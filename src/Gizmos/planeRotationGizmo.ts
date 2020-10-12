@@ -8,7 +8,7 @@ import { LinesMesh } from '../Meshes/linesMesh';
 import { Mesh } from "../Meshes/mesh";
 import { Node } from "../node";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
-import { Gizmo } from "./gizmo";
+import { Gizmo, GizmoAxisCache } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import "../Meshes/Builders/linesBuilder";   // Why
 import { StandardMaterial } from "../Materials/standardMaterial";
@@ -43,7 +43,7 @@ export class PlaneRotationGizmo extends Gizmo {
     private _gizmoMesh: Mesh;
     private _rotationCircle: Mesh;
 
-    private circleConstants = {
+    private static _CircleConstants = {
         radius: 0.3,
         pi2: Math.PI * 2,
         tessellation: 360
@@ -221,26 +221,10 @@ export class PlaneRotationGizmo extends Gizmo {
             }
         });
 
-        this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
-            if (this._customMeshSet) {
-                return;
-            }
-            this._isHovered = !!(pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1));
-            if (!this._parent) {
-                var material = this._isHovered ? this._hoverMaterial : this._coloredMaterial;
-                this._rootMesh.getChildMeshes().forEach((m) => {
-                    m.material = material;
-                    if ((<LinesMesh>m).color) {
-                        (<LinesMesh>m).color = material.diffuseColor;
-                    }
-                });
-            }
-        });
-
         var light = gizmoLayer._getSharedGizmoLight();
         light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._rootMesh.getChildMeshes(false));
 
-        const cache: any = {
+        const cache: GizmoAxisCache = {
             colliderMeshes: [ collider ],
             gizmoMeshes: [ rotationMesh ],
             material: this._coloredMaterial,
@@ -249,6 +233,22 @@ export class PlaneRotationGizmo extends Gizmo {
             active: false
         };
         this._parent?.addToAxisCache(this._gizmoMesh, cache);
+
+        this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
+            if (this._customMeshSet) {
+                return;
+            }
+            this._isHovered = !!(cache.colliderMeshes.indexOf(<Mesh>pointerInfo?.pickInfo?.pickedMesh) != -1);
+            if (!this._parent) {
+                var material = this._isHovered ? this._hoverMaterial : this._coloredMaterial;
+                cache.gizmoMeshes.forEach((m: Mesh) => {
+                    m.material = material;
+                    if ((<LinesMesh>m).color) {
+                        (<LinesMesh>m).color = material.diffuseColor;
+                    }
+                });
+            }
+        });
     }
 
     /** Create Geometry for Gizmo */
@@ -303,13 +303,13 @@ export class PlaneRotationGizmo extends Gizmo {
 
     private setupRotationCircle(paths: Vector3[][], parentMesh: AbstractMesh): Mesh {
         const fillRadians = 0;
-        const step = this.circleConstants.pi2 / this.circleConstants.tessellation;
+        const step = PlaneRotationGizmo._CircleConstants.pi2 / PlaneRotationGizmo._CircleConstants.tessellation;
         for (let p = -Math.PI / 2; p < Math.PI / 2 - 1.5; p += step / 2) {
             const path: Vector3[] = [];
-            for (let i = 0; i < this.circleConstants.pi2; i += step) {
+            for (let i = 0; i < PlaneRotationGizmo._CircleConstants.pi2; i += step) {
                 if (i < fillRadians) {
-                    const x = this.circleConstants.radius * Math.sin(i) * Math.cos(p);
-                    const z = this.circleConstants.radius * Math.cos(i) * Math.cos(p);
+                    const x = PlaneRotationGizmo._CircleConstants.radius * Math.sin(i) * Math.cos(p);
+                    const z = PlaneRotationGizmo._CircleConstants.radius * Math.cos(i) * Math.cos(p);
                     const y = 0;
                     path.push(new Vector3(x, y, z));
                 } else {
@@ -323,7 +323,7 @@ export class PlaneRotationGizmo extends Gizmo {
         const mat = new StandardMaterial("", this.gizmoLayer.utilityLayerScene);
         mat.diffuseColor = Color3.Yellow();
         mat.backFaceCulling = false;
-        const mesh = Mesh.CreateRibbon("ignore", paths, false, false, 0, this.gizmoLayer.utilityLayerScene, true);
+        const mesh = Mesh.CreateRibbon("rotationCircle", paths, false, false, 0, this.gizmoLayer.utilityLayerScene, true);
         mesh.material = mat;
         mesh.material.alpha = .25;
         mesh.rotation.x = Math.PI / 2;
@@ -333,21 +333,21 @@ export class PlaneRotationGizmo extends Gizmo {
 
     private updateRotationPath(pathArr: Vector3[][], newFill: number): void {
         // To update the Ribbon, you have to mutate the pathArray in-place
-        const step = this.circleConstants.pi2 / this.circleConstants.tessellation;
+        const step = PlaneRotationGizmo._CircleConstants.pi2 / PlaneRotationGizmo._CircleConstants.tessellation;
         let tessellationCounter = 0;
         for (let p = -Math.PI / 2; p < Math.PI / 2 - 1.5; p += step / 2) {
             const path = pathArr[tessellationCounter];
             if (path) {
                 let radianCounter = 0;
-                for (let i = 0; i < this.circleConstants.pi2; i += step) {
+                for (let i = 0; i < PlaneRotationGizmo._CircleConstants.pi2; i += step) {
                     if (path[radianCounter]) {
                         if (i < Math.abs(newFill)) {
                             const absI = (newFill > 0) ? i : i * -1;
                             const absP = (newFill > 0) ? p : p * -1;
                             path[radianCounter].set(
-                                this.circleConstants.radius * Math.sin(absI) * Math.cos(absP),
+                                PlaneRotationGizmo._CircleConstants.radius * Math.sin(absI) * Math.cos(absP),
                                 0,
-                                this.circleConstants.radius * Math.cos(absI) * Math.cos(absP)
+                                PlaneRotationGizmo._CircleConstants.radius * Math.cos(absI) * Math.cos(absP)
                             );
                         } else {
                             path[radianCounter].set(0, 0, 0);
@@ -364,7 +364,7 @@ export class PlaneRotationGizmo extends Gizmo {
 
     private updateRotationCircle(mesh: Mesh, paths: any[], newFill: number, dragPlanePoint: Vector3): void {
         this.updateRotationPath(paths, newFill);
-        Mesh.CreateRibbon("ribbon", paths, false, false, 0, this.gizmoLayer.utilityLayerScene, undefined, undefined, mesh);
+        Mesh.CreateRibbon("rotationCircle", paths, false, false, 0, this.gizmoLayer.utilityLayerScene, undefined, undefined, mesh);
     }
 
     /**
@@ -394,7 +394,7 @@ export class PlaneRotationGizmo extends Gizmo {
         if (this._gizmoMesh) {
             this._gizmoMesh.dispose();
         }
-        if(this._rotationCircle) {
+        if (this._rotationCircle) {
             this._rotationCircle.dispose();
         }
         [this._coloredMaterial, this._hoverMaterial, this._disableMaterial].forEach((matl) => {
