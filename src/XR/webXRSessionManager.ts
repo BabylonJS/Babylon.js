@@ -259,8 +259,8 @@ export class WebXRSessionManager implements IDisposable {
         return this.session
             .requestReferenceSpace(referenceSpaceType)
             .then(
-                (referenceSpace: XRReferenceSpace) => {
-                    return referenceSpace;
+                (referenceSpace) => {
+                    return referenceSpace as XRReferenceSpace;
                 },
                 (rejectionReason) => {
                     Logger.Error("XR.requestReferenceSpace failed for the following reason: ");
@@ -268,9 +268,9 @@ export class WebXRSessionManager implements IDisposable {
                     Logger.Log('Defaulting to universally-supported "viewer" reference space type.');
 
                     return this.session.requestReferenceSpace("viewer").then(
-                        (referenceSpace: XRReferenceSpace) => {
+                        (referenceSpace) => {
                             const heightCompensation = new XRRigidTransform({ x: 0, y: -this.defaultHeightCompensation, z: 0 });
-                            return referenceSpace.getOffsetReferenceSpace(heightCompensation);
+                            return (referenceSpace as XRReferenceSpace).getOffsetReferenceSpace(heightCompensation);
                         },
                         (rejectionReason) => {
                             Logger.Error(rejectionReason);
@@ -281,8 +281,8 @@ export class WebXRSessionManager implements IDisposable {
             )
             .then((referenceSpace) => {
                 // create viewer reference space before setting the first reference space
-                return this.session.requestReferenceSpace("viewer").then((viewerReferenceSpace: XRReferenceSpace) => {
-                    this.viewerReferenceSpace = viewerReferenceSpace;
+                return this.session.requestReferenceSpace("viewer").then((viewerReferenceSpace) => {
+                    this.viewerReferenceSpace = viewerReferenceSpace as XRReferenceSpace;
                     return referenceSpace;
                 });
             })
