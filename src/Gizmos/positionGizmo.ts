@@ -47,7 +47,7 @@ export class PositionGizmo extends Gizmo {
     private _meshAttached: Nullable<AbstractMesh> = null;
     private _nodeAttached: Nullable<Node> = null;
     private _snapDistance: number;
-    private _observables: Nullable<Observer<PointerInfo>>[] = [];
+    private _observables: Observer<PointerInfo>[] = [];
 
     /** Gizmo state variables used for UI behavior */
     private _dragging = false;
@@ -269,7 +269,7 @@ export class PositionGizmo extends Gizmo {
             }
         });
 
-        this._observables = [pointerObserver];
+        this._observables = [pointerObserver!];
     }
 
     /**

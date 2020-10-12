@@ -44,7 +44,7 @@ export class ScaleGizmo extends Gizmo {
     private _coloredMaterial: StandardMaterial;
     private _hoverMaterial: StandardMaterial;
     private _disableMaterial: StandardMaterial;
-    private _observables: Nullable<Observer<PointerInfo>>[] = [];
+    private _observables: Observer<PointerInfo>[] = [];
 
     /** Gizmo state variables used for UI behavior */
     private _dragging = false;
@@ -294,8 +294,7 @@ export class ScaleGizmo extends Gizmo {
                 }
             }
         });
-
-        this._observables = [pointerObserver];
+        this._observables = [pointerObserver!];
     }
 
     /**

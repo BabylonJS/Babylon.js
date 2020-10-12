@@ -11,14 +11,23 @@ import { Node } from "../node";
 import { Bone } from "../Bones/bone";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { TransformNode } from '../Meshes/transformNode';
-import { StandardMaterial } from 'Materials';
+import { StandardMaterial } from '../Materials/standardMaterial';
 
+/**
+ * Cache built by each axis. Used for managing state between all elements of gizmo for enhanced UI
+ */
 export interface GizmoAxisCache {
+    /** Mesh used to runder the Gizmo */
     gizmoMeshes: Mesh[];
+    /** Mesh used to detect user interaction with Gizmo */
     colliderMeshes: Mesh[];
+    /** Material used to inicate color of gizmo mesh */
     material: StandardMaterial;
+    /** Material used to inicate hover state of the Gizmo */
     hoverMaterial: StandardMaterial;
+    /** Material used to inicate disabled state of the Gizmo */
     disableMaterial: StandardMaterial;
+    /** Used to indicate Active state of the Gizmo */
     active: boolean;
 }
 /**
