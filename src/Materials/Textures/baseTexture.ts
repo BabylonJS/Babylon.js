@@ -743,6 +743,52 @@ export class BaseTexture implements IAnimatable {
     }
 
     /**
+     * Reads the pixels stored in the webgl texture and returns them as a base64 string.
+     * @returns The base64 encoded string or null.
+     */
+    public toBase64(): Nullable<string> {
+        if (!this._texture) {
+            return null;
+        }
+
+        var size = this.getSize();
+        var width = size.width;
+        var height = size.height;
+        var pixels = this.readPixels();
+        var isFloatBuffer = (pixels instanceof Float32Array);
+        var invertY = this._texture.invertY;
+
+        var canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+
+        var ctx = canvas.getContext('2d');
+        ctx.fillStyle = 'rgb(0, 0, 0)';
+        ctx.fillRect(0, 0, width, height);
+
+        var wCount = 0;
+        var hCount = 0;
+        var drawHeight = 0;
+        for (var i = 0; i < pixels.length; i+=4) {
+            if (wCount >= width) {
+                wCount = 0;
+                hCount++;
+            }
+            drawHeight = (invertY ? height - hCount - 1 : hCount);
+
+            if (isFloatBuffer) {
+                ctx.fillStyle = `rgba( ${pixels[i]*255}, ${pixels[i+1]*255}, ${pixels[i+2]*255}, ${pixels[i+3]})`;
+            } else {
+                ctx.fillStyle = `rgba( ${pixels[i]}, ${pixels[i+1]}, ${pixels[i+2]}, ${pixels[i+3]/255})`;
+            }
+
+            ctx.fillRect(wCount, drawHeight, 1, 1);
+            wCount++;
+        }
+        return canvas.toDataURL('image/png');
+    }
+
+    /**
      * Release and destroy the underlying lower level texture aka internalTexture.
      */
     public releaseInternalTexture(): void {
