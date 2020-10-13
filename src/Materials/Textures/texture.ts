@@ -27,6 +27,12 @@ export class Texture extends BaseTexture {
      * Gets or sets a general boolean used to indicate that textures containing direct data (buffers) must be saved as part of the serialization process
      */
     public static SerializeBuffers = true;
+    
+    /**
+     * Gets or sets a general boolean used to indicate that texture buffers must be saved as part of the serialization process.
+     * If no buffer exists, one will be created as base64 string from the internal webgl data.
+     */
+    public static ForceSerializeBuffers = false;
 
     /** @hidden */
     public static _CubeTextureParser = (jsonTexture: any, scene: Scene, rootUrl: string): CubeTexture => {
@@ -667,12 +673,14 @@ export class Texture extends BaseTexture {
             return null;
         }
 
-        if (Texture.SerializeBuffers) {
+        if (Texture.SerializeBuffers || Texture.ForceSerializeBuffers) {
             if (typeof this._buffer === "string" && (this._buffer as string).substr(0, 5) === "data:") {
                 serializationObject.base64String = this._buffer;
                 serializationObject.name = serializationObject.name.replace("data:", "");
             } else if (this.url && StringTools.StartsWith(this.url, "data:") && this._buffer instanceof Uint8Array) {
                 serializationObject.base64String = "data:image/png;base64," + StringTools.EncodeArrayBufferToBase64(this._buffer);
+            } else if (Texture.ForceSerializeBuffers) {
+                serializationObject.base64String = this.toBase64();
             }
         }
 
