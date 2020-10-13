@@ -787,7 +787,7 @@ export class VRExperienceHelper {
 
             this._scene.activeCamera = this._deviceOrientationCamera;
             if (this._inputElement) {
-                this._scene.activeCamera.attachControl(this._inputElement);
+                this._scene.activeCamera.attachControl();
             }
         } else {
             this._existingCamera = this._scene.activeCamera;
@@ -1180,7 +1180,7 @@ export class VRExperienceHelper {
         }
 
         if (this._scene.activeCamera && this._inputElement) {
-            this._scene.activeCamera.attachControl(this._inputElement);
+            this._scene.activeCamera.attachControl();
         }
 
         if (this._interactionsEnabled) {
@@ -1248,7 +1248,7 @@ export class VRExperienceHelper {
                 this._existingCamera.position = this._position;
                 this._scene.activeCamera = this._existingCamera;
                 if (this._inputElement) {
-                    this._scene.activeCamera.attachControl(this._inputElement);
+                    this._scene.activeCamera.attachControl();
                 }
 
                 // Restore angular sensibility

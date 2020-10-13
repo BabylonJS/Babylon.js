@@ -1,4 +1,3 @@
-import { Nullable } from "../../types";
 import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { ArcRotateCameraInputsManager } from "../../Cameras/arcRotateCameraInputsManager";
@@ -59,11 +58,12 @@ export class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<Arc
 
     /**
      * Attach the input controls to a specific dom element to get the input from.
-     * @param element Defines the element the controls should be listened from
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
-        this.camera.attachControl(element, noPreventDefault);
+    public attachControl(noPreventDefault?: boolean): void {
+        noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
+
+        this.camera.attachControl(noPreventDefault);
 
         let hostWindow = this.camera.getScene().getEngine().getHostWindow();
 
@@ -118,9 +118,8 @@ export class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<Arc
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param element Defines the element to stop listening the inputs from
      */
-    public detachControl(element: Nullable<HTMLElement>): void {
+    public detachControl(): void {
         window.removeEventListener("deviceorientation", this._deviceOrientationHandler);
     }
 
