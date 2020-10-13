@@ -92,7 +92,7 @@ export class SoundTrack {
      * @param sound define the cound to add
      * @ignoreNaming
      */
-    public AddSound(sound: Sound): void {
+    public addSound(sound: Sound): void {
         if (!this._isInitialized) {
             this._initializeSoundTrackAudioGraph();
         }
@@ -101,10 +101,10 @@ export class SoundTrack {
         }
         if (sound.soundTrackId) {
             if (sound.soundTrackId === -1) {
-                this._scene.mainSoundTrack.RemoveSound(sound);
+                this._scene.mainSoundTrack.removeSound(sound);
             }
             else if (this._scene.soundTracks) {
-                this._scene.soundTracks[sound.soundTrackId].RemoveSound(sound);
+                this._scene.soundTracks[sound.soundTrackId].removeSound(sound);
             }
         }
 
@@ -117,7 +117,7 @@ export class SoundTrack {
      * @param sound define the cound to remove
      * @ignoreNaming
      */
-    public RemoveSound(sound: Sound): void {
+    public removeSound(sound: Sound): void {
         var index = this.soundCollection.indexOf(sound);
         if (index !== -1) {
             this.soundCollection.splice(index, 1);
