@@ -4,6 +4,7 @@ import { Observable, Observer } from "../../Misc/observable";
 import { Camera } from "../../Cameras/camera";
 import { ICameraInput } from "../../Cameras/cameraInputsManager";
 import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
+import { Tools } from "../../Misc/tools";
 
 /**
  * Base class for mouse wheel input..
@@ -40,28 +41,29 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
     /**
      * Observable for when a mouse wheel move event occurs.
      */
-    public onChangedObservable = new Observable<
-        {wheelDeltaX: number, wheelDeltaY: number, wheelDeltaZ: number}>();
+    public onChangedObservable = new Observable<{ wheelDeltaX: number; wheelDeltaY: number; wheelDeltaZ: number }>();
 
     private _wheel: Nullable<(pointer: PointerInfo) => void>;
     private _observer: Nullable<Observer<PointerInfo>>;
 
     /**
      * Attach the input controls to a specific dom element to get the input from.
-     * @param element Defines the element the controls should be listened from
      * @param noPreventDefault Defines whether event caught by the controls
      *   should call preventdefault().
      *   (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
+    public attachControl(noPreventDefault?: boolean): void {
+        noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
+
         this._wheel = (pointer) => {
             // sanity check - this should be a PointerWheel event.
-            if (pointer.type !== PointerEventTypes.POINTERWHEEL) { return; }
+            if (pointer.type !== PointerEventTypes.POINTERWHEEL) {
+                return;
+            }
 
             const event = <MouseWheelEvent>pointer.event;
 
-            const platformScale =
-                event.deltaMode === WheelEvent.DOM_DELTA_LINE ? this._ffMultiplier : 1;
+            const platformScale = event.deltaMode === WheelEvent.DOM_DELTA_LINE ? this._ffMultiplier : 1;
 
             if (event.deltaY !== undefined) {
                 // Most recent browsers versions have delta properties.
@@ -69,29 +71,19 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
                 // Chrome >=  v31  (Has WebGL >= v8)
                 // Edge >=    v12  (Has WebGl >= v12)
                 // https://developer.mozilla.org/en-US/docs/Web/API/WheelEvent
-                this._wheelDeltaX +=
-                    this.wheelPrecisionX * platformScale * event.deltaX / this._normalize;
-                this._wheelDeltaY -=
-                    this.wheelPrecisionY * platformScale * event.deltaY / this._normalize;
-                this._wheelDeltaZ +=
-                    this.wheelPrecisionZ * platformScale * event.deltaZ / this._normalize;
+                this._wheelDeltaX += (this.wheelPrecisionX * platformScale * event.deltaX) / this._normalize;
+                this._wheelDeltaY -= (this.wheelPrecisionY * platformScale * event.deltaY) / this._normalize;
+                this._wheelDeltaZ += (this.wheelPrecisionZ * platformScale * event.deltaZ) / this._normalize;
             } else if ((<any>event).wheelDeltaY !== undefined) {
                 // Unsure whether these catch anything more. Documentation
                 // online is contradictory.
-                this._wheelDeltaX +=
-                    this.wheelPrecisionX * platformScale *
-                    (<any>event).wheelDeltaX / this._normalize;
-                this._wheelDeltaY -=
-                    this.wheelPrecisionY * platformScale *
-                    (<any>event).wheelDeltaY / this._normalize;
-                this._wheelDeltaZ +=
-                    this.wheelPrecisionZ * platformScale *
-                    (<any>event).wheelDeltaZ / this._normalize;
+                this._wheelDeltaX += (this.wheelPrecisionX * platformScale * (<any>event).wheelDeltaX) / this._normalize;
+                this._wheelDeltaY -= (this.wheelPrecisionY * platformScale * (<any>event).wheelDeltaY) / this._normalize;
+                this._wheelDeltaZ += (this.wheelPrecisionZ * platformScale * (<any>event).wheelDeltaZ) / this._normalize;
             } else if ((<any>event).wheelDelta) {
                 // IE >= v9   (Has WebGL >= v11)
                 // Maybe others?
-                this._wheelDeltaY -=
-                    this.wheelPrecisionY * (<any>event).wheelDelta / this._normalize;
+                this._wheelDeltaY -= (this.wheelPrecisionY * (<any>event).wheelDelta) / this._normalize;
             }
 
             if (event.preventDefault) {
@@ -101,16 +93,13 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
             }
         };
 
-        this._observer = this.camera.getScene().onPointerObservable.add(
-            this._wheel,
-            PointerEventTypes.POINTERWHEEL);
+        this._observer = this.camera.getScene().onPointerObservable.add(this._wheel, PointerEventTypes.POINTERWHEEL);
     }
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param element Defines the element to stop listening the inputs from
      */
-    public detachControl(element: Nullable<HTMLElement>): void {
+    public detachControl(): void {
         if (this._observer) {
             this.camera.getScene().onPointerObservable.remove(this._observer);
             this._observer = null;
@@ -128,7 +117,7 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
         this.onChangedObservable.notifyObservers({
             wheelDeltaX: this._wheelDeltaX,
             wheelDeltaY: this._wheelDeltaY,
-            wheelDeltaZ: this._wheelDeltaZ
+            wheelDeltaZ: this._wheelDeltaZ,
         });
 
         // Clear deltas.
