@@ -3609,7 +3609,11 @@ export class WebGPUEngine extends Engine {
         const bindGroups = this._getBindGroupsToRender();
         this._setRenderBindGroups(bindGroups);
 
-        if (this._alphaState.alphaBlend && this._alphaState._isBlendConstantsDirty) {
+        if (this._stencilState.stencilTest) {
+            this._getCurrentRenderPass().setStencilReference(this._stencilState.stencilFuncRef);
+        }
+
+        if (this._alphaState.alphaBlend/* && this._alphaState._isBlendConstantsDirty*/) {
             // TODO WebGPU. should use renderPass.
             this._getCurrentRenderPass().setBlendColor(this._alphaState._blendConstants as any);
         }
