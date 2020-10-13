@@ -162,7 +162,7 @@ export class MatrixLineComponent extends React.Component<IMatrixLineComponentPro
                 {
                     this.state.mode !== 0 &&
                     <div className="secondLine">
-                        <SliderLineComponent label="Angle" minimum={0} maximum={2 * Math.PI} useEuler={true} step={0.1} directValue={this.state.angle} onChange={value => this.updateBasedOnMode(value)}/>
+                        <SliderLineComponent label="Angle" minimum={0} maximum={2 * Math.PI} useEuler={true} step={0.1} globalState={this.props.globalState} directValue={this.state.angle} onChange={value => this.updateBasedOnMode(value)}/>
                     </div>
                 }
             </div>
