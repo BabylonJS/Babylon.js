@@ -214,6 +214,8 @@ export class WebGPUTextureHelper {
             commandEncoder = this._device.createCommandEncoder({});
         }
 
+        commandEncoder!.pushDebugGroup("start create mipmaps");
+
         for (let i = 1; i < mipLevelCount; ++i) {
             const passEncoder = commandEncoder!.beginRenderPass({
                 colorAttachments: [{
@@ -250,6 +252,8 @@ export class WebGPUTextureHelper {
             passEncoder.draw(4, 1, 0, 0);
             passEncoder.endPass();
         }
+
+        commandEncoder!.popDebugGroup();
 
         if (useOwnCommandEncoder) {
             this._device.defaultQueue.submit([commandEncoder!.finish()]);
