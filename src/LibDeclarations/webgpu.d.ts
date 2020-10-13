@@ -138,6 +138,7 @@ declare global {
     | "rgba8sint"
     | "bgra8unorm"
     | "bgra8unorm-srgb"
+    | "rgb9e5ufloat"
     | "rgb10a2unorm"
     | "rg11b10ufloat"
     | "rg32uint"
@@ -149,9 +150,11 @@ declare global {
     | "rgba32uint"
     | "rgba32sint"
     | "rgba32float"
-    | "depth32float"
+    | "stencil8"
+    | "depth16unorm"
     | "depth24plus"
     | "depth24plus-stencil8"
+    | "depth32float"
     | "bc1-rgba-unorm"
     | "bc1-rgba-unorm-srgb"
     | "bc2-rgba-unorm"
@@ -165,7 +168,9 @@ declare global {
     | "bc6h-rgb-ufloat"
     | "bc6h-rgb-sfloat"
     | "bc7-rgba-unorm"
-    | "bc7-rgba-unorm-srgb";
+    | "bc7-rgba-unorm-srgb"
+    | "depth24unorm-stencil8"
+    | "depth32float-stencil8";
   export type GPUTextureComponentType = "float" | "sint" | "uint";
   export type GPUTextureViewDimension =
     | "1d"
