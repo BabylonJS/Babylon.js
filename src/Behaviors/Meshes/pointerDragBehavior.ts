@@ -261,9 +261,9 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
         if (this.detachCameraControls && this._attachedElement && this._scene.activeCamera && !this._scene.activeCamera.leftCamera) {
             if (this._scene.activeCamera.getClassName() === "ArcRotateCamera") {
                 const arcRotateCamera = this._scene.activeCamera as ArcRotateCamera;
-                arcRotateCamera.attachControl(this._attachedElement, arcRotateCamera.inputs ? arcRotateCamera.inputs.noPreventDefault : true, arcRotateCamera._useCtrlForPanning, arcRotateCamera._panningMouseButton);
+                arcRotateCamera.attachControl(arcRotateCamera.inputs ? arcRotateCamera.inputs.noPreventDefault : true, arcRotateCamera._useCtrlForPanning, arcRotateCamera._panningMouseButton);
             } else {
-                this._scene.activeCamera.attachControl(this._attachedElement, this._scene.activeCamera.inputs ? this._scene.activeCamera.inputs.noPreventDefault : true);
+                this._scene.activeCamera.attachControl(this._scene.activeCamera.inputs ? this._scene.activeCamera.inputs.noPreventDefault : true);
             }
         }
     }
@@ -318,9 +318,8 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
 
             // Detatch camera controls
             if (this.detachCameraControls && this._scene.activeCamera && this._scene.activeCamera.inputs && !this._scene.activeCamera.leftCamera) {
-                if (this._scene.activeCamera.inputs.attachedElement) {
-                    this._attachedElement = this._scene.activeCamera.inputs.attachedElement;
-                    this._scene.activeCamera.detachControl(this._scene.activeCamera.inputs.attachedElement);
+                if (this._scene.activeCamera.inputs.attachedToElement) {
+                    this._scene.activeCamera.detachControl();
                 } else {
                     this._attachedElement = null;
                 }

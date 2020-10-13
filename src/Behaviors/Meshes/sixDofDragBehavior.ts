@@ -146,9 +146,8 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
 
                     // Detatch camera controls
                     if (this.detachCameraControls && this._pointerCamera && !this._pointerCamera.leftCamera) {
-                        if (this._pointerCamera.inputs.attachedElement) {
-                            this._attachedElement = this._pointerCamera.inputs.attachedElement;
-                            this._pointerCamera.detachControl(this._pointerCamera.inputs.attachedElement);
+                        if (this._pointerCamera.inputs.attachedToElement) {
+                            this._pointerCamera.detachControl();
                         } else {
                             this._attachedElement = null;
                         }
@@ -166,7 +165,7 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
 
                     // Reattach camera controls
                     if (this.detachCameraControls && this._attachedElement && this._pointerCamera && !this._pointerCamera.leftCamera) {
-                        this._pointerCamera.attachControl(this._attachedElement, true);
+                        this._pointerCamera.attachControl(true);
                     }
                     this.onDragEndObservable.notifyObservers({});
                 }
@@ -247,7 +246,7 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
     public detach(): void {
         if (this._scene) {
             if (this.detachCameraControls && this._attachedElement && this._pointerCamera && !this._pointerCamera.leftCamera) {
-                this._pointerCamera.attachControl(this._attachedElement, true);
+                this._pointerCamera.attachControl(true);
             }
             this._scene.onPointerObservable.remove(this._pointerObserver);
         }

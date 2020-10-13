@@ -6407,15 +6407,13 @@ declare module BABYLON {
         getSimpleName(): string;
         /**
          * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(noPreventDefault?: boolean): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: Nullable<HTMLElement>): void;
+        detachControl(): void;
         /**
          * Update the current camera state depending on the inputs that have been used this frame.
          * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
@@ -6449,7 +6447,7 @@ declare module BABYLON {
          * Defines the dom element the camera is collecting inputs from.
          * This is null if the controls have not been attached.
          */
-        attachedElement: Nullable<HTMLElement>;
+        attachedToElement: boolean;
         /**
          * Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
@@ -6497,13 +6495,13 @@ declare module BABYLON {
          * @param element Defines the dom element to collect the events from
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachElement(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachElement(noPreventDefault?: boolean): void;
         /**
          * Detach the current manager inputs controls from a specific dom element.
          * @param element Defines the dom element to collect the events from
          * @param disconnect Defines whether the input should be removed from the current list of attached inputs
          */
-        detachElement(element: HTMLElement, disconnect?: boolean): void;
+        detachElement(disconnect?: boolean): void;
         /**
          * Rebuild the dynamic inputCheck function from the current list of
          * defined inputs in the manager.
@@ -18802,15 +18800,13 @@ declare module BABYLON {
         private _scene;
         /**
          * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(noPreventDefault?: boolean): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: Nullable<HTMLElement>): void;
+        detachControl(): void;
         /**
          * Update the current camera state depending on the inputs that have been used this frame.
          * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
@@ -19010,10 +19006,9 @@ declare module BABYLON {
         touchEnabled?: boolean);
         /**
          * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(noPreventDefault?: boolean): void;
         /**
          * Called on JS contextmenu event.
          * Override this method to provide functionality.
@@ -19021,9 +19016,8 @@ declare module BABYLON {
         protected onContextMenu(evt: PointerEvent): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: Nullable<HTMLElement>): void;
+        detachControl(): void;
         /**
          * Gets the class name of the current intput.
          * @returns the class name
@@ -19074,17 +19068,15 @@ declare module BABYLON {
         private _observer;
         /**
          * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
          * @param noPreventDefault Defines whether event caught by the controls
          *   should call preventdefault().
          *   (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(noPreventDefault?: boolean): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: Nullable<HTMLElement>): void;
+        detachControl(): void;
         /**
          * Called for each rendered frame.
          */
@@ -19303,7 +19295,7 @@ declare module BABYLON {
         private _offsetX;
         private _offsetY;
         private _pointerPressed;
-        private _pointerInput;
+        private _pointerInput?;
         private _observer;
         private _onLostFocus;
         /**
@@ -19318,15 +19310,14 @@ declare module BABYLON {
         allowMouse?: boolean);
         /**
          * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(noPreventDefault?: boolean): void;
         /**
          * Detach the current controls from the specified dom element.
          * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: Nullable<HTMLElement>): void;
+        detachControl(): void;
         /**
          * Update the current camera state depending on the inputs that have been used this frame.
          * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
@@ -19498,16 +19489,14 @@ declare module BABYLON {
         constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive?: boolean);
         /**
          * Attached controls to the current camera.
-         * @param element Defines the element the controls should be listened from
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(noPreventDefault?: boolean): void;
         /**
          * Detach the current controls from the camera.
          * The camera will stop reacting to inputs.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: HTMLElement): void;
+        detachControl(): void;
         private _collisionMask;
         /**
          * Define a collision mask to limit the list of object the camera can collide with
@@ -20535,7 +20524,6 @@ declare module BABYLON {
          * @param poseData Pose coming from the device
          */
         updateFromDevice(poseData: DevicePose): void;
-        private _htmlElementAttached;
         private _detachIfAttached;
         /**
          * WebVR's attach control will start broadcasting frames to the device.
@@ -20543,16 +20531,13 @@ declare module BABYLON {
          * within a user-interaction callback. Example:
          * <pre> scene.onPointerDown = function() { camera.attachControl(canvas); }</pre>
          *
-         * @param element html element to attach the vrDevice to
          * @param noPreventDefault prevent the default html element operation when attaching the vrDevice
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(noPreventDefault?: boolean): void;
         /**
          * Detaches the camera from the html element and disables VR
-         *
-         * @param element html element to detach from
          */
-        detachControl(element: HTMLElement): void;
+        detachControl(): void;
         /**
          * @returns the name of this class
          */
@@ -34211,15 +34196,13 @@ declare module BABYLON {
         _isSynchronizedProjectionMatrix(): boolean;
         /**
          * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(noPreventDefault?: boolean): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: HTMLElement): void;
+        detachControl(): void;
         /**
          * Update the camera state according to the different inputs gathered during the frame.
          */
@@ -41711,14 +41694,14 @@ declare module BABYLON {
         static get PreprocessUrl(): (url: string) => string;
         static set PreprocessUrl(processor: (url: string) => string);
         /**
-        * Loads an image as an HTMLImageElement.
-        * @param input url string, ArrayBuffer, or Blob to load
-        * @param onLoad callback called when the image successfully loads
-        * @param onError callback called when the image fails to load
-        * @param offlineProvider offline provider for caching
-        * @param mimeType optional mime type
-        * @returns the HTMLImageElement of the loaded image
-        */
+         * Loads an image as an HTMLImageElement.
+         * @param input url string, ArrayBuffer, or Blob to load
+         * @param onLoad callback called when the image successfully loads
+         * @param onError callback called when the image fails to load
+         * @param offlineProvider offline provider for caching
+         * @param mimeType optional mime type
+         * @returns the HTMLImageElement of the loaded image
+         */
         static LoadImage(input: string | ArrayBuffer | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string): Nullable<HTMLImageElement>;
         /**
          * Loads a file from a url
@@ -41854,6 +41837,14 @@ declare module BABYLON {
          */
         static Download(blob: Blob, fileName: string): void;
         /**
+         * Will return the right value of the noPreventDefault variable
+         * Needed to keep backwards compatibility to the old API.
+         *
+         * @param args arguments passed to the attachControl function
+         * @returns the correct value for noPreventDefault
+         */
+        static BackCompatCameraNoPreventDefault(args: IArguments): boolean;
+        /**
          * Captures a screenshot of the current rendering
          * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
          * @param engine defines the rendering engine
@@ -41933,16 +41924,16 @@ declare module BABYLON {
          */
         static RandomId(): string;
         /**
-        * Test if the given uri is a base64 string
-        * @param uri The uri to test
-        * @return True if the uri is a base64 string or false otherwise
-        */
+         * Test if the given uri is a base64 string
+         * @param uri The uri to test
+         * @return True if the uri is a base64 string or false otherwise
+         */
         static IsBase64(uri: string): boolean;
         /**
-        * Decode the given base64 uri.
-        * @param uri The uri to decode
-        * @return The decoded base64 data.
-        */
+         * Decode the given base64 uri.
+         * @param uri The uri to decode
+         * @return The decoded base64 data.
+         */
         static DecodeBase64(uri: string): ArrayBuffer;
         /**
          * Gets the absolute url.
@@ -44946,6 +44937,10 @@ declare module BABYLON {
          * Observable event when the current playing sound finishes.
          */
         onEndedObservable: Observable<Sound>;
+        /**
+         * Gets the current time for the sound.
+         */
+        get currentTime(): number;
         private _panningModel;
         private _playbackRate;
         private _streaming;
@@ -45868,12 +45863,11 @@ declare module BABYLON {
          * @param element Defines the element the controls should be listened from
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(noPreventDefault?: boolean): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: Nullable<HTMLElement>): void;
+        detachControl(): void;
         /**
          * Gets the class name of the current input.
          * @returns the class name
@@ -46082,15 +46076,13 @@ declare module BABYLON {
         private _scene;
         /**
          * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(noPreventDefault?: boolean): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: Nullable<HTMLElement>): void;
+        detachControl(): void;
         /**
          * Update the current camera state depending on the inputs that have been used this frame.
          * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
@@ -46132,15 +46124,13 @@ declare module BABYLON {
         private computeDeltaFromMouseWheelLegacyEvent;
         /**
          * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(noPreventDefault?: boolean): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: Nullable<HTMLElement>): void;
+        detachControl(): void;
         /**
          * Gets the class name of the current intput.
          * @returns the class name
@@ -46506,18 +46496,16 @@ declare module BABYLON {
         _isSynchronizedViewMatrix(): boolean;
         /**
          * Attached controls to the current camera.
-         * @param element Defines the element the controls should be listened from
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          * @param useCtrlForPanning  Defines whether ctrl is used for paning within the controls
          * @param panningMouseButton Defines whether panning is allowed through mouse click button
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean, useCtrlForPanning?: boolean, panningMouseButton?: number): void;
+        attachControl(noPreventDefault?: boolean, useCtrlForPanning?: boolean, panningMouseButton?: number): void;
         /**
          * Detach the current controls from the camera.
          * The camera will stop reacting to inputs.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: HTMLElement): void;
+        detachControl(): void;
         /** @hidden */
         _checkInputs(): void;
         protected _checkLimits(): void;
@@ -47329,15 +47317,13 @@ declare module BABYLON {
         private _onGamepadDisconnectedObserver;
         /**
          * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
-         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(): void;
         /**
          * Detach the current controls from the specified dom element.
          * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: Nullable<HTMLElement>): void;
+        detachControl(): void;
         /**
          * Update the current camera state depending on the inputs that have been used this frame.
          * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
@@ -47390,10 +47376,9 @@ declare module BABYLON {
         constructor();
         /**
          * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(noPreventDefault?: boolean): void;
         /** @hidden */
         _onOrientationEvent(evt: DeviceOrientationEvent): void;
         /**
@@ -47403,9 +47388,8 @@ declare module BABYLON {
         checkInputs(): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: Nullable<HTMLElement>): void;
+        detachControl(): void;
         /**
          * Gets the class name of the current intput.
          * @returns the class name
@@ -47474,15 +47458,13 @@ declare module BABYLON {
         constructor(touchEnabled?: boolean);
         /**
          * Attach the mouse control to the HTML DOM element.
-         * @param element Defines the element that listens to the input events.
          * @param noPreventDefault Defines whether events caught by the controls should call preventdefault().
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(noPreventDefault?: boolean): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: Nullable<HTMLElement>): void;
+        detachControl(): void;
         /**
          * Gets the class name of the current input.
          * @returns the class name.
@@ -47667,16 +47649,14 @@ declare module BABYLON {
         constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive?: boolean);
         /**
          * Attach a control to the HTML DOM element.
-         * @param element Defines the element that listens to the input events.
          * @param noPreventDefault Defines whether events caught by the controls should call preventdefault(). https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(noPreventDefault?: boolean): void;
         /**
          * Detach a control from the HTML DOM element.
          * The camera will stop reacting to that input.
-         * @param element Defines the element that listens to the input events.
          */
-        detachControl(element: HTMLElement): void;
+        detachControl(): void;
         private _collisionMask;
         /**
          * Get the mask that the camera ignores in collision events.
@@ -47754,15 +47734,13 @@ declare module BABYLON {
         private _scene;
         /**
          * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(noPreventDefault?: boolean): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: Nullable<HTMLElement>): void;
+        detachControl(): void;
         /**
          * Gets the class name of the current intput.
          * @returns the class name
@@ -47818,15 +47796,13 @@ declare module BABYLON {
         private _observer;
         /**
          * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(noPreventDefault?: boolean): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: Nullable<HTMLElement>): void;
+        detachControl(): void;
         /**
          * Gets the class name of the current intput.
          * @returns the class name
@@ -48038,16 +48014,14 @@ declare module BABYLON {
         private _follow;
         /**
          * Attached controls to the current camera.
-         * @param element Defines the element the controls should be listened from
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(noPreventDefault?: boolean): void;
         /**
          * Detach the current controls from the camera.
          * The camera will stop reacting to inputs.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: HTMLElement): void;
+        detachControl(): void;
         /** @hidden */
         _checkInputs(): void;
         private _checkLimits;
@@ -48193,15 +48167,13 @@ declare module BABYLON {
         private _scene;
         /**
          * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(noPreventDefault?: boolean): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: Nullable<HTMLElement>): void;
+        detachControl(): void;
         /**
          * Update the current camera state depending on the inputs that have been used this frame.
          * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
@@ -48281,17 +48253,14 @@ declare module BABYLON {
         set camera(camera: FreeCamera);
         /**
          * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
-         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(): void;
         private _orientationChanged;
         private _deviceOrientation;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: Nullable<HTMLElement>): void;
+        detachControl(): void;
         /**
          * Update the current camera state depending on the inputs that have been used this frame.
          * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
@@ -48347,15 +48316,12 @@ declare module BABYLON {
         private _vector2;
         /**
          * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
-         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: Nullable<HTMLElement>): void;
+        detachControl(): void;
         /**
          * Update the current camera state depending on the inputs that have been used this frame.
          * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
@@ -48612,15 +48578,12 @@ declare module BABYLON {
         checkInputs(): void;
         /**
          * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
-         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: Nullable<HTMLElement>): void;
+        detachControl(): void;
         /**
          * Gets the class name of the current intput.
          * @returns the class name
@@ -52462,6 +52425,10 @@ declare module BABYLON {
          * A list of optional features to init the session with
          */
         requiredFeatures?: string[];
+        /**
+         * If defined, this function will be executed if the UI encounters an error when entering XR
+         */
+        onError?: (error: any) => void;
     }
     /**
      * UI to allow the user to enter/exit XR mode
@@ -54971,9 +54938,15 @@ declare module BABYLON {
      */
     export class DeviceInputSystem implements IDisposable {
         /**
-         * Callback to be triggered when a device is connected
+         * Returns onDeviceConnected callback property
+         * @returns Callback with function to execute when a device is connected
          */
-        onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void;
+        get onDeviceConnected(): (deviceType: DeviceType, deviceSlot: number) => void;
+        /**
+         * Sets callback function when a device is connected and executes against all connected devices
+         * @param callback Function to execute when a device is connected
+         */
+        set onDeviceConnected(callback: (deviceType: DeviceType, deviceSlot: number) => void);
         /**
          * Callback to be triggered when a device is disconnected
          */
@@ -54994,6 +54967,7 @@ declare module BABYLON {
         private _pointerUpEvent;
         private _gamepadConnectedEvent;
         private _gamepadDisconnectedEvent;
+        private _onDeviceConnected;
         private static _MAX_KEYCODES;
         private static _MAX_POINTER_INPUTS;
         private constructor();
@@ -55021,6 +54995,24 @@ declare module BABYLON {
          * Dispose of all the eventlisteners
          */
         dispose(): void;
+        /**
+         * Checks for existing connections to devices and register them, if necessary
+         * Currently handles gamepads and mouse
+         */
+        private _checkForConnectedDevices;
+        /**
+         * Add a gamepad to the DeviceInputSystem
+         * @param gamepad A single DOM Gamepad object
+         */
+        private _addGamePad;
+        /**
+         * Add pointer device to DeviceInputSystem
+         * @param deviceType Type of Pointer to add
+         * @param deviceSlot Pointer ID (0 for mouse, pointerId for Touch)
+         * @param currentX Current X at point of adding
+         * @param currentY Current Y at point of adding
+         */
+        private _addPointerDevice;
         /**
          * Add device and inputs to device array
          * @param deviceType Enum specifiying device type
@@ -55108,33 +55100,13 @@ declare module BABYLON {
      */
     export class DeviceSourceManager implements IDisposable {
         /**
-         * Observable to be triggered when before a device is connected
+         * Observable to be triggered when after a device is connected, any new observers added will be triggered against already connected devices
          */
-        readonly onBeforeDeviceConnectedObservable: Observable<{
-            deviceType: DeviceType;
-            deviceSlot: number;
-        }>;
-        /**
-         * Observable to be triggered when before a device is disconnected
-         */
-        readonly onBeforeDeviceDisconnectedObservable: Observable<{
-            deviceType: DeviceType;
-            deviceSlot: number;
-        }>;
-        /**
-         * Observable to be triggered when after a device is connected
-         */
-        readonly onAfterDeviceConnectedObservable: Observable<{
-            deviceType: DeviceType;
-            deviceSlot: number;
-        }>;
+        readonly onDeviceConnectedObservable: Observable<DeviceSource<DeviceType>>;
         /**
          * Observable to be triggered when after a device is disconnected
          */
-        readonly onAfterDeviceDisconnectedObservable: Observable<{
-            deviceType: DeviceType;
-            deviceSlot: number;
-        }>;
+        readonly onDeviceDisconnectedObservable: Observable<DeviceSource<DeviceType>>;
         private readonly _devices;
         private readonly _firstDevice;
         private readonly _deviceInputSystem;
@@ -55156,6 +55128,11 @@ declare module BABYLON {
          * @returns Array of DeviceSource objects
          */
         getDeviceSources<T extends DeviceType>(deviceType: T): ReadonlyArray<DeviceSource<T>>;
+        /**
+         * Returns a read-only list of all available devices
+         * @returns Read-only array with active devices
+         */
+        getDevices(): ReadonlyArray<DeviceSource<DeviceType>>;
         /**
          * Dispose of DeviceInputSystem and other parts
          */
@@ -72862,9 +72839,9 @@ declare module BABYLON {
          */
         onAfterBoxRenderingObservable: Observable<BoundingBox>;
         /**
-         * Observable raised after ressources are created
+         * Observable raised after resources are created
          */
-        onRessourcesReadyObservable: Observable<BoundingBoxRenderer>;
+        onResourcesReadyObservable: Observable<BoundingBoxRenderer>;
         /**
          * When false, no bounding boxes will be rendered
          */
@@ -72889,7 +72866,7 @@ declare module BABYLON {
         register(): void;
         private _evaluateSubMesh;
         private _preActiveMesh;
-        private _prepareRessources;
+        private _prepareResources;
         private _createIndexBuffer;
         /**
          * Rebuilds the elements related to this component in case of
@@ -76045,6 +76022,11 @@ declare module BABYLON {
          * Dispose this feature and all of the resources attached
          */
         dispose(): void;
+        /**
+         * Check if the needed objects are defined.
+         * This does not mean that the feature is enabled, but that the objects needed are well defined.
+         */
+        isCompatible(): boolean;
         protected _onXRFrame(frame: XRFrame): void;
         private _init;
         private _updatePlaneWithXRPlane;

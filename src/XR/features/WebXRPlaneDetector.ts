@@ -5,6 +5,8 @@ import { Observable } from "../../Misc/observable";
 import { Vector3, Matrix } from "../../Maths/math.vector";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 
+declare const XRPlane: XRPlane;
+
 /**
  * Options used in the plane detector module
  */
@@ -90,6 +92,7 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
      */
     constructor(_xrSessionManager: WebXRSessionManager, private _options: IWebXRPlaneDetectorOptions = {}) {
         super(_xrSessionManager);
+        this.xrNativeFeatureName = "plane-detection";
         if (this._xrSessionManager.session) {
             this._init();
         } else {
@@ -130,6 +133,14 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
         this.onPlaneAddedObservable.clear();
         this.onPlaneRemovedObservable.clear();
         this.onPlaneUpdatedObservable.clear();
+    }
+
+    /**
+     * Check if the needed objects are defined.
+     * This does not mean that the feature is enabled, but that the objects needed are well defined.
+     */
+    public isCompatible(): boolean {
+        return typeof XRPlane !== "undefined";
     }
 
     protected _onXRFrame(frame: XRFrame) {
@@ -177,15 +188,23 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
     }
 
     private _init() {
+        const internalInit = () => {
+            this._enabled = true;
+            if (this._detectedPlanes.length) {
+                this._detectedPlanes.length = 0;
+            }
+        };
         if (!this._xrSessionManager.session.updateWorldTrackingState) {
+            // check if this was enabled by a flag
+            const alreadyEnabled = (this._xrSessionManager.session as any).worldTrackingState?.planeDetectionState?.enabled;
+            if (alreadyEnabled) {
+                internalInit();
+            }
             // fail silently
             return;
         }
         this._xrSessionManager.session.updateWorldTrackingState({ planeDetectionState: { enabled: true } });
-        this._enabled = true;
-        if (this._detectedPlanes.length) {
-            this._detectedPlanes = [];
-        }
+        internalInit();
     }
 
     private _updatePlaneWithXRPlane(xrPlane: XRPlane, plane: Partial<IWebXRPlane>, xrFrame: XRFrame): IWebXRPlane {
