@@ -8,6 +8,7 @@ import { TargetCamera } from "./targetCamera";
 import { FlyCameraInputsManager } from "./flyCameraInputsManager";
 import { FlyCameraMouseInput } from "../Cameras/Inputs/flyCameraMouseInput";
 import { FlyCameraKeyboardInput } from "../Cameras/Inputs/flyCameraKeyboardInput";
+import { Tools } from '../Misc/tools';
 
 declare type Collider = import("../Collisions/collider").Collider;
 
@@ -273,20 +274,19 @@ export class FlyCamera extends TargetCamera {
 
     /**
      * Attach a control to the HTML DOM element.
-     * @param element Defines the element that listens to the input events.
      * @param noPreventDefault Defines whether events caught by the controls should call preventdefault(). https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault
      */
-    public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
-        this.inputs.attachElement(element, noPreventDefault);
+    public attachControl(noPreventDefault?: boolean): void {
+        noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
+        this.inputs.attachElement(noPreventDefault);
     }
 
     /**
      * Detach a control from the HTML DOM element.
      * The camera will stop reacting to that input.
-     * @param element Defines the element that listens to the input events.
      */
-    public detachControl(element: HTMLElement): void {
-        this.inputs.detachElement(element);
+    public detachControl(): void {
+        this.inputs.detachElement();
 
         this.cameraDirection = new Vector3(0, 0, 0);
     }

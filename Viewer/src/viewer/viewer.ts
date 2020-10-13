@@ -561,7 +561,7 @@ export abstract class AbstractViewer {
 
         if (this.sceneManager) {
             if (this.sceneManager.scene && this.sceneManager.scene.activeCamera) {
-                this.sceneManager.scene.activeCamera.detachControl(this.canvas);
+                this.sceneManager.scene.activeCamera.detachControl();
             }
             this.sceneManager.dispose();
         }

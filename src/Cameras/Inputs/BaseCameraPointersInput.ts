@@ -42,8 +42,10 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
      * @param element Defines the element the controls should be listened from
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
+    public attachControl(noPreventDefault?: boolean): void {
+        noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         var engine = this.camera.getEngine();
+        const element = engine.getInputElement();
         var previousPinchSquaredDistance = 0;
         var previousMultiTouchPanPosition: Nullable<PointerTouch> = null;
 
@@ -115,7 +117,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
 
                 if (!noPreventDefault) {
                     evt.preventDefault();
-                    element.focus();
+                    element && element.focus();
                 }
             } else if (p.type === PointerEventTypes.POINTERDOUBLETAP) {
                 this.onDoubleTap(evt.pointerType);
@@ -225,7 +227,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
             this.onLostFocus();
         };
 
-        element.addEventListener("contextmenu",
+        element && element.addEventListener("contextmenu",
             <EventListener>this.onContextMenu.bind(this), false);
 
         let hostWindow = this.camera.getScene().getEngine().getHostWindow();
@@ -239,9 +241,8 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param element Defines the element to stop listening the inputs from
      */
-    public detachControl(element: Nullable<HTMLElement>): void {
+    public detachControl(): void {
         if (this._onLostFocus) {
             let hostWindow = this.camera.getScene().getEngine().getHostWindow();
             if (hostWindow) {
@@ -251,12 +252,13 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
             }
         }
 
-        if (element && this._observer) {
+        if (this._observer) {
             this.camera.getScene().onPointerObservable.remove(this._observer);
             this._observer = null;
 
             if (this.onContextMenu) {
-                element.removeEventListener("contextmenu", <EventListener>this.onContextMenu);
+                const inputElement = this.camera.getScene().getEngine().getInputElement();
+                inputElement && inputElement.removeEventListener("contextmenu", <EventListener>this.onContextMenu);
             }
 
             this._onLostFocus = null;
