@@ -7,9 +7,10 @@ import { Vector2, Matrix } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Constants } from "../Engines/constants";
 import { ActionEvent } from "../Actions/actionEvent";
-import { Tools } from "../Misc/tools";
 import { Engine } from "../Engines/engine";
 import { KeyboardEventTypes, KeyboardInfoPre, KeyboardInfo } from "../Events/keyboardEvents";
+import { DeviceSourceManager } from '../DeviceInput/InputDevices/deviceSourceManager';
+import { DeviceType, PointerInput } from '../DeviceInput/InputDevices/deviceEnums';
 
 declare type Scene = import("../scene").Scene;
 
@@ -61,11 +62,12 @@ export class InputManager {
     public static ExclusiveDoubleClickMode = false;
 
     /** This is a defensive check to not allow control attachment prior to an already active one. If already attached, previous control is unattached before attaching the new one. */
+    // TODO: Decide if we need this
     private _alreadyAttached = false;
     private _alreadyAttachedTo: HTMLElement;
 
     // Pointers
-    private _wheelEventName = "";
+    private _wheelEventName = "wheel";
     private _onPointerMove: (evt: PointerEvent) => void;
     private _onPointerDown: (evt: PointerEvent) => void;
     private _onPointerUp: (evt: PointerEvent) => void;
@@ -97,18 +99,19 @@ export class InputManager {
     private _startingPointerTime = 0;
     private _previousStartingPointerTime = 0;
     private _pointerCaptures: { [pointerId: number]: boolean } = {};
-
+    // TODO: Do we need this?
     private _meshUnderPointerId: Nullable<AbstractMesh>[] = [];
 
     // Keyboard
     private _onKeyDown: (evt: KeyboardEvent) => void;
     private _onKeyUp: (evt: KeyboardEvent) => void;
-    private _keyboardIsAttached = false;
+    //private _keyboardIsAttached = false;
     private _onCanvasFocusObserver: Nullable<Observer<Engine>>;
     private _onCanvasBlurObserver: Nullable<Observer<Engine>>;
 
     private _scene: Scene;
-
+    private _deviceSourceManager: DeviceSourceManager;
+    
     /**
      * Creates a new InputManager
      * @param scene defines the hosting scene
@@ -129,6 +132,8 @@ export class InputManager {
      * @param pointerId the pointer id to use
      * @returns The mesh under this pointer id or null if not found
      */
+
+     // TODO: Do we need this?
     public getMeshUnderPointerByPointerId(pointerId: number): Nullable<AbstractMesh> {
         return this._meshUnderPointerId[pointerId];
     }
@@ -477,6 +482,8 @@ export class InputManager {
         }
         this._alreadyAttachedTo = elementToAttachTo;
         let engine = scene.getEngine();
+        
+        this._deviceSourceManager = new DeviceSourceManager(engine);
 
         this._initActionManager = (act: Nullable<AbstractActionManager>, clickInfo: _ClickInfo): Nullable<AbstractActionManager> => {
             if (!this._meshPickProceed) {
@@ -804,17 +811,73 @@ export class InputManager {
             }
         };
 
-        let attachedFunction = () => {
+        this._deviceSourceManager.onDeviceConnectedObservable.add((device) => {
+            // Keyboard Events
+            if (device.deviceType == DeviceType.Keyboard) {
+                this._deviceSourceManager.getDeviceSource(device.deviceType, device.deviceSlot)!.onInputChangedObservable.add((deviceSource) => {
+                    if (elementToAttachTo && document.activeElement === elementToAttachTo) {
+                        // Get Keyboard key and create event init data
+                        const key = String.fromCharCode(deviceSource.inputIndex);
+                        const init = {key: key, keyCode: deviceSource.inputIndex};
+
+                        if (deviceSource.currentState == 1) {
+                            const evt = new KeyboardEvent("keydown", init);
+                            this._onKeyDown(evt);
+                        }
+
+                        if (deviceSource.currentState == 0) {
+                            const evt = new KeyboardEvent("keyup", init);
+                            this._onKeyUp(evt);
+                        }
+                    }
+                });
+            }
+
+            // Pointer Events
+            if (device.deviceType == DeviceType.Mouse || device.deviceType == DeviceType.Touch) {
+                this._deviceSourceManager.getDeviceSource(device.deviceType, device.deviceSlot)!.onInputChangedObservable.add((deviceSource) => {
+                    // Get current cursor position and create event init data
+                    const pointerX = this._deviceSourceManager.getDeviceSource(device.deviceType)!.getInput(PointerInput.Horizontal) || 0;
+                    const pointerY = this._deviceSourceManager.getDeviceSource(device.deviceType)!.getInput(PointerInput.Vertical) || 0;
+                    const init = {pointerId: 0, clientX: pointerX, clientY: pointerY};
+                    const evt = (device.deviceType == DeviceType.Mouse) ? new PointerEvent("mouse", init) : new PointerEvent("touch", init);
+                    Object.defineProperty(evt, 'target', {value: elementToAttachTo});
+
+                    if (attachDown && deviceSource.inputIndex >= PointerInput.LeftClick && deviceSource.inputIndex <= PointerInput.RightClick && deviceSource.currentState == 1) {   // Pointer Down
+                        this._onPointerDown(evt);
+                    }
+
+                    if (attachUp && deviceSource.inputIndex >= PointerInput.LeftClick && deviceSource.inputIndex <= PointerInput.RightClick && deviceSource.currentState == 0) {   // Pointer Up
+                        this._onPointerUp(evt);
+                    }
+
+                    if (attachMove) {
+                        if (deviceSource.inputIndex == PointerInput.Horizontal || deviceSource.inputIndex == PointerInput.Vertical) {
+                            this._onPointerMove(evt);
+                        }
+                        else if (deviceSource.inputIndex == PointerInput.MouseWheelX || deviceSource.inputIndex == PointerInput.MouseWheelY || deviceSource.inputIndex == PointerInput.MouseWheelZ) {
+                            const deltaX = this._deviceSourceManager.getDeviceSource(device.deviceType)!.getInput(PointerInput.MouseWheelX) || 0;
+                            const deltaY = this._deviceSourceManager.getDeviceSource(device.deviceType)!.getInput(PointerInput.MouseWheelY) || 0;
+                            const deltaZ = this._deviceSourceManager.getDeviceSource(device.deviceType)!.getInput(PointerInput.MouseWheelZ) || 0;
+                            this._onPointerMove(<any>new WheelEvent("wheel", {deltaX: deltaX, deltaY: deltaY, deltaZ: deltaZ}));
+                        }
+                    }
+                });
+            }
+        });
+
+
+        /*let attachedFunction = () => {
             if (!elementToAttachTo || this._keyboardIsAttached) {
                 return;
             }
             elementToAttachTo.addEventListener("keydown", this._onKeyDown, false);
             elementToAttachTo.addEventListener("keyup", this._onKeyUp, false);
             this._keyboardIsAttached = true;
-        };
+        };*/
 
         // Keyboard events
-        this._onCanvasFocusObserver = engine.onCanvasFocusObservable.add(
+        /*this._onCanvasFocusObserver = engine.onCanvasFocusObservable.add(
             (() => {
 
                 if (document.activeElement === elementToAttachTo) {
@@ -822,9 +885,9 @@ export class InputManager {
                 }
                 return attachedFunction;
             })()
-        );
+        );*/
 
-        this._onCanvasBlurObserver = engine.onCanvasBlurObservable.add(() => {
+        /*this._onCanvasBlurObserver = engine.onCanvasBlurObservable.add(() => {
             if (!elementToAttachTo) {
                 return;
             }
@@ -833,10 +896,10 @@ export class InputManager {
             this._keyboardIsAttached = false;
         });
 
-        attachedFunction();
+        attachedFunction();*/
 
         // Pointer events
-        var eventPrefix = Tools.GetPointerPrefix(engine);
+        /*var eventPrefix = Tools.GetPointerPrefix(engine);
 
         if (attachMove) {
             elementToAttachTo.addEventListener(eventPrefix + "move", <any>this._onPointerMove, false);
@@ -861,7 +924,7 @@ export class InputManager {
             if (hostWindow) {
                 hostWindow.addEventListener(eventPrefix + "up", <any>this._onPointerUp, false);
             }
-        }
+        }*/
         this._alreadyAttached = true;
     }
 
@@ -870,7 +933,7 @@ export class InputManager {
      */
     public detachControl() {
         const engine = this._scene.getEngine();
-        const eventPrefix = Tools.GetPointerPrefix(engine);
+        //const eventPrefix = Tools.GetPointerPrefix(engine);
 
         if (!this._alreadyAttachedTo) {
             return;
@@ -880,13 +943,17 @@ export class InputManager {
             return;
         }
 
+        this._deviceSourceManager.dispose();
+        //delete this._deviceSourceManager;
+
         // Pointer
-        this._alreadyAttachedTo.removeEventListener(eventPrefix + "move", <any>this._onPointerMove);
+        /*this._alreadyAttachedTo.removeEventListener(eventPrefix + "move", <any>this._onPointerMove);
         this._alreadyAttachedTo.removeEventListener(this._wheelEventName, <any>this._onPointerMove);
         this._alreadyAttachedTo.removeEventListener(eventPrefix + "down", <any>this._onPointerDown);
-        window.removeEventListener(eventPrefix + "up", <any>this._onPointerUp);
+        window.removeEventListener(eventPrefix + "up", <any>this._onPointerUp);*/
 
         // Blur / Focus
+        // TODO: Do we need this?
         if (this._onCanvasBlurObserver) {
             engine.onCanvasBlurObservable.remove(this._onCanvasBlurObserver);
         }
@@ -896,8 +963,8 @@ export class InputManager {
         }
 
         // Keyboard
-        this._alreadyAttachedTo.removeEventListener("keydown", this._onKeyDown);
-        this._alreadyAttachedTo.removeEventListener("keyup", this._onKeyUp);
+        /*this._alreadyAttachedTo.removeEventListener("keydown", this._onKeyDown);
+        this._alreadyAttachedTo.removeEventListener("keyup", this._onKeyUp);*/
 
         // Cursor
         if (!this._scene.doNotHandleCursors) {
