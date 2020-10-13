@@ -1,36 +1,36 @@
-import { GlobalState } from '../../globalState';
-import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
-import { Nullable } from 'babylonjs/types';
-import { Observer } from 'babylonjs/Misc/observable';
-import { Engine } from 'babylonjs/Engines/engine';
-import { Scene } from 'babylonjs/scene';
-import { Mesh } from 'babylonjs/Meshes/mesh';
-import { Vector3 } from 'babylonjs/Maths/math.vector';
-import { HemisphericLight } from 'babylonjs/Lights/hemisphericLight';
-import { ArcRotateCamera } from 'babylonjs/Cameras/arcRotateCamera';
-import { PreviewType } from './previewType';
-import { Animation } from 'babylonjs/Animations/animation';
-import { SceneLoader } from 'babylonjs/Loading/sceneLoader';
-import { TransformNode } from 'babylonjs/Meshes/transformNode';
-import { AbstractMesh } from 'babylonjs/Meshes/abstractMesh';
-import { FramingBehavior } from 'babylonjs/Behaviors/Cameras/framingBehavior';
-import { DirectionalLight } from 'babylonjs/Lights/directionalLight';
-import { LogEntry } from '../log/logComponent';
-import { PointerEventTypes } from 'babylonjs/Events/pointerEvents';
-import { Color3, Color4 } from 'babylonjs/Maths/math.color';
-import { PostProcess } from 'babylonjs/PostProcesses/postProcess';
-import { Constants } from 'babylonjs/Engines/constants';
-import { CurrentScreenBlock } from 'babylonjs/Materials/Node/Blocks/Dual/currentScreenBlock';
-import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
-import { ParticleSystem } from 'babylonjs/Particles/particleSystem';
-import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
-import { ParticleHelper } from 'babylonjs/Particles/particleHelper';
-import { Texture } from 'babylonjs/Materials/Textures/texture';
-import { ParticleTextureBlock } from 'babylonjs/Materials/Node/Blocks/Particle/particleTextureBlock';
-import { FileTools } from 'babylonjs/Misc/fileTools';
-import { ProceduralTexture } from 'babylonjs/Materials/Textures/Procedurals/proceduralTexture';
-import { StandardMaterial } from 'babylonjs/Materials/standardMaterial';
-import { Layer } from 'babylonjs/Layers/layer';
+import { GlobalState } from "../../globalState";
+import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial";
+import { Nullable } from "babylonjs/types";
+import { Observer } from "babylonjs/Misc/observable";
+import { Engine } from "babylonjs/Engines/engine";
+import { Scene } from "babylonjs/scene";
+import { Mesh } from "babylonjs/Meshes/mesh";
+import { Vector3 } from "babylonjs/Maths/math.vector";
+import { HemisphericLight } from "babylonjs/Lights/hemisphericLight";
+import { ArcRotateCamera } from "babylonjs/Cameras/arcRotateCamera";
+import { PreviewType } from "./previewType";
+import { Animation } from "babylonjs/Animations/animation";
+import { SceneLoader } from "babylonjs/Loading/sceneLoader";
+import { TransformNode } from "babylonjs/Meshes/transformNode";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { FramingBehavior } from "babylonjs/Behaviors/Cameras/framingBehavior";
+import { DirectionalLight } from "babylonjs/Lights/directionalLight";
+import { LogEntry } from "../log/logComponent";
+import { PointerEventTypes } from "babylonjs/Events/pointerEvents";
+import { Color3, Color4 } from "babylonjs/Maths/math.color";
+import { PostProcess } from "babylonjs/PostProcesses/postProcess";
+import { Constants } from "babylonjs/Engines/constants";
+import { CurrentScreenBlock } from "babylonjs/Materials/Node/Blocks/Dual/currentScreenBlock";
+import { NodeMaterialModes } from "babylonjs/Materials/Node/Enums/nodeMaterialModes";
+import { ParticleSystem } from "babylonjs/Particles/particleSystem";
+import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
+import { ParticleHelper } from "babylonjs/Particles/particleHelper";
+import { Texture } from "babylonjs/Materials/Textures/texture";
+import { ParticleTextureBlock } from "babylonjs/Materials/Node/Blocks/Particle/particleTextureBlock";
+import { FileTools } from "babylonjs/Misc/fileTools";
+import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
+import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+import { Layer } from "babylonjs/Layers/layer";
 
 export class PreviewManager {
     private _nodeMaterial: NodeMaterial;
@@ -105,7 +105,7 @@ export class PreviewManager {
         this._camera.upperRadiusLimit = 10;
         this._camera.wheelPrecision = 20;
         this._camera.minZ = 0.1;
-        this._camera.attachControl(targetCanvas, false);
+        this._camera.attachControl(false);
 
         this._lightParent = new TransformNode("LightParent", this._scene);
 
@@ -212,7 +212,8 @@ export class PreviewManager {
 
                 var framingBehavior = this._camera.getBehaviorByName("Framing") as FramingBehavior;
 
-                setTimeout(() => { // Let the behavior activate first
+                setTimeout(() => {
+                    // Let the behavior activate first
                     framingBehavior.framingTime = 0;
                     framingBehavior.elevationReturnTime = -1;
 
@@ -234,7 +235,7 @@ export class PreviewManager {
                 this._handleAnimations();
                 break;
             }
-            case NodeMaterialModes.PostProcess: 
+            case NodeMaterialModes.PostProcess:
             case NodeMaterialModes.ProceduralTexture: {
                 this._camera.radius = 4;
                 this._camera.upperRadiusLimit = 10;
@@ -359,13 +360,19 @@ export class PreviewManager {
                         this._loadParticleSystem(this._globalState.previewType);
                         return;
                     case PreviewType.Custom:
-                        FileTools.ReadFile(this._globalState.previewFile, (json) =>  {
-                            this._particleSystem = ParticleSystem.Parse(JSON.parse(json), this._scene, "");
-                            this._particleSystem.start();
-                            this._prepareScene();
-                        }, undefined, false, (error) => {
-                            console.log(error);
-                        });
+                        FileTools.ReadFile(
+                            this._globalState.previewFile,
+                            (json) => {
+                                this._particleSystem = ParticleSystem.Parse(JSON.parse(json), this._scene, "");
+                                this._particleSystem.start();
+                                this._prepareScene();
+                            },
+                            undefined,
+                            false,
+                            (error) => {
+                                console.log(error);
+                            }
+                        );
                         return;
                 }
             }
@@ -461,7 +468,7 @@ export class PreviewManager {
                     this._globalState.onIsLoadingChanged.notifyObservers(false);
 
                     this._proceduralTexture = tempMaterial.createProceduralTexture(512, this._scene);
-                   
+
                     if (this._material) {
                         this._material.dispose();
                     }
@@ -497,21 +504,23 @@ export class PreviewManager {
                     if (this._meshes.length) {
                         let tasks = this._meshes.map((m) => this._forceCompilationAsync(tempMaterial, m));
 
-                        Promise.all(tasks).then(() => {
-                            for (var mesh of this._meshes) {
-                                mesh.material = tempMaterial;
-                            }
+                        Promise.all(tasks)
+                            .then(() => {
+                                for (var mesh of this._meshes) {
+                                    mesh.material = tempMaterial;
+                                }
 
-                            if (this._material) {
-                                this._material.dispose();
-                            }
+                                if (this._material) {
+                                    this._material.dispose();
+                                }
 
-                            this._material = tempMaterial;
-                            this._globalState.onIsLoadingChanged.notifyObservers(false);
-                        }).catch((reason) => {
-                            this._globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Shader compilation error:\r\n" + reason, true));
-                            this._globalState.onIsLoadingChanged.notifyObservers(false);
-                        });
+                                this._material = tempMaterial;
+                                this._globalState.onIsLoadingChanged.notifyObservers(false);
+                            })
+                            .catch((reason) => {
+                                this._globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Shader compilation error:\r\n" + reason, true));
+                                this._globalState.onIsLoadingChanged.notifyObservers(false);
+                            });
                     } else {
                         this._material = tempMaterial;
                     }

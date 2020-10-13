@@ -64245,7 +64245,7 @@ var PreviewManager = /** @class */ (function () {
         this._camera.upperRadiusLimit = 10;
         this._camera.wheelPrecision = 20;
         this._camera.minZ = 0.1;
-        this._camera.attachControl(targetCanvas, false);
+        this._camera.attachControl(false);
         this._lightParent = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["TransformNode"]("LightParent", this._scene);
         this._refreshPreviewMesh();
         this._engine.runRenderLoop(function () {
@@ -64334,6 +64334,7 @@ var PreviewManager = /** @class */ (function () {
                 this._prepareLights();
                 var framingBehavior = this._camera.getBehaviorByName("Framing");
                 setTimeout(function () {
+                    // Let the behavior activate first
                     framingBehavior.framingTime = 0;
                     framingBehavior.elevationReturnTime = -1;
                     if (_this._scene.meshes.length) {
@@ -64597,7 +64598,8 @@ var PreviewManager = /** @class */ (function () {
                 default: {
                     if (this._meshes.length) {
                         var tasks = this._meshes.map(function (m) { return _this._forceCompilationAsync(tempMaterial_1, m); });
-                        Promise.all(tasks).then(function () {
+                        Promise.all(tasks)
+                            .then(function () {
                             for (var _i = 0, _a = _this._meshes; _i < _a.length; _i++) {
                                 var mesh = _a[_i];
                                 mesh.material = tempMaterial_1;
@@ -64607,7 +64609,8 @@ var PreviewManager = /** @class */ (function () {
                             }
                             _this._material = tempMaterial_1;
                             _this._globalState.onIsLoadingChanged.notifyObservers(false);
-                        }).catch(function (reason) {
+                        })
+                            .catch(function (reason) {
                             _this._globalState.onLogRequiredObservable.notifyObservers(new _log_logComponent__WEBPACK_IMPORTED_MODULE_2__["LogEntry"]("Shader compilation error:\r\n" + reason, true));
                             _this._globalState.onIsLoadingChanged.notifyObservers(false);
                         });
