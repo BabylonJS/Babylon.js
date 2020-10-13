@@ -769,7 +769,7 @@ export class BaseTexture implements IAnimatable {
         var wCount = 0;
         var hCount = 0;
         var drawHeight = 0;
-        for (var i = 0; i < pixels.length; i+=4) {
+        for (var i = 0; i < pixels.length; i += 4) {
             if (wCount >= width) {
                 wCount = 0;
                 hCount++;
@@ -777,9 +777,9 @@ export class BaseTexture implements IAnimatable {
             drawHeight = (invertY ? height - hCount - 1 : hCount);
 
             if (isFloatBuffer) {
-                ctx.fillStyle = `rgba( ${pixels[i]*255}, ${pixels[i+1]*255}, ${pixels[i+2]*255}, ${pixels[i+3]})`;
+                ctx.fillStyle = `rgba( ${pixels[i] * 255}, ${pixels[i + 1] * 255}, ${pixels[i + 2] * 255}, ${pixels[i + 3]})`;
             } else {
-                ctx.fillStyle = `rgba( ${pixels[i]}, ${pixels[i+1]}, ${pixels[i+2]}, ${pixels[i+3]/255})`;
+                ctx.fillStyle = `rgba( ${pixels[i]}, ${pixels[i + 1]}, ${pixels[i + 2]}, ${pixels[i + 3] / 255})`;
             }
 
             ctx.fillRect(wCount, drawHeight, 1, 1);
