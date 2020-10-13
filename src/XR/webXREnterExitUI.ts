@@ -185,7 +185,7 @@ export class WebXREnterExitUI implements IDisposable {
                                     const prevTitle = element.title;
                                     element.title = "Error entering XR session : " + prevTitle;
                                     element.classList.add("xr-error");
-                                    if(options.onError) {
+                                    if (options.onError) {
                                         options.onError(e);
                                     }
                                 }
