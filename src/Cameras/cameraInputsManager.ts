@@ -98,7 +98,7 @@ export class CameraInputsManager<TCamera extends Camera> {
     constructor(camera: TCamera) {
         this.attached = {};
         this.camera = camera;
-        this.checkInputs = () => { };
+        this.checkInputs = () => {};
     }
 
     /**
@@ -205,7 +205,6 @@ export class CameraInputsManager<TCamera extends Camera> {
      * @param disconnect Defines whether the input should be removed from the current list of attached inputs
      */
     public detachElement(disconnect = false): void {
-
         for (var cam in this.attached) {
             this.attached[cam].detachControl();
 
@@ -213,6 +212,7 @@ export class CameraInputsManager<TCamera extends Camera> {
                 this.attached[cam].camera = null;
             }
         }
+        this.attachedToElement = false;
     }
 
     /**
@@ -220,7 +220,7 @@ export class CameraInputsManager<TCamera extends Camera> {
      * defined inputs in the manager.
      */
     public rebuildInputCheck(): void {
-        this.checkInputs = () => { };
+        this.checkInputs = () => {};
 
         for (var cam in this.attached) {
             var input = this.attached[cam];
@@ -239,7 +239,7 @@ export class CameraInputsManager<TCamera extends Camera> {
         }
         this.attached = {};
         this.attachedToElement = false;
-        this.checkInputs = () => { };
+        this.checkInputs = () => {};
     }
 
     /**
@@ -273,7 +273,13 @@ export class CameraInputsManager<TCamera extends Camera> {
                 var construct = (<any>CameraInputTypes)[n];
                 if (construct) {
                     var parsedinput = parsedInputs[n];
-                    var input = SerializationHelper.Parse(() => { return new construct(); }, parsedinput, null);
+                    var input = SerializationHelper.Parse(
+                        () => {
+                            return new construct();
+                        },
+                        parsedinput,
+                        null
+                    );
                     this.add(input as any);
                 }
             }
@@ -282,7 +288,13 @@ export class CameraInputsManager<TCamera extends Camera> {
             for (var n in this.attached) {
                 var construct = (<any>CameraInputTypes)[this.attached[n].getClassName()];
                 if (construct) {
-                    var input = SerializationHelper.Parse(() => { return new construct(); }, parsedCamera, null);
+                    var input = SerializationHelper.Parse(
+                        () => {
+                            return new construct();
+                        },
+                        parsedCamera,
+                        null
+                    );
                     this.remove(this.attached[n]);
                     this.add(input as any);
                 }
