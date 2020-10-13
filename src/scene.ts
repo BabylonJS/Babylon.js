@@ -2003,7 +2003,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param projectionR defines the right Projection matrix to use (if provided)
      */
     public setTransformMatrix(viewL: Matrix, projectionL: Matrix, viewR?: Matrix, projectionR?: Matrix): void {
-        // TODO WEBGPU handle case where the matrices didn't change but the viewPosition will still be different than previously
         if (this._viewUpdateFlag === viewL.updateFlag && this._projectionUpdateFlag === projectionL.updateFlag) {
             return;
         }
@@ -2027,17 +2026,26 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         } else if (this._sceneUbo.useUbo) {
             this._sceneUbo.updateMatrix("viewProjection", this._transformMatrix);
             this._sceneUbo.updateMatrix("view", this._viewMatrix);
-
-            const eyePosition = this._forcedViewPosition ? this._forcedViewPosition : (this._mirroredCameraPosition ? this._mirroredCameraPosition : (this.activeCamera!).globalPosition);
-            const invertNormal = (this.useRightHandedSystem === (this._mirroredCameraPosition != null));
-            this._sceneUbo.updateFloat4("viewPosition",
-                eyePosition.x,
-                eyePosition.y,
-                eyePosition.z,
-                invertNormal ? -1 : 1);
-
-            this._sceneUbo.update();
         }
+    }
+
+    /**
+     * Update the scene ubo before it can be used in rendering processing
+     * @returns the scene UniformBuffer
+     */
+    public finalizeSceneUbo(): UniformBuffer {
+        const ubo = this.getSceneUniformBuffer();
+        const eyePosition = this._forcedViewPosition ? this._forcedViewPosition : (this._mirroredCameraPosition ? this._mirroredCameraPosition : (this.activeCamera!).globalPosition);
+        const invertNormal = (this.useRightHandedSystem === (this._mirroredCameraPosition != null));
+        ubo.updateFloat4("viewPosition",
+            eyePosition.x,
+            eyePosition.y,
+            eyePosition.z,
+            invertNormal ? -1 : 1);
+
+        ubo.update();
+
+        return ubo;
     }
 
     /**

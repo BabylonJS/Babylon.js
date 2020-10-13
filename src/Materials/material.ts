@@ -620,6 +620,7 @@ export class Material implements IAnimatable {
      * Stores a reference to the scene
      */
     private _scene: Scene;
+    private _needToFinalizeSceneUbo: boolean;
 
     /**
      * Stores the fill mode state
@@ -942,6 +943,7 @@ export class Material implements IAnimatable {
         if (!this._useUBO) {
             effect.setMatrix("view", this.getScene().getViewMatrix());
         } else {
+            this._needToFinalizeSceneUbo = true;
             this.bindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
         }
     }
@@ -954,6 +956,7 @@ export class Material implements IAnimatable {
         if (!this._useUBO) {
             effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
         } else {
+            this._needToFinalizeSceneUbo = true;
             this.bindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
         }
     }
@@ -964,6 +967,10 @@ export class Material implements IAnimatable {
      */
     protected _afterBind(mesh?: Mesh): void {
         this._scene._cachedMaterial = this;
+        if (this._needToFinalizeSceneUbo) {
+            this._needToFinalizeSceneUbo = false;
+            this.getScene().finalizeSceneUbo();
+        }
         if (mesh) {
             this._scene._cachedVisibility = mesh.visibility;
         } else {

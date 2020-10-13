@@ -803,7 +803,6 @@ export class CascadedShadowGenerator extends ShadowGenerator {
                 const sceneUBO = this._scene.getSceneUniformBuffer();
                 sceneUBO.updateMatrix("viewProjection", this.getCascadeTransformMatrix(layer)!);
                 sceneUBO.updateMatrix("view", this.getCascadeViewMatrix(layer)!);
-                sceneUBO.update();
             }
         });
 
