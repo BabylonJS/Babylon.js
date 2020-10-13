@@ -63,7 +63,7 @@ export class GradientStepComponent extends React.Component<IGradientStepComponen
                 <div className="step-value">
                     <FloatLineComponent globalState={this.props.globalState} smallUI={true} label="" target={step} propertyName="step"
                     min={0} max={1}
-                    onEnter={ evt => { 
+                    onEnter={ () => { 
                             this.props.onUpdateStep();
                             this.props.onCheckForReOrder();
                             this.forceUpdate();
