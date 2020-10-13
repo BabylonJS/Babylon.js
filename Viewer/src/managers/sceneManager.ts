@@ -670,7 +670,7 @@ export class SceneManager {
 
         if (canvas) {
             if (this.camera && sceneConfig.disableCameraControl) {
-                this.camera.detachControl(canvas);
+                this.camera.detachControl();
             } else if (this.camera && sceneConfig.disableCameraControl === false) {
                 this.camera.attachControl();
             }
