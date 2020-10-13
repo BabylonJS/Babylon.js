@@ -3620,7 +3620,7 @@ export class WebGPUEngine extends Engine {
 
         this._setRenderPipeline(fillMode);
 
-        renderPass.drawIndexed(indexCount, instancesCount, indexStart, 0, 0);
+        renderPass.drawIndexed(indexCount, instancesCount || 1, indexStart, 0, 0);
     }
 
     public drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount: number = 1): void {
@@ -3630,7 +3630,7 @@ export class WebGPUEngine extends Engine {
 
         this._setRenderPipeline(fillMode);
 
-        renderPass.draw(verticesCount, instancesCount, verticesStart, 0);
+        renderPass.draw(verticesCount, instancesCount || 1, verticesStart, 0);
     }
 
     /**
