@@ -192,19 +192,19 @@ describe('Viewer', function() {
     it('should attach and detach camera control correctly', (done) => {
         let viewer = Helper.getNewViewerInstance();
         viewer.onInitDoneObservable.add(() => {
-            assert.isDefined(viewer.sceneManager.camera.inputs.attachedElement, "Camera is not attached per default");
+            assert.isDefined(viewer.sceneManager.camera.inputs.attachedToElement, "Camera is not attached per default");
             viewer.updateConfiguration({
                 scene: {
                     disableCameraControl: true
                 }
             });
-            assert.isNull(viewer.sceneManager.camera.inputs.attachedElement, "Camera is still attached");
+            assert.isNull(viewer.sceneManager.camera.inputs.attachedToElement, "Camera is still attached");
             viewer.updateConfiguration({
                 scene: {
                     disableCameraControl: false
                 }
             });
-            assert.isDefined(viewer.sceneManager.camera.inputs.attachedElement, "Camera not attached");
+            assert.isDefined(viewer.sceneManager.camera.inputs.attachedToElement, "Camera not attached");
             viewer.dispose();
             done();
         });
