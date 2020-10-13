@@ -15,7 +15,7 @@ export class STLExport {
     * @param isLittleEndian toggle for binary type exporter.
     * @returns the STL as UTF8 string
     */
-    public static CreateSTL(meshes: Mesh[], download: boolean = true, fileName: string = 'STL_Mesh', binary: boolean = false, isLittleEndian: boolean = true): any {
+    public static CreateSTL(meshes: Mesh[], download: boolean = true, fileName: string = 'stlmesh', binary: boolean = false, isLittleEndian: boolean = true): any {
 
         //Binary support adapted from https://gist.github.com/paulkaplan/6d5f0ab2c7e8fdc68a61
 
@@ -28,7 +28,7 @@ export class STLExport {
             ];
             let p1p2 = v[0].subtract(v[1]);
             let p3p2 = v[2].subtract(v[1]);
-            let n = (Vector3.Cross(p1p2, p3p2)).normalize().negateInPlace();
+            let n = (Vector3.Cross(p3p2, p1p2)).normalize();
 
             return {v, n};
         };
@@ -65,7 +65,7 @@ export class STLExport {
             offset += 4;
 
         } else {
-            data = 'solid exportedMesh\r\n';
+            data = 'solid stlmesh\r\n';
         }
 
         for (let i = 0; i < meshes.length; i++) {
@@ -97,17 +97,13 @@ export class STLExport {
         }
 
         if (!binary) {
-            data += 'endsolid exportedMesh';
+            data += 'endsolid stlmesh';
         }
 
         if (download) {
             let a = document.createElement('a');
             let blob = new Blob([data], {'type': 'application/octet-stream'});
             a.href = window.URL.createObjectURL(blob);
-
-            if (!fileName) {
-                fileName = "STL_Mesh";
-            }
             a.download = fileName + ".stl";
             a.click();
         }
