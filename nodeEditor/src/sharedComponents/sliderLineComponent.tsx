@@ -2,6 +2,8 @@ import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 import { Tools } from 'babylonjs/Misc/tools';
 import { PropertyChangedEvent } from './propertyChangedEvent';
+import { FloatLineComponent } from './floatLineComponent';
+import { GlobalState } from '../globalState';
 
 interface ISliderLineComponentProps {
     label: string;
@@ -16,6 +18,7 @@ interface ISliderLineComponentProps {
     onInput?: (value: number) => void;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     decimalCount?: number;
+    globalState?: GlobalState;
 }
 
 export class SliderLineComponent extends React.Component<ISliderLineComponentProps, { value: number }> {
@@ -100,14 +103,26 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
     }
 
     render() {
+
+        const input = this.props.globalState ?
+        <FloatLineComponent globalState={this.props.globalState} smallUI={true} label="" target={this.state} propertyName="value" min={this.prepareDataToRead(this.props.minimum)} max={this.prepareDataToRead(this.props.maximum)}
+                onEnter={ () => { 
+                    this.onChange(this.state.value)
+                }
+         } >
+        </FloatLineComponent> : null;
+
         let decimalCount = this.props.decimalCount !== undefined ? this.props.decimalCount : 2;
+        const valueDisplay = this.state.value ? this.prepareDataToRead(this.state.value).toFixed(decimalCount) : "0";
+
         return (
             <div className="sliderLine">
                 <div className="label">
                     {this.props.label}
                 </div>
+                {input}
                 <div className="slider">
-                    {this.state.value ? this.prepareDataToRead(this.state.value).toFixed(decimalCount) : "0"}&nbsp;<input className="range" type="range" step={this.props.step} min={this.prepareDataToRead(this.props.minimum)} max={this.prepareDataToRead(this.props.maximum)} value={this.prepareDataToRead(this.state.value)}
+                    {this.props.globalState? null : valueDisplay }&nbsp; <input className="range" type="range" step={this.props.step} min={this.prepareDataToRead(this.props.minimum)} max={this.prepareDataToRead(this.props.maximum)} value={this.prepareDataToRead(this.state.value)}
                         onInput={evt => this.onInput((evt.target as HTMLInputElement).value)}
                         onChange={evt => this.onChange(evt.target.value)} />
                 </div>
