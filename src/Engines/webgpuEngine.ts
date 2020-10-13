@@ -192,6 +192,8 @@ export class WebGPUEngine extends Engine {
     private _mainColorAttachments: GPURenderPassColorAttachmentDescriptor[];
     private _mainTextureExtends: GPUExtent3D;
     private _mainDepthAttachment: GPURenderPassDepthStencilAttachmentDescriptor;
+    private _depthTextureFormat: GPUTextureFormat | undefined;
+    private _colorFormat: GPUTextureFormat;
 
     // Frame Life Cycle (recreated each frame)
     private _uploadEncoder: GPUCommandEncoder;
@@ -454,6 +456,7 @@ export class WebGPUEngine extends Engine {
             format: this._options.swapChainFormat!,
             usage: WebGPUConstants.TextureUsage.OutputAttachment | WebGPUConstants.TextureUsage.CopySrc,
         });
+        this._colorFormat = this._options.swapChainFormat!;
         if (dbgGenerateLogs) {
             this._context.getSwapChainPreferredFormat(this._device).then((format) => {
                 console.log("Swap chain preferred format:", format);
@@ -497,12 +500,14 @@ export class WebGPUEngine extends Engine {
             }];
         }
 
+        this._depthTextureFormat = this._getMainDepthTextureFormat();
+
         const depthTextureDescriptor: GPUTextureDescriptor = {
             size: this._mainTextureExtends,
             mipLevelCount: 1,
             sampleCount: this._mainPassSampleCount,
             dimension: WebGPUConstants.TextureDimension.E2d,
-            format: this._getDepthTextureFormat(),
+            format: this._depthTextureFormat,
             usage:  WebGPUConstants.TextureUsage.OutputAttachment
         };
 
@@ -547,7 +552,6 @@ export class WebGPUEngine extends Engine {
         this._resetCachedViewport();
         this._currentIndexBuffer = null;
         this._currentVertexBuffers = null;
-        this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.all);
 
         if (bruteForce) {
             this._currentProgram = null;
@@ -1067,7 +1071,7 @@ export class WebGPUEngine extends Engine {
     //                              Textures
     //------------------------------------------------------------------------------
 
-    private _getDepthTextureFormat(): GPUTextureFormat {
+    private _getMainDepthTextureFormat(): GPUTextureFormat {
         return this.isStencilEnable ? WebGPUConstants.TextureFormat.Depth24PlusStencil8 : WebGPUConstants.TextureFormat.Depth32Float;
     }
 
@@ -2599,9 +2603,14 @@ export class WebGPUEngine extends Engine {
             this.unBindFramebuffer(this._currentRenderTarget);
         }
         this._currentRenderTarget = texture;
+
+        this._setDepthTextureFormat(this._currentRenderTarget._depthStencilTexture ? this._getWebGPUTextureFormat(-1, this._currentRenderTarget._depthStencilTexture.format) : undefined);
+        this._setColorFormat(this._getWebGPUTextureFormat(this._currentRenderTarget.type, this._currentRenderTarget.format));
+
         // TODO WEBGPU handle array layer
         const bindWithMipMaps = texture.generateMipMaps && texture._source !== InternalTextureSource.RenderTarget;
         this._currentRenderTargetViewDescriptor = {
+            format: this._colorFormat,
             dimension: WebGPUConstants.TextureViewDimension.E2d,
             mipLevelCount: bindWithMipMaps ? WebGPUTextureHelper.computeNumMipmapLevels(texture.width, texture.height) - lodLevel : 1,
             baseArrayLayer: faceIndex,
@@ -2660,6 +2669,8 @@ export class WebGPUEngine extends Engine {
         }
 
         this._currentRenderPass = this._mainRenderPass;
+        this._setDepthTextureFormat(this._getMainDepthTextureFormat());
+        this._setColorFormat(this._options.swapChainFormat!);
     }
 
     public restoreDefaultFramebuffer(): void {
@@ -2667,6 +2678,8 @@ export class WebGPUEngine extends Engine {
             this.unBindFramebuffer(this._currentRenderTarget);
         } else {
             this._currentRenderPass = this._mainRenderPass;
+            this._setDepthTextureFormat(this._getMainDepthTextureFormat());
+            this._setColorFormat(this._options.swapChainFormat!);
         }
         this._transientViewport.x = Infinity;
         if (this._currentRenderPass) {
@@ -2699,7 +2712,19 @@ export class WebGPUEngine extends Engine {
     }
 
     private _setColorFormat(format: GPUTextureFormat): void {
+        if (this._colorFormat === format) {
+            return;
         }
+        this._colorFormat = format;
+        this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.ColorStates);
+    }
+
+    private _setDepthTextureFormat(format: GPUTextureFormat | undefined): void {
+        if (this._depthTextureFormat === format) {
+            return;
+        }
+        this._depthTextureFormat = format;
+        this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.DepthStencilState);
     }
 
     public setDepthBuffer(enable: boolean): void {
@@ -2899,9 +2924,7 @@ export class WebGPUEngine extends Engine {
     }
 
     private _getDepthStencilStateDescriptor(): GPUDepthStencilStateDescriptor | undefined {
-        // TODO WEBGPU. Depth State according to the cached state.
-        // And the current render pass attachment setup.
-        if (this._currentRenderTarget && !this._currentRenderTarget._depthStencilTexture) {
+        if (this._depthTextureFormat === undefined) {
             return undefined;
         }
 
@@ -2915,7 +2938,7 @@ export class WebGPUEngine extends Engine {
         return {
             depthWriteEnabled: this.getDepthWrite(),
             depthCompare: this.getDepthBuffer() ? this._getCompareFunction(this.getDepthFunction()) : WebGPUConstants.CompareFunction.Always,
-            format: this._currentRenderTarget && this._currentRenderTarget._depthStencilTexture ? this._getWebGPUTextureFormat(-1, this._currentRenderTarget._depthStencilTexture.format) : this._getDepthTextureFormat(),
+            format: this._depthTextureFormat,
             stencilFront: stencilFrontBack,
             stencilBack: stencilFrontBack,
             stencilReadMask: this._stencilState.stencilFuncMask,
@@ -3145,7 +3168,7 @@ export class WebGPUEngine extends Engine {
 
     private _getColorStateDescriptors(): GPUColorStateDescriptor[] {
         return [{
-            format: this._currentRenderTarget ? this._getWebGPUTextureFormat(this._currentRenderTarget.type, this._currentRenderTarget.format) : this._options.swapChainFormat!,
+            format: this._colorFormat,
             alphaBlend: this._getAphaBlendState(),
             colorBlend: this._getColorBlendState(),
             writeMask: this._getWriteMask(),
