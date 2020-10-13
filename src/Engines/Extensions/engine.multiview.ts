@@ -123,10 +123,12 @@ declare module "../../scene" {
 Scene.prototype._transformMatrixR = Matrix.Zero();
 Scene.prototype._multiviewSceneUbo = null;
 Scene.prototype._createMultiviewUbo = function() {
-    this._multiviewSceneUbo = new UniformBuffer(this.getEngine(), undefined, true);
+    this._multiviewSceneUbo = new UniformBuffer(this.getEngine(), undefined, true, "scene_multiview");
     this._multiviewSceneUbo.addUniform("viewProjection", 16);
     this._multiviewSceneUbo.addUniform("viewProjectionR", 16);
     this._multiviewSceneUbo.addUniform("view", 16);
+    this._multiviewSceneUbo.addUniform("viewPosition", 4);
+
 };
 Scene.prototype._updateMultiviewUbo = function(viewR?: Matrix, projectionR?: Matrix) {
     if (viewR && projectionR) {
