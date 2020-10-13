@@ -50,14 +50,14 @@ const dbgShowWarningsNotImplemented = true;
 export const dbgShowDebugInliningProcess = false;
 
 const enum RenderPipelineDirtyFlags {
-    rasterizationState = 1,
-    colorStates = 2,
-    depthStencilState = 4,
-    vertexState = 8,
-    sampleCount = 16,
-    sampleMask = 32,
-    alphaToCoverageEnabled = 64,
-    all = 0xFFFF
+    RasterizationState = 1,
+    ColorStates = 2,
+    DepthStencilState = 4,
+    VertexState = 8,
+    SampleCount = 16,
+    SampleMask = 32,
+    AlphaToCoverageEnabled = 64,
+    All = 0xFFFF
 }
 
 /**
@@ -568,7 +568,7 @@ export class WebGPUEngine extends Engine {
 
     public setColorWrite(enable: boolean): void {
         this.__colorWrite = enable;
-        this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.colorStates);
+        this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.ColorStates);
     }
 
     public getColorWrite(): boolean {
@@ -806,7 +806,7 @@ export class WebGPUEngine extends Engine {
     public bindBuffers(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, indexBuffer: Nullable<DataBuffer>, effect: Effect): void {
         this._currentIndexBuffer = indexBuffer;
         this._currentVertexBuffers = vertexBuffers;
-        this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.vertexState);
+        this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.VertexState);
     }
 
     /** @hidden */
@@ -1031,6 +1031,8 @@ export class WebGPUEngine extends Engine {
         }
 
         this._currentEffect = effect;
+
+        this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.All);
 
         if (effect.onBind) {
             effect.onBind(effect);
@@ -2685,77 +2687,81 @@ export class WebGPUEngine extends Engine {
     public setZOffset(value: number): void {
         if (value !== this._depthCullingState.zOffset) {
             this._depthCullingState.zOffset = value;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.rasterizationState);
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.RasterizationState);
+        }
+    }
+
+    private _setColorFormat(format: GPUTextureFormat): void {
         }
     }
 
     public setDepthBuffer(enable: boolean): void {
         if (this._depthCullingState.depthTest !== enable) {
             this._depthCullingState.depthTest = enable;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.depthStencilState);
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.DepthStencilState);
         }
     }
 
     public setDepthWrite(enable: boolean): void {
         if (this._depthCullingState.depthMask !== enable) {
             this._depthCullingState.depthMask = enable;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.depthStencilState);
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.DepthStencilState);
         }
     }
 
     public setStencilBuffer(enable: boolean): void {
         if (this._stencilState.stencilTest !== enable) {
             this._stencilState.stencilTest = enable;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.depthStencilState);
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.DepthStencilState);
         }
     }
 
     public setStencilMask(mask: number): void {
         if (this._stencilState.stencilMask !== mask) {
             this._stencilState.stencilMask = mask;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.depthStencilState);
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.DepthStencilState);
         }
     }
 
     public setStencilFunction(stencilFunc: number) {
         if (this._stencilState.stencilFunc !== stencilFunc) {
             this._stencilState.stencilFunc = stencilFunc;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.depthStencilState);
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.DepthStencilState);
         }
     }
 
     public setStencilFunctionReference(reference: number) {
         if (this._stencilState.stencilFuncRef !== reference) {
             this._stencilState.stencilFuncRef = reference;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.depthStencilState);
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.DepthStencilState);
         }
     }
 
     public setStencilFunctionMask(mask: number) {
         if (this._stencilState.stencilFuncMask !== mask) {
             this._stencilState.stencilFuncMask = mask;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.depthStencilState);
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.DepthStencilState);
         }
     }
 
     public setStencilOperationFail(operation: number): void {
         if (this._stencilState.stencilOpStencilFail !== operation) {
             this._stencilState.stencilOpStencilFail = operation;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.depthStencilState);
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.DepthStencilState);
         }
     }
 
     public setStencilOperationDepthFail(operation: number): void {
         if (this._stencilState.stencilOpDepthFail !== operation) {
             this._stencilState.stencilOpDepthFail = operation;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.depthStencilState);
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.DepthStencilState);
         }
     }
 
     public setStencilOperationPass(operation: number): void {
         if (this._stencilState.stencilOpStencilDepthPass !== operation) {
             this._stencilState.stencilOpStencilDepthPass = operation;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.depthStencilState);
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.DepthStencilState);
         }
     }
 
@@ -2770,35 +2776,35 @@ export class WebGPUEngine extends Engine {
     public setDepthFunction(depthFunc: number) {
         if (this._depthCullingState.depthFunc !== depthFunc) {
             this._depthCullingState.depthFunc = depthFunc;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.depthStencilState);
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.DepthStencilState);
         }
     }
 
     public setDepthFunctionToGreater(): void {
         if (this._depthCullingState.depthFunc !== Constants.GREATER) {
             this._depthCullingState.depthFunc = Constants.GREATER;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.depthStencilState);
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.DepthStencilState);
         }
     }
 
     public setDepthFunctionToGreaterOrEqual(): void {
         if (this._depthCullingState.depthFunc !== Constants.GEQUAL) {
             this._depthCullingState.depthFunc = Constants.GEQUAL;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.depthStencilState);
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.DepthStencilState);
         }
     }
 
     public setDepthFunctionToLess(): void {
         if (this._depthCullingState.depthFunc !== Constants.LESS) {
             this._depthCullingState.depthFunc = Constants.LESS;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.depthStencilState);
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.DepthStencilState);
         }
     }
 
     public setDepthFunctionToLessOrEqual(): void {
         if (this._depthCullingState.depthFunc !== Constants.LEQUAL) {
             this._depthCullingState.depthFunc = Constants.LEQUAL;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.depthStencilState);
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.DepthStencilState);
         }
     }
 
@@ -2921,7 +2927,7 @@ export class WebGPUEngine extends Engine {
         // Culling
         if (this._depthCullingState.cull !== culling || force) {
             this._depthCullingState.cull = culling;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.rasterizationState);
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.RasterizationState);
         }
 
         // Cull face
@@ -2929,7 +2935,7 @@ export class WebGPUEngine extends Engine {
         var cullFace = this.cullBackFaces ? 1 : 2;
         if (this._depthCullingState.cullFace !== cullFace || force) {
             this._depthCullingState.cullFace = cullFace;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.rasterizationState);
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.RasterizationState);
         }
 
         // Z offset
@@ -2940,7 +2946,7 @@ export class WebGPUEngine extends Engine {
         var frontFace = reverseSide ? 1 : 2;
         if (this._depthCullingState.frontFace !== frontFace || force) {
             this._depthCullingState.frontFace = frontFace;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.rasterizationState);
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.RasterizationState);
         }
     }
 
@@ -3053,7 +3059,7 @@ export class WebGPUEngine extends Engine {
             this.setDepthWrite(mode === Engine.ALPHA_DISABLE);
         }
         this._alphaMode = mode;
-        this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.colorStates);
+        this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.ColorStates);
     }
 
     private _getAphaBlendOperation(operation: Nullable<number>): GPUBlendOperation {
