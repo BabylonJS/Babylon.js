@@ -30,6 +30,7 @@ import { HardwareTextureWrapper } from '../Materials/Textures/hardwareTextureWra
 import { WebGPUHardwareTexture } from './WebGPU/webgpuHardwareTexture';
 import { IColor4Like } from '../Maths/math.like';
 import { IWebRequest } from '../Misc/interfaces/iWebRequest';
+import { UniformBuffer } from '../Materials/uniformBuffer';
 
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
@@ -177,8 +178,10 @@ export class WebGPUEngine extends Engine {
     private _renderPipelineDirtyFlags = 0;
     private _counters: {
         numPipelineDescriptorCreation: number;
+        numBindGroupsCreation: number;
     } = {
-        numPipelineDescriptorCreation: 0
+        numPipelineDescriptorCreation: 0,
+        numBindGroupsCreation: 0,
     };
 
     // Some of the internal state might change during the render pass.
@@ -2376,20 +2379,14 @@ export class WebGPUEngine extends Engine {
      * Begin a new frame
      */
     public beginFrame(): void {
-        this._counters.numPipelineDescriptorCreation = 0;
+        super.beginFrame();
 
         if (dbgVerboseLogsForFirstFrames) {
-            if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
-                if (!(this as any)._count) {
-                    (this as any)._count = 1;
-                } else {
-                    (this as any)._count++;
-                }
+            if ((this as any)._count === undefined) {
+                (this as any)._count = 1;
                 console.log("begin frame #" + (this as any)._count);
             }
         }
-
-        super.beginFrame();
     }
 
     /**
@@ -2403,6 +2400,12 @@ export class WebGPUEngine extends Engine {
         this._commandBuffers[2] = this._renderEncoder.finish();
 
         this._device.defaultQueue.submit(this._commandBuffers);
+
+        if (dbgVerboseLogsForFirstFrames) {
+            if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
+                console.log("counters frame #" + (this as any)._count, " - numPipelineDescriptorCreation=", this._counters.numPipelineDescriptorCreation, ", numBindGroupsCreation=", this._counters.numBindGroupsCreation);
+            }
+        }
 
         for (let i = 0; i < this._deferredReleaseTextures.length; ++i) {
             const [texture, hardwareTexture, irradianceTexture, depthStencilTexture] = this._deferredReleaseTextures[i];
@@ -2450,8 +2453,12 @@ export class WebGPUEngine extends Engine {
         super.endFrame();
 
         if (dbgVerboseLogsForFirstFrames) {
-            if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
+            if ((this as any)._count < dbgVerboseLogsNumFrames) {
                 console.log("end frame #" + (this as any)._count);
+            }
+            if ((this as any)._count < dbgVerboseLogsNumFrames) {
+                (this as any)._count++;
+                console.log("begin frame #" + (this as any)._count);
             }
         }
     }
