@@ -52,8 +52,7 @@ export class STLExport {
         if (binary) {
             for (let i = 0; i < meshes.length; i++) {
                 let mesh = meshes[i];
-                let indices = mesh.getIndices();
-                faceCount += !mesh.isUnIndexed ? indices.length / 3 : 0;
+                faceCount += !mesh.isUnIndexed ? mesh.getIndices().length / 3 : 0;
             }
 
             let bufferSize = 84 + (50 * faceCount);
