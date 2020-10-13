@@ -144,7 +144,6 @@ Scene.prototype._updateMultiviewUbo = function(viewR?: Matrix, projectionR?: Mat
         this._multiviewSceneUbo.updateMatrix("viewProjection", this.getTransformMatrix());
         this._multiviewSceneUbo.updateMatrix("viewProjectionR", this._transformMatrixR);
         this._multiviewSceneUbo.updateMatrix("view", this._viewMatrix);
-        this._multiviewSceneUbo.update();
     }
 };
 Scene.prototype._renderMultiviewToSingleView = function(camera: Camera) {
