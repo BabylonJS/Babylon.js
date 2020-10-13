@@ -38,7 +38,9 @@ varying vec4 vColor;
 // Samplers
 #ifdef BUMP
 varying vec2 vNormalUV;
-varying vec2 vNormalUV2;
+#ifdef BUMPSUPERIMPOSE
+    varying vec2 vNormalUV2;
+#endif
 uniform sampler2D normalSampler;
 uniform vec2 vNormalInfos;
 #endif
