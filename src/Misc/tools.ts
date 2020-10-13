@@ -747,6 +747,7 @@ export class Tools {
      * Needed to keep backwards compatibility to the old API.
      *
      * @param args arguments passed to the attachControl function
+     * @returns the correct value for noPreventDefault
      */
     public static BackCompatCameraNoPreventDefault(args: IArguments): boolean {
         // is it used correctly?
