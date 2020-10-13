@@ -1,3 +1,4 @@
+export * from "./WebXRAbstractFeature";
 export * from "./WebXRHitTestLegacy";
 export * from "./WebXRAnchorSystem";
 export * from "./WebXRPlaneDetector";
