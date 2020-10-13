@@ -259,7 +259,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                     }
                     {
                         texture && !isInReflectionMode && !isFrozenTexture &&
-                        <SliderLineComponent label="Rotation U" target={texture} propertyName="uAng" minimum={0} maximum={Math.PI * 2} useEuler={true} step={0.1}
+                        <SliderLineComponent label="Rotation U" target={texture} globalState={this.props.globalState} propertyName="uAng" minimum={0} maximum={Math.PI * 2} useEuler={true} step={0.1}
                         onChange={() => {
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         }}
@@ -267,7 +267,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                     }
                     {
                         texture && !isInReflectionMode && !isFrozenTexture &&
-                        <SliderLineComponent label="Rotation V" target={texture} propertyName="vAng" minimum={0} maximum={Math.PI * 2} useEuler={true} step={0.1}
+                        <SliderLineComponent label="Rotation V" target={texture} globalState={this.props.globalState} propertyName="vAng" minimum={0} maximum={Math.PI * 2} useEuler={true} step={0.1}
                         onChange={() => {
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         }}
@@ -275,7 +275,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                     }                    
                     {
                         texture && !isInReflectionMode && !isFrozenTexture &&
-                        <SliderLineComponent label="Rotation W" target={texture} propertyName="wAng" minimum={0} maximum={Math.PI * 2} useEuler={true} step={0.1}
+                        <SliderLineComponent label="Rotation W" target={texture} globalState={this.props.globalState} propertyName="wAng" minimum={0} maximum={Math.PI * 2} useEuler={true} step={0.1}
                         onChange={() => {
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         }}
