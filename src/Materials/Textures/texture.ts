@@ -27,7 +27,7 @@ export class Texture extends BaseTexture {
      * Gets or sets a general boolean used to indicate that textures containing direct data (buffers) must be saved as part of the serialization process
      */
     public static SerializeBuffers = true;
-    
+
     /**
      * Gets or sets a general boolean used to indicate that texture buffers must be saved as part of the serialization process.
      * If no buffer exists, one will be created as base64 string from the internal webgl data.
