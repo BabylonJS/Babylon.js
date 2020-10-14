@@ -124,7 +124,7 @@ export class TextureTools {
         }
 
         var imageData = ctx.createImageData(width, height);
-        imageData.data.set(pixels);
+        imageData.data.set(pixels as ArrayLike<number>);
         ctx.putImageData(imageData, 0, 0);
 
         if (internalTexture.invertY) {
