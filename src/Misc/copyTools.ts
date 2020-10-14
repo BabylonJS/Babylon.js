@@ -1,5 +1,7 @@
 import { Nullable } from "../types";
 
+declare type BaseTexture = import("../Materials/Textures/baseTexture").BaseTexture;
+
 /**
  * Class used to host copy specific utilities
  */
@@ -11,7 +13,7 @@ export class CopyTools {
      * @param level defines the LOD level of the texture to read (in case of Mip Maps)
      * @returns The base64 encoded string or null
      */
-    public static GenerateBase64StringFromTexture(texture: any, faceIndex = 0, level = 0): Nullable<string> {
+    public static GenerateBase64StringFromTexture(texture: BaseTexture, faceIndex = 0, level = 0): Nullable<string> {
         if (!texture) {
             return null;
         }
