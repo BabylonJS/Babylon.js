@@ -473,6 +473,7 @@ declare module NODEEDITOR {
         onInput?: (value: number) => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         decimalCount?: number;
+        globalState: GlobalState;
     }
     export class SliderLineComponent extends React.Component<ISliderLineComponentProps, {
         value: number;

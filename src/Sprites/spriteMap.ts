@@ -302,6 +302,8 @@ export class SpriteMap implements ISpriteMap {
         this._output = Mesh.CreatePlane(name + ":output", 1, scene, true);
         this._output.scaling.x = options.outputSize.x;
         this._output.scaling.y = options.outputSize.y;
+        this.position = options.outputPosition;
+        this.rotation = options.outputRotation;
 
         let obfunction = () => {
             this._time += this._scene.getEngine().getDeltaTime();

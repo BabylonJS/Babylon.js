@@ -113,7 +113,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             {
                                 !block.isBoolean && !cantDisplaySlider &&
                                 <SliderLineComponent key={block.uniqueId} label={block.name} target={block} propertyName="value"
-                                step={(block.max - block.min) / 100.0} minimum={block.min} maximum={block.max}
+                                step={(block.max - block.min) / 100.0} minimum={block.min} maximum={block.max} globalState={this.props.globalState}
                                 onChange={() => this.processInputBlockUpdate(block)}/>
                             }
                         </div>
@@ -405,7 +405,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             }}
                         />
                         <SliderLineComponent label="Grid size" minimum={0} maximum={100} step={5}
-                            decimalCount={0}
+                            decimalCount={0} globalState={this.props.globalState}
                             directValue={gridSize}
                             onChange={(value) => {
                                 DataStorage.WriteNumber("GridSize", value);

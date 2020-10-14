@@ -153,7 +153,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
     private _alternatePickedPoint = new Vector3(0, 0, 0);
     private _worldDragAxis = new Vector3(0, 0, 0);
     private _targetPosition = new Vector3(0, 0, 0);
-    private _attachedElement: Nullable<HTMLElement> = null;
+    private _attachedToElement: boolean = false;
     /**
      * Attaches the drag behavior the passed in mesh
      * @param ownerNode The mesh that will be dragged around once attached
@@ -258,13 +258,14 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
         this._moving = false;
 
         // Reattach camera controls
-        if (this.detachCameraControls && this._attachedElement && this._scene.activeCamera && !this._scene.activeCamera.leftCamera) {
+        if (this.detachCameraControls && this._attachedToElement && this._scene.activeCamera && !this._scene.activeCamera.leftCamera) {
             if (this._scene.activeCamera.getClassName() === "ArcRotateCamera") {
                 const arcRotateCamera = this._scene.activeCamera as ArcRotateCamera;
                 arcRotateCamera.attachControl(arcRotateCamera.inputs ? arcRotateCamera.inputs.noPreventDefault : true, arcRotateCamera._useCtrlForPanning, arcRotateCamera._panningMouseButton);
             } else {
                 this._scene.activeCamera.attachControl(this._scene.activeCamera.inputs ? this._scene.activeCamera.inputs.noPreventDefault : true);
             }
+            this._attachedToElement = false;
         }
     }
 
@@ -320,8 +321,9 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             if (this.detachCameraControls && this._scene.activeCamera && this._scene.activeCamera.inputs && !this._scene.activeCamera.leftCamera) {
                 if (this._scene.activeCamera.inputs.attachedToElement) {
                     this._scene.activeCamera.detachControl();
+                    this._attachedToElement = true;
                 } else {
-                    this._attachedElement = null;
+                    this._attachedToElement = false;
                 }
             }
         }
