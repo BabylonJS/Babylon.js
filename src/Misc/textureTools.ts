@@ -92,7 +92,7 @@ export class TextureTools {
         if (!pixels) {
             return null;
         }
-        
+
         var size = texture.getSize();
         var width = size.width;
         var height = size.height;
