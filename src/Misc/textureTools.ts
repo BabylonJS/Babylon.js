@@ -75,17 +75,19 @@ export class TextureTools {
 
     /**
      * Reads the pixels stored in the webgl texture and returns them as a base64 string
-     * @param texture Texture to read pixels from
+     * @param texture defines the texture to read pixels from
+     * @param faceIndex defines the face of the texture to read (in case of cube texture)
+     * @param level defines the LOD level of the texture to read (in case of Mip Maps)
      * @returns The base64 encoded string or null
      */
-    public static GenerateBase64StringFromTexture(texture: Texture): Nullable<string> {
+    public static GenerateBase64StringFromTexture(texture: Texture, faceIndex = 0, level = 0): Nullable<string> {
 
         var internalTexture = texture.getInternalTexture();
         if (!internalTexture || internalTexture.isCube) {
             return null;
         }
 
-        var pixels = texture.readPixels(0, 0);
+        var pixels = texture.readPixels(faceIndex, level);
         var size = texture.getSize();
         var width = size.width;
         var height = size.height;
