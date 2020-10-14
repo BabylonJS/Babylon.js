@@ -131,6 +131,11 @@ export class BoundingBoxRenderer implements ISceneComponent {
     public onAfterBoxRenderingObservable = new Observable<BoundingBox>();
 
     /**
+     * Observable raised after resources are created
+     */
+    public onResourcesReadyObservable = new Observable<BoundingBoxRenderer>();
+
+    /**
      * When false, no bounding boxes will be rendered
      */
     public enabled = true;
@@ -186,7 +191,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
         }
     }
 
-    private _prepareRessources(): void {
+    private _prepareResources(): void {
         if (this._colorShader) {
             return;
         }
@@ -205,6 +210,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
         this._vertexBuffers[VertexBuffer.PositionKind] = new VertexBuffer(engine, <FloatArray>boxdata.positions, VertexBuffer.PositionKind, false);
         this._createIndexBuffer();
         this._fillIndexData = boxdata.indices;
+        this.onResourcesReadyObservable.notifyObservers(this);
     }
 
     private _createIndexBuffer(): void {
@@ -240,7 +246,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
             return;
         }
 
-        this._prepareRessources();
+        this._prepareResources();
 
         if (!this._colorShader.isReady()) {
             return;
@@ -303,7 +309,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
      */
     public renderOcclusionBoundingBox(mesh: AbstractMesh): void {
 
-        this._prepareRessources();
+        this._prepareResources();
 
         if (!this._colorShader.isReady() || !mesh._boundingInfo) {
             return;
@@ -352,6 +358,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
 
         this.onBeforeBoxRenderingObservable.clear();
         this.onAfterBoxRenderingObservable.clear();
+        this.onResourcesReadyObservable.clear();
 
         this.renderList.dispose();
 

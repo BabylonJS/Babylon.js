@@ -54,6 +54,8 @@
 - Allow cross-eye mode in photo and video dome ([#8897](https://github.com/BabylonJS/Babylon.js/issues/8897)) ([RaananW](https://github.com/RaananW))
 - Added noMipMap option to the photo dome construction process ([#8972](https://github.com/BabylonJS/Babylon.js/issues/8972)) ([RaananW](https://github.com/RaananW))
 - Add a `disableBoundingBoxesFromEffectLayer` property to the `EffectLayer` class to render the bounding boxes unaffected by the effect ([Popov72](https://github.com/Popov72))
+- Removed all references to HTML element from cameras' attach and detach control functions ([RaananW](https://github.com/RaananW))
+- Added `boundingBoxRenderer.onResourcesReadyObservable` ([aWeirdo](https://github.com/aWeirdo))
 
 ### Engine
 
@@ -218,6 +220,7 @@
 - XR tracking state was added to the camera ([#9076](https://github.com/BabylonJS/Babylon.js/issues/9076)) ([RaananW](https://github.com/RaananW))
 - Individual post processing can be applied to the XR rig cameras ([#9038](https://github.com/BabylonJS/Babylon.js/issues/9038)) ([RaananW](https://github.com/RaananW))
 - Pointer selection improvements - single/dual hand selection, max ray distance and more ([#7974](https://github.com/BabylonJS/Babylon.js/issues/7974)) ([RaananW](https://github.com/RaananW))
+- Updated Plane Detection API ([RaananW](https://github.com/RaananW))
 
 ### Collisions
 
@@ -245,6 +248,7 @@
 ### Audio
 
 - Added support of `metadata` in `Sound` class. ([julien-moreau](https://github.com/julien-moreau))
+- Added `currentTime` property to the `Sound` class. ([jocravio](https://github.com/jocravio))
 
 ### Build
 

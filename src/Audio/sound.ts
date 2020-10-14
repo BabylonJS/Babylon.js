@@ -150,6 +150,21 @@ export class Sound {
      */
     public onEndedObservable = new Observable<Sound>();
 
+    /**
+     * Gets the current time for the sound.
+     */
+    public get currentTime(): number {
+        if (this._htmlAudioElement) {
+            return this._htmlAudioElement.currentTime;
+        }
+
+        let currentTime: number = this._startOffset;
+        if (this.isPlaying && Engine.audioEngine.audioContext) {
+            currentTime += Engine.audioEngine.audioContext.currentTime - this._startTime;
+        }
+        return currentTime;
+    }
+
     private _panningModel: string = "equalpower";
     private _playbackRate: number = 1;
     private _streaming: boolean = false;
@@ -835,6 +850,7 @@ export class Sound {
 
     private _onended() {
         this.isPlaying = false;
+        this._startOffset = 0;
         if (this.onended) {
             this.onended();
         }

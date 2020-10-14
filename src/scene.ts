@@ -2522,11 +2522,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         if (this.activeCamera) {
-            this.activeCamera.detachControl(canvas);
+            this.activeCamera.detachControl();
         }
         this.activeCamera = newCamera;
         if (attachControl) {
-            newCamera.attachControl(canvas);
+            newCamera.attachControl();
         }
     }
 
@@ -4261,7 +4261,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         if (canvas) {
             var index;
             for (index = 0; index < this.cameras.length; index++) {
-                this.cameras[index].detachControl(canvas);
+                this.cameras[index].detachControl();
             }
         }
 

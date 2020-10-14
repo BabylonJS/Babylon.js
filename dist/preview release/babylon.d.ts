@@ -480,7 +480,7 @@ declare module BABYLON {
      * Extended version of XMLHttpRequest with support for customizations (headers, ...)
      */
     export class WebRequest implements IWebRequest {
-        private _xhr;
+        private readonly _xhr;
         /**
          * Custom HTTP Request Headers to be sent with XMLHttpRequests
          * i.e. when loading files, where the server/service expects an Authorization header
@@ -6407,15 +6407,13 @@ declare module BABYLON {
         getSimpleName(): string;
         /**
          * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(noPreventDefault?: boolean): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: Nullable<HTMLElement>): void;
+        detachControl(): void;
         /**
          * Update the current camera state depending on the inputs that have been used this frame.
          * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
@@ -6449,7 +6447,7 @@ declare module BABYLON {
          * Defines the dom element the camera is collecting inputs from.
          * This is null if the controls have not been attached.
          */
-        attachedElement: Nullable<HTMLElement>;
+        attachedToElement: boolean;
         /**
          * Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
@@ -6497,13 +6495,13 @@ declare module BABYLON {
          * @param element Defines the dom element to collect the events from
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachElement(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachElement(noPreventDefault?: boolean): void;
         /**
          * Detach the current manager inputs controls from a specific dom element.
          * @param element Defines the dom element to collect the events from
          * @param disconnect Defines whether the input should be removed from the current list of attached inputs
          */
-        detachElement(element: HTMLElement, disconnect?: boolean): void;
+        detachElement(disconnect?: boolean): void;
         /**
          * Rebuild the dynamic inputCheck function from the current list of
          * defined inputs in the manager.
@@ -10690,7 +10688,7 @@ declare module BABYLON {
             /** @hidden */
             _internalMultiPick(rayFunction: (world: Matrix) => Ray, predicate?: (mesh: AbstractMesh) => boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]>;
             /** @hidden */
-            _internalPickForMesh(pickingInfo: Nullable<PickingInfo>, rayFunction: (world: Matrix) => Ray, mesh: AbstractMesh, world: Matrix, fastCheck?: boolean, onlyBoundingInfo?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo>;
+            _internalPickForMesh(pickingInfo: Nullable<PickingInfo>, rayFunction: (world: Matrix) => Ray, mesh: AbstractMesh, world: Matrix, fastCheck?: boolean, onlyBoundingInfo?: boolean, trianglePredicate?: TrianglePickingPredicate, skipBoundingInfo?: boolean): Nullable<PickingInfo>;
         }
 }
 declare module BABYLON {
@@ -18802,15 +18800,13 @@ declare module BABYLON {
         private _scene;
         /**
          * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(noPreventDefault?: boolean): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: Nullable<HTMLElement>): void;
+        detachControl(): void;
         /**
          * Update the current camera state depending on the inputs that have been used this frame.
          * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
@@ -19010,10 +19006,9 @@ declare module BABYLON {
         touchEnabled?: boolean);
         /**
          * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(noPreventDefault?: boolean): void;
         /**
          * Called on JS contextmenu event.
          * Override this method to provide functionality.
@@ -19021,9 +19016,8 @@ declare module BABYLON {
         protected onContextMenu(evt: PointerEvent): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: Nullable<HTMLElement>): void;
+        detachControl(): void;
         /**
          * Gets the class name of the current intput.
          * @returns the class name
@@ -19074,17 +19068,15 @@ declare module BABYLON {
         private _observer;
         /**
          * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
          * @param noPreventDefault Defines whether event caught by the controls
          *   should call preventdefault().
          *   (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(noPreventDefault?: boolean): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: Nullable<HTMLElement>): void;
+        detachControl(): void;
         /**
          * Called for each rendered frame.
          */
@@ -19303,7 +19295,7 @@ declare module BABYLON {
         private _offsetX;
         private _offsetY;
         private _pointerPressed;
-        private _pointerInput;
+        private _pointerInput?;
         private _observer;
         private _onLostFocus;
         /**
@@ -19318,15 +19310,14 @@ declare module BABYLON {
         allowMouse?: boolean);
         /**
          * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(noPreventDefault?: boolean): void;
         /**
          * Detach the current controls from the specified dom element.
          * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: Nullable<HTMLElement>): void;
+        detachControl(): void;
         /**
          * Update the current camera state depending on the inputs that have been used this frame.
          * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
@@ -19498,16 +19489,14 @@ declare module BABYLON {
         constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive?: boolean);
         /**
          * Attached controls to the current camera.
-         * @param element Defines the element the controls should be listened from
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(noPreventDefault?: boolean): void;
         /**
          * Detach the current controls from the camera.
          * The camera will stop reacting to inputs.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: HTMLElement): void;
+        detachControl(): void;
         private _collisionMask;
         /**
          * Define a collision mask to limit the list of object the camera can collide with
@@ -20535,7 +20524,6 @@ declare module BABYLON {
          * @param poseData Pose coming from the device
          */
         updateFromDevice(poseData: DevicePose): void;
-        private _htmlElementAttached;
         private _detachIfAttached;
         /**
          * WebVR's attach control will start broadcasting frames to the device.
@@ -20543,16 +20531,13 @@ declare module BABYLON {
          * within a user-interaction callback. Example:
          * <pre> scene.onPointerDown = function() { camera.attachControl(canvas); }</pre>
          *
-         * @param element html element to attach the vrDevice to
          * @param noPreventDefault prevent the default html element operation when attaching the vrDevice
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(noPreventDefault?: boolean): void;
         /**
          * Detaches the camera from the html element and disables VR
-         *
-         * @param element html element to detach from
          */
-        detachControl(element: HTMLElement): void;
+        detachControl(): void;
         /**
          * @returns the name of this class
          */
@@ -34211,15 +34196,13 @@ declare module BABYLON {
         _isSynchronizedProjectionMatrix(): boolean;
         /**
          * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(noPreventDefault?: boolean): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: HTMLElement): void;
+        detachControl(): void;
         /**
          * Update the camera state according to the different inputs gathered during the frame.
          */
@@ -36066,10 +36049,11 @@ declare module BABYLON {
          * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
          * @param onlyBoundingInfo defines a boolean indicating if picking should only happen using bounding info (false by default)
          * @param worldToUse defines the world matrix to use to get the world coordinate of the intersection point
+         * @param skipBoundingInfo a boolean indicating if we should skip the bounding info check
          * @returns the picking info
          * @see https://doc.babylonjs.com/babylon101/intersect_collisions_-_mesh
          */
-        intersects(ray: Ray, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate, onlyBoundingInfo?: boolean, worldToUse?: Matrix): PickingInfo;
+        intersects(ray: Ray, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate, onlyBoundingInfo?: boolean, worldToUse?: Matrix, skipBoundingInfo?: boolean): PickingInfo;
         /**
          * Clones the current mesh
          * @param name defines the mesh name
@@ -41710,14 +41694,14 @@ declare module BABYLON {
         static get PreprocessUrl(): (url: string) => string;
         static set PreprocessUrl(processor: (url: string) => string);
         /**
-        * Loads an image as an HTMLImageElement.
-        * @param input url string, ArrayBuffer, or Blob to load
-        * @param onLoad callback called when the image successfully loads
-        * @param onError callback called when the image fails to load
-        * @param offlineProvider offline provider for caching
-        * @param mimeType optional mime type
-        * @returns the HTMLImageElement of the loaded image
-        */
+         * Loads an image as an HTMLImageElement.
+         * @param input url string, ArrayBuffer, or Blob to load
+         * @param onLoad callback called when the image successfully loads
+         * @param onError callback called when the image fails to load
+         * @param offlineProvider offline provider for caching
+         * @param mimeType optional mime type
+         * @returns the HTMLImageElement of the loaded image
+         */
         static LoadImage(input: string | ArrayBuffer | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string): Nullable<HTMLImageElement>;
         /**
          * Loads a file from a url
@@ -41853,6 +41837,14 @@ declare module BABYLON {
          */
         static Download(blob: Blob, fileName: string): void;
         /**
+         * Will return the right value of the noPreventDefault variable
+         * Needed to keep backwards compatibility to the old API.
+         *
+         * @param args arguments passed to the attachControl function
+         * @returns the correct value for noPreventDefault
+         */
+        static BackCompatCameraNoPreventDefault(args: IArguments): boolean;
+        /**
          * Captures a screenshot of the current rendering
          * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
          * @param engine defines the rendering engine
@@ -41932,16 +41924,16 @@ declare module BABYLON {
          */
         static RandomId(): string;
         /**
-        * Test if the given uri is a base64 string
-        * @param uri The uri to test
-        * @return True if the uri is a base64 string or false otherwise
-        */
+         * Test if the given uri is a base64 string
+         * @param uri The uri to test
+         * @return True if the uri is a base64 string or false otherwise
+         */
         static IsBase64(uri: string): boolean;
         /**
-        * Decode the given base64 uri.
-        * @param uri The uri to decode
-        * @return The decoded base64 data.
-        */
+         * Decode the given base64 uri.
+         * @param uri The uri to decode
+         * @return The decoded base64 data.
+         */
         static DecodeBase64(uri: string): ArrayBuffer;
         /**
          * Gets the absolute url.
@@ -44945,6 +44937,10 @@ declare module BABYLON {
          * Observable event when the current playing sound finishes.
          */
         onEndedObservable: Observable<Sound>;
+        /**
+         * Gets the current time for the sound.
+         */
+        get currentTime(): number;
         private _panningModel;
         private _playbackRate;
         private _streaming;
@@ -45867,12 +45863,11 @@ declare module BABYLON {
          * @param element Defines the element the controls should be listened from
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(noPreventDefault?: boolean): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: Nullable<HTMLElement>): void;
+        detachControl(): void;
         /**
          * Gets the class name of the current input.
          * @returns the class name
@@ -46081,15 +46076,13 @@ declare module BABYLON {
         private _scene;
         /**
          * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(noPreventDefault?: boolean): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: Nullable<HTMLElement>): void;
+        detachControl(): void;
         /**
          * Update the current camera state depending on the inputs that have been used this frame.
          * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
@@ -46131,15 +46124,13 @@ declare module BABYLON {
         private computeDeltaFromMouseWheelLegacyEvent;
         /**
          * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(noPreventDefault?: boolean): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: Nullable<HTMLElement>): void;
+        detachControl(): void;
         /**
          * Gets the class name of the current intput.
          * @returns the class name
@@ -46505,18 +46496,16 @@ declare module BABYLON {
         _isSynchronizedViewMatrix(): boolean;
         /**
          * Attached controls to the current camera.
-         * @param element Defines the element the controls should be listened from
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          * @param useCtrlForPanning  Defines whether ctrl is used for paning within the controls
          * @param panningMouseButton Defines whether panning is allowed through mouse click button
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean, useCtrlForPanning?: boolean, panningMouseButton?: number): void;
+        attachControl(noPreventDefault?: boolean, useCtrlForPanning?: boolean, panningMouseButton?: number): void;
         /**
          * Detach the current controls from the camera.
          * The camera will stop reacting to inputs.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: HTMLElement): void;
+        detachControl(): void;
         /** @hidden */
         _checkInputs(): void;
         protected _checkLimits(): void;
@@ -47328,15 +47317,13 @@ declare module BABYLON {
         private _onGamepadDisconnectedObserver;
         /**
          * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
-         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(): void;
         /**
          * Detach the current controls from the specified dom element.
          * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: Nullable<HTMLElement>): void;
+        detachControl(): void;
         /**
          * Update the current camera state depending on the inputs that have been used this frame.
          * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
@@ -47389,10 +47376,9 @@ declare module BABYLON {
         constructor();
         /**
          * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(noPreventDefault?: boolean): void;
         /** @hidden */
         _onOrientationEvent(evt: DeviceOrientationEvent): void;
         /**
@@ -47402,9 +47388,8 @@ declare module BABYLON {
         checkInputs(): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: Nullable<HTMLElement>): void;
+        detachControl(): void;
         /**
          * Gets the class name of the current intput.
          * @returns the class name
@@ -47473,15 +47458,13 @@ declare module BABYLON {
         constructor(touchEnabled?: boolean);
         /**
          * Attach the mouse control to the HTML DOM element.
-         * @param element Defines the element that listens to the input events.
          * @param noPreventDefault Defines whether events caught by the controls should call preventdefault().
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(noPreventDefault?: boolean): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: Nullable<HTMLElement>): void;
+        detachControl(): void;
         /**
          * Gets the class name of the current input.
          * @returns the class name.
@@ -47666,16 +47649,14 @@ declare module BABYLON {
         constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive?: boolean);
         /**
          * Attach a control to the HTML DOM element.
-         * @param element Defines the element that listens to the input events.
          * @param noPreventDefault Defines whether events caught by the controls should call preventdefault(). https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(noPreventDefault?: boolean): void;
         /**
          * Detach a control from the HTML DOM element.
          * The camera will stop reacting to that input.
-         * @param element Defines the element that listens to the input events.
          */
-        detachControl(element: HTMLElement): void;
+        detachControl(): void;
         private _collisionMask;
         /**
          * Get the mask that the camera ignores in collision events.
@@ -47753,15 +47734,13 @@ declare module BABYLON {
         private _scene;
         /**
          * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(noPreventDefault?: boolean): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: Nullable<HTMLElement>): void;
+        detachControl(): void;
         /**
          * Gets the class name of the current intput.
          * @returns the class name
@@ -47817,15 +47796,13 @@ declare module BABYLON {
         private _observer;
         /**
          * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(noPreventDefault?: boolean): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: Nullable<HTMLElement>): void;
+        detachControl(): void;
         /**
          * Gets the class name of the current intput.
          * @returns the class name
@@ -48037,16 +48014,14 @@ declare module BABYLON {
         private _follow;
         /**
          * Attached controls to the current camera.
-         * @param element Defines the element the controls should be listened from
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(noPreventDefault?: boolean): void;
         /**
          * Detach the current controls from the camera.
          * The camera will stop reacting to inputs.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: HTMLElement): void;
+        detachControl(): void;
         /** @hidden */
         _checkInputs(): void;
         private _checkLimits;
@@ -48192,15 +48167,13 @@ declare module BABYLON {
         private _scene;
         /**
          * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(noPreventDefault?: boolean): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: Nullable<HTMLElement>): void;
+        detachControl(): void;
         /**
          * Update the current camera state depending on the inputs that have been used this frame.
          * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
@@ -48280,17 +48253,14 @@ declare module BABYLON {
         set camera(camera: FreeCamera);
         /**
          * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
-         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(): void;
         private _orientationChanged;
         private _deviceOrientation;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: Nullable<HTMLElement>): void;
+        detachControl(): void;
         /**
          * Update the current camera state depending on the inputs that have been used this frame.
          * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
@@ -48346,15 +48316,12 @@ declare module BABYLON {
         private _vector2;
         /**
          * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
-         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: Nullable<HTMLElement>): void;
+        detachControl(): void;
         /**
          * Update the current camera state depending on the inputs that have been used this frame.
          * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
@@ -48611,15 +48578,12 @@ declare module BABYLON {
         checkInputs(): void;
         /**
          * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
-         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        attachControl(): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
-        detachControl(element: Nullable<HTMLElement>): void;
+        detachControl(): void;
         /**
          * Gets the class name of the current intput.
          * @returns the class name
@@ -50214,7 +50178,7 @@ declare module BABYLON {
         /**
          * Options for this XR Layer output
          */
-        canvasOptions?: XRWebGLLayerOptions;
+        canvasOptions?: XRWebGLLayerInit;
         /**
          * CSS styling for a newly created canvas (if not provided)
          */
@@ -52461,6 +52425,10 @@ declare module BABYLON {
          * A list of optional features to init the session with
          */
         requiredFeatures?: string[];
+        /**
+         * If defined, this function will be executed if the UI encounters an error when entering XR
+         */
+        onError?: (error: any) => void;
     }
     /**
      * UI to allow the user to enter/exit XR mode
@@ -54970,9 +54938,15 @@ declare module BABYLON {
      */
     export class DeviceInputSystem implements IDisposable {
         /**
-         * Callback to be triggered when a device is connected
+         * Returns onDeviceConnected callback property
+         * @returns Callback with function to execute when a device is connected
          */
-        onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void;
+        get onDeviceConnected(): (deviceType: DeviceType, deviceSlot: number) => void;
+        /**
+         * Sets callback function when a device is connected and executes against all connected devices
+         * @param callback Function to execute when a device is connected
+         */
+        set onDeviceConnected(callback: (deviceType: DeviceType, deviceSlot: number) => void);
         /**
          * Callback to be triggered when a device is disconnected
          */
@@ -54993,6 +54967,7 @@ declare module BABYLON {
         private _pointerUpEvent;
         private _gamepadConnectedEvent;
         private _gamepadDisconnectedEvent;
+        private _onDeviceConnected;
         private static _MAX_KEYCODES;
         private static _MAX_POINTER_INPUTS;
         private constructor();
@@ -55020,6 +54995,24 @@ declare module BABYLON {
          * Dispose of all the eventlisteners
          */
         dispose(): void;
+        /**
+         * Checks for existing connections to devices and register them, if necessary
+         * Currently handles gamepads and mouse
+         */
+        private _checkForConnectedDevices;
+        /**
+         * Add a gamepad to the DeviceInputSystem
+         * @param gamepad A single DOM Gamepad object
+         */
+        private _addGamePad;
+        /**
+         * Add pointer device to DeviceInputSystem
+         * @param deviceType Type of Pointer to add
+         * @param deviceSlot Pointer ID (0 for mouse, pointerId for Touch)
+         * @param currentX Current X at point of adding
+         * @param currentY Current Y at point of adding
+         */
+        private _addPointerDevice;
         /**
          * Add device and inputs to device array
          * @param deviceType Enum specifiying device type
@@ -55107,33 +55100,13 @@ declare module BABYLON {
      */
     export class DeviceSourceManager implements IDisposable {
         /**
-         * Observable to be triggered when before a device is connected
+         * Observable to be triggered when after a device is connected, any new observers added will be triggered against already connected devices
          */
-        readonly onBeforeDeviceConnectedObservable: Observable<{
-            deviceType: DeviceType;
-            deviceSlot: number;
-        }>;
-        /**
-         * Observable to be triggered when before a device is disconnected
-         */
-        readonly onBeforeDeviceDisconnectedObservable: Observable<{
-            deviceType: DeviceType;
-            deviceSlot: number;
-        }>;
-        /**
-         * Observable to be triggered when after a device is connected
-         */
-        readonly onAfterDeviceConnectedObservable: Observable<{
-            deviceType: DeviceType;
-            deviceSlot: number;
-        }>;
+        readonly onDeviceConnectedObservable: Observable<DeviceSource<DeviceType>>;
         /**
          * Observable to be triggered when after a device is disconnected
          */
-        readonly onAfterDeviceDisconnectedObservable: Observable<{
-            deviceType: DeviceType;
-            deviceSlot: number;
-        }>;
+        readonly onDeviceDisconnectedObservable: Observable<DeviceSource<DeviceType>>;
         private readonly _devices;
         private readonly _firstDevice;
         private readonly _deviceInputSystem;
@@ -55155,6 +55128,11 @@ declare module BABYLON {
          * @returns Array of DeviceSource objects
          */
         getDeviceSources<T extends DeviceType>(deviceType: T): ReadonlyArray<DeviceSource<T>>;
+        /**
+         * Returns a read-only list of all available devices
+         * @returns Read-only array with active devices
+         */
+        getDevices(): ReadonlyArray<DeviceSource<DeviceType>>;
         /**
          * Dispose of DeviceInputSystem and other parts
          */
@@ -58867,6 +58845,8 @@ declare module BABYLON {
          *     URLConfig.jsDecoderModule
          *     URLConfig.wasmUASTCToASTC
          *     URLConfig.wasmUASTCToBC7
+         *     URLConfig.wasmUASTCToRGBA_UNORM
+         *     URLConfig.wasmUASTCToRGBA_SRGB
          *     URLConfig.jsMSCTranscoder
          *     URLConfig.wasmMSCTranscoder
          * You can see their default values in this PG: https://playground.babylonjs.com/#EIJH8L#9
@@ -58875,6 +58855,8 @@ declare module BABYLON {
             jsDecoderModule: string;
             wasmUASTCToASTC: null;
             wasmUASTCToBC7: null;
+            wasmUASTCToRGBA_UNORM: null;
+            wasmUASTCToRGBA_SRGB: null;
             jsMSCTranscoder: null;
             wasmMSCTranscoder: null;
         };
@@ -58897,7 +58879,7 @@ declare module BABYLON {
          * Stop all async operations and release resources.
          */
         dispose(): void;
-        protected _createTexture(data: any, internalTexture: InternalTexture): void;
+        protected _createTexture(data: any, internalTexture: InternalTexture, options?: any): void;
         /**
          * Checks if the given data starts with a KTX2 file identifier.
          * @param data the data to check
@@ -67991,6 +67973,18 @@ declare module BABYLON {
          */
         getAgentNextTargetPath(index: number): Vector3;
         /**
+         * Gets the agent state
+         * @param index agent index returned by addAgent
+         * @returns agent state
+         */
+        getAgentState(index: number): number;
+        /**
+         * returns true if the agent in over an off mesh link connection
+         * @param index agent index returned by addAgent
+         * @returns true if over an off mesh link connection
+         */
+        overOffmeshConnection(index: number): boolean;
+        /**
          * Gets the agent next target point on the path
          * @param index agent index returned by addAgent
          * @param result output world space position
@@ -68357,6 +68351,18 @@ declare module BABYLON {
          * @param result output world space position
          */
         getAgentNextTargetPathToRef(index: number, result: Vector3): void;
+        /**
+         * Gets the agent state
+         * @param index agent index returned by addAgent
+         * @returns agent state
+         */
+        getAgentState(index: number): number;
+        /**
+         * returns true if the agent in over an off mesh link connection
+         * @param index agent index returned by addAgent
+         * @returns true if over an off mesh link connection
+         */
+        overOffmeshConnection(index: number): boolean;
         /**
          * Asks a particular agent to go to a destination. That destination is constrained by the navigation mesh
          * @param index agent index returned by addAgent
@@ -72833,6 +72839,10 @@ declare module BABYLON {
          */
         onAfterBoxRenderingObservable: Observable<BoundingBox>;
         /**
+         * Observable raised after resources are created
+         */
+        onResourcesReadyObservable: Observable<BoundingBoxRenderer>;
+        /**
          * When false, no bounding boxes will be rendered
          */
         enabled: boolean;
@@ -72856,7 +72866,7 @@ declare module BABYLON {
         register(): void;
         private _evaluateSubMesh;
         private _preActiveMesh;
-        private _prepareRessources;
+        private _prepareResources;
         private _createIndexBuffer;
         /**
          * Rebuilds the elements related to this component in case of
@@ -76012,6 +76022,11 @@ declare module BABYLON {
          * Dispose this feature and all of the resources attached
          */
         dispose(): void;
+        /**
+         * Check if the needed objects are defined.
+         * This does not mean that the feature is enabled, but that the objects needed are well defined.
+         */
+        isCompatible(): boolean;
         protected _onXRFrame(frame: XRFrame): void;
         private _init;
         private _updatePlaneWithXRPlane;
@@ -77270,104 +77285,71 @@ interface Window {
 interface Gamepad {
     readonly displayId: number;
 }
+/**
+ * Available session modes
+ */
 type XRSessionMode = "inline" | "immersive-vr" | "immersive-ar";
 
+/**
+ * Reference space types
+ */
 type XRReferenceSpaceType = "viewer" | "local" | "local-floor" | "bounded-floor" | "unbounded";
 
 type XREnvironmentBlendMode = "opaque" | "additive" | "alpha-blend";
 
 type XRVisibilityState = "visible" | "visible-blurred" | "hidden";
 
+/**
+ * Handedness types
+ */
 type XRHandedness = "none" | "left" | "right";
 
+/**
+ * InputSource target ray modes
+ */
 type XRTargetRayMode = "gaze" | "tracked-pointer" | "screen";
 
+/**
+ * Eye types
+ */
 type XREye = "none" | "left" | "right";
 
+/**
+ * Type of XR events available
+ */
 type XREventType = "devicechange" | "visibilitychange" | "end" | "inputsourceschange" | "select" | "selectstart" | "selectend" | "squeeze" | "squeezestart" | "squeezeend" | "reset";
 
-interface XRSpace extends EventTarget {}
+type XRFrameRequestCallback = (time: DOMHighResTimeStamp, frame: XRFrame) => void;
 
-interface XRRenderState {
-    depthNear?: number;
-    depthFar?: number;
-    inlineVerticalFieldOfView?: number;
-    baseLayer?: XRWebGLLayer;
-}
+type XRPlaneSet = Set<XRPlane>;
+type XRAnchorSet = Set<XRAnchor>;
 
-interface XRInputSource {
-    handedness: XRHandedness;
-    targetRayMode: XRTargetRayMode;
-    targetRaySpace: XRSpace;
-    gripSpace: XRSpace | undefined;
-    gamepad: Gamepad | undefined;
-    profiles: Array<string>;
-    hand: XRHand | undefined;
-}
+type XREventHandler = (callback: any) => void;
+
+interface XRLayer extends EventTarget {}
 
 interface XRSessionInit {
     optionalFeatures?: string[];
     requiredFeatures?: string[];
 }
 
-interface XRSession {
-    addEventListener: Function;
-    removeEventListener: Function;
-    requestReferenceSpace(type: XRReferenceSpaceType): Promise<XRReferenceSpace>;
-    updateRenderState(XRRenderStateInit: XRRenderState): Promise<void>;
-    requestAnimationFrame: Function;
-    end(): Promise<void>;
-    renderState: XRRenderState;
-    inputSources: Array<XRInputSource>;
-
-    // hit test
-    requestHitTestSource(options: XRHitTestOptionsInit): Promise<XRHitTestSource>;
-    requestHitTestSourceForTransientInput(options: XRTransientInputHitTestOptionsInit): Promise<XRTransientInputHitTestSource>;
-
-    // legacy AR hit test
-    requestHitTest(ray: XRRay, referenceSpace: XRReferenceSpace): Promise<XRHitResult[]>;
-
-    // legacy plane detection
-    updateWorldTrackingState(options: { planeDetectionState?: { enabled: boolean } }): void;
+interface XRSessionEvent extends Event {
+    readonly session: XRSession;
 }
 
-interface XRReferenceSpace extends XRSpace {
-    getOffsetReferenceSpace(originOffset: XRRigidTransform): XRReferenceSpace;
-    onreset: any;
+interface XRSystem {
+    isSessionSupported: (sessionMode: XRSessionMode) => Promise<boolean>;
+    requestSession: (sessionMode: XRSessionMode, sessionInit?: any) => Promise<XRSession>;
 }
 
-type XRPlaneSet = Set<XRPlane>;
-type XRAnchorSet = Set<XRAnchor>;
-
-interface XRFrame {
-    session: XRSession;
-    getViewerPose(referenceSpace: XRReferenceSpace): XRViewerPose | undefined;
-    getPose(space: XRSpace, baseSpace: XRSpace): XRPose | undefined;
-
-    // AR
-    getHitTestResults(hitTestSource: XRHitTestSource): Array<XRHitTestResult>;
-    getHitTestResultsForTransientInput(hitTestSource: XRTransientInputHitTestSource): Array<XRTransientInputHitTestResult>;
-    // Anchors
-    trackedAnchors?: XRAnchorSet;
-    createAnchor(pose: XRRigidTransform, space: XRSpace): Promise<XRAnchor>;
-    // Planes
-    worldInformation: {
-        detectedPlanes?: XRPlaneSet;
-    };
-    // Hand tracking
-    getJointPose(joint: XRJointSpace, baseSpace: XRSpace): XRJointPose;
+interface XRViewport {
+    readonly x: number;
+    readonly y: number;
+    readonly width: number;
+    readonly height: number;
 }
 
-interface XRViewerPose extends XRPose {
-    views: Array<XRView>;
-}
-
-interface XRPose {
-    transform: XRRigidTransform;
-    emulatedPosition: boolean;
-}
-
-interface XRWebGLLayerOptions {
+interface XRWebGLLayerInit {
     antialias?: boolean;
     depth?: boolean;
     stencil?: boolean;
@@ -77376,35 +77358,76 @@ interface XRWebGLLayerOptions {
     framebufferScaleFactor?: number;
 }
 
-declare var XRWebGLLayer: {
-    prototype: XRWebGLLayer;
-    new (session: XRSession, context: WebGLRenderingContext | undefined, options?: XRWebGLLayerOptions): XRWebGLLayer;
-};
-interface XRWebGLLayer {
-    framebuffer: WebGLFramebuffer;
-    framebufferWidth: number;
-    framebufferHeight: number;
-    getViewport: Function;
+declare class XRWebGLLayer {
+    static getNativeFramebufferScaleFactor(session: XRSession): number;
+    constructor(session: XRSession, context: WebGLRenderingContext | WebGL2RenderingContext, layerInit?: XRWebGLLayerInit);
+    readonly antialias: boolean;
+    readonly framebuffer: WebGLFramebuffer;
+    readonly framebufferWidth: number;
+    readonly framebufferHeight: number;
+    readonly ignoreDepthValues: boolean;
+    getViewport: (view: XRView) => XRViewport;
 }
 
-declare class XRRigidTransform {
-    constructor(matrix: Float32Array | DOMPointInit, direction?: DOMPointInit);
-    position: DOMPointReadOnly;
-    orientation: DOMPointReadOnly;
-    matrix: Float32Array;
-    inverse: XRRigidTransform;
+// tslint:disable-next-line no-empty-interface
+interface XRSpace extends EventTarget {}
+
+interface XRRenderState {
+    readonly baseLayer?: XRWebGLLayer;
+    readonly depthFar: number;
+    readonly depthNear: number;
+    readonly inlineVerticalFieldOfView?: number;
 }
 
-interface XRView {
-    eye: XREye;
-    projectionMatrix: Float32Array;
-    transform: XRRigidTransform;
+interface XRRenderStateInit extends XRRenderState {
+    baseLayer: XRWebGLLayer;
+    depthFar: number;
+    depthNear: number;
+    inlineVerticalFieldOfView?: number;
+    layers?: XRLayer[];
 }
 
-interface XRInputSourceChangeEvent {
-    session: XRSession;
-    removed: Array<XRInputSource>;
-    added: Array<XRInputSource>;
+interface XRReferenceSpace extends XRSpace {
+    getOffsetReferenceSpace(originOffset: XRRigidTransform): XRReferenceSpace;
+    onreset: XREventHandler;
+}
+
+interface XRBoundedReferenceSpace extends XRSpace {
+    readonly boundsGeometry: DOMPointReadOnly[];
+}
+
+interface XRInputSource {
+    readonly handedness: XRHandedness;
+    readonly targetRayMode: XRTargetRayMode;
+    readonly targetRaySpace: XRSpace;
+    readonly gripSpace?: XRSpace;
+    readonly gamepad?: Gamepad;
+    readonly profiles: Array<string>;
+    readonly hand?: XRHand;
+}
+
+interface XRPose {
+    readonly transform: XRRigidTransform;
+    readonly emulatedPosition: boolean;
+}
+
+interface XRFrame {
+    readonly session: XRSession;
+    getPose(space: XRSpace, baseSpace: XRSpace): XRPose | undefined;
+    getViewerPose(referenceSpace: XRReferenceSpace): XRViewerPose | undefined;
+
+    // AR
+    getHitTestResults(hitTestSource: XRHitTestSource): Array<XRHitTestResult>;
+    getHitTestResultsForTransientInput(hitTestSource: XRTransientInputHitTestSource): Array<XRTransientInputHitTestResult>;
+    // Anchors
+    trackedAnchors?: XRAnchorSet;
+    createAnchor?(pose: XRRigidTransform, space: XRSpace): Promise<XRAnchor>;
+    // Planes
+    worldInformation?: {
+        detectedPlanes?: XRPlaneSet;
+    };
+    // Hand tracking
+    getJointPose?(joint: XRJointSpace, baseSpace: XRSpace): XRJointPose;
 }
 
 interface XRInputSourceEvent extends Event {
@@ -77412,7 +77435,99 @@ interface XRInputSourceEvent extends Event {
     readonly inputSource: XRInputSource;
 }
 
-// Experimental(er) features
+type XRInputSourceArray = XRInputSource[];
+
+interface XRSession {
+    addEventListener(type: XREventType, listener: XREventHandler, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: XREventType, listener: XREventHandler, options?: boolean | EventListenerOptions): void;
+    /**
+     * Returns a list of this session's XRInputSources, each representing an input device
+     * used to control the camera and/or scene.
+     */
+    readonly inputSources: Array<XRInputSource>;
+    /**
+     * object which contains options affecting how the imagery is rendered.
+     * This includes things such as the near and far clipping planes
+     */
+    readonly renderState: XRRenderState;
+    readonly visibilityState: XRVisibilityState;
+    /**
+     * Removes a callback from the animation frame painting callback from
+     * XRSession's set of animation frame rendering callbacks, given the
+     * identifying handle returned by a previous call to requestAnimationFrame().
+     */
+    cancelAnimationFrame: (handle: number) => void;
+    /**
+     * Ends the WebXR session. Returns a promise which resolves when the
+     * session has been shut down.
+     */
+    end(): Promise<void>;
+    /**
+     * Schedules the specified method to be called the next time the user agent
+     * is working on rendering an animation frame for the WebXR device. Returns an
+     * integer value which can be used to identify the request for the purposes of
+     * canceling the callback using cancelAnimationFrame(). This method is comparable
+     * to the Window.requestAnimationFrame() method.
+     */
+    requestAnimationFrame: XRFrameRequestCallback;
+    /**
+     * Requests that a new XRReferenceSpace of the specified type be created.
+     * Returns a promise which resolves with the XRReferenceSpace or
+     * XRBoundedReferenceSpace which was requested, or throws a NotSupportedError if
+     * the requested space type isn't supported by the device.
+     */
+    requestReferenceSpace(type: XRReferenceSpaceType): Promise<XRReferenceSpace | XRBoundedReferenceSpace>;
+
+    updateRenderState(XRRenderStateInit: XRRenderState): Promise<void>;
+
+    onend: XREventHandler;
+    oninputsourceschange: XREventHandler;
+    onselect: XREventHandler;
+    onselectstart: XREventHandler;
+    onselectend: XREventHandler;
+    onsqueeze: XREventHandler;
+    onsqueezestart: XREventHandler;
+    onsqueezeend: XREventHandler;
+    onvisibilitychange: XREventHandler;
+
+    // hit test
+    requestHitTestSource?(options: XRHitTestOptionsInit): Promise<XRHitTestSource>;
+    requestHitTestSourceForTransientInput?(options: XRTransientInputHitTestOptionsInit): Promise<XRTransientInputHitTestSource>;
+
+    // legacy AR hit test
+    requestHitTest?(ray: XRRay, referenceSpace: XRReferenceSpace): Promise<XRHitResult[]>;
+
+    // legacy plane detection
+    updateWorldTrackingState?(options: { planeDetectionState?: { enabled: boolean } }): void;
+}
+
+interface XRViewerPose extends XRPose {
+    readonly views: Array<XRView>;
+}
+
+declare class XRRigidTransform {
+    constructor(position?: DOMPointInit, direction?: DOMPointInit);
+    position: DOMPointReadOnly;
+    orientation: DOMPointReadOnly;
+    matrix: Float32Array;
+    inverse: XRRigidTransform;
+}
+
+interface XRView {
+    readonly eye: XREye;
+    readonly projectionMatrix: Float32Array;
+    readonly transform: XRRigidTransform;
+    readonly recommendedViewportScale?: number;
+    requestViewportScale(scale: number): void;
+}
+
+interface XRInputSourceChangeEvent extends Event {
+    session: XRSession;
+    removed: Array<XRInputSource>;
+    added: Array<XRInputSource>;
+}
+
+// Experimental/Draft features
 declare class XRRay {
     constructor(transformOrOrigin: XRRigidTransform | DOMPointInit, direction?: DOMPointInit);
     origin: DOMPointReadOnly;
@@ -77479,12 +77594,10 @@ interface XRJointPose extends XRPose {
     radius: number | undefined;
 }
 
-interface XRHand /*extends Iterablele<XRJointSpace>*/ {
+interface XRHand extends Iterable<XRJointSpace> {
     readonly length: number;
 
     [index: number]: XRJointSpace;
-
-    // Specs have the function 'joint(idx: number)', but chrome doesn't support it yet.
 
     readonly WRIST: number;
 
