@@ -95,8 +95,15 @@ export class TextureTools {
             var npixels = new Uint8Array(len);
 
             while (--len >= 0) {
-                npixels[len] = pixels[len] * 255;
+                var val = pixels[len];
+                if (val < 0) {
+                    val = 0; 
+                } else if (val > 1) {
+                    val = 1;
+                }
+                npixels[len] = val * 255;
             }
+
             pixels = npixels;
         }
 
