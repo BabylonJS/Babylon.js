@@ -12,6 +12,7 @@ import { TimingTools } from '../../Misc/timingTools';
 import { InstantiationTools } from '../../Misc/instantiationTools';
 import { Plane } from '../../Maths/math.plane';
 import { StringTools } from '../../Misc/stringTools';
+import { TextureTools } from '../../Misc/textureTools';
 
 declare type CubeTexture = import("../../Materials/Textures/cubeTexture").CubeTexture;
 declare type MirrorTexture = import("../../Materials/Textures/mirrorTexture").MirrorTexture;
@@ -680,7 +681,7 @@ export class Texture extends BaseTexture {
             } else if (this.url && StringTools.StartsWith(this.url, "data:") && this._buffer instanceof Uint8Array) {
                 serializationObject.base64String = "data:image/png;base64," + StringTools.EncodeArrayBufferToBase64(this._buffer);
             } else if (Texture.ForceSerializeBuffers) {
-                serializationObject.base64String = this.toBase64();
+                serializationObject.base64String = TextureTools.GenerateBase64StringFromTexture(this);
             }
         }
 
