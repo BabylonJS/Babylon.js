@@ -10,6 +10,7 @@ export class LiteTranscoder extends Transcoder {
     private _modulePath: string;
     private _modulePromise: Promise<{ module: any }>;
     private _memoryManager: WASMMemoryManager;
+    protected _transcodeInPlace: boolean;
 
     protected _loadModule(): Promise<{ module: any }> {
         if (this._modulePromise) {
@@ -35,6 +36,10 @@ export class LiteTranscoder extends Transcoder {
         this._modulePath = modulePath;
     }
 
+    public initialize(): void {
+        this._transcodeInPlace = true;
+    }
+
     public needMemoryManager(): boolean {
         return true;
     }
@@ -46,16 +51,27 @@ export class LiteTranscoder extends Transcoder {
     public transcode(src: sourceTextureFormat, dst: transcodeTarget, level: number, width: number, height: number, uncompressedByteLength: number, ktx2Reader: KTX2FileReader, imageDesc: IKTX2_ImageDesc | null, encodedData: Uint8Array): Promise<Uint8Array | null> {
         return this._loadModule().then((moduleWrapper: any) => {
             const transcoder: any = moduleWrapper.module;
+            const [textureView, uncompressedTextureView, nBlocks] = this._prepareTranscoding(width, height, uncompressedByteLength, encodedData);
 
-            const nBlocks = ((width + 3) >> 2) * ((height + 3) >> 2);
-
-            const texMemoryPages = ((nBlocks * 16 + 65535) >> 16) + 1;
-
-            const textureView = this.memoryManager.getMemoryView(texMemoryPages, 65536, nBlocks * 16);
-
-            textureView.set(encodedData);
-
-            return transcoder.transcode(nBlocks) === 0 ? textureView.slice() : null;
+            return transcoder.transcode(nBlocks) === 0 ? (this._transcodeInPlace ? textureView.slice() : uncompressedTextureView!.slice()) : null;
         });
+    }
+
+    protected _prepareTranscoding(width: number, height: number, uncompressedByteLength: number, encodedData: Uint8Array, forceRGBA = false): [Uint8Array, Uint8Array | null, number] {
+        const nBlocks = ((width + 3) >> 2) * ((height + 3) >> 2);
+
+        if (forceRGBA) {
+            uncompressedByteLength = width * ((height + 3) >> 2) * 4 * 4;
+        }
+
+        const texMemoryPages = ((nBlocks * 16 + 65535 + (this._transcodeInPlace ? 0 : uncompressedByteLength)) >> 16) + 1;
+
+        const textureView = this.memoryManager.getMemoryView(texMemoryPages, 65536, nBlocks * 16);
+
+        const uncompressedTextureView = this._transcodeInPlace ? null : new Uint8Array(this._memoryManager.wasmMemory.buffer, 65536 + nBlocks * 16, forceRGBA ? width * height * 4 : uncompressedByteLength);
+
+        textureView.set(encodedData);
+
+        return [textureView, uncompressedTextureView, nBlocks]
     }
 }

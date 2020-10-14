@@ -5,6 +5,7 @@ import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 import { Scalar } from '../../Maths/math.scalar';
+import { Tools } from '../../Misc/tools';
 
 /**
  * Manage the mouse wheel inputs to control an arc rotate camera.
@@ -44,10 +45,11 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
     }
     /**
      * Attach the input controls to a specific dom element to get the input from.
-     * @param element Defines the element the controls should be listened from
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
+    public attachControl(noPreventDefault?: boolean): void {
+        // was there a second variable defined?
+        noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         this._wheel = (p, s) => {
             //sanity check - this should be a PointerWheel event.
             if (p.type !== PointerEventTypes.POINTERWHEEL) { return; }
@@ -98,10 +100,9 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param element Defines the element to stop listening the inputs from
      */
-    public detachControl(element: Nullable<HTMLElement>): void {
-        if (this._observer && element) {
+    public detachControl(): void {
+        if (this._observer) {
             this.camera.getScene().onPointerObservable.remove(this._observer);
             this._observer = null;
             this._wheel = null;

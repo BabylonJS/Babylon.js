@@ -8,6 +8,7 @@ import { TargetCamera } from "./targetCamera";
 import { FreeCameraInputsManager } from "./freeCameraInputsManager";
 import { FreeCameraMouseInput } from "../Cameras/Inputs/freeCameraMouseInput";
 import { FreeCameraKeyboardMoveInput } from "../Cameras/Inputs/freeCameraKeyboardMoveInput";
+import { Tools } from '../Misc/tools';
 
 declare type Collider = import("../Collisions/collider").Collider;
 
@@ -222,20 +223,19 @@ export class FreeCamera extends TargetCamera {
 
     /**
      * Attached controls to the current camera.
-     * @param element Defines the element the controls should be listened from
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
-        this.inputs.attachElement(element, noPreventDefault);
+    public attachControl(noPreventDefault?: boolean): void {
+        noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
+        this.inputs.attachElement(noPreventDefault);
     }
 
     /**
      * Detach the current controls from the camera.
      * The camera will stop reacting to inputs.
-     * @param element Defines the element to stop listening the inputs from
      */
-    public detachControl(element: HTMLElement): void {
-        this.inputs.detachElement(element);
+    public detachControl(): void {
+        this.inputs.detachElement();
 
         this.cameraDirection = new Vector3(0, 0, 0);
         this.cameraRotation = new Vector2(0, 0);
