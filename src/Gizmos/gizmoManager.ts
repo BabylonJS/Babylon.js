@@ -91,10 +91,10 @@ export class GizmoManager implements IDisposable {
      * @param scene the scene to overlay the gizmos on top of
      * @param thickness display gizmo axis thickness
      */
-    constructor(private scene: Scene, thickness: number = 1) {
-        this._defaultKeepDepthUtilityLayer = new UtilityLayerRenderer(scene);
+    constructor(private scene: Scene, thickness: number = 1, utilityLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, keepDepthUtilityLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultKeepDepthUtilityLayer) {
+        this._defaultUtilityLayer = utilityLayer;
+        this._defaultKeepDepthUtilityLayer = keepDepthUtilityLayer;
         this._defaultKeepDepthUtilityLayer.utilityLayerScene.autoClearDepthAndStencil = false;
-        this._defaultUtilityLayer = new UtilityLayerRenderer(scene);
         this._thickness = thickness;
         this.gizmos = { positionGizmo: null, rotationGizmo: null, scaleGizmo: null, boundingBoxGizmo: null };
 
