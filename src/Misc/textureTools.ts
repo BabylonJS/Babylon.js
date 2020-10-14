@@ -89,6 +89,10 @@ export class TextureTools {
         }
 
         var pixels = texture.readPixels(faceIndex, level);
+        if (!pixels) {
+            return null;
+        }
+        
         var size = texture.getSize();
         var width = size.width;
         var height = size.height;
