@@ -19,7 +19,7 @@ export class CopyTools {
         }
 
         var internalTexture = texture.getInternalTexture();
-        if (!internalTexture || internalTexture.isCube) {
+        if (!internalTexture) {
             return null;
         }
 
