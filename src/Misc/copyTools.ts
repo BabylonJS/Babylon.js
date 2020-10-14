@@ -14,9 +14,6 @@ export class CopyTools {
      * @returns The base64 encoded string or null
      */
     public static GenerateBase64StringFromTexture(texture: BaseTexture, faceIndex = 0, level = 0): Nullable<string> {
-        if (!texture) {
-            return null;
-        }
 
         var internalTexture = texture.getInternalTexture();
         if (!internalTexture) {
