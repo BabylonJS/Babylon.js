@@ -9,6 +9,8 @@ import { AbstractMesh } from '../Meshes/abstractMesh';
 import { Node } from '../node';
 import { ShadowGenerator } from '../Lights/Shadows/shadowGenerator';
 import { GUID } from '../Misc/guid';
+import { NodeMaterial } from './Node/nodeMaterial';
+import { NodeMaterialSystemValues } from './Node/Enums/nodeMaterialSystemValues';
 
 /**
  * Options to be used when creating a shadow depth material
@@ -93,14 +95,51 @@ export class ShadowDepthWrapper {
 
         const prefix = baseMaterial.getClassName() === "NodeMaterial" ? "u_" : "";
 
-        this._matriceNames = {
-            "world": prefix + "world",
-            "view": prefix + "view",
-            "projection": prefix + "projection",
-            "viewProjection": prefix + "viewProjection",
-            "worldView": prefix + "worldView",
-            "worldViewProjection": prefix + "worldViewProjection",
-        };
+        if (prefix) {
+            this._matriceNames = {
+                "world": prefix + "World",
+                "view": prefix + "View",
+                "projection": prefix + "Projection",
+                "viewProjection": prefix + "ViewProjection",
+                "worldView": prefix + "WorldxView",
+                "worldViewProjection": prefix + "WorldxViewxProjection",
+            };
+
+            const nodeMat = baseMaterial as NodeMaterial;
+            const inputBlocks = nodeMat.getInputBlocks();
+
+            for (let i = 0; i < inputBlocks.length; ++i) {
+                switch (inputBlocks[i]._systemValue) {
+                    case NodeMaterialSystemValues.World:
+                        this._matriceNames["world"] = inputBlocks[i].associatedVariableName;
+                        break;
+                    case NodeMaterialSystemValues.View:
+                        this._matriceNames["view"] = inputBlocks[i].associatedVariableName;
+                        break;
+                    case NodeMaterialSystemValues.Projection:
+                        this._matriceNames["projection"] = inputBlocks[i].associatedVariableName;
+                        break;
+                    case NodeMaterialSystemValues.ViewProjection:
+                        this._matriceNames["viewProjection"] = inputBlocks[i].associatedVariableName;
+                        break;
+                    case NodeMaterialSystemValues.WorldView:
+                        this._matriceNames["worldView"] = inputBlocks[i].associatedVariableName;
+                        break;
+                    case NodeMaterialSystemValues.WorldViewProjection:
+                        this._matriceNames["worldViewProjection"] = inputBlocks[i].associatedVariableName;
+                        break;
+                }
+            }
+        } else {
+            this._matriceNames = {
+                "world": prefix + "world",
+                "view": prefix + "view",
+                "projection": prefix + "projection",
+                "viewProjection": prefix + "viewProjection",
+                "worldView": prefix + "worldView",
+                "worldViewProjection": prefix + "worldViewProjection",
+            };
+        }
 
         // Register for onEffectCreated to store the effect of the base material when it is (re)generated. This effect will be used
         // to create the depth effect later on
