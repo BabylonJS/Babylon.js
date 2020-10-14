@@ -3,7 +3,7 @@ import { Nullable } from "../types";
 /**
  * Class used to host copy specific utilities
  */
-export class copyTools {
+export class CopyTools {
     /**
      * Reads the pixels stored in the webgl texture and returns them as a base64 string
      * @param texture defines the texture to read pixels from
@@ -11,7 +11,7 @@ export class copyTools {
      * @param level defines the LOD level of the texture to read (in case of Mip Maps)
      * @returns The base64 encoded string or null
      */
-    public static GenerateBase64StringFromTexture(texture: Any, faceIndex = 0, level = 0): Nullable<string> {
+    public static GenerateBase64StringFromTexture(texture: any, faceIndex = 0, level = 0): Nullable<string> {
         if (!texture) {
             return null;
         }
