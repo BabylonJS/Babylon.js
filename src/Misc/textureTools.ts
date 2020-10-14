@@ -4,6 +4,7 @@ import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { PassPostProcess } from "../PostProcesses/passPostProcess";
 import { Constants } from "../Engines/constants";
 import { Scene } from "../scene";
+import { Nullable } from "../types";
 
 /**
  * Class used to host texture specific utilities
@@ -99,7 +100,7 @@ export class TextureTools {
             while (--len >= 0) {
                 var val = pixels[len];
                 if (val < 0) {
-                    val = 0; 
+                    val = 0;
                 } else if (val > 1) {
                     val = 1;
                 }
@@ -134,7 +135,7 @@ export class TextureTools {
 
             ctx2.translate(0, height);
             ctx2.scale(1, -1);
-            ctx2.drawImage(canvas, 0, 0)
+            ctx2.drawImage(canvas, 0, 0);
 
             return canvas2.toDataURL('image/png');
         }
