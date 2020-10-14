@@ -72,4 +72,64 @@ export class TextureTools {
 
         return rtt;
     }
+
+    /**
+     * Reads the pixels stored in the webgl texture and returns them as a base64 string
+     * @param texture Texture to read pixels from
+     * @returns The base64 encoded string or null
+     */
+    public static GenerateBase64StringFromTexture(texture: Texture): Nullable<string> {
+
+        var internalTexture = texture.getInternalTexture();
+        if (!internalTexture || internalTexture.isCube) {
+            return null;
+        }
+
+        var pixels = texture.readPixels(0, 0);
+        var size = texture.getSize();
+        var width = size.width;
+        var height = size.height;
+
+        if (pixels instanceof Float32Array) {
+            var len = pixels.byteLength / pixels.BYTES_PER_ELEMENT;
+            var npixels = new Uint8Array(len);
+
+            while (--len >= 0) {
+                npixels[len] = pixels[len] * 255;
+            }
+            pixels = npixels;
+        }
+
+        var canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+
+        var ctx = canvas.getContext('2d');
+        if (!ctx) {
+            return null;
+        }
+
+        var imageData = ctx.createImageData(width, height);
+        imageData.data.set(pixels);
+        ctx.putImageData(imageData, 0, 0);
+
+        if (internalTexture.invertY) {
+            var canvas2 = document.createElement('canvas');
+            canvas2.width = width;
+            canvas2.height = height;
+
+            var ctx2 = canvas2.getContext('2d');
+            if (!ctx2) {
+                return null;
+            }
+
+            ctx2.translate(0, height);
+            ctx2.scale(1, -1);
+            ctx2.drawImage(canvas, 0, 0)
+
+            return canvas2.toDataURL('image/png');
+        }
+
+        return canvas.toDataURL('image/png');
+    }
 }
