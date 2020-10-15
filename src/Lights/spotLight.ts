@@ -9,7 +9,7 @@ import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Light } from "./light";
 import { ShadowLight } from "./shadowLight";
 import { Texture } from '../Materials/Textures/texture';
-import { ProceduralTexture } from '../Materials';
+import { ProceduralTexture } from '../Materials/Textures/Procedurals/proceduralTexture';
 
 Node.AddNodeConstructor("Light_Type_2", (name, scene) => {
     return () => new SpotLight(name, Vector3.Zero(), Vector3.Zero(), 0, 0, scene);
