@@ -57540,6 +57540,8 @@ declare module BABYLON {
         * Sets the projection texture of the light.
         */
         set projectionTexture(value: Nullable<BaseTexture>);
+        private static _IsProceduralTexture;
+        private static _IsTexture;
         private _projectionTextureViewLightDirty;
         private _projectionTextureProjectionLightDirty;
         private _projectionTextureDirty;
