@@ -7779,6 +7779,21 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Class used to host copy specific utilities
+     */
+    export class CopyTools {
+        /**
+         * Reads the pixels stored in the webgl texture and returns them as a base64 string
+         * @param texture defines the texture to read pixels from
+         * @param faceIndex defines the face of the texture to read (in case of cube texture)
+         * @param level defines the LOD level of the texture to read (in case of Mip Maps)
+         * @returns The base64 encoded string or null
+         */
+        static GenerateBase64StringFromTexture(texture: BaseTexture, faceIndex?: number, level?: number): Nullable<string>;
+    }
+}
+declare module BABYLON {
+    /**
      * Define options used to create a depth texture
      */
     export class DepthTextureCreationOptions {
@@ -28291,6 +28306,11 @@ declare module BABYLON {
          * Gets or sets a general boolean used to indicate that textures containing direct data (buffers) must be saved as part of the serialization process
          */
         static SerializeBuffers: boolean;
+        /**
+         * Gets or sets a general boolean used to indicate that texture buffers must be saved as part of the serialization process.
+         * If no buffer exists, one will be created as base64 string from the internal webgl data.
+         */
+        static ForceSerializeBuffers: boolean;
         /** @hidden */
         static _CubeTextureParser: (jsonTexture: any, scene: Scene, rootUrl: string) => CubeTexture;
         /** @hidden */
@@ -37789,6 +37809,8 @@ declare module BABYLON {
         private _vertexSourceCodeOverride;
         private _fragmentSourceCodeOverride;
         private _transformFeedbackVaryings;
+        private _rawVertexSourceCode;
+        private _rawFragmentSourceCode;
         /**
          * Compiled shader to webGL program.
          * @hidden
@@ -37911,6 +37933,14 @@ declare module BABYLON {
          * Gets the fragment shader source code of this effect
          */
         get fragmentSourceCode(): string;
+        /**
+         * Gets the vertex shader source code before it has been processed by the preprocessor
+         */
+        get rawVertexSourceCode(): string;
+        /**
+         * Gets the fragment shader source code before it has been processed by the preprocessor
+         */
+        get rawFragmentSourceCode(): string;
         /**
          * Recompiles the webGL program
          * @param vertexSourceCode The source code for the vertex shader.
@@ -38977,7 +39007,7 @@ declare module BABYLON {
          * @param options defines further options to be sent to the getContext() function
          * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
          */
-        constructor(canvasOrContext: Nullable<HTMLCanvasElement | WebGLRenderingContext | WebGL2RenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio?: boolean);
+        constructor(canvasOrContext: Nullable<HTMLCanvasElement | OffscreenCanvas | WebGLRenderingContext | WebGL2RenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio?: boolean);
         private _rebuildInternalTextures;
         private _rebuildEffects;
         /**
@@ -46932,7 +46962,7 @@ declare module BABYLON {
         private _alternatePickedPoint;
         private _worldDragAxis;
         private _targetPosition;
-        private _attachedElement;
+        private _attachedToElement;
         /**
          * Attaches the drag behavior the passed in mesh
          * @param ownerNode The mesh that will be dragged around once attached
@@ -47018,7 +47048,7 @@ declare module BABYLON {
         private _pointerObserver;
         private _moving;
         private _startingOrientation;
-        private _attachedElement;
+        private _attachedToElement;
         /**
          * How much faster the object should move when the controller is moving towards it. This is useful to bring objects that are far away from the user to them faster. Set this to 0 to avoid any speed increase. (Default: 3)
          */
@@ -57510,6 +57540,8 @@ declare module BABYLON {
         * Sets the projection texture of the light.
         */
         set projectionTexture(value: Nullable<BaseTexture>);
+        private static _IsProceduralTexture;
+        private static _IsTexture;
         private _projectionTextureViewLightDirty;
         private _projectionTextureProjectionLightDirty;
         private _projectionTextureDirty;

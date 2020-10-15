@@ -56,6 +56,7 @@
 - Add a `disableBoundingBoxesFromEffectLayer` property to the `EffectLayer` class to render the bounding boxes unaffected by the effect ([Popov72](https://github.com/Popov72))
 - Removed all references to HTML element from cameras' attach and detach control functions ([RaananW](https://github.com/RaananW))
 - Added `boundingBoxRenderer.onResourcesReadyObservable` ([aWeirdo](https://github.com/aWeirdo))
+- Added `copyTools.GenerateBase64StringFromTexture` ([aWeirdo](https://github.com/aWeirdo))
 
 ### Engine
 
@@ -159,6 +160,7 @@
 - Added support for KHR_materials_unlit to glTF serializer ([Popov72](https://github.com/Popov72))
 - Added support for glTF Skins to glTF serializer ([Drigax](https://github.com/Drigax))
 - Added support for glTF Morph Target serialization ([Drigax](https://github.com/Drigax))
+- Fixed several bugs in stlSerializer ([aWeirdo](https://github.com/aWeirdo))
 
 ### Navigation
 
@@ -244,6 +246,7 @@
 
 - .HDR environment files will now give accurate PBR reflections ([CraigFeldpsar](https://github.com/craigfeldspar))
 - Added a `homogeneousRotationInUVTransform` property in the `Texture` to avoid deformations when rotating the texture with non-uniform scaling ([Popov72](https://github.com/Popov72))
+- Added `Texture.ForceSerializeBuffers` ([aWeirdo](https://github.com/aWeirdo))
 
 ### Audio
 

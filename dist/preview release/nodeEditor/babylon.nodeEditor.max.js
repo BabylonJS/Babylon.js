@@ -68403,17 +68403,6 @@ var GraphFrame = /** @class */ (function () {
     };
     GraphFrame.prototype.dispose = function () {
         var _a;
-        if (this.isCollapsed) {
-            while (this._nodes.length > 0) {
-                this._nodes[0].dispose();
-            }
-            this.isCollapsed = false;
-        }
-        else {
-            this._nodes.forEach(function (node) {
-                node.enclosingFrameId = -1;
-            });
-        }
         if (this._onSelectionChangedObserver) {
             this._ownerCanvas.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
         }
@@ -71059,6 +71048,24 @@ var GraphEditor = /** @class */ (function (_super) {
                     _this._graphCanvas.selectedLink.dispose();
                 }
                 if (_this._graphCanvas.selectedFrame) {
+                    var frame = _this._graphCanvas.selectedFrame;
+                    if (frame.isCollapsed) {
+                        while (frame.nodes.length > 0) {
+                            var targetBlock = frame.nodes[0].block;
+                            _this.props.globalState.nodeMaterial.removeBlock(targetBlock);
+                            var blockIndex = _this._blocks.indexOf(targetBlock);
+                            if (blockIndex > -1) {
+                                _this._blocks.splice(blockIndex, 1);
+                            }
+                            frame.nodes[0].dispose();
+                        }
+                        frame.isCollapsed = false;
+                    }
+                    else {
+                        frame.nodes.forEach(function (node) {
+                            node.enclosingFrameId = -1;
+                        });
+                    }
                     _this._graphCanvas.selectedFrame.dispose();
                 }
                 _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
