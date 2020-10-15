@@ -143,12 +143,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     public lightFalloff = 0;
 
     /**
-     * Specifies that the alpha is coming form the albedo channel alpha channel for alpha blending.
-     */
-    @editableInPropertyPage("Alpha from albedo", PropertyTypeForEdition.Boolean, "TRANSPARENCY", { "notifiers": { "update": true }})
-    public useAlphaFromAlbedoTexture: boolean = false;
-
-    /**
      * Specifies that alpha test should be used
      */
     @editableInPropertyPage("Alpha Testing", PropertyTypeForEdition.Boolean, "TRANSPARENCY")
@@ -615,7 +609,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         const alphaTestCutOffString = this.alphaTestCutoff.toString();
 
         defines.setValue("ALPHABLEND", this.useAlphaBlending, true);
-        defines.setValue("ALPHAFROMALBEDO", this.useAlphaFromAlbedoTexture, true);
+        defines.setValue("ALPHAFROMALBEDO", false, true);
         defines.setValue("ALPHATEST", this.useAlphaTest, true);
         defines.setValue("ALPHATESTVALUE", alphaTestCutOffString.indexOf('.') < 0 ? alphaTestCutOffString + "." : alphaTestCutOffString, true);
         defines.setValue("OPACITYRGB", this.opacityRGB, true);
@@ -1153,7 +1147,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         let codeString: string = "";
 
         codeString += `${this._codeVariableName}.lightFalloff = ${this.lightFalloff};\r\n`;
-        codeString += `${this._codeVariableName}.useAlphaFromAlbedoTexture = ${this.useAlphaFromAlbedoTexture};\r\n`;
         codeString += `${this._codeVariableName}.useAlphaTest = ${this.useAlphaTest};\r\n`;
         codeString += `${this._codeVariableName}.alphaTestCutoff = ${this.alphaTestCutoff};\r\n`;
         codeString += `${this._codeVariableName}.useAlphaBlending = ${this.useAlphaBlending};\r\n`;
@@ -1183,7 +1176,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         }
 
         serializationObject.lightFalloff = this.lightFalloff;
-        serializationObject.useAlphaFromAlbedoTexture = this.useAlphaFromAlbedoTexture;
         serializationObject.useAlphaTest = this.useAlphaTest;
         serializationObject.alphaTestCutoff = this.alphaTestCutoff;
         serializationObject.useAlphaBlending = this.useAlphaBlending;
@@ -1213,7 +1205,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         }
 
         this.lightFalloff = serializationObject.lightFalloff ?? 0;
-        this.useAlphaFromAlbedoTexture = serializationObject.useAlphaFromAlbedoTexture;
         this.useAlphaTest = serializationObject.useAlphaTest;
         this.alphaTestCutoff = serializationObject.alphaTestCutoff;
         this.useAlphaBlending = serializationObject.useAlphaBlending;
