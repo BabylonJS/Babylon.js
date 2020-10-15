@@ -67731,7 +67731,7 @@ var GraphFrame = /** @class */ (function () {
             if (_this_1.nodes.indexOf(node) === -1) {
                 return;
             }
-            _this_1._redrawFramePorts();
+            _this_1.redrawFramePorts();
         });
         this._commentsElement = document.createElement('div');
         this._commentsElement.className = 'frame-comments';
@@ -67955,7 +67955,7 @@ var GraphFrame = /** @class */ (function () {
                     portAdded = true;
                     var onLinkDisposedObserver = link.onDisposedObservable.add(function (nodeLink) {
                         _this_1.removePortFromExposedWithLink(nodeLink, _this_1._exposedInPorts);
-                        _this_1._redrawFramePorts();
+                        _this_1.redrawFramePorts();
                     });
                     this._onNodeLinkDisposedObservers.push(onLinkDisposedObserver);
                 }
@@ -67984,7 +67984,7 @@ var GraphFrame = /** @class */ (function () {
                         link.isVisible = true;
                         var onLinkDisposedObserver = link.onDisposedObservable.add(function (nodeLink) {
                             _this_1.removePortFromExposedWithLink(nodeLink, _this_1._exposedOutPorts);
-                            _this_1._redrawFramePorts();
+                            _this_1.redrawFramePorts();
                         });
                         this._onNodeLinkDisposedObservers.push(onLinkDisposedObserver);
                     }
@@ -68018,7 +68018,7 @@ var GraphFrame = /** @class */ (function () {
         }
         return false;
     };
-    GraphFrame.prototype._redrawFramePorts = function () {
+    GraphFrame.prototype.redrawFramePorts = function () {
         if (!this.isCollapsed) {
             return;
         }
@@ -68801,6 +68801,7 @@ var GraphNode = /** @class */ (function () {
         }
     };
     GraphNode.prototype.refresh = function () {
+        var _this = this;
         if (this._displayManager) {
             this._header.innerHTML = this._displayManager.getHeaderText(this.block);
             this._displayManager.updatePreviewContent(this.block, this._content);
@@ -68821,6 +68822,12 @@ var GraphNode = /** @class */ (function () {
         for (var _b = 0, _c = this._outputPorts; _b < _c.length; _b++) {
             var port = _c[_b];
             port.refresh();
+        }
+        if (this.enclosingFrameId !== -1) {
+            var index = this._ownerCanvas.frames.findIndex(function (frame) { return frame.id === _this.enclosingFrameId; });
+            if (index >= 0 && this._ownerCanvas.frames[index].isCollapsed) {
+                this._ownerCanvas.frames[index].redrawFramePorts();
+            }
         }
         this._comments.innerHTML = this.block.comments || "";
         this._comments.title = this.block.comments || "";

@@ -46529,12 +46529,36 @@ declare module BABYLON {
         /** @hidden */
         _isSynchronizedViewMatrix(): boolean;
         /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        attachControl(noPreventDefault?: boolean): void;
+        /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        attachControl(ignored: any, noPreventDefault?: boolean): void;
+        /**
+         * Attached controls to the current camera.
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         * @param useCtrlForPanning  Defines whether ctrl is used for paning within the controls
+         */
+        attachControl(noPreventDefault: boolean, useCtrlForPanning: boolean): void;
+        /**
+         * Attached controls to the current camera.
+         * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         * @param useCtrlForPanning  Defines whether ctrl is used for paning within the controls
+         */
+        attachControl(ignored: any, noPreventDefault: boolean, useCtrlForPanning: boolean): void;
+        /**
          * Attached controls to the current camera.
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          * @param useCtrlForPanning  Defines whether ctrl is used for paning within the controls
          * @param panningMouseButton Defines whether panning is allowed through mouse click button
          */
-        attachControl(noPreventDefault?: boolean, useCtrlForPanning?: boolean, panningMouseButton?: number): void;
+        attachControl(noPreventDefault: boolean, useCtrlForPanning: boolean, panningMouseButton: number): void;
         /**
          * Detach the current controls from the camera.
          * The camera will stop reacting to inputs.
