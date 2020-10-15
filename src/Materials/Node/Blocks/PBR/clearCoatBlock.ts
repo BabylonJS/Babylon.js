@@ -36,8 +36,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         this.registerInput("intensity", NodeMaterialBlockConnectionPointTypes.Float, false, NodeMaterialBlockTargets.Fragment);
         this.registerInput("roughness", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("ior", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("texture", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("bumpTexture", NodeMaterialBlockConnectionPointTypes.Color4, true, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("normalMapColor", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.Vector2, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("tintColor", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("tintAtDistance", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
@@ -90,52 +89,45 @@ export class ClearCoatBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the texture input component
-     */
-    public get texture(): NodeMaterialConnectionPoint {
-        return this._inputs[3];
-    }
-
-    /**
      * Gets the bump texture input component
      */
-    public get bumpTexture(): NodeMaterialConnectionPoint {
-        return this._inputs[4];
+    public get normalMapColor(): NodeMaterialConnectionPoint {
+        return this._inputs[3];
     }
 
     /**
      * Gets the uv input component
      */
     public get uv(): NodeMaterialConnectionPoint {
-        return this._inputs[5];
+        return this._inputs[4];
     }
 
     /**
      * Gets the tint color input component
      */
     public get tintColor(): NodeMaterialConnectionPoint {
-        return this._inputs[6];
+        return this._inputs[5];
     }
 
     /**
      * Gets the tint "at distance" input component
      */
     public get tintAtDistance(): NodeMaterialConnectionPoint {
-        return this._inputs[7];
+        return this._inputs[6];
     }
 
     /**
      * Gets the tint thickness input component
      */
     public get tintThickness(): NodeMaterialConnectionPoint {
-        return this._inputs[8];
+        return this._inputs[7];
     }
 
     /**
      * Gets the world tangent input component
      */
     public get worldTangent(): NodeMaterialConnectionPoint {
-        return this._inputs[9];
+        return this._inputs[8];
     }
 
     /**
@@ -157,10 +149,10 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         super.prepareDefines(mesh, nodeMaterial, defines);
 
         defines.setValue("CLEARCOAT", true);
-        defines.setValue("CLEARCOAT_TEXTURE", this.texture.isConnected, true);
+        defines.setValue("CLEARCOAT_TEXTURE", false, true);
         defines.setValue("CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE", true, true);
         defines.setValue("CLEARCOAT_TINT", this.tintColor.isConnected || this.tintThickness.isConnected || this.tintAtDistance.isConnected, true);
-        defines.setValue("CLEARCOAT_BUMP", this.bumpTexture.isConnected, true);
+        defines.setValue("CLEARCOAT_BUMP", this.normalMapColor.isConnected, true);
         defines.setValue("CLEARCOAT_DEFAULTIOR", this.ior.isConnected ? this.ior.connectInputBlock!.value === 1.5 : false, true);
     }
 
@@ -230,8 +222,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
 
         const intensity = ccBlock?.intensity.isConnected ? ccBlock.intensity.associatedVariableName : "1.";
         const roughness = ccBlock?.roughness.isConnected ? ccBlock.roughness.associatedVariableName : "0.";
-        const texture = ccBlock?.texture.isConnected ? ccBlock.texture.associatedVariableName : "vec2(0.)";
-        const bumpTexture = ccBlock?.bumpTexture.isConnected ? ccBlock.bumpTexture.associatedVariableName : "vec4(0.)";
+        const normalMapColor = ccBlock?.normalMapColor.isConnected ? ccBlock.normalMapColor.associatedVariableName : "vec3(0.)";
         const uv = ccBlock?.uv.isConnected ? ccBlock.uv.associatedVariableName : "vec2(0.)";
 
         const tintColor = ccBlock?.tintColor.isConnected ? ccBlock.tintColor.associatedVariableName : "vec3(1.)";
@@ -262,7 +253,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
                 vClearCoatParams,
                 specularEnvironmentR0,
             #ifdef CLEARCOAT_TEXTURE
-                ${texture}.rg,
+                vec2(0.),
             #endif
             #ifdef CLEARCOAT_TINT
                 vClearCoatTintParams,
@@ -274,7 +265,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
             #endif
             #ifdef CLEARCOAT_BUMP
                 vec2(0., 1.),
-                ${bumpTexture},
+                vec4(${normalMapColor}, 0.),
                 ${uv},
                 #if defined(${vTBNAvailable ? "TANGENT" : "IGNORE"}) && defined(NORMAL)
                     vTBN,

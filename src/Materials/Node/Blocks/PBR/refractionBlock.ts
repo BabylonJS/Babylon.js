@@ -46,6 +46,15 @@ export class RefractionBlock extends NodeMaterialBlock {
     private _scene: Scene;
 
     /**
+     * The properties below are set by the main PBR block prior to calling methods of this class.
+     * This is to avoid having to add them as inputs here whereas they are already inputs of the main block, so already known.
+     * It's less burden on the user side in the editor part.
+    */
+
+    /** @hidden */
+    public viewConnectionPoint: NodeMaterialConnectionPoint;
+
+    /**
      * This parameters will make the material used its opacity to control how much it is refracting aginst not.
      * Materials half opaque for instance using refraction could benefit from this control.
      */
@@ -75,7 +84,6 @@ export class RefractionBlock extends NodeMaterialBlock {
         this.registerInput("intensity", NodeMaterialBlockConnectionPointTypes.Float, false, NodeMaterialBlockTargets.Fragment);
         this.registerInput("indexOfRefraction", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("tintAtDistance", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("view", NodeMaterialBlockConnectionPointTypes.Matrix, false, NodeMaterialBlockTargets.Fragment);
 
         this.registerOutput("refraction", NodeMaterialBlockConnectionPointTypes.Object, NodeMaterialBlockTargets.Fragment,
             new NodeMaterialConnectionPointCustomObject("refraction", this, NodeMaterialConnectionPointDirection.Output, RefractionBlock, "RefractionBlock"));
@@ -114,7 +122,7 @@ export class RefractionBlock extends NodeMaterialBlock {
      * Gets the view input component
      */
     public get view(): NodeMaterialConnectionPoint {
-        return this._inputs[3];
+        return this.viewConnectionPoint;
     }
 
     /**

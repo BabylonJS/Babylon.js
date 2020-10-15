@@ -17,9 +17,7 @@ import { PBRBaseMaterial } from '../../../PBR/pbrBaseMaterial';
 import { Scene } from '../../../../scene';
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
-import { AmbientOcclusionBlock } from './ambientOcclusionBlock';
 import { SheenBlock } from './sheenBlock';
-import { ReflectivityBlock } from './reflectivityBlock';
 import { BaseTexture } from '../../../Textures/baseTexture';
 import { BRDFTextureTools } from '../../../../Misc/brdfTextureTools';
 import { MaterialFlags } from '../../../materialFlags';
@@ -30,6 +28,7 @@ import { SubSurfaceBlock } from './subSurfaceBlock';
 import { RefractionBlock } from './refractionBlock';
 import { PerturbNormalBlock } from '../Fragment/perturbNormalBlock';
 import { Constants } from '../../../../Engines/constants';
+import { Color3, TmpColors } from '../../../../Maths/math.color';
 
 const mapOutputToVariable: { [name: string] : [string, string] } = {
     "ambient":      ["finalAmbient", ""],
@@ -62,6 +61,10 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     private _environmentBrdfSamplerName: string;
     private _vNormalWName: string;
     private _invertNormalName: string;
+    private _indexOfRefractionConnectionPoint: Nullable<NodeMaterialConnectionPoint>;
+    private _metallicReflectanceColor: Color3 = Color3.White();
+    private _metallicF0Factor = 1;
+    private _vMetallicReflectanceFactorsName: string;
 
     /**
      * Create a new ReflectionBlock
@@ -74,15 +77,15 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Vertex);
         this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("view", NodeMaterialBlockConnectionPointTypes.Matrix, false);
         this.registerInput("perturbedNormal", NodeMaterialBlockConnectionPointTypes.Vector4, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("cameraPosition", NodeMaterialBlockConnectionPointTypes.Vector3, false, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("baseColor", NodeMaterialBlockConnectionPointTypes.Color4, true, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("opacityTexture", NodeMaterialBlockConnectionPointTypes.Color4, true, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("baseColor", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("metallic", NodeMaterialBlockConnectionPointTypes.Float, false, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("roughness", NodeMaterialBlockConnectionPointTypes.Float, false, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("ambientOcc", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("opacity", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("ambientColor", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("reflectivity", NodeMaterialBlockConnectionPointTypes.Object, false, NodeMaterialBlockTargets.Fragment,
-            new NodeMaterialConnectionPointCustomObject("reflectivity", this, NodeMaterialConnectionPointDirection.Input, ReflectivityBlock, "ReflectivityBlock"));
-        this.registerInput("ambientOcc", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment,
-            new NodeMaterialConnectionPointCustomObject("ambientOcc", this, NodeMaterialConnectionPointDirection.Input, AmbientOcclusionBlock, "AOBlock"));
         this.registerInput("reflection", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment,
             new NodeMaterialConnectionPointCustomObject("reflection", this, NodeMaterialConnectionPointDirection.Input, ReflectionBlock, "ReflectionBlock"));
         this.registerInput("sheen", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment,
@@ -93,11 +96,10 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             new NodeMaterialConnectionPointCustomObject("subsurface", this, NodeMaterialConnectionPointDirection.Input, SubSurfaceBlock, "SubSurfaceBlock"));
         this.registerInput("anisotropy", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment,
             new NodeMaterialConnectionPointCustomObject("anisotropy", this, NodeMaterialConnectionPointDirection.Input, AnisotropyBlock, "AnisotropyBlock"));
-        this.registerInput("view", NodeMaterialBlockConnectionPointTypes.Matrix, true);
 
-        this.registerOutput("ambient", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
-        this.registerOutput("diffuse", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
-        this.registerOutput("specular", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
+        this.registerOutput("ambientClr", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
+        this.registerOutput("diffuseDir", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
+        this.registerOutput("specularDir", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("sheenDir", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("clearcoatDir", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("diffuseInd", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
@@ -145,27 +147,20 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     /**
      * Specifies that alpha test should be used
      */
-    @editableInPropertyPage("Alpha Testing", PropertyTypeForEdition.Boolean, "TRANSPARENCY")
+    @editableInPropertyPage("Alpha Testing", PropertyTypeForEdition.Boolean, "OPACITY")
     public useAlphaTest: boolean = false;
 
     /**
      * Defines the alpha limits in alpha test mode.
      */
-    @editableInPropertyPage("Alpha CutOff", PropertyTypeForEdition.Float, "TRANSPARENCY", { min: 0, max: 1, "notifiers": { "update": true }})
+    @editableInPropertyPage("Alpha CutOff", PropertyTypeForEdition.Float, "OPACITY", { min: 0, max: 1, "notifiers": { "update": true }})
     public alphaTestCutoff: number = 0.5;
 
     /**
      * Specifies that alpha blending should be used
      */
-    @editableInPropertyPage("Alpha blending", PropertyTypeForEdition.Boolean, "TRANSPARENCY")
+    @editableInPropertyPage("Alpha blending", PropertyTypeForEdition.Boolean, "OPACITY")
     public useAlphaBlending: boolean = false;
-
-    /**
-     * Defines if the alpha value should be determined via the rgb values.
-     * If true the luminance of the pixel might be used to find the corresponding alpha value.
-     */
-    @editableInPropertyPage("Get alpha from opacity texture RGB", PropertyTypeForEdition.Boolean, "TRANSPARENCY", { "notifiers": { "update": true }})
-    public opacityRGB: boolean = false;
 
     /**
      * Specifies that the material will keeps the reflection highlights over a transparent surface (only the most luminous ones).
@@ -258,18 +253,8 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         { label: "Anisotropic Tangents", value: 12 },
         { label: "Anisotropic Bitangents", value: 13 },
         // Maps
-        { label: "Albedo Map", value: 20 },
-        { label: "Ambient Map", value: 21 },
-        { label: "Opacity Map", value: 22 },
         //{ label: "Emissive Map", value: 23 },
         //{ label: "Light Map", value: 24 },
-        { label: "Metallic Map", value: 25 },
-        { label: "Reflectivity Map", value: 26 },
-        { label: "ClearCoat Map", value: 27 },
-        { label: "ClearCoat Tint Map", value: 28 },
-        { label: "Sheen Map", value: 29 },
-        { label: "Anisotropic Map", value: 30 },
-        { label: "Thickness Map", value: 31 },
         // Env
         { label: "Env Refraction", value: 40 },
         { label: "Env Reflection", value: 41 },
@@ -336,6 +321,13 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state._excludeVariableName("surfaceAlbedo");
         state._excludeVariableName("alpha");
 
+        state._excludeVariableName("aoOut");
+
+        state._excludeVariableName("baseColor");
+        state._excludeVariableName("reflectivityOut");
+        state._excludeVariableName("microSurface");
+        state._excludeVariableName("roughness");
+
         state._excludeVariableName("NdotVUnclamped");
         state._excludeVariableName("NdotV");
         state._excludeVariableName("alphaG");
@@ -388,114 +380,121 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the view matrix parameter
+     */
+    public get view(): NodeMaterialConnectionPoint {
+        return this._inputs[2];
+    }
+
+    /**
      * Gets the perturbed normal input component
      */
     public get perturbedNormal(): NodeMaterialConnectionPoint {
-        return this._inputs[2];
+        return this._inputs[3];
     }
 
     /**
      * Gets the camera position input component
      */
     public get cameraPosition(): NodeMaterialConnectionPoint {
-        return this._inputs[3];
+        return this._inputs[4];
     }
 
     /**
      * Gets the base color input component
      */
     public get baseColor(): NodeMaterialConnectionPoint {
-        return this._inputs[4];
-    }
-
-    /**
-     * Gets the opacity texture input component
-     */
-    public get opacityTexture(): NodeMaterialConnectionPoint {
         return this._inputs[5];
     }
 
     /**
-     * Gets the ambient color input component
+     * Gets the metallic input component
      */
-    public get ambientColor(): NodeMaterialConnectionPoint {
+    public get metallic(): NodeMaterialConnectionPoint {
         return this._inputs[6];
     }
 
     /**
-     * Gets the reflectivity object parameters
+     * Gets the roughness input component
      */
-    public get reflectivity(): NodeMaterialConnectionPoint {
+    public get roughness(): NodeMaterialConnectionPoint {
         return this._inputs[7];
     }
 
     /**
-     * Gets the ambient occlusion object parameters
+     * Gets the ambient occlusion input component
      */
     public get ambientOcc(): NodeMaterialConnectionPoint {
         return this._inputs[8];
     }
 
     /**
+     * Gets the opacity input component
+     */
+    public get opacity(): NodeMaterialConnectionPoint {
+        return this._inputs[9];
+    }
+
+    /**
+     * Gets the ambient color input component
+     */
+    public get ambientColor(): NodeMaterialConnectionPoint {
+        return this._inputs[10];
+    }
+
+    /**
      * Gets the reflection object parameters
      */
     public get reflection(): NodeMaterialConnectionPoint {
-        return this._inputs[9];
+        return this._inputs[11];
     }
 
     /**
      * Gets the sheen object parameters
      */
     public get sheen(): NodeMaterialConnectionPoint {
-        return this._inputs[10];
+        return this._inputs[12];
     }
 
     /**
      * Gets the clear coat object parameters
      */
     public get clearcoat(): NodeMaterialConnectionPoint {
-        return this._inputs[11];
+        return this._inputs[13];
     }
 
     /**
      * Gets the sub surface object parameters
      */
     public get subsurface(): NodeMaterialConnectionPoint {
-        return this._inputs[12];
+        return this._inputs[14];
     }
 
     /**
      * Gets the anisotropy object parameters
      */
     public get anisotropy(): NodeMaterialConnectionPoint {
-        return this._inputs[13];
-    }
-
-    /**
-     * Gets the view matrix parameter
-     */
-    public get view(): NodeMaterialConnectionPoint {
-        return this._inputs[14];
+        return this._inputs[15];
     }
 
     /**
      * Gets the ambient output component
      */
-    public get ambient(): NodeMaterialConnectionPoint {
+    public get ambientClr(): NodeMaterialConnectionPoint {
         return this._outputs[0];
     }
 
     /**
      * Gets the diffuse output component
      */
-    public get diffuse(): NodeMaterialConnectionPoint {
+    public get diffuseDir(): NodeMaterialConnectionPoint {
         return this._outputs[1];
     }
 
     /**
      * Gets the specular output component
      */
-    public get specular(): NodeMaterialConnectionPoint {
+    public get specularDir(): NodeMaterialConnectionPoint {
         return this._outputs[2];
     }
 
@@ -579,6 +578,16 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             }
             cameraPositionInput.output.connectTo(this.cameraPosition);
         }
+
+        if (!this.view.isConnected) {
+            let viewInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.View);
+
+            if (!viewInput) {
+                viewInput = new InputBlock("view");
+                viewInput.setAsSystemValue(NodeMaterialSystemValues.View);
+            }
+            viewInput.output.connectTo(this.view);
+        }
     }
 
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
@@ -591,7 +600,19 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         defines.setValue("LODBASEDMICROSFURACE", this._scene.getEngine().getCaps().textureLOD);
 
         // Albedo & Opacity
-        defines.setValue("OPACITY", this.opacityTexture.isConnected, true);
+        defines.setValue("ALBEDO", false, true);
+        defines.setValue("OPACITY", this.opacity.isConnected, true);
+
+        // Ambient occlusion
+        defines.setValue("AMBIENT", true, true);
+        defines.setValue("AMBIENTINGRAYSCALE", false, true);
+
+        // Reflectivity
+        defines.setValue("REFLECTIVITY", false, true);
+        defines.setValue("AOSTOREINMETALMAPRED", false, true);
+        defines.setValue("METALLNESSSTOREINMETALMAPBLUE", false, true);
+        defines.setValue("ROUGHNESSSTOREINMETALMAPALPHA", false, true);
+        defines.setValue("ROUGHNESSSTOREINMETALMAPGREEN",  false, true);
 
         // Lighting & colors
         if (this.lightFalloff === PBRBaseMaterial.LIGHTFALLOFF_STANDARD) {
@@ -612,7 +633,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         defines.setValue("ALPHAFROMALBEDO", false, true);
         defines.setValue("ALPHATEST", this.useAlphaTest, true);
         defines.setValue("ALPHATESTVALUE", alphaTestCutOffString.indexOf('.') < 0 ? alphaTestCutOffString + "." : alphaTestCutOffString, true);
-        defines.setValue("OPACITYRGB", this.opacityRGB, true);
+        defines.setValue("OPACITYRGB", false, true);
 
         // Rendering
         defines.setValue("RADIANCEOVERALPHA", this.useRadianceOverAlpha, true);
@@ -709,6 +730,21 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         effect.setFloat(this._invertNormalName, invertNormal ? -1 : 1);
 
         effect.setFloat4("vLightingIntensity", this.directIntensity, 1, this.environmentIntensity * this._scene.environmentIntensity, this.specularIntensity);
+
+        // reflectivity bindings
+        const outside_ior = 1; // consider air as clear coat and other layers would remap in the shader.
+        const ior = this._indexOfRefractionConnectionPoint?.connectInputBlock?.value ?? 1.5;
+
+        // We are here deriving our default reflectance from a common value for none metallic surface.
+        // Based of the schlick fresnel approximation model
+        // for dielectrics.
+        const f0 = Math.pow((ior - outside_ior) / (ior + outside_ior), 2);
+
+        // Tweak the default F0 and F90 based on our given setup
+        this._metallicReflectanceColor.scaleToRef(f0 * this._metallicF0Factor, TmpColors.Color3[0]);
+        const metallicF90 = this._metallicF0Factor;
+
+        effect.setColor4(this._vMetallicReflectanceFactorsName, TmpColors.Color3[0], metallicF90);
     }
 
     private _injectVertexCode(state: NodeMaterialBuildState) {
@@ -740,6 +776,10 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         const reflectionBlock = this.reflection.isConnected ? this.reflection.connectedPoint?.ownerBlock as ReflectionBlock : null;
 
+        if (reflectionBlock) {
+            reflectionBlock.viewConnectionPoint = this.view;
+        }
+
         state.compilationString += reflectionBlock?.handleVertexSide(state) ?? "";
 
         state._emitUniformFromString("vDebugMode", "vec2", "defined(IGNORE) || DEBUGMODE > 0");
@@ -769,24 +809,20 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         }
     }
 
-    /**
-     * Gets the code corresponding to the albedo/opacity module
-     * @returns the shader code
-     */
-    public getAlbedoOpacityCode(): string {
+    private _getAlbedoOpacityCode(): string {
         let code = `albedoOpacityOutParams albedoOpacityOut;\r\n`;
 
-        const albedoColor = this.baseColor.isConnected ? this.baseColor.associatedVariableName : "vec4(1., 1., 1., 1.)";
-        const opacityTexture = this.opacityTexture.isConnected ? this.opacityTexture.associatedVariableName : "";
+        const albedoColor = this.baseColor.isConnected ? this.baseColor.associatedVariableName : "vec3(1.)";
+        const opacity = this.opacity.isConnected ? this.opacity.associatedVariableName : "1.";
 
         code += `albedoOpacityBlock(
-                ${albedoColor},
+                vec4(${albedoColor}, 1.),
             #ifdef ALBEDO
                 vec4(1.),
                 vec2(1., 1.),
             #endif
             #ifdef OPACITY
-                ${opacityTexture},
+                vec4(${opacity}),
                 vec2(1., 1.),
             #endif
                 albedoOpacityOut
@@ -794,6 +830,64 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
             vec3 surfaceAlbedo = albedoOpacityOut.surfaceAlbedo;
             float alpha = albedoOpacityOut.alpha;\r\n`;
+
+        return code;
+    }
+
+    private _getAmbientOcclusionCode(): string {
+        let code = `ambientOcclusionOutParams aoOut;\r\n`;
+
+        const ao = this.ambientOcc.isConnected ? this.ambientOcc.associatedVariableName : "1.";
+
+        code += `ambientOcclusionBlock(
+            #ifdef AMBIENT
+                vec3(${ao}),
+                vec4(0., 1.0, 1.0, 0.),
+            #endif
+                aoOut
+            );\r\n`;
+
+        return code;
+    }
+
+    private _getReflectivityCode(state: NodeMaterialBuildState): string {
+        let code = `reflectivityOutParams reflectivityOut;\r\n`;
+
+        const aoIntensity = "1.";
+
+        this._vMetallicReflectanceFactorsName = state._getFreeVariableName("vMetallicReflectanceFactors");
+        state._emitUniformFromString(this._vMetallicReflectanceFactorsName, "vec4");
+
+        code += `vec3 baseColor = surfaceAlbedo;
+
+            reflectivityBlock(
+                vec4(${this.metallic.associatedVariableName}, ${this.roughness.associatedVariableName}, 0., 0.),
+            #ifdef METALLICWORKFLOW
+                surfaceAlbedo,
+                ${this._vMetallicReflectanceFactorsName},
+            #endif
+            #ifdef REFLECTIVITY
+                vec3(0., 0., ${aoIntensity}),
+                vec4(1.),
+            #endif
+            #if defined(METALLICWORKFLOW) && defined(REFLECTIVITY)  && defined(AOSTOREINMETALMAPRED)
+                aoOut.ambientOcclusionColor,
+            #endif
+            #ifdef MICROSURFACEMAP
+                microSurfaceTexel, <== not handled!
+            #endif
+                reflectivityOut
+            );
+
+            float microSurface = reflectivityOut.microSurface;
+            float roughness = reflectivityOut.roughness;
+
+            #ifdef METALLICWORKFLOW
+                surfaceAlbedo = reflectivityOut.surfaceAlbedo;
+            #endif
+            #if defined(METALLICWORKFLOW) && defined(REFLECTIVITY) && defined(AOSTOREINMETALMAPRED)
+                aoOut.ambientOcclusionColor = reflectivityOut.ambientOcclusionColor;
+            #endif\r\n`;
 
         return code;
     }
@@ -919,19 +1013,16 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         });
 
         // _____________________________ Albedo & Opacity ______________________________
-        state.compilationString += this.getAlbedoOpacityCode();
+        state.compilationString += this._getAlbedoOpacityCode();
 
         state.compilationString += state._emitCodeFromInclude("depthPrePass", comments);
 
         // _____________________________ AO  _______________________________
-        const aoBlock = this.ambientOcc.connectedPoint?.ownerBlock as Nullable<AmbientOcclusionBlock>;
-
-        state.compilationString += AmbientOcclusionBlock.GetCode(aoBlock);
+        state.compilationString += this._getAmbientOcclusionCode();
 
         state.compilationString += state._emitCodeFromInclude("pbrBlockLightmapInit", comments);
 
         // _____________________________ UNLIT  _______________________________
-
         state.compilationString += `#ifdef UNLIT
                 vec3 diffuseBase = vec3(1., 1., 1.);
             #else\r\n`;
@@ -940,15 +1031,13 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         const subsurfaceBlock = this.subsurface.isConnected ? this.subsurface.connectedPoint?.ownerBlock as SubSurfaceBlock : null;
         const refractionBlock = this.subsurface.isConnected ? (this.subsurface.connectedPoint?.ownerBlock as SubSurfaceBlock).refraction.connectedPoint?.ownerBlock as RefractionBlock : null;
 
-        const reflectivityBlock = this.reflectivity.connectedPoint?.ownerBlock as Nullable<ReflectivityBlock> ?? null;
+        this._indexOfRefractionConnectionPoint = refractionBlock?.indexOfRefraction ?? null;
 
-        if (reflectivityBlock) {
-            reflectivityBlock.indexOfRefractionConnectionPoint = refractionBlock?.indexOfRefraction ?? null;
+        if (refractionBlock) {
+            refractionBlock.viewConnectionPoint = this.view;
         }
 
-        const aoIntensity = aoBlock?.intensity.isConnected ? aoBlock.intensity.associatedVariableName : "1.";
-
-        state.compilationString += reflectivityBlock?.getCode(state, aoIntensity) ?? "";
+        state.compilationString += this._getReflectivityCode(state);
 
         // _____________________________ Geometry info _________________________________
         state.compilationString += state._emitCodeFromInclude("pbrBlockGeometryInfo", comments, {
@@ -989,7 +1078,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         // ___________________ Compute Reflectance aka R0 F0 info _________________________
         state.compilationString += state._emitCodeFromInclude("pbrBlockReflectance0", comments, {
             replaceStrings: [
-                { search: /metallicReflectanceFactors/g, replace: reflectivityBlock?._vMetallicReflectanceFactorsName ?? "metallicReflectanceFactors" },
+                { search: /metallicReflectanceFactors/g, replace: this._vMetallicReflectanceFactorsName },
             ]
         });
         // ________________________________ Sheen ______________________________
@@ -1081,9 +1170,9 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         // _____________________________ Compute Final Unlit Components ________________________
         const aoColor = this.ambientColor.isConnected ? this.ambientColor.associatedVariableName : "vec3(0., 0., 0.)";
 
-        let aoDirectLightIntensity = aoBlock?.directLightIntensity.isConnected ? aoBlock.directLightIntensity.associatedVariableName : PBRBaseMaterial.DEFAULT_AO_ON_ANALYTICAL_LIGHTS.toString();
+        let aoDirectLightIntensity = PBRBaseMaterial.DEFAULT_AO_ON_ANALYTICAL_LIGHTS.toString();
 
-        if (!aoBlock?.directLightIntensity.isConnected && aoDirectLightIntensity.indexOf('.') === -1) {
+        if (aoDirectLightIntensity.indexOf('.') === -1) {
             aoDirectLightIntensity += ".";
         }
 
@@ -1115,7 +1204,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 { search: /vNormalW/g, replace: this._vNormalWName },
                 { search: /vPositionW/g, replace: worldPosVarName },
                 { search: /albedoTexture\.rgb;/g, replace: "vec3(1.);\r\ngl_FragColor.rgb = toGammaSpace(gl_FragColor.rgb);\r\n" },
-                { search: /opacityMap/g, replace: this.opacityTexture.associatedVariableName },
             ]
         });
 
@@ -1150,7 +1238,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         codeString += `${this._codeVariableName}.useAlphaTest = ${this.useAlphaTest};\r\n`;
         codeString += `${this._codeVariableName}.alphaTestCutoff = ${this.alphaTestCutoff};\r\n`;
         codeString += `${this._codeVariableName}.useAlphaBlending = ${this.useAlphaBlending};\r\n`;
-        codeString += `${this._codeVariableName}.opacityRGB = ${this.opacityRGB};\r\n`;
         codeString += `${this._codeVariableName}.useRadianceOverAlpha = ${this.useRadianceOverAlpha};\r\n`;
         codeString += `${this._codeVariableName}.useSpecularOverAlpha = ${this.useSpecularOverAlpha};\r\n`;
         codeString += `${this._codeVariableName}.enableSpecularAntiAliasing = ${this.enableSpecularAntiAliasing};\r\n`;
@@ -1179,7 +1266,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         serializationObject.useAlphaTest = this.useAlphaTest;
         serializationObject.alphaTestCutoff = this.alphaTestCutoff;
         serializationObject.useAlphaBlending = this.useAlphaBlending;
-        serializationObject.opacityRGB = this.opacityRGB;
         serializationObject.useRadianceOverAlpha = this.useRadianceOverAlpha;
         serializationObject.useSpecularOverAlpha = this.useSpecularOverAlpha;
         serializationObject.enableSpecularAntiAliasing = this.enableSpecularAntiAliasing;
@@ -1208,7 +1294,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         this.useAlphaTest = serializationObject.useAlphaTest;
         this.alphaTestCutoff = serializationObject.alphaTestCutoff;
         this.useAlphaBlending = serializationObject.useAlphaBlending;
-        this.opacityRGB = serializationObject.opacityRGB;
         this.useRadianceOverAlpha = serializationObject.useRadianceOverAlpha;
         this.useSpecularOverAlpha = serializationObject.useSpecularOverAlpha;
         this.enableSpecularAntiAliasing = serializationObject.enableSpecularAntiAliasing;
