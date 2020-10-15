@@ -103,7 +103,8 @@ export class AudioEngine implements IAudioEngine {
         this._hostElement = hostElement;
 
         try {
-            if (audioElem && !!audioElem.canPlayType && audioElem.canPlayType('audio/mpeg; codecs="mp3"').replace(/^no$/, '')) {
+            if (audioElem && !!audioElem.canPlayType && (audioElem.canPlayType('audio/mpeg; codecs="mp3"').replace(/^no$/, '') || 
+                audioElem.canPlayType('audio/mp3').replace(/^no$/, ''))) {
                 this.isMP3supported = true;
             }
         }
