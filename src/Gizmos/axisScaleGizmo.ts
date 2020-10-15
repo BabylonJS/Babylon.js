@@ -49,6 +49,7 @@ export class AxisScaleGizmo extends Gizmo {
     private _coloredMaterial: StandardMaterial;
     private _hoverMaterial: StandardMaterial;
     private _disableMaterial: StandardMaterial;
+    private _dragging: boolean = false;
 
     /**
      * Creates an AxisScaleGizmo
@@ -103,6 +104,7 @@ export class AxisScaleGizmo extends Gizmo {
             arrowMesh.position.set(nodePosition.x, nodePosition.y, nodePosition.z);
             arrowTail.position.set(linePosition.x, linePosition.y, linePosition.z);
             arrowTail.scaling.set(lineScale.x, lineScale.y, lineScale.z);
+            this._dragging = false;
         };
 
         // Add drag behavior to handle events when the gizmo is dragged
@@ -159,6 +161,7 @@ export class AxisScaleGizmo extends Gizmo {
             }
         });
         // On Drag Listener: to move gizmo mesh with user action
+        this.dragBehavior.onDragStartObservable.add(() => { this._dragging = true; });
         this.dragBehavior.onDragObservable.add((e) => increaseGizmoMesh(e.dragDistance));
         this.dragBehavior.onDragEndObservable.add(resetGizmoMesh);
 
@@ -182,7 +185,7 @@ export class AxisScaleGizmo extends Gizmo {
             }
             this._isHovered = !!(cache.colliderMeshes.indexOf(<Mesh>pointerInfo?.pickInfo?.pickedMesh) != -1);
             if (!this._parent) {
-                var material = this._isHovered ? this._hoverMaterial : this._coloredMaterial;
+                var material = this._isHovered || this._dragging ? this._hoverMaterial : this._coloredMaterial;
                 cache.gizmoMeshes.forEach((m: Mesh) => {
                     m.material = material;
                     if ((<LinesMesh>m).color) {

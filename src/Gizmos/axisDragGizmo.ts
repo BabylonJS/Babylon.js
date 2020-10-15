@@ -40,6 +40,7 @@ export class AxisDragGizmo extends Gizmo {
     private _coloredMaterial: StandardMaterial;
     private _hoverMaterial: StandardMaterial;
     private _disableMaterial: StandardMaterial;
+    private _dragging: boolean = false;
 
     /** @hidden */
     public static _CreateArrow(scene: Scene, material: StandardMaterial, thickness: number = 1, isCollider = false): TransformNode {
@@ -150,6 +151,8 @@ export class AxisDragGizmo extends Gizmo {
                 this._matrixChanged();
             }
         });
+        this.dragBehavior.onDragStartObservable.add(() => { this._dragging = true; });
+        this.dragBehavior.onDragEndObservable.add(() => { this._dragging = false; });
 
         var light = gizmoLayer._getSharedGizmoLight();
         light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._rootMesh.getChildMeshes(false));
@@ -170,7 +173,7 @@ export class AxisDragGizmo extends Gizmo {
             }
             this._isHovered = !!(cache.colliderMeshes.indexOf(<Mesh>pointerInfo?.pickInfo?.pickedMesh) != -1);
             if (!this._parent) {
-                var material = this._isHovered ? this._hoverMaterial : this._coloredMaterial;
+                var material = this._isHovered || this._dragging ? this._hoverMaterial : this._coloredMaterial;
                 cache.gizmoMeshes.forEach((m: Mesh) => {
                     m.material = material;
                     if ((<LinesMesh>m).color) {
