@@ -7,7 +7,6 @@ import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import { IKHRMaterialsTranslucency } from 'babylonjs-gltf2interface';
 
-
 const NAME = "KHR_materials_translucency";
 
 /**
