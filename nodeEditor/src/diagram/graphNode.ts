@@ -297,6 +297,14 @@ export class GraphNode {
             port.refresh();
         }
 
+        if(this.enclosingFrameId !== -1)
+        {   
+            let index = this._ownerCanvas.frames.findIndex(frame => frame.id === this.enclosingFrameId);
+            if(index >= 0 && this._ownerCanvas.frames[index].isCollapsed)
+            {
+                this._ownerCanvas.frames[index].redrawFramePorts();
+            }
+        }   
         this._comments.innerHTML = this.block.comments || "";
         this._comments.title = this.block.comments || "";
 
