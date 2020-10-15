@@ -762,15 +762,52 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     /**
+     * Attach the input controls to a specific dom element to get the input from.
+     * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+     */
+    public attachControl(noPreventDefault?: boolean): void;
+    /**
+     * Attach the input controls to a specific dom element to get the input from.
+     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+     */
+    public attachControl(ignored: any, noPreventDefault?: boolean): void;
+    /**
+     * Attached controls to the current camera.
+     * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+     * @param useCtrlForPanning  Defines whether ctrl is used for paning within the controls
+     */
+    public attachControl(noPreventDefault: boolean, useCtrlForPanning: boolean): void;
+    /**
+     * Attached controls to the current camera.
+     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+     * @param useCtrlForPanning  Defines whether ctrl is used for paning within the controls
+     */
+    public attachControl(ignored: any, noPreventDefault: boolean, useCtrlForPanning: boolean): void;
+    /**
      * Attached controls to the current camera.
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      * @param useCtrlForPanning  Defines whether ctrl is used for paning within the controls
      * @param panningMouseButton Defines whether panning is allowed through mouse click button
      */
-    public attachControl(noPreventDefault?: boolean, useCtrlForPanning: boolean = true, panningMouseButton: number = 2): void {
+    public attachControl(noPreventDefault: boolean, useCtrlForPanning: boolean, panningMouseButton: number): void;
+    /**
+     * Attached controls to the current camera.
+     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+     * @param useCtrlForPanning  Defines whether ctrl is used for paning within the controls
+     * @param panningMouseButton Defines whether panning is allowed through mouse click button
+     */
+    public attachControl(ignored: any, noPreventDefault?: boolean, useCtrlForPanning: boolean | number = true, panningMouseButton: number = 2): void {
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
-        this._useCtrlForPanning = useCtrlForPanning;
-        this._panningMouseButton = panningMouseButton;
+        if (typeof arguments[0] === "boolean") {
+            this._useCtrlForPanning = arguments[1];
+            this._panningMouseButton = arguments[2];
+        } else {
+            this._useCtrlForPanning = useCtrlForPanning as boolean;
+            this._panningMouseButton = panningMouseButton;
+        }
 
         this.inputs.attachElement(noPreventDefault);
 
