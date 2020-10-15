@@ -276,7 +276,7 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
         if (this.enabled) {
-            (loader as any)._parent.transparencyAsCoverage = true;
+            loader.parent.transparencyAsCoverage = true;
         }
     }
 
