@@ -202,21 +202,23 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 }
 
                 if (this._graphCanvas.selectedFrame) {
-                    if(this._graphCanvas.selectedFrame.isCollapsed) {
-                        while(this._graphCanvas.selectedFrame.nodes.length > 0) {
-                            let targetBlock = this._graphCanvas.selectedFrame.nodes[0].block;
+                    var frame = this._graphCanvas.selectedFrame;
+                    
+                    if(frame.isCollapsed) {
+                        while(frame.nodes.length > 0) {
+                            let targetBlock = frame.nodes[0].block;
                             this.props.globalState.nodeMaterial!.removeBlock(targetBlock);
                             let blockIndex = this._blocks.indexOf(targetBlock);
         
                             if (blockIndex > -1) {
                                 this._blocks.splice(blockIndex, 1);
                             }
-                            this._graphCanvas.selectedFrame.nodes[0].dispose();            
+                            frame.nodes[0].dispose();            
                         }
-                        this._graphCanvas.selectedFrame.isCollapsed = false;
+                        frame.isCollapsed = false;
                     }
                     else {
-                        this._graphCanvas.selectedFrame.nodes.forEach(node => {
+                        frame.nodes.forEach(node => {
                             node.enclosingFrameId = -1;
                         });
                     }
