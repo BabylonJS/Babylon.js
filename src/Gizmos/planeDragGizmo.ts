@@ -39,6 +39,7 @@ export class PlaneDragGizmo extends Gizmo {
 
     private _isEnabled: boolean = false;
     private _parent: Nullable<PositionGizmo> = null;
+    private _dragging: boolean = false;
 
     /** @hidden */
     public static _CreatePlane(scene: Scene, material: StandardMaterial): TransformNode {
@@ -111,6 +112,8 @@ export class PlaneDragGizmo extends Gizmo {
                 this._matrixChanged();
             }
         });
+        this.dragBehavior.onDragStartObservable.add(() => { this._dragging = true; });
+        this.dragBehavior.onDragEndObservable.add(() => { this._dragging = false; });
 
         var light = gizmoLayer._getSharedGizmoLight();
         light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._rootMesh.getChildMeshes(false));
@@ -131,7 +134,7 @@ export class PlaneDragGizmo extends Gizmo {
             }
             this._isHovered = !!(cache.colliderMeshes.indexOf(<Mesh>pointerInfo?.pickInfo?.pickedMesh) != -1);
             if (!this._parent) {
-                var material = this._isHovered ? this._hoverMaterial : this._coloredMaterial;
+                var material = this._isHovered || this._dragging ? this._hoverMaterial : this._coloredMaterial;
                 cache.gizmoMeshes.forEach((m: Mesh) => {
                     m.material = material;
                 });
