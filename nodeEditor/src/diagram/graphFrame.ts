@@ -1377,18 +1377,6 @@ export class GraphFrame {
     }
 
     public dispose() {
-        if(this.isCollapsed) {
-            while(this._nodes.length > 0) {
-                this._nodes[0].dispose();
-            }
-            this.isCollapsed = false;
-        }
-        else {
-            this._nodes.forEach(node => {
-                node.enclosingFrameId = -1;
-            });
-        }
-
         if (this._onSelectionChangedObserver) {
             this._ownerCanvas.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
         };
