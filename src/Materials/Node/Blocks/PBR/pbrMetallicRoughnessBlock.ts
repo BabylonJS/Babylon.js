@@ -612,10 +612,12 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         }
 
         // Transparency
+        const alphaTestCutOffString = this.alphaTestCutoff.toString();
+
         defines.setValue("ALPHABLEND", this.useAlphaBlending, true);
         defines.setValue("ALPHAFROMALBEDO", this.useAlphaFromAlbedoTexture, true);
         defines.setValue("ALPHATEST", this.useAlphaTest, true);
-        defines.setValue("ALPHATESTVALUE", this.alphaTestCutoff, true);
+        defines.setValue("ALPHATESTVALUE", alphaTestCutOffString.indexOf('.') < 0 ? alphaTestCutOffString + "." : alphaTestCutOffString, true);
         defines.setValue("OPACITYRGB", this.opacityRGB, true);
 
         // Rendering
