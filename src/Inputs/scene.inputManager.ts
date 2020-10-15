@@ -62,7 +62,6 @@ export class InputManager {
     public static ExclusiveDoubleClickMode = false;
 
     /** This is a defensive check to not allow control attachment prior to an already active one. If already attached, previous control is unattached before attaching the new one. */
-    // TODO: Decide if we need this
     private _alreadyAttached = false;
     private _alreadyAttachedTo: HTMLElement;
 
@@ -99,13 +98,11 @@ export class InputManager {
     private _startingPointerTime = 0;
     private _previousStartingPointerTime = 0;
     private _pointerCaptures: { [pointerId: number]: boolean } = {};
-    // TODO: Do we need this?
     private _meshUnderPointerId: Nullable<AbstractMesh>[] = [];
 
     // Keyboard
     private _onKeyDown: (evt: KeyboardEvent) => void;
     private _onKeyUp: (evt: KeyboardEvent) => void;
-    //private _keyboardIsAttached = false;
     private _onCanvasFocusObserver: Nullable<Observer<Engine>>;
     private _onCanvasBlurObserver: Nullable<Observer<Engine>>;
 
@@ -132,8 +129,6 @@ export class InputManager {
      * @param pointerId the pointer id to use
      * @returns The mesh under this pointer id or null if not found
      */
-
-     // TODO: Do we need this?
     public getMeshUnderPointerByPointerId(pointerId: number): Nullable<AbstractMesh> {
         return this._meshUnderPointerId[pointerId];
     }
@@ -839,7 +834,16 @@ export class InputManager {
                     // Get current cursor position and create event init data
                     const pointerX = this._deviceSourceManager.getDeviceSource(device.deviceType)!.getInput(PointerInput.Horizontal) || 0;
                     const pointerY = this._deviceSourceManager.getDeviceSource(device.deviceType)!.getInput(PointerInput.Vertical) || 0;
-                    const init = {pointerId: 0, clientX: pointerX, clientY: pointerY};
+                    // If dealing with a change to the delta, grab values for event init
+                    const deltaX = (deviceSource.inputIndex == PointerInput.DeltaHorizontal) ? this._deviceSourceManager.getDeviceSource(device.deviceType)!.getInput(PointerInput.DeltaHorizontal) : 0;
+                    const deltaY = (deviceSource.inputIndex == PointerInput.DeltaVertical) ? this._deviceSourceManager.getDeviceSource(device.deviceType)!.getInput(PointerInput.DeltaVertical) : 0;
+                    const init = {
+                        pointerId: 1,
+                        clientX: pointerX,
+                        clientY: pointerY,
+                        movementX: deltaX,
+                        movementY: deltaY
+                    };
                     const evt = (device.deviceType == DeviceType.Mouse) ? new PointerEvent("mouse", init) : new PointerEvent("touch", init);
                     Object.defineProperty(evt, 'target', {value: elementToAttachTo});
 
@@ -852,79 +856,31 @@ export class InputManager {
                     }
 
                     if (attachMove) {
-                        if (deviceSource.inputIndex == PointerInput.Horizontal || deviceSource.inputIndex == PointerInput.Vertical) {
+                        if (deviceSource.inputIndex == PointerInput.Horizontal || deviceSource.inputIndex == PointerInput.Vertical || deviceSource.inputIndex == PointerInput.DeltaHorizontal || deviceSource.inputIndex == PointerInput.DeltaVertical) {
                             this._onPointerMove(evt);
                         }
                         else if (deviceSource.inputIndex == PointerInput.MouseWheelX || deviceSource.inputIndex == PointerInput.MouseWheelY || deviceSource.inputIndex == PointerInput.MouseWheelZ) {
                             const deltaX = this._deviceSourceManager.getDeviceSource(device.deviceType)!.getInput(PointerInput.MouseWheelX) || 0;
                             const deltaY = this._deviceSourceManager.getDeviceSource(device.deviceType)!.getInput(PointerInput.MouseWheelY) || 0;
                             const deltaZ = this._deviceSourceManager.getDeviceSource(device.deviceType)!.getInput(PointerInput.MouseWheelZ) || 0;
-                            this._onPointerMove(<any>new WheelEvent("wheel", {deltaX: deltaX, deltaY: deltaY, deltaZ: deltaZ}));
+                            this._onPointerMove(<any>new WheelEvent(this._wheelEventName, {deltaX: deltaX, deltaY: deltaY, deltaZ: deltaZ}));
                         }
                     }
                 });
             }
         });
 
+        // TODO: Do we need this?
+        this._onCanvasFocusObserver = engine.onCanvasFocusObservable.add(() => {
 
-        /*let attachedFunction = () => {
-            if (!elementToAttachTo || this._keyboardIsAttached) {
-                return;
-            }
-            elementToAttachTo.addEventListener("keydown", this._onKeyDown, false);
-            elementToAttachTo.addEventListener("keyup", this._onKeyUp, false);
-            this._keyboardIsAttached = true;
-        };*/
-
-        // Keyboard events
-        /*this._onCanvasFocusObserver = engine.onCanvasFocusObservable.add(
-            (() => {
-
-                if (document.activeElement === elementToAttachTo) {
-                    attachedFunction();
-                }
-                return attachedFunction;
-            })()
-        );*/
-
-        /*this._onCanvasBlurObserver = engine.onCanvasBlurObservable.add(() => {
-            if (!elementToAttachTo) {
-                return;
-            }
-            elementToAttachTo.removeEventListener("keydown", this._onKeyDown);
-            elementToAttachTo.removeEventListener("keyup", this._onKeyUp);
-            this._keyboardIsAttached = false;
         });
 
-        attachedFunction();*/
+        this._onCanvasBlurObserver = engine.onCanvasBlurObservable.add(() => {
+            //if (!elementToAttachTo) {
+            //    return;
+            //}
+        });
 
-        // Pointer events
-        /*var eventPrefix = Tools.GetPointerPrefix(engine);
-
-        if (attachMove) {
-            elementToAttachTo.addEventListener(eventPrefix + "move", <any>this._onPointerMove, false);
-
-            // Wheel
-            this._wheelEventName =
-                "onwheel" in document.createElement("div")
-                    ? "wheel" // Modern browsers support "wheel"
-                    : (<any>document).onmousewheel !== undefined
-                    ? "mousewheel" // Webkit and IE support at least "mousewheel"
-                    : "DOMMouseScroll"; // let's assume that remaining browsers are older Firefox
-
-            elementToAttachTo.addEventListener(this._wheelEventName, <any>this._onPointerMove, false);
-        }
-
-        if (attachDown) {
-            elementToAttachTo.addEventListener(eventPrefix + "down", <any>this._onPointerDown, false);
-        }
-
-        if (attachUp) {
-            let hostWindow = scene.getEngine().getHostWindow();
-            if (hostWindow) {
-                hostWindow.addEventListener(eventPrefix + "up", <any>this._onPointerUp, false);
-            }
-        }*/
         this._alreadyAttached = true;
     }
 
@@ -933,24 +889,12 @@ export class InputManager {
      */
     public detachControl() {
         const engine = this._scene.getEngine();
-        //const eventPrefix = Tools.GetPointerPrefix(engine);
 
-        if (!this._alreadyAttachedTo) {
-            return;
-        }
-
-        if (!this._alreadyAttached) {
+        if (!this._alreadyAttachedTo || !this._alreadyAttached) {
             return;
         }
 
         this._deviceSourceManager.dispose();
-        //delete this._deviceSourceManager;
-
-        // Pointer
-        /*this._alreadyAttachedTo.removeEventListener(eventPrefix + "move", <any>this._onPointerMove);
-        this._alreadyAttachedTo.removeEventListener(this._wheelEventName, <any>this._onPointerMove);
-        this._alreadyAttachedTo.removeEventListener(eventPrefix + "down", <any>this._onPointerDown);
-        window.removeEventListener(eventPrefix + "up", <any>this._onPointerUp);*/
 
         // Blur / Focus
         // TODO: Do we need this?
@@ -961,10 +905,6 @@ export class InputManager {
         if (this._onCanvasFocusObserver) {
             engine.onCanvasFocusObservable.remove(this._onCanvasFocusObserver);
         }
-
-        // Keyboard
-        /*this._alreadyAttachedTo.removeEventListener("keydown", this._onKeyDown);
-        this._alreadyAttachedTo.removeEventListener("keyup", this._onKeyUp);*/
 
         // Cursor
         if (!this._scene.doNotHandleCursors) {

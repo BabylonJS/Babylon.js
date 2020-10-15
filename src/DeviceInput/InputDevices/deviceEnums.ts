@@ -42,7 +42,11 @@ export enum PointerInput {
     /** Mouse Wheel Y */
     MouseWheelY = 8,
     /** Mouse Wheel Z */
-    MouseWheelZ = 9
+    MouseWheelZ = 9,
+    /** Delta X */
+    DeltaHorizontal = 10,
+    /** Delta Y */
+    DeltaVertical = 11
 }
 
 /**

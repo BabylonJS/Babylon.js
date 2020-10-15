@@ -308,6 +308,13 @@ export class DeviceInputSystem implements IDisposable {
                 // Store previous values for event
                 const previousHorizontal = pointer[PointerInput.Horizontal];
                 const previousVertical = pointer[PointerInput.Vertical];
+                const previousDeltaHorizontal = pointer[PointerInput.DeltaHorizontal];
+                const previousDeltaVertical = pointer[PointerInput.DeltaVertical];
+
+                pointer[PointerInput.Horizontal] = evt.clientX;
+                pointer[PointerInput.Vertical] = evt.clientY;
+                pointer[PointerInput.DeltaHorizontal] = evt.movementX;
+                pointer[PointerInput.DeltaVertical] = evt.movementY;
 
                 if (this.onInputChanged) {
                     if (previousHorizontal != evt.clientX) {
@@ -316,9 +323,13 @@ export class DeviceInputSystem implements IDisposable {
                     if (previousVertical != evt.clientY) {
                         this.onInputChanged(deviceType, deviceSlot, PointerInput.Vertical, previousVertical, pointer[PointerInput.Vertical]);
                     }
+                    if (pointer[PointerInput.DeltaHorizontal] != 0) {
+                        this.onInputChanged(deviceType, deviceSlot, PointerInput.DeltaHorizontal, previousDeltaHorizontal, pointer[PointerInput.DeltaHorizontal]);
+                    }
+                    if (pointer[PointerInput.DeltaVertical] != 0) {
+                        this.onInputChanged(deviceType, deviceSlot, PointerInput.DeltaVertical, previousDeltaVertical, pointer[PointerInput.DeltaVertical]);
+                    }
                 }
-                pointer[PointerInput.Horizontal] = evt.clientX;
-                pointer[PointerInput.Vertical] = evt.clientY;
             }
         });
 
