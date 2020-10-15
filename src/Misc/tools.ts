@@ -754,7 +754,6 @@ export class Tools {
         if (typeof args[0] === "boolean") {
             return args[0];
         } else if (typeof args[1] === "boolean") {
-            Tools.Warn("Don't pass HTML element to attachControl. Set engine.inputElement instead");
             return args[1];
         }
 

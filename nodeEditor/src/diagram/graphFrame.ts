@@ -225,7 +225,7 @@ export class GraphFrame {
                     portAdded = true;
                     const onLinkDisposedObserver = link.onDisposedObservable.add((nodeLink: NodeLink) => {
                         this.removePortFromExposedWithLink(nodeLink, this._exposedInPorts);
-                        this._redrawFramePorts();
+                        this.redrawFramePorts();
                     });
                     this._onNodeLinkDisposedObservers.push(onLinkDisposedObserver);
                 }
@@ -255,7 +255,7 @@ export class GraphFrame {
 
                         const onLinkDisposedObserver = link.onDisposedObservable.add((nodeLink: NodeLink) => {
                             this.removePortFromExposedWithLink(nodeLink, this._exposedOutPorts);
-                            this._redrawFramePorts();
+                            this.redrawFramePorts();
                         });
 
                         this._onNodeLinkDisposedObservers.push(onLinkDisposedObserver); 
@@ -291,7 +291,7 @@ export class GraphFrame {
         return false;
     }
 
-    private _redrawFramePorts() {
+    public redrawFramePorts() {
         if(!this.isCollapsed) {
             return;
         }
@@ -643,7 +643,7 @@ export class GraphFrame {
             if (this.nodes.indexOf(node) === -1) {
                 return;
             }
-            this._redrawFramePorts();
+            this.redrawFramePorts();
         });
 
         this._commentsElement = document.createElement('div');
@@ -1377,18 +1377,6 @@ export class GraphFrame {
     }
 
     public dispose() {
-        if(this.isCollapsed) {
-            while(this._nodes.length > 0) {
-                this._nodes[0].dispose();
-            }
-            this.isCollapsed = false;
-        }
-        else {
-            this._nodes.forEach(node => {
-                node.enclosingFrameId = -1;
-            });
-        }
-
         if (this._onSelectionChangedObserver) {
             this._ownerCanvas.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
         };
