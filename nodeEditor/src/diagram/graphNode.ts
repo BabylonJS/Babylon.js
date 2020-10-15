@@ -297,11 +297,9 @@ export class GraphNode {
             port.refresh();
         }
 
-        if(this.enclosingFrameId !== -1)
-        {   
+        if(this.enclosingFrameId !== -1) {   
             let index = this._ownerCanvas.frames.findIndex(frame => frame.id === this.enclosingFrameId);
-            if(index >= 0 && this._ownerCanvas.frames[index].isCollapsed)
-            {
+            if(index >= 0 && this._ownerCanvas.frames[index].isCollapsed) {
                 this._ownerCanvas.frames[index].redrawFramePorts();
             }
         }   
