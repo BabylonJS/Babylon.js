@@ -95,7 +95,7 @@ interface INativeEngine {
 
     createVertexBuffer(data: ArrayBufferView, dynamic: boolean): any;
     deleteVertexBuffer(buffer: any): void;
-    recordVertexBuffer(vertexArray: any, buffer: any, location: number, byteOffset: number, byteStride: number, numElements: number, type: number, normalized: boolean): void;
+    recordVertexBuffer(vertexArray: any, buffer: any, kind: string, byteOffset: number, byteStride: number, numElements: number, type: number, normalized: boolean): void;
     updateDynamicVertexBuffer(buffer: any, data: ArrayBufferView, byteOffset: number, byteLength: number): void;
 
     createProgram(vertexShader: string, fragmentShader: string): any;
@@ -403,10 +403,14 @@ export class NativeEngine extends Engine {
         }
 
         const attributes = effect.getAttributesNames();
+        const indexAttributeMap: Array<number> = new Array<number>(attributes.length);
         for (let index = 0; index < attributes.length; index++) {
-            const location = effect.getAttributeLocation(index);
-            if (location >= 0) {
-                const kind = attributes[index];
+            indexAttributeMap[effect.getAttributeLocation(index)] = index;
+        }
+        for (let index = 0; index < attributes.length; index++) {
+            if (indexAttributeMap[index] >= 0) {
+                const kind = attributes[indexAttributeMap[index]];
+                console.log("NativeEngine.RecordVertexArray: Attribute: " + index + " (" + kind + "} " + " is placed in slot: " + indexAttributeMap[index]);
                 const vertexBuffer = vertexBuffers[kind];
                 if (vertexBuffer) {
                     const buffer = vertexBuffer.getBuffer() as Nullable<NativeDataBuffer>;
@@ -414,7 +418,7 @@ export class NativeEngine extends Engine {
                         this._native.recordVertexBuffer(
                             vertexArray,
                             buffer.nativeVertexBuffer,
-                            location,
+                            kind,
                             vertexBuffer.byteOffset,
                             vertexBuffer.byteStride,
                             vertexBuffer.getSize(),
