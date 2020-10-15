@@ -37,7 +37,7 @@ export class KHR_materials_translucency implements IGLTFLoaderExtension {
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
         if (this.enabled) {
-            (loader as any)._parent.transparencyAsCoverage = true;
+            loader.parent.transparencyAsCoverage = true;
         }
     }
 
@@ -61,7 +61,7 @@ export class KHR_materials_translucency implements IGLTFLoaderExtension {
         if (!(babylonMaterial instanceof PBRMaterial)) {
             throw new Error(`${context}: Material type not supported`);
         }
-        let pbrMaterial = babylonMaterial as PBRMaterial;
+        const pbrMaterial = babylonMaterial as PBRMaterial;
 
         // Enables "translucency" texture which represents diffusely-transmitted light.
         pbrMaterial.subSurface.isTranslucencyEnabled = true;
