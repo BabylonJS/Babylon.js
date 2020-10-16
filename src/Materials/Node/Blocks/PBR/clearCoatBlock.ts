@@ -17,6 +17,7 @@ import { Effect } from '../../../effect';
 import { PBRMetallicRoughnessBlock } from './pbrMetallicRoughnessBlock';
 import { PerturbNormalBlock } from '../Fragment/perturbNormalBlock';
 import { PBRClearCoatConfiguration } from '../../../PBR/pbrClearCoatConfiguration';
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
 
 /**
  * Block used to implement the clear coat module of the PBR material
@@ -47,6 +48,12 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         this.registerOutput("clearcoat", NodeMaterialBlockConnectionPointTypes.Object, NodeMaterialBlockTargets.Fragment,
             new NodeMaterialConnectionPointCustomObject("clearcoat", this, NodeMaterialConnectionPointDirection.Output, ClearCoatBlock, "ClearCoatBlock"));
     }
+
+    /**
+     * Defines if the F0 value should be remapped to account for the interface change in the material.
+     */
+    @editableInPropertyPage("Remap F0 on interface change", PropertyTypeForEdition.Boolean, "ADVANCED")
+    public remapF0OnInterfaceChange: boolean = true;
 
     /**
      * Initialize the block and prepare the context for build
@@ -155,7 +162,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         defines.setValue("CLEARCOAT_TINT", this.tintColor.isConnected || this.tintThickness.isConnected || this.tintAtDistance.isConnected, true);
         defines.setValue("CLEARCOAT_BUMP", this.normalMapColor.isConnected, true);
         defines.setValue("CLEARCOAT_DEFAULTIOR", this.indexOfRefraction.isConnected ? this.indexOfRefraction.connectInputBlock!.value === PBRClearCoatConfiguration._DefaultIndexOfRefraction : true, true);
-        defines.setValue("CLEARCOAT_REMAP_F0", true, true);
+        defines.setValue("CLEARCOAT_REMAP_F0", this.remapF0OnInterfaceChange, true);
     }
 
     public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh, subMesh?: SubMesh) {
@@ -324,6 +331,28 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         }
 
         return this;
+    }
+
+    protected _dumpPropertiesCode() {
+        let codeString: string = "";
+
+        codeString += `${this._codeVariableName}.remapF0OnInterfaceChange = ${this.remapF0OnInterfaceChange};\r\n`;
+
+        return codeString;
+    }
+
+    public serialize(): any {
+        let serializationObject = super.serialize();
+
+        serializationObject.remapF0OnInterfaceChange = this.remapF0OnInterfaceChange;
+
+        return serializationObject;
+    }
+
+    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+        super._deserialize(serializationObject, scene, rootUrl);
+
+        this.remapF0OnInterfaceChange = serializationObject.remapF0OnInterfaceChange ?? true;
     }
 }
 

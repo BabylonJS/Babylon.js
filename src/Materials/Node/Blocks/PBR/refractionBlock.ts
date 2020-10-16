@@ -54,6 +54,9 @@ export class RefractionBlock extends NodeMaterialBlock {
     /** @hidden */
     public viewConnectionPoint: NodeMaterialConnectionPoint;
 
+    /** @hidden */
+    public indexOfRefractionConnectionPoint: NodeMaterialConnectionPoint;
+
     /**
      * This parameters will make the material used its opacity to control how much it is refracting aginst not.
      * Materials half opaque for instance using refraction could benefit from this control.
@@ -82,7 +85,6 @@ export class RefractionBlock extends NodeMaterialBlock {
         this._isUnique = true;
 
         this.registerInput("intensity", NodeMaterialBlockConnectionPointTypes.Float, false, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("indexOfRefraction", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("tintAtDistance", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
 
         this.registerOutput("refraction", NodeMaterialBlockConnectionPointTypes.Object, NodeMaterialBlockTargets.Fragment,
@@ -105,17 +107,10 @@ export class RefractionBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the index of refraction input component
-     */
-    public get indexOfRefraction(): NodeMaterialConnectionPoint {
-        return this._inputs[1];
-    }
-
-    /**
      * Gets the tint at distance input component
      */
     public get tintAtDistance(): NodeMaterialConnectionPoint {
-        return this._inputs[2];
+        return this._inputs[1];
     }
 
     /**
@@ -221,7 +216,7 @@ export class RefractionBlock extends NodeMaterialBlock {
             }
         }
 
-        const indexOfRefraction = this.indexOfRefraction.connectInputBlock?.value ?? 1.5;
+        const indexOfRefraction = this.indexOfRefractionConnectionPoint.connectInputBlock?.value ?? 1.5;
 
         effect.setFloat4(this._vRefractionInfosName, refractionTexture.level, 1 / indexOfRefraction, depth, this.invertRefractionY ? -1 : 1);
 
