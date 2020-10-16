@@ -13,6 +13,7 @@ import { Node } from "../node";
 import { PointerEventTypes, PointerInfo } from "../Events/pointerEvents";
 import { LinesMesh } from "../Meshes/linesMesh";
 import { StandardMaterial } from "../Materials/standardMaterial";
+import { GizmoManager } from './gizmoManager';
 /**
  * Gizmo that enables scaling a mesh along 3 axis
  */
@@ -104,7 +105,7 @@ export class ScaleGizmo extends Gizmo {
      * @param gizmoLayer The utility layer the gizmo will be added to
      * @param thickness display gizmo axis thickness
      */
-    constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, thickness: number = 1) {
+    constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, thickness: number = 1, gizmoManager?: GizmoManager) {
         super(gizmoLayer);
         this.uniformScaleGizmo = this._createUniformScaleMesh();
         this.xGizmo = new AxisScaleGizmo(new Vector3(1, 0, 0), Color3.Red().scale(0.5), gizmoLayer, this, thickness);
@@ -123,7 +124,13 @@ export class ScaleGizmo extends Gizmo {
 
         this.attachedMesh = null;
         this.attachedNode = null;
-        this._subscribeToPointerObserver();
+
+        if (gizmoManager) {
+            gizmoManager.addToAxisCache(this._gizmoAxisCache);
+        } else {
+            // Only subscribe to pointer event if gizmoManager isnt
+            Gizmo.GizmoAxisPointerObserver(gizmoLayer, this._gizmoAxisCache);
+        }
     }
 
     /** Create Geometry for Gizmo */
@@ -234,67 +241,6 @@ export class ScaleGizmo extends Gizmo {
      */
     public addToAxisCache(mesh: Mesh, cache: GizmoAxisCache) {
         this._gizmoAxisCache.set(mesh, cache);
-    }
-
-    /**
-     * Subscribes to pointer up, down, and hover events. Used for responsive gizmos.
-     */
-    public _subscribeToPointerObserver(): void {
-        const pointerObserver = this.gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
-            if (pointerInfo.pickInfo) {
-                // On Hover Logic
-                if (pointerInfo.type === PointerEventTypes.POINTERMOVE) {
-                    if (this._dragging) { return; }
-                    this._gizmoAxisCache.forEach((cache) => {
-                        if (cache.colliderMeshes && cache.gizmoMeshes) {
-                            const isHovered = (cache.colliderMeshes?.indexOf((pointerInfo?.pickInfo?.pickedMesh as Mesh)) != -1);
-                            const material = isHovered || cache.active ? cache.hoverMaterial : cache.material;
-                            cache.gizmoMeshes.forEach((m: Mesh) => {
-                                m.material = material;
-                                if ((m as LinesMesh).color) {
-                                    (m as LinesMesh).color = material.diffuseColor;
-                                }
-                            });
-                        }
-                    });
-                }
-
-                // On Mouse Down
-                if (pointerInfo.type === PointerEventTypes.POINTERDOWN) {
-                    // If user Clicked Gizmo
-                    if (this._gizmoAxisCache.has(pointerInfo.pickInfo.pickedMesh?.parent as Mesh)) {
-                        this._dragging = true;
-                        const statusMap = this._gizmoAxisCache.get(pointerInfo.pickInfo.pickedMesh?.parent as Mesh);
-                        statusMap!.active = true;
-                        this._gizmoAxisCache.forEach((cache) => {
-                            const isHovered = (cache.colliderMeshes?.indexOf((pointerInfo?.pickInfo?.pickedMesh as Mesh)) != -1);
-                            const material = isHovered || cache.active ? cache.hoverMaterial : cache.disableMaterial;
-                            cache.gizmoMeshes.forEach((m: Mesh) => {
-                                m.material = material;
-                                if ((m as LinesMesh).color) {
-                                    (m as LinesMesh).color = material.diffuseColor;
-                                }
-                            });
-                        });
-                    }
-                }
-
-                // On Mouse Up
-                if (pointerInfo.type === PointerEventTypes.POINTERUP) {
-                    this._gizmoAxisCache.forEach((cache) => {
-                        cache.active = false;
-                        this._dragging = false;
-                        cache.gizmoMeshes.forEach((m: Mesh) => {
-                            m.material = cache.material;
-                            if ((m as LinesMesh).color) {
-                                (m as LinesMesh).color = cache.material.diffuseColor;
-                            }
-                        });
-                    });
-                }
-            }
-        });
-        this._observables = [pointerObserver!];
     }
 
     /**
