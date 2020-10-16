@@ -16,6 +16,7 @@ import { SubMesh } from '../../../../Meshes/subMesh';
 import { Effect } from '../../../effect';
 import { PBRMetallicRoughnessBlock } from './pbrMetallicRoughnessBlock';
 import { PerturbNormalBlock } from '../Fragment/perturbNormalBlock';
+import { PBRClearCoatConfiguration } from '../../../PBR/pbrClearCoatConfiguration';
 
 /**
  * Block used to implement the clear coat module of the PBR material
@@ -153,14 +154,15 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         defines.setValue("CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE", true, true);
         defines.setValue("CLEARCOAT_TINT", this.tintColor.isConnected || this.tintThickness.isConnected || this.tintAtDistance.isConnected, true);
         defines.setValue("CLEARCOAT_BUMP", this.normalMapColor.isConnected, true);
-        defines.setValue("CLEARCOAT_DEFAULTIOR", this.ior.isConnected ? this.ior.connectInputBlock!.value === 1.5 : false, true);
+        defines.setValue("CLEARCOAT_DEFAULTIOR", this.ior.isConnected ? this.ior.connectInputBlock!.value === PBRClearCoatConfiguration._DefaultIndexOfRefraction : true, true);
+        defines.setValue("CLEARCOAT_REMAP_F0", true, true);
     }
 
     public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh, subMesh?: SubMesh) {
         super.bind(effect, nodeMaterial, mesh);
 
         // Clear Coat Refraction params
-        const indexOfRefraction = this.ior.connectInputBlock?.value ?? 1.5;
+        const indexOfRefraction = this.ior.connectInputBlock?.value ?? PBRClearCoatConfiguration._DefaultIndexOfRefraction;
 
         const a = 1 - indexOfRefraction;
         const b = 1 + indexOfRefraction;
