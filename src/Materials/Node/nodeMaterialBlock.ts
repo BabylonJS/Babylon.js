@@ -425,8 +425,12 @@ export class NodeMaterialBlock {
         return true;
     }
 
-    protected _linkConnectionTypes(inputIndex0: number, inputIndex1: number) {
-        this._inputs[inputIndex0]._linkedConnectionSource = this._inputs[inputIndex1];
+    protected _linkConnectionTypes(inputIndex0: number, inputIndex1: number, looseCoupling = false) {
+        if (looseCoupling) {
+            this._inputs[inputIndex1]._acceptedConnectionPointType = this._inputs[inputIndex0];
+        } else {
+            this._inputs[inputIndex0]._linkedConnectionSource = this._inputs[inputIndex1];
+        }
         this._inputs[inputIndex1]._linkedConnectionSource = this._inputs[inputIndex0];
     }
 
