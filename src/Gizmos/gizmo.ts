@@ -298,6 +298,9 @@ export class Gizmo implements IDisposable {
 
     /**
      * Subscribes to pointer up, down, and hover events. Used for responsive gizmos.
+     * @param gizmoLayer The utility layer the gizmo will be added to
+     * @param gizmoAxisCache Gizmo axis definition used for reactive gizmo UI
+     * @returns {Observer<PointerInfo>} pointerObserver
      */
     public static GizmoAxisPointerObserver(gizmoLayer: UtilityLayerRenderer, gizmoAxisCache: Map<Mesh, GizmoAxisCache>): Observer<PointerInfo> {
 

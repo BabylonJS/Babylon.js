@@ -10,8 +10,7 @@ import { AxisScaleGizmo } from "./axisScaleGizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { Mesh } from "../Meshes/mesh";
 import { Node } from "../node";
-import { PointerEventTypes, PointerInfo } from "../Events/pointerEvents";
-import { LinesMesh } from "../Meshes/linesMesh";
+import { PointerInfo } from "../Events/pointerEvents";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { GizmoManager } from './gizmoManager';
 /**
@@ -47,8 +46,6 @@ export class ScaleGizmo extends Gizmo {
     private _disableMaterial: StandardMaterial;
     private _observables: Observer<PointerInfo>[] = [];
 
-    /** Gizmo state variables used for UI behavior */
-    private _dragging = false;
     /** Node Caching for quick lookup */
     private _gizmoAxisCache: Map<Mesh, GizmoAxisCache> = new Map();
 
@@ -237,7 +234,7 @@ export class ScaleGizmo extends Gizmo {
     /**
      * Builds Gizmo Axis Cache to enable features such as hover state preservation and graying out other axis during manipulation
      * @param mesh Axis gizmo mesh
-      @param cache display gizmo axis thickness
+     * @param cache Gizmo axis definition used for reactive gizmo UI
      */
     public addToAxisCache(mesh: Mesh, cache: GizmoAxisCache) {
         this._gizmoAxisCache.set(mesh, cache);

@@ -10,8 +10,7 @@ import { Gizmo, GizmoAxisCache } from "./gizmo";
 import { AxisDragGizmo } from "./axisDragGizmo";
 import { PlaneDragGizmo } from "./planeDragGizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-import { PointerEventTypes, PointerInfo } from "../Events/pointerEvents";
-import { LinesMesh } from "../Meshes/linesMesh";
+import { PointerInfo } from "../Events/pointerEvents";
 import { GizmoManager } from './gizmoManager';
 /**
  * Gizmo that enables dragging a mesh along 3 axis
@@ -50,8 +49,6 @@ export class PositionGizmo extends Gizmo {
     private _snapDistance: number;
     private _observables: Observer<PointerInfo>[] = [];
 
-    /** Gizmo state variables used for UI behavior */
-    private _dragging = false;
     /** Node Caching for quick lookup */
     private _gizmoAxisCache: Map<Mesh, GizmoAxisCache> = new Map();
 
@@ -211,7 +208,7 @@ export class PositionGizmo extends Gizmo {
     /**
      * Builds Gizmo Axis Cache to enable features such as hover state preservation and graying out other axis during manipulation
      * @param mesh Axis gizmo mesh
-      @param cache display gizmo axis thickness
+     * @param cache Gizmo axis definition used for reactive gizmo UI
      */
     public addToAxisCache(mesh: Mesh, cache: GizmoAxisCache) {
         this._gizmoAxisCache.set(mesh, cache);

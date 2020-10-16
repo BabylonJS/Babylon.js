@@ -5,7 +5,6 @@ import { Scene, IDisposable } from "../scene";
 import { Node } from "../node";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from '../Meshes/mesh';
-import { LinesMesh } from '../Meshes/linesMesh';
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { Color3 } from '../Maths/math.color';
 import { SixDofDragBehavior } from "../Behaviors/Meshes/sixDofDragBehavior";
@@ -103,9 +102,13 @@ export class GizmoManager implements IDisposable {
 
         const attachToMeshPointerObserver = this._attachToMeshPointerObserver(scene);
         const gizmoAxisPointerObserver = Gizmo.GizmoAxisPointerObserver(this._defaultUtilityLayer, this._gizmoAxisCache);
-        this._pointerObservers = [attachToMeshPointerObserver, gizmoAxisPointerObserver]
+        this._pointerObservers = [attachToMeshPointerObserver, gizmoAxisPointerObserver];
     }
 
+    /**
+     * Subscribes to pointer down events, for attaching and detaching mesh
+     * @param scene The sceme layer the observer will be added to
+     */
     private _attachToMeshPointerObserver(scene: Scene): Observer<PointerInfo> {
         // Instatiate/dispose gizmos based on pointer actions
         const pointerObserver = scene.onPointerObservable.add((pointerInfo) => {
@@ -298,14 +301,13 @@ export class GizmoManager implements IDisposable {
 
     /**
      * Builds Gizmo Axis Cache to enable features such as hover state preservation and graying out other axis during manipulation
-     * @param mesh Axis gizmo mesh
-      @param cache display gizmo axis thickness
-    */
+     * @param gizmoAxisCache Gizmo axis definition used for reactive gizmo UI
+     */
     public addToAxisCache(gizmoAxisCache: Map<Mesh, GizmoAxisCache>) {
         if (gizmoAxisCache.size > 0) {
             gizmoAxisCache.forEach((v, k) => {
                 this._gizmoAxisCache.set(k, v);
-            })
+            });
         }
     }
 
@@ -313,8 +315,8 @@ export class GizmoManager implements IDisposable {
      * Disposes of the gizmo manager
      */
     public dispose() {
-        
-        this._pointerObservers.forEach(observer => {
+
+        this._pointerObservers.forEach((observer) => {
             this.scene.onPointerObservable.remove(observer);
         });
         for (var key in this.gizmos) {
