@@ -61,7 +61,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     private _environmentBrdfSamplerName: string;
     private _vNormalWName: string;
     private _invertNormalName: string;
-    private _indexOfRefractionConnectionPoint: Nullable<NodeMaterialConnectionPoint>;
     private _metallicReflectanceColor: Color3 = Color3.White();
     private _metallicF0Factor = 1;
     private _vMetallicReflectanceFactorsName: string;
@@ -78,20 +77,21 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Vertex);
         this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Fragment);
         this.registerInput("view", NodeMaterialBlockConnectionPointTypes.Matrix, false);
-        this.registerInput("perturbedNormal", NodeMaterialBlockConnectionPointTypes.Vector4, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("cameraPosition", NodeMaterialBlockConnectionPointTypes.Vector3, false, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("perturbedNormal", NodeMaterialBlockConnectionPointTypes.Vector4, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("baseColor", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("metallic", NodeMaterialBlockConnectionPointTypes.Float, false, NodeMaterialBlockTargets.Fragment);
         this.registerInput("roughness", NodeMaterialBlockConnectionPointTypes.Float, false, NodeMaterialBlockTargets.Fragment);
         this.registerInput("ambientOcc", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("opacity", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("indexOfRefraction", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("ambientColor", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("reflection", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment,
             new NodeMaterialConnectionPointCustomObject("reflection", this, NodeMaterialConnectionPointDirection.Input, ReflectionBlock, "ReflectionBlock"));
-        this.registerInput("sheen", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment,
-            new NodeMaterialConnectionPointCustomObject("sheen", this, NodeMaterialConnectionPointDirection.Input, SheenBlock, "SheenBlock"));
         this.registerInput("clearcoat", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment,
             new NodeMaterialConnectionPointCustomObject("clearcoat", this, NodeMaterialConnectionPointDirection.Input, ClearCoatBlock, "ClearCoatBlock"));
+        this.registerInput("sheen", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment,
+            new NodeMaterialConnectionPointCustomObject("sheen", this, NodeMaterialConnectionPointDirection.Input, SheenBlock, "SheenBlock"));
         this.registerInput("subsurface", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment,
             new NodeMaterialConnectionPointCustomObject("subsurface", this, NodeMaterialConnectionPointDirection.Input, SubSurfaceBlock, "SubSurfaceBlock"));
         this.registerInput("anisotropy", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment,
@@ -100,12 +100,12 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         this.registerOutput("ambientClr", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("diffuseDir", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("specularDir", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
-        this.registerOutput("sheenDir", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("clearcoatDir", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
+        this.registerOutput("sheenDir", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("diffuseInd", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("specularInd", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
-        this.registerOutput("sheenInd", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("clearcoatInd", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
+        this.registerOutput("sheenInd", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("refraction", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("lighting", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("shadow", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Fragment);
@@ -387,16 +387,16 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the perturbed normal input component
+     * Gets the camera position input component
      */
-    public get perturbedNormal(): NodeMaterialConnectionPoint {
+    public get cameraPosition(): NodeMaterialConnectionPoint {
         return this._inputs[3];
     }
 
     /**
-     * Gets the camera position input component
+     * Gets the perturbed normal input component
      */
-    public get cameraPosition(): NodeMaterialConnectionPoint {
+    public get perturbedNormal(): NodeMaterialConnectionPoint {
         return this._inputs[4];
     }
 
@@ -436,45 +436,52 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the index of refraction input component
+     */
+    public get indexOfRefraction(): NodeMaterialConnectionPoint {
+        return this._inputs[10];
+    }
+
+    /**
      * Gets the ambient color input component
      */
     public get ambientColor(): NodeMaterialConnectionPoint {
-        return this._inputs[10];
+        return this._inputs[11];
     }
 
     /**
      * Gets the reflection object parameters
      */
     public get reflection(): NodeMaterialConnectionPoint {
-        return this._inputs[11];
+        return this._inputs[12];
     }
 
     /**
      * Gets the sheen object parameters
      */
     public get sheen(): NodeMaterialConnectionPoint {
-        return this._inputs[12];
+        return this._inputs[13];
     }
 
     /**
      * Gets the clear coat object parameters
      */
     public get clearcoat(): NodeMaterialConnectionPoint {
-        return this._inputs[13];
+        return this._inputs[14];
     }
 
     /**
      * Gets the sub surface object parameters
      */
     public get subsurface(): NodeMaterialConnectionPoint {
-        return this._inputs[14];
+        return this._inputs[15];
     }
 
     /**
      * Gets the anisotropy object parameters
      */
     public get anisotropy(): NodeMaterialConnectionPoint {
-        return this._inputs[15];
+        return this._inputs[16];
     }
 
     /**
@@ -499,16 +506,16 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the sheen output component
+     * Gets the clear coat output component
      */
-    public get sheenDir(): NodeMaterialConnectionPoint {
+    public get clearcoatDir(): NodeMaterialConnectionPoint {
         return this._outputs[3];
     }
 
     /**
-     * Gets the clear coat output component
+     * Gets the sheen output component
      */
-    public get clearcoatDir(): NodeMaterialConnectionPoint {
+    public get sheenDir(): NodeMaterialConnectionPoint {
         return this._outputs[4];
     }
 
@@ -527,16 +534,16 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the indirect sheen output component
+     * Gets the indirect clear coat output component
      */
-    public get sheenIndirect(): NodeMaterialConnectionPoint {
+    public get clearcoatIndirect(): NodeMaterialConnectionPoint {
         return this._outputs[7];
     }
 
     /**
-     * Gets the indirect clear coat output component
+     * Gets the indirect sheen output component
      */
-    public get clearcoatIndirect(): NodeMaterialConnectionPoint {
+    public get sheenIndirect(): NodeMaterialConnectionPoint {
         return this._outputs[8];
     }
 
@@ -733,7 +740,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         // reflectivity bindings
         const outside_ior = 1; // consider air as clear coat and other layers would remap in the shader.
-        const ior = this._indexOfRefractionConnectionPoint?.connectInputBlock?.value ?? 1.5;
+        const ior = this.indexOfRefraction.connectInputBlock?.value ?? 1.5;
 
         // We are here deriving our default reflectance from a common value for none metallic surface.
         // Based of the schlick fresnel approximation model
@@ -1028,15 +1035,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             #else\r\n`;
 
         // _____________________________ Reflectivity _______________________________
-        const subsurfaceBlock = this.subsurface.isConnected ? this.subsurface.connectedPoint?.ownerBlock as SubSurfaceBlock : null;
-        const refractionBlock = this.subsurface.isConnected ? (this.subsurface.connectedPoint?.ownerBlock as SubSurfaceBlock).refraction.connectedPoint?.ownerBlock as RefractionBlock : null;
-
-        this._indexOfRefractionConnectionPoint = refractionBlock?.indexOfRefraction ?? null;
-
-        if (refractionBlock) {
-            refractionBlock.viewConnectionPoint = this.view;
-        }
-
         state.compilationString += this._getReflectivityCode(state);
 
         // _____________________________ Geometry info _________________________________
@@ -1132,6 +1130,9 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         });
 
         // ___________________________________ SubSurface ______________________________________
+        const subsurfaceBlock = this.subsurface.isConnected ? this.subsurface.connectedPoint?.ownerBlock as SubSurfaceBlock : null;
+        const refractionBlock = this.subsurface.isConnected ? (this.subsurface.connectedPoint?.ownerBlock as SubSurfaceBlock).refraction.connectedPoint?.ownerBlock as RefractionBlock : null;
+
         state.compilationString += SubSurfaceBlock.GetCode(state, subsurfaceBlock, reflectionBlock, worldPosVarName);
 
         state._emitFunctionFromInclude("pbrBlockSubSurface", comments, {
