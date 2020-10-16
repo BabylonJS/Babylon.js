@@ -71417,6 +71417,10 @@ declare module BABYLON {
         private _grainEnabled;
         private _buildAllowed;
         /**
+         * This is triggered each time the pipeline has been built.
+         */
+        onBuildObservable: Observable<DefaultRenderingPipeline>;
+        /**
          * Gets active scene
          */
         get scene(): Scene;
