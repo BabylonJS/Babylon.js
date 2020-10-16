@@ -154,7 +154,7 @@ export class RefractionBlock extends NodeMaterialBlock {
             intensityInput.output.connectTo(this.intensity);
         }
 
-        if (!this.view.isConnected) {
+        if (this.view && !this.view.isConnected) {
             let viewInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.View);
 
             if (!viewInput) {
