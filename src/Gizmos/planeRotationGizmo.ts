@@ -289,7 +289,6 @@ export class PlaneRotationGizmo extends Gizmo {
 
             paths.push(path);
         }
-        console.log(paths);
 
         const mat = new StandardMaterial("", this.gizmoLayer.utilityLayerScene);
         mat.diffuseColor = Color3.Yellow();

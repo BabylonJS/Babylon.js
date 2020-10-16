@@ -12,6 +12,7 @@ import { Node } from "../node";
 import { PointerEventTypes, PointerInfo } from "../Events/pointerEvents";
 import { LinesMesh } from "../Meshes/linesMesh";
 import { TransformNode } from "../Meshes/transformNode";
+import { GizmoManager } from './gizmoManager';
 /**
  * Gizmo that enables rotating a mesh along 3 axis
  */
@@ -101,7 +102,7 @@ export class RotationGizmo extends Gizmo {
      * @param useEulerRotation Use and update Euler angle instead of quaternion
      * @param thickness display gizmo axis thickness
      */
-    constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, tessellation = 32, useEulerRotation = false, thickness: number = 1) {
+    constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, tessellation = 32, useEulerRotation = false, thickness: number = 1, gizmoManager?: GizmoManager) {
         super(gizmoLayer);
         this.xGizmo = new PlaneRotationGizmo(new Vector3(1, 0, 0), Color3.Red().scale(0.5), gizmoLayer, tessellation, this, useEulerRotation, thickness);
         this.yGizmo = new PlaneRotationGizmo(new Vector3(0, 1, 0), Color3.Green().scale(0.5), gizmoLayer, tessellation, this, useEulerRotation, thickness);
@@ -119,7 +120,13 @@ export class RotationGizmo extends Gizmo {
 
         this.attachedMesh = null;
         this.attachedNode = null;
-        this._subscribeToPointerObserver();
+
+        if (gizmoManager) {
+            gizmoManager.addToAxisCache(this._gizmoAxisCache);
+        } else {
+            // Only subscribe to pointer event if gizmoManager isnt
+            Gizmo.GizmoAxisPointerObserver(gizmoLayer, this._gizmoAxisCache);
+        }
     }
 
     public set updateGizmoRotationToMatchAttachedMesh(value: boolean) {
@@ -167,68 +174,6 @@ export class RotationGizmo extends Gizmo {
      */
     public addToAxisCache(mesh: Mesh, cache: GizmoAxisCache) {
         this._gizmoAxisCache.set(mesh, cache);
-    }
-
-    /**
-     * Subscribes to pointer up, down, and hover events. Used for responsive gizmos.
-     */
-    public _subscribeToPointerObserver(): void {
-        const pointerObserver = this.gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
-            if (pointerInfo.pickInfo) {
-                // On Hover Logic
-                if (pointerInfo.type === PointerEventTypes.POINTERMOVE) {
-                    if (this._dragging) { return; }
-                    this._gizmoAxisCache.forEach((cache) => {
-                        if (cache.colliderMeshes && cache.gizmoMeshes) {
-                            const isHovered = (cache.colliderMeshes?.indexOf((pointerInfo?.pickInfo?.pickedMesh as Mesh)) != -1);
-                            const material = isHovered || cache.active ? cache.hoverMaterial : cache.material;
-                            cache.gizmoMeshes.forEach((m: Mesh) => {
-                                m.material = material;
-                                if ((m as LinesMesh).color) {
-                                    (m as LinesMesh).color = material.diffuseColor;
-                                }
-                            });
-                        }
-                    });
-                }
-
-                // On Mouse Down
-                if (pointerInfo.type === PointerEventTypes.POINTERDOWN) {
-                    // If user Clicked Gizmo
-                    if (this._gizmoAxisCache.has(pointerInfo.pickInfo.pickedMesh?.parent as Mesh)) {
-                        this._dragging = true;
-                        const statusMap = this._gizmoAxisCache.get(pointerInfo.pickInfo.pickedMesh?.parent as Mesh);
-                        statusMap!.active = true;
-                        this._gizmoAxisCache.forEach((cache) => {
-                            const isHovered = (cache.colliderMeshes?.indexOf((pointerInfo?.pickInfo?.pickedMesh as Mesh)) != -1);
-                            const material = isHovered || cache.active ? cache.hoverMaterial : cache.disableMaterial;
-                            cache.gizmoMeshes.forEach((m: Mesh) => {
-                                m.material = material;
-                                if ((m as LinesMesh).color) {
-                                    (m as LinesMesh).color = material.diffuseColor;
-                                }
-                            });
-                        });
-                    }
-                }
-
-                // On Mouse Up
-                if (pointerInfo.type === PointerEventTypes.POINTERUP) {
-                    this._gizmoAxisCache.forEach((cache) => {
-                        cache.active = false;
-                        this._dragging = false;
-                        cache.gizmoMeshes.forEach((m: Mesh) => {
-                            m.material = cache.material;
-                            if ((m as LinesMesh).color) {
-                                (m as LinesMesh).color = cache.material.diffuseColor;
-                            }
-                        });
-                    });
-                }
-            }
-        });
-
-        this._observables = [pointerObserver!];
     }
 
     /**
