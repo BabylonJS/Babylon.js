@@ -36,7 +36,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
 
         this.registerInput("intensity", NodeMaterialBlockConnectionPointTypes.Float, false, NodeMaterialBlockTargets.Fragment);
         this.registerInput("roughness", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("ior", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("indexOfRefraction", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("normalMapColor", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.Vector2, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("tintColor", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
@@ -85,7 +85,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
     /**
      * Gets the ior input component
      */
-    public get ior(): NodeMaterialConnectionPoint {
+    public get indexOfRefraction(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
@@ -154,7 +154,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         defines.setValue("CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE", true, true);
         defines.setValue("CLEARCOAT_TINT", this.tintColor.isConnected || this.tintThickness.isConnected || this.tintAtDistance.isConnected, true);
         defines.setValue("CLEARCOAT_BUMP", this.normalMapColor.isConnected, true);
-        defines.setValue("CLEARCOAT_DEFAULTIOR", this.ior.isConnected ? this.ior.connectInputBlock!.value === PBRClearCoatConfiguration._DefaultIndexOfRefraction : true, true);
+        defines.setValue("CLEARCOAT_DEFAULTIOR", this.indexOfRefraction.isConnected ? this.indexOfRefraction.connectInputBlock!.value === PBRClearCoatConfiguration._DefaultIndexOfRefraction : true, true);
         defines.setValue("CLEARCOAT_REMAP_F0", true, true);
     }
 
@@ -162,7 +162,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         super.bind(effect, nodeMaterial, mesh);
 
         // Clear Coat Refraction params
-        const indexOfRefraction = this.ior.connectInputBlock?.value ?? PBRClearCoatConfiguration._DefaultIndexOfRefraction;
+        const indexOfRefraction = this.indexOfRefraction.connectInputBlock?.value ?? PBRClearCoatConfiguration._DefaultIndexOfRefraction;
 
         const a = 1 - indexOfRefraction;
         const b = 1 + indexOfRefraction;
