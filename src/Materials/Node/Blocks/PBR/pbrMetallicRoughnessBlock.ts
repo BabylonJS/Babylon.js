@@ -457,16 +457,16 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the sheen object parameters
+     * Gets the clear coat object parameters
      */
-    public get sheen(): NodeMaterialConnectionPoint {
+    public get clearcoat(): NodeMaterialConnectionPoint {
         return this._inputs[13];
     }
 
     /**
-     * Gets the clear coat object parameters
+     * Gets the sheen object parameters
      */
-    public get clearcoat(): NodeMaterialConnectionPoint {
+    public get sheen(): NodeMaterialConnectionPoint {
         return this._inputs[14];
     }
 
@@ -1132,6 +1132,11 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         // ___________________________________ SubSurface ______________________________________
         const subsurfaceBlock = this.subsurface.isConnected ? this.subsurface.connectedPoint?.ownerBlock as SubSurfaceBlock : null;
         const refractionBlock = this.subsurface.isConnected ? (this.subsurface.connectedPoint?.ownerBlock as SubSurfaceBlock).refraction.connectedPoint?.ownerBlock as RefractionBlock : null;
+
+        if (refractionBlock) {
+            refractionBlock.viewConnectionPoint = this.view;
+            refractionBlock.indexOfRefractionConnectionPoint = this.indexOfRefraction;
+        }
 
         state.compilationString += SubSurfaceBlock.GetCode(state, subsurfaceBlock, reflectionBlock, worldPosVarName);
 
