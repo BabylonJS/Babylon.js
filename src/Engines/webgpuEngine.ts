@@ -50,17 +50,6 @@ const dbgVerboseLogsNumFrames = 20;
 const dbgShowWarningsNotImplemented = true;
 export const dbgShowDebugInliningProcess = false;
 
-const enum RenderPipelineDirtyFlags {
-    RasterizationState = 1,
-    ColorStates = 2,
-    DepthStencilState = 4,
-    VertexState = 8,
-    SampleCount = 16,
-    SampleMask = 32,
-    AlphaToCoverageEnabled = 64,
-    All = 0xFFFF
-}
-
 /**
  * Options to load the associated Glslang library
  */
@@ -175,7 +164,6 @@ export class WebGPUEngine extends Engine {
     private _bufferManager: WebGPUBufferManager;
     private _deferredReleaseTextures: Array<[InternalTexture, Nullable<HardwareTextureWrapper>, Nullable<BaseTexture>, Nullable<InternalTexture>]> = [];
     private _deferredReleaseBuffers: Array<GPUBuffer> = [];
-    private _renderPipelineDirtyFlags = 0;
     private _counters: {
         numPipelineDescriptorCreation: number;
         numBindGroupsCreation: number;
@@ -307,6 +295,10 @@ export class WebGPUEngine extends Engine {
         this._hardwareScalingLevel = 1;
         this._mainPassSampleCount = options.antialiasing ? this._defaultSampleCount : 1;
         this._isStencilEnable = options.stencil;
+
+        this._depthCullingState.depthTest = true;
+        this._depthCullingState.depthFunc = Constants.LEQUAL;
+        this._depthCullingState.depthMask = true;
 
         this._sharedInit(canvas, !!options.doNotHandleTouchAction, options.audioEngine);
 
@@ -575,7 +567,6 @@ export class WebGPUEngine extends Engine {
 
     public setColorWrite(enable: boolean): void {
         this.__colorWrite = enable;
-        this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.ColorStates);
     }
 
     public getColorWrite(): boolean {
@@ -813,7 +804,6 @@ export class WebGPUEngine extends Engine {
     public bindBuffers(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, indexBuffer: Nullable<DataBuffer>, effect: Effect): void {
         this._currentIndexBuffer = indexBuffer;
         this._currentVertexBuffers = vertexBuffers;
-        this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.VertexState);
     }
 
     /** @hidden */
@@ -888,13 +878,25 @@ export class WebGPUEngine extends Engine {
         const fragment = baseName.fragmentElement || baseName.fragment || baseName.fragmentToken || baseName.fragmentSource || baseName;
 
         const name = vertex + "+" + fragment + "@" + (defines ? defines : (<IEffectCreationOptions>attributesNamesOrOptions).defines);
-        const shader = this._compiledShaders[name];
+        /*const shader = this._compiledShaders[name];
         if (shader) {
             return new Effect(baseName, attributesNamesOrOptions, uniformsNamesOrEngine, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters, name, shader.sources);
         }
         else {
             return new Effect(baseName, attributesNamesOrOptions, uniformsNamesOrEngine, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters, name);
+        }*/
+        if (this._compiledEffects[name]) {
+            var compiledEffect = <Effect>this._compiledEffects[name];
+            if (onCompiled && compiledEffect.isReady()) {
+                onCompiled(compiledEffect);
+            }
+
+            return compiledEffect;
         }
+        var effect = new Effect(baseName, attributesNamesOrOptions, uniformsNamesOrEngine, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters, name);
+        this._compiledEffects[name] = effect;
+
+        return effect;
     }
 
     private _compileRawShaderToSpirV(source: string, type: string): Uint32Array {
@@ -1038,8 +1040,6 @@ export class WebGPUEngine extends Engine {
         }
 
         this._currentEffect = effect;
-
-        this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.All);
 
         if (effect.onBind) {
             effect.onBind(effect);
@@ -2699,15 +2699,9 @@ export class WebGPUEngine extends Engine {
     //                              Render
     //------------------------------------------------------------------------------
 
-    private _renderPipelineSetDirtyFlags(flags: number): void {
-        this._renderPipelineDirtyFlags |= flags;
-    }
-
-    // TODO WEBGPU make sure all state changes are handled
     public setZOffset(value: number): void {
         if (value !== this._depthCullingState.zOffset) {
             this._depthCullingState.zOffset = value;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.RasterizationState);
         }
     }
 
@@ -2716,7 +2710,6 @@ export class WebGPUEngine extends Engine {
             return;
         }
         this._colorFormat = format;
-        this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.ColorStates);
     }
 
     private _setDepthTextureFormat(format: GPUTextureFormat | undefined): void {
@@ -2724,76 +2717,65 @@ export class WebGPUEngine extends Engine {
             return;
         }
         this._depthTextureFormat = format;
-        this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.DepthStencilState);
     }
 
     public setDepthBuffer(enable: boolean): void {
         if (this._depthCullingState.depthTest !== enable) {
             this._depthCullingState.depthTest = enable;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.DepthStencilState);
         }
     }
 
     public setDepthWrite(enable: boolean): void {
         if (this._depthCullingState.depthMask !== enable) {
             this._depthCullingState.depthMask = enable;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.DepthStencilState);
         }
     }
 
     public setStencilBuffer(enable: boolean): void {
         if (this._stencilState.stencilTest !== enable) {
             this._stencilState.stencilTest = enable;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.DepthStencilState);
         }
     }
 
     public setStencilMask(mask: number): void {
         if (this._stencilState.stencilMask !== mask) {
             this._stencilState.stencilMask = mask;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.DepthStencilState);
         }
     }
 
     public setStencilFunction(stencilFunc: number) {
         if (this._stencilState.stencilFunc !== stencilFunc) {
             this._stencilState.stencilFunc = stencilFunc;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.DepthStencilState);
         }
     }
 
     public setStencilFunctionReference(reference: number) {
         if (this._stencilState.stencilFuncRef !== reference) {
             this._stencilState.stencilFuncRef = reference;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.DepthStencilState);
         }
     }
 
     public setStencilFunctionMask(mask: number) {
         if (this._stencilState.stencilFuncMask !== mask) {
             this._stencilState.stencilFuncMask = mask;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.DepthStencilState);
         }
     }
 
     public setStencilOperationFail(operation: number): void {
         if (this._stencilState.stencilOpStencilFail !== operation) {
             this._stencilState.stencilOpStencilFail = operation;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.DepthStencilState);
         }
     }
 
     public setStencilOperationDepthFail(operation: number): void {
         if (this._stencilState.stencilOpDepthFail !== operation) {
             this._stencilState.stencilOpDepthFail = operation;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.DepthStencilState);
         }
     }
 
     public setStencilOperationPass(operation: number): void {
         if (this._stencilState.stencilOpStencilDepthPass !== operation) {
             this._stencilState.stencilOpStencilDepthPass = operation;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.DepthStencilState);
         }
     }
 
@@ -2808,35 +2790,30 @@ export class WebGPUEngine extends Engine {
     public setDepthFunction(depthFunc: number) {
         if (this._depthCullingState.depthFunc !== depthFunc) {
             this._depthCullingState.depthFunc = depthFunc;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.DepthStencilState);
         }
     }
 
     public setDepthFunctionToGreater(): void {
         if (this._depthCullingState.depthFunc !== Constants.GREATER) {
             this._depthCullingState.depthFunc = Constants.GREATER;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.DepthStencilState);
         }
     }
 
     public setDepthFunctionToGreaterOrEqual(): void {
         if (this._depthCullingState.depthFunc !== Constants.GEQUAL) {
             this._depthCullingState.depthFunc = Constants.GEQUAL;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.DepthStencilState);
         }
     }
 
     public setDepthFunctionToLess(): void {
         if (this._depthCullingState.depthFunc !== Constants.LESS) {
             this._depthCullingState.depthFunc = Constants.LESS;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.DepthStencilState);
         }
     }
 
     public setDepthFunctionToLessOrEqual(): void {
         if (this._depthCullingState.depthFunc !== Constants.LEQUAL) {
             this._depthCullingState.depthFunc = Constants.LEQUAL;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.DepthStencilState);
         }
     }
 
@@ -2957,7 +2934,6 @@ export class WebGPUEngine extends Engine {
         // Culling
         if (this._depthCullingState.cull !== culling || force) {
             this._depthCullingState.cull = culling;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.RasterizationState);
         }
 
         // Cull face
@@ -2965,7 +2941,6 @@ export class WebGPUEngine extends Engine {
         var cullFace = this.cullBackFaces ? 1 : 2;
         if (this._depthCullingState.cullFace !== cullFace || force) {
             this._depthCullingState.cullFace = cullFace;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.RasterizationState);
         }
 
         // Z offset
@@ -2976,7 +2951,6 @@ export class WebGPUEngine extends Engine {
         var frontFace = reverseSide ? 1 : 2;
         if (this._depthCullingState.frontFace !== frontFace || force) {
             this._depthCullingState.frontFace = frontFace;
-            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.RasterizationState);
         }
     }
 
@@ -3006,9 +2980,9 @@ export class WebGPUEngine extends Engine {
         return {
             frontFace: this._getFrontFace(),
             cullMode: this._getCullMode(),
-            depthBias: this._depthCullingState.zOffset,
-            // depthBiasClamp: 0,
-            // depthBiasSlopeScale: 0,
+            depthBias: 0,
+            depthBiasClamp: 0,
+            depthBiasSlopeScale: this._depthCullingState.zOffset,
         };
     }
 
@@ -3089,7 +3063,6 @@ export class WebGPUEngine extends Engine {
             this.setDepthWrite(mode === Engine.ALPHA_DISABLE);
         }
         this._alphaMode = mode;
-        this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.ColorStates);
     }
 
     private _getAphaBlendOperation(operation: Nullable<number>): GPUBlendOperation {
@@ -3335,6 +3308,7 @@ export class WebGPUEngine extends Engine {
                         // multisampled?: boolean;
                         // hasDynamicOffset?: boolean;
                         // storageTextureFormat?: GPUTextureFormat;
+                        // minBufferBindingSize?: number;
                     }, {
                         // TODO WEBGPU. No Magic + 1 (coming from current 1 texture 1 sampler startegy).
                         binding: j + 1,
@@ -3366,9 +3340,9 @@ export class WebGPUEngine extends Engine {
     private _getRenderPipeline(topology: GPUPrimitiveTopology): GPURenderPipeline {
         // This is wrong to cache this way but workarounds the need of cache in the simple demo context.
         const webgpuPipelineContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
-        if (webgpuPipelineContext.renderPipeline) {
+        /*if (webgpuPipelineContext.renderPipeline) {
             return webgpuPipelineContext.renderPipeline;
-        }
+        }*/
 
         this._counters.numPipelineDescriptorCreation++;
 
@@ -3399,9 +3373,9 @@ export class WebGPUEngine extends Engine {
         const webgpuPipelineContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
 
         let vertexInputs = webgpuPipelineContext.vertexInputs;
-        if (vertexInputs) {
+        /*!!if (vertexInputs) {
             return vertexInputs;
-        }
+        }*/
 
         vertexInputs = {
             indexBuffer: null,
@@ -3447,12 +3421,14 @@ export class WebGPUEngine extends Engine {
     private _getBindGroupsToRender(): GPUBindGroup[] {
         const webgpuPipelineContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
         let bindGroups = webgpuPipelineContext.bindGroups;
-        if (bindGroups) {
+        /*if (bindGroups) {
             if (webgpuPipelineContext.uniformBuffer) {
                 webgpuPipelineContext.uniformBuffer.update();
             }
             return bindGroups;
-        }
+        }*/
+
+        this._counters.numBindGroupsCreation++;
 
         if (webgpuPipelineContext.uniformBuffer) {
             this.bindUniformBufferBase(webgpuPipelineContext.uniformBuffer.getBuffer()!, 0, "LeftOver");
@@ -3593,8 +3569,6 @@ export class WebGPUEngine extends Engine {
     }
 
     private _setRenderPipeline(fillMode: number): void {
-        this.applyStates();
-
         const renderPass = this._bundleEncoder || this._getCurrentRenderPass();
 
         const topology = this._getTopology(fillMode);
@@ -3765,18 +3739,6 @@ export class WebGPUEngine extends Engine {
     }
 
     public _unpackFlipY(value: boolean) { }
-
-    public applyStates() {
-        if (!this._currentEffect || !this._renderPipelineDirtyFlags) {
-            return;
-        }
-
-        // We can't update only a part of the pipeline descriptor, we must recreate the whole pipeline if any setting changes
-        const webgpuPipelineContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
-        webgpuPipelineContext.renderPipeline = null as any;
-
-        this._renderPipelineDirtyFlags = 0;
-    }
 
     // TODO WEBGPU. All of the below should go once engine split with baseEngine.
 
