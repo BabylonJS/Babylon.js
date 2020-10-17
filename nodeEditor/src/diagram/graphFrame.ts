@@ -205,14 +205,19 @@ export class GraphFrame {
         let aPort = exposedPorts.findIndex(nodePort => nodePort === nodeLink.portA);
         let bPort = exposedPorts.findIndex(nodePort => nodePort === nodeLink.portB);
         if(aPort >= 0) {
-            exposedPorts.splice(aPort,1);
-            nodeLink.portA.exposedPortPosition = -1;
-        } else if(bPort >= 0) {
-            exposedPorts.splice(bPort,1);
-            if(nodeLink.portB){ 
+            if(!nodeLink.portA.exposedOnFrame) {
+                exposedPorts.splice(aPort,1);
+                nodeLink.portA.exposedPortPosition = -1;
+                return true;
+            }
+        } else if(bPort >= 0) {         
+            if(nodeLink.portB && !nodeLink.portB.exposedOnFrame) { 
+                exposedPorts.splice(bPort,1);
                 nodeLink.portB.exposedPortPosition = -1
+                return true;
             }
         }
+        return false;
     }
     
     private createInputPorts(port: NodePort, node: GraphNode){
@@ -224,8 +229,9 @@ export class GraphFrame {
                     link.isVisible = true;
                     portAdded = true;
                     const onLinkDisposedObserver = link.onDisposedObservable.add((nodeLink: NodeLink) => {
-                        this.removePortFromExposedWithLink(nodeLink, this._exposedInPorts);
-                        this.redrawFramePorts();
+                        if(this.removePortFromExposedWithLink(nodeLink, this._exposedInPorts)) {
+                            this.redrawFramePorts();
+                        }
                     });
                     this._onNodeLinkDisposedObservers.push(onLinkDisposedObserver);
                 }
@@ -254,8 +260,9 @@ export class GraphFrame {
                         link.isVisible = true;
 
                         const onLinkDisposedObserver = link.onDisposedObservable.add((nodeLink: NodeLink) => {
-                            this.removePortFromExposedWithLink(nodeLink, this._exposedOutPorts);
-                            this.redrawFramePorts();
+                            if(this.removePortFromExposedWithLink(nodeLink, this._exposedOutPorts)) {
+                                this.redrawFramePorts();
+                            }
                         });
 
                         this._onNodeLinkDisposedObservers.push(onLinkDisposedObserver); 
@@ -312,6 +319,7 @@ export class GraphFrame {
         this._controlledPorts = [];
 
         this._createFramePorts();
+        this._markFramePortPositions();
         this.ports.forEach((framePort: FrameNodePort) => framePort.node._refreshLinks());
     }
 
