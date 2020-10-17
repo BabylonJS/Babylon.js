@@ -126,10 +126,16 @@ export class ScreenshotTools {
 
         var scene = camera.getScene();
         var previousCamera: Nullable<Camera> = null;
+        let previousActiveCameras: Camera[] = [];
 
         if (scene.activeCamera !== camera) {
             previousCamera = scene.activeCamera;
             scene.activeCamera = camera;
+        }
+
+        if (scene.activeCameras.length > 0) {
+            previousActiveCameras = scene.activeCameras;
+            scene.activeCameras = [] as Camera[];
         }
 
         var renderCanvas = engine.getRenderingCanvas();
@@ -160,6 +166,11 @@ export class ScreenshotTools {
             if (previousCamera) {
                 scene.activeCamera = previousCamera;
             }
+
+            if (previousActiveCameras.length > 0) {
+                scene.activeCameras = previousActiveCameras;
+            }
+
             engine.setSize(originalSize.width, originalSize.height);
             camera.getProjectionMatrix(true); // Force cache refresh;
         };
