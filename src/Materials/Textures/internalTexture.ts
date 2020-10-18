@@ -406,7 +406,8 @@ export class InternalTexture {
                     bilinearFiltering: this.samplingMode !== Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
                     comparisonFunction: this._comparisonFunction,
                     generateStencil: this._generateStencilBuffer,
-                    isCube: this.isCube
+                    isCube: this.isCube,
+                    samples: this.samples
                 };
 
                 let size = {

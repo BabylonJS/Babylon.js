@@ -435,7 +435,7 @@ export class WebGPUEngine extends Engine {
             instancedArrays: true,
             canUseTimestampForTimerQuery: false,
             blendMinMax: true,
-            maxMSAASamples: 1
+            maxMSAASamples: 8 // TODO WEBGPU what is the right value?
         };
 
         this._caps.parallelShaderCompile = null as any;
@@ -2124,6 +2124,7 @@ export class WebGPUEngine extends Engine {
             fullOptions.type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_INT : options.type;
             fullOptions.samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
             fullOptions.format = options.format === undefined ? Constants.TEXTUREFORMAT_RGBA : options.format;
+            fullOptions.samples = options.samples ?? this._mainPassSampleCount;
         } else {
             fullOptions.generateMipMaps = <boolean>options;
             fullOptions.generateDepthBuffer = true;
@@ -2131,6 +2132,7 @@ export class WebGPUEngine extends Engine {
             fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
             fullOptions.samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
             fullOptions.format = Constants.TEXTUREFORMAT_RGBA;
+            fullOptions.samples = this._mainPassSampleCount;
         }
 
         const texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
@@ -2147,7 +2149,7 @@ export class WebGPUEngine extends Engine {
         texture.height = height;
         texture.depth = layers;
         texture.isReady = true;
-        texture.samples = this._mainPassSampleCount;
+        texture.samples = fullOptions.samples;
         texture.generateMipMaps = fullOptions.generateMipMaps ? true : false;
         texture.samplingMode = fullOptions.samplingMode;
         texture.type = fullOptions.type;
@@ -2167,7 +2169,8 @@ export class WebGPUEngine extends Engine {
                     fullOptions.samplingMode === Constants.TEXTURE_NEAREST_LINEAR || fullOptions.samplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST,
                 comparisonFunction: 0,
                 generateStencil: texture._generateStencilBuffer,
-                isCube: texture.isCube
+                isCube: texture.isCube,
+                samples: texture.samples,
             });
         }
 
@@ -2192,6 +2195,7 @@ export class WebGPUEngine extends Engine {
             type: Constants.TEXTURETYPE_UNSIGNED_INT,
             samplingMode: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
             format: Constants.TEXTUREFORMAT_RGBA,
+            samples: this._mainPassSampleCount,
             ...options
         };
         fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && fullOptions.generateStencilBuffer;
@@ -2203,7 +2207,7 @@ export class WebGPUEngine extends Engine {
         texture.depth = 0;
         texture.isReady = true;
         texture.isCube = true;
-        texture.samples = 1;
+        texture.samples = fullOptions.samples;
         texture.generateMipMaps = fullOptions.generateMipMaps;
         texture.samplingMode = fullOptions.samplingMode;
         texture.type = fullOptions.type;
@@ -2223,7 +2227,8 @@ export class WebGPUEngine extends Engine {
                     fullOptions.samplingMode === Constants.TEXTURE_NEAREST_LINEAR || fullOptions.samplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST,
                 comparisonFunction: 0,
                 generateStencil: texture._generateStencilBuffer,
-                isCube: texture.isCube
+                isCube: texture.isCube,
+                samples: texture.samples,
             });
         }
 
@@ -2241,7 +2246,7 @@ export class WebGPUEngine extends Engine {
     }
 
     /** @hidden */
-    public _setupDepthStencilTexture(internalTexture: InternalTexture, size: number | { width: number, height: number, layers?: number }, generateStencil: boolean, bilinearFiltering: boolean, comparisonFunction: number): void {
+    public _setupDepthStencilTexture(internalTexture: InternalTexture, size: number | { width: number, height: number, layers?: number }, generateStencil: boolean, bilinearFiltering: boolean, comparisonFunction: number, samples = 1): void {
         const width = (<{ width: number, height: number, layers?: number }>size).width || <number>size;
         const height = (<{ width: number, height: number, layers?: number }>size).height || <number>size;
         const layers = (<{ width: number, height: number, layers?: number }>size).layers || 0;
@@ -2253,7 +2258,7 @@ export class WebGPUEngine extends Engine {
         internalTexture.is2DArray = layers > 0;
         internalTexture.depth = layers;
         internalTexture.isReady = true;
-        internalTexture.samples = this._mainPassSampleCount;
+        internalTexture.samples = samples;
         internalTexture.generateMipMaps = false;
         internalTexture._generateDepthBuffer = true;
         internalTexture._generateStencilBuffer = generateStencil;
@@ -2270,12 +2275,13 @@ export class WebGPUEngine extends Engine {
             bilinearFiltering: false,
             comparisonFunction: 0,
             generateStencil: false,
+            samples: this._mainPassSampleCount,
             ...options
         };
 
         internalTexture.format = internalOptions.generateStencil ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT;
 
-        this._setupDepthStencilTexture(internalTexture, size, internalOptions.generateStencil, internalOptions.bilinearFiltering, internalOptions.comparisonFunction);
+        this._setupDepthStencilTexture(internalTexture, size, internalOptions.generateStencil, internalOptions.bilinearFiltering, internalOptions.comparisonFunction, internalOptions.samples);
 
         this._createGPUTextureForInternalTexture(internalTexture);
 
@@ -2292,12 +2298,13 @@ export class WebGPUEngine extends Engine {
             bilinearFiltering: false,
             comparisonFunction: 0,
             generateStencil: false,
+            samples: this._mainPassSampleCount,
             ...options
         };
 
         internalTexture.format = internalOptions.generateStencil ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT;
 
-        this._setupDepthStencilTexture(internalTexture, size, internalOptions.generateStencil, internalOptions.bilinearFiltering, internalOptions.comparisonFunction);
+        this._setupDepthStencilTexture(internalTexture, size, internalOptions.generateStencil, internalOptions.bilinearFiltering, internalOptions.comparisonFunction, internalOptions.samples);
 
         this._createGPUTextureForInternalTexture(internalTexture);
 
@@ -2305,18 +2312,9 @@ export class WebGPUEngine extends Engine {
     }
 
     public updateRenderTargetTextureSampleCount(texture: Nullable<InternalTexture>, samples: number): number {
-        if (!texture) {
-            return 1;
-        }
+        // samples is used at creation time in WebGPU, you can't change it afterwards
 
-        if (texture.samples === samples) {
-            return samples;
-        }
-
-        // TODO WEBGPU handle sampleCount
-        //console.warn("updateRenderTargetTextureSampleCount not implemented yet in WebGPU");
-
-        return 1;
+        return samples;
     }
 
     //------------------------------------------------------------------------------

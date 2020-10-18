@@ -3336,7 +3336,7 @@ export class ThinEngine {
     }
 
     /** @hidden */
-    public _setupDepthStencilTexture(internalTexture: InternalTexture, size: number | { width: number, height: number, layers?: number }, generateStencil: boolean, bilinearFiltering: boolean, comparisonFunction: number): void {
+    public _setupDepthStencilTexture(internalTexture: InternalTexture, size: number | { width: number, height: number, layers?: number }, generateStencil: boolean, bilinearFiltering: boolean, comparisonFunction: number, samples = 1): void {
         const width = (<{ width: number, height: number, layers?: number }>size).width || <number>size;
         const height = (<{ width: number, height: number, layers?: number }>size).height || <number>size;
         const layers = (<{ width: number, height: number, layers?: number }>size).layers || 0;
@@ -3348,7 +3348,7 @@ export class ThinEngine {
         internalTexture.is2DArray = layers > 0;
         internalTexture.depth = layers;
         internalTexture.isReady = true;
-        internalTexture.samples = 1;
+        internalTexture.samples = samples;
         internalTexture.generateMipMaps = false;
         internalTexture._generateDepthBuffer = true;
         internalTexture._generateStencilBuffer = generateStencil;
