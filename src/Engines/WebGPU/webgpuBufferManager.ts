@@ -1,10 +1,16 @@
 import { DataBuffer } from '../../Meshes/dataBuffer';
 import { WebGPUDataBuffer } from '../../Meshes/WebGPU/webgpuDataBuffer';
+import { Nullable } from '../../types';
 
 /** @hidden */
 export class WebGPUBufferManager {
 
     private _device: GPUDevice;
+    private _deferredReleaseBuffers: Array<GPUBuffer> = [];
+
+    private static _IsGPUBuffer(buffer: DataBuffer | GPUBuffer): buffer is GPUBuffer {
+        return (buffer as DataBuffer).underlyingResource === undefined;
+    }
 
     constructor(device: GPUDevice) {
         this._device = device;
@@ -84,4 +90,28 @@ export class WebGPUBufferManager {
             }, (reason) => reject(reason));
         });
     }
+
+    public releaseBuffer(buffer: DataBuffer | GPUBuffer): boolean {
+        if (WebGPUBufferManager._IsGPUBuffer(buffer)) {
+            this._deferredReleaseBuffers.push(buffer);
+            return true;
+        }
+
+        buffer.references--;
+
+        if (buffer.references === 0) {
+            this._deferredReleaseBuffers.push(buffer.underlyingResource as GPUBuffer);
+            return true;
+        }
+
+        return false;
+    }
+
+    public destroyDeferredBuffers(): void {
+        for (let i = 0; i < this._deferredReleaseBuffers.length; ++i) {
+            this._deferredReleaseBuffers[i].destroy();
+        }
+
+        this._deferredReleaseBuffers.length = 0;
+   }
 }
