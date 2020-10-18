@@ -104,10 +104,13 @@ export enum TextureDimension {
     E3d = "3d"
 }
 export enum TextureFormat {
+    // 8-bit formats
     R8Unorm = "r8unorm",
     R8Snorm = "r8snorm",
     R8Uint = "r8uint",
     R8Sint = "r8sint",
+
+    // 16-bit formats
     R16Uint = "r16uint",
     R16Sint = "r16sint",
     R16Float = "r16float",
@@ -115,6 +118,8 @@ export enum TextureFormat {
     RG8Snorm = "rg8snorm",
     RG8Uint = "rg8uint",
     RG8Sint = "rg8sint",
+
+    // 32-bit formats
     R32Uint = "r32uint",
     R32Sint = "r32sint",
     R32Float = "r32float",
@@ -128,20 +133,33 @@ export enum TextureFormat {
     RGBA8Sint = "rgba8sint",
     BGRA8Unorm = "bgra8unorm",
     BGRA8UnormSRGB = "bgra8unorm-srgb",
+    // Packed 32-bit formats
+    RGB9E5UFloat = "rgb9e5ufloat",
     RGB10A2Unorm = "rgb10a2unorm",
     RG11B10UFloat = "rg11b10ufloat",
+
+    // 64-bit formats
     RG32Uint = "rg32uint",
     RG32Sint = "rg32sint",
     RG32Float = "rg32float",
     RGBA16Uint = "rgba16uint",
     RGBA16Sint = "rgba16sint",
     RGBA16Float = "rgba16float",
+
+    // 128-bit formats
     RGBA32Uint = "rgba32uint",
     RGBA32Sint = "rgba32sint",
     RGBA32Float = "rgba32float",
-    Depth32Float = "depth32float",
+
+    // Depth and stencil formats
+    Stencil8 = "stencil8",
+    Depth16Unorm = "depth16unorm",
     Depth24Plus = "depth24plus",
     Depth24PlusStencil8 = "depth24plus-stencil8",
+    Depth32Float = "depth32float",
+
+    // BC compressed formats usable if "texture-compression-bc" is both
+    // supported by the device/user agent and enabled in requestDevice.
     BC1RGBAUNorm = "bc1-rgba-unorm",
     BC1RGBAUnormSRGB = "bc1-rgba-unorm-srgb",
     BC2RGBAUnorm = "bc2-rgba-unorm",
@@ -155,12 +173,20 @@ export enum TextureFormat {
     BC6HRGBUFloat = "bc6h-rgb-ufloat",
     BC6HRGBSFloat = "bc6h-rgb-sfloat",
     BC7RGBAUnorm = "bc7-rgba-unorm",
-    BC7RGBAUnormSRGB = "bc7-rgba-unorm-srgb"
+    BC7RGBAUnormSRGB = "bc7-rgba-unorm-srgb",
+
+    // "depth24unorm-stencil8" feature
+    Depth24UnormStencil8 = "depth24unorm-stencil8",
+
+    // "depth32float-stencil8" feature
+    Depth32FloatStencil8 = "depth32float-stencil8"
 }
 export enum TextureComponentType {
     Float = "float",
     Sint = "sint",
-    Uint = "uint"
+    Uint = "uint",
+    // Texture is used with comparison sampling only.
+    DepthComparison = "depth-comparison"
 }
 export enum TextureViewDimension {
     E1d = "1d",
