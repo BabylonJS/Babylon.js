@@ -515,6 +515,10 @@ export class WebGPUEngine extends Engine {
             stencilLoadValue: this._clearStencilValue,
             stencilStoreOp: WebGPUConstants.StoreOp.Store,
         };
+
+        if (this._mainRenderPass !== null) {
+            this._endMainRenderPass();
+        }
     }
 
     /**
@@ -596,7 +600,7 @@ export class WebGPUEngine extends Engine {
             this._transientViewport.w = height;
             if (dbgVerboseLogsForFirstFrames) {
                 if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
-                    console.log("_viewport called but _currentRenderPass is null", x, y, width, height);
+                    console.log("_viewport called but _currentRenderPass is null frame #" + (this as any)._count, x, y, width, height);
                 }
             }
         } else  if (this._transientViewport.x !== Infinity) {
@@ -606,7 +610,7 @@ export class WebGPUEngine extends Engine {
 
             if (dbgVerboseLogsForFirstFrames) {
                 if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
-                    console.log("_viewport called and transient viewport set", this._transientViewport.x, this._transientViewport.y, this._transientViewport.z, this._transientViewport.w, "current pass is main pass=" + (renderPass === this._mainRenderPass));
+                    console.log("_viewport called and transient viewport set frame #" + (this as any)._count, this._transientViewport.x, this._transientViewport.y, this._transientViewport.z, this._transientViewport.w, "current pass is main pass=" + (renderPass === this._mainRenderPass));
                 }
             }
 
@@ -623,13 +627,13 @@ export class WebGPUEngine extends Engine {
 
             if (dbgVerboseLogsForFirstFrames) {
                 if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
-                    console.log("_viewport called and viewport set", x, y, width, height, "current pass is main pass=" + (renderPass === this._mainRenderPass));
+                    console.log("_viewport called and viewport set frame #" + (this as any)._count, x, y, width, height, "current pass is main pass=" + (renderPass === this._mainRenderPass));
                 }
             }
         } else {
             if (dbgVerboseLogsForFirstFrames) {
                 if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
-                    console.log("_viewport called and viewport NOT set because cached", x, y, width, height, "current pass is main pass=" + (this._currentRenderPass === this._mainRenderPass));
+                    console.log("_viewport called and viewport NOT set because cached frame #" + (this as any)._count, x, y, width, height, "current pass is main pass=" + (this._currentRenderPass === this._mainRenderPass));
                 }
             }
         }
@@ -1849,7 +1853,7 @@ export class WebGPUEngine extends Engine {
         gpuTextureWrapper.format = this._getWebGPUTextureFormat(texture.type, texture.format);
 
         const textureUsages =
-            texture._source === InternalTextureSource.RenderTarget ? WebGPUConstants.TextureUsage.Sampled | WebGPUConstants.TextureUsage.OutputAttachment :
+            texture._source === InternalTextureSource.RenderTarget ? WebGPUConstants.TextureUsage.Sampled | WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.OutputAttachment :
             texture._source === InternalTextureSource.Depth ? WebGPUConstants.TextureUsage.Sampled | WebGPUConstants.TextureUsage.OutputAttachment : -1;
 
         const generateMipMaps = texture._source === InternalTextureSource.RenderTarget ? false : texture.generateMipMaps;
@@ -2417,15 +2421,9 @@ export class WebGPUEngine extends Engine {
         const depthStencilTexture = internalTexture._depthStencilTexture;
         const gpuDepthStencilTexture = depthStencilTexture?._hardwareTexture?.underlyingResource;
 
-        if (dbgVerboseLogsForFirstFrames) {
-            if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
-                console.log("render target begin pass frame #" + (this as any)._count, " - internalTexture.uniqueId=", internalTexture.uniqueId);
-            }
-        }
-
         this._renderTargetEncoder.pushDebugGroup("start render target rendering");
 
-        const renderPass = this._renderTargetEncoder.beginRenderPass({
+        const renderPassDescriptor = {
             colorAttachments: [{
                 attachment: colorTextureView,
                 loadValue: clearColor !== null ? clearColor : WebGPUConstants.LoadOp.Load,
@@ -2438,7 +2436,14 @@ export class WebGPUEngine extends Engine {
                 stencilLoadValue: clearStencil && depthStencilTexture._generateStencilBuffer ? this._clearStencilValue : WebGPUConstants.LoadOp.Load,
                 stencilStoreOp: WebGPUConstants.StoreOp.Store,
             } : undefined
-        });
+        };
+        const renderPass = this._renderTargetEncoder.beginRenderPass(renderPassDescriptor);
+
+        if (dbgVerboseLogsForFirstFrames) {
+            if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
+                console.log("render target begin pass frame #" + (this as any)._count, " - internalTexture.uniqueId=", internalTexture.uniqueId, renderPassDescriptor);
+            }
+        }
 
         this._currentRenderPass = renderPass;
 
@@ -2473,7 +2478,7 @@ export class WebGPUEngine extends Engine {
     }
 
     private _startMainRenderPass(): void {
-        if (this._currentRenderPass && !this._currentRenderTarget) {
+        if (this._mainRenderPass) {
             this._endMainRenderPass();
         }
 
@@ -2489,7 +2494,7 @@ export class WebGPUEngine extends Engine {
 
         if (dbgVerboseLogsForFirstFrames) {
             if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
-                console.log("main begin pass frame #" + (this as any)._count);
+                console.log("main begin pass frame #" + (this as any)._count, "texture width=" + (this._mainTextureExtends as any).width, " height=" + (this._mainTextureExtends as any).height, this._mainColorAttachments, this._mainDepthAttachment);
             }
         }
 
@@ -2512,8 +2517,8 @@ export class WebGPUEngine extends Engine {
     }
 
     private _endMainRenderPass(): void {
-        if (this._currentRenderPass === this._mainRenderPass && this._currentRenderPass !== null) {
-            this._currentRenderPass.endPass();
+        if (this._mainRenderPass !== null) {
+            this._mainRenderPass.endPass();
             if (dbgVerboseLogsForFirstFrames) {
                 if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
                     console.log("main end pass frame #" + (this as any)._count);
@@ -2521,7 +2526,9 @@ export class WebGPUEngine extends Engine {
             }
             this._renderEncoder.popDebugGroup();
             this._resetCachedViewport();
-            this._currentRenderPass = null;
+            if (this._mainRenderPass === this._currentRenderPass) {
+                this._currentRenderPass = null;
+            }
             this._mainRenderPass = null;
         }
     }
@@ -3558,6 +3565,12 @@ export class WebGPUEngine extends Engine {
     public setSize(width: number, height: number): boolean {
         if (!super.setSize(width, height)) {
             return false;
+        }
+
+        if (dbgVerboseLogsForFirstFrames) {
+            if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
+                console.log("setSize called frame #" + (this as any)._count, width, height);
+            }
         }
 
         this._initializeMainAttachments();
