@@ -34,6 +34,8 @@ export class ScreenshotTools {
     public static CreateScreenshot(engine: Engine, camera: Camera, size: IScreenshotSize | number, successCallback?: (data: string) => void, mimeType: string = "image/png"): void {
         const { height, width } = ScreenshotTools._getScreenshotSize(engine, camera, size);
 
+        // TODO WEBGPU use engine.readPixels to get the back buffer
+
         if (!(height && width)) {
             Logger.Error("Invalid 'size' parameter !");
             return;
@@ -132,36 +134,27 @@ export class ScreenshotTools {
             scene.activeCamera = camera;
         }
 
-        var renderCanvas = engine.getRenderingCanvas();
-        if (!renderCanvas) {
-            Logger.Error("No rendering canvas found !");
-            return;
-        }
-
-        var originalSize = { width: renderCanvas.width, height: renderCanvas.height };
-        engine.setSize(width, height);
-        scene.render();
-
         // At this point size can be a number, or an object (according to engine.prototype.createRenderTargetTexture method)
-        var texture = new RenderTargetTexture("screenShot", targetTextureSize, scene, false, false, Constants.TEXTURETYPE_UNSIGNED_INT, false, Texture.NEAREST_SAMPLINGMODE, undefined, enableStencilBuffer);
+        var texture = new RenderTargetTexture("screenShot", targetTextureSize, scene, false, false, Constants.TEXTURETYPE_UNSIGNED_INT, false, Texture.NEAREST_SAMPLINGMODE, undefined, enableStencilBuffer, undefined, undefined, undefined, samples);
         texture.renderList = null;
         texture.samples = samples;
         texture.renderSprites = renderSprites;
-        texture.onAfterRenderObservable.add(() => {
-            Tools.DumpFramebuffer(width, height, engine, successCallback, mimeType, fileName);
+        engine.onEndFrameObservable.addOnce(() => {
+            texture.readPixels()!.then((data) => {
+                Tools.DumpData(width, height, data, successCallback, mimeType, fileName, true);
+                texture.dispose();
+
+                if (previousCamera) {
+                    scene.activeCamera = previousCamera;
+                }
+                camera.getProjectionMatrix(true); // Force cache refresh;
+            });
         });
 
         const renderToTexture = () => {
             scene.incrementRenderId();
             scene.resetCachedMaterial();
             texture.render(true);
-            texture.dispose();
-
-            if (previousCamera) {
-                scene.activeCamera = previousCamera;
-            }
-            engine.setSize(originalSize.width, originalSize.height);
-            camera.getProjectionMatrix(true); // Force cache refresh;
         };
 
         if (antialiasing) {

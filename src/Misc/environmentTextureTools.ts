@@ -146,7 +146,7 @@ export class EnvironmentTextureTools {
      * @param texture defines the cube texture to convert in env file
      * @return a promise containing the environment data if succesfull.
      */
-    public static CreateEnvTextureAsync(texture: BaseTexture): Promise<ArrayBuffer> {
+    public static async CreateEnvTextureAsync(texture: BaseTexture): Promise<ArrayBuffer> {
         let internalTexture = texture.getInternalTexture();
         if (!internalTexture) {
             return Promise.reject("The cube texture is invalid.");
@@ -180,14 +180,13 @@ export class EnvironmentTextureTools {
         let promises: Promise<void>[] = [];
 
         // Read and collect all mipmaps data from the cube.
-        let mipmapsCount = Scalar.Log2(internalTexture.width);
-        mipmapsCount = Math.round(mipmapsCount);
+        let mipmapsCount = Math.floor(Scalar.ILog2(internalTexture.width));
         for (let i = 0; i <= mipmapsCount; i++) {
             let faceWidth = Math.pow(2, mipmapsCount - i);
 
             // All faces of the cube.
             for (let face = 0; face < 6; face++) {
-                let data = texture.readPixels(face, i);
+                let data = await texture.readPixels(face, i);
 
                 // Creates a temp texture with the face data.
                 let tempTexture = engine.createRawTexture(data, faceWidth, faceWidth, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, null, textureType);

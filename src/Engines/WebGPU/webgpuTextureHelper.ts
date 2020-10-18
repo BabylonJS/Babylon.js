@@ -20,6 +20,8 @@
 import * as WebGPUConstants from './webgpuConstants';
 import { Scalar } from '../../Maths/math.scalar';
 import { WebGPUBufferManager } from './webgpuBufferManager';
+import { Constants } from '../constants';
+import { Nullable } from '../../types';
 
 // TODO WEBGPU improve mipmap generation by not using the OutputAttachment flag
 // see https://github.com/toji/web-texture-tool/tree/main/src
@@ -261,30 +263,174 @@ export class WebGPUTextureHelper {
         }
     }
 
-    private _getBlockInformationFromFormat(format: GPUTextureFormat): { width: number, height: number, length: number } {
-        // TODO WEBGPU support other formats?
+    private _getTextureTypeFromFormat(format: GPUTextureFormat): number {
         switch (format) {
+            // One Component = 8 bits
+            case WebGPUConstants.TextureFormat.R8Unorm:
+            case WebGPUConstants.TextureFormat.R8Snorm:
+            case WebGPUConstants.TextureFormat.R8Uint:
+            case WebGPUConstants.TextureFormat.R8Sint:
+            case WebGPUConstants.TextureFormat.RG8Unorm:
+            case WebGPUConstants.TextureFormat.RG8Snorm:
+            case WebGPUConstants.TextureFormat.RG8Uint:
+            case WebGPUConstants.TextureFormat.RG8Sint:
+            case WebGPUConstants.TextureFormat.RGBA8Unorm:
+            case WebGPUConstants.TextureFormat.RGBA8UnormSRGB:
+            case WebGPUConstants.TextureFormat.RGBA8Snorm:
+            case WebGPUConstants.TextureFormat.RGBA8Uint:
+            case WebGPUConstants.TextureFormat.RGBA8Sint:
+            case WebGPUConstants.TextureFormat.BGRA8Unorm:
+            case WebGPUConstants.TextureFormat.BGRA8UnormSRGB:
+            case WebGPUConstants.TextureFormat.RGB10A2Unorm: // composite format - let's say it's byte...
+            case WebGPUConstants.TextureFormat.RGB9E5UFloat: // composite format - let's say it's byte...
+            case WebGPUConstants.TextureFormat.RG11B10UFloat: // composite format - let's say it's byte...
+            case WebGPUConstants.TextureFormat.Depth24UnormStencil8: // composite format - let's say it's byte...
+            case WebGPUConstants.TextureFormat.Depth32FloatStencil8: // composite format - let's say it's byte...
             case WebGPUConstants.TextureFormat.BC7RGBAUnorm:
             case WebGPUConstants.TextureFormat.BC7RGBAUnormSRGB:
-                return { width: 4, height: 4, length: 16 };
             case WebGPUConstants.TextureFormat.BC6HRGBUFloat:
-                return { width: 4, height: 4, length: 16 };
             case WebGPUConstants.TextureFormat.BC6HRGBSFloat:
-                return { width: 4, height: 4, length: 16 };
+            case WebGPUConstants.TextureFormat.BC5RGUnorm:
+            case WebGPUConstants.TextureFormat.BC5RGSnorm:
             case WebGPUConstants.TextureFormat.BC3RGBAUnorm:
             case WebGPUConstants.TextureFormat.BC3RGBAUnormSRGB:
-                return { width: 4, height: 4, length: 16 };
+            case WebGPUConstants.TextureFormat.BC2RGBAUnorm:
+            case WebGPUConstants.TextureFormat.BC2RGBAUnormSRGB:
+            case WebGPUConstants.TextureFormat.BC4RUnorm:
+            case WebGPUConstants.TextureFormat.BC4RSnorm:
+            case WebGPUConstants.TextureFormat.BC1RGBAUNorm:
+            case WebGPUConstants.TextureFormat.BC1RGBAUnormSRGB:
+                return Constants.TEXTURETYPE_UNSIGNED_BYTE;
+
+            // One component = 16 bits
+            case WebGPUConstants.TextureFormat.R16Uint:
+            case WebGPUConstants.TextureFormat.R16Sint:
+            case WebGPUConstants.TextureFormat.RG16Uint:
+            case WebGPUConstants.TextureFormat.RG16Sint:
+            case WebGPUConstants.TextureFormat.RGBA16Uint:
+            case WebGPUConstants.TextureFormat.RGBA16Sint:
+            case WebGPUConstants.TextureFormat.Depth16Unorm:
+                return Constants.TEXTURETYPE_UNSIGNED_SHORT;
+
+            case WebGPUConstants.TextureFormat.R16Float:
+            case WebGPUConstants.TextureFormat.RG16Float:
+            case WebGPUConstants.TextureFormat.RGBA16Float:
+                return Constants.TEXTURETYPE_HALF_FLOAT;
+
+            // One component = 32 bits
+            case WebGPUConstants.TextureFormat.R32Uint:
+            case WebGPUConstants.TextureFormat.R32Sint:
+            case WebGPUConstants.TextureFormat.RG32Uint:
+            case WebGPUConstants.TextureFormat.RG32Sint:
+            case WebGPUConstants.TextureFormat.RGBA32Uint:
+            case WebGPUConstants.TextureFormat.RGBA32Sint:
+                return Constants.TEXTURETYPE_UNSIGNED_INTEGER;
+
+            case WebGPUConstants.TextureFormat.R32Float:
+            case WebGPUConstants.TextureFormat.RG32Float:
+            case WebGPUConstants.TextureFormat.RGBA32Float:
+            case WebGPUConstants.TextureFormat.Depth32Float:
+                return Constants.TEXTURETYPE_FLOAT;
+
+            case WebGPUConstants.TextureFormat.Stencil8:
+                throw "No fixed size for Stencil8 format!";
+            case WebGPUConstants.TextureFormat.Depth24Plus:
+                throw "No fixed size for Depth24Plus format!";
+            case WebGPUConstants.TextureFormat.Depth24PlusStencil8:
+                throw "No fixed size for Depth24PlusStencil8 format!";
+        }
+
+        return Constants.TEXTURETYPE_UNSIGNED_BYTE;
+    }
+
+    private _getBlockInformationFromFormat(format: GPUTextureFormat): { width: number, height: number, length: number } {
+        switch (format) {
+            // 8 bits formats
+            case WebGPUConstants.TextureFormat.R8Unorm:
+            case WebGPUConstants.TextureFormat.R8Snorm:
+            case WebGPUConstants.TextureFormat.R8Uint:
+            case WebGPUConstants.TextureFormat.R8Sint:
+                return { width: 1, height: 1, length: 1 };
+
+            // 16 bits formats
+            case WebGPUConstants.TextureFormat.R16Uint:
+            case WebGPUConstants.TextureFormat.R16Sint:
+            case WebGPUConstants.TextureFormat.R16Float:
+            case WebGPUConstants.TextureFormat.RG8Unorm:
+            case WebGPUConstants.TextureFormat.RG8Snorm:
+            case WebGPUConstants.TextureFormat.RG8Uint:
+            case WebGPUConstants.TextureFormat.RG8Sint:
+                return { width: 1, height: 1, length: 2 };
+
+            // 32 bits formats
+            case WebGPUConstants.TextureFormat.R32Uint:
+            case WebGPUConstants.TextureFormat.R32Sint:
+            case WebGPUConstants.TextureFormat.R32Float:
+            case WebGPUConstants.TextureFormat.RG16Uint:
+            case WebGPUConstants.TextureFormat.RG16Sint:
+            case WebGPUConstants.TextureFormat.RG16Float:
+            case WebGPUConstants.TextureFormat.RGBA8Unorm:
+            case WebGPUConstants.TextureFormat.RGBA8UnormSRGB:
+            case WebGPUConstants.TextureFormat.RGBA8Snorm:
+            case WebGPUConstants.TextureFormat.RGBA8Uint:
+            case WebGPUConstants.TextureFormat.RGBA8Sint:
+            case WebGPUConstants.TextureFormat.BGRA8Unorm:
+            case WebGPUConstants.TextureFormat.BGRA8UnormSRGB:
+            case WebGPUConstants.TextureFormat.RGB9E5UFloat:
+            case WebGPUConstants.TextureFormat.RGB10A2Unorm:
+            case WebGPUConstants.TextureFormat.RG11B10UFloat:
+                return { width: 1, height: 1, length: 4 };
+
+            // 64 bits formats
+            case WebGPUConstants.TextureFormat.RG32Uint:
+            case WebGPUConstants.TextureFormat.RG32Sint:
+            case WebGPUConstants.TextureFormat.RG32Float:
+            case WebGPUConstants.TextureFormat.RGBA16Uint:
+            case WebGPUConstants.TextureFormat.RGBA16Sint:
+            case WebGPUConstants.TextureFormat.RGBA16Float:
+                return { width: 1, height: 1, length: 8 };
+
+            // 128 bits formats
+            case WebGPUConstants.TextureFormat.RGBA32Uint:
+            case WebGPUConstants.TextureFormat.RGBA32Sint:
+            case WebGPUConstants.TextureFormat.RGBA32Float:
+                return { width: 1, height: 1, length: 16 };
+
+            // Depth and stencil formats
+            case WebGPUConstants.TextureFormat.Stencil8:
+                throw "No fixed size for Stencil8 format!";
+            case WebGPUConstants.TextureFormat.Depth16Unorm:
+                return { width: 1, height: 1, length: 2 };
+            case WebGPUConstants.TextureFormat.Depth24Plus:
+                throw "No fixed size for Depth24Plus format!";
+            case WebGPUConstants.TextureFormat.Depth24PlusStencil8:
+                throw "No fixed size for Depth24PlusStencil8 format!";
+            case WebGPUConstants.TextureFormat.Depth32Float:
+                return { width: 1, height: 1, length: 4 };
+            case WebGPUConstants.TextureFormat.Depth24UnormStencil8:
+                return { width: 1, height: 1, length: 4 };
+            case WebGPUConstants.TextureFormat.Depth32FloatStencil8:
+                return { width: 1, height: 1, length: 5 };
+
+            // BC compressed formats usable if "texture-compression-bc" is both
+            // supported by the device/user agent and enabled in requestDevice.
+            case WebGPUConstants.TextureFormat.BC7RGBAUnorm:
+            case WebGPUConstants.TextureFormat.BC7RGBAUnormSRGB:
+            case WebGPUConstants.TextureFormat.BC6HRGBUFloat:
+            case WebGPUConstants.TextureFormat.BC6HRGBSFloat:
+            case WebGPUConstants.TextureFormat.BC5RGUnorm:
+            case WebGPUConstants.TextureFormat.BC5RGSnorm:
+            case WebGPUConstants.TextureFormat.BC3RGBAUnorm:
+            case WebGPUConstants.TextureFormat.BC3RGBAUnormSRGB:
             case WebGPUConstants.TextureFormat.BC2RGBAUnorm:
             case WebGPUConstants.TextureFormat.BC2RGBAUnormSRGB:
                 return { width: 4, height: 4, length: 16 };
+
+            case WebGPUConstants.TextureFormat.BC4RUnorm:
+            case WebGPUConstants.TextureFormat.BC4RSnorm:
             case WebGPUConstants.TextureFormat.BC1RGBAUNorm:
             case WebGPUConstants.TextureFormat.BC1RGBAUnormSRGB:
                 return { width: 4, height: 4, length: 8 };
-
-            case WebGPUConstants.TextureFormat.RGBA16Float:
-                return { width: 1, height: 1, length: 8 };
-            case WebGPUConstants.TextureFormat.RGBA32Float:
-                return { width: 1, height: 1, length: 16 };
         }
 
         return { width: 1, height: 1, length: 4 };
@@ -304,6 +450,12 @@ export class WebGPUTextureHelper {
     public updateTexture(imageBitmap: ImageBitmap | Uint8Array, gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, faceIndex: number = 0, mipLevel: number = 0, invertY = false, premultiplyAlpha = false, offsetX = 0, offsetY = 0,
         commandEncoder?: GPUCommandEncoder): void
     {
+        const useOwnCommandEncoder = commandEncoder === undefined;
+
+        if (useOwnCommandEncoder) {
+            commandEncoder = this._device.createCommandEncoder({});
+        }
+
         const blockInformation = this._getBlockInformationFromFormat(format);
 
         const textureCopyView: GPUTextureCopyView = {
@@ -338,18 +490,18 @@ export class WebGPUTextureHelper {
 
                 buffer.unmap();
 
-                // TODO WEBGPU should we reuse the passed in commandEncoder (if defined)? If yes, we must delay the destroying of the buffer until after the commandEncoder has been submitted...
-                const copyCommandEncoder = this._device.createCommandEncoder({});
-
-                copyCommandEncoder.copyBufferToTexture({
+                commandEncoder!.copyBufferToTexture({
                     buffer: buffer,
                     offset: 0,
-                    bytesPerRow: Math.ceil(width / blockInformation.width) * blockInformation.length
+                    bytesPerRow
                 }, textureCopyView, textureExtent);
 
-                this._device.defaultQueue.submit([copyCommandEncoder.finish()]);
+                if (useOwnCommandEncoder) {
+                    this._device.defaultQueue.submit([commandEncoder!.finish()]);
+                    commandEncoder = null as any;
+                }
 
-                buffer.destroy();
+                this._bufferManager.releaseBuffer(buffer);
             } else {
                 this._device.defaultQueue.writeTexture(textureCopyView, imageBitmap, {
                     offset: 0,
@@ -367,5 +519,41 @@ export class WebGPUTextureHelper {
                 this._device.defaultQueue.copyImageBitmapToTexture({ imageBitmap }, textureCopyView, textureExtent);
             }
         }
+    }
+
+    public readPixels(texture: GPUTexture, x: number, y: number, width: number, height: number, format: GPUTextureFormat, faceIndex: number = 0, mipLevel: number = 0, buffer: Nullable<ArrayBufferView> = null): Promise<ArrayBufferView> {
+        const blockInformation = this._getBlockInformationFromFormat(format);
+
+        const bytesPerRow = Math.ceil(width / blockInformation.width) * blockInformation.length;
+        const size = bytesPerRow * height;
+
+        const gpuBuffer = this._bufferManager.createRawBuffer(size, GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST);
+
+        const commandEncoder = this._device.createCommandEncoder({});
+
+        commandEncoder.copyTextureToBuffer({
+            texture,
+            mipLevel,
+            origin: {
+                x,
+                y,
+                z: Math.max(faceIndex, 0)
+            }
+        }, {
+            buffer: gpuBuffer,
+            offset: 0,
+            bytesPerRow
+        }, {
+            width,
+            height,
+            depth: 1
+        });
+
+        this._device.defaultQueue.submit([commandEncoder!.finish()]);
+
+        const type = this._getTextureTypeFromFormat(format);
+        const floatFormat = type === Constants.TEXTURETYPE_FLOAT ? 2 : type === Constants.TEXTURETYPE_HALF_FLOAT ? 1 : 0;
+
+        return this._bufferManager.readDataFromBuffer(gpuBuffer, size, width, height, floatFormat, 0, buffer);
     }
 }
