@@ -171,7 +171,7 @@ declare global {
     | "bc7-rgba-unorm-srgb"
     | "depth24unorm-stencil8"
     | "depth32float-stencil8";
-  export type GPUTextureComponentType = "float" | "sint" | "uint";
+  export type GPUTextureComponentType = "float" | "sint" | "uint" | "depth-comparison";
   export type GPUTextureViewDimension =
     | "1d"
     | "2d"
