@@ -299,8 +299,9 @@ export class RenderTargetTexture extends Texture {
      * @param isMulti True if multiple textures need to be created (Draw Buffers)
      * @param format The internal format of the buffer in the RTT (RED, RG, RGB, RGBA, ALPHA...)
      * @param delayAllocation if the texture allocation should be delayed (default: false)
+     * @param samples sample count to use when creating the RTT
      */
-    constructor(name: string, size: number | { width: number, height: number, layers?: number } | { ratio: number }, scene: Nullable<Scene>, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Constants.TEXTURETYPE_UNSIGNED_INT, isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false, isMulti = false, format = Constants.TEXTUREFORMAT_RGBA, delayAllocation = false) {
+    constructor(name: string, size: number | { width: number, height: number, layers?: number } | { ratio: number }, scene: Nullable<Scene>, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Constants.TEXTURETYPE_UNSIGNED_INT, isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false, isMulti = false, format = Constants.TEXTUREFORMAT_RGBA, delayAllocation = false, samples?: number) {
         super(null, scene, !generateMipMaps);
         scene = this.getScene();
         if (!scene) {
@@ -335,7 +336,8 @@ export class RenderTargetTexture extends Texture {
             format: format,
             samplingMode: samplingMode,
             generateDepthBuffer: generateDepthBuffer,
-            generateStencilBuffer: generateStencilBuffer
+            generateStencilBuffer: generateStencilBuffer,
+            samples: samples,
         };
 
         if (samplingMode === Texture.NEAREST_SAMPLINGMODE) {
@@ -351,6 +353,9 @@ export class RenderTargetTexture extends Texture {
             } else {
                 this._texture = scene.getEngine().createRenderTargetTexture(this._size, this._renderTargetOptions);
             }
+            if (samples !== undefined) {
+                this.samples = samples;
+            }
         }
     }
 
@@ -360,8 +365,9 @@ export class RenderTargetTexture extends Texture {
      * @param comparisonFunction Specifies the comparison function to set on the texture. If 0 or undefined, the texture is not in comparison mode
      * @param bilinearFiltering Specifies whether or not bilinear filtering is enable on the texture
      * @param generateStencil Specifies whether or not a stencil should be allocated in the texture
+     * @param samples sample count of the depth/stencil texture
      */
-    public createDepthStencilTexture(comparisonFunction: number = 0, bilinearFiltering: boolean = true, generateStencil: boolean = false): void {
+    public createDepthStencilTexture(comparisonFunction: number = 0, bilinearFiltering: boolean = true, generateStencil: boolean = false, samples: number = 1): void {
         const internalTexture = this.getInternalTexture();
         if (!this.getScene() || !internalTexture) {
             return;
@@ -374,7 +380,8 @@ export class RenderTargetTexture extends Texture {
             bilinearFiltering,
             comparisonFunction,
             generateStencil,
-            isCube: this.isCube
+            isCube: this.isCube,
+            samples
         });
     }
 
@@ -606,6 +613,10 @@ export class RenderTargetTexture extends Texture {
             this._texture = scene.getEngine().createRenderTargetCubeTexture(this.getRenderSize(), this._renderTargetOptions);
         } else {
             this._texture = scene.getEngine().createRenderTargetTexture(this._size, this._renderTargetOptions);
+        }
+
+        if (this._renderTargetOptions.samples !== undefined) {
+            this.samples = this._renderTargetOptions.samples;
         }
 
         if (this.onResizeObservable.hasObservers()) {
@@ -986,7 +997,11 @@ export class RenderTargetTexture extends Texture {
             this.isCube,
             this._renderTargetOptions.samplingMode,
             this._renderTargetOptions.generateDepthBuffer,
-            this._renderTargetOptions.generateStencilBuffer
+            this._renderTargetOptions.generateStencilBuffer,
+            undefined,
+            this._renderTargetOptions.format,
+            undefined,
+            this._renderTargetOptions.samples
         );
 
         // Base texture
