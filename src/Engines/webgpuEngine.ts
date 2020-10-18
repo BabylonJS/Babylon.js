@@ -163,7 +163,6 @@ export class WebGPUEngine extends Engine {
     private _textureHelper: WebGPUTextureHelper;
     private _bufferManager: WebGPUBufferManager;
     private _deferredReleaseTextures: Array<[InternalTexture, Nullable<HardwareTextureWrapper>, Nullable<BaseTexture>, Nullable<InternalTexture>]> = [];
-    private _deferredReleaseBuffers: Array<GPUBuffer> = [];
     private _counters: {
         numPipelineDescriptorCreation: number;
         numBindGroupsCreation: number;
@@ -808,14 +807,7 @@ export class WebGPUEngine extends Engine {
 
     /** @hidden */
     public _releaseBuffer(buffer: DataBuffer): boolean {
-        buffer.references--;
-
-        if (buffer.references === 0) {
-            this._deferredReleaseBuffers.push(buffer.underlyingResource as GPUBuffer);
-            return true;
-        }
-
-        return false;
+        return this._bufferManager.releaseBuffer(buffer);
     }
 
     //------------------------------------------------------------------------------
@@ -2428,11 +2420,7 @@ export class WebGPUEngine extends Engine {
 
         this._deferredReleaseTextures.length = 0;
 
-        for (let i = 0; i < this._deferredReleaseBuffers.length; ++i) {
-            this._deferredReleaseBuffers[i].destroy();
-        }
-
-        this._deferredReleaseBuffers.length = 0;
+        this._bufferManager.destroyDeferredBuffers();
 
         this._uploadEncoder = this._device.createCommandEncoder(this._uploadEncoderDescriptor);
         this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
