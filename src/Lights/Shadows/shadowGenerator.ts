@@ -229,7 +229,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
     public set id(id: string) {
         this._id = id;
-        this._nameForCustomEffect = "shadowgenerator_" + id;
+        this._nameForCustomEffect = Constants.CUSTOMEFFECT_PREFIX_SHADOWGENERATOR + id;
     }
 
     /** Gets or sets the custom shader name to use */
@@ -790,8 +790,6 @@ export class ShadowGenerator implements IShadowGenerator {
 
     protected _scene: Scene;
     protected _lightDirection = Vector3.Zero();
-
-    protected _effect: Effect;
 
     protected _viewMatrix = Matrix.Zero();
     protected _projectionMatrix = Matrix.Zero();

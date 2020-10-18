@@ -546,4 +546,9 @@ export class Constants {
      * using the getIndex(Constants.PREPASS_ALBEDO_TEXTURE_TYPE)
      */
     public static readonly PREPASS_ALBEDO_TEXTURE_TYPE = 6;
+
+    /**
+     * Prefixes used by the engine for custom effects
+     */
+    public static readonly CUSTOMEFFECT_PREFIX_SHADOWGENERATOR = "bjs_shadowgenerator_";
 }
