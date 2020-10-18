@@ -515,7 +515,7 @@ export class ThinEngine {
     /**
      * Defines whether the engine has been created with the premultipliedAlpha option on or not.
      */
-    public readonly premultipliedAlpha: boolean = true;
+    public premultipliedAlpha: boolean = true;
 
     /**
      * Observable event triggered before each texture is initialized
