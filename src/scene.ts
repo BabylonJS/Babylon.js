@@ -2003,7 +2003,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param projectionR defines the right Projection matrix to use (if provided)
      */
     public setTransformMatrix(viewL: Matrix, projectionL: Matrix, viewR?: Matrix, projectionR?: Matrix): void {
-        if (this._viewUpdateFlag === viewL.updateFlag && this._projectionUpdateFlag === projectionL.updateFlag) {
+        if (!ThinEngine.Features.trackUbosInFrame && this._viewUpdateFlag === viewL.updateFlag && this._projectionUpdateFlag === projectionL.updateFlag) {
             return;
         }
 
