@@ -580,13 +580,9 @@ export class Tools {
         var halfHeight = height / 2;
 
         engine.onEndFrameObservable.addOnce(async () => {
-            let data = engine.readPixels(0, 0, width, height);
+            let bufferView = await engine.readPixels(0, 0, width, height);
 
-            if ((data as Uint8Array).byteLength === undefined) {
-                data = await data;
-            }
-
-            data = data as Uint8Array;
+            const data = new Uint8Array(bufferView.buffer);
 
             // To flip image on Y axis.
             for (var i = 0; i < halfHeight; i++) {
@@ -611,24 +607,57 @@ export class Tools {
                 }
             }
 
-            // Create a 2D canvas to store the result
-            if (!Tools._ScreenshotCanvas) {
-                Tools._ScreenshotCanvas = document.createElement('canvas');
-            }
-            Tools._ScreenshotCanvas.width = width;
-            Tools._ScreenshotCanvas.height = height;
-            var context = Tools._ScreenshotCanvas.getContext('2d');
-
-            if (context) {
-                // Copy the pixels to a 2D canvas
-                var imageData = context.createImageData(width, height);
-                var castData = <any>(imageData.data);
-                castData.set(data);
-                context.putImageData(imageData, 0, 0);
-
-                Tools.EncodeScreenshotCanvasData(successCallback, mimeType, fileName);
-            }
+            Tools.DumpData(width, height, data, successCallback, mimeType, fileName);
         });
+    }
+
+    /**
+     * Dumps an array buffer
+     * @param width defines the rendering width
+     * @param height defines the rendering height
+     * @param data the data array
+     * @param successCallback defines the callback triggered once the data are available
+     * @param mimeType defines the mime type of the result
+     * @param fileName defines the filename to download. If present, the result will automatically be downloaded
+     * @param invertY true to invert the picture in the Y dimension
+     */
+    public static DumpData(width: number, height: number, data: ArrayBufferView, successCallback?: (data: string) => void, mimeType: string = "image/png", fileName?: string, invertY = false) {
+        // Create a 2D canvas to store the result
+        if (!Tools._ScreenshotCanvas) {
+            Tools._ScreenshotCanvas = document.createElement('canvas');
+        }
+        Tools._ScreenshotCanvas.width = width;
+        Tools._ScreenshotCanvas.height = height;
+        var context = Tools._ScreenshotCanvas.getContext('2d');
+
+        if (context) {
+            // Copy the pixels to a 2D canvas
+            var imageData = context.createImageData(width, height);
+            var castData = <any>(imageData.data);
+            castData.set(data);
+            context.putImageData(imageData, 0, 0);
+
+            let canvas = Tools._ScreenshotCanvas;
+
+            if (invertY) {
+                var canvas2 = document.createElement('canvas');
+                canvas2.width = width;
+                canvas2.height = height;
+
+                var ctx2 = canvas2.getContext('2d');
+                if (!ctx2) {
+                    return;
+                }
+
+                ctx2.translate(0, height);
+                ctx2.scale(1, -1);
+                ctx2.drawImage(Tools._ScreenshotCanvas, 0, 0);
+
+                canvas = canvas2;
+            }
+
+            Tools.EncodeScreenshotCanvasData(successCallback, mimeType, fileName, canvas);
+        }
     }
 
     /**
@@ -665,14 +694,15 @@ export class Tools {
      * @param successCallback defines the callback triggered once the data are available
      * @param mimeType defines the mime type of the result
      * @param fileName defines he filename to download. If present, the result will automatically be downloaded
+     * @param canvas canvas to get the data from. If not provided, use the default screenshot canvas
      */
-    static EncodeScreenshotCanvasData(successCallback?: (data: string) => void, mimeType: string = "image/png", fileName?: string): void {
+    static EncodeScreenshotCanvasData(successCallback?: (data: string) => void, mimeType: string = "image/png", fileName?: string, canvas?: HTMLCanvasElement): void {
         if (successCallback) {
-            var base64Image = Tools._ScreenshotCanvas.toDataURL(mimeType);
+            var base64Image = (canvas ?? Tools._ScreenshotCanvas).toDataURL(mimeType);
             successCallback(base64Image);
         }
         else {
-            this.ToBlob(Tools._ScreenshotCanvas, function(blob) {
+            this.ToBlob(canvas ?? Tools._ScreenshotCanvas, function(blob) {
                 //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
                 if (("download" in document.createElement("a"))) {
                     if (!fileName) {

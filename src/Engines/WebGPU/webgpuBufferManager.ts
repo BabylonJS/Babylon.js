@@ -76,17 +76,79 @@ export class WebGPUBufferManager {
         this._device.defaultQueue.writeBuffer(buffer, dstByteOffset + offset, src.buffer, chunkStart + offset, byteLength - offset);
     }
 
-    public readDataFromBuffer(buffer: GPUBuffer, size: number, offset = 0, destroyBuffer = true): Promise<Uint8Array> {
+    private _FromHalfFloat(value: number): number {
+        const s = (value & 0x8000) >> 15;
+        const e = (value & 0x7C00) >> 10;
+        const f = value & 0x03FF;
+
+        if (e === 0) {
+            return (s ? -1 : 1) * Math.pow(2, -14) * (f / Math.pow(2, 10));
+        } else if (e == 0x1F) {
+            return f ? NaN : ((s ? -1 : 1) * Infinity);
+        }
+
+        return (s ? -1 : 1) * Math.pow(2, e - 15) * (1 + (f / Math.pow(2, 10)));
+    }
+
+    private _GetHalfFloatAsFloatRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, destArray?: Float32Array): Float32Array {
+        if (!destArray) {
+            destArray = new Float32Array(dataLength);
+        }
+        const srcData = new Uint16Array(arrayBuffer, dataOffset);
+        let index = 0;
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                const srcPos = (x + y * width) * 4;
+                destArray[index] = this._FromHalfFloat(srcData[srcPos]);
+                destArray[index + 1] = this._FromHalfFloat(srcData[srcPos + 1]);
+                destArray[index + 2] = this._FromHalfFloat(srcData[srcPos + 2]);
+                destArray[index + 3] = this._FromHalfFloat(srcData[srcPos + 3]);
+                index += 4;
+            }
+        }
+
+        return destArray;
+    }
+
+    public readDataFromBuffer(gpuBuffer: GPUBuffer, size: number, width: number, height: number, floatFormat = 0, offset = 0, buffer: Nullable<ArrayBufferView> = null, destroyBuffer = true): Promise<ArrayBufferView> {
         return new Promise((resolve, reject) => {
-            buffer.mapAsync(GPUMapMode.READ, offset, size).then(() => {
-                const copyArrayBuffer = buffer.getMappedRange(offset, size);
-                const data = new Uint8Array(size);
-                data.set(new Uint8Array(copyArrayBuffer));
-                buffer.unmap();
-                if (destroyBuffer) {
-                    buffer.destroy();
+            gpuBuffer.mapAsync(GPUMapMode.READ, offset, size).then(() => {
+                const copyArrayBuffer = gpuBuffer.getMappedRange(offset, size);
+                let data: Nullable<ArrayBufferView> | Uint8Array | Float32Array = buffer;
+                if (data === null) {
+                    switch (floatFormat) {
+                        case 0: // byte format
+                            data = new Uint8Array(size);
+                            (data as Uint8Array).set(new Uint8Array(copyArrayBuffer));
+                            break;
+                        case 1: // half float
+                            data = this._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, 0, size / 2, copyArrayBuffer);
+                            break;
+                        case 2: // float
+                            data = new Float32Array(size / 4);
+                            (data as Float32Array).set(new Float32Array(copyArrayBuffer));
+                            break;
+                    }
+                } else {
+                    switch (floatFormat) {
+                        case 0: // byte format
+                            data = new Uint8Array(data.buffer);
+                            (data as Uint8Array).set(new Uint8Array(copyArrayBuffer));
+                            break;
+                        case 1: // half float
+                            data = this._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, 0, size / 2, copyArrayBuffer, buffer as Float32Array);
+                            break;
+                        case 2: // float
+                            data = new Float32Array(data.buffer);
+                            (data as Float32Array).set(new Float32Array(copyArrayBuffer));
+                            break;
+                    }
                 }
-                resolve(data);
+                gpuBuffer.unmap();
+                if (destroyBuffer) {
+                    this.releaseBuffer(gpuBuffer);
+                }
+                resolve(data!);
             }, (reason) => reject(reason));
         });
     }

@@ -21,4 +21,6 @@ export class RenderTargetCreationOptions {
     samplingMode?: number;
     /** Defines format (RGBA by default) */
     format?: number;
+    /** Defines sample count (1 by default) */
+    samples?: number;
 }

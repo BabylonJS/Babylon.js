@@ -102,7 +102,7 @@ export class ProceduralTexture extends Texture {
     private _cachedDefines: Nullable<string> = null;
 
     private _contentUpdateId = -1;
-    private _contentData: Nullable<ArrayBufferView>;
+    private _contentData: Nullable<Promise<ArrayBufferView>>;
 
     /**
      * Instantiates a new procedural texture.
@@ -171,15 +171,22 @@ export class ProceduralTexture extends Texture {
 
     /**
      * Gets texture content (Use this function wisely as reading from a texture can be slow)
-     * @returns an ArrayBufferView (Uint8Array or Float32Array)
+     * @returns an ArrayBufferView promise (Uint8Array or Float32Array)
      */
-    public getContent(): Nullable<ArrayBufferView> {
+    public getContent(): Nullable<Promise<ArrayBufferView>> {
         if (this._contentData && this._frameId === this._contentUpdateId) {
             return this._contentData;
         }
 
-        this._contentData = this.readPixels(0, 0, this._contentData);
-        this._contentUpdateId = this._frameId;
+        if (this._contentData) {
+            this._contentData.then((buffer) => {
+                this._contentData = this.readPixels(0, 0, buffer);
+                this._contentUpdateId = this._frameId;
+            });
+        } else {
+            this._contentData = this.readPixels(0, 0);
+            this._contentUpdateId = this._frameId;
+        }
 
         return this._contentData;
     }

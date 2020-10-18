@@ -2098,64 +2098,15 @@ export class WebGPUEngine extends Engine {
         }
     }
 
-    public readPixels(x: number, y: number, width: number, height: number, hasAlpha = true): Promise<Uint8Array> | Uint8Array {
-        const numChannels = 4; // no RGB format in WebGPU
-        const size = height * width * numChannels;
-
-        const buffer = this._bufferManager.createRawBuffer(size, GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST);
-
-        const commandEncoder = this._device.createCommandEncoder({});
-
-        commandEncoder.copyTextureToBuffer({
-            texture: this._swapChainTexture,
-            mipLevel: 0,
-            origin: {
-                x,
-                y,
-                z: 0
-            }
-        }, {
-            buffer: buffer,
-            offset: 0,
-            bytesPerRow: width * numChannels,
-            rowsPerImage: height
-        }, {
-            width,
-            height,
-            depth: 1
-        });
-
-        this._device.defaultQueue.submit([commandEncoder!.finish()]);
-
-        return this._bufferManager.readDataFromBuffer(buffer, size);
+    public readPixels(x: number, y: number, width: number, height: number, hasAlpha = true): Promise<ArrayBufferView> {
+        return this._textureHelper.readPixels(this._swapChainTexture, x, y, width, height, this._options.swapChainFormat!);
     }
 
     /** @hidden */
-    public _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer: Nullable<ArrayBufferView> = null): ArrayBufferView {
-        // TODO WEBGPU Implement the method, the problem being it is "synchronous" in the webgl case...
-        if (dbgShowWarningsNotImplemented) {
-            console.warn("_readTexturePixels not implemented yet in WebGPU");
-        }
+    public _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer: Nullable<ArrayBufferView> = null): Promise<ArrayBufferView> {
+        let gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
 
-        return null as any;
-        /*let readType = (texture.type !== undefined) ? this._getWebGLTextureType(texture.type) : gl.UNSIGNED_BYTE;
-
-        switch (readType) {
-            case gl.UNSIGNED_BYTE:
-                if (!buffer) {
-                    buffer = new Uint8Array(4 * width * height);
-                }
-                readType = gl.UNSIGNED_BYTE;
-                break;
-            default:
-                if (!buffer) {
-                    buffer = new Float32Array(4 * width * height);
-                }
-                readType = gl.FLOAT;
-                break;
-        }
-
-        gl.readPixels(0, 0, width, height, gl.RGBA, readType, <DataView>buffer);*/
+        return this._textureHelper.readPixels(gpuTextureWrapper.underlyingResource!, 0, 0, width, height, gpuTextureWrapper.format, faceIndex, level, buffer);
     }
 
     //------------------------------------------------------------------------------

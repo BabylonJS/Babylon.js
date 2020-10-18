@@ -929,14 +929,10 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
                 pp.onAfterRender = () => {
                     var pixel = scene.getEngine().readPixels(0, 0, 1, 1);
                     var bit_shift = new Vector4(1.0 / (255.0 * 255.0 * 255.0), 1.0 / (255.0 * 255.0), 1.0 / 255.0, 1.0);
-                    if ((pixel as Uint8Array).byteLength !== undefined) {
-                        pixel = pixel as Uint8Array;
-                        this._hdrCurrentLuminance = (pixel[0] * bit_shift.x + pixel[1] * bit_shift.y + pixel[2] * bit_shift.z + pixel[3] * bit_shift.w) / 100.0;
-                    } else {
-                        (pixel as Promise<Uint8Array>).then((pixel) => {
-                            this._hdrCurrentLuminance = (pixel[0] * bit_shift.x + pixel[1] * bit_shift.y + pixel[2] * bit_shift.z + pixel[3] * bit_shift.w) / 100.0;
-                        });
-                    }
+                    pixel.then((pixel) => {
+                        const data = new Uint8Array(pixel.buffer);
+                        this._hdrCurrentLuminance = (data[0] * bit_shift.x + data[1] * bit_shift.y + data[2] * bit_shift.z + data[3] * bit_shift.w) / 100.0;
+                    });
                 };
             }
 
