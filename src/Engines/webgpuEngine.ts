@@ -290,6 +290,7 @@ export class WebGPUEngine extends Engine {
 
         this._canvas = canvas;
         this._options = options;
+        this.premultipliedAlpha = false;
 
         this._hardwareScalingLevel = 1;
         this._mainPassSampleCount = options.antialiasing ? this._defaultSampleCount : 1;
