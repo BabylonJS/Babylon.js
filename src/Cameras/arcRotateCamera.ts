@@ -801,12 +801,16 @@ export class ArcRotateCamera extends TargetCamera {
      */
     public attachControl(ignored: any, noPreventDefault?: boolean, useCtrlForPanning: boolean | number = true, panningMouseButton: number = 2): void {
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
+        this._useCtrlForPanning = useCtrlForPanning as boolean;
+        this._panningMouseButton = panningMouseButton;
+        // backwards compatibility
         if (typeof arguments[0] === "boolean") {
-            this._useCtrlForPanning = arguments[1];
-            this._panningMouseButton = arguments[2];
-        } else {
-            this._useCtrlForPanning = useCtrlForPanning as boolean;
-            this._panningMouseButton = panningMouseButton;
+            if (arguments.length > 1) {
+                this._useCtrlForPanning = arguments[1];
+            }
+            if (arguments.length > 2) {
+                this._panningMouseButton = arguments[2];
+            }
         }
 
         this.inputs.attachElement(noPreventDefault);
@@ -821,10 +825,15 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     /**
-     * Detach the current controls from the camera.
-     * The camera will stop reacting to inputs.
+     * Detach the current controls from the specified dom element.
      */
-    public detachControl(): void {
+    public detachControl(): void;
+
+    /**
+     * Detach the current controls from the specified dom element.
+     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     */
+    public detachControl(ignored?: any): void {
         this.inputs.detachElement();
 
         if (this._reset) {
