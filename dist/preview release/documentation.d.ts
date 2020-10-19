@@ -19330,7 +19330,6 @@ declare module BABYLON {
         attachControl(noPreventDefault?: boolean): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
         detachControl(): void;
         /**
@@ -19508,8 +19507,7 @@ declare module BABYLON {
          */
         attachControl(noPreventDefault?: boolean): void;
         /**
-         * Detach the current controls from the camera.
-         * The camera will stop reacting to inputs.
+         * Detach the current controls from the specified dom element.
          */
         detachControl(): void;
         private _collisionMask;
@@ -20550,7 +20548,7 @@ declare module BABYLON {
          */
         attachControl(noPreventDefault?: boolean): void;
         /**
-         * Detaches the camera from the html element and disables VR
+         * Detach the current controls from the specified dom element.
          */
         detachControl(): void;
         /**
@@ -46569,8 +46567,7 @@ declare module BABYLON {
          */
         attachControl(noPreventDefault: boolean, useCtrlForPanning: boolean, panningMouseButton: number): void;
         /**
-         * Detach the current controls from the camera.
-         * The camera will stop reacting to inputs.
+         * Detach the current controls from the specified dom element.
          */
         detachControl(): void;
         /** @hidden */
@@ -47388,7 +47385,6 @@ declare module BABYLON {
         attachControl(): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
         detachControl(): void;
         /**
@@ -48085,8 +48081,7 @@ declare module BABYLON {
          */
         attachControl(noPreventDefault?: boolean): void;
         /**
-         * Detach the current controls from the camera.
-         * The camera will stop reacting to inputs.
+         * Detach the current controls from the specified dom element.
          */
         detachControl(): void;
         /** @hidden */
