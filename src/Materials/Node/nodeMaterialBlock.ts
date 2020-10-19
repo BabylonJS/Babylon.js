@@ -591,7 +591,7 @@ export class NodeMaterialBlock {
 
     protected _dumpPropertiesCode() {
         let variableName = this._codeVariableName;
-        return `${variableName}.visibleInInspector = ${this.visibleInInspector}`;
+        return `${variableName}.visibleInInspector = ${this.visibleInInspector};\r\n`;
     }
 
     /** @hidden */
