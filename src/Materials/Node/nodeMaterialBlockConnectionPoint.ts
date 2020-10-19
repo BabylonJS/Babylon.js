@@ -34,6 +34,7 @@ export enum NodeMaterialConnectionPointDirection {
 export class NodeMaterialConnectionPoint {
 
     /**
+     * Checks if two types are equivalent
      * @param type1 type 1 to check
      * @param type2 type 2 to check
      * @returns true if both types are equivalent, else false
