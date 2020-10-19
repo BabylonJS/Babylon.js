@@ -537,7 +537,13 @@ export class Camera extends Node {
     /**
      * Detach the current controls from the specified dom element.
      */
-    public detachControl(): void {
+    public detachControl(): void;
+
+    /**
+     * Detach the current controls from the specified dom element.
+     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     */
+    public detachControl(ignored?: any): void {
     }
 
     /**
