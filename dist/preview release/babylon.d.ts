@@ -21029,6 +21029,13 @@ declare module BABYLON {
      * Defines a connection point for a block
      */
     export class NodeMaterialConnectionPoint {
+        /**
+         * Checks if two types are equivalent
+         * @param type1 type 1 to check
+         * @param type2 type 2 to check
+         * @returns true if both types are equivalent, else false
+         */
+        static AreEquivalentTypes(type1: number, type2: number): boolean;
         /** @hidden */
         _ownerBlock: NodeMaterialBlock;
         /** @hidden */
@@ -21040,6 +21047,8 @@ declare module BABYLON {
         _typeConnectionSource: Nullable<NodeMaterialConnectionPoint>;
         /** @hidden */
         _linkedConnectionSource: Nullable<NodeMaterialConnectionPoint>;
+        /** @hidden */
+        _acceptedConnectionPointType: Nullable<NodeMaterialConnectionPoint>;
         private _type;
         /** @hidden */
         _enforceAssociatedVariableName: boolean;
@@ -22182,7 +22191,7 @@ declare module BABYLON {
          * @returns true if the block is ready
          */
         isReady(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): boolean;
-        protected _linkConnectionTypes(inputIndex0: number, inputIndex1: number): void;
+        protected _linkConnectionTypes(inputIndex0: number, inputIndex1: number, looseCoupling?: boolean): void;
         private _processBuild;
         /**
         * Validates the new name for the block node.
