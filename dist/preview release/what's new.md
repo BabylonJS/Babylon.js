@@ -354,6 +354,7 @@
 - Fix same sub mesh being rendered multiple times in the shadow map ([Popov72](https://github.com/Popov72))
 - Fix incorrect shadows on the master mesh when using a lod mesh ([Popov72](https://github.com/Popov72))
 - Take first gamepad connected when attaching camera (and not only XBOX gamepads) ([#9136](https://github.com/BabylonJS/Babylon.js/issues/9136)) ([RaananW](https://github.com/RaananW))
+- Fixed bug in `Mesh.IncreaseVertices` assuming null value if a property didn't exist. ([aWeirdo](https://github.com/aWeirdo))
 
 ## Breaking changes
 
