@@ -285,7 +285,7 @@ declare module "babylonjs-node-editor/diagram/graphFrame" {
         private removePortFromExposedWithLink;
         private createInputPorts;
         private createOutputPorts;
-        private _redrawFramePorts;
+        redrawFramePorts(): void;
         set isCollapsed(value: boolean);
         get nodes(): GraphNode[];
         get ports(): FrameNodePort[];
@@ -598,6 +598,7 @@ declare module "babylonjs-node-editor/sharedComponents/sliderLineComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
     interface ISliderLineComponentProps {
         label: string;
         target?: any;
@@ -611,6 +612,7 @@ declare module "babylonjs-node-editor/sharedComponents/sliderLineComponent" {
         onInput?: (value: number) => void;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
         decimalCount?: number;
+        globalState: GlobalState;
     }
     export class SliderLineComponent extends React.Component<ISliderLineComponentProps, {
         value: number;
@@ -2108,7 +2110,7 @@ declare module NODEEDITOR {
         private removePortFromExposedWithLink;
         private createInputPorts;
         private createOutputPorts;
-        private _redrawFramePorts;
+        redrawFramePorts(): void;
         set isCollapsed(value: boolean);
         get nodes(): GraphNode[];
         get ports(): FrameNodePort[];
@@ -2397,6 +2399,7 @@ declare module NODEEDITOR {
         onInput?: (value: number) => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         decimalCount?: number;
+        globalState: GlobalState;
     }
     export class SliderLineComponent extends React.Component<ISliderLineComponentProps, {
         value: number;

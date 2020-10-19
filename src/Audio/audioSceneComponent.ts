@@ -355,7 +355,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
         container.sounds.forEach((sound) => {
             sound.play();
             sound.autoplay = true;
-            this.scene.mainSoundTrack.AddSound(sound);
+            this.scene.mainSoundTrack.addSound(sound);
         });
     }
 
@@ -371,7 +371,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
         container.sounds.forEach((sound) => {
             sound.stop();
             sound.autoplay = false;
-            this.scene.mainSoundTrack.RemoveSound(sound);
+            this.scene.mainSoundTrack.removeSound(sound);
             if (dispose) {
                 sound.dispose();
             }
