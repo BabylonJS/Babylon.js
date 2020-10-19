@@ -696,7 +696,7 @@ Scene.prototype._internalPick = function (rayFunction: (world: Matrix) => Ray, p
 
         if (mesh.hasThinInstances && (mesh as Mesh).thinInstanceEnablePicking) {
             // first check if the ray intersects the whole bounding box/sphere of the mesh
-            let result = this._internalPickForMesh(pickingInfo, rayFunction, mesh, world, fastCheck, true, trianglePredicate);
+            let result = this._internalPickForMesh(pickingInfo, rayFunction, mesh, world, true, true, trianglePredicate);
             if (result) {
                 if (onlyBoundingInfo) {
                     // the user only asked for a bounding info check so we can return
@@ -755,7 +755,7 @@ Scene.prototype._internalMultiPick = function (rayFunction: (world: Matrix) => R
         let world = mesh.skeleton && mesh.skeleton.overrideMesh ? mesh.skeleton.overrideMesh.getWorldMatrix() : mesh.getWorldMatrix();
 
         if (mesh.hasThinInstances && (mesh as Mesh).thinInstanceEnablePicking) {
-            let result = this._internalPickForMesh(null, rayFunction, mesh, world, false, true, trianglePredicate);
+            let result = this._internalPickForMesh(null, rayFunction, mesh, world, true, true, trianglePredicate);
             if (result) {
                 const tmpMatrix = TmpVectors.Matrix[1];
                 let thinMatrices = (mesh as Mesh).thinInstanceGetWorldMatrices();

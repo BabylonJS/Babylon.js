@@ -172,6 +172,8 @@ export class Effect implements IDisposable {
     private _vertexSourceCodeOverride: string = "";
     private _fragmentSourceCodeOverride: string = "";
     private _transformFeedbackVaryings: Nullable<string[]> = null;
+    private _rawVertexSourceCode: string = "";
+    private _rawFragmentSourceCode: string = "";
     /**
      * Compiled shader to webGL program.
      * @hidden
@@ -286,7 +288,9 @@ export class Effect implements IDisposable {
         };
 
         this._loadShader(vertexSource, "Vertex", "", (vertexCode) => {
+            this._rawVertexSourceCode = vertexCode;
             this._loadShader(fragmentSource, "Fragment", "Pixel", (fragmentCode) => {
+                this._rawFragmentSourceCode = fragmentCode;
                 ShaderProcessor.Process(vertexCode, processorOptions, (migratedVertexCode) => {
                     if (processFinalCode) {
                         migratedVertexCode = processFinalCode("vertex", migratedVertexCode);
@@ -557,6 +561,20 @@ export class Effect implements IDisposable {
      */
     public get fragmentSourceCode(): string {
         return this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride ? this._fragmentSourceCodeOverride : this._fragmentSourceCode;
+    }
+
+    /**
+     * Gets the vertex shader source code before it has been processed by the preprocessor
+     */
+    public get rawVertexSourceCode(): string {
+        return this._rawVertexSourceCode;
+    }
+
+    /**
+     * Gets the fragment shader source code before it has been processed by the preprocessor
+     */
+    public get rawFragmentSourceCode(): string {
+        return this._rawFragmentSourceCode;
     }
 
     /**
