@@ -156,7 +156,7 @@ export class GraphFrame {
 
         for (var i = 0; i < this._exposedInPorts.length; ) { // Input
             var port = this._exposedInPorts[i];
-            if(port.node === null || port.node.enclosingFrameId != this.id) {
+            if(!port || port.node === null || port.node.enclosingFrameId != this.id) {
                 if(this.removePortFromExposedWithNode(port, this._exposedInPorts)) {
                     continue;
                 }
@@ -194,7 +194,9 @@ export class GraphFrame {
         let index = exposedPorts.findIndex(nodePort => nodePort === port);
         if(index >= 0) {
             exposedPorts.splice(index,1)
-            port.exposedPortPosition = -1;
+            if (port) {
+                port.exposedPortPosition = -1;
+            }
             return true;
         }
         return false;
