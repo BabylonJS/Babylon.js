@@ -115,7 +115,7 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
                         this.onChange(this.state.value)
                     }
                 } > 
-                </FloatLineComponent> ;
+                </FloatLineComponent>
                 <div className="slider">
                     <input className="range" type="range" step={this.props.step} min={this.prepareDataToRead(this.props.minimum)} max={this.prepareDataToRead(this.props.maximum)} value={this.prepareDataToRead(this.state.value)}
                         onInput={evt => this.onInput((evt.target as HTMLInputElement).value)}
