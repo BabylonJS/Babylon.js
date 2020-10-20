@@ -19330,7 +19330,6 @@ declare module BABYLON {
         attachControl(noPreventDefault?: boolean): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
         detachControl(): void;
         /**
@@ -19503,13 +19502,12 @@ declare module BABYLON {
          */
         constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive?: boolean);
         /**
-         * Attached controls to the current camera.
+         * Attach the input controls to a specific dom element to get the input from.
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
         attachControl(noPreventDefault?: boolean): void;
         /**
-         * Detach the current controls from the camera.
-         * The camera will stop reacting to inputs.
+         * Detach the current controls from the specified dom element.
          */
         detachControl(): void;
         private _collisionMask;
@@ -20550,7 +20548,7 @@ declare module BABYLON {
          */
         attachControl(noPreventDefault?: boolean): void;
         /**
-         * Detaches the camera from the html element and disables VR
+         * Detach the current controls from the specified dom element.
          */
         detachControl(): void;
         /**
@@ -21029,6 +21027,13 @@ declare module BABYLON {
      * Defines a connection point for a block
      */
     export class NodeMaterialConnectionPoint {
+        /**
+         * Checks if two types are equivalent
+         * @param type1 type 1 to check
+         * @param type2 type 2 to check
+         * @returns true if both types are equivalent, else false
+         */
+        static AreEquivalentTypes(type1: number, type2: number): boolean;
         /** @hidden */
         _ownerBlock: NodeMaterialBlock;
         /** @hidden */
@@ -21040,6 +21045,8 @@ declare module BABYLON {
         _typeConnectionSource: Nullable<NodeMaterialConnectionPoint>;
         /** @hidden */
         _linkedConnectionSource: Nullable<NodeMaterialConnectionPoint>;
+        /** @hidden */
+        _acceptedConnectionPointType: Nullable<NodeMaterialConnectionPoint>;
         private _type;
         /** @hidden */
         _enforceAssociatedVariableName: boolean;
@@ -22182,7 +22189,7 @@ declare module BABYLON {
          * @returns true if the block is ready
          */
         isReady(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): boolean;
-        protected _linkConnectionTypes(inputIndex0: number, inputIndex1: number): void;
+        protected _linkConnectionTypes(inputIndex0: number, inputIndex1: number, looseCoupling?: boolean): void;
         private _processBuild;
         /**
         * Validates the new name for the block node.
@@ -46560,8 +46567,7 @@ declare module BABYLON {
          */
         attachControl(noPreventDefault: boolean, useCtrlForPanning: boolean, panningMouseButton: number): void;
         /**
-         * Detach the current controls from the camera.
-         * The camera will stop reacting to inputs.
+         * Detach the current controls from the specified dom element.
          */
         detachControl(): void;
         /** @hidden */
@@ -47379,7 +47385,6 @@ declare module BABYLON {
         attachControl(): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
         detachControl(): void;
         /**
@@ -47706,8 +47711,8 @@ declare module BABYLON {
         */
         constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive?: boolean);
         /**
-         * Attach a control to the HTML DOM element.
-         * @param noPreventDefault Defines whether events caught by the controls should call preventdefault(). https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
         attachControl(noPreventDefault?: boolean): void;
         /**
@@ -48071,13 +48076,12 @@ declare module BABYLON {
         constructor(name: string, position: Vector3, scene: Scene, lockedTarget?: Nullable<AbstractMesh>);
         private _follow;
         /**
-         * Attached controls to the current camera.
+         * Attach the input controls to a specific dom element to get the input from.
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
         attachControl(noPreventDefault?: boolean): void;
         /**
-         * Detach the current controls from the camera.
-         * The camera will stop reacting to inputs.
+         * Detach the current controls from the specified dom element.
          */
         detachControl(): void;
         /** @hidden */
@@ -71416,6 +71420,10 @@ declare module BABYLON {
         private _chromaticAberrationEnabled;
         private _grainEnabled;
         private _buildAllowed;
+        /**
+         * This is triggered each time the pipeline has been built.
+         */
+        onBuildObservable: Observable<DefaultRenderingPipeline>;
         /**
          * Gets active scene
          */
