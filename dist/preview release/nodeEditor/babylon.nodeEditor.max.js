@@ -63151,8 +63151,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
-
 var BlockTools = /** @class */ (function () {
     function BlockTools() {
     }
@@ -63523,10 +63521,6 @@ var BlockTools = /** @class */ (function () {
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["PBRMetallicRoughnessBlock"]("PBRMetallicRoughness");
             case "SheenBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["SheenBlock"]("Sheen");
-            case "AmbientOcclusionBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["AmbientOcclusionBlock"]("AmbientOcclusion");
-            case "ReflectivityBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ReflectivityBlock"]("Reflectivity");
             case "AnisotropyBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["AnisotropyBlock"]("Anisotropy");
             case "ReflectionBlock":
@@ -63876,7 +63870,7 @@ var NodeListComponent = /** @class */ (function (_super) {
             Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock"],
             Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
             Particle: ["ParticleBlendMultiplyBlock", "ParticleColorBlock", "ParticlePositionWorldBlock", "ParticleRampGradientBlock", "ParticleTextureBlock", "ParticleTextureMaskBlock", "ParticleUVBlock"],
-            PBR: ["PBRMetallicRoughnessBlock", "AmbientOcclusionBlock", "AnisotropyBlock", "ClearCoatBlock", "ReflectionBlock", "ReflectivityBlock", "RefractionBlock", "SheenBlock", "SubSurfaceBlock"],
+            PBR: ["PBRMetallicRoughnessBlock", "AnisotropyBlock", "ClearCoatBlock", "ReflectionBlock", "RefractionBlock", "SheenBlock", "SubSurfaceBlock"],
             PostProcess: ["ScreenPositionBlock", "CurrentScreenBlock"],
             Procedural__Texture: ["ScreenPositionBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
@@ -64047,8 +64041,6 @@ var NodeListComponent = /** @class */ (function (_super) {
         "Rotate2dBlock": "Rotates UV coordinates around the W axis.",
         "PBRMetallicRoughnessBlock": "PBR metallic/roughness material",
         "SheenBlock": "PBR Sheen block",
-        "AmbientOcclusionBlock": "PBR Ambient occlusion block",
-        "ReflectivityBlock": "PBR Reflectivity block",
         "AnisotropyBlock": "PBR Anisotropy block",
         "ReflectionBlock": "PBR Reflection block",
         "ClearCoatBlock": "PBR ClearCoat block",
@@ -64240,6 +64232,7 @@ var PreviewManager = /** @class */ (function () {
         this._engine = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Engine"](targetCanvas, true);
         this._scene = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Scene"](this._engine);
         this._scene.clearColor = this._globalState.backgroundColor;
+        this._scene.ambientColor = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Color3"](1, 1, 1);
         this._camera = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["ArcRotateCamera"]("Camera", 0, 0.8, 4, babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Zero(), this._scene);
         this._camera.lowerRadiusLimit = 3;
         this._camera.upperRadiusLimit = 10;
@@ -65891,6 +65884,41 @@ var OutputDisplayManager = /** @class */ (function () {
 
 /***/ }),
 
+/***/ "./diagram/display/pbrDisplayManager.ts":
+/*!**********************************************!*\
+  !*** ./diagram/display/pbrDisplayManager.ts ***!
+  \**********************************************/
+/*! exports provided: PBRDisplayManager */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PBRDisplayManager", function() { return PBRDisplayManager; });
+var PBRDisplayManager = /** @class */ (function () {
+    function PBRDisplayManager() {
+    }
+    PBRDisplayManager.prototype.getHeaderClass = function (block) {
+        return "";
+    };
+    PBRDisplayManager.prototype.shouldDisplayPortLabels = function (block) {
+        return true;
+    };
+    PBRDisplayManager.prototype.getHeaderText = function (block) {
+        return block.name;
+    };
+    PBRDisplayManager.prototype.getBackgroundColor = function (block) {
+        return "#6174FA";
+    };
+    PBRDisplayManager.prototype.updatePreviewContent = function (block, contentArea) {
+        contentArea.classList.add("pbr-block");
+    };
+    return PBRDisplayManager;
+}());
+
+
+
+/***/ }),
+
 /***/ "./diagram/display/remapDisplayManager.ts":
 /*!************************************************!*\
   !*** ./diagram/display/remapDisplayManager.ts ***!
@@ -65972,7 +66000,7 @@ var TextureDisplayManager = /** @class */ (function () {
         return block.name;
     };
     TextureDisplayManager.prototype.getBackgroundColor = function (block) {
-        return "#323232";
+        return block.getClassName() === "RefractionBlock" || block.getClassName() === "ReflectionBlock" ? "#6174FA" : "#323232";
     };
     TextureDisplayManager.prototype.updatePreviewContent = function (block, contentArea) {
         var _this = this;
@@ -66068,6 +66096,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _display_trigonometryDisplayManager__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./display/trigonometryDisplayManager */ "./diagram/display/trigonometryDisplayManager.ts");
 /* harmony import */ var _display_textureDisplayManager__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./display/textureDisplayManager */ "./diagram/display/textureDisplayManager.ts");
 /* harmony import */ var _display_discardDisplayManager__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./display/discardDisplayManager */ "./diagram/display/discardDisplayManager.ts");
+/* harmony import */ var _display_pbrDisplayManager__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./display/pbrDisplayManager */ "./diagram/display/pbrDisplayManager.ts");
+
 
 
 
@@ -66097,6 +66127,11 @@ DisplayLedger.RegisteredControls["RefractionBlock"] = _display_textureDisplayMan
 DisplayLedger.RegisteredControls["CurrentScreenBlock"] = _display_textureDisplayManager__WEBPACK_IMPORTED_MODULE_6__["TextureDisplayManager"];
 DisplayLedger.RegisteredControls["ParticleTextureBlock"] = _display_textureDisplayManager__WEBPACK_IMPORTED_MODULE_6__["TextureDisplayManager"];
 DisplayLedger.RegisteredControls["DiscardBlock"] = _display_discardDisplayManager__WEBPACK_IMPORTED_MODULE_7__["DiscardDisplayManager"];
+DisplayLedger.RegisteredControls["PBRMetallicRoughnessBlock"] = _display_pbrDisplayManager__WEBPACK_IMPORTED_MODULE_8__["PBRDisplayManager"];
+DisplayLedger.RegisteredControls["AnisotropyBlock"] = _display_pbrDisplayManager__WEBPACK_IMPORTED_MODULE_8__["PBRDisplayManager"];
+DisplayLedger.RegisteredControls["ClearCoatBlock"] = _display_pbrDisplayManager__WEBPACK_IMPORTED_MODULE_8__["PBRDisplayManager"];
+DisplayLedger.RegisteredControls["SheenBlock"] = _display_pbrDisplayManager__WEBPACK_IMPORTED_MODULE_8__["PBRDisplayManager"];
+DisplayLedger.RegisteredControls["SubSurfaceBlock"] = _display_pbrDisplayManager__WEBPACK_IMPORTED_MODULE_8__["PBRDisplayManager"];
 
 
 /***/ }),
@@ -67882,7 +67917,7 @@ var GraphFrame = /** @class */ (function () {
         }
         for (var i = 0; i < this._exposedInPorts.length;) { // Input
             var port = this._exposedInPorts[i];
-            if (port.node === null || port.node.enclosingFrameId != this.id) {
+            if (!port || port.node === null || port.node.enclosingFrameId != this.id) {
                 if (this.removePortFromExposedWithNode(port, this._exposedInPorts)) {
                     continue;
                 }
@@ -67924,7 +67959,9 @@ var GraphFrame = /** @class */ (function () {
         var index = exposedPorts.findIndex(function (nodePort) { return nodePort === port; });
         if (index >= 0) {
             exposedPorts.splice(index, 1);
-            port.exposedPortPosition = -1;
+            if (port) {
+                port.exposedPortPosition = -1;
+            }
             return true;
         }
         return false;
@@ -69309,7 +69346,7 @@ var NodePort = /** @class */ (function () {
                 this._img.src = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMSAyMSI+PGRlZnM+PHN0eWxlPi5jbHMtMXtmaWxsOiNmZmY7fTwvc3R5bGU+PC9kZWZzPjx0aXRsZT5NYXRyaXg8L3RpdGxlPjxnIGlkPSJMYXllcl81IiBkYXRhLW5hbWU9IkxheWVyIDUiPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTExLjUsNi4xMVY5LjVoMy4zOUE0LjUxLDQuNTEsMCwwLDAsMTEuNSw2LjExWiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTExLjUsMTQuODlhNC41MSw0LjUxLDAsMCwwLDMuMzktMy4zOUgxMS41WiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTExLjUsMy4wN3YyQTUuNTQsNS41NCwwLDAsMSwxNS45Miw5LjVoMkE3LjUxLDcuNTEsMCwwLDAsMTEuNSwzLjA3WiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTE1LjkyLDExLjVhNS41NCw1LjU0LDAsMCwxLTQuNDIsNC40MnYyYTcuNTEsNy41MSwwLDAsMCw2LjQzLTYuNDNaIi8+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNNS4wOCwxMS41aC0yQTcuNTEsNy41MSwwLDAsMCw5LjUsMTcuOTN2LTJBNS41NCw1LjU0LDAsMCwxLDUuMDgsMTEuNVoiLz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik05LjUsMy4wN0E3LjUxLDcuNTEsMCwwLDAsMy4wNyw5LjVoMkE1LjU0LDUuNTQsMCwwLDEsOS41LDUuMDhaIi8+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNOS41LDExLjVINi4xMUE0LjUxLDQuNTEsMCwwLDAsOS41LDE0Ljg5WiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTkuNSw2LjExQTQuNTEsNC41MSwwLDAsMCw2LjExLDkuNUg5LjVaIi8+PC9nPjwvc3ZnPg==";
                 break;
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1__["NodeMaterialBlockConnectionPointTypes"].Object:
-                this._img.src = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMSAyMSI+PGRlZnM+PHN0eWxlPi5jbHMtMXtmaWxsOiNmZmY7fTwvc3R5bGU+PC9kZWZzPjx0aXRsZT5WZWN0b3IxPC90aXRsZT48ZyBpZD0iTGF5ZXJfNSIgZGF0YS1uYW1lPSJMYXllciA1Ij48Y2lyY2xlIGNsYXNzPSJjbHMtMSIgY3g9IjEwLjUiIGN5PSIxMC41IiByPSI3LjUiLz48L2c+PC9zdmc+";
+                this._img.src = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMSIgaGVpZ2h0PSIyMSIgdmlld0JveD0iMCAwIDIxIDIxIj48Y2lyY2xlIGN4PSI3LjEiIGN5PSIxMy4wOCIgcj0iMy4yNSIgc3R5bGU9ImZpbGw6I2ZmZiIvPjxwYXRoIGQ9Ik0xMC40OSwzQTcuNTIsNy41MiwwLDAsMCwzLDEwYTUuMTMsNS4xMywwLDEsMSw2LDcuODUsNy42MSw3LjYxLDAsMCwwLDEuNTIuMTYsNy41Miw3LjUyLDAsMCwwLDAtMTVaIiBzdHlsZT0iZmlsbDojZmZmIi8+PC9zdmc+";
                 break;
         }
     };
@@ -70326,7 +70363,7 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
     function TexturePropertyTabComponent(props) {
         var _this = _super.call(this, props) || this;
         var texture = _this.textureBlock.texture;
-        _this.state = { isEmbedded: !texture || texture.name.substring(0, 4) === "data", loadAsCubeTexture: texture && texture.isCube };
+        _this.state = { isEmbedded: !texture || texture.name.substring(0, 4) === "data", loadAsCubeTexture: texture && texture.isCube, textureIsPrefiltered: true };
         return _this;
     }
     Object.defineProperty(TexturePropertyTabComponent.prototype, "textureBlock", {
@@ -70403,7 +70440,12 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
                 else if (file.name.toLowerCase().indexOf(".env") > 0) {
                     extension = ".env";
                 }
-                texture.updateURL(base64data, extension, function () { return _this.updateAfterTextureLoad(); });
+                if (texture.isCube) {
+                    texture.updateURL(base64data, extension, function () { return _this.updateAfterTextureLoad(); }, _this.state.textureIsPrefiltered);
+                }
+                else {
+                    texture.updateURL(base64data, extension, function () { return _this.updateAfterTextureLoad(); });
+                }
             };
         }, undefined, true);
     };
@@ -70419,7 +70461,7 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
             else if (url.toLowerCase().indexOf(".env") > 0) {
                 extension = ".env";
             }
-            texture.updateURL(url, extension, function () { return _this.updateAfterTextureLoad(); });
+            texture.updateURL(url, extension, function () { return _this.updateAfterTextureLoad(); }, this.state.textureIsPrefiltered);
         }
         else {
             texture.updateURL(url, null, function () { return _this.updateAfterTextureLoad(); });
@@ -70435,6 +70477,7 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
         url = url.replace(/\?nocache=\d+/, "");
         var isInReflectionMode = this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["ReflectionTextureBlock"] || this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["ReflectionBlock"] || this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["RefractionBlock"];
         var isFrozenTexture = this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["CurrentScreenBlock"] || this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["ParticleTextureBlock"];
+        var showIsInGammaSpace = this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["ReflectionBlock"];
         var reflectionModeOptions = [
             {
                 label: "Cubic", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CUBIC_MODE
@@ -70476,6 +70519,10 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
                         } }),
                 texture && !isInReflectionMode &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Convert to linear space", propertyName: "convertToLinearSpace", target: this.props.block, onValueChanged: function () {
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        } }),
+                texture && showIsInGammaSpace &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Is in gamma space", propertyName: "gammaSpace", target: texture, onValueChanged: function () {
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
                 texture && isInReflectionMode &&
@@ -70530,6 +70577,8 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
                     } }),
                 isInReflectionMode &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Load as cube texture", isSelected: function () { return _this.state.loadAsCubeTexture; }, onSelect: function (value) { return _this.setState({ loadAsCubeTexture: value }); } }),
+                isInReflectionMode && this.state.loadAsCubeTexture &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Texture is prefiltered", isSelected: function () { return _this.state.textureIsPrefiltered; }, onSelect: function (value) { return _this.setState({ textureIsPrefiltered: value }); } }),
                 this.state.isEmbedded &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["FileButtonLineComponent"], { label: "Upload", onClick: function (file) { return _this.replaceTexture(file); }, accept: ".jpg, .png, .tga, .dds, .env" }),
                 !this.state.isEmbedded &&

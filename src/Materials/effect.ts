@@ -13,7 +13,7 @@ import { IEffectFallbacks } from './iEffectFallbacks';
 
 declare type Engine = import("../Engines/engine").Engine;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
-declare type BaseTexture = import("../Materials/Textures/baseTexture").BaseTexture;
+declare type ThinTexture = import("../Materials/Textures/thinTexture").ThinTexture;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 
@@ -809,7 +809,7 @@ export class Effect implements IDisposable {
      * @param channel Name of the sampler variable.
      * @param texture Texture to set.
      */
-    public setTexture(channel: string, texture: Nullable<BaseTexture>): void {
+    public setTexture(channel: string, texture: Nullable<ThinTexture>): void {
         this._engine.setTexture(this._samplers[channel], this._uniforms[channel], texture);
     }
 
@@ -827,7 +827,7 @@ export class Effect implements IDisposable {
      * @param channel Name of the variable.
      * @param textures Textures to set.
      */
-    public setTextureArray(channel: string, textures: BaseTexture[]): void {
+    public setTextureArray(channel: string, textures: ThinTexture[]): void {
         let exName = channel + "Ex";
         if (this._samplerList.indexOf(exName + "0") === -1) {
             const initialPos = this._samplerList.indexOf(channel);

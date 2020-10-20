@@ -8,10 +8,10 @@ import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { Constants } from "../../Engines/constants";
 import { IAnimatable } from '../../Animations/animatable.interface';
 import { GUID } from '../../Misc/guid';
-import { ISize, Size } from '../../Maths/math.size';
 
 import "../../Misc/fileTools";
 import { ThinEngine } from '../../Engines/thinEngine';
+import { ThinTexture } from './thinTexture';
 
 declare type Animation = import("../../Animations/animation").Animation;
 
@@ -20,7 +20,7 @@ declare type Animation = import("../../Animations/animation").Animation;
  * It groups all the common properties the materials, post process, lights... might need
  * in order to make a correct use of the texture.
  */
-export class BaseTexture implements IAnimatable {
+export class BaseTexture extends ThinTexture implements IAnimatable {
     /**
      * Default anisotropic filtering level for the application.
      * It is set to 4 as a good tradeoff between perf and quality.
@@ -121,36 +121,32 @@ export class BaseTexture implements IAnimatable {
         return this._coordinatesMode;
     }
 
-    private _wrapU = Constants.TEXTURE_WRAP_ADDRESSMODE;
     /**
-    * | Value | Type               | Description |
-    * | ----- | ------------------ | ----------- |
-    * | 0     | CLAMP_ADDRESSMODE  |             |
-    * | 1     | WRAP_ADDRESSMODE   |             |
-    * | 2     | MIRROR_ADDRESSMODE |             |
-    */
+     * | Value | Type               | Description |
+     * | ----- | ------------------ | ----------- |
+     * | 0     | CLAMP_ADDRESSMODE  |             |
+     * | 1     | WRAP_ADDRESSMODE   |             |
+     * | 2     | MIRROR_ADDRESSMODE |             |
+     */
     @serialize()
     public get wrapU() {
         return this._wrapU;
     }
-
     public set wrapU(value: number) {
         this._wrapU = value;
     }
 
-    private _wrapV = Constants.TEXTURE_WRAP_ADDRESSMODE;
     /**
-    * | Value | Type               | Description |
-    * | ----- | ------------------ | ----------- |
-    * | 0     | CLAMP_ADDRESSMODE  |             |
-    * | 1     | WRAP_ADDRESSMODE   |             |
-    * | 2     | MIRROR_ADDRESSMODE |             |
-    */
+     * | Value | Type               | Description |
+     * | ----- | ------------------ | ----------- |
+     * | 0     | CLAMP_ADDRESSMODE  |             |
+     * | 1     | WRAP_ADDRESSMODE   |             |
+     * | 2     | MIRROR_ADDRESSMODE |             |
+     */
     @serialize()
     public get wrapV() {
         return this._wrapV;
     }
-
     public set wrapV(value: number) {
         this._wrapV = value;
     }
@@ -173,13 +169,14 @@ export class BaseTexture implements IAnimatable {
     @serialize()
     public anisotropicFilteringLevel = BaseTexture.DEFAULT_ANISOTROPIC_FILTERING_LEVEL;
 
+    private _isCube = false;
     /**
      * Define if the texture is a cube texture or if false a 2d texture.
      */
     @serialize()
     public get isCube(): boolean {
         if (!this._texture) {
-            return false;
+            return this._isCube;
         }
 
         return this._texture.isCube;
@@ -187,10 +184,10 @@ export class BaseTexture implements IAnimatable {
 
     public set isCube(value: boolean) {
         if (!this._texture) {
-            return;
+            this._isCube = value;
+        } else {
+            this._texture.isCube = value;
         }
-
-        this._texture.isCube = value;
     }
 
     /**
@@ -411,13 +408,7 @@ export class BaseTexture implements IAnimatable {
         this._onDisposeObserver = this.onDisposeObservable.add(callback);
     }
 
-    /**
-     * Define the current state of the loading sequence when in delayed load mode.
-     */
-    public delayLoadState = Constants.DELAYLOADSTATE_NONE;
-
     protected _scene: Nullable<Scene> = null;
-    protected _engine: Nullable<ThinEngine> = null;
 
     /** @hidden */
     public _texture: Nullable<InternalTexture> = null;
@@ -439,6 +430,8 @@ export class BaseTexture implements IAnimatable {
      * @param sceneOrEngine Define the scene or engine the texture blongs to
      */
     constructor(sceneOrEngine: Nullable<Scene | ThinEngine>) {
+        super(null);
+
         if (sceneOrEngine) {
             if (BaseTexture._isScene(sceneOrEngine)) {
                 this._scene = sceneOrEngine;
@@ -499,113 +492,11 @@ export class BaseTexture implements IAnimatable {
     }
 
     /**
-     * Get the underlying lower level texture from Babylon.
-     * @returns the insternal texture
-     */
-    public getInternalTexture(): Nullable<InternalTexture> {
-        return this._texture;
-    }
-
-    /**
      * Get if the texture is ready to be consumed (either it is ready or it is not blocking)
      * @returns true if ready or not blocking
      */
     public isReadyOrNotBlocking(): boolean {
         return !this.isBlocking || this.isReady();
-    }
-
-    /**
-     * Get if the texture is ready to be used (downloaded, converted, mip mapped...).
-     * @returns true if fully ready
-     */
-    public isReady(): boolean {
-        if (this.delayLoadState === Constants.DELAYLOADSTATE_NOTLOADED) {
-            this.delayLoad();
-            return false;
-        }
-
-        if (this._texture) {
-            return this._texture.isReady;
-        }
-
-        return false;
-    }
-
-    private _cachedSize: ISize = Size.Zero();
-    /**
-     * Get the size of the texture.
-     * @returns the texture size.
-     */
-    public getSize(): ISize {
-        if (this._texture) {
-            if (this._texture.width) {
-                this._cachedSize.width = this._texture.width;
-                this._cachedSize.height = this._texture.height;
-                return this._cachedSize;
-            }
-
-            if (this._texture._size) {
-                this._cachedSize.width = this._texture._size;
-                this._cachedSize.height = this._texture._size;
-                return this._cachedSize;
-            }
-        }
-
-        return this._cachedSize;
-    }
-
-    /**
-     * Get the base size of the texture.
-     * It can be different from the size if the texture has been resized for POT for instance
-     * @returns the base size
-     */
-    public getBaseSize(): ISize {
-        if (!this.isReady() || !this._texture) {
-            return Size.Zero();
-        }
-
-        if (this._texture._size) {
-            return new Size(this._texture._size, this._texture._size);
-        }
-
-        return new Size(this._texture.baseWidth, this._texture.baseHeight);
-    }
-
-    /**
-     * Update the sampling mode of the texture.
-     * Default is Trilinear mode.
-     *
-     * | Value | Type               | Description |
-     * | ----- | ------------------ | ----------- |
-     * | 1     | NEAREST_SAMPLINGMODE or NEAREST_NEAREST_MIPLINEAR  | Nearest is: mag = nearest, min = nearest, mip = linear |
-     * | 2     | BILINEAR_SAMPLINGMODE or LINEAR_LINEAR_MIPNEAREST | Bilinear is: mag = linear, min = linear, mip = nearest |
-     * | 3     | TRILINEAR_SAMPLINGMODE or LINEAR_LINEAR_MIPLINEAR | Trilinear is: mag = linear, min = linear, mip = linear |
-     * | 4     | NEAREST_NEAREST_MIPNEAREST |             |
-     * | 5    | NEAREST_LINEAR_MIPNEAREST |             |
-     * | 6    | NEAREST_LINEAR_MIPLINEAR |             |
-     * | 7    | NEAREST_LINEAR |             |
-     * | 8    | NEAREST_NEAREST |             |
-     * | 9   | LINEAR_NEAREST_MIPNEAREST |             |
-     * | 10   | LINEAR_NEAREST_MIPLINEAR |             |
-     * | 11   | LINEAR_LINEAR |             |
-     * | 12   | LINEAR_NEAREST |             |
-     *
-     *    > _mag_: magnification filter (close to the viewer)
-     *    > _min_: minification filter (far from the viewer)
-     *    > _mip_: filter used between mip map levels
-     *@param samplingMode Define the new sampling mode of the texture
-     */
-    public updateSamplingMode(samplingMode: number): void {
-        if (!this._texture) {
-            return;
-        }
-
-        const engine = this._getEngine();
-        if (!engine) {
-            return;
-        }
-
-        engine.updateTextureSamplingMode(samplingMode, this._texture);
     }
 
     /**
@@ -649,12 +540,6 @@ export class BaseTexture implements IAnimatable {
     /** @hidden */
     public _rebuild(): void {
 
-    }
-
-    /**
-     * Triggers the load sequence in delayed load mode.
-     */
-    public delayLoad(): void {
     }
 
     /**
@@ -742,16 +627,6 @@ export class BaseTexture implements IAnimatable {
         }
     }
 
-    /**
-     * Release and destroy the underlying lower level texture aka internalTexture.
-     */
-    public releaseInternalTexture(): void {
-        if (this._texture) {
-            this._texture.dispose();
-            this._texture = null;
-        }
-    }
-
     /** @hidden */
     public get _lodTextureHigh(): Nullable<BaseTexture> {
         if (this._texture) {
@@ -797,18 +672,11 @@ export class BaseTexture implements IAnimatable {
             this._scene = null;
         }
 
-        if (this._texture === undefined) {
-            return;
-        }
-
-        // Release
-        this.releaseInternalTexture();
-
         // Callback
         this.onDisposeObservable.notifyObservers(this);
         this.onDisposeObservable.clear();
 
-        this._engine = null;
+        super.dispose();
     }
 
     /**
