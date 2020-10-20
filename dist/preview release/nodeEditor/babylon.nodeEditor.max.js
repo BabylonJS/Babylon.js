@@ -63151,8 +63151,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
-
 var BlockTools = /** @class */ (function () {
     function BlockTools() {
     }
@@ -63523,10 +63521,6 @@ var BlockTools = /** @class */ (function () {
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["PBRMetallicRoughnessBlock"]("PBRMetallicRoughness");
             case "SheenBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["SheenBlock"]("Sheen");
-            case "AmbientOcclusionBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["AmbientOcclusionBlock"]("AmbientOcclusion");
-            case "ReflectivityBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ReflectivityBlock"]("Reflectivity");
             case "AnisotropyBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["AnisotropyBlock"]("Anisotropy");
             case "ReflectionBlock":
@@ -63876,7 +63870,7 @@ var NodeListComponent = /** @class */ (function (_super) {
             Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock"],
             Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
             Particle: ["ParticleBlendMultiplyBlock", "ParticleColorBlock", "ParticlePositionWorldBlock", "ParticleRampGradientBlock", "ParticleTextureBlock", "ParticleTextureMaskBlock", "ParticleUVBlock"],
-            PBR: ["PBRMetallicRoughnessBlock", "AmbientOcclusionBlock", "AnisotropyBlock", "ClearCoatBlock", "ReflectionBlock", "ReflectivityBlock", "RefractionBlock", "SheenBlock", "SubSurfaceBlock"],
+            PBR: ["PBRMetallicRoughnessBlock", "AnisotropyBlock", "ClearCoatBlock", "ReflectionBlock", "RefractionBlock", "SheenBlock", "SubSurfaceBlock"],
             PostProcess: ["ScreenPositionBlock", "CurrentScreenBlock"],
             Procedural__Texture: ["ScreenPositionBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
@@ -64047,8 +64041,6 @@ var NodeListComponent = /** @class */ (function (_super) {
         "Rotate2dBlock": "Rotates UV coordinates around the W axis.",
         "PBRMetallicRoughnessBlock": "PBR metallic/roughness material",
         "SheenBlock": "PBR Sheen block",
-        "AmbientOcclusionBlock": "PBR Ambient occlusion block",
-        "ReflectivityBlock": "PBR Reflectivity block",
         "AnisotropyBlock": "PBR Anisotropy block",
         "ReflectionBlock": "PBR Reflection block",
         "ClearCoatBlock": "PBR ClearCoat block",
@@ -64240,6 +64232,7 @@ var PreviewManager = /** @class */ (function () {
         this._engine = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Engine"](targetCanvas, true);
         this._scene = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Scene"](this._engine);
         this._scene.clearColor = this._globalState.backgroundColor;
+        this._scene.ambientColor = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Color3"](1, 1, 1);
         this._camera = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["ArcRotateCamera"]("Camera", 0, 0.8, 4, babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Zero(), this._scene);
         this._camera.lowerRadiusLimit = 3;
         this._camera.upperRadiusLimit = 10;
@@ -67882,7 +67875,7 @@ var GraphFrame = /** @class */ (function () {
         }
         for (var i = 0; i < this._exposedInPorts.length;) { // Input
             var port = this._exposedInPorts[i];
-            if (port.node === null || port.node.enclosingFrameId != this.id) {
+            if (!port || port.node === null || port.node.enclosingFrameId != this.id) {
                 if (this.removePortFromExposedWithNode(port, this._exposedInPorts)) {
                     continue;
                 }
@@ -67924,7 +67917,9 @@ var GraphFrame = /** @class */ (function () {
         var index = exposedPorts.findIndex(function (nodePort) { return nodePort === port; });
         if (index >= 0) {
             exposedPorts.splice(index, 1);
-            port.exposedPortPosition = -1;
+            if (port) {
+                port.exposedPortPosition = -1;
+            }
             return true;
         }
         return false;
