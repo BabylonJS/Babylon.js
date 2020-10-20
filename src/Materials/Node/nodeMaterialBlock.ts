@@ -425,8 +425,12 @@ export class NodeMaterialBlock {
         return true;
     }
 
-    protected _linkConnectionTypes(inputIndex0: number, inputIndex1: number) {
-        this._inputs[inputIndex0]._linkedConnectionSource = this._inputs[inputIndex1];
+    protected _linkConnectionTypes(inputIndex0: number, inputIndex1: number, looseCoupling = false) {
+        if (looseCoupling) {
+            this._inputs[inputIndex1]._acceptedConnectionPointType = this._inputs[inputIndex0];
+        } else {
+            this._inputs[inputIndex0]._linkedConnectionSource = this._inputs[inputIndex1];
+        }
         this._inputs[inputIndex1]._linkedConnectionSource = this._inputs[inputIndex0];
     }
 
@@ -587,7 +591,7 @@ export class NodeMaterialBlock {
 
     protected _dumpPropertiesCode() {
         let variableName = this._codeVariableName;
-        return `${variableName}.visibleInInspector = ${this.visibleInInspector}`;
+        return `${variableName}.visibleInInspector = ${this.visibleInInspector};\r\n`;
     }
 
     /** @hidden */
