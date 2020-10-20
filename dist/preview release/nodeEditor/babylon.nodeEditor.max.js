@@ -67731,7 +67731,7 @@ var GraphFrame = /** @class */ (function () {
             if (_this_1.nodes.indexOf(node) === -1) {
                 return;
             }
-            _this_1._redrawFramePorts();
+            _this_1.redrawFramePorts();
         });
         this._commentsElement = document.createElement('div');
         this._commentsElement.className = 'frame-comments';
@@ -67933,15 +67933,20 @@ var GraphFrame = /** @class */ (function () {
         var aPort = exposedPorts.findIndex(function (nodePort) { return nodePort === nodeLink.portA; });
         var bPort = exposedPorts.findIndex(function (nodePort) { return nodePort === nodeLink.portB; });
         if (aPort >= 0) {
-            exposedPorts.splice(aPort, 1);
-            nodeLink.portA.exposedPortPosition = -1;
-        }
-        else if (bPort >= 0) {
-            exposedPorts.splice(bPort, 1);
-            if (nodeLink.portB) {
-                nodeLink.portB.exposedPortPosition = -1;
+            if (!nodeLink.portA.exposedOnFrame) {
+                exposedPorts.splice(aPort, 1);
+                nodeLink.portA.exposedPortPosition = -1;
+                return true;
             }
         }
+        else if (bPort >= 0) {
+            if (nodeLink.portB && !nodeLink.portB.exposedOnFrame) {
+                exposedPorts.splice(bPort, 1);
+                nodeLink.portB.exposedPortPosition = -1;
+                return true;
+            }
+        }
+        return false;
     };
     GraphFrame.prototype.createInputPorts = function (port, node) {
         var _this_1 = this;
@@ -67954,8 +67959,9 @@ var GraphFrame = /** @class */ (function () {
                     link.isVisible = true;
                     portAdded = true;
                     var onLinkDisposedObserver = link.onDisposedObservable.add(function (nodeLink) {
-                        _this_1.removePortFromExposedWithLink(nodeLink, _this_1._exposedInPorts);
-                        _this_1._redrawFramePorts();
+                        if (_this_1.removePortFromExposedWithLink(nodeLink, _this_1._exposedInPorts)) {
+                            _this_1.redrawFramePorts();
+                        }
                     });
                     this._onNodeLinkDisposedObservers.push(onLinkDisposedObserver);
                 }
@@ -67983,8 +67989,9 @@ var GraphFrame = /** @class */ (function () {
                         this._frameOutPorts.push(localPort);
                         link.isVisible = true;
                         var onLinkDisposedObserver = link.onDisposedObservable.add(function (nodeLink) {
-                            _this_1.removePortFromExposedWithLink(nodeLink, _this_1._exposedOutPorts);
-                            _this_1._redrawFramePorts();
+                            if (_this_1.removePortFromExposedWithLink(nodeLink, _this_1._exposedOutPorts)) {
+                                _this_1.redrawFramePorts();
+                            }
                         });
                         this._onNodeLinkDisposedObservers.push(onLinkDisposedObserver);
                     }
@@ -68018,7 +68025,7 @@ var GraphFrame = /** @class */ (function () {
         }
         return false;
     };
-    GraphFrame.prototype._redrawFramePorts = function () {
+    GraphFrame.prototype.redrawFramePorts = function () {
         if (!this.isCollapsed) {
             return;
         }
@@ -68035,6 +68042,7 @@ var GraphFrame = /** @class */ (function () {
         this._frameOutPorts = [];
         this._controlledPorts = [];
         this._createFramePorts();
+        this._markFramePortPositions();
         this.ports.forEach(function (framePort) { return framePort.node._refreshLinks(); });
     };
     Object.defineProperty(GraphFrame.prototype, "nodes", {
@@ -68403,17 +68411,6 @@ var GraphFrame = /** @class */ (function () {
     };
     GraphFrame.prototype.dispose = function () {
         var _a;
-        if (this.isCollapsed) {
-            while (this._nodes.length > 0) {
-                this._nodes[0].dispose();
-            }
-            this.isCollapsed = false;
-        }
-        else {
-            this._nodes.forEach(function (node) {
-                node.enclosingFrameId = -1;
-            });
-        }
         if (this._onSelectionChangedObserver) {
             this._ownerCanvas.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
         }
@@ -68812,6 +68809,7 @@ var GraphNode = /** @class */ (function () {
         }
     };
     GraphNode.prototype.refresh = function () {
+        var _this = this;
         if (this._displayManager) {
             this._header.innerHTML = this._displayManager.getHeaderText(this.block);
             this._displayManager.updatePreviewContent(this.block, this._content);
@@ -68832,6 +68830,12 @@ var GraphNode = /** @class */ (function () {
         for (var _b = 0, _c = this._outputPorts; _b < _c.length; _b++) {
             var port = _c[_b];
             port.refresh();
+        }
+        if (this.enclosingFrameId !== -1) {
+            var index = this._ownerCanvas.frames.findIndex(function (frame) { return frame.id === _this.enclosingFrameId; });
+            if (index >= 0 && this._ownerCanvas.frames[index].isCollapsed) {
+                this._ownerCanvas.frames[index].redrawFramePorts();
+            }
         }
         this._comments.innerHTML = this.block.comments || "";
         this._comments.title = this.block.comments || "";
@@ -71059,6 +71063,24 @@ var GraphEditor = /** @class */ (function (_super) {
                     _this._graphCanvas.selectedLink.dispose();
                 }
                 if (_this._graphCanvas.selectedFrame) {
+                    var frame = _this._graphCanvas.selectedFrame;
+                    if (frame.isCollapsed) {
+                        while (frame.nodes.length > 0) {
+                            var targetBlock = frame.nodes[0].block;
+                            _this.props.globalState.nodeMaterial.removeBlock(targetBlock);
+                            var blockIndex = _this._blocks.indexOf(targetBlock);
+                            if (blockIndex > -1) {
+                                _this._blocks.splice(blockIndex, 1);
+                            }
+                            frame.nodes[0].dispose();
+                        }
+                        frame.isCollapsed = false;
+                    }
+                    else {
+                        frame.nodes.forEach(function (node) {
+                            node.enclosingFrameId = -1;
+                        });
+                    }
                     _this._graphCanvas.selectedFrame.dispose();
                 }
                 _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);

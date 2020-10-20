@@ -5818,19 +5818,19 @@ var STLExport = /** @class */ (function () {
     STLExport.CreateSTL = function (meshes, download, fileName, binary, isLittleEndian) {
         //Binary support adapted from https://gist.github.com/paulkaplan/6d5f0ab2c7e8fdc68a61
         if (download === void 0) { download = true; }
-        if (fileName === void 0) { fileName = 'STL_Mesh'; }
+        if (fileName === void 0) { fileName = 'stlmesh'; }
         if (binary === void 0) { binary = false; }
         if (isLittleEndian === void 0) { isLittleEndian = true; }
         var getFaceData = function (indices, vertices, i) {
             var id = [indices[i] * 3, indices[i + 1] * 3, indices[i + 2] * 3];
             var v = [
-                new babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0__["Vector3"](vertices[id[0]], vertices[id[0] + 1], vertices[id[0] + 2]),
-                new babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0__["Vector3"](vertices[id[1]], vertices[id[1] + 1], vertices[id[1] + 2]),
-                new babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0__["Vector3"](vertices[id[2]], vertices[id[2] + 1], vertices[id[2] + 2])
+                new babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0__["Vector3"](vertices[id[0]], vertices[id[0] + 2], vertices[id[0] + 1]),
+                new babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0__["Vector3"](vertices[id[1]], vertices[id[1] + 2], vertices[id[1] + 1]),
+                new babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0__["Vector3"](vertices[id[2]], vertices[id[2] + 2], vertices[id[2] + 1])
             ];
             var p1p2 = v[0].subtract(v[1]);
             var p3p2 = v[2].subtract(v[1]);
-            var n = (babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Cross(p1p2, p3p2)).normalize();
+            var n = (babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Cross(p3p2, p1p2)).normalize();
             return { v: v, n: n };
         };
         var writeVector = function (dataview, offset, vector, isLittleEndian) {
@@ -5849,7 +5849,7 @@ var STLExport = /** @class */ (function () {
             for (var i = 0; i < meshes.length; i++) {
                 var mesh = meshes[i];
                 var indices = mesh.getIndices();
-                faceCount += indices ? indices.length : 0;
+                faceCount += indices ? indices.length / 3 : 0;
             }
             var bufferSize = 84 + (50 * faceCount);
             var buffer = new ArrayBuffer(bufferSize);
@@ -5859,7 +5859,7 @@ var STLExport = /** @class */ (function () {
             offset += 4;
         }
         else {
-            data = 'solid exportedMesh\r\n';
+            data = 'solid stlmesh\r\n';
         }
         for (var i = 0; i < meshes.length; i++) {
             var mesh = meshes[i];
@@ -5887,15 +5887,12 @@ var STLExport = /** @class */ (function () {
             }
         }
         if (!binary) {
-            data += 'endsolid exportedMesh';
+            data += 'endsolid stlmesh';
         }
         if (download) {
             var a = document.createElement('a');
             var blob = new Blob([data], { 'type': 'application/octet-stream' });
             a.href = window.URL.createObjectURL(blob);
-            if (!fileName) {
-                fileName = "STL_Mesh";
-            }
             a.download = fileName + ".stl";
             a.click();
         }

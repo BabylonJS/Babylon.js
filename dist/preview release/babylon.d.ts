@@ -7779,6 +7779,21 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Class used to host copy specific utilities
+     */
+    export class CopyTools {
+        /**
+         * Reads the pixels stored in the webgl texture and returns them as a base64 string
+         * @param texture defines the texture to read pixels from
+         * @param faceIndex defines the face of the texture to read (in case of cube texture)
+         * @param level defines the LOD level of the texture to read (in case of Mip Maps)
+         * @returns The base64 encoded string or null
+         */
+        static GenerateBase64StringFromTexture(texture: BaseTexture, faceIndex?: number, level?: number): Nullable<string>;
+    }
+}
+declare module BABYLON {
+    /**
      * Define options used to create a depth texture
      */
     export class DepthTextureCreationOptions {
@@ -19315,7 +19330,6 @@ declare module BABYLON {
         attachControl(noPreventDefault?: boolean): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
         detachControl(): void;
         /**
@@ -19488,13 +19502,12 @@ declare module BABYLON {
          */
         constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive?: boolean);
         /**
-         * Attached controls to the current camera.
+         * Attach the input controls to a specific dom element to get the input from.
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
         attachControl(noPreventDefault?: boolean): void;
         /**
-         * Detach the current controls from the camera.
-         * The camera will stop reacting to inputs.
+         * Detach the current controls from the specified dom element.
          */
         detachControl(): void;
         private _collisionMask;
@@ -20535,7 +20548,7 @@ declare module BABYLON {
          */
         attachControl(noPreventDefault?: boolean): void;
         /**
-         * Detaches the camera from the html element and disables VR
+         * Detach the current controls from the specified dom element.
          */
         detachControl(): void;
         /**
@@ -21014,6 +21027,13 @@ declare module BABYLON {
      * Defines a connection point for a block
      */
     export class NodeMaterialConnectionPoint {
+        /**
+         * Checks if two types are equivalent
+         * @param type1 type 1 to check
+         * @param type2 type 2 to check
+         * @returns true if both types are equivalent, else false
+         */
+        static AreEquivalentTypes(type1: number, type2: number): boolean;
         /** @hidden */
         _ownerBlock: NodeMaterialBlock;
         /** @hidden */
@@ -21025,6 +21045,8 @@ declare module BABYLON {
         _typeConnectionSource: Nullable<NodeMaterialConnectionPoint>;
         /** @hidden */
         _linkedConnectionSource: Nullable<NodeMaterialConnectionPoint>;
+        /** @hidden */
+        _acceptedConnectionPointType: Nullable<NodeMaterialConnectionPoint>;
         private _type;
         /** @hidden */
         _enforceAssociatedVariableName: boolean;
@@ -22167,7 +22189,7 @@ declare module BABYLON {
          * @returns true if the block is ready
          */
         isReady(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): boolean;
-        protected _linkConnectionTypes(inputIndex0: number, inputIndex1: number): void;
+        protected _linkConnectionTypes(inputIndex0: number, inputIndex1: number, looseCoupling?: boolean): void;
         private _processBuild;
         /**
         * Validates the new name for the block node.
@@ -28291,6 +28313,11 @@ declare module BABYLON {
          * Gets or sets a general boolean used to indicate that textures containing direct data (buffers) must be saved as part of the serialization process
          */
         static SerializeBuffers: boolean;
+        /**
+         * Gets or sets a general boolean used to indicate that texture buffers must be saved as part of the serialization process.
+         * If no buffer exists, one will be created as base64 string from the internal webgl data.
+         */
+        static ForceSerializeBuffers: boolean;
         /** @hidden */
         static _CubeTextureParser: (jsonTexture: any, scene: Scene, rootUrl: string) => CubeTexture;
         /** @hidden */
@@ -37789,6 +37816,8 @@ declare module BABYLON {
         private _vertexSourceCodeOverride;
         private _fragmentSourceCodeOverride;
         private _transformFeedbackVaryings;
+        private _rawVertexSourceCode;
+        private _rawFragmentSourceCode;
         /**
          * Compiled shader to webGL program.
          * @hidden
@@ -37911,6 +37940,14 @@ declare module BABYLON {
          * Gets the fragment shader source code of this effect
          */
         get fragmentSourceCode(): string;
+        /**
+         * Gets the vertex shader source code before it has been processed by the preprocessor
+         */
+        get rawVertexSourceCode(): string;
+        /**
+         * Gets the fragment shader source code before it has been processed by the preprocessor
+         */
+        get rawFragmentSourceCode(): string;
         /**
          * Recompiles the webGL program
          * @param vertexSourceCode The source code for the vertex shader.
@@ -38977,7 +39014,7 @@ declare module BABYLON {
          * @param options defines further options to be sent to the getContext() function
          * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
          */
-        constructor(canvasOrContext: Nullable<HTMLCanvasElement | WebGLRenderingContext | WebGL2RenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio?: boolean);
+        constructor(canvasOrContext: Nullable<HTMLCanvasElement | OffscreenCanvas | WebGLRenderingContext | WebGL2RenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio?: boolean);
         private _rebuildInternalTextures;
         private _rebuildEffects;
         /**
@@ -46499,15 +46536,38 @@ declare module BABYLON {
         /** @hidden */
         _isSynchronizedViewMatrix(): boolean;
         /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        attachControl(noPreventDefault?: boolean): void;
+        /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        attachControl(ignored: any, noPreventDefault?: boolean): void;
+        /**
+         * Attached controls to the current camera.
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         * @param useCtrlForPanning  Defines whether ctrl is used for paning within the controls
+         */
+        attachControl(noPreventDefault: boolean, useCtrlForPanning: boolean): void;
+        /**
+         * Attached controls to the current camera.
+         * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         * @param useCtrlForPanning  Defines whether ctrl is used for paning within the controls
+         */
+        attachControl(ignored: any, noPreventDefault: boolean, useCtrlForPanning: boolean): void;
+        /**
          * Attached controls to the current camera.
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          * @param useCtrlForPanning  Defines whether ctrl is used for paning within the controls
          * @param panningMouseButton Defines whether panning is allowed through mouse click button
          */
-        attachControl(noPreventDefault?: boolean, useCtrlForPanning?: boolean, panningMouseButton?: number): void;
+        attachControl(noPreventDefault: boolean, useCtrlForPanning: boolean, panningMouseButton: number): void;
         /**
-         * Detach the current controls from the camera.
-         * The camera will stop reacting to inputs.
+         * Detach the current controls from the specified dom element.
          */
         detachControl(): void;
         /** @hidden */
@@ -46932,7 +46992,7 @@ declare module BABYLON {
         private _alternatePickedPoint;
         private _worldDragAxis;
         private _targetPosition;
-        private _attachedElement;
+        private _attachedToElement;
         /**
          * Attaches the drag behavior the passed in mesh
          * @param ownerNode The mesh that will be dragged around once attached
@@ -47018,7 +47078,7 @@ declare module BABYLON {
         private _pointerObserver;
         private _moving;
         private _startingOrientation;
-        private _attachedElement;
+        private _attachedToElement;
         /**
          * How much faster the object should move when the controller is moving towards it. This is useful to bring objects that are far away from the user to them faster. Set this to 0 to avoid any speed increase. (Default: 3)
          */
@@ -47325,7 +47385,6 @@ declare module BABYLON {
         attachControl(): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
          */
         detachControl(): void;
         /**
@@ -47652,8 +47711,8 @@ declare module BABYLON {
         */
         constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive?: boolean);
         /**
-         * Attach a control to the HTML DOM element.
-         * @param noPreventDefault Defines whether events caught by the controls should call preventdefault(). https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
         attachControl(noPreventDefault?: boolean): void;
         /**
@@ -48017,13 +48076,12 @@ declare module BABYLON {
         constructor(name: string, position: Vector3, scene: Scene, lockedTarget?: Nullable<AbstractMesh>);
         private _follow;
         /**
-         * Attached controls to the current camera.
+         * Attach the input controls to a specific dom element to get the input from.
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
         attachControl(noPreventDefault?: boolean): void;
         /**
-         * Detach the current controls from the camera.
-         * The camera will stop reacting to inputs.
+         * Detach the current controls from the specified dom element.
          */
         detachControl(): void;
         /** @hidden */
@@ -57510,6 +57568,8 @@ declare module BABYLON {
         * Sets the projection texture of the light.
         */
         set projectionTexture(value: Nullable<BaseTexture>);
+        private static _IsProceduralTexture;
+        private static _IsTexture;
         private _projectionTextureViewLightDirty;
         private _projectionTextureProjectionLightDirty;
         private _projectionTextureDirty;
@@ -71360,6 +71420,10 @@ declare module BABYLON {
         private _chromaticAberrationEnabled;
         private _grainEnabled;
         private _buildAllowed;
+        /**
+         * This is triggered each time the pipeline has been built.
+         */
+        onBuildObservable: Observable<DefaultRenderingPipeline>;
         /**
          * Gets active scene
          */
