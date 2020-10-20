@@ -5,37 +5,45 @@ import { PropertyChangedEvent } from "../../propertyChangedEvent";
 import { LockObject } from "../tabs/propertyGrids/lockObject";
 import { SliderLineComponent } from './sliderLineComponent';
 import { Tools } from 'babylonjs/Misc/tools';
+import { GlobalState } from '../../globalState';
+
 
 interface IFloatLineComponentProps {
     label: string;
     target: any;
     propertyName: string;
-    lockObject?: LockObject;
     onChange?: (newValue: number) => void;
     isInteger?: boolean;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     additionalClass?: string;
-    step?: string,
+    step?: string;
     digits?: number;
-    useEuler?: boolean;
-    min?: number;
-    max?: number;
+    globalState: GlobalState;
+    min?: number
+    max?: number
+    smallUI?: boolean;
+    onEnter?: (newValue:number) => void;
 }
 
 export class FloatLineComponent extends React.Component<IFloatLineComponentProps, { value: string }> {
     private _localChange = false;
     private _store: number;
+    private _regExp: RegExp;
 
     constructor(props: IFloatLineComponentProps) {
         super(props);
-
         let currentValue = this.props.target[this.props.propertyName];
-        this.state = { value: currentValue ? (this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(this.props.digits || 3)) : "0" };
+        this.state = { value: currentValue ? (this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(this.props.digits || 2)) : "0" };
         this._store = currentValue;
-    }
 
-    componentWillUnmount() {
-        this.unlock();
+        let rexp = "(.*\\.";
+        let numDigits = this.props.digits || 2;
+        while (numDigits--) {
+            rexp += ".";
+        }
+        rexp += ").+";
+
+        this._regExp = new RegExp(rexp);
     }
 
     shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: { value: string }) {
@@ -45,7 +53,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         }
 
         const newValue = nextProps.target[nextProps.propertyName];
-        const newValueString = newValue ? this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this.props.digits || 3) : "0";
+        const newValueString = newValue ? this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this.props.digits || 2) : "0";
 
         if (newValueString !== nextState.value) {
             nextState.value = newValueString;
@@ -71,10 +79,11 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
     }
 
     updateValue(valueString: string) {
-
         if (/[^0-9\.\-]/g.test(valueString)) {
             return;
         }
+
+        valueString = valueString.replace(this._regExp, "$1");
 
         let valueAsNumber: number;
 
@@ -84,26 +93,17 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
             valueAsNumber = parseFloat(valueString);
         }
 
-        if (!isNaN(valueAsNumber)) {
-            if (this.props.min !== undefined) {
-                if (valueAsNumber < this.props.min) {
-                    valueAsNumber = this.props.min;
-                    valueString = valueAsNumber.toString();
-                }            
-            }
-            if (this.props.max !== undefined) {
-                if (valueAsNumber > this.props.max) {
-                    valueAsNumber = this.props.max;
-                    valueString = valueAsNumber.toString();
-                }            
-            }
-        }
-
         this._localChange = true;
-        this.setState({ value: valueString });
+        this.setState({ value: valueString});
 
         if (isNaN(valueAsNumber)) {
             return;
+        }
+        if(this.props.max != undefined && (valueAsNumber > this.props.max)) {
+            valueAsNumber = this.props.max;
+        }
+        if(this.props.min != undefined && (valueAsNumber < this.props.min)) {
+            valueAsNumber = this.props.min;
         }
 
         this.props.target[this.props.propertyName] = valueAsNumber;
@@ -112,45 +112,39 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         this._store = valueAsNumber;
     }
 
-    lock() {
-        if (this.props.lockObject) {
-            this.props.lockObject.lock = true;
-        }
-    }
-
-    unlock() {
-        if (this.props.lockObject) {
-            this.props.lockObject.lock = false;
-        }
-    }
-
     render() {
-        let valueAsNumber: number;
-
-        if (this.props.isInteger) {
-            valueAsNumber = parseInt(this.state.value);
-        } else {
-            valueAsNumber = parseFloat(this.state.value);
-        }
+        let className = this.props.smallUI ? "short": "value";
 
         return (
             <div>
                 {
-                    !this.props.useEuler &&
                     <div className={this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine"}>
                         <div className="label">
                             {this.props.label}
                         </div>
-                        <div className="value">
-                            <input type="number" step={this.props.step || this.props.isInteger ? "1" : "0.01"} className="numeric-input" value={this.state.value} onBlur={() => this.unlock()} onFocus={() => this.lock()} onChange={evt => this.updateValue(evt.target.value)} />
+                        <div className={className}>
+                            <input type="number" step={this.props.step || "0.01"} className="numeric-input"
+                            onBlur={(evt) => {
+                                this.props.globalState.blockKeyboardEvents = false;
+                                if(this.props.onEnter) {
+                                    this.props.onEnter(this._store);
+                                }
+                            }}
+                            onKeyDown={evt => {
+                                if (evt.keyCode !== 13) {
+                                    return;
+                                }
+                                if(this.props.onEnter) {
+                                    this.props.onEnter(this._store);
+                                }
+                            }}
+                            onFocus={() => this.props.globalState.blockKeyboardEvents = true}
+                            value={this.state.value} onChange={(evt) => this.updateValue(evt.target.value)} />
                         </div>
                     </div>
-                }
-                {
-                    this.props.useEuler &&
-                    <SliderLineComponent label={this.props.label} minimum={0} maximum={360} step={0.1} directValue={Tools.ToDegrees(valueAsNumber)} onChange={value => this.updateValue(Tools.ToRadians(value).toString())} />
                 }
             </div>
         );
     }
 }
+

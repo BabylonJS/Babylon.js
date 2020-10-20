@@ -35,7 +35,7 @@ export class CustomPropertyGridComponent extends React.Component<ICustomProperty
                 )
             case InspectableType.Slider:
                 return (
-                    <SliderLineComponent key={inspectable.label} label={inspectable.label} target={this.props.target} propertyName={inspectable.propertyName}
+                    <SliderLineComponent globalState={this.props.globalState} key={inspectable.label} label={inspectable.label} target={this.props.target} propertyName={inspectable.propertyName}
                         step={inspectable.step !== undefined ? inspectable.step : 0.1}
                         minimum={inspectable.min !== undefined ? inspectable.min : 0} maximum={inspectable.max !== undefined ? inspectable.max : 1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 )
@@ -46,7 +46,7 @@ export class CustomPropertyGridComponent extends React.Component<ICustomProperty
                 )
             case InspectableType.Quaternion:
                 return (
-                    <QuaternionLineComponent useEuler={this.props.globalState.onlyUseEulers} key={inspectable.label} label={inspectable.label} target={this.props.target} propertyName={inspectable.propertyName}
+                    <QuaternionLineComponent globalState={this.props.globalState} useEuler={this.props.globalState.onlyUseEulers} key={inspectable.label} label={inspectable.label} target={this.props.target} propertyName={inspectable.propertyName}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 )
             case InspectableType.Color3:

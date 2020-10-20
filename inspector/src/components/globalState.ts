@@ -73,6 +73,7 @@ export class GlobalState {
     public recorder = new ReplayRecorder();
 
     private _onlyUseEulers: Nullable<boolean> = null;
+    public blockKeyboardEvents = false;
 
     public get onlyUseEulers(): boolean {
         if (this._onlyUseEulers === null) {
