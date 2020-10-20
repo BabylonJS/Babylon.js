@@ -35,7 +35,7 @@ export class CustomPropertyGridComponent extends React.Component<ICustomProperty
                 )
             case InspectableType.Slider:
                 return (
-                    <SliderLineComponent globalState={this.props.globalState} key={inspectable.label} label={inspectable.label} target={this.props.target} propertyName={inspectable.propertyName}
+                    <SliderLineComponent key={inspectable.label} label={inspectable.label} target={this.props.target} propertyName={inspectable.propertyName}
                         step={inspectable.step !== undefined ? inspectable.step : 0.1}
                         minimum={inspectable.min !== undefined ? inspectable.min : 0} maximum={inspectable.max !== undefined ? inspectable.max : 1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 )

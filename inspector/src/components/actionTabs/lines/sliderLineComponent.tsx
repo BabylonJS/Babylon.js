@@ -3,7 +3,7 @@ import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../propertyChangedEvent";
 import { Tools } from 'babylonjs/Misc/tools';
 import { FloatLineComponent } from './floatLineComponent';
-import { GlobalState } from '../../globalState';
+
 
 interface ISliderLineComponentProps {
     label: string;
@@ -18,7 +18,6 @@ interface ISliderLineComponentProps {
     onInput?: (value: number) => void;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     decimalCount?: number;
-    globalState: GlobalState;
 }
 
 export class SliderLineComponent extends React.Component<ISliderLineComponentProps, { value: number }> {
@@ -105,7 +104,7 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
     render() {
 
         var input = // this.props.globalState ? 
-        <FloatLineComponent globalState={this.props.globalState} smallUI={true} label="" target={this.state} propertyName="value" min={this.prepareDataToRead(this.props.minimum)} max={this.prepareDataToRead(this.props.maximum)}
+        <FloatLineComponent smallUI={true} label="" target={this.state} propertyName="value" min={this.prepareDataToRead(this.props.minimum)} max={this.prepareDataToRead(this.props.maximum)}
         onEnter={ () => { 
             this.onChange(this.state.value)
         }
