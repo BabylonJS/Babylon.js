@@ -164,9 +164,9 @@ export class QuaternionLineComponent extends React.Component<IQuaternionLineComp
                 {
                     this.state.isExpanded && this.props.useEuler &&
                     <div className="secondLine">
-                        <SliderLineComponent globalState={this.props.globalState} label="x" minimum={0} maximum={360} step={0.1} directValue={Tools.ToDegrees(euler.x)} onChange={value => this.updateStateEulerX(value)} />
-                        <SliderLineComponent globalState={this.props.globalState} label="y" minimum={0} maximum={360} step={0.1} directValue={Tools.ToDegrees(euler.y)} onChange={value => this.updateStateEulerY(value)} />
-                        <SliderLineComponent globalState={this.props.globalState} label="z" minimum={0} maximum={360} step={0.1} directValue={Tools.ToDegrees(euler.z)} onChange={value => this.updateStateEulerZ(value)} />
+                        <SliderLineComponent label="x" minimum={0} maximum={360} step={0.1} directValue={Tools.ToDegrees(euler.x)} onChange={value => this.updateStateEulerX(value)} />
+                        <SliderLineComponent label="y" minimum={0} maximum={360} step={0.1} directValue={Tools.ToDegrees(euler.y)} onChange={value => this.updateStateEulerY(value)} />
+                        <SliderLineComponent label="z" minimum={0} maximum={360} step={0.1} directValue={Tools.ToDegrees(euler.z)} onChange={value => this.updateStateEulerZ(value)} />
                     </div>
                 }
             </div>
