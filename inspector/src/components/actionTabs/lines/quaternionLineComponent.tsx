@@ -7,7 +7,6 @@ import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { PropertyChangedEvent } from "../../propertyChangedEvent";
 import { Tools } from 'babylonjs/Misc/tools';
 import { SliderLineComponent } from './sliderLineComponent';
-import { GlobalState } from '../../globalState';
 
 interface IQuaternionLineComponentProps {
     label: string;
@@ -15,7 +14,6 @@ interface IQuaternionLineComponentProps {
     useEuler?: boolean;
     propertyName: string;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
-    globalState: GlobalState
 }
 
 export class QuaternionLineComponent extends React.Component<IQuaternionLineComponentProps, { isExpanded: boolean, value: Quaternion, eulerValue: Vector3 }> {
