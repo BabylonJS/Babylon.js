@@ -123,21 +123,6 @@ export class ScreenshotTools {
             Logger.Error("Invalid 'size' parameter !");
             return;
         }
-
-        var scene = camera.getScene();
-        var previousCamera: Nullable<Camera> = null;
-        let previousActiveCameras: Camera[] = [];
-
-        if (scene.activeCamera !== camera) {
-            previousCamera = scene.activeCamera;
-            scene.activeCamera = camera;
-        }
-
-        if (scene.activeCameras.length > 0) {
-            previousActiveCameras = scene.activeCameras;
-            scene.activeCameras = [] as Camera[];
-        }
-
         var renderCanvas = engine.getRenderingCanvas();
         if (!renderCanvas) {
             Logger.Error("No rendering canvas found !");
@@ -146,7 +131,15 @@ export class ScreenshotTools {
 
         var originalSize = { width: renderCanvas.width, height: renderCanvas.height };
         engine.setSize(width, height);
+
+        var scene = camera.getScene();
         scene.render();
+
+        var previousCamera: Nullable<Camera> = null;
+        if (scene.activeCamera !== camera) {
+            previousCamera = scene.activeCamera;
+            scene.activeCamera = camera;
+        }
 
         // At this point size can be a number, or an object (according to engine.prototype.createRenderTargetTexture method)
         var texture = new RenderTargetTexture("screenShot", targetTextureSize, scene, false, false, Constants.TEXTURETYPE_UNSIGNED_INT, false, Texture.NEAREST_SAMPLINGMODE, undefined, enableStencilBuffer);
@@ -165,10 +158,6 @@ export class ScreenshotTools {
 
             if (previousCamera) {
                 scene.activeCamera = previousCamera;
-            }
-
-            if (previousActiveCameras.length > 0) {
-                scene.activeCameras = previousActiveCameras;
             }
 
             engine.setSize(originalSize.width, originalSize.height);
