@@ -127,6 +127,13 @@ struct subSurfaceOutParams
             #ifdef SS_TRANSLUCENCY
                 translucencyIntensity *= thicknessMap.b;
             #endif
+        #elif defined(SS_MASK_FROM_THICKNESS_TEXTURE_GLTF)
+            #ifdef SS_REFRACTION
+                refractionIntensity *= thicknessMap.r;
+            #elif defined(SS_TRANSLUCENCY)
+                translucencyIntensity *= thicknessMap.r;
+            #endif
+            thickness = thicknessMap.g * vThicknessParam.y + vThicknessParam.x;
         #endif
     #else
         float thickness = vThicknessParam.y;
