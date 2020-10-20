@@ -184,7 +184,7 @@ declare module NODEEDITOR {
         private removePortFromExposedWithLink;
         private createInputPorts;
         private createOutputPorts;
-        private _redrawFramePorts;
+        redrawFramePorts(): void;
         set isCollapsed(value: boolean);
         get nodes(): GraphNode[];
         get ports(): FrameNodePort[];

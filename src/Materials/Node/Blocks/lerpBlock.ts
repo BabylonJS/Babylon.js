@@ -22,7 +22,7 @@ export class LerpBlock extends NodeMaterialBlock {
 
         this._outputs[0]._typeConnectionSource = this._inputs[0];
         this._linkConnectionTypes(0, 1);
-        this._linkConnectionTypes(1, 2);
+        this._linkConnectionTypes(1, 2, true);
 
         this._inputs[2].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Float);
     }

@@ -285,7 +285,7 @@ declare module "babylonjs-node-editor/diagram/graphFrame" {
         private removePortFromExposedWithLink;
         private createInputPorts;
         private createOutputPorts;
-        private _redrawFramePorts;
+        redrawFramePorts(): void;
         set isCollapsed(value: boolean);
         get nodes(): GraphNode[];
         get ports(): FrameNodePort[];
@@ -2110,7 +2110,7 @@ declare module NODEEDITOR {
         private removePortFromExposedWithLink;
         private createInputPorts;
         private createOutputPorts;
-        private _redrawFramePorts;
+        redrawFramePorts(): void;
         set isCollapsed(value: boolean);
         get nodes(): GraphNode[];
         get ports(): FrameNodePort[];
