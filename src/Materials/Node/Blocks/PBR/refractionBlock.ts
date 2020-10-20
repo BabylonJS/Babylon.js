@@ -46,6 +46,18 @@ export class RefractionBlock extends NodeMaterialBlock {
     private _scene: Scene;
 
     /**
+     * The properties below are set by the main PBR block prior to calling methods of this class.
+     * This is to avoid having to add them as inputs here whereas they are already inputs of the main block, so already known.
+     * It's less burden on the user side in the editor part.
+    */
+
+    /** @hidden */
+    public viewConnectionPoint: NodeMaterialConnectionPoint;
+
+    /** @hidden */
+    public indexOfRefractionConnectionPoint: NodeMaterialConnectionPoint;
+
+    /**
      * This parameters will make the material used its opacity to control how much it is refracting aginst not.
      * Materials half opaque for instance using refraction could benefit from this control.
      */
@@ -73,9 +85,7 @@ export class RefractionBlock extends NodeMaterialBlock {
         this._isUnique = true;
 
         this.registerInput("intensity", NodeMaterialBlockConnectionPointTypes.Float, false, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("indexOfRefraction", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("tintAtDistance", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("view", NodeMaterialBlockConnectionPointTypes.Matrix, false, NodeMaterialBlockTargets.Fragment);
 
         this.registerOutput("refraction", NodeMaterialBlockConnectionPointTypes.Object, NodeMaterialBlockTargets.Fragment,
             new NodeMaterialConnectionPointCustomObject("refraction", this, NodeMaterialConnectionPointDirection.Output, RefractionBlock, "RefractionBlock"));
@@ -97,24 +107,17 @@ export class RefractionBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the index of refraction input component
-     */
-    public get indexOfRefraction(): NodeMaterialConnectionPoint {
-        return this._inputs[1];
-    }
-
-    /**
      * Gets the tint at distance input component
      */
     public get tintAtDistance(): NodeMaterialConnectionPoint {
-        return this._inputs[2];
+        return this._inputs[1];
     }
 
     /**
      * Gets the view input component
      */
     public get view(): NodeMaterialConnectionPoint {
-        return this._inputs[3];
+        return this.viewConnectionPoint;
     }
 
     /**
@@ -146,7 +149,7 @@ export class RefractionBlock extends NodeMaterialBlock {
             intensityInput.output.connectTo(this.intensity);
         }
 
-        if (!this.view.isConnected) {
+        if (this.view && !this.view.isConnected) {
             let viewInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.View);
 
             if (!viewInput) {
@@ -213,7 +216,7 @@ export class RefractionBlock extends NodeMaterialBlock {
             }
         }
 
-        const indexOfRefraction = this.indexOfRefraction.connectInputBlock?.value ?? 1.5;
+        const indexOfRefraction = this.indexOfRefractionConnectionPoint.connectInputBlock?.value ?? 1.5;
 
         effect.setFloat4(this._vRefractionInfosName, refractionTexture.level, 1 / indexOfRefraction, depth, this.invertRefractionY ? -1 : 1);
 
