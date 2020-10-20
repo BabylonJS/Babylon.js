@@ -46,6 +46,12 @@ export class SpriteRenderer {
     public blendMode = Constants.ALPHA_COMBINE;
 
     /**
+     * Gets or sets a boolean indicating if alpha mode is automatically
+     * reset.
+     */
+    public autoResetAlpha = true;
+
+    /**
      * Disables writing to the depth buffer when rendering the sprites.
      * It can be handy to disable depth writing when using textures without alpha channel
      * and setting some specific blend modes.
@@ -278,7 +284,10 @@ export class SpriteRenderer {
         } else {
             engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, (offset / 4) * 6);
         }
-        engine.setAlphaMode(Constants.ALPHA_DISABLE);
+
+        if (this.autoResetAlpha) {
+            engine.setAlphaMode(Constants.ALPHA_DISABLE);
+        }
 
         // Restore Right Handed
         if (useRightHandedSystem) {

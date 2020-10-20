@@ -8,8 +8,7 @@ import { ThinEngine } from '../../Engines/thinEngine';
 
 /**
  * Base class of all the textures in babylon.
- * It groups all the common properties the materials, post process, lights... might need
- * in order to make a correct use of the texture.
+ * It groups all the common properties required to work with Thin Engine.
  */
 export class ThinTexture {
     protected _wrapU = Constants.TEXTURE_WRAP_ADDRESSMODE;
@@ -147,11 +146,10 @@ export class ThinTexture {
     private _cachedBaseSize: ISize = Size.Zero();
 
     /**
-     * Instantiates a new BaseTexture.
+     * Instantiates a new ThinTexture.
      * Base class of all the textures in babylon.
-     * It groups all the common properties the materials, post process, lights... might need
-     * in order to make a correct use of the texture.
-     * @param sceneOrEngine Define the scene or engine the texture blongs to
+     * This can be used as an internal texture wrapper in ThinEngine to benefit from the cache
+     * @param internalTexture Define the internalTexture to wrap
      */
     constructor(internalTexture: Nullable<InternalTexture>) {
         this._texture = internalTexture;
