@@ -115,6 +115,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
         defines.setValue("SS_TRANSLUCENCY", translucencyEnabled, true);
         defines.setValue("SS_THICKNESSANDMASK_TEXTURE", false, true);
         defines.setValue("SS_MASK_FROM_THICKNESS_TEXTURE", false, true);
+        defines.setValue("SS_MASK_FROM_THICKNESS_TEXTURE_GLTF", false, true);
     }
 
     /**
