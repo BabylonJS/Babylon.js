@@ -34,6 +34,7 @@ import { isFramePortData } from '../../diagram/graphCanvas';
 import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
 import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
 import { PreviewType } from '../preview/previewType';
+import { TextInputLineComponent } from '../../sharedComponents/textInputLineComponent';
 require("./propertyTab.scss");
 
 interface IPropertyTabComponentProps {
@@ -67,7 +68,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 this.setState({ currentNode: null, currentFrame: selection, currentFrameNodePort: null, currentNodePort: null });
             } else if (isFramePortData(selection)) {
                 this.setState({ currentNode: null, currentFrame: selection.frame, currentFrameNodePort: selection.port, currentNodePort: null });
-            } else if (selection instanceof NodePort && selection.hasLabel()) {
+            } else if (selection instanceof NodePort) {
                 this.setState({ currentNode: null, currentFrame: null, currentFrameNodePort: null, currentNodePort: selection});
             } else {
                 this.setState({ currentNode: null, currentFrame: null, currentFrameNodePort: null, currentNodePort: null });
@@ -112,7 +113,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             {
                                 !block.isBoolean && !cantDisplaySlider &&
                                 <SliderLineComponent key={block.uniqueId} label={block.name} target={block} propertyName="value"
-                                step={(block.max - block.min) / 100.0} minimum={block.min} maximum={block.max}
+                                step={(block.max - block.min) / 100.0} minimum={block.min} maximum={block.max} globalState={this.props.globalState}
                                 onChange={() => this.processInputBlockUpdate(block)}/>
                             }
                         </div>
@@ -216,11 +217,11 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         });
                     }
 
-                    alert("NodeMaterial saved with ID: " + material.snippetId + " (please note that the id was also saved to your clipboard)");
+                    this.props.globalState.hostDocument.defaultView!.alert("NodeMaterial saved with ID: " + material.snippetId + " (please note that the id was also saved to your clipboard)");
 
                 }
                 else {
-                    alert(`Unable to save your node material. It may be too large (${(dataToSend.payload.length / 1024).toFixed(2)} KB) because of embedded textures. Please reduce texture sizes or point to a specific url instead of embedding them and try again.`);
+                    this.props.globalState.hostDocument.defaultView!.alert(`Unable to save your node material. It may be too large (${(dataToSend.payload.length / 1024).toFixed(2)} KB) because of embedded textures. Please reduce texture sizes or point to a specific url instead of embedding them and try again.`);
                 }
             }
         };
@@ -258,7 +259,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 this.props.globalState.onResetRequiredObservable.notifyObservers();
             }
         }).catch((err) => {
-            alert("Unable to load your node material: " + err);
+            this.props.globalState.hostDocument.defaultView!.alert("Unable to load your node material: " + err);
         });
     }
 
@@ -267,7 +268,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             return false;
         }
 
-        if (!force && !confirm('Are your sure? You will lose your current changes (if any) if they are not saved!')) {
+        if (!force && !this.props.globalState.hostDocument.defaultView!.confirm('Are your sure? You will lose your current changes (if any) if they are not saved!')) {
             this._modeSelect.current?.setValue(this.props.globalState.mode);
             return false;
         }
@@ -286,6 +287,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     break;
                 case NodeMaterialModes.Particle:
                     this.props.globalState.nodeMaterial!.setToDefaultParticle();
+                    break;
+                case NodeMaterialModes.ProceduralTexture:
+                    this.props.globalState.nodeMaterial!.setToDefaultProceduralTexture();
                     break;
             }
         }
@@ -350,6 +354,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             { label: "Material", value: NodeMaterialModes.Material },
             { label: "Post Process", value: NodeMaterialModes.PostProcess },
             { label: "Particle", value: NodeMaterialModes.Particle },
+            { label: "Procedural", value: NodeMaterialModes.ProceduralTexture },
         ];
 
         return (
@@ -365,8 +370,22 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <OptionsLineComponent ref={this._modeSelect} label="Mode" target={this} getSelection={(target) => this.props.globalState.mode} options={modeList} onSelect={(value) => this.changeMode(value)} />
                         <TextLineComponent label="Version" value={Engine.Version}/>
                         <TextLineComponent label="Help" value="doc.babylonjs.com" underline={true} onLink={() => window.open('https://doc.babylonjs.com/how_to/node_material', '_blank')}/>
+                        <TextInputLineComponent label="Comment" multilines={true} value={this.props.globalState.nodeMaterial!.comment} target={this.props.globalState.nodeMaterial} propertyName="comment" globalState={this.props.globalState}/>
                         <ButtonLineComponent label="Reset to default" onClick={() => {
-                            this.props.globalState.nodeMaterial!.setToDefault();
+                            switch (this.props.globalState.mode) {
+                                case NodeMaterialModes.Material:
+                                    this.props.globalState.nodeMaterial!.setToDefault();
+                                    break;
+                                case NodeMaterialModes.PostProcess:
+                                    this.props.globalState.nodeMaterial!.setToDefaultPostProcess();
+                                    break;
+                                case NodeMaterialModes.Particle:
+                                    this.props.globalState.nodeMaterial!.setToDefaultParticle();
+                                    break;
+                                case NodeMaterialModes.ProceduralTexture:
+                                    this.props.globalState.nodeMaterial!.setToDefaultProceduralTexture();
+                                    break;
+                            }
                             this.props.globalState.onResetRequiredObservable.notifyObservers();
                         }} />
                     </LineContainerComponent>
@@ -386,7 +405,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             }}
                         />
                         <SliderLineComponent label="Grid size" minimum={0} maximum={100} step={5}
-                            decimalCount={0}
+                            decimalCount={0} globalState={this.props.globalState}
                             directValue={gridSize}
                             onChange={(value) => {
                                 DataStorage.WriteNumber("GridSize", value);

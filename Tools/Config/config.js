@@ -77,6 +77,7 @@ allModules.map(function(module) {
     const distDirectory = path.join(outputFolder, distFolder);
     const localDevES6Directory = path.join(localDevES6Folder, module);
     const localDevUMDDirectory = path.join(localDevUMDFolder, distFolder);
+    const localDevAppDirectory = path.join(localDevUMDFolder, module);
     const packageUMDDirectory = path.join(packageUMDFolder, module);
     const packageUMDDevDirectory = path.join(packageUMDDevFolder, module);
     const sourceES6Directory = path.join(sourceES6Folder, module);
@@ -95,6 +96,7 @@ allModules.map(function(module) {
         distDirectory,
         localDevES6Directory,
         localDevUMDDirectory,
+        localDevAppDirectory,
         packageUMDDirectory,
         packageUMDDevDirectory,
         sourceES6Directory,

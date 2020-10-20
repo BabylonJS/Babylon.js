@@ -1416,7 +1416,7 @@ declare module BabylonViewer {
             /**
                 * Babylon's scene optimizer
                 */
-            sceneOptimizer: BABYLON.SceneOptimizer;
+            sceneOptimizer?: BABYLON.SceneOptimizer;
             /**
                 * Models displayed in this viewer.
                 */

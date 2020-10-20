@@ -113,10 +113,6 @@ export class RenderTargetTexture extends Texture {
      */
     public renderSprites = false;
     /**
-     * Override the default coordinates mode to projection for RTT as it is the most common case for rendered textures.
-     */
-    public coordinatesMode = Texture.PROJECTION_MODE;
-    /**
      * Define the camera used to render the texture.
      */
     public activeCamera: Nullable<Camera>;
@@ -230,7 +226,7 @@ export class RenderTargetTexture extends Texture {
     public _generateMipMaps: boolean;
     protected _renderingManager: RenderingManager;
     /** @hidden */
-    public _waitingRenderList: string[];
+    public _waitingRenderList?: string[];
     protected _doNotChangeAspectRatio: boolean;
     protected _currentRefreshId = -1;
     protected _refreshRate = 1;
@@ -304,13 +300,14 @@ export class RenderTargetTexture extends Texture {
      * @param format The internal format of the buffer in the RTT (RED, RG, RGB, RGBA, ALPHA...)
      * @param delayAllocation if the texture allocation should be delayed (default: false)
      */
-    constructor(name: string, size: number | { width: number, height: number, layers?: number } | { ratio: number }, scene: Nullable<Scene>, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Constants.TEXTURETYPE_UNSIGNED_INT, public isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false, isMulti = false, format = Constants.TEXTUREFORMAT_RGBA, delayAllocation = false) {
+    constructor(name: string, size: number | { width: number, height: number, layers?: number } | { ratio: number }, scene: Nullable<Scene>, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Constants.TEXTURETYPE_UNSIGNED_INT, isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false, isMulti = false, format = Constants.TEXTUREFORMAT_RGBA, delayAllocation = false) {
         super(null, scene, !generateMipMaps);
         scene = this.getScene();
         if (!scene) {
             return;
         }
 
+        this._coordinatesMode = Texture.PROJECTION_MODE;
         this.renderList = new Array<AbstractMesh>();
         this.name = name;
         this.isRenderTarget = true;
@@ -644,7 +641,7 @@ export class RenderTargetTexture extends Texture {
                 }
             }
 
-            delete this._waitingRenderList;
+            this._waitingRenderList = undefined;
         }
 
         // Is predicate defined?

@@ -20,7 +20,6 @@ import "../Shaders/postprocess.vertex";
  * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#imageprocessing
  */
 export class ImageProcessingPostProcess extends PostProcess {
-
     /**
      * Default configuration related to image processing available in the PBR Material.
      */

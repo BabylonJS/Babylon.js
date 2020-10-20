@@ -1028,8 +1028,9 @@ declare module BABYLON.GLTF2 {
     /** @hidden */
     interface IKHRMaterialsSheen {
         sheenColorFactor?: number[];
-        sheenTexture?: ITextureInfo;
+        sheenColorTexture?: ITextureInfo;
         sheenRoughnessFactor?: number;
+        sheenRoughnessTexture?: ITextureInfo;
     }
 
     /**
@@ -1061,14 +1062,21 @@ declare module BABYLON.GLTF2 {
      */
 
     /** @hidden */
-    interface IKHRMaterialVariants_Mapping {
-        variants: string[];
-        material: number;
+    interface IKHRMaterialVariants_Mapping extends IProperty {
+        mappings: Array<{
+            variants: number[];
+            material: number;
+        }>;
     }
 
     /** @hidden */
-    interface IKHRMaterialVariants {
-        mapping: IKHRMaterialVariants_Mapping[];
+    interface IKHRMaterialVariants_Variant extends IProperty {
+        name: string;
+    }
+
+    /** @hidden */
+    interface IKHRMaterialVariants_Variants extends IChildRootProperty {
+        variants: Array<IKHRMaterialVariants_Variant>;
     }
 
     /**

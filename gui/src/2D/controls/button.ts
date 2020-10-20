@@ -6,6 +6,7 @@ import { Control } from "./control";
 import { TextBlock } from "./textBlock";
 import { Image } from "./image";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
 
 /**
  * Class used to create 2D buttons
@@ -89,7 +90,7 @@ export class Button extends Rectangle {
 
     // While being a container, the button behaves like a control.
     /** @hidden */
-    public _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
+    public _processPicking(x: number, y: number, pi: PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
         if (!this._isEnabled || !this.isHitTestVisible || !this.isVisible || this.notRenderable) {
             return false;
         }
@@ -113,14 +114,14 @@ export class Button extends Rectangle {
             }
         }
 
-        this._processObservables(type, x, y, pointerId, buttonIndex, deltaX, deltaY);
+        this._processObservables(type, x, y, pi, pointerId, buttonIndex, deltaX, deltaY);
 
         return true;
     }
 
     /** @hidden */
-    public _onPointerEnter(target: Control): boolean {
-        if (!super._onPointerEnter(target)) {
+    public _onPointerEnter(target: Control, pi: PointerInfoBase): boolean {
+        if (!super._onPointerEnter(target, pi)) {
             return false;
         }
 
@@ -132,17 +133,17 @@ export class Button extends Rectangle {
     }
 
     /** @hidden */
-    public _onPointerOut(target: Control, force = false): void {
+    public _onPointerOut(target: Control, pi: PointerInfoBase, force = false): void {
         if (this.pointerOutAnimation) {
             this.pointerOutAnimation();
         }
 
-        super._onPointerOut(target, force);
+        super._onPointerOut(target, pi, force);
     }
 
     /** @hidden */
-    public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean {
-        if (!super._onPointerDown(target, coordinates, pointerId, buttonIndex)) {
+    public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {
+        if (!super._onPointerDown(target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
         }
 
@@ -154,12 +155,12 @@ export class Button extends Rectangle {
     }
 
     /** @hidden */
-    public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void {
+    public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi: PointerInfoBase): void {
         if (this.pointerUpAnimation) {
             this.pointerUpAnimation();
         }
 
-        super._onPointerUp(target, coordinates, pointerId, buttonIndex, notifyClick);
+        super._onPointerUp(target, coordinates, pointerId, buttonIndex, notifyClick, pi);
     }
 
     // Statics

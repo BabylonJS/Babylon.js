@@ -2,7 +2,7 @@ import { Nullable } from "babylonjs/types";
 import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
 import { Material } from "babylonjs/Materials/material";
 
-import { IMaterial } from "../glTFLoaderInterfaces";
+import { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import { IKHRMaterialsClearcoat } from 'babylonjs-gltf2interface';
@@ -10,9 +10,8 @@ import { IKHRMaterialsClearcoat } from 'babylonjs-gltf2interface';
 const NAME = "KHR_materials_clearcoat";
 
 /**
- * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1677)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_clearcoat/README.md)
  * [Playground Sample](https://www.babylonjs-playground.com/frame.html#7F7PN6#8)
- * !!! Experimental Extension Subject to Changes !!!
  */
 export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
     /**
@@ -40,7 +39,7 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
 
     /** @hidden */
     public dispose() {
-        delete this._loader;
+        (this._loader as any) = null;
     }
 
     /** @hidden */
@@ -61,6 +60,8 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
         const promises = new Array<Promise<any>>();
 
         babylonMaterial.clearCoat.isEnabled = true;
+        babylonMaterial.clearCoat.useRoughnessFromMainTexture = false;
+        babylonMaterial.clearCoat.remapF0OnInterfaceChange = false;
 
         if (properties.clearcoatFactor != undefined) {
             babylonMaterial.clearCoat.intensity = properties.clearcoatFactor;
@@ -84,13 +85,15 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
         }
 
         if (properties.clearcoatRoughnessTexture) {
+            (properties.clearcoatRoughnessTexture as ITextureInfo).nonColorData = true;
             promises.push(this._loader.loadTextureInfoAsync(`${context}/clearcoatRoughnessTexture`, properties.clearcoatRoughnessTexture, (texture) => {
                 texture.name = `${babylonMaterial.name} (ClearCoat Roughness)`;
-                babylonMaterial.clearCoat.texture = texture;
+                babylonMaterial.clearCoat.textureRoughness = texture;
             }));
         }
 
         if (properties.clearcoatNormalTexture) {
+            (properties.clearcoatNormalTexture as ITextureInfo).nonColorData = true;
             promises.push(this._loader.loadTextureInfoAsync(`${context}/clearcoatNormalTexture`, properties.clearcoatNormalTexture, (texture) => {
                 texture.name = `${babylonMaterial.name} (ClearCoat Normal)`;
                 babylonMaterial.clearCoat.bumpTexture = texture;

@@ -31,7 +31,7 @@ export class FreeCameraPropertyGridComponent extends React.Component<IFreeCamera
                 <LineContainerComponent globalState={this.props.globalState} title="TRANSFORMS">
                     <Vector3LineComponent label="Target" target={camera} propertyName="target" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Vector3LineComponent label="Position" target={camera} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <Vector3LineComponent label="Rotation" useEuler={this.props.globalState.onlyUseEulers} target={camera} propertyName="rotation" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Vector3LineComponent label="Rotation" noSlider={true} useEuler={this.props.globalState.onlyUseEulers} target={camera} propertyName="rotation" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="CONTROLS" closed={true}>
                     <FloatLineComponent lockObject={this.props.lockObject} label="Angular sensitivity" target={camera} propertyName="angularSensibility" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

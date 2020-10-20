@@ -5,12 +5,21 @@ import { Camera } from "../Cameras/camera";
 import { Effect } from "../Materials/effect";
 
 import "../Shaders/anaglyph.fragment";
+import { _TypeStore } from '../Misc/typeStore';
 
 /**
  * Postprocess used to generate anaglyphic rendering
  */
 export class AnaglyphPostProcess extends PostProcess {
     private _passedProcess: Nullable<PostProcess>;
+
+    /**
+     * Gets a string identifying the name of the class
+     * @returns "AnaglyphPostProcess" string
+     */
+    public getClassName(): string {
+        return "AnaglyphPostProcess";
+    }
 
     /**
      * Creates a new AnaglyphPostProcess
@@ -30,3 +39,5 @@ export class AnaglyphPostProcess extends PostProcess {
         });
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.AnaglyphPostProcess"] = AnaglyphPostProcess;

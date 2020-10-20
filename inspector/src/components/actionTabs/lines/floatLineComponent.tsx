@@ -18,7 +18,8 @@ interface IFloatLineComponentProps {
     step?: string,
     digits?: number;
     useEuler?: boolean;
-    min?: number
+    min?: number;
+    max?: number;
 }
 
 export class FloatLineComponent extends React.Component<IFloatLineComponentProps, { value: string }> {
@@ -83,11 +84,19 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
             valueAsNumber = parseFloat(valueString);
         }
 
-        if (!isNaN(valueAsNumber) && this.props.min !== undefined) {
-            if (valueAsNumber < this.props.min) {
-                valueAsNumber = this.props.min;
-                valueString = valueAsNumber.toString();
-            }            
+        if (!isNaN(valueAsNumber)) {
+            if (this.props.min !== undefined) {
+                if (valueAsNumber < this.props.min) {
+                    valueAsNumber = this.props.min;
+                    valueString = valueAsNumber.toString();
+                }            
+            }
+            if (this.props.max !== undefined) {
+                if (valueAsNumber > this.props.max) {
+                    valueAsNumber = this.props.max;
+                    valueString = valueAsNumber.toString();
+                }            
+            }
         }
 
         this._localChange = true;

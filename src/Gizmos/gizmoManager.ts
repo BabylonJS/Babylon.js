@@ -4,35 +4,44 @@ import { PointerInfo, PointerEventTypes } from "../Events/pointerEvents";
 import { Scene, IDisposable } from "../scene";
 import { Node } from "../node";
 import { AbstractMesh } from "../Meshes/abstractMesh";
+import { Mesh } from '../Meshes/mesh';
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { Color3 } from '../Maths/math.color';
 import { SixDofDragBehavior } from "../Behaviors/Meshes/sixDofDragBehavior";
-
-import { Gizmo } from "./gizmo";
+import { Gizmo, GizmoAxisCache } from "./gizmo";
 import { RotationGizmo } from "./rotationGizmo";
 import { PositionGizmo } from "./positionGizmo";
 import { ScaleGizmo } from "./scaleGizmo";
 import { BoundingBoxGizmo } from "./boundingBoxGizmo";
 
 /**
- * Helps setup gizmo's in the scene to rotate/scale/position meshes
+ * Helps setup gizmo's in the scene to rotate/scale/position nodes
  */
 export class GizmoManager implements IDisposable {
     /**
      * Gizmo's created by the gizmo manager, gizmo will be null until gizmo has been enabled for the first time
      */
     public gizmos: { positionGizmo: Nullable<PositionGizmo>, rotationGizmo: Nullable<RotationGizmo>, scaleGizmo: Nullable<ScaleGizmo>, boundingBoxGizmo: Nullable<BoundingBoxGizmo> };
+
     /** When true, the gizmo will be detached from the current object when a pointer down occurs with an empty picked mesh */
     public clearGizmoOnEmptyPointerEvent = false;
+
     /** Fires an event when the manager is attached to a mesh */
     public onAttachedToMeshObservable = new Observable<Nullable<AbstractMesh>>();
+
+    /** Fires an event when the manager is attached to a node */
+    public onAttachedToNodeObservable = new Observable<Nullable<Node>>();
+
     private _gizmosEnabled = { positionGizmo: false, rotationGizmo: false, scaleGizmo: false, boundingBoxGizmo: false };
-    private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
+    private _pointerObservers: Observer<PointerInfo>[] = [];
     private _attachedMesh: Nullable<AbstractMesh> = null;
+    private _attachedNode: Nullable<Node> = null;
     private _boundingBoxColor = Color3.FromHexString("#0984e3");
     private _defaultUtilityLayer: UtilityLayerRenderer;
     private _defaultKeepDepthUtilityLayer: UtilityLayerRenderer;
     private _thickness: number = 1;
+    /** Node Caching for quick lookup */
+    private _gizmoAxisCache: Map<Mesh, GizmoAxisCache> = new Map();
     /**
      * When bounding box gizmo is enabled, this can be used to track drag/end events
      */
@@ -42,7 +51,11 @@ export class GizmoManager implements IDisposable {
      */
     public attachableMeshes: Nullable<Array<AbstractMesh>> = null;
     /**
-     * If pointer events should perform attaching/detaching a gizmo, if false this can be done manually via attachToMesh. (Default: true)
+     * Array of nodes which will have the gizmo attached when a pointer selected them. If null, all nodes are attachable. (Default: null)
+     */
+    public attachableNodes: Nullable<Array<Node>> = null;
+    /**
+     * If pointer events should perform attaching/detaching a gizmo, if false this can be done manually via attachToMesh/attachToNode. (Default: true)
      */
     public usePointerToAttachGizmos = true;
 
@@ -61,6 +74,21 @@ export class GizmoManager implements IDisposable {
     }
 
     /**
+     * True when the mouse pointer is hovering a gizmo mesh
+     */
+    public get isHovered() {
+        var hovered = false;
+        for (var key in this.gizmos) {
+            var gizmo = <Nullable<Gizmo>>((<any>this.gizmos)[key]);
+            if (gizmo && gizmo.isHovered) {
+                hovered = true;
+                break;
+            }
+        }
+        return hovered;
+    }
+
+    /**
      * Instatiates a gizmo manager
      * @param scene the scene to overlay the gizmos on top of
      * @param thickness display gizmo axis thickness
@@ -72,8 +100,18 @@ export class GizmoManager implements IDisposable {
         this._thickness = thickness;
         this.gizmos = { positionGizmo: null, rotationGizmo: null, scaleGizmo: null, boundingBoxGizmo: null };
 
+        const attachToMeshPointerObserver = this._attachToMeshPointerObserver(scene);
+        const gizmoAxisPointerObserver = Gizmo.GizmoAxisPointerObserver(this._defaultUtilityLayer, this._gizmoAxisCache);
+        this._pointerObservers = [attachToMeshPointerObserver, gizmoAxisPointerObserver];
+    }
+
+    /**
+     * Subscribes to pointer down events, for attaching and detaching mesh
+     * @param scene The sceme layer the observer will be added to
+     */
+    private _attachToMeshPointerObserver(scene: Scene): Observer<PointerInfo> {
         // Instatiate/dispose gizmos based on pointer actions
-        this._pointerObserver = scene.onPointerObservable.add((pointerInfo) => {
+        const pointerObserver = scene.onPointerObservable.add((pointerInfo) => {
             if (!this.usePointerToAttachGizmos) {
                 return;
             }
@@ -114,6 +152,7 @@ export class GizmoManager implements IDisposable {
                 }
             }
         });
+        return pointerObserver!;
     }
 
     /**
@@ -124,7 +163,11 @@ export class GizmoManager implements IDisposable {
         if (this._attachedMesh) {
             this._attachedMesh.removeBehavior(this.boundingBoxDragBehavior);
         }
+        if (this._attachedNode) {
+            this._attachedNode.removeBehavior(this.boundingBoxDragBehavior);
+        }
         this._attachedMesh = mesh;
+        this._attachedNode = null;
         for (var key in this.gizmos) {
             var gizmo = <Nullable<Gizmo>>((<any>this.gizmos)[key]);
             if (gizmo && (<any>this._gizmosEnabled)[key]) {
@@ -138,16 +181,45 @@ export class GizmoManager implements IDisposable {
     }
 
     /**
+     * Attaches a set of gizmos to the specified node
+     * @param node The node the gizmo's should be attached to
+     */
+    public attachToNode(node: Nullable<Node>) {
+        if (this._attachedMesh) {
+            this._attachedMesh.removeBehavior(this.boundingBoxDragBehavior);
+        }
+        if (this._attachedNode) {
+            this._attachedNode.removeBehavior(this.boundingBoxDragBehavior);
+        }
+        this._attachedMesh = null;
+        this._attachedNode = node;
+        for (var key in this.gizmos) {
+            var gizmo = <Nullable<Gizmo>>((<any>this.gizmos)[key]);
+            if (gizmo && (<any>this._gizmosEnabled)[key]) {
+                gizmo.attachedNode = node;
+            }
+        }
+        if (this.boundingBoxGizmoEnabled && this._attachedNode) {
+            this._attachedNode.addBehavior(this.boundingBoxDragBehavior);
+        }
+        this.onAttachedToNodeObservable.notifyObservers(node);
+    }
+
+    /**
      * If the position gizmo is enabled
      */
     public set positionGizmoEnabled(value: boolean) {
         if (value) {
             if (!this.gizmos.positionGizmo) {
-                this.gizmos.positionGizmo = new PositionGizmo(this._defaultUtilityLayer, this._thickness);
+                this.gizmos.positionGizmo = new PositionGizmo(this._defaultUtilityLayer, this._thickness, this);
             }
-            this.gizmos.positionGizmo.attachedMesh = this._attachedMesh;
+            if (this._attachedNode) {
+                this.gizmos.positionGizmo.attachedNode = this._attachedNode;
+            } else {
+                this.gizmos.positionGizmo.attachedMesh = this._attachedMesh;
+            }
         } else if (this.gizmos.positionGizmo) {
-            this.gizmos.positionGizmo.attachedMesh = null;
+            this.gizmos.positionGizmo.attachedNode = null;
         }
         this._gizmosEnabled.positionGizmo = value;
     }
@@ -160,11 +232,15 @@ export class GizmoManager implements IDisposable {
     public set rotationGizmoEnabled(value: boolean) {
         if (value) {
             if (!this.gizmos.rotationGizmo) {
-                this.gizmos.rotationGizmo = new RotationGizmo(this._defaultUtilityLayer, 32, false, this._thickness);
+                this.gizmos.rotationGizmo = new RotationGizmo(this._defaultUtilityLayer, 32, false, this._thickness, this);
             }
-            this.gizmos.rotationGizmo.attachedMesh = this._attachedMesh;
+            if (this._attachedNode) {
+                this.gizmos.rotationGizmo.attachedNode = this._attachedNode;
+            } else {
+                this.gizmos.rotationGizmo.attachedMesh = this._attachedMesh;
+            }
         } else if (this.gizmos.rotationGizmo) {
-            this.gizmos.rotationGizmo.attachedMesh = null;
+            this.gizmos.rotationGizmo.attachedNode = null;
         }
         this._gizmosEnabled.rotationGizmo = value;
     }
@@ -176,10 +252,14 @@ export class GizmoManager implements IDisposable {
      */
     public set scaleGizmoEnabled(value: boolean) {
         if (value) {
-            this.gizmos.scaleGizmo = this.gizmos.scaleGizmo || new ScaleGizmo(this._defaultUtilityLayer, this._thickness);
-            this.gizmos.scaleGizmo.attachedMesh = this._attachedMesh;
+            this.gizmos.scaleGizmo = this.gizmos.scaleGizmo || new ScaleGizmo(this._defaultUtilityLayer, this._thickness, this);
+            if (this._attachedNode) {
+                this.gizmos.scaleGizmo.attachedNode = this._attachedNode;
+            } else {
+                this.gizmos.scaleGizmo.attachedMesh = this._attachedMesh;
+            }
         } else if (this.gizmos.scaleGizmo) {
-            this.gizmos.scaleGizmo.attachedMesh = null;
+            this.gizmos.scaleGizmo.attachedNode = null;
         }
         this._gizmosEnabled.scaleGizmo = value;
     }
@@ -192,16 +272,26 @@ export class GizmoManager implements IDisposable {
     public set boundingBoxGizmoEnabled(value: boolean) {
         if (value) {
             this.gizmos.boundingBoxGizmo = this.gizmos.boundingBoxGizmo || new BoundingBoxGizmo(this._boundingBoxColor, this._defaultKeepDepthUtilityLayer);
-            this.gizmos.boundingBoxGizmo.attachedMesh = this._attachedMesh;
+            if (this._attachedMesh) {
+                this.gizmos.boundingBoxGizmo.attachedMesh = this._attachedMesh;
+            } else {
+                this.gizmos.boundingBoxGizmo.attachedNode = this._attachedNode;
+            }
+
             if (this._attachedMesh) {
                 this._attachedMesh.removeBehavior(this.boundingBoxDragBehavior);
                 this._attachedMesh.addBehavior(this.boundingBoxDragBehavior);
+            } else if (this._attachedNode) {
+                this._attachedNode.removeBehavior(this.boundingBoxDragBehavior);
+                this._attachedNode.addBehavior(this.boundingBoxDragBehavior);
             }
         } else if (this.gizmos.boundingBoxGizmo) {
             if (this._attachedMesh) {
                 this._attachedMesh.removeBehavior(this.boundingBoxDragBehavior);
+            } else if (this._attachedNode) {
+                this._attachedNode.removeBehavior(this.boundingBoxDragBehavior);
             }
-            this.gizmos.boundingBoxGizmo.attachedMesh = null;
+            this.gizmos.boundingBoxGizmo.attachedNode = null;
         }
         this._gizmosEnabled.boundingBoxGizmo = value;
     }
@@ -210,10 +300,25 @@ export class GizmoManager implements IDisposable {
     }
 
     /**
+     * Builds Gizmo Axis Cache to enable features such as hover state preservation and graying out other axis during manipulation
+     * @param gizmoAxisCache Gizmo axis definition used for reactive gizmo UI
+     */
+    public addToAxisCache(gizmoAxisCache: Map<Mesh, GizmoAxisCache>) {
+        if (gizmoAxisCache.size > 0) {
+            gizmoAxisCache.forEach((v, k) => {
+                this._gizmoAxisCache.set(k, v);
+            });
+        }
+    }
+
+    /**
      * Disposes of the gizmo manager
      */
     public dispose() {
-        this.scene.onPointerObservable.remove(this._pointerObserver);
+
+        this._pointerObservers.forEach((observer) => {
+            this.scene.onPointerObservable.remove(observer);
+        });
         for (var key in this.gizmos) {
             var gizmo = <Nullable<Gizmo>>((<any>this.gizmos)[key]);
             if (gizmo) {

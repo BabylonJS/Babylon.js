@@ -2,17 +2,19 @@ import { Nullable } from "../types";
 import { Vector2, Vector3 } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { ImageProcessingConfiguration, ImageProcessingConfigurationDefines } from "../Materials/imageProcessingConfiguration";
-import { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
-import { RawTexture } from "../Materials/Textures/rawTexture";
 import { ColorGradient, FactorGradient, Color3Gradient, IValueGradient } from "../Misc/gradients";
 import { BoxParticleEmitter, IParticleEmitterType, PointParticleEmitter, HemisphericParticleEmitter, SphereParticleEmitter, SphereDirectedParticleEmitter, CylinderParticleEmitter, CylinderDirectedParticleEmitter, ConeParticleEmitter } from "../Particles/EmitterTypes/index";
 import { Constants } from "../Engines/constants";
-import { Texture } from '../Materials/Textures/texture';
+import { BaseTexture } from '../Materials/Textures/baseTexture';
 import { Color4 } from '../Maths/math.color';
 import { ThinEngine } from '../Engines/thinEngine';
 
+import "../Engines/Extensions/engine.dynamicBuffer";
+
 declare type Animation = import("../Animations/animation").Animation;
 declare type Scene = import("../scene").Scene;
+declare type ProceduralTexture = import("../Materials/Textures/Procedurals/proceduralTexture").ProceduralTexture;
+declare type RawTexture = import("../Materials/Textures/rawTexture").RawTexture;
 
 /**
  * This represents the base class for particle system in Babylon.
@@ -169,7 +171,7 @@ export class BaseParticleSystem {
     /**
      * The texture used to render each particle. (this can be a spritesheet)
      */
-    public particleTexture: Nullable<Texture>;
+    public particleTexture: Nullable<BaseTexture>;
 
     /**
      * The layer mask we are rendering the particles through.

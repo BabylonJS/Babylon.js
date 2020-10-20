@@ -110,6 +110,7 @@ declare module BABYLON {
     /** @hidden */
     export interface IImportMeshAsyncOutput {
         meshes: AbstractMesh[];
+        geometries: Geometry[];
         particleSystems: IParticleSystem[];
         skeletons: Skeleton[];
         animationGroups: AnimationGroup[];
@@ -202,11 +203,13 @@ declare module BABYLON {
         preprocessUrlAsync: (url: string) => Promise<string>;
         /**
          * Observable raised when the loader creates a mesh after parsing the glTF properties of the mesh.
+         * Note that the observable is raised as soon as the mesh object is created, meaning some data may not have been setup yet for this mesh (vertex data, morph targets, material, ...)
          */
         readonly onMeshLoadedObservable: Observable<AbstractMesh>;
         private _onMeshLoadedObserver;
         /**
          * Callback raised when the loader creates a mesh after parsing the glTF properties of the mesh.
+         * Note that the callback is called as soon as the mesh object is created, meaning some data may not have been setup yet for this mesh (vertex data, morph targets, material, ...)
          */
         set onMeshLoaded(callback: (mesh: AbstractMesh) => void);
         /**
@@ -1147,11 +1150,15 @@ declare module BABYLON.GLTF2.Loader {
      * Loader interface with additional members.
      */
     export interface ITexture extends BABYLON.GLTF2.ITexture, IArrayItem {
+        /** @hidden */
+        _textureInfo: ITextureInfo;
     }
     /**
      * Loader interface with additional members.
      */
     export interface ITextureInfo extends BABYLON.GLTF2.ITextureInfo {
+        /** false or undefined if the texture holds color data (true if data are roughness, normal, ...) */
+        nonColorData?: boolean;
     }
     /**
      * Loader interface with additional members.
@@ -1236,7 +1243,7 @@ declare module BABYLON.GLTF2 {
          * @param assign A function called synchronously after parsing the glTF properties
          * @returns A promise that resolves with the loaded Babylon material when the load is complete or null if not handled
          */
-        _loadMaterialAsync?(context: string, material: IMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>>;
+        _loadMaterialAsync?(context: string, material: IMaterial, babylonMesh: Nullable<Mesh>, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>>;
         /**
          * Define this method to modify the default behavior when creating materials.
          * @param context The context when loading the asset
@@ -1420,6 +1427,7 @@ declare module BABYLON.GLTF2 {
          */
         loadSceneAsync(context: string, scene: IScene): Promise<void>;
         private _forEachPrimitive;
+        private _getGeometries;
         private _getMeshes;
         private _getTransformNodes;
         private _getSkeletons;
@@ -1500,7 +1508,7 @@ declare module BABYLON.GLTF2 {
         private _loadVertexAccessorAsync;
         private _loadMaterialMetallicRoughnessPropertiesAsync;
         /** @hidden */
-        _loadMaterialAsync(context: string, material: IMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign?: (babylonMaterial: Material) => void): Promise<Material>;
+        _loadMaterialAsync(context: string, material: IMaterial, babylonMesh: Nullable<Mesh>, babylonDrawMode: number, assign?: (babylonMaterial: Material) => void): Promise<Material>;
         private _createDefaultMaterial;
         /**
          * Creates a Babylon material from a glTF material.
@@ -1545,7 +1553,7 @@ declare module BABYLON.GLTF2 {
         /** @hidden */
         _loadTextureAsync(context: string, texture: ITexture, assign?: (babylonTexture: BaseTexture) => void): Promise<BaseTexture>;
         /** @hidden */
-        _createTextureAsync(context: string, sampler: ISampler, image: IImage, assign?: (babylonTexture: BaseTexture) => void): Promise<BaseTexture>;
+        _createTextureAsync(context: string, sampler: ISampler, image: IImage, assign?: (babylonTexture: BaseTexture) => void, textureLoaderOptions?: any): Promise<BaseTexture>;
         private _loadSampler;
         /**
          * Loads a glTF image.
@@ -1829,9 +1837,8 @@ declare module BABYLON.GLTF2.Loader.Extensions {
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
     /**
-     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1677)
+     * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_clearcoat/README.md)
      * [Playground Sample](https://www.babylonjs-playground.com/frame.html#7F7PN6#8)
-     * !!! Experimental Extension Subject to Changes !!!
      */
     export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
         /**
@@ -1960,6 +1967,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
          */
         enabled: boolean;
         private _loader;
+        private _variants?;
         /** @hidden */
         constructor(loader: GLTFLoader);
         /** @hidden */
@@ -2011,6 +2019,8 @@ declare module BABYLON.GLTF2.Loader.Extensions {
          */
         getLastSelectedVariant(rootMesh: Mesh): Nullable<string | string[]>;
         private static _GetExtensionMetadata;
+        /** @hidden */
+        onLoading(): void;
         /** @hidden */
         _loadMeshPrimitiveAsync(context: string, name: string, node: INode, mesh: IMesh, primitive: IMeshPrimitive, assign: (babylonMesh: AbstractMesh) => void): Nullable<Promise<AbstractMesh>>;
     }
@@ -2220,7 +2230,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>>;
         /** @hidden */
-        _loadMaterialAsync(context: string, material: IMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>>;
+        _loadMaterialAsync(context: string, material: IMaterial, babylonMesh: Nullable<Mesh>, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>>;
         /** @hidden */
         _loadUriAsync(context: string, property: IProperty, uri: string): Nullable<Promise<ArrayBufferView>>;
         /** @hidden */

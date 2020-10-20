@@ -183,6 +183,7 @@ export class OutlineRenderer implements ISceneComponent {
         this._effect.setFloat("offset", useOverlay ? 0 : renderingMesh.outlineWidth);
         this._effect.setColor4("color", useOverlay ? renderingMesh.overlayColor : renderingMesh.outlineColor, useOverlay ? renderingMesh.overlayAlpha : material.alpha);
         this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
+        this._effect.setMatrix("world", effectiveMesh.getWorldMatrix());
 
         // Bones
         if (renderingMesh.useBones && renderingMesh.computeBonesUsingShaders && renderingMesh.skeleton) {

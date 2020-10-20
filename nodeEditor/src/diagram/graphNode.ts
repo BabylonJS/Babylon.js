@@ -39,7 +39,7 @@ export class GraphNode {
     private _isSelected: boolean;
     private _displayManager: Nullable<IDisplayManager> = null;
     private _isVisible = true;
-    private _enclosingFrameId: number;
+    private _enclosingFrameId = -1;
 
     public get isVisible() {
         return this._isVisible;
@@ -297,6 +297,12 @@ export class GraphNode {
             port.refresh();
         }
 
+        if(this.enclosingFrameId !== -1) {   
+            let index = this._ownerCanvas.frames.findIndex(frame => frame.id === this.enclosingFrameId);
+            if(index >= 0 && this._ownerCanvas.frames[index].isCollapsed) {
+                this._ownerCanvas.frames[index].redrawFramePorts();
+            }
+        }   
         this._comments.innerHTML = this.block.comments || "";
         this._comments.title = this.block.comments || "";
 

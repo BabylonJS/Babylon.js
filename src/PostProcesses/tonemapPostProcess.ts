@@ -23,6 +23,13 @@ export enum TonemappingOperator {
  * Defines a post process to apply tone mapping
  */
 export class TonemapPostProcess extends PostProcess {
+    /**
+     * Gets a string identifying the name of the class
+     * @returns "TonemapPostProcess" string
+     */
+    public getClassName(): string {
+        return "TonemapPostProcess";
+    }
 
     /**
      * Creates a new TonemapPostProcess

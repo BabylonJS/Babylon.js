@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="https://use.typekit.net/cta4xsb.css">
     <link rel="shortcut icon" href="https://www.babylonjs.com/favicon.ico">
     <script src="https://code.jquery.com/pep/0.4.2/pep.min.js"></script>
-    <script src="../../dist/preview%20release/libktx.js"></script>
     <script src="../../Tools/DevLoader/BabylonLoader.js"></script>
     <style>
         html,
@@ -36,6 +35,14 @@
         BABYLONDEVTOOLS.Loader
             .require("index.js")
             .load(() => {
+                BABYLON.DracoCompression.Configuration.decoder = {
+                    wasmUrl: "../../dist/preview%20release/draco_wasm_wrapper_gltf.js",
+                    wasmBinaryUrl: "../../dist/preview%20release/draco_decoder_gltf.wasm",
+                    fallbackUrl: "../../dist/preview%20release/draco_decoder_gltf.js"
+                };
+                BABYLON.GLTFValidation.Configuration = {
+                    url: "../../dist/preview%20release/gltf_validator.js"
+                };
             });
     </script>
 </body>

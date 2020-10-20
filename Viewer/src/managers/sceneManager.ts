@@ -98,7 +98,7 @@ export class SceneManager {
     /**
      * Babylon's scene optimizer
      */
-    public sceneOptimizer: SceneOptimizer;
+    public sceneOptimizer?: SceneOptimizer;
     /**
      * Models displayed in this viewer.
      */
@@ -670,9 +670,9 @@ export class SceneManager {
 
         if (canvas) {
             if (this.camera && sceneConfig.disableCameraControl) {
-                this.camera.detachControl(canvas);
+                this.camera.detachControl();
             } else if (this.camera && sceneConfig.disableCameraControl === false) {
-                this.camera.attachControl(canvas);
+                this.camera.attachControl();
             }
         }
 
@@ -741,7 +741,7 @@ export class SceneManager {
 
         this.onSceneOptimizerConfiguredObservable.notifyObservers({
             sceneManager: this,
-            object: this.sceneOptimizer,
+            object: this.sceneOptimizer!,
             newConfiguration: optimizerConfig
         });
     }
@@ -925,7 +925,7 @@ export class SceneManager {
             }
             let canvas = this.scene.getEngine().getInputElement();
             if (canvas) {
-                this.scene.activeCamera.attachControl(canvas);
+                this.scene.activeCamera.attachControl();
             }
 
             this.camera = <ArcRotateCamera>this.scene.activeCamera!;

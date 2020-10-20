@@ -32,6 +32,44 @@ export enum NodeMaterialConnectionPointDirection {
  * Defines a connection point for a block
  */
 export class NodeMaterialConnectionPoint {
+
+    /**
+     * Checks if two types are equivalent
+     * @param type1 type 1 to check
+     * @param type2 type 2 to check
+     * @returns true if both types are equivalent, else false
+     */
+    public static AreEquivalentTypes(type1: number, type2: number): boolean {
+        switch (type1) {
+            case NodeMaterialBlockConnectionPointTypes.Vector3: {
+                if (type2 === NodeMaterialBlockConnectionPointTypes.Color3) {
+                    return true;
+                }
+                break;
+            }
+            case NodeMaterialBlockConnectionPointTypes.Vector4: {
+                if (type2 === NodeMaterialBlockConnectionPointTypes.Color4) {
+                    return true;
+                }
+                break;
+            }
+            case NodeMaterialBlockConnectionPointTypes.Color3: {
+                if (type2 === NodeMaterialBlockConnectionPointTypes.Vector3) {
+                    return true;
+                }
+                break;
+            }
+            case NodeMaterialBlockConnectionPointTypes.Color4: {
+                if (type2 === NodeMaterialBlockConnectionPointTypes.Vector4) {
+                    return true;
+                }
+                break;
+            }
+        }
+
+        return false;
+    }
+
     /** @hidden */
     public _ownerBlock: NodeMaterialBlock;
     /** @hidden */
@@ -46,6 +84,9 @@ export class NodeMaterialConnectionPoint {
 
     /** @hidden */
     public _linkedConnectionSource: Nullable<NodeMaterialConnectionPoint> = null;
+
+    /** @hidden */
+    public _acceptedConnectionPointType: Nullable<NodeMaterialConnectionPoint> = null;
 
     private _type = NodeMaterialBlockConnectionPointTypes.Float;
 
@@ -150,6 +191,11 @@ export class NodeMaterialConnectionPoint {
      * Gets or sets a boolean indicating that this connection point is exposed on a frame
      */
     public isExposedOnFrame: boolean =  false;
+
+    /**
+     * Gets or sets number indicating the position that the port is exposed to on a frame
+     */
+    public exposedPortPosition: number = -1;
 
     /**
      * Gets or sets a string indicating that this uniform must be defined under a #ifdef
@@ -362,35 +408,14 @@ export class NodeMaterialConnectionPoint {
 
         if (this.type !== connectionPoint.type && connectionPoint.innerType !== NodeMaterialBlockConnectionPointTypes.AutoDetect) {
             // Equivalents
-            switch (this.type) {
-                case NodeMaterialBlockConnectionPointTypes.Vector3: {
-                    if (connectionPoint.type === NodeMaterialBlockConnectionPointTypes.Color3) {
-                        return NodeMaterialConnectionPointCompatibilityStates.Compatible;
-                    }
-                    break;
-                }
-                case NodeMaterialBlockConnectionPointTypes.Vector4: {
-                    if (connectionPoint.type === NodeMaterialBlockConnectionPointTypes.Color4) {
-                        return NodeMaterialConnectionPointCompatibilityStates.Compatible;
-                    }
-                    break;
-                }
-                case NodeMaterialBlockConnectionPointTypes.Color3: {
-                    if (connectionPoint.type === NodeMaterialBlockConnectionPointTypes.Vector3) {
-                        return NodeMaterialConnectionPointCompatibilityStates.Compatible;
-                    }
-                    break;
-                }
-                case NodeMaterialBlockConnectionPointTypes.Color4: {
-                    if (connectionPoint.type === NodeMaterialBlockConnectionPointTypes.Vector4) {
-                        return NodeMaterialConnectionPointCompatibilityStates.Compatible;
-                    }
-                    break;
-                }
+            if (NodeMaterialConnectionPoint.AreEquivalentTypes(this.type, connectionPoint.type)) {
+                return NodeMaterialConnectionPointCompatibilityStates.Compatible;
             }
 
             // Accepted types
-            if (connectionPoint.acceptedConnectionPointTypes && connectionPoint.acceptedConnectionPointTypes.indexOf(this.type) !== -1) {
+            if (connectionPoint.acceptedConnectionPointTypes && connectionPoint.acceptedConnectionPointTypes.indexOf(this.type) !== -1 ||
+                connectionPoint._acceptedConnectionPointType && NodeMaterialConnectionPoint.AreEquivalentTypes(connectionPoint._acceptedConnectionPointType.type, this.type))
+            {
                 return NodeMaterialConnectionPointCompatibilityStates.Compatible;
             } else {
                 return NodeMaterialConnectionPointCompatibilityStates.TypeIncompatible;
@@ -461,10 +486,13 @@ export class NodeMaterialConnectionPoint {
             serializationObject.inputName = this.name;
             serializationObject.targetBlockId = this.connectedPoint.ownerBlock.uniqueId;
             serializationObject.targetConnectionName = this.connectedPoint.name;
+            serializationObject.isExposedOnFrame = true;
+            serializationObject.exposedPortPosition = this.exposedPortPosition;
         }
 
-        if (this.isExposedOnFrame) {
-            serializationObject.isExposedOnFrame = this.isExposedOnFrame;
+        if (this.isExposedOnFrame || this.exposedPortPosition >= 0) {
+            serializationObject.isExposedOnFrame = true;
+            serializationObject.exposedPortPosition = this.exposedPortPosition;
         }
 
         return serializationObject;

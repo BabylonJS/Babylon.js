@@ -10,6 +10,7 @@ declare module "babylonjs-materials/cell/cell.fragment" {
     import "babylonjs/Shaders/ShadersInclude/depthPrePass";
     import "babylonjs/Shaders/ShadersInclude/lightFragment";
     import "babylonjs/Shaders/ShadersInclude/fogFragment";
+    import "babylonjs/Shaders/ShadersInclude/imageProcessingCompatibility";
     /** @hidden */
     export var cellPixelShader: {
         name: string;
@@ -223,6 +224,7 @@ declare module "babylonjs-materials/fire/fire.fragment" {
     import "babylonjs/Shaders/ShadersInclude/clipPlaneFragment";
     import "babylonjs/Shaders/ShadersInclude/depthPrePass";
     import "babylonjs/Shaders/ShadersInclude/fogFragment";
+    import "babylonjs/Shaders/ShadersInclude/imageProcessingCompatibility";
     /** @hidden */
     export var firePixelShader: {
         name: string;
@@ -299,6 +301,7 @@ declare module "babylonjs-materials/fur/fur.fragment" {
     import "babylonjs/Shaders/ShadersInclude/depthPrePass";
     import "babylonjs/Shaders/ShadersInclude/lightFragment";
     import "babylonjs/Shaders/ShadersInclude/fogFragment";
+    import "babylonjs/Shaders/ShadersInclude/imageProcessingCompatibility";
     /** @hidden */
     export var furPixelShader: {
         name: string;
@@ -396,6 +399,7 @@ declare module "babylonjs-materials/gradient/gradient.fragment" {
     import "babylonjs/Shaders/ShadersInclude/depthPrePass";
     import "babylonjs/Shaders/ShadersInclude/lightFragment";
     import "babylonjs/Shaders/ShadersInclude/fogFragment";
+    import "babylonjs/Shaders/ShadersInclude/imageProcessingCompatibility";
     /** @hidden */
     export var gradientPixelShader: {
         name: string;
@@ -465,6 +469,7 @@ declare module "babylonjs-materials/gradient/index" {
 declare module "babylonjs-materials/grid/grid.fragment" {
     import "babylonjs/Shaders/ShadersInclude/fogFragmentDeclaration";
     import "babylonjs/Shaders/ShadersInclude/fogFragment";
+    import "babylonjs/Shaders/ShadersInclude/imageProcessingCompatibility";
     /** @hidden */
     export var gridPixelShader: {
         name: string;
@@ -572,6 +577,7 @@ declare module "babylonjs-materials/lava/lava.fragment" {
     import "babylonjs/Shaders/ShadersInclude/depthPrePass";
     import "babylonjs/Shaders/ShadersInclude/lightFragment";
     import "babylonjs/Shaders/ShadersInclude/fogFragment";
+    import "babylonjs/Shaders/ShadersInclude/imageProcessingCompatibility";
     /** @hidden */
     export var lavaPixelShader: {
         name: string;
@@ -658,6 +664,7 @@ declare module "babylonjs-materials/mix/mix.fragment" {
     import "babylonjs/Shaders/ShadersInclude/depthPrePass";
     import "babylonjs/Shaders/ShadersInclude/lightFragment";
     import "babylonjs/Shaders/ShadersInclude/fogFragment";
+    import "babylonjs/Shaders/ShadersInclude/imageProcessingCompatibility";
     /** @hidden */
     export var mixPixelShader: {
         name: string;
@@ -764,6 +771,7 @@ declare module "babylonjs-materials/normal/normal.fragment" {
     import "babylonjs/Shaders/ShadersInclude/depthPrePass";
     import "babylonjs/Shaders/ShadersInclude/lightFragment";
     import "babylonjs/Shaders/ShadersInclude/fogFragment";
+    import "babylonjs/Shaders/ShadersInclude/imageProcessingCompatibility";
     /** @hidden */
     export var normalPixelShader: {
         name: string;
@@ -840,6 +848,7 @@ declare module "babylonjs-materials/shadowOnly/shadowOnly.fragment" {
     import "babylonjs/Shaders/ShadersInclude/clipPlaneFragment";
     import "babylonjs/Shaders/ShadersInclude/lightFragment";
     import "babylonjs/Shaders/ShadersInclude/fogFragment";
+    import "babylonjs/Shaders/ShadersInclude/imageProcessingCompatibility";
     /** @hidden */
     export var shadowOnlyPixelShader: {
         name: string;
@@ -911,6 +920,7 @@ declare module "babylonjs-materials/simple/simple.fragment" {
     import "babylonjs/Shaders/ShadersInclude/depthPrePass";
     import "babylonjs/Shaders/ShadersInclude/lightFragment";
     import "babylonjs/Shaders/ShadersInclude/fogFragment";
+    import "babylonjs/Shaders/ShadersInclude/imageProcessingCompatibility";
     /** @hidden */
     export var simplePixelShader: {
         name: string;
@@ -980,6 +990,7 @@ declare module "babylonjs-materials/sky/sky.fragment" {
     import "babylonjs/Shaders/ShadersInclude/fogFragmentDeclaration";
     import "babylonjs/Shaders/ShadersInclude/clipPlaneFragment";
     import "babylonjs/Shaders/ShadersInclude/fogFragment";
+    import "babylonjs/Shaders/ShadersInclude/imageProcessingCompatibility";
     /** @hidden */
     export var skyPixelShader: {
         name: string;
@@ -1156,6 +1167,7 @@ declare module "babylonjs-materials/terrain/terrain.fragment" {
     import "babylonjs/Shaders/ShadersInclude/depthPrePass";
     import "babylonjs/Shaders/ShadersInclude/lightFragment";
     import "babylonjs/Shaders/ShadersInclude/fogFragment";
+    import "babylonjs/Shaders/ShadersInclude/imageProcessingCompatibility";
     /** @hidden */
     export var terrainPixelShader: {
         name: string;
@@ -1247,6 +1259,7 @@ declare module "babylonjs-materials/triPlanar/triplanar.fragment" {
     import "babylonjs/Shaders/ShadersInclude/depthPrePass";
     import "babylonjs/Shaders/ShadersInclude/lightFragment";
     import "babylonjs/Shaders/ShadersInclude/fogFragment";
+    import "babylonjs/Shaders/ShadersInclude/imageProcessingCompatibility";
     /** @hidden */
     export var triplanarPixelShader: {
         name: string;
@@ -1393,60 +1406,64 @@ declare module "babylonjs-materials/water/waterMaterial" {
         private _maxSimultaneousLights;
         maxSimultaneousLights: number;
         /**
-        * @param {number}: Represents the wind force
-        */
+         * Defines the wind force.
+         */
         windForce: number;
         /**
-        * @param {Vector2}: The direction of the wind in the plane (X, Z)
-        */
+         * Defines the direction of the wind in the plane (X, Z).
+         */
         windDirection: Vector2;
         /**
-        * @param {number}: Wave height, represents the height of the waves
-        */
+         * Defines the height of the waves.
+         */
         waveHeight: number;
         /**
-        * @param {number}: Bump height, represents the bump height related to the bump map
-        */
+         * Defines the bump height related to the bump map.
+         */
         bumpHeight: number;
         /**
-         * @param {boolean}: Add a smaller moving bump to less steady waves.
+         * Defines wether or not: to add a smaller moving bump to less steady waves.
          */
         private _bumpSuperimpose;
         bumpSuperimpose: boolean;
         /**
-         * @param {boolean}: Color refraction and reflection differently with .waterColor2 and .colorBlendFactor2. Non-linear (physically correct) fresnel.
+         * Defines wether or not color refraction and reflection differently with .waterColor2 and .colorBlendFactor2. Non-linear (physically correct) fresnel.
          */
         private _fresnelSeparate;
         fresnelSeparate: boolean;
         /**
-         * @param {boolean}: bump Waves modify the reflection.
+         * Defines wether or not bump Wwves modify the reflection.
          */
         private _bumpAffectsReflection;
         bumpAffectsReflection: boolean;
         /**
-        * @param {number}: The water color blended with the refraction (near)
-        */
+         * Defines the water color blended with the refraction (near).
+         */
         waterColor: Color3;
         /**
-        * @param {number}: The blend factor related to the water color
-        */
+         * Defines the blend factor related to the water color.
+         */
         colorBlendFactor: number;
         /**
-         * @param {number}: The water color blended with the reflection (far)
+         * Defines the water color blended with the reflection (far).
          */
         waterColor2: Color3;
         /**
-         * @param {number}: The blend factor related to the water color (reflection, far)
+         * Defines the blend factor related to the water color (reflection, far).
          */
         colorBlendFactor2: number;
         /**
-        * @param {number}: Represents the maximum length of a wave
-        */
+         * Defines the maximum length of a wave.
+         */
         waveLength: number;
         /**
-        * @param {number}: Defines the waves speed
-        */
+         * Defines the waves speed.
+         */
         waveSpeed: number;
+        /**
+         * Defines the number of times waves are repeated. This is typically used to adjust waves count according to the ground's size where the material is applied on.
+         */
+        waveCount: number;
         /**
          * Sets or gets whether or not automatic clipping should be enabled or not. Setting to true will save performances and
          * will avoid calculating useless pixels in the pixel shader of the water material.
@@ -2464,60 +2481,64 @@ declare module BABYLON {
         private _maxSimultaneousLights;
         maxSimultaneousLights: number;
         /**
-        * @param {number}: Represents the wind force
-        */
+         * Defines the wind force.
+         */
         windForce: number;
         /**
-        * @param {Vector2}: The direction of the wind in the plane (X, Z)
-        */
+         * Defines the direction of the wind in the plane (X, Z).
+         */
         windDirection: BABYLON.Vector2;
         /**
-        * @param {number}: Wave height, represents the height of the waves
-        */
+         * Defines the height of the waves.
+         */
         waveHeight: number;
         /**
-        * @param {number}: Bump height, represents the bump height related to the bump map
-        */
+         * Defines the bump height related to the bump map.
+         */
         bumpHeight: number;
         /**
-         * @param {boolean}: Add a smaller moving bump to less steady waves.
+         * Defines wether or not: to add a smaller moving bump to less steady waves.
          */
         private _bumpSuperimpose;
         bumpSuperimpose: boolean;
         /**
-         * @param {boolean}: Color refraction and reflection differently with .waterColor2 and .colorBlendFactor2. Non-linear (physically correct) fresnel.
+         * Defines wether or not color refraction and reflection differently with .waterColor2 and .colorBlendFactor2. Non-linear (physically correct) fresnel.
          */
         private _fresnelSeparate;
         fresnelSeparate: boolean;
         /**
-         * @param {boolean}: bump Waves modify the reflection.
+         * Defines wether or not bump Wwves modify the reflection.
          */
         private _bumpAffectsReflection;
         bumpAffectsReflection: boolean;
         /**
-        * @param {number}: The water color blended with the refraction (near)
-        */
+         * Defines the water color blended with the refraction (near).
+         */
         waterColor: BABYLON.Color3;
         /**
-        * @param {number}: The blend factor related to the water color
-        */
+         * Defines the blend factor related to the water color.
+         */
         colorBlendFactor: number;
         /**
-         * @param {number}: The water color blended with the reflection (far)
+         * Defines the water color blended with the reflection (far).
          */
         waterColor2: BABYLON.Color3;
         /**
-         * @param {number}: The blend factor related to the water color (reflection, far)
+         * Defines the blend factor related to the water color (reflection, far).
          */
         colorBlendFactor2: number;
         /**
-        * @param {number}: Represents the maximum length of a wave
-        */
+         * Defines the maximum length of a wave.
+         */
         waveLength: number;
         /**
-        * @param {number}: Defines the waves speed
-        */
+         * Defines the waves speed.
+         */
         waveSpeed: number;
+        /**
+         * Defines the number of times waves are repeated. This is typically used to adjust waves count according to the ground's size where the material is applied on.
+         */
+        waveCount: number;
         /**
          * Sets or gets whether or not automatic clipping should be enabled or not. Setting to true will save performances and
          * will avoid calculating useless pixels in the pixel shader of the water material.

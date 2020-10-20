@@ -4,18 +4,18 @@ import { DomManagement } from "./domManagement";
 import { Logger } from "./logger";
 import { _TypeStore } from "./typeStore";
 import { DeepCopier } from "./deepCopier";
-import { PrecisionDate } from './precisionDate';
-import { _DevTools } from './devTools';
-import { WebRequest } from './webRequest';
-import { IFileRequest } from './fileRequest';
-import { EngineStore } from '../Engines/engineStore';
-import { FileTools, ReadFileError } from './fileTools';
-import { IOfflineProvider } from '../Offline/IOfflineProvider';
-import { PromisePolyfill } from './promise';
-import { TimingTools } from './timingTools';
-import { InstantiationTools } from './instantiationTools';
-import { GUID } from './guid';
-import { IScreenshotSize } from './interfaces/screenshotSize';
+import { PrecisionDate } from "./precisionDate";
+import { _DevTools } from "./devTools";
+import { WebRequest } from "./webRequest";
+import { IFileRequest } from "./fileRequest";
+import { EngineStore } from "../Engines/engineStore";
+import { FileTools, ReadFileError } from "./fileTools";
+import { IOfflineProvider } from "../Offline/IOfflineProvider";
+import { PromisePolyfill } from "./promise";
+import { TimingTools } from "./timingTools";
+import { InstantiationTools } from "./instantiationTools";
+import { GUID } from "./guid";
+import { IScreenshotSize } from "./interfaces/screenshotSize";
 
 declare type Camera = import("../Cameras/camera").Camera;
 declare type Engine = import("../Engines/engine").Engine;
@@ -125,8 +125,8 @@ export class Tools {
      * @param color defines the output color
      */
     public static FetchToRef(u: number, v: number, width: number, height: number, pixels: Uint8Array, color: IColor4Like): void {
-        let wrappedU = ((Math.abs(u) * width) % width) | 0;
-        let wrappedV = ((Math.abs(v) * height) % height) | 0;
+        let wrappedU = (Math.abs(u) * width) % width | 0;
+        let wrappedV = (Math.abs(v) * height) % height | 0;
 
         let position = (wrappedU + wrappedV * width) * 4;
         color.r = pixels[position] / 255;
@@ -165,6 +165,22 @@ export class Tools {
     public static Slice<T>(data: T, start?: number, end?: number): T {
         if ((data as any).slice) {
             return (data as any).slice(start, end);
+        }
+
+        return Array.prototype.slice.call(data, start, end);
+    }
+
+    /**
+     * Provides a slice function that will work even on IE
+     * The difference between this and Slice is that this will force-convert to array
+     * @param data defines the array to slice
+     * @param start defines the start of the data (optional)
+     * @param end defines the end of the data (optional)
+     * @returns the new sliced array
+     */
+    public static SliceToArray<T, P>(data: T, start?: number, end?: number): Array<P> {
+        if (Array.isArray(data)) {
+            return (data as Array<P>).slice(start, end);
         }
 
         return Array.prototype.slice.call(data, start, end);
@@ -253,7 +269,7 @@ export class Tools {
      * @returns the angle in degrees
      */
     public static ToDegrees(angle: number): number {
-        return angle * 180 / Math.PI;
+        return (angle * 180) / Math.PI;
     }
 
     /**
@@ -262,7 +278,7 @@ export class Tools {
      * @returns the angle in radians
      */
     public static ToRadians(angle: number): number {
-        return angle * Math.PI / 180;
+        return (angle * Math.PI) / 180;
     }
 
     /**
@@ -293,9 +309,12 @@ export class Tools {
         }
 
         // Special Fallback MacOS Safari...
-        if (engine._badDesktopOS && !engine._badOS &&
+        if (
+            engine._badDesktopOS &&
+            !engine._badOS &&
             // And not ipad pros who claim to be macs...
-            !(document && 'ontouchend' in document)) {
+            !(document && "ontouchend" in document)
+        ) {
             eventPrefix = "mouse";
         }
 
@@ -319,7 +338,7 @@ export class Tools {
      * @returns the cleaned url
      */
     public static CleanUrl(url: string): string {
-        url = url.replace(/#/mg, "%23");
+        url = url.replace(/#/gm, "%23");
         return url;
     }
 
@@ -335,14 +354,14 @@ export class Tools {
     }
 
     /**
-    * Loads an image as an HTMLImageElement.
-    * @param input url string, ArrayBuffer, or Blob to load
-    * @param onLoad callback called when the image successfully loads
-    * @param onError callback called when the image fails to load
-    * @param offlineProvider offline provider for caching
-    * @param mimeType optional mime type
-    * @returns the HTMLImageElement of the loaded image
-    */
+     * Loads an image as an HTMLImageElement.
+     * @param input url string, ArrayBuffer, or Blob to load
+     * @param onLoad callback called when the image successfully loads
+     * @param onError callback called when the image fails to load
+     * @param offlineProvider offline provider for caching
+     * @param mimeType optional mime type
+     * @returns the HTMLImageElement of the loaded image
+     */
     public static LoadImage(input: string | ArrayBuffer | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string): Nullable<HTMLImageElement> {
         return FileTools.LoadImage(input, onLoad, onError, offlineProvider, mimeType);
     }
@@ -369,11 +388,18 @@ export class Tools {
      */
     public static LoadFileAsync(url: string, useArrayBuffer: boolean = true): Promise<ArrayBuffer | string> {
         return new Promise((resolve, reject) => {
-            FileTools.LoadFile(url, (data) => {
-                resolve(data);
-            }, undefined, undefined, useArrayBuffer, (request, exception) => {
-                reject(exception);
-            });
+            FileTools.LoadFile(
+                url,
+                (data) => {
+                    resolve(data);
+                },
+                undefined,
+                undefined,
+                useArrayBuffer,
+                (request, exception) => {
+                    reject(exception);
+                }
+            );
         });
     }
 
@@ -389,10 +415,10 @@ export class Tools {
         if (!DomManagement.IsWindowObjectExist()) {
             return;
         }
-        var head = document.getElementsByTagName('head')[0];
-        var script = document.createElement('script');
-        script.setAttribute('type', 'text/javascript');
-        script.setAttribute('src', scriptUrl);
+        var head = document.getElementsByTagName("head")[0];
+        var script = document.createElement("script");
+        script.setAttribute("type", "text/javascript");
+        script.setAttribute("src", scriptUrl);
         if (scriptId) {
             script.id = scriptId;
         }
@@ -421,11 +447,15 @@ export class Tools {
      */
     public static LoadScriptAsync(scriptUrl: string, scriptId?: string): Promise<void> {
         return new Promise((resolve, reject) => {
-            this.LoadScript(scriptUrl, () => {
-                resolve();
-            }, (message, exception) => {
-                reject(exception);
-            });
+            this.LoadScript(
+                scriptUrl,
+                () => {
+                    resolve();
+                },
+                (message, exception) => {
+                    reject(exception);
+                }
+            );
         });
     }
 
@@ -450,7 +480,7 @@ export class Tools {
 
         reader.onload = (e) => {
             //target doesn't have result from ts 1.3
-            callback((<any>e.target)['result']);
+            callback((<any>e.target)["result"]);
         };
 
         reader.onprogress = progressCallback;
@@ -597,16 +627,16 @@ export class Tools {
 
         // Create a 2D canvas to store the result
         if (!Tools._ScreenshotCanvas) {
-            Tools._ScreenshotCanvas = document.createElement('canvas');
+            Tools._ScreenshotCanvas = document.createElement("canvas");
         }
         Tools._ScreenshotCanvas.width = width;
         Tools._ScreenshotCanvas.height = height;
-        var context = Tools._ScreenshotCanvas.getContext('2d');
+        var context = Tools._ScreenshotCanvas.getContext("2d");
 
         if (context) {
             // Copy the pixels to a 2D canvas
             var imageData = context.createImageData(width, height);
-            var castData = <any>(imageData.data);
+            var castData = <any>imageData.data;
             castData.set(data);
             context.putImageData(imageData, 0, 0);
 
@@ -625,9 +655,9 @@ export class Tools {
         // We need HTMLCanvasElement.toBlob for HD screenshots
         if (!canvas.toBlob) {
             //  low performance polyfill based on toDataURL (https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob)
-            canvas.toBlob = function(callback, type, quality) {
+            canvas.toBlob = function (callback, type, quality) {
                 setTimeout(() => {
-                    var binStr = atob(this.toDataURL(type, quality).split(',')[1]),
+                    var binStr = atob(this.toDataURL(type, quality).split(",")[1]),
                         len = binStr.length,
                         arr = new Uint8Array(len);
 
@@ -638,7 +668,7 @@ export class Tools {
                 });
             };
         }
-        canvas.toBlob(function(blob) {
+        canvas.toBlob(function (blob) {
             successCallback(blob);
         }, mimeType);
     }
@@ -653,32 +683,36 @@ export class Tools {
         if (successCallback) {
             var base64Image = Tools._ScreenshotCanvas.toDataURL(mimeType);
             successCallback(base64Image);
-        }
-        else {
-            this.ToBlob(Tools._ScreenshotCanvas, function(blob) {
-                //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
-                if (("download" in document.createElement("a"))) {
-                    if (!fileName) {
-                        var date = new Date();
-                        var stringDate = (date.getFullYear() + "-" + (date.getMonth() + 1)).slice(2) + "-" + date.getDate() + "_" + date.getHours() + "-" + ('0' + date.getMinutes()).slice(-2);
-                        fileName = "screenshot_" + stringDate + ".png";
-                    }
-                    Tools.Download(blob!, fileName);
-                }
-                else {
-                    var url = URL.createObjectURL(blob);
+        } else {
+            this.ToBlob(
+                Tools._ScreenshotCanvas,
+                function (blob) {
+                    //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
+                    if ("download" in document.createElement("a")) {
+                        if (!fileName) {
+                            var date = new Date();
+                            var stringDate = (date.getFullYear() + "-" + (date.getMonth() + 1)).slice(2) + "-" + date.getDate() + "_" + date.getHours() + "-" + ("0" + date.getMinutes()).slice(-2);
+                            fileName = "screenshot_" + stringDate + ".png";
+                        }
+                        Tools.Download(blob!, fileName);
+                    } else {
+                        var url = URL.createObjectURL(blob);
 
-                    var newWindow = window.open("");
-                    if (!newWindow) { return; }
-                    var img = newWindow.document.createElement("img");
-                    img.onload = function() {
-                        // no longer need to read the blob so it's revoked
-                        URL.revokeObjectURL(url);
-                    };
-                    img.src = url;
-                    newWindow.document.body.appendChild(img);
-                }
-            }, mimeType);
+                        var newWindow = window.open("");
+                        if (!newWindow) {
+                            return;
+                        }
+                        var img = newWindow.document.createElement("img");
+                        img.onload = function () {
+                            // no longer need to read the blob so it's revoked
+                            URL.revokeObjectURL(url);
+                        };
+                        img.src = url;
+                        newWindow.document.body.appendChild(img);
+                    }
+                },
+                mimeType
+            );
         }
     }
 
@@ -706,6 +740,24 @@ export class Tools {
         });
         a.click();
         window.URL.revokeObjectURL(url);
+    }
+
+    /**
+     * Will return the right value of the noPreventDefault variable
+     * Needed to keep backwards compatibility to the old API.
+     *
+     * @param args arguments passed to the attachControl function
+     * @returns the correct value for noPreventDefault
+     */
+    public static BackCompatCameraNoPreventDefault(args: IArguments): boolean {
+        // is it used correctly?
+        if (typeof args[0] === "boolean") {
+            return args[0];
+        } else if (typeof args[1] === "boolean") {
+            return args[1];
+        }
+
+        return false;
     }
 
     /**
@@ -803,19 +855,19 @@ export class Tools {
     }
 
     /**
-    * Test if the given uri is a base64 string
-    * @param uri The uri to test
-    * @return True if the uri is a base64 string or false otherwise
-    */
+     * Test if the given uri is a base64 string
+     * @param uri The uri to test
+     * @return True if the uri is a base64 string or false otherwise
+     */
     public static IsBase64(uri: string): boolean {
         return uri.length < 5 ? false : uri.substr(0, 5) === "data:";
     }
 
     /**
-    * Decode the given base64 uri.
-    * @param uri The uri to decode
-    * @return The decoded base64 data.
-    */
+     * Decode the given base64 uri.
+     * @param uri The uri to decode
+     * @return The decoded base64 data.
+     */
     public static DecodeBase64(uri: string): ArrayBuffer {
         const decodedString = atob(uri.split(",")[1]);
         const bufferLength = decodedString.length;
@@ -962,11 +1014,9 @@ export class Tools {
         Tools.EndPerformanceCounter = Tools._EndPerformanceCounterDisabled;
     }
 
-    private static _StartPerformanceCounterDisabled(counterName: string, condition?: boolean): void {
-    }
+    private static _StartPerformanceCounterDisabled(counterName: string, condition?: boolean): void {}
 
-    private static _EndPerformanceCounterDisabled(counterName: string, condition?: boolean): void {
-    }
+    private static _EndPerformanceCounterDisabled(counterName: string, condition?: boolean): void {}
 
     private static _StartUserMark(counterName: string, condition = true): void {
         if (!Tools._performance) {
@@ -1098,7 +1148,7 @@ export class Tools {
             return null;
         }
 
-        return ((moduleName != null) ? (moduleName + ".") : "") + className;
+        return (moduleName != null ? moduleName + "." : "") + className;
     }
 
     /**
@@ -1133,7 +1183,7 @@ export class Tools {
 export function className(name: string, module?: string): (target: Object) => void {
     return (target: Object) => {
         (<any>target)["__bjsclassName__"] = name;
-        (<any>target)["__bjsmoduleName__"] = (module != null) ? module : null;
+        (<any>target)["__bjsmoduleName__"] = module != null ? module : null;
     };
 }
 
@@ -1163,8 +1213,8 @@ export class AsyncLoop {
         public iterations: number,
         func: (asyncLoop: AsyncLoop) => void,
         successCallback: () => void,
-        offset: number = 0) {
-
+        offset: number = 0
+    ) {
         this.index = offset - 1;
         this._done = false;
         this._fn = func;
@@ -1220,28 +1270,36 @@ export class AsyncLoop {
      * @returns the created async loop object
      */
     public static SyncAsyncForLoop(iterations: number, syncedIterations: number, fn: (iteration: number) => void, callback: () => void, breakFunction?: () => boolean, timeout: number = 0): AsyncLoop {
-        return AsyncLoop.Run(Math.ceil(iterations / syncedIterations), (loop: AsyncLoop) => {
-            if (breakFunction && breakFunction()) { loop.breakLoop(); }
-            else {
-                setTimeout(() => {
-                    for (var i = 0; i < syncedIterations; ++i) {
-                        var iteration = (loop.index * syncedIterations) + i;
-                        if (iteration >= iterations) { break; }
-                        fn(iteration);
-                        if (breakFunction && breakFunction()) {
-                            loop.breakLoop();
-                            break;
+        return AsyncLoop.Run(
+            Math.ceil(iterations / syncedIterations),
+            (loop: AsyncLoop) => {
+                if (breakFunction && breakFunction()) {
+                    loop.breakLoop();
+                } else {
+                    setTimeout(() => {
+                        for (var i = 0; i < syncedIterations; ++i) {
+                            var iteration = loop.index * syncedIterations + i;
+                            if (iteration >= iterations) {
+                                break;
+                            }
+                            fn(iteration);
+                            if (breakFunction && breakFunction()) {
+                                loop.breakLoop();
+                                break;
+                            }
                         }
-                    }
-                    loop.executeNext();
-                }, timeout);
-            }
-        }, callback);
+                        loop.executeNext();
+                    }, timeout);
+                }
+            },
+            callback
+        );
     }
 }
 
 // Will only be define if Tools is imported freeing up some space when only engine is required
-EngineStore.FallbackTexture = "data:image/jpg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/4QBmRXhpZgAATU0AKgAAAAgABAEaAAUAAAABAAAAPgEbAAUAAAABAAAARgEoAAMAAAABAAIAAAExAAIAAAAQAAAATgAAAAAAAABgAAAAAQAAAGAAAAABcGFpbnQubmV0IDQuMC41AP/bAEMABAIDAwMCBAMDAwQEBAQFCQYFBQUFCwgIBgkNCw0NDQsMDA4QFBEODxMPDAwSGBITFRYXFxcOERkbGRYaFBYXFv/bAEMBBAQEBQUFCgYGChYPDA8WFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFv/AABEIAQABAAMBIgACEQEDEQH/xAAfAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgv/xAC1EAACAQMDAgQDBQUEBAAAAX0BAgMABBEFEiExQQYTUWEHInEUMoGRoQgjQrHBFVLR8CQzYnKCCQoWFxgZGiUmJygpKjQ1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4eLj5OXm5+jp6vHy8/T19vf4+fr/xAAfAQADAQEBAQEBAQEBAAAAAAAAAQIDBAUGBwgJCgv/xAC1EQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/APH6KKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76P//Z";
+EngineStore.FallbackTexture =
+    "data:image/jpg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/4QBmRXhpZgAATU0AKgAAAAgABAEaAAUAAAABAAAAPgEbAAUAAAABAAAARgEoAAMAAAABAAIAAAExAAIAAAAQAAAATgAAAAAAAABgAAAAAQAAAGAAAAABcGFpbnQubmV0IDQuMC41AP/bAEMABAIDAwMCBAMDAwQEBAQFCQYFBQUFCwgIBgkNCw0NDQsMDA4QFBEODxMPDAwSGBITFRYXFxcOERkbGRYaFBYXFv/bAEMBBAQEBQUFCgYGChYPDA8WFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFv/AABEIAQABAAMBIgACEQEDEQH/xAAfAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgv/xAC1EAACAQMDAgQDBQUEBAAAAX0BAgMABBEFEiExQQYTUWEHInEUMoGRoQgjQrHBFVLR8CQzYnKCCQoWFxgZGiUmJygpKjQ1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4eLj5OXm5+jp6vHy8/T19vf4+fr/xAAfAQADAQEBAQEBAQEBAAAAAAAAAQIDBAUGBwgJCgv/xAC1EQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/APH6KKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76P//Z";
 
 // Register promise fallback for IE
 PromisePolyfill.Apply();

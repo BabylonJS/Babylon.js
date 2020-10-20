@@ -211,12 +211,16 @@ export interface ISkin extends GLTF2.ISkin, IArrayItem {
  * Loader interface with additional members.
  */
 export interface ITexture extends GLTF2.ITexture, IArrayItem {
+    /** @hidden */
+    _textureInfo: ITextureInfo;
 }
 
 /**
  * Loader interface with additional members.
  */
 export interface ITextureInfo extends GLTF2.ITextureInfo {
+    /** false or undefined if the texture holds color data (true if data are roughness, normal, ...) */
+    nonColorData?: boolean;
 }
 
 /**
