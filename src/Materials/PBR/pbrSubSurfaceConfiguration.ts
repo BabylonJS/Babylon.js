@@ -247,9 +247,8 @@ export class PBRSubSurfaceConfiguration {
     /**
      * Stores the intensity of the different subsurface effects in the thickness texture. This variation
      * matches the channel-packing that is used by glTF.
-     * * the red channel is the transmission intensity.
-     * * the green channel is the translucency intensity.
-     * * the blue channel is the thickness.
+     * * the red channel is the transmission/translucency intensity.
+     * * the green channel is the thickness.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
