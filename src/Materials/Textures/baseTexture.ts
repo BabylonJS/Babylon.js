@@ -169,13 +169,14 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     @serialize()
     public anisotropicFilteringLevel = BaseTexture.DEFAULT_ANISOTROPIC_FILTERING_LEVEL;
 
+    private _isCube = false;
     /**
      * Define if the texture is a cube texture or if false a 2d texture.
      */
     @serialize()
     public get isCube(): boolean {
         if (!this._texture) {
-            return false;
+            return this._isCube;
         }
 
         return this._texture.isCube;
@@ -183,10 +184,10 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
 
     public set isCube(value: boolean) {
         if (!this._texture) {
-            return;
+            this._isCube = value;
+        } else {
+            this._texture.isCube = value;
         }
-
-        this._texture.isCube = value;
     }
 
     /**
