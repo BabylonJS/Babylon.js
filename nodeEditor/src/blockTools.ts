@@ -65,8 +65,6 @@ import { ReflectBlock } from 'babylonjs/Materials/Node/Blocks/reflectBlock';
 import { DesaturateBlock } from 'babylonjs/Materials/Node/Blocks/desaturateBlock';
 import { PBRMetallicRoughnessBlock } from 'babylonjs/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock';
 import { SheenBlock } from 'babylonjs/Materials/Node/Blocks/PBR/sheenBlock';
-import { AmbientOcclusionBlock } from 'babylonjs/Materials/Node/Blocks/PBR/ambientOcclusionBlock';
-import { ReflectivityBlock } from 'babylonjs/Materials/Node/Blocks/PBR/reflectivityBlock';
 import { AnisotropyBlock } from 'babylonjs/Materials/Node/Blocks/PBR/anisotropyBlock';
 import { ReflectionBlock } from 'babylonjs/Materials/Node/Blocks/PBR/reflectionBlock';
 import { ClearCoatBlock } from 'babylonjs/Materials/Node/Blocks/PBR/clearCoatBlock';
@@ -460,10 +458,6 @@ export class BlockTools {
                 return new PBRMetallicRoughnessBlock("PBRMetallicRoughness");
             case "SheenBlock":
                 return new SheenBlock("Sheen");
-            case "AmbientOcclusionBlock":
-                return new AmbientOcclusionBlock("AmbientOcclusion");
-            case "ReflectivityBlock":
-                return new ReflectivityBlock("Reflectivity");
             case "AnisotropyBlock":
                 return new AnisotropyBlock("Anisotropy");
             case "ReflectionBlock":
