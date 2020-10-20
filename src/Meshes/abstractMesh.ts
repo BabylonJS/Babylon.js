@@ -2228,7 +2228,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * This mode makes the mesh edges visible
      * @param epsilon defines the maximal distance between two angles to detect a face
      * @param checkVerticesInsteadOfIndices indicates that we should check vertex list directly instead of faces
-     * @param additional options to the edge renderer
+     * @param options options to the edge renderer
      * @returns the currentAbstractMesh
      * @see https://www.babylonjs-playground.com/#19O9TU#0
      */
