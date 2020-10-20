@@ -7526,6 +7526,7 @@ declare module BABYLON {
          * The higher the better but the slower. This defaults to 4 as it seems to be the best tradeoff.
          */
         anisotropicFilteringLevel: number;
+        private _isCube;
         /**
          * Define if the texture is a cube texture or if false a 2d texture.
          */
