@@ -423,6 +423,9 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     protected _dumpPropertiesCode() {
         let codeString: string = super._dumpPropertiesCode();
 
+        if (this.texture) {
+            codeString += `${this._codeVariableName}.texture.gammaSpace = ${this.texture.gammaSpace});\r\n`;
+        }
         codeString += `${this._codeVariableName}.useSphericalHarmonics = ${this.useSphericalHarmonics};\r\n`;
         codeString += `${this._codeVariableName}.forceIrradianceInFragment = ${this.forceIrradianceInFragment};\r\n`;
 
@@ -434,6 +437,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
 
         serializationObject.useSphericalHarmonics = this.useSphericalHarmonics;
         serializationObject.forceIrradianceInFragment = this.forceIrradianceInFragment;
+        serializationObject.gammaSpace = this.texture?.gammaSpace ?? true;
 
         return serializationObject;
     }
@@ -443,6 +447,9 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
 
         this.useSphericalHarmonics = serializationObject.useSphericalHarmonics;
         this.forceIrradianceInFragment = serializationObject.forceIrradianceInFragment;
+        if (this.texture) {
+            this.texture.gammaSpace = serializationObject.gammaSpace;
+        }
     }
 }
 
