@@ -18,8 +18,8 @@ interface IFloatLineComponentProps {
     step?: string,
     digits?: number;
     useEuler?: boolean;
-    min?: number
-    max?: number
+    min?: number;
+    max?: number;
     smallUI?: boolean;
     onEnter?: (newValue:number) => void;
 }
