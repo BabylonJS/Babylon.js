@@ -4,7 +4,7 @@ import { Vector3, Vector2 } from "../Maths/math.vector";
 import { Color4 } from "../Maths/math.color";
 import { Engine } from "../Engines/engine";
 import { IGetSetVerticesData, VertexData } from "../Meshes/mesh.vertexData";
-import { VertexBuffer } from "../Meshes/buffer";
+import { VertexBuffer, IndexBuffer } from "../Meshes/buffer";
 import { SubMesh } from "../Meshes/subMesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Effect } from "../Materials/effect";
@@ -50,16 +50,14 @@ export class Geometry implements IGetSetVerticesData {
     private _meshes: Mesh[];
     private _totalVertices = 0;
     /** @hidden */
-    public _indices: IndicesArray;
-    /** @hidden */
     public _vertexBuffers: { [key: string]: VertexBuffer };
     private _isDisposed = false;
     private _extend: { minimum: Vector3; maximum: Vector3 };
     private _boundingBias: Vector2;
     /** @hidden */
     public _delayInfo: Array<string>;
-    private _indexBuffer: Nullable<DataBuffer>;
-    private _indexBufferIsUpdatable = false;
+    /** @hidden */
+    public _indexBuffer: Nullable<IndexBuffer>;
     /** @hidden */
     public _boundingInfo: Nullable<BoundingInfo>;
     /** @hidden */
@@ -134,7 +132,7 @@ export class Geometry implements IGetSetVerticesData {
         this._scene = scene;
         //Init vertex buffer cache
         this._vertexBuffers = {};
-        this._indices = [];
+        this._indexBuffer = null;
         this._updatable = updatable;
 
         // vertexData
@@ -142,7 +140,6 @@ export class Geometry implements IGetSetVerticesData {
             this.setAllVerticesData(vertexData, updatable);
         } else {
             this._totalVertices = 0;
-            this._indices = [];
         }
 
         if (this._engine.getCaps().vertexArrayObject) {
@@ -204,17 +201,6 @@ export class Geometry implements IGetSetVerticesData {
     public _rebuild(): void {
         if (this._vertexArrayObjects) {
             this._vertexArrayObjects = {};
-        }
-
-        // Index buffer
-        if (this._meshes.length !== 0 && this._indices) {
-            this._indexBuffer = this._engine.createIndexBuffer(this._indices, this._updatable);
-        }
-
-        // Vertex buffers
-        for (var key in this._vertexBuffers) {
-            let vertexBuffer = <VertexBuffer>this._vertexBuffers[key];
-            vertexBuffer._rebuild();
         }
     }
 
@@ -373,7 +359,11 @@ export class Geometry implements IGetSetVerticesData {
         }
 
         if (indexToBind === undefined) {
-            indexToBind = this._indexBuffer;
+            if (this._indexBuffer) {
+                indexToBind = this._indexBuffer.buffer;
+            } else {
+                indexToBind = null;
+            }
         }
         let vbs = this.getVertexBuffers();
 
@@ -551,20 +541,9 @@ export class Geometry implements IGetSetVerticesData {
         if (!this._indexBuffer) {
             return;
         }
-
-        if (!this._indexBufferIsUpdatable) {
-            this.setIndices(indices, null, true);
-        } else {
-            const needToUpdateSubMeshes = indices.length !== this._indices.length;
-
-            if (!gpuMemoryOnly) {
-                this._indices = indices.slice();
-            }
-            this._engine.updateDynamicIndexBuffer(this._indexBuffer, indices, offset);
-            if (needToUpdateSubMeshes) {
-                for (const mesh of this._meshes) {
-                    mesh._createGlobalSubMesh(true);
-                }
+        if (this._indexBuffer.update(indices, offset, gpuMemoryOnly)) {
+            for (const mesh of this._meshes) {
+                mesh._createGlobalSubMesh(true);
             }
         }
     }
@@ -576,17 +555,13 @@ export class Geometry implements IGetSetVerticesData {
      * @param updatable defines if the index buffer must be flagged as updatable (false by default)
      */
     public setIndices(indices: IndicesArray, totalVertices: Nullable<number> = null, updatable: boolean = false): void {
-        if (this._indexBuffer) {
-            this._engine._releaseBuffer(this._indexBuffer);
+        if (!this._indexBuffer) {
+            this._indexBuffer = new IndexBuffer(this._engine, indices, updatable);
+        } else {
+            this._indexBuffer.recreate(indices, updatable);
         }
 
         this._disposeVertexArrayObjects();
-
-        this._indices = indices;
-        this._indexBufferIsUpdatable = updatable;
-        if (this._meshes.length !== 0 && this._indices) {
-            this._indexBuffer = this._engine.createIndexBuffer(this._indices, updatable);
-        }
 
         if (totalVertices != undefined) {
             // including null and undefined
@@ -605,10 +580,10 @@ export class Geometry implements IGetSetVerticesData {
      * @returns the total number of indices
      */
     public getTotalIndices(): number {
-        if (!this.isReady()) {
+        if (!this.isReady() || !this._indexBuffer) {
             return 0;
         }
-        return this._indices.length;
+        return this._indexBuffer.data.length;
     }
 
     /**
@@ -618,10 +593,10 @@ export class Geometry implements IGetSetVerticesData {
      * @returns the index buffer array
      */
     public getIndices(copyWhenShared?: boolean, forceCopy?: boolean): Nullable<IndicesArray> {
-        if (!this.isReady()) {
+        if (!this.isReady() || !this._indexBuffer) {
             return null;
         }
-        var orig = this._indices;
+        var orig = this._indexBuffer.data;
         if (!forceCopy && (!copyWhenShared || this._meshes.length === 1)) {
             return orig;
         } else {
@@ -639,10 +614,10 @@ export class Geometry implements IGetSetVerticesData {
      * @return the index buffer
      */
     public getIndexBuffer(): Nullable<DataBuffer> {
-        if (!this.isReady()) {
+        if (!this.isReady() || !this._indexBuffer) {
             return null;
         }
-        return this._indexBuffer;
+        return this._indexBuffer.buffer;
     }
 
     /** @hidden */
@@ -732,11 +707,6 @@ export class Geometry implements IGetSetVerticesData {
             if (numOfMeshes === 1) {
                 this._vertexBuffers[kind].create();
             }
-            var buffer = this._vertexBuffers[kind].getBuffer();
-            if (buffer) {
-                buffer.references = numOfMeshes;
-            }
-
             if (kind === VertexBuffer.PositionKind) {
                 if (!this._extend) {
                     this._updateExtend();
@@ -751,11 +721,8 @@ export class Geometry implements IGetSetVerticesData {
         }
 
         // indexBuffer
-        if (numOfMeshes === 1 && this._indices && this._indices.length > 0) {
-            this._indexBuffer = this._engine.createIndexBuffer(this._indices, this._updatable);
-        }
-        if (this._indexBuffer) {
-            this._indexBuffer.references = numOfMeshes;
+        if (numOfMeshes === 1 && this._indexBuffer) {
+            this._indexBuffer.create();
         }
 
         // morphTargets
@@ -938,10 +905,8 @@ export class Geometry implements IGetSetVerticesData {
         this._totalVertices = 0;
 
         if (this._indexBuffer) {
-            this._engine._releaseBuffer(this._indexBuffer);
+            this._indexBuffer.dispose();
         }
-        this._indexBuffer = null;
-        this._indices = [];
 
         this.delayLoadState = Constants.DELAYLOADSTATE_NONE;
         this.delayLoadingFile = null;
@@ -1010,6 +975,28 @@ export class Geometry implements IGetSetVerticesData {
         geometry._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
 
         return geometry;
+    }
+
+    /**
+     * Clone the geometry.
+     * The new geometry will contain the same vertex buffers and index buffers.
+     * If the original geometry is updated it will not affect the clone, except for the content of the buffers that was available at the time of the clone.
+     * If the position data is updated in the orignal geometry the clone will not have updated bounds.
+     * Intended to be used with static geometry where one buffer needs to be replaced or per-instance buffers needs to be added without duplicating memory.
+     * @returns a clone of the Geometry
+     */
+    public clone(): Geometry {
+        const clone = new Geometry('clone_' + this.id, this._scene, undefined, this._updatable);
+
+        if (this._indexBuffer) {
+            clone._indexBuffer = this._indexBuffer.makeNewReference();
+        }
+
+        for (const kind in this._vertexBuffers) {
+            clone.setVerticesBuffer(this._vertexBuffers[kind].clone(), this._totalVertices);
+        }
+
+        return clone;
     }
 
     /**

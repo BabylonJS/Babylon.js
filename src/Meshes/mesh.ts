@@ -1437,6 +1437,20 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
+     * Clones the geometry for the mesh such that new vertex buffers and instance buffers can be added
+     * @returns the current mesh
+     */
+    public cloneGeometry(): Mesh {
+        if (!this._geometry) {
+            return this;
+        }
+
+        this._geometry =  this._geometry.clone();
+        this._geometry.applyToMesh(this);
+        return this;
+    }
+
+    /**
      * Set the index buffer of this mesh
      * @param indices defines the source data
      * @param totalVertices defines the total number of vertices referenced by this index data (can be null)

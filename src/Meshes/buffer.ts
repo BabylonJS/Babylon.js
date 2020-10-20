@@ -1,24 +1,150 @@
-import { Nullable, DataArray } from "../types";
+import { Nullable, DataArray, IndicesArray } from "../types";
 import { ThinEngine } from "../Engines/thinEngine";
 import { DataBuffer } from './dataBuffer';
+import { Observer } from '../Misc/observable';
 
 /**
  * Class used to store data that will be store in GPU memory
  */
-export class Buffer {
-    private _engine: ThinEngine;
-    private _buffer: Nullable<DataBuffer>;
+abstract class Buffer {
+    protected _engine: ThinEngine;
+    protected _buffer: Nullable<DataBuffer>;
     /** @hidden */
     public _data: Nullable<DataArray>;
-    private _updatable: boolean;
-    private _instanced: boolean;
-    private _divisor: number;
-    private _isAlreadyOwned = false;
+    protected _updatable: boolean;
+    protected _bufferReferenceCount: number = 0;
+    protected _restoreContextObserver: Nullable<Observer<ThinEngine>> = null;
 
+    /**
+     * Constructor
+     * @param engine the engine
+     * @param data the data to use for this buffer
+     * @param updatable whether the data is updatable
+     */
+    constructor(engine: any, data: DataArray, updatable: boolean) {
+        if (engine.getScene) { // old versions of VertexBuffer accepted 'mesh' instead of 'engine'
+            this._engine = engine.getScene().getEngine();
+        }
+        else {
+            this._engine = engine;
+        }
+
+        this._updatable = updatable;
+        this._data = data;
+    }
+
+    /**
+     * Store data into the buffer. If the buffer was already used it will be either recreated or updated depending on isUpdatable property
+     * @param data defines the data to store
+     */
+    protected abstract createInternal(data: DataArray): void;
+
+    /**
+     * Store data into the buffer. If the buffer was already used it will be either recreated or updated depending on isUpdatable property
+     * @param data defines the data to store
+     */
+    public create(data: Nullable<DataArray> = null): void {
+        if (!data && this._buffer) {
+            return; // nothing to do
+        }
+
+        data = data || this._data;
+
+        if (!data) {
+            return;
+        }
+
+        this.createInternal(data);
+
+        if (this._buffer && this._restoreContextObserver === null) {
+            this._restoreContextObserver = this._engine.onContextRestoredObservable.add(this._rebuild);
+        }
+    }
+
+    // Properties
+
+    /**
+     * Gets a boolean indicating if the Buffer is updatable?
+     * @returns true if the buffer is updatable
+     */
+    public isUpdatable(): boolean {
+        return this._updatable;
+    }
+
+    /**
+     * Gets current buffer's data
+     * @returns a DataArray or null
+     */
+    public getData(): Nullable<DataArray> {
+        return this._data;
+    }
+
+    public setData(data: DataArray): void {
+        this._data = data; // TODO: Doesn't actually update anything, part of CPU setup
+    }
+
+    /**
+     * Gets underlying native buffer
+     * @returns underlying native buffer
+     */
+    public getBuffer(): Nullable<DataBuffer> {
+        return this._buffer;
+    }
+
+    // Methods
+
+    /** @hidden */
+    public _rebuild(): void {
+        this._buffer = null;
+        this.create(this._data);
+    }
+
+    /**
+     * Update current buffer data
+     * @param data defines the data to store
+     */
+    public update(data: DataArray): void {
+        this.create(data);
+    }
+
+    /** @hidden */
+    public _increaseReferences() {
+        this._bufferReferenceCount++;
+    }
+
+    /**
+     * Release all resources
+     */
+    public dispose(dispose_buffer: boolean = true): void {
+        if (this._restoreContextObserver) {
+            this._engine.onContextRestoredObservable.remove(this._restoreContextObserver);
+            this._restoreContextObserver = null;
+        }
+        if (!this._buffer) {
+            return;
+        }
+        if (dispose_buffer) {
+            this._engine._releaseBuffer(this._buffer);
+        }
+        this._buffer = null;
+    }
+}
+
+export class VertexBufferBuffer extends Buffer {
     /**
      * Gets the byte stride.
      */
     public readonly byteStride: number;
+
+    /**
+     * Gets the stride in float32 units (i.e. byte stride / 4).
+     * May not be an integer if the byte stride is not divisible by 4.
+     * @returns the stride in float32 units
+     * @deprecated Please use byteStride instead.
+     */
+    public getStrideSize(): number {
+        return this.byteStride / Float32Array.BYTES_PER_ELEMENT;
+    }
 
     /**
      * Constructor
@@ -32,23 +158,11 @@ export class Buffer {
      * @param divisor sets an optional divisor for instances (1 by default)
      */
     constructor(engine: any, data: DataArray, updatable: boolean, stride = 0, postponeInternalCreation = false, instanced = false, useBytes = false, divisor?: number) {
-        if (engine.getScene) { // old versions of VertexBuffer accepted 'mesh' instead of 'engine'
-            this._engine = engine.getScene().getEngine();
-        }
-        else {
-            this._engine = engine;
-        }
-
-        this._updatable = updatable;
-        this._instanced = instanced;
-        this._divisor = divisor || 1;
-
-        this._data = data;
-
+        super(engine, data, updatable);
         this.byteStride = useBytes ? stride : stride * Float32Array.BYTES_PER_ELEMENT;
 
         if (!postponeInternalCreation) { // by default
-            this.create();
+            this.create(null);
         }
     }
 
@@ -71,59 +185,11 @@ export class Buffer {
         return new VertexBuffer(this._engine, this, kind, this._updatable, true, byteStride, instanced === undefined ? this._instanced : instanced, byteOffset, size, undefined, undefined, true, this._divisor || divisor);
     }
 
-    // Properties
-
-    /**
-     * Gets a boolean indicating if the Buffer is updatable?
-     * @returns true if the buffer is updatable
-     */
-    public isUpdatable(): boolean {
-        return this._updatable;
-    }
-
-    /**
-     * Gets current buffer's data
-     * @returns a DataArray or null
-     */
-    public getData(): Nullable<DataArray> {
-        return this._data;
-    }
-
-    /**
-     * Gets underlying native buffer
-     * @returns underlying native buffer
-     */
-    public getBuffer(): Nullable<DataBuffer> {
-        return this._buffer;
-    }
-
-    /**
-     * Gets the stride in float32 units (i.e. byte stride / 4).
-     * May not be an integer if the byte stride is not divisible by 4.
-     * @returns the stride in float32 units
-     * @deprecated Please use byteStride instead.
-     */
-    public getStrideSize(): number {
-        return this.byteStride / Float32Array.BYTES_PER_ELEMENT;
-    }
-
-    // Methods
-
     /**
      * Store data into the buffer. If the buffer was already used it will be either recreated or updated depending on isUpdatable property
      * @param data defines the data to store
      */
-    public create(data: Nullable<DataArray> = null): void {
-        if (!data && this._buffer) {
-            return; // nothing to do
-        }
-
-        data = data || this._data;
-
-        if (!data) {
-            return;
-        }
-
+    protected createInternal(data: DataArray): void {
         if (!this._buffer) { // create buffer
             if (this._updatable) {
                 this._buffer = this._engine.createDynamicVertexBuffer(data);
@@ -137,18 +203,48 @@ export class Buffer {
         }
     }
 
-    /** @hidden */
-    public _rebuild(): void {
-        this._buffer = null;
-        this.create(this._data);
+    /**
+     * Updates the data directly.
+     * @param data the new data
+     * @param offset the new offset
+     * @param vertexCount the vertex count (optional)
+     * @param useBytes set to true if the offset is in bytes
+     */
+    public updateDirectly(data: DataArray, offset: number, vertexCount?: number, useBytes: boolean = false): void {
+        if (this._buffer && this._updatable) { // update buffer
+            this._engine.updateDynamicVertexBuffer(this._buffer, data, useBytes ? offset : offset * Float32Array.BYTES_PER_ELEMENT, (vertexCount ? vertexCount * this.byteStride : undefined));
+            this._data = null;
+        }
+    }
+}
+
+export class IndexBufferBuffer extends Buffer {
+    /**
+     * Constructor
+     * @param engine the engine
+     * @param data the data to use for this buffer
+     * @param updatable whether the data is updatable
+     * @param postponeInternalCreation whether to postpone creating the internal WebGL buffer (optional)
+     */
+    constructor(engine: any, data: DataArray, updatable: boolean, postponeInternalCreation: boolean) {
+        super(engine, data, updatable);
+
+        if (!postponeInternalCreation) { // by default
+            this.create(null);
+        }
     }
 
     /**
-     * Update current buffer data
+     * Store data into the buffer. If the buffer was already used it will be either recreated or updated depending on isUpdatable property
      * @param data defines the data to store
      */
-    public update(data: DataArray): void {
-        this.create(data);
+    protected createInternal(data: DataArray): void {
+        if (!this._buffer) { // create buffer
+            this._buffer = this._engine.createIndexBuffer(data as IndicesArray, this._updatable);
+        } else if (this._updatable) { // update buffer
+            this._engine.updateDynamicIndexBuffer(this._buffer, data as IndicesArray);
+            this._data = data;
+        }
     }
 
     /**
@@ -158,41 +254,144 @@ export class Buffer {
      * @param vertexCount the vertex count (optional)
      * @param useBytes set to true if the offset is in bytes
      */
-    public updateDirectly(data: DataArray, offset: number, vertexCount?: number, useBytes: boolean = false): void {
-        if (!this._buffer) {
-            return;
-        }
-
-        if (this._updatable) { // update buffer
-            this._engine.updateDynamicVertexBuffer(this._buffer, data, useBytes ? offset : offset * Float32Array.BYTES_PER_ELEMENT, (vertexCount ? vertexCount * this.byteStride : undefined));
+    public updateDirectly(data: IndicesArray, offset: number, vertexCount?: number, useBytes: boolean = false): void {
+        if (this._buffer && this._updatable) { // update buffer
+            this._engine.updateDynamicIndexBuffer(this._buffer, data, offset); // TODO: Multiply offset by 2 or 4 depending on size of index?
             this._data = null;
         }
     }
+}
 
-    /** @hidden */
-    public _increaseReferences() {
-        if (!this._buffer) {
-            return;
-        }
+export class IndexBuffer {
+    private _buffer: IndexBufferBuffer;
 
-        if (!this._isAlreadyOwned) {
-            this._isAlreadyOwned = true;
-            return;
-        }
+    public get updatable(): boolean {
+        return this._buffer.isUpdatable();
+    }
 
-        this._buffer.references++;
+    /** Get the data buffer (GPU resource) of this index buffer */
+    public get buffer(): Nullable<DataBuffer> {
+        return this._buffer.getBuffer();
+    }
+
+    /** Get the CPU-data used for this index buffer */
+    public get data(): IndicesArray {
+        return this._buffer.getData() as IndicesArray;
+    }
+
+    /** Set the CPU-data used for this index buffer */
+    public set data(new_data: IndicesArray) {
+        this._buffer.setData(new_data);
     }
 
     /**
-     * Release all resources
+     * Constructor
+     * @param engine the engine
+     * @param data the data to use for this buffer
+     * @param updatable whether the data is updatable
+     * @param postponeInternalCreation whether to postpone creating the internal WebGL buffer (optional)
      */
-    public dispose(): void {
-        if (!this._buffer) {
+    constructor (engine: ThinEngine, data: IndicesArray, updatable = false, postponeInternalCreation = false) {
+        this._buffer = new IndexBufferBuffer(engine, data, updatable, postponeInternalCreation);
+    }
+
+    /**
+     * Create the GPU memory for the IndexBuffer. Will have no effect if it was already created.
+     */
+    public create() {
+        this._buffer.create();
+    }
+
+    /**
+     * Dispose the IndexBuffer.
+     * Will only do actual dispose if this was the last usage of the index buffer.
+     */
+    public dispose() {
+        if (this._buffer) {
+            if (this._engine._releaseBuffer(this._buffer)) {
+                this._buffer = null;
+                if (this._restoreContextObserver) {
+                    this._engine.onContextRestoredObservable.remove(this._restoreContextObserver);
+                }
+            }
+        }
+    }
+
+    /**
+     * Restore the IndexBuffer on the GPU. Used to restore buffer after a context lost.
+     */
+    private _rebuild() {
+        if (this._buffer === null) {
             return;
         }
-        if (this._engine._releaseBuffer(this._buffer)) {
+        // Make sure we retain theo riginal reference count of the buffer. Calling .create will reset it to 1.
+        const restore_references = this._buffer.references;
+        this._buffer = null;
+        this.create();
+        // The typescript compiler fails to realize that this.create() always recreates this._buffer, hence the ignore.
+        // @ts-ignore
+        this._buffer.references = restore_references;
+    }
+
+    /**
+     * Increase reference count to indicate that we have one more owner.
+     * This lets the outside call dispose() once more without deleting the actual buffer.
+     * @returns the same index buffer with a higher reference count
+     */
+    public makeNewReference(): IndexBuffer {
+        if (this._buffer) {
+            this._buffer.references++;
+        }
+        return this;
+    }
+
+    /**
+     * Update content of the buffer
+     * @param indices new indices to use
+     * @param offset optional offset in the target buffer
+     * @param gpuMemoryOnly specifies if the CPU memory should be updated
+     * @returns true if size changed
+     */
+    public update(indices: IndicesArray, offset?: number, gpuMemoryOnly = false): boolean {
+        if (!this._buffer) {
+            return false;
+        }
+
+        const needToUpdateSubMeshes = indices.length !== this._data.length;
+
+        if (!this._updatable) {
+            this.recreate(indices, this._updatable);
+            // Should we return true or false here?
+        } else {
+            if (!gpuMemoryOnly) {
+                this._data = indices.slice();
+            }
+            this._engine.updateDynamicIndexBuffer(this._buffer, indices, offset);
+        }
+        return needToUpdateSubMeshes;
+    }
+
+    /**
+     * Change the source data for the IndexBuffer and recreate it
+     * @param indices new index data
+     * @param updatable specifies if the new buffer should be updatable
+     */
+    public recreate(indices: IndicesArray, updatable: boolean = false): void {
+        var restore_references = 0;
+
+        if (this._buffer) {
+            restore_references = this._buffer.references;
+            this._engine._releaseBuffer(this._buffer);
             this._buffer = null;
         }
+
+        this._data = indices;
+        this._updatable = updatable;
+        this.create();
+
+        // The typescript compiler fails to realize that this.create() always recreates this._buffer, hence the ignore.
+        // @ts-ignore
+        this._buffer.references = restore_references;
     }
 }
 
@@ -201,12 +400,12 @@ export class Buffer {
      */
 export class VertexBuffer {
     /** @hidden */
-    public _buffer: Buffer;
+    public _buffer: VertexBufferBuffer;
     private _kind: string;
     private _size: number;
+    protected _instanced: boolean;
+    protected _instanceDivisor: number;
     private _ownsBuffer: boolean;
-    private _instanced: boolean;
-    private _instanceDivisor: number;
 
     /**
      * The byte type.
@@ -243,18 +442,19 @@ export class VertexBuffer {
      */
     public static readonly FLOAT = 5126;
 
-    /**
-     * Gets or sets the instance divisor when in instanced mode
-     */
+    public isInstanced(): boolean {
+        return this._instanced;
+    }
+
     public get instanceDivisor(): number {
         return this._instanceDivisor;
     }
 
     public set instanceDivisor(value: number) {
-        this._instanceDivisor = value;
         if (value == 0) {
             this._instanced = false;
         } else {
+            this._instanceDivisor = value;
             this._instanced = true;
         }
     }
@@ -296,7 +496,7 @@ export class VertexBuffer {
      * @param divisor defines the instance divisor to use (1 by default)
      * @param takeBufferOwnership defines if the buffer should be released when the vertex buffer is disposed
      */
-    constructor(engine: any, data: DataArray | Buffer, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number,
+    constructor(engine: any, data: DataArray | VertexBufferBuffer, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number,
         instanced?: boolean, offset?: number, size?: number, type?: number, normalized = false, useBytes = false, divisor = 1, takeBufferOwnership = false) {
         if (data instanceof Buffer) {
             this._buffer = data;
@@ -306,7 +506,7 @@ export class VertexBuffer {
                 this._buffer._increaseReferences();
             }
         } else {
-            this._buffer = new Buffer(engine, data, updatable, stride, postponeInternalCreation, instanced, useBytes);
+            this._buffer = new VertexBufferBuffer(engine, data, updatable, stride, postponeInternalCreation, instanced, useBytes);
             this._ownsBuffer = true;
         }
 
@@ -345,12 +545,17 @@ export class VertexBuffer {
         this._instanceDivisor = instanced ? divisor : 0;
     }
 
+    /**
+     * Return a clone of this VertexBuffer that references the same data buffer.
+     * Data buffers are reference counted so it will only be released once even if we have two VertexBuffers referencing it.
+     * @returns a clone of the VertexBuffer
+     */
+    public clone(): VertexBuffer {
+        return new VertexBuffer(undefined, this._buffer, this._kind, true, undefined, this.byteStride, this._instanced, this.byteOffset, this._size, this.type, this.normalized, false, this._instanceDivisor);
+    }
+
     /** @hidden */
     public _rebuild(): void {
-        if (!this._buffer) {
-            return;
-        }
-
         this._buffer._rebuild();
     }
 
@@ -420,7 +625,7 @@ export class VertexBuffer {
      * @returns true if this buffer is instanced
      */
     public getIsInstanced(): boolean {
-        return this._instanced;
+        return this.isInstanced();
     }
 
     /**
@@ -428,7 +633,7 @@ export class VertexBuffer {
      * @returns a number
      */
     public getInstanceDivisor(): number {
-        return this._instanceDivisor;
+        return this.instanceDivisor;
     }
 
     // Methods
@@ -465,9 +670,7 @@ export class VertexBuffer {
      * Disposes the VertexBuffer and the underlying WebGLBuffer.
      */
     public dispose(): void {
-        if (this._ownsBuffer) {
-            this._buffer.dispose();
-        }
+        this._buffer.dispose(this._ownsBuffer);
     }
 
     /**

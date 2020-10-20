@@ -4416,7 +4416,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             var geometry = (<Mesh>mesh).geometry;
 
             if (geometry) {
-                geometry._indices = [];
+                if (geometry._indexBuffer) {
+                    geometry._indexBuffer.data = [];
+                }
 
                 for (var vbName in geometry._vertexBuffers) {
                     if (!geometry._vertexBuffers.hasOwnProperty(vbName)) {
