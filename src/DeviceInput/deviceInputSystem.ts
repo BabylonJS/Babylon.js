@@ -13,10 +13,31 @@ declare const _native: any;
  * pointer device and one keyboard.
  */
 export class DeviceInputSystem implements IDisposable {
+
     /**
-     * Callback to be triggered when a device is connected
+     * Returns onDeviceConnected callback property
+     * @returns Callback with function to execute when a device is connected
      */
-    public onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void = () => { };
+    public get onDeviceConnected() { return this._onDeviceConnected; }
+
+    /**
+     * Sets callback function when a device is connected and executes against all connected devices
+     * @param callback Function to execute when a device is connected
+     */
+    public set onDeviceConnected(callback) {
+        this._onDeviceConnected = callback;
+
+        // Iterate through each active device and rerun new callback
+        for (let deviceType = 0; deviceType < this._inputs.length; deviceType++) {
+            if (this._inputs[deviceType]) {
+                for (let deviceSlot = 0; deviceSlot < this._inputs[deviceType].length; deviceSlot++) {
+                    if (this._inputs[deviceType][deviceSlot]) {
+                        this._onDeviceConnected(deviceType, deviceSlot);
+                    }
+                }
+            }
+        }
+    }
 
     /**
      * Callback to be triggered when a device is disconnected
@@ -29,7 +50,7 @@ export class DeviceInputSystem implements IDisposable {
     public onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>) => void;
 
     // Private Members
-    private _inputs: Array<Array<Array<Nullable<number>>>> = [];
+    private _inputs: Array<Array<Array<number>>> = [];
     private _gamepads: Array<DeviceType>;
     private _keyboardActive: boolean = false;
     private _pointerActive: boolean = false;
@@ -45,16 +66,22 @@ export class DeviceInputSystem implements IDisposable {
     private _gamepadConnectedEvent = (evt: any) => { };
     private _gamepadDisconnectedEvent = (evt: any) => { };
 
+    private _onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void = () => { };
+
     private static _MAX_KEYCODES: number = 255;
     private static _MAX_POINTER_INPUTS: number = 7;
 
     private constructor(engine: Engine) {
         const inputElement = engine.getInputElement();
+
         if (inputElement) {
             this._elementToAttachTo = inputElement;
             this._handleKeyActions();
             this._handlePointerActions();
             this._handleGamepadActions();
+
+            // Check for devices that are already connected but aren't registered. Currently, only checks for gamepads and mouse
+            this._checkForConnectedDevices();
         }
     }
 
@@ -81,13 +108,13 @@ export class DeviceInputSystem implements IDisposable {
      */
 
     /**
-     * Checks for current device input value, given an id and input index
+     * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
      * @param deviceType Enum specifiying device type
      * @param deviceSlot "Slot" or index that device is referenced in
      * @param inputIndex Id of input to be checked
      * @returns Current value of input
      */
-    public pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): Nullable<number> {
+    public pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): number {
         const device = this._inputs[deviceType][deviceSlot];
 
         if (!device) {
@@ -125,7 +152,56 @@ export class DeviceInputSystem implements IDisposable {
         window.removeEventListener("gamepaddisconnected", this._gamepadDisconnectedEvent);
     }
 
+    /**
+     * Checks for existing connections to devices and register them, if necessary
+     * Currently handles gamepads and mouse
+     */
+    private _checkForConnectedDevices() {
+        const gamepads = navigator.getGamepads();
+
+        for (const gamepad of gamepads) {
+            if (gamepad) {
+                this._addGamePad(gamepad);
+            }
+        }
+
+        // If the device in use has mouse capabilities, pre-register mouse
+        if (matchMedia('(pointer:fine)').matches) {
+            // This will provide a dummy value for the cursor position and is expected to be overriden when the first mouse event happens.
+            // There isn't any good way to get the current position outside of a pointer event so that's why this was done.
+            this._addPointerDevice(DeviceType.Mouse, 0, 0, 0);
+        }
+    }
+
     // Private functions
+    /**
+     * Add a gamepad to the DeviceInputSystem
+     * @param gamepad A single DOM Gamepad object
+     */
+    private _addGamePad(gamepad: any) {
+        const deviceType = this._getGamepadDeviceType(gamepad.id);
+        const deviceSlot = gamepad.index;
+
+        this._registerDevice(deviceType, deviceSlot, gamepad.buttons.length + gamepad.axes.length);
+        this._gamepads = this._gamepads || new Array<DeviceType>(gamepad.index + 1);
+        this._gamepads[deviceSlot] = deviceType;
+    }
+
+    /**
+     * Add pointer device to DeviceInputSystem
+     * @param deviceType Type of Pointer to add
+     * @param deviceSlot Pointer ID (0 for mouse, pointerId for Touch)
+     * @param currentX Current X at point of adding
+     * @param currentY Current Y at point of adding
+     */
+    private _addPointerDevice(deviceType: DeviceType, deviceSlot: number, currentX: number, currentY: number) {
+        this._pointerActive = true;
+        this._registerDevice(deviceType, deviceSlot, DeviceInputSystem._MAX_POINTER_INPUTS);
+        const pointer = this._inputs[deviceType][deviceSlot]; /* initalize our pointer position immediately after registration */
+        pointer[0] = currentX;
+        pointer[1] = currentY;
+    }
+
     /**
      * Add device and inputs to device array
      * @param deviceType Enum specifiying device type
@@ -138,10 +214,10 @@ export class DeviceInputSystem implements IDisposable {
         }
 
         if (!this._inputs[deviceType][deviceSlot]) {
-            const device = new Array<Nullable<number>>(numberOfInputs);
+            const device = new Array<number>(numberOfInputs);
 
             for (let i = 0; i < numberOfInputs; i++) {
-                device[i] = null;
+                device[i] = 0; /* set device input as unpressed */
             }
 
             this._inputs[deviceType][deviceSlot] = device;
@@ -207,8 +283,7 @@ export class DeviceInputSystem implements IDisposable {
             }
 
             if (!this._inputs[deviceType][deviceSlot]) {
-                this._pointerActive = true;
-                this._registerDevice(deviceType, deviceSlot, DeviceInputSystem._MAX_POINTER_INPUTS);
+                this._addPointerDevice(deviceType, deviceSlot, evt.clientX, evt.clientY);
             }
 
             const pointer = this._inputs[deviceType][deviceSlot];
@@ -231,8 +306,7 @@ export class DeviceInputSystem implements IDisposable {
             }
 
             if (!this._inputs[deviceType][deviceSlot]) {
-                this._pointerActive = true;
-                this._registerDevice(deviceType, deviceSlot, DeviceInputSystem._MAX_POINTER_INPUTS);
+                this._addPointerDevice(deviceType, deviceSlot, evt.clientX, evt.clientY);
             }
 
             const pointer = this._inputs[deviceType][deviceSlot];
@@ -257,6 +331,9 @@ export class DeviceInputSystem implements IDisposable {
                 if (this.onInputChanged) {
                     this.onInputChanged(deviceType, deviceSlot, evt.button + 2, pointer[evt.button + 2], 0);
                 }
+
+                pointer[0] = evt.clientX;
+                pointer[1] = evt.clientY;
                 pointer[evt.button + 2] = 0;
             }
             // We don't want to unregister the mouse because we may miss input data when a mouse is moving after a click
@@ -276,12 +353,7 @@ export class DeviceInputSystem implements IDisposable {
      */
     private _handleGamepadActions() {
         this._gamepadConnectedEvent = ((evt: any) => {
-            const deviceType = this._getGamepadDeviceType(evt.gamepad.id);
-            const deviceSlot = evt.gamepad.index;
-
-            this._registerDevice(deviceType, deviceSlot, evt.gamepad.buttons.length + evt.gamepad.axes.length);
-            this._gamepads = this._gamepads || new Array<string>(evt.gamepad.index + 1);
-            this._gamepads[deviceSlot] = deviceType;
+            this._addGamePad(evt.gamepad);
         });
 
         this._gamepadDisconnectedEvent = ((evt: any) => {

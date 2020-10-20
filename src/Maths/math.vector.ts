@@ -1837,6 +1837,21 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public static Project(vector: DeepImmutable<Vector3>, world: DeepImmutable<Matrix>, transform: DeepImmutable<Matrix>, viewport: DeepImmutable<Viewport>): Vector3 {
+        const result = new Vector3();
+        Vector3.ProjectToRef(vector, world, transform, viewport, result);
+        return result;
+    }
+
+    /**
+     * Project a Vector3 onto screen space to reference
+     * @param vector defines the Vector3 to project
+     * @param world defines the world matrix to use
+     * @param transform defines the transform (view x projection) matrix to use
+     * @param viewport defines the screen viewport to use
+     * @param result the vector in which the screen space will be stored
+     * @returns the new Vector3
+     */
+    public static ProjectToRef(vector: DeepImmutable<Vector3>, world: DeepImmutable<Matrix>, transform: DeepImmutable<Matrix>, viewport: DeepImmutable<Viewport>, result: DeepImmutable<Vector3>): Vector3 {
         var cw = viewport.width;
         var ch = viewport.height;
         var cx = viewport.x;
@@ -1854,7 +1869,8 @@ export class Vector3 {
         world.multiplyToRef(transform, matrix);
         matrix.multiplyToRef(viewportMatrix, matrix);
 
-        return Vector3.TransformCoordinates(vector, matrix);
+        Vector3.TransformCoordinatesToRef(vector, matrix, result);
+        return result;
     }
 
     /** @hidden */
@@ -3113,7 +3129,7 @@ export class Quaternion {
 
     /**
      * Returns a new Vector3 set with the Euler angles translated from the current quaternion
-     * @param order is a reserved parameter and is ignore for now
+     * @param order is a reserved parameter and is ignored for now
      * @returns a new Vector3 containing the Euler angles
      */
     public toEulerAngles(order = "YZX"): Vector3 {
@@ -3125,7 +3141,6 @@ export class Quaternion {
     /**
      * Sets the given vector3 "result" with the Euler angles translated from the current quaternion
      * @param result defines the vector which will be filled with the Euler angles
-     * @param order is a reserved parameter and is ignore for now
      * @returns the current unchanged quaternion
      */
     public toEulerAnglesToRef(result: Vector3): Quaternion {

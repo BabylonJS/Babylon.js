@@ -90,6 +90,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     * An event triggered when the system is disposed.
     */
     public onDisposeObservable = new Observable<IParticleSystem>();
+    /**
+    * An event triggered when the system is stopped
+    */
+    public onStoppedObservable = new Observable<IParticleSystem>();
 
     /**
      * Gets the maximum number of particles active at the same time.
@@ -204,6 +208,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * Stops the particle system.
      */
     public stop(): void {
+        if (this._stopped) {
+            return;
+        }
         this._stopped = true;
     }
 
@@ -709,9 +716,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     }>, sceneOrEngine: Scene | ThinEngine, isAnimationSheetEnabled: boolean = false, customEffect: Nullable<Effect> = null) {
         super(name);
 
-        if (sceneOrEngine.getClassName() === "Scene") {
+        if (!sceneOrEngine || sceneOrEngine.getClassName() === "Scene") {
             this._scene = (sceneOrEngine as Scene) || EngineStore.LastCreatedScene;
-            this._engine = this._engine;
+            this._engine = this._scene.getEngine();
             this.uniqueId = this._scene.getUniqueId();
             this._scene.particleSystems.push(this);
         } else {
@@ -1688,6 +1695,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
 
         // Callback
+        this.onStoppedObservable.clear();
         this.onDisposeObservable.notifyObservers(this);
         this.onDisposeObservable.clear();
     }

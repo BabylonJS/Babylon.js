@@ -540,7 +540,6 @@ export class ShaderMaterial extends Material {
 
         // Bones
         let numInfluencers = 0;
-
         if (mesh && mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
             attribs.push(VertexBuffer.MatricesIndicesKind);
             attribs.push(VertexBuffer.MatricesWeightsKind);
@@ -552,7 +551,6 @@ export class ShaderMaterial extends Material {
             const skeleton = mesh.skeleton;
 
             numInfluencers = mesh.numBoneInfluencers;
-
             defines.push("#define NUM_BONE_INFLUENCERS " + numInfluencers);
             fallbacks.addCPUSkinningFallback(0, mesh);
 
@@ -573,7 +571,6 @@ export class ShaderMaterial extends Material {
                     this._options.uniforms.push("mBones");
                 }
             }
-
         } else {
             defines.push("#define NUM_BONE_INFLUENCERS 0");
         }

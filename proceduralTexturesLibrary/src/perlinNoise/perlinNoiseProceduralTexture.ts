@@ -24,7 +24,7 @@ export class PerlinNoiseProceduralTexture extends ProceduralTexture {
     }
 
     public updateShaderUniforms() {
-        this.setFloat("size", this.getRenderSize());
+        this.setFloat("size", this.getRenderSize() as number);
 
         let scene = this.getScene();
 

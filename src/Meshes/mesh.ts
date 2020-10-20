@@ -35,6 +35,7 @@ import { Path3D } from '../Maths/math.path';
 import { Plane } from '../Maths/math.plane';
 import { TransformNode } from './transformNode';
 import { CanvasGenerator } from '../Misc/canvasGenerator';
+import { ICreateCapsuleOptions } from './Builders/capsuleBuilder';
 
 declare type LinesMesh = import("./linesMesh").LinesMesh;
 declare type InstancedMesh = import("./instancedMesh").InstancedMesh;
@@ -76,6 +77,7 @@ class _InstanceDataStorage {
     public hardwareInstancedRendering: boolean;
     public sideOrientation: number;
     public manualUpdate: boolean;
+    public previousRenderId: number;
 }
 
 /**
@@ -235,10 +237,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return;
         }
 
-        if (value && this._internalMeshDataInfo._sourcePositions && this._internalMeshDataInfo._sourceNormals) {
+        if (value && this._internalMeshDataInfo._sourcePositions) {
             // switch from software to GPU computation: we need to reset the vertex and normal buffers that have been updated by the software process
-            this.setVerticesData(VertexBuffer.PositionKind, this._internalMeshDataInfo._sourcePositions);
-            this.setVerticesData(VertexBuffer.NormalKind, this._internalMeshDataInfo._sourceNormals);
+            this.setVerticesData(VertexBuffer.PositionKind, this._internalMeshDataInfo._sourcePositions.slice(), true);
+            if (this._internalMeshDataInfo._sourceNormals) {
+                this.setVerticesData(VertexBuffer.NormalKind, this._internalMeshDataInfo._sourceNormals.slice(), true);
+            }
         }
 
         this._internalAbstractMeshDataInfo._computeBonesUsingShaders = value;
@@ -394,6 +398,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
+     * Gets the list of clones of this mesh
+     * The scene must have been constructed with useClonedMeshMap=true for this to work!
+     * Note that useClonedMeshMap=true is the default setting
+     */
+    public get cloneMeshMap(): Nullable<{ [id: string]: Mesh | undefined }> {
+        return this._internalMeshDataInfo.meshMap;
+    }
+
+    /**
      * Gets or sets a boolean indicating that this mesh does not use index buffer
      */
     public get isUnIndexed(): boolean {
@@ -449,7 +462,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 "hasInstances", "source", "worldMatrixInstancedBuffer", "hasLODLevels", "geometry", "isBlocked", "areNormalsFrozen",
                 "facetNb", "isFacetDataEnabled", "lightSources", "useBones", "isAnInstance", "collider", "edgesRenderer", "forward",
                 "up", "right", "absolutePosition", "absoluteScaling", "absoluteRotationQuaternion", "isWorldMatrixFrozen",
-                "nonUniformScaling", "behaviors", "worldMatrixFromCache", "hasThinInstances"
+                "nonUniformScaling", "behaviors", "worldMatrixFromCache", "hasThinInstances", "cloneMeshMap"
             ], ["_poseMatrix"]);
 
             // Source mesh
@@ -765,6 +778,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             if (level.distance < distanceToCamera) {
                 if (level.mesh) {
+                    if (level.mesh.delayLoadState === Constants.DELAYLOADSTATE_NOTLOADED) {
+                        level.mesh._checkDelayState();
+                        return this;
+                    }
+
+                    if (level.mesh.delayLoadState === Constants.DELAYLOADSTATE_LOADING) {
+                        return this;
+                    }
+
                     level.mesh._preActivate();
                     level.mesh._updateSubMeshesBoundingInfo(this.worldMatrixFromCache);
                 }
@@ -1108,6 +1130,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         if (!this._instanceDataStorage.visibleInstances[renderId]) {
+            if (this._instanceDataStorage.previousRenderId !== undefined && this._instanceDataStorage.isFrozen) {
+                this._instanceDataStorage.visibleInstances[this._instanceDataStorage.previousRenderId] = null;
+            }
+            this._instanceDataStorage.previousRenderId = renderId;
             this._instanceDataStorage.visibleInstances[renderId] = new Array<InstancedMesh>();
         }
 
@@ -1852,7 +1878,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Render to MRT
         if (scene.prePassRenderer) {
-            scene.prePassRenderer.bindAttachmentsForEffect(effect);
+            scene.prePassRenderer.bindAttachmentsForEffect(effect, subMesh);
         }
 
         const effectiveMesh = effectiveMeshReplacement || this._effectiveMesh;
@@ -2071,9 +2097,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         let matricesIndices = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesIndicesKind));
         let matricesIndicesExtra = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesIndicesExtraKind));
         let numBadBoneIndices: number = 0;
-        for (var a = 0; a < numWeights; a++) {
+        for (var a = 0; a < numWeights; a += 4) {
             for (var b = 0; b < numInfluences; b++) {
-                let index = b < 4 ? matricesIndices[b] : matricesIndicesExtra[b - 4];
+                let index = b < 4 ? matricesIndices[a + b] : matricesIndicesExtra[a + b - 4];
                 if (index >= numBones || index < 0) { numBadBoneIndices++; }
             }
         }
@@ -2687,7 +2713,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         var positions = vertex_data.positions;
         var normals = vertex_data.normals;
 
-        if (currentIndices === null || positions === null || normals === null || uvs === null) {
+        if (!currentIndices || !positions || !normals || !uvs) {
             Logger.Warn("VertexData contains null entries");
         }
         else {
@@ -3076,6 +3102,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Skeleton
         if (this.skeleton) {
             serializationObject.skeletonId = this.skeleton.id;
+            serializationObject.numBoneInfluencers = this.numBoneInfluencers;
         }
 
         // Physics
@@ -3106,6 +3133,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             var serializationInstance: any = {
                 name: instance.name,
                 id: instance.id,
+                isEnabled: instance.isEnabled(false),
+                isVisible: instance.isVisible,
                 isPickable: instance.isPickable,
                 checkCollisions: instance.checkCollisions,
                 position: instance.position.asArray(),
@@ -3150,7 +3179,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (this._thinInstanceDataStorage.instancesCount && this._thinInstanceDataStorage.matrixData) {
             serializationObject.thinInstances = {
                 instancesCount: this._thinInstanceDataStorage.instancesCount,
-                matrixData: Array.from(this._thinInstanceDataStorage.matrixData),
+                matrixData: Tools.SliceToArray(this._thinInstanceDataStorage.matrixData),
                 matrixBufferSize: this._thinInstanceDataStorage.matrixBufferSize,
             };
 
@@ -3162,7 +3191,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 };
 
                 for (const kind in this._userThinInstanceBuffersStorage.data) {
-                    userThinInstance.data[kind] = Array.from(this._userThinInstanceBuffersStorage.data[kind]);
+                    userThinInstance.data[kind] = Tools.SliceToArray(this._userThinInstanceBuffersStorage.data[kind]);
                     userThinInstance.sizes[kind] = this._userThinInstanceBuffersStorage.sizes[kind];
                     userThinInstance.strides[kind] = this._userThinInstanceBuffersStorage.strides[kind];
                 }
@@ -3443,7 +3472,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Skeleton
-        if (parsedMesh.skeletonId > -1) {
+        if (parsedMesh.skeletonId !== undefined && parsedMesh.skeletonId !== null) {
             mesh.skeleton = scene.getLastSkeletonByID(parsedMesh.skeletonId);
             if (parsedMesh.numBoneInfluencers) {
                 mesh.numBoneInfluencers = parsedMesh.numBoneInfluencers;
@@ -3513,6 +3542,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
                 if (parsedInstance.parentId) {
                     instance._waitingParentId = parsedInstance.parentId;
+                }
+
+                if (parsedInstance.isEnabled !== undefined && parsedInstance.isEnabled !== null) {
+                    instance.setEnabled(parsedInstance.isEnabled);
+                }
+
+                if (parsedInstance.isVisible !== undefined && parsedInstance.isVisible !== null) {
+                    instance.isVisible = parsedInstance.isVisible;
                 }
 
                 if (parsedInstance.isPickable !== undefined && parsedInstance.isPickable !== null) {
@@ -3990,6 +4027,16 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         throw _DevTools.WarnImport("MeshBuilder");
     }
 
+    /** Creates a Capsule Mesh
+     * @param name defines the name of the mesh.
+     * @param options the constructors options used to shape the mesh.
+     * @param scene defines the scene the mesh is scoped to.
+     * @returns the capsule mesh
+     * @see https://doc.babylonjs.com/how_to/capsule_shape
+     */
+    public static CreateCapsule(name: string, options: ICreateCapsuleOptions, scene: Scene): Mesh {
+        throw _DevTools.WarnImport("MeshBuilder");
+    }
     // Skeletons
 
     /**
@@ -4055,15 +4102,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (!this.isVerticesDataPresent(VertexBuffer.PositionKind)) {
             return this;
         }
-        if (!this.isVerticesDataPresent(VertexBuffer.NormalKind)) {
-            return this;
-        }
         if (!this.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind)) {
             return this;
         }
         if (!this.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
             return this;
         }
+
+        const hasNormals = this.isVerticesDataPresent(VertexBuffer.NormalKind);
 
         let internalDataInfo = this._internalMeshDataInfo;
 
@@ -4073,7 +4119,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this.subMeshes = submeshes;
         }
 
-        if (!internalDataInfo._sourceNormals) {
+        if (hasNormals && !internalDataInfo._sourceNormals) {
             this.setNormalsForCPUSkinning();
         }
 
@@ -4091,12 +4137,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // normalsData checks for not being Float32Array will only pass at most once
         var normalsData = this.getVerticesData(VertexBuffer.NormalKind);
 
-        if (!normalsData) {
-            return this;
-        }
+        if (hasNormals) {
+            if (!normalsData) {
+                return this;
+            }
 
-        if (!(normalsData instanceof Float32Array)) {
-            normalsData = new Float32Array(normalsData);
+            if (!(normalsData instanceof Float32Array)) {
+                normalsData = new Float32Array(normalsData);
+            }
         }
 
         var matricesIndicesData = this.getVerticesData(VertexBuffer.MatricesIndicesKind);
@@ -4140,14 +4188,18 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             Vector3.TransformCoordinatesFromFloatsToRef(internalDataInfo._sourcePositions[index], internalDataInfo._sourcePositions[index + 1], internalDataInfo._sourcePositions[index + 2], finalMatrix, tempVector3);
             tempVector3.toArray(positionsData, index);
 
-            Vector3.TransformNormalFromFloatsToRef(internalDataInfo._sourceNormals[index], internalDataInfo._sourceNormals[index + 1], internalDataInfo._sourceNormals[index + 2], finalMatrix, tempVector3);
-            tempVector3.toArray(normalsData, index);
+            if (hasNormals) {
+                Vector3.TransformNormalFromFloatsToRef(internalDataInfo._sourceNormals[index], internalDataInfo._sourceNormals[index + 1], internalDataInfo._sourceNormals[index + 2], finalMatrix, tempVector3);
+                tempVector3.toArray(normalsData!, index);
+            }
 
             finalMatrix.reset();
         }
 
         this.updateVerticesData(VertexBuffer.PositionKind, positionsData);
-        this.updateVerticesData(VertexBuffer.NormalKind, normalsData);
+        if (hasNormals) {
+            this.updateVerticesData(VertexBuffer.NormalKind, normalsData!);
+        }
 
         return this;
     }

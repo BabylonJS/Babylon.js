@@ -19,7 +19,7 @@ export class AxesViewer {
     /**
      * Gets the hosting scene
      */
-    public scene: Scene;
+    public scene: Nullable<Scene> = null;
 
     /**
      * Gets or sets a number used to scale line length
@@ -117,10 +117,10 @@ export class AxesViewer {
      * @returns a new axes viewer with instanced meshes
      */
     public createInstance(): AxesViewer {
-        const xAxis = AxisDragGizmo._CreateArrowInstance(this.scene, this._xAxis);
-        const yAxis = AxisDragGizmo._CreateArrowInstance(this.scene, this._yAxis);
-        const zAxis = AxisDragGizmo._CreateArrowInstance(this.scene, this._zAxis);
-        const axesViewer = new AxesViewer(this.scene, this.scaleLines, null, xAxis, yAxis, zAxis);
+        const xAxis = AxisDragGizmo._CreateArrowInstance(this.scene!, this._xAxis);
+        const yAxis = AxisDragGizmo._CreateArrowInstance(this.scene!, this._yAxis);
+        const zAxis = AxisDragGizmo._CreateArrowInstance(this.scene!, this._zAxis);
+        const axesViewer = new AxesViewer(this.scene!, this.scaleLines, null, xAxis, yAxis, zAxis);
         axesViewer._instanced = true;
         return axesViewer;
     }
@@ -129,20 +129,17 @@ export class AxesViewer {
     public dispose() {
         if (this._xAxis) {
             this._xAxis.dispose(false, !this._instanced);
-            delete this._xAxis;
         }
 
         if (this._yAxis) {
             this._yAxis.dispose(false, !this._instanced);
-            delete this._yAxis;
         }
 
         if (this._zAxis) {
             this._zAxis.dispose(false, !this._instanced);
-            delete this._zAxis;
         }
 
-        delete this.scene;
+        this.scene = null;
     }
 
     private static _SetRenderingGroupId(node: TransformNode, id: number) {

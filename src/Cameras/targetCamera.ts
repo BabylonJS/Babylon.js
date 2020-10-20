@@ -247,6 +247,8 @@ export class TargetCamera extends Camera {
             this.position.z += Epsilon;
         }
 
+        this._referencePoint.normalize().scaleInPlace(this._initialFocalDistance);
+
         Matrix.LookAtLHToRef(this.position, target, this._defaultUp, this._camMatrix);
         this._camMatrix.invert();
 

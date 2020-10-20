@@ -158,7 +158,8 @@ export class TransformNode extends Node {
     private _absoluteRotationQuaternion = Quaternion.Identity();
     private _pivotMatrix = Matrix.Identity();
     private _pivotMatrixInverse: Matrix;
-    protected _postMultiplyPivotMatrix = false;
+    /** @hidden */
+    public _postMultiplyPivotMatrix = false;
 
     protected _isWorldMatrixFrozen = false;
 

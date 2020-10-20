@@ -28,6 +28,7 @@ export class SceneComponentConstants {
     public static readonly NAME_DEPTHRENDERER = "DepthRenderer";
     public static readonly NAME_POSTPROCESSRENDERPIPELINEMANAGER = "PostProcessRenderPipelineManager";
     public static readonly NAME_SPRITE = "Sprite";
+    public static readonly NAME_SUBSURFACE = "SubSurface";
     public static readonly NAME_OUTLINERENDERER = "Outline";
     public static readonly NAME_PROCEDURALTEXTURE = "ProceduralTexture";
     public static readonly NAME_SHADOWGENERATOR = "ShadowGenerator";
@@ -41,7 +42,7 @@ export class SceneComponentConstants {
 
     public static readonly STEP_EVALUATESUBMESH_BOUNDINGBOXRENDERER = 0;
 
-    public static readonly STEP_ACTIVEMESH_BOUNDINGBOXRENDERER = 0;
+    public static readonly STEP_PREACTIVEMESH_BOUNDINGBOXRENDERER = 0;
 
     public static readonly STEP_CAMERADRAWRENDERTARGET_EFFECTLAYER = 1;
 
@@ -158,9 +159,9 @@ export type MeshStageAction = (mesh: AbstractMesh, hardwareInstancedRendering: b
 export type EvaluateSubMeshStageAction = (mesh: AbstractMesh, subMesh: SubMesh) => void;
 
 /**
- * Strong typing of a Active Mesh related stage step action
+ * Strong typing of a pre active Mesh related stage step action
  */
-export type ActiveMeshStageAction = (sourceMesh: AbstractMesh, mesh: AbstractMesh) => void;
+export type PreActiveMeshStageAction = (mesh: AbstractMesh) => void;
 
 /**
  * Strong typing of a Camera related stage step action

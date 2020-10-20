@@ -5,6 +5,7 @@ import { Control } from "./control";
 import { Measure } from "../measure";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
 
 /**
  * Root class for 2D containers
@@ -340,12 +341,14 @@ export class Container extends Control {
                 }
 
                 if (this.adaptWidthToChildren && computedWidth >= 0) {
+                    computedWidth += this.paddingLeftInPixels + this.paddingRightInPixels;
                     if (this.width !== computedWidth + "px") {
                         this.width = computedWidth + "px";
                         this._rebuildLayout = true;
                     }
                 }
                 if (this.adaptHeightToChildren && computedHeight >= 0) {
+                    computedHeight += this.paddingTopInPixels + this.paddingBottomInPixels;
                     if (this.height !== computedHeight + "px") {
                         this.height = computedHeight + "px";
                         this._rebuildLayout = true;
@@ -416,7 +419,7 @@ export class Container extends Control {
     }
 
     /** @hidden */
-    public _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
+    public _processPicking(x: number, y: number, pi: PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
         if (!this._isEnabled || !this.isVisible || this.notRenderable) {
             return false;
         }
@@ -428,7 +431,7 @@ export class Container extends Control {
         // Checking backwards to pick closest first
         for (var index = this._children.length - 1; index >= 0; index--) {
             var child = this._children[index];
-            if (child._processPicking(x, y, type, pointerId, buttonIndex, deltaX, deltaY)) {
+            if (child._processPicking(x, y, pi, type, pointerId, buttonIndex, deltaX, deltaY)) {
                 if (child.hoverCursor) {
                     this._host._changeCursor(child.hoverCursor);
                 }
@@ -440,7 +443,7 @@ export class Container extends Control {
             return false;
         }
 
-        return this._processObservables(type, x, y, pointerId, buttonIndex, deltaX, deltaY);
+        return this._processObservables(type, x, y, pi, pointerId, buttonIndex, deltaX, deltaY);
     }
 
     /** @hidden */

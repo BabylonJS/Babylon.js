@@ -3,12 +3,12 @@ import { Observable } from "babylonjs/Misc/observable";
 import { Color4 } from "babylonjs/Maths/math.color";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
 import { NumericInputComponent } from "./numericInputComponent";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { GlobalState } from '../globalState';
 import { ColorPickerLineComponent } from './colorPickerComponent';
 
 const copyIcon: string = require("./copy.svg");
+const plusIcon: string = require("./plus.svg");
+const minusIcon: string = require("./minus.svg");
 
 export interface IColor4LineComponentProps {
     label: string;
@@ -30,8 +30,8 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
     }
 
     shouldComponentUpdate(nextProps: IColor4LineComponentProps, nextState: { color: Color4 }) {
-        let value = this.props.target[this.props.propertyName];
-        let currentColor = value.getClassName() === "Color4" ? value : new Color4(value.r, value.g, value.b, 1.0);
+        const currentState = nextProps.target[nextProps.propertyName];
+        let currentColor = currentState.getClassName() === "Color4" ? currentState : new Color4(currentState.r, currentState.g, currentState.b, 1.0);  
 
         if (!currentColor.equals(nextState.color) || this._localChange) {
             nextState.color = currentColor.clone();
@@ -150,7 +150,7 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
 
     render() {
 
-        const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />;
+        const expandedIcon = this.state.isExpanded ? minusIcon : plusIcon;
 
         return (
             <div className="color3Line">
@@ -167,7 +167,7 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
                         <img src={copyIcon} alt=""/>
                     </div>
                     <div className="expand hoverIcon" onClick={() => this.switchExpandState()} title="Expand">
-                        {chevron}
+                        <img src={expandedIcon} alt=""/>
                     </div>
                 </div>
                 {
