@@ -5,7 +5,7 @@ import { Control } from "./control";
 import { MultiLinePoint } from "../multiLinePoint";
 import { Measure } from "../measure";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
-import { Vector3 } from 'babylonjs';
+import { Vector3 } from "babylonjs/Maths/math.vector";
 
 /**
  * Class used to create multi line control
