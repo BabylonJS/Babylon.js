@@ -678,6 +678,13 @@ export class UniformBuffer {
         return true;
     }
 
+    /** @hidden */
+    public _getMatrixUpdateFlagFromCache(matrixName: string): number | undefined {
+        this._checkBuffers();
+
+        return this._valueCache[matrixName];
+    }
+
     // Update methods
 
     private _updateMatrix3x3ForUniform(name: string, matrix: Float32Array): void {

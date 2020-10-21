@@ -1175,7 +1175,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /** @hidden */
     public _viewMatrix: Matrix;
-    private _projectionMatrix: Matrix;
+    public _projectionMatrix: Matrix;
     /** @hidden */
     public _forcedViewPosition: Nullable<Vector3>;
 
@@ -1659,6 +1659,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this._sceneUbo = new UniformBuffer(this._engine, undefined, !ThinEngine.Features.trackUbosInFrame, "scene");
         this._sceneUbo.addUniform("viewProjection", 16);
         this._sceneUbo.addUniform("view", 16);
+        this._sceneUbo.addUniform("projection", 16);
         this._sceneUbo.addUniform("viewPosition", 4);
     }
 
@@ -2003,7 +2004,14 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param projectionR defines the right Projection matrix to use (if provided)
      */
     public setTransformMatrix(viewL: Matrix, projectionL: Matrix, viewR?: Matrix, projectionR?: Matrix): void {
-        if (!ThinEngine.Features.trackUbosInFrame && this._viewUpdateFlag === viewL.updateFlag && this._projectionUpdateFlag === projectionL.updateFlag) {
+        if (ThinEngine.Features.trackUbosInFrame) {
+            const viewLUpdateFlag = this._sceneUbo._getMatrixUpdateFlagFromCache("view");
+            const projectionLUpdateFlag = this._sceneUbo._getMatrixUpdateFlagFromCache("projection");
+
+            if (viewLUpdateFlag === viewL.updateFlag && projectionLUpdateFlag === projectionL.updateFlag) {
+                return;
+            }
+        } else if (this._viewUpdateFlag === viewL.updateFlag && this._projectionUpdateFlag === projectionL.updateFlag) {
             return;
         }
 
@@ -2026,6 +2034,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         } else if (this._sceneUbo.useUbo) {
             this._sceneUbo.updateMatrix("viewProjection", this._transformMatrix);
             this._sceneUbo.updateMatrix("view", this._viewMatrix);
+            this._sceneUbo.updateMatrix("projection", this._projectionMatrix);
         }
     }
 

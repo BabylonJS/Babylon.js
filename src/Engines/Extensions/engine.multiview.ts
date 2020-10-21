@@ -127,8 +127,8 @@ Scene.prototype._createMultiviewUbo = function() {
     this._multiviewSceneUbo.addUniform("viewProjection", 16);
     this._multiviewSceneUbo.addUniform("viewProjectionR", 16);
     this._multiviewSceneUbo.addUniform("view", 16);
+    this._multiviewSceneUbo.addUniform("projection", 16);
     this._multiviewSceneUbo.addUniform("viewPosition", 4);
-
 };
 Scene.prototype._updateMultiviewUbo = function(viewR?: Matrix, projectionR?: Matrix) {
     if (viewR && projectionR) {
@@ -144,6 +144,7 @@ Scene.prototype._updateMultiviewUbo = function(viewR?: Matrix, projectionR?: Mat
         this._multiviewSceneUbo.updateMatrix("viewProjection", this.getTransformMatrix());
         this._multiviewSceneUbo.updateMatrix("viewProjectionR", this._transformMatrixR);
         this._multiviewSceneUbo.updateMatrix("view", this._viewMatrix);
+        this._multiviewSceneUbo.updateMatrix("projection", this._projectionMatrix);
     }
 };
 Scene.prototype._renderMultiviewToSingleView = function(camera: Camera) {
