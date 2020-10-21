@@ -239,9 +239,6 @@ export class AssetContainer extends AbstractScene {
         this.lights.forEach((o) => {
             this.scene.addLight(o);
         });
-        this.geometries.forEach((o) => {
-            this.scene.addGeometry(o);
-        });
         this.meshes.forEach((o) => {
             this.scene.addMesh(o);
         });
@@ -299,9 +296,6 @@ export class AssetContainer extends AbstractScene {
         });
         this.lights.forEach((o) => {
             this.scene.removeLight(o);
-        });
-        this.geometries.forEach((o) => {
-            this.scene.removeGeometry(o);
         });
         this.meshes.forEach((o) => {
             this.scene.removeMesh(o);
