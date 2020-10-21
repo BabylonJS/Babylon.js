@@ -8,6 +8,7 @@ import { Camera } from "./Cameras/camera";
 import { RenderTargetTexture } from "./Materials/Textures/renderTargetTexture";
 import { PickingInfo } from "./Collisions/pickingInfo";
 import { AbstractScene } from "./abstractScene";
+import { IPointerEvent } from './Events/deviceInputEvents';
 
 declare type Mesh = import("./Meshes/mesh").Mesh;
 
@@ -206,7 +207,7 @@ export type PointerMoveStageAction = (unTranslatedPointerX: number, unTranslated
 /**
  * Strong typing of a pointer up/down action.
  */
-export type PointerUpDownStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, evt: PointerEvent) => Nullable<PickingInfo>;
+export type PointerUpDownStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, evt: IPointerEvent) => Nullable<PickingInfo>;
 
 /**
  * Representation of a stage in the scene (Basically a list of ordered steps)

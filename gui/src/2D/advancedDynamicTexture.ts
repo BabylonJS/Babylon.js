@@ -21,6 +21,7 @@ import { Measure } from "./measure";
 import { Constants } from 'babylonjs/Engines/constants';
 import { Viewport } from 'babylonjs/Maths/math.viewport';
 import { Color3 } from 'babylonjs/Maths/math.color';
+import { IWheelEvent } from 'babylonjs/Events/deviceInputEvents';
 /**
 * Interface used to define a control that can receive focus
 */
@@ -739,7 +740,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             this._shouldBlockPointer = false;
             // Do picking modifies _shouldBlockPointer
             let pointerId = (pi.event as PointerEvent).pointerId || this._defaultMousePointerId;
-            this._doPicking(x, y, pi, pi.type, pointerId, pi.event.button, (<MouseWheelEvent>pi.event).deltaX, (<MouseWheelEvent>pi.event).deltaY);
+            this._doPicking(x, y, pi, pi.type, pointerId, pi.event.button, (pi.event as unknown as IWheelEvent).deltaX, (pi.event as unknown as IWheelEvent).deltaY);
             // Avoid overwriting a true skipOnPointerObservable to false
             if (this._shouldBlockPointer) {
                 pi.skipOnPointerObservable = this._shouldBlockPointer;

@@ -5,6 +5,7 @@ import { Camera } from "../../Cameras/camera";
 import { ICameraInput } from "../../Cameras/cameraInputsManager";
 import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 import { Tools } from "../../Misc/tools";
+import { IWheelEvent } from '../../Events/deviceInputEvents';
 
 /**
  * Base class for mouse wheel input..
@@ -61,7 +62,7 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
                 return;
             }
 
-            const event = <MouseWheelEvent>pointer.event;
+            const event = (pointer.event as unknown as IWheelEvent);
 
             const platformScale = event.deltaMode === WheelEvent.DOM_DELTA_LINE ? this._ffMultiplier : 1;
 

@@ -134,6 +134,7 @@ export class DeviceInputSystem implements IDisposable {
         }
 
         // TODO: Determine best way to handle wheel
+        // When the mouse wheel is moved, only clear the value if that input is polled for
         if (deviceType == DeviceType.Mouse && (inputIndex >= PointerInput.MouseWheelX && inputIndex <= PointerInput.MouseWheelZ)) {
             const currentValue = 0 + device[inputIndex];
 
