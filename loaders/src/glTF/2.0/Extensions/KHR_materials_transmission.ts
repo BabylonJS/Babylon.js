@@ -276,7 +276,7 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
         if (this.enabled) {
-            (loader as any)._parent.transparencyAsCoverage = true;
+            loader.parent.transparencyAsCoverage = true;
         }
     }
 
@@ -329,7 +329,6 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
                 .then((texture: BaseTexture) => {
                     pbrMaterial.subSurface.thicknessTexture = texture;
                     pbrMaterial.subSurface.useMaskFromThicknessTextureGltf = true;
-                    pbrMaterial.subSurface.useMaskFromThicknessTexture = false;
                 });
         } else {
             return Promise.resolve();
