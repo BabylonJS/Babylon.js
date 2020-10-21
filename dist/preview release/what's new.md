@@ -267,6 +267,7 @@
 
 - Added support for custom word splitting function for `TextBlock` ([Popov72](https://github.com/Popov72))
 - Added the `fixedRatio` property to the `Control` class ([Popov72](https://github.com/Popov72))
+- Clip multilines by camera near plane when point is attached to a mesh ([cedricguillemet](https://github.com/cedricguillemet))
 
 ### Post Processes
 
