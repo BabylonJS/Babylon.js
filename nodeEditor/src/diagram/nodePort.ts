@@ -30,16 +30,16 @@ export class NodePort {
         return this._element;
     }
 
-    public get portName(){
+    public get portName() {
         let portName = this.connectionPoint.displayName || this.connectionPoint.name;
         if (this.connectionPoint.ownerBlock.isInput) {
             portName = this.node.name;
         }
-        return portName
+        return portName;
     }
 
-    public set portName(newName: string){
-        if(this._portLabelElement) {
+    public set portName(newName: string) {
+        if (this._portLabelElement) {
             this.connectionPoint.displayName = newName;
             this._portLabelElement.innerHTML = newName;
         }
@@ -51,8 +51,8 @@ export class NodePort {
         } else if (this._isConnectedToNodeOutsideOfFrame()) { //connected to outside node
             return true;
         } else {
-            const link = this.node.getLinksForConnectionPoint(this.connectionPoint)
-            if (link.length){
+            const link = this.node.getLinksForConnectionPoint(this.connectionPoint);
+            if (link.length) {
                 if (link[0].nodeB === this.node) { // check if this node is the receiving
                     return true;
                 }
@@ -61,23 +61,23 @@ export class NodePort {
         return false;
     }
 
-    public hasLabel(){
+    public hasLabel() {
         return !!this._portLabelElement;
     }
 
     public get exposedOnFrame() {
-        if(!!this.connectionPoint.isExposedOnFrame || this._isConnectedToNodeOutsideOfFrame()) {
-            return true
+        if (!!this.connectionPoint.isExposedOnFrame || this._isConnectedToNodeOutsideOfFrame()) {
+            return true;
         } return false;
     }
 
     public set exposedOnFrame(value: boolean) {
-        if(this.disabled){
+        if (this.disabled) {
             return;
         }
         this.connectionPoint.isExposedOnFrame = value;
     }
-    
+
     public get exposedPortPosition()
     {
         return this.connectionPoint.exposedPortPosition;
@@ -86,11 +86,11 @@ export class NodePort {
     public set exposedPortPosition(value: number) {
         this.connectionPoint.exposedPortPosition = value;
     }
-    
+
     private _isConnectedToNodeOutsideOfFrame() {
-        const link = this.node.getLinksForConnectionPoint(this.connectionPoint)
-        if (link.length){
-            for(let i = 0; i < link.length; i++){
+        const link = this.node.getLinksForConnectionPoint(this.connectionPoint);
+        if (link.length) {
+            for (let i = 0; i < link.length; i++) {
                 if (link[i].nodeA.enclosingFrameId !== link[i].nodeB!.enclosingFrameId) {
                     return true;
                 }
@@ -133,7 +133,7 @@ export class NodePort {
         this._globalState = globalState;
 
         this._img = portContainer.ownerDocument!.createElement("img");
-        this._element.appendChild(this._img );
+        this._element.appendChild(this._img);
 
         // determine if node name is editable
         if (portContainer.children[0].className === 'port-label') {
@@ -143,17 +143,17 @@ export class NodePort {
         (this._element as any).port = this;
 
         // Drag support
-        this._element.ondragstart= () => false;
+        this._element.ondragstart = () => false;
 
-        this._onCandidateLinkMovedObserver = globalState.onCandidateLinkMoved.add(coords => {
+        this._onCandidateLinkMovedObserver = globalState.onCandidateLinkMoved.add((coords) => {
             const rect = this._element.getBoundingClientRect();
 
             if (!coords || rect.left > coords.x || rect.right < coords.x || rect.top > coords.y || rect.bottom < coords.y) {
-                this._element.classList.remove("selected"); 
+                this._element.classList.remove("selected");
                 return;
             }
 
-            this._element.classList.add("selected"); 
+            this._element.classList.add("selected");
             this._globalState.onCandidatePortSelectedObservable.notifyObservers(this);
         });
 
@@ -176,7 +176,7 @@ export class NodePort {
         }
     }
 
-    public static CreatePortElement(connectionPoint: NodeMaterialConnectionPoint, node: GraphNode, root: HTMLElement, 
+    public static CreatePortElement(connectionPoint: NodeMaterialConnectionPoint, node: GraphNode, root: HTMLElement,
             displayManager: Nullable<IDisplayManager>, globalState: GlobalState) {
         let portContainer = root.ownerDocument!.createElement("div");
         let block = connectionPoint.ownerBlock;
@@ -188,10 +188,10 @@ export class NodePort {
         if (!displayManager || displayManager.shouldDisplayPortLabels(block)) {
             let portLabel = root.ownerDocument!.createElement("div");
             portLabel.classList.add("port-label");
-            portLabel.innerHTML = connectionPoint.displayName || connectionPoint.name;        
+            portLabel.innerHTML = connectionPoint.displayName || connectionPoint.name;
             portContainer.appendChild(portLabel);
         }
-    
+
         return new NodePort(portContainer, connectionPoint, node, globalState);
     }
 }
