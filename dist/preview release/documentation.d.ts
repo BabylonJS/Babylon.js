@@ -24350,9 +24350,21 @@ declare module BABYLON {
          */
         attachControl(noPreventDefault?: boolean): void;
         /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         * BACK COMPAT SIGNATURE ONLY.
+         */
+        attachControl(ignored: any, noPreventDefault?: boolean): void;
+        /**
          * Detach the current controls from the specified dom element.
          */
         detachControl(): void;
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+         */
+        detachControl(ignored: any): void;
         private _collisionMask;
         /**
          * Define a collision mask to limit the list of object the camera can collide with
@@ -37229,9 +37241,21 @@ declare module BABYLON {
          */
         attachControl(noPreventDefault?: boolean): void;
         /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         * BACK COMPAT SIGNATURE ONLY.
+         */
+        attachControl(ignored: any, noPreventDefault?: boolean): void;
+        /**
          * Detach the current controls from the specified dom element.
          */
         detachControl(): void;
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+         */
+        detachControl(ignored: any): void;
         /**
          * Update the camera state according to the different inputs gathered during the frame.
          */
@@ -43137,9 +43161,17 @@ declare module BABYLON {
         */
         onNewMaterialAddedObservable: Observable<Material>;
         /**
+        * An event triggered when a multi material is created
+        */
+        onNewMultiMaterialAddedObservable: Observable<MultiMaterial>;
+        /**
         * An event triggered when a material is removed
         */
         onMaterialRemovedObservable: Observable<Material>;
+        /**
+        * An event triggered when a multi material is removed
+        */
+        onMultiMaterialRemovedObservable: Observable<MultiMaterial>;
         /**
         * An event triggered when a texture is created
         */
@@ -46767,6 +46799,11 @@ declare module BABYLON {
          * Detach the current controls from the specified dom element.
          */
         detachControl(): void;
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+         */
+        detachControl(ignored: any): void;
         /** @hidden */
         _checkInputs(): void;
         protected _checkLimits(): void;
@@ -54671,8 +54708,10 @@ declare module BABYLON {
          * Instatiates a gizmo manager
          * @param scene the scene to overlay the gizmos on top of
          * @param thickness display gizmo axis thickness
+         * @param utilityLayer the layer where gizmos are rendered
+         * @param keepDepthUtilityLayer the layer where occluded gizmos are rendered
          */
-        constructor(scene: Scene, thickness?: number);
+        constructor(scene: Scene, thickness?: number, utilityLayer?: UtilityLayerRenderer, keepDepthUtilityLayer?: UtilityLayerRenderer);
         /**
          * Subscribes to pointer down events, for attaching and detaching mesh
          * @param scene The sceme layer the observer will be added to
@@ -78433,6 +78472,13 @@ declare module BABYLON.GUI {
         * @returns the projected position
         */
         getProjectedPosition(position: BABYLON.Vector3, worldMatrix: BABYLON.Matrix): BABYLON.Vector2;
+        /**
+        * Get screen coordinates for a vector3
+        * @param position defines the position to project
+        * @param worldMatrix defines the world matrix to use
+        * @returns the projected position with Z
+        */
+        getProjectedPositionWithZ(position: BABYLON.Vector3, worldMatrix: BABYLON.Matrix): BABYLON.Vector3;
         private _checkUpdate;
         private _clearMeasure;
         private _render;
@@ -80349,7 +80395,7 @@ declare module BABYLON.GUI {
         private _controlObserver;
         private _meshObserver;
         /** @hidden */
-        _point: BABYLON.Vector2;
+        _point: BABYLON.Vector3;
         /**
          * Creates a new MultiLinePoint
          * @param multiLine defines the source MultiLine object
@@ -80370,10 +80416,10 @@ declare module BABYLON.GUI {
         /** Resets links */
         resetLinks(): void;
         /**
-         * Gets a translation vector
+         * Gets a translation vector with Z component
          * @returns the translation vector
          */
-        translate(): BABYLON.Vector2;
+        translate(): BABYLON.Vector3;
         private _translatePoint;
         /** Release associated resources */
         dispose(): void;
