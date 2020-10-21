@@ -990,12 +990,6 @@ $line-padding-left: 2px;
 
                     .floatLine {
                         padding-left: $line-padding-left;
-                
-                        .label {
-                            grid-column: 1;
-                            display: flex;
-                            align-items: center;
-                        }
                     
                         .short {
                             grid-column: 1; 
