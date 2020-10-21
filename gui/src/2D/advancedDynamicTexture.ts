@@ -549,6 +549,22 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         projectedPosition.scaleInPlace(this.renderScale);
         return new Vector2(projectedPosition.x, projectedPosition.y);
     }
+    /**
+    * Get screen coordinates for a vector3
+    * @param position defines the position to project
+    * @param worldMatrix defines the world matrix to use
+    * @returns the projected position with Z
+    */
+    public getProjectedPositionWithZ(position: Vector3, worldMatrix: Matrix): Vector3 {
+        var scene = this.getScene();
+        if (!scene) {
+            return Vector3.Zero();
+        }
+        var globalViewport = this._getGlobalViewport(scene);
+        var projectedPosition = Vector3.Project(position, worldMatrix, scene.getTransformMatrix(), globalViewport);
+        projectedPosition.scaleInPlace(this.renderScale);
+        return new Vector3(projectedPosition.x, projectedPosition.y, projectedPosition.z);
+    }
     private _checkUpdate(camera: Camera): void {
         if (this._layerToDispose) {
             if ((camera.layerMask & this._layerToDispose.layerMask) === 0) {
