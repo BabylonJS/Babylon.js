@@ -5,6 +5,7 @@ import { Control } from "./control";
 import { MultiLinePoint } from "../multiLinePoint";
 import { Measure } from "../measure";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { Vector3 } from 'babylonjs';
 
 /**
  * Class used to create multi line control
@@ -193,6 +194,7 @@ export class MultiLine extends Control {
         context.beginPath();
 
         var first: boolean = true; //first index is not necessarily 0
+        var previousPoint: Vector3;
 
         this._points.forEach((point) => {
             if (!point) {
@@ -205,8 +207,13 @@ export class MultiLine extends Control {
                 first = false;
             }
             else {
-                context.lineTo(point._point.x, point._point.y);
+                if (point._point.z < 1 && previousPoint.z < 1) {
+                    context.lineTo(point._point.x, point._point.y);
+                } else {
+                    context.moveTo(point._point.x, point._point.y);
+                }
             }
+            previousPoint = point._point;
         });
 
         context.stroke();
