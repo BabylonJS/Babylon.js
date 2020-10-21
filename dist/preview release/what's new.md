@@ -57,6 +57,7 @@
 - Removed all references to HTML element from cameras' attach and detach control functions ([RaananW](https://github.com/RaananW))
 - Added `boundingBoxRenderer.onResourcesReadyObservable` ([aWeirdo](https://github.com/aWeirdo))
 - Added `copyTools.GenerateBase64StringFromTexture` ([aWeirdo](https://github.com/aWeirdo))
+- Added `instancedMesh.changeSourceMesh` ([breakin](https://github.com/breakin))
 
 ### Engine
 

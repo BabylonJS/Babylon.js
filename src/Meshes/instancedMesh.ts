@@ -172,6 +172,30 @@ export class InstancedMesh extends AbstractMesh {
     }
 
     /**
+     * Changes the source mesh for this instance
+     * Animations are not affected by this (they are not copied from the new source mesh)
+     * Note that the result might be unexpected if the source meshes are different
+     * @see https://doc.babylonjs.com/how_to/how_to_use_instances
+     * @param newSourceMesh defines the new source mesh for the instance
+     */
+    public changeSourceMesh(newSourceMesh: Mesh): void {
+        if (this.sourceMesh.uniqueId === newSourceMesh.uniqueId) {
+            return;
+        }
+        this.sourceMesh.removeInstance(this);
+        newSourceMesh.addInstance(this);
+        this._sourceMesh = newSourceMesh;
+        this._currentLOD = newSourceMesh; // TODO: ?
+
+        this._unIndexed = newSourceMesh._unIndexed;
+
+        this.infiniteDistance = newSourceMesh.infiniteDistance;
+
+        this.refreshBoundingInfo();
+        this._syncSubMeshes();
+    }
+
+    /**
      * Is this node ready to be used/rendered
      * @param completeCheck defines if a complete check (including materials and lights) has to be done (false by default)
      * @return {boolean} is it ready
