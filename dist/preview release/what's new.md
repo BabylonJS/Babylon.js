@@ -23,7 +23,8 @@
 - Refactored React refs from old string API to React.createRef() API ([belfortk](https://github.com/belfortk))
 - Scale on one axis for `BoundingBoxGizmo` ([cedricguillemet](https://github.com/cedricguillemet))
 - Camera gizmo ([cedricguillemet](https://github.com/cedricguillemet))
-- gizmo isHovered boolean ([cedricguillemet](https://github.com/cedricguillemet))
+- Upgraded gizmo meshes ([davesauce14](https://github.com/davesauce14))
+- Gizmo isHovered boolean ([cedricguillemet](https://github.com/cedricguillemet))
 - Node support (Transform, Bone) for gizmos ([cedricguillemet](https://github.com/cedricguillemet))
 - Simplified code contributions by fully automating the dev setup with gitpod ([nisarhassan12](https://github.com/nisarhassan12))
 - Add a `CascadedShadowMap.IsSupported` method and log an error instead of throwing an exception when CSM is not supported ([Popov72](https://github.com/Popov72))
@@ -354,6 +355,8 @@
 - Fix same sub mesh being rendered multiple times in the shadow map ([Popov72](https://github.com/Popov72))
 - Fix incorrect shadows on the master mesh when using a lod mesh ([Popov72](https://github.com/Popov72))
 - Take first gamepad connected when attaching camera (and not only XBOX gamepads) ([#9136](https://github.com/BabylonJS/Babylon.js/issues/9136)) ([RaananW](https://github.com/RaananW))
+- Fixed bug in `Mesh.IncreaseVertices` assuming null value if a property didn't exist. ([aWeirdo](https://github.com/aWeirdo))
+- Fix issue when taking a screenshot with multi-cameras using method `CreateScreenshotUsingRenderTarget` ([#9201](https://github.com/BabylonJS/Babylon.js/issues/9201)) ([gabrielheming](https://github.com/gabrielheming))
 
 ## Breaking changes
 

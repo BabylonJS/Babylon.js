@@ -167,10 +167,16 @@ export class FollowCamera extends TargetCamera {
     }
 
     /**
-     * Attached controls to the current camera.
+     * Attach the input controls to a specific dom element to get the input from.
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    public attachControl(noPreventDefault?: boolean): void {
+    public attachControl(noPreventDefault?: boolean): void;
+    /**
+     * Attached controls to the current camera.
+     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+     */
+    public attachControl(ignored: any, noPreventDefault?: boolean): void {
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         this.inputs.attachElement(noPreventDefault);
 
@@ -179,10 +185,15 @@ export class FollowCamera extends TargetCamera {
     }
 
     /**
-     * Detach the current controls from the camera.
-     * The camera will stop reacting to inputs.
+     * Detach the current controls from the specified dom element.
      */
-    public detachControl(): void {
+    public detachControl(): void;
+
+    /**
+     * Detach the current controls from the specified dom element.
+     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     */
+    public detachControl(ignored?: any): void {
         this.inputs.detachElement();
 
         if (this._reset) {

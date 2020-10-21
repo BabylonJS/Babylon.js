@@ -128,7 +128,7 @@
         luminanceOverAlpha += getLuminance(finalClearCoatScaled);
     #endif
 
-    #if defined(RADIANCEOVERALPHA) || defined(SPECULAROVERALPHA)
+    #if defined(RADIANCEOVERALPHA) || defined(SPECULAROVERALPHA) || defined(CLEARCOATOVERALPHA)
         alpha = saturate(alpha + luminanceOverAlpha * luminanceOverAlpha);
     #endif
 #endif

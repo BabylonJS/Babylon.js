@@ -305,7 +305,7 @@ export class CubeTexture extends BaseTexture {
         if (!this._texture) {
             const scene = this.getScene();
             if (this._prefiltered) {
-                this._texture = this._getEngine()!.createPrefilteredCubeTexture(this.url, scene, 0.8, 0, this._delayedOnLoad, undefined, this._format, undefined, this._createPolynomials);
+                this._texture = this._getEngine()!.createPrefilteredCubeTexture(this.url, scene, 0.8, 0, this._delayedOnLoad, undefined, this._format, forcedExtension, this._createPolynomials);
             }
             else {
                 this._texture = this._getEngine()!.createCubeTexture(this.url, scene, this._files, this._noMipmap, this._delayedOnLoad, null, this._format, forcedExtension, false, 0, 0, null, this._loaderOptions);
