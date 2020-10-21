@@ -383,10 +383,10 @@ export class MeshPropertyGridComponent extends React.Component<
             value: -1,
         });
 
-        const targetBoneOptions: ListLineOption[] = mesh.skeleton ? mesh.skeleton.bones.map((bone, idx) => {
+        const targetBoneOptions: ListLineOption[] = mesh.skeleton ? mesh.skeleton.bones.filter((bone) => bone.getIndex() >= 0).sort((bone1, bone2) => bone1.getIndex() - bone2.getIndex()).map((bone, idx) => {
             return {
                 label: bone.name,
-                value: idx,
+                value: bone.getIndex(),
             };
         }) : [];
 
@@ -548,7 +548,7 @@ export class MeshPropertyGridComponent extends React.Component<
                             target={mesh.reservedDataStore}
                             propertyName="displayBoneIndex"
                             minimum={0}
-                            maximum={mesh.skeleton.bones.length - 1 || 0}
+                            maximum={targetBoneOptions.length - 1 || 0}
                             step={1}
                             onChange={(value) => {
                                 this.onBoneDisplayIndexChange(value);
