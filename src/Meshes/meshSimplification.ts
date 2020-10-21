@@ -138,7 +138,7 @@ export class SimplificationQueue {
             task.settings.forEach((setting) => {
                 var simplifier = this.getSimplifier(task);
                 simplifier.simplify(setting, (newMesh) => {
-                    if (setting.distance !== void 0) {
+                    if (typeof(setting.distance) !== 'undefined') {
                         task.mesh.addLODLevel(setting.distance, newMesh);
                     }
                     newMesh.isVisible = true;
@@ -156,7 +156,7 @@ export class SimplificationQueue {
 
             var runDecimation = (setting: ISimplificationSettings, callback: () => void) => {
                 simplifier.simplify(setting, (newMesh) => {
-                    if (setting.distance !== void 0) {
+                    if (typeof(setting.distance) !== 'undefined') {
                         task.mesh.addLODLevel(setting.distance, newMesh);
                     }
                     newMesh.isVisible = true;
