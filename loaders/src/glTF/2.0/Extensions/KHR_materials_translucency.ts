@@ -27,7 +27,7 @@ export class KHR_materials_translucency implements IGLTFLoaderExtension {
     /**
      * Defines a number that determines the order the extensions are applied.
      */
-    public order = 175;
+    public order = 174;
 
     private _loader: GLTFLoader;
 
@@ -87,6 +87,7 @@ export class KHR_materials_translucency implements IGLTFLoaderExtension {
                 .then((texture: BaseTexture) => {
                     pbrMaterial.subSurface.thicknessTexture = texture;
                     pbrMaterial.subSurface.useMaskFromThicknessTextureGltf = true;
+                    pbrMaterial.subSurface.useMaskFromThicknessTexture = false;
                 });
         } else {
             return Promise.resolve();

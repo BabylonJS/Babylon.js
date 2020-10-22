@@ -6,6 +6,7 @@ import { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import { Color3 } from 'babylonjs/Maths/math.color';
+import { Scene } from 'babylonjs';
 
 const NAME = "KHR_materials_volume";
 
@@ -35,7 +36,7 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
     /**
      * Defines a number that determines the order the extensions are applied.
      */
-    public order = 174;
+    public order = 173;
 
     private _loader: GLTFLoader;
 
@@ -47,7 +48,7 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
 
     /** @hidden */
     public dispose() {
-        delete this._loader;
+        (this._loader as any) = null;
     }
 
     /** @hidden */
@@ -70,16 +71,29 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
 
         // If transparency isn't enabled already, this extension shouldn't do anything.
         // i.e. it requires either the KHR_materials_transmission or KHR_materials_translucency extensions.
-        if (!pbrMaterial.subSurface.isRefractionEnabled || !extension.thicknessFactor) {
+        if (!pbrMaterial.subSurface.isRefractionEnabled && !pbrMaterial.subSurface.isTranslucencyEnabled || !extension.thicknessFactor) {
             return Promise.resolve();
         }
 
         // Since this extension models thin-surface transmission only, we must make IOR = 1.0
         pbrMaterial.subSurface.volumeIndexOfRefraction = pbrMaterial.indexOfRefraction;
-        pbrMaterial.subSurface.tintColorAtDistance = extension.attenuationDistance !== undefined ? extension.attenuationDistance : Number.MAX_VALUE;
+        const attenuationDistance = extension.attenuationDistance !== undefined ? extension.attenuationDistance : Number.MAX_VALUE;
+        pbrMaterial.subSurface.tintColorAtDistance = attenuationDistance;
         if (extension.attenuationColor !== undefined && extension.attenuationColor.length == 3) {
             pbrMaterial.subSurface.tintColor = new Color3(1.0, 1.0, 1.0);
             pbrMaterial.subSurface.tintColor.copyFromFloats(extension.attenuationColor[0], extension.attenuationColor[1], extension.attenuationColor[2]);
+        } else {
+            pbrMaterial.subSurface.tintColor = new Color3(1.0, 1.0, 1.0);
+        }
+        if (extension.subsurfaceColor !== undefined && extension.subsurfaceColor.length == 3) {
+            const sssColour = new Color3(1.0, 1.0, 1.0);
+            sssColour.copyFromFloats(extension.subsurfaceColor[0], extension.subsurfaceColor[1], extension.subsurfaceColor[2]);
+            pbrMaterial.subSurface.isScatteringEnabled = true;
+            const scene = pbrMaterial.getScene();
+            if (scene.subSurfaceConfiguration != null) {
+                scene.subSurfaceConfiguration.metersPerUnit = 0.04;
+            }
+            pbrMaterial.subSurface.scatteringDiffusionProfile = sssColour;
         } else {
             pbrMaterial.subSurface.tintColor = new Color3(1.0, 1.0, 1.0);
         }
