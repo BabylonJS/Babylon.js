@@ -324,6 +324,7 @@ declare module NODEEDITOR {
 declare module NODEEDITOR {
     export interface IGraphCanvasComponentProps {
         globalState: GlobalState;
+        onEmitNewBlock: (block: BABYLON.NodeMaterialBlock) => GraphNode;
     }
     export type FramePortData = {
         frame: GraphFrame;

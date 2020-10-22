@@ -63467,6 +63467,9 @@ var BlockTools = /** @class */ (function () {
             case babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Matrix:
                 color = "#591990";
                 break;
+            case babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Object:
+                color = "#6174FA";
+                break;
         }
         return color;
     };
@@ -66855,6 +66858,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         this.y = 0;
     };
     GraphCanvasComponent.prototype.processCandidatePort = function () {
+        var _this = this;
         var pointB = this._candidateLink.portA.connectionPoint;
         var nodeB = this._candidateLink.portA.node;
         var pointA;
@@ -66868,19 +66872,39 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
                 return;
             }
             // No destination so let's spin a new input block
-            var pointName = "output", inputBlock = void 0;
+            var pointName = "output", emittedBlock = void 0;
             var customInputBlock = this._candidateLink.portA.connectionPoint.createCustomInputBlock();
             if (!customInputBlock) {
-                inputBlock = new babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["InputBlock"](babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"][this._candidateLink.portA.connectionPoint.type], undefined, this._candidateLink.portA.connectionPoint.type);
+                emittedBlock = new babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["InputBlock"](babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"][this._candidateLink.portA.connectionPoint.type], undefined, this._candidateLink.portA.connectionPoint.type);
             }
             else {
-                inputBlock = customInputBlock[0], pointName = customInputBlock[1];
+                emittedBlock = customInputBlock[0], pointName = customInputBlock[1];
             }
-            this.props.globalState.nodeMaterial.attachedBlocks.push(inputBlock);
-            pointA = inputBlock[pointName];
-            nodeA = this.appendBlock(inputBlock);
+            this.props.globalState.nodeMaterial.attachedBlocks.push(emittedBlock);
+            pointA = emittedBlock[pointName];
+            if (!emittedBlock.isInput) {
+                emittedBlock.autoConfigure(this.props.globalState.nodeMaterial);
+                nodeA = this.props.onEmitNewBlock(emittedBlock);
+            }
+            else {
+                nodeA = this.appendBlock(emittedBlock);
+            }
             nodeA.x = this._dropPointX - 200;
             nodeA.y = this._dropPointY - 50;
+            var x_1 = nodeA.x - 250;
+            var y_1 = nodeA.y;
+            emittedBlock.inputs.forEach(function (connection) {
+                if (connection.connectedPoint) {
+                    var existingNodes = _this.nodes.filter(function (n) { return n.block === connection.connectedPoint.ownerBlock; });
+                    var connectedNode = existingNodes[0];
+                    if (connectedNode.x === 0 && connectedNode.y === 0) {
+                        connectedNode.x = x_1;
+                        connectedNode.y = y_1;
+                        connectedNode.cleanAccumulation();
+                        y_1 += 80;
+                    }
+                }
+            });
         }
         if (pointA.direction === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialConnectionPointDirection"].Input) {
             var temp = pointB;
@@ -69228,6 +69252,8 @@ var NodePort = /** @class */ (function () {
                 break;
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1__["NodeMaterialBlockConnectionPointTypes"].Object:
                 this._img.src = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMSIgaGVpZ2h0PSIyMSIgdmlld0JveD0iMCAwIDIxIDIxIj48Y2lyY2xlIGN4PSI3LjEiIGN5PSIxMy4wOCIgcj0iMy4yNSIgc3R5bGU9ImZpbGw6I2ZmZiIvPjxwYXRoIGQ9Ik0xMC40OSwzQTcuNTIsNy41MiwwLDAsMCwzLDEwYTUuMTMsNS4xMywwLDEsMSw2LDcuODUsNy42MSw3LjYxLDAsMCwwLDEuNTIuMTYsNy41Miw3LjUyLDAsMCwwLDAtMTVaIiBzdHlsZT0iZmlsbDojZmZmIi8+PC9zdmc+";
+                this._img.style.width = "100%"; // it's so that the svg is correctly centered inside the outer circle
+                this._img.style.height = "100%";
                 break;
         }
     };
@@ -71454,7 +71480,9 @@ var GraphEditor = /** @class */ (function (_super) {
                     }, onDragOver: function (event) {
                         event.preventDefault();
                     } },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_graphCanvas__WEBPACK_IMPORTED_MODULE_13__["GraphCanvasComponent"], { ref: "graphCanvas", globalState: this.props.globalState })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_graphCanvas__WEBPACK_IMPORTED_MODULE_13__["GraphCanvasComponent"], { ref: "graphCanvas", globalState: this.props.globalState, onEmitNewBlock: function (block) {
+                            return _this.createNodeFromObject(block);
+                        } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "rightGrab", onPointerDown: function (evt) { return _this.onPointerDown(evt); }, onPointerUp: function (evt) { return _this.onPointerUp(evt); }, onPointerMove: function (evt) { return _this.resizeColumns(evt, false); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "right-panel" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_propertyTabComponent__WEBPACK_IMPORTED_MODULE_3__["PropertyTabComponent"], { globalState: this.props.globalState }),
@@ -71718,14 +71746,14 @@ var SerializationTools = /** @class */ (function () {
         return JSON.stringify(serializationObject, undefined, 2);
     };
     SerializationTools.Deserialize = function (serializationObject, globalState) {
-        globalState.onIsLoadingChanged.notifyObservers(true);
         globalState.nodeMaterial.loadFromSerialization(serializationObject, "");
+        globalState.onIsLoadingChanged.notifyObservers(false);
     };
     SerializationTools.AddFrameToMaterial = function (serializationObject, globalState, currentMaterial) {
-        globalState.onIsLoadingChanged.notifyObservers(true);
         this.UpdateLocations(currentMaterial, globalState);
         globalState.nodeMaterial.loadFromSerialization(serializationObject, "", true);
         globalState.onImportFrameObservable.notifyObservers(serializationObject);
+        globalState.onIsLoadingChanged.notifyObservers(false);
     };
     return SerializationTools;
 }());

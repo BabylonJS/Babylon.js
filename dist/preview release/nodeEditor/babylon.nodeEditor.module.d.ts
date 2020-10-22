@@ -450,6 +450,7 @@ declare module "babylonjs-node-editor/diagram/graphCanvas" {
     import { FrameNodePort } from "babylonjs-node-editor/diagram/frameNodePort";
     export interface IGraphCanvasComponentProps {
         globalState: GlobalState;
+        onEmitNewBlock: (block: NodeMaterialBlock) => GraphNode;
     }
     export type FramePortData = {
         frame: GraphFrame;
@@ -2260,6 +2261,7 @@ declare module NODEEDITOR {
 declare module NODEEDITOR {
     export interface IGraphCanvasComponentProps {
         globalState: GlobalState;
+        onEmitNewBlock: (block: BABYLON.NodeMaterialBlock) => GraphNode;
     }
     export type FramePortData = {
         frame: GraphFrame;
