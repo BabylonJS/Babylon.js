@@ -1864,10 +1864,11 @@ export class WebGPUEngine extends Engine {
             gpuTextureWrapper.set(gpuTexture);
             gpuTextureWrapper.createView({
                 dimension: WebGPUConstants.TextureViewDimension.Cube,
+                /*dimension: InternalTextureSource.RenderTarget ? WebGPUConstants.TextureViewDimension.E2d : WebGPUConstants.TextureViewDimension.Cube,*/
                 mipLevelCount: generateMipMaps ? WebGPUTextureHelper.computeNumMipmapLevels(width!, height!) : 1,
                 baseArrayLayer: 0,
                 baseMipLevel: 0,
-                arrayLayerCount: 0,
+                /*arrayLayerCount: InternalTextureSource.RenderTarget ? 1 : undefined,*/
                 aspect: WebGPUConstants.TextureAspect.All
             });
         } else {
@@ -1879,6 +1880,7 @@ export class WebGPUEngine extends Engine {
                 mipLevelCount: generateMipMaps ? WebGPUTextureHelper.computeNumMipmapLevels(width!, height!) : 1,
                 baseArrayLayer: 0,
                 baseMipLevel: 0,
+                /*arrayLayerCount: InternalTextureSource.RenderTarget ? 1 : undefined,*/
                 aspect: WebGPUConstants.TextureAspect.All
             });
         }
