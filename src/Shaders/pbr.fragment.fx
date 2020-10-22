@@ -540,14 +540,15 @@ void main(void) {
 
         vec3 sqAlbedo = sqrt(surfaceAlbedo); // for pre and post scatter
         #ifdef SS_SCATTERING
-        gl_FragData[0] = vec4(finalColor.rgb - irradiance, finalColor.a); // Split irradiance from final color
+            gl_FragData[0] = vec4(finalColor.rgb - irradiance, finalColor.a); // Split irradiance from final color
+            irradiance /= sqAlbedo;
+            irradiance = tagLightingForSSS(irradiance);
         #else
-        gl_FragData[0] = finalColor; // No split lighting
-        float scatteringDiffusionProfile = 255.;
+            gl_FragData[0] = finalColor; // No split lighting
+            float scatteringDiffusionProfile = 255.;
         #endif
-        irradiance /= sqAlbedo;
 
-        gl_FragData[PREPASS_IRRADIANCE_INDEX] = vec4(tagLightingForSSS(irradiance), scatteringDiffusionProfile / 255.); // Irradiance + SS diffusion profile
+        gl_FragData[PREPASS_IRRADIANCE_INDEX] = vec4(irradiance, scatteringDiffusionProfile / 255.); // Irradiance + SS diffusion profile
     #else
         gl_FragData[0] = vec4(finalColor.rgb, finalColor.a);
     #endif
