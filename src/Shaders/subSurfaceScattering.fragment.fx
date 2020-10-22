@@ -121,7 +121,7 @@ void EvaluateSample(int i, int n, vec3 S, float d, vec3 centerPosVS, float mmPer
     float viewZ = texture2D(depthSampler, position).r;
     vec3 irradiance    = textureSample.rgb;
 
-    if (testLightingForSSS(irradiance))
+    if (testLightingForSSS(textureSample.a))
     {
         // Apply bilateral weighting.
         float relZ = viewZ - centerPosVS.z;
@@ -149,7 +149,7 @@ void main(void)
 
 	float  centerDepth       = 0.;
     vec4 inputColor = texture2D(textureSampler, vUV);
-	bool passedStencilTest = testLightingForSSS(centerIrradiance);
+	bool passedStencilTest = testLightingForSSS(irradianceAndDiffusionProfile.a);
 
 	if (passedStencilTest)
 	{
