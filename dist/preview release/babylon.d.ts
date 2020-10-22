@@ -40148,6 +40148,8 @@ declare module BABYLON {
          * Gets the URL used to load this texture
          */
         url: string;
+        /** @hidden */
+        _originalUrl: string;
         /**
          * Gets the sampling mode of the texture
          */
