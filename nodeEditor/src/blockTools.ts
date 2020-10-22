@@ -525,6 +525,9 @@ export class BlockTools {
             case NodeMaterialBlockConnectionPointTypes.Matrix:
                 color = "#591990";
                 break;
+            case NodeMaterialBlockConnectionPointTypes.Object:
+                color = "#6174FA";
+                break;
         }
 
         return color;
