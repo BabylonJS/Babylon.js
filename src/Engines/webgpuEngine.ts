@@ -192,7 +192,8 @@ export class WebGPUEngine extends Engine {
     // Frame Buffer Life Cycle (recreated for each render target pass)
     private _currentRenderPass: Nullable<GPURenderPassEncoder> = null;
     private _mainRenderPass: Nullable<GPURenderPassEncoder> = null;
-    private _currentRenderTargetViewDescriptor: GPUTextureViewDescriptor;
+    private _currentRenderTargetColorAttachmentViewDescriptor: GPUTextureViewDescriptor;
+    private _currentRenderTargetDepthAttachmentViewDescriptor: GPUTextureViewDescriptor;
 
     // DrawCall Life Cycle
     // Effect is on the parent class
@@ -1864,11 +1865,9 @@ export class WebGPUEngine extends Engine {
             gpuTextureWrapper.set(gpuTexture);
             gpuTextureWrapper.createView({
                 dimension: WebGPUConstants.TextureViewDimension.Cube,
-                /*dimension: InternalTextureSource.RenderTarget ? WebGPUConstants.TextureViewDimension.E2d : WebGPUConstants.TextureViewDimension.Cube,*/
                 mipLevelCount: generateMipMaps ? WebGPUTextureHelper.computeNumMipmapLevels(width!, height!) : 1,
                 baseArrayLayer: 0,
                 baseMipLevel: 0,
-                /*arrayLayerCount: InternalTextureSource.RenderTarget ? 1 : undefined,*/
                 aspect: WebGPUConstants.TextureAspect.All
             });
         } else {
@@ -1880,7 +1879,6 @@ export class WebGPUEngine extends Engine {
                 mipLevelCount: generateMipMaps ? WebGPUTextureHelper.computeNumMipmapLevels(width!, height!) : 1,
                 baseArrayLayer: 0,
                 baseMipLevel: 0,
-                /*arrayLayerCount: InternalTextureSource.RenderTarget ? 1 : undefined,*/
                 aspect: WebGPUConstants.TextureAspect.All
             });
         }
@@ -2417,11 +2415,11 @@ export class WebGPUEngine extends Engine {
 
     private _startRenderTargetRenderPass(internalTexture: InternalTexture, clearColor: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean = false) {
         const gpuTexture = (internalTexture._hardwareTexture as WebGPUHardwareTexture).underlyingResource!;
-
-        const colorTextureView = gpuTexture.createView(this._currentRenderTargetViewDescriptor);
-
         const depthStencilTexture = internalTexture._depthStencilTexture;
-        const gpuDepthStencilTexture = depthStencilTexture?._hardwareTexture?.underlyingResource;
+        const gpuDepthStencilTexture = depthStencilTexture?._hardwareTexture?.underlyingResource as Nullable<GPUTexture>;
+
+        const colorTextureView = gpuTexture.createView(this._currentRenderTargetColorAttachmentViewDescriptor);
+        const depthTextureView = gpuDepthStencilTexture?.createView(this._currentRenderTargetDepthAttachmentViewDescriptor);
 
         this._renderTargetEncoder.pushDebugGroup("start render target rendering");
 
@@ -2432,7 +2430,7 @@ export class WebGPUEngine extends Engine {
                 storeOp: WebGPUConstants.StoreOp.Store
             }],
             depthStencilAttachment: depthStencilTexture && gpuDepthStencilTexture ? {
-                attachment: (depthStencilTexture._hardwareTexture as WebGPUHardwareTexture).view!,
+                attachment: depthTextureView!,
                 depthLoadValue: clearDepth && depthStencilTexture._generateDepthBuffer ? this._clearDepthValue : WebGPUConstants.LoadOp.Load,
                 depthStoreOp: WebGPUConstants.StoreOp.Store,
                 stencilLoadValue: clearStencil && depthStencilTexture._generateStencilBuffer ? this._clearStencilValue : WebGPUConstants.LoadOp.Load,
@@ -2555,20 +2553,29 @@ export class WebGPUEngine extends Engine {
         this._setColorFormat(this._getWebGPUTextureFormat(this._currentRenderTarget.type, this._currentRenderTarget.format));
 
         // TODO WEBGPU handle array layer
-        const bindWithMipMaps = texture.generateMipMaps && texture._source !== InternalTextureSource.RenderTarget;
-        this._currentRenderTargetViewDescriptor = {
+        this._currentRenderTargetColorAttachmentViewDescriptor = {
             format: this._colorFormat,
             dimension: WebGPUConstants.TextureViewDimension.E2d,
-            mipLevelCount: bindWithMipMaps ? WebGPUTextureHelper.computeNumMipmapLevels(texture.width, texture.height) - lodLevel : 1,
+            mipLevelCount: 1,
             baseArrayLayer: faceIndex,
             baseMipLevel: lodLevel,
             arrayLayerCount: 1,
             aspect: WebGPUConstants.TextureAspect.All
         };
 
+        this._currentRenderTargetDepthAttachmentViewDescriptor = {
+            format: this._depthTextureFormat,
+            dimension: WebGPUConstants.TextureViewDimension.E2d,
+            mipLevelCount: 1,
+            baseArrayLayer: 0,
+            baseMipLevel: 0,
+            arrayLayerCount: 1,
+            aspect: WebGPUConstants.TextureAspect.All
+        };
+
         if (dbgVerboseLogsForFirstFrames) {
             if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
-                console.log("bindFramebuffer called in frame #" + (this as any)._count, "face=", faceIndex, "lodLevel=", lodLevel, "bindWithMipMaps=", bindWithMipMaps, "texture.generateMipMaps=", texture.generateMipMaps, this._currentRenderTargetViewDescriptor);
+                console.log("bindFramebuffer called in frame #" + (this as any)._count, "face=", faceIndex, "lodLevel=", lodLevel, this._currentRenderTargetColorAttachmentViewDescriptor, this._currentRenderTargetDepthAttachmentViewDescriptor);
             }
         }
 
