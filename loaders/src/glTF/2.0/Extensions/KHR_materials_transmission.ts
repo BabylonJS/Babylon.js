@@ -329,6 +329,7 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
                 .then((texture: BaseTexture) => {
                     pbrMaterial.subSurface.thicknessTexture = texture;
                     pbrMaterial.subSurface.useMaskFromThicknessTextureGltf = true;
+                    pbrMaterial.subSurface.useMaskFromThicknessTexture = false;
                 });
         } else {
             return Promise.resolve();
