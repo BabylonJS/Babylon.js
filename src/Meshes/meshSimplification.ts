@@ -138,7 +138,9 @@ export class SimplificationQueue {
             task.settings.forEach((setting) => {
                 var simplifier = this.getSimplifier(task);
                 simplifier.simplify(setting, (newMesh) => {
-                    task.mesh.addLODLevel(setting.distance, newMesh);
+                    if (setting.distance !== undefined) {
+                        task.mesh.addLODLevel(setting.distance, newMesh);
+                    }
                     newMesh.isVisible = true;
                     //check if it is the last
                     if (setting.quality === task.settings[task.settings.length - 1].quality && task.successCallback) {
@@ -154,7 +156,9 @@ export class SimplificationQueue {
 
             var runDecimation = (setting: ISimplificationSettings, callback: () => void) => {
                 simplifier.simplify(setting, (newMesh) => {
-                    task.mesh.addLODLevel(setting.distance, newMesh);
+                    if (setting.distance !== undefined) {
+                        task.mesh.addLODLevel(setting.distance, newMesh);
+                    }
                     newMesh.isVisible = true;
                     //run the next quality level
                     callback();

@@ -569,6 +569,13 @@ declare module BABYLON.GUI {
         * @returns the projected position
         */
         getProjectedPosition(position: BABYLON.Vector3, worldMatrix: BABYLON.Matrix): BABYLON.Vector2;
+        /**
+        * Get screen coordinates for a vector3
+        * @param position defines the position to project
+        * @param worldMatrix defines the world matrix to use
+        * @returns the projected position with Z
+        */
+        getProjectedPositionWithZ(position: BABYLON.Vector3, worldMatrix: BABYLON.Matrix): BABYLON.Vector3;
         private _checkUpdate;
         private _clearMeasure;
         private _render;
@@ -2485,7 +2492,7 @@ declare module BABYLON.GUI {
         private _controlObserver;
         private _meshObserver;
         /** @hidden */
-        _point: BABYLON.Vector2;
+        _point: BABYLON.Vector3;
         /**
          * Creates a new MultiLinePoint
          * @param multiLine defines the source MultiLine object
@@ -2506,10 +2513,10 @@ declare module BABYLON.GUI {
         /** Resets links */
         resetLinks(): void;
         /**
-         * Gets a translation vector
+         * Gets a translation vector with Z component
          * @returns the translation vector
          */
-        translate(): BABYLON.Vector2;
+        translate(): BABYLON.Vector3;
         private _translatePoint;
         /** Release associated resources */
         dispose(): void;

@@ -74,12 +74,12 @@ export class Sprite extends ThinSprite implements IAnimatable {
         public name: string,
         manager: ISpriteManager) {
         super();
-        this.uniqueId = this._manager.scene.getUniqueId();
         this.color = new Color4(1.0, 1.0, 1.0, 1.0);
         this.position = Vector3.Zero();
 
         this._manager = manager;
         this._manager.sprites.push(this);
+        this.uniqueId = this._manager.scene.getUniqueId();
     }
 
     /**

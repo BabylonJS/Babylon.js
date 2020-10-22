@@ -589,6 +589,13 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
         * @returns the projected position
         */
         getProjectedPosition(position: Vector3, worldMatrix: Matrix): Vector2;
+        /**
+        * Get screen coordinates for a vector3
+        * @param position defines the position to project
+        * @param worldMatrix defines the world matrix to use
+        * @returns the projected position with Z
+        */
+        getProjectedPositionWithZ(position: Vector3, worldMatrix: Matrix): Vector3;
         private _checkUpdate;
         private _clearMeasure;
         private _render;
@@ -2567,7 +2574,7 @@ declare module "babylonjs-gui/2D/controls/line" {
 }
 declare module "babylonjs-gui/2D/multiLinePoint" {
     import { Nullable } from "babylonjs/types";
-    import { Vector2 } from "babylonjs/Maths/math.vector";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
     import { MultiLine } from "babylonjs-gui/2D/controls/multiLine";
     import { Control } from "babylonjs-gui/2D/controls/control";
@@ -2584,7 +2591,7 @@ declare module "babylonjs-gui/2D/multiLinePoint" {
         private _controlObserver;
         private _meshObserver;
         /** @hidden */
-        _point: Vector2;
+        _point: Vector3;
         /**
          * Creates a new MultiLinePoint
          * @param multiLine defines the source MultiLine object
@@ -2605,10 +2612,10 @@ declare module "babylonjs-gui/2D/multiLinePoint" {
         /** Resets links */
         resetLinks(): void;
         /**
-         * Gets a translation vector
+         * Gets a translation vector with Z component
          * @returns the translation vector
          */
-        translate(): Vector2;
+        translate(): Vector3;
         private _translatePoint;
         /** Release associated resources */
         dispose(): void;
@@ -5005,6 +5012,13 @@ declare module BABYLON.GUI {
         * @returns the projected position
         */
         getProjectedPosition(position: BABYLON.Vector3, worldMatrix: BABYLON.Matrix): BABYLON.Vector2;
+        /**
+        * Get screen coordinates for a vector3
+        * @param position defines the position to project
+        * @param worldMatrix defines the world matrix to use
+        * @returns the projected position with Z
+        */
+        getProjectedPositionWithZ(position: BABYLON.Vector3, worldMatrix: BABYLON.Matrix): BABYLON.Vector3;
         private _checkUpdate;
         private _clearMeasure;
         private _render;
@@ -6921,7 +6935,7 @@ declare module BABYLON.GUI {
         private _controlObserver;
         private _meshObserver;
         /** @hidden */
-        _point: BABYLON.Vector2;
+        _point: BABYLON.Vector3;
         /**
          * Creates a new MultiLinePoint
          * @param multiLine defines the source MultiLine object
@@ -6942,10 +6956,10 @@ declare module BABYLON.GUI {
         /** Resets links */
         resetLinks(): void;
         /**
-         * Gets a translation vector
+         * Gets a translation vector with Z component
          * @returns the translation vector
          */
-        translate(): BABYLON.Vector2;
+        translate(): BABYLON.Vector3;
         private _translatePoint;
         /** Release associated resources */
         dispose(): void;

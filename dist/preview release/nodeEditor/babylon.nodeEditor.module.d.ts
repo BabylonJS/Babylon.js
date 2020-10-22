@@ -450,6 +450,7 @@ declare module "babylonjs-node-editor/diagram/graphCanvas" {
     import { FrameNodePort } from "babylonjs-node-editor/diagram/frameNodePort";
     export interface IGraphCanvasComponentProps {
         globalState: GlobalState;
+        onEmitNewBlock: (block: NodeMaterialBlock) => GraphNode;
     }
     export type FramePortData = {
         frame: GraphFrame;
@@ -1240,6 +1241,7 @@ declare module "babylonjs-node-editor/diagram/properties/texturePropertyTabCompo
     export class TexturePropertyTabComponent extends React.Component<IPropertyComponentProps, {
         isEmbedded: boolean;
         loadAsCubeTexture: boolean;
+        textureIsPrefiltered: boolean;
     }> {
         get textureBlock(): AnyTexture;
         constructor(props: IPropertyComponentProps);
@@ -1395,6 +1397,17 @@ declare module "babylonjs-node-editor/diagram/display/discardDisplayManager" {
     import { IDisplayManager } from "babylonjs-node-editor/diagram/display/displayManager";
     import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
     export class DiscardDisplayManager implements IDisplayManager {
+        getHeaderClass(block: NodeMaterialBlock): string;
+        shouldDisplayPortLabels(block: NodeMaterialBlock): boolean;
+        getHeaderText(block: NodeMaterialBlock): string;
+        getBackgroundColor(block: NodeMaterialBlock): string;
+        updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void;
+    }
+}
+declare module "babylonjs-node-editor/diagram/display/pbrDisplayManager" {
+    import { IDisplayManager } from "babylonjs-node-editor/diagram/display/displayManager";
+    import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
+    export class PBRDisplayManager implements IDisplayManager {
         getHeaderClass(block: NodeMaterialBlock): string;
         shouldDisplayPortLabels(block: NodeMaterialBlock): boolean;
         getHeaderText(block: NodeMaterialBlock): string;
@@ -2248,6 +2261,7 @@ declare module NODEEDITOR {
 declare module NODEEDITOR {
     export interface IGraphCanvasComponentProps {
         globalState: GlobalState;
+        onEmitNewBlock: (block: BABYLON.NodeMaterialBlock) => GraphNode;
     }
     export type FramePortData = {
         frame: GraphFrame;
@@ -2933,6 +2947,7 @@ declare module NODEEDITOR {
     export class TexturePropertyTabComponent extends React.Component<IPropertyComponentProps, {
         isEmbedded: boolean;
         loadAsCubeTexture: boolean;
+        textureIsPrefiltered: boolean;
     }> {
         get textureBlock(): AnyTexture;
         constructor(props: IPropertyComponentProps);
@@ -3066,6 +3081,15 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     export class DiscardDisplayManager implements IDisplayManager {
+        getHeaderClass(block: BABYLON.NodeMaterialBlock): string;
+        shouldDisplayPortLabels(block: BABYLON.NodeMaterialBlock): boolean;
+        getHeaderText(block: BABYLON.NodeMaterialBlock): string;
+        getBackgroundColor(block: BABYLON.NodeMaterialBlock): string;
+        updatePreviewContent(block: BABYLON.NodeMaterialBlock, contentArea: HTMLDivElement): void;
+    }
+}
+declare module NODEEDITOR {
+    export class PBRDisplayManager implements IDisplayManager {
         getHeaderClass(block: BABYLON.NodeMaterialBlock): string;
         shouldDisplayPortLabels(block: BABYLON.NodeMaterialBlock): boolean;
         getHeaderText(block: BABYLON.NodeMaterialBlock): string;

@@ -245,6 +245,10 @@ export class SpriteManager implements ISpriteManager {
         }
         this._fromPacked = fromPacked;
 
+        this._scene = scene;
+        const engine = this._scene.getEngine();
+        this._spriteRenderer = new SpriteRenderer(engine, capacity, epsilon, scene);
+
         if (cellSize.width && cellSize.height) {
             this.cellWidth = cellSize.width;
             this.cellHeight = cellSize.height;
@@ -252,17 +256,13 @@ export class SpriteManager implements ISpriteManager {
             this.cellWidth = cellSize;
             this.cellHeight = cellSize;
         } else {
+            this._spriteRenderer = <any>null;
             return;
         }
 
-        this._scene = scene;
         this._scene.spriteManagers.push(this);
         this.uniqueId = this.scene.getUniqueId();
 
-        const engine = this._scene.getEngine();
-        this._spriteRenderer = new SpriteRenderer(engine, capacity, epsilon, scene);
-        this._spriteRenderer.cellWidth = this.cellWidth;
-        this._spriteRenderer.cellHeight = this.cellHeight;
         if (imgUrl) {
             this._spriteRenderer.texture = new Texture(imgUrl, scene, true, false, samplingMode);
         }

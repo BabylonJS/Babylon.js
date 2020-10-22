@@ -7526,6 +7526,7 @@ declare module BABYLON {
          * The higher the better but the slower. This defaults to 4 as it seems to be the best tradeoff.
          */
         anisotropicFilteringLevel: number;
+        private _isCube;
         /**
          * Define if the texture is a cube texture or if false a 2d texture.
          */
@@ -24349,9 +24350,21 @@ declare module BABYLON {
          */
         attachControl(noPreventDefault?: boolean): void;
         /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         * BACK COMPAT SIGNATURE ONLY.
+         */
+        attachControl(ignored: any, noPreventDefault?: boolean): void;
+        /**
          * Detach the current controls from the specified dom element.
          */
         detachControl(): void;
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+         */
+        detachControl(ignored: any): void;
         private _collisionMask;
         /**
          * Define a collision mask to limit the list of object the camera can collide with
@@ -37228,9 +37241,21 @@ declare module BABYLON {
          */
         attachControl(noPreventDefault?: boolean): void;
         /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         * BACK COMPAT SIGNATURE ONLY.
+         */
+        attachControl(ignored: any, noPreventDefault?: boolean): void;
+        /**
          * Detach the current controls from the specified dom element.
          */
         detachControl(): void;
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+         */
+        detachControl(ignored: any): void;
         /**
          * Update the camera state according to the different inputs gathered during the frame.
          */
@@ -43136,9 +43161,17 @@ declare module BABYLON {
         */
         onNewMaterialAddedObservable: Observable<Material>;
         /**
+        * An event triggered when a multi material is created
+        */
+        onNewMultiMaterialAddedObservable: Observable<MultiMaterial>;
+        /**
         * An event triggered when a material is removed
         */
         onMaterialRemovedObservable: Observable<Material>;
+        /**
+        * An event triggered when a multi material is removed
+        */
+        onMultiMaterialRemovedObservable: Observable<MultiMaterial>;
         /**
         * An event triggered when a texture is created
         */
@@ -46766,6 +46799,11 @@ declare module BABYLON {
          * Detach the current controls from the specified dom element.
          */
         detachControl(): void;
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+         */
+        detachControl(ignored: any): void;
         /** @hidden */
         _checkInputs(): void;
         protected _checkLimits(): void;
@@ -47303,6 +47341,10 @@ declare module BABYLON {
          * Fires each time a drag starts
          */
         onDragStartObservable: Observable<{}>;
+        /**
+         * Fires each time a drag happens
+         */
+        onDragObservable: Observable<void>;
         /**
          *  Fires each time a drag ends (eg. mouse release after drag)
          */
@@ -54670,8 +54712,10 @@ declare module BABYLON {
          * Instatiates a gizmo manager
          * @param scene the scene to overlay the gizmos on top of
          * @param thickness display gizmo axis thickness
+         * @param utilityLayer the layer where gizmos are rendered
+         * @param keepDepthUtilityLayer the layer where occluded gizmos are rendered
          */
-        constructor(scene: Scene, thickness?: number);
+        constructor(scene: Scene, thickness?: number, utilityLayer?: UtilityLayerRenderer, keepDepthUtilityLayer?: UtilityLayerRenderer);
         /**
          * Subscribes to pointer down events, for attaching and detaching mesh
          * @param scene The sceme layer the observer will be added to
