@@ -47342,6 +47342,10 @@ declare module BABYLON {
          */
         onDragStartObservable: Observable<{}>;
         /**
+         * Fires each time a drag happens
+         */
+        onDragObservable: Observable<void>;
+        /**
          *  Fires each time a drag ends (eg. mouse release after drag)
          */
         onDragEndObservable: Observable<{}>;
