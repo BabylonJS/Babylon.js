@@ -542,7 +542,6 @@ void main(void) {
         #ifdef SS_SCATTERING
             gl_FragData[0] = vec4(finalColor.rgb - irradiance, finalColor.a); // Split irradiance from final color
             irradiance /= sqAlbedo;
-            irradiance = tagLightingForSSS(irradiance);
         #else
             gl_FragData[0] = finalColor; // No split lighting
             float scatteringDiffusionProfile = 255.;
