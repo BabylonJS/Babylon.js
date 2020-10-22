@@ -30,7 +30,6 @@ export class UniformBuffer {
     private _buffers : Array<[Nullable<DataBuffer>, Float32Array, { [name: string]: number }]>;
     private _bufferIndex: number;
     private _createBufferOnWrite: boolean;
-    private _advanceToNextBuffer: boolean;
     private _data: number[];
     private _bufferData: Float32Array;
     private _dynamic?: boolean;
@@ -41,6 +40,7 @@ export class UniformBuffer {
     private _needSync: boolean;
     private _noUBO: boolean;
     private _currentEffect: Effect;
+    private _currentEffectName: string;
     private _name: string;
     private _currentFrameId: number;
 
@@ -180,7 +180,6 @@ export class UniformBuffer {
             this._buffers = [];
             this._bufferIndex = -1;
             this._createBufferOnWrite = false;
-            this._advanceToNextBuffer = false;
             this._currentFrameId = 0;
         }
 
@@ -505,7 +504,6 @@ export class UniformBuffer {
         }
 
         if (!this._dynamic && !this._needSync) {
-            this._advanceToNextBuffer = ThinEngine.Features.trackUbosInFrame;
             this._createBufferOnWrite = ThinEngine.Features.trackUbosInFrame;
             return;
         }
@@ -521,27 +519,31 @@ export class UniformBuffer {
 
         this._needSync = false;
         this._createBufferOnWrite = ThinEngine.Features.trackUbosInFrame;
-        this._advanceToNextBuffer = ThinEngine.Features.trackUbosInFrame;
     }
 
-    private _createNewBuffer(): void {
-        this._bufferData = this._bufferData.slice();
-        this._valueCache = { ...this._valueCache }; // clone
-        this._rebuild();
-    }
-
-    private _checkBuffers(): void {
-        if (this._advanceToNextBuffer) {
-            if (this._bufferIndex + 1 < this._buffers.length) {
-                this._bufferIndex++;
-                this._buffer = this._buffers[this._bufferIndex][0];
-                this._bufferData = this._buffers[this._bufferIndex][1];
-                this._valueCache = this._buffers[this._bufferIndex][2];
-                this._createBufferOnWrite = false;
+    private _createNewBuffer(): boolean {
+        if (this._bufferIndex + 1 < this._buffers.length) {
+            this._bufferIndex++;
+            this._buffer = this._buffers[this._bufferIndex][0];
+            this._bufferData = this._buffers[this._bufferIndex][1];
+            this._valueCache = this._buffers[this._bufferIndex][2];
+            this._createBufferOnWrite = false;
+            if (this._currentEffect && this._buffer) {
+                this._currentEffect.bindUniformBuffer(this._buffer, this._currentEffectName);
             }
-            this._advanceToNextBuffer = false;
+            return false;
+        } else {
+            this._bufferData = this._bufferData.slice();
+            this._valueCache = { ...this._valueCache }; // clone
+            this._rebuild();
+            if (this._currentEffect && this._buffer) {
+                this._currentEffect.bindUniformBuffer(this._buffer, this._currentEffectName);
+            }
+            return true;
         }
+    }
 
+    private _checkNewFrame(): void {
         if (ThinEngine.Features.trackUbosInFrame && this._currentFrameId !== this._engine.frameId) {
             this._currentFrameId = this._engine.frameId;
             this._createBufferOnWrite = false;
@@ -550,6 +552,9 @@ export class UniformBuffer {
                 this._buffer = this._buffers[this._bufferIndex][0];
                 this._bufferData = this._buffers[this._bufferIndex][1];
                 this._valueCache = this._buffers[this._bufferIndex][2];
+                if (this._currentEffect && this._buffer) {
+                    this._currentEffect.bindUniformBuffer(this._buffer, this._currentEffectName);
+                }
             } else {
                 this._bufferIndex = -1;
             }
@@ -563,7 +568,7 @@ export class UniformBuffer {
      * @param size Define the size of the data.
      */
     public updateUniform(uniformName: string, data: FloatArray, size: number) {
-        this._checkBuffers();
+        this._checkNewFrame();
 
         var location = this._uniformLocations[uniformName];
         if (location === undefined) {
@@ -588,7 +593,11 @@ export class UniformBuffer {
                 if ((size === 16 && !ThinEngine.Features.uniformBufferHardCheckMatrix) || this._bufferData[location + i] !== data[i]) {
                     changed = true;
                     if (this._createBufferOnWrite) {
-                        this._createNewBuffer();
+                        if (!this._createNewBuffer()) {
+                            // we didn't create a new buffer but advanced to the next one: retry the update, chances are that the new buffer already has the right data for uniformName so we won't set needSync to true
+                            this.updateUniform(uniformName, data, size);
+                            return;
+                        }
                     }
                     this._bufferData[location + i] = data[i];
                 }
@@ -613,7 +622,7 @@ export class UniformBuffer {
      * @param size Define the size of the data.
      */
     public updateUniformArray(uniformName: string, data: FloatArray, size: number) {
-        this._checkBuffers();
+        this._checkNewFrame();
 
         var location = this._uniformLocations[uniformName];
         if (location === undefined) {
@@ -635,8 +644,10 @@ export class UniformBuffer {
             for (var i = 0; i < size; i++) {
                 if (this._bufferData[location + baseStride * 4 + countToFour] !== data[i]) {
                     changed = true;
-                    if (this._createBufferOnWrite) {
-                        this._createNewBuffer();
+                    if (!this._createNewBuffer()) {
+                        // we didn't create a new buffer but advanced to the next one: retry the update, chances are that the new buffer already has the right data for uniformName so we won't set needSync to true
+                        this.updateUniformArray(uniformName, data, size);
+                        return;
                     }
                     this._bufferData[location + baseStride * 4 + countToFour] = data[i];
                 }
@@ -665,7 +676,7 @@ export class UniformBuffer {
     // Matrix cache
     private _valueCache: { [key: string]: number } = {};
     private _cacheMatrix(name: string, matrix: IMatrixLike): boolean {
-        this._checkBuffers();
+        this._checkNewFrame();
 
         var cache = this._valueCache[name];
         var flag = matrix.updateFlag;
@@ -680,7 +691,7 @@ export class UniformBuffer {
 
     /** @hidden */
     public _getMatrixUpdateFlagFromCache(matrixName: string): number | undefined {
-        this._checkBuffers();
+        this._checkNewFrame();
 
         return this._valueCache[matrixName];
     }
@@ -860,6 +871,7 @@ export class UniformBuffer {
      */
     public bindToEffect(effect: Effect, name: string): void {
         this._currentEffect = effect;
+        this._currentEffectName = name;
 
         if (this._noUBO || !this._buffer) {
             return;
