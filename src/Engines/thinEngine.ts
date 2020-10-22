@@ -2886,6 +2886,10 @@ export class ThinEngine {
             url = this._transformTextureUrl(url);
         }
 
+        if (originalUrl !== url) {
+            texture._originalUrl = originalUrl;
+        }
+
         // establish the file extension, if possible
         const lastDot = url.lastIndexOf('.');
         let extension = forcedExtension ? forcedExtension : (lastDot > -1 ? url.substring(lastDot).toLowerCase() : "");
