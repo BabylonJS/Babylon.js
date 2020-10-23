@@ -81,7 +81,7 @@ export class ActionEvent implements IActionEvent {
      * @param evt The original (browser) event
      * @returns the new ActionEvent
      */
-    public static CreateNewFromScene(scene: Scene, evt: Event): ActionEvent {
+    public static CreateNewFromScene(scene: Scene, evt: IEvent): ActionEvent {
         return new ActionEvent(null, scene.pointerX, scene.pointerY, scene.meshUnderPointer, evt);
     }
 

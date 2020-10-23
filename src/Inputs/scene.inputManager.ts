@@ -10,7 +10,8 @@ import { ActionEvent } from "../Actions/actionEvent";
 import { KeyboardEventTypes, KeyboardInfoPre, KeyboardInfo } from "../Events/keyboardEvents";
 import { DeviceSourceManager } from '../DeviceInput/InputDevices/deviceSourceManager';
 import { DeviceType, PointerInput } from '../DeviceInput/InputDevices/deviceEnums';
-import { IMouseEvent, IPointerEvent, IWheelEvent } from '../Events/deviceInputEvents';
+import { IKeyboardEvent, IMouseEvent, IPointerEvent, IWheelEvent } from '../Events/deviceInputEvents';
+import { DeviceInputEventFactory } from '../DeviceInput/Helpers/deviceInputEventFactory';
 
 declare type Scene = import("../scene").Scene;
 
@@ -101,8 +102,8 @@ export class InputManager {
     private _meshUnderPointerId: Nullable<AbstractMesh>[] = [];
 
     // Keyboard
-    private _onKeyDown: (evt: KeyboardEvent) => void;
-    private _onKeyUp: (evt: KeyboardEvent) => void;
+    private _onKeyDown: (evt: IKeyboardEvent) => void;
+    private _onKeyUp: (evt: IKeyboardEvent) => void;
 
     private _scene: Scene;
     private _deviceSourceManager: DeviceSourceManager;
@@ -764,7 +765,7 @@ export class InputManager {
             });
         };
 
-        this._onKeyDown = (evt: KeyboardEvent) => {
+        this._onKeyDown = (evt: IKeyboardEvent) => {
             let type = KeyboardEventTypes.KEYDOWN;
             if (scene.onPreKeyboardObservable.hasObservers()) {
                 let pi = new KeyboardInfoPre(type, evt);
@@ -784,7 +785,7 @@ export class InputManager {
             }
         };
 
-        this._onKeyUp = (evt: KeyboardEvent) => {
+        this._onKeyUp = (evt: IKeyboardEvent) => {
             let type = KeyboardEventTypes.KEYUP;
             if (scene.onPreKeyboardObservable.hasObservers()) {
                 let pi = new KeyboardInfoPre(type, evt);
@@ -809,18 +810,14 @@ export class InputManager {
             if (device.deviceType === DeviceType.Keyboard) {
                 device.onInputChangedObservable.add((deviceSource) => {
                     if (elementToAttachTo && document.activeElement === elementToAttachTo) {
-                        // Get Keyboard key and create event init data
-                        const key = String.fromCharCode(deviceSource.inputIndex);
-                        const init = {key: key, keyCode: deviceSource.inputIndex};
-
                         if (deviceSource.currentState == 1) {
-                            const evt = new KeyboardEvent("keydown", init);
-                            this._onKeyDown(evt);
+                            const evt = DeviceInputEventFactory.GenerateEvent(elementToAttachTo, "keydown", device, deviceSource.inputIndex, deviceSource.currentState, this._deviceSourceManager);
+                            this._onKeyDown((evt as IKeyboardEvent));
                         }
 
                         if (deviceSource.currentState == 0) {
-                            const evt = new KeyboardEvent("keyup", init);
-                            this._onKeyUp(evt);
+                            const evt = DeviceInputEventFactory.GenerateEvent(elementToAttachTo, "keyup", device, deviceSource.inputIndex, deviceSource.currentState, this._deviceSourceManager);
+                            this._onKeyUp((evt as IKeyboardEvent));
                         }
                     }
                 });
@@ -829,66 +826,27 @@ export class InputManager {
             // Pointer Events
             if (device.deviceType === DeviceType.Mouse || device.deviceType === DeviceType.Touch) {
                 device.onInputChangedObservable.add((deviceSource) => {
-                    // Get current cursor position and create event init data
-                    const pointerX = device.getInput(PointerInput.Horizontal) || 0;
-                    const pointerY = device.getInput(PointerInput.Vertical) || 0;
-                    // If dealing with a change to the delta, grab values for event init
-                    const deltaX = (deviceSource.inputIndex === PointerInput.DeltaHorizontal) ? device.getInput(PointerInput.DeltaHorizontal) : 0;
-                    const deltaY = (deviceSource.inputIndex === PointerInput.DeltaVertical) ? device.getInput(PointerInput.DeltaVertical) : 0;
-                    // Get offsets from container
-                    const offsetX = (deviceSource.inputIndex === PointerInput.DeltaHorizontal && elementToAttachTo) ? (device.getInput(PointerInput.DeltaHorizontal) - elementToAttachTo.getBoundingClientRect().x) : 0;
-                    const offsetY = (deviceSource.inputIndex === PointerInput.DeltaVertical && elementToAttachTo) ? (device.getInput(PointerInput.DeltaVertical) - elementToAttachTo.getBoundingClientRect().y) : 0;
-                    // Get keys pressed (Alt, Shift, etc.)
-                    const altKey = (this._deviceSourceManager.getDeviceSource(DeviceType.Keyboard)?.getInput(18) == 1);
-                    const ctrlKey = (this._deviceSourceManager.getDeviceSource(DeviceType.Keyboard)?.getInput(17) == 1);
-                    const metaKey = (this._deviceSourceManager.getDeviceSource(DeviceType.Keyboard)?.getInput(91) == 1
-                        || this._deviceSourceManager.getDeviceSource(DeviceType.Keyboard)?.getInput(92) == 1
-                        || this._deviceSourceManager.getDeviceSource(DeviceType.Keyboard)?.getInput(93) == 1);
-                    const shiftKey = (this._deviceSourceManager.getDeviceSource(DeviceType.Keyboard)?.getInput(16) == 1);
-                    // Build event array
-                    const evt = {
-                        pointerId: (device.deviceType == DeviceType.Mouse ? 1 : device.deviceSlot),
-                        clientX: pointerX,
-                        clientY: pointerY,
-                        movementX: deltaX,
-                        movementY: deltaY,
-                        offsetX: offsetX,
-                        offsetY: offsetY,
-                        x: pointerX,
-                        y: pointerY,
-                        // From Event
-                        type: (device.deviceType === DeviceType.Mouse ? "mouse" : "touch"),
-                        target: elementToAttachTo,
-                        // Buttons
-                        altKey: altKey,
-                        ctrlKey: ctrlKey,
-                        metaKey: metaKey,
-                        shiftKey: shiftKey,
-                    };
 
                     if (attachDown && deviceSource.inputIndex >= PointerInput.LeftClick && deviceSource.inputIndex <= PointerInput.RightClick && deviceSource.currentState == 1) {   // Pointer Down
-                        Object.defineProperty(evt, 'button', {value: deviceSource.inputIndex});
+                        const evt = DeviceInputEventFactory.GenerateEvent(elementToAttachTo, "pointerdown", device, deviceSource.inputIndex, deviceSource.currentState, this._deviceSourceManager);
+                        //Object.defineProperty(evt, 'button', {value: deviceSource.inputIndex});
                         this._onPointerDown((evt as IPointerEvent));
                     }
 
                     if (attachUp && deviceSource.inputIndex >= PointerInput.LeftClick && deviceSource.inputIndex <= PointerInput.RightClick && deviceSource.currentState == 0) {   // Pointer Up
-                        Object.defineProperty(evt, 'button', {value: deviceSource.inputIndex});
+                        const evt = DeviceInputEventFactory.GenerateEvent(elementToAttachTo, "pointerup", device, deviceSource.inputIndex, deviceSource.currentState, this._deviceSourceManager);
+                        //Object.defineProperty(evt, 'button', {value: deviceSource.inputIndex});
                         this._onPointerUp((evt as IPointerEvent));
                     }
 
                     if (attachMove) {
                         if (deviceSource.inputIndex == PointerInput.Horizontal || deviceSource.inputIndex == PointerInput.Vertical || deviceSource.inputIndex == PointerInput.DeltaHorizontal || deviceSource.inputIndex == PointerInput.DeltaVertical) {
+                            const evt = DeviceInputEventFactory.GenerateEvent(elementToAttachTo, "pointermove", device, deviceSource.inputIndex, deviceSource.currentState, this._deviceSourceManager);
                             this._onPointerMove((evt as IPointerEvent));
                         }
                         else if (deviceSource.inputIndex == PointerInput.MouseWheelX || deviceSource.inputIndex == PointerInput.MouseWheelY || deviceSource.inputIndex == PointerInput.MouseWheelZ) {
-                            const deltaX = device.getInput(PointerInput.MouseWheelX) || 0;
-                            const deltaY = device.getInput(PointerInput.MouseWheelY) || 0;
-                            const deltaZ = device.getInput(PointerInput.MouseWheelZ) || 0;
-                            evt.type = this._wheelEventName;
-                            Object.defineProperty(evt, 'deltaX', {value: deltaX});
-                            Object.defineProperty(evt, 'deltaY', {value: deltaY});
-                            Object.defineProperty(evt, 'deltaZ', {value: deltaZ});
-                            this._onPointerMove((evt as unknown as IWheelEvent));
+                            const evt = DeviceInputEventFactory.GenerateEvent(elementToAttachTo, "wheel", device, deviceSource.inputIndex, deviceSource.currentState, this._deviceSourceManager);
+                            this._onPointerMove((evt as IWheelEvent));
                         }
                     }
                 });

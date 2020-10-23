@@ -1,4 +1,5 @@
 export * from "./deviceInputSystem";
+export * from "./Helpers/deviceInputEventFactory";
 export * from "./InputDevices/deviceEnums";
 export * from "./InputDevices/deviceTypes";
 

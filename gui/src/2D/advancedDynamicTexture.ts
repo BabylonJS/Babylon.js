@@ -21,7 +21,7 @@ import { Measure } from "./measure";
 import { Constants } from 'babylonjs/Engines/constants';
 import { Viewport } from 'babylonjs/Maths/math.viewport';
 import { Color3 } from 'babylonjs/Maths/math.color';
-import { IWheelEvent } from 'babylonjs/Events/deviceInputEvents';
+import { IKeyboardEvent, IWheelEvent } from 'babylonjs/Events/deviceInputEvents';
 /**
 * Interface used to define a control that can receive focus
 */
@@ -38,7 +38,7 @@ export interface IFocusableControl {
      * Function called to let the control handle keyboard events
      * @param evt defines the current keyboard event
      */
-    processKeyboard(evt: KeyboardEvent): void;
+    processKeyboard(evt: IKeyboardEvent): void;
     /**
     * Function called to get the list of controls that should not steal the focus from this control
     * @returns an array of controls

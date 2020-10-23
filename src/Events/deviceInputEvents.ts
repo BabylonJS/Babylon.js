@@ -99,7 +99,7 @@ export interface IKeyboardEvent extends IUIEvent {
      * ASCII value of key
      * @deprecated
      */
-    keyCode?: number;
+    keyCode: number;
 
     /**
      * Status of Meta key (eg. Windows key) being pressed
@@ -258,34 +258,4 @@ export interface IWheelEvent extends IMouseEvent {
      * Z-Axis scroll delta
      */
     deltaZ: number;
-}
-
-/**
- * Class with event factory for device input events
- */
-export class DeviceInputEventFactory {
-
-    /**
-     * Generate a Native friendly event
-     * @param target element where input is being read from
-     * @returns native friendly event
-     */
-    public generateEvent(target: any, eventType: DeviceInputEventType): IEvent {
-        let generatedEvent = {
-            target: target,
-            type: "event",
-            preventDefault: () => {}
-        };
-
-        switch(eventType) {
-            case DeviceInputEventType.PointerMove:
-                break;
-            case DeviceInputEventType.PointerDown:
-                break;
-            case DeviceInputEventType.PointerUp:
-                break;
-        }
-
-        return generatedEvent;
-    }
 }

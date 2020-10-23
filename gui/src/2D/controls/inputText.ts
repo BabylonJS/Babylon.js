@@ -10,6 +10,7 @@ import { ValueAndUnit } from "../valueAndUnit";
 import { VirtualKeyboard } from "./virtualKeyboard";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { Measure } from '../measure';
+import { IKeyboardEvent } from 'babylonjs/Events/deviceInputEvents';
 
 /**
  * Class used to create input text control
@@ -72,7 +73,7 @@ export class InputText extends Control implements IFocusableControl {
     /** Observable raised when paste event is triggered */
     public onTextPasteObservable = new Observable<InputText>();
     /** Observable raised when a key event was processed */
-    public onKeyboardEventProcessedObservable = new Observable<KeyboardEvent>();
+    public onKeyboardEventProcessedObservable = new Observable<IKeyboardEvent>();
 
     /** Gets or sets the maximum width allowed by the control */
     public get maxWidth(): string | number {
@@ -434,7 +435,7 @@ export class InputText extends Control implements IFocusableControl {
     }
 
     /** @hidden */
-    public processKey(keyCode: number, key?: string, evt?: KeyboardEvent) {
+    public processKey(keyCode: number, key?: string, evt?: IKeyboardEvent) {
 
         //return if clipboard event keys (i.e -ctr/cmd + c,v,x)
         if (evt && (evt.ctrlKey || evt.metaKey) && (keyCode === 67 || keyCode === 86 || keyCode === 88)) {
@@ -750,7 +751,7 @@ export class InputText extends Control implements IFocusableControl {
      * Handles the keyboard event
      * @param evt Defines the KeyboardEvent
      */
-    public processKeyboard(evt: KeyboardEvent): void {
+    public processKeyboard(evt: IKeyboardEvent): void {
         // process pressed key
         this.processKey(evt.keyCode, evt.key, evt);
 
