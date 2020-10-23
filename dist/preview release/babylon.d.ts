@@ -38762,13 +38762,13 @@ declare module BABYLON {
             /**
              * Update the content of a dynamic texture
              * @param texture defines the texture to update
-             * @param canvas defines the canvas containing the source
+             * @param source defines the source containing the data
              * @param invertY defines if data must be stored with Y axis inverted
              * @param premulAlpha defines if alpha is stored as premultiplied
              * @param format defines the format of the data
              * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
              */
-            updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement | OffscreenCanvas, invertY: boolean, premulAlpha?: boolean, format?: number, forceBindTexture?: boolean): void;
+            updateDynamicTexture(texture: Nullable<InternalTexture>, source: ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | OffscreenCanvas, invertY?: boolean, premulAlpha?: boolean, format?: number, forceBindTexture?: boolean): void;
         }
 }
 declare module BABYLON {
