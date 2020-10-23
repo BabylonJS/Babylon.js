@@ -2019,7 +2019,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         if (this.blendMode === ParticleSystem.BLENDMODE_MULTIPLYADD) {
             outparticles = this._render(ParticleSystem.BLENDMODE_MULTIPLY) + this._render(ParticleSystem.BLENDMODE_ADD);
         }
-        outparticles = this._render(this.blendMode);
+        else {
+            outparticles = this._render(this.blendMode);
+        }
 
         this._engine.unbindInstanceAttributes();
         this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
