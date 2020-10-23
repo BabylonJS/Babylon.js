@@ -1656,7 +1656,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     private _createUbo(): void {
-        this._sceneUbo = new UniformBuffer(this._engine, undefined, !ThinEngine.Features.trackUbosInFrame, "scene");
+        this._sceneUbo = new UniformBuffer(this._engine, undefined, false, "scene");
         this._sceneUbo.addUniform("viewProjection", 16);
         this._sceneUbo.addUniform("view", 16);
         this._sceneUbo.addUniform("projection", 16);
