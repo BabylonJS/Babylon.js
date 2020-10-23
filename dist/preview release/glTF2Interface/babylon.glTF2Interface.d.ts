@@ -1057,6 +1057,17 @@ declare module BABYLON.GLTF2 {
     }
 
     /**
+     * Interfaces from the KHR_materials_translucency extension
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+
+    /** @hidden */
+    interface IKHRMaterialsTranslucency {
+        translucencyFactor?: number;
+        translucencyTexture?: ITextureInfo;
+    }
+
+    /**
      * Interfaces from the KHR_materials_variants extension
      * !!! Experimental Extension Subject to Changes !!!
      */
