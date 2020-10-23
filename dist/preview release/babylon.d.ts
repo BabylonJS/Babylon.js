@@ -19931,6 +19931,7 @@ declare module BABYLON {
         SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
         SS_ALBEDOFORREFRACTIONTINT: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
+        SS_MASK_FROM_THICKNESS_TEXTURE_GLTF: boolean;
         /** @hidden */
         _areTexturesDirty: boolean;
     }
@@ -20054,6 +20055,14 @@ declare module BABYLON {
          */
         useMaskFromThicknessTexture: boolean;
         private _scene;
+        private _useMaskFromThicknessTextureGltf;
+        /**
+         * Stores the intensity of the different subsurface effects in the thickness texture. This variation
+         * matches the channel-packing that is used by glTF.
+         * * the red channel is the transmission/translucency intensity.
+         * * the green channel is the thickness.
+         */
+        useMaskFromThicknessTextureGltf: boolean;
         /** @hidden */
         private _internalMarkAllSubMeshesAsTexturesDirty;
         private _internalMarkScenePrePassDirty;
@@ -20932,6 +20941,7 @@ declare module BABYLON {
         SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
         SS_ALBEDOFORREFRACTIONTINT: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
+        SS_MASK_FROM_THICKNESS_TEXTURE_GLTF: boolean;
         UNLIT: boolean;
         DEBUGMODE: number;
         /**
