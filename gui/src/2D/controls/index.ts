@@ -15,6 +15,7 @@ export * from "./stackPanel";
 export * from "./selector";
 export * from "./scrollViewers/scrollViewer";
 export * from "./textBlock";
+export * from "./textWrapper";
 export * from "./virtualKeyboard";
 export * from "./rectangle";
 export * from "./displayGrid";
