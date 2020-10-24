@@ -1297,7 +1297,7 @@ export class ThinEngine {
         this._gl.clear(mode);
     }
 
-    protected _viewportCached = { x: 0, y: 0, z: 0, w: 0 };
+    private _viewportCached = { x: 0, y: 0, z: 0, w: 0 };
 
     /** @hidden */
     public _viewport(x: number, y: number, width: number, height: number): void {
