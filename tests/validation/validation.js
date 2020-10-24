@@ -46,27 +46,37 @@ function compare(renderData, referenceCanvas, threshold, errorRatio) {
     return (differencesCount * 100) / (width * height) > errorRatio;
 }
 
-function getRenderData(canvas, engine) {
+async function getRenderData(canvas, engine) {
     var width = canvas.width;
     var height = canvas.height;
 
-    var renderData = engine.readPixels(0, 0, width, height);
-    var numberOfChannelsByLine = width * 4;
-    var halfHeight = height / 2;
+    return new Promise((resolve) => {
+        engine.onEndFrameObservable.addOnce(async () => {
+            var renderData = await engine.readPixels(0, 0, width, height);
+            var numberOfChannelsByLine = width * 4;
+            var halfHeight = height / 2;
+            for (var i = 0; i < halfHeight; i++) {
+                for (var j = 0; j < numberOfChannelsByLine; j++) {
+                    var currentCell = j + i * numberOfChannelsByLine;
+                    var targetLine = height - i - 1;
+                    var targetCell = j + targetLine * numberOfChannelsByLine;
 
-    for (var i = 0; i < halfHeight; i++) {
-        for (var j = 0; j < numberOfChannelsByLine; j++) {
-            var currentCell = j + i * numberOfChannelsByLine;
-            var targetLine = height - i - 1;
-            var targetCell = j + targetLine * numberOfChannelsByLine;
+                    var temp = renderData[currentCell];
+                    renderData[currentCell] = renderData[targetCell];
+                    renderData[targetCell] = temp;
+                }
+            }
+            if (engine.isWebGPU) {
+                for (var i = 0; i < width * height * 4; i += 4) {
+                    var temp = renderData[i + 0];
+                    renderData[i + 0] = renderData[i + 2];
+                    renderData[i + 2] = temp;
+                }
+            }
 
-            var temp = renderData[currentCell];
-            renderData[currentCell] = renderData[targetCell];
-            renderData[targetCell] = temp;
-        }
-    }
-
-    return renderData;
+            resolve(renderData);
+        });
+    });
 }
 
 function saveRenderImage(data, canvas) {
@@ -85,13 +95,13 @@ function saveRenderImage(data, canvas) {
     return screenshotCanvas.toDataURL();
 }
 
-function evaluate(test, resultCanvas, result, renderImage, waitRing, done) {
-    var renderData = getRenderData(canvas, engine);
+async function evaluate(test, resultCanvas, result, renderImage, waitRing, done) {
+    var renderData = await getRenderData(canvas, engine);
     var testRes = true;
 
     // gl check
     var gl = engine._gl;
-    if (gl.getError() !== 0) {
+    if (gl && gl.getError() !== 0) {
         result.classList.add("failed");
         result.innerHTML = "×";
         testRes = false;
@@ -155,7 +165,7 @@ function processCurrentScene(test, resultCanvas, result, renderImage, index, wai
     });
 }
 
-function runTest(index, done) {
+function runTest(index, done, listname) {
     if (index >= config.tests.length) {
         done(false);
     }
@@ -192,7 +202,7 @@ function runTest(index, done) {
 
     title.innerHTML = "#" + index + "> " + test.title;
 
-    console.log("Running " + test.title);
+    console.log("Running " + (listname ? listname + "/" : "") + test.title);
 
     var resultContext = resultCanvas.getContext("2d");
     var img = new Image();
@@ -354,11 +364,13 @@ function runTest(index, done) {
         }
     }
 
-    img.src = "/tests/validation/ReferenceImages/" + test.referenceImage;
+    img.src = "/tests/validation/ReferenceImages/" + (listname ? listname + "/" : "") + (test.referenceImage ? test.referenceImage : test.title + ".png");
 
 }
 
-function init() {
+function init(engineName) {
+    engineName = engineName.toLowerCase();
+
     BABYLON.SceneLoader.ShowLoadingScreen = false;
     BABYLON.SceneLoader.ForceFullSceneLoadingForIncremental = true;
 
@@ -375,9 +387,33 @@ function init() {
     canvas = document.createElement("canvas");
     canvas.className = "renderCanvas";
     document.body.appendChild(canvas);
-    engine = new BABYLON.Engine(canvas, false, { useHighPrecisionFloats: true, disableWebGL2Support: window.disableWebGL2Support ? true : false });
-    engine.enableOfflineSupport = false;
-    engine.setDitheringState(false);
+    if (engineName === "webgpu") {
+        const glslangOptions = { 
+            jsPath: "../../dist/preview%20release/glslang/glslang.js",
+            wasmPath: "../../dist/preview%20release/glslang/glslang.wasm"
+        };
+
+        engine = new BABYLON.WebGPUEngine(canvas, {
+            deviceDescriptor: {
+                extensions: [
+                    "texture-compression-bc",
+                    "timestamp-query",
+                    "pipeline-statistics-query",
+                    "depth-clamping",
+                    "depth24unorm-stencil8",
+                    "depth32float-stencil8"
+                ]
+            }
+        });
+        return new Promise((resolve) => {
+            engine.initAsync(glslangOptions).then(() => resolve());
+        });
+    } else {
+        engine = new BABYLON.Engine(canvas, false, { useHighPrecisionFloats: true, disableWebGL2Support: window.disableWebGL2Support || engineName === "webgl" || engineName === "webgl1" ? true : false });
+        engine.enableOfflineSupport = false;
+        engine.setDitheringState(false);
+        return Promise.resolve();
+    }
 }
 
 function dispose() {
@@ -387,5 +423,3 @@ function dispose() {
     document.body.removeChild(canvas);
     canvas = null;
 }
-
-init();
