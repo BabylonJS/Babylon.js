@@ -1060,6 +1060,10 @@ export class WebGPUEngine extends Engine {
     //                              Textures
     //------------------------------------------------------------------------------
 
+    public get needPOTTextures(): boolean {
+        return false;
+    }
+
     private _getMainDepthTextureFormat(): GPUTextureFormat {
         return this.isStencilEnable ? WebGPUConstants.TextureFormat.Depth24PlusStencil8 : WebGPUConstants.TextureFormat.Depth32Float;
     }
@@ -2329,11 +2333,7 @@ export class WebGPUEngine extends Engine {
     public endFrame() {
         this._endMainRenderPass();
 
-        this._commandBuffers[0] = this._uploadEncoder.finish();
-        this._commandBuffers[1] = this._renderTargetEncoder.finish();
-        this._commandBuffers[2] = this._renderEncoder.finish();
-
-        this._device.defaultQueue.submit(this._commandBuffers);
+        this.flushFramebuffer();
 
         if (dbgVerboseLogsForFirstFrames) {
             if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
@@ -2359,10 +2359,6 @@ export class WebGPUEngine extends Engine {
         this._deferredReleaseTextures.length = 0;
 
         this._bufferManager.destroyDeferredBuffers();
-
-        this._uploadEncoder = this._device.createCommandEncoder(this._uploadEncoderDescriptor);
-        this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
-        this._renderTargetEncoder = this._device.createCommandEncoder(this._renderTargetEncoderDescriptor);
 
         if (ThinEngine.Features._collectUbosUpdatedInFrame) {
             if (dbgVerboseLogsForFirstFrames) {
@@ -2600,6 +2596,18 @@ export class WebGPUEngine extends Engine {
         this._currentRenderPass = this._mainRenderPass;
         this._setDepthTextureFormat(this._getMainDepthTextureFormat());
         this._setColorFormat(this._options.swapChainFormat!);
+    }
+
+    public flushFramebuffer(): void {
+        this._commandBuffers[0] = this._uploadEncoder.finish();
+        this._commandBuffers[1] = this._renderTargetEncoder.finish();
+        this._commandBuffers[2] = this._renderEncoder.finish();
+
+        this._device.defaultQueue.submit(this._commandBuffers);
+
+        this._uploadEncoder = this._device.createCommandEncoder(this._uploadEncoderDescriptor);
+        this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
+        this._renderTargetEncoder = this._device.createCommandEncoder(this._renderTargetEncoderDescriptor);
     }
 
     public restoreDefaultFramebuffer(): void {
@@ -3563,6 +3571,9 @@ export class WebGPUEngine extends Engine {
 
         this._initializeMainAttachments();
         return true;
+    }
+
+    public applyStates() {
     }
 
     //------------------------------------------------------------------------------
