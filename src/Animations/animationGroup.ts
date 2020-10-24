@@ -280,7 +280,7 @@ export class AnimationGroup implements IDisposable {
                 let newKey: IAnimationKey = {
                     frame: endFrame,
                     value: endKey.value,
-                    inTangent: endKey.outTangent,
+                    inTangent: endKey.inTangent,
                     outTangent: endKey.outTangent,
                     interpolation: endKey.interpolation
                 };
