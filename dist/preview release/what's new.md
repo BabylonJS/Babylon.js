@@ -360,6 +360,7 @@
 - Take first gamepad connected when attaching camera (and not only XBOX gamepads) ([#9136](https://github.com/BabylonJS/Babylon.js/issues/9136)) ([RaananW](https://github.com/RaananW))
 - Fixed bug in `Mesh.IncreaseVertices` assuming null value if a property didn't exist. ([aWeirdo](https://github.com/aWeirdo))
 - Fix issue when taking a screenshot with multi-cameras using method `CreateScreenshotUsingRenderTarget` ([#9201](https://github.com/BabylonJS/Babylon.js/issues/9201)) ([gabrielheming](https://github.com/gabrielheming))
+- Fix inTangent in animationGroup ([dad72](https://github.com/dad72))
 
 ## Breaking changes
 
