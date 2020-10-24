@@ -553,7 +553,6 @@ export class WebGPUEngine extends Engine {
         this.resetTextureCache();
 
         //this._currentEffect = null; // can't reset _currentEffect, else some crashes can occur (for eg in ProceduralTexture which calls bindFrameBuffer (which calls wipeCaches) after having called enableEffect and before drawing into the texture)
-        this._resetCachedViewport();
         this._currentIndexBuffer = null;
         this._currentVertexBuffers = null;
 
@@ -589,62 +588,47 @@ export class WebGPUEngine extends Engine {
     //                              Dynamic WebGPU States
     //------------------------------------------------------------------------------
 
-    private _resetCachedViewport() {
-        this._viewportCached.x = 0;
-        this._viewportCached.y = 0;
-        this._viewportCached.z = 0;
-        this._viewportCached.w = 0;
+    private _viewportsCurrent: Array<{ x: number, y: number, w: number, h: number }> = [{ x: 0, y: 0, w: 0, h: 0 }, { x: 0, y: 0, w: 0, h: 0 }];
+
+    private _resetCurrentViewport(index: number) {
+        this._viewportsCurrent[index].x = 0;
+        this._viewportsCurrent[index].y = 0;
+        this._viewportsCurrent[index].w = 0;
+        this._viewportsCurrent[index].h = 0;
     }
 
-    private _transientViewport: { x: number, y: number, z: number, w: number } = { x: Infinity, y: 0, z: 0, w: 0 };
+    private _applyViewport(renderPass: GPURenderPassEncoder): void {
+        const index = renderPass === this._mainRenderPass ? 0 : 1;
 
-    /** @hidden */
-    public _viewport(x: number, y: number, width: number, height: number): void {
-        if (!this._currentRenderPass) {
-            // we want to set the viewport for the main pass or for a render target but the render pass has not been created yet: let's postpone the update of the viewport when the pass is created
-            this._transientViewport.x = x;
-            this._transientViewport.y = y;
-            this._transientViewport.z = width;
-            this._transientViewport.w = height;
-            if (dbgVerboseLogsForFirstFrames) {
-                if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
-                    console.log("_viewport called but _currentRenderPass is null frame #" + (this as any)._count, x, y, width, height);
-                }
-            }
-        } else  if (this._transientViewport.x !== Infinity) {
-            const renderPass = this._getCurrentRenderPass();
+        const x = this._viewportCached.x,
+              y = this._viewportCached.y,
+              w = this._viewportCached.z,
+              h = this._viewportCached.w;
 
-            renderPass.setViewport(this._transientViewport.x, this._transientViewport.y, this._transientViewport.z, this._transientViewport.w, 0, 1);
+        if (this._viewportsCurrent[index].x !== x || this._viewportsCurrent[index].y !== y ||
+            this._viewportsCurrent[index].w !== w || this._viewportsCurrent[index].h !== h)
+        {
+            this._viewportsCurrent[index].x = x;
+            this._viewportsCurrent[index].y = y;
+            this._viewportsCurrent[index].w = w;
+            this._viewportsCurrent[index].h = h;
+
+            renderPass.setViewport(x, y, w, h, 0, 1);
 
             if (dbgVerboseLogsForFirstFrames) {
                 if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
-                    console.log("_viewport called and transient viewport set frame #" + (this as any)._count, this._transientViewport.x, this._transientViewport.y, this._transientViewport.z, this._transientViewport.w, "current pass is main pass=" + (renderPass === this._mainRenderPass));
-                }
-            }
-
-            this._transientViewport.x = Infinity;
-        } else  if (x !== this._viewportCached.x || y !== this._viewportCached.y || width !== this._viewportCached.z || height !== this._viewportCached.w) {
-            this._viewportCached.x = x;
-            this._viewportCached.y = y;
-            this._viewportCached.z = width;
-            this._viewportCached.w = height;
-
-            const renderPass = this._getCurrentRenderPass();
-
-            renderPass.setViewport(x, y, width, height, 0, 1);
-
-            if (dbgVerboseLogsForFirstFrames) {
-                if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
-                    console.log("_viewport called and viewport set frame #" + (this as any)._count, x, y, width, height, "current pass is main pass=" + (renderPass === this._mainRenderPass));
-                }
-            }
-        } else {
-            if (dbgVerboseLogsForFirstFrames) {
-                if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
-                    console.log("_viewport called and viewport NOT set because cached frame #" + (this as any)._count, x, y, width, height, "current pass is main pass=" + (this._currentRenderPass === this._mainRenderPass));
+                    console.log("frame #" + (this as any)._count + " - _viewport applied - (", x, y, w, h, ") current pass is main pass=" + (renderPass === this._mainRenderPass));
                 }
             }
         }
+    }
+
+    /** @hidden */
+    public _viewport(x: number, y: number, width: number, height: number): void {
+        this._viewportCached.x = x;
+        this._viewportCached.y = y;
+        this._viewportCached.z = width;
+        this._viewportCached.w = height;
     }
 
     public enableScissor(x: number, y: number, width: number, height: number): void {
@@ -2449,11 +2433,7 @@ export class WebGPUEngine extends Engine {
 
         this._currentRenderPass = renderPass;
 
-        if (this._cachedViewport) {
-            this.setViewport(this._cachedViewport);
-        }
-
-        // TODO WEBGPU set the scissor rect and the stencil reference value
+        this._resetCurrentViewport(1);
     }
 
     private _endRenderTargetRenderPass() {
@@ -2465,7 +2445,7 @@ export class WebGPUEngine extends Engine {
                 }
             }
             this._renderTargetEncoder.popDebugGroup();
-            this._resetCachedViewport();
+            this._resetCurrentViewport(1);
         }
     }
 
@@ -2509,13 +2489,7 @@ export class WebGPUEngine extends Engine {
 
         this._mainRenderPass = this._currentRenderPass;
 
-        if (this._cachedViewport) {
-            this.setViewport(this._cachedViewport);
-        }
-
-        this._currentRenderPass.setBlendColor(this._alphaState._blendConstants as any);
-
-        // TODO WEBGPU set the scissor rect and the stencil reference value
+        this._resetCurrentViewport(0);
     }
 
     private _endMainRenderPass(): void {
@@ -2527,7 +2501,7 @@ export class WebGPUEngine extends Engine {
                 }
             }
             this._renderEncoder.popDebugGroup();
-            this._resetCachedViewport();
+            this._resetCurrentViewport(0);
             if (this._mainRenderPass === this._currentRenderPass) {
                 this._currentRenderPass = null;
             }
@@ -2613,7 +2587,6 @@ export class WebGPUEngine extends Engine {
             this._endRenderTargetRenderPass();
         }
 
-        this._transientViewport.x = Infinity;
         this._currentRenderTarget = null;
 
         if (texture.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
@@ -2637,7 +2610,6 @@ export class WebGPUEngine extends Engine {
             this._setDepthTextureFormat(this._getMainDepthTextureFormat());
             this._setColorFormat(this._options.swapChainFormat!);
         }
-        this._transientViewport.x = Infinity;
         if (this._currentRenderPass) {
             if (this._cachedViewport) {
                 this.setViewport(this._cachedViewport);
@@ -3543,9 +3515,14 @@ export class WebGPUEngine extends Engine {
             this._getCurrentRenderPass().setStencilReference(this._stencilState.stencilFuncRef);
         }
 
-        if (this._alphaState.alphaBlend/* && this._alphaState._isBlendConstantsDirty*/) {
+        // TODO WebGPU add back the dirty mechanism, but we need to distinguish between the main render pass and the RTT pass (if any)
+        if (this._alphaState.alphaBlend /* && this._alphaState._isBlendConstantsDirty*/ && renderPass !== this._bundleEncoder) {
             // TODO WebGPU. should use renderPass.
             this._getCurrentRenderPass().setBlendColor(this._alphaState._blendConstants as any);
+        }
+
+        if (renderPass !== this._bundleEncoder) {
+            this._applyViewport(renderPass as GPURenderPassEncoder);
         }
     }
 
