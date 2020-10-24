@@ -525,7 +525,10 @@ export class WebGPUTextureHelper {
         const blockInformation = this._getBlockInformationFromFormat(format);
 
         const bytesPerRow = Math.ceil(width / blockInformation.width) * blockInformation.length;
-        const size = bytesPerRow * height;
+
+        const bytesPerRowAligned = Math.ceil(bytesPerRow / 256) * 256;
+
+        const size = bytesPerRowAligned * height;
 
         const gpuBuffer = this._bufferManager.createRawBuffer(size, GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST);
 
@@ -542,7 +545,7 @@ export class WebGPUTextureHelper {
         }, {
             buffer: gpuBuffer,
             offset: 0,
-            bytesPerRow
+            bytesPerRow: bytesPerRowAligned
         }, {
             width,
             height,
@@ -554,6 +557,6 @@ export class WebGPUTextureHelper {
         const type = this._getTextureTypeFromFormat(format);
         const floatFormat = type === Constants.TEXTURETYPE_FLOAT ? 2 : type === Constants.TEXTURETYPE_HALF_FLOAT ? 1 : 0;
 
-        return this._bufferManager.readDataFromBuffer(gpuBuffer, size, width, height, floatFormat, 0, buffer);
+        return this._bufferManager.readDataFromBuffer(gpuBuffer, size, width, height, bytesPerRow, bytesPerRowAligned, floatFormat, 0, buffer);
     }
 }
