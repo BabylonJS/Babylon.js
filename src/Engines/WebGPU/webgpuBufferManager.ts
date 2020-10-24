@@ -110,7 +110,7 @@ export class WebGPUBufferManager {
         return destArray;
     }
 
-    public readDataFromBuffer(gpuBuffer: GPUBuffer, size: number, width: number, height: number, floatFormat = 0, offset = 0, buffer: Nullable<ArrayBufferView> = null, destroyBuffer = true): Promise<ArrayBufferView> {
+    public readDataFromBuffer(gpuBuffer: GPUBuffer, size: number, width: number, height: number, bytesPerRow: number, bytesPerRowAlignedAligned: number, floatFormat = 0, offset = 0, buffer: Nullable<ArrayBufferView> = null, destroyBuffer = true): Promise<ArrayBufferView> {
         return new Promise((resolve, reject) => {
             gpuBuffer.mapAsync(GPUMapMode.READ, offset, size).then(() => {
                 const copyArrayBuffer = gpuBuffer.getMappedRange(offset, size);
@@ -142,6 +142,21 @@ export class WebGPUBufferManager {
                             data = new Float32Array(data.buffer);
                             (data as Float32Array).set(new Float32Array(copyArrayBuffer));
                             break;
+                    }
+                }
+                if (bytesPerRow !== bytesPerRowAlignedAligned) {
+                    const data2: Uint8Array = data as Uint8Array;
+                    let offset = bytesPerRow, offset2 = 0;
+                    for (let y = 1; y < height; ++y) {
+                        offset2 = y * bytesPerRowAlignedAligned;
+                        for (let x = 0; x < bytesPerRow; ++x) {
+                            data2[offset++] = data2[offset2++];
+                        }
+                    }
+                    if (floatFormat !== 0) {
+                        data = new Float32Array(data2.buffer, 0, offset / 4);
+                    } else {
+                        data = new Uint8Array(data2.buffer, 0, offset);
                     }
                 }
                 gpuBuffer.unmap();
