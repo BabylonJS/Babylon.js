@@ -130,10 +130,16 @@ async function evaluate(test, resultCanvas, result, renderImage, waitRing, done)
     var renderB64 = saveRenderImage(renderData, canvas);
     renderImage.src = renderB64;
 
-    engine.applyStates();
     currentScene.dispose();
     currentScene = null;
     engine.setHardwareScalingLevel(1);
+    engine.setDepthFunction(BABYLON.Constants.LEQUAL);
+
+    engine.applyStates();
+
+    engine._deltaTime = 0;
+    engine._fps = 60;
+    engine._performanceMonitor = new BABYLON.PerformanceMonitor();
 
     done(testRes, renderB64);
 }
