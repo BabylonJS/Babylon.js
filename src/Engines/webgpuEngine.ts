@@ -356,6 +356,13 @@ export class WebGPUEngine extends Engine {
                 this._bufferManager = new WebGPUBufferManager(this._device);
                 this._textureHelper = new WebGPUTextureHelper(this._device, this._glslang, this._bufferManager);
 
+                if (dbgVerboseLogsForFirstFrames) {
+                    if ((this as any)._count === undefined) {
+                        (this as any)._count = 0;
+                        console.log("frame #" + (this as any)._count + " - begin");
+                    }
+                }
+
                 this._uploadEncoder = this._device.createCommandEncoder(this._uploadEncoderDescriptor);
                 this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
                 this._renderTargetEncoder = this._device.createCommandEncoder(this._renderTargetEncoderDescriptor);
@@ -1787,7 +1794,7 @@ export class WebGPUEngine extends Engine {
         } else {
             if (dbgVerboseLogsForFirstFrames) {
                 if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
-                    console.log("_setTexture called with a null _currentEffect! frame #" + (this as any)._count, " - texture=", texture);
+                    console.log("frame #" + (this as any)._count + " - _setTexture called with a null _currentEffect! texture=", texture);
                 }
             }
         }
@@ -1901,7 +1908,7 @@ export class WebGPUEngine extends Engine {
 
         if (dbgVerboseLogsForFirstFrames) {
             if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
-                console.log("generate mipmaps called frame #" + (this as any)._count, " - width=", texture.width, "height=", texture.height, "isCube=", texture.isCube);
+                console.log("frame #" + (this as any)._count + " - generate mipmaps called - width=", texture.width, "height=", texture.height, "isCube=", texture.isCube);
             }
         }
 
@@ -2330,13 +2337,6 @@ export class WebGPUEngine extends Engine {
      */
     public beginFrame(): void {
         super.beginFrame();
-
-        if (dbgVerboseLogsForFirstFrames) {
-            if ((this as any)._count === undefined) {
-                (this as any)._count = 1;
-                console.log("begin frame #" + (this as any)._count);
-            }
-        }
     }
 
     /**
@@ -2353,7 +2353,7 @@ export class WebGPUEngine extends Engine {
 
         if (dbgVerboseLogsForFirstFrames) {
             if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
-                console.log("counters frame #" + (this as any)._count, " - numPipelineDescriptorCreation=", this._counters.numPipelineDescriptorCreation, ", numBindGroupsCreation=", this._counters.numBindGroupsCreation);
+                console.log("frame #" + (this as any)._count + " - counters - numPipelineDescriptorCreation=", this._counters.numPipelineDescriptorCreation, ", numBindGroupsCreation=", this._counters.numBindGroupsCreation);
             }
         }
 
@@ -2387,7 +2387,7 @@ export class WebGPUEngine extends Engine {
                     for (const name in UniformBuffer._updatedUbosInFrame) {
                         list.push(name + ":" + UniformBuffer._updatedUbosInFrame[name]);
                     }
-                    console.log("updated ubos in frame #" + (this as any)._count, " -", list.join(", "));
+                    console.log("frame #" + (this as any)._count + " - updated ubos -", list.join(", "));
                 }
             }
             UniformBuffer._updatedUbosInFrame = {};
@@ -2400,11 +2400,13 @@ export class WebGPUEngine extends Engine {
 
         if (dbgVerboseLogsForFirstFrames) {
             if ((this as any)._count < dbgVerboseLogsNumFrames) {
-                console.log("end frame #" + (this as any)._count);
+                console.log("frame #" + (this as any)._count + " - end");
             }
             if ((this as any)._count < dbgVerboseLogsNumFrames) {
                 (this as any)._count++;
-                console.log("begin frame #" + (this as any)._count);
+                if ((this as any)._count !== dbgVerboseLogsNumFrames) {
+                    console.log("frame #" + (this as any)._count + " - begin");
+                    }
             }
         }
     }
@@ -2441,7 +2443,7 @@ export class WebGPUEngine extends Engine {
 
         if (dbgVerboseLogsForFirstFrames) {
             if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
-                console.log("render target begin pass frame #" + (this as any)._count, " - internalTexture.uniqueId=", internalTexture.uniqueId, renderPassDescriptor);
+                console.log("frame #" + (this as any)._count + " - render target begin pass - internalTexture.uniqueId=", internalTexture.uniqueId, renderPassDescriptor);
             }
         }
 
@@ -2459,7 +2461,7 @@ export class WebGPUEngine extends Engine {
             this._currentRenderPass.endPass();
             if (dbgVerboseLogsForFirstFrames) {
                 if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
-                    console.log("render target end pass frame #" + (this as any)._count, " - internalTexture.uniqueId=", this._currentRenderTarget?.uniqueId);
+                    console.log("frame #" + (this as any)._count + " - render target end pass - internalTexture.uniqueId=", this._currentRenderTarget?.uniqueId);
                 }
             }
             this._renderTargetEncoder.popDebugGroup();
@@ -2494,7 +2496,7 @@ export class WebGPUEngine extends Engine {
 
         if (dbgVerboseLogsForFirstFrames) {
             if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
-                console.log("main begin pass frame #" + (this as any)._count, "texture width=" + (this._mainTextureExtends as any).width, " height=" + (this._mainTextureExtends as any).height, this._mainColorAttachments, this._mainDepthAttachment);
+                console.log("frame #" + (this as any)._count + " - main begin pass - texture width=" + (this._mainTextureExtends as any).width, " height=" + (this._mainTextureExtends as any).height, this._mainColorAttachments, this._mainDepthAttachment);
             }
         }
 
@@ -2521,7 +2523,7 @@ export class WebGPUEngine extends Engine {
             this._mainRenderPass.endPass();
             if (dbgVerboseLogsForFirstFrames) {
                 if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
-                    console.log("main end pass frame #" + (this as any)._count);
+                    console.log("frame #" + (this as any)._count + " - main end pass");
                 }
             }
             this._renderEncoder.popDebugGroup();
@@ -2575,7 +2577,7 @@ export class WebGPUEngine extends Engine {
 
         if (dbgVerboseLogsForFirstFrames) {
             if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
-                console.log("bindFramebuffer called in frame #" + (this as any)._count, "face=", faceIndex, "lodLevel=", lodLevel, this._currentRenderTargetColorAttachmentViewDescriptor, this._currentRenderTargetDepthAttachmentViewDescriptor);
+                console.log("frame #" + (this as any)._count + " - bindFramebuffer called - face=", faceIndex, "lodLevel=", lodLevel, this._currentRenderTargetColorAttachmentViewDescriptor, this._currentRenderTargetDepthAttachmentViewDescriptor);
             }
         }
 
@@ -3578,7 +3580,7 @@ export class WebGPUEngine extends Engine {
 
         if (dbgVerboseLogsForFirstFrames) {
             if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
-                console.log("setSize called frame #" + (this as any)._count, width, height);
+                console.log("frame #" + (this as any)._count + " - setSize called -", width, height);
             }
         }
 
