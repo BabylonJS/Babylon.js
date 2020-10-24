@@ -46,7 +46,7 @@ const dbgShowShaderCode = false;
 const dbgSanityChecks = true;
 const dbgGenerateLogs = true;
 const dbgVerboseLogsForFirstFrames = true;
-const dbgVerboseLogsNumFrames = 20;
+const dbgVerboseLogsNumFrames = 10;
 const dbgShowWarningsNotImplemented = true;
 export const dbgShowDebugInliningProcess = false;
 
@@ -359,7 +359,7 @@ export class WebGPUEngine extends Engine {
                 if (dbgVerboseLogsForFirstFrames) {
                     if ((this as any)._count === undefined) {
                         (this as any)._count = 0;
-                        console.log("frame #" + (this as any)._count + " - begin");
+                        console.log("%c frame #" + (this as any)._count + " - begin", "background: #ffff00");
                     }
                 }
 
@@ -2380,12 +2380,12 @@ export class WebGPUEngine extends Engine {
 
         if (dbgVerboseLogsForFirstFrames) {
             if ((this as any)._count < dbgVerboseLogsNumFrames) {
-                console.log("frame #" + (this as any)._count + " - end");
+                console.log("%c frame #" + (this as any)._count + " - end", "background: #ffff00");
             }
             if ((this as any)._count < dbgVerboseLogsNumFrames) {
                 (this as any)._count++;
                 if ((this as any)._count !== dbgVerboseLogsNumFrames) {
-                    console.log("frame #" + (this as any)._count + " - begin");
+                    console.log("%c frame #" + (this as any)._count + " - begin", "background: #ffff00");
                     }
             }
         }
