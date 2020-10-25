@@ -26,7 +26,7 @@
         },
         {
             "title": "sphere with custom shader to display wireframe using glow layer",
-            "playgroundId": "#Y05E2C#1"
+            "playgroundId": "#Y05E2C#3"
         },
         {
             "title": "blur cube with the effect renderer",
@@ -65,7 +65,7 @@
         {
             "title": "procedural texture with node material",
             "renderCount": 10,
-            "playgroundId": "#IA4X0H#0"
+            "playgroundId": "#IA4X0H#1"
         },
         {
             "title": "apply all post processes",
@@ -91,6 +91,11 @@
             "title": "show all procedural textures",
             "renderCount": 5,
             "playgroundId": "#4N0QRP#0"
+        },
+        {
+            "title": "custom handling of materials for render target pass",
+            "renderCount": 30,
+            "playgroundId": "#FIVL25"
         }
     ]
 }

@@ -237,9 +237,7 @@ function runTest(index, done, listname) {
         }
         else if (test.playgroundId) {
             if (test.playgroundId[0] !== "#" || test.playgroundId.indexOf("#", 1) === -1) {
-                console.error("Invalid playground id");
-                done(false);
-                return;
+                test.playgroundId += "#0";
             }
 
             var snippetUrl = "https://snippet.babylonjs.com";

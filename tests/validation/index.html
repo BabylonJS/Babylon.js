@@ -64,6 +64,13 @@
 								}
 							}
 						}
+						if (qs.fromtest) {
+							for (var index = 0; index < config.tests.length; index++) {
+								if (config.tests[index].title === qs.fromtest) {
+									break;
+								}
+							}
+						}
 
                         await init(qs.engine || "webgl2");
 
