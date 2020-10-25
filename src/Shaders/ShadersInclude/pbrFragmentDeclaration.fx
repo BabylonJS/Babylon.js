@@ -1,3 +1,5 @@
+uniform vec4 viewPosition;
+
 uniform vec3 vReflectionColor;
 uniform vec4 vAlbedoColor;
 
