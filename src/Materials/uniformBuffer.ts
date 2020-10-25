@@ -557,6 +557,9 @@ export class UniformBuffer {
             if (this._currentEffect && this._buffer) {
                 this._currentEffect.bindUniformBuffer(this._buffer, this._currentEffectName);
             }
+            if (this._buffers.length >= ThinEngine.Features._warnWhenTooManyBuffersInUniformBufferClass) {
+                console.log(`%c Too many buffers created in the UniformBuffer class! name=${this.name}, number of buffers=${this._buffers.length}`, "background: #ff0000; color: #ffffff", this);
+            }
             return true;
         }
     }
@@ -667,10 +670,12 @@ export class UniformBuffer {
             for (var i = 0; i < size; i++) {
                 if (this._bufferData[location + baseStride * 4 + countToFour] !== data[i]) {
                     changed = true;
-                    if (!this._createNewBuffer(location)) {
-                        // we didn't create a new buffer but advanced to the next one: retry the update, chances are that the new buffer already has the right data for uniformName so we won't set needSync to true
-                        this.updateUniformArray(uniformName, data, size);
-                        return;
+                    if (this._createBufferOnWrite) {
+                        if (!this._createNewBuffer(location)) {
+                            // we didn't create a new buffer but advanced to the next one: retry the update, chances are that the new buffer already has the right data for uniformName so we won't set needSync to true
+                            this.updateUniformArray(uniformName, data, size);
+                            return;
+                        }
                     }
                     this._bufferData[location + baseStride * 4 + countToFour] = data[i];
                 }

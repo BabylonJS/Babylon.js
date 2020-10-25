@@ -184,6 +184,7 @@ export class ThinEngine {
         allowTexturePrefiltering: false,
         trackUbosInFrame: false,
         _collectUbosUpdatedInFrame: false,
+        _warnWhenTooManyBuffersInUniformBufferClass: 0,
     };
 
     /**
