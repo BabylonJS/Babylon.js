@@ -203,24 +203,6 @@ export class WebGPUEngine extends Engine {
     private __colorWrite = true;
     private _uniformsBuffers: { [name: string]: WebGPUDataBuffer } = {};
 
-    // Caches
-    private _compiledShaders: { [key: string]: {
-        stages: IWebGPURenderPipelineStageDescriptor,
-        availableAttributes: { [key: string]: number },
-        availableUBOs: { [key: string]: { setIndex: number, bindingIndex: number} },
-        availableSamplers: { [key: string]: { setIndex: number, bindingIndex: number} },
-        orderedAttributes: string[],
-        orderedUBOsAndSamplers: { name: string, isSampler: boolean }[][],
-        leftOverUniforms: { name: string, type: string, length: number }[],
-        leftOverUniformsByName: { [name: string]: string },
-        sources: {
-            vertex: string,
-            fragment: string,
-            rawVertex: string,
-            rawFragment: string,
-        }
-    } } = {};
-
     /**
      * Gets a boolean indicating that the engine supports uniform buffers
      * @see http://doc.babylonjs.com/features/webgl2#uniform-buffer-objets
@@ -867,13 +849,6 @@ export class WebGPUEngine extends Engine {
         const fragment = baseName.fragmentElement || baseName.fragment || baseName.fragmentToken || baseName.fragmentSource || baseName;
 
         const name = vertex + "+" + fragment + "@" + (defines ? defines : (<IEffectCreationOptions>attributesNamesOrOptions).defines);
-        /*const shader = this._compiledShaders[name];
-        if (shader) {
-            return new Effect(baseName, attributesNamesOrOptions, uniformsNamesOrEngine, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters, name, shader.sources);
-        }
-        else {
-            return new Effect(baseName, attributesNamesOrOptions, uniformsNamesOrEngine, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters, name);
-        }*/
         if (this._compiledEffects[name]) {
             var compiledEffect = <Effect>this._compiledEffects[name];
             if (onCompiled && compiledEffect.isReady()) {
@@ -956,51 +931,24 @@ export class WebGPUEngine extends Engine {
         key: string) {
         const webGpuContext = pipelineContext as WebGPUPipelineContext;
 
-        // TODO WEBGPU. Check if caches could be reuse from piepline ???
-        const shader = this._compiledShaders[key];
-        if (shader) {
-            webGpuContext.stages = shader.stages;
-            webGpuContext.availableAttributes = shader.availableAttributes;
-            webGpuContext.availableUBOs = shader.availableUBOs;
-            webGpuContext.availableSamplers = shader.availableSamplers;
-            webGpuContext.orderedAttributes = shader.orderedAttributes;
-            webGpuContext.orderedUBOsAndSamplers = shader.orderedUBOsAndSamplers;
-            webGpuContext.leftOverUniforms = shader.leftOverUniforms;
-            webGpuContext.leftOverUniformsByName = shader.leftOverUniformsByName;
-            webGpuContext.sources = shader.sources;
+        if (dbgShowShaderCode) {
+            console.log(defines);
+            console.log(vertexSourceCode);
+            console.log(fragmentSourceCode);
+        }
+
+        webGpuContext.sources = {
+            fragment: fragmentSourceCode,
+            vertex: vertexSourceCode,
+            rawVertex: rawVertexSourceCode,
+            rawFragment: rawFragmentSourceCode,
+        };
+
+        if (createAsRaw) {
+            webGpuContext.stages = this._compileRawPipelineStageDescriptor(vertexSourceCode, fragmentSourceCode);
         }
         else {
-            if (dbgShowShaderCode) {
-                console.log(defines);
-                console.log(vertexSourceCode);
-                console.log(fragmentSourceCode);
-            }
-
-            webGpuContext.sources = {
-                fragment: fragmentSourceCode,
-                vertex: vertexSourceCode,
-                rawVertex: rawVertexSourceCode,
-                rawFragment: rawFragmentSourceCode,
-            };
-
-            if (createAsRaw) {
-                webGpuContext.stages = this._compileRawPipelineStageDescriptor(vertexSourceCode, fragmentSourceCode);
-            }
-            else {
-                webGpuContext.stages = this._compilePipelineStageDescriptor(vertexSourceCode, fragmentSourceCode, defines);
-            }
-
-            this._compiledShaders[key] = {
-                stages: webGpuContext.stages,
-                availableAttributes: webGpuContext.availableAttributes,
-                availableUBOs: webGpuContext.availableUBOs,
-                availableSamplers: webGpuContext.availableSamplers,
-                orderedAttributes: webGpuContext.orderedAttributes,
-                orderedUBOsAndSamplers: webGpuContext.orderedUBOsAndSamplers,
-                leftOverUniforms: webGpuContext.leftOverUniforms,
-                leftOverUniformsByName: webGpuContext.leftOverUniformsByName,
-                sources: webGpuContext.sources
-            };
+            webGpuContext.stages = this._compilePipelineStageDescriptor(vertexSourceCode, fragmentSourceCode, defines);
         }
     }
 
@@ -3622,7 +3570,6 @@ export class WebGPUEngine extends Engine {
      * Dispose and release all associated resources
      */
     public dispose(): void {
-        this._compiledShaders = { };
         if (this._mainTexture) {
             this._mainTexture.destroy();
         }
