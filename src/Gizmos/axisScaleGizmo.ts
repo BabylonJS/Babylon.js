@@ -89,10 +89,9 @@ export class AxisScaleGizmo extends Gizmo {
 
         const increaseGizmoMesh = (dragDistance: number) => {
             const dragStrength = (dragDistance * (3 / this._rootMesh.scaling.length())) * 6;
-            const originalScale = arrowTail.scaling.y;
-            const newScale = originalScale + dragStrength;
-            arrowMesh.position.z += ((newScale - originalScale) / 3.5);
-            arrowTail.scaling.y = newScale;
+
+            arrowMesh.position.z += dragStrength / 3.5;
+            arrowTail.scaling.y += dragStrength;
             arrowTail.position.z = arrowMesh.position.z / 2;
         };
 
