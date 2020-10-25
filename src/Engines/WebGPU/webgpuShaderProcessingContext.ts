@@ -3,12 +3,17 @@ import { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 const _maxSets = 4;
 const _maxBindingsPerSet = 16;
 
+// all types not listed are assumed to consume 1 location
+const _webGLTypeToLocationSize: { [key: string]: number } = {
+    "mat2": 2,
+    "mat3": 3,
+    "mat4": 4,
+};
+
 /**
  * @hidden
  */
 export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
-    public attributeNextLocation: number;
-    public varyingNextLocation: number;
     public uboNextBindingIndex: number;
     public freeSetIndex: number;
     public freeBindingIndex: number;
@@ -23,9 +28,28 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
     public orderedAttributes: string[];
     public orderedUBOsAndSamplers: { name: string, isSampler: boolean, isComparisonSampler?: boolean, textureDimension?: GPUTextureViewDimension }[][];
 
+    private _attributeNextLocation: number;
+    private _varyingNextLocation: number;
+
+    public getAttributeNextLocation(dataType: string, arrayLength: number = 0): number {
+        const index = this._attributeNextLocation;
+
+        this._attributeNextLocation += (_webGLTypeToLocationSize[dataType] ?? 1) * (arrayLength || 1);
+
+        return index;
+    }
+
+    public getVaryingNextLocation(dataType: string, arrayLength: number = 0): number {
+        const index = this._varyingNextLocation;
+
+        this._varyingNextLocation += (_webGLTypeToLocationSize[dataType] ?? 1) * (arrayLength || 1);
+
+        return index;
+    }
+
     constructor() {
-        this.attributeNextLocation = 0;
-        this.varyingNextLocation = 0;
+        this._attributeNextLocation = 0;
+        this._varyingNextLocation = 0;
         this.freeSetIndex = 2;
         this.freeBindingIndex = 0;
 

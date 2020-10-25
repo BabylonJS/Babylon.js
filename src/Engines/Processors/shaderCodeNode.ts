@@ -24,9 +24,9 @@ export class ShaderCodeNode {
                 }
 
                 if (processor.attributeProcessor && StringTools.StartsWith(this.line, "attribute")) {
-                    value = processor.attributeProcessor(this.line, options.processingContext);
+                    value = processor.attributeProcessor(this.line, preprocessors, options.processingContext);
                 } else if (processor.varyingProcessor && StringTools.StartsWith(this.line, "varying")) {
-                    value = processor.varyingProcessor(this.line, options.isFragment, options.processingContext);
+                    value = processor.varyingProcessor(this.line, options.isFragment, preprocessors, options.processingContext);
                 } else if ((processor.uniformProcessor || processor.uniformBufferProcessor) && StringTools.StartsWith(this.line, "uniform") && !options.lookForClosingBracketForUniformBuffer) {
                     let regex = /uniform\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s+(\S+)\s*;/;
 
