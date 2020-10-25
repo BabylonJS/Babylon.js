@@ -631,6 +631,12 @@ export class WebGPUEngine extends Engine {
             color.a = 1;
         }
 
+        if (dbgVerboseLogsForFirstFrames) {
+            if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
+                console.log("frame #" + (this as any)._count + " - clear called - backBuffer=", backBuffer, " depth=", depth, " stencil=", stencil);
+            }
+        }
+
         // We need to recreate the render pass so that the new parameters for clear color / depth / stencil are taken into account
         if (this._currentRenderTarget) {
             if (this._currentRenderPass) {
@@ -646,10 +652,6 @@ export class WebGPUEngine extends Engine {
 
             this._mainDepthAttachment.depthLoadValue = depth ? (this.useReverseDepthBuffer ? this._clearReverseDepthValue : this._clearDepthValue) : WebGPUConstants.LoadOp.Load;
             this._mainDepthAttachment.stencilLoadValue = stencil ? this._clearStencilValue : WebGPUConstants.LoadOp.Load;
-
-            if (this._mainRenderPass) {
-                this._endMainRenderPass();
-            }
 
             this._startMainRenderPass();
         }
