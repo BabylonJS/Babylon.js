@@ -58,16 +58,32 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
 
     protected _missingVaryings: Array<string> = [];
 
+    private _getArraySize(name: string, preProcessors: { [key: string]: string }): [string, number] {
+        let length = 0;
+        const startArray = name.indexOf("[");
+        const endArray = name.indexOf("]");
+        if (startArray > 0 && endArray > 0) {
+            const lengthInString = name.substring(startArray + 1, endArray);
+            length = +(lengthInString);
+            if (isNaN(length)) {
+                length = +(preProcessors[lengthInString]);
+            }
+            name = name.substr(0, startArray);
+        }
+        return [name, length];
+    }
+
     public initializeShaders(processingContext: Nullable<ShaderProcessingContext>): void {
         this._missingVaryings.length = 0;
     }
 
-    public varyingProcessor(varying: string, isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>) {
+    public varyingProcessor(varying: string, isFragment: boolean, preProcessors: { [key: string]: string }, processingContext: Nullable<ShaderProcessingContext>) {
         const webgpuProcessingContext = processingContext! as WebGPUShaderProcessingContext;
 
         const varyingRegex = new RegExp(/\s*varying\s+(\S+)\s+(\S+)\s*;/gm);
         const match = varyingRegex.exec(varying);
         if (match != null) {
+            const varyingType = match[1];
             const name = match[2];
             let location: number;
             if (isFragment) {
@@ -75,29 +91,30 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
                 this._missingVaryings[location] = "";
             }
             else {
-                location = webgpuProcessingContext.varyingNextLocation++;
+                location = webgpuProcessingContext.getVaryingNextLocation(varyingType, this._getArraySize(name, preProcessors)[1]);
                 webgpuProcessingContext.availableVaryings[name] = location;
-                this._missingVaryings.push(`layout(location = ${location}) in ${match[1]} ${name};`);
+                this._missingVaryings[location] = `layout(location = ${location}) in ${varyingType} ${name};`;
             }
 
-            varying = varying.replace(match[0], `layout(location = ${location}) ${isFragment ? "in" : "out"} ${match[1]} ${name};`);
+            varying = varying.replace(match[0], `layout(location = ${location}) ${isFragment ? "in" : "out"} ${varyingType} ${name};`);
         }
         return varying;
     }
 
-    public attributeProcessor(attribute: string, processingContext: Nullable<ShaderProcessingContext>) {
+    public attributeProcessor(attribute: string, preProcessors: { [key: string]: string }, processingContext: Nullable<ShaderProcessingContext>) {
         const webgpuProcessingContext = processingContext! as WebGPUShaderProcessingContext;
 
         const attribRegex = new RegExp(/\s*attribute\s+(\S+)\s+(\S+)\s*;/gm);
         const match = attribRegex.exec(attribute);
         if (match != null) {
+            const varyingType = match[1];
             const name = match[2];
-            const location = webgpuProcessingContext.attributeNextLocation++;
+            const location = webgpuProcessingContext.getAttributeNextLocation(varyingType, this._getArraySize(name, preProcessors)[1]);
 
             webgpuProcessingContext.availableAttributes[name] = location;
             webgpuProcessingContext.orderedAttributes[location] = name;
 
-            attribute = attribute.replace(match[0], `layout(location = ${location}) in ${match[1]} ${name};`);
+            attribute = attribute.replace(match[0], `layout(location = ${location}) in ${varyingType} ${name};`);
         }
         return attribute;
     }
@@ -148,16 +165,8 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
             else {
                 // Check the size of the uniform array in case of array.
                 let length = 0;
-                const startArray = name.indexOf("[");
-                const endArray = name.indexOf("]");
-                if (startArray > 0 && endArray > 0) {
-                    const lengthInString = name.substring(startArray + 1, endArray);
-                    length = +(lengthInString);
-                    if (isNaN(length)) {
-                        length = +(preProcessors[lengthInString]);
-                    }
-                    name = name.substr(0, startArray);
-                }
+
+                [name, length] = this._getArraySize(name, preProcessors);
 
                 for (let i = 0; i < webgpuProcessingContext.leftOverUniforms.length; i++) {
                     if (webgpuProcessingContext.leftOverUniforms[i].name === name) {
@@ -273,7 +282,7 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
         // inject the missing varying in the fragment shader
         for (let i = 0; i < this._missingVaryings.length; ++i) {
             const decl = this._missingVaryings[i];
-            if (decl.length > 0) {
+            if (decl && decl.length > 0) {
                 fragmentCode = decl + "\n" + fragmentCode;
             }
         }
