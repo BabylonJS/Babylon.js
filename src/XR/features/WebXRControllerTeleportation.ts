@@ -397,9 +397,9 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                 // set the ray and position
 
                 let hitPossible = false;
+                controllerData.xrController.getWorldPointerRayToRef(this._tmpRay);
                 if (this.straightRayEnabled) {
                     // first check if direct ray possible
-                    controllerData.xrController.getWorldPointerRayToRef(this._tmpRay);
                     // pick grounds that are LOWER only. upper will use parabolic path
                     let pick = scene.pickWithRay(this._tmpRay, (o) => {
                         // check for mesh-blockers
