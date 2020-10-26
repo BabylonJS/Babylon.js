@@ -239,7 +239,6 @@ export class WebGPUEngine extends Engine {
         ThinEngine.Features.trackUbosInFrame = true;
         ThinEngine.Features.supportCSM = true;
         ThinEngine.Features._collectUbosUpdatedInFrame = true;
-        ThinEngine.Features._warnWhenTooManyBuffersInUniformBufferClass = 30;
 
         options.deviceDescriptor = options.deviceDescriptor || { };
         options.swapChainFormat = options.swapChainFormat || WebGPUConstants.TextureFormat.BGRA8Unorm;

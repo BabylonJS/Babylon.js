@@ -557,9 +557,6 @@ export class UniformBuffer {
             if (this._currentEffect && this._buffer) {
                 this._currentEffect.bindUniformBuffer(this._buffer, this._currentEffectName);
             }
-            if (this._buffers.length >= ThinEngine.Features._warnWhenTooManyBuffersInUniformBufferClass) {
-                console.log(`%c Too many buffers created in the UniformBuffer class! name=${this.name}, number of buffers=${this._buffers.length}`, "background: #ff0000; color: #ffffff", this);
-            }
             return true;
         }
     }

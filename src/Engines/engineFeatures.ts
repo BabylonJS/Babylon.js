@@ -28,7 +28,4 @@ export interface EngineFeatures {
 
     /** @hidden */
     _collectUbosUpdatedInFrame: boolean;
-
-    /** @hidden */
-    _warnWhenTooManyBuffersInUniformBufferClass: number;
 }

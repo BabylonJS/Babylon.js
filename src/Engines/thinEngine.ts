@@ -185,7 +185,6 @@ export class ThinEngine {
         trackUbosInFrame: false,
         supportCSM: false,
         _collectUbosUpdatedInFrame: false,
-        _warnWhenTooManyBuffersInUniformBufferClass: 0,
     };
 
     /**
