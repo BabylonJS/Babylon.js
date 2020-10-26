@@ -303,7 +303,7 @@ export class SpriteManager implements ISpriteManager {
         var offsets: VertexBuffer;
 
         if (this._useInstancing) {
-            var spriteData = new Float32Array([0, 0, 1, 0, 1, 1, 0, 1]);
+            var spriteData = new Float32Array([0, 0, 1, 0, 0, 1, 1, 1]);
             this._spriteBuffer = new Buffer(engine, spriteData, false, 2);
             offsets = this._spriteBuffer.createVertexBuffer("offsets", 0, 2);
         } else {
@@ -760,7 +760,7 @@ export class SpriteManager implements ISpriteManager {
             effect.setBool("alphaTest", true);
             engine.setColorWrite(false);
             if (this._useInstancing) {
-                engine.drawArraysType(Constants.MATERIAL_TriangleFanDrawMode, 0, 4, offset);
+                engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, offset);
             } else {
                 engine.drawElementsType(Material.TriangleFillMode, 0, (offset / 4) * 6);
             }
@@ -770,7 +770,7 @@ export class SpriteManager implements ISpriteManager {
 
         engine.setAlphaMode(this._blendMode);
         if (this._useInstancing) {
-            engine.drawArraysType(Constants.MATERIAL_TriangleFanDrawMode, 0, 4, offset);
+            engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, offset);
         } else {
             engine.drawElementsType(Material.TriangleFillMode, 0, (offset / 4) * 6);
         }
