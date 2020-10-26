@@ -8,10 +8,15 @@ import { UniformBuffer } from "../../Materials/uniformBuffer";
 import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from '../../Maths/math.like';
 
 const _uniformSizes: { [type: string]: number } = {
+    "bool": 1,
+    "int": 1,
     "float": 1,
     "vec2": 2,
+    "ivec2": 2,
     "vec3": 3,
+    "ivec3": 3,
     "vec4": 4,
+    "ivec4": 4,
     "mat2": 4,
     "mat3": 9,
     "mat4": 16
@@ -185,12 +190,57 @@ export class WebGPUPipelineContext implements IPipelineContext {
     }
 
     /**
-     * Sets an interger value on a uniform variable.
+     * Sets an integer value on a uniform variable.
      * @param uniformName Name of the variable.
      * @param value Value to be set.
      */
     public setInt(uniformName: string, value: number): void {
-        throw "setInt not Supported in LeftOver UBO.";
+        if (!this.uniformBuffer || !this.leftOverUniformsByName[uniformName]) {
+            return;
+        }
+        this.uniformBuffer.updateInt(uniformName, value);
+    }
+
+    /**
+     * Sets an int2 value on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param x First int in int2.
+     * @param y Second int in int2.
+     */
+    public setInt2(uniformName: string, x: number, y: number): void {
+        if (!this.uniformBuffer || !this.leftOverUniformsByName[uniformName]) {
+            return;
+        }
+        this.uniformBuffer.updateInt2(uniformName, x, y);
+    }
+
+    /**
+     * Sets an int3 value on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param x First int in int3.
+     * @param y Second int in int3.
+     * @param z Third int in int3.
+     */
+    public setInt3(uniformName: string, x: number, y: number, z: number): void {
+        if (!this.uniformBuffer || !this.leftOverUniformsByName[uniformName]) {
+            return;
+        }
+        this.uniformBuffer.updateInt3(uniformName, x, y, z);
+    }
+
+    /**
+     * Sets an int4 value on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param x First int in int4.
+     * @param y Second int in int4.
+     * @param z Third int in int4.
+     * @param w Fourth int in int4.
+     */
+    public setInt4(uniformName: string, x: number, y: number, z: number, w: number): void {
+        if (!this.uniformBuffer || !this.leftOverUniformsByName[uniformName]) {
+            return;
+        }
+        this.uniformBuffer.updateInt4(uniformName, x, y, z, w);
     }
 
     /**
@@ -199,7 +249,10 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param array array to be set.
      */
     public setIntArray(uniformName: string, array: Int32Array): void {
-        throw "setIntArray not Supported in LeftOver UBO.";
+        if (!this.uniformBuffer || !this.leftOverUniformsByName[uniformName]) {
+            return;
+        }
+        this.uniformBuffer.updateIntArray(uniformName, array);
     }
 
     /**
@@ -208,7 +261,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param array array to be set.
      */
     public setIntArray2(uniformName: string, array: Int32Array): void {
-        throw "setIntArray2 not Supported in LeftOver UBO.";
+        this.setIntArray(uniformName, array);
     }
 
     /**
@@ -217,7 +270,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param array array to be set.
      */
     public setIntArray3(uniformName: string, array: Int32Array): void {
-        throw "setIntArray3 not Supported in LeftOver UBO.";
+        this.setIntArray(uniformName, array);
     }
 
     /**
@@ -226,7 +279,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param array array to be set.
      */
     public setIntArray4(uniformName: string, array: Int32Array): void {
-        throw "setIntArray4 not Supported in LeftOver UBO.";
+        this.setIntArray(uniformName, array);
     }
 
     /**

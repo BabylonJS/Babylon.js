@@ -51,6 +51,7 @@ export class UniformBuffer {
     // Pool for avoiding memory leaks
     private static _MAX_UNIFORM_SIZE = 256;
     private static _tempBuffer = new Float32Array(UniformBuffer._MAX_UNIFORM_SIZE);
+    private static _tempBufferInt32View = new Uint32Array(UniformBuffer._tempBuffer.buffer);
 
     /**
      * Lambda to Update a 3x3 Matrix in a uniform buffer.
@@ -109,6 +110,13 @@ export class UniformBuffer {
     public updateArray: (name: string, array: number[]) => void;
 
     /**
+     * Lambda to Update an array of number in a uniform buffer.
+     * This is dynamic to allow compat with webgl 1 and 2.
+     * You will need to pass the name of the uniform as well as the value.
+     */
+    public updateIntArray: (name: string, array: Int32Array) => void;
+
+    /**
      * Lambda to Update a 4x4 Matrix in a uniform buffer.
      * This is dynamic to allow compat with webgl 1 and 2.
      * You will need to pass the name of the uniform as well as the value.
@@ -149,6 +157,34 @@ export class UniformBuffer {
      * You will need to pass the name of the uniform as well as the value.
      */
     public updateColor4: (name: string, color: Color3, alpha: number, suffix?: string) => void;
+
+    /**
+     * Lambda to Update a int a uniform buffer.
+     * This is dynamic to allow compat with webgl 1 and 2.
+     * You will need to pass the name of the uniform as well as the value.
+     */
+    public updateInt: (name: string, x: number, suffix?: string) => void;
+
+    /**
+     * Lambda to Update a vec2 of int in a uniform buffer.
+     * This is dynamic to allow compat with webgl 1 and 2.
+     * You will need to pass the name of the uniform as well as the value.
+     */
+    public updateInt2: (name: string, x: number, y: number, suffix?: string) => void;
+
+    /**
+     * Lambda to Update a vec3 of int in a uniform buffer.
+     * This is dynamic to allow compat with webgl 1 and 2.
+     * You will need to pass the name of the uniform as well as the value.
+     */
+    public updateInt3: (name: string, x: number, y: number, z: number, suffix?: string) => void;
+
+    /**
+     * Lambda to Update a vec4 of int in a uniform buffer.
+     * This is dynamic to allow compat with webgl 1 and 2.
+     * You will need to pass the name of the uniform as well as the value.
+     */
+    public updateInt4: (name: string, x: number, y: number, z: number, w: number, suffix?: string) => void;
 
     /**
      * Instantiates a new Uniform buffer objects.
@@ -194,12 +230,17 @@ export class UniformBuffer {
             this.updateFloat4 = this._updateFloat4ForEffect;
             this.updateFloatArray = this._updateFloatArrayForEffect;
             this.updateArray = this._updateArrayForEffect;
+            this.updateIntArray = this._updateIntArrayForEffect;
             this.updateMatrix = this._updateMatrixForEffect;
             this.updateMatrices = this._updateMatricesForEffect;
             this.updateVector3 = this._updateVector3ForEffect;
             this.updateVector4 = this._updateVector4ForEffect;
             this.updateColor3 = this._updateColor3ForEffect;
             this.updateColor4 = this._updateColor4ForEffect;
+            this.updateInt = this._updateIntForEffect;
+            this.updateInt2 = this._updateInt2ForEffect;
+            this.updateInt3 = this._updateInt3ForEffect;
+            this.updateInt4 = this._updateInt4ForEffect;
         } else {
             this._engine._uniformBuffers.push(this);
 
@@ -211,12 +252,17 @@ export class UniformBuffer {
             this.updateFloat4 = this._updateFloat4ForUniform;
             this.updateFloatArray = this._updateFloatArrayForUniform;
             this.updateArray = this._updateArrayForUniform;
+            this.updateIntArray = this._updateIntArrayForUniform;
             this.updateMatrix = this._updateMatrixForUniform;
             this.updateMatrices = this._updateMatricesForUniform;
             this.updateVector3 = this._updateVector3ForUniform;
             this.updateVector4 = this._updateVector4ForUniform;
             this.updateColor3 = this._updateColor3ForUniform;
             this.updateColor4 = this._updateColor4ForUniform;
+            this.updateInt = this._updateIntForUniform;
+            this.updateInt2 = this._updateInt2ForUniform;
+            this.updateInt3 = this._updateInt3ForUniform;
+            this.updateInt4 = this._updateInt4ForUniform;
         }
 
     }
@@ -821,6 +867,15 @@ export class UniformBuffer {
         this.updateUniformArray(name, array, array.length);
     }
 
+    private _updateIntArrayForEffect(name: string, array: Int32Array) {
+        this._currentEffect.setIntArray(name, array);
+    }
+
+    private _updateIntArrayForUniform(name: string, array: Int32Array) {
+        UniformBuffer._tempBufferInt32View.set(array);
+        this.updateUniformArray(name, UniformBuffer._tempBuffer, array.length);
+    }
+
     private _updateMatrixForEffect(name: string, mat: IMatrixLike) {
         this._currentEffect.setMatrix(name, mat);
     }
@@ -873,6 +928,48 @@ export class UniformBuffer {
     private _updateColor4ForUniform(name: string, color: Color3, alpha: number) {
         color.toArray(UniformBuffer._tempBuffer);
         UniformBuffer._tempBuffer[3] = alpha;
+        this.updateUniform(name, UniformBuffer._tempBuffer, 4);
+    }
+
+    private _updateIntForEffect(name: string, x: number, suffix = "") {
+        this._currentEffect.setInt(name + suffix, x);
+    }
+
+    private _updateIntForUniform(name: string, x: number) {
+        UniformBuffer._tempBufferInt32View[0] = x;
+        this.updateUniform(name, UniformBuffer._tempBuffer, 1);
+    }
+
+    private _updateInt2ForEffect(name: string, x: number, y: number, suffix = "") {
+        this._currentEffect.setInt2(name + suffix, x, y);
+    }
+
+    private _updateInt2ForUniform(name: string, x: number, y: number) {
+        UniformBuffer._tempBufferInt32View[0] = x;
+        UniformBuffer._tempBufferInt32View[1] = y;
+        this.updateUniform(name, UniformBuffer._tempBuffer, 2);
+    }
+
+    private _updateInt3ForEffect(name: string, x: number, y: number, z: number, suffix = "") {
+        this._currentEffect.setInt3(name + suffix, x, y, z);
+    }
+
+    private _updateInt3ForUniform(name: string, x: number, y: number, z: number) {
+        UniformBuffer._tempBufferInt32View[0] = x;
+        UniformBuffer._tempBufferInt32View[1] = y;
+        UniformBuffer._tempBufferInt32View[2] = z;
+        this.updateUniform(name, UniformBuffer._tempBuffer, 3);
+    }
+
+    private _updateInt4ForEffect(name: string, x: number, y: number, z: number, w: number, suffix = "") {
+        this._currentEffect.setInt4(name + suffix, x, y, z, w);
+    }
+
+    private _updateInt4ForUniform(name: string, x: number, y: number, z: number, w: number) {
+        UniformBuffer._tempBufferInt32View[0] = x;
+        UniformBuffer._tempBufferInt32View[1] = y;
+        UniformBuffer._tempBufferInt32View[2] = z;
+        UniformBuffer._tempBufferInt32View[3] = w;
         this.updateUniform(name, UniformBuffer._tempBuffer, 4);
     }
 

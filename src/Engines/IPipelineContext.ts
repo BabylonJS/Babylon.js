@@ -34,11 +34,38 @@ export interface IPipelineContext {
     dispose(): void;
 
     /**
-     * Sets an interger value on a uniform variable.
+     * Sets an integer value on a uniform variable.
      * @param uniformName Name of the variable.
      * @param value Value to be set.
      */
     setInt(uniformName: string, value: number): void;
+
+    /**
+     * Sets an int2 value on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param x First int in int2.
+     * @param y Second int in int2.
+     */
+    setInt2(uniformName: string, x: number, y: number): void;
+
+    /**
+     * Sets an int3 value on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param x First int in int3.
+     * @param y Second int in int3.
+     * @param z Third int in int3.
+     */
+    setInt3(uniformName: string, x: number, y: number, z: number): void;
+
+    /**
+     * Sets an int4 value on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param x First int in int4.
+     * @param y Second int in int4.
+     * @param z Third int in int4.
+     * @param w Fourth int in int4.
+     */
+    setInt4(uniformName: string, x: number, y: number, z: number, w: number): void;
 
     /**
      * Sets an int array on a uniform variable.

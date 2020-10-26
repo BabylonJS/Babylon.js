@@ -928,6 +928,45 @@ export class Effect implements IDisposable {
     }
 
     /**
+     * Sets an int2 value on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param x First int in int2.
+     * @param y Second int in int2.
+     * @returns this effect.
+     */
+    public setInt2(uniformName: string, x: number, y: number): Effect {
+        this._pipelineContext!.setInt2(uniformName, x, y);
+        return this;
+    }
+
+    /**
+     * Sets an int3 value on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param x First int in int3.
+     * @param y Second int in int3.
+     * @param z Third int in int3.
+     * @returns this effect.
+     */
+    public setInt3(uniformName: string, x: number, y: number, z: number): Effect {
+        this._pipelineContext!.setInt3(uniformName, x, y, z);
+        return this;
+    }
+
+    /**
+     * Sets an int4 value on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param x First int in int4.
+     * @param y Second int in int4.
+     * @param z Third int in int4.
+     * @param w Fourth int in int4.
+     * @returns this effect.
+     */
+    public setInt4(uniformName: string, x: number, y: number, z: number, w: number): Effect {
+        this._pipelineContext!.setInt4(uniformName, x, y, z, w);
+        return this;
+    }
+
+    /**
      * Sets an int array on a uniform variable.
      * @param uniformName Name of the variable.
      * @param array array to be set.
