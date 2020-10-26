@@ -56,9 +56,7 @@ export class WebGPUBufferManager {
         if (alignedLength !== byteLength) {
             const tempView = new Uint8Array(src.buffer.slice(chunkStart, chunkEnd));
             src = new Uint8Array(alignedLength);
-            tempView.forEach((element, index) => {
-                (src as Uint8Array)[index] = element;
-            });
+            (src as Uint8Array).set(tempView);
             srcByteOffset = 0;
             chunkStart = 0;
             chunkEnd = alignedLength;
