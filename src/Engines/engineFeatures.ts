@@ -23,6 +23,9 @@ export interface EngineFeatures {
     /** Indicates to track the usage of ubos and to create new ones as necessary during a frame duration */
     trackUbosInFrame: boolean;
 
+    /** Indicates that the Cascaded Shadow Map technic is supported */
+    supportCSM: boolean;
+
     /** @hidden */
     _collectUbosUpdatedInFrame: boolean;
 

@@ -144,6 +144,8 @@ export interface IShadowGenerator {
  */
 export class ShadowGenerator implements IShadowGenerator {
 
+    private static _Counter = 0;
+
     /**
      * Name of the shadow generator class
      */
@@ -221,16 +223,8 @@ export class ShadowGenerator implements IShadowGenerator {
      */
     public static readonly QUALITY_LOW = 2;
 
-    private _id: string;
     /** Gets or set the id of the shadow generator. It will be the one from the light if not defined */
-    public get id(): string {
-        return this._id;
-    }
-
-    public set id(id: string) {
-        this._id = id;
-        this._nameForCustomEffect = Constants.CUSTOMEFFECT_PREFIX_SHADOWGENERATOR + id;
-    }
+    public id: string;
 
     /** Gets or sets the custom shader name to use */
     public customShaderOptions: ICustomShaderOptions;
@@ -830,6 +824,8 @@ export class ShadowGenerator implements IShadowGenerator {
         this._scene = light.getScene();
         light._shadowGenerator = this;
         this.id = light.id;
+
+        this._nameForCustomEffect = Constants.CUSTOMEFFECT_PREFIX_SHADOWGENERATOR + ShadowGenerator._Counter++;
 
         ShadowGenerator._SceneComponentInitialization(this._scene);
 
