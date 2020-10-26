@@ -31,11 +31,9 @@ class PolygonPoints {
 
         var result = new Array<IndexedVector2>();
         originalPoints.forEach((point) => {
-            if (result.length === 0 || !point.equalsWithEpsilon(result[0])) {
-                var newPoint = new IndexedVector2(point, this.elements.length);
-                result.push(newPoint);
-                this.elements.push(newPoint);
-            }
+            var newPoint = new IndexedVector2(point, this.elements.length);
+            result.push(newPoint);
+            this.elements.push(newPoint);
         });
 
         return result;
