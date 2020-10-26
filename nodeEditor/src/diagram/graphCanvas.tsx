@@ -235,13 +235,13 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this.props.globalState.storeEditorData = (editorData, graphFrame) => {
             editorData.frames = [];
             if (graphFrame) {
-                editorData.frames.push(graphFrame!.serialize());
+                editorData.frames.push(graphFrame!.serialize(false));
             } else {
                 editorData.x = this.x;
                 editorData.y = this.y;
                 editorData.zoom = this.zoom;
                 for (var frame of this._frames) {
-                    editorData.frames.push(frame.serialize());
+                    editorData.frames.push(frame.serialize(true));
                 }
             }
         }

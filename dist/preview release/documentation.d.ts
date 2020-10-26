@@ -76103,6 +76103,10 @@ declare module BABYLON {
          * if defined, this object will be constantly updated by the anchor's position and rotation
          */
         attachedNode?: TransformNode;
+        /**
+         * Remove this anchor from the scene
+         */
+        remove(): void;
     }
     /**
      * An implementation of the anchor system for WebXR.
@@ -76159,9 +76163,9 @@ declare module BABYLON {
          * @param hitTestResult The hit test result to use for this anchor creation
          * @param position an optional position offset for this anchor
          * @param rotationQuaternion an optional rotation offset for this anchor
-         * @returns A promise that fulfills when the XR anchor was registered in the system (but not necessarily added to the tracked anchors)
+         * @returns A promise that fulfills when babylon has created the corresponding WebXRAnchor object and tracking has begun
          */
-        addAnchorPointUsingHitTestResultAsync(hitTestResult: IWebXRHitResult, position?: Vector3, rotationQuaternion?: Quaternion): Promise<XRAnchor>;
+        addAnchorPointUsingHitTestResultAsync(hitTestResult: IWebXRHitResult, position?: Vector3, rotationQuaternion?: Quaternion): Promise<IWebXRAnchor>;
         /**
          * Add a new anchor at a specific position and rotation
          * This function will add a new anchor per default in the next available frame. Unless forced, the createAnchor function
@@ -76172,9 +76176,9 @@ declare module BABYLON {
          * @param position the position in which to add an anchor
          * @param rotationQuaternion an optional rotation for the anchor transformation
          * @param forceCreateInCurrentFrame force the creation of this anchor in the current frame. Must be called inside xrFrame loop!
-         * @returns A promise that fulfills when the XR anchor was registered in the system (but not necessarily added to the tracked anchors)
+         * @returns A promise that fulfills when babylon has created the corresponding WebXRAnchor object and tracking has begun
          */
-        addAnchorAtPositionAndRotationAsync(position: Vector3, rotationQuaternion?: Quaternion, forceCreateInCurrentFrame?: boolean): Promise<XRAnchor>;
+        addAnchorAtPositionAndRotationAsync(position: Vector3, rotationQuaternion?: Quaternion, forceCreateInCurrentFrame?: boolean): Promise<IWebXRAnchor>;
         /**
          * detach this feature.
          * Will usually be called by the features manager
