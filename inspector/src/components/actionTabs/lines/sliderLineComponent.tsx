@@ -3,7 +3,6 @@ import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../propertyChangedEvent";
 import { Tools } from 'babylonjs/Misc/tools';
 import { FloatLineComponent } from './floatLineComponent';
-import { LockObject } from '../tabs/propertyGrids/lockObject';
 
 interface ISliderLineComponentProps {
     label: string;
@@ -23,7 +22,6 @@ interface ISliderLineComponentProps {
 
 export class SliderLineComponent extends React.Component<ISliderLineComponentProps, { value: number }> {
     private _localChange = false;
-    //private _lockObject = new LockObject();
     constructor(props: ISliderLineComponentProps) {
         super(props);
 
