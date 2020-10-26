@@ -66295,7 +66295,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         _this.props.globalState.storeEditorData = function (editorData, graphFrame) {
             editorData.frames = [];
             if (graphFrame) {
-                editorData.frames.push(graphFrame.serialize());
+                editorData.frames.push(graphFrame.serialize(false));
             }
             else {
                 editorData.x = _this.x;
@@ -66303,7 +66303,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
                 editorData.zoom = _this.zoom;
                 for (var _i = 0, _a = _this._frames; _i < _a.length; _i++) {
                     var frame = _a[_i];
-                    editorData.frames.push(frame.serialize());
+                    editorData.frames.push(frame.serialize(true));
                 }
             }
         };
@@ -68376,7 +68376,7 @@ var GraphFrame = /** @class */ (function () {
             }
         }
     };
-    GraphFrame.prototype.serialize = function () {
+    GraphFrame.prototype.serialize = function (saveCollapsedState) {
         this.serializePortData(this._exposedInPorts);
         this.serializePortData(this._exposedOutPorts);
         return {
@@ -68386,7 +68386,7 @@ var GraphFrame = /** @class */ (function () {
             height: this._height,
             color: this._color.asArray(),
             name: this.name,
-            isCollapsed: true,
+            isCollapsed: saveCollapsedState ? this.isCollapsed : true,
             blocks: this.nodes.map(function (n) { return n.block.uniqueId; }),
             comments: this._comments
         };
