@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { PropertyChangedEvent } from "../../propertyChangedEvent";
 import { Tools } from 'babylonjs/Misc/tools';
-import { SliderLineComponent } from './sliderLineComponent';
+import { FloatLineComponent } from './floatLineComponent';
 
 interface IQuaternionLineComponentProps {
     label: string;
@@ -134,7 +134,7 @@ export class QuaternionLineComponent extends React.Component<IQuaternionLineComp
             <div className="vector3Line">
                 <div className="firstLine">
                     <div className="label">
-                        {this.props.label}
+                        {this.props.label + (" Using Quaternion")} 
                     </div>
                     <div className="vector">
                         {
@@ -162,9 +162,9 @@ export class QuaternionLineComponent extends React.Component<IQuaternionLineComp
                 {
                     this.state.isExpanded && this.props.useEuler &&
                     <div className="secondLine">
-                        <SliderLineComponent label="x" minimum={0} maximum={360} step={0.1} directValue={Tools.ToDegrees(euler.x)} onChange={value => this.updateStateEulerX(value)} />
-                        <SliderLineComponent label="y" minimum={0} maximum={360} step={0.1} directValue={Tools.ToDegrees(euler.y)} onChange={value => this.updateStateEulerY(value)} />
-                        <SliderLineComponent label="z" minimum={0} maximum={360} step={0.1} directValue={Tools.ToDegrees(euler.z)} onChange={value => this.updateStateEulerZ(value)} />
+                        <FloatLineComponent label="x" min={0} max={360} target={euler} propertyName='x' onChange={value => {value = Tools.ToDegrees(euler.x); this.updateStateEulerX(value)} } />
+                        <FloatLineComponent label="y" min={0} max={360} target={euler} propertyName='y' onChange={value => {value = Tools.ToDegrees(euler.y); this.updateStateEulerX(value)} } />
+                        <FloatLineComponent label="z" min={0} max={360} target={euler} propertyName='z' onChange={value => {value = Tools.ToDegrees(euler.z); this.updateStateEulerX(value)} } />
                     </div>
                 }
             </div>
