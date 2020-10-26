@@ -97,7 +97,7 @@ export class MinMaxReducer {
         reductionInitial.onApply = ((w: number, h: number) => {
             return (effect: Effect) => {
                 effect.setTexture('sourceTexture', this._sourceTexture);
-                effect.setFloatArray2('texSize', new Float32Array([w, h]));
+                effect.setFloat2('texSize', w, h);
             };
         })(w, h);
 
@@ -134,9 +134,9 @@ export class MinMaxReducer {
             reduction.onApply = ((w: number, h: number) => {
                 return (effect: Effect) => {
                     if (w == 1 || h == 1) {
-                        effect.setIntArray2('texSize', new Int32Array([w, h]));
+                        effect.setInt2('texSize', w, h);
                     } else {
-                        effect.setFloatArray2('texSize', new Float32Array([w, h]));
+                        effect.setFloat2('texSize', w, h);
                     }
                 };
             })(w, h);
