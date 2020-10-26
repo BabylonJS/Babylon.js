@@ -27,6 +27,7 @@ const _samplerFunctionByWebGLSamplerType: { [key: string]: string } = {
     "texture2D": "sampler2D",
     "sampler2D": "sampler2D",
     "sampler2DShadow": "sampler2DShadow",
+    "sampler2DArrayShadow": "sampler2DArrayShadow",
     "samplerCube": "samplerCube"
 };
 
@@ -35,21 +36,27 @@ const _textureTypeByWebGLSamplerType: { [key: string]: string } = {
     "texture2D": "texture2D",
     "sampler2D": "texture2D",
     "sampler2DShadow": "texture2D",
-    "samplerCube": "textureCube"
+    "sampler2DArrayShadow": "texture2DArray",
+    "samplerCube": "textureCube",
+    "samplerCubeArray": "textureCubeArray"
 };
 
 const _gpuTextureViewDimensionByWebGPUTextureType: { [key: string]: GPUTextureViewDimension } = {
     "textureCube": WebGPUConstants.TextureViewDimension.Cube,
+    "textureCubeArray": WebGPUConstants.TextureViewDimension.CubeArray,
     "texture2D": WebGPUConstants.TextureViewDimension.E2d,
+    "texture2DArray": WebGPUConstants.TextureViewDimension.E2dArray,
 };
 
 // if the webgl sampler type is not listed in this array, "sampler" is taken by default
 const _samplerTypeByWebGLSamplerType: { [key: string]: string } = {
     "sampler2DShadow": "samplerShadow",
+    "sampler2DArrayShadow": "samplerShadow",
 };
 
-const _comparisonSamplerByWebGPUSamplerType: { [key: string]: boolean } = {
+const _isComparisonSamplerByWebGPUSamplerType: { [key: string]: boolean } = {
     "samplerShadow": true,
+    "samplerArrayShadow": true,
     "sampler": false,
 };
 
@@ -157,7 +164,7 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
                 }
                 webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][textureBindingIndex] = {
                     isSampler: true,
-                    isComparisonSampler: _comparisonSamplerByWebGPUSamplerType[samplerType] ?? false,
+                    isComparisonSampler: _isComparisonSamplerByWebGPUSamplerType[samplerType] ?? false,
                     textureDimension,
                     name,
                 };

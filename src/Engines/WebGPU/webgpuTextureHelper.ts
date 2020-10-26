@@ -134,13 +134,13 @@ export class WebGPUTextureHelper {
         return false;
     }
 
-    public createTexture(imageBitmap: ImageBitmap | { width: number, height: number }, hasMipmaps = false, generateMipmaps = false, invertY = false, premultiplyAlpha = false, format: GPUTextureFormat = WebGPUConstants.TextureFormat.RGBA8Unorm,
+    public createTexture(imageBitmap: ImageBitmap | { width: number, height: number, layers: number }, hasMipmaps = false, generateMipmaps = false, invertY = false, premultiplyAlpha = false, format: GPUTextureFormat = WebGPUConstants.TextureFormat.RGBA8Unorm,
         sampleCount = 1, commandEncoder?: GPUCommandEncoder, usage = -1): GPUTexture
     {
         let textureSize = {
             width: imageBitmap.width,
             height: imageBitmap.height,
-            depth: 1,
+            depth: (imageBitmap as any).layers || 1,
         };
 
         const mipLevelCount = hasMipmaps ? WebGPUTextureHelper.computeNumMipmapLevels(imageBitmap.width, imageBitmap.height) : 1;

@@ -23,7 +23,7 @@ import { DepthRenderer } from '../../Rendering/depthRenderer';
 import { DepthReducer } from '../../Misc/depthReducer';
 
 import { Logger } from "../../Misc/logger";
-import { EngineStore } from '../../Engines/engineStore';
+import { ThinEngine } from '../../Engines/thinEngine';
 
 interface ICascade {
     prevBreakDistance: number;
@@ -693,11 +693,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     *  Support test.
     */
     public static get IsSupported(): boolean {
-        var engine = EngineStore.LastCreatedEngine;
-        if (!engine) {
-            return false;
-        }
-        return engine.webGLVersion != 1;
+        return ThinEngine.Features.supportCSM;
     }
 
     /** @hidden */
@@ -716,7 +712,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
      */
     constructor(mapSize: number, light: DirectionalLight, usefulFloatFirst?: boolean) {
         if (!CascadedShadowGenerator.IsSupported) {
-            Logger.Error("CascadedShadowMap needs WebGL 2 support.");
+            Logger.Error("CascadedShadowMap is not supported by the current engine.");
             return;
         }
 
@@ -797,13 +793,16 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             }
         }
 
+        let engine = this._scene.getEngine();
+
+        this._shadowMap.onBeforeRenderObservable.clear();
+
         this._shadowMap.onBeforeRenderObservable.add((layer: number) => {
             this._currentLayer = layer;
-            if (this._scene.getSceneUniformBuffer().useUbo) {
-                const sceneUBO = this._scene.getSceneUniformBuffer();
-                sceneUBO.updateMatrix("viewProjection", this.getCascadeTransformMatrix(layer)!);
-                sceneUBO.updateMatrix("view", this.getCascadeViewMatrix(layer)!);
+            if (this._filter === ShadowGenerator.FILTER_PCF) {
+                engine.setColorWrite(false);
             }
+            this._scene.setTransformMatrix(this.getCascadeViewMatrix(layer)!, this.getCascadeProjectionMatrix(layer)!);
         });
 
         this._shadowMap.onBeforeBindObservable.add(() => {

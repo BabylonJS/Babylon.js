@@ -237,6 +237,7 @@ export class WebGPUEngine extends Engine {
         ThinEngine.Features.uniformBufferHardCheckMatrix = true;
         ThinEngine.Features.allowTexturePrefiltering = true;
         ThinEngine.Features.trackUbosInFrame = true;
+        ThinEngine.Features.supportCSM = true;
         ThinEngine.Features._collectUbosUpdatedInFrame = true;
         ThinEngine.Features._warnWhenTooManyBuffersInUniformBufferClass = 30;
 
@@ -1804,6 +1805,7 @@ export class WebGPUEngine extends Engine {
             texture._source === InternalTextureSource.Depth ? WebGPUConstants.TextureUsage.Sampled | WebGPUConstants.TextureUsage.OutputAttachment : -1;
 
         const generateMipMaps = texture._source === InternalTextureSource.RenderTarget ? false : texture.generateMipMaps;
+        const layerCount = texture.depth || 1;
 
         if (texture.isCube) {
             const gpuTexture = this._textureHelper.createCubeTexture({ width, height }, texture.generateMipMaps, texture.generateMipMaps, texture.invertY, false, gpuTextureWrapper.format, texture.samples || 1, this._uploadEncoder, textureUsages);
@@ -1817,14 +1819,15 @@ export class WebGPUEngine extends Engine {
                 aspect: WebGPUConstants.TextureAspect.All
             });
         } else {
-            const gpuTexture = this._textureHelper.createTexture({ width, height }, texture.generateMipMaps, texture.generateMipMaps, texture.invertY, false, gpuTextureWrapper.format, texture.samples || 1, this._uploadEncoder, textureUsages);
+            const gpuTexture = this._textureHelper.createTexture({ width, height, layers: layerCount }, texture.generateMipMaps, texture.generateMipMaps, texture.invertY, false, gpuTextureWrapper.format, texture.samples || 1, this._uploadEncoder, textureUsages);
 
             gpuTextureWrapper.set(gpuTexture);
             gpuTextureWrapper.createView({
-                dimension: WebGPUConstants.TextureViewDimension.E2d,
+                dimension: texture.is2DArray ? WebGPUConstants.TextureViewDimension.E2dArray : WebGPUConstants.TextureViewDimension.E2d,
                 mipLevelCount: generateMipMaps ? WebGPUTextureHelper.computeNumMipmapLevels(width!, height!) : 1,
                 baseArrayLayer: 0,
                 baseMipLevel: 0,
+                arrayLayerCount: layerCount,
                 aspect: WebGPUConstants.TextureAspect.All
             });
         }
@@ -2106,6 +2109,7 @@ export class WebGPUEngine extends Engine {
         texture.format = fullOptions.format;
         texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
         texture._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
+        texture.is2DArray = layers > 0;
 
         this._internalTexturesCache.push(texture);
 
@@ -2475,12 +2479,11 @@ export class WebGPUEngine extends Engine {
         this._setDepthTextureFormat(this._currentRenderTarget._depthStencilTexture ? this._getWebGPUTextureFormat(-1, this._currentRenderTarget._depthStencilTexture.format) : undefined);
         this._setColorFormat(this._getWebGPUTextureFormat(this._currentRenderTarget.type, this._currentRenderTarget.format));
 
-        // TODO WEBGPU handle array layer
         this._currentRenderTargetColorAttachmentViewDescriptor = {
             format: this._colorFormat,
             dimension: WebGPUConstants.TextureViewDimension.E2d,
             mipLevelCount: 1,
-            baseArrayLayer: faceIndex,
+            baseArrayLayer: texture.isCube ? layer * 6 + faceIndex : layer,
             baseMipLevel: lodLevel,
             arrayLayerCount: 1,
             aspect: WebGPUConstants.TextureAspect.All
@@ -2490,7 +2493,7 @@ export class WebGPUEngine extends Engine {
             format: this._depthTextureFormat,
             dimension: WebGPUConstants.TextureViewDimension.E2d,
             mipLevelCount: 1,
-            baseArrayLayer: 0,
+            baseArrayLayer: texture.isCube ? layer * 6 + faceIndex : layer,
             baseMipLevel: 0,
             arrayLayerCount: 1,
             aspect: WebGPUConstants.TextureAspect.All
@@ -2498,7 +2501,7 @@ export class WebGPUEngine extends Engine {
 
         if (dbgVerboseLogsForFirstFrames) {
             if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
-                console.log("frame #" + (this as any)._count + " - bindFramebuffer called - face=", faceIndex, "lodLevel=", lodLevel, this._currentRenderTargetColorAttachmentViewDescriptor, this._currentRenderTargetDepthAttachmentViewDescriptor);
+                console.log("frame #" + (this as any)._count + " - bindFramebuffer called - face=", faceIndex, "lodLevel=", lodLevel, "layer=", layer, this._currentRenderTargetColorAttachmentViewDescriptor, this._currentRenderTargetDepthAttachmentViewDescriptor);
             }
         }
 
