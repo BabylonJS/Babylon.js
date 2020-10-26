@@ -134,7 +134,7 @@ export class QuaternionLineComponent extends React.Component<IQuaternionLineComp
             <div className="vector3Line">
                 <div className="firstLine">
                     <div className="label">
-                        {this.props.label + (" Using Quaternion")} 
+                        {this.props.label + (" (Using Quaternion)")} 
                     </div>
                     <div className="vector">
                         {
