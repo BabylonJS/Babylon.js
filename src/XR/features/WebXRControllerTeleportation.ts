@@ -26,6 +26,7 @@ import { Scene } from "../../scene";
 import { UtilityLayerRenderer } from "../../Rendering/utilityLayerRenderer";
 import { PointerEventTypes } from "../../Events/pointerEvents";
 import { setAndStartTimer } from "../../Misc/timer";
+import { LinesMesh } from "../../Meshes/linesMesh";
 
 /**
  * The options container for the teleportation module
@@ -114,6 +115,16 @@ export interface IWebXRTeleportationOptions {
      * Meshes that the teleportation ray cannot go through
      */
     pickBlockerMeshes?: AbstractMesh[];
+
+    /**
+     * Should teleport work only on a specific hand?
+     */
+    forceHandedness?: XRHandedness;
+
+    /**
+     * If provided, this function will be used to generate the ray mesh instead of the lines mesh being used per default
+     */
+    generateRayPathMesh?: (points: Vector3[]) => AbstractMesh;
 }
 
 /**
@@ -139,7 +150,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
     } = {};
     private _currentTeleportationControllerId: string;
     private _floorMeshes: AbstractMesh[];
-    private _quadraticBezierCurve: AbstractMesh;
+    private _quadraticBezierCurve: Nullable<AbstractMesh>;
     private _selectionFeature: Nullable<IWebXRFeature>;
     private _snapToPositions: Vector3[];
     private _snappedToPoint: boolean = false;
@@ -179,15 +190,45 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
      * Very helpful when moving between floors / different heights
      */
     public parabolicRayEnabled: boolean = true;
+
+    /**
+     * The second type of ray - straight line.
+     * Should it be enabled or should the parabolic line be the only one.
+     */
+    public straightRayEnabled: boolean = true;
     /**
      * How much rotation should be applied when rotating right and left
      */
     public rotationAngle: number = Math.PI / 8;
+
+    private _rotationEnabled: boolean = true;
+
     /**
      * Is rotation enabled when moving forward?
      * Disabling this feature will prevent the user from deciding the direction when teleporting
      */
-    public rotationEnabled: boolean = true;
+    public get rotationEnabled(): boolean {
+        return this._rotationEnabled;
+    }
+
+    /**
+     * Sets wether rotation is enabled or not
+     * @param enabled is rotation enabled when teleportation is shown
+     */
+    public set rotationEnabled(enabled: boolean) {
+        this._rotationEnabled = enabled;
+
+        if (this._options.teleportationTargetMesh) {
+            const children = this._options.teleportationTargetMesh.getChildMeshes(false, (node) => node.name === "rotationCone");
+            if (children[0]) {
+                children[0].setEnabled(enabled);
+            }
+        }
+    }
+
+    public get teleportationTargetMesh(): Nullable<AbstractMesh> {
+        return this._options.teleportationTargetMesh || null;
+    }
 
     /**
      * constructs a new anchor system
@@ -267,6 +308,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
 
         this._setTargetMeshVisibility(false);
         this._currentTeleportationControllerId = "";
+        this._controllers = {};
 
         return true;
     }
@@ -355,55 +397,57 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                 // set the ray and position
 
                 let hitPossible = false;
-                // first check if direct ray possible
-                controllerData.xrController.getWorldPointerRayToRef(this._tmpRay);
-                // pick grounds that are LOWER only. upper will use parabolic path
-                let pick = scene.pickWithRay(this._tmpRay, (o) => {
-                    // check for mesh-blockers
-                    if (this._options.pickBlockerMeshes && this._options.pickBlockerMeshes.indexOf(o) !== -1) {
-                        return true;
-                    }
-                    const index = this._floorMeshes.indexOf(o);
-                    if (index === -1) {
-                        return false;
-                    }
-                    return this._floorMeshes[index].absolutePosition.y < this._options.xrInput.xrCamera.position.y;
-                });
-                if (pick && pick.pickedMesh && this._options.pickBlockerMeshes && this._options.pickBlockerMeshes.indexOf(pick.pickedMesh) !== -1) {
-                    return;
-                } else if (pick && pick.pickedPoint) {
-                    hitPossible = true;
-                    this._setTargetMeshPosition(pick.pickedPoint);
-                    this._setTargetMeshVisibility(true);
-                    this._showParabolicPath(pick);
-                } else {
-                    if (this.parabolicRayEnabled) {
-                        // radius compensation according to pointer rotation around X
-                        const xRotation = controllerData.xrController.pointer.rotationQuaternion!.toEulerAngles().x;
-                        const compensation = 1 + (Math.PI / 2 - Math.abs(xRotation));
-                        // check parabolic ray
-                        const radius = this.parabolicCheckRadius * compensation;
-                        this._tmpRay.origin.addToRef(this._tmpRay.direction.scale(radius * 2), this._tmpVector);
-                        this._tmpVector.y = this._tmpRay.origin.y;
-                        this._tmpRay.origin.addInPlace(this._tmpRay.direction.scale(radius));
-                        this._tmpVector.subtractToRef(this._tmpRay.origin, this._tmpRay.direction);
-                        this._tmpRay.direction.normalize();
-
-                        let pick = scene.pickWithRay(this._tmpRay, (o) => {
-                            // check for mesh-blockers
-                            if (this._options.pickBlockerMeshes && this._options.pickBlockerMeshes.indexOf(o) !== -1) {
-                                return true;
-                            }
-                            return this._floorMeshes.indexOf(o) !== -1;
-                        });
-                        if (pick && pick.pickedMesh && this._options.pickBlockerMeshes && this._options.pickBlockerMeshes.indexOf(pick.pickedMesh) !== -1) {
-                            return;
-                        } else if (pick && pick.pickedPoint) {
-                            hitPossible = true;
-                            this._setTargetMeshPosition(pick.pickedPoint);
-                            this._setTargetMeshVisibility(true);
-                            this._showParabolicPath(pick);
+                if (this.straightRayEnabled) {
+                    // first check if direct ray possible
+                    controllerData.xrController.getWorldPointerRayToRef(this._tmpRay);
+                    // pick grounds that are LOWER only. upper will use parabolic path
+                    let pick = scene.pickWithRay(this._tmpRay, (o) => {
+                        // check for mesh-blockers
+                        if (this._options.pickBlockerMeshes && this._options.pickBlockerMeshes.indexOf(o) !== -1) {
+                            return true;
                         }
+                        const index = this._floorMeshes.indexOf(o);
+                        if (index === -1) {
+                            return false;
+                        }
+                        return this._floorMeshes[index].absolutePosition.y < this._options.xrInput.xrCamera.position.y;
+                    });
+                    if (pick && pick.pickedMesh && this._options.pickBlockerMeshes && this._options.pickBlockerMeshes.indexOf(pick.pickedMesh) !== -1) {
+                        return;
+                    } else if (pick && pick.pickedPoint) {
+                        hitPossible = true;
+                        this._setTargetMeshPosition(pick.pickedPoint);
+                        this._setTargetMeshVisibility(true);
+                        this._showParabolicPath(pick);
+                    }
+                }
+                // straight ray is still the main ray, but disabling the straight line will force parabolic line.
+                if (this.parabolicRayEnabled && !hitPossible) {
+                    // radius compensation according to pointer rotation around X
+                    const xRotation = controllerData.xrController.pointer.rotationQuaternion!.toEulerAngles().x;
+                    const compensation = 1 + (Math.PI / 2 - Math.abs(xRotation));
+                    // check parabolic ray
+                    const radius = this.parabolicCheckRadius * compensation;
+                    this._tmpRay.origin.addToRef(this._tmpRay.direction.scale(radius * 2), this._tmpVector);
+                    this._tmpVector.y = this._tmpRay.origin.y;
+                    this._tmpRay.origin.addInPlace(this._tmpRay.direction.scale(radius));
+                    this._tmpVector.subtractToRef(this._tmpRay.origin, this._tmpRay.direction);
+                    this._tmpRay.direction.normalize();
+
+                    let pick = scene.pickWithRay(this._tmpRay, (o) => {
+                        // check for mesh-blockers
+                        if (this._options.pickBlockerMeshes && this._options.pickBlockerMeshes.indexOf(o) !== -1) {
+                            return true;
+                        }
+                        return this._floorMeshes.indexOf(o) !== -1;
+                    });
+                    if (pick && pick.pickedMesh && this._options.pickBlockerMeshes && this._options.pickBlockerMeshes.indexOf(pick.pickedMesh) !== -1) {
+                        return;
+                    } else if (pick && pick.pickedPoint) {
+                        hitPossible = true;
+                        this._setTargetMeshPosition(pick.pickedPoint);
+                        this._setTargetMeshVisibility(true);
+                        this._showParabolicPath(pick);
                     }
                 }
 
@@ -418,7 +462,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
     }
 
     private _attachController = (xrController: WebXRInputSource) => {
-        if (this._controllers[xrController.uniqueId]) {
+        if (this._controllers[xrController.uniqueId] || (this._options.forceHandedness && xrController.inputSource.handedness !== this._options.forceHandedness)) {
             // already attached
             return;
         }
@@ -436,7 +480,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         // motion controller only available to gamepad-enabled input sources.
         if (controllerData.xrController.inputSource.targetRayMode === "tracked-pointer" && controllerData.xrController.inputSource.gamepad) {
             // motion controller support
-            xrController.onMotionControllerInitObservable.addOnce(() => {
+            const initMotionController = () => {
                 if (xrController.motionController) {
                     const movementController = xrController.motionController.getComponentOfType(WebXRControllerComponent.THUMBSTICK_TYPE) || xrController.motionController.getComponentOfType(WebXRControllerComponent.TOUCHPAD_TYPE);
                     if (!movementController || this._options.useMainComponentOnly) {
@@ -445,6 +489,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                         if (!mainComponent) {
                             return;
                         }
+                        controllerData.teleportationComponent = mainComponent;
                         controllerData.onButtonChangedObserver = mainComponent.onButtonStateChangedObservable.add(() => {
                             // did "pressed" changed?
                             if (mainComponent.changes.pressed) {
@@ -472,6 +517,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                             }
                         });
                     } else {
+                        controllerData.teleportationComponent = movementController;
                         // use thumbstick (or touchpad if thumbstick not available)
                         controllerData.onAxisChangedObserver = movementController.onAxisValueChangedObservable.add((axesData) => {
                             if (axesData.y <= 0.7 && controllerData.teleportationState.backwards) {
@@ -550,7 +596,14 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                         });
                     }
                 }
-            });
+            };
+            if (xrController.motionController) {
+                initMotionController();
+            } else {
+                xrController.onMotionControllerInitObservable.addOnce(() => {
+                    initMotionController();
+                });
+            }
         } else {
             this._xrSessionManager.scene.onPointerObservable.add((pointerInfo) => {
                 if (pointerInfo.type === PointerEventTypes.POINTERDOWN) {
@@ -580,15 +633,15 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         // set defaults
         this._options.defaultTargetMeshOptions = this._options.defaultTargetMeshOptions || {};
         const sceneToRenderTo = this._options.useUtilityLayer ? this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene : this._xrSessionManager.scene;
-        let teleportationTarget = GroundBuilder.CreateGround("teleportationTarget", { width: 2, height: 2, subdivisions: 2 }, sceneToRenderTo);
+        const teleportationTarget = GroundBuilder.CreateGround("teleportationTarget", { width: 2, height: 2, subdivisions: 2 }, sceneToRenderTo);
         teleportationTarget.isPickable = false;
-        let length = 512;
-        let dynamicTexture = new DynamicTexture("teleportationPlaneDynamicTexture", length, sceneToRenderTo, true);
+        const length = 512;
+        const dynamicTexture = new DynamicTexture("teleportationPlaneDynamicTexture", length, sceneToRenderTo, true);
         dynamicTexture.hasAlpha = true;
-        let context = dynamicTexture.getContext();
-        let centerX = length / 2;
-        let centerY = length / 2;
-        let radius = 200;
+        const context = dynamicTexture.getContext();
+        const centerX = length / 2;
+        const centerY = length / 2;
+        const radius = 200;
         context.beginPath();
         context.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
         context.fillStyle = this._options.defaultTargetMeshOptions.teleportationFillColor || "#444444";
@@ -601,7 +654,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         const teleportationCircleMaterial = new StandardMaterial("teleportationPlaneMaterial", sceneToRenderTo);
         teleportationCircleMaterial.diffuseTexture = dynamicTexture;
         teleportationTarget.material = teleportationCircleMaterial;
-        let torus = TorusBuilder.CreateTorus(
+        const torus = TorusBuilder.CreateTorus(
             "torusTeleportation",
             {
                 diameter: 0.75,
@@ -613,8 +666,8 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         torus.isPickable = false;
         torus.parent = teleportationTarget;
         if (!this._options.defaultTargetMeshOptions.disableAnimation) {
-            let animationInnerCircle = new Animation("animationInnerCircle", "position.y", 30, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CYCLE);
-            let keys = [];
+            const animationInnerCircle = new Animation("animationInnerCircle", "position.y", 30, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CYCLE);
+            const keys = [];
             keys.push({
                 frame: 0,
                 value: 0,
@@ -628,7 +681,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                 value: 0,
             });
             animationInnerCircle.setKeys(keys);
-            let easingFunction = new SineEase();
+            const easingFunction = new SineEase();
             easingFunction.setEasingMode(EasingFunction.EASINGMODE_EASEINOUT);
             animationInnerCircle.setEasingFunction(easingFunction);
             torus.animations = [];
@@ -636,7 +689,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
             sceneToRenderTo.beginAnimation(torus, 0, 60, true);
         }
 
-        var cone = CylinderBuilder.CreateCylinder("cone", { diameterTop: 0, tessellation: 4 }, sceneToRenderTo);
+        const cone = CylinderBuilder.CreateCylinder("rotationCone", { diameterTop: 0, tessellation: 4 }, sceneToRenderTo);
         cone.isPickable = false;
         cone.scaling.set(0.5, 0.12, 0.2);
 
@@ -734,6 +787,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         if (!visible) {
             if (this._quadraticBezierCurve) {
                 this._quadraticBezierCurve.dispose();
+                this._quadraticBezierCurve = null;
             }
             if (this._selectionFeature) {
                 this._selectionFeature.attach();
@@ -753,12 +807,11 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         const controllerData = this._controllers[this._currentTeleportationControllerId];
 
         const quadraticBezierVectors = Curve3.CreateQuadraticBezier(controllerData.xrController.pointer.absolutePosition, pickInfo.ray!.origin, pickInfo.pickedPoint, 25);
-
-        if (this._quadraticBezierCurve) {
-            this._quadraticBezierCurve.dispose();
+        if (!this._options.generateRayPathMesh) {
+            this._quadraticBezierCurve = LinesBuilder.CreateLines("teleportation path line", { points: quadraticBezierVectors.getPoints(), instance: this._quadraticBezierCurve as LinesMesh, updatable: true });
+        } else {
+            this._quadraticBezierCurve = this._options.generateRayPathMesh(quadraticBezierVectors.getPoints());
         }
-
-        this._quadraticBezierCurve = LinesBuilder.CreateLines("path line", { points: quadraticBezierVectors.getPoints() });
         this._quadraticBezierCurve.isPickable = false;
     }
 
