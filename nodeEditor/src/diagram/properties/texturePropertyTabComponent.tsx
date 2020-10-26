@@ -198,13 +198,13 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                         this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                     }}/> 
                     {
-                        texture && !isInReflectionMode &&
+                        !isInReflectionMode &&
                         <CheckBoxLineComponent label="Convert to gamma space" propertyName="convertToGammaSpace" target={this.props.block} onValueChanged={() => {                        
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         }}/>
                     }
                     {
-                        texture && !isInReflectionMode &&
+                        !isInReflectionMode &&
                         <CheckBoxLineComponent label="Convert to linear space" propertyName="convertToLinearSpace" target={this.props.block} onValueChanged={() => {                        
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         }}/>
