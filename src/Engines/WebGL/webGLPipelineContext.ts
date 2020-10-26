@@ -191,6 +191,51 @@ export class WebGLPipelineContext implements IPipelineContext {
     }
 
     /**
+     * Sets a int2 on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param x First int in int2.
+     * @param y Second int in int2.
+     */
+    public setInt2(uniformName: string, x: number, y: number): void {
+        if (this._cacheFloat2(uniformName, x, y)) {
+            if (!this.engine.setInt2(this._uniforms[uniformName], x, y)) {
+                this._valueCache[uniformName] = null;
+            }
+        }
+    }
+
+    /**
+     * Sets a int3 on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param x First int in int3.
+     * @param y Second int in int3.
+     * @param y Third int in int3.
+     */
+    public setInt3(uniformName: string, x: number, y: number, z: number): void {
+        if (this._cacheFloat3(uniformName, x, y, z)) {
+            if (!this.engine.setInt3(this._uniforms[uniformName], x, y, z)) {
+                this._valueCache[uniformName] = null;
+            }
+        }
+    }
+
+    /**
+     * Sets a int4 on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param x First int in int4.
+     * @param y Second int in int4.
+     * @param y Third int in int4.
+     * @param w Fourth int in int4.
+     */
+    public setInt4(uniformName: string, x: number, y: number, z: number, w: number): void {
+        if (this._cacheFloat4(uniformName, x, y, z, w)) {
+            if (!this.engine.setInt4(this._uniforms[uniformName], x, y, z, w)) {
+                this._valueCache[uniformName] = null;
+            }
+        }
+    }
+
+    /**
      * Sets an int array on a uniform variable.
      * @param uniformName Name of the variable.
      * @param array array to be set.

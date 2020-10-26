@@ -2478,6 +2478,60 @@ export class ThinEngine {
     }
 
     /**
+     * Set the value of an uniform to a int2
+     * @param uniform defines the webGL uniform location where to store the value
+     * @param x defines the 1st component of the value
+     * @param y defines the 2nd component of the value
+     * @returns true if the value was set
+     */
+    public setInt2(uniform: Nullable<WebGLUniformLocation>, x: number, y: number): boolean {
+        if (!uniform) {
+            return false;
+        }
+
+        this._gl.uniform2i(uniform, x, y);
+
+        return true;
+    }
+
+    /**
+     * Set the value of an uniform to a int3
+     * @param uniform defines the webGL uniform location where to store the value
+     * @param x defines the 1st component of the value
+     * @param y defines the 2nd component of the value
+     * @param z defines the 3rd component of the value
+     * @returns true if the value was set
+     */
+    public setInt3(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number): boolean {
+        if (!uniform) {
+            return false;
+        }
+
+        this._gl.uniform3i(uniform, x, y, z);
+
+        return true;
+    }
+
+    /**
+     * Set the value of an uniform to a int4
+     * @param uniform defines the webGL uniform location where to store the value
+     * @param x defines the 1st component of the value
+     * @param y defines the 2nd component of the value
+     * @param z defines the 3rd component of the value
+     * @param w defines the 4th component of the value
+     * @returns true if the value was set
+     */
+    public setInt4(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number, w: number): boolean {
+        if (!uniform) {
+            return false;
+        }
+
+        this._gl.uniform4i(uniform, x, y, z, w);
+
+        return true;
+    }
+
+    /**
      * Set the value of an uniform to an array of int32
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of int32 to store
