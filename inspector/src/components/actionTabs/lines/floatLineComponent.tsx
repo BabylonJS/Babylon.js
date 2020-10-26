@@ -155,7 +155,12 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                                     this.props.onEnter(this._store);
                                 }
                             }}
-                            value={this.state.value} onBlur={() => this.unlock()} onFocus={() => this.lock()} onChange={evt => this.updateValue(evt.target.value)} />
+                            value={this.state.value} onBlur={() => {
+                                this.unlock();
+                                if(this.props.onEnter) {
+                                    this.props.onEnter(this._store);
+                                }
+                            }} onFocus={() => this.lock()} onChange={evt => this.updateValue(evt.target.value)} />
                         </div>
                     </div>
                 }
