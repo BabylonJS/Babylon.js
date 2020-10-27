@@ -227,6 +227,7 @@
 - Pointer selection improvements - single/dual hand selection, max ray distance and more ([#7974](https://github.com/BabylonJS/Babylon.js/issues/7974)) ([RaananW](https://github.com/RaananW))
 - Updated Plane Detection API ([RaananW](https://github.com/RaananW))
 - Updated anchor system's promise resolution and API ([#9258](https://github.com/BabylonJS/Babylon.js/issues/9258)) ([RaananW](https://github.com/RaananW))
+- Fixed an issue with teleportation re-attachment ([#9273](https://github.com/BabylonJS/Babylon.js/issues/9273)) ([RaananW](https://github.com/RaananW))
 
 ### Collisions
 
