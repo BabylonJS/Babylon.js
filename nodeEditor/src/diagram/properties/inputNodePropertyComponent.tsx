@@ -96,12 +96,26 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                     <Vector2PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
                 );
             case NodeMaterialBlockConnectionPointTypes.Color3:
-                return (
-                    <Color3PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
-                );
+                return (<>
+                        <Color3PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
+                        <CheckBoxLineComponent label="Convert to gamma space" propertyName="convertToGammaSpace" target={this.props.block} onValueChanged={() => {
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        }}/>
+                        <CheckBoxLineComponent label="Convert to linear space" propertyName="convertToLinearSpace" target={this.props.block} onValueChanged={() => {
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        }}/>
+                        </>
+            );
             case NodeMaterialBlockConnectionPointTypes.Color4:
-                return (
-                    <Color4PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
+                return (<>
+                        <Color4PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
+                        <CheckBoxLineComponent label="Convert to gamma space" propertyName="convertToGammaSpace" target={this.props.block} onValueChanged={() => {
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        }}/>
+                        <CheckBoxLineComponent label="Convert to linear space" propertyName="convertToLinearSpace" target={this.props.block} onValueChanged={() => {
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        }}/>
+                        </>
                 );
             case NodeMaterialBlockConnectionPointTypes.Vector3:
                 return (
