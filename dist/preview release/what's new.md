@@ -58,6 +58,7 @@
 - Removed all references to HTML element from cameras' attach and detach control functions ([RaananW](https://github.com/RaananW))
 - Added `boundingBoxRenderer.onResourcesReadyObservable` ([aWeirdo](https://github.com/aWeirdo))
 - Added `copyTools.GenerateBase64StringFromTexture` ([aWeirdo](https://github.com/aWeirdo))
+- Updated `axisScaleGizmo` to follow pointer on drag ([aWeirdo](https://github.com/aWeirdo))
 
 ### Engine
 
@@ -226,6 +227,8 @@
 - Individual post processing can be applied to the XR rig cameras ([#9038](https://github.com/BabylonJS/Babylon.js/issues/9038)) ([RaananW](https://github.com/RaananW))
 - Pointer selection improvements - single/dual hand selection, max ray distance and more ([#7974](https://github.com/BabylonJS/Babylon.js/issues/7974)) ([RaananW](https://github.com/RaananW))
 - Updated Plane Detection API ([RaananW](https://github.com/RaananW))
+- Updated anchor system's promise resolution and API ([#9258](https://github.com/BabylonJS/Babylon.js/issues/9258)) ([RaananW](https://github.com/RaananW))
+- Fixed an issue with teleportation re-attachment ([#9273](https://github.com/BabylonJS/Babylon.js/issues/9273)) ([RaananW](https://github.com/RaananW))
 
 ### Collisions
 
@@ -345,6 +348,7 @@
 - Fixed bug in sphereBuilder where top and bottom segments added 6 indices per triangle instead of 3. (use option dedupTopBottomIndices to enable it) ([aWeirdo](https://github.com/aWeirdo))
 - Fixed issue with Babylon scene export of loaded glTF meshes.([Drigax]/(https://github.com/drigax))
 - Fixed an issue with text block wrap and unicode strings (not working in IE11) ([#8822](https://github.com/BabylonJS/Babylon.js/issues/8822)) ([RaananW](https://github.com/RaananW))
+- Fixed an issue with input text and input password and unicode strings (not working in IE11) ([#9242](https://github.com/BabylonJS/Babylon.js/issues/9242)) ([Popov72](https://github.com/Popov72))
 - Fixed an issue with compound initialization that has rotation ([#8744](https://github.com/BabylonJS/Babylon.js/issues/8744)) ([RaananW](https://github.com/RaananW))
 - Fixed an issue in `DeviceSourceManager.getDeviceSources()` where null devices are returned ([Drigax](https://github.com/drigax))
 - Fix issue in glTF2 `_Exporter.createSkinsAsync()` that exported an incorrect joint indexing list ([drigax](https://github.com/drigax))
@@ -360,6 +364,7 @@
 - Take first gamepad connected when attaching camera (and not only XBOX gamepads) ([#9136](https://github.com/BabylonJS/Babylon.js/issues/9136)) ([RaananW](https://github.com/RaananW))
 - Fixed bug in `Mesh.IncreaseVertices` assuming null value if a property didn't exist. ([aWeirdo](https://github.com/aWeirdo))
 - Fix issue when taking a screenshot with multi-cameras using method `CreateScreenshotUsingRenderTarget` ([#9201](https://github.com/BabylonJS/Babylon.js/issues/9201)) ([gabrielheming](https://github.com/gabrielheming))
+- Fix inTangent in animationGroup ([dad72](https://github.com/dad72))
 
 ## Breaking changes
 
@@ -373,3 +378,4 @@
 - Fix width/height GUI container computation to take into account paddings when `adaptWithToChildren = true` ([Popov72](https://github.com/Popov72))
 - `smoothstep` in NME is now taking any type of parameters for its `value` input. If you use generated code from the NME ("Generate code" button), you may have to move the smoothstep output connection AFTER the input connections ([Popov72](https://github.com/Popov72))
 - `SoundTrack.RemoveSound` and `SoundTrack.AddSound` were renamed to `SoundTrack.removeSound` and `SoundTrack.addSound` ([Deltakosh](https://github.com/deltakosh))
+- `PolygonPoints.add` no longer filters out points that are close to the first point ([bghgary](https://github.com/bghgary))

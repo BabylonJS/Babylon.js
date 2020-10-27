@@ -11798,6 +11798,10 @@ declare module BABYLON {
         groupInInspector: string;
         /** Gets an observable raised when the value is changed */
         onValueChangedObservable: Observable<InputBlock>;
+        /** Gets or sets a boolean indicating if content needs to be converted to gamma space (for color3/4 only) */
+        convertToGammaSpace: boolean;
+        /** Gets or sets a boolean indicating if content needs to be converted to linear space (for color3/4 only) */
+        convertToLinearSpace: boolean;
         /**
          * Gets or sets the connection point type (default is float)
          */
@@ -19931,6 +19935,7 @@ declare module BABYLON {
         SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
         SS_ALBEDOFORREFRACTIONTINT: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
+        SS_MASK_FROM_THICKNESS_TEXTURE_GLTF: boolean;
         /** @hidden */
         _areTexturesDirty: boolean;
     }
@@ -20054,6 +20059,14 @@ declare module BABYLON {
          */
         useMaskFromThicknessTexture: boolean;
         private _scene;
+        private _useMaskFromThicknessTextureGltf;
+        /**
+         * Stores the intensity of the different subsurface effects in the thickness texture. This variation
+         * matches the channel-packing that is used by glTF.
+         * * the red channel is the transmission/translucency intensity.
+         * * the green channel is the thickness.
+         */
+        useMaskFromThicknessTextureGltf: boolean;
         /** @hidden */
         private _internalMarkAllSubMeshesAsTexturesDirty;
         private _internalMarkScenePrePassDirty;
@@ -20932,6 +20945,7 @@ declare module BABYLON {
         SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
         SS_ALBEDOFORREFRACTIONTINT: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
+        SS_MASK_FROM_THICKNESS_TEXTURE_GLTF: boolean;
         UNLIT: boolean;
         DEBUGMODE: number;
         /**
@@ -23135,27 +23149,6 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    /** @hidden */
-    export var imageProcessingCompatibility: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /** @hidden */
-    export var spritesPixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /** @hidden */
-    export var spritesVertexShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
     /**
      * ThinSprite Class used to represent a thin sprite
      * This is the base class for sprites but can also directly be used with ThinEngine
@@ -23203,10 +23196,10 @@ declare module BABYLON {
         /** @hidden */
         _ySize: number;
         private _animationStarted;
-        private _loopAnimation;
-        private _fromIndex;
-        private _toIndex;
-        private _delay;
+        protected _loopAnimation: boolean;
+        protected _fromIndex: number;
+        protected _toIndex: number;
+        protected _delay: number;
         private _direction;
         private _time;
         private _onBaseAnimationEnd;
@@ -23228,6 +23221,27 @@ declare module BABYLON {
         /** @hidden */
         _animate(deltaTime: number): void;
     }
+}
+declare module BABYLON {
+    /** @hidden */
+    export var imageProcessingCompatibility: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var spritesPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var spritesVertexShader: {
+        name: string;
+        shader: string;
+    };
 }
 declare module BABYLON {
     /**
@@ -23591,12 +23605,16 @@ declare module BABYLON {
          */
         getClassName(): string;
         /** Gets or sets the initial key for the animation (setting it will restart the animation)  */
+        get fromIndex(): number;
         set fromIndex(value: number);
         /** Gets or sets the end key for the animation (setting it will restart the animation)  */
+        get toIndex(): number;
         set toIndex(value: number);
         /** Gets or sets a boolean indicating if the animation is looping (setting it will restart the animation)  */
+        get loopAnimation(): boolean;
         set loopAnimation(value: boolean);
         /** Gets or sets the delay between cell changes (setting it will restart the animation)  */
+        get delay(): number;
         set delay(value: number);
         /**
          * Starts an animation
@@ -38762,13 +38780,13 @@ declare module BABYLON {
             /**
              * Update the content of a dynamic texture
              * @param texture defines the texture to update
-             * @param canvas defines the canvas containing the source
+             * @param source defines the source containing the data
              * @param invertY defines if data must be stored with Y axis inverted
              * @param premulAlpha defines if alpha is stored as premultiplied
              * @param format defines the format of the data
              * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
              */
-            updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement | OffscreenCanvas, invertY: boolean, premulAlpha?: boolean, format?: number, forceBindTexture?: boolean): void;
+            updateDynamicTexture(texture: Nullable<InternalTexture>, source: ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | OffscreenCanvas, invertY?: boolean, premulAlpha?: boolean, format?: number, forceBindTexture?: boolean): void;
         }
 }
 declare module BABYLON {
@@ -40148,6 +40166,8 @@ declare module BABYLON {
          * Gets the URL used to load this texture
          */
         url: string;
+        /** @hidden */
+        _originalUrl: string;
         /**
          * Gets the sampling mode of the texture
          */
@@ -53091,6 +53111,14 @@ declare module BABYLON {
          * Meshes that the teleportation ray cannot go through
          */
         pickBlockerMeshes?: AbstractMesh[];
+        /**
+         * Should teleport work only on a specific hand?
+         */
+        forceHandedness?: XRHandedness;
+        /**
+         * If provided, this function will be used to generate the ray mesh instead of the lines mesh being used per default
+         */
+        generateRayPathMesh?: (points: Vector3[]) => AbstractMesh;
     }
     /**
      * This is a teleportation feature to be used with WebXR-enabled motion controllers.
@@ -53141,14 +53169,29 @@ declare module BABYLON {
          */
         parabolicRayEnabled: boolean;
         /**
+         * The second type of ray - straight line.
+         * Should it be enabled or should the parabolic line be the only one.
+         */
+        straightRayEnabled: boolean;
+        /**
          * How much rotation should be applied when rotating right and left
          */
         rotationAngle: number;
+        private _rotationEnabled;
         /**
          * Is rotation enabled when moving forward?
          * Disabling this feature will prevent the user from deciding the direction when teleporting
          */
-        rotationEnabled: boolean;
+        get rotationEnabled(): boolean;
+        /**
+         * Sets wether rotation is enabled or not
+         * @param enabled is rotation enabled when teleportation is shown
+         */
+        set rotationEnabled(enabled: boolean);
+        /**
+         * Exposes the currently set teleportation target mesh.
+         */
+        get teleportationTargetMesh(): Nullable<AbstractMesh>;
         /**
          * constructs a new anchor system
          * @param _xrSessionManager an instance of WebXRSessionManager
@@ -76091,6 +76134,10 @@ declare module BABYLON {
          * if defined, this object will be constantly updated by the anchor's position and rotation
          */
         attachedNode?: TransformNode;
+        /**
+         * Remove this anchor from the scene
+         */
+        remove(): void;
     }
     /**
      * An implementation of the anchor system for WebXR.
@@ -76147,9 +76194,9 @@ declare module BABYLON {
          * @param hitTestResult The hit test result to use for this anchor creation
          * @param position an optional position offset for this anchor
          * @param rotationQuaternion an optional rotation offset for this anchor
-         * @returns A promise that fulfills when the XR anchor was registered in the system (but not necessarily added to the tracked anchors)
+         * @returns A promise that fulfills when babylon has created the corresponding WebXRAnchor object and tracking has begun
          */
-        addAnchorPointUsingHitTestResultAsync(hitTestResult: IWebXRHitResult, position?: Vector3, rotationQuaternion?: Quaternion): Promise<XRAnchor>;
+        addAnchorPointUsingHitTestResultAsync(hitTestResult: IWebXRHitResult, position?: Vector3, rotationQuaternion?: Quaternion): Promise<IWebXRAnchor>;
         /**
          * Add a new anchor at a specific position and rotation
          * This function will add a new anchor per default in the next available frame. Unless forced, the createAnchor function
@@ -76160,9 +76207,13 @@ declare module BABYLON {
          * @param position the position in which to add an anchor
          * @param rotationQuaternion an optional rotation for the anchor transformation
          * @param forceCreateInCurrentFrame force the creation of this anchor in the current frame. Must be called inside xrFrame loop!
-         * @returns A promise that fulfills when the XR anchor was registered in the system (but not necessarily added to the tracked anchors)
+         * @returns A promise that fulfills when babylon has created the corresponding WebXRAnchor object and tracking has begun
          */
-        addAnchorAtPositionAndRotationAsync(position: Vector3, rotationQuaternion?: Quaternion, forceCreateInCurrentFrame?: boolean): Promise<XRAnchor>;
+        addAnchorAtPositionAndRotationAsync(position: Vector3, rotationQuaternion?: Quaternion, forceCreateInCurrentFrame?: boolean): Promise<IWebXRAnchor>;
+        /**
+         * Get the list of anchors currently being tracked by the system
+         */
+        get anchors(): IWebXRAnchor[];
         /**
          * detach this feature.
          * Will usually be called by the features manager
@@ -79929,12 +79980,27 @@ declare module BABYLON.GUI {
     }
 }
 declare module BABYLON.GUI {
+    /** @hidden */
+    export class TextWrapper {
+        private _text;
+        private _characters;
+        get text(): string;
+        set text(txt: string);
+        get length(): number;
+        removePart(idxStart: number, idxEnd: number, insertTxt?: string): void;
+        charAt(idx: number): string;
+        substr(from: number, length?: number): string;
+        substring(from: number, to?: number): string;
+        isWord(index: number): boolean;
+    }
+}
+declare module BABYLON.GUI {
     /**
      * Class used to create input text control
      */
     export class InputText extends Control implements IFocusableControl {
         name?: string | undefined;
-        private _text;
+        private _textWrapper;
         private _placeholderText;
         private _background;
         private _focusedBackground;
@@ -80044,6 +80110,7 @@ declare module BABYLON.GUI {
         /** Gets or sets the text displayed in the control */
         get text(): string;
         set text(value: string);
+        private _textHasChanged;
         /** Gets or sets control width */
         get width(): string | number;
         set width(value: string | number);
@@ -80086,7 +80153,7 @@ declare module BABYLON.GUI {
         _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
         _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number, pi: BABYLON.PointerInfoBase): void;
         _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
-        protected _beforeRenderText(text: string): string;
+        protected _beforeRenderText(textWrapper: TextWrapper): TextWrapper;
         dispose(): void;
     }
 }
@@ -80319,7 +80386,7 @@ declare module BABYLON.GUI {
      * Class used to create a password control
      */
     export class InputPassword extends InputText {
-        protected _beforeRenderText(text: string): string;
+        protected _beforeRenderText(textWrapper: TextWrapper): TextWrapper;
     }
 }
 declare module BABYLON.GUI {
@@ -84104,6 +84171,34 @@ declare module BABYLON.GLTF2.Loader.Extensions {
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
     /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1825)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_materials_translucency implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /**
+         * Defines a number that determines the order the extensions are applied.
+         */
+        order: number;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
+        private _loadTranslucentPropertiesAsync;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
      * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_mesh_quantization)
      */
     export class KHR_mesh_quantization implements IGLTFLoaderExtension {
@@ -86949,6 +87044,17 @@ declare module BABYLON.GLTF2 {
     interface IKHRMaterialsTransmission {
         transmissionFactor?: number;
         transmissionTexture?: ITextureInfo;
+    }
+
+    /**
+     * Interfaces from the KHR_materials_translucency extension
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+
+    /** @hidden */
+    interface IKHRMaterialsTranslucency {
+        translucencyFactor?: number;
+        translucencyTexture?: ITextureInfo;
     }
 
     /**

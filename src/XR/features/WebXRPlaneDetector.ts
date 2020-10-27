@@ -160,7 +160,7 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
             toRemove.forEach((index) => {
                 const plane = this._detectedPlanes.splice(index - idxTracker, 1)[0];
                 this.onPlaneRemovedObservable.notifyObservers(plane);
-                idxTracker--;
+                idxTracker++;
             });
             // now check for new ones
             detectedPlanes.forEach((xrPlane) => {
