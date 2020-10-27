@@ -270,7 +270,7 @@ export class WebGPUEngine extends Engine {
         this._lockstepMaxSteps = options.lockstepMaxSteps;
         this._timeStep = options.timeStep || 1 / 60;
 
-        this._doNotHandleContextLost = true;
+        this._doNotHandleContextLost = false;
 
         this._canvas = canvas;
         this._options = options;
