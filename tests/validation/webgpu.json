@@ -105,6 +105,10 @@
             "title": "cascaded shadow maps and flying saucers",
             "renderCount": 10,
             "playgroundId": "#IIZ9UU#40"
+        },
+        {
+            "title": "sprite maps",
+            "playgroundId": "#PIVJ45#4"
         }
     ]
 }
