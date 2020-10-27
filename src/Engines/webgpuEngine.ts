@@ -1666,7 +1666,6 @@ export class WebGPUEngine extends Engine {
 
             // Video
             if ((<VideoTexture>texture).video) {
-                this._activeChannel = channel;
                 (<VideoTexture>texture).update();
             } else if (texture.delayLoadState === Constants.DELAYLOADSTATE_NOTLOADED) { // Delay loading
                 texture.delayLoad();
@@ -1761,10 +1760,6 @@ export class WebGPUEngine extends Engine {
     public bindSamplers(effect: Effect): void { }
 
     public _bindTextureDirectly(target: number, texture: InternalTexture, forTextureDataUpdate = false, force = false): boolean {
-        if (this._boundTexturesCache[this._activeChannel] !== texture) {
-            this._boundTexturesCache[this._activeChannel] = texture;
-            return true;
-        }
         return false;
     }
 
@@ -1777,8 +1772,6 @@ export class WebGPUEngine extends Engine {
         if (texture) {
             texture._associatedChannel = channel;
         }
-
-        this._activeChannel = channel;
 
         this._setInternalTexture(name, texture);
     }
