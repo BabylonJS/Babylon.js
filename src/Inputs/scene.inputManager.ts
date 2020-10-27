@@ -803,7 +803,6 @@ export class InputManager {
             }
         };
 
-        //this._deviceSourceManager.onDeviceConnectedObservable.add((device) => {
         this._deviceInputSystem.onInputChanged = (deviceType, deviceSlot, inputIndex, previousState, currentState) => {
             let isKeyboardActive = false;
             try {
