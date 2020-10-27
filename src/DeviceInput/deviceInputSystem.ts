@@ -152,8 +152,8 @@ export class DeviceInputSystem implements IDisposable {
     public dispose() {
         // Keyboard Events
         if (this._keyboardActive) {
-            this._elementToAttachTo.removeEventListener("keydown", this._keyboardDownEvent);
-            this._elementToAttachTo.removeEventListener("keyup", this._keyboardUpEvent);
+            window.removeEventListener("keydown", this._keyboardDownEvent);
+            window.removeEventListener("keyup", this._keyboardUpEvent);
         }
 
         // Pointer Events
@@ -283,8 +283,8 @@ export class DeviceInputSystem implements IDisposable {
             }
         });
 
-        this._elementToAttachTo.addEventListener("keydown", this._keyboardDownEvent);
-        this._elementToAttachTo.addEventListener("keyup", this._keyboardUpEvent);
+        window.addEventListener("keydown", this._keyboardDownEvent);
+        window.addEventListener("keyup", this._keyboardUpEvent);
     }
 
     /**

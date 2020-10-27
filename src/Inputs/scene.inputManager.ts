@@ -819,7 +819,7 @@ export class InputManager {
 
             const evt = {
                 target: elementToAttachTo,
-                preventDefault: () => {},
+                preventDefault: () => { },
                 altKey: altKey,
                 ctrlKey: ctrlKey,
                 metaKey: metaKey,
@@ -828,25 +828,27 @@ export class InputManager {
 
             // Keyboard Events
             if (deviceType === DeviceType.Keyboard) {
-                if (elementToAttachTo && document.activeElement === elementToAttachTo) {
-                    Object.defineProperties(evt, {
-                        key: {
-                            value: String.fromCharCode(inputIndex)
-                        },
-                        keyCode: {
-                            value: inputIndex
-                        }
-                    });
+                if (!elementToAttachTo || document.activeElement !== elementToAttachTo) {
+                    return;
+                }
 
-                    if (currentState == 1) {
-                        Object.defineProperty(evt, 'type', {value: "keydown"});
-                        this._onKeyDown((evt as IKeyboardEvent));
+                Object.defineProperties(evt, {
+                    key: {
+                        value: String.fromCharCode(inputIndex)
+                    },
+                    keyCode: {
+                        value: inputIndex
                     }
+                });
 
-                    if (currentState == 0) {
-                        Object.defineProperty(evt, 'type', {value: "keyup"});
-                        this._onKeyUp((evt as IKeyboardEvent));
-                    }
+                if (currentState == 1) {
+                    Object.defineProperty(evt, 'type', { value: "keydown" });
+                    this._onKeyDown((evt as IKeyboardEvent));
+                }
+
+                if (currentState == 0) {
+                    Object.defineProperty(evt, 'type', { value: "keyup" });
+                    this._onKeyUp((evt as IKeyboardEvent));
                 }
             }
 
@@ -918,7 +920,7 @@ export class InputManager {
 
                 if (attachMove) {
                     if (inputIndex == PointerInput.Horizontal || inputIndex === PointerInput.Vertical || inputIndex === PointerInput.DeltaHorizontal || inputIndex === PointerInput.DeltaVertical) {
-                        Object.defineProperty(evt, 'type', {value: "pointermove"});
+                        Object.defineProperty(evt, 'type', { value: "pointermove" });
                         this._onPointerMove((evt as IPointerEvent));
                     }
                     else if (inputIndex === PointerInput.MouseWheelX || inputIndex === PointerInput.MouseWheelY || inputIndex === PointerInput.MouseWheelZ) {
