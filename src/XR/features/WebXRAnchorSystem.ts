@@ -225,6 +225,13 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
     }
 
     /**
+     * Get the list of anchors currently being tracked by the system
+     */
+    public get anchors(): IWebXRAnchor[] {
+        return this._trackedAnchors;
+    }
+
+    /**
      * detach this feature.
      * Will usually be called by the features manager
      *
@@ -239,6 +246,13 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
             while (this._trackedAnchors.length) {
                 const toRemove = this._trackedAnchors.pop();
                 if (toRemove) {
+                    try {
+                        // try to natively remove it as well
+                        toRemove.remove();
+                    } catch (e) {
+                        // no-op
+                    }
+                    // as the xr frame loop is removed, we need to notify manually
                     this.onAnchorRemovedObservable.notifyObservers(toRemove);
                 }
             }
@@ -275,7 +289,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
             toRemove.forEach((index) => {
                 const anchor = this._trackedAnchors.splice(index - idxTracker, 1)[0];
                 this.onAnchorRemovedObservable.notifyObservers(anchor);
-                idxTracker--;
+                idxTracker++;
             });
             // now check for new ones
             trackedAnchors.forEach((xrAnchor) => {
