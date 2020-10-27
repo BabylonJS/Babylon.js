@@ -9,14 +9,12 @@ import { Camera } from "../Cameras/camera";
 import { Texture } from "../Materials/Textures/texture";
 import { SceneComponentConstants } from "../sceneComponent";
 import { Logger } from "../Misc/logger";
-
-import "../Shaders/sprites.fragment";
-import "../Shaders/sprites.vertex";
 import { Engine } from '../Engines/engine';
 import { WebRequest } from '../Misc/webRequest';
 import { SpriteRenderer } from './spriteRenderer';
 import { ThinSprite } from './thinSprite';
 import { ISize } from '../Maths/math.size';
+
 declare type Ray = import("../Culling/ray").Ray;
 
 /**
@@ -264,7 +262,7 @@ export class SpriteManager implements ISpriteManager {
         this.uniqueId = this.scene.getUniqueId();
 
         if (imgUrl) {
-            this._spriteRenderer.texture = new Texture(imgUrl, scene, true, false, samplingMode);
+            this.texture = new Texture(imgUrl, scene, true, false, samplingMode);
         }
 
         if (this._fromPacked) {

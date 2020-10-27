@@ -720,14 +720,11 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
                 var onLoadObservable = (texture as any).onLoadObservable as Observable<BaseTexture>;
 
                 if (onLoadObservable) {
-                    let onLoadCallback = () => {
-                        onLoadObservable.removeCallback(onLoadCallback);
+                    onLoadObservable.addOnce(() => {
                         if (--numRemaining === 0) {
                             callback();
                         }
-                    };
-
-                    onLoadObservable.add(onLoadCallback);
+                    });
                 }
             }
         }
