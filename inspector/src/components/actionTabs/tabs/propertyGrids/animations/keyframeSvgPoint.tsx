@@ -6,13 +6,21 @@ const keyInactive = require("./assets/keyInactiveIcon.svg") as string;
 const keySelected = require("./assets/keySelectedIcon.svg") as string;
 
 export interface IKeyframeSvgPoint {
+    // Keyframe point to render in svg canvas
     keyframePoint: Vector2;
+    // Right control point (controls curve)
     rightControlPoint: Vector2 | null;
+    // Left control point (controls curve)
     leftControlPoint: Vector2 | null;
+    // svg keyframe id
     id: string;
+    // If the keyframe is selected on canvas
     selected: boolean;
+    // I the left control point is being dragged or active
     isLeftActive: boolean;
+    // I the right control point is being dragged or active
     isRightActive: boolean;
+    // The parent curve id
     curveId?: ICurveMetaData;
 }
 
@@ -23,15 +31,25 @@ export interface ICurveMetaData {
 }
 
 interface IKeyframeSvgPointProps {
+    // Keyframe point to render in svg canvas
     keyframePoint: Vector2;
+    // Left control point (controls curve)
     leftControlPoint: Vector2 | null;
+    // Right control point (controls curve)
     rightControlPoint: Vector2 | null;
+    // svg keyframe id
     id: string;
+    // If the keyframe is selected on canvas
     selected: boolean;
+    // Select keyframe and mode of selection
     selectKeyframe: (id: string, multiselect: boolean) => void;
+    // Returns the id of the selected keyframe and its animation property type
     selectedControlPoint: (type: string, id: string) => void;
+    // I the left control point is being dragged or active
     isLeftActive: boolean;
+    // I the right control point is being dragged or active
     isRightActive: boolean;
+    // Current visible frames in canvas
     framesInCanvasView: { from: number; to: number };
 }
 
@@ -61,22 +79,8 @@ export class KeyframeSvgPoint extends React.Component<IKeyframeSvgPointProps> {
         const svgImageIcon = this.props.selected ? keySelected : keyInactive;
         return (
             <>
-                <svg
-                    className="draggable"
-                    x={this.props.keyframePoint.x}
-                    y={this.props.keyframePoint.y}
-                    style={{ overflow: "visible", cursor: "pointer" }}
-                >
-                    <image
-                        data-id={this.props.id}
-                        className="draggable"
-                        x="-1"
-                        y="-1.5"
-                        width="3"
-                        height="3"
-                        href={svgImageIcon}
-                        onClick={this.select}
-                    />
+                <svg className="draggable" x={this.props.keyframePoint.x} y={this.props.keyframePoint.y} style={{ overflow: "visible", cursor: "pointer" }}>
+                    <image data-id={this.props.id} className="draggable" x="-1" y="-1.5" width="3" height="3" href={svgImageIcon} onClick={this.select} />
                 </svg>
                 {this.props.leftControlPoint && (
                     <AnchorSvgPoint

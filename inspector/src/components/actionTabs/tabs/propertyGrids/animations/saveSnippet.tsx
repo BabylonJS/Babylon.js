@@ -9,11 +9,17 @@ import { Nullable } from "babylonjs/types";
 import { GlobalState } from "../../../../globalState";
 
 interface ISaveSnippetProps {
+    // Animation to save
     animations: Nullable<Animation[]>;
+    // Observable
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    // Global lock object
     lockObject: LockObject;
+    // Global state
     globalState: GlobalState;
+    // Snippet server address
     snippetServer: string;
+    // Snippert id to save the snippet
     snippetId: string;
 }
 
@@ -108,11 +114,7 @@ export class SaveSnippet extends React.Component<ISaveSnippetProps, { selectedAn
                             });
                         }
 
-                        alert(
-                            "Animations saved with ID: " +
-                                serverId +
-                                " (please note that the id was also saved to your clipboard)"
-                        );
+                        alert("Animations saved with ID: " + serverId + " (please note that the id was also saved to your clipboard)");
                     } else {
                         alert("Unable to save your animations");
                     }
@@ -145,13 +147,7 @@ export class SaveSnippet extends React.Component<ISaveSnippetProps, { selectedAn
                                 <li key={i}>
                                     <div>
                                         <label>
-                                            <input
-                                                id={`save_${i}`}
-                                                name={`save_${animation?.name}`}
-                                                type="checkbox"
-                                                checked={this.state.selectedAnimations[i].selected}
-                                                onChange={this.handleCheckboxChange}
-                                            />
+                                            <input id={`save_${i}`} name={`save_${animation?.name}`} type="checkbox" checked={this.state.selectedAnimations[i].selected} onChange={this.handleCheckboxChange} />
                                             {animation?.name}
                                         </label>
                                     </div>

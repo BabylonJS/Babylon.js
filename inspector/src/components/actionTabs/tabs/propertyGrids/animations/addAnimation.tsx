@@ -3,8 +3,8 @@ import { ButtonLineComponent } from "../../../lines/buttonLineComponent";
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../../../../components/propertyChangedEvent";
 import { Animation } from "babylonjs/Animations/animation";
-//import { Vector2, Vector3, Quaternion } from "babylonjs/Maths/math.vector";
-//import { Color3, Color4 } from "babylonjs/Maths/math.color";
+//import { Vector2, Vector3, Quaternion } from "babylonjs/Maths/math.vector"; // Remove comment lines when these imports are supported
+//import { Color3, Color4 } from "babylonjs/Maths/math.color"; // Remove comment lines when these imports are supported
 import { IAnimatable } from "babylonjs/Animations/animatable.interface";
 import { IAnimationKey } from "babylonjs/Animations/animationKey";
 
@@ -21,7 +21,16 @@ interface IAddAnimationProps {
 }
 
 /**
- * Controls the creation of a new animation
+ * Controls the creation of a new animation.
+ * @property {boolean} isOpen controls if the add animation pannel is open or closed in the editor controls;
+ * @property {()=>void} close sends the message to close this panel setting isOpen to false;
+ * @property {IAnimatable} entity is the animation object to add the animation to;
+ * @property {Observable<PropertyChangedEvent>} onPropertyChangedObservable is the registered observable
+ * @property {(message: string) => void} setNotificationMessage sends the message string to display errors on the message box
+ * @property {() => void} finishedUpdate tells the parent component the update on the animation collection has completed
+ * @property { (animation: Animation) => void} addedNewAnimation sends the animation to the editor to process how its is rendered
+ * @property {number} fps Frames per second of the animation.
+ * @property {Animation | undefined} selectedToUpdate the selected animation so we can update the renderer curve.
  */
 export class AddAnimation extends React.Component<
     IAddAnimationProps,
@@ -50,6 +59,11 @@ export class AddAnimation extends React.Component<
         };
     }
 
+    /**
+     * We decide wether the animation will be added or edited
+     * @param prevProps Previous props.
+     * @param prevState Previous state.
+     */
     componentDidUpdate(prevProps: IAddAnimationProps, prevState: any) {
         if (this.props.selectedToUpdate !== undefined && this.props.selectedToUpdate !== prevProps.selectedToUpdate) {
             this.setState(this.setInitialState(this.props.selectedToUpdate));
@@ -60,6 +74,13 @@ export class AddAnimation extends React.Component<
         }
     }
 
+    /**
+     * Updates the animation with the correct properties
+     * Updates its name, loopmode and targetProperty.
+     * This allows the edition of the animation in the curve editor.
+     * We can only update these props for the animation.
+     * Keyframes of course are updated on the curve editor.
+     */
     updateAnimation = () => {
         if (this.props.selectedToUpdate !== undefined) {
             const oldNameValue = this.props.selectedToUpdate.name;
@@ -78,6 +99,10 @@ export class AddAnimation extends React.Component<
         }
     };
 
+    /**
+     * Returns the animation type as string
+     * @param type Type of animation so we return a string.
+     */
     getTypeAsString(type: number) {
         switch (type) {
             case Animation.ANIMATIONTYPE_FLOAT:
@@ -99,6 +124,14 @@ export class AddAnimation extends React.Component<
         }
     }
 
+    /**
+     * Process the creation of a new animation.
+     * We verify is the property to animate is present on the object
+     * We verify if the property derives from a correct class *type of animation to add an animation
+     * At the end we create an empty animation named animation.
+     * The animation keys array is set to empty so we can add keyframes in the editor.
+     * We return the animation to the curve editor and update the entity animation collection
+     */
     addAnimation = () => {
         if (this.state.animationName != "" && this.state.animationTargetProperty != "") {
             let matchTypeTargetProperty = this.state.animationTargetProperty.split(".");
@@ -155,7 +188,7 @@ export class AddAnimation extends React.Component<
                 } else {
                     let animation = new Animation(this.state.animationName, this.state.animationTargetProperty, this.props.fps, animationDataType);
 
-                    // Start with two keyframes
+                    // Start with empty keyframes
                     var keys: IAnimationKey[] = [];
 
                     animation.setKeys(keys);
@@ -166,7 +199,7 @@ export class AddAnimation extends React.Component<
                         this.raiseOnPropertyChanged(updatedCollection, store);
                         this.props.entity.animations = updatedCollection;
                         this.props.addedNewAnimation(animation);
-                        //Cleaning form fields
+                        //Here we clean the form fields
                         this.setState({
                             animationName: "",
                             animationTargetPath: "",
@@ -255,14 +288,15 @@ export class AddAnimation extends React.Component<
                         <div className="label-input">
                             <label>Type</label>
                             <select onChange={this.handleTypeChange} value={this.state.animationType}>
+                                {/** Uncomment the following lines when other animation types are available */}
                                 {/* <option value={Animation.ANIMATIONTYPE_COLOR3}>Color3</option>
-                <option value={Animation.ANIMATIONTYPE_COLOR4}>Color4</option> */}
+                                    <option value={Animation.ANIMATIONTYPE_COLOR4}>Color4</option> */}
                                 <option value={Animation.ANIMATIONTYPE_FLOAT}>Float</option>
                                 {/* <option value={Animation.ANIMATIONTYPE_VECTOR3}>Vector3</option>
-                <option value={Animation.ANIMATIONTYPE_VECTOR2}>Vector2</option>
-                <option value={Animation.ANIMATIONTYPE_QUATERNION}>
-                  Quaternion
-                </option> */}
+                                    <option value={Animation.ANIMATIONTYPE_VECTOR2}>Vector2</option>
+                                    <option value={Animation.ANIMATIONTYPE_QUATERNION}>
+                                        Quaternion
+                                    </option> */}
                             </select>
                         </div>
                     )}
