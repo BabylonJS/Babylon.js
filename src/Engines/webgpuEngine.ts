@@ -1675,11 +1675,12 @@ export class WebGPUEngine extends Engine {
         }
     }
 
-    protected _setTexture(channel: number, texture: Nullable<BaseTexture>, isPartOfTextureArray = false, depthStencilTexture = false, name = "", baseName = "", textureIndex = 0): boolean {
+    protected _setTexture(channel: number, texture: Nullable<BaseTexture>, isPartOfTextureArray = false, depthStencilTexture = false, name = "", baseName?: string, textureIndex = 0): boolean {
         // name == baseName for a texture that is not part of a texture array
         // Else, name is something like 'myTexture0' / 'myTexture1' / ... and baseName is 'myTexture'
         // baseName is used to look up the sampler in the WebGPUPipelineContext.samplers map
         // name is used to look up the texture in the WebGPUPipelineContext.textures map
+        baseName = baseName ?? name;
         if (this._currentEffect) {
             const webgpuPipelineContext = this._currentEffect._pipelineContext as WebGPUPipelineContext;
             if (!texture) {
@@ -3397,7 +3398,7 @@ export class WebGPUEngine extends Engine {
                         });
                     }
                     else {
-                        Logger.Error(`Sampler "${bindingDefinition.name}" could not be bound. bindingDefinition=${JSON.stringify(bindingDefinition)}`);
+                        Logger.Error(`Sampler "${bindingDefinition.name}" could not be bound. bindingDefinition=${JSON.stringify(bindingDefinition)}, webgpuPipelineContext.samplers=${JSON.stringify(webgpuPipelineContext.samplers)}`);
                     }
                 } else if (bindingDefinition.isTexture) {
                     const bindingInfo = webgpuPipelineContext.textures[bindingDefinition.name];
@@ -3430,7 +3431,7 @@ export class WebGPUEngine extends Engine {
                         });
                     }
                     else {
-                        Logger.Error(`Texture "${bindingDefinition.name}" could not be bound. bindingDefinition=${JSON.stringify(bindingDefinition)}`);
+                        Logger.Error(`Texture "${bindingDefinition.name}" could not be bound. bindingDefinition=${JSON.stringify(bindingDefinition)}, webgpuPipelineContext.textures=${JSON.stringify(webgpuPipelineContext.textures, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}`);
                     }
                 } else {
                     const dataBuffer = this._uniformsBuffers[bindingDefinition.name];
