@@ -844,7 +844,7 @@ export class InputManager {
                     }
 
                     if (currentState == 0) {
-                        Object.defineProperty(evt, 'type', {value: "keydown"});
+                        Object.defineProperty(evt, 'type', {value: "keyup"});
                         this._onKeyUp((evt as IKeyboardEvent));
                     }
                 }
