@@ -3393,13 +3393,10 @@ export class WebGPUEngine extends Engine {
                                 Logger.Error(`Could not create the gpu sampler "${bindingDefinition.name}" because no texture can be looked up for the name "${bindingInfo.firstTextureName}". bindingInfo=${JSON.stringify(bindingInfo)}, webgpuPipelineContext.textures=${webgpuPipelineContext.textures}`);
                                 continue;
                             }
-                            const hardwareTexture = texture._hardwareTexture as WebGPUHardwareTexture;
-                            if (!hardwareTexture.sampler) {
+                            if (!bindingInfo.sampler) {
                                 const samplerDescriptor: GPUSamplerDescriptor = this._getSamplerDescriptor(texture);
-                                const gpuSampler = this._device.createSampler(samplerDescriptor);
-                                hardwareTexture.sampler = gpuSampler;
+                                bindingInfo.sampler = this._device.createSampler(samplerDescriptor);
                             }
-                            bindingInfo.sampler = hardwareTexture.sampler;
                         }
 
                         entries.push({
@@ -3418,11 +3415,6 @@ export class WebGPUEngine extends Engine {
                             continue;
                         }
                         const hardwareTexture = bindingInfo.texture._hardwareTexture as WebGPUHardwareTexture;
-                        if (!hardwareTexture.sampler) {
-                            const samplerDescriptor: GPUSamplerDescriptor = this._getSamplerDescriptor(bindingInfo.texture!);
-                            const gpuSampler = this._device.createSampler(samplerDescriptor);
-                            hardwareTexture.sampler = gpuSampler;
-                        }
 
                         if (dbgSanityChecks && !hardwareTexture.view) {
                             Logger.Error(`Trying to bind a null gpu texture! bindingDefinition=${JSON.stringify(bindingDefinition)}, bindingInfo=${JSON.stringify(bindingInfo)}, isReady=${bindingInfo.texture.isReady}`);
