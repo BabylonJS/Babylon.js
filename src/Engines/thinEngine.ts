@@ -24,7 +24,7 @@ import { IPipelineContext } from './IPipelineContext';
 import { WebGLPipelineContext } from './WebGL/webGLPipelineContext';
 import { VertexBuffer } from '../Meshes/buffer';
 import { InstancingAttributeInfo } from './instancingAttributeInfo';
-import { BaseTexture } from '../Materials/Textures/baseTexture';
+import { ThinTexture } from '../Materials/Textures/thinTexture';
 import { IOfflineProvider } from '../Offline/IOfflineProvider';
 import { IEffectFallbacks } from '../Materials/iEffectFallbacks';
 import { IWebRequest } from '../Misc/interfaces/iWebRequest';
@@ -158,14 +158,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.2.0-beta.13";
+        return "babylonjs@4.2.0-beta.19";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.2.0-beta.13";
+        return "4.2.0-beta.19";
     }
 
     /**
@@ -2886,6 +2886,10 @@ export class ThinEngine {
             url = this._transformTextureUrl(url);
         }
 
+        if (originalUrl !== url) {
+            texture._originalUrl = originalUrl;
+        }
+
         // establish the file extension, if possible
         const lastDot = url.lastIndexOf('.');
         let extension = forcedExtension ? forcedExtension : (lastDot > -1 ? url.substring(lastDot).toLowerCase() : "");
@@ -3616,7 +3620,7 @@ export class ThinEngine {
      * @param uniform The uniform to set
      * @param texture The texture to apply
      */
-    public setTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<BaseTexture>): void {
+    public setTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<ThinTexture>): void {
         if (channel === undefined) {
             return;
         }
@@ -3649,7 +3653,7 @@ export class ThinEngine {
         return this._gl.REPEAT;
     }
 
-    protected _setTexture(channel: number, texture: Nullable<BaseTexture>, isPartOfTextureArray = false, depthStencilTexture = false): boolean {
+    protected _setTexture(channel: number, texture: Nullable<ThinTexture>, isPartOfTextureArray = false, depthStencilTexture = false): boolean {
         // Not ready?
         if (!texture) {
             if (this._boundTexturesCache[channel] != null) {
@@ -3749,7 +3753,7 @@ export class ThinEngine {
      * @param uniform defines the associated uniform location
      * @param textures defines the array of textures to bind
      */
-    public setTextureArray(channel: number, uniform: Nullable<WebGLUniformLocation>, textures: BaseTexture[]): void {
+    public setTextureArray(channel: number, uniform: Nullable<WebGLUniformLocation>, textures: ThinTexture[]): void {
         if (channel === undefined || !uniform) {
             return;
         }
