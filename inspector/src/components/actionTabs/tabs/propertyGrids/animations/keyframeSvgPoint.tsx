@@ -79,8 +79,22 @@ export class KeyframeSvgPoint extends React.Component<IKeyframeSvgPointProps> {
         const svgImageIcon = this.props.selected ? keySelected : keyInactive;
         return (
             <>
-                <svg className="draggable" x={this.props.keyframePoint.x} y={this.props.keyframePoint.y} style={{ overflow: "visible", cursor: "pointer" }}>
-                    <image data-id={this.props.id} className="draggable" x="-1" y="-1.5" width="3" height="3" href={svgImageIcon} onClick={this.select} />
+                <svg
+                    className="draggable"
+                    x={this.props.keyframePoint.x}
+                    y={this.props.keyframePoint.y}
+                    style={{ overflow: "visible", cursor: "pointer" }}
+                >
+                    <image
+                        data-id={this.props.id}
+                        className="draggable"
+                        x="-1"
+                        y="-1.5"
+                        width="3"
+                        height="3"
+                        href={svgImageIcon}
+                        onClick={this.select}
+                    />
                 </svg>
                 {this.props.leftControlPoint && (
                     <AnchorSvgPoint
