@@ -23145,6 +23145,80 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /**
+     * ThinSprite Class used to represent a thin sprite
+     * This is the base class for sprites but can also directly be used with ThinEngine
+     * @see https://doc.babylonjs.com/babylon101/sprites
+     */
+    export class ThinSprite {
+        /** Gets or sets the cell index in the sprite sheet */
+        cellIndex: number;
+        /** Gets or sets the cell reference in the sprite sheet, uses sprite's filename when added to sprite sheet */
+        cellRef: string;
+        /** Gets or sets the current world position */
+        position: IVector3Like;
+        /** Gets or sets the main color */
+        color: IColor4Like;
+        /** Gets or sets the width */
+        width: number;
+        /** Gets or sets the height */
+        height: number;
+        /** Gets or sets rotation angle */
+        angle: number;
+        /** Gets or sets a boolean indicating if UV coordinates should be inverted in U axis */
+        invertU: boolean;
+        /** Gets or sets a boolean indicating if UV coordinates should be inverted in B axis */
+        invertV: boolean;
+        /** Gets or sets a boolean indicating if the sprite is visible (renderable). Default is true */
+        isVisible: boolean;
+        /**
+         * Returns a boolean indicating if the animation is started
+         */
+        get animationStarted(): boolean;
+        /** Gets the initial key for the animation (setting it will restart the animation)  */
+        get fromIndex(): number;
+        /** Gets or sets the end key for the animation (setting it will restart the animation)  */
+        get toIndex(): number;
+        /** Gets or sets a boolean indicating if the animation is looping (setting it will restart the animation)  */
+        get loopAnimation(): boolean;
+        /** Gets or sets the delay between cell changes (setting it will restart the animation)  */
+        get delay(): number;
+        /** @hidden */
+        _xOffset: number;
+        /** @hidden */
+        _yOffset: number;
+        /** @hidden */
+        _xSize: number;
+        /** @hidden */
+        _ySize: number;
+        private _animationStarted;
+        protected _loopAnimation: boolean;
+        protected _fromIndex: number;
+        protected _toIndex: number;
+        protected _delay: number;
+        private _direction;
+        private _time;
+        private _onBaseAnimationEnd;
+        /**
+         * Creates a new Thin Sprite
+         */
+        constructor();
+        /**
+         * Starts an animation
+         * @param from defines the initial key
+         * @param to defines the end key
+         * @param loop defines if the animation must loop
+         * @param delay defines the start delay (in ms)
+         * @param onAnimationEnd defines a callback for when the animation ends
+         */
+        playAnimation(from: number, to: number, loop: boolean, delay: number, onAnimationEnd: Nullable<() => void>): void;
+        /** Stops current animation (if any) */
+        stopAnimation(): void;
+        /** @hidden */
+        _animate(deltaTime: number): void;
+    }
+}
+declare module BABYLON {
     /** @hidden */
     export var imageProcessingCompatibility: {
         name: string;
@@ -23164,6 +23238,89 @@ declare module BABYLON {
         name: string;
         shader: string;
     };
+}
+declare module BABYLON {
+    /**
+     * Class used to render sprites.
+     *
+     * It can be used either to render Sprites or ThinSriptes with ThinEngine only.
+     */
+    export class SpriteRenderer {
+        /**
+         * Defines the texture of the spritesheet
+         */
+        texture: Nullable<ThinTexture>;
+        /**
+         * Defines the default width of a cell in the spritesheet
+         */
+        cellWidth: number;
+        /**
+         * Defines the default height of a cell in the spritesheet
+         */
+        cellHeight: number;
+        /**
+         * Blend mode use to render the particle, it can be any of
+         * the static Constants.ALPHA_x properties provided in this class.
+         * Default value is Constants.ALPHA_COMBINE
+         */
+        blendMode: number;
+        /**
+         * Gets or sets a boolean indicating if alpha mode is automatically
+         * reset.
+         */
+        autoResetAlpha: boolean;
+        /**
+         * Disables writing to the depth buffer when rendering the sprites.
+         * It can be handy to disable depth writing when using textures without alpha channel
+         * and setting some specific blend modes.
+         */
+        disableDepthWrite: boolean;
+        /**
+         * Gets or sets a boolean indicating if the manager must consider scene fog when rendering
+         */
+        fogEnabled: boolean;
+        /**
+         * Gets the capacity of the manager
+         */
+        get capacity(): number;
+        private readonly _engine;
+        private readonly _useVAO;
+        private readonly _useInstancing;
+        private readonly _scene;
+        private readonly _capacity;
+        private readonly _epsilon;
+        private _vertexBufferSize;
+        private _vertexData;
+        private _buffer;
+        private _vertexBuffers;
+        private _spriteBuffer;
+        private _indexBuffer;
+        private _effectBase;
+        private _effectFog;
+        private _vertexArrayObject;
+        /**
+         * Creates a new sprite Renderer
+         * @param engine defines the engine the renderer works with
+         * @param capacity defines the maximum allowed number of sprites
+         * @param epsilon defines the epsilon value to align texture (0.01 by default)
+         * @param scene defines the hosting scene
+         */
+        constructor(engine: ThinEngine, capacity: number, epsilon?: number, scene?: Nullable<Scene>);
+        /**
+         * Render all child sprites
+         * @param sprites defines the list of sprites to render
+         * @param deltaTime defines the time since last frame
+         * @param viewMatrix defines the viewMatrix to use to render the sprites
+         * @param projectionMatrix defines the projectionMatrix to use to render the sprites
+         * @param customSpriteUpdate defines a custom function to update the sprites data before they render
+         */
+        render(sprites: ThinSprite[], deltaTime: number, viewMatrix: IMatrixLike, projectionMatrix: IMatrixLike, customSpriteUpdate?: Nullable<(sprite: ThinSprite, baseSize: ISize) => void>): void;
+        private _appendSpriteVertex;
+        /**
+         * Release associated resources
+         */
+        dispose(): void;
+    }
 }
 declare module BABYLON {
     /**
@@ -23243,44 +23400,16 @@ declare module BABYLON {
         renderingGroupId: number;
         /** Gets or sets camera layer mask */
         layerMask: number;
-        /** Gets or sets a boolean indicating if the manager must consider scene fog when rendering */
-        fogEnabled: boolean;
         /** Gets or sets a boolean indicating if the sprites are pickable */
         isPickable: boolean;
-        /** Defines the default width of a cell in the spritesheet */
-        cellWidth: number;
-        /** Defines the default height of a cell in the spritesheet */
-        cellHeight: number;
-        /** Associative array from JSON sprite data file */
-        private _cellData;
-        /** Array of sprite names from JSON sprite data file */
-        private _spriteMap;
-        /** True when packed cell data from JSON file is ready*/
-        private _packedAndReady;
-        private _textureContent;
-        private _useInstancing;
         /**
         * An event triggered when the manager is disposed.
         */
         onDisposeObservable: Observable<SpriteManager>;
-        private _onDisposeObserver;
         /**
          * Callback called when the manager is disposed
          */
         set onDispose(callback: () => void);
-        private _capacity;
-        private _fromPacked;
-        private _spriteTexture;
-        private _epsilon;
-        private _scene;
-        private _vertexData;
-        private _buffer;
-        private _vertexBuffers;
-        private _spriteBuffer;
-        private _indexBuffer;
-        private _effectBase;
-        private _effectFog;
-        private _vertexBufferSize;
         /**
          * Gets or sets the unique id of the sprite
          */
@@ -23302,7 +23431,15 @@ declare module BABYLON {
          */
         get texture(): Texture;
         set texture(value: Texture);
-        private _blendMode;
+        /** Defines the default width of a cell in the spritesheet */
+        get cellWidth(): number;
+        set cellWidth(value: number);
+        /** Defines the default height of a cell in the spritesheet */
+        get cellHeight(): number;
+        set cellHeight(value: number);
+        /** Gets or sets a boolean indicating if the manager must consider scene fog when rendering */
+        get fogEnabled(): boolean;
+        set fogEnabled(value: boolean);
         /**
          * Blend mode use to render the particle, it can be any of
          * the static Constants.ALPHA_x properties provided in this class.
@@ -23315,6 +23452,17 @@ declare module BABYLON {
          *  and setting some specific blend modes.
         */
         disableDepthWrite: boolean;
+        private _spriteRenderer;
+        /** Associative array from JSON sprite data file */
+        private _cellData;
+        /** Array of sprite names from JSON sprite data file */
+        private _spriteMap;
+        /** True when packed cell data from JSON file is ready*/
+        private _packedAndReady;
+        private _textureContent;
+        private _onDisposeObserver;
+        private _fromPacked;
+        private _scene;
         /**
          * Creates a new sprite manager
          * @param name defines the manager's name
@@ -23336,7 +23484,6 @@ declare module BABYLON {
          */
         getClassName(): string;
         private _makePacked;
-        private _appendSpriteVertex;
         private _checkTextureAlpha;
         /**
          * Intersects the sprites with a ray
@@ -23359,6 +23506,7 @@ declare module BABYLON {
          * Render all child sprites
          */
         render(): void;
+        private _customUpdate;
         /**
          * Release associated resources
          */
@@ -23401,27 +23549,13 @@ declare module BABYLON {
      * Class used to represent a sprite
      * @see https://doc.babylonjs.com/babylon101/sprites
      */
-    export class Sprite implements IAnimatable {
+    export class Sprite extends ThinSprite implements IAnimatable {
         /** defines the name */
         name: string;
         /** Gets or sets the current world position */
         position: Vector3;
         /** Gets or sets the main color */
         color: Color4;
-        /** Gets or sets the width */
-        width: number;
-        /** Gets or sets the height */
-        height: number;
-        /** Gets or sets rotation angle */
-        angle: number;
-        /** Gets or sets the cell index in the sprite sheet */
-        cellIndex: number;
-        /** Gets or sets the cell reference in the sprite sheet, uses sprite's filename when added to sprite sheet */
-        cellRef: string;
-        /** Gets or sets a boolean indicating if UV coordinates should be inverted in U axis */
-        invertU: boolean;
-        /** Gets or sets a boolean indicating if UV coordinates should be inverted in B axis */
-        invertV: boolean;
         /** Gets or sets a boolean indicating that this sprite should be disposed after animation ends */
         disposeWhenFinishedAnimating: boolean;
         /** Gets the list of attached animations */
@@ -23430,44 +23564,21 @@ declare module BABYLON {
         isPickable: boolean;
         /** Gets or sets a boolean indicating that sprite texture alpha will be used for precise picking (false by default) */
         useAlphaForPicking: boolean;
-        /** @hidden */
-        _xOffset: number;
-        /** @hidden */
-        _yOffset: number;
-        /** @hidden */
-        _xSize: number;
-        /** @hidden */
-        _ySize: number;
         /**
          * Gets or sets the associated action manager
          */
         actionManager: Nullable<ActionManager>;
         /**
-        * An event triggered when the control has been disposed
-        */
-        onDisposeObservable: Observable<Sprite>;
-        private _animationStarted;
-        private _loopAnimation;
-        private _fromIndex;
-        private _toIndex;
-        private _delay;
-        private _direction;
-        private _manager;
-        private _time;
-        private _onAnimationEnd;
-        /**
-         * Gets or sets a boolean indicating if the sprite is visible (renderable). Default is true
+         * An event triggered when the control has been disposed
          */
-        isVisible: boolean;
+        onDisposeObservable: Observable<Sprite>;
+        private _manager;
+        private _onAnimationEnd;
         /**
          * Gets or sets the sprite size
          */
         get size(): number;
         set size(value: number);
-        /**
-         * Returns a boolean indicating if the animation is started
-         */
-        get animationStarted(): boolean;
         /**
          * Gets or sets the unique id of the sprite
          */
@@ -23510,10 +23621,7 @@ declare module BABYLON {
          * @param onAnimationEnd defines a callback to call when animation ends
          */
         playAnimation(from: number, to: number, loop: boolean, delay: number, onAnimationEnd?: Nullable<() => void>): void;
-        /** Stops current animation (if any) */
-        stopAnimation(): void;
-        /** @hidden */
-        _animate(deltaTime: number): void;
+        private _endAnimation;
         /** Release associated resources */
         dispose(): void;
         /**
@@ -76950,163 +77058,6 @@ declare module BABYLON {
         name: string;
         shader: string;
     };
-}
-declare module BABYLON {
-    /**
-     * ThinSprite Class used to represent a thin sprite
-     * This is the base class for sprites but can also directly be used with ThinEngine
-     * @see https://doc.babylonjs.com/babylon101/sprites
-     */
-    export class ThinSprite {
-        /** Gets or sets the cell index in the sprite sheet */
-        cellIndex: number;
-        /** Gets or sets the cell reference in the sprite sheet, uses sprite's filename when added to sprite sheet */
-        cellRef: string;
-        /** Gets or sets the current world position */
-        position: IVector3Like;
-        /** Gets or sets the main color */
-        color: IColor4Like;
-        /** Gets or sets the width */
-        width: number;
-        /** Gets or sets the height */
-        height: number;
-        /** Gets or sets rotation angle */
-        angle: number;
-        /** Gets or sets a boolean indicating if UV coordinates should be inverted in U axis */
-        invertU: boolean;
-        /** Gets or sets a boolean indicating if UV coordinates should be inverted in B axis */
-        invertV: boolean;
-        /** Gets or sets a boolean indicating if the sprite is visible (renderable). Default is true */
-        isVisible: boolean;
-        /**
-         * Returns a boolean indicating if the animation is started
-         */
-        get animationStarted(): boolean;
-        /** Gets the initial key for the animation (setting it will restart the animation)  */
-        get fromIndex(): number;
-        /** Gets or sets the end key for the animation (setting it will restart the animation)  */
-        get toIndex(): number;
-        /** Gets or sets a boolean indicating if the animation is looping (setting it will restart the animation)  */
-        get loopAnimation(): boolean;
-        /** Gets or sets the delay between cell changes (setting it will restart the animation)  */
-        get delay(): number;
-        /** @hidden */
-        _xOffset: number;
-        /** @hidden */
-        _yOffset: number;
-        /** @hidden */
-        _xSize: number;
-        /** @hidden */
-        _ySize: number;
-        private _animationStarted;
-        private _loopAnimation;
-        private _fromIndex;
-        private _toIndex;
-        private _delay;
-        private _direction;
-        private _time;
-        private _onBaseAnimationEnd;
-        /**
-         * Creates a new Thin Sprite
-         */
-        constructor();
-        /**
-         * Starts an animation
-         * @param from defines the initial key
-         * @param to defines the end key
-         * @param loop defines if the animation must loop
-         * @param delay defines the start delay (in ms)
-         * @param onAnimationEnd defines a callback for when the animation ends
-         */
-        playAnimation(from: number, to: number, loop: boolean, delay: number, onAnimationEnd: Nullable<() => void>): void;
-        /** Stops current animation (if any) */
-        stopAnimation(): void;
-        /** @hidden */
-        _animate(deltaTime: number): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Class used to render sprites.
-     *
-     * It can be used either to render Sprites or ThinSriptes with ThinEngine only.
-     */
-    export class SpriteRenderer {
-        /**
-         * Defines the texture of the spritesheet
-         */
-        texture: Nullable<ThinTexture>;
-        /**
-         * Defines the default width of a cell in the spritesheet
-         */
-        cellWidth: number;
-        /**
-         * Defines the default height of a cell in the spritesheet
-         */
-        cellHeight: number;
-        /**
-         * Blend mode use to render the particle, it can be any of
-         * the static Constants.ALPHA_x properties provided in this class.
-         * Default value is Constants.ALPHA_COMBINE
-         */
-        blendMode: number;
-        /**
-         * Gets or sets a boolean indicating if alpha mode is automatically
-         * reset.
-         */
-        autoResetAlpha: boolean;
-        /**
-         * Disables writing to the depth buffer when rendering the sprites.
-         * It can be handy to disable depth writing when using textures without alpha channel
-         * and setting some specific blend modes.
-         */
-        disableDepthWrite: boolean;
-        /**
-         * Gets or sets a boolean indicating if the manager must consider scene fog when rendering
-         */
-        fogEnabled: boolean;
-        /**
-         * Gets the capacity of the manager
-         */
-        get capacity(): number;
-        private readonly _engine;
-        private readonly _useVAO;
-        private readonly _useInstancing;
-        private readonly _scene;
-        private readonly _capacity;
-        private readonly _epsilon;
-        private _vertexBufferSize;
-        private _vertexData;
-        private _buffer;
-        private _vertexBuffers;
-        private _spriteBuffer;
-        private _indexBuffer;
-        private _effectBase;
-        private _effectFog;
-        private _vertexArrayObject;
-        /**
-         * Creates a new sprite Renderer
-         * @param engine defines the engine the renderer works with
-         * @param capacity defines the maximum allowed number of sprites
-         * @param epsilon defines the epsilon value to align texture (0.01 by default)
-         * @param scene defines the hosting scene
-         */
-        constructor(engine: ThinEngine, capacity: number, epsilon?: number, scene?: Nullable<Scene>);
-        /**
-         * Render all child sprites
-         * @param sprites defines the list of sprites to render
-         * @param deltaTime defines the time since last frame
-         * @param viewMatrix defines the viewMatrix to use to render the sprites
-         * @param projectionMatrix defines the projectionMatrix to use to render the sprites
-         * @param customSpriteUpdate defines a custom function to update the sprites data before they render
-         */
-        render(sprites: ThinSprite[], deltaTime: number, viewMatrix: IMatrixLike, projectionMatrix: IMatrixLike, customSpriteUpdate?: Nullable<(sprite: ThinSprite, baseSize: ISize) => void>): void;
-        private _appendSpriteVertex;
-        /**
-         * Release associated resources
-         */
-        dispose(): void;
-    }
 }
 // Mixins
 interface Window {
