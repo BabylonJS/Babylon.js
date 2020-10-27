@@ -195,7 +195,7 @@ export class Engine extends ThinEngine {
     /** FLOAT_32_UNSIGNED_INT_24_8_REV */
     public static readonly TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV = Constants.TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV;
 
-    /** nearest is mag = nearest and min = nearest and mip = nearest */
+    /** nearest is mag = nearest and min = nearest and mip = none */
     public static readonly TEXTURE_NEAREST_SAMPLINGMODE = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
     /** Bilinear is mag = linear and min = linear and mip = nearest */
     public static readonly TEXTURE_BILINEAR_SAMPLINGMODE = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
