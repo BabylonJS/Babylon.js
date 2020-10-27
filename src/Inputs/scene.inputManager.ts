@@ -896,7 +896,7 @@ export class InputManager {
                             value: "pointerdown"
                         },
                         button: {
-                            value: inputIndex
+                            value: (inputIndex - 2)
                         }
                     });
 
