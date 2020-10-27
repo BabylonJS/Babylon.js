@@ -869,7 +869,12 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                             event.preventDefault();
                         }}
                     >                        
-                        <GraphCanvasComponent ref={"graphCanvas"} globalState={this.props.globalState}/>
+                        <GraphCanvasComponent ref={"graphCanvas"} 
+                            globalState={this.props.globalState}
+                            onEmitNewBlock={ block => {
+                                return this.createNodeFromObject(block);
+                            }
+                            }/>
                     </div>
 
                     <div id="rightGrab"

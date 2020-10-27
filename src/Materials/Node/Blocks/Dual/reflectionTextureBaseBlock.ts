@@ -135,7 +135,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
             worldInput.output.connectTo(this.world);
         }
 
-        if (!this.view.isConnected) {
+        if (this.view && !this.view.isConnected) {
             let viewInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.View);
 
             if (!viewInput) {

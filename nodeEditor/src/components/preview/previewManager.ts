@@ -99,6 +99,7 @@ export class PreviewManager {
         this._engine = new Engine(targetCanvas, true);
         this._scene = new Scene(this._engine);
         this._scene.clearColor = this._globalState.backgroundColor;
+        this._scene.ambientColor = new Color3(1, 1, 1);
         this._camera = new ArcRotateCamera("Camera", 0, 0.8, 4, Vector3.Zero(), this._scene);
 
         this._camera.lowerRadiusLimit = 3;
