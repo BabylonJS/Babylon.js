@@ -1042,14 +1042,17 @@ export class WebGPUEngine extends Engine {
     private _getSamplerFilterDescriptor(internalTexture: InternalTexture): {
         magFilter: GPUFilterMode,
         minFilter: GPUFilterMode,
-        mipmapFilter: GPUFilterMode
+        mipmapFilter: GPUFilterMode,
+        lodMinClamp?: number,
+        lodMaxClamp?: number,
     } {
-        let magFilter: GPUFilterMode, minFilter: GPUFilterMode, mipmapFilter: GPUFilterMode;
+        let magFilter: GPUFilterMode, minFilter: GPUFilterMode, mipmapFilter: GPUFilterMode, lodMinClamp: number | undefined, lodMaxClamp: number | undefined;
         switch (internalTexture.samplingMode) {
             case Engine.TEXTURE_NEAREST_SAMPLINGMODE:
                 magFilter = WebGPUConstants.FilterMode.Nearest;
                 minFilter = WebGPUConstants.FilterMode.Nearest;
                 mipmapFilter = WebGPUConstants.FilterMode.Nearest;
+                lodMinClamp = lodMaxClamp = 0;
                 break;
             case Engine.TEXTURE_BILINEAR_SAMPLINGMODE:
                 magFilter = WebGPUConstants.FilterMode.Linear;
@@ -1093,11 +1096,13 @@ export class WebGPUEngine extends Engine {
                 magFilter = WebGPUConstants.FilterMode.Nearest;
                 minFilter = WebGPUConstants.FilterMode.Linear;
                 mipmapFilter = WebGPUConstants.FilterMode.Nearest;
+                lodMinClamp = lodMaxClamp = 0;
                 break;
             case Engine.TEXTURE_NEAREST_NEAREST:
                 magFilter = WebGPUConstants.FilterMode.Nearest;
                 minFilter = WebGPUConstants.FilterMode.Nearest;
                 mipmapFilter = WebGPUConstants.FilterMode.Nearest;
+                lodMinClamp = lodMaxClamp = 0;
                 break;
             case Engine.TEXTURE_LINEAR_NEAREST_MIPNEAREST:
                 magFilter = WebGPUConstants.FilterMode.Linear;
@@ -1113,11 +1118,13 @@ export class WebGPUEngine extends Engine {
                 magFilter = WebGPUConstants.FilterMode.Linear;
                 minFilter = WebGPUConstants.FilterMode.Linear;
                 mipmapFilter = WebGPUConstants.FilterMode.Nearest;
+                lodMinClamp = lodMaxClamp = 0;
                 break;
             case Engine.TEXTURE_LINEAR_NEAREST:
                 magFilter = WebGPUConstants.FilterMode.Linear;
                 minFilter = WebGPUConstants.FilterMode.Nearest;
                 mipmapFilter = WebGPUConstants.FilterMode.Nearest;
+                lodMinClamp = lodMaxClamp = 0;
                 break;
             default:
                 magFilter = WebGPUConstants.FilterMode.Nearest;
@@ -1129,7 +1136,9 @@ export class WebGPUEngine extends Engine {
         return {
             magFilter,
             minFilter,
-            mipmapFilter
+            mipmapFilter,
+            lodMinClamp,
+            lodMaxClamp,
         };
     }
 
@@ -1363,6 +1372,7 @@ export class WebGPUEngine extends Engine {
             ...this._getSamplerFilterDescriptor(internalTexture),
             ...this._getSamplerWrappingDescriptor(internalTexture),
             compare: internalTexture._comparisonFunction ? this._getCompareFunction(internalTexture._comparisonFunction) : undefined,
+            // TODO WEBGPU maxAnisotropy: ??,
         };
     }
 
