@@ -1,0 +1,12 @@
+{
+    "extends": "../tsconfigRules",
+    "compilerOptions": {
+        "jsx": "react",
+        "baseUrl": "./src/",
+        "rootDir": "./src/",
+        "paths": {
+        }
+    },
+    "exclude": [
+    ]
+}
