@@ -24,46 +24,46 @@ import { Nullable } from 'babylonjs/types';
 import { Observer } from 'babylonjs/Misc/observable';
 
 export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-    
+
     private onValueChangedObserver: Nullable<Observer<InputBlock>>;
 
     constructor(props: IPropertyComponentProps) {
-        super(props)
+        super(props);
     }
 
-    componentDidMount() {        
+    componentDidMount() {
         let inputBlock = this.props.block as InputBlock;
         this.onValueChangedObserver = inputBlock.onValueChangedObservable.add(() => {
-            this.forceUpdate()
+            this.forceUpdate();
             this.props.globalState.onUpdateRequiredObservable.notifyObservers();
         });
     }
 
     componentWillUnmount() {
-        
+
         let inputBlock = this.props.block as InputBlock;
         if (this.onValueChangedObserver) {
             inputBlock.onValueChangedObservable.remove(this.onValueChangedObserver);
             this.onValueChangedObserver = null;
         }
-    }    
+    }
 
     renderValue(globalState: GlobalState) {
         let inputBlock = this.props.block as InputBlock;
         switch (inputBlock.type) {
             case NodeMaterialBlockConnectionPointTypes.Float: {
-                let cantDisplaySlider = (isNaN(inputBlock.min) || isNaN(inputBlock.max) || inputBlock.min === inputBlock.max);            
+                let cantDisplaySlider = (isNaN(inputBlock.min) || isNaN(inputBlock.max) || inputBlock.min === inputBlock.max);
                 return (
                     <>
                         <CheckBoxLineComponent label="Is boolean" target={inputBlock} propertyName="isBoolean" />
                         {
                             inputBlock.isBoolean &&
                             <CheckBoxLineComponent label="Value" isSelected={() => {
-                                return inputBlock.value === 1
+                                return inputBlock.value === 1;
                             }} onSelect={(value) => {
                                 inputBlock.value = value ? 1 : 0;
                                 if (inputBlock.isConstant) {
-                                    this.props.globalState.onRebuildRequiredObservable.notifyObservers();    
+                                    this.props.globalState.onRebuildRequiredObservable.notifyObservers();
                                 }
                                 this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                             }}/>
@@ -74,17 +74,17 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                         }
                         {
                             !inputBlock.isBoolean &&
-                            <FloatLineComponent globalState={this.props.globalState} label="Max" target={inputBlock} propertyName="max" onChange={() => this.forceUpdate()}></FloatLineComponent>      
+                            <FloatLineComponent globalState={this.props.globalState} label="Max" target={inputBlock} propertyName="max" onChange={() => this.forceUpdate()}></FloatLineComponent>
                         }
                         {
                             !inputBlock.isBoolean && cantDisplaySlider &&
                             <FloatPropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
-                        }        
+                        }
                         {
                             !inputBlock.isBoolean && !cantDisplaySlider &&
                             <SliderLineComponent label="Value" globalState={this.props.globalState} target={inputBlock} propertyName="value" step={Math.abs(inputBlock.max - inputBlock.min) / 100.0} minimum={Math.min(inputBlock.min, inputBlock.max)} maximum={inputBlock.max} onChange={() => {
                                 if (inputBlock.isConstant) {
-                                    this.props.globalState.onRebuildRequiredObservable.notifyObservers();    
+                                    this.props.globalState.onRebuildRequiredObservable.notifyObservers();
                                 }
                             }}/>
                         }
@@ -106,7 +106,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
             case NodeMaterialBlockConnectionPointTypes.Vector3:
                 return (
                     <Vector3PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
-                );            
+                );
             case NodeMaterialBlockConnectionPointTypes.Vector4:
                 return (
                     <Vector4PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
@@ -114,7 +114,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
             case NodeMaterialBlockConnectionPointTypes.Matrix:
                 return (
                     <MatrixPropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
-                );                
+                );
         }
 
         return null;
@@ -132,16 +132,16 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
         var attributeOptions: {label: string, value: string}[] = [];
         var animationOptions: {label: string, value: AnimatedInputBlockTypes}[] = [];
 
-        switch(inputBlock.type) {      
+        switch (inputBlock.type) {
             case NodeMaterialBlockConnectionPointTypes.Float:
                 animationOptions = [
                     { label: "None", value: AnimatedInputBlockTypes.None },
                     { label: "Time", value: AnimatedInputBlockTypes.Time },
                 ];
-                systemValuesOptions = [ 
+                systemValuesOptions = [
                     { label: "Delta time", value: NodeMaterialSystemValues.DeltaTime }
-                ]
-                break;      
+                ];
+                break;
             case NodeMaterialBlockConnectionPointTypes.Matrix:
                 systemValuesOptions = [
                     { label: "World", value: NodeMaterialSystemValues.World },
@@ -167,7 +167,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                     { label: "uv", value: "uv" },
                     { label: "uv2", value: "uv2" },
                 ];
-                break;                
+                break;
             case NodeMaterialBlockConnectionPointTypes.Vector3:
                 systemValuesOptions = [
                     { label: "Camera position", value: NodeMaterialSystemValues.CameraPosition }
@@ -175,7 +175,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 attributeOptions = [
                     { label: "position", value: "position" },
                     { label: "normal", value: "normal" },
-                    { label: "tangent", value: "tangent" },        
+                    { label: "tangent", value: "tangent" },
                 ];
                 break;
             case NodeMaterialBlockConnectionPointTypes.Vector4:
@@ -183,7 +183,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                         { label: "matricesIndices", value: "matricesIndices" },
                         { label: "matricesWeights", value: "matricesWeights" }
                     ];
-                    break;                
+                    break;
         }
 
         var modeOptions = [
@@ -210,7 +210,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 <LineContainerComponent title="PROPERTIES">
                     {
                         inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === AnimatedInputBlockTypes.None &&
-                        <OptionsLineComponent label="Type" options={typeOptions} target={inputBlock} 
+                        <OptionsLineComponent label="Type" options={typeOptions} target={inputBlock}
                             noDirectUpdate={true}
                             getSelection={(block) => {
                                 if (block.visibleInInspector) {
@@ -241,18 +241,18 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                 this.forceUpdate();
                                 this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                                 this.props.globalState.onRebuildRequiredObservable.notifyObservers();
-                            }} />                        
-                    }      
+                            }} />
+                    }
                     {
                         inputBlock.visibleInInspector &&
-                        <TextInputLineComponent globalState={this.props.globalState} label="Group" propertyName="groupInInspector" target={this.props.block} 
+                        <TextInputLineComponent globalState={this.props.globalState} label="Group" propertyName="groupInInspector" target={this.props.block}
                             onChange={() => {
                                 this.forceUpdate();
                                 this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                                 this.props.globalState.onRebuildRequiredObservable.notifyObservers();
                             }} />
-                    }     
-                    <OptionsLineComponent label="Mode" options={modeOptions} target={inputBlock} 
+                    }
+                    <OptionsLineComponent label="Mode" options={modeOptions} target={inputBlock}
                         noDirectUpdate={true}
                         getSelection={(block) => {
                             if (block.isAttribute) {
@@ -279,7 +279,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                     inputBlock.setAsSystemValue(systemValuesOptions[0].value);
                                     break;
                             }
-                            this.forceUpdate();                            
+                            this.forceUpdate();
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                             this.props.globalState.onRebuildRequiredObservable.notifyObservers();
                         }} />
@@ -288,7 +288,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                         <OptionsLineComponent label="Attribute" valuesAreStrings={true} options={attributeOptions} target={inputBlock} propertyName="name" onSelect={(value: any) => {
                             inputBlock.setAsAttribute(value);
                             this.forceUpdate();
-                            
+
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                             this.props.globalState.onRebuildRequiredObservable.notifyObservers();
                         }} />
@@ -297,11 +297,11 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                         inputBlock.isUniform && animationOptions.length > 0 &&
                         <OptionsLineComponent label="Animation type" options={animationOptions} target={inputBlock} propertyName="animationType" onSelect={(value: any) => {
                             this.forceUpdate();
-                            
+
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                             this.props.globalState.onRebuildRequiredObservable.notifyObservers();
                         }} />
-                    }   
+                    }
                     {
                         inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === AnimatedInputBlockTypes.None &&
                         this.renderValue(this.props.globalState)
@@ -311,7 +311,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                         <OptionsLineComponent label="System value" options={systemValuesOptions} target={inputBlock} propertyName="systemValue" onSelect={(value: any) => {
                             inputBlock.setAsSystemValue(value);
                             this.forceUpdate();
-                            
+
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                             this.props.globalState.onRebuildRequiredObservable.notifyObservers();
                         }} />
