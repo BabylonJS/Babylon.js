@@ -1,0 +1,1 @@
+BABYLON.UIControls.UIControlsTest.Test(document.getElementById("host-element"), "ColorPicker");

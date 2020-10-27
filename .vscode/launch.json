@@ -1,6 +1,19 @@
 {
     "version": "2.0.0",
-    "configurations": [    
+    "configurations": [                 
+        {
+            "name": "Launch UI Controls (Edge) - Direct",
+            "type": "edge",
+            "version": "dev",
+            "request": "launch",
+            "url": "http://localhost:1338/uiControls/test/index-local.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis"
+            ]
+        },     
         {
             "name": "Launch Node Material Editor (Chrome)",
             "type": "chrome",

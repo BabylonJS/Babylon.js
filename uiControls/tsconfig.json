@@ -5,6 +5,9 @@
         "baseUrl": "./src/",
         "rootDir": "./src/",
         "paths": {
+            "babylonjs/*": [
+                "../../dist/preview release/babylon.module.d.ts"
+            ]
         }
     },
     "exclude": [

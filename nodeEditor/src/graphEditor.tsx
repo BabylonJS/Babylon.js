@@ -24,7 +24,6 @@ import * as ReactDOM from 'react-dom';
 import { IInspectorOptions } from "babylonjs/Debug/debugLayer";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
-
 require("./main.scss");
 
 interface IGraphEditorProps {

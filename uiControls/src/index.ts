@@ -1,1 +1,2 @@
-export * from "./colorPicker";
+export * from "./colorPicker/colorPicker";
+export * from "./uiControlsTest";
