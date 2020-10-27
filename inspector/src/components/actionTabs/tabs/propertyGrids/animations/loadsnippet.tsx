@@ -13,14 +13,23 @@ import { IAnimatable } from "babylonjs/Animations/animatable.interface";
 import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
 
 interface ILoadSnippetProps {
+    // Animations to load
     animations: Animation[];
+    // Observable
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    // Global lock object
     lockObject: LockObject;
+    // Global state
     globalState: GlobalState;
+    // Snippet server address
     snippetServer: string;
+    // Function to set the id of the snippert
     setSnippetId: (id: string) => void;
+    // entity to reference the animations
     entity: IAnimatable | TargetedAnimation;
+    // sets the message for error or warning
     setNotificationMessage: (message: string) => void;
+    // tells if animation have loaded successfully
     animationsLoaded: (numberOfAnimations: number) => void;
 }
 
@@ -95,12 +104,7 @@ export class LoadSnippet extends React.Component<ILoadSnippetProps, { snippetId:
     render() {
         return (
             <div className="load-container">
-                <TextInputLineComponent
-                    label="Snippet Id"
-                    lockObject={this.props.lockObject}
-                    value={this.state.snippetId}
-                    onChange={this.change}
-                />
+                <TextInputLineComponent label="Snippet Id" lockObject={this.props.lockObject} value={this.state.snippetId} onChange={this.change} />
                 <ButtonLineComponent label="Load from snippet server" onClick={this.loadFromSnippet} />
                 <div className="load-browse">
                     <p>Local File</p>

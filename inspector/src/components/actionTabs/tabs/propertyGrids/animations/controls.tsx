@@ -3,13 +3,21 @@ import { IAnimationKey } from "babylonjs/Animations/animationKey";
 import { IconButtonLineComponent } from "../../../lines/iconButtonLineComponent";
 
 interface IControlsProps {
+    // Keyframes to choose start or end of animation playback
     keyframes: IAnimationKey[] | null;
+    // The currently selected animation keyframe
     selected: IAnimationKey | null;
+    // The current frame number
     currentFrame: number;
+    // Event to change the current frame
     onCurrentFrameChange: (frame: number) => void;
+    // Event to communicate canvas repposition
     repositionCanvas: (keyframe: IAnimationKey) => void;
+    // Event to play, pause or play backwards the animation
     playPause: (direction: number) => void;
+    // If the animation is playing
     isPlaying: boolean;
+    // The reference to the scrollable dom object to set its position
     scrollable: React.RefObject<HTMLDivElement>;
 }
 
@@ -86,70 +94,30 @@ export class Controls extends React.Component<IControlsProps, { selected: IAnima
     render() {
         return (
             <div className="controls">
-                <IconButtonLineComponent
-                    tooltip="Animation Start"
-                    icon="animation-start"
-                    onClick={this.moveToAnimationStart}
-                ></IconButtonLineComponent>
-                <IconButtonLineComponent
-                    tooltip="Previous Keyframe"
-                    icon="animation-lastkey"
-                    onClick={this.previousKeyframe}
-                ></IconButtonLineComponent>
+                <IconButtonLineComponent tooltip="Animation Start" icon="animation-start" onClick={this.moveToAnimationStart}></IconButtonLineComponent>
+                <IconButtonLineComponent tooltip="Previous Keyframe" icon="animation-lastkey" onClick={this.previousKeyframe}></IconButtonLineComponent>
                 {this.props.isPlaying ? (
                     <div className="stop-container">
                         {this.state.playingType === "reverse" ? (
                             <>
-                                <IconButtonLineComponent
-                                    tooltip="Pause"
-                                    icon="animation-stop"
-                                    onClick={this.pause}
-                                ></IconButtonLineComponent>
-                                <IconButtonLineComponent
-                                    tooltip="Play Forward"
-                                    icon="animation-playfwd"
-                                    onClick={this.play}
-                                ></IconButtonLineComponent>
+                                <IconButtonLineComponent tooltip="Pause" icon="animation-stop" onClick={this.pause}></IconButtonLineComponent>
+                                <IconButtonLineComponent tooltip="Play Forward" icon="animation-playfwd" onClick={this.play}></IconButtonLineComponent>
                             </>
                         ) : (
                             <>
-                                <IconButtonLineComponent
-                                    tooltip="Play Reverse"
-                                    icon="animation-playrev"
-                                    onClick={this.playBackwards}
-                                ></IconButtonLineComponent>
-                                <IconButtonLineComponent
-                                    tooltip="Pause"
-                                    icon="animation-stop"
-                                    onClick={this.pause}
-                                ></IconButtonLineComponent>
+                                <IconButtonLineComponent tooltip="Play Reverse" icon="animation-playrev" onClick={this.playBackwards}></IconButtonLineComponent>
+                                <IconButtonLineComponent tooltip="Pause" icon="animation-stop" onClick={this.pause}></IconButtonLineComponent>
                             </>
                         )}
                     </div>
                 ) : (
                     <div className="stop-container">
-                        <IconButtonLineComponent
-                            tooltip="Play Reverse"
-                            icon="animation-playrev"
-                            onClick={this.playBackwards}
-                        ></IconButtonLineComponent>
-                        <IconButtonLineComponent
-                            tooltip="Play Forward"
-                            icon="animation-playfwd"
-                            onClick={this.play}
-                        ></IconButtonLineComponent>
+                        <IconButtonLineComponent tooltip="Play Reverse" icon="animation-playrev" onClick={this.playBackwards}></IconButtonLineComponent>
+                        <IconButtonLineComponent tooltip="Play Forward" icon="animation-playfwd" onClick={this.play}></IconButtonLineComponent>
                     </div>
                 )}
-                <IconButtonLineComponent
-                    tooltip="Next Keyframe"
-                    icon="animation-nextkey"
-                    onClick={this.nextKeyframe}
-                ></IconButtonLineComponent>
-                <IconButtonLineComponent
-                    tooltip="Animation End"
-                    icon="animation-end"
-                    onClick={this.moveToAnimationEnd}
-                ></IconButtonLineComponent>
+                <IconButtonLineComponent tooltip="Next Keyframe" icon="animation-nextkey" onClick={this.nextKeyframe}></IconButtonLineComponent>
+                <IconButtonLineComponent tooltip="Animation End" icon="animation-end" onClick={this.moveToAnimationEnd}></IconButtonLineComponent>
             </div>
         );
     }

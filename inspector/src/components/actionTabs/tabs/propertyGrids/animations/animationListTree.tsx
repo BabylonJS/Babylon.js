@@ -8,13 +8,21 @@ import { IconButtonLineComponent } from "../../../lines/iconButtonLineComponent"
 import { Nullable } from "babylonjs/types";
 
 interface IAnimationListTreeProps {
+    // If the animation is targeted animation or not
     isTargetedAnimation: boolean;
+    // The entity that is being targetd by the animations
     entity: IAnimatable | TargetedAnimation;
+    // The currently selected animations
     selected: Animation | null;
+    // The obeservable
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    // Event to send the selected animation and the coordinate to render the correct curve
     selectAnimation: (selected: Animation, coordinate?: SelectedCoordinate) => void;
+    // Event to empty the animation list
     empty: () => void;
+    // Event to edit the selected animation
     editAnimation: (selected: Animation) => void;
+    // Event to deselect the animation
     deselectAnimation: () => void;
 }
 
@@ -26,6 +34,7 @@ interface Item {
     open: boolean;
 }
 
+// Collection of coordinates available in different animated target property types.
 export enum SelectedCoordinate {
     x = 0,
     y = 1,
@@ -195,9 +204,7 @@ export class AnimationListTree extends React.Component<
                         <div className="spacer"></div>
                     )
                 ) : null}
-                <ul className={`sub-list ${this.state.animationList && this.state.animationList[i].open ? "" : "hidden"}`}>
-                    {childrenElements.map((c) => this.coordinateItem(i, animation, c.id, c.color, c.coordinate))}
-                </ul>
+                <ul className={`sub-list ${this.state.animationList && this.state.animationList[i].open ? "" : "hidden"}`}>{childrenElements.map((c) => this.coordinateItem(i, animation, c.id, c.color, c.coordinate))}</ul>
             </li>
         );
     }
@@ -212,13 +219,7 @@ export class AnimationListTree extends React.Component<
                         <div className={`animation-bullet`}></div>
                         <p>{animation.targetProperty}</p>
                         <IconButtonLineComponent tooltip="Options" icon="small animation-options" onClick={editAnimation} />
-                        {!(this.props.entity instanceof TargetedAnimation) ? (
-                            this.props.selected && this.props.selected.name === animation.name ? (
-                                <IconButtonLineComponent tooltip="Remove" icon="small animation-delete" onClick={this.deleteAnimation} />
-                            ) : (
-                                <div className="spacer"></div>
-                            )
-                        ) : null}
+                        {!(this.props.entity instanceof TargetedAnimation) ? this.props.selected && this.props.selected.name === animation.name ? <IconButtonLineComponent tooltip="Remove" icon="small animation-delete" onClick={this.deleteAnimation} /> : <div className="spacer"></div> : null}
                     </li>
                 );
             case Animation.ANIMATIONTYPE_VECTOR2:
