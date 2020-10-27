@@ -238,7 +238,9 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
             isBrokenMode: false,
             lerpMode: initialLerpMode,
             playheadOffset: this._graphCanvas.current ? this._graphCanvas.current.children[0].clientWidth / (_canvasLength * 10) : 0,
+            // Set default frame for visible canvas
             frameAxisLength: this.setFrameAxis(_canvasLength),
+            // Set default values for the visible canvas
             valueAxisLength: new Array(10).fill(0).map((s, i) => {
                 return { value: i * 10, label: valueInd[i] };
             }),
@@ -247,6 +249,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
             scale: 1,
             playheadPos: 0,
             isPlaying: false,
+            // The initial curve if exists on load
             selectedPathData: initialPathData,
             selectedCoordinate: 0,
             animationLimit: _canvasLength / 2,
@@ -269,23 +272,29 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         };
     }
 
-    // Control the window resize event
     componentDidMount() {
         this.state.selected && this.selectAnimation(this.state.selected);
-
+        // Control the window resize event
         if (this._editor.current && this._editor.current.ownerDocument && this._editor.current.ownerDocument.defaultView) {
             this._editorWindow = this._editor.current.ownerDocument.defaultView;
             this._editorWindow.addEventListener("resize", this.onWindowResizeWidth.bind(this));
         }
     }
 
-    // Connects scene frame with curve editor animation
+    /**
+     * Connects scene frame with curve editor animation
+     * @param prevProps previous Props
+     * @param prevState previous State
+     */
     componentDidUpdate(prevProps: IAnimationCurveEditorComponentProps, prevState: any) {
         if (prevState.currentFrame !== this.state.currentFrame) {
             this.onCurrentFrameChangeScene(this.state.currentFrame);
         }
     }
 
+    /**
+     * Clean up observer and listeners
+     */
     componentWillUnmount() {
         this.playPause(0);
         if (this._onBeforeRenderObserver) {
