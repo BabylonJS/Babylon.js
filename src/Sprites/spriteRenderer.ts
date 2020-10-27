@@ -318,6 +318,10 @@ export class SpriteRenderer {
             customSpriteUpdate(sprite, baseSize);
         }
         else {
+            if (!sprite.cellIndex) {
+                sprite.cellIndex = 0;
+            }
+
             const rowSize = baseSize.width / this.cellWidth;
             const offset = (sprite.cellIndex / rowSize) >> 0;
             sprite._xOffset = (sprite.cellIndex - offset * rowSize) * this.cellWidth / baseSize.width;
