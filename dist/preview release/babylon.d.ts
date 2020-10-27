@@ -11798,6 +11798,10 @@ declare module BABYLON {
         groupInInspector: string;
         /** Gets an observable raised when the value is changed */
         onValueChangedObservable: Observable<InputBlock>;
+        /** Gets or sets a boolean indicating if content needs to be converted to gamma space (for color3/4 only) */
+        convertToGammaSpace: boolean;
+        /** Gets or sets a boolean indicating if content needs to be converted to linear space (for color3/4 only) */
+        convertToLinearSpace: boolean;
         /**
          * Gets or sets the connection point type (default is float)
          */
@@ -53107,6 +53111,14 @@ declare module BABYLON {
          * Meshes that the teleportation ray cannot go through
          */
         pickBlockerMeshes?: AbstractMesh[];
+        /**
+         * Should teleport work only on a specific hand?
+         */
+        forceHandedness?: XRHandedness;
+        /**
+         * If provided, this function will be used to generate the ray mesh instead of the lines mesh being used per default
+         */
+        generateRayPathMesh?: (points: Vector3[]) => AbstractMesh;
     }
     /**
      * This is a teleportation feature to be used with WebXR-enabled motion controllers.
@@ -53157,14 +53169,29 @@ declare module BABYLON {
          */
         parabolicRayEnabled: boolean;
         /**
+         * The second type of ray - straight line.
+         * Should it be enabled or should the parabolic line be the only one.
+         */
+        straightRayEnabled: boolean;
+        /**
          * How much rotation should be applied when rotating right and left
          */
         rotationAngle: number;
+        private _rotationEnabled;
         /**
          * Is rotation enabled when moving forward?
          * Disabling this feature will prevent the user from deciding the direction when teleporting
          */
-        rotationEnabled: boolean;
+        get rotationEnabled(): boolean;
+        /**
+         * Sets wether rotation is enabled or not
+         * @param enabled is rotation enabled when teleportation is shown
+         */
+        set rotationEnabled(enabled: boolean);
+        /**
+         * Exposes the currently set teleportation target mesh.
+         */
+        get teleportationTargetMesh(): Nullable<AbstractMesh>;
         /**
          * constructs a new anchor system
          * @param _xrSessionManager an instance of WebXRSessionManager
@@ -76183,6 +76210,10 @@ declare module BABYLON {
          * @returns A promise that fulfills when babylon has created the corresponding WebXRAnchor object and tracking has begun
          */
         addAnchorAtPositionAndRotationAsync(position: Vector3, rotationQuaternion?: Quaternion, forceCreateInCurrentFrame?: boolean): Promise<IWebXRAnchor>;
+        /**
+         * Get the list of anchors currently being tracked by the system
+         */
+        get anchors(): IWebXRAnchor[];
         /**
          * detach this feature.
          * Will usually be called by the features manager
