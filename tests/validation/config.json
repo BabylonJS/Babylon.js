@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [   
         {
+            "title": "Sprites",
+            "playgroundId": "#ZX8DJ3#1",
+            "referenceImage": "Sprites.png"
+        },
+        {
             "title": "Procedural texture with NME",       
             "renderCount": 10,
             "playgroundId": "#8S19ZC#1",            
@@ -31,8 +36,7 @@
         {
             "title": "Sprite maps",
             "playgroundId": "#ARLADE#23",
-            "referenceImage": "sprite-maps.png",            
-            "excludeFromAutomaticTesting": true
+            "referenceImage": "sprite-maps.png"
         },              
         {
             "title": "Point light shadows",
