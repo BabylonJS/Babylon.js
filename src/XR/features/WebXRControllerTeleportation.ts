@@ -226,6 +226,9 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         }
     }
 
+    /**
+     * Exposes the currently set teleportation target mesh.
+     */
     public get teleportationTargetMesh(): Nullable<AbstractMesh> {
         return this._options.teleportationTargetMesh || null;
     }
