@@ -871,7 +871,7 @@ export class Effect implements IDisposable {
             }
         }
 
-        this._engine.setTextureArray(this._samplers[channel], this._uniforms[channel], textures);
+        this._engine.setTextureArray(this._samplers[channel], this._uniforms[channel], textures, channel);
     }
 
     /**
