@@ -3915,7 +3915,7 @@ export class ThinEngine {
      * @param uniform defines the associated uniform location
      * @param textures defines the array of textures to bind
      */
-    public setTextureArray(channel: number, uniform: Nullable<WebGLUniformLocation>, textures: BaseTexture[]): void {
+    public setTextureArray(channel: number, uniform: Nullable<WebGLUniformLocation>, textures: BaseTexture[], name: string): void {
         if (channel === undefined || !uniform) {
             return;
         }

@@ -1624,25 +1624,28 @@ export class WebGPUEngine extends Engine {
         }
     }
 
-    private _setInternalTexture(name: string, internalTexture: Nullable<InternalTexture>): void {
+    private _setInternalTexture(name: string, internalTexture: Nullable<InternalTexture>, baseName?: string, textureIndex = 0): void {
+        baseName = baseName ?? name;
         if (this._currentEffect) {
             const webgpuPipelineContext = this._currentEffect._pipelineContext as WebGPUPipelineContext;
 
-            if (webgpuPipelineContext.samplers[name]) {
-                if (webgpuPipelineContext.samplers[name]!.texture !== internalTexture) {
+            if (webgpuPipelineContext.textures[name]) {
+                if (webgpuPipelineContext.textures[name]!.texture !== internalTexture) {
                     webgpuPipelineContext.bindGroups = null as any; // the bind groups need to be rebuilt (at least the bind group owning this texture, but it's easier to just have them all rebuilt)
                 }
-                webgpuPipelineContext.samplers[name]!.texture = internalTexture!;
+                webgpuPipelineContext.textures[name]!.texture = internalTexture!;
             }
             else {
                 // TODO WEBGPU. 121 mapping samplers <-> availableSamplers
-                const availableSampler = webgpuPipelineContext.availableSamplers[name];
+                const availableSampler = webgpuPipelineContext.availableSamplers[baseName];
                 if (availableSampler) {
-                    webgpuPipelineContext.samplers[name] = {
-                        setIndex: availableSampler.setIndex,
-                        textureBinding: availableSampler.bindingIndex,
-                        samplerBinding: availableSampler.bindingIndex + 1,
-                        texture: internalTexture!
+                    webgpuPipelineContext.samplers[baseName] = {
+                        samplerBinding: availableSampler.sampler.bindingIndex,
+                        firstTextureName: name,
+                    };
+                    webgpuPipelineContext.textures[name] = {
+                        textureBinding: availableSampler.textures[textureIndex].bindingIndex,
+                        texture: internalTexture!,
                     };
                 }
             }
@@ -1650,17 +1653,27 @@ export class WebGPUEngine extends Engine {
     }
 
     public setTexture(channel: number, _: Nullable<WebGLUniformLocation>, texture: Nullable<BaseTexture>, name: string): void {
-        this._setTexture(channel, texture, false, false, name);
+        this._setTexture(channel, texture, false, false, name, name);
     }
 
-    protected _setTexture(channel: number, texture: Nullable<BaseTexture>, isPartOfTextureArray = false, depthStencilTexture = false, name = ""): boolean {
+    public setTextureArray(channel: number, _: Nullable<WebGLUniformLocation>, textures: BaseTexture[], name: string): void {
+        for (var index = 0; index < textures.length; index++) {
+            this._setTexture(-1, textures[index], true, false, name + index.toString(), name, index);
+        }
+    }
+
+    protected _setTexture(channel: number, texture: Nullable<BaseTexture>, isPartOfTextureArray = false, depthStencilTexture = false, name = "", baseName = "", textureIndex = 0): boolean {
+        // name == baseName for a texture that is not part of a texture array
+        // Else, name is something like 'myTexture0' / 'myTexture1' / ... and baseName is 'myTexture'
+        // baseName is used to look up the sampler in the WebGPUPipelineContext.samplers map
+        // name is used to look up the texture in the WebGPUPipelineContext.textures map
         if (this._currentEffect) {
             const webgpuPipelineContext = this._currentEffect._pipelineContext as WebGPUPipelineContext;
             if (!texture) {
-                if (webgpuPipelineContext.samplers[name] && webgpuPipelineContext.samplers[name]!.texture) {
+                if (webgpuPipelineContext.textures[name] && webgpuPipelineContext.textures[name]!.texture) {
                     webgpuPipelineContext.bindGroups = null as any; // the bind groups need to be rebuilt (at least the bind group owning this texture, but it's easier to just have them all rebuilt)
                 }
-                webgpuPipelineContext.samplers[name] = null;
+                webgpuPipelineContext.textures[name] = null;
                 return false;
             }
 
@@ -1728,7 +1741,7 @@ export class WebGPUEngine extends Engine {
                 debugger;
             }
 
-            this._setInternalTexture(name, internalTexture);
+            this._setInternalTexture(name, internalTexture, baseName, textureIndex);
         } else {
             if (dbgVerboseLogsForFirstFrames) {
                 if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
@@ -3183,6 +3196,12 @@ export class WebGPUEngine extends Engine {
                     entries.push({
                         binding: j,
                         visibility: WebGPUConstants.ShaderStage.Vertex | WebGPUConstants.ShaderStage.Fragment,
+                        type: bindingDefinition.isComparisonSampler ? WebGPUConstants.BindingType.ComparisonSampler : WebGPUConstants.BindingType.Sampler
+                    });
+                } else if (bindingDefinition.isTexture) {
+                    entries.push({
+                        binding: j,
+                        visibility: WebGPUConstants.ShaderStage.Vertex | WebGPUConstants.ShaderStage.Fragment,
                         type: WebGPUConstants.BindingType.SampledTexture,
                         viewDimension: bindingDefinition.textureDimension,
                         // TODO WEBGPU. Handle texture component type properly.
@@ -3191,14 +3210,8 @@ export class WebGPUEngine extends Engine {
                         // hasDynamicOffset?: boolean;
                         // storageTextureFormat?: GPUTextureFormat;
                         // minBufferBindingSize?: number;
-                    }, {
-                        // TODO WEBGPU. No Magic + 1 (coming from current 1 texture 1 sampler startegy).
-                        binding: j + 1,
-                        visibility: WebGPUConstants.ShaderStage.Vertex | WebGPUConstants.ShaderStage.Fragment,
-                        type: bindingDefinition.isComparisonSampler ? WebGPUConstants.BindingType.ComparisonSampler : WebGPUConstants.BindingType.Sampler
                     });
-                }
-                else {
+                } else {
                     entries.push({
                         binding: j,
                         visibility: WebGPUConstants.ShaderStage.Vertex | WebGPUConstants.ShaderStage.Fragment,
@@ -3350,9 +3363,35 @@ export class WebGPUEngine extends Engine {
                 if (bindingDefinition.isSampler) {
                     const bindingInfo = webgpuPipelineContext.samplers[bindingDefinition.name];
                     if (bindingInfo) {
+                        if (!bindingInfo.sampler) {
+                            const texture = webgpuPipelineContext.textures[bindingInfo.firstTextureName]?.texture;
+                            if (!texture) {
+                                Logger.Error(`Could not create the gpu sampler "${bindingDefinition.name}" because no texture can be looked up for the name "${bindingInfo.firstTextureName}". bindingInfo=${JSON.stringify(bindingInfo)}, webgpuPipelineContext.textures=${webgpuPipelineContext.textures}`);
+                                continue;
+                            }
+                            const hardwareTexture = texture._hardwareTexture as WebGPUHardwareTexture;
+                            if (!hardwareTexture.sampler) {
+                                const samplerDescriptor: GPUSamplerDescriptor = this._getSamplerDescriptor(texture);
+                                const gpuSampler = this._device.createSampler(samplerDescriptor);
+                                hardwareTexture.sampler = gpuSampler;
+                            }
+                            bindingInfo.sampler = hardwareTexture.sampler;
+                        }
+
+                        entries.push({
+                            binding: bindingInfo.samplerBinding,
+                            resource: bindingInfo.sampler,
+                        });
+                    }
+                    else {
+                        Logger.Error(`Sampler "${bindingDefinition.name}" could not be bound. bindingDefinition=${JSON.stringify(bindingDefinition)}`);
+                    }
+                } else if (bindingDefinition.isTexture) {
+                    const bindingInfo = webgpuPipelineContext.textures[bindingDefinition.name];
+                    if (bindingInfo) {
                         if (dbgSanityChecks && bindingInfo.texture === null) {
-                            console.error("Trying to bind a null texture! bindingDefinition=", bindingDefinition, " | bindingInfo=", bindingInfo);
-                            debugger;
+                            Logger.Error(`Trying to bind a null texture! bindingDefinition=${JSON.stringify(bindingDefinition)}, bindingInfo=${JSON.stringify(bindingInfo)}`);
+                            continue;
                         }
                         const hardwareTexture = bindingInfo.texture._hardwareTexture as WebGPUHardwareTexture;
                         if (!hardwareTexture.sampler) {
@@ -3362,29 +3401,25 @@ export class WebGPUEngine extends Engine {
                         }
 
                         if (dbgSanityChecks && !hardwareTexture.view) {
-                            console.error("Trying to bind a null gpu texture! bindingDefinition=", bindingDefinition, " | bindingInfo=", bindingInfo, " | isReady=", bindingInfo.texture.isReady);
-                            debugger;
+                            Logger.Error(`Trying to bind a null gpu texture! bindingDefinition=${JSON.stringify(bindingDefinition)}, bindingInfo=${JSON.stringify(bindingInfo)}, isReady=${bindingInfo.texture.isReady}`);
+                            continue;
                         }
 
                         // TODO WEBGPU remove this code
                         if ((bindingInfo.texture as any)._released) {
                             console.error("Trying to bind a released texture!", bindingInfo.texture, bindingInfo);
-                            debugger;
+                            continue;
                         }
 
                         entries.push({
                             binding: bindingInfo.textureBinding,
                             resource: hardwareTexture.view!,
-                        }, {
-                            binding: bindingInfo.samplerBinding,
-                            resource: hardwareTexture.sampler!,
                         });
                     }
                     else {
-                        Logger.Error("Sampler has not been bound: " + bindingDefinition.name);
+                        Logger.Error(`Texture "${bindingDefinition.name}" could not be bound. bindingDefinition=${JSON.stringify(bindingDefinition)}`);
                     }
-                }
-                else {
+                } else {
                     const dataBuffer = this._uniformsBuffers[bindingDefinition.name];
                     if (dataBuffer) {
                         const webgpuBuffer = dataBuffer.underlyingResource as GPUBuffer;

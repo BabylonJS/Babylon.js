@@ -10,6 +10,19 @@ const _webGLTypeToLocationSize: { [key: string]: number } = {
     "mat4": 4,
 };
 
+/** @hidden */
+export interface WebGPUBindingInfo {
+    setIndex: number;
+    bindingIndex: number;
+}
+
+/** @hidden */
+export interface WebGPUTextureSamplerBindingDescription {
+    sampler: WebGPUBindingInfo;
+    isTextureArray: boolean;
+    textures: Array<WebGPUBindingInfo>;
+}
+
 /**
  * @hidden
  */
@@ -21,31 +34,15 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
     public availableVaryings: { [key: string]: number };
     public availableAttributes: { [key: string]: number };
     public availableUBOs: { [key: string]: { setIndex: number, bindingIndex: number} };
-    public availableSamplers: { [key: string]: { setIndex: number, bindingIndex: number} };
+    public availableSamplers: { [key: string]: WebGPUTextureSamplerBindingDescription };
 
     public leftOverUniforms: { name: string, type: string, length: number }[];
 
     public orderedAttributes: string[];
-    public orderedUBOsAndSamplers: { name: string, isSampler: boolean, isComparisonSampler?: boolean, textureDimension?: GPUTextureViewDimension }[][];
+    public orderedUBOsAndSamplers: { name: string, isSampler: boolean, isComparisonSampler?: boolean, isTexture: boolean, textureIndex?: number, textureDimension?: GPUTextureViewDimension }[][];
 
     private _attributeNextLocation: number;
     private _varyingNextLocation: number;
-
-    public getAttributeNextLocation(dataType: string, arrayLength: number = 0): number {
-        const index = this._attributeNextLocation;
-
-        this._attributeNextLocation += (_webGLTypeToLocationSize[dataType] ?? 1) * (arrayLength || 1);
-
-        return index;
-    }
-
-    public getVaryingNextLocation(dataType: string, arrayLength: number = 0): number {
-        const index = this._varyingNextLocation;
-
-        this._varyingNextLocation += (_webGLTypeToLocationSize[dataType] ?? 1) * (arrayLength || 1);
-
-        return index;
-    }
 
     constructor() {
         this._attributeNextLocation = 0;
@@ -64,12 +61,24 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
         this.leftOverUniforms = [];
     }
 
-    public getNextFreeUBOBinding() {
-        return this._getNextFreeBinding(1);
+    public getAttributeNextLocation(dataType: string, arrayLength: number = 0): number {
+        const index = this._attributeNextLocation;
+
+        this._attributeNextLocation += (_webGLTypeToLocationSize[dataType] ?? 1) * (arrayLength || 1);
+
+        return index;
     }
 
-    public getNextFreeTextureBinding() {
-        return this._getNextFreeBinding(2);
+    public getVaryingNextLocation(dataType: string, arrayLength: number = 0): number {
+        const index = this._varyingNextLocation;
+
+        this._varyingNextLocation += (_webGLTypeToLocationSize[dataType] ?? 1) * (arrayLength || 1);
+
+        return index;
+    }
+
+    public getNextFreeUBOBinding() {
+        return this._getNextFreeBinding(1);
     }
 
     private _getNextFreeBinding(bindingCount: number) {

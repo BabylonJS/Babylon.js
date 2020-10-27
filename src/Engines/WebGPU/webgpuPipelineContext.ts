@@ -3,7 +3,7 @@ import { Nullable } from '../../types';
 import { WebGPUEngine } from '../webgpuEngine';
 import { InternalTexture } from '../../Materials/Textures/internalTexture';
 import { Effect } from '../../Materials/effect';
-import { WebGPUShaderProcessingContext } from './webgpuShaderProcessingContext';
+import { WebGPUTextureSamplerBindingDescription, WebGPUShaderProcessingContext } from './webgpuShaderProcessingContext';
 import { UniformBuffer } from "../../Materials/uniformBuffer";
 import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from '../../Maths/math.like';
 
@@ -24,12 +24,14 @@ const _uniformSizes: { [type: string]: number } = {
 
 /** @hidden */
 export interface IWebGPUPipelineContextSamplerCache {
-    setIndex: number;
-
-    textureBinding: number;
-
     samplerBinding: number;
+    firstTextureName: string;
+    sampler?: GPUSampler;
+}
 
+/** @hidden */
+export interface IWebGPUPipelineContextTextureCache {
+    textureBinding: number;
     texture: InternalTexture;
 }
 
@@ -54,10 +56,10 @@ export class WebGPUPipelineContext implements IPipelineContext {
 
     public availableAttributes: { [key: string]: number };
     public availableUBOs: { [key: string]: { setIndex: number, bindingIndex: number} };
-    public availableSamplers: { [key: string]: { setIndex: number, bindingIndex: number} };
+    public availableSamplers: { [key: string]: WebGPUTextureSamplerBindingDescription };
 
     public orderedAttributes: string[];
-    public orderedUBOsAndSamplers: { name: string, isSampler: boolean, isComparisonSampler?: boolean, textureDimension?: GPUTextureViewDimension }[][];
+    public orderedUBOsAndSamplers: { name: string, isSampler: boolean, isComparisonSampler?: boolean, isTexture: boolean, textureDimension?: GPUTextureViewDimension }[][];
 
     public leftOverUniforms: { name: string, type: string, length: number }[];
     public leftOverUniformsByName: { [name: string]: string };
@@ -72,6 +74,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
     public stages: Nullable<IWebGPURenderPipelineStageDescriptor>;
 
     public samplers: { [name: string]: Nullable<IWebGPUPipelineContextSamplerCache> } = { };
+    public textures: { [name: string]: Nullable<IWebGPUPipelineContextTextureCache> } = { };
 
     public vertexInputs: IWebGPUPipelineContextVertexInputsCache;
 
