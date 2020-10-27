@@ -236,6 +236,10 @@ export class Geometry implements IGetSetVerticesData {
      * @param stride defines the stride to use (0 by default). This value is deduced from the kind value if not specified
      */
     public setVerticesData(kind: string, data: FloatArray, updatable: boolean = false, stride?: number): void {
+        if (updatable && Array.isArray(data)) {
+            // to avoid converting to Float32Array at each draw call in engine.updateDynamicVertexBuffer, we make the conversion a single time here
+            data = new Float32Array(data);
+        }
         var buffer = new VertexBuffer(this._engine, data, kind, updatable, this._meshes.length === 0, stride);
         this.setVerticesBuffer(buffer);
     }
