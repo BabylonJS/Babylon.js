@@ -14,13 +14,11 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
     }
 
     public view: Nullable<GPUTextureView>;
-    public sampler: Nullable<GPUSampler>;
     public format: GPUTextureFormat = WebGPUConstants.TextureFormat.RGBA8Unorm;
 
     constructor(existingTexture: Nullable<GPUTexture> = null) {
         this._webgpuTexture = existingTexture;
         this.view = null;
-        this.sampler = null;
     }
 
     public set(hardwareTexture: GPUTexture): void {
@@ -46,7 +44,6 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
     public reset(): void {
         this._webgpuTexture = null;
         this.view = null;
-        this.sampler = null;
     }
 
     public release(): void {
