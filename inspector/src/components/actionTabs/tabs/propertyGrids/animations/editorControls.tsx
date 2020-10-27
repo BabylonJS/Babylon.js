@@ -265,17 +265,54 @@ export class EditorControls extends React.Component<IEditorControlsProps, IEdito
         return (
             <div className="animation-list">
                 <div className="controls-header">
-                    {this.props.isTargetedAnimation ? null : <IconButtonLineComponent active={this.state.isAnimationTabOpen} tooltip="Add Animation" icon="medium add-animation" onClick={this.handleFirstTab}></IconButtonLineComponent>}
-                    <IconButtonLineComponent active={this.state.isLoadTabOpen} tooltip="Load Animation" icon="medium load" onClick={this.handleSecondTab}></IconButtonLineComponent>
-                    {this.state.animationsCount === 0 ? null : <IconButtonLineComponent active={this.state.isSaveTabOpen} tooltip="Save Animation" icon="medium save" onClick={this.handleThirdTab}></IconButtonLineComponent>}
-                    {this.state.animationsCount === 0 ? null : <IconButtonLineComponent active={this.state.isEditTabOpen} tooltip="Edit Animations" icon="medium animation-edit" onClick={this.handleFourthTab}></IconButtonLineComponent>}
+                    {this.props.isTargetedAnimation ? null : (
+                        <IconButtonLineComponent
+                            active={this.state.isAnimationTabOpen}
+                            tooltip="Add Animation"
+                            icon="medium add-animation"
+                            onClick={this.handleFirstTab}
+                        ></IconButtonLineComponent>
+                    )}
+                    <IconButtonLineComponent
+                        active={this.state.isLoadTabOpen}
+                        tooltip="Load Animation"
+                        icon="medium load"
+                        onClick={this.handleSecondTab}
+                    ></IconButtonLineComponent>
+                    {this.state.animationsCount === 0 ? null : (
+                        <IconButtonLineComponent
+                            active={this.state.isSaveTabOpen}
+                            tooltip="Save Animation"
+                            icon="medium save"
+                            onClick={this.handleThirdTab}
+                        ></IconButtonLineComponent>
+                    )}
+                    {this.state.animationsCount === 0 ? null : (
+                        <IconButtonLineComponent
+                            active={this.state.isEditTabOpen}
+                            tooltip="Edit Animations"
+                            icon="medium animation-edit"
+                            onClick={this.handleFourthTab}
+                        ></IconButtonLineComponent>
+                    )}
                     {this.state.isEditTabOpen ? (
                         <div className="input-fps">
-                            <NumericInputComponent label={""} precision={0} value={this.state.framesPerSecond} onChange={this.handleChangeFps} />
+                            <NumericInputComponent
+                                label={""}
+                                precision={0}
+                                value={this.state.framesPerSecond}
+                                onChange={this.handleChangeFps}
+                            />
                             <p>fps</p>
                         </div>
                     ) : null}
-                    {this.state.isEditTabOpen ? <IconButtonLineComponent tooltip="Loop/Unloop" icon={`medium ${this.state.isLoopActive ? "loop-active last" : "loop-inactive last"}`} onClick={this.changeLoopBehavior}></IconButtonLineComponent> : null}
+                    {this.state.isEditTabOpen ? (
+                        <IconButtonLineComponent
+                            tooltip="Loop/Unloop"
+                            icon={`medium ${this.state.isLoopActive ? "loop-active last" : "loop-inactive last"}`}
+                            onClick={this.changeLoopBehavior}
+                        ></IconButtonLineComponent>
+                    ) : null}
                 </div>
                 {this.props.isTargetedAnimation ? null : (
                     <AddAnimation
@@ -304,7 +341,15 @@ export class EditorControls extends React.Component<IEditorControlsProps, IEdito
                     />
                 ) : null}
 
-                {this.state.isSaveTabOpen ? <SaveSnippet lockObject={this.props.lockObject} animations={(this.props.entity as IAnimatable).animations} snippetServer={this.props.snippetServer} globalState={this.props.globalState} snippetId={this.state.snippetId} /> : null}
+                {this.state.isSaveTabOpen ? (
+                    <SaveSnippet
+                        lockObject={this.props.lockObject}
+                        animations={(this.props.entity as IAnimatable).animations}
+                        snippetServer={this.props.snippetServer}
+                        globalState={this.props.globalState}
+                        snippetId={this.state.snippetId}
+                    />
+                ) : null}
 
                 {this.state.isEditTabOpen ? (
                     <AnimationListTree

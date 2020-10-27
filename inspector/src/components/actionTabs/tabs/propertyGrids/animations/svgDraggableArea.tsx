@@ -84,7 +84,11 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
 
     // Makes sure the canvas has resposition correctly
     componentDidUpdate(prevProps: ISvgDraggableAreaProps) {
-        if (this.props.positionCanvas !== prevProps.positionCanvas && this.props.positionCanvas !== undefined && this.props.repositionCanvas) {
+        if (
+            this.props.positionCanvas !== prevProps.positionCanvas &&
+            this.props.positionCanvas !== undefined &&
+            this.props.repositionCanvas
+        ) {
             this.setState(
                 {
                     panX: this.props.positionCanvas.x,
@@ -128,7 +132,10 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
         if ((e.target as SVGSVGElement).classList.contains("pannable")) {
             if (this._isControlKeyPress) {
                 this._active = true;
-                this._panStart.set(e.clientX - e.currentTarget.getBoundingClientRect().left, e.clientY - e.currentTarget.getBoundingClientRect().top);
+                this._panStart.set(
+                    e.clientX - e.currentTarget.getBoundingClientRect().left,
+                    e.clientY - e.currentTarget.getBoundingClientRect().top
+                );
             }
         }
     };
@@ -144,13 +151,20 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
                 if ((e.target as SVGSVGElement).classList.contains("pannable")) {
                     if (this._isControlKeyPress) {
                         if (this._panStart.x !== 0 && this._panStart.y !== 0) {
-                            this._panStop.set(e.clientX - e.currentTarget.getBoundingClientRect().left, e.clientY - e.currentTarget.getBoundingClientRect().top);
+                            this._panStop.set(
+                                e.clientX - e.currentTarget.getBoundingClientRect().left,
+                                e.clientY - e.currentTarget.getBoundingClientRect().top
+                            );
                             this.panDirection();
                         }
                     }
                 }
                 // Handles the playhead dragging
-                if (e.currentTarget.classList.contains("linear") && this._playheadDrag !== 0 && this._playheadSelected) {
+                if (
+                    e.currentTarget.classList.contains("linear") &&
+                    this._playheadDrag !== 0 &&
+                    this._playheadSelected
+                ) {
                     const moving = e.clientX - e.currentTarget.getBoundingClientRect().left;
 
                     const draggableAreaWidth = e.currentTarget.clientWidth;
@@ -336,10 +350,22 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
     }
 
     render() {
-        const viewBoxScaling = `${this.props.positionCanvas?.x} ${this.props.positionCanvas?.y} ${Math.round(this.props.scale * 200)} ${Math.round(this.props.scale * 100)}`;
+        const viewBoxScaling = `${this.props.positionCanvas?.x} ${this.props.positionCanvas?.y} ${Math.round(
+            this.props.scale * 200
+        )} ${Math.round(this.props.scale * 100)}`;
         return (
             <>
-                <svg className="linear pannable" ref={this._draggableArea} tabIndex={0} onMouseMove={this.drag} onMouseDown={this.dragStart} onMouseUp={this.dragEnd} onMouseLeave={this.dragEnd} onClick={this.focus} viewBox={viewBoxScaling}>
+                <svg
+                    className="linear pannable"
+                    ref={this._draggableArea}
+                    tabIndex={0}
+                    onMouseMove={this.drag}
+                    onMouseDown={this.dragStart}
+                    onMouseUp={this.dragEnd}
+                    onMouseLeave={this.dragEnd}
+                    onClick={this.focus}
+                    viewBox={viewBoxScaling}
+                >
                     {this.props.children}
                 </svg>
             </>

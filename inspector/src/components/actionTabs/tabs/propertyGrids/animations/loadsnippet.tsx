@@ -104,7 +104,12 @@ export class LoadSnippet extends React.Component<ILoadSnippetProps, { snippetId:
     render() {
         return (
             <div className="load-container">
-                <TextInputLineComponent label="Snippet Id" lockObject={this.props.lockObject} value={this.state.snippetId} onChange={this.change} />
+                <TextInputLineComponent
+                    label="Snippet Id"
+                    lockObject={this.props.lockObject}
+                    value={this.state.snippetId}
+                    onChange={this.change}
+                />
                 <ButtonLineComponent label="Load from snippet server" onClick={this.loadFromSnippet} />
                 <div className="load-browse">
                     <p>Local File</p>

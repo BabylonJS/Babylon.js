@@ -39,7 +39,10 @@ interface IGraphActionsBarProps {
  * Has the buttons and actions for the Canvas Graph.
  * Handles input change and actions (flat, broken mode, set linear control points)
  */
-export class GraphActionsBar extends React.Component<IGraphActionsBarProps, { frame: string; value: string; min: number | undefined; max: number | undefined }> {
+export class GraphActionsBar extends React.Component<
+    IGraphActionsBarProps,
+    { frame: string; value: string; min: number | undefined; max: number | undefined }
+> {
     private _frameInput: React.RefObject<HTMLInputElement>;
     private _valueInput: React.RefObject<HTMLInputElement>;
     constructor(props: IGraphActionsBarProps) {
@@ -63,7 +66,10 @@ export class GraphActionsBar extends React.Component<IGraphActionsBarProps, { fr
             this.setState({ frame, value });
         }
 
-        if (prevProps.frameRange.min !== this.props.frameRange.min || prevProps.frameRange.max !== this.props.frameRange.max) {
+        if (
+            prevProps.frameRange.min !== this.props.frameRange.min ||
+            prevProps.frameRange.max !== this.props.frameRange.max
+        ) {
             this.setState({ min: this.props.frameRange.min, max: this.props.frameRange.max });
         }
     }
@@ -151,18 +157,56 @@ export class GraphActionsBar extends React.Component<IGraphActionsBarProps, { fr
                     <div className="icon babylon-logo"></div>
                     <div className="title">{this.props.title}</div>
                 </div>
-                <div className={`buttons-container ${this.props.enabled ? "pointer-events-enabled" : "pointer-events-disabled"}`}>
+                <div
+                    className={`buttons-container ${
+                        this.props.enabled ? "pointer-events-enabled" : "pointer-events-disabled"
+                    }`}
+                >
                     <div className="action-input frame-input">
-                        <input ref={this._frameInput} type="number" onChange={this.handleFrameChange} value={this.state.frame} max={this.state.max} min={this.state.min} step="1" disabled={this.props.actionableKeyframe.frame === undefined} onBlur={this.onBlur} />
+                        <input
+                            ref={this._frameInput}
+                            type="number"
+                            onChange={this.handleFrameChange}
+                            value={this.state.frame}
+                            max={this.state.max}
+                            min={this.state.min}
+                            step="1"
+                            disabled={this.props.actionableKeyframe.frame === undefined}
+                            onBlur={this.onBlur}
+                        />
                     </div>
                     <div className="action-input">
-                        <input ref={this._valueInput} type="number" value={this.state.value} onChange={this.handleValueChange} step="0.01" disabled={this.props.actionableKeyframe.value === undefined} onBlur={this.onBlur} />
+                        <input
+                            ref={this._valueInput}
+                            type="number"
+                            value={this.state.value}
+                            onChange={this.handleValueChange}
+                            step="0.01"
+                            disabled={this.props.actionableKeyframe.value === undefined}
+                            onBlur={this.onBlur}
+                        />
                     </div>
                     <IconButtonLineComponent tooltip={"Add Keyframe"} icon="new-key" onClick={this.props.addKeyframe} />
-                    <IconButtonLineComponent tooltip={"Frame selected keyframes"} icon="frame" onClick={this.props.frameSelectedKeyframes} />
-                    <IconButtonLineComponent tooltip={this.props.brokenMode ? "Flat selected control point" : "Flat control points"} icon="flat-tangent" onClick={this.props.flatTangent} />
-                    <IconButtonLineComponent tooltip={this.props.brokenMode ? "Broken Mode On" : "Broken Mode Off"} icon={this.props.brokenMode ? "break-tangent" : "unify-tangent"} onClick={this.props.brokeTangents} />
-                    <IconButtonLineComponent tooltip={"Linear"} icon="linear-tangent" onClick={this.props.setLerpToActiveControlPoint} />
+                    <IconButtonLineComponent
+                        tooltip={"Frame selected keyframes"}
+                        icon="frame"
+                        onClick={this.props.frameSelectedKeyframes}
+                    />
+                    <IconButtonLineComponent
+                        tooltip={this.props.brokenMode ? "Flat selected control point" : "Flat control points"}
+                        icon="flat-tangent"
+                        onClick={this.props.flatTangent}
+                    />
+                    <IconButtonLineComponent
+                        tooltip={this.props.brokenMode ? "Broken Mode On" : "Broken Mode Off"}
+                        icon={this.props.brokenMode ? "break-tangent" : "unify-tangent"}
+                        onClick={this.props.brokeTangents}
+                    />
+                    <IconButtonLineComponent
+                        tooltip={"Linear"}
+                        icon="linear-tangent"
+                        onClick={this.props.setLerpToActiveControlPoint}
+                    />
                 </div>
             </div>
         );

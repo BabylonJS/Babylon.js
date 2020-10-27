@@ -114,7 +114,11 @@ export class SaveSnippet extends React.Component<ISaveSnippetProps, { selectedAn
                             });
                         }
 
-                        alert("Animations saved with ID: " + serverId + " (please note that the id was also saved to your clipboard)");
+                        alert(
+                            "Animations saved with ID: " +
+                                serverId +
+                                " (please note that the id was also saved to your clipboard)"
+                        );
                     } else {
                         alert("Unable to save your animations");
                     }
@@ -147,7 +151,13 @@ export class SaveSnippet extends React.Component<ISaveSnippetProps, { selectedAn
                                 <li key={i}>
                                     <div>
                                         <label>
-                                            <input id={`save_${i}`} name={`save_${animation?.name}`} type="checkbox" checked={this.state.selectedAnimations[i].selected} onChange={this.handleCheckboxChange} />
+                                            <input
+                                                id={`save_${i}`}
+                                                name={`save_${animation?.name}`}
+                                                type="checkbox"
+                                                checked={this.state.selectedAnimations[i].selected}
+                                                onChange={this.handleCheckboxChange}
+                                            />
                                             {animation?.name}
                                         </label>
                                     </div>
@@ -157,7 +167,9 @@ export class SaveSnippet extends React.Component<ISaveSnippetProps, { selectedAn
                     </ul>
                 </div>
                 <div className="save-buttons">
-                    {this.props.snippetId && <ButtonLineComponent label="Save to snippet server" onClick={this.saveToSnippet} />}
+                    {this.props.snippetId && (
+                        <ButtonLineComponent label="Save to snippet server" onClick={this.saveToSnippet} />
+                    )}
                     <ButtonLineComponent label="Save" onClick={this.saveToFile} />
                 </div>
                 <div className="save-server">
