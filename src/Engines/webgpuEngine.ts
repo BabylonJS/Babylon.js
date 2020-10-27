@@ -1046,6 +1046,11 @@ export class WebGPUEngine extends Engine {
     } {
         let magFilter: GPUFilterMode, minFilter: GPUFilterMode, mipmapFilter: GPUFilterMode;
         switch (internalTexture.samplingMode) {
+            case Engine.TEXTURE_NEAREST_SAMPLINGMODE:
+                magFilter = WebGPUConstants.FilterMode.Nearest;
+                minFilter = WebGPUConstants.FilterMode.Nearest;
+                mipmapFilter = WebGPUConstants.FilterMode.Nearest;
+                break;
             case Engine.TEXTURE_BILINEAR_SAMPLINGMODE:
                 magFilter = WebGPUConstants.FilterMode.Linear;
                 minFilter = WebGPUConstants.FilterMode.Linear;
@@ -1056,11 +1061,19 @@ export class WebGPUEngine extends Engine {
                 minFilter = WebGPUConstants.FilterMode.Linear;
                 mipmapFilter = WebGPUConstants.FilterMode.Linear;
                 break;
-            case Engine.TEXTURE_NEAREST_SAMPLINGMODE:
+            case Engine.TEXTURE_NEAREST_NEAREST_MIPLINEAR:
                 magFilter = WebGPUConstants.FilterMode.Nearest;
                 minFilter = WebGPUConstants.FilterMode.Nearest;
                 mipmapFilter = WebGPUConstants.FilterMode.Linear;
-                break;
+            case Engine.TEXTURE_LINEAR_LINEAR_MIPNEAREST:
+                magFilter = WebGPUConstants.FilterMode.Linear;
+                minFilter = WebGPUConstants.FilterMode.Linear;
+                mipmapFilter = WebGPUConstants.FilterMode.Nearest;
+            case Engine.TEXTURE_LINEAR_LINEAR_MIPLINEAR:
+                magFilter = WebGPUConstants.FilterMode.Linear;
+                minFilter = WebGPUConstants.FilterMode.Linear;
+                mipmapFilter = WebGPUConstants.FilterMode.Linear;
+
             case Engine.TEXTURE_NEAREST_NEAREST_MIPNEAREST:
                 magFilter = WebGPUConstants.FilterMode.Nearest;
                 minFilter = WebGPUConstants.FilterMode.Nearest;
@@ -1107,9 +1120,9 @@ export class WebGPUEngine extends Engine {
                 mipmapFilter = WebGPUConstants.FilterMode.Nearest;
                 break;
             default:
-                magFilter = WebGPUConstants.FilterMode.Linear;
-                minFilter = WebGPUConstants.FilterMode.Linear;
-                mipmapFilter = WebGPUConstants.FilterMode.Linear;
+                magFilter = WebGPUConstants.FilterMode.Nearest;
+                minFilter = WebGPUConstants.FilterMode.Nearest;
+                mipmapFilter = WebGPUConstants.FilterMode.Nearest;
                 break;
         }
 
