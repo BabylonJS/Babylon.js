@@ -660,13 +660,14 @@ export class Material implements IAnimatable {
      */
     constructor(name: string, scene: Scene, doNotAdd?: boolean) {
         this.name = name;
-        this.id = name || Tools.RandomId();
         let idSubscript = 1;
-        while (scene.getMaterialByID(this.id) !== null) {
+        this._scene = scene || EngineStore.LastCreatedScene;
+
+        this.id = name || Tools.RandomId();
+        while (this._scene.getMaterialByID(this.id) !== null) {
             this.id = name + " " + idSubscript++;
         }
 
-        this._scene = scene || EngineStore.LastCreatedScene;
         this.uniqueId = this._scene.getUniqueId();
 
         if (this._scene.useRightHandedSystem) {
