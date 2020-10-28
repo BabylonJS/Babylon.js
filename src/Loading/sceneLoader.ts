@@ -16,6 +16,62 @@ import { SceneLoaderFlags } from "./sceneLoaderFlags";
 import { IFileRequest } from "../Misc/fileRequest";
 import { WebRequest } from "../Misc/webRequest";
 import { RequestFileError, ReadFileError } from '../Misc/fileTools';
+import { TransformNode } from '../Meshes/transformNode';
+import { Geometry } from '../Meshes/geometry';
+import { Light } from '../Lights/light';
+
+/**
+ * Type used for the success callback of ImportMesh
+ */
+export type SceneLoaderSuccessCallback = (
+    meshes: AbstractMesh[],
+    particleSystems: IParticleSystem[],
+    skeletons: Skeleton[],
+    animationGroups: AnimationGroup[],
+    transformNodes: TransformNode[],
+    geometries: Geometry[],
+    lights: Light[]
+) => void;
+
+/**
+ * Interface used for the result of ImportMeshAsync
+ */
+export interface ISceneLoaderAsyncResult {
+    /**
+     * The array of loaded meshes
+     */
+    readonly meshes: AbstractMesh[];
+
+    /**
+     * The array of loaded particle systems
+     */
+    readonly particleSystems: IParticleSystem[];
+
+    /**
+     * The array of loaded skeletons
+     */
+    readonly skeletons: Skeleton[];
+
+    /**
+     * The array of loaded animation groups
+     */
+    readonly animationGroups: AnimationGroup[];
+
+    /**
+     * The array of loaded transform nodes
+     */
+    readonly transformNodes: TransformNode[];
+
+    /**
+     * The array of loaded geometries
+     */
+    readonly geometries: Geometry[];
+
+    /**
+     * The array of loaded lights
+     */
+    readonly lights: Light[];
+}
 
 /**
  * Interface used to represent data loading progression
@@ -185,9 +241,9 @@ export interface ISceneLoaderPluginAsync extends ISceneLoaderPluginBase {
      * @param rootUrl The root url for scene and resources
      * @param onProgress The callback when the load progresses
      * @param fileName Defines the name of the file to load
-     * @returns The loaded meshes, particle systems, skeletons, and animation groups
+     * @returns The loaded objects (e.g. meshes, particle systems, skeletons, animation groups, etc.)
      */
-    importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<{ meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }>;
+    importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<ISceneLoaderAsyncResult>;
 
     /**
      * Load into a scene.
@@ -619,7 +675,7 @@ export class SceneLoader {
      * @param pluginExtension the extension used to determine the plugin
      * @returns The loaded plugin
      */
-    public static ImportMesh(meshNames: any, rootUrl: string, sceneFilename: string | File = "", scene: Nullable<Scene> = EngineStore.LastCreatedScene, onSuccess: Nullable<(meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[]) => void> = null, onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null, onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null, pluginExtension: Nullable<string> = null): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
+    public static ImportMesh(meshNames: any, rootUrl: string, sceneFilename: string | File = "", scene: Nullable<Scene> = EngineStore.LastCreatedScene, onSuccess: Nullable<SceneLoaderSuccessCallback> = null, onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null, onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null, pluginExtension: Nullable<string> = null): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
         if (!scene) {
             Logger.Error("No scene available to import mesh to");
             return null;
@@ -659,12 +715,12 @@ export class SceneLoader {
             }
         } : undefined;
 
-        var successHandler = (meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[]) => {
+        var successHandler: SceneLoaderSuccessCallback = (meshes, particleSystems, skeletons, animationGroups, transformNodes, geometries, lights) => {
             scene.importedMeshesFiles.push(fileInfo.url);
 
             if (onSuccess) {
                 try {
-                    onSuccess(meshes, particleSystems, skeletons, animationGroups);
+                    onSuccess(meshes, particleSystems, skeletons, animationGroups, transformNodes, geometries, lights);
                 }
                 catch (e) {
                     errorHandler("Error in onSuccess callback: " + e, e);
@@ -690,13 +746,13 @@ export class SceneLoader {
                 }
 
                 scene.loadingPluginName = plugin.name;
-                successHandler(meshes, particleSystems, skeletons, []);
+                successHandler(meshes, particleSystems, skeletons, [], [], [], []);
             }
             else {
                 var asyncedPlugin = <ISceneLoaderPluginAsync>plugin;
                 asyncedPlugin.importMeshAsync(meshNames, scene, data, fileInfo.rootUrl, progressHandler, fileInfo.name).then((result) => {
                     scene.loadingPluginName = plugin.name;
-                    successHandler(result.meshes, result.particleSystems, result.skeletons, result.animationGroups);
+                    successHandler(result.meshes, result.particleSystems, result.skeletons, result.animationGroups, result.transformNodes, result.geometries, result.lights);
                 }).catch((error) => {
                     errorHandler(error.message, error);
                 });
@@ -714,14 +770,17 @@ export class SceneLoader {
      * @param pluginExtension the extension used to determine the plugin
      * @returns The loaded list of imported meshes, particle systems, skeletons, and animation groups
      */
-    public static ImportMeshAsync(meshNames: any, rootUrl: string, sceneFilename: string | File = "", scene: Nullable<Scene> = EngineStore.LastCreatedScene, onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null, pluginExtension: Nullable<string> = null): Promise<{ meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }> {
+    public static ImportMeshAsync(meshNames: any, rootUrl: string, sceneFilename: string | File = "", scene: Nullable<Scene> = EngineStore.LastCreatedScene, onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null, pluginExtension: Nullable<string> = null): Promise<ISceneLoaderAsyncResult> {
         return new Promise((resolve, reject) => {
-            SceneLoader.ImportMesh(meshNames, rootUrl, sceneFilename, scene, (meshes, particleSystems, skeletons, animationGroups) => {
+            SceneLoader.ImportMesh(meshNames, rootUrl, sceneFilename, scene, (meshes, particleSystems, skeletons, animationGroups, transformNodes, geometries, lights) => {
                 resolve({
                     meshes: meshes,
                     particleSystems: particleSystems,
                     skeletons: skeletons,
-                    animationGroups: animationGroups
+                    animationGroups: animationGroups,
+                    transformNodes: transformNodes,
+                    geometries: geometries,
+                    lights: lights
                 });
             }, onProgress, (scene, message, exception) => {
                 reject(exception || new Error(message));
