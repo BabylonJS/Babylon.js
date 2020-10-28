@@ -1,4 +1,4 @@
-# Babylon.js Node Editor
+# Babylon.js Gui Editor
 
 An extension to easily create or update any NodeMaterial.
 
