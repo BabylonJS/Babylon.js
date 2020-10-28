@@ -3472,16 +3472,12 @@ export class WebGPUEngine extends Engine {
         return bindGroups;
     }
 
-    private _bindVertexInputs(vertexInputs: IWebGPUPipelineContextVertexInputsCache, setIndexFormat: boolean): void {
+    private _bindVertexInputs(vertexInputs: IWebGPUPipelineContextVertexInputsCache): void {
         const renderPass = this._bundleEncoder || this._getCurrentRenderPass();
 
         if (vertexInputs.indexBuffer) {
             // TODO WEBGPU. Check if cache would be worth it.
-            if (setIndexFormat) {
-                renderPass.setIndexBuffer(vertexInputs.indexBuffer, this._currentIndexBuffer!.is32Bits ? WebGPUConstants.IndexFormat.Uint32 : WebGPUConstants.IndexFormat.Uint16, vertexInputs.indexOffset);
-            } else {
-                renderPass.setIndexBuffer(vertexInputs.indexBuffer, vertexInputs.indexOffset);
-            }
+            renderPass.setIndexBuffer(vertexInputs.indexBuffer, this._currentIndexBuffer!.is32Bits ? WebGPUConstants.IndexFormat.Uint32 : WebGPUConstants.IndexFormat.Uint16, vertexInputs.indexOffset);
         }
 
         // TODO WEBGPU. Optimize buffer reusability and types as more are now allowed.
@@ -3505,13 +3501,12 @@ export class WebGPUEngine extends Engine {
         const renderPass = this._bundleEncoder || this._getCurrentRenderPass();
 
         const topology = this._getTopology(fillMode);
-        const setIndexFormatInRenderPass = this._indexFormatInRenderPass(topology);
 
         const pipeline = this._getRenderPipeline(topology);
         renderPass.setPipeline(pipeline);
 
         const vertexInputs = this._getVertexInputsToRender();
-        this._bindVertexInputs(vertexInputs, setIndexFormatInRenderPass);
+        this._bindVertexInputs(vertexInputs);
 
         const bindGroups = this._getBindGroupsToRender();
         this._setRenderBindGroups(bindGroups);
