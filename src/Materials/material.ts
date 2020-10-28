@@ -664,7 +664,7 @@ export class Material implements IAnimatable {
         this._scene = scene || EngineStore.LastCreatedScene;
 
         this.id = name || Tools.RandomId();
-        while (this._scene.getMaterialByID(this.id) !== null) {
+        while (this._scene.getMaterialByID(this.id)) {
             this.id = name + " " + idSubscript++;
         }
 
