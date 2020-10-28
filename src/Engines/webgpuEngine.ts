@@ -963,7 +963,7 @@ export class WebGPUEngine extends Engine {
         // Should be done at processing time, not need to double the work in here.
         for (let i = 0; i < attributesNames.length; i++) {
             const attributeName = attributesNames[i];
-            const attributeLocation = gpuPipelineContext.availableAttributes[attributeName];
+            const attributeLocation = gpuPipelineContext.shaderProcessingContext.availableAttributes[attributeName];
             if (attributeLocation === undefined) {
                 continue;
             }
@@ -1654,13 +1654,14 @@ export class WebGPUEngine extends Engine {
 
             if (webgpuPipelineContext.textures[name]) {
                 if (webgpuPipelineContext.textures[name]!.texture !== internalTexture) {
-                    webgpuPipelineContext.bindGroups = null as any; // the bind groups need to be rebuilt (at least the bind group owning this texture, but it's easier to just have them all rebuilt)
+                    // TODO WEBGPU when the bindGroups has a caching mechanism set up, clear this cache
+                    //webgpuPipelineContext.bindGroups = null as any; // the bind groups need to be rebuilt (at least the bind group owning this texture, but it's easier to just have them all rebuilt)
                 }
                 webgpuPipelineContext.textures[name]!.texture = internalTexture!;
             }
             else {
                 // TODO WEBGPU. 121 mapping samplers <-> availableSamplers
-                const availableSampler = webgpuPipelineContext.availableSamplers[baseName];
+                const availableSampler = webgpuPipelineContext.shaderProcessingContext.availableSamplers[baseName];
                 if (availableSampler) {
                     webgpuPipelineContext.samplers[baseName] = {
                         samplerBinding: availableSampler.sampler.bindingIndex,
@@ -1695,7 +1696,8 @@ export class WebGPUEngine extends Engine {
             const webgpuPipelineContext = this._currentEffect._pipelineContext as WebGPUPipelineContext;
             if (!texture) {
                 if (webgpuPipelineContext.textures[name] && webgpuPipelineContext.textures[name]!.texture) {
-                    webgpuPipelineContext.bindGroups = null as any; // the bind groups need to be rebuilt (at least the bind group owning this texture, but it's easier to just have them all rebuilt)
+                    // TODO WEBGPU when the bindGroups has a caching mechanism set up, clear this cache
+                    //webgpuPipelineContext.bindGroups = null as any; // the bind groups need to be rebuilt (at least the bind group owning this texture, but it's easier to just have them all rebuilt)
                 }
                 webgpuPipelineContext.textures[name] = null;
                 return false;
@@ -3197,8 +3199,8 @@ export class WebGPUEngine extends Engine {
         const bindGroupLayouts: GPUBindGroupLayout[] = [];
         const webgpuPipelineContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
 
-        for (let i = 0; i < webgpuPipelineContext.orderedUBOsAndSamplers.length; i++) {
-            const setDefinition = webgpuPipelineContext.orderedUBOsAndSamplers[i];
+        for (let i = 0; i < webgpuPipelineContext.shaderProcessingContext.orderedUBOsAndSamplers.length; i++) {
+            const setDefinition = webgpuPipelineContext.shaderProcessingContext.orderedUBOsAndSamplers[i];
             if (setDefinition === undefined) {
                 const entries: GPUBindGroupLayoutEntry[] = [];
                 const uniformsBindGroupLayout = this._device.createBindGroupLayout({
@@ -3210,7 +3212,7 @@ export class WebGPUEngine extends Engine {
 
             const entries: GPUBindGroupLayoutEntry[] = [];
             for (let j = 0; j < setDefinition.length; j++) {
-                const bindingDefinition = webgpuPipelineContext.orderedUBOsAndSamplers[i][j];
+                const bindingDefinition = webgpuPipelineContext.shaderProcessingContext.orderedUBOsAndSamplers[i][j];
                 if (bindingDefinition === undefined) {
                     continue;
                 }
@@ -3256,12 +3258,6 @@ export class WebGPUEngine extends Engine {
     }
 
     private _getRenderPipeline(topology: GPUPrimitiveTopology): GPURenderPipeline {
-        // This is wrong to cache this way but workarounds the need of cache in the simple demo context.
-        const webgpuPipelineContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
-        /*if (webgpuPipelineContext.renderPipeline) {
-            return webgpuPipelineContext.renderPipeline;
-        }*/
-
         this._counters.numPipelineDescriptorCreation++;
 
         // Unsupported at the moment but needs to be extracted from the MSAA param.
@@ -3272,7 +3268,7 @@ export class WebGPUEngine extends Engine {
         const inputStateDescriptor = this._getVertexInputDescriptor(topology);
         const pipelineLayout = this._getPipelineLayout();
 
-        webgpuPipelineContext.renderPipeline = this._device.createRenderPipeline({
+        return this._device.createRenderPipeline({
             sampleCount: this._currentRenderTarget ? this._currentRenderTarget.samples : this._mainPassSampleCount,
             primitiveTopology: topology,
             rasterizationState: rasterizationStateDescriptor,
@@ -3283,19 +3279,12 @@ export class WebGPUEngine extends Engine {
             vertexState: inputStateDescriptor,
             layout: pipelineLayout,
         });
-        return webgpuPipelineContext.renderPipeline;
     }
 
     private _getVertexInputsToRender(): IWebGPUPipelineContextVertexInputsCache {
         const effect = this._currentEffect!;
-        const webgpuPipelineContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
 
-        let vertexInputs = webgpuPipelineContext.vertexInputs;
-        /*!!if (vertexInputs) {
-            return vertexInputs;
-        }*/
-
-        vertexInputs = {
+        let vertexInputs: IWebGPUPipelineContextVertexInputsCache = {
             indexBuffer: null,
             indexOffset: 0,
 
@@ -3303,7 +3292,6 @@ export class WebGPUEngine extends Engine {
             vertexBuffers: [],
             vertexOffsets: [],
         };
-        webgpuPipelineContext.vertexInputs = vertexInputs;
 
         if (this._currentIndexBuffer) {
             // TODO WEBGPU. Check if cache would be worth it.
@@ -3336,15 +3324,9 @@ export class WebGPUEngine extends Engine {
         return vertexInputs;
     }
 
-    private _getBindGroupsToRender(): GPUBindGroup[] {
+    private _getBindGroupsToRender(renderPipeline: GPURenderPipeline): GPUBindGroup[] {
         const webgpuPipelineContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
-        let bindGroups = webgpuPipelineContext.bindGroups;
-        /*if (bindGroups) {
-            if (webgpuPipelineContext.uniformBuffer) {
-                webgpuPipelineContext.uniformBuffer.update();
-            }
-            return bindGroups;
-        }*/
+        let bindGroups: GPUBindGroup[] = [];
 
         this._counters.numBindGroupsCreation++;
 
@@ -3353,20 +3335,18 @@ export class WebGPUEngine extends Engine {
             webgpuPipelineContext.uniformBuffer.update();
         }
 
-        bindGroups = [];
-        webgpuPipelineContext.bindGroups = bindGroups;
-
         const bindGroupLayouts = webgpuPipelineContext.bindGroupLayouts;
 
-        for (let i = 0; i < webgpuPipelineContext.orderedUBOsAndSamplers.length; i++) {
-            const setDefinition = webgpuPipelineContext.orderedUBOsAndSamplers[i];
+        for (let i = 0; i < webgpuPipelineContext.shaderProcessingContext.orderedUBOsAndSamplers.length; i++) {
+            const setDefinition = webgpuPipelineContext.shaderProcessingContext.orderedUBOsAndSamplers[i];
             if (setDefinition === undefined) {
                 let groupLayout: GPUBindGroupLayout;
                 if (bindGroupLayouts && bindGroupLayouts[i]) {
                     groupLayout = bindGroupLayouts[i];
                 }
                 else {
-                    groupLayout = webgpuPipelineContext.renderPipeline.getBindGroupLayout(i);
+                    // TODO WEBGPU can it happens? we should be able to avoid a dependency on renderPipeline here
+                    groupLayout = renderPipeline.getBindGroupLayout(i);
                 }
                 bindGroups[i] = this._device.createBindGroup({
                     layout: groupLayout,
@@ -3377,7 +3357,7 @@ export class WebGPUEngine extends Engine {
 
             const entries: GPUBindGroupEntry[] = [];
             for (let j = 0; j < setDefinition.length; j++) {
-                const bindingDefinition = webgpuPipelineContext.orderedUBOsAndSamplers[i][j];
+                const bindingDefinition = webgpuPipelineContext.shaderProcessingContext.orderedUBOsAndSamplers[i][j];
                 if (bindingDefinition === undefined) {
                     continue;
                 }
@@ -3459,7 +3439,8 @@ export class WebGPUEngine extends Engine {
                     groupLayout = bindGroupLayouts[i];
                 }
                 else {
-                    groupLayout = webgpuPipelineContext.renderPipeline.getBindGroupLayout(i);
+                    // TODO WEBGPU can it happens? we should be able to avoid a dependency on renderPipeline here
+                    groupLayout = renderPipeline.getBindGroupLayout(i);
                 }
                 bindGroups[i] = this._device.createBindGroup({
                     layout: groupLayout,
@@ -3507,7 +3488,7 @@ export class WebGPUEngine extends Engine {
         const vertexInputs = this._getVertexInputsToRender();
         this._bindVertexInputs(vertexInputs);
 
-        const bindGroups = this._getBindGroupsToRender();
+        const bindGroups = this._getBindGroupsToRender(pipeline);
         this._setRenderBindGroups(bindGroups);
 
         if (this._stencilState.stencilTest) {
