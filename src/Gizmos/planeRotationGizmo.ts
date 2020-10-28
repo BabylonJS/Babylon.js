@@ -334,7 +334,7 @@ export class PlaneRotationGizmo extends Gizmo {
 
     private updateRotationCircle(mesh: Mesh, paths: any[], newFill: number, dragPlanePoint: Vector3): void {
         this.updateRotationPath(paths, newFill);
-        Mesh.CreateRibbon("rotationCircle", paths, false, false, 0, this.gizmoLayer.utilityLayerScene, undefined, undefined, mesh);
+        Mesh.CreateRibbon("rotationCircle", paths, false, false, 0, this.gizmoLayer.utilityLayerScene, undefined, undefined, mesh.geometry ? mesh : undefined);
     }
 
     /**
