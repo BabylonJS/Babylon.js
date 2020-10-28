@@ -378,3 +378,4 @@
 - `smoothstep` in NME is now taking any type of parameters for its `value` input. If you use generated code from the NME ("Generate code" button), you may have to move the smoothstep output connection AFTER the input connections ([Popov72](https://github.com/Popov72))
 - `SoundTrack.RemoveSound` and `SoundTrack.AddSound` were renamed to `SoundTrack.removeSound` and `SoundTrack.addSound` ([Deltakosh](https://github.com/deltakosh))
 - `PolygonPoints.add` no longer filters out points that are close to the first point ([bghgary](https://github.com/bghgary))
+- `Material` created with matching names now have auto-incrementing IDs.

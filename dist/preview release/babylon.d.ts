@@ -51206,6 +51206,43 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Type used for the success callback of ImportMesh
+     */
+    export type SceneLoaderSuccessCallback = (meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[], transformNodes: TransformNode[], geometries: Geometry[], lights: Light[]) => void;
+    /**
+     * Interface used for the result of ImportMeshAsync
+     */
+    export interface ISceneLoaderAsyncResult {
+        /**
+         * The array of loaded meshes
+         */
+        readonly meshes: AbstractMesh[];
+        /**
+         * The array of loaded particle systems
+         */
+        readonly particleSystems: IParticleSystem[];
+        /**
+         * The array of loaded skeletons
+         */
+        readonly skeletons: Skeleton[];
+        /**
+         * The array of loaded animation groups
+         */
+        readonly animationGroups: AnimationGroup[];
+        /**
+         * The array of loaded transform nodes
+         */
+        readonly transformNodes: TransformNode[];
+        /**
+         * The array of loaded geometries
+         */
+        readonly geometries: Geometry[];
+        /**
+         * The array of loaded lights
+         */
+        readonly lights: Light[];
+    }
+    /**
      * Interface used to represent data loading progression
      */
     export interface ISceneLoaderProgressEvent {
@@ -51356,14 +51393,9 @@ declare module BABYLON {
          * @param rootUrl The root url for scene and resources
          * @param onProgress The callback when the load progresses
          * @param fileName Defines the name of the file to load
-         * @returns The loaded meshes, particle systems, skeletons, and animation groups
+         * @returns The loaded objects (e.g. meshes, particle systems, skeletons, animation groups, etc.)
          */
-        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<{
-            meshes: AbstractMesh[];
-            particleSystems: IParticleSystem[];
-            skeletons: Skeleton[];
-            animationGroups: AnimationGroup[];
-        }>;
+        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<ISceneLoaderAsyncResult>;
         /**
          * Load into a scene.
          * @param scene The scene to load into
@@ -51507,7 +51539,7 @@ declare module BABYLON {
          * @param pluginExtension the extension used to determine the plugin
          * @returns The loaded plugin
          */
-        static ImportMesh(meshNames: any, rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onSuccess?: Nullable<(meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[]) => void>, onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        static ImportMesh(meshNames: any, rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onSuccess?: Nullable<SceneLoaderSuccessCallback>, onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
         /**
          * Import meshes into a scene
          * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
@@ -51518,12 +51550,7 @@ declare module BABYLON {
          * @param pluginExtension the extension used to determine the plugin
          * @returns The loaded list of imported meshes, particle systems, skeletons, and animation groups
          */
-        static ImportMeshAsync(meshNames: any, rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<{
-            meshes: AbstractMesh[];
-            particleSystems: IParticleSystem[];
-            skeletons: Skeleton[];
-            animationGroups: AnimationGroup[];
-        }>;
+        static ImportMeshAsync(meshNames: any, rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<ISceneLoaderAsyncResult>;
         /**
          * Load a scene
          * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)

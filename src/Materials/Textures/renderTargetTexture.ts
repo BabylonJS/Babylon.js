@@ -769,7 +769,7 @@ export class RenderTargetTexture extends Texture {
                             mesh._internalAbstractMeshDataInfo._onlyForInstancesIntermediate = false;
                         } else {
                             if (!mesh._internalAbstractMeshDataInfo._actAsRegularMesh) {
-                                mesh = (mesh as InstancedMesh).sourceMesh;
+                                mesh = mesh._internalAbstractMeshDataInfo._currentLOD ?? (mesh as InstancedMesh).sourceMesh;
                             }
                         }
                         mesh._internalAbstractMeshDataInfo._isActiveIntermediate = true;
