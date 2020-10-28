@@ -14,7 +14,6 @@ export * from "./KHR_materials_transmission";
 export * from "./KHR_mesh_quantization";
 export * from "./KHR_texture_basisu";
 export * from "./KHR_texture_transform";
-export * from "./KHR_xmp";
 export * from "./MSFT_audio_emitter";
 export * from "./MSFT_lod";
 export * from "./MSFT_minecraftMesh";
