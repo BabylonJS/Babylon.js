@@ -166,7 +166,7 @@ declare global {
     | "bc5-rg-unorm"
     | "bc5-rg-snorm"
     | "bc6h-rgb-ufloat"
-    | "bc6h-rgb-sfloat"
+    | "bc6h-rgb-float"
     | "bc7-rgba-unorm"
     | "bc7-rgba-unorm-srgb"
     | "depth24unorm-stencil8"
@@ -276,7 +276,6 @@ declare global {
     minBufferBindingSize?: number;
     viewDimension?: GPUTextureViewDimension;
     textureComponentType?: GPUTextureComponentType;
-    multisampled?: boolean;
     storageTextureFormat?: GPUTextureFormat;
   }
 
