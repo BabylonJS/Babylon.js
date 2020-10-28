@@ -661,10 +661,9 @@ export class Material implements IAnimatable {
     constructor(name: string, scene: Scene, doNotAdd?: boolean) {
         this.name = name;
         this.id = name || Tools.RandomId();
-        let idSubscript = 0;
-        while (scene.getMaterialByID(this.id) != null) {
-            idSubscript++;
-            this.id = name + " " + idSubscript;
+        let idSubscript = 1;
+        while (scene.getMaterialByID(this.id) !== null) {
+            this.id = name + " " + idSubscript++;
         }
 
         this._scene = scene || EngineStore.LastCreatedScene;
