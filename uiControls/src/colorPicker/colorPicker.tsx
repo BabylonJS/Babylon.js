@@ -28,7 +28,8 @@ export interface IColorPickerState {
 export class ColorPicker extends React.Component<IColorPickerProps, IColorPickerState> {
     private _saturationRef: React.RefObject<HTMLDivElement>;
     private _hueRef: React.RefObject<HTMLDivElement>;
-    private _isPointerDown: boolean;
+    private _isSaturationPointerDown: boolean;
+    private _isHuePointerDown: boolean;
 
     constructor(props: IColorPickerProps) {
         super(props);
@@ -43,18 +44,18 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
 
     onSaturationPointerDown(evt: React.PointerEvent<HTMLDivElement>) {
         this._evaluateSaturation(evt);
-        this._isPointerDown = true;
+        this._isSaturationPointerDown = true;
 
         evt.currentTarget.setPointerCapture(evt.pointerId);
     }
     
     onSaturationPointerUp(evt: React.PointerEvent<HTMLDivElement>) {
-        this._isPointerDown = false;
+        this._isSaturationPointerDown = false;
         evt.currentTarget.releasePointerCapture(evt.pointerId);
     }
 
     onSaturationPointerMove(evt: React.PointerEvent<HTMLDivElement>) {
-        if (!this._isPointerDown) {
+        if (!this._isSaturationPointerDown) {
             return;
         }
         this._evaluateSaturation(evt);
@@ -62,18 +63,18 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
 
     onHuePointerDown(evt: React.PointerEvent<HTMLDivElement>) {
         this._evaluateHue(evt);
-        this._isPointerDown = true;
+        this._isHuePointerDown = true;
 
         evt.currentTarget.setPointerCapture(evt.pointerId);
     }
     
     onHuePointerUp(evt: React.PointerEvent<HTMLDivElement>) {
-        this._isPointerDown = false;
+        this._isHuePointerDown = false;
         evt.currentTarget.releasePointerCapture(evt.pointerId);
     }
 
     onHuePointerMove(evt: React.PointerEvent<HTMLDivElement>) {
-        if (!this._isPointerDown) {
+        if (!this._isHuePointerDown) {
             return;
         }
         this._evaluateHue(evt);
@@ -171,11 +172,12 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
                     >                    
                         <div className="color-picker-hue-cursor" style={{
                             left: `${ (hsv.r / 360.0) * 100 }%`,
+                            border: `1px solid ` + colorHexRef
                         }}>                    
                         </div>
                     </div>
                 </div>
-                <div className={hasAlpha ? "color-picker-rgba" : "color-picker-rgb"}>
+                <div className="color-picker-rgb">
                     <div className="red">
                         <ColorComponentEntry label="R" min={0} max={255} value={this.state.color.r * 255 | 0} onChange={value => {
                             this.state.color.r = value / 255.0;
@@ -203,7 +205,7 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
                             }}/>
                         </div>
                     }          
-                </div>
+                </div>  
                 <div className="color-picker-hex">
                     <div className="color-picker-hex-label">
                         Hex

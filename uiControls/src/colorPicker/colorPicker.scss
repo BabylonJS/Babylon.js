@@ -1,10 +1,10 @@
 .color-picker-container {
-    width: 300px;
+    width: 280px;
     height: 300px;
     background-color: white;
     display: grid;    
     grid-template-columns: 100%;
-    grid-template-rows: 50% 40px 60px 40px 1fr;
+    grid-template-rows: 50% 50px 60px 40px 1fr;
     font-family: "acumin-pro-condensed";
     font-weight: normal;   
     font-size: 14px;
@@ -16,6 +16,7 @@
         grid-template-columns: 100%;
         grid-template-rows: 100%;
         position: relative;
+        cursor: pointer;
     
         .color-picker-saturation-white {
             grid-row: 1;
@@ -34,11 +35,11 @@
         }
 
         .color-picker-saturation-cursor {
+            pointer-events: none;
             width: 4px;
             height: 4px;
             box-shadow: 0 0 0 1.5px #fff, inset 0 0 1px 1px rgba(0,0,0,.3), 0 0 1px 2px rgba(0,0,0,.4);
             border-radius: 50%;
-            cursor: pointer;
             transform: translate(-2px, -2px);
             position: absolute;
         }
@@ -49,7 +50,7 @@
         grid-column: 1;
         display: grid;
         margin: 10px;
-        grid-template-columns: 30% 70%;
+        grid-template-columns: 24% 76%;
         grid-template-rows: 100%;
 
         .color-picker-hue-color {
@@ -68,6 +69,7 @@
             align-self: center;
             height: 16px;
             position: relative;
+            cursor: pointer;
             
             background: linear-gradient(to right, #f00 0%, #ff0 17%, #0f0
                     33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);
@@ -75,11 +77,10 @@
                 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);                
 
             .color-picker-hue-cursor {
-                width: 18px;
+                pointer-events: none;
+                width: 8px;
                 height: 18px;
-                border-radius: 50%;
-                cursor: pointer;
-                transform: translate(-9px, -1px);
+                transform: translate(-4px, -2px);
                 background-color: rgb(248, 248, 248);
                 box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.37);
                 position: absolute;
@@ -114,15 +115,6 @@
     }
 
     .color-picker-rgb {
-        grid-row: 3;
-        grid-column: 1;
-        display: grid;
-        margin: 10px;
-        grid-template-columns: 30% 5% 30% 5% 30%;
-        grid-template-rows: 100%;
-    }
-
-    .color-picker-rgba {
         grid-row: 3;
         grid-column: 1;
         display: grid;
