@@ -3,7 +3,7 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const babylonWebpackConfig = require('../Tools/WebpackPlugins/babylonWebpackConfig');
 
 var config = babylonWebpackConfig({
-    module: "nodeEditor",
+    module: "guiEditor",
     resolve: {
         extensions: [".js", '.ts', ".tsx"],
     },
