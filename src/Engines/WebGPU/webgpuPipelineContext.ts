@@ -3,7 +3,7 @@ import { Nullable } from '../../types';
 import { WebGPUEngine } from '../webgpuEngine';
 import { InternalTexture } from '../../Materials/Textures/internalTexture';
 import { Effect } from '../../Materials/effect';
-import { WebGPUTextureSamplerBindingDescription, WebGPUShaderProcessingContext } from './webgpuShaderProcessingContext';
+import { WebGPUShaderProcessingContext } from './webgpuShaderProcessingContext';
 import { UniformBuffer } from "../../Materials/uniformBuffer";
 import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from '../../Maths/math.like';
 
@@ -54,14 +54,8 @@ export interface IWebGPURenderPipelineStageDescriptor {
 export class WebGPUPipelineContext implements IPipelineContext {
     public engine: WebGPUEngine;
 
-    public availableAttributes: { [key: string]: number };
-    public availableUBOs: { [key: string]: { setIndex: number, bindingIndex: number} };
-    public availableSamplers: { [key: string]: WebGPUTextureSamplerBindingDescription };
+    public shaderProcessingContext: WebGPUShaderProcessingContext;
 
-    public orderedAttributes: string[];
-    public orderedUBOsAndSamplers: { name: string, isSampler: boolean, isComparisonSampler?: boolean, isTexture: boolean, textureNeedsDepthComparison?: boolean, textureDimension?: GPUTextureViewDimension }[][];
-
-    public leftOverUniforms: { name: string, type: string, length: number }[];
     public leftOverUniformsByName: { [name: string]: string };
 
     public sources: {
@@ -76,12 +70,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
     public samplers: { [name: string]: Nullable<IWebGPUPipelineContextSamplerCache> } = { };
     public textures: { [name: string]: Nullable<IWebGPUPipelineContextTextureCache> } = { };
 
-    public vertexInputs: IWebGPUPipelineContextVertexInputsCache;
-
     public bindGroupLayouts: GPUBindGroupLayout[];
-    public bindGroups: GPUBindGroup[];
-
-    public renderPipeline: GPURenderPipeline;
 
     /**
      * Stores the uniform buffer
@@ -108,16 +97,8 @@ export class WebGPUPipelineContext implements IPipelineContext {
 
     constructor(shaderProcessingContext: WebGPUShaderProcessingContext, engine: WebGPUEngine) {
         this._name = "unnamed";
-        if (shaderProcessingContext) {
-            this.availableAttributes = shaderProcessingContext.availableAttributes;
-            this.availableUBOs = shaderProcessingContext.availableUBOs;
-            this.availableSamplers = shaderProcessingContext.availableSamplers;
-            this.orderedAttributes = shaderProcessingContext.orderedAttributes;
-            this.orderedUBOsAndSamplers = shaderProcessingContext.orderedUBOsAndSamplers;
-
-            this.leftOverUniforms = shaderProcessingContext.leftOverUniforms;
-            this.leftOverUniformsByName = {};
-        }
+        this.shaderProcessingContext = shaderProcessingContext;
+        this.leftOverUniformsByName = {};
     }
 
     public _handlesSpectorRebuildCallback(onCompiled: (program: any) => void): void {
@@ -139,7 +120,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
         // this._fragmentSourceCodeOverride = "";
         // this._vertexSourceCodeOverride = "";
 
-        const foundSamplers = this.availableSamplers;
+        const foundSamplers = this.shaderProcessingContext.availableSamplers;
         let index: number;
         for (index = 0; index < samplerList.length; index++) {
             const name = samplerList[index];
@@ -167,13 +148,13 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * Build the uniform buffer used in the material.
      */
     public buildUniformLayout(): void {
-        if (!this.leftOverUniforms.length) {
+        if (!this.shaderProcessingContext.leftOverUniforms.length) {
             return;
         }
 
         this.uniformBuffer = new UniformBuffer(this.engine, undefined, undefined, "leftOver-" + this._name);
 
-        for (let leftOverUniform of this.leftOverUniforms) {
+        for (let leftOverUniform of this.shaderProcessingContext.leftOverUniforms) {
             const size = _uniformSizes[leftOverUniform.type];
             this.uniformBuffer.addUniform(leftOverUniform.name, size, leftOverUniform.length);
             // TODO WEBGPU. Replace with info from uniform buffer class
