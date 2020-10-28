@@ -542,7 +542,10 @@ var OBJFileLoader = /** @class */ (function () {
                 meshes: meshes,
                 particleSystems: [],
                 skeletons: [],
-                animationGroups: []
+                animationGroups: [],
+                transformNodes: [],
+                geometries: [],
+                lights: []
             };
         });
     };
