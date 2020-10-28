@@ -172,6 +172,7 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
                 const samplerType = _samplerTypeByWebGLSamplerType[uniformType] ?? "sampler";
                 const textureType = _textureTypeByWebGLSamplerType[uniformType];
                 const textureDimension = _gpuTextureViewDimensionByWebGPUTextureType[textureType];
+                const isComparisonSampler = !!_isComparisonSamplerByWebGPUSamplerType[samplerType];
 
                 // Manage textures and samplers.
                 if (!isTextureArray) {
@@ -203,7 +204,7 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
                 webgpuProcessingContext.orderedUBOsAndSamplers[samplerSetIndex][samplerBindingIndex] = {
                     isSampler: true,
                     isTexture: false,
-                    isComparisonSampler: _isComparisonSamplerByWebGPUSamplerType[samplerType] ?? false,
+                    isComparisonSampler,
                     name,
                 };
 
@@ -217,9 +218,9 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
                     webgpuProcessingContext.orderedUBOsAndSamplers[textureSetIndex][textureBindingIndex] = {
                         isSampler: false,
                         isTexture: true,
+                        textureNeedsDepthComparison: isComparisonSampler,
                         textureDimension,
                         name: isTextureArray ? name + i.toString() : name,
-                        textureIndex: i,
                     };
                 }
             }

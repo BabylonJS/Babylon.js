@@ -3228,9 +3228,8 @@ export class WebGPUEngine extends Engine {
                         visibility: WebGPUConstants.ShaderStage.Vertex | WebGPUConstants.ShaderStage.Fragment,
                         type: WebGPUConstants.BindingType.SampledTexture,
                         viewDimension: bindingDefinition.textureDimension,
+                        //textureComponentType: bindingDefinition.textureNeedsDepthComparison ? WebGPUConstants.TextureComponentType.DepthComparison : undefined,
                         // TODO WEBGPU. Handle texture component type properly.
-                        // textureComponentType?: GPUTextureComponentType,
-                        // multisampled?: boolean;
                         // hasDynamicOffset?: boolean;
                         // storageTextureFormat?: GPUTextureFormat;
                         // minBufferBindingSize?: number;

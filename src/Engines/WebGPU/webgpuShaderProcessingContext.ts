@@ -39,7 +39,7 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
     public leftOverUniforms: { name: string, type: string, length: number }[];
 
     public orderedAttributes: string[];
-    public orderedUBOsAndSamplers: { name: string, isSampler: boolean, isComparisonSampler?: boolean, isTexture: boolean, textureIndex?: number, textureDimension?: GPUTextureViewDimension }[][];
+    public orderedUBOsAndSamplers: { name: string, isSampler: boolean, isComparisonSampler?: boolean, isTexture: boolean, textureNeedsDepthComparison?: boolean, textureDimension?: GPUTextureViewDimension }[][];
 
     private _attributeNextLocation: number;
     private _varyingNextLocation: number;
