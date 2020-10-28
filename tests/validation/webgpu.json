@@ -109,6 +109,11 @@
         {
             "title": "sprite maps",
             "playgroundId": "#PIVJ45#4"
+        },
+        {
+            "title": "halo particle system",
+            "renderCount": 20,
+            "playgroundId": "#2441BU#1"
         }
     ]
 }
