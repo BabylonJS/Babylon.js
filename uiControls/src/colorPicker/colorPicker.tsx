@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Color3, Color4 } from "babylonjs/Maths/math.color";
 import { ColorComponentEntry } from './colorComponentEntry';
+import { HexColor } from './hexColor';
 
 require("./colorPicker.scss");
 
@@ -25,7 +26,8 @@ export interface IColorPickerState {
  * Class used to create a color picker
  */
 export class ColorPicker extends React.Component<IColorPickerProps, IColorPickerState> {
-    private _saturationRef: React.RefObject<HTMLDivElement>
+    private _saturationRef: React.RefObject<HTMLDivElement>;
+    private _hueRef: React.RefObject<HTMLDivElement>;
     private _isPointerDown: boolean;
 
     constructor(props: IColorPickerProps) {
@@ -36,30 +38,50 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
             this.state = {color : this.props.color.clone(), alpha: 1};
         }
         this._saturationRef = React.createRef();
+        this._hueRef = React.createRef();
     }
 
-    onPointerDown(evt: React.PointerEvent<HTMLDivElement>) {
+    onSaturationPointerDown(evt: React.PointerEvent<HTMLDivElement>) {
         this._evaluateSaturation(evt);
         this._isPointerDown = true;
 
         evt.currentTarget.setPointerCapture(evt.pointerId);
     }
     
-    onPointerUp(evt: React.PointerEvent<HTMLDivElement>) {
+    onSaturationPointerUp(evt: React.PointerEvent<HTMLDivElement>) {
         this._isPointerDown = false;
         evt.currentTarget.releasePointerCapture(evt.pointerId);
     }
 
-    onPointerMove(evt: React.PointerEvent<HTMLDivElement>) {
+    onSaturationPointerMove(evt: React.PointerEvent<HTMLDivElement>) {
         if (!this._isPointerDown) {
             return;
         }
         this._evaluateSaturation(evt);
     }
 
+    onHuePointerDown(evt: React.PointerEvent<HTMLDivElement>) {
+        this._evaluateHue(evt);
+        this._isPointerDown = true;
+
+        evt.currentTarget.setPointerCapture(evt.pointerId);
+    }
+    
+    onHuePointerUp(evt: React.PointerEvent<HTMLDivElement>) {
+        this._isPointerDown = false;
+        evt.currentTarget.releasePointerCapture(evt.pointerId);
+    }
+
+    onHuePointerMove(evt: React.PointerEvent<HTMLDivElement>) {
+        if (!this._isPointerDown) {
+            return;
+        }
+        this._evaluateHue(evt);
+    }
+
     private _evaluateSaturation(evt: React.PointerEvent<HTMLDivElement>) {
-        let left = evt.clientX;
-        let top = evt.clientY;
+        let left = evt.nativeEvent.offsetX;
+        let top = evt.nativeEvent.offsetY;
       
         const saturation =  Math.min(1, Math.max(0.0001, left / this._saturationRef.current!.clientWidth));
         const value = Math.min(1, Math.max(0.0001, 1 - (top / this._saturationRef.current!.clientHeight)));
@@ -71,6 +93,20 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
 
         let hsv = this.state.color.toHSV();
         Color3.HSVtoRGBToRef(hsv.r, saturation, value, this.state.color);
+        this.setState({color: this.state.color});
+    }
+
+    private _evaluateHue(evt: React.PointerEvent<HTMLDivElement>) {
+        let left = evt.nativeEvent.offsetX;
+      
+        const hue = 360 * Math.min(0.9999, Math.max(0.0001, left / this._hueRef.current!.clientWidth));
+
+        if (this.props.debugMode) {
+            console.log("Hue: " + hue);
+        }
+
+        let hsv = this.state.color.toHSV();
+        Color3.HSVtoRGBToRef(hue, hsv.g, hsv.b, this.state.color);
         this.setState({color: this.state.color});
     }
 
@@ -92,19 +128,7 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
         }
 
         this.props.onColorChanged(this.state.color.clone());
-    }
-
-    updateHexValue(valueString: string) {
-        if (valueString != "" && /^[0-9A-Fa-f]+$/g.test(valueString) == false) {
-            return;
-        }
-    
-        if(valueString.length > 10) {
-            return;
-        }
-       
-        this.setState({color: Color3.FromHexString("#" + valueString)});
-    }
+    } 
 
     public render() {
         let colorHex = this.state.color.toHexString();
@@ -117,9 +141,9 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
         return (
             <div className="color-picker-container">
                 <div className="color-picker-saturation"  
-                    onPointerMove={e => this.onPointerMove(e)}               
-                    onPointerDown={e => this.onPointerDown(e)}
-                    onPointerUp={e => this.onPointerUp(e)}
+                    onPointerMove={e => this.onSaturationPointerMove(e)}               
+                    onPointerDown={e => this.onSaturationPointerDown(e)}
+                    onPointerUp={e => this.onSaturationPointerUp(e)}
                     ref={this._saturationRef}
                     style={{
                         background: colorHexRef
@@ -139,7 +163,16 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
                         background: colorHex
                     }}>
                     </div>
-                    <div className="color-picker-hue-slider">                    
+                    <div className="color-picker-hue-slider"                    
+                        ref={this._hueRef}
+                        onPointerMove={e => this.onHuePointerMove(e)}               
+                        onPointerDown={e => this.onHuePointerDown(e)}
+                        onPointerUp={e => this.onHuePointerUp(e)}
+                    >                    
+                        <div className="color-picker-hue-cursor" style={{
+                            left: `${ (hsv.r / 360.0) * 100 }%`,
+                        }}>                    
+                        </div>
                     </div>
                 </div>
                 <div className={hasAlpha ? "color-picker-rgba" : "color-picker-rgb"}>
@@ -176,8 +209,9 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
                         Hex
                     </div>
                     <div className="color-picker-hex-value">     
-                        <input type="string" className="hex-input" value={colorHex.replace("#", "")} 
-                            onChange={evt => this.updateHexValue(evt.target.value)}/>               
+                        <HexColor expectedLength={6} value={colorHex} onChange={value => {
+                            this.setState({color: Color3.FromHexString(value)});
+                        }}/>            
                     </div>
                 </div>
             </div>
