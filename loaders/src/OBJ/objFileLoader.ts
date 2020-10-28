@@ -4,12 +4,9 @@ import { Color4 } from 'babylonjs/Maths/math.color';
 import { Tools } from "babylonjs/Misc/tools";
 import { VertexData } from "babylonjs/Meshes/mesh.vertexData";
 import { Geometry } from "babylonjs/Meshes/geometry";
-import { AnimationGroup } from "babylonjs/Animations/animationGroup";
-import { Skeleton } from "babylonjs/Bones/skeleton";
-import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
-import { SceneLoader, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent, ISceneLoaderPluginFactory, ISceneLoaderPlugin } from "babylonjs/Loading/sceneLoader";
+import { SceneLoader, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent, ISceneLoaderPluginFactory, ISceneLoaderPlugin, ISceneLoaderAsyncResult } from "babylonjs/Loading/sceneLoader";
 
 import { AssetContainer } from "babylonjs/assetContainer";
 import { Scene } from "babylonjs/scene";
@@ -236,14 +233,17 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @param fileName Defines the name of the file to load
      * @returns a promise containg the loaded meshes, particles, skeletons and animations
      */
-    public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<{ meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }> {
+    public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<ISceneLoaderAsyncResult> {
         //get the meshes from OBJ file
         return this._parseSolid(meshesNames, scene, data, rootUrl).then((meshes) => {
             return {
-                meshes,
+                meshes: meshes,
                 particleSystems: [],
                 skeletons: [],
-                animationGroups: []
+                animationGroups: [],
+                transformNodes: [],
+                geometries: [],
+                lights: []
             };
         });
     }
