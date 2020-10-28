@@ -171,7 +171,7 @@ export enum TextureFormat {
     BC5RGUnorm = "bc5-rg-unorm",
     BC5RGSnorm = "bc5-rg-snorm",
     BC6HRGBUFloat = "bc6h-rgb-ufloat",
-    BC6HRGBSFloat = "bc6h-rgb-sfloat",
+    BC6HRGBFloat = "bc6h-rgb-float",
     BC7RGBAUnorm = "bc7-rgba-unorm",
     BC7RGBAUnormSRGB = "bc7-rgba-unorm-srgb",
 

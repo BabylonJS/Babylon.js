@@ -1183,7 +1183,7 @@ export class WebGPUEngine extends Engine {
             case Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT:
                 return WebGPUConstants.TextureFormat.BC6HRGBUFloat;
             case Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT:
-                return WebGPUConstants.TextureFormat.BC6HRGBSFloat;
+                return WebGPUConstants.TextureFormat.BC6HRGBFloat;
             case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5:
                 return WebGPUConstants.TextureFormat.BC3RGBAUnorm;
             case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3:

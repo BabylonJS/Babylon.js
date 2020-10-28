@@ -116,7 +116,7 @@ export class WebGPUTextureHelper {
         switch (format) {
             case WebGPUConstants.TextureFormat.BC7RGBAUnormSRGB:
             case WebGPUConstants.TextureFormat.BC7RGBAUnorm:
-            case WebGPUConstants.TextureFormat.BC6HRGBSFloat:
+            case WebGPUConstants.TextureFormat.BC6HRGBFloat:
             case WebGPUConstants.TextureFormat.BC6HRGBUFloat:
             case WebGPUConstants.TextureFormat.BC5RGSnorm:
             case WebGPUConstants.TextureFormat.BC5RGUnorm:
@@ -289,7 +289,7 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.BC7RGBAUnorm:
             case WebGPUConstants.TextureFormat.BC7RGBAUnormSRGB:
             case WebGPUConstants.TextureFormat.BC6HRGBUFloat:
-            case WebGPUConstants.TextureFormat.BC6HRGBSFloat:
+            case WebGPUConstants.TextureFormat.BC6HRGBFloat:
             case WebGPUConstants.TextureFormat.BC5RGUnorm:
             case WebGPUConstants.TextureFormat.BC5RGSnorm:
             case WebGPUConstants.TextureFormat.BC3RGBAUnorm:
@@ -417,7 +417,7 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.BC7RGBAUnorm:
             case WebGPUConstants.TextureFormat.BC7RGBAUnormSRGB:
             case WebGPUConstants.TextureFormat.BC6HRGBUFloat:
-            case WebGPUConstants.TextureFormat.BC6HRGBSFloat:
+            case WebGPUConstants.TextureFormat.BC6HRGBFloat:
             case WebGPUConstants.TextureFormat.BC5RGUnorm:
             case WebGPUConstants.TextureFormat.BC5RGSnorm:
             case WebGPUConstants.TextureFormat.BC3RGBAUnorm:
