@@ -29991,6 +29991,12 @@ declare module BABYLON {
          */
         getActiveTextures(): BaseTexture[];
         /**
+         * Specifies if any sub-materials of this multi-material use a given texture.
+         * @param texture Defines the texture to check against this multi-material's sub-materials.
+         * @returns A boolean specifying if any sub-material of this multi-material uses the texture.
+         */
+        hasTexture(texture: BaseTexture): boolean;
+        /**
          * Gets the current class name of the material e.g. "MultiMaterial"
          * Mainly use in serialization.
          * @returns the class name
@@ -84267,35 +84273,6 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         dispose(): void;
         /** @hidden */
         loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>>;
-    }
-}
-declare module BABYLON.GLTF2.Loader.Extensions {
-    /**
-     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1553)
-     * !!! Experimental Extension Subject to Changes !!!
-     */
-    export class KHR_xmp implements IGLTFLoaderExtension {
-        /**
-         * The name of this extension.
-         */
-        readonly name: string;
-        /**
-         * Defines whether this extension is enabled.
-         */
-        enabled: boolean;
-        /**
-         * Defines a number that determines the order the extensions are applied.
-         */
-        order: number;
-        private _loader;
-        /** @hidden */
-        constructor(loader: GLTFLoader);
-        /** @hidden */
-        dispose(): void;
-        /**
-         * Called after the loader state changes to LOADING.
-         */
-        onLoading(): void;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
