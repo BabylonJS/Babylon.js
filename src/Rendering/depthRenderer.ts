@@ -102,7 +102,7 @@ export class DepthRenderer {
 
             effectiveMesh._internalAbstractMeshDataInfo._isActiveIntermediate = false;
 
-            if (!material) {
+            if (!material || subMesh.verticesCount === 0 || subMesh._renderId === scene.getRenderId()) {
                 return;
             }
 
@@ -116,10 +116,12 @@ export class DepthRenderer {
                 return;
             }
 
-            var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null || renderingMesh.hasThinInstances);
+            var hardwareInstancedRendering = engine.getCaps().instancedArrays && (batch.visibleInstances[subMesh._id] !== null && batch.visibleInstances[subMesh._id] !== undefined || renderingMesh.hasThinInstances);
 
             var camera = this._camera || scene.activeCamera;
             if (this.isReady(subMesh, hardwareInstancedRendering) && camera) {
+                subMesh._renderId = scene.getRenderId();
+
                 engine.enableEffect(this._effect);
                 renderingMesh._bind(subMesh, this._effect, material.fillMode);
 

@@ -2228,37 +2228,6 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
-    interface IIndentedTextLineComponentProps {
-        value?: string;
-        color?: string;
-        underline?: boolean;
-        onLink?: () => void;
-        url?: string;
-        additionalClass?: string;
-    }
-    export class IndentedTextLineComponent extends React.Component<IIndentedTextLineComponentProps> {
-        constructor(props: IIndentedTextLineComponentProps);
-        onLink(): void;
-        renderContent(): JSX.Element;
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    interface ICommonPropertyGridComponentProps {
-        globalState: GlobalState;
-        host: {
-            metadata: any;
-        };
-        lockObject: LockObject;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-    }
-    export class CommonPropertyGridComponent extends React.Component<ICommonPropertyGridComponentProps> {
-        constructor(props: ICommonPropertyGridComponentProps);
-        renderLevel(jsonObject: any): JSX.Element[];
-        render(): JSX.Element | null;
-    }
-}
-declare module INSPECTOR {
     interface IVariantsPropertyGridComponentProps {
         globalState: GlobalState;
         host: any;
@@ -3236,6 +3205,22 @@ declare module INSPECTOR {
         private uploadInputRef;
         constructor(props: IFileMultipleButtonLineComponentProps);
         onChange(evt: any): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IIndentedTextLineComponentProps {
+        value?: string;
+        color?: string;
+        underline?: boolean;
+        onLink?: () => void;
+        url?: string;
+        additionalClass?: string;
+    }
+    export class IndentedTextLineComponent extends React.Component<IIndentedTextLineComponentProps> {
+        constructor(props: IIndentedTextLineComponentProps);
+        onLink(): void;
+        renderContent(): JSX.Element;
         render(): JSX.Element;
     }
 }
