@@ -106,12 +106,16 @@ export class WebXRInput implements IDisposable {
             WebXRMotionControllerManager.BaseRepositoryUrl = this.options.customControllersRepositoryURL;
         }
 
-        if (!this.options.disableOnlineControllerRepository) {
-            WebXRMotionControllerManager.UseOnlineRepository = true;
+        WebXRMotionControllerManager.UseOnlineRepository = !this.options.disableOnlineControllerRepository;
+        if (WebXRMotionControllerManager.UseOnlineRepository) {
             // pre-load the profiles list to load the controllers quicker afterwards
-            WebXRMotionControllerManager.UpdateProfilesList();
-        } else {
-            WebXRMotionControllerManager.UseOnlineRepository = false;
+            try {
+                WebXRMotionControllerManager.UpdateProfilesList().catch(() => {
+                    WebXRMotionControllerManager.UseOnlineRepository = false;
+                });
+            } catch (e) {
+                WebXRMotionControllerManager.UseOnlineRepository = false;
+            }
         }
     }
 

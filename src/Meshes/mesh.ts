@@ -2713,7 +2713,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         var positions = vertex_data.positions;
         var normals = vertex_data.normals;
 
-        if (currentIndices === null || positions === null || normals === null || uvs === null) {
+        if (!currentIndices || !positions || !normals || !uvs) {
             Logger.Warn("VertexData contains null entries");
         }
         else {

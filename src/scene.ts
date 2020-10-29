@@ -593,9 +593,19 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public onNewMaterialAddedObservable = new Observable<Material>();
 
     /**
+    * An event triggered when a multi material is created
+    */
+   public onNewMultiMaterialAddedObservable = new Observable<MultiMaterial>();
+
+    /**
     * An event triggered when a material is removed
     */
     public onMaterialRemovedObservable = new Observable<Material>();
+
+    /**
+    * An event triggered when a multi material is removed
+    */
+    public onMultiMaterialRemovedObservable = new Observable<MultiMaterial>();
 
     /**
     * An event triggered when a texture is created
@@ -2287,6 +2297,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         if (index !== -1) {
             this.multiMaterials.splice(index, 1);
         }
+
+        this.onMultiMaterialRemovedObservable.notifyObservers(toRemove);
+
         return index;
     }
 
@@ -2447,6 +2460,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             return;
         }
         this.multiMaterials.push(newMultiMaterial);
+        this.onNewMultiMaterialAddedObservable.notifyObservers(newMultiMaterial);
     }
 
     /**
@@ -4245,7 +4259,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.onNewSkeletonAddedObservable.clear();
         this.onSkeletonRemovedObservable.clear();
         this.onNewMaterialAddedObservable.clear();
+        this.onNewMultiMaterialAddedObservable.clear();
         this.onMaterialRemovedObservable.clear();
+        this.onMultiMaterialRemovedObservable.clear();
         this.onNewTextureAddedObservable.clear();
         this.onTextureRemovedObservable.clear();
         this.onPrePointerObservable.clear();

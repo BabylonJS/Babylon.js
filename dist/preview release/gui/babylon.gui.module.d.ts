@@ -589,6 +589,13 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
         * @returns the projected position
         */
         getProjectedPosition(position: Vector3, worldMatrix: Matrix): Vector2;
+        /**
+        * Get screen coordinates for a vector3
+        * @param position defines the position to project
+        * @param worldMatrix defines the world matrix to use
+        * @returns the projected position with Z
+        */
+        getProjectedPositionWithZ(position: Vector3, worldMatrix: Matrix): Vector3;
         private _checkUpdate;
         private _clearMeasure;
         private _render;
@@ -2081,6 +2088,21 @@ declare module "babylonjs-gui/2D/controls/virtualKeyboard" {
         static CreateDefaultLayout(name?: string): VirtualKeyboard;
     }
 }
+declare module "babylonjs-gui/2D/controls/textWrapper" {
+    /** @hidden */
+    export class TextWrapper {
+        private _text;
+        private _characters;
+        get text(): string;
+        set text(txt: string);
+        get length(): number;
+        removePart(idxStart: number, idxEnd: number, insertTxt?: string): void;
+        charAt(idx: number): string;
+        substr(from: number, length?: number): string;
+        substring(from: number, to?: number): string;
+        isWord(index: number): boolean;
+    }
+}
 declare module "babylonjs-gui/2D/controls/inputText" {
     import { Nullable } from "babylonjs/types";
     import { Observable } from "babylonjs/Misc/observable";
@@ -2090,12 +2112,13 @@ declare module "babylonjs-gui/2D/controls/inputText" {
     import { IFocusableControl } from "babylonjs-gui/2D/advancedDynamicTexture";
     import { VirtualKeyboard } from "babylonjs-gui/2D/controls/virtualKeyboard";
     import { Measure } from "babylonjs-gui/2D/measure";
+    import { TextWrapper } from "babylonjs-gui/2D/controls/textWrapper";
     /**
      * Class used to create input text control
      */
     export class InputText extends Control implements IFocusableControl {
         name?: string | undefined;
-        private _text;
+        private _textWrapper;
         private _placeholderText;
         private _background;
         private _focusedBackground;
@@ -2205,6 +2228,7 @@ declare module "babylonjs-gui/2D/controls/inputText" {
         /** Gets or sets the text displayed in the control */
         get text(): string;
         set text(value: string);
+        private _textHasChanged;
         /** Gets or sets control width */
         get width(): string | number;
         set width(value: string | number);
@@ -2247,7 +2271,7 @@ declare module "babylonjs-gui/2D/controls/inputText" {
         _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean;
         _onPointerMove(target: Control, coordinates: Vector2, pointerId: number, pi: PointerInfoBase): void;
         _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
-        protected _beforeRenderText(text: string): string;
+        protected _beforeRenderText(textWrapper: TextWrapper): TextWrapper;
         dispose(): void;
     }
 }
@@ -2491,11 +2515,12 @@ declare module "babylonjs-gui/2D/controls/ellipse" {
 }
 declare module "babylonjs-gui/2D/controls/inputPassword" {
     import { InputText } from "babylonjs-gui/2D/controls/inputText";
+    import { TextWrapper } from "babylonjs-gui/2D/controls/textWrapper";
     /**
      * Class used to create a password control
      */
     export class InputPassword extends InputText {
-        protected _beforeRenderText(text: string): string;
+        protected _beforeRenderText(textWrapper: TextWrapper): TextWrapper;
     }
 }
 declare module "babylonjs-gui/2D/controls/line" {
@@ -2567,7 +2592,7 @@ declare module "babylonjs-gui/2D/controls/line" {
 }
 declare module "babylonjs-gui/2D/multiLinePoint" {
     import { Nullable } from "babylonjs/types";
-    import { Vector2 } from "babylonjs/Maths/math.vector";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
     import { MultiLine } from "babylonjs-gui/2D/controls/multiLine";
     import { Control } from "babylonjs-gui/2D/controls/control";
@@ -2584,7 +2609,7 @@ declare module "babylonjs-gui/2D/multiLinePoint" {
         private _controlObserver;
         private _meshObserver;
         /** @hidden */
-        _point: Vector2;
+        _point: Vector3;
         /**
          * Creates a new MultiLinePoint
          * @param multiLine defines the source MultiLine object
@@ -2605,10 +2630,10 @@ declare module "babylonjs-gui/2D/multiLinePoint" {
         /** Resets links */
         resetLinks(): void;
         /**
-         * Gets a translation vector
+         * Gets a translation vector with Z component
          * @returns the translation vector
          */
-        translate(): Vector2;
+        translate(): Vector3;
         private _translatePoint;
         /** Release associated resources */
         dispose(): void;
@@ -3512,6 +3537,7 @@ declare module "babylonjs-gui/2D/controls/index" {
     export * from "babylonjs-gui/2D/controls/selector";
     export * from "babylonjs-gui/2D/controls/scrollViewers/scrollViewer";
     export * from "babylonjs-gui/2D/controls/textBlock";
+    export * from "babylonjs-gui/2D/controls/textWrapper";
     export * from "babylonjs-gui/2D/controls/virtualKeyboard";
     export * from "babylonjs-gui/2D/controls/rectangle";
     export * from "babylonjs-gui/2D/controls/displayGrid";
@@ -5005,6 +5031,13 @@ declare module BABYLON.GUI {
         * @returns the projected position
         */
         getProjectedPosition(position: BABYLON.Vector3, worldMatrix: BABYLON.Matrix): BABYLON.Vector2;
+        /**
+        * Get screen coordinates for a vector3
+        * @param position defines the position to project
+        * @param worldMatrix defines the world matrix to use
+        * @returns the projected position with Z
+        */
+        getProjectedPositionWithZ(position: BABYLON.Vector3, worldMatrix: BABYLON.Matrix): BABYLON.Vector3;
         private _checkUpdate;
         private _clearMeasure;
         private _render;
@@ -6451,12 +6484,27 @@ declare module BABYLON.GUI {
     }
 }
 declare module BABYLON.GUI {
+    /** @hidden */
+    export class TextWrapper {
+        private _text;
+        private _characters;
+        get text(): string;
+        set text(txt: string);
+        get length(): number;
+        removePart(idxStart: number, idxEnd: number, insertTxt?: string): void;
+        charAt(idx: number): string;
+        substr(from: number, length?: number): string;
+        substring(from: number, to?: number): string;
+        isWord(index: number): boolean;
+    }
+}
+declare module BABYLON.GUI {
     /**
      * Class used to create input text control
      */
     export class InputText extends Control implements IFocusableControl {
         name?: string | undefined;
-        private _text;
+        private _textWrapper;
         private _placeholderText;
         private _background;
         private _focusedBackground;
@@ -6566,6 +6614,7 @@ declare module BABYLON.GUI {
         /** Gets or sets the text displayed in the control */
         get text(): string;
         set text(value: string);
+        private _textHasChanged;
         /** Gets or sets control width */
         get width(): string | number;
         set width(value: string | number);
@@ -6608,7 +6657,7 @@ declare module BABYLON.GUI {
         _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
         _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number, pi: BABYLON.PointerInfoBase): void;
         _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
-        protected _beforeRenderText(text: string): string;
+        protected _beforeRenderText(textWrapper: TextWrapper): TextWrapper;
         dispose(): void;
     }
 }
@@ -6841,7 +6890,7 @@ declare module BABYLON.GUI {
      * Class used to create a password control
      */
     export class InputPassword extends InputText {
-        protected _beforeRenderText(text: string): string;
+        protected _beforeRenderText(textWrapper: TextWrapper): TextWrapper;
     }
 }
 declare module BABYLON.GUI {
@@ -6921,7 +6970,7 @@ declare module BABYLON.GUI {
         private _controlObserver;
         private _meshObserver;
         /** @hidden */
-        _point: BABYLON.Vector2;
+        _point: BABYLON.Vector3;
         /**
          * Creates a new MultiLinePoint
          * @param multiLine defines the source MultiLine object
@@ -6942,10 +6991,10 @@ declare module BABYLON.GUI {
         /** Resets links */
         resetLinks(): void;
         /**
-         * Gets a translation vector
+         * Gets a translation vector with Z component
          * @returns the translation vector
          */
-        translate(): BABYLON.Vector2;
+        translate(): BABYLON.Vector3;
         private _translatePoint;
         /** Release associated resources */
         dispose(): void;
