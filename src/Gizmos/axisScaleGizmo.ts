@@ -150,7 +150,7 @@ export class AxisScaleGizmo extends Gizmo {
                 var newScaledMatrix = scalingMatrix.multiply(this.attachedNode.getWorldMatrix());
                 var tempVector = new Vector3();
                 newScaledMatrix.decompose(tempVector);
-                
+
                 let maxScale = 100000;
                 if (Math.abs(tempVector.x) < maxScale && Math.abs(tempVector.y) < maxScale && Math.abs(tempVector.z) < maxScale) {
                     this.attachedNode.getWorldMatrix().copyFrom(newScaledMatrix);
