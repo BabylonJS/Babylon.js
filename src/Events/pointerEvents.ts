@@ -1,7 +1,7 @@
 import { Nullable } from "../types";
 import { Vector2 } from "../Maths/math.vector";
 import { PickingInfo } from "../Collisions/pickingInfo";
-import { IPointerEvent } from './deviceInputEvents';
+import { IMouseEvent } from './deviceInputEvents';
 
 declare type Ray = import("../Culling/ray").Ray;
 
@@ -56,7 +56,7 @@ export class PointerInfoBase {
         /**
          * Defines the related dom event
          */
-        public event: IPointerEvent) {
+        public event: IMouseEvent) {
     }
 }
 
@@ -87,7 +87,7 @@ export class PointerInfoPre extends PointerInfoBase {
      * @param localX Defines the local x coordinates of the pointer when the event occured
      * @param localY Defines the local y coordinates of the pointer when the event occured
      */
-    constructor(type: number, event: IPointerEvent, localX: number, localY: number) {
+    constructor(type: number, event: IMouseEvent, localX: number, localY: number) {
         super(type, event);
         this.skipOnPointerObservable = false;
         this.localPosition = new Vector2(localX, localY);
@@ -106,7 +106,7 @@ export class PointerInfo extends PointerInfoBase {
      * @param pickInfo Defines the picking info associated to the info (if any)\
      */
     constructor(type: number,
-        event: IPointerEvent,
+        event: IMouseEvent,
         /**
          * Defines the picking info associated to the info (if any)\
          */

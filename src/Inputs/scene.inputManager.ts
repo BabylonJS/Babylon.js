@@ -804,18 +804,14 @@ export class InputManager {
         };
 
         this._deviceInputSystem.onInputChanged = (deviceType, deviceSlot, inputIndex, previousState, currentState) => {
-            let isKeyboardActive = false;
-            try {
-                isKeyboardActive = this._deviceInputSystem.pollInput(DeviceType.Keyboard, 0, 18) >= 0;
-            }
-            catch { } // This is just a test to see if the keyboard is present
+            let isKeyboardActive = this._deviceInputSystem.isDeviceAvailable(DeviceType.Keyboard);
 
-            const altKey = (isKeyboardActive && this._deviceInputSystem.pollInput(DeviceType.Keyboard, 0, 18) == 1);
-            const ctrlKey = (isKeyboardActive && this._deviceInputSystem.pollInput(DeviceType.Keyboard, 0, 17) == 1);
-            const metaKey = (isKeyboardActive && (this._deviceInputSystem.pollInput(DeviceType.Keyboard, 0, 91) == 1
-                || this._deviceInputSystem.pollInput(DeviceType.Keyboard, 0, 92) == 1
-                || this._deviceInputSystem.pollInput(DeviceType.Keyboard, 0, 93) == 1));
-            const shiftKey = (isKeyboardActive && this._deviceInputSystem.pollInput(DeviceType.Keyboard, 0, 16) == 1);
+            const altKey = (isKeyboardActive && this._deviceInputSystem.pollInput(DeviceType.Keyboard, 0, Constants.INPUT_ALT_KEY) === 1);
+            const ctrlKey = (isKeyboardActive && this._deviceInputSystem.pollInput(DeviceType.Keyboard, 0, Constants.INPUT_CTRL_KEY) === 1);
+            const metaKey = (isKeyboardActive && (this._deviceInputSystem.pollInput(DeviceType.Keyboard, 0, Constants.INPUT_META_KEY1) === 1
+                || this._deviceInputSystem.pollInput(DeviceType.Keyboard, 0, Constants.INPUT_META_KEY2) === 1
+                || this._deviceInputSystem.pollInput(DeviceType.Keyboard, 0, Constants.INPUT_META_KEY3) === 1));
+            const shiftKey = (isKeyboardActive && this._deviceInputSystem.pollInput(DeviceType.Keyboard, 0, Constants.INPUT_SHIFT_KEY) === 1);
 
             const evt = {
                 target: elementToAttachTo,

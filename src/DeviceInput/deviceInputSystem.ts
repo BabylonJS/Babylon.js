@@ -133,9 +133,8 @@ export class DeviceInputSystem implements IDisposable {
             throw `Unable to find input ${inputIndex} for device ${DeviceType[deviceType]} in slot ${deviceSlot}`;
         }
 
-        // TODO: Determine best way to handle wheel
         // When the mouse wheel is moved, only clear the value if that input is polled for
-        if (deviceType == DeviceType.Mouse && (inputIndex >= PointerInput.MouseWheelX && inputIndex <= PointerInput.MouseWheelZ)) {
+        if (deviceType === DeviceType.Mouse && (inputIndex >= PointerInput.MouseWheelX && inputIndex <= PointerInput.MouseWheelZ)) {
             const currentValue = 0 + device[inputIndex];
 
             device[inputIndex] = 0;
@@ -144,6 +143,15 @@ export class DeviceInputSystem implements IDisposable {
         }
 
         return device[inputIndex];
+    }
+
+    /**
+     * Check for a specific device in the DeviceInputSystem
+     * @param deviceType Type of device to check for
+     * @returns bool with status of device's existence
+     */
+    public isDeviceAvailable(deviceType: DeviceType) {
+        return (this._inputs[deviceType] !== undefined);
     }
 
     /**
@@ -292,8 +300,8 @@ export class DeviceInputSystem implements IDisposable {
      */
     private _handlePointerActions() {
         this._pointerMoveEvent = ((evt) => {
-            const deviceType = (evt.pointerType == "mouse") ? DeviceType.Mouse : DeviceType.Touch;
-            const deviceSlot = (evt.pointerType == "mouse") ? 0 : evt.pointerId;
+            const deviceType = (evt.pointerType === "mouse") ? DeviceType.Mouse : DeviceType.Touch;
+            const deviceSlot = (evt.pointerType === "mouse") ? 0 : evt.pointerId;
 
             if (!this._inputs[deviceType]) {
                 this._inputs[deviceType] = [];
@@ -334,8 +342,8 @@ export class DeviceInputSystem implements IDisposable {
         });
 
         this._pointerDownEvent = ((evt) => {
-            const deviceType = (evt.pointerType == "mouse") ? DeviceType.Mouse : DeviceType.Touch;
-            const deviceSlot = (evt.pointerType == "mouse") ? 0 : evt.pointerId;
+            const deviceType = (evt.pointerType === "mouse") ? DeviceType.Mouse : DeviceType.Touch;
+            const deviceSlot = (evt.pointerType === "mouse") ? 0 : evt.pointerId;
 
             if (!this._inputs[deviceType]) {
                 this._inputs[deviceType] = [];
@@ -368,8 +376,8 @@ export class DeviceInputSystem implements IDisposable {
         });
 
         this._pointerUpEvent = ((evt) => {
-            const deviceType = (evt.pointerType == "mouse") ? DeviceType.Mouse : DeviceType.Touch;
-            const deviceSlot = (evt.pointerType == "mouse") ? 0 : evt.pointerId;
+            const deviceType = (evt.pointerType === "mouse") ? DeviceType.Mouse : DeviceType.Touch;
+            const deviceSlot = (evt.pointerType === "mouse") ? 0 : evt.pointerId;
 
             const pointer = this._inputs[deviceType][deviceSlot];
             if (pointer) {
