@@ -7,7 +7,6 @@ export interface IColorPickerComponentProps {
     value: Color4 | Color3;
     onColorChanged: (newOne: string) => void;
     globalState: GlobalState;
-    disableAlpha?: boolean;
 }
 
 interface IColorPickerComponentState {
@@ -49,8 +48,7 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
     }
 
     shouldComponentUpdate(nextProps: IColorPickerComponentProps, nextState: IColorPickerComponentState) {
-        let result = nextProps.value.toHexString() !== this.props.value.toHexString()
-            || nextProps.disableAlpha !== this.props.disableAlpha
+        let result = nextProps.value.toHexString() !== this.props.value.toHexString()            
             || nextState.hex !== this.state.hex
             || nextState.pickerEnabled !== this.state.pickerEnabled;
 
@@ -92,7 +90,6 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
                         <div className="color-picker-cover" onClick={() => this.setPickerState(false)}></div>
                         <div className="color-picker-float" ref={this._floatRef}>
                             <ColorPicker color={color}
-                                // disableAlpha={this.props.disableAlpha}
                                 onColorChanged={(color: Color3 | Color4) => {
                                     const hex = color.toHexString();
                                     this.setState({ hex, color });

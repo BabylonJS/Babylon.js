@@ -6,7 +6,6 @@ import { ColorPicker } from 'babylonjs-ui-controls/colorPicker/colorPicker';
 export interface IColorPickerComponentProps {
     value: Color4 | Color3;
     onColorChanged: (newOne: string) => void;
-    disableAlpha?: boolean;
 }
 
 interface IColorPickerComponentState {
@@ -58,7 +57,6 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
         }
 
         return diffProps
-            || nextProps.disableAlpha !== this.props.disableAlpha
             || nextState.hex !== this.state.hex
             || nextState.pickerEnabled !== this.state.pickerEnabled;
     }
@@ -92,7 +90,6 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
                             }}>
                             <div className="color-picker-float" ref={this._floatRef}>
                                 <ColorPicker color={color}
-                                    // disableAlpha={this.props.disableAlpha}
                                     onColorChanged={(color: Color3 | Color4) => {
                                         const hex: string = color.toHexString();
                                         this.setState({ hex, color });

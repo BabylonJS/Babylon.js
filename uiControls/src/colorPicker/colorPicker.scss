@@ -1,5 +1,5 @@
 .color-picker-container {
-    width: 280px;
+    width: 320px;
     height: 300px;
     background-color: white;
     display: grid;    
@@ -61,6 +61,7 @@
             width: 30px;
             height: 30px;
             border-radius: 15px;
+            border: 1px solid black;
         }
 
         .color-picker-hue-slider {
@@ -102,7 +103,7 @@
             margin-bottom: 4px;
 
             input {
-                width: 40px;
+                width: 50px;
             }
         }
 
@@ -111,6 +112,7 @@
             align-self: center;
             grid-row: 2;
             grid-column: 1;
+            color:black;
         }
     }
 
@@ -141,6 +143,10 @@
     .alpha {
         grid-row: 1;
         grid-column: 7;
+
+        &.grayed {
+            opacity: 0.5;
+        }
     }
 
     .color-picker-hex {
@@ -156,6 +162,7 @@
             grid-row: 1;
             grid-column: 1;
             margin-left: 10px;
+            color:black;
         }
 
         .color-picker-hex-value {

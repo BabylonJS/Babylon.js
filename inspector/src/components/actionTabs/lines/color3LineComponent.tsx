@@ -145,7 +145,7 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
                         {this.props.label}
                     </div>
                     <div className="color3">
-                        <ColorPickerLineComponent value={this.state.color} disableAlpha={true} onColorChanged={color => {
+                        <ColorPickerLineComponent value={this.state.color} onColorChanged={color => {
                             this.onChange(color);
                         }} />                             
                     </div>

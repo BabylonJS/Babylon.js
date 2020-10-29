@@ -107,7 +107,7 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
         }
 
         let hsv = this.state.color.toHSV();
-        Color3.HSVtoRGBToRef(hue, hsv.g, hsv.b, this.state.color);
+        Color3.HSVtoRGBToRef(hue, Math.max(hsv.g, 0.0001), hsv.b, this.state.color);
         this.setState({color: this.state.color});
     }
 
@@ -196,15 +196,12 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
                             this.forceUpdate();
                         }}/>
                     </div>        
-                    {
-                        hasAlpha &&
-                        <div className="alpha">
-                            <ColorComponentEntry label="A" min={0} max={255} value={this.state.alpha * 255 | 0} onChange={value => {
-                                    this.setState({alpha: value / 255.0});
-                                    this.forceUpdate();
-                            }}/>
-                        </div>
-                    }          
+                    <div className={"alpha" + (hasAlpha ? "" : " grayed")}>
+                        <ColorComponentEntry label="A" min={0} max={255} value={this.state.alpha * 255 | 0} onChange={value => {
+                                this.setState({alpha: value / 255.0});
+                                this.forceUpdate();
+                        }}/>
+                    </div>   
                 </div>  
                 <div className="color-picker-hex">
                     <div className="color-picker-hex-label">

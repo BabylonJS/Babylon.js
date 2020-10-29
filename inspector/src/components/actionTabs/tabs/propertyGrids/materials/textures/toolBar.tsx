@@ -79,11 +79,10 @@ export class ToolBar extends React.Component<IToolBarProps, IToolBarState> {
                 this.props.pickerOpen &&
                 <div id='color-picker' ref={this.props.pickerRef}>
                     <ColorPicker
-                        // disableAlpha={!this.props.hasAlpha}
                         color={this.computeRGBAColor()}
                         onColorChanged={
                             (color: Color3 | Color4) => {
-                                const metadata = { color: color.toHexString(), alpha: (color as unknown as Color4).a};
+                                const metadata = { color: color.toHexString(true), alpha: (color as unknown as Color4).a};
                                 if (metadata.color !== this.props.metadata.color ||
                                     metadata.alpha !== this.props.metadata.alpha) {
                                     this.props.setMetadata(metadata);
