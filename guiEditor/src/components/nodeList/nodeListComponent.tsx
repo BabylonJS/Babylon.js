@@ -224,26 +224,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         
         // Block types used to create the menu from
         const allBlocks: any = {
-            Custom_Frames: customFrameNames,
-            Animation: ["BonesBlock", "MorphTargetsBlock"],
-            Color_Management: ["ReplaceColorBlock", "PosterizeBlock", "GradientBlock", "DesaturateBlock"],
-            Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
-            Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "ReflectionTextureBlock", "TimeBlock", "DeltaTimeBlock", "FragCoordBlock", "ScreenSizeBlock"],
-            Interpolation: ["LerpBlock", "StepBlock", "SmoothStepBlock", "NLerpBlock"],
-            Math__Standard: ["AddBlock", "DivideBlock", "MaxBlock", "MinBlock", "ModBlock", "MultiplyBlock", "NegateBlock", "OneMinusBlock", "ReciprocalBlock", "ScaleBlock", "SignBlock", "SqrtBlock", "SubtractBlock"],
-            Math__Scientific: ["AbsBlock", "ArcCosBlock", "ArcSinBlock", "ArcTanBlock", "ArcTan2Block", "CosBlock", "DegreesToRadiansBlock", "ExpBlock", "Exp2Block", "FractBlock", "LogBlock", "PowBlock", "RadiansToDegreesBlock", "SawToothWaveBlock", "SinBlock", "SquareWaveBlock", "TanBlock", "TriangleWaveBlock"],
-            Math__Vector: ["CrossBlock", "DerivativeBlock", "DistanceBlock", "DotBlock", "FresnelBlock", "LengthBlock", "ReflectBlock", "RefractBlock", "Rotate2dBlock", "TransformBlock", ],
-            Matrices: ["Matrix", "WorldMatrixBlock", "WorldViewMatrixBlock", "WorldViewProjectionMatrixBlock", "ViewMatrixBlock", "ViewProjectionMatrixBlock", "ProjectionMatrixBlock"],
-            Mesh: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "PerturbNormalBlock", "NormalBlendBlock" , "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "WorldTangentBlock", "FrontFacingBlock"],
-            Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock"],
-            Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
-            Particle: ["ParticleBlendMultiplyBlock", "ParticleColorBlock", "ParticlePositionWorldBlock", "ParticleRampGradientBlock", "ParticleTextureBlock", "ParticleTextureMaskBlock", "ParticleUVBlock"],
-            PBR: ["PBRMetallicRoughnessBlock", "AmbientOcclusionBlock", "AnisotropyBlock", "ClearCoatBlock", "ReflectionBlock", "ReflectivityBlock", "RefractionBlock", "SheenBlock", "SubSurfaceBlock"],
-            PostProcess: ["ScreenPositionBlock", "CurrentScreenBlock"],
-            Procedural__Texture: ["ScreenPositionBlock"],
-            Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
-            Round: ["RoundBlock", "CeilingBlock", "FloorBlock"],
-            Scene: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock"],
+            Custom_Gui: customFrameNames,
+            Buttons: ["Text", "Image"],
         };
 
         switch (this.props.globalState.mode) {
@@ -279,7 +261,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             var blockList = (allBlocks as any)[key].filter((b: string) => !this.state.filter || b.toLowerCase().indexOf(this.state.filter.toLowerCase()) !== -1)
             .sort((a: string, b: string) => a.localeCompare(b))
             .map((block: any, i: number) => {
-                if(key === "Custom_Frames") {
+                if(key === "Custom_Gui") {
                     return <DraggableLineWithButtonComponent key={block} data={block} tooltip={this._customFrameList[block] || ""} iconImage={deleteButton} iconTitle="Delete"
                     onIconClick={ value => this.removeItem(value)}/>;
                 }
@@ -287,7 +269,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
 
             });
 
-            if(key === "Custom_Frames") {
+            if(key === "Custom_Gui") {
                 let line =  <LineWithFileButtonComponent key="add..."title={"Add Custom Frame"} closed={false}
                 label="Add..." uploadName={'custom-frame-upload'} iconImage={addButton} accept=".json" onIconClick={(file) => {
                     this.loadCustomFrame(file);
