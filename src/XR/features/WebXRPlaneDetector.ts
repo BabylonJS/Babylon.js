@@ -50,16 +50,6 @@ export interface IWebXRPlane {
      * the native xr-plane object
      */
     xrPlane: XRPlane;
-    /**
-     * if the plane is a part of a more complex geometry, geometryId will be populated with the geometry's id
-     * note: this functionality is currently only available with BabylonNative
-     */
-    geometryId?: number;
-    /**
-     * if the mesh is a part of a more complex geometry, geometryType will be populated by the type of the geometry
-     * note: this functionality is currently only available with BabylonNative
-     */
-    geometryType?: XRGeometryType | string;
 }
 
 let planeIdProvider = 0;
@@ -209,8 +199,8 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
         };
 
         if (!!this._options.preferredDetectorOptions &&
-            !!this._xrSessionManager.session.trySetPlaneDetectorOptions) {
-            this._xrSessionManager.session.trySetPlaneDetectorOptions(this._options.preferredDetectorOptions);
+            !!this._xrSessionManager.session.trySetPreferredPlaneDetectorOptions) {
+            this._xrSessionManager.session.trySetPreferredPlaneDetectorOptions(this._options.preferredDetectorOptions);
         }
 
         if (!this._xrSessionManager.session.updateWorldTrackingState) {
@@ -244,9 +234,6 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
                 mat.multiplyToRef(this._options.worldParentNode.getWorldMatrix(), mat);
             }
         }
-
-        plane.geometryId = this._xrSessionManager.session.tryGetPlaneGeometryId(xrPlane);
-        plane.geometryType = this._xrSessionManager.session.tryGetPlaneGeometryType(xrPlane);
 
         return <IWebXRPlane>plane;
     }
