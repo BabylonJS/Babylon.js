@@ -50,6 +50,9 @@ export class AxisScaleGizmo extends Gizmo {
     private _hoverMaterial: StandardMaterial;
     private _disableMaterial: StandardMaterial;
     private _dragging: boolean = false;
+    private _tmpVector = new Vector3();
+    private _tmpMatrix = new Matrix();
+    private _tmpMatrix2 = new Matrix();
 
     /**
      * Creates an AxisScaleGizmo
@@ -144,16 +147,14 @@ export class AxisScaleGizmo extends Gizmo {
                     }
                 }
 
-                const scalingMatrix = new Matrix();
-                Matrix.ScalingToRef(1 + tmpVector.x, 1 + tmpVector.y, 1 + tmpVector.z, scalingMatrix);
+                Matrix.ScalingToRef(1 + tmpVector.x, 1 + tmpVector.y, 1 + tmpVector.z, this._tmpMatrix2);
 
-                var newScaledMatrix = scalingMatrix.multiply(this.attachedNode.getWorldMatrix());
-                var tempVector = new Vector3();
-                newScaledMatrix.decompose(tempVector);
+                this._tmpMatrix2.multiplyToRef(this.attachedNode.getWorldMatrix(), this._tmpMatrix);
+                this._tmpMatrix.decompose(this._tmpVector);
 
                 let maxScale = 100000;
-                if (Math.abs(tempVector.x) < maxScale && Math.abs(tempVector.y) < maxScale && Math.abs(tempVector.z) < maxScale) {
-                    this.attachedNode.getWorldMatrix().copyFrom(newScaledMatrix);
+                if (Math.abs(this._tmpVector.x) < maxScale && Math.abs(this._tmpVector.y) < maxScale && Math.abs(this._tmpVector.z) < maxScale) {
+                    this.attachedNode.getWorldMatrix().copyFrom(this._tmpMatrix);
                 }
 
                 if (snapped) {
