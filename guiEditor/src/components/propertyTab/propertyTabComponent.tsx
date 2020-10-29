@@ -362,32 +362,14 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 <div id="header">
                     <img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
                     <div id="title">
-                        NODE MATERIAL EDITOR
+                        GUI EDITOR
                     </div>
                 </div>
                 <div>
                     <LineContainerComponent title="GENERAL">
-                        <OptionsLineComponent ref={this._modeSelect} label="Mode" target={this} getSelection={(target) => this.props.globalState.mode} options={modeList} onSelect={(value) => this.changeMode(value)} />
                         <TextLineComponent label="Version" value={Engine.Version}/>
                         <TextLineComponent label="Help" value="doc.babylonjs.com" underline={true} onLink={() => window.open('https://doc.babylonjs.com/how_to/node_material', '_blank')}/>
                         <TextInputLineComponent label="Comment" multilines={true} value={this.props.globalState.nodeMaterial!.comment} target={this.props.globalState.nodeMaterial} propertyName="comment" globalState={this.props.globalState}/>
-                        <ButtonLineComponent label="Reset to default" onClick={() => {
-                            switch (this.props.globalState.mode) {
-                                case NodeMaterialModes.Material:
-                                    this.props.globalState.nodeMaterial!.setToDefault();
-                                    break;
-                                case NodeMaterialModes.PostProcess:
-                                    this.props.globalState.nodeMaterial!.setToDefaultPostProcess();
-                                    break;
-                                case NodeMaterialModes.Particle:
-                                    this.props.globalState.nodeMaterial!.setToDefaultParticle();
-                                    break;
-                                case NodeMaterialModes.ProceduralTexture:
-                                    this.props.globalState.nodeMaterial!.setToDefaultProceduralTexture();
-                                    break;
-                            }
-                            this.props.globalState.onResetRequiredObservable.notifyObservers();
-                        }} />
                     </LineContainerComponent>
                     <LineContainerComponent title="UI">
                         <ButtonLineComponent label="Zoom to fit" onClick={() => {
@@ -398,12 +380,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         }} />
                     </LineContainerComponent>
                     <LineContainerComponent title="OPTIONS">
-                        <CheckBoxLineComponent label="Embed textures when saving"
-                            isSelected={() => DataStorage.ReadBoolean("EmbedTextures", true)}
-                            onSelect={(value: boolean) => {
-                                DataStorage.WriteBoolean("EmbedTextures", value);
-                            }}
-                        />
                         <SliderLineComponent label="Grid size" minimum={0} maximum={100} step={5}
                             decimalCount={0} globalState={this.props.globalState}
                             directValue={gridSize}
@@ -422,46 +398,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         />
                     </LineContainerComponent>
                     <LineContainerComponent title="FILE">
-                        <FileButtonLineComponent label="Load" onClick={(file) => this.load(file)} accept=".json" />
-                        <ButtonLineComponent label="Save" onClick={() => {
-                            this.save();
-                        }} />
                         <ButtonLineComponent label="Generate code" onClick={() => {
                             StringTools.DownloadAsFile(this.props.globalState.hostDocument, this.props.globalState.nodeMaterial!.generateCode(), "code.txt");
                         }} />
-                        <ButtonLineComponent label="Export shaders" onClick={() => {
-                            StringTools.DownloadAsFile(this.props.globalState.hostDocument, this.props.globalState.nodeMaterial!.compiledShaders, "shaders.txt");
-                        }} />
-                        {
-                            this.props.globalState.customSave &&
-                            <ButtonLineComponent label={this.props.globalState.customSave!.label} onClick={() => {
-                                this.customSave();
-                            }} />
-                        }
-                        <FileButtonLineComponent label="Load Frame" uploadName={'frame-upload'} onClick={(file) => this.loadFrame(file)} accept=".json" />
-                    </LineContainerComponent>
-                    {
-                        !this.props.globalState.customSave &&
-                        <LineContainerComponent title="SNIPPET">
-                            {
-                                this.props.globalState.nodeMaterial!.snippetId &&
-                                <TextLineComponent label="Snippet ID" value={this.props.globalState.nodeMaterial!.snippetId} />
-                            }
-                            <ButtonLineComponent label="Load from snippet server" onClick={() => this.loadFromSnippet()} />
-                            <ButtonLineComponent label="Save to snippet server" onClick={() => {
-                                this.saveToSnippetServer();
-                            }} />
-                        </LineContainerComponent>
-                    }
-                    <LineContainerComponent title="INPUTS">
-                    {
-                        this.props.globalState.nodeMaterial.getInputBlocks().map((ib) => {
-                            if (!ib.isUniform || ib.isSystemValue || !ib.name) {
-                                return null;
-                            }
-                            return this.renderInputBlock(ib);
-                        })
-                    }
                     </LineContainerComponent>
                 </div>
             </div>
