@@ -23,8 +23,6 @@ const _knownSamplers: { [key: string]: WebGPUTextureSamplerBindingDescription } 
 
 // TODO WEBGPU. sampler3D
 const _samplerFunctionByWebGLSamplerType: { [key: string]: string } = {
-    "textureCube": "samplerCube",
-    "texture2D": "sampler2D",
     "sampler2D": "sampler2D",
     "sampler2DShadow": "sampler2DShadow",
     "sampler2DArrayShadow": "sampler2DArrayShadow",
@@ -32,8 +30,6 @@ const _samplerFunctionByWebGLSamplerType: { [key: string]: string } = {
 };
 
 const _textureTypeByWebGLSamplerType: { [key: string]: string } = {
-    "textureCube": "textureCube",
-    "texture2D": "texture2D",
     "sampler2D": "texture2D",
     "sampler2DShadow": "texture2D",
     "sampler2DArrayShadow": "texture2DArray",
@@ -142,10 +138,10 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
 
         const match = uniformRegex.exec(uniform);
         if (match != null) {
-            const uniformType = match[1];
+            let uniformType = match[1];
             let name = match[2];
 
-            if (uniformType.indexOf("texture") === 0 || uniformType.indexOf("sampler") === 0) {
+            if (uniformType.indexOf("sampler") === 0 || uniformType.indexOf("sampler") === 1) {
                 let samplerInfo = _knownSamplers[name];
                 let arraySize = 0; // 0 means the sampler/texture is not declared as an array
                 if (!samplerInfo) {
@@ -165,6 +161,12 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
                     }
                 }
 
+                const componentType = uniformType.charAt(0) === 'u' ? 'u' : uniformType.charAt(0) === 'i' ? 'i' : '';
+
+                if (componentType) {
+                    uniformType = uniformType.substr(1);
+                }
+
                 const isTextureArray = arraySize > 0;
                 const samplerSetIndex = samplerInfo.sampler.setIndex;
                 const samplerBindingIndex = samplerInfo.sampler.bindingIndex;
@@ -177,12 +179,12 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
                 // Manage textures and samplers.
                 if (!isTextureArray) {
                     arraySize = 1;
-                    uniform = `layout(set = ${samplerSetIndex}, binding = ${samplerBindingIndex}) uniform ${samplerType} ${name}Sampler;
+                    uniform = `layout(set = ${samplerSetIndex}, binding = ${samplerBindingIndex}) uniform ${componentType}${samplerType} ${name}Sampler;
                         layout(set = ${samplerInfo.textures[0].setIndex}, binding = ${samplerInfo.textures[0].bindingIndex}) uniform ${textureType} ${name}Texture;
-                        #define ${name} ${samplerFunction}(${name}Texture, ${name}Sampler)`;
+                        #define ${name} ${componentType}${samplerFunction}(${name}Texture, ${name}Sampler)`;
                 } else {
                     let layouts = [];
-                    layouts.push(`layout(set = ${samplerSetIndex}, binding = ${samplerBindingIndex}) uniform ${samplerType} ${name}Sampler;`);
+                    layouts.push(`layout(set = ${samplerSetIndex}, binding = ${samplerBindingIndex}) uniform ${componentType}${samplerType} ${name}Sampler;`);
                     uniform = `\r\n`;
                     for (let i = 0; i < arraySize; ++i) {
                         const textureSetIndex = samplerInfo.textures[i].setIndex;
@@ -190,7 +192,7 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
 
                         layouts.push(`layout(set = ${textureSetIndex}, binding = ${textureBindingIndex}) uniform ${textureType} ${name}Texture${i};`);
 
-                        uniform += `${i > 0 ? '\r\n' : ''}#define ${name}${i} ${samplerFunction}(${name}Texture${i}, ${name}Sampler)`;
+                        uniform += `${i > 0 ? '\r\n' : ''}#define ${name}${i} ${componentType}${samplerFunction}(${name}Texture${i}, ${name}Sampler)`;
                     }
                     uniform = layouts.join('\r\n') + uniform;
                     this._textureArrayProcessing.push(name);
@@ -218,7 +220,9 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
                     webgpuProcessingContext.orderedUBOsAndSamplers[textureSetIndex][textureBindingIndex] = {
                         isSampler: false,
                         isTexture: true,
-                        textureNeedsDepthComparison: isComparisonSampler,
+                        componentType: isComparisonSampler ? WebGPUConstants.TextureComponentType.DepthComparison :
+                                     componentType === 'u' ? WebGPUConstants.TextureComponentType.Uint :
+                                     componentType === 'i' ? WebGPUConstants.TextureComponentType.Sint : WebGPUConstants.TextureComponentType.Float,
                         textureDimension,
                         name: isTextureArray ? name + i.toString() : name,
                     };
