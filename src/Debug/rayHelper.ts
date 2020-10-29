@@ -121,6 +121,8 @@ export class RayHelper {
         point.scaleInPlace(len);
         point.addInPlace(ray.origin);
 
+        this._renderPoints[0].copyFrom(ray.origin);
+
         Mesh.CreateLines("ray", this._renderPoints, this._scene, true, this._renderLine);
 
     }
