@@ -54491,6 +54491,9 @@ declare module BABYLON {
         private _hoverMaterial;
         private _disableMaterial;
         private _dragging;
+        private _tmpVector;
+        private _tmpMatrix;
+        private _tmpMatrix2;
         /**
          * Creates an AxisScaleGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
