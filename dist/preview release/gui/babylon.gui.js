@@ -1501,6 +1501,23 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         return result;
     };
     /**
+     * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh) BUT do not create a new material for the mesh. You will be responsible for connecting the texture
+     * @param mesh defines the mesh which will receive the texture
+     * @param width defines the texture width (1024 by default)
+     * @param height defines the texture height (1024 by default)
+     * @param supportPointerMove defines a boolean indicating if the texture must capture move events (true by default)
+     * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
+     * @returns a new AdvancedDynamicTexture
+     */
+    AdvancedDynamicTexture.CreateForMeshTexture = function (mesh, width, height, supportPointerMove, invertY) {
+        if (width === void 0) { width = 1024; }
+        if (height === void 0) { height = 1024; }
+        if (supportPointerMove === void 0) { supportPointerMove = true; }
+        var result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Texture"].TRILINEAR_SAMPLINGMODE, invertY);
+        result.attachToMesh(mesh, supportPointerMove);
+        return result;
+    };
+    /**
     * Creates a new AdvancedDynamicTexture in fullscreen mode.
     * In this mode the texture will rely on a layer for its rendering.
     * This allows it to be treated like any other layer.

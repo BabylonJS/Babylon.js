@@ -29991,6 +29991,12 @@ declare module BABYLON {
          */
         getActiveTextures(): BaseTexture[];
         /**
+         * Specifies if any sub-materials of this multi-material use a given texture.
+         * @param texture Defines the texture to check against this multi-material's sub-materials.
+         * @returns A boolean specifying if any sub-material of this multi-material uses the texture.
+         */
+        hasTexture(texture: BaseTexture): boolean;
+        /**
          * Gets the current class name of the material e.g. "MultiMaterial"
          * Mainly use in serialization.
          * @returns the class name

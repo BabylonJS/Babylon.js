@@ -936,6 +936,21 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         result.attachToMesh(mesh, supportPointerMove);
         return result;
     }
+
+    /**
+     * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh) BUT do not create a new material for the mesh. You will be responsible for connecting the texture
+     * @param mesh defines the mesh which will receive the texture
+     * @param width defines the texture width (1024 by default)
+     * @param height defines the texture height (1024 by default)
+     * @param supportPointerMove defines a boolean indicating if the texture must capture move events (true by default)
+     * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
+     * @returns a new AdvancedDynamicTexture
+     */
+    public static CreateForMeshTexture(mesh: AbstractMesh, width = 1024, height = 1024, supportPointerMove = true, invertY?: boolean): AdvancedDynamicTexture {
+        var result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, Texture.TRILINEAR_SAMPLINGMODE, invertY);
+        result.attachToMesh(mesh, supportPointerMove);
+        return result;
+    }
     /**
     * Creates a new AdvancedDynamicTexture in fullscreen mode.
     * In this mode the texture will rely on a layer for its rendering.
