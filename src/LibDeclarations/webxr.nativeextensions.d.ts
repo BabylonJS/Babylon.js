@@ -55,7 +55,7 @@ type XRDetectionBoundaryType = "frustum" | "sphere" | "box";
 
 interface XRDetectionBoundary {
     isStationary?: boolean;
-    type?: XRDetectionBoundaryType | string;
+    type?: XRDetectionBoundaryType;
     frustum?: XRFrustum;
     sphereRadius?: number;
     boxDimensions?: XRVector;
