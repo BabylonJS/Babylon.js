@@ -43,6 +43,14 @@ module.exports = function nodeExternals(options) {
                 amd: "babylonjs-materials"
             });
         }
+        else if (/^babylonjs-ui-controls.*$/i.test(request)) {
+            callback(null, {
+                root: "UICONTROLS",
+                commonjs: "babylonjs-ui-controls",
+                commonjs2: "babylonjs-ui-controls",
+                amd: "babylonjs-ui-controls"
+            });
+        }
         else if (/^babylonjs.*$/i.test(request)) {
             callback(null, {
                 root: "BABYLON",
@@ -89,6 +97,14 @@ module.exports = function nodeExternals(options) {
                 commonjs: "@babylonjs/materials",
                 commonjs2: "@babylonjs/materials",
                 amd: "@babylonjs/materials"
+            });
+        }
+        else if (/^@babylonjs\/ui-controls.*$/i.test(request)) {
+            callback(null, {
+                root: "UICONTROLS",
+                commonjs: "@babylonjs/ui-controls",
+                commonjs2: "@babylonjs/ui-controls",
+                amd: "@babylonjs/ui-controls"
             });
         }
         else if (/^@babylonjs\/core.*$/i.test(request)) {

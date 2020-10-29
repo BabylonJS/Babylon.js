@@ -46,9 +46,9 @@
         "loaders",
         "serializers",
         "gui",
+        "uiControls",
         "inspector",
-        "nodeEditor",
-        "uiControls"
+        "nodeEditor"
     ],
     "es6modules": [
         "core",
@@ -58,10 +58,10 @@
         "loaders",
         "serializers",
         "gui",
+        "uiControls",
         "inspector",
         "viewer",
-        "nodeEditor",
-        "uiControls"
+        "nodeEditor"
     ],
     "apps": [
         "playground",

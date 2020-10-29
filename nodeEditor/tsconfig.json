@@ -17,6 +17,9 @@
             "babylonjs-serializers/*": [
                 "../../dist/preview release/serializers/babylonjs.serializers.module.d.ts"
             ],
+            "babylonjs-ui-controls/*": [
+                "../../dist/preview release/uiControls/babylon.uiControls.module.d.ts"
+            ],
             "babylonjs/*": [
                 "../../dist/preview release/babylon.module.d.ts"
             ]
