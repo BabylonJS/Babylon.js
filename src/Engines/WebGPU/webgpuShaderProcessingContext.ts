@@ -23,6 +23,20 @@ export interface WebGPUTextureSamplerBindingDescription {
     textures: Array<WebGPUBindingInfo>;
 }
 
+/** @hidden
+ *  If the binding is a UBO, isSampler=isTexture=false
+*/
+export interface WebGPUBindingDescription {
+    name: string;
+
+    isSampler: boolean;
+    isComparisonSampler?: boolean;
+
+    isTexture: boolean;
+    componentType?: GPUTextureComponentType;
+    textureDimension?: GPUTextureViewDimension;
+}
+
 /**
  * @hidden
  */
@@ -39,7 +53,7 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
     public leftOverUniforms: { name: string, type: string, length: number }[];
 
     public orderedAttributes: string[];
-    public orderedUBOsAndSamplers: { name: string, isSampler: boolean, isComparisonSampler?: boolean, isTexture: boolean, textureNeedsDepthComparison?: boolean, textureDimension?: GPUTextureViewDimension }[][];
+    public orderedUBOsAndSamplers: WebGPUBindingDescription[][];
 
     private _attributeNextLocation: number;
     private _varyingNextLocation: number;
