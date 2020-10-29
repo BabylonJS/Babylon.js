@@ -96,12 +96,11 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
     constructor(_xrSessionManager: WebXRSessionManager, private _options: IWebXRPlaneDetectorOptions = {}) {
         super(_xrSessionManager);
         this.xrNativeFeatureName = "plane-detection";
+        this._initPlaneDetector = this._initPlaneDetector.bind(this);
         if (this._xrSessionManager.session) {
-            this._init();
+            this._initPlaneDetector(this._xrSessionManager.session);
         } else {
-            this._xrSessionManager.onXRSessionInit.addOnce(() => {
-                this._init();
-            });
+            this._xrSessionManager.onXRSessionInit.addOnce(this._initPlaneDetector);
         }
     }
 
@@ -190,7 +189,7 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
         }
     }
 
-    private _init() {
+    private _initPlaneDetector(session: XRSession) {
         const internalInit = () => {
             this._enabled = true;
             if (this._detectedPlanes.length) {
@@ -199,20 +198,20 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
         };
 
         if (!!this._options.preferredDetectorOptions &&
-            !!this._xrSessionManager.session.trySetPreferredPlaneDetectorOptions) {
-            this._xrSessionManager.session.trySetPreferredPlaneDetectorOptions(this._options.preferredDetectorOptions);
+            !!session.trySetPreferredPlaneDetectorOptions) {
+                session.trySetPreferredPlaneDetectorOptions(this._options.preferredDetectorOptions);
         }
 
-        if (!this._xrSessionManager.session.updateWorldTrackingState) {
+        if (!session.updateWorldTrackingState) {
             // check if this was enabled by a flag
-            const alreadyEnabled = (this._xrSessionManager.session as any).worldTrackingState?.planeDetectionState?.enabled;
+            const alreadyEnabled = (session as any).worldTrackingState?.planeDetectionState?.enabled;
             if (alreadyEnabled) {
                 internalInit();
             }
             // fail silently
             return;
         }
-        this._xrSessionManager.session.updateWorldTrackingState({ planeDetectionState: { enabled: true } });
+        session.updateWorldTrackingState({ planeDetectionState: { enabled: true } });
         internalInit();
     }
 
