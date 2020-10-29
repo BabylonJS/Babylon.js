@@ -146,7 +146,15 @@ export class AxisScaleGizmo extends Gizmo {
 
                 const scalingMatrix = new Matrix();
                 Matrix.ScalingToRef(1 + tmpVector.x, 1 + tmpVector.y, 1 + tmpVector.z, scalingMatrix);
-                this.attachedNode.getWorldMatrix().copyFrom(scalingMatrix.multiply(this.attachedNode.getWorldMatrix()));
+
+                var newScaledMatrix = scalingMatrix.multiply(this.attachedNode.getWorldMatrix());
+                var tempVector = new Vector3();
+                newScaledMatrix.decompose(tempVector);
+                
+                let maxScale = 100000;
+                if (Math.abs(tempVector.x) < maxScale && Math.abs(tempVector.y) < maxScale && Math.abs(tempVector.z) < maxScale) {
+                    this.attachedNode.getWorldMatrix().copyFrom(newScaledMatrix);
+                }
 
                 if (snapped) {
                     tmpSnapEvent.snapDistance = this.snapDistance * dragSteps;
