@@ -93,12 +93,11 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
     constructor(_xrSessionManager: WebXRSessionManager, private _options: IWebXRMeshDetectorOptions = {}) {
         super(_xrSessionManager);
         this.xrNativeFeatureName = "mesh-detection";
+        this._initMeshDetector = this._initMeshDetector.bind(this);
         if (this._xrSessionManager.session) {
-            this._init();
+            this._initMeshDetector(this._xrSessionManager.session);
         } else {
-            this._xrSessionManager.onXRSessionInit.addOnce(() => {
-                this._init();
-            });
+            this._xrSessionManager.onXRSessionInit.addOnce(this._initMeshDetector);
         }
     }
 
@@ -172,14 +171,14 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
         }
     }
 
-    private _init() {
-        if (!!this._xrSessionManager.session.trySetMeshDetectorEnabled) {
-            this._xrSessionManager.session.trySetMeshDetectorEnabled(true);
+    private _initMeshDetector(session: XRSession) {
+        if (!!session.trySetMeshDetectorEnabled) {
+            session.trySetMeshDetectorEnabled(true);
         }
 
         if (!!this._options.preferredDetectorOptions &&
-            !!this._xrSessionManager.session.trySetPreferredMeshDetectorOptions) {
-            this._xrSessionManager.session.trySetPreferredMeshDetectorOptions(this._options.preferredDetectorOptions);
+            !!session.trySetPreferredMeshDetectorOptions) {
+            session.trySetPreferredMeshDetectorOptions(this._options.preferredDetectorOptions);
         }
     }
 
