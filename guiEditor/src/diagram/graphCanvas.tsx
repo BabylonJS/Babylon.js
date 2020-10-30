@@ -15,6 +15,9 @@ import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { GraphFrame } from './graphFrame';
 import { IEditorData, IFrameData } from '../nodeLocationInfo';
 import { FrameNodePort } from './frameNodePort';
+import { Button } from 'babylonjs-gui/2D/controls/button';
+import { Engine } from 'babylonjs/Engines/engine';
+import { Scene } from 'babylonjs/scene';
 
 require("./graphCanvas.scss");
 
@@ -611,6 +614,39 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     onUp(evt: React.PointerEvent) {
+
+        // Get the canvas element from the DOM.
+        const canvas = document.getElementById("graph-canvas") as HTMLCanvasElement;
+
+        // Associate a Babylon Engine to it.
+        const engine = new BABYLON.Engine(canvas);
+
+        // Create our first scene.
+        var scene = new BABYLON.Scene(engine);
+        // This creates and positions a free camera (non-mesh)
+        var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
+
+        // This targets the camera to scene origin
+        camera.setTarget(BABYLON.Vector3.Zero());
+
+        // This attaches the camera to the canvas
+        camera.attachControl(true);
+
+          // GUI
+        var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+
+        var button1 = BABYLON.GUI.Button.CreateSimpleButton("but1", "Click Me");
+        button1.width = "150px"
+        button1.height = "40px";
+        button1.color = "white";
+        button1.cornerRadius = 20;
+        button1.background = "green";
+        button1.onPointerUpObservable.add(function() {
+         alert("you did it!");
+        });
+        advancedTexture.addControl(button1);    
+
+
         this._mouseStartPointX = null;
         this._mouseStartPointY = null;
         this._rootContainer.releasePointerCapture(evt.pointerId);   
@@ -923,7 +959,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
  
     render() {
         return (
-            <div id="graph-canvas" 
+            <canvas id="graph-canvas" 
                 onWheel={evt => this.onWheel(evt)}
                 onPointerMove={evt => this.onMove(evt)}
                 onPointerDown={evt =>  this.onDown(evt)}   
@@ -931,6 +967,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             >    
                 <div id="graph-container">
                     <div id="graph-canvas-container">
+                        
                     </div>     
                     <div id="frame-container">                        
                     </div>
@@ -939,7 +976,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     <div id="selection-container">                        
                     </div>
                 </div>
-            </div>
+            </canvas>
         );
     }
 }
