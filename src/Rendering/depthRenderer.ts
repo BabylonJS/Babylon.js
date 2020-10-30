@@ -92,6 +92,14 @@ export class DepthRenderer {
             engine.clear(this._clearColor, true, true, true);
         });
 
+        this._depthMap.onBeforeBindObservable.add(() => {
+            engine._debugPushGroup("depth renderer", 1);
+        });
+
+        this._depthMap.onAfterUnbindObservable.add(() => {
+            engine._debugPopGroup(1);
+        });
+
         // Custom render function
         var renderSubMesh = (subMesh: SubMesh): void => {
             var renderingMesh = subMesh.getRenderingMesh();

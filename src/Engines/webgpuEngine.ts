@@ -127,6 +127,11 @@ export interface WebGPUEngineOptions extends GPURequestAdapterOptions {
      * Defines wether the stencil buffer should be enabled.
      */
     stencil?: boolean;
+
+    /**
+     * Defines wether we should generate debug markers in the gpu command lists (can be seen with PIX for eg)
+     */
+    enableGPUDebugMarkers?: boolean;
 }
 
 /**
@@ -194,6 +199,7 @@ export class WebGPUEngine extends Engine {
     private _mainRenderPass: Nullable<GPURenderPassEncoder> = null;
     private _currentRenderTargetColorAttachmentViewDescriptor: GPUTextureViewDescriptor;
     private _currentRenderTargetDepthAttachmentViewDescriptor: GPUTextureViewDescriptor;
+    private _pendingDebugCommands: Array<[string, Nullable<string>]> = [];
 
     // DrawCall Life Cycle
     // Effect is on the parent class
@@ -244,6 +250,7 @@ export class WebGPUEngine extends Engine {
         options.swapChainFormat = options.swapChainFormat || WebGPUConstants.TextureFormat.BGRA8Unorm;
         options.antialiasing = false; //options.antialiasing === undefined ? true : options.antialiasing;
         options.stencil = options.stencil ?? true;
+        options.enableGPUDebugMarkers = options.enableGPUDebugMarkers ?? false;
 
         Logger.Log(`Babylon.js v${Engine.Version} - WebGPU engine`);
         if (!navigator.gpu) {
@@ -2362,6 +2369,8 @@ export class WebGPUEngine extends Engine {
         this._counters.numPipelineDescriptorCreation = 0;
         this._counters.numBindGroupsCreation = 0;
 
+        this._pendingDebugCommands.length = 0;
+
         super.endFrame();
 
         if (dbgVerboseLogsForFirstFrames) {
@@ -2389,7 +2398,7 @@ export class WebGPUEngine extends Engine {
         const colorTextureView = gpuTexture.createView(this._currentRenderTargetColorAttachmentViewDescriptor);
         const depthTextureView = gpuDepthStencilTexture?.createView(this._currentRenderTargetDepthAttachmentViewDescriptor);
 
-        this._renderTargetEncoder.pushDebugGroup("start render target rendering");
+        this._debugPushGroup("render target pass", 1);
 
         const renderPassDescriptor = {
             colorAttachments: [{
@@ -2415,6 +2424,8 @@ export class WebGPUEngine extends Engine {
 
         this._currentRenderPass = renderPass;
 
+        this._debugFlushPendingCommands();
+
         this._resetCurrentViewport(1);
     }
 
@@ -2426,13 +2437,14 @@ export class WebGPUEngine extends Engine {
                     console.log("frame #" + (this as any)._count + " - render target end pass - internalTexture.uniqueId=", this._currentRenderTarget?.uniqueId);
                 }
             }
-            this._renderTargetEncoder.popDebugGroup();
+            this._debugPopGroup(1);
             this._resetCurrentViewport(1);
         }
     }
 
     private _getCurrentRenderPass(): GPURenderPassEncoder {
         if (this._currentRenderTarget && !this._currentRenderPass) {
+            // delayed creation of the render target pass, but we now need to create it as we are requested the render pass
             this._startRenderTargetRenderPass(this._currentRenderTarget, null, false, false);
         } else if (!this._currentRenderPass) {
             this._startMainRenderPass();
@@ -2462,7 +2474,7 @@ export class WebGPUEngine extends Engine {
             }
         }
 
-        this._renderEncoder.pushDebugGroup("start main rendering");
+        this._debugPushGroup("main pass", 0);
 
         this._currentRenderPass = this._renderEncoder.beginRenderPass({
             colorAttachments: this._mainColorAttachments,
@@ -2470,6 +2482,8 @@ export class WebGPUEngine extends Engine {
         });
 
         this._mainRenderPass = this._currentRenderPass;
+
+        this._debugFlushPendingCommands();
 
         this._resetCurrentViewport(0);
     }
@@ -2482,7 +2496,7 @@ export class WebGPUEngine extends Engine {
                     console.log("frame #" + (this as any)._count + " - main end pass");
                 }
             }
-            this._renderEncoder.popDebugGroup();
+            this._debugPopGroup(0);
             this._resetCurrentViewport(0);
             if (this._mainRenderPass === this._currentRenderPass) {
                 this._currentRenderPass = null;
@@ -2564,6 +2578,10 @@ export class WebGPUEngine extends Engine {
         // TODO WEBGPU remove the assert debugging code
         assert(this._currentRenderTarget === null || (this._currentRenderTarget !== null && texture === this._currentRenderTarget), "unBindFramebuffer - the texture we wan't to unbind is not the same than the currentRenderTarget! texture=" + texture + ", this._currentRenderTarget=" + this._currentRenderTarget);
 
+        if (onBeforeUnbind) {
+            onBeforeUnbind();
+        }
+
         if (this._currentRenderPass && this._currentRenderPass !== this._mainRenderPass) {
             this._endRenderTargetRenderPass();
         }
@@ -2574,18 +2592,14 @@ export class WebGPUEngine extends Engine {
             this._generateMipmaps(texture);
         }
 
-        if (onBeforeUnbind) {
-            onBeforeUnbind();
-        }
-
         this._currentRenderPass = this._mainRenderPass;
         this._setDepthTextureFormat(this._getMainDepthTextureFormat());
         this._setColorFormat(this._options.swapChainFormat!);
     }
 
     public flushFramebuffer(): void {
-        this._commandBuffers[0] = this._uploadEncoder.finish();
-        this._commandBuffers[1] = this._renderTargetEncoder.finish();
+        this._commandBuffers[0] = this._renderTargetEncoder.finish();
+        this._commandBuffers[1] = this._uploadEncoder.finish();
         this._commandBuffers[2] = this._renderEncoder.finish();
 
         this._device.defaultQueue.submit(this._commandBuffers);
@@ -3625,6 +3639,70 @@ export class WebGPUEngine extends Engine {
 
     public getRenderingCanvas(): Nullable<HTMLCanvasElement> {
         return this._canvas;
+    }
+
+    public _debugPushGroup(groupName: string, targetObject?: number): void {
+        if (!this._options.enableGPUDebugMarkers) {
+            return;
+        }
+
+        if (targetObject === 0 || targetObject === 1) {
+            const encoder = targetObject === 0 ? this._renderEncoder : this._renderTargetEncoder;
+            encoder.pushDebugGroup(groupName);
+        } else if (this._currentRenderPass) {
+            this._currentRenderPass.pushDebugGroup(groupName);
+        } else {
+            this._pendingDebugCommands.push(["push", groupName]);
+        }
+    }
+
+    public _debugPopGroup(targetObject?: number): void {
+        if (!this._options.enableGPUDebugMarkers) {
+            return;
+        }
+
+        if (targetObject === 0 || targetObject === 1) {
+            const encoder = targetObject === 0 ? this._renderEncoder : this._renderTargetEncoder;
+            encoder.popDebugGroup();
+        } else if (this._currentRenderPass) {
+            this._currentRenderPass.popDebugGroup();
+        } else {
+            this._pendingDebugCommands.push(["pop", null]);
+        }
+    }
+
+    public _debugInsertMarker(text: string, targetObject?: number): void {
+        if (!this._options.enableGPUDebugMarkers) {
+            return;
+        }
+
+        if (targetObject === 0 || targetObject === 1) {
+            const encoder = targetObject === 0 ? this._renderEncoder : this._renderTargetEncoder;
+            encoder.insertDebugMarker(text);
+        } else if (this._currentRenderPass) {
+            this._currentRenderPass.insertDebugMarker(text);
+        } else {
+            this._pendingDebugCommands.push(["insert", text]);
+        }
+    }
+
+    private _debugFlushPendingCommands(): void {
+        for (let i = 0; i < this._pendingDebugCommands.length; ++i) {
+            const [name, param] = this._pendingDebugCommands[i];
+
+            switch (name) {
+                case "push":
+                    this._debugPushGroup(param!);
+                    break;
+                case "pop":
+                    this._debugPopGroup();
+                    break;
+                case "insert":
+                    this._debugInsertMarker(param!);
+                    break;
+            }
+        }
+        this._pendingDebugCommands.length = 0;
     }
 
     //------------------------------------------------------------------------------
