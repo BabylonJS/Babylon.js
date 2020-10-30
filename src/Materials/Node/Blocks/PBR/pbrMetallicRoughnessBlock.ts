@@ -647,10 +647,11 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         defines.setValue("SPECULAROVERALPHA", this.useSpecularOverAlpha, true);
         defines.setValue("SPECULARAA", this._scene.getEngine().getCaps().standardDerivatives && this.enableSpecularAntiAliasing, true);
         defines.setValue("REALTIME_FILTERING", this.realTimeFiltering, true);
-        defines.setValue("NUM_SAMPLES", "" + this.realTimeFilteringQuality, true);
 
         if (this._scene.getEngine().webGLVersion > 1) {
             defines.setValue("NUM_SAMPLES", this.realTimeFilteringQuality + "u", true);
+        } else {
+            defines.setValue("NUM_SAMPLES", "" + this.realTimeFilteringQuality, true);
         }
 
         // Advanced
@@ -700,13 +701,13 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     }
 
     public updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, uniformBuffers: string[]) {
-        MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
-            uniformsNames: state.uniforms,
-            uniformBuffersNames: uniformBuffers,
-            samplers: state.samplers,
-            defines: defines,
-            maxSimultaneousLights: nodeMaterial.maxSimultaneousLights
-        });
+        for (var lightIndex = 0; lightIndex < nodeMaterial.maxSimultaneousLights; lightIndex++) {
+            if (!defines["LIGHT" + lightIndex]) {
+                break;
+            }
+            const onlyUpdateBuffersList = state.uniforms.indexOf("vLightData" + lightIndex) >= 0;
+            MaterialHelper.PrepareUniformsAndSamplersForLight(lightIndex, state.uniforms, state.samplers, defines["PROJECTEDLIGHTTEXTURE" + lightIndex], uniformBuffers, onlyUpdateBuffersList);
+        }
     }
 
     public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {

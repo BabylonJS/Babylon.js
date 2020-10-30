@@ -559,7 +559,15 @@ export class MaterialHelper {
      * @param projectedLightTexture defines if projected texture must be used
      * @param uniformBuffersList defines an optional list of uniform buffers
      */
-    public static PrepareUniformsAndSamplersForLight(lightIndex: number, uniformsList: string[], samplersList: string[], projectedLightTexture?: any, uniformBuffersList: Nullable<string[]> = null) {
+    public static PrepareUniformsAndSamplersForLight(lightIndex: number, uniformsList: string[], samplersList: string[], projectedLightTexture?: any, uniformBuffersList: Nullable<string[]> = null, updateOnlyBuffersList = false) {
+        if (uniformBuffersList) {
+            uniformBuffersList.push("Light" + lightIndex);
+        }
+
+        if (updateOnlyBuffersList) {
+            return;
+        }
+
         uniformsList.push(
             "vLightData" + lightIndex,
             "vLightDiffuse" + lightIndex,
@@ -571,10 +579,6 @@ export class MaterialHelper {
             "shadowsInfo" + lightIndex,
             "depthValues" + lightIndex,
         );
-
-        if (uniformBuffersList) {
-            uniformBuffersList.push("Light" + lightIndex);
-        }
 
         samplersList.push("shadowSampler" + lightIndex);
         samplersList.push("depthSampler" + lightIndex);
