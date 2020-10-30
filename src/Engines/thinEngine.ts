@@ -299,6 +299,22 @@ export class ThinEngine {
     protected _renderingQueueLaunched = false;
     protected _activeRenderLoops = new Array<() => void>();
 
+    /**
+    * An event triggered when the thin engine is disposed.
+    */
+    public onDisposeObservable = new Observable<ThinEngine>();
+
+    private _onDisposeObserver: Nullable<Observer<ThinEngine>> = null;
+    /** Sets a function to be executed when this engine is disposed. 
+     * This callback has been introduced to allow gltf loader to dispose its own buffer.
+    */
+    public set onDispose(callback: () => void) {
+        if (this._onDisposeObserver) {
+            this.onDisposeObservable.remove(this._onDisposeObserver);
+        }
+        this._onDisposeObserver = this.onDisposeObservable.add(callback);
+    }
+
     // Lost context
     /**
      * Observable signaled when a context lost event is raised
@@ -3844,6 +3860,10 @@ export class ThinEngine {
      */
     public dispose(): void {
         this.stopRenderLoop();
+
+        // on dispose event
+        this.onDisposeObservable.notifyObservers(this);
+        this.onDisposeObservable.clear();
 
         // Clear observables
         if (this.onBeforeTextureInitObservable) {

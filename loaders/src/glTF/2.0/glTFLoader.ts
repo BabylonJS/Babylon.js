@@ -1675,8 +1675,17 @@ export class GLTFLoader implements IGLTFLoader {
             const bufferView = ArrayItem.Get(`${context}/bufferView`, this._gltf.bufferViews, accessor.bufferView);
             accessor._babylonVertexBuffer = this._loadVertexBufferViewAsync(bufferView, kind).then((babylonBuffer) => {
                 const size = GLTFLoader._GetNumComponents(context, accessor.type);
-                return new VertexBuffer(this._babylonScene.getEngine(), babylonBuffer, kind, false, false, bufferView.byteStride,
+                var vertexBuffer = new VertexBuffer(this._babylonScene.getEngine(), babylonBuffer, kind, false, false, bufferView.byteStride,
                     false, accessor.byteOffset, size, accessor.componentType, accessor.normalized, true);
+
+                // gltfload owns this buffer and is responsible to dispose it at some point.
+                // for now, it's doing that procedure when the engine is disposed
+                if (babylonBuffer instanceof Buffer) {
+                    this._babylonScene.getEngine().onDispose = () => {
+                        vertexBuffer._buffer.dispose();
+                    };
+                }
+                return vertexBuffer;
             });
         }
 
