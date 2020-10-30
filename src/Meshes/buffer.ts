@@ -13,6 +13,7 @@ export class Buffer {
     private _updatable: boolean;
     private _instanced: boolean;
     private _divisor: number;
+    private _isAlreadyOwned = false;
 
     /**
      * Gets the byte stride.
@@ -168,6 +169,20 @@ export class Buffer {
         }
     }
 
+    /** @hidden */
+    public _increaseReferences() {
+        if (!this._buffer) {
+            return;
+        }
+
+        if (!this._isAlreadyOwned) {
+            this._isAlreadyOwned = true;
+            return;
+        }
+
+        this._buffer.references++;
+    }
+
     /**
      * Release all resources
      */
@@ -286,6 +301,10 @@ export class VertexBuffer {
         if (data instanceof Buffer) {
             this._buffer = data;
             this._ownsBuffer = takeBufferOwnership;
+
+            if (takeBufferOwnership) {
+                this._buffer._increaseReferences();
+            }
         } else {
             this._buffer = new Buffer(engine, data, updatable, stride, postponeInternalCreation, instanced, useBytes);
             this._ownsBuffer = true;
