@@ -78415,6 +78415,10 @@ declare module BABYLON.GUI {
         */
         premulAlpha: boolean;
         /**
+         * Gets or sets a boolean indicating that the canvas must be reverted on Y when updating the texture
+         */
+        applyYInversionOnUpdate: boolean;
+        /**
         * Gets or sets a number used to scale rendering size (2 means that the texture will be twice bigger).
         * Useful when you want more antialiasing
         */
