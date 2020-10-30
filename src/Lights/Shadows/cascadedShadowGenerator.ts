@@ -795,6 +795,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
 
         let engine = this._scene.getEngine();
 
+        this._shadowMap.onBeforeBindObservable.clear();
         this._shadowMap.onBeforeRenderObservable.clear();
 
         this._shadowMap.onBeforeRenderObservable.add((layer: number) => {
@@ -806,6 +807,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         });
 
         this._shadowMap.onBeforeBindObservable.add(() => {
+            engine._debugPushGroup(`cascaded shadow map generation for ${this._nameForCustomEffect}`, 1);
             if (this._breaksAreDirty) {
                 this._splitFrustum();
             }

@@ -575,6 +575,8 @@ export class ProceduralTexture extends Texture {
             return;
         }
 
+        engine._debugPushGroup(`procedural texture generation for ${this.name}`, 1);
+
         if (this.isCube) {
             for (var face = 0; face < 6; face++) {
                 engine.bindFramebuffer(this._texture, face, undefined, undefined, true);
@@ -614,6 +616,8 @@ export class ProceduralTexture extends Texture {
 
         // Unbind
         engine.unBindFramebuffer(this._texture, this.isCube);
+
+        engine._debugPopGroup(1);
 
         if (this.onGenerated) {
             this.onGenerated();

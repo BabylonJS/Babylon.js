@@ -782,6 +782,24 @@ export class ThinEngine {
     }
 
     /**
+     * @hidden
+     */
+    public _debugPushGroup(groupName: string, targetObject?: number): void {
+    }
+
+    /**
+     * @hidden
+     */
+    public _debugPopGroup(targetObject?: number): void {
+    }
+
+    /**
+     * @hidden
+     */
+    public _debugInsertMarker(text: string, targetObject?: number): void {
+    }
+
+    /**
      * Shared initialization across engines types.
      * @param canvas The canvas associated with this instance of the engine.
      * @param doNotHandleTouchAction Defines that engine should ignore modifying touch action attribute and style

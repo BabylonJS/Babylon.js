@@ -195,9 +195,12 @@ export class MinMaxReducer {
         }
 
         this._onAfterUnbindObserver = this._sourceTexture.onAfterUnbindObservable.add(() => {
+            const engine = this._camera.getScene().getEngine();
+            engine._debugPushGroup(`min max reduction`, 1);
             this._reductionSteps![0].activate(this._camera);
             this._postProcessManager.directRender(this._reductionSteps!, this._reductionSteps![0].inputTexture, this._forceFullscreenViewport);
-            this._camera.getScene().getEngine().unBindFramebuffer(this._reductionSteps![0].inputTexture, false);
+            engine.unBindFramebuffer(this._reductionSteps![0].inputTexture, false);
+            engine._debugPopGroup(1);
         });
 
         this._activated = true;

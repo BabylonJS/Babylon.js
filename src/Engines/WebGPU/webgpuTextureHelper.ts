@@ -216,7 +216,7 @@ export class WebGPUTextureHelper {
             commandEncoder = this._device.createCommandEncoder({});
         }
 
-        commandEncoder!.pushDebugGroup("start create mipmaps");
+        commandEncoder!.pushDebugGroup("create mipmaps");
 
         for (let i = 1; i < mipLevelCount; ++i) {
             const passEncoder = commandEncoder!.beginRenderPass({

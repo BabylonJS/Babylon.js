@@ -902,6 +902,10 @@ export class ShadowGenerator implements IShadowGenerator {
 
         let engine = this._scene.getEngine();
 
+        this._shadowMap.onBeforeBindObservable.add(() => {
+            engine._debugPushGroup(`shadow map generation for ${this._nameForCustomEffect}`, 1);
+        });
+
         // Record Face Index before render.
         this._shadowMap.onBeforeRenderObservable.add((faceIndex: number) => {
             this._currentFaceIndex = faceIndex;
@@ -920,6 +924,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 engine.setColorWrite(true);
             }
             if (!this.useBlurExponentialShadowMap && !this.useBlurCloseExponentialShadowMap) {
+                engine._debugPopGroup(1);
                 return;
             }
             let shadowMap = this.getShadowMapForRendering();
@@ -928,6 +933,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 const texture = shadowMap.getInternalTexture()!;
                 this._scene.postProcessManager.directRender(this._blurPostProcesses, texture, true);
                 engine.unBindFramebuffer(texture, true);
+                engine._debugPopGroup(1);
             }
         });
 

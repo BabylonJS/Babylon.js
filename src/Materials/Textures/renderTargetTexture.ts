@@ -849,6 +849,8 @@ export class RenderTargetTexture extends Texture {
             return;
         }
 
+        engine._debugPushGroup(`render to face #${faceIndex} layer #${layer}`, 1);
+
         // Bind
         if (this._postProcessManager) {
             this._postProcessManager._prepareFrame(this._texture, this._postProcesses);
@@ -935,19 +937,12 @@ export class RenderTargetTexture extends Texture {
         }
 
         // Unbind
-        if (!this.isCube || faceIndex === 5) {
-            if (this.isCube) {
-
-                if (faceIndex === 5) {
-                    engine.generateMipMapsForCubemap(this._texture);
-                }
-            }
-
-            this.unbindFrameBuffer(engine, faceIndex);
-
-        } else {
-            this.onAfterRenderObservable.notifyObservers(faceIndex);
+        if (this.isCube && faceIndex === 5) {
+            engine.generateMipMapsForCubemap(this._texture);
         }
+
+        this.unbindFrameBuffer(engine, faceIndex);
+        engine._debugPopGroup(1);
     }
 
     /**

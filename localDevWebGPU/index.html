@@ -146,7 +146,9 @@
                                     "depth24unorm-stencil8",
                                     "depth32float-stencil8"
                                 ]
-                            }
+                            },
+                            enableGPUDebugMarkers: true,
+                            antialiasing: true,
                         });
                         engine.initAsync(glslangOptions).then(() => onLoad(engine));
                     }
