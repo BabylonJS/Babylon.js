@@ -46,6 +46,10 @@ export class DiscardBlock extends NodeMaterialBlock {
 
         state.sharedData.hints.needAlphaTesting = true;
 
+        if (!this.cutoff.isConnected || !this.value.isConnected) {
+            return;
+        }
+
         state.compilationString += `if (${this.value.associatedVariableName} < ${this.cutoff.associatedVariableName}) discard;\r\n`;
 
         return this;
