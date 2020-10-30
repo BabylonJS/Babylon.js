@@ -104,7 +104,7 @@
         {
             "title": "cascaded shadow maps and flying saucers",
             "renderCount": 10,
-            "playgroundId": "#IIZ9UU#40"
+            "playgroundId": "#IIZ9UU#63"
         },
         {
             "title": "sprite maps",
@@ -114,6 +114,11 @@
             "title": "halo particle system",
             "renderCount": 20,
             "playgroundId": "#2441BU#1"
+        },
+        {
+            "title": "depth renderer",
+            "renderCount": 5,
+            "playgroundId": "#1PHYB0#86"
         }
     ]
 }
