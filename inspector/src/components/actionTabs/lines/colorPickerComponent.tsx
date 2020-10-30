@@ -1,38 +1,29 @@
 import * as React from "react";
 import { Color4, Color3 } from 'babylonjs/Maths/math.color';
-import { SketchPicker } from 'react-color';
+import { ColorPicker } from '../../controls/colorPicker/colorPicker';
 
 export interface IColorPickerComponentProps {
     value: Color4 | Color3;
     onColorChanged: (newOne: string) => void;
-    disableAlpha?: boolean;
 }
 
 interface IColorPickerComponentState {
     pickerEnabled: boolean;
-    color: {
-        r: number,
-        g: number,
-        b: number,
-        a?: number
-    },
-    hex: string
+    color: Color3 | Color4;
+    hex: string;
 }
 
 export class ColorPickerLineComponent extends React.Component<IColorPickerComponentProps, IColorPickerComponentState> {
-    private _floatRef: React.RefObject<HTMLDivElement>
-    private _floatHostRef: React.RefObject<HTMLDivElement>
+    private _floatRef: React.RefObject<HTMLDivElement>;
+    private _floatHostRef: React.RefObject<HTMLDivElement>;
 
     constructor(props: IColorPickerComponentProps) {
         super(props);
 
-        this.state = {pickerEnabled: false, color: {
-            r: this.props.value.r * 255,
-            g: this.props.value.g * 255,
-            b: this.props.value.b * 255,
-            a: this.props.value instanceof Color4 ? this.props.value.a * 100 : 100,
-        }, hex: this.props.value.toHexString()};
-        
+        this.state = {pickerEnabled: false,
+            color: this.props.value,
+            hex: this.props.value.toHexString()};
+
         this._floatRef = React.createRef();
         this._floatHostRef = React.createRef();
     }
@@ -52,7 +43,7 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
             top = window.innerHeight - height - 10;
         }
 
-        div.style.top = top + "px";        
+        div.style.top = top + "px";
         div.style.left = host.getBoundingClientRect().left - div.getBoundingClientRect().width + "px";
     }
 
@@ -60,17 +51,11 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
         let diffProps = nextProps.value.toHexString() !== this.props.value.toHexString();
 
         if (diffProps) {
-            nextState.color =  {
-                r: nextProps.value.r * 255,
-                g: nextProps.value.g * 255,
-                b: nextProps.value.b * 255,
-                a: nextProps.value instanceof Color4 ? nextProps.value.a : 1,
-            };
+            nextState.color =  nextProps.value;
             nextState.hex = nextProps.value.toHexString();
         }
 
         return diffProps
-            || nextProps.disableAlpha !== this.props.disableAlpha 
             || nextState.hex !== this.state.hex
             || nextState.pickerEnabled !== this.state.pickerEnabled;
     }
@@ -88,8 +73,8 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
 
         return (
             <div className="color-picker">
-                <div className="color-rect"  ref={this._floatHostRef} 
-                    style={{background: this.state.hex}} 
+                <div className="color-rect"  ref={this._floatHostRef}
+                    style={{background: this.state.hex}}
                     onClick={() => this.setState({pickerEnabled: true})}>
 
                 </div>
@@ -103,26 +88,17 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
                                 this.setState({pickerEnabled: false});
                             }}>
                             <div className="color-picker-float" ref={this._floatRef}>
-                                <SketchPicker color={color} 
-                                    disableAlpha={this.props.disableAlpha}
-                                    onChange={(color) => {
-                                        let hex: string;
-
-                                        if (this.props.disableAlpha) {
-                                            let newColor3 = Color3.FromInts(color.rgb.r, color.rgb.g, color.rgb.b);
-                                            hex = newColor3.toHexString();    
-                                        } else {
-                                            let newColor4 = Color4.FromInts(color.rgb.r, color.rgb.g, color.rgb.b, 255 * (color.rgb.a || 0));
-                                            hex = newColor4.toHexString();   
-                                        }
-                                        this.setState({hex: hex, color: color.rgb});
+                                <ColorPicker color={color}
+                                    onColorChanged={(color: Color3 | Color4) => {
+                                        const hex: string = color.toHexString();
+                                        this.setState({ hex, color });
                                         this.props.onColorChanged(hex);
                                     }}
                                 />
                             </div>
                         </div>
                     </>
-                }                
+                }
             </div>
         );
     }

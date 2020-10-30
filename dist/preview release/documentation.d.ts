@@ -44491,7 +44491,8 @@ declare module BABYLON {
          * Lambda returning the list of potentially colliding sub meshes.
          */
         getCollidingSubMeshCandidates: (mesh: AbstractMesh, collider: Collider) => ISmartArrayLike<SubMesh>;
-        private _activeMeshesFrozen;
+        /** @hidden */
+        _activeMeshesFrozen: boolean;
         private _skipEvaluateActiveMeshesCompletely;
         /**
          * Use this function to stop evaluating active meshes. The current list will be keep alive between frames
@@ -64179,7 +64180,7 @@ declare module BABYLON {
          * Gets the cutoff input component
          */
         get cutoff(): NodeMaterialConnectionPoint;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
+        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
     }
 }
 declare module BABYLON {
@@ -78414,6 +78415,10 @@ declare module BABYLON.GUI {
         * Gets or sets a boolean defining if alpha is stored as premultiplied
         */
         premulAlpha: boolean;
+        /**
+         * Gets or sets a boolean indicating that the canvas must be reverted on Y when updating the texture
+         */
+        applyYInversionOnUpdate: boolean;
         /**
         * Gets or sets a number used to scale rendering size (2 means that the texture will be twice bigger).
         * Useful when you want more antialiasing
