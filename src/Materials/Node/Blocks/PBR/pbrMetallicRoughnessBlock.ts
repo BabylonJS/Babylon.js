@@ -31,15 +31,15 @@ import { Constants } from '../../../../Engines/constants';
 import { Color3, TmpColors } from '../../../../Maths/math.color';
 
 const mapOutputToVariable: { [name: string] : [string, string] } = {
-    "ambient":      ["finalAmbient", ""],
-    "diffuse":      ["finalDiffuse", ""],
-    "specular":     ["finalSpecularScaled",                         "!defined(UNLIT) && defined(SPECULARTERM)"],
-    "sheenDir":     ["finalSheenScaled",                            "!defined(UNLIT) && defined(SHEEN)"],
+    "ambientClr":   ["finalAmbient", ""],
+    "diffuseDir":   ["finalDiffuse", ""],
+    "specularDir":  ["finalSpecularScaled",                         "!defined(UNLIT) && defined(SPECULARTERM)"],
     "clearcoatDir": ["finalClearCoatScaled",                        "!defined(UNLIT) && defined(CLEARCOAT)"],
+    "sheenDir":     ["finalSheenScaled",                            "!defined(UNLIT) && defined(SHEEN)"],
     "diffuseInd":   ["finalIrradiance",                             "!defined(UNLIT) && defined(REFLECTION)"],
     "specularInd":  ["finalRadianceScaled",                         "!defined(UNLIT) && defined(REFLECTION)"],
-    "sheenInd":     ["sheenOut.finalSheenRadianceScaled",           "!defined(UNLIT) && defined(REFLECTION) && defined(SHEEN) && defined(ENVIRONMENTBRDF)"],
     "clearcoatInd": ["clearcoatOut.finalClearCoatRadianceScaled",   "!defined(UNLIT) && defined(REFLECTION) && defined(CLEARCOAT)"],
+    "sheenInd":     ["sheenOut.finalSheenRadianceScaled",           "!defined(UNLIT) && defined(REFLECTION) && defined(SHEEN) && defined(ENVIRONMENTBRDF)"],
     "refraction":   ["subSurfaceOut.finalRefraction",               "!defined(UNLIT) && defined(SS_REFRACTION)"],
     "lighting":     ["finalColor.rgb", ""],
     "shadow":       ["shadow", ""],
