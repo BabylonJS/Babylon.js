@@ -959,6 +959,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
  
     render() {
         return (
+
+            //changing div to canvas
             <canvas id="graph-canvas" 
                 onWheel={evt => this.onWheel(evt)}
                 onPointerMove={evt => this.onMove(evt)}
