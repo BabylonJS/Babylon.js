@@ -305,7 +305,7 @@ export class ThinEngine {
     public onDisposeObservable = new Observable<ThinEngine>();
 
     private _onDisposeObserver: Nullable<Observer<ThinEngine>> = null;
-    /** Sets a function to be executed when this engine is disposed. 
+    /** Sets a function to be executed when this engine is disposed.
      * This callback has been introduced to allow gltf loader to dispose its own buffer.
     */
     public set onDispose(callback: () => void) {

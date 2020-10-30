@@ -116,6 +116,7 @@ export class GLTFLoader implements IGLTFLoader {
     private _babylonScene: Scene;
     private _rootBabylonMesh: Mesh;
     private _defaultBabylonMaterialData: { [drawMode: number]: Material } = {};
+    private static _buffersToDispose = new Array<VertexBuffer>();
 
     private static _RegisteredExtensions: { [name: string]: IRegisteredExtension } = {};
 
@@ -1681,8 +1682,15 @@ export class GLTFLoader implements IGLTFLoader {
                 // gltfload owns this buffer and is responsible to dispose it at some point.
                 // for now, it's doing that procedure when the engine is disposed
                 if (babylonBuffer instanceof Buffer) {
+                    GLTFLoader._buffersToDispose.push(vertexBuffer);
                     this._babylonScene.getEngine().onDispose = () => {
-                        vertexBuffer._buffer.dispose();
+                        while (GLTFLoader._buffersToDispose.length)
+                        {
+                            var bufferToDispose = GLTFLoader._buffersToDispose.pop();
+                            if (bufferToDispose) {
+                                bufferToDispose._buffer.dispose();
+                            }
+                        }
                     };
                 }
                 return vertexBuffer;
