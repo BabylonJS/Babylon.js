@@ -647,6 +647,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         advancedTexture.addControl(button1);    
 
 
+        engine.runRenderLoop(() => {scene.render()});
+
         this._mouseStartPointX = null;
         this._mouseStartPointY = null;
         this._rootContainer.releasePointerCapture(evt.pointerId);   
