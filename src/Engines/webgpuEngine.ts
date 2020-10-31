@@ -1640,6 +1640,7 @@ export class WebGPUEngine extends Engine {
         }
 
         texture.samplingMode = samplingMode;
+        // TODO WEBGPU have the sampler associated to the texture rebuilt with the new sampling mode
     }
 
     public updateTextureWrappingMode(texture: InternalTexture, wrapU: Nullable<number>, wrapV: Nullable<number> = null, wrapR: Nullable<number> = null): void {
