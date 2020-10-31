@@ -226,6 +226,9 @@ export class ShadowGenerator implements IShadowGenerator {
     /** Gets or sets the custom shader name to use */
     public customShaderOptions: ICustomShaderOptions;
 
+    /** Gets or sets a custom function to allow/disable rendering a sub mesh in the shadow map */
+    public customAllowRendering: (subMesh: SubMesh) => boolean;
+
     /**
      * Observable triggered before the shadow is rendered. Can be used to update internal effect state
      */
@@ -1099,12 +1102,9 @@ export class ShadowGenerator implements IShadowGenerator {
         }
 
         var hardwareInstancedRendering = engine.getCaps().instancedArrays && (batch.visibleInstances[subMesh._id] !== null && batch.visibleInstances[subMesh._id] !== undefined || renderingMesh.hasThinInstances);
-        if (effectiveMesh._internalAbstractMeshDataInfo._currentLOD !== effectiveMesh) {
-            if (hardwareInstancedRendering) {
-                delete batch.renderSelf[subMesh._id];
-            } else {
-                return;
-            }
+
+        if (this.customAllowRendering && !this.customAllowRendering(subMesh)) {
+            return;
         }
 
         if (this.isReady(subMesh, hardwareInstancedRendering, isTransparent)) {
