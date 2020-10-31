@@ -536,6 +536,11 @@ export class UniformBuffer {
         return this._buffers.length;
     }
 
+    /** @hidden */
+    public get _indexBuffer(): number {
+        return this._bufferIndex;
+    }
+
     public get name(): string {
         return this._name;
     }
