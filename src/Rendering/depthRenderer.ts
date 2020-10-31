@@ -110,7 +110,7 @@ export class DepthRenderer {
 
             effectiveMesh._internalAbstractMeshDataInfo._isActiveIntermediate = false;
 
-            if (!material) {
+            if (!material || effectiveMesh.infiniteDistance || material.disableDepthWrite) {
                 return;
             }
 
