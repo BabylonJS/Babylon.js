@@ -753,6 +753,16 @@ export class RenderTargetTexture extends Texture {
                     continue;
                 }
 
+                if (!mesh._internalAbstractMeshDataInfo._currentLODIsUpToDate && scene.activeCamera) {
+                    mesh._internalAbstractMeshDataInfo._currentLOD = scene.customLODSelector ? scene.customLODSelector(mesh, scene.activeCamera) : mesh.getLOD(scene.activeCamera);
+                    mesh._internalAbstractMeshDataInfo._currentLODIsUpToDate = true;
+                }
+                if (!mesh._internalAbstractMeshDataInfo._currentLOD) {
+                    continue;
+                }
+
+                let meshToRender = mesh._internalAbstractMeshDataInfo._currentLOD;
+
                 mesh._preActivateForIntermediateRendering(sceneRenderId);
 
                 let isMasked;
@@ -761,15 +771,6 @@ export class RenderTargetTexture extends Texture {
                 } else {
                     isMasked = false;
                 }
-
-                if (!mesh._internalAbstractMeshDataInfo._currentLOD && scene.activeCamera) {
-                    mesh._internalAbstractMeshDataInfo._currentLOD = scene.customLODSelector ? scene.customLODSelector(mesh, scene.activeCamera) : mesh.getLOD(scene.activeCamera);
-                }
-                if (!mesh._internalAbstractMeshDataInfo._currentLOD) {
-                    mesh._internalAbstractMeshDataInfo._currentLOD = mesh;
-                }
-
-                let meshToRender = mesh._internalAbstractMeshDataInfo._currentLOD;
 
                 if (mesh.isEnabled() && mesh.isVisible && mesh.subMeshes && !isMasked) {
                     if (meshToRender !== mesh) {
