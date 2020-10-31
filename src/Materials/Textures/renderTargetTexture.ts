@@ -18,7 +18,6 @@ import { Constants } from "../../Engines/constants";
 
 import "../../Engines/Extensions/engine.renderTarget";
 import "../../Engines/Extensions/engine.renderTargetCube";
-import { InstancedMesh } from '../../Meshes/instancedMesh';
 import { Engine } from '../../Engines/engine';
 
 /**
@@ -742,7 +741,7 @@ export class RenderTargetTexture extends Texture {
         for (var meshIndex = 0; meshIndex < currentRenderListLength; meshIndex++) {
             var mesh = currentRenderList[meshIndex];
 
-            if (mesh) {
+            if (mesh && !mesh.isBlocked) {
                 if (this.customIsReadyFunction) {
                     if (!this.customIsReadyFunction(mesh, this.refreshRate)) {
                         this.resetRefreshCounter();
@@ -763,20 +762,32 @@ export class RenderTargetTexture extends Texture {
                     isMasked = false;
                 }
 
+                if (!mesh._internalAbstractMeshDataInfo._currentLOD && scene.activeCamera) {
+                    mesh._internalAbstractMeshDataInfo._currentLOD = scene.customLODSelector ? scene.customLODSelector(mesh, scene.activeCamera) : mesh.getLOD(scene.activeCamera);
+                }
+                if (!mesh._internalAbstractMeshDataInfo._currentLOD) {
+                    mesh._internalAbstractMeshDataInfo._currentLOD = mesh;
+                }
+
+                let meshToRender = mesh._internalAbstractMeshDataInfo._currentLOD;
+
                 if (mesh.isEnabled() && mesh.isVisible && mesh.subMeshes && !isMasked) {
+                    if (meshToRender !== mesh) {
+                        meshToRender._activate(sceneRenderId, true);
+                    }
                     if (mesh._activate(sceneRenderId, true) && mesh.subMeshes.length) {
                         if (!mesh.isAnInstance) {
-                            mesh._internalAbstractMeshDataInfo._onlyForInstancesIntermediate = false;
+                            meshToRender._internalAbstractMeshDataInfo._onlyForInstancesIntermediate = false;
                         } else {
-                            if (!mesh._internalAbstractMeshDataInfo._actAsRegularMesh) {
-                                mesh = mesh._internalAbstractMeshDataInfo._currentLOD ?? (mesh as InstancedMesh).sourceMesh;
+                            if (mesh._internalAbstractMeshDataInfo._actAsRegularMesh) {
+                                meshToRender = mesh;
                             }
                         }
-                        mesh._internalAbstractMeshDataInfo._isActiveIntermediate = true;
+                        meshToRender._internalAbstractMeshDataInfo._isActiveIntermediate = true;
 
-                        for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
-                            var subMesh = mesh.subMeshes[subIndex];
-                            this._renderingManager.dispatch(subMesh, mesh);
+                        for (var subIndex = 0; subIndex < meshToRender.subMeshes.length; subIndex++) {
+                            var subMesh = meshToRender.subMeshes[subIndex];
+                            this._renderingManager.dispatch(subMesh, meshToRender);
                         }
                     }
                 }
