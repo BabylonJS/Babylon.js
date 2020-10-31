@@ -226,7 +226,7 @@ export class ShadowGenerator implements IShadowGenerator {
     /** Gets or sets the custom shader name to use */
     public customShaderOptions: ICustomShaderOptions;
 
-    /** Gets or sets a custom function to allow/disable rendering a sub mesh in the shadow map */
+    /** Gets or sets a custom function to allow/disallow rendering a sub mesh in the shadow map */
     public customAllowRendering: (subMesh: SubMesh) => boolean;
 
     /**
