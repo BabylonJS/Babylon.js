@@ -95,6 +95,7 @@ export class Timeline extends React.Component<ITimelineProps, ITimelineState> {
         }
     }
 
+    /** Listen to keyup events and set the initial lenght of the scrollbar */
     componentDidMount() {
         setTimeout(() => {
             this.setState({
@@ -105,6 +106,7 @@ export class Timeline extends React.Component<ITimelineProps, ITimelineState> {
         this._inputAnimationLimit.current?.addEventListener("keyup", this.isEnterKeyUp.bind(this));
     }
 
+    /** Recalculate the scrollwidth if a window resize happens */
     componentDidUpdate(prevProps: ITimelineProps) {
         if (prevProps.animationLimit !== this.props.animationLimit) {
             this.setState({ limitValue: this.props.animationLimit });
@@ -116,10 +118,15 @@ export class Timeline extends React.Component<ITimelineProps, ITimelineState> {
         }
     }
 
+    /** Remove key event listener */
     componentWillUnmount() {
         this._inputAnimationLimit.current?.removeEventListener("keyup", this.isEnterKeyUp.bind(this));
     }
 
+    /**
+     * Set component state if enter key is pressed
+     * @param event enter key event
+     */
     isEnterKeyUp(event: KeyboardEvent) {
         event.preventDefault();
         if (event.key === "Enter") {
@@ -127,11 +134,16 @@ export class Timeline extends React.Component<ITimelineProps, ITimelineState> {
         }
     }
 
+    /**
+     * Detect blur event
+     * @param event Blur event
+     */
     onInputBlur(event: React.FocusEvent<HTMLInputElement>) {
         event.preventDefault();
         this.setControlState();
     }
 
+    /** Set component state (scrollbar width, position, and start and end) */
     setControlState() {
         this.props.onAnimationLimitChange(this.state.limitValue);
         const newEnd = Math.round(this.state.limitValue / 2);
@@ -270,6 +282,8 @@ export class Timeline extends React.Component<ITimelineProps, ITimelineState> {
 
     /**
      * Check if the frame is being used as a Keyframe by the animation
+     * @param frame number of frame
+     * @param direction frame increment or decrement
      */
     isFrameBeingUsed(frame: number, direction: number) {
         let used = this.props.keyframes?.find((kf) => kf.frame === frame);
@@ -480,12 +494,14 @@ export class Timeline extends React.Component<ITimelineProps, ITimelineState> {
         }
     }
 
+    /* Overrides default DOM drag */
     dragDomFalse = () => false;
 
     render() {
         return (
             <>
                 <div className="timeline">
+                    {/* Renders the play animation controls */}
                     <Controls
                         keyframes={this.props.keyframes}
                         selected={this.props.selected}
@@ -497,6 +513,7 @@ export class Timeline extends React.Component<ITimelineProps, ITimelineState> {
                         scrollable={this._scrollable}
                     />
                     <div className="timeline-wrapper">
+                        {/* Renders the timeline that displays the animation keyframes */}
                         <div
                             ref={this._scrollable}
                             className="display-line"
@@ -514,6 +531,7 @@ export class Timeline extends React.Component<ITimelineProps, ITimelineState> {
                                 onMouseUp={this.dragEnd}
                                 onMouseLeave={this.dragEnd}
                             >
+                                {/* Renders the visible frames */}
                                 {this.state.selectionLength.map((frame, i) => {
                                     return (
                                         <svg key={`tl_${frame}`}>
@@ -583,7 +601,7 @@ export class Timeline extends React.Component<ITimelineProps, ITimelineState> {
                                 })}
                             </svg>
                         </div>
-
+                        {/* Timeline scrollbar that has drag events */}
                         <div
                             className="timeline-scroll-handle"
                             onMouseMove={this.scrollDrag}
@@ -598,6 +616,7 @@ export class Timeline extends React.Component<ITimelineProps, ITimelineState> {
                                     ref={this._scrollbarHandle}
                                     style={{ width: this.state.scrollWidth }}
                                 >
+                                    {/* Handle that resizes the scrollbar to the left */}
                                     <div className="left-grabber">
                                         <div className="left-draggable">
                                             <div className="grabber"></div>
@@ -607,7 +626,7 @@ export class Timeline extends React.Component<ITimelineProps, ITimelineState> {
                                         <div className="text">{this.state.start}</div>
                                     </div>
                                     <div className="scrollbar"></div>
-
+                                    {/* Handle that resizes the scrollbar to the right */}
                                     <div className="right-grabber">
                                         <div className="text">{this.state.end}</div>
                                         <div className="right-draggable">
@@ -619,7 +638,7 @@ export class Timeline extends React.Component<ITimelineProps, ITimelineState> {
                                 </div>
                             </div>
                         </div>
-
+                        {/* Handles the limit of number of frames in the selected animation */}
                         <div className="input-frame">
                             <input
                                 ref={this._inputAnimationLimit}

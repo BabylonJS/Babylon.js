@@ -51,6 +51,10 @@ export class SaveSnippet extends React.Component<ISaveSnippetProps, { selectedAn
         this.state = { selectedAnimations: animList ?? [] };
     }
 
+    /**
+     * Set the selected animations to save
+     * @param e Input event
+     */
     handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         e.preventDefault();
 
@@ -66,6 +70,9 @@ export class SaveSnippet extends React.Component<ISaveSnippetProps, { selectedAn
         this.setState({ selectedAnimations: updated });
     };
 
+    /**
+     * Stringify the selected animation
+     */
     stringifySelectedAnimations() {
         const content: string[] = [];
         this.state.selectedAnimations.forEach((animation) => {
@@ -79,11 +86,17 @@ export class SaveSnippet extends React.Component<ISaveSnippetProps, { selectedAn
         return JSON.stringify(content);
     }
 
+    /**
+     * Save the selected animations to a local file
+     */
     saveToFile = () => {
         const content = this.stringifySelectedAnimations();
         Tools.Download(new Blob([content]), "animations.json");
     };
 
+    /**
+     * Save the selected animations if a snippet ID is set
+     */
     saveToSnippet = () => {
         if (this.props.snippetId !== "") {
             let serverId = this.props.snippetId;

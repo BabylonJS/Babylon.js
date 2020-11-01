@@ -50,6 +50,9 @@ export class Controls extends React.Component<IControlsProps, { selected: IAnima
         }
     };
 
+    /**
+     * Set animation to initial keyframe
+     */
     moveToAnimationStart = () => {
         const startKeyframe = this.props.keyframes && this.props.keyframes[0];
         if (startKeyframe !== null) {
@@ -59,6 +62,9 @@ export class Controls extends React.Component<IControlsProps, { selected: IAnima
         }
     };
 
+    /**
+     * Set animation to the last keyframe
+     */
     moveToAnimationEnd = () => {
         const endKeyframe = this.props.keyframes && this.props.keyframes[this.props.keyframes.length - 1];
         if (endKeyframe !== null) {
@@ -68,6 +74,7 @@ export class Controls extends React.Component<IControlsProps, { selected: IAnima
         }
     };
 
+    /** Move to next keyframe */
     nextKeyframe = () => {
         if (this.props.keyframes !== null) {
             let first = this.props.keyframes.find((kf) => kf.frame > this.props.currentFrame);
@@ -79,6 +86,7 @@ export class Controls extends React.Component<IControlsProps, { selected: IAnima
         }
     };
 
+    /** Move to previous keyframe */
     previousKeyframe = () => {
         if (this.props.keyframes !== null) {
             let keyframes = [...this.props.keyframes];

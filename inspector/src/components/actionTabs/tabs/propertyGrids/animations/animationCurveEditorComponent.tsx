@@ -2552,11 +2552,13 @@ export class AnimationCurveEditorComponent extends React.Component<
     render() {
         return (
             <div ref={this._editor} id="animation-curve-editor">
+                {/* Notifies if there is a warning or error */}
                 <Notification
                     message={this.state.notification}
                     open={this.state.notification !== "" ? true : false}
                     close={this.clearNotification}
                 />
+                {/* Renders the actions to perform on the selected keyframe and control points */}
                 <GraphActionsBar
                     setKeyframeValue={this.setKeyframeValueFromInput}
                     enabled={this.state.selected === null || this.state.selected === undefined ? false : true}
@@ -2574,9 +2576,10 @@ export class AnimationCurveEditorComponent extends React.Component<
                     flatTangent={this.setFlatTangent}
                     frameRange={{ max: this.state.maxFrame, min: this.state.minFrame }}
                 />
-
+                {/* Animation list and edit controls */}
                 <div className="content">
                     <div className="row">
+                        {/* Renders the edition controls for the animations */}
                         <EditorControls
                             deselectAnimation={this.deselectAnimation}
                             selectAnimation={this.selectAnimation}
@@ -2591,7 +2594,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                             setFps={this.setFramesPerSecond}
                             setIsLooping={this.setIsLooping}
                         />
-
+                        {/* Renders the main canvas to render the curves */}
                         <div ref={this._graphCanvas} className="graph-chart" onWheel={this.zoom}>
                             {this.state.svgKeyframes && (
                                 <SvgDraggableArea
@@ -2612,6 +2615,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                                     framesInCanvasView={this.state.framesInCanvasView}
                                     framesResized={this.state.framesResized}
                                 >
+                                    {/* Render the value axis labels */}
                                     {this.setValueLines().map((line, i) => {
                                         return (
                                             <text
@@ -2631,7 +2635,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                                             </text>
                                         );
                                     })}
-
+                                    {/* Render the value axis lines for the canvas */}
                                     {this.setValueLines().map((line, i) => {
                                         return (
                                             <line
@@ -2644,7 +2648,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                                         );
                                     })}
 
-                                    {/* Multiple Curves  */}
+                                    {/* Renders the curves. Supports multiple curves  */}
                                     {this.state.selectedPathData?.map((curve, i) => (
                                         <path
                                             key={i}
@@ -2660,6 +2664,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                                         ></path>
                                     ))}
 
+                                    {/* Render selected curve keyframes */}
                                     {this.state.svgKeyframes.map((keyframe, i) => (
                                         <KeyframeSvgPoint
                                             key={`${keyframe.id}_${i}`}
@@ -2676,6 +2681,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                                         />
                                     ))}
 
+                                    {/* Renders clickable area for frames  */}
                                     <rect
                                         onClick={(e) => this.moveFrameTo(e)}
                                         x={-((this.state.frameAxisLength.length * 10) / 2)}
@@ -2685,7 +2691,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                                         fill="#222"
                                         style={{ cursor: "pointer" }}
                                     ></rect>
-
+                                    {/* Renders frame axis labels  */}
                                     {this.state.frameAxisLength.map((f, i) => (
                                         <svg key={i} x="0" y={96 + this.state.panningY + "%"} className="frame-contain">
                                             <text
@@ -2708,7 +2714,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                                             ) : null}
                                         </svg>
                                     ))}
-
+                                    {/* Renders the playhead */}
                                     {this.state.selected && this.state.currentFrame !== undefined ? (
                                         <svg x="0" y={96 + this.state.panningY + "%"}>
                                             <line
@@ -2745,6 +2751,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                         </div>
                     </div>
                     <div className="row-bottom">
+                        {/* Renders the timeline of the editor  */}
                         <Timeline
                             currentFrame={this.state.currentFrame}
                             playPause={this.playPause}
