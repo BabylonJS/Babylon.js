@@ -582,21 +582,20 @@ export class QuadraticErrorSimplification implements ISimplifier {
             vertex.id = vertexCount;
             if (vertex.triangleCount) {
                 vertex.originalOffsets.forEach((originalOffset) => {
-                    if (!normalData) {
-                        return;
-                    }
 
                     newPositionData.push(vertex.position.x);
                     newPositionData.push(vertex.position.y);
                     newPositionData.push(vertex.position.z);
-                    newNormalData.push(normalData[originalOffset * 3]);
-                    newNormalData.push(normalData[(originalOffset * 3) + 1]);
-                    newNormalData.push(normalData[(originalOffset * 3) + 2]);
+
+                    if (normalData && normalData.length) {
+                        newNormalData.push(normalData[originalOffset * 3]);
+                        newNormalData.push(normalData[(originalOffset * 3) + 1]);
+                        newNormalData.push(normalData[(originalOffset * 3) + 2]);
+                    }
                     if (uvs && uvs.length) {
                         newUVsData.push(uvs[(originalOffset * 2)]);
                         newUVsData.push(uvs[(originalOffset * 2) + 1]);
                     }
-
                     if (colorsData && colorsData.length) {
                         newColorsData.push(colorsData[(originalOffset * 4)]);
                         newColorsData.push(colorsData[(originalOffset * 4) + 1]);
@@ -630,7 +629,9 @@ export class QuadraticErrorSimplification implements ISimplifier {
 
         this._reconstructedMesh.setIndices(newIndicesArray);
         this._reconstructedMesh.setVerticesData(VertexBuffer.PositionKind, newPositionData);
-        this._reconstructedMesh.setVerticesData(VertexBuffer.NormalKind, newNormalData);
+        if (newNormalData.length > 0) {
+            this._reconstructedMesh.setVerticesData(VertexBuffer.NormalKind, newNormalData);
+        }
         if (newUVsData.length > 0) {
             this._reconstructedMesh.setVerticesData(VertexBuffer.UVKind, newUVsData);
         }
