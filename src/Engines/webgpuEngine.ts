@@ -3387,7 +3387,7 @@ export class WebGPUEngine extends Engine {
                         if (!bindingInfo.sampler) {
                             const texture = webgpuPipelineContext.textures[bindingInfo.firstTextureName]?.texture;
                             if (!texture) {
-                                Logger.Error(`Could not create the gpu sampler "${bindingDefinition.name}" because no texture can be looked up for the name "${bindingInfo.firstTextureName}". bindingInfo=${JSON.stringify(bindingInfo)}, webgpuPipelineContext.textures=${webgpuPipelineContext.textures}`);
+                                Logger.Error(`Could not create the gpu sampler "${bindingDefinition.name}" because no texture can be looked up for the name "${bindingInfo.firstTextureName}". bindingInfo=${JSON.stringify(bindingInfo)}, webgpuPipelineContext.textures=${webgpuPipelineContext.textures}`, 50);
                                 continue;
                             }
                             if (!bindingInfo.sampler) {
@@ -3400,21 +3400,20 @@ export class WebGPUEngine extends Engine {
                             binding: bindingInfo.samplerBinding,
                             resource: bindingInfo.sampler,
                         });
-                    }
-                    else {
-                        Logger.Error(`Sampler "${bindingDefinition.name}" could not be bound. bindingDefinition=${JSON.stringify(bindingDefinition)}, webgpuPipelineContext.samplers=${JSON.stringify(webgpuPipelineContext.samplers)}`);
+                    } else {
+                        Logger.Error(`Sampler "${bindingDefinition.name}" could not be bound. bindingDefinition=${JSON.stringify(bindingDefinition)}, webgpuPipelineContext.samplers=${JSON.stringify(webgpuPipelineContext.samplers)}`, 50);
                     }
                 } else if (bindingDefinition.isTexture) {
                     const bindingInfo = webgpuPipelineContext.textures[bindingDefinition.name];
                     if (bindingInfo) {
                         if (dbgSanityChecks && bindingInfo.texture === null) {
-                            Logger.Error(`Trying to bind a null texture! bindingDefinition=${JSON.stringify(bindingDefinition)}, bindingInfo=${JSON.stringify(bindingInfo)}`);
+                            Logger.Error(`Trying to bind a null texture! bindingDefinition=${JSON.stringify(bindingDefinition)}, bindingInfo=${JSON.stringify(bindingInfo)}`, 50);
                             continue;
                         }
                         const hardwareTexture = bindingInfo.texture._hardwareTexture as WebGPUHardwareTexture;
 
                         if (dbgSanityChecks && !hardwareTexture.view) {
-                            Logger.Error(`Trying to bind a null gpu texture! bindingDefinition=${JSON.stringify(bindingDefinition)}, bindingInfo=${JSON.stringify(bindingInfo)}, isReady=${bindingInfo.texture.isReady}`);
+                            Logger.Error(`Trying to bind a null gpu texture! bindingDefinition=${JSON.stringify(bindingDefinition)}, bindingInfo=${JSON.stringify(bindingInfo)}, isReady=${bindingInfo.texture.isReady}`, 50);
                             continue;
                         }
 
@@ -3428,9 +3427,8 @@ export class WebGPUEngine extends Engine {
                             binding: bindingInfo.textureBinding,
                             resource: hardwareTexture.view!,
                         });
-                    }
-                    else {
-                        Logger.Error(`Texture "${bindingDefinition.name}" could not be bound. bindingDefinition=${JSON.stringify(bindingDefinition)}, webgpuPipelineContext.textures=${JSON.stringify(webgpuPipelineContext.textures, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}`);
+                    } else {
+                        Logger.Error(`Texture "${bindingDefinition.name}" could not be bound. bindingDefinition=${JSON.stringify(bindingDefinition)}, webgpuPipelineContext.textures=${JSON.stringify(webgpuPipelineContext.textures, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}`, 50);
                     }
                 } else {
                     const dataBuffer = this._uniformsBuffers[bindingDefinition.name];
@@ -3444,9 +3442,8 @@ export class WebGPUEngine extends Engine {
                                 size: dataBuffer.capacity,
                             },
                         });
-                    }
-                    else {
-                        Logger.Error("UBO has not been bound: " + bindingDefinition.name);
+                    } else {
+                        Logger.Error(`UBO "${bindingDefinition.name}. bindingDefinition=${JSON.stringify(bindingDefinition)}, _uniformsBuffers=${JSON.stringify(this._uniformsBuffers)}`, 50);
                     }
                 }
             }
