@@ -764,9 +764,11 @@ export class UniformBuffer {
             return false;
         }
 
-        this._valueCache[name] = flag;
-        if (ThinEngine.Features.trackUbosInFrame) {
-            this._updateList[this._updateList.length] = [-1, flag, name];
+        if (!this._createBufferOnWrite) {
+            this._valueCache[name] = flag;
+            if (ThinEngine.Features.trackUbosInFrame) {
+                this._updateList[this._updateList.length] = [-1, flag, name];
+            }
         }
 
         return true;
