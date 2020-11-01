@@ -18,6 +18,7 @@ import { FrameNodePort } from './frameNodePort';
 import { Button } from 'babylonjs-gui/2D/controls/button';
 import { Engine } from 'babylonjs/Engines/engine';
 import { Scene } from 'babylonjs/scene';
+import { Container, Rectangle } from 'babylonjs-gui';
 
 require("./graphCanvas.scss");
 
@@ -171,6 +172,11 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     public get frameContainer() {
         return this._frameContainer;
     }
+
+
+    
+
+
     
 
     constructor(props: IGraphCanvasComponentProps) {
@@ -615,40 +621,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
     onUp(evt: React.PointerEvent) {
 
-        // Get the canvas element from the DOM.
-        const canvas = document.getElementById("graph-canvas") as HTMLCanvasElement;
-
-        // Associate a Babylon Engine to it.
-        const engine = new BABYLON.Engine(canvas);
-
-        // Create our first scene.
-        var scene = new BABYLON.Scene(engine);
-        // This creates and positions a free camera (non-mesh)
-        var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
-
-        // This targets the camera to scene origin
-        camera.setTarget(BABYLON.Vector3.Zero());
-
-        // This attaches the camera to the canvas
-        camera.attachControl(true);
-
-          // GUI
-        var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-
-        var button1 = BABYLON.GUI.Button.CreateSimpleButton("but1", "Click Me");
-        button1.width = "150px"
-        button1.height = "40px";
-        button1.color = "white";
-        button1.cornerRadius = 20;
-        button1.background = "green";
-        button1.onPointerUpObservable.add(function() {
-         alert("you did it!");
-        });
-        advancedTexture.addControl(button1);    
-
-
-        engine.runRenderLoop(() => {scene.render()});
-
         this._mouseStartPointX = null;
         this._mouseStartPointY = null;
         this._rootContainer.releasePointerCapture(evt.pointerId);   
@@ -958,29 +930,84 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             this._frames.push(frame);
             this.globalState.onSelectionChangedObservable.notifyObservers(frame);
     }
+
+    createGUICanvas()
+    {
+        // Get the canvas element from the DOM.
+        const canvas = document.getElementById("graph-canvas") as HTMLCanvasElement;
+
+        // Associate a Babylon Engine to it.
+        const engine = new BABYLON.Engine(canvas);
+        
+        // Create our first scene.
+        var scene = new BABYLON.Scene(engine);
+        // This creates and positions a free camera (non-mesh)
+        var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
+        
+        // This targets the camera to scene origin
+        camera.setTarget(BABYLON.Vector3.Zero());
+        
+        // This attaches the camera to the canvas
+        camera.attachControl(true);
+        
+        // GUI
+        this._advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+        
+        this.addNewButton();
+        
+        engine.runRenderLoop(() => {this.updateGUIs(); scene.render()});
+    }
+
+    public addNewButton()
+    {
+        var button1 = BABYLON.GUI.Button.CreateSimpleButton("but1", "Click Me");
+        button1.width = "150px"
+        button1.height = "40px";
+        button1.color = "white";
+        button1.cornerRadius = 20;
+        button1.background = "green";
+        button1.onPointerUpObservable.add(function() {
+            alert("you did it!");
+        });
+        this._guis.push(button1 );
+        this._advancedTexture.addControl(button1);    
+    }
+
+    private _guis: BABYLON.GUI.Container[] = [];
+    private _advancedTexture: BABYLON.GUI.AdvancedDynamicTexture;
+    updateGUIs()
+    {
+        this._guis.forEach(element => {
+            //should create a new component type that has the contrainer ias a property.
+            //with then have the update information.
+            
+        });
+    }
  
     render() {
-        return (
 
-            //changing div to canvas
-            <canvas id="graph-canvas" 
-                onWheel={evt => this.onWheel(evt)}
-                onPointerMove={evt => this.onMove(evt)}
-                onPointerDown={evt =>  this.onDown(evt)}   
-                onPointerUp={evt =>  this.onUp(evt)} 
-            >    
-                <div id="graph-container">
-                    <div id="graph-canvas-container">
-                        
-                    </div>     
-                    <div id="frame-container">                        
-                    </div>
-                    <svg id="graph-svg-container">
-                    </svg>                    
-                    <div id="selection-container">                        
-                    </div>
-                </div>
-            </canvas>
+        //var canv = new HTMLCanvasElement;
+        var canv = <canvas id="graph-canvas" 
+        onWheel={evt => this.onWheel(evt)}
+        onPointerMove={evt => this.onMove(evt)}
+        onPointerDown={evt =>  this.onDown(evt)}   
+        onPointerUp={evt =>  this.onUp(evt)} 
+        >   
+        <div id="graph-container">
+            <div id="graph-canvas-container">
+                
+            </div>     
+            <div id="frame-container">                        
+            </div>
+            <svg id="graph-svg-container">
+            </svg>                    
+            <div id="selection-container">                        
+            </div>
+        </div>
+        </canvas>
+
+        return (
+            canv
         );
     }
 }
