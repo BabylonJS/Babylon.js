@@ -81,7 +81,7 @@
 									return;
 								}
 								recursiveRunTest(i);
-							}, qs.list || "");
+							}, qs.list !== "config" && qs.list || "");
 						}
 
 						recursiveRunTest(index);
