@@ -168,6 +168,7 @@ export class WebGPUEngine extends Engine {
     private _textureHelper: WebGPUTextureHelper;
     private _bufferManager: WebGPUBufferManager;
     private _deferredReleaseTextures: Array<[InternalTexture, Nullable<HardwareTextureWrapper>, Nullable<BaseTexture>, Nullable<InternalTexture>]> = [];
+    private _emptyVertexBuffer: VertexBuffer;
     private _counters: {
         numPipelineDescriptorCreation: number;
         numBindGroupsCreation: number;
@@ -357,6 +358,8 @@ export class WebGPUEngine extends Engine {
                 this._uploadEncoder = this._device.createCommandEncoder(this._uploadEncoderDescriptor);
                 this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
                 this._renderTargetEncoder = this._device.createCommandEncoder(this._renderTargetEncoderDescriptor);
+
+                this._emptyVertexBuffer = new VertexBuffer(this, [0], "", false, false, 1, false, 0, 1);
 
                 this._initializeLimits();
                 this._initializeContextAndSwapChain();
@@ -3173,9 +3176,11 @@ export class WebGPUEngine extends Engine {
             const location = effect.getAttributeLocation(index);
 
             if (location >= 0) {
-                const vertexBuffer = this._currentVertexBuffers![attributes[index]];
+                let  vertexBuffer = this._currentVertexBuffers![attributes[index]];
                 if (!vertexBuffer) {
-                    continue;
+                    // In WebGL it's valid to not bind a vertex buffer to an attribute, but it's not valid in WebGPU
+                    // So we must bind a dummy buffer when we are not given one for a specific attribute
+                    vertexBuffer = this._emptyVertexBuffer;
                 }
 
                 const positionAttributeDescriptor: GPUVertexAttributeDescriptor = {
@@ -3325,9 +3330,11 @@ export class WebGPUEngine extends Engine {
             const order = effect.getAttributeLocation(index);
 
             if (order >= 0) {
-                const vertexBuffer = this._currentVertexBuffers![attributes[index]];
+                let vertexBuffer = this._currentVertexBuffers![attributes[index]];
                 if (!vertexBuffer) {
-                    continue;
+                    // In WebGL it's valid to not bind a vertex buffer to an attribute, but it's not valid in WebGPU
+                    // So we must bind a dummy buffer when we are not given one for a specific attribute
+                    vertexBuffer = this._emptyVertexBuffer;
                 }
 
                 var buffer = vertexBuffer.getBuffer();
