@@ -364,6 +364,7 @@
 - Fixed bug in `Mesh.IncreaseVertices` assuming null value if a property didn't exist. ([aWeirdo](https://github.com/aWeirdo))
 - Fix issue when taking a screenshot with multi-cameras using method `CreateScreenshotUsingRenderTarget` ([#9201](https://github.com/BabylonJS/Babylon.js/issues/9201)) ([gabrielheming](https://github.com/gabrielheming))
 - Fix inTangent in animationGroup ([dad72](https://github.com/dad72))
+- Fixed bug in `QuadraticErrorSimplification` not correctly optimizing mesh. ([aWeirdo](https://github.com/aWeirdo))
 
 ## Breaking changes
 
