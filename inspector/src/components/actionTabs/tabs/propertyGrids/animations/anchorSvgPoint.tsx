@@ -2,13 +2,21 @@ import * as React from "react";
 import { Vector2 } from "babylonjs/Maths/math.vector";
 
 interface IAnchorSvgPointProps {
+    // Keyframe point
     control: Vector2;
+    // Anchor point
     anchor: Vector2;
+    // Is currently active
     active: boolean;
+    // Type of control point (left/right)
     type: string;
+    // keyframe index
     index: string;
+    // Is selected
     selected: boolean;
+    // Event to set selected
     selectControlPoint: (id: string) => void;
+    // How many frames are currently in the canvas
     framesInCanvasView: { from: number; to: number };
 }
 

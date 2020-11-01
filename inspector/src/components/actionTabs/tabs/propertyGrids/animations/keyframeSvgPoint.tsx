@@ -62,6 +62,10 @@ export class KeyframeSvgPoint extends React.Component<IKeyframeSvgPointProps> {
         super(props);
     }
 
+    /**
+     * Select a keyframe. If the control key is pressed, multiselect keyframes
+     * @param e Mouse event
+     */
     select = (e: React.MouseEvent<SVGImageElement>) => {
         e.preventDefault();
         let multiSelect = false;
@@ -71,6 +75,10 @@ export class KeyframeSvgPoint extends React.Component<IKeyframeSvgPointProps> {
         this.props.selectKeyframe(this.props.id, multiSelect);
     };
 
+    /**
+     * Send the ID of the selected keyframe
+     * @param type Type of selected keyframe
+     */
     selectedControlPointId = (type: string) => {
         this.props.selectedControlPoint(type, this.props.id);
     };

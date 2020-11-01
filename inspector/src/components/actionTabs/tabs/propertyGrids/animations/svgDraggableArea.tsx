@@ -73,7 +73,9 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
         this.state = { panX: 0, panY: 0 };
     }
 
-    // Listen to key events to be able to drag and set the correct canvas client width
+    /**
+     * Listen to key events to be able to drag and set the correct canvas client width
+    */
     componentDidMount() {
         this._draggableArea.current?.addEventListener("keydown", this.keyDown.bind(this));
         this._draggableArea.current?.addEventListener("keyup", this.keyUp.bind(this));
@@ -82,7 +84,10 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
         }, 500);
     }
 
-    // Makes sure the canvas has resposition correctly
+    /**
+     * Makes sure the canvas has resposition correctly
+     * @param prevProps previous props
+     */
     componentDidUpdate(prevProps: ISvgDraggableAreaProps) {
         if (
             this.props.positionCanvas !== prevProps.positionCanvas &&
@@ -101,6 +106,10 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
         }
     }
 
+    /**
+     * Identify the type of target of the mouse event
+     * @param e SVG Mouse Event
+     */
     dragStart = (e: React.MouseEvent<SVGSVGElement, MouseEvent>): void => {
         e.preventDefault();
         if ((e.target as SVGSVGElement).classList.contains("draggable")) {
@@ -140,6 +149,10 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
         }
     };
 
+    /**
+     * Handle dragging
+     * @param e SVG Mouse Event
+     */
     drag = (e: React.MouseEvent<SVGSVGElement, MouseEvent>): void => {
         if (this._active) {
             e.preventDefault();
@@ -258,22 +271,26 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
             directionY = 1; //bottom
         }
 
+        // Establish the pan buffer we have to start moving the canvas
         const bufferX = this._movedX === 0 ? 1 : Math.abs(this._movedX - this._panStop.x);
         const bufferY = this._movedY === 0 ? 1 : Math.abs(this._movedY - this._panStop.y);
 
         let xMulti = 0;
+        // Evaluate if mouse move is too little to move the canvas
         if (bufferX >= this._dragBuffer) {
             xMulti = Math.round(Math.abs(bufferX - this._dragBuffer) / 2.5);
         }
-
+        // Evaluate if mouse move is too little to move the canvas
         let yMulti = 0;
         if (bufferY >= this._dragBuffer) {
             yMulti = Math.round(Math.abs(bufferY - this._dragBuffer) / 2.5);
         }
 
+        // Set last moved value
         this._movedX = this._panStop.x;
         this._movedY = this._panStop.y;
 
+        // Establish new pan value
         let newX = this.state.panX + directionX * xMulti;
         let newY = this.state.panY + directionY * yMulti;
 

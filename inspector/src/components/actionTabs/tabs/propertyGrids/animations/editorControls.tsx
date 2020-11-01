@@ -132,6 +132,9 @@ export class EditorControls extends React.Component<IEditorControlsProps, IEdito
         this.props.setIsLooping();
     };
 
+    /**
+     * This avoids using lambda functions in JSX
+     */
     handleFirstTab = () => {
         this.handleTabs(0);
     };

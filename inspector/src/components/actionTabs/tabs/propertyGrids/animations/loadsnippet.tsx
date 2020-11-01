@@ -44,11 +44,19 @@ export class LoadSnippet extends React.Component<ILoadSnippetProps, { snippetId:
         this.state = { snippetId: "" };
     }
 
+    /**
+     * Set the animations snippet id
+     * @param value Snippet ID
+     */
     change = (value: string) => {
         this.setState({ snippetId: value });
         this.props.setSnippetId(value);
     };
 
+    /**
+     * Select a local file to load animations
+     * @param file File name
+     */
     loadFromFile = (file: File) => {
         Tools.ReadFile(
             file,
@@ -79,6 +87,9 @@ export class LoadSnippet extends React.Component<ILoadSnippetProps, { snippetId:
         );
     };
 
+    /**
+     * Load animations from server identified with a snippet id
+     */
     loadFromSnippet = () => {
         if (this.state.snippetId !== "") {
             //Notify observers

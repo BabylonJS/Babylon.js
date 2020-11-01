@@ -53,13 +53,19 @@ export class GraphActionsBar extends React.Component<
         this.state = { frame, value, min: this.props.frameRange.min, max: this.props.frameRange.max };
     }
 
-    // Listen to keyup changes to handle if the input event has ended or change
+    /**
+     * Listen to keyup changes to handle if the input event has ended or change
+     */
     componentDidMount() {
         this._frameInput.current?.addEventListener("keyup", this.isEnterKeyUp.bind(this));
         this._valueInput.current?.addEventListener("keyup", this.isEnterKeyUp.bind(this));
     }
 
-    // Set the changing state of frame, value and range of the actionablekeyframe
+    /**
+     * Set the changing state of frame, value and range of the actionablekeyframe
+     * @param prevProps previous props
+     * @param prevState previous state
+     */
     componentDidUpdate(prevProps: IGraphActionsBarProps, prevState: any) {
         if (prevProps.actionableKeyframe !== this.props.actionableKeyframe) {
             const { frame, value } = this.selectedKeyframeChanged(this.props.actionableKeyframe);
@@ -90,13 +96,18 @@ export class GraphActionsBar extends React.Component<
         return { frame, value };
     }
 
-    // Remove listeners
+    /**
+     * Remove listeners
+     */
     componentWillUnmount() {
         this._frameInput.current?.removeEventListener("keyup", this.isEnterKeyUp.bind(this));
         this._valueInput.current?.removeEventListener("keyup", this.isEnterKeyUp.bind(this));
     }
 
-    // Trigger the change on the keyframe
+    /**
+     * Trigger the change on the keyframe
+     * @param event Enter keyevent
+     */
     isEnterKeyUp(event: KeyboardEvent) {
         event.preventDefault();
 
@@ -106,7 +117,10 @@ export class GraphActionsBar extends React.Component<
         }
     }
 
-    // Trigger the chnage on the keyframe on blur
+    /**
+     * Trigger the chnage on the keyframe on blur
+     * @param event Focus event
+     */
     onBlur = (event: React.FocusEvent<HTMLInputElement>) => {
         event.preventDefault();
         if (event.target.value !== "") {
@@ -115,7 +129,9 @@ export class GraphActionsBar extends React.Component<
         }
     };
 
-    // Gets the keyframe frame
+    /**
+     * Gets the keyframe frame
+     */
     getFrame() {
         let frame;
         if (this.state.frame === "") {
@@ -127,7 +143,9 @@ export class GraphActionsBar extends React.Component<
         return frame;
     }
 
-    // Gets the keyframe value
+    /**
+     * Gets the keyframe value
+     */
     getValue() {
         let value;
         if (this.state.value !== "") {
@@ -138,13 +156,19 @@ export class GraphActionsBar extends React.Component<
         return value;
     }
 
-    // Set keyframe value state
+    /**
+     * Set keyframe value state
+     * @param e Input event
+     */
     handleValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         e.preventDefault();
         this.setState({ value: e.target.value });
     };
 
-    // Set the keyframe frame state
+    /**
+     * Set the keyframe frame state
+     * @param e Input event
+     */
     handleFrameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         e.preventDefault();
         this.setState({ frame: e.target.value });
