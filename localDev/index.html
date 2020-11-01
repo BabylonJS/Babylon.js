@@ -94,6 +94,8 @@
                         engine = new BABYLON.Engine(canvas, false, { premultipliedAlpha: false, stencil: true, disableWebGL2Support: false, preserveDrawingBuffer: true });
                     }
 
+                    engine.getCaps().textureAnisotropicFilterExtension = false;
+
                     BABYLONDEVTOOLS.Loader.debugShortcut(engine);
 
                     // call the scene creation from the js.
