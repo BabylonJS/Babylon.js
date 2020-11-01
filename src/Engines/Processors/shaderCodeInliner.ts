@@ -458,12 +458,19 @@ export class ShaderCodeInliner {
     }
 
     private _replaceNames(code: string, sources: string[], destinations: string[]): string {
-
         for (let i = 0; i < sources.length; ++i) {
             const source = new RegExp(this._escapeRegExp(sources[i]), 'g'),
+                  sourceLen = sources[i].length,
                   destination = destinations[i];
 
-            code = code.replace(source, destination);
+            code = code.replace(source, (match, ...args) => {
+                const offset: number = args[0];
+                // Make sure "source" is not part of a bigger identifier (for eg, if source=view and we matched it with viewDirection)
+                if (this._isIdentifierChar(code.charAt(offset - 1)) || this._isIdentifierChar(code.charAt(offset + sourceLen))) {
+                    return sources[i];
+                }
+                return destination;
+            });
         }
 
         return code;
