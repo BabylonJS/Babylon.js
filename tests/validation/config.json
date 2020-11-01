@@ -40,40 +40,40 @@
             "referenceImage": "point-light-shadows.png"
         },             
         {
-            "title": "Node material #0",
+            "title": "Node material 0",
             "playgroundId": "#M5VQE9#20",
             "referenceImage": "node-material0.png",
             "renderCount": 5,
             "excludeFromAutomaticTesting": true
         },    
         {
-            "title": "Node material #1",
+            "title": "Node material 1",
             "playgroundId": "#QJ71C6#1",
             "referenceImage": "node-material1.png",
             "renderCount": 20
         },     
         {
-            "title": "Node material #2",
+            "title": "Node material 2",
             "playgroundId": "#WYM31D#4",
             "referenceImage": "node-material2.png"
         },
         {
-            "title": "Node material #3",
+            "title": "Node material 3",
             "playgroundId": "#LWGVT0#2",
             "referenceImage": "node-material3.png"
         },     
         {
-            "title": "Node material #4",
+            "title": "Node material 4",
             "playgroundId": "#ZYGRII#1",
             "referenceImage": "node-material4.png"
         },        
         {
-            "title": "Node material #5",
+            "title": "Node material 5",
             "playgroundId": "#V8VH7B#0",
             "referenceImage": "node-material5.png"
         },                     
         {
-            "title": "Node material #6",
+            "title": "Node material 6",
             "playgroundId": "#2XY3Z4#0",
             "referenceImage": "node-material6.png"
         },    
@@ -734,17 +734,17 @@
             "referenceImage": "pbr_refraction.png"
         },
         {
-            "title": "PBR shader code coverage #1",
+            "title": "PBR shader code coverage 1",
             "playgroundId": "#QI7TL3#16",
             "referenceImage": "pbr_codecoverage1.png"
         },
         {
-            "title": "PBR shader code coverage #2",
+            "title": "PBR shader code coverage 2",
             "playgroundId": "#QI7TL3#17",
             "referenceImage": "pbr_codecoverage2.png"
         },
         {
-            "title": "PBR shader code coverage #3",
+            "title": "PBR shader code coverage 3",
             "playgroundId": "#QI7TL3#18",
             "referenceImage": "pbr_codecoverage3.png"
         },
