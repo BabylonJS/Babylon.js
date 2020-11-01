@@ -473,7 +473,7 @@ export class QuadraticErrorSimplification implements ISimplifier {
         var findInVertices = (positionToSearch: Vector3) => {
             if (optimizeMesh) {
                 for (var ii = 0; ii < this.vertices.length; ++ii) {
-                    if (this.vertices[ii].position.equals(positionToSearch)) {
+                    if (this.vertices[ii].position.equalsWithEpsilon(positionToSearch, 0.0001)) {
                         return this.vertices[ii];
                     }
                 }
