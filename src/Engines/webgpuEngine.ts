@@ -43,11 +43,11 @@ function assert(condition: any, msg?: string): asserts condition {
 }
 
 const dbgShowShaderCode = false;
-const dbgSanityChecks = true;
-const dbgGenerateLogs = true;
+const dbgSanityChecks = false;
+const dbgGenerateLogs = false;
 const dbgVerboseLogsForFirstFrames = true;
 const dbgVerboseLogsNumFrames = 10;
-const dbgShowWarningsNotImplemented = true;
+const dbgShowWarningsNotImplemented = false;
 export const dbgShowDebugInliningProcess = false;
 
 /**
@@ -208,6 +208,7 @@ export class WebGPUEngine extends Engine {
     private _currentIndexBuffer: Nullable<DataBuffer> = null;
     private __colorWrite = true;
     private _uniformsBuffers: { [name: string]: WebGPUDataBuffer } = {};
+    private _forceEnableEffect = false;
 
     /**
      * Gets a boolean indicating that the engine supports uniform buffers
@@ -540,9 +541,10 @@ export class WebGPUEngine extends Engine {
         if (this.preventCacheWipeBetweenFrames && !bruteForce) {
             return;
         }
-        this.resetTextureCache();
 
         //this._currentEffect = null; // can't reset _currentEffect, else some crashes can occur (for eg in ProceduralTexture which calls bindFrameBuffer (which calls wipeCaches) after having called enableEffect and before drawing into the texture)
+                                        // _forceEnableEffect = true assumes the role of _currentEffect = null
+        this._forceEnableEffect = true;
         this._currentIndexBuffer = null;
         this._currentVertexBuffers = null;
 
@@ -982,11 +984,12 @@ export class WebGPUEngine extends Engine {
     }
 
     public enableEffect(effect: Nullable<Effect>): void {
-        if (!effect || effect === this._currentEffect) {
+        if (!effect || effect === this._currentEffect && !this._forceEnableEffect) {
             return;
         }
 
         this._currentEffect = effect;
+        this._forceEnableEffect = false;
 
         if (effect.onBind) {
             effect.onBind(effect);
@@ -2599,8 +2602,8 @@ export class WebGPUEngine extends Engine {
     }
 
     public flushFramebuffer(): void {
-        this._commandBuffers[0] = this._renderTargetEncoder.finish();
-        this._commandBuffers[1] = this._uploadEncoder.finish();
+        this._commandBuffers[0] = this._uploadEncoder.finish();
+        this._commandBuffers[1] = this._renderTargetEncoder.finish();
         this._commandBuffers[2] = this._renderEncoder.finish();
 
         this._device.defaultQueue.submit(this._commandBuffers);
