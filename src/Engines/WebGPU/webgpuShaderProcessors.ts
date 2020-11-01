@@ -5,6 +5,7 @@ import { WebGPUTextureSamplerBindingDescription, WebGPUShaderProcessingContext }
 import * as WebGPUConstants from './webgpuConstants';
 import { ShaderCodeInliner } from '../Processors/shaderCodeInliner';
 import { dbgShowDebugInliningProcess } from '../webgpuEngine';
+import { Logger } from '../../Misc/logger';
 
 const _knownUBOs: { [key: string]: { setIndex: number, bindingIndex: number} } = {
     "Scene": { setIndex: 0, bindingIndex: 0 },
@@ -97,6 +98,9 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
             if (isFragment) {
                 location = webgpuProcessingContext.availableVaryings[name];
                 this._missingVaryings[location] = "";
+                if (location === undefined) {
+                    Logger.Warn(`Invalid fragment shader: The varying named "${name}" is not declared in the vertex shader! This declaration will be ignored.`);
+                }
             }
             else {
                 location = webgpuProcessingContext.getVaryingNextLocation(varyingType, this._getArraySize(name, preProcessors)[1]);
@@ -104,7 +108,7 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
                 this._missingVaryings[location] = `layout(location = ${location}) in ${varyingType} ${name};`;
             }
 
-            varying = varying.replace(match[0], `layout(location = ${location}) ${isFragment ? "in" : "out"} ${varyingType} ${name};`);
+            varying = varying.replace(match[0], location === undefined ? "" : `layout(location = ${location}) ${isFragment ? "in" : "out"} ${varyingType} ${name};`);
         }
         return varying;
     }
