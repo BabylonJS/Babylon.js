@@ -19,6 +19,7 @@ import { Button } from 'babylonjs-gui/2D/controls/button';
 import { Engine } from 'babylonjs/Engines/engine';
 import { Scene } from 'babylonjs/scene';
 import { Container, Rectangle } from 'babylonjs-gui';
+import { GuiNode } from './guiNode';
 
 require("./graphCanvas.scss");
 
@@ -61,6 +62,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _y = 0;
     private _zoom = 1;
     private _selectedNodes: GraphNode[] = [];
+    private _selectedGuiNodes: GuiNode[] = [];
     private _selectedLink: Nullable<NodeLink> = null;
     private _selectedPort: Nullable<NodePort> = null;
     private _candidateLink: Nullable<NodeLink> = null;
@@ -140,6 +142,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
     public get selectedNodes() {
         return this._selectedNodes;
+    }
+
+    public get selectedGuiNodes() {
+        return this._selectedGuiNodes;
     }
 
     public get selectedLink() {
