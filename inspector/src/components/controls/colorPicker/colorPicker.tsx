@@ -107,7 +107,7 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
         }
 
         let hsv = this.state.color.toHSV();
-        Color3.HSVtoRGBToRef(hue, Math.max(hsv.g, 0.0001), hsv.b, this.state.color);
+        Color3.HSVtoRGBToRef(hue, Math.max(hsv.g, 0.0001), Math.max(hsv.b, 0.0001), this.state.color);
         this.setState({color: this.state.color});
     }
 
