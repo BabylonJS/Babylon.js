@@ -27252,8 +27252,9 @@ declare module BABYLON {
          * @param samplersList The sampler list
          * @param projectedLightTexture defines if projected texture must be used
          * @param uniformBuffersList defines an optional list of uniform buffers
+         * @param updateOnlyBuffersList True to only update the uniformBuffersList array
          */
-        static PrepareUniformsAndSamplersForLight(lightIndex: number, uniformsList: string[], samplersList: string[], projectedLightTexture?: any, uniformBuffersList?: Nullable<string[]>): void;
+        static PrepareUniformsAndSamplersForLight(lightIndex: number, uniformsList: string[], samplersList: string[], projectedLightTexture?: any, uniformBuffersList?: Nullable<string[]>, updateOnlyBuffersList?: boolean): void;
         /**
          * Prepares the uniforms and samplers list to be used in the effect
          * @param uniformsListOrOptions The uniform names to prepare or an EffectCreationOptions containing the liist and extra information
