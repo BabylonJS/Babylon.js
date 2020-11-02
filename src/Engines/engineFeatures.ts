@@ -26,6 +26,9 @@ export interface EngineFeatures {
     /** Indicates that the Cascaded Shadow Map technic is supported */
     supportCSM: boolean;
 
+    /** Indicates that the textures transcoded by the basis transcoder must have power of 2 width and height */
+    basisNeedsPOT: boolean;
+
     /** @hidden */
     _collectUbosUpdatedInFrame: boolean;
 }

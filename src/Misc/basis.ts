@@ -5,6 +5,7 @@ import { InternalTexture, InternalTextureSource } from '../Materials/Textures/in
 import { Scalar } from '../Maths/math.scalar';
 import { Constants } from '../Engines/constants';
 import { Engine } from '../Engines/engine';
+import { ThinEngine } from '../Engines/thinEngine';
 
 /**
  * Info about the .basis files
@@ -195,7 +196,7 @@ export class BasisTools {
                 texture.type = Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
                 texture.format = Constants.TEXTUREFORMAT_RGB;
 
-                if (engine.webGLVersion < 2 && (Scalar.Log2(rootImage.width) % 1 !== 0 || Scalar.Log2(rootImage.height) % 1 !== 0)) {
+                if (ThinEngine.Features.basisNeedsPOT && (Scalar.Log2(rootImage.width) % 1 !== 0 || Scalar.Log2(rootImage.height) % 1 !== 0)) {
                     // Create non power of two texture
                     let source = new InternalTexture(engine, InternalTextureSource.Temp);
 
@@ -232,7 +233,7 @@ export class BasisTools {
                     engine._uploadCompressedDataToTextureDirectly(texture, BasisTools.GetInternalFormatFromBasisFormat(transcodeResult.format!), level.width, level.height, level.transcodedPixels, i, index);
                 });
 
-                if (engine.webGLVersion < 2 && (Scalar.Log2(texture.width) % 1 !== 0 || Scalar.Log2(texture.height) % 1 !== 0)) {
+                if (ThinEngine.Features.basisNeedsPOT && (Scalar.Log2(texture.width) % 1 !== 0 || Scalar.Log2(texture.height) % 1 !== 0)) {
                     Tools.Warn("Loaded .basis texture width and height are not a power of two. Texture wrapping will be set to Texture.CLAMP_ADDRESSMODE as other modes are not supported with non power of two dimensions in webGL 1.");
                     texture._cachedWrapU = Texture.CLAMP_ADDRESSMODE;
                     texture._cachedWrapV = Texture.CLAMP_ADDRESSMODE;
