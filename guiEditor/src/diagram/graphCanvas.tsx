@@ -620,7 +620,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     onUp(evt: React.PointerEvent) {
-
         this._mouseStartPointX = null;
         this._mouseStartPointY = null;
         this._rootContainer.releasePointerCapture(evt.pointerId);   
@@ -953,13 +952,17 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         // GUI
         this._advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
         
-        this.addNewButton();
-        
         engine.runRenderLoop(() => {this.updateGUIs(); scene.render()});
     }
+    
 
     public addNewButton()
     {
+        if(!this._advancedTexture)
+        {
+            this.createGUICanvas();
+        }
+
         var button1 = BABYLON.GUI.Button.CreateSimpleButton("but1", "Click Me");
         button1.width = "150px"
         button1.height = "40px";
@@ -967,9 +970,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         button1.cornerRadius = 20;
         button1.background = "green";
         button1.onPointerUpObservable.add(function() {
-            alert("you did it!");
         });
-        this._guis.push(button1 );
+        this._guis.push(button1);
         this._advancedTexture.addControl(button1);    
     }
 
@@ -978,6 +980,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     updateGUIs()
     {
         this._guis.forEach(element => {
+            element.paddingLeft == 1;
             //should create a new component type that has the contrainer ias a property.
             //with then have the update information.
             
