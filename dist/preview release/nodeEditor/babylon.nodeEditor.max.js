@@ -55654,18 +55654,21 @@ var NodeListComponent = /** @class */ (function (_super) {
                 delete allBlocks["Mesh"];
                 delete allBlocks["Particle"];
                 delete allBlocks["Procedural__Texture"];
+                delete allBlocks["PBR"];
                 break;
             case babylonjs_Materials_Node_Enums_nodeMaterialModes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialModes"].ProceduralTexture:
                 delete allBlocks["Animation"];
                 delete allBlocks["Mesh"];
                 delete allBlocks["Particle"];
                 delete allBlocks["PostProcess"];
+                delete allBlocks["PBR"];
                 break;
             case babylonjs_Materials_Node_Enums_nodeMaterialModes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialModes"].Particle:
                 delete allBlocks["Animation"];
                 delete allBlocks["Mesh"];
                 delete allBlocks["PostProcess"];
                 delete allBlocks["Procedural__Texture"];
+                delete allBlocks["PBR"];
                 allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("VertexOutputBlock"), 1);
                 break;
         }

@@ -255,18 +255,21 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 delete allBlocks["Mesh"];
                 delete allBlocks["Particle"];
                 delete allBlocks["Procedural__Texture"];
+                delete allBlocks["PBR"];
                 break;
             case NodeMaterialModes.ProceduralTexture:
                 delete allBlocks["Animation"];
                 delete allBlocks["Mesh"];  
                 delete allBlocks["Particle"];              
                 delete allBlocks["PostProcess"];
+                delete allBlocks["PBR"];
                 break;
             case NodeMaterialModes.Particle:
                 delete allBlocks["Animation"];
                 delete allBlocks["Mesh"];
                 delete allBlocks["PostProcess"];            
                 delete allBlocks["Procedural__Texture"];
+                delete allBlocks["PBR"];
                 allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("VertexOutputBlock"), 1);
                 break;
         }
