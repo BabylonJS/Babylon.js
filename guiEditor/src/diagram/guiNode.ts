@@ -41,6 +41,10 @@ export class GuiNode {
     private _isVisible = true;
     private _enclosingFrameId = -1;
 
+
+    private _guiElement: BABYLON.GUI.Container;
+
+
     public get isVisible() {
         return this._isVisible;
     }
@@ -133,11 +137,11 @@ export class GuiNode {
     }
 
     public get id() {
-        return this.block.uniqueId;
+        return this._guiElement.uniqueId;
     }
 
     public get name() {
-        return this.block.name;
+        return this._guiElement.name;
     }
 
     public get isSelected() {
@@ -171,8 +175,9 @@ export class GuiNode {
         }
     }
 
-    public constructor(public block: NodeMaterialBlock, globalState: GlobalState) {
+    public constructor(public guiElement: BABYLON.GUI.Container, globalState: GlobalState) {
         this._globalState = globalState;
+        this._guiElement = guiElement;
 
         //this is where the clicking needs to happen?
         /*this._onSelectionChangedObserver = this._globalState.onSelectionChangedObservable.add(node => {
@@ -256,39 +261,13 @@ export class GuiNode {
     }
 
     public refresh() {
-        if (this._displayManager) {
-            this._header.innerHTML = this._displayManager.getHeaderText(this.block);
-            this._displayManager.updatePreviewContent(this.block, this._content);
-            this._visual.style.background = this._displayManager.getBackgroundColor(this.block);
-            let additionalClass = this._displayManager.getHeaderClass(this.block);
-            this._header.classList.value = "header";
-            if (additionalClass) {
-                this._header.classList.add(additionalClass);
-            }
-        } else {
-            this._header.innerHTML = this.block.name;
-        }
 
-        for (var port of this._inputPorts) {
-            port.refresh();
-        }
-
-        for (var port of this._outputPorts) {
-            port.refresh();
-        }
-
-        if(this.enclosingFrameId !== -1) {   
-            let index = this._ownerCanvas.frames.findIndex(frame => frame.id === this.enclosingFrameId);
-            if(index >= 0 && this._ownerCanvas.frames[index].isCollapsed) {
-                this._ownerCanvas.frames[index].redrawFramePorts();
-            }
-        }   
-        this._comments.innerHTML = this.block.comments || "";
-        this._comments.title = this.block.comments || "";
 
     }
 
     private _onDown(evt: PointerEvent) {
+
+        //i think this is where them movement code goes?
         // Check if this is coming from the port
         if (evt.srcElement && (evt.srcElement as HTMLElement).nodeName === "IMG") {
             return;
@@ -349,8 +328,8 @@ export class GuiNode {
         evt.stopPropagation();
     }
 
-    public renderProperties(): Nullable<JSX.Element> {
-        let control = PropertyLedger.RegisteredControls[this.block.getClassName()];
+    /*public renderProperties(): Nullable<JSX.Element> {
+        let control = PropertyLedger.RegisteredControls[this._guiElement.getClassName()];
 
         if (!control) {
             control = GenericPropertyComponent;
@@ -358,15 +337,15 @@ export class GuiNode {
 
         return React.createElement(control, {
             globalState: this._globalState,
-            block: this.block
+            guiElement: this._guiElement
         });
-    }
+    }*/
 
     public appendVisual(root: HTMLDivElement, owner: GraphCanvasComponent) {
         this._ownerCanvas = owner;
 
         // Display manager
-        let displayManagerClass = DisplayLedger.RegisteredControls[this.block.getClassName()];
+        let displayManagerClass = DisplayLedger.RegisteredControls[this._guiElement.getClassName()];
         
 
         if (displayManagerClass) {
