@@ -558,6 +558,7 @@ export class MaterialHelper {
      * @param samplersList The sampler list
      * @param projectedLightTexture defines if projected texture must be used
      * @param uniformBuffersList defines an optional list of uniform buffers
+     * @param updateOnlyBuffersList True to only update the uniformBuffersList array
      */
     public static PrepareUniformsAndSamplersForLight(lightIndex: number, uniformsList: string[], samplersList: string[], projectedLightTexture?: any, uniformBuffersList: Nullable<string[]> = null, updateOnlyBuffersList = false) {
         if (uniformBuffersList) {
