@@ -11,7 +11,7 @@ import { Light } from '../../../../Lights/light';
 import { Nullable } from '../../../../types';
 import { _TypeStore } from '../../../../Misc/typeStore';
 import { AbstractMesh } from '../../../../Meshes/abstractMesh';
-import { Effect, IEffectCreationOptions } from '../../../effect';
+import { Effect } from '../../../effect';
 import { Mesh } from '../../../../Meshes/mesh';
 import { PBRBaseMaterial } from '../../../PBR/pbrBaseMaterial';
 import { Scene } from '../../../../scene';
