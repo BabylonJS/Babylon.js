@@ -172,8 +172,12 @@ export class GraphNode {
         }
     }
 
-    public constructor(public block: NodeMaterialBlock, globalState: GlobalState) {
+    public constructor(public block: NodeMaterialBlock, globalState: GlobalState, public guiNode: BABYLON.GUI.Container | null | undefined) {
         this._globalState = globalState;
+
+        guiNode?.onPointerUpObservable.add(() => {
+            this.isSelected = true;
+        });
 
         this._onSelectionChangedObserver = this._globalState.onSelectionChangedObservable.add(node => {
             if (node === this) {

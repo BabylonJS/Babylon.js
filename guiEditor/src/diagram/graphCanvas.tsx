@@ -50,6 +50,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _svgCanvas: HTMLElement;
     private _rootContainer: HTMLDivElement;
     private _nodes: GraphNode[] = [];
+    private _guiNodes: GraphNode[] = [];
     private _links: NodeLink[] = [];
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null
@@ -62,7 +63,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _y = 0;
     private _zoom = 1;
     private _selectedNodes: GraphNode[] = [];
-    private _selectedGuiNodes: GuiNode[] = [];
+    private _selectedGuiNodes: GraphNode[] = [];
     private _selectedLink: Nullable<NodeLink> = null;
     private _selectedPort: Nullable<NodePort> = null;
     private _candidateLink: Nullable<NodeLink> = null;
@@ -179,29 +180,26 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         return this._frameContainer;
     }
 
-
-    
-
-
-    
-
     constructor(props: IGraphCanvasComponentProps) {
         super(props);
 
         props.globalState.onSelectionChangedObservable.add(selection => {            
             if (!selection) {
                 this._selectedNodes = [];
+                this._selectedGuiNodes = [];
                 this._selectedLink = null;
                 this._selectedFrame = null;
                 this._selectedPort = null;
             } else {
                 if (selection instanceof NodeLink) {
                     this._selectedNodes = [];
+                    this._selectedGuiNodes = [];
                     this._selectedFrame = null;
                     this._selectedLink = selection;
                     this._selectedPort = null;
                 } else if (selection instanceof GraphFrame) {
                     this._selectedNodes = [];
+                    this._selectedGuiNodes = [];
                     this._selectedFrame = selection;
                     this._selectedLink = null;
                     this._selectedPort = null;
@@ -209,17 +207,21 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     if (this._ctrlKeyIsPressed) {
                         if (this._selectedNodes.indexOf(selection) === -1) {
                             this._selectedNodes.push(selection);
+                            this._selectedGuiNodes.push(selection);
                         }
                     } else {                    
                         this._selectedNodes = [selection];
+                        this._selectedGuiNodes = [selection];
                     }
                 } else if(selection instanceof NodePort){
                     this._selectedNodes = [];
+                    this._selectedGuiNodes = [];
                     this._selectedFrame = null;
                     this._selectedLink = null;
                     this._selectedPort = selection;
                 } else {
                     this._selectedNodes = [];
+                    this._selectedGuiNodes = [];
                     this._selectedFrame = null;
                     this._selectedLink = null;
                     this._selectedPort = selection.port;
@@ -361,7 +363,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     appendBlock(block: NodeMaterialBlock) {
-        let newNode = new GraphNode(block, this.props.globalState);
+        let newNode = new GraphNode(block, this.props.globalState, null);
 
         newNode.appendVisual(this._graphCanvas, this);
 
@@ -978,6 +980,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         button1.onPointerUpObservable.add(function() {
         });
         this._guis.push(button1);
+        var fakeNodeMaterialBlock = new NodeMaterialBlock("Button");
+        this._guiNodes.push(new GraphNode(fakeNodeMaterialBlock, this.globalState, button1));
         this._advancedTexture.addControl(button1);    
     }
 
@@ -985,8 +989,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _advancedTexture: BABYLON.GUI.AdvancedDynamicTexture;
     updateGUIs()
     {
-        this._guis.forEach(element => {
-            element.paddingLeft == 1;
+        this._guiNodes.forEach(element => {
+            element.guiNode?.paddingLeft == 1;
             //should create a new component type that has the contrainer ias a property.
             //with then have the update information.
             
