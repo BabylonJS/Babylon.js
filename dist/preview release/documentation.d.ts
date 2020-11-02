@@ -85996,9 +85996,10 @@ declare module BABYLON {
         * @param fileName changes the downloads fileName.
         * @param binary changes the STL to a binary type.
         * @param isLittleEndian toggle for binary type exporter.
+        * @param doNotBakeTransform toggle if meshes transforms should be baked or not.
         * @returns the STL as UTF8 string
         */
-        static CreateSTL(meshes: Mesh[], download?: boolean, fileName?: string, binary?: boolean, isLittleEndian?: boolean): any;
+        static CreateSTL(meshes: Mesh[], download?: boolean, fileName?: string, binary?: boolean, isLittleEndian?: boolean, doNotBakeTransform?: boolean): any;
     }
 }
 declare module "babylonjs-gltf2interface" {
