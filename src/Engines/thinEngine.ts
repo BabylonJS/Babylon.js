@@ -158,14 +158,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.2.0-beta.21";
+        return "babylonjs@4.2.0-beta.22";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.2.0-beta.21";
+        return "4.2.0-beta.22";
     }
 
     /**
