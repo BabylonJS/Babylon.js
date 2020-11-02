@@ -164,6 +164,7 @@
 - Added support for glTF Skins to glTF serializer ([Drigax](https://github.com/Drigax))
 - Added support for glTF Morph Target serialization ([Drigax](https://github.com/Drigax))
 - Fixed several bugs in stlSerializer ([aWeirdo](https://github.com/aWeirdo))
+- Added param `doNotBakeTransform` to `stlSerializer.CreateSTL` ([aWeirdo](https://github.com/aWeirdo))
 
 ### Navigation
 
