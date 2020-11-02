@@ -246,6 +246,7 @@ export class WebGPUEngine extends Engine {
         ThinEngine.Features.allowTexturePrefiltering = true;
         ThinEngine.Features.trackUbosInFrame = true;
         ThinEngine.Features.supportCSM = true;
+        ThinEngine.Features.basisNeedsPOT = false;
         ThinEngine.Features._collectUbosUpdatedInFrame = true;
 
         options.deviceDescriptor = options.deviceDescriptor || { };
