@@ -36,7 +36,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
     private _onBeforeRenderObserver: Nullable<Observer<Scene>>;
     private _isPlaying = false;
     private timelineRef: React.RefObject<SliderLineComponent>;
-    private _isCurveEditorOpen = false;
+    // private _isCurveEditorOpen = false;
     private _animationControl = {
         from: 0,
         to: 0,
@@ -131,16 +131,16 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
         }
     }
 
-    onOpenAnimationCurveEditor() {
-        this._isCurveEditorOpen = true;
-    }
+    // onOpenAnimationCurveEditor() {
+    //     this._isCurveEditorOpen = true;
+    // }
 
-    onCloseAnimationCurveEditor(window: Window | null) {
-        this._isCurveEditorOpen = false;
-        if (window !== null) {
-            window.close();
-        }
-    }
+    // onCloseAnimationCurveEditor(window: Window | null) {
+    //     this._isCurveEditorOpen = false;
+    //     if (window !== null) {
+    //         window.close();
+    //     }
+    // }
 
     render() {
         const animatable = this.props.animatable;

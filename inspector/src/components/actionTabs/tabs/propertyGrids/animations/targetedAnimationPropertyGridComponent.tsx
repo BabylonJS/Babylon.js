@@ -23,7 +23,7 @@ interface ITargetedAnimationGridComponentProps {
 }
 
 export class TargetedAnimationGridComponent extends React.Component<ITargetedAnimationGridComponentProps> {
-    private _isCurveEditorOpen: boolean;
+    // private _isCurveEditorOpen: boolean;
     private _animationGroup: AnimationGroup | undefined;
     constructor(props: ITargetedAnimationGridComponentProps) {
         super(props);
@@ -33,16 +33,16 @@ export class TargetedAnimationGridComponent extends React.Component<ITargetedAni
         });
     }
 
-    onOpenAnimationCurveEditor = () => {
-        this._isCurveEditorOpen = true;
-    };
+    // onOpenAnimationCurveEditor = () => {
+    //     this._isCurveEditorOpen = true;
+    // };
 
-    onCloseAnimationCurveEditor = (window: Window | null) => {
-        this._isCurveEditorOpen = false;
-        if (window !== null) {
-            window.close();
-        }
-    };
+    // onCloseAnimationCurveEditor = (window: Window | null) => {
+    //     this._isCurveEditorOpen = false;
+    //     if (window !== null) {
+    //         window.close();
+    //     }
+    // };
 
     playOrPause = () => {
         if (this._animationGroup) {
