@@ -45,7 +45,7 @@ function assert(condition: any, msg?: string): asserts condition {
 const dbgShowShaderCode = false;
 const dbgSanityChecks = false;
 const dbgGenerateLogs = false;
-const dbgVerboseLogsForFirstFrames = true;
+const dbgVerboseLogsForFirstFrames = false;
 const dbgVerboseLogsNumFrames = 10;
 const dbgShowWarningsNotImplemented = false;
 export const dbgShowDebugInliningProcess = false;
@@ -1063,79 +1063,68 @@ export class WebGPUEngine extends Engine {
     } {
         let magFilter: GPUFilterMode, minFilter: GPUFilterMode, mipmapFilter: GPUFilterMode, lodMinClamp: number | undefined, lodMaxClamp: number | undefined;
         switch (internalTexture.samplingMode) {
-            case Engine.TEXTURE_NEAREST_SAMPLINGMODE:
-                magFilter = WebGPUConstants.FilterMode.Nearest;
-                minFilter = WebGPUConstants.FilterMode.Nearest;
-                mipmapFilter = WebGPUConstants.FilterMode.Nearest;
-                lodMinClamp = lodMaxClamp = 0;
-                break;
-            case Engine.TEXTURE_BILINEAR_SAMPLINGMODE:
+            case Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST:
                 magFilter = WebGPUConstants.FilterMode.Linear;
                 minFilter = WebGPUConstants.FilterMode.Linear;
                 mipmapFilter = WebGPUConstants.FilterMode.Nearest;
                 break;
-            case Engine.TEXTURE_TRILINEAR_SAMPLINGMODE:
+            case Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR:
+            case Constants.TEXTURE_TRILINEAR_SAMPLINGMODE:
                 magFilter = WebGPUConstants.FilterMode.Linear;
                 minFilter = WebGPUConstants.FilterMode.Linear;
                 mipmapFilter = WebGPUConstants.FilterMode.Linear;
                 break;
-            case Engine.TEXTURE_NEAREST_NEAREST_MIPLINEAR:
+            case Constants.TEXTURE_NEAREST_NEAREST_MIPLINEAR:
                 magFilter = WebGPUConstants.FilterMode.Nearest;
                 minFilter = WebGPUConstants.FilterMode.Nearest;
                 mipmapFilter = WebGPUConstants.FilterMode.Linear;
-            case Engine.TEXTURE_LINEAR_LINEAR_MIPNEAREST:
-                magFilter = WebGPUConstants.FilterMode.Linear;
-                minFilter = WebGPUConstants.FilterMode.Linear;
-                mipmapFilter = WebGPUConstants.FilterMode.Nearest;
-            case Engine.TEXTURE_LINEAR_LINEAR_MIPLINEAR:
-                magFilter = WebGPUConstants.FilterMode.Linear;
-                minFilter = WebGPUConstants.FilterMode.Linear;
-                mipmapFilter = WebGPUConstants.FilterMode.Linear;
-
-            case Engine.TEXTURE_NEAREST_NEAREST_MIPNEAREST:
+                break;
+            case Constants.TEXTURE_NEAREST_NEAREST_MIPNEAREST:
                 magFilter = WebGPUConstants.FilterMode.Nearest;
                 minFilter = WebGPUConstants.FilterMode.Nearest;
                 mipmapFilter = WebGPUConstants.FilterMode.Nearest;
                 break;
-            case Engine.TEXTURE_NEAREST_LINEAR_MIPNEAREST:
+            case Constants.TEXTURE_NEAREST_LINEAR_MIPNEAREST:
                 magFilter = WebGPUConstants.FilterMode.Nearest;
                 minFilter = WebGPUConstants.FilterMode.Linear;
                 mipmapFilter = WebGPUConstants.FilterMode.Nearest;
                 break;
-            case Engine.TEXTURE_NEAREST_LINEAR_MIPLINEAR:
+            case Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR:
                 magFilter = WebGPUConstants.FilterMode.Nearest;
                 minFilter = WebGPUConstants.FilterMode.Linear;
                 mipmapFilter = WebGPUConstants.FilterMode.Linear;
                 break;
-            case Engine.TEXTURE_NEAREST_LINEAR:
+            case Constants.TEXTURE_NEAREST_LINEAR:
                 magFilter = WebGPUConstants.FilterMode.Nearest;
                 minFilter = WebGPUConstants.FilterMode.Linear;
                 mipmapFilter = WebGPUConstants.FilterMode.Nearest;
                 lodMinClamp = lodMaxClamp = 0;
                 break;
-            case Engine.TEXTURE_NEAREST_NEAREST:
+            case Constants.TEXTURE_NEAREST_NEAREST:
+            case Constants.TEXTURE_NEAREST_SAMPLINGMODE:
                 magFilter = WebGPUConstants.FilterMode.Nearest;
                 minFilter = WebGPUConstants.FilterMode.Nearest;
                 mipmapFilter = WebGPUConstants.FilterMode.Nearest;
                 lodMinClamp = lodMaxClamp = 0;
                 break;
-            case Engine.TEXTURE_LINEAR_NEAREST_MIPNEAREST:
+            case Constants.TEXTURE_LINEAR_NEAREST_MIPNEAREST:
                 magFilter = WebGPUConstants.FilterMode.Linear;
                 minFilter = WebGPUConstants.FilterMode.Nearest;
                 mipmapFilter = WebGPUConstants.FilterMode.Nearest;
                 break;
-            case Engine.TEXTURE_LINEAR_NEAREST_MIPLINEAR:
+            case Constants.TEXTURE_LINEAR_NEAREST_MIPLINEAR:
                 magFilter = WebGPUConstants.FilterMode.Linear;
                 minFilter = WebGPUConstants.FilterMode.Nearest;
                 mipmapFilter = WebGPUConstants.FilterMode.Linear;
                 break;
-            case Engine.TEXTURE_LINEAR_LINEAR:
+            case Constants.TEXTURE_LINEAR_LINEAR:
+            case Constants.TEXTURE_BILINEAR_SAMPLINGMODE:
                 magFilter = WebGPUConstants.FilterMode.Linear;
                 minFilter = WebGPUConstants.FilterMode.Linear;
                 mipmapFilter = WebGPUConstants.FilterMode.Nearest;
                 lodMinClamp = lodMaxClamp = 0;
                 break;
-            case Engine.TEXTURE_LINEAR_NEAREST:
+            case Constants.TEXTURE_LINEAR_NEAREST:
                 magFilter = WebGPUConstants.FilterMode.Linear;
                 minFilter = WebGPUConstants.FilterMode.Nearest;
                 mipmapFilter = WebGPUConstants.FilterMode.Nearest;
@@ -1145,6 +1134,7 @@ export class WebGPUEngine extends Engine {
                 magFilter = WebGPUConstants.FilterMode.Nearest;
                 minFilter = WebGPUConstants.FilterMode.Nearest;
                 mipmapFilter = WebGPUConstants.FilterMode.Nearest;
+                lodMinClamp = lodMaxClamp = 0;
                 break;
         }
 
@@ -3475,13 +3465,13 @@ export class WebGPUEngine extends Engine {
                     const bindingInfo = webgpuPipelineContext.textures[bindingDefinition.name];
                     if (bindingInfo) {
                         if (dbgSanityChecks && bindingInfo.texture === null) {
-                            Logger.Error(`Trying to bind a null texture! bindingDefinition=${JSON.stringify(bindingDefinition)}, bindingInfo=${JSON.stringify(bindingInfo)}`, 50);
+                            Logger.Error(`Trying to bind a null texture! bindingDefinition=${JSON.stringify(bindingDefinition)}, bindingInfo=${JSON.stringify(bindingInfo, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}`, 50);
                             continue;
                         }
                         const hardwareTexture = bindingInfo.texture._hardwareTexture as WebGPUHardwareTexture;
 
                         if (dbgSanityChecks && !hardwareTexture.view) {
-                            Logger.Error(`Trying to bind a null gpu texture! bindingDefinition=${JSON.stringify(bindingDefinition)}, bindingInfo=${JSON.stringify(bindingInfo)}, isReady=${bindingInfo.texture.isReady}`, 50);
+                            Logger.Error(`Trying to bind a null gpu texture! bindingDefinition=${JSON.stringify(bindingDefinition)}, bindingInfo=${JSON.stringify(bindingInfo, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}, isReady=${bindingInfo.texture.isReady}`, 50);
                             continue;
                         }
 
