@@ -3548,6 +3548,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         const len = meshes.length;
         for (let i = 0; i < len; i++) {
             const mesh = meshes.data[i];
+            mesh._internalAbstractMeshDataInfo._currentLODIsUpToDate = false;
             if (mesh.isBlocked) {
                 continue;
             }
@@ -3567,10 +3568,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
             // Switch to current LOD
             let meshToRender = this.customLODSelector ? this.customLODSelector(mesh, this.activeCamera) : mesh.getLOD(this.activeCamera);
+            mesh._internalAbstractMeshDataInfo._currentLOD = meshToRender;
+            mesh._internalAbstractMeshDataInfo._currentLODIsUpToDate = true;
             if (meshToRender === undefined || meshToRender === null) {
                 continue;
             }
-            mesh._internalAbstractMeshDataInfo._currentLOD = meshToRender;
 
             // Compute world matrix if LOD is billboard
             if (meshToRender !== mesh && meshToRender.billboardMode !== TransformNode.BILLBOARDMODE_NONE) {

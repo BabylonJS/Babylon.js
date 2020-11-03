@@ -29,7 +29,7 @@ export class Vector2 {
      * @returns a string with the Vector2 coordinates
      */
     public toString(): string {
-        return "{X: " + this.x + " Y:" + this.y + "}";
+        return "{X: " + this.x + " Y: " + this.y + "}";
     }
 
     /**

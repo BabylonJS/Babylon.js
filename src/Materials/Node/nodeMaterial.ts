@@ -1866,7 +1866,10 @@ export class NodeMaterial extends PushMaterial {
         var material = new NodeMaterial(name, scene);
 
         return new Promise((resolve, reject) => {
-            return material.loadAsync(url).then(() => resolve(material)).catch(reject);
+            return material.loadAsync(url).then(() => {
+                material.build();
+                resolve(material);
+            }).catch(reject);
         });
     }
 
