@@ -94,7 +94,7 @@ export class ColorGradingTexture extends BaseTexture {
     private load3dlTexture() {
         var engine = this._getEngine()!;
         var texture: InternalTexture;
-        if (engine.webGLVersion === 1) {
+        if (!ThinEngine.Features.support3DTextures) {
             texture = engine.createRawTexture(null, 1, 1, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, null, Constants.TEXTURETYPE_UNSIGNED_INT);
         }
         else {
@@ -105,7 +105,7 @@ export class ColorGradingTexture extends BaseTexture {
         this._texture.isReady = false;
 
         this.isCube = false;
-        this.is3D = engine.webGLVersion > 1;
+        this.is3D = ThinEngine.Features.support3DTextures;
         this.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         this.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         this.wrapR = Constants.TEXTURE_CLAMP_ADDRESSMODE;

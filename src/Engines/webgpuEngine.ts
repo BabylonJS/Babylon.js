@@ -247,6 +247,7 @@ export class WebGPUEngine extends Engine {
         ThinEngine.Features.trackUbosInFrame = true;
         ThinEngine.Features.supportCSM = true;
         ThinEngine.Features.basisNeedsPOT = false;
+        ThinEngine.Features.support3DTextures = false; // TODO WEBGPU change to true when Chrome supports 3D textures
         ThinEngine.Features._collectUbosUpdatedInFrame = true;
 
         options.deviceDescriptor = options.deviceDescriptor || { };
