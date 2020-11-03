@@ -315,6 +315,8 @@ export class InternalTexture {
      * @param depth defines the new depth (1 by default)
      */
     public updateSize(width: int, height: int, depth: int = 1): void {
+        this._engine.updateTextureDimensions(this, width, height, depth);
+
         this.width = width;
         this.height = height;
         this.depth = depth;

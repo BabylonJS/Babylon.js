@@ -1415,7 +1415,7 @@ export class WebGPUEngine extends Engine {
                         const gpuTextureWrapper = this._createGPUTextureForInternalTexture(texture, imageBitmap.width, imageBitmap.height);
 
                         if (this._textureHelper.isImageBitmap(imageBitmap)) {
-                            this._textureHelper.updateTexture(imageBitmap, gpuTextureWrapper.underlyingResource!, imageBitmap.width, imageBitmap.height, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0, this._uploadEncoder);
+                            this._textureHelper.updateTexture(imageBitmap, gpuTextureWrapper.underlyingResource!, imageBitmap.width, imageBitmap.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0, this._uploadEncoder);
                             if (!noMipmap && !isCompressed) {
                                 this._generateMipmaps(texture);
                             }
@@ -1619,12 +1619,30 @@ export class WebGPUEngine extends Engine {
     public createRawTexture3D(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number,
         compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture
     {
-        var source = InternalTextureSource.Raw2DArray;
-        var texture = new InternalTexture(this, source);
+        const source = InternalTextureSource.Raw3D;
+        const texture = new InternalTexture(this, source);
 
-        if (dbgShowWarningsNotImplemented) {
-            console.warn("createRawTexture3D not implemented yet in WebGPU");
+        texture.baseWidth = width;
+        texture.baseHeight = height;
+        texture.baseDepth = depth;
+        texture.width = width;
+        texture.height = height;
+        texture.depth = depth;
+        texture.format = format;
+        texture.type = textureType;
+        texture.generateMipMaps = generateMipMaps;
+        texture.samplingMode = samplingMode;
+        texture.is3D = true;
+
+        if (!this._doNotHandleContextLost) {
+            texture._bufferView = data;
         }
+
+        this._createGPUTextureForInternalTexture(texture, width, height);
+
+        this.updateRawTexture3D(texture, data, format, invertY, compression, textureType);
+
+        this._internalTexturesCache.push(texture);
 
         return texture;
     }
@@ -1661,6 +1679,21 @@ export class WebGPUEngine extends Engine {
         if ((texture.is2DArray || texture.is3D) && (wrapR !== null)) {
             texture._cachedWrapR = wrapR;
         }
+    }
+
+    public updateTextureDimensions(texture: InternalTexture, width: number, height: number, depth: number = 1): void {
+        if (!texture._hardwareTexture) {
+            // the gpu texture is not created yet, so when it is it will be created with the right dimensions
+            return;
+        }
+
+        if (texture.width === width && texture.height === height && texture.depth === depth) {
+            return;
+        }
+
+        texture._hardwareTexture.release(); // don't defer the releasing! Else we will release at the end of this frame the gpu texture we are about to create in the next line...
+
+        this._createGPUTextureForInternalTexture(texture, width, height, depth);
     }
 
     private _setInternalTexture(name: string, internalTexture: Nullable<InternalTexture>, baseName?: string, textureIndex = 0): void {
@@ -1831,7 +1864,7 @@ export class WebGPUEngine extends Engine {
         this._setInternalTexture(name, texture);
     }
 
-    private _createGPUTextureForInternalTexture(texture: InternalTexture, width?: number, height?: number): WebGPUHardwareTexture {
+    private _createGPUTextureForInternalTexture(texture: InternalTexture, width?: number, height?: number, depth?: number): WebGPUHardwareTexture {
         if (!texture._hardwareTexture) {
             texture._hardwareTexture = this._createHardwareTexture();
         }
@@ -1841,6 +1874,9 @@ export class WebGPUEngine extends Engine {
         }
         if (height === undefined) {
             height = texture.height;
+        }
+        if (depth === undefined) {
+            depth = texture.depth;
         }
 
         const gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
@@ -1852,9 +1888,10 @@ export class WebGPUEngine extends Engine {
             texture._source === InternalTextureSource.Depth ? WebGPUConstants.TextureUsage.Sampled | WebGPUConstants.TextureUsage.OutputAttachment : -1;
 
         const generateMipMaps = texture._source === InternalTextureSource.RenderTarget ? false : texture.generateMipMaps;
-        const layerCount = texture.depth || 1;
+        const layerCount = depth || 1;
 
         if (texture.isCube) {
+            // TODO WEBGPU handle depth for cube textures?
             const gpuTexture = this._textureHelper.createCubeTexture({ width, height }, texture.generateMipMaps, texture.generateMipMaps, texture.invertY, false, gpuTextureWrapper.format, texture.samples || 1, this._uploadEncoder, textureUsages);
 
             gpuTextureWrapper.set(gpuTexture);
@@ -1866,11 +1903,11 @@ export class WebGPUEngine extends Engine {
                 aspect: WebGPUConstants.TextureAspect.All
             });
         } else {
-            const gpuTexture = this._textureHelper.createTexture({ width, height, layers: layerCount }, texture.generateMipMaps, texture.generateMipMaps, texture.invertY, false, gpuTextureWrapper.format, texture.samples || 1, this._uploadEncoder, textureUsages);
+            const gpuTexture = this._textureHelper.createTexture({ width, height, layers: layerCount }, texture.generateMipMaps, texture.generateMipMaps, texture.invertY, false, texture.is3D, gpuTextureWrapper.format, texture.samples || 1, this._uploadEncoder, textureUsages);
 
             gpuTextureWrapper.set(gpuTexture);
             gpuTextureWrapper.createView({
-                dimension: texture.is2DArray ? WebGPUConstants.TextureViewDimension.E2dArray : WebGPUConstants.TextureViewDimension.E2d,
+                dimension: texture.is2DArray ? WebGPUConstants.TextureViewDimension.E2dArray : texture.is3D ? WebGPUConstants.TextureDimension.E3d : WebGPUConstants.TextureViewDimension.E2d,
                 mipLevelCount: generateMipMaps ? WebGPUTextureHelper.computeNumMipmapLevels(width!, height!) : 1,
                 baseArrayLayer: 0,
                 baseMipLevel: 0,
@@ -1881,6 +1918,7 @@ export class WebGPUEngine extends Engine {
 
         texture.width = texture.baseWidth = width;
         texture.height = texture.baseHeight = height;
+        texture.depth = texture.baseDepth = depth;
 
         return gpuTextureWrapper;
     }
@@ -1926,7 +1964,7 @@ export class WebGPUEngine extends Engine {
         }
 
         createImageBitmap(canvas).then((bitmap) => {
-            this._textureHelper.updateTexture(bitmap, gpuTextureWrapper.underlyingResource!, width, height, gpuTextureWrapper.format, 0, 0, invertY, premulAlpha, 0, 0, this._uploadEncoder);
+            this._textureHelper.updateTexture(bitmap, gpuTextureWrapper.underlyingResource!, width, height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, premulAlpha, 0, 0, this._uploadEncoder);
             if (texture.generateMipMaps) {
                 this._generateMipmaps(texture);
             }
@@ -1944,7 +1982,7 @@ export class WebGPUEngine extends Engine {
 
         const data = new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength);
 
-        this._textureHelper.updateTexture(data, gpuTextureWrapper.underlyingResource!, width, height, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, xOffset, yOffset, this._uploadEncoder);
+        this._textureHelper.updateTexture(data, gpuTextureWrapper.underlyingResource!, width, height, texture.depth, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, xOffset, yOffset, this._uploadEncoder);
     }
 
     public updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void {
@@ -1963,7 +2001,7 @@ export class WebGPUEngine extends Engine {
         }
 
         createImageBitmap(video).then((bitmap) => {
-            this._textureHelper.updateTexture(bitmap, gpuTextureWrapper.underlyingResource!, texture.width, texture.height, gpuTextureWrapper.format, 0, 0, !invertY, false, 0, 0, this._uploadEncoder);
+            this._textureHelper.updateTexture(bitmap, gpuTextureWrapper.underlyingResource!, texture.width, texture.height, texture.depth, gpuTextureWrapper.format, 0, 0, !invertY, false, 0, 0, this._uploadEncoder);
             if (texture.generateMipMaps) {
                 this._generateMipmaps(texture);
             }
@@ -1987,7 +2025,7 @@ export class WebGPUEngine extends Engine {
 
         const data = new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength);
 
-        this._textureHelper.updateTexture(data, gpuTextureWrapper.underlyingResource!, width, height, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, 0, 0, this._uploadEncoder);
+        this._textureHelper.updateTexture(data, gpuTextureWrapper.underlyingResource!, width, height, texture.depth, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, 0, 0, this._uploadEncoder);
     }
 
     /** @hidden */
@@ -2008,7 +2046,7 @@ export class WebGPUEngine extends Engine {
 
         const data = new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength);
 
-        this._textureHelper.updateTexture(data, gpuTextureWrapper.underlyingResource!, width, height, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, 0, 0, this._uploadEncoder);
+        this._textureHelper.updateTexture(data, gpuTextureWrapper.underlyingResource!, width, height, texture.depth, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, 0, 0, this._uploadEncoder);
     }
 
     /** @hidden */
@@ -2029,7 +2067,7 @@ export class WebGPUEngine extends Engine {
         const width = Math.ceil(texture.width / (1 << lod));
         const height = Math.ceil(texture.height / (1 << lod));
 
-        this._textureHelper.updateTexture(bitmap, gpuTextureWrapper.underlyingResource!, width, height, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, 0, 0, this._uploadEncoder);
+        this._textureHelper.updateTexture(bitmap, gpuTextureWrapper.underlyingResource!, width, height, texture.depth, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, 0, 0, this._uploadEncoder);
     }
 
     public updateRawTexture(texture: Nullable<InternalTexture>, bufferView: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): void {
@@ -2053,7 +2091,7 @@ export class WebGPUEngine extends Engine {
 
             const data = new Uint8Array(bufferView.buffer, bufferView.byteOffset, bufferView.byteLength);
 
-            this._textureHelper.updateTexture(data, gpuTextureWrapper.underlyingResource!, texture.width, texture.height, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0, this._uploadEncoder);
+            this._textureHelper.updateTexture(data, gpuTextureWrapper.underlyingResource!, texture.width, texture.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0, this._uploadEncoder);
             if (texture.generateMipMaps) {
                 this._generateMipmaps(texture);
             }
@@ -2087,16 +2125,37 @@ export class WebGPUEngine extends Engine {
         texture.isReady = true;
     }
 
-    public updateRawTexture2DArray(texture: InternalTexture, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): void {
+    public updateRawTexture2DArray(texture: InternalTexture, bufferView: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): void {
         if (dbgShowWarningsNotImplemented) {
             console.warn("updateRawTexture2DArray not implemented yet in WebGPU");
         }
     }
 
-    public updateRawTexture3D(texture: InternalTexture, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): void {
-        if (dbgShowWarningsNotImplemented) {
-            console.warn("updateRawTexture2DArray not implemented yet in WebGPU");
+    public updateRawTexture3D(texture: InternalTexture, bufferView: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): void {
+        if (!this._doNotHandleContextLost) {
+            texture._bufferView = bufferView;
+            texture.format = format;
+            texture.invertY = invertY;
+            texture._compression = compression;
         }
+
+        if (bufferView) {
+            const gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
+            const needConversion = format === Constants.TEXTUREFORMAT_RGB;
+
+            if (needConversion) {
+                bufferView = _convertRGBtoRGBATextureData(bufferView, texture.width, texture.height, textureType);
+            }
+
+            const data = new Uint8Array(bufferView.buffer, bufferView.byteOffset, bufferView.byteLength);
+
+            this._textureHelper.updateTexture(data, gpuTextureWrapper.underlyingResource!, texture.width, texture.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0, this._uploadEncoder);
+            if (texture.generateMipMaps) {
+                this._generateMipmaps(texture);
+            }
+        }
+
+        texture.isReady = true;
     }
 
     public readPixels(x: number, y: number, width: number, height: number, hasAlpha = true): Promise<ArrayBufferView> {

@@ -3388,6 +3388,15 @@ export class ThinEngine {
     }
 
     /**
+     * Update the dimensions of a texture
+     * @param width new width of the texture
+     * @param height new height of the texture
+     * @param depth new depth of the texture
+     */
+    public updateTextureDimensions(texture: InternalTexture, width: number, height: number, depth: number = 1): void {
+    }
+
+    /**
      * Update the sampling mode of a given texture
      * @param texture defines the texture to update
      * @param wrapU defines the texture wrap mode of the u coordinates
