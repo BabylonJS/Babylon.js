@@ -182,7 +182,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                     <>
                         <LineContainerComponent globalState={this.props.globalState} title="ANIMATIONS">
                             <TextLineComponent label="Count" value={animations.length.toString()} />
-                            <ButtonLineComponent label="Edit" onClick={() => this.onOpenAnimationCurveEditor()} />
+                            {/* <ButtonLineComponent label="Edit" onClick={() => this.onOpenAnimationCurveEditor()} />
                             {animations.map((anim, i) => {
                                 return <TextLineComponent key={anim.targetProperty + i} label={"#" + i + " >"} value={anim.targetProperty} />;
                             })}
@@ -191,7 +191,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                                 <PopupComponent id="curve-editor" title="Curve Animation Editor" size={{ width: 1024, height: 512 }} onOpen={(window: Window) => {}} onClose={(window: Window) => this.onCloseAnimationCurveEditor(window)}>
                                     <AnimationCurveEditorComponent scene={this.props.scene} entity={animatableAsAny} lockObject={this.props.lockObject} playOrPause={() => this.playOrPause()} globalState={this.props.globalState} />
                                 </PopupComponent>
-                            )}
+                            )} */}
                         </LineContainerComponent>
                         {animations.length > 0 && (
                             <LineContainerComponent globalState={this.props.globalState} title="ANIMATION GENERAL CONTROL">
