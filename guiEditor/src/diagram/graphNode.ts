@@ -161,12 +161,12 @@ export class GraphNode {
         this._isSelected = value;
 
         if (!value) {
-            this._visual.classList.remove("selected");    
+            /*this._visual.classList.remove("selected");    
             let indexInSelection = this._ownerCanvas.selectedNodes.indexOf(this);
 
             if (indexInSelection > -1) {
                 this._ownerCanvas.selectedNodes.splice(indexInSelection, 1);
-            }
+            }*/
         } else {
             this._globalState.onSelectionChangedObservable.notifyObservers(this);  
         }
