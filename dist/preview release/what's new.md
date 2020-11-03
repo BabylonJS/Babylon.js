@@ -89,7 +89,7 @@
 - Add the `rgba` and `a` outputs to the `ReflectionTexture` block ([Popov72](https://github.com/Popov72))
 - Add custom frames to be uploaded into NME for reuse ([msDestiny14](https://github.com/msDestiny14))
 - Node ports are now serialized for custom frames ([msDestiny14](https://github.com/msDestiny14))
-- Deleting a collapsed frame will deleting all nodes inside it ([msDestiny14](https://github.com/msDestiny14))
+- Deleting a collapsed frame will delete all nodes inside it ([msDestiny14](https://github.com/msDestiny14))
 
 ### Inspector
 
