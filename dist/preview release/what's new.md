@@ -58,6 +58,7 @@
 - Removed all references to HTML element from cameras' attach and detach control functions ([RaananW](https://github.com/RaananW))
 - Added `boundingBoxRenderer.onResourcesReadyObservable` ([aWeirdo](https://github.com/aWeirdo))
 - Added `copyTools.GenerateBase64StringFromTexture` ([aWeirdo](https://github.com/aWeirdo))
+- Added manual input for sliders on NME and inspector ([msDestiny14](https://github.com/msDestiny14))
 
 ### Engine
 
@@ -86,6 +87,9 @@
 - Add support for exporting frames ([belfortk](https://github.com/belfortk))
 - Add support for importing frames and their nodes (unconnected) and exposed frame ports ([belfortk](https://github.com/belfortk))
 - Add the `rgba` and `a` outputs to the `ReflectionTexture` block ([Popov72](https://github.com/Popov72))
+- Add custom frames to be uploaded into NME for reuse ([msDestiny14](https://github.com/msDestiny14))
+- Node ports are now serialized for custom frames ([msDestiny14](https://github.com/msDestiny14))
+- Deleting a collapsed frame will deleting all nodes inside it ([msDestiny14](https://github.com/msDestiny14))
 
 ### Inspector
 
@@ -103,6 +107,7 @@
 - Added mesh debug tools to display bone influence weights and bone indices maps. ([Pryme8](https://github.com/Pryme8))
 - Added more functionality and options to the skeleton debug panel. ([Pryme8](https://github.com/Pryme8))
 - Along with bone index it is now possible to select a bone using its name when viewing bone weights ([#9117](https://github.com/BabylonJS/Babylon.js/issues/9117)) ([RaananW](https://github.com/RaananW))
+- Gradient nodes from NME can now be set to be visable in the inspector ([msDestiny14](https://github.com/msDestiny14))
 
 ### Cameras
 
