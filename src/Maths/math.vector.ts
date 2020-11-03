@@ -657,6 +657,17 @@ export class Vector2 {
     }
 
     /**
+     * Gets the center of the vectors "value1" and "value2" and stores the result in the vector "ref"
+     * @param value1 defines first vector
+     * @param value2 defines second vector
+     * @param ref defines third vector
+     * @returns ref
+     */
+    public static CenterToRef(value1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, ref: DeepImmutable<Vector2>): Vector2 {
+        return ref.copyFromFloats((value1.x + value2.x) / 2, (value1.y + value2.y) / 2);
+    }
+
+    /**
      * Gets the shortest distance (float) between the point "p" and the segment defined by the two points "segA" and "segB".
      * @param p defines the middle point
      * @param segA defines one point of the segment
@@ -2020,6 +2031,17 @@ export class Vector3 {
     }
 
     /**
+     * Gets the center of the vectors "value1" and "value2" and stores the result in the vector "ref"
+     * @param value1 defines first vector
+     * @param value2 defines second vector
+     * @param ref defines third vector
+     * @returns ref
+     */
+    public static CenterToRef(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, ref: DeepImmutable<Vector3>): Vector3 {
+        return ref.copyFromFloats((value1.x + value2.x) / 2, (value1.y + value2.y) / 2, (value1.z + value2.z) / 2);
+    }
+
+    /**
      * Given three orthogonal normalized left-handed oriented Vector3 axis in space (target system),
      * RotationFromAxis() returns the rotation Euler angles (ex : rotation.x, rotation.y, rotation.z) to apply
      * to something in order to rotate it from its local system to the given target system
@@ -2707,6 +2729,17 @@ export class Vector4 {
         var center = value1.add(value2);
         center.scaleInPlace(0.5);
         return center;
+    }
+
+    /**
+     * Gets the center of the vectors "value1" and "value2" and stores the result in the vector "ref"
+     * @param value1 defines first vector
+     * @param value2 defines second vector
+     * @param ref defines third vector
+     * @returns ref
+     */
+    public static CenterToRef(value1: DeepImmutable<Vector4>, value2: DeepImmutable<Vector4>, ref: DeepImmutable<Vector4>): Vector4 {
+        return ref.copyFromFloats((value1.x + value2.x) / 2, (value1.y + value2.y) / 2, (value1.z + value2.z) / 2, (value1.w + value2.w) / 2);
     }
 
     /**
