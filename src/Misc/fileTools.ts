@@ -469,7 +469,7 @@ export class FileTools {
      * @returns boolean
      */
     public static IsFileURL(): boolean {
-        return location.protocol === "file:";
+        return typeof location !== "undefined" && location.protocol === "file:";
     }
 }
 
