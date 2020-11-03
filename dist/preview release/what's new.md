@@ -59,6 +59,7 @@
 - Added `boundingBoxRenderer.onResourcesReadyObservable` ([aWeirdo](https://github.com/aWeirdo))
 - Added `copyTools.GenerateBase64StringFromTexture` ([aWeirdo](https://github.com/aWeirdo))
 - Updated `axisScaleGizmo` to follow pointer on drag ([aWeirdo](https://github.com/aWeirdo))
+- Added manual input for sliders on NME and inspector ([msDestiny14](https://github.com/msDestiny14))
 
 ### Engine
 
@@ -80,14 +81,17 @@
 - Can now edit Node port names ([belfortk](https://github.com/belfortk))
 - Updated which node ports are shown on frames by default so that only node ports connected to outside nodes are by default exposed on the frame ([belfortk](https://github.com/belfortk))
 - Added a modulo block ([ageneau](https://github.com/ageneau))
-- Fixed bug where frame port labels would be the names of incorrect nodes ([belfortk](https://github.com/belfortk))
-- Fixed bug where long comments on collapsed frames broke port alignment ([belfortk](https://github.com/belfortk))
-- Added the `FragCoord` and `ScreenSize` blocks ([Popov72](https://github.com/Popov72))
-- Particle systems: Added the `ParticlePositionWorld` block ([Popov72](https://github.com/Popov72))
-- Added isExposedOnFrame property to connection points ([belfortk](https://github.com/belfortk))
-- Added support for exporting frames ([belfortk](https://github.com/belfortk))
-- Added support for importing frames and their nodes (unconnected) and exposed frame ports ([belfortk](https://github.com/belfortk))
-- Added the `rgba` and `a` outputs to the `ReflectionTexture` block ([Popov72](https://github.com/Popov72))
+- Fix bug where frame port labels would be the names of incorrect nodes ([belfortk](https://github.com/belfortk))
+- Fix bug where long comments on collapsed frames broke port alignment ([belfortk](https://github.com/belfortk))
+- Add the `FragCoord` and `ScreenSize` blocks ([Popov72](https://github.com/Popov72))
+- Particle systems: add the `ParticlePositionWorld` block ([Popov72](https://github.com/Popov72))
+- Add isExposedOnFrame property to connection points ([belfortk](https://github.com/belfortk))
+- Add support for exporting frames ([belfortk](https://github.com/belfortk))
+- Add support for importing frames and their nodes (unconnected) and exposed frame ports ([belfortk](https://github.com/belfortk))
+- Add the `rgba` and `a` outputs to the `ReflectionTexture` block ([Popov72](https://github.com/Popov72))
+- Add custom frames to be uploaded into NME for reuse ([msDestiny14](https://github.com/msDestiny14))
+- Node ports are now serialized for custom frames ([msDestiny14](https://github.com/msDestiny14))
+- Deleting a collapsed frame will delete all nodes inside it ([msDestiny14](https://github.com/msDestiny14))
 
 ### Inspector
 
@@ -105,6 +109,7 @@
 - Added mesh debug tools to display bone influence weights and bone indices maps. ([Pryme8](https://github.com/Pryme8))
 - Added more functionality and options to the skeleton debug panel. ([Pryme8](https://github.com/Pryme8))
 - Along with bone index it is now possible to select a bone using its name when viewing bone weights ([#9117](https://github.com/BabylonJS/Babylon.js/issues/9117)) ([RaananW](https://github.com/RaananW))
+- Gradient nodes from NME can now be set to be visible in the inspector ([msDestiny14](https://github.com/msDestiny14))
 
 ### Cameras
 
