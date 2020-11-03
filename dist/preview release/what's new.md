@@ -10,7 +10,6 @@
 - Added SubSurfaceScattering on PBR materials ([CraigFeldpsar](https://github.com/craigfeldspar) and ([Sebavan](https://github.com/sebavan/)))
 - Added edition of PBR materials, Post processes and Particle fragment shaders in the node material editor ([Popov72](https://github.com/Popov72))
 - Added edition of procedural texture in the node material editor ([Deltakosh](https://github.com/deltakosh))
-- Added Curve editor to manage entity's animations and edit animation groups in Inspector ([pixelspace](https://github.com/devpixelspace))
 - Added support in `ShadowGenerator` for fast fake soft transparent shadows ([Popov72](https://github.com/Popov72))
 - Added support for **thin instances** for faster mesh instances. [Doc](https://doc.babylonjs.com/how_to/how_to_use_thininstances) ([Popov72](https://github.com/Popov72))
 
@@ -45,6 +44,7 @@
 - Force compute world matrix of the newly-attached mesh of a ray helper ([RaananW](https://github.com/RaananW))
 - Allow 180 monoscopic videos on top of the video dome ([#8575](https://github.com/BabylonJS/Babylon.js/issues/8575)) ([RaananW](https://github.com/RaananW))
 - Added `AssetContainerTask` support to `AssetsManager` class ([MackeyK24](https://github.com/MackeyK24))
+- Added `fixedDragMeshBoundsSize` for boundingbox gizmo to size anchors from bounds size ([cedricguillemet](https://github.com/cedricguillemet))
 - Changed DeviceSourceManager getInput contract to no longer return nullable values ([Drigax](https://github.com/drigax))
 - Photo Dome and Video Dome now use the same abstract class and support the same parameters ([#8771](https://github.com/BabylonJS/Babylon.js/issues/8771)) ([RaananW](https://github.com/RaananW))
 - Added `getTransformNodesByTags` support to `Scene` class ([MackeyK24](https://github.com/MackeyK24))
@@ -58,6 +58,7 @@
 - Removed all references to HTML element from cameras' attach and detach control functions ([RaananW](https://github.com/RaananW))
 - Added `boundingBoxRenderer.onResourcesReadyObservable` ([aWeirdo](https://github.com/aWeirdo))
 - Added `copyTools.GenerateBase64StringFromTexture` ([aWeirdo](https://github.com/aWeirdo))
+- Updated `axisScaleGizmo` to follow pointer on drag ([aWeirdo](https://github.com/aWeirdo))
 - Added manual input for sliders on NME and inspector ([msDestiny14](https://github.com/msDestiny14))
 
 ### Engine
@@ -71,6 +72,7 @@
 - Add support for detail maps in both the standard and PBR materials ([Popov72](https://github.com/Popov72))
 - Added abstractMesh method to get all particle systems that use the mesh as an emitter ([PirateJC](https://github.com/PirateJC))
 - Added customization options to VirtualJoystick ([#7398](https://github.com/BabylonJS/Babylon.js/issues/7398)) ([Rockwell15](https://github.com/Rockwell15))
+- Handle meshes with LODs in render target textures (meaning in glow/highlight layers, shadow generators, depth renderer, etc) ([Popov72](https://github.com/Popov72))
 
 ### NME
 
@@ -149,7 +151,6 @@
 - Renamed KHR_mesh_instancing extension to EXT_mesh_gpu_instancing ([#7945](https://github.com/BabylonJS/Babylon.js/issues/7945)) ([drigax](https://github.com/Drigax))
 - Added support for KHR_materials_ior for glTF loader. ([Sebavan](https://github.com/sebavan/))
 - Added support for KHR_materials_specular for glTF loader. ([Sebavan](https://github.com/sebavan/))
-- Added support for KHR_xmp for glTF loader. ([Sebavan](https://github.com/sebavan/))
 - Added support for KHR_materials_variants for glTF loader. ([MiiBond](https://github.com/MiiBond/))
 - Added support for KHR_materials_transmission for glTF loader. ([MiiBond](https://github.com/MiiBond/))
 - Improved progress handling in glTF loader. ([bghgary](https://github.com/bghgary))
@@ -160,6 +161,7 @@
 - Added the `loadAllMaterials` property to the gLTF loader to load materials even if not used by any mesh ([Popov72](https://github.com/Popov72))
 - Added transmission prerender pass when using KHR_materials_transmission ([MiiBond](https://github.com/MiiBond/))
 - Fixed a bug when loading glTF with interleaved animation data. ([bghgary](https://github.com/bghgary))
+- Added support for KHR_materials_translucency for glTF loader. ([MiiBond](https://github.com/MiiBond/))
 
 ### Serializers
 
@@ -167,6 +169,7 @@
 - Added support for glTF Skins to glTF serializer ([Drigax](https://github.com/Drigax))
 - Added support for glTF Morph Target serialization ([Drigax](https://github.com/Drigax))
 - Fixed several bugs in stlSerializer ([aWeirdo](https://github.com/aWeirdo))
+- Added param `doNotBakeTransform` to `stlSerializer.CreateSTL` ([aWeirdo](https://github.com/aWeirdo))
 
 ### Navigation
 
@@ -190,6 +193,7 @@
 - Added `muted` setting to `VideoTexture`, fix autoplay in Chrome ([simonihmig](https://github.com/simonihmig))
 - Added `waveCount` to `WaterMaterial` used to adjust waves count according to the ground's size where the material is applied on ([julien-moreau](https://github.com/julien-moreau))
 - Alpha test `transparencyMode` no-longer requires a diffuse/albedo texture if `opacityTexture` is present ([metaobjects](https://github.com/metaobjects))
+- Added `hasTexture` override in `MultiMaterial` ([Vampiro](https://github.com/vampiro))
 
 ### Meshes
 
@@ -229,10 +233,13 @@
 - Individual post processing can be applied to the XR rig cameras ([#9038](https://github.com/BabylonJS/Babylon.js/issues/9038)) ([RaananW](https://github.com/RaananW))
 - Pointer selection improvements - single/dual hand selection, max ray distance and more ([#7974](https://github.com/BabylonJS/Babylon.js/issues/7974)) ([RaananW](https://github.com/RaananW))
 - Updated Plane Detection API ([RaananW](https://github.com/RaananW))
+- Updated anchor system's promise resolution and API ([#9258](https://github.com/BabylonJS/Babylon.js/issues/9258)) ([RaananW](https://github.com/RaananW))
+- Fixed an issue with teleportation re-attachment ([#9273](https://github.com/BabylonJS/Babylon.js/issues/9273)) ([RaananW](https://github.com/RaananW))
 
 ### Collisions
 
 - Added an option to optimize collision detection performance ([jsdream](https://github.com/jsdream)) - [PR](https://github.com/BabylonJS/Babylon.js/pull/7810)
+- Added support for collisions with unindexed meshes ([#9267](https://github.com/BabylonJS/Babylon.js/issues/9267))([Popov72](https://github.com/Popov72))
 
 ### Animation
 
@@ -272,6 +279,7 @@
 
 - Added support for custom word splitting function for `TextBlock` ([Popov72](https://github.com/Popov72))
 - Added the `fixedRatio` property to the `Control` class ([Popov72](https://github.com/Popov72))
+- Clip multilines by camera near plane when point is attached to a mesh ([cedricguillemet](https://github.com/cedricguillemet))
 
 ### Post Processes
 
@@ -347,6 +355,7 @@
 - Fixed bug in sphereBuilder where top and bottom segments added 6 indices per triangle instead of 3. (use option dedupTopBottomIndices to enable it) ([aWeirdo](https://github.com/aWeirdo))
 - Fixed issue with Babylon scene export of loaded glTF meshes.([Drigax]/(https://github.com/drigax))
 - Fixed an issue with text block wrap and unicode strings (not working in IE11) ([#8822](https://github.com/BabylonJS/Babylon.js/issues/8822)) ([RaananW](https://github.com/RaananW))
+- Fixed an issue with input text and input password and unicode strings (not working in IE11) ([#9242](https://github.com/BabylonJS/Babylon.js/issues/9242)) ([Popov72](https://github.com/Popov72))
 - Fixed an issue with compound initialization that has rotation ([#8744](https://github.com/BabylonJS/Babylon.js/issues/8744)) ([RaananW](https://github.com/RaananW))
 - Fixed an issue in `DeviceSourceManager.getDeviceSources()` where null devices are returned ([Drigax](https://github.com/drigax))
 - Fix issue in glTF2 `_Exporter.createSkinsAsync()` that exported an incorrect joint indexing list ([drigax](https://github.com/drigax))
@@ -362,6 +371,9 @@
 - Take first gamepad connected when attaching camera (and not only XBOX gamepads) ([#9136](https://github.com/BabylonJS/Babylon.js/issues/9136)) ([RaananW](https://github.com/RaananW))
 - Fixed bug in `Mesh.IncreaseVertices` assuming null value if a property didn't exist. ([aWeirdo](https://github.com/aWeirdo))
 - Fix issue when taking a screenshot with multi-cameras using method `CreateScreenshotUsingRenderTarget` ([#9201](https://github.com/BabylonJS/Babylon.js/issues/9201)) ([gabrielheming](https://github.com/gabrielheming))
+- Fix inTangent in animationGroup ([dad72](https://github.com/dad72))
+- Fixed bug in `QuadraticErrorSimplification` not correctly optimizing mesh. ([aWeirdo](https://github.com/aWeirdo))
+- Fixed bug in `ArcRotateCamera` where setting the position would recalculate the alpha value to a value outside the current limits. ([nilss0n](https://github.com/nilss0n))
 
 ## Breaking changes
 
@@ -375,3 +387,5 @@
 - Fix width/height GUI container computation to take into account paddings when `adaptWithToChildren = true` ([Popov72](https://github.com/Popov72))
 - `smoothstep` in NME is now taking any type of parameters for its `value` input. If you use generated code from the NME ("Generate code" button), you may have to move the smoothstep output connection AFTER the input connections ([Popov72](https://github.com/Popov72))
 - `SoundTrack.RemoveSound` and `SoundTrack.AddSound` were renamed to `SoundTrack.removeSound` and `SoundTrack.addSound` ([Deltakosh](https://github.com/deltakosh))
+- `PolygonPoints.add` no longer filters out points that are close to the first point ([bghgary](https://github.com/bghgary))
+- `Material` created with matching names now have auto-incrementing IDs ([Drigax](https://github.com/drigax))

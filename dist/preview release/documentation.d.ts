@@ -2385,10 +2385,13 @@ declare module BABYLON {
          */
         copyFromPoints(point1: DeepImmutable<Vector3>, point2: DeepImmutable<Vector3>, point3: DeepImmutable<Vector3>): Plane;
         /**
-         * Checks if the plane is facing a given direction
+         * Checks if the plane is facing a given direction (meaning if the plane's normal is pointing in the opposite direction of the given vector).
+         * Note that for this function to work as expected you should make sure that:
+         *   - direction and the plane normal are normalized
+         *   - epsilon is a number just bigger than -1, something like -0.99 for eg
          * @param direction the direction to check if the plane is facing
          * @param epsilon value the dot product is compared against (returns true if dot <= epsilon)
-         * @returns True is the vector "direction"  is the same side than the plane normal.
+         * @returns True if the plane is facing the given direction
          */
         isFrontFacingTo(direction: DeepImmutable<Vector3>, epsilon: number): boolean;
         /**
@@ -6647,6 +6650,7 @@ declare module BABYLON {
         private _updatable;
         private _instanced;
         private _divisor;
+        private _isAlreadyOwned;
         /**
          * Gets the byte stride.
          */
@@ -6717,6 +6721,8 @@ declare module BABYLON {
          * @param useBytes set to true if the offset is in bytes
          */
         updateDirectly(data: DataArray, offset: number, vertexCount?: number, useBytes?: boolean): void;
+        /** @hidden */
+        _increaseReferences(): void;
         /**
          * Release all resources
          */
@@ -6797,8 +6803,9 @@ declare module BABYLON {
          * @param normalized whether the data contains normalized data (optional)
          * @param useBytes set to true if stride and offset are in bytes (optional)
          * @param divisor defines the instance divisor to use (1 by default)
+         * @param takeBufferOwnership defines if the buffer should be released when the vertex buffer is disposed
          */
-        constructor(engine: any, data: DataArray | Buffer, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number, instanced?: boolean, offset?: number, size?: number, type?: number, normalized?: boolean, useBytes?: boolean, divisor?: number);
+        constructor(engine: any, data: DataArray | Buffer, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number, instanced?: boolean, offset?: number, size?: number, type?: number, normalized?: boolean, useBytes?: boolean, divisor?: number, takeBufferOwnership?: boolean);
         /** @hidden */
         _rebuild(): void;
         /**
@@ -11798,6 +11805,10 @@ declare module BABYLON {
         groupInInspector: string;
         /** Gets an observable raised when the value is changed */
         onValueChangedObservable: Observable<InputBlock>;
+        /** Gets or sets a boolean indicating if content needs to be converted to gamma space (for color3/4 only) */
+        convertToGammaSpace: boolean;
+        /** Gets or sets a boolean indicating if content needs to be converted to linear space (for color3/4 only) */
+        convertToLinearSpace: boolean;
         /**
          * Gets or sets the connection point type (default is float)
          */
@@ -19931,6 +19942,7 @@ declare module BABYLON {
         SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
         SS_ALBEDOFORREFRACTIONTINT: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
+        SS_MASK_FROM_THICKNESS_TEXTURE_GLTF: boolean;
         /** @hidden */
         _areTexturesDirty: boolean;
     }
@@ -20054,6 +20066,14 @@ declare module BABYLON {
          */
         useMaskFromThicknessTexture: boolean;
         private _scene;
+        private _useMaskFromThicknessTextureGltf;
+        /**
+         * Stores the intensity of the different subsurface effects in the thickness texture. This variation
+         * matches the channel-packing that is used by glTF.
+         * * the red channel is the transmission/translucency intensity.
+         * * the green channel is the thickness.
+         */
+        useMaskFromThicknessTextureGltf: boolean;
         /** @hidden */
         private _internalMarkAllSubMeshesAsTexturesDirty;
         private _internalMarkScenePrePassDirty;
@@ -20932,6 +20952,7 @@ declare module BABYLON {
         SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
         SS_ALBEDOFORREFRACTIONTINT: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
+        SS_MASK_FROM_THICKNESS_TEXTURE_GLTF: boolean;
         UNLIT: boolean;
         DEBUGMODE: number;
         /**
@@ -23135,27 +23156,6 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    /** @hidden */
-    export var imageProcessingCompatibility: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /** @hidden */
-    export var spritesPixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /** @hidden */
-    export var spritesVertexShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
     /**
      * ThinSprite Class used to represent a thin sprite
      * This is the base class for sprites but can also directly be used with ThinEngine
@@ -23203,10 +23203,10 @@ declare module BABYLON {
         /** @hidden */
         _ySize: number;
         private _animationStarted;
-        private _loopAnimation;
-        private _fromIndex;
-        private _toIndex;
-        private _delay;
+        protected _loopAnimation: boolean;
+        protected _fromIndex: number;
+        protected _toIndex: number;
+        protected _delay: number;
         private _direction;
         private _time;
         private _onBaseAnimationEnd;
@@ -23228,6 +23228,27 @@ declare module BABYLON {
         /** @hidden */
         _animate(deltaTime: number): void;
     }
+}
+declare module BABYLON {
+    /** @hidden */
+    export var imageProcessingCompatibility: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var spritesPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var spritesVertexShader: {
+        name: string;
+        shader: string;
+    };
 }
 declare module BABYLON {
     /**
@@ -23591,12 +23612,16 @@ declare module BABYLON {
          */
         getClassName(): string;
         /** Gets or sets the initial key for the animation (setting it will restart the animation)  */
+        get fromIndex(): number;
         set fromIndex(value: number);
         /** Gets or sets the end key for the animation (setting it will restart the animation)  */
+        get toIndex(): number;
         set toIndex(value: number);
         /** Gets or sets a boolean indicating if the animation is looping (setting it will restart the animation)  */
+        get loopAnimation(): boolean;
         set loopAnimation(value: boolean);
         /** Gets or sets the delay between cell changes (setting it will restart the animation)  */
+        get delay(): number;
         set delay(value: number);
         /**
          * Starts an animation
@@ -24350,9 +24375,21 @@ declare module BABYLON {
          */
         attachControl(noPreventDefault?: boolean): void;
         /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         * BACK COMPAT SIGNATURE ONLY.
+         */
+        attachControl(ignored: any, noPreventDefault?: boolean): void;
+        /**
          * Detach the current controls from the specified dom element.
          */
         detachControl(): void;
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+         */
+        detachControl(ignored: any): void;
         private _collisionMask;
         /**
          * Define a collision mask to limit the list of object the camera can collide with
@@ -27215,8 +27252,9 @@ declare module BABYLON {
          * @param samplersList The sampler list
          * @param projectedLightTexture defines if projected texture must be used
          * @param uniformBuffersList defines an optional list of uniform buffers
+         * @param updateOnlyBuffersList True to only update the uniformBuffersList array
          */
-        static PrepareUniformsAndSamplersForLight(lightIndex: number, uniformsList: string[], samplersList: string[], projectedLightTexture?: any, uniformBuffersList?: Nullable<string[]>): void;
+        static PrepareUniformsAndSamplersForLight(lightIndex: number, uniformsList: string[], samplersList: string[], projectedLightTexture?: any, uniformBuffersList?: Nullable<string[]>, updateOnlyBuffersList?: boolean): void;
         /**
          * Prepares the uniforms and samplers list to be used in the effect
          * @param uniformsListOrOptions The uniform names to prepare or an EffectCreationOptions containing the liist and extra information
@@ -28754,6 +28792,8 @@ declare module BABYLON {
         id: string;
         /** Gets or sets the custom shader name to use */
         customShaderOptions: ICustomShaderOptions;
+        /** Gets or sets a custom function to allow/disallow rendering a sub mesh in the shadow map */
+        customAllowRendering: (subMesh: SubMesh) => boolean;
         /**
          * Observable triggered before the shadow is rendered. Can be used to update internal effect state
          */
@@ -29960,6 +30000,12 @@ declare module BABYLON {
          * @returns All the textures that will be used during the rendering
          */
         getActiveTextures(): BaseTexture[];
+        /**
+         * Specifies if any sub-materials of this multi-material use a given texture.
+         * @param texture Defines the texture to check against this multi-material's sub-materials.
+         * @returns A boolean specifying if any sub-material of this multi-material uses the texture.
+         */
+        hasTexture(texture: BaseTexture): boolean;
         /**
          * Gets the current class name of the material e.g. "MultiMaterial"
          * Mainly use in serialization.
@@ -35056,6 +35102,7 @@ declare module BABYLON {
         _onlyForInstancesIntermediate: boolean;
         _actAsRegularMesh: boolean;
         _currentLOD: Nullable<AbstractMesh>;
+        _currentLODIsUpToDate: boolean;
     }
     /**
      * Class used to store all common mesh properties
@@ -37229,9 +37276,21 @@ declare module BABYLON {
          */
         attachControl(noPreventDefault?: boolean): void;
         /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         * BACK COMPAT SIGNATURE ONLY.
+         */
+        attachControl(ignored: any, noPreventDefault?: boolean): void;
+        /**
          * Detach the current controls from the specified dom element.
          */
         detachControl(): void;
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+         */
+        detachControl(ignored: any): void;
         /**
          * Update the camera state according to the different inputs gathered during the frame.
          */
@@ -38738,13 +38797,13 @@ declare module BABYLON {
             /**
              * Update the content of a dynamic texture
              * @param texture defines the texture to update
-             * @param canvas defines the canvas containing the source
+             * @param source defines the source containing the data
              * @param invertY defines if data must be stored with Y axis inverted
              * @param premulAlpha defines if alpha is stored as premultiplied
              * @param format defines the format of the data
              * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
              */
-            updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement | OffscreenCanvas, invertY: boolean, premulAlpha?: boolean, format?: number, forceBindTexture?: boolean): void;
+            updateDynamicTexture(texture: Nullable<InternalTexture>, source: ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | OffscreenCanvas, invertY?: boolean, premulAlpha?: boolean, format?: number, forceBindTexture?: boolean): void;
         }
 }
 declare module BABYLON {
@@ -40124,6 +40183,8 @@ declare module BABYLON {
          * Gets the URL used to load this texture
          */
         url: string;
+        /** @hidden */
+        _originalUrl: string;
         /**
          * Gets the sampling mode of the texture
          */
@@ -43137,9 +43198,17 @@ declare module BABYLON {
         */
         onNewMaterialAddedObservable: Observable<Material>;
         /**
+        * An event triggered when a multi material is created
+        */
+        onNewMultiMaterialAddedObservable: Observable<MultiMaterial>;
+        /**
         * An event triggered when a material is removed
         */
         onMaterialRemovedObservable: Observable<Material>;
+        /**
+        * An event triggered when a multi material is removed
+        */
+        onMultiMaterialRemovedObservable: Observable<MultiMaterial>;
         /**
         * An event triggered when a texture is created
         */
@@ -44433,7 +44502,8 @@ declare module BABYLON {
          * Lambda returning the list of potentially colliding sub meshes.
          */
         getCollidingSubMeshCandidates: (mesh: AbstractMesh, collider: Collider) => ISmartArrayLike<SubMesh>;
-        private _activeMeshesFrozen;
+        /** @hidden */
+        _activeMeshesFrozen: boolean;
         private _skipEvaluateActiveMeshesCompletely;
         /**
          * Use this function to stop evaluating active meshes. The current list will be keep alive between frames
@@ -46767,6 +46837,11 @@ declare module BABYLON {
          * Detach the current controls from the specified dom element.
          */
         detachControl(): void;
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+         */
+        detachControl(ignored: any): void;
         /** @hidden */
         _checkInputs(): void;
         protected _checkLimits(): void;
@@ -47304,6 +47379,10 @@ declare module BABYLON {
          * Fires each time a drag starts
          */
         onDragStartObservable: Observable<{}>;
+        /**
+         * Fires each time a drag happens
+         */
+        onDragObservable: Observable<void>;
         /**
          *  Fires each time a drag ends (eg. mouse release after drag)
          */
@@ -51145,6 +51224,43 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Type used for the success callback of ImportMesh
+     */
+    export type SceneLoaderSuccessCallback = (meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[], transformNodes: TransformNode[], geometries: Geometry[], lights: Light[]) => void;
+    /**
+     * Interface used for the result of ImportMeshAsync
+     */
+    export interface ISceneLoaderAsyncResult {
+        /**
+         * The array of loaded meshes
+         */
+        readonly meshes: AbstractMesh[];
+        /**
+         * The array of loaded particle systems
+         */
+        readonly particleSystems: IParticleSystem[];
+        /**
+         * The array of loaded skeletons
+         */
+        readonly skeletons: Skeleton[];
+        /**
+         * The array of loaded animation groups
+         */
+        readonly animationGroups: AnimationGroup[];
+        /**
+         * The array of loaded transform nodes
+         */
+        readonly transformNodes: TransformNode[];
+        /**
+         * The array of loaded geometries
+         */
+        readonly geometries: Geometry[];
+        /**
+         * The array of loaded lights
+         */
+        readonly lights: Light[];
+    }
+    /**
      * Interface used to represent data loading progression
      */
     export interface ISceneLoaderProgressEvent {
@@ -51295,14 +51411,9 @@ declare module BABYLON {
          * @param rootUrl The root url for scene and resources
          * @param onProgress The callback when the load progresses
          * @param fileName Defines the name of the file to load
-         * @returns The loaded meshes, particle systems, skeletons, and animation groups
+         * @returns The loaded objects (e.g. meshes, particle systems, skeletons, animation groups, etc.)
          */
-        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<{
-            meshes: AbstractMesh[];
-            particleSystems: IParticleSystem[];
-            skeletons: Skeleton[];
-            animationGroups: AnimationGroup[];
-        }>;
+        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<ISceneLoaderAsyncResult>;
         /**
          * Load into a scene.
          * @param scene The scene to load into
@@ -51446,7 +51557,7 @@ declare module BABYLON {
          * @param pluginExtension the extension used to determine the plugin
          * @returns The loaded plugin
          */
-        static ImportMesh(meshNames: any, rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onSuccess?: Nullable<(meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[]) => void>, onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        static ImportMesh(meshNames: any, rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onSuccess?: Nullable<SceneLoaderSuccessCallback>, onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
         /**
          * Import meshes into a scene
          * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
@@ -51457,12 +51568,7 @@ declare module BABYLON {
          * @param pluginExtension the extension used to determine the plugin
          * @returns The loaded list of imported meshes, particle systems, skeletons, and animation groups
          */
-        static ImportMeshAsync(meshNames: any, rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<{
-            meshes: AbstractMesh[];
-            particleSystems: IParticleSystem[];
-            skeletons: Skeleton[];
-            animationGroups: AnimationGroup[];
-        }>;
+        static ImportMeshAsync(meshNames: any, rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<ISceneLoaderAsyncResult>;
         /**
          * Load a scene
          * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
@@ -53050,6 +53156,14 @@ declare module BABYLON {
          * Meshes that the teleportation ray cannot go through
          */
         pickBlockerMeshes?: AbstractMesh[];
+        /**
+         * Should teleport work only on a specific hand?
+         */
+        forceHandedness?: XRHandedness;
+        /**
+         * If provided, this function will be used to generate the ray mesh instead of the lines mesh being used per default
+         */
+        generateRayPathMesh?: (points: Vector3[]) => AbstractMesh;
     }
     /**
      * This is a teleportation feature to be used with WebXR-enabled motion controllers.
@@ -53100,14 +53214,29 @@ declare module BABYLON {
          */
         parabolicRayEnabled: boolean;
         /**
+         * The second type of ray - straight line.
+         * Should it be enabled or should the parabolic line be the only one.
+         */
+        straightRayEnabled: boolean;
+        /**
          * How much rotation should be applied when rotating right and left
          */
         rotationAngle: number;
+        private _rotationEnabled;
         /**
          * Is rotation enabled when moving forward?
          * Disabling this feature will prevent the user from deciding the direction when teleporting
          */
-        rotationEnabled: boolean;
+        get rotationEnabled(): boolean;
+        /**
+         * Sets wether rotation is enabled or not
+         * @param enabled is rotation enabled when teleportation is shown
+         */
+        set rotationEnabled(enabled: boolean);
+        /**
+         * Exposes the currently set teleportation target mesh.
+         */
+        get teleportationTargetMesh(): Nullable<AbstractMesh>;
         /**
          * constructs a new anchor system
          * @param _xrSessionManager an instance of WebXRSessionManager
@@ -54374,6 +54503,9 @@ declare module BABYLON {
         private _hoverMaterial;
         private _disableMaterial;
         private _dragging;
+        private _tmpVector;
+        private _tmpMatrix;
+        private _tmpMatrix2;
         /**
          * Creates an AxisScaleGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -54517,8 +54649,14 @@ declare module BABYLON {
         scaleBoxSize: number;
         /**
          * If set, the rotation spheres and scale boxes will increase in size based on the distance away from the camera to have a consistent screen size (Default: false)
+         * Note : fixedDragMeshScreenSize takes precedence over fixedDragMeshBoundsSize if both are true
          */
         fixedDragMeshScreenSize: boolean;
+        /**
+         * If set, the rotation spheres and scale boxes will increase in size based on the size of the bounding box
+         * Note : fixedDragMeshScreenSize takes precedence over fixedDragMeshBoundsSize if both are true
+         */
+        fixedDragMeshBoundsSize: boolean;
         /**
          * The distance away from the object which the draggable meshes should appear world sized when fixedDragMeshScreenSize is set to true (default: 10)
          */
@@ -54671,8 +54809,10 @@ declare module BABYLON {
          * Instatiates a gizmo manager
          * @param scene the scene to overlay the gizmos on top of
          * @param thickness display gizmo axis thickness
+         * @param utilityLayer the layer where gizmos are rendered
+         * @param keepDepthUtilityLayer the layer where occluded gizmos are rendered
          */
-        constructor(scene: Scene, thickness?: number);
+        constructor(scene: Scene, thickness?: number, utilityLayer?: UtilityLayerRenderer, keepDepthUtilityLayer?: UtilityLayerRenderer);
         /**
          * Subscribes to pointer down events, for attaching and detaching mesh
          * @param scene The sceme layer the observer will be added to
@@ -64057,7 +64197,7 @@ declare module BABYLON {
          * Gets the cutoff input component
          */
         get cutoff(): NodeMaterialConnectionPoint;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
+        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
     }
 }
 declare module BABYLON {
@@ -76048,6 +76188,10 @@ declare module BABYLON {
          * if defined, this object will be constantly updated by the anchor's position and rotation
          */
         attachedNode?: TransformNode;
+        /**
+         * Remove this anchor from the scene
+         */
+        remove(): void;
     }
     /**
      * An implementation of the anchor system for WebXR.
@@ -76104,9 +76248,9 @@ declare module BABYLON {
          * @param hitTestResult The hit test result to use for this anchor creation
          * @param position an optional position offset for this anchor
          * @param rotationQuaternion an optional rotation offset for this anchor
-         * @returns A promise that fulfills when the XR anchor was registered in the system (but not necessarily added to the tracked anchors)
+         * @returns A promise that fulfills when babylon has created the corresponding WebXRAnchor object and tracking has begun
          */
-        addAnchorPointUsingHitTestResultAsync(hitTestResult: IWebXRHitResult, position?: Vector3, rotationQuaternion?: Quaternion): Promise<XRAnchor>;
+        addAnchorPointUsingHitTestResultAsync(hitTestResult: IWebXRHitResult, position?: Vector3, rotationQuaternion?: Quaternion): Promise<IWebXRAnchor>;
         /**
          * Add a new anchor at a specific position and rotation
          * This function will add a new anchor per default in the next available frame. Unless forced, the createAnchor function
@@ -76117,9 +76261,13 @@ declare module BABYLON {
          * @param position the position in which to add an anchor
          * @param rotationQuaternion an optional rotation for the anchor transformation
          * @param forceCreateInCurrentFrame force the creation of this anchor in the current frame. Must be called inside xrFrame loop!
-         * @returns A promise that fulfills when the XR anchor was registered in the system (but not necessarily added to the tracked anchors)
+         * @returns A promise that fulfills when babylon has created the corresponding WebXRAnchor object and tracking has begun
          */
-        addAnchorAtPositionAndRotationAsync(position: Vector3, rotationQuaternion?: Quaternion, forceCreateInCurrentFrame?: boolean): Promise<XRAnchor>;
+        addAnchorAtPositionAndRotationAsync(position: Vector3, rotationQuaternion?: Quaternion, forceCreateInCurrentFrame?: boolean): Promise<IWebXRAnchor>;
+        /**
+         * Get the list of anchors currently being tracked by the system
+         */
+        get anchors(): IWebXRAnchor[];
         /**
          * detach this feature.
          * Will usually be called by the features manager
@@ -78285,6 +78433,10 @@ declare module BABYLON.GUI {
         */
         premulAlpha: boolean;
         /**
+         * Gets or sets a boolean indicating that the canvas must be reverted on Y when updating the texture
+         */
+        applyYInversionOnUpdate: boolean;
+        /**
         * Gets or sets a number used to scale rendering size (2 means that the texture will be twice bigger).
         * Useful when you want more antialiasing
         */
@@ -78433,6 +78585,13 @@ declare module BABYLON.GUI {
         * @returns the projected position
         */
         getProjectedPosition(position: BABYLON.Vector3, worldMatrix: BABYLON.Matrix): BABYLON.Vector2;
+        /**
+        * Get screen coordinates for a vector3
+        * @param position defines the position to project
+        * @param worldMatrix defines the world matrix to use
+        * @returns the projected position with Z
+        */
+        getProjectedPositionWithZ(position: BABYLON.Vector3, worldMatrix: BABYLON.Matrix): BABYLON.Vector3;
         private _checkUpdate;
         private _clearMeasure;
         private _render;
@@ -78488,6 +78647,16 @@ declare module BABYLON.GUI {
          * @returns a new AdvancedDynamicTexture
          */
         static CreateForMesh(mesh: BABYLON.AbstractMesh, width?: number, height?: number, supportPointerMove?: boolean, onlyAlphaTesting?: boolean, invertY?: boolean): AdvancedDynamicTexture;
+        /**
+         * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh) BUT do not create a new material for the mesh. You will be responsible for connecting the texture
+         * @param mesh defines the mesh which will receive the texture
+         * @param width defines the texture width (1024 by default)
+         * @param height defines the texture height (1024 by default)
+         * @param supportPointerMove defines a boolean indicating if the texture must capture move events (true by default)
+         * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
+         * @returns a new AdvancedDynamicTexture
+         */
+        static CreateForMeshTexture(mesh: BABYLON.AbstractMesh, width?: number, height?: number, supportPointerMove?: boolean, invertY?: boolean): AdvancedDynamicTexture;
         /**
         * Creates a new AdvancedDynamicTexture in fullscreen mode.
         * In this mode the texture will rely on a layer for its rendering.
@@ -79879,12 +80048,27 @@ declare module BABYLON.GUI {
     }
 }
 declare module BABYLON.GUI {
+    /** @hidden */
+    export class TextWrapper {
+        private _text;
+        private _characters;
+        get text(): string;
+        set text(txt: string);
+        get length(): number;
+        removePart(idxStart: number, idxEnd: number, insertTxt?: string): void;
+        charAt(idx: number): string;
+        substr(from: number, length?: number): string;
+        substring(from: number, to?: number): string;
+        isWord(index: number): boolean;
+    }
+}
+declare module BABYLON.GUI {
     /**
      * Class used to create input text control
      */
     export class InputText extends Control implements IFocusableControl {
         name?: string | undefined;
-        private _text;
+        private _textWrapper;
         private _placeholderText;
         private _background;
         private _focusedBackground;
@@ -79994,6 +80178,7 @@ declare module BABYLON.GUI {
         /** Gets or sets the text displayed in the control */
         get text(): string;
         set text(value: string);
+        private _textHasChanged;
         /** Gets or sets control width */
         get width(): string | number;
         set width(value: string | number);
@@ -80036,7 +80221,7 @@ declare module BABYLON.GUI {
         _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
         _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number, pi: BABYLON.PointerInfoBase): void;
         _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
-        protected _beforeRenderText(text: string): string;
+        protected _beforeRenderText(textWrapper: TextWrapper): TextWrapper;
         dispose(): void;
     }
 }
@@ -80269,7 +80454,7 @@ declare module BABYLON.GUI {
      * Class used to create a password control
      */
     export class InputPassword extends InputText {
-        protected _beforeRenderText(text: string): string;
+        protected _beforeRenderText(textWrapper: TextWrapper): TextWrapper;
     }
 }
 declare module BABYLON.GUI {
@@ -80349,7 +80534,7 @@ declare module BABYLON.GUI {
         private _controlObserver;
         private _meshObserver;
         /** @hidden */
-        _point: BABYLON.Vector2;
+        _point: BABYLON.Vector3;
         /**
          * Creates a new MultiLinePoint
          * @param multiLine defines the source MultiLine object
@@ -80370,10 +80555,10 @@ declare module BABYLON.GUI {
         /** Resets links */
         resetLinks(): void;
         /**
-         * Gets a translation vector
+         * Gets a translation vector with Z component
          * @returns the translation vector
          */
-        translate(): BABYLON.Vector2;
+        translate(): BABYLON.Vector3;
         private _translatePoint;
         /** Release associated resources */
         dispose(): void;
@@ -82107,19 +82292,9 @@ declare module BABYLON {
         COMPLETE = 2
     }
     /** @hidden */
-    export interface IImportMeshAsyncOutput {
-        meshes: AbstractMesh[];
-        geometries: Geometry[];
-        particleSystems: IParticleSystem[];
-        skeletons: Skeleton[];
-        animationGroups: AnimationGroup[];
-        lights: Light[];
-        transformNodes: TransformNode[];
-    }
-    /** @hidden */
     export interface IGLTFLoader extends IDisposable {
         readonly state: Nullable<GLTFLoaderState>;
-        importMeshAsync: (meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string) => Promise<IImportMeshAsyncOutput>;
+        importMeshAsync: (meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string) => Promise<ISceneLoaderAsyncResult>;
         loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string) => Promise<void>;
     }
     /**
@@ -82321,12 +82496,7 @@ declare module BABYLON {
         /** @hidden */
         readFile(scene: Scene, file: File, onSuccess: (data: any) => void, onProgress?: (ev: ISceneLoaderProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: any) => void): IFileRequest;
         /** @hidden */
-        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<{
-            meshes: AbstractMesh[];
-            particleSystems: IParticleSystem[];
-            skeletons: Skeleton[];
-            animationGroups: AnimationGroup[];
-        }>;
+        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<ISceneLoaderAsyncResult>;
         /** @hidden */
         loadAsync(scene: Scene, data: any, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<void>;
         /** @hidden */
@@ -82889,7 +83059,7 @@ declare module BABYLON.GLTF1 {
         * @param onProgress event that fires when loading progress has occured
         * @returns a promise containg the loaded meshes, particles, skeletons and animations
         */
-        importMeshAsync(meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void): Promise<IImportMeshAsyncOutput>;
+        importMeshAsync(meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void): Promise<ISceneLoaderAsyncResult>;
         private _loadAsync;
         /**
         * Imports all objects from a loaded gltf file and adds them to the scene
@@ -83408,7 +83578,7 @@ declare module BABYLON.GLTF2 {
         /** @hidden */
         dispose(): void;
         /** @hidden */
-        importMeshAsync(meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<IImportMeshAsyncOutput>;
+        importMeshAsync(meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<ISceneLoaderAsyncResult>;
         /** @hidden */
         loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<void>;
         private _loadAsync;
@@ -84054,6 +84224,34 @@ declare module BABYLON.GLTF2.Loader.Extensions {
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
     /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1825)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_materials_translucency implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /**
+         * Defines a number that determines the order the extensions are applied.
+         */
+        order: number;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
+        private _loadTranslucentPropertiesAsync;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
      * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_mesh_quantization)
      */
     export class KHR_mesh_quantization implements IGLTFLoaderExtension {
@@ -84110,35 +84308,6 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         dispose(): void;
         /** @hidden */
         loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>>;
-    }
-}
-declare module BABYLON.GLTF2.Loader.Extensions {
-    /**
-     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1553)
-     * !!! Experimental Extension Subject to Changes !!!
-     */
-    export class KHR_xmp implements IGLTFLoaderExtension {
-        /**
-         * The name of this extension.
-         */
-        readonly name: string;
-        /**
-         * Defines whether this extension is enabled.
-         */
-        enabled: boolean;
-        /**
-         * Defines a number that determines the order the extensions are applied.
-         */
-        order: number;
-        private _loader;
-        /** @hidden */
-        constructor(loader: GLTFLoader);
-        /** @hidden */
-        dispose(): void;
-        /**
-         * Called after the loader state changes to LOADING.
-         */
-        onLoading(): void;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
@@ -84485,12 +84654,7 @@ declare module BABYLON {
          * @param fileName Defines the name of the file to load
          * @returns a promise containg the loaded meshes, particles, skeletons and animations
          */
-        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<{
-            meshes: AbstractMesh[];
-            particleSystems: IParticleSystem[];
-            skeletons: Skeleton[];
-            animationGroups: AnimationGroup[];
-        }>;
+        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<ISceneLoaderAsyncResult>;
         /**
          * Imports all objects from the loaded OBJ data and adds them to the scene
          * @param scene the scene the objects should be added to
@@ -85838,9 +86002,10 @@ declare module BABYLON {
         * @param fileName changes the downloads fileName.
         * @param binary changes the STL to a binary type.
         * @param isLittleEndian toggle for binary type exporter.
+        * @param doNotBakeTransform toggle if meshes transforms should be baked or not.
         * @returns the STL as UTF8 string
         */
-        static CreateSTL(meshes: Mesh[], download?: boolean, fileName?: string, binary?: boolean, isLittleEndian?: boolean): any;
+        static CreateSTL(meshes: Mesh[], download?: boolean, fileName?: string, binary?: boolean, isLittleEndian?: boolean, doNotBakeTransform?: boolean): any;
     }
 }
 declare module "babylonjs-gltf2interface" {
@@ -86899,6 +87064,17 @@ declare module BABYLON.GLTF2 {
     interface IKHRMaterialsTransmission {
         transmissionFactor?: number;
         transmissionTexture?: ITextureInfo;
+    }
+
+    /**
+     * Interfaces from the KHR_materials_translucency extension
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+
+    /** @hidden */
+    interface IKHRMaterialsTranslucency {
+        translucencyFactor?: number;
+        translucencyTexture?: ITextureInfo;
     }
 
     /**

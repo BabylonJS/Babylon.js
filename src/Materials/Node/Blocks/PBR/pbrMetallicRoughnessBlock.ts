@@ -11,7 +11,7 @@ import { Light } from '../../../../Lights/light';
 import { Nullable } from '../../../../types';
 import { _TypeStore } from '../../../../Misc/typeStore';
 import { AbstractMesh } from '../../../../Meshes/abstractMesh';
-import { Effect, IEffectCreationOptions } from '../../../effect';
+import { Effect } from '../../../effect';
 import { Mesh } from '../../../../Meshes/mesh';
 import { PBRBaseMaterial } from '../../../PBR/pbrBaseMaterial';
 import { Scene } from '../../../../scene';
@@ -31,15 +31,15 @@ import { Constants } from '../../../../Engines/constants';
 import { Color3, TmpColors } from '../../../../Maths/math.color';
 
 const mapOutputToVariable: { [name: string] : [string, string] } = {
-    "ambient":      ["finalAmbient", ""],
-    "diffuse":      ["finalDiffuse", ""],
-    "specular":     ["finalSpecularScaled",                         "!defined(UNLIT) && defined(SPECULARTERM)"],
-    "sheenDir":     ["finalSheenScaled",                            "!defined(UNLIT) && defined(SHEEN)"],
+    "ambientClr":   ["finalAmbient", ""],
+    "diffuseDir":   ["finalDiffuse", ""],
+    "specularDir":  ["finalSpecularScaled",                         "!defined(UNLIT) && defined(SPECULARTERM)"],
     "clearcoatDir": ["finalClearCoatScaled",                        "!defined(UNLIT) && defined(CLEARCOAT)"],
+    "sheenDir":     ["finalSheenScaled",                            "!defined(UNLIT) && defined(SHEEN)"],
     "diffuseInd":   ["finalIrradiance",                             "!defined(UNLIT) && defined(REFLECTION)"],
     "specularInd":  ["finalRadianceScaled",                         "!defined(UNLIT) && defined(REFLECTION)"],
-    "sheenInd":     ["sheenOut.finalSheenRadianceScaled",           "!defined(UNLIT) && defined(REFLECTION) && defined(SHEEN) && defined(ENVIRONMENTBRDF)"],
     "clearcoatInd": ["clearcoatOut.finalClearCoatRadianceScaled",   "!defined(UNLIT) && defined(REFLECTION) && defined(CLEARCOAT)"],
+    "sheenInd":     ["sheenOut.finalSheenRadianceScaled",           "!defined(UNLIT) && defined(REFLECTION) && defined(SHEEN) && defined(ENVIRONMENTBRDF)"],
     "refraction":   ["subSurfaceOut.finalRefraction",               "!defined(UNLIT) && defined(SS_REFRACTION)"],
     "lighting":     ["finalColor.rgb", ""],
     "shadow":       ["shadow", ""],
@@ -647,10 +647,11 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         defines.setValue("SPECULAROVERALPHA", this.useSpecularOverAlpha, true);
         defines.setValue("SPECULARAA", this._scene.getEngine().getCaps().standardDerivatives && this.enableSpecularAntiAliasing, true);
         defines.setValue("REALTIME_FILTERING", this.realTimeFiltering, true);
-        defines.setValue("NUM_SAMPLES", "" + this.realTimeFilteringQuality, true);
 
         if (this._scene.getEngine().webGLVersion > 1) {
             defines.setValue("NUM_SAMPLES", this.realTimeFilteringQuality + "u", true);
+        } else {
+            defines.setValue("NUM_SAMPLES", "" + this.realTimeFilteringQuality, true);
         }
 
         // Advanced
@@ -700,13 +701,13 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     }
 
     public updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, uniformBuffers: string[]) {
-        MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
-            uniformsNames: state.uniforms,
-            uniformBuffersNames: uniformBuffers,
-            samplers: state.samplers,
-            defines: defines,
-            maxSimultaneousLights: nodeMaterial.maxSimultaneousLights
-        });
+        for (var lightIndex = 0; lightIndex < nodeMaterial.maxSimultaneousLights; lightIndex++) {
+            if (!defines["LIGHT" + lightIndex]) {
+                break;
+            }
+            const onlyUpdateBuffersList = state.uniforms.indexOf("vLightData" + lightIndex) >= 0;
+            MaterialHelper.PrepareUniformsAndSamplersForLight(lightIndex, state.uniforms, state.samplers, defines["PROJECTEDLIGHTTEXTURE" + lightIndex], uniformBuffers, onlyUpdateBuffersList);
+        }
     }
 
     public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {

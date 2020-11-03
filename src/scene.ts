@@ -592,9 +592,19 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public onNewMaterialAddedObservable = new Observable<Material>();
 
     /**
+    * An event triggered when a multi material is created
+    */
+   public onNewMultiMaterialAddedObservable = new Observable<MultiMaterial>();
+
+    /**
     * An event triggered when a material is removed
     */
     public onMaterialRemovedObservable = new Observable<Material>();
+
+    /**
+    * An event triggered when a multi material is removed
+    */
+    public onMultiMaterialRemovedObservable = new Observable<MultiMaterial>();
 
     /**
     * An event triggered when a texture is created
@@ -2286,6 +2296,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         if (index !== -1) {
             this.multiMaterials.splice(index, 1);
         }
+
+        this.onMultiMaterialRemovedObservable.notifyObservers(toRemove);
+
         return index;
     }
 
@@ -2446,6 +2459,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             return;
         }
         this.multiMaterials.push(newMultiMaterial);
+        this.onNewMultiMaterialAddedObservable.notifyObservers(newMultiMaterial);
     }
 
     /**
@@ -3434,7 +3448,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public getCollidingSubMeshCandidates: (mesh: AbstractMesh, collider: Collider) => ISmartArrayLike<SubMesh>;
 
-    private _activeMeshesFrozen = false;
+    /** @hidden */
+    public _activeMeshesFrozen = false;
     private _skipEvaluateActiveMeshesCompletely = false;
 
     /**
@@ -3533,6 +3548,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         const len = meshes.length;
         for (let i = 0; i < len; i++) {
             const mesh = meshes.data[i];
+            mesh._internalAbstractMeshDataInfo._currentLODIsUpToDate = false;
             if (mesh.isBlocked) {
                 continue;
             }
@@ -3552,10 +3568,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
             // Switch to current LOD
             let meshToRender = this.customLODSelector ? this.customLODSelector(mesh, this.activeCamera) : mesh.getLOD(this.activeCamera);
+            mesh._internalAbstractMeshDataInfo._currentLOD = meshToRender;
+            mesh._internalAbstractMeshDataInfo._currentLODIsUpToDate = true;
             if (meshToRender === undefined || meshToRender === null) {
                 continue;
             }
-            mesh._internalAbstractMeshDataInfo._currentLOD = meshToRender;
 
             // Compute world matrix if LOD is billboard
             if (meshToRender !== mesh && meshToRender.billboardMode !== TransformNode.BILLBOARDMODE_NONE) {
@@ -4244,7 +4261,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.onNewSkeletonAddedObservable.clear();
         this.onSkeletonRemovedObservable.clear();
         this.onNewMaterialAddedObservable.clear();
+        this.onNewMultiMaterialAddedObservable.clear();
         this.onMaterialRemovedObservable.clear();
+        this.onMultiMaterialRemovedObservable.clear();
         this.onNewTextureAddedObservable.clear();
         this.onTextureRemovedObservable.clear();
         this.onPrePointerObservable.clear();

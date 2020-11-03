@@ -442,7 +442,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         this._ssaoCombinePostProcess.onApply = (effect: Effect) => {
             let viewport = this._scene.activeCamera!.viewport;
             effect.setVector4("viewport", TmpVectors.Vector4[0].copyFromFloats(viewport.x, viewport.y, viewport.width, viewport.height));
-            effect.setTextureFromPostProcess("originalColor", this._originalColorPostProcess);
+            effect.setTextureFromPostProcessOutput("originalColor", this._originalColorPostProcess);
         };
         this._ssaoCombinePostProcess.samples = this.textureSamples;
 

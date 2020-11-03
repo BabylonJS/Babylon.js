@@ -8,7 +8,7 @@ import { Nullable } from "../types";
  */
 export class ThinSprite {
     /** Gets or sets the cell index in the sprite sheet */
-    public cellIndex: number = 0;
+    public cellIndex: number;
     /** Gets or sets the cell reference in the sprite sheet, uses sprite's filename when added to sprite sheet */
     public cellRef: string;
     /** Gets or sets the current world position */
@@ -65,10 +65,10 @@ export class ThinSprite {
     public _ySize: number;
 
     private _animationStarted = false;
-    private _loopAnimation = false;
-    private _fromIndex = 0;
-    private _toIndex = 0;
-    private _delay = 0;
+    protected _loopAnimation = false;
+    protected _fromIndex = 0;
+    protected _toIndex = 0;
+    protected _delay = 0;
     private _direction = 1;
     private _time = 0;
     private _onBaseAnimationEnd: Nullable<() => void> = null;

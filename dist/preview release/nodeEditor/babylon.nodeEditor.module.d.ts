@@ -361,7 +361,7 @@ declare module "babylonjs-node-editor/diagram/graphFrame" {
         private _expandBottom;
         dispose(): void;
         private serializePortData;
-        serialize(): IFrameData;
+        serialize(saveCollapsedState: boolean): IFrameData;
         export(): void;
         static Parse(serializationData: IFrameData, canvas: GraphCanvasComponent, map?: {
             [key: number]: number;
@@ -450,6 +450,7 @@ declare module "babylonjs-node-editor/diagram/graphCanvas" {
     import { FrameNodePort } from "babylonjs-node-editor/diagram/frameNodePort";
     export interface IGraphCanvasComponentProps {
         globalState: GlobalState;
+        onEmitNewBlock: (block: NodeMaterialBlock) => GraphNode;
     }
     export type FramePortData = {
         frame: GraphFrame;
@@ -698,6 +699,79 @@ declare module "babylonjs-node-editor/components/propertyTab/properties/vector2P
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-node-editor/sharedComponents/colorPicker/colorComponentEntry" {
+    import * as React from "react";
+    export interface IColorComponentEntryProps {
+        value: number;
+        label: string;
+        max?: number;
+        min?: number;
+        onChange: (value: number) => void;
+    }
+    export class ColorComponentEntry extends React.Component<IColorComponentEntryProps> {
+        constructor(props: IColorComponentEntryProps);
+        updateValue(valueString: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/sharedComponents/colorPicker/hexColor" {
+    import * as React from "react";
+    export interface IHexColorProps {
+        value: string;
+        expectedLength: number;
+        onChange: (value: string) => void;
+    }
+    export class HexColor extends React.Component<IHexColorProps, {
+        hex: string;
+    }> {
+        constructor(props: IHexColorProps);
+        shouldComponentUpdate(nextProps: IHexColorProps, nextState: {
+            hex: string;
+        }): boolean;
+        updateHexValue(valueString: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/sharedComponents/colorPicker/colorPicker" {
+    import * as React from "react";
+    import { Color3, Color4 } from "babylonjs/Maths/math.color";
+    /**
+     * Interface used to specify creation options for color picker
+     */
+    export interface IColorPickerProps {
+        color: Color3 | Color4;
+        debugMode?: boolean;
+        onColorChanged?: (color: Color3 | Color4) => void;
+    }
+    /**
+     * Interface used to specify creation options for color picker
+     */
+    export interface IColorPickerState {
+        color: Color3;
+        alpha: number;
+    }
+    /**
+     * Class used to create a color picker
+     */
+    export class ColorPicker extends React.Component<IColorPickerProps, IColorPickerState> {
+        private _saturationRef;
+        private _hueRef;
+        private _isSaturationPointerDown;
+        private _isHuePointerDown;
+        constructor(props: IColorPickerProps);
+        onSaturationPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
+        onSaturationPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
+        onSaturationPointerMove(evt: React.PointerEvent<HTMLDivElement>): void;
+        onHuePointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
+        onHuePointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
+        onHuePointerMove(evt: React.PointerEvent<HTMLDivElement>): void;
+        private _evaluateSaturation;
+        private _evaluateHue;
+        componentDidUpdate(): void;
+        raiseOnColorChanged(): void;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-node-editor/sharedComponents/colorPickerComponent" {
     import * as React from "react";
     import { Color4, Color3 } from 'babylonjs/Maths/math.color';
@@ -706,16 +780,10 @@ declare module "babylonjs-node-editor/sharedComponents/colorPickerComponent" {
         value: Color4 | Color3;
         onColorChanged: (newOne: string) => void;
         globalState: GlobalState;
-        disableAlpha?: boolean;
     }
     interface IColorPickerComponentState {
         pickerEnabled: boolean;
-        color: {
-            r: number;
-            g: number;
-            b: number;
-            a?: number;
-        };
+        color: Color3 | Color4;
         hex: string;
     }
     export class ColorPickerLineComponent extends React.Component<IColorPickerComponentProps, IColorPickerComponentState> {
@@ -2198,7 +2266,7 @@ declare module NODEEDITOR {
         private _expandBottom;
         dispose(): void;
         private serializePortData;
-        serialize(): IFrameData;
+        serialize(saveCollapsedState: boolean): IFrameData;
         export(): void;
         static Parse(serializationData: IFrameData, canvas: GraphCanvasComponent, map?: {
             [key: number]: number;
@@ -2260,6 +2328,7 @@ declare module NODEEDITOR {
 declare module NODEEDITOR {
     export interface IGraphCanvasComponentProps {
         globalState: GlobalState;
+        onEmitNewBlock: (block: BABYLON.NodeMaterialBlock) => GraphNode;
     }
     export type FramePortData = {
         frame: GraphFrame;
@@ -2488,20 +2557,83 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export interface IColorComponentEntryProps {
+        value: number;
+        label: string;
+        max?: number;
+        min?: number;
+        onChange: (value: number) => void;
+    }
+    export class ColorComponentEntry extends React.Component<IColorComponentEntryProps> {
+        constructor(props: IColorComponentEntryProps);
+        updateValue(valueString: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export interface IHexColorProps {
+        value: string;
+        expectedLength: number;
+        onChange: (value: string) => void;
+    }
+    export class HexColor extends React.Component<IHexColorProps, {
+        hex: string;
+    }> {
+        constructor(props: IHexColorProps);
+        shouldComponentUpdate(nextProps: IHexColorProps, nextState: {
+            hex: string;
+        }): boolean;
+        updateHexValue(valueString: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    /**
+     * Interface used to specify creation options for color picker
+     */
+    export interface IColorPickerProps {
+        color: BABYLON.Color3 | BABYLON.Color4;
+        debugMode?: boolean;
+        onColorChanged?: (color: BABYLON.Color3 | BABYLON.Color4) => void;
+    }
+    /**
+     * Interface used to specify creation options for color picker
+     */
+    export interface IColorPickerState {
+        color: BABYLON.Color3;
+        alpha: number;
+    }
+    /**
+     * Class used to create a color picker
+     */
+    export class ColorPicker extends React.Component<IColorPickerProps, IColorPickerState> {
+        private _saturationRef;
+        private _hueRef;
+        private _isSaturationPointerDown;
+        private _isHuePointerDown;
+        constructor(props: IColorPickerProps);
+        onSaturationPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
+        onSaturationPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
+        onSaturationPointerMove(evt: React.PointerEvent<HTMLDivElement>): void;
+        onHuePointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
+        onHuePointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
+        onHuePointerMove(evt: React.PointerEvent<HTMLDivElement>): void;
+        private _evaluateSaturation;
+        private _evaluateHue;
+        componentDidUpdate(): void;
+        raiseOnColorChanged(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
     export interface IColorPickerComponentProps {
         value: BABYLON.Color4 | BABYLON.Color3;
         onColorChanged: (newOne: string) => void;
         globalState: GlobalState;
-        disableAlpha?: boolean;
     }
     interface IColorPickerComponentState {
         pickerEnabled: boolean;
-        color: {
-            r: number;
-            g: number;
-            b: number;
-            a?: number;
-        };
+        color: BABYLON.Color3 | BABYLON.Color4;
         hex: string;
     }
     export class ColorPickerLineComponent extends React.Component<IColorPickerComponentProps, IColorPickerComponentState> {
