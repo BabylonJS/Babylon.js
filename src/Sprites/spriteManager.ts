@@ -9,14 +9,12 @@ import { Camera } from "../Cameras/camera";
 import { Texture } from "../Materials/Textures/texture";
 import { SceneComponentConstants } from "../sceneComponent";
 import { Logger } from "../Misc/logger";
-
-import "../Shaders/sprites.fragment";
-import "../Shaders/sprites.vertex";
 import { Engine } from '../Engines/engine';
 import { WebRequest } from '../Misc/webRequest';
 import { SpriteRenderer } from './spriteRenderer';
 import { ThinSprite } from './thinSprite';
 import { ISize } from '../Maths/math.size';
+
 declare type Ray = import("../Culling/ray").Ray;
 
 /**
@@ -245,6 +243,10 @@ export class SpriteManager implements ISpriteManager {
         }
         this._fromPacked = fromPacked;
 
+        this._scene = scene;
+        const engine = this._scene.getEngine();
+        this._spriteRenderer = new SpriteRenderer(engine, capacity, epsilon, scene);
+
         if (cellSize.width && cellSize.height) {
             this.cellWidth = cellSize.width;
             this.cellHeight = cellSize.height;
@@ -252,19 +254,15 @@ export class SpriteManager implements ISpriteManager {
             this.cellWidth = cellSize;
             this.cellHeight = cellSize;
         } else {
+            this._spriteRenderer = <any>null;
             return;
         }
 
-        this._scene = scene;
         this._scene.spriteManagers.push(this);
         this.uniqueId = this.scene.getUniqueId();
 
-        const engine = this._scene.getEngine();
-        this._spriteRenderer = new SpriteRenderer(engine, capacity, epsilon, scene);
-        this._spriteRenderer.cellWidth = this.cellWidth;
-        this._spriteRenderer.cellHeight = this.cellHeight;
         if (imgUrl) {
-            this._spriteRenderer.texture = new Texture(imgUrl, scene, true, false, samplingMode);
+            this.texture = new Texture(imgUrl, scene, true, false, samplingMode);
         }
 
         if (this._fromPacked) {

@@ -1,6 +1,7 @@
 import * as React from 'react';
-import { SketchPicker } from 'react-color';
 import { IToolData, IToolType, IMetadata } from './textureEditorComponent';
+import { Color3, Color4 } from 'babylonjs/Maths/math.color';
+import { ColorPicker } from '../../../../../controls/colorPicker/colorPicker';
 
 export interface ITool extends IToolData {
     instance: IToolType;
@@ -36,9 +37,10 @@ export class ToolBar extends React.Component<IToolBarProps, IToolBarState> {
     computeRGBAColor() {
         const opacityInt = Math.floor(this.props.metadata.alpha * 255);
         const opacityHex = opacityInt.toString(16).padStart(2, '0');
-        return `${this.props.metadata.color}${opacityHex}`;
+
+        return Color4.FromHexString(`${this.props.metadata.color}${opacityHex}`);
     }
-    
+
     shouldComponentUpdate(nextProps: IToolBarProps) {
         return (nextProps.tools != this.props.tools || nextProps.activeToolIndex !== this.props.activeToolIndex || nextProps.metadata != this.props.metadata || nextProps.pickerOpen != this.props.pickerOpen);
     }
@@ -76,7 +78,17 @@ export class ToolBar extends React.Component<IToolBarProps, IToolBarState> {
             {
                 this.props.pickerOpen &&
                 <div id='color-picker' ref={this.props.pickerRef}>
-                    <SketchPicker disableAlpha={!this.props.hasAlpha} color={this.computeRGBAColor()}  onChange={color => this.props.setMetadata({color: color.hex, alpha: color.rgb.a})}/>
+                    <ColorPicker
+                        color={this.computeRGBAColor()}
+                        onColorChanged={
+                            (color: Color3 | Color4) => {
+                                const metadata = { color: color.toHexString(true), alpha: (color as unknown as Color4).a};
+                                if (metadata.color !== this.props.metadata.color ||
+                                    metadata.alpha !== this.props.metadata.alpha) {
+                                    this.props.setMetadata(metadata);
+                                }
+                            }
+                        }/>
                 </div>
             }
         </div>;

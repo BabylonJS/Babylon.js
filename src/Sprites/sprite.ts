@@ -74,12 +74,12 @@ export class Sprite extends ThinSprite implements IAnimatable {
         public name: string,
         manager: ISpriteManager) {
         super();
-        this.uniqueId = this._manager.scene.getUniqueId();
         this.color = new Color4(1.0, 1.0, 1.0, 1.0);
         this.position = Vector3.Zero();
 
         this._manager = manager;
         this._manager.sprites.push(this);
+        this.uniqueId = this._manager.scene.getUniqueId();
     }
 
     /**
@@ -91,23 +91,35 @@ export class Sprite extends ThinSprite implements IAnimatable {
     }
 
     /** Gets or sets the initial key for the animation (setting it will restart the animation)  */
+    public get fromIndex() {
+        return this._fromIndex;
+    }
     public set fromIndex(value: number) {
-        this.playAnimation(value, this.toIndex, this.loopAnimation, this.delay, this._onAnimationEnd);
+        this.playAnimation(value, this._toIndex, this._loopAnimation, this._delay, this._onAnimationEnd);
     }
 
     /** Gets or sets the end key for the animation (setting it will restart the animation)  */
+    public get toIndex() {
+        return this._toIndex;
+    }
     public set toIndex(value: number) {
-        this.playAnimation(this.fromIndex, value, this.loopAnimation, this.delay, this._onAnimationEnd);
+        this.playAnimation(this._fromIndex, value, this._loopAnimation, this._delay, this._onAnimationEnd);
     }
 
     /** Gets or sets a boolean indicating if the animation is looping (setting it will restart the animation)  */
+    public get loopAnimation() {
+        return this._loopAnimation;
+    }
     public set loopAnimation(value: boolean) {
-        this.playAnimation(this.fromIndex, this.toIndex, value, this.delay, this._onAnimationEnd);
+        this.playAnimation(this._fromIndex, this._toIndex, value, this._delay, this._onAnimationEnd);
     }
 
     /** Gets or sets the delay between cell changes (setting it will restart the animation)  */
+    public get delay() {
+        return Math.max(this._delay, 1);
+    }
     public set delay(value: number) {
-        this.playAnimation(this.fromIndex, this.toIndex, this.loopAnimation, value, this._onAnimationEnd);
+        this.playAnimation(this._fromIndex, this._toIndex, this._loopAnimation, value, this._onAnimationEnd);
     }
 
     /**
