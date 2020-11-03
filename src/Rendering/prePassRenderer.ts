@@ -428,7 +428,7 @@ export class PrePassRenderer {
         let isIPPAlreadyPresent = false;
         if (this._scene.activeCamera?._postProcesses) {
             for (let i = 0; i < this._scene.activeCamera._postProcesses.length; i++) {
-                if (this._scene.activeCamera._postProcesses[i] instanceof ImageProcessingPostProcess) {
+                if (this._scene.activeCamera._postProcesses[i]?.getClassName() === "ImageProcessingPostProcess") {
                     isIPPAlreadyPresent = true;
                 }
             }
