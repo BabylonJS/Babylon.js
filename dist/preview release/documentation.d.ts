@@ -54649,8 +54649,14 @@ declare module BABYLON {
         scaleBoxSize: number;
         /**
          * If set, the rotation spheres and scale boxes will increase in size based on the distance away from the camera to have a consistent screen size (Default: false)
+         * Note : fixedDragMeshScreenSize takes precedence over fixedDragMeshBoundsSize if both are true
          */
         fixedDragMeshScreenSize: boolean;
+        /**
+         * If set, the rotation spheres and scale boxes will increase in size based on the size of the bounding box
+         * Note : fixedDragMeshScreenSize takes precedence over fixedDragMeshBoundsSize if both are true
+         */
+        fixedDragMeshBoundsSize: boolean;
         /**
          * The distance away from the object which the draggable meshes should appear world sized when fixedDragMeshScreenSize is set to true (default: 10)
          */

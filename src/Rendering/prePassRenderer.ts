@@ -259,7 +259,7 @@ export class PrePassRenderer {
     public _afterCameraDraw() {
         if (this._enabled) {
             const firstCameraPP = this._scene.activeCamera && this._scene.activeCamera._getFirstPostProcess();
-            if (firstCameraPP) {
+            if (firstCameraPP && this._postProcesses.length) {
                 this._scene.postProcessManager._prepareFrame();
             }
             this._scene.postProcessManager.directRender(this._postProcesses, firstCameraPP ? firstCameraPP.inputTexture : null);
@@ -425,7 +425,19 @@ export class PrePassRenderer {
             this._createCompositionEffect();
         }
 
-        this._postProcesses.push(this.imageProcessingPostProcess);
+        let isIPPAlreadyPresent = false;
+        if (this._scene.activeCamera?._postProcesses) {
+            for (let i = 0; i < this._scene.activeCamera._postProcesses.length; i++) {
+                if (this._scene.activeCamera._postProcesses[i]?.getClassName() === "ImageProcessingPostProcess") {
+                    isIPPAlreadyPresent = true;
+                }
+            }
+
+        }
+
+        if (!isIPPAlreadyPresent) {
+            this._postProcesses.push(this.imageProcessingPostProcess);
+        }
         this._bindPostProcessChain();
         this._setState(true);
     }
@@ -464,7 +476,14 @@ export class PrePassRenderer {
     }
 
     private _bindPostProcessChain() {
-        this._postProcesses[0].inputTexture = this.prePassRT.getInternalTexture()!;
+        if (this._postProcesses.length) {
+            this._postProcesses[0].inputTexture = this.prePassRT.getInternalTexture()!;
+        } else {
+            const pp = this._scene.activeCamera?._getFirstPostProcess();
+            if (pp) {
+                pp.inputTexture = this.prePassRT.getInternalTexture()!;
+            }
+        }
     }
 
     /**

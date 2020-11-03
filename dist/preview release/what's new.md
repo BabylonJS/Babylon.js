@@ -45,6 +45,7 @@
 - Force compute world matrix of the newly-attached mesh of a ray helper ([RaananW](https://github.com/RaananW))
 - Allow 180 monoscopic videos on top of the video dome ([#8575](https://github.com/BabylonJS/Babylon.js/issues/8575)) ([RaananW](https://github.com/RaananW))
 - Added `AssetContainerTask` support to `AssetsManager` class ([MackeyK24](https://github.com/MackeyK24))
+- Added `fixedDragMeshBoundsSize` for boundingbox gizmo to size anchors from bounds size ([cedricguillemet](https://github.com/cedricguillemet))
 - Changed DeviceSourceManager getInput contract to no longer return nullable values ([Drigax](https://github.com/drigax))
 - Photo Dome and Video Dome now use the same abstract class and support the same parameters ([#8771](https://github.com/BabylonJS/Babylon.js/issues/8771)) ([RaananW](https://github.com/RaananW))
 - Added `getTransformNodesByTags` support to `Scene` class ([MackeyK24](https://github.com/MackeyK24))
@@ -234,6 +235,7 @@
 ### Collisions
 
 - Added an option to optimize collision detection performance ([jsdream](https://github.com/jsdream)) - [PR](https://github.com/BabylonJS/Babylon.js/pull/7810)
+- Added support for collisions with unindexed meshes ([#9267](https://github.com/BabylonJS/Babylon.js/issues/9267))([Popov72](https://github.com/Popov72))
 
 ### Animation
 
