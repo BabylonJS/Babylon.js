@@ -4,4 +4,5 @@ import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
 export interface IPropertyComponentProps {
     globalState: GlobalState;
     block: NodeMaterialBlock;
+    guiBlock?: BABYLON.GUI.Container;
 }

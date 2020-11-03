@@ -4,7 +4,7 @@ import { Nullable } from 'babylonjs/types';
 import { Observer } from 'babylonjs/Misc/observable';
 import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
 import { GraphCanvasComponent, FramePortData } from './graphCanvas';
-import { PropertyLedger } from './propertyLedger';
+import { PropertyGuiLedger, PropertyLedger } from './propertyLedger';
 import * as React from 'react';
 import { GenericPropertyComponent } from './properties/genericNodePropertyComponent';
 import { DisplayLedger } from './displayLedger';
@@ -374,12 +374,20 @@ export class GraphNode {
     }
 
     public renderProperties(): Nullable<JSX.Element> {
-        let control = PropertyLedger.RegisteredControls[this.block.getClassName()];
-
+        let className = this.guiNode ? this.guiNode.getClassName() : "";
+        let control = PropertyGuiLedger.RegisteredControls[className];
+        
         if (!control) {
             control = GenericPropertyComponent;
         }
 
+        if(this.guiNode) {
+            return React.createElement(control, {
+            globalState: this._globalState,
+            block: this.block,
+            guiBlock: this.guiNode
+            });
+        }
         return React.createElement(control, {
             globalState: this._globalState,
             block: this.block
