@@ -985,7 +985,7 @@ export class ArcRotateCamera extends TargetCamera {
         }
 
         // Alpha
-        const previousAlpha = this.alpha
+        const previousAlpha = this.alpha;
         if (this._computationVector.x === 0 && this._computationVector.z === 0) {
             this.alpha = Math.PI / 2; // avoid division by zero when looking along up axis, and set to acos(0)
         } else {
@@ -997,9 +997,9 @@ export class ArcRotateCamera extends TargetCamera {
         }
 
         // Calculate the number of revolutions between the new and old alpha values.
-        const alphaCorrectionTurns = Math.round((previousAlpha - this.alpha) / (2.0 * Math.PI))
+        const alphaCorrectionTurns = Math.round((previousAlpha - this.alpha) / (2.0 * Math.PI));
         // Adjust alpha so that its numerical representation is the closest one to the old value.
-        this.alpha += alphaCorrectionTurns * 2.0 * Math.PI
+        this.alpha += alphaCorrectionTurns * 2.0 * Math.PI;
 
         // Beta
         this.beta = Math.acos(this._computationVector.y / this.radius);
