@@ -2385,10 +2385,13 @@ declare module BABYLON {
          */
         copyFromPoints(point1: DeepImmutable<Vector3>, point2: DeepImmutable<Vector3>, point3: DeepImmutable<Vector3>): Plane;
         /**
-         * Checks if the plane is facing a given direction
+         * Checks if the plane is facing a given direction (meaning if the plane's normal is pointing in the opposite direction of the given vector).
+         * Note that for this function to work as expected you should make sure that:
+         *   - direction and the plane normal are normalized
+         *   - epsilon is a number just bigger than -1, something like -0.99 for eg
          * @param direction the direction to check if the plane is facing
          * @param epsilon value the dot product is compared against (returns true if dot <= epsilon)
-         * @returns True is the vector "direction"  is the same side than the plane normal.
+         * @returns True if the plane is facing the given direction
          */
         isFrontFacingTo(direction: DeepImmutable<Vector3>, epsilon: number): boolean;
         /**
@@ -6647,6 +6650,7 @@ declare module BABYLON {
         private _updatable;
         private _instanced;
         private _divisor;
+        private _isAlreadyOwned;
         /**
          * Gets the byte stride.
          */
@@ -6717,6 +6721,8 @@ declare module BABYLON {
          * @param useBytes set to true if the offset is in bytes
          */
         updateDirectly(data: DataArray, offset: number, vertexCount?: number, useBytes?: boolean): void;
+        /** @hidden */
+        _increaseReferences(): void;
         /**
          * Release all resources
          */
@@ -6797,8 +6803,9 @@ declare module BABYLON {
          * @param normalized whether the data contains normalized data (optional)
          * @param useBytes set to true if stride and offset are in bytes (optional)
          * @param divisor defines the instance divisor to use (1 by default)
+         * @param takeBufferOwnership defines if the buffer should be released when the vertex buffer is disposed
          */
-        constructor(engine: any, data: DataArray | Buffer, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number, instanced?: boolean, offset?: number, size?: number, type?: number, normalized?: boolean, useBytes?: boolean, divisor?: number);
+        constructor(engine: any, data: DataArray | Buffer, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number, instanced?: boolean, offset?: number, size?: number, type?: number, normalized?: boolean, useBytes?: boolean, divisor?: number, takeBufferOwnership?: boolean);
         /** @hidden */
         _rebuild(): void;
         /**
@@ -27245,8 +27252,9 @@ declare module BABYLON {
          * @param samplersList The sampler list
          * @param projectedLightTexture defines if projected texture must be used
          * @param uniformBuffersList defines an optional list of uniform buffers
+         * @param updateOnlyBuffersList True to only update the uniformBuffersList array
          */
-        static PrepareUniformsAndSamplersForLight(lightIndex: number, uniformsList: string[], samplersList: string[], projectedLightTexture?: any, uniformBuffersList?: Nullable<string[]>): void;
+        static PrepareUniformsAndSamplersForLight(lightIndex: number, uniformsList: string[], samplersList: string[], projectedLightTexture?: any, uniformBuffersList?: Nullable<string[]>, updateOnlyBuffersList?: boolean): void;
         /**
          * Prepares the uniforms and samplers list to be used in the effect
          * @param uniformsListOrOptions The uniform names to prepare or an EffectCreationOptions containing the liist and extra information
@@ -28784,6 +28792,8 @@ declare module BABYLON {
         id: string;
         /** Gets or sets the custom shader name to use */
         customShaderOptions: ICustomShaderOptions;
+        /** Gets or sets a custom function to allow/disallow rendering a sub mesh in the shadow map */
+        customAllowRendering: (subMesh: SubMesh) => boolean;
         /**
          * Observable triggered before the shadow is rendered. Can be used to update internal effect state
          */
@@ -35092,6 +35102,7 @@ declare module BABYLON {
         _onlyForInstancesIntermediate: boolean;
         _actAsRegularMesh: boolean;
         _currentLOD: Nullable<AbstractMesh>;
+        _currentLODIsUpToDate: boolean;
     }
     /**
      * Class used to store all common mesh properties
@@ -85985,9 +85996,10 @@ declare module BABYLON {
         * @param fileName changes the downloads fileName.
         * @param binary changes the STL to a binary type.
         * @param isLittleEndian toggle for binary type exporter.
+        * @param doNotBakeTransform toggle if meshes transforms should be baked or not.
         * @returns the STL as UTF8 string
         */
-        static CreateSTL(meshes: Mesh[], download?: boolean, fileName?: string, binary?: boolean, isLittleEndian?: boolean): any;
+        static CreateSTL(meshes: Mesh[], download?: boolean, fileName?: string, binary?: boolean, isLittleEndian?: boolean, doNotBakeTransform?: boolean): any;
     }
 }
 declare module "babylonjs-gltf2interface" {

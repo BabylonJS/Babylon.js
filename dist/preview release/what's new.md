@@ -71,6 +71,7 @@
 - Add support for detail maps in both the standard and PBR materials ([Popov72](https://github.com/Popov72))
 - Added abstractMesh method to get all particle systems that use the mesh as an emitter ([PirateJC](https://github.com/PirateJC))
 - Added customization options to VirtualJoystick ([#7398](https://github.com/BabylonJS/Babylon.js/issues/7398)) ([Rockwell15](https://github.com/Rockwell15))
+- Handle meshes with LODs in render target textures (meaning in glow/highlight layers, shadow generators, depth renderer, etc) ([Popov72](https://github.com/Popov72))
 
 ### NME
 
@@ -163,6 +164,7 @@
 - Added support for glTF Skins to glTF serializer ([Drigax](https://github.com/Drigax))
 - Added support for glTF Morph Target serialization ([Drigax](https://github.com/Drigax))
 - Fixed several bugs in stlSerializer ([aWeirdo](https://github.com/aWeirdo))
+- Added param `doNotBakeTransform` to `stlSerializer.CreateSTL` ([aWeirdo](https://github.com/aWeirdo))
 
 ### Navigation
 
@@ -364,6 +366,7 @@
 - Fixed bug in `Mesh.IncreaseVertices` assuming null value if a property didn't exist. ([aWeirdo](https://github.com/aWeirdo))
 - Fix issue when taking a screenshot with multi-cameras using method `CreateScreenshotUsingRenderTarget` ([#9201](https://github.com/BabylonJS/Babylon.js/issues/9201)) ([gabrielheming](https://github.com/gabrielheming))
 - Fix inTangent in animationGroup ([dad72](https://github.com/dad72))
+- Fixed bug in `QuadraticErrorSimplification` not correctly optimizing mesh. ([aWeirdo](https://github.com/aWeirdo))
 
 ## Breaking changes
 
