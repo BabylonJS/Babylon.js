@@ -183,7 +183,11 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     constructor(props: IGraphCanvasComponentProps) {
         super(props);
 
-        props.globalState.onSelectionChangedObservable.add(selection => {            
+        props.globalState.onSelectionChangedObservable.add(selection => {  
+            this.selectedGuiNodes.forEach(element => {
+                element.isSelected = false;
+            }); 
+            //this._selectedGuiNodes = [];
             if (!selection) {
                 this._selectedNodes = [];
                 this._selectedGuiNodes = [];
