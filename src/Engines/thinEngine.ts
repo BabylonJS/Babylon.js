@@ -185,6 +185,7 @@ export class ThinEngine {
         trackUbosInFrame: false,
         supportCSM: false,
         basisNeedsPOT: false,
+        support3DTextures: false,
         _collectUbosUpdatedInFrame: false,
     };
 
@@ -735,7 +736,8 @@ export class ThinEngine {
         ThinEngine.Features.supportShadowSamplers = this._webGLVersion !== 1;
         ThinEngine.Features.allowTexturePrefiltering = this._webGLVersion !== 1;
         ThinEngine.Features.supportCSM = this._webGLVersion !== 1;
-        ThinEngine.Features.basisNeedsPOT = this._webGLVersion < 2;
+        ThinEngine.Features.basisNeedsPOT = this._webGLVersion === 1;
+        ThinEngine.Features.support3DTextures = this._webGLVersion !== 1;
 
         // Ensures a consistent color space unpacking of textures cross browser.
         this._gl.pixelStorei(this._gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, this._gl.NONE);

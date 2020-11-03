@@ -29,6 +29,9 @@ export interface EngineFeatures {
     /** Indicates that the textures transcoded by the basis transcoder must have power of 2 width and height */
     basisNeedsPOT: boolean;
 
+    /** Indicates that the engine supports 3D textures */
+    support3DTextures: boolean;
+
     /** @hidden */
     _collectUbosUpdatedInFrame: boolean;
 }
