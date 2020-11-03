@@ -148,6 +148,8 @@ function processCurrentScene(test, resultCanvas, result, renderImage, index, wai
     currentScene.useConstantAnimationDeltaTime = true;
     var renderCount = test.renderCount || 1;
 
+    engine.endFrame();
+
     currentScene.executeWhenReady(function() {
         if (currentScene.activeCamera && currentScene.activeCamera.useAutoRotationBehavior) {
             currentScene.activeCamera.useAutoRotationBehavior = false;
@@ -209,6 +211,8 @@ function runTest(index, done, listname) {
     title.innerHTML = "#" + index + "> " + test.title;
 
     console.log("Running " + (listname ? listname + "/" : "") + test.title);
+
+    engine.beginFrame();
 
     var resultContext = resultCanvas.getContext("2d");
     var img = new Image();
@@ -409,6 +413,7 @@ function init(engineName) {
                 ]
             }
         });
+        engine.enableOfflineSupport = false;
         return new Promise((resolve) => {
             engine.initAsync(glslangOptions).then(() => resolve());
         });
