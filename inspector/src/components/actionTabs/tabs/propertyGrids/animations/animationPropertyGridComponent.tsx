@@ -18,8 +18,8 @@ import { Nullable } from "babylonjs/types";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { TextLineComponent } from "../../../lines/textLineComponent";
 import { IAnimatable } from "babylonjs/Animations/animatable.interface";
-import { AnimationCurveEditorComponent } from "../animations/animationCurveEditorComponent";
-import { PopupComponent } from "../../../../popupComponent";
+// import { AnimationCurveEditorComponent } from "../animations/animationCurveEditorComponent";
+// import { PopupComponent } from "../../../../popupComponent";
 
 interface IAnimationGridComponentProps {
     globalState: GlobalState;
