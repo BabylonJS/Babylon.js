@@ -1508,6 +1508,7 @@ export class WebGPUEngine extends Engine {
         texture.generateMipMaps = generateMipMaps;
         texture.width = size;
         texture.height = size;
+        texture.samplingMode = samplingMode;
         if (!this._doNotHandleContextLost) {
             texture._bufferViewArray = data;
         }
