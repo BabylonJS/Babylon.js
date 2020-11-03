@@ -56,7 +56,10 @@ export class BoundingBoxGizmo extends Gizmo {
      * If set, the rotation spheres and scale boxes will increase in size based on the distance away from the camera to have a consistent screen size (Default: false)
      */
     public fixedDragMeshScreenSize = false;
-
+    /**
+     * If set, the rotation spheres and scale boxes will increase in size based on the size of the bounding box
+     */
+    public fixedDragMeshBoundsSize = false;
     /**
      * The distance away from the object which the draggable meshes should appear world sized when fixedDragMeshScreenSize is set to true (default: 10)
      */
@@ -353,7 +356,7 @@ export class BoundingBoxGizmo extends Gizmo {
             // Only update the bouding box if scaling has changed
             if (this.attachedMesh && !this._existingMeshScale.equals(this.attachedMesh.scaling)) {
                 this.updateBoundingBox();
-            } else if (this.fixedDragMeshScreenSize) {
+            } else if (this.fixedDragMeshScreenSize || this.fixedDragMeshBoundsSize) {
                 this._updateRotationSpheres();
                 this._updateScaleBoxes();
             }
@@ -491,6 +494,8 @@ export class BoundingBoxGizmo extends Gizmo {
                         rotateSpheres[index].absolutePosition.subtractToRef(this.gizmoLayer.utilityLayerScene.activeCamera.position, this._tmpVector);
                         var distanceFromCamera = this.rotationSphereSize * this._tmpVector.length() / this.fixedDragMeshScreenSizeDistanceFactor;
                         rotateSpheres[index].scaling.set(distanceFromCamera, distanceFromCamera, distanceFromCamera);
+                    } else if (this.fixedDragMeshBoundsSize) {
+                        rotateSpheres[index].scaling.set(this.rotationSphereSize * this._boundingDimensions.x, this.rotationSphereSize * this._boundingDimensions.y, this.rotationSphereSize * this._boundingDimensions.z);
                     } else {
                         rotateSpheres[index].scaling.set(this.rotationSphereSize, this.rotationSphereSize, this.rotationSphereSize);
                     }
@@ -516,6 +521,8 @@ export class BoundingBoxGizmo extends Gizmo {
                             scaleBoxes[index].absolutePosition.subtractToRef(this.gizmoLayer.utilityLayerScene.activeCamera.position, this._tmpVector);
                             var distanceFromCamera = this.scaleBoxSize * this._tmpVector.length() / this.fixedDragMeshScreenSizeDistanceFactor;
                             scaleBoxes[index].scaling.set(distanceFromCamera, distanceFromCamera, distanceFromCamera);
+                        } else if (this.fixedDragMeshBoundsSize) {
+                            scaleBoxes[index].scaling.set(this.scaleBoxSize * this._boundingDimensions.x, this.scaleBoxSize * this._boundingDimensions.y, this.scaleBoxSize * this._boundingDimensions.z);
                         } else {
                             scaleBoxes[index].scaling.set(this.scaleBoxSize, this.scaleBoxSize, this.scaleBoxSize);
                         }
