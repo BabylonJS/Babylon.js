@@ -532,6 +532,29 @@
         }  
     }
 
+    .numeric {
+        padding-left: $line-padding-left;
+        height: 30px;
+        display: grid;
+        grid-template-columns: 1fr 120px auto;
+
+        .numeric-label {
+            grid-column: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .number {                        
+            display: flex;
+            align-items: center;
+            grid-column: 2;
+            height: 10px;
+            .input {
+                width: calc(100% - 5px);
+                height: 10px;
+            }
+        }
+    }
     
     .checkBoxLine {
         padding-left: $line-padding-left;
