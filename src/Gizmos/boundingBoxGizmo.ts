@@ -54,10 +54,12 @@ export class BoundingBoxGizmo extends Gizmo {
     public scaleBoxSize = 0.1;
     /**
      * If set, the rotation spheres and scale boxes will increase in size based on the distance away from the camera to have a consistent screen size (Default: false)
+     * Note : fixedDragMeshScreenSize takes precedence over fixedDragMeshBoundsSize if both are true
      */
     public fixedDragMeshScreenSize = false;
     /**
      * If set, the rotation spheres and scale boxes will increase in size based on the size of the bounding box
+     * Note : fixedDragMeshScreenSize takes precedence over fixedDragMeshBoundsSize if both are true
      */
     public fixedDragMeshBoundsSize = false;
     /**
