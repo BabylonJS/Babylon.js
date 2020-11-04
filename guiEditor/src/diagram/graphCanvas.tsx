@@ -985,7 +985,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         });
         this._guis.push(button1);
         var fakeNodeMaterialBlock = new NodeMaterialBlock("Button");
-        this._guiNodes.push(new GraphNode(fakeNodeMaterialBlock, this.globalState, button1));
+        var newGuiNode = new GraphNode(fakeNodeMaterialBlock, this.globalState, button1);
+        newGuiNode.appendVisual(this._graphCanvas, this);
+        this._guiNodes.push(newGuiNode);
+
         this._advancedTexture.addControl(button1);    
     }
 
@@ -994,9 +997,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     updateGUIs()
     {
         this._guiNodes.forEach(element => {
-            element.guiNode?.paddingLeft == 1;
-            //should create a new component type that has the contrainer ias a property.
-            //with then have the update information.
+            element.updateVisual();
             
         });
     }
