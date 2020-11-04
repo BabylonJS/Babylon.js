@@ -126,7 +126,7 @@
         #endif
 
         #ifdef PROJECTEDLIGHTTEXTURE{X}
-            info.diffuse *= texture2D(projectionLightSampler{X}, computeProjectionTextureDiffuseLightingUV(textureProjectionMatrix{X})).rgb;
+            info.diffuse *= computeProjectionTextureDiffuseLighting(projectionLightSampler{X}, textureProjectionMatrix{X});
         #endif
     #endif
 
