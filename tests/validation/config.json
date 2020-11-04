@@ -431,24 +431,28 @@
         },
         {
             "title": "GLTF Animation Node",
+            "renderCount": 2,
             "playgroundId": "#DS8AA7#18",
             "replace": "__folder__, Animation_Node, __page__, 0",
             "referenceImage": "gltfAnimationNode.png"
         },
         {
             "title": "GLTF Animation Node Misc",
+            "renderCount": 2,
             "playgroundId": "#DS8AA7#18",
             "replace": "__folder__, Animation_NodeMisc, __page__, 0",
             "referenceImage": "gltfAnimationNodeMisc.png"
         },
         {
             "title": "GLTF Animation Skin (0)",
+            "renderCount": 2,
             "playgroundId": "#DS8AA7#18",
             "replace": "__folder__, Animation_Skin, __page__, 0",
             "referenceImage": "gltfAnimationSkin0.png"
         },
         {
             "title": "GLTF Animation Skin (1)",
+            "renderCount": 2,
             "playgroundId": "#DS8AA7#18",
             "replace": "__folder__, Animation_Skin, __page__, 1",
             "referenceImage": "gltfAnimationSkin1.png"
@@ -627,6 +631,7 @@
         },
         {
             "title": "GLTF Serializer Morph Target Animation",
+            "renderCount": 2,
             "playgroundId": "#84M2SR#23",
             "referenceImage": "gltfSerializerMorphTargetAnimation.png"
         },
@@ -830,11 +835,13 @@
         },
         {
             "title": "Local cubemaps",
+            "renderCount": 2,
             "playgroundId": "#RNASML#4",
             "referenceImage": "local cubemaps.png"
         },
         {
             "title": "TGA",
+            "renderCount": 2,
             "playgroundId": "#ZI77S7#0",
             "referenceImage": "tga.png"
         },
