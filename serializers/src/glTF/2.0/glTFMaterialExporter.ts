@@ -1147,8 +1147,9 @@ export class _GLTFMaterialExporter {
         return this._finishMaterial(promises, glTFMaterial, babylonPBRMaterial, mimeType);
     }
 
-    private getPixelsFromTexture(babylonTexture: BaseTexture): Nullable<Uint8Array | Float32Array> {
-        const pixels = babylonTexture.textureType === Constants.TEXTURETYPE_UNSIGNED_INT ? babylonTexture.readPixels() as Uint8Array : babylonTexture.readPixels() as Float32Array;
+    private getPixelsFromTexture(babylonTexture: BaseTexture): Promise<Nullable<Uint8Array | Float32Array>> {
+        // TODO WEBGPU remove the as unknown cast once using the new babylonjs package to compile the glTF material exporter
+        const pixels = babylonTexture.textureType === Constants.TEXTURETYPE_UNSIGNED_INT ? babylonTexture.readPixels() as unknown as Promise<Uint8Array> : babylonTexture.readPixels() as unknown as Promise<Float32Array>;
         return pixels;
     }
 
@@ -1173,13 +1174,13 @@ export class _GLTFMaterialExporter {
     }
 
     public _exportTextureInfoAsync(babylonTexture: BaseTexture, mimeType: ImageMimeType): Promise<Nullable<ITextureInfo>> {
-        return Promise.resolve().then(() => {
+        return Promise.resolve().then(async () => {
             const textureUid = babylonTexture.uid;
             if (textureUid in this._textureMap) {
                 return this._textureMap[textureUid];
             }
             else {
-                const pixels = this.getPixelsFromTexture(babylonTexture);
+                const pixels = await this.getPixelsFromTexture(babylonTexture);
                 if (!pixels) {
                     return null;
                 }
