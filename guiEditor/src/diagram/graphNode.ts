@@ -12,6 +12,7 @@ import { IDisplayManager } from './display/displayManager';
 import { NodeLink } from './nodeLink';
 import { NodePort } from './nodePort';
 import { GraphFrame } from './graphFrame';
+import { Vector2 } from 'babylonjs';
 
 export class GraphNode {
     private _visual: HTMLDivElement;
@@ -175,12 +176,21 @@ export class GraphNode {
     public constructor(public block: NodeMaterialBlock, globalState: GlobalState, public guiNode: BABYLON.GUI.Container | null | undefined) {
         this._globalState = globalState;
 
-        guiNode?.onPointerUpObservable.add(() => {
+        guiNode?.onPointerUpObservable.add(evt => {
             this.isSelected = true;
+            this._onUp(evt);
         });
 
+        guiNode?.onPointerDownObservable.add( evt => {this._onDown(evt);}
+        );
+
+        guiNode?.onPointerMoveObservable.add( evt => {this._onMove(evt);}
+        );
+
+
+
         this._onSelectionChangedObserver = this._globalState.onSelectionChangedObservable.add(node => {
-            if (node === this) {
+            /*if (node === this) {
                 this._visual.classList.add("selected");
             } else {
                 setTimeout(() => {
@@ -188,7 +198,7 @@ export class GraphNode {
                         this._visual.classList.remove("selected");
                     }
                 })
-            }
+            }*/
         });
 
         this._onUpdateRequiredObserver = this._globalState.onUpdateRequiredObservable.add(() => {
@@ -312,9 +322,9 @@ export class GraphNode {
 
     }
 
-    private _onDown(evt: PointerEvent) {
+    private _onDown(evt: BABYLON.GUI.Vector2WithInfo) {
         // Check if this is coming from the port
-        if (evt.srcElement && (evt.srcElement as HTMLElement).nodeName === "IMG") {
+        /*if (evt.srcElement && (evt.srcElement as HTMLElement).nodeName === "IMG") {
             return;
         }
 
@@ -329,12 +339,12 @@ export class GraphNode {
 
         for (var selectedNode of this._ownerCanvas.selectedNodes) {
             selectedNode.cleanAccumulation();
-        }
+        }*/
 
-        this._mouseStartPointX = evt.clientX;
-        this._mouseStartPointY = evt.clientY;        
+        this._mouseStartPointX = evt.x;
+        this._mouseStartPointY = evt.y;        
         
-        this._visual.setPointerCapture(evt.pointerId);
+        //this._visual.setPointerCapture(evt.buttonIndex);
     }
 
     public cleanAccumulation(useCeil = false) {
@@ -342,35 +352,35 @@ export class GraphNode {
         this.y = this._ownerCanvas.getGridPosition(this.y, useCeil);
     }
 
-    private _onUp(evt: PointerEvent) {
-        evt.stopPropagation();
+    private _onUp(evt: BABYLON.GUI.Vector2WithInfo) {
+        //evt.stopPropagation();
 
-        for (var selectedNode of this._ownerCanvas.selectedNodes) {
-            selectedNode.cleanAccumulation();
-        }
+       //for (var selectedNode of this._ownerCanvas.selectedNodes) {
+        //this.cleanAccumulation();
+        //}
         
         this._mouseStartPointX = null;
         this._mouseStartPointY = null;
-        this._visual.releasePointerCapture(evt.pointerId);
+        //this._visual.releasePointerCapture(evt.pointerId);
     }
 
-    private _onMove(evt: PointerEvent) {
-        if (this._mouseStartPointX === null || this._mouseStartPointY === null || evt.ctrlKey) {
+    private _onMove(evt: BABYLON.Vector2) {
+        if (this._mouseStartPointX === null || this._mouseStartPointY === null) {
             return;
         }
 
-        let newX = (evt.clientX - this._mouseStartPointX) / this._ownerCanvas.zoom;
-        let newY = (evt.clientY - this._mouseStartPointY) / this._ownerCanvas.zoom;
+        let newX = (evt.x - this._mouseStartPointX) / this._ownerCanvas.zoom;
+        let newY = (evt.y - this._mouseStartPointY) / this._ownerCanvas.zoom;
 
-        for (var selectedNode of this._ownerCanvas.selectedNodes) {
-            selectedNode.x += newX;
-            selectedNode.y += newY;
-        }
+        //for (var selectedNode of this._ownerCanvas.selectedNodes) {
+        this.x += newX;
+        this.y += newY;
+        //}
 
-        this._mouseStartPointX = evt.clientX;
-        this._mouseStartPointY = evt.clientY;   
+        this._mouseStartPointX = evt.x;
+        this._mouseStartPointY = evt.y;   
 
-        evt.stopPropagation();
+        //evt.stopPropagation();
     }
 
     public renderProperties(): Nullable<JSX.Element> {
@@ -394,6 +404,15 @@ export class GraphNode {
         });
     }
 
+    public updateVisual()
+    {
+        if(this.guiNode)
+        {
+            this.guiNode.leftInPixels = this.x;
+            this.guiNode.topInPixels = this.y;
+        }
+    }
+
     public appendVisual(root: HTMLDivElement, owner: GraphCanvasComponent) {
         this._ownerCanvas = owner;
 
@@ -409,9 +428,9 @@ export class GraphNode {
         this._visual = root.ownerDocument!.createElement("div");
         this._visual.classList.add("visual");
 
-        this._visual.addEventListener("pointerdown", evt => this._onDown(evt));
-        this._visual.addEventListener("pointerup", evt => this._onUp(evt));
-        this._visual.addEventListener("pointermove", evt => this._onMove(evt));
+        //this._visual.addEventListener("pointerdown", evt => this._onDown(evt));
+        //this._visual.addEventListener("pointerup", evt => this._onUp(evt));
+        //this._visual.addEventListener("pointermove", evt => this._onMove(evt));
 
         this._header = root.ownerDocument!.createElement("div");
         this._header.classList.add("header");
