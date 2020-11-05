@@ -178,14 +178,13 @@ export class GraphNode {
 
         guiNode?.onPointerUpObservable.add(evt => {
             this.isSelected = true;
-            this._onUp(evt);
+            this.clicked = false;
         });
 
-        guiNode?.onPointerDownObservable.add( evt => {this._onDown(evt);}
+        guiNode?.onPointerDownObservable.add( evt => {this.clicked = true; this._onDown(evt);}
         );
 
-        guiNode?.onPointerMoveObservable.add( evt => {this._onMove(evt);}
-        );
+        //guiNode?.onPointerMoveObservable.add( evt => {this._onMove(evt);} );
 
 
 
@@ -363,14 +362,13 @@ export class GraphNode {
         this._mouseStartPointY = null;
         //this._visual.releasePointerCapture(evt.pointerId);
     }
+    public clicked: boolean;
+    public _onMove(evt: BABYLON.Vector2, startPos: BABYLON.Vector2) {
+       
+        if(!this.clicked) return;
 
-    private _onMove(evt: BABYLON.Vector2) {
-        if (this._mouseStartPointX === null || this._mouseStartPointY === null) {
-            return;
-        }
-
-        let newX = (evt.x - this._mouseStartPointX) / this._ownerCanvas.zoom;
-        let newY = (evt.y - this._mouseStartPointY) / this._ownerCanvas.zoom;
+        let newX = (evt.x - startPos.x) ;// / this._ownerCanvas.zoom;
+        let newY = (evt.y - startPos.y) ;// / this._ownerCanvas.zoom;
 
         //for (var selectedNode of this._ownerCanvas.selectedNodes) {
         this.x += newX;
