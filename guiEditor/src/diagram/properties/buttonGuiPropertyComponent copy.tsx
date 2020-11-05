@@ -9,6 +9,7 @@ import { ColorPickerLineComponent } from '../../sharedComponents/colorPickerComp
 import { TextLineComponent } from '../../sharedComponents/textLineComponent';
 import { TextInputLineComponent } from '../../sharedComponents/textInputLineComponent';
 import { NumericInputComponent } from '../../sharedComponents/numericInputComponent';
+import { SketchPicker } from 'react-color';
 
 export class ButtonPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
@@ -38,7 +39,13 @@ export class ButtonPropertyTabComponent extends React.Component<IPropertyCompone
                 onChange={evt =>{
                    this.button.heightInPixels = evt;
                 }}>
-                </NumericInputComponent>
+                </NumericInputComponent>  
+                <TextLineComponent label="Background Color" value={this.button.background} />
+                <SketchPicker
+                    color={ this.button.background }
+                    onChangeComplete={evt =>{
+                        this.button.background = evt.hex;
+                }}/>
                 </LineContainerComponent>            
             </>
         );
