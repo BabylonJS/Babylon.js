@@ -22233,6 +22233,12 @@ declare module BABYLON {
         get useGeometryBufferFallback(): boolean;
         set useGeometryBufferFallback(value: boolean);
         /**
+         * Set to true to disable gamma transform in PrePass.
+         * Can be useful in case you already proceed to gamma transform on a material level
+         * and your post processes don't need to be in linear color space.
+         */
+        disableGammaTransform: boolean;
+        /**
          * Instanciates a prepass renderer
          * @param scene The scene
          */

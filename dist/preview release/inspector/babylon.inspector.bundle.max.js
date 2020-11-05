@@ -52198,10 +52198,10 @@ var PropertiesBar = /** @class */ (function (_super) {
         _this._mipDown = __webpack_require__(/*! ./assets/mipDown.svg */ "./components/actionTabs/tabs/propertyGrids/materials/textures/assets/mipDown.svg");
         _this._faces = [
             __webpack_require__(/*! ./assets/posX.svg */ "./components/actionTabs/tabs/propertyGrids/materials/textures/assets/posX.svg"),
-            __webpack_require__(/*! ./assets/posY.svg */ "./components/actionTabs/tabs/propertyGrids/materials/textures/assets/posY.svg"),
-            __webpack_require__(/*! ./assets/posZ.svg */ "./components/actionTabs/tabs/propertyGrids/materials/textures/assets/posZ.svg"),
             __webpack_require__(/*! ./assets/negX.svg */ "./components/actionTabs/tabs/propertyGrids/materials/textures/assets/negX.svg"),
+            __webpack_require__(/*! ./assets/posY.svg */ "./components/actionTabs/tabs/propertyGrids/materials/textures/assets/posY.svg"),
             __webpack_require__(/*! ./assets/negY.svg */ "./components/actionTabs/tabs/propertyGrids/materials/textures/assets/negY.svg"),
+            __webpack_require__(/*! ./assets/posZ.svg */ "./components/actionTabs/tabs/propertyGrids/materials/textures/assets/posZ.svg"),
             __webpack_require__(/*! ./assets/negZ.svg */ "./components/actionTabs/tabs/propertyGrids/materials/textures/assets/negZ.svg")
         ];
         _this.state = {
