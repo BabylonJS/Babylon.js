@@ -93,11 +93,12 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
     constructor(_xrSessionManager: WebXRSessionManager, private _options: IWebXRMeshDetectorOptions = {}) {
         super(_xrSessionManager);
         this.xrNativeFeatureName = "mesh-detection";
-        this._initMeshDetector = this._initMeshDetector.bind(this);
         if (this._xrSessionManager.session) {
-            this._initMeshDetector(this._xrSessionManager.session);
+            this._init();
         } else {
-            this._xrSessionManager.onXRSessionInit.addOnce(this._initMeshDetector);
+            this._xrSessionManager.onXRSessionInit.addOnce(() => {
+                this._init();
+            });
         }
     }
 
@@ -134,7 +135,7 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
             return;
         }
 
-        const detectedMeshes = frame.detectedMeshes;
+        const detectedMeshes = frame.worldInformation?.detectedMeshes;
         if (!!detectedMeshes) {
             const toRemove = this._detectedMeshes
                 .filter((mesh) => !detectedMeshes.has(mesh.xrMesh))
@@ -171,14 +172,14 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
         }
     }
 
-    private _initMeshDetector(session: XRSession) {
-        if (!!session.trySetMeshDetectorEnabled) {
-            session.trySetMeshDetectorEnabled(true);
+    private _init() {
+        if (!!this._xrSessionManager.session.trySetMeshDetectorEnabled) {
+            this._xrSessionManager.session.trySetMeshDetectorEnabled(true);
         }
 
         if (!!this._options.preferredDetectorOptions &&
-            !!session.trySetPreferredMeshDetectorOptions) {
-            session.trySetPreferredMeshDetectorOptions(this._options.preferredDetectorOptions);
+            !!this._xrSessionManager.session.trySetPreferredMeshDetectorOptions) {
+            this._xrSessionManager.session.trySetPreferredMeshDetectorOptions(this._options.preferredDetectorOptions);
         }
     }
 
@@ -214,7 +215,20 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
             mesh.normals = xrMesh.normals;
         }
 
-        mesh.transformationMatrix = this._options.worldParentNode?.getWorldMatrix() ?? Matrix.Identity();
+        // matrix
+        const pose = xrFrame.getPose(xrMesh.meshSpace, this._xrSessionManager.referenceSpace);
+        if (pose) {
+            const mat = mesh.transformationMatrix || new Matrix();
+            Matrix.FromArrayToRef(pose.transform.matrix, 0, mat);
+            if (!this._xrSessionManager.scene.useRightHandedSystem) {
+                mat.toggleModelMatrixHandInPlace();
+            }
+            mesh.transformationMatrix = mat;
+            if (this._options.worldParentNode) {
+                mat.multiplyToRef(this._options.worldParentNode.getWorldMatrix(), mat);
+            }
+        }
+        
         return <IWebXRMesh>mesh;
     }
 
