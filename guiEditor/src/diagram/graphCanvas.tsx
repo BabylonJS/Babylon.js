@@ -184,11 +184,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         super(props);
 
         props.globalState.onSelectionChangedObservable.add(selection => {  
-            this.selectedGuiNodes.forEach(element => {
-                element.isSelected = false;
-            }); 
-            //this._selectedGuiNodes = [];
             if (!selection) {
+                this.selectedGuiNodes.forEach(element => {
+                    element.isSelected = false;
+                }); 
                 this._selectedNodes = [];
                 this._selectedGuiNodes = [];
                 this._selectedLink = null;
@@ -476,7 +475,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
     onMove(evt: React.PointerEvent) {        
         // Selection box
-        if (this._selectionBox) {
+        /*if (this._selectionBox) {
             const rootRect = this.canvasContainer.getBoundingClientRect();      
 
             const localX = evt.pageX - rootRect.left;
@@ -570,15 +569,25 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
         // Move canvas
         this._rootContainer.style.cursor = "move";
+        */
+        if (this._mouseStartPointX != null && this._mouseStartPointY != null) {
 
-        if (this._mouseStartPointX === null || this._mouseStartPointY === null) {
-            return;
-        }
-        this.x += evt.clientX - this._mouseStartPointX;
-        this.y += evt.clientY - this._mouseStartPointY;
+        //this.x += evt.clientX - this._mouseStartPointX;
+        //this.y += evt.clientY - this._mouseStartPointY;
+
+        var x = this._mouseStartPointX;
+        var y = this._mouseStartPointY;
+        this._guiNodes.forEach(element => {
+            element._onMove(new BABYLON.Vector2(evt.clientX, evt.clientY), 
+            new BABYLON.Vector2( x, y));
+        });
 
         this._mouseStartPointX = evt.clientX;
         this._mouseStartPointY = evt.clientY;
+
+        //doing the dragging for the gui node.
+
+     }
     }
 
     onDown(evt: React.PointerEvent<HTMLElement>) {
@@ -978,9 +987,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         var button1 = BABYLON.GUI.Button.CreateSimpleButton("but1", "Click Me");
         button1.width = "150px"
         button1.height = "40px";
-        button1.color = "white";
+        button1.color = "#FFFFFF";
         button1.cornerRadius = 20;
-        button1.background = "green";
+        button1.background = "#008000";
         button1.onPointerUpObservable.add(function() {
         });
         this._guis.push(button1);
