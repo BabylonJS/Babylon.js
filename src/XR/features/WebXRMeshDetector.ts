@@ -25,11 +25,11 @@ export interface IWebXRMeshDetectorOptions {
 }
 
 /**
- * A babylon interface for a XR mesh.
+ * A babylon interface for a XR mesh's vertex data.
  *
  * Currently not supported by WebXR, available only with BabylonNative
  */
-export interface IWebXRMesh {
+export interface IWebXRVertexData {
     /**
      * a babylon-assigned ID for this mesh
      */
@@ -63,7 +63,7 @@ let meshIdProvider = 0;
  * The mesh detector is used to detect meshes in the real world when in AR
  */
 export class WebXRMeshDetector extends WebXRAbstractFeature {
-    private _detectedMeshes: Array<IWebXRMesh> = [];
+    private _detectedMeshes: Array<IWebXRVertexData> = [];
     private _lastDetectedSet: XRMeshSet = new Set();
 
     /**
@@ -80,15 +80,15 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
     /**
      * Observers registered here will be executed when a new mesh was added to the session
      */
-    public onMeshAddedObservable: Observable<IWebXRMesh> = new Observable();
+    public onMeshAddedObservable: Observable<IWebXRVertexData> = new Observable();
     /**
      * Observers registered here will be executed when a mesh is no longer detected in the session
      */
-    public onMeshRemovedObservable: Observable<IWebXRMesh> = new Observable();
+    public onMeshRemovedObservable: Observable<IWebXRVertexData> = new Observable();
     /**
      * Observers registered here will be executed when an existing mesh updates
      */
-    public onMeshUpdatedObservable: Observable<IWebXRMesh> = new Observable();
+    public onMeshUpdatedObservable: Observable<IWebXRVertexData> = new Observable();
 
     constructor(_xrSessionManager: WebXRSessionManager, private _options: IWebXRMeshDetectorOptions = {}) {
         super(_xrSessionManager);
@@ -151,7 +151,7 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
             // now check for new ones
             detectedMeshes.forEach((xrMesh) => {
                 if (!this._lastDetectedSet.has(xrMesh)) {
-                    const newMesh: Partial<IWebXRMesh> = {
+                    const newMesh: Partial<IWebXRVertexData> = {
                         id: meshIdProvider++,
                         xrMesh: xrMesh,
                     };
@@ -183,7 +183,7 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
         }
     }
 
-    private _updateMeshWithXRMesh(xrMesh: XRMesh, mesh: Partial<IWebXRMesh>, xrFrame: XRFrame): IWebXRMesh {
+    private _updateMeshWithXRMesh(xrMesh: XRMesh, mesh: Partial<IWebXRVertexData>, xrFrame: XRFrame): IWebXRVertexData {
         mesh.xrMesh = xrMesh;
         if (!this._xrSessionManager.scene.useRightHandedSystem) {
             mesh.positions = new Float32Array(xrMesh.positions.length);
@@ -229,7 +229,7 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
             }
         }
         
-        return <IWebXRMesh>mesh;
+        return <IWebXRVertexData>mesh;
     }
 
     private _findIndexInMeshArray(xrMesh: XRMesh) {
