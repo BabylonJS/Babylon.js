@@ -53,9 +53,11 @@ export class SceneComponentConstants {
 
     public static readonly STEP_BEFORERENDERTARGETDRAW_LAYER = 0;
 
-    public static readonly STEP_BEFORERENDERINGMESH_OUTLINE = 0;
+    public static readonly STEP_BEFORERENDERINGMESH_PREPASS = 0;
+    public static readonly STEP_BEFORERENDERINGMESH_OUTLINE = 1;
 
-    public static readonly STEP_AFTERRENDERINGMESH_OUTLINE = 0;
+    public static readonly STEP_AFTERRENDERINGMESH_PREPASS = 0;
+    public static readonly STEP_AFTERRENDERINGMESH_OUTLINE = 1;
 
     public static readonly STEP_AFTERRENDERINGGROUPDRAW_EFFECTLAYER_DRAW = 0;
     public static readonly STEP_AFTERRENDERINGGROUPDRAW_BOUNDINGBOXRENDERER = 1;
