@@ -39,7 +39,7 @@ export class RadioButtonLineComponent extends React.Component<IRadioButtonLineCo
     render() {
         return (
             <div className="radioLine">
-                <div className="label">
+                <div className="label" title={this.props.label}>
                     {this.props.label}
                 </div>
                 <div className="radioContainer">
