@@ -131,7 +131,7 @@ export class PrePassRenderer {
     }
 
     private _geometryBuffer: Nullable<GeometryBufferRenderer>;
-    private _useGeometryBufferFallback = true;
+    private _useGeometryBufferFallback = false;
     /**
      * Uses the geometry buffer renderer as a fallback for non prepass capable effects
      */
@@ -162,6 +162,13 @@ export class PrePassRenderer {
             this._scene.disableGeometryBufferRenderer();
         }
     }
+
+    /**
+     * Set to true to disable gamma transform in PrePass.
+     * Can be useful in case you already proceed to gamma transform on a material level
+     * and your post processes don't need to be in linear color space.
+     */
+    public disableGammaTransform = false;
 
     /**
      * Instanciates a prepass renderer
@@ -235,6 +242,15 @@ export class PrePassRenderer {
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Restores attachments for single texture draw.
+     */
+    public restoreAttachments() {
+        if (this.enabled && this._defaultAttachments) {
+            this._engine.bindAttachments(this._defaultAttachments);
         }
     }
 
@@ -435,7 +451,7 @@ export class PrePassRenderer {
 
         }
 
-        if (!isIPPAlreadyPresent) {
+        if (!isIPPAlreadyPresent && !this.disableGammaTransform) {
             this._postProcesses.push(this.imageProcessingPostProcess);
         }
         this._bindPostProcessChain();
