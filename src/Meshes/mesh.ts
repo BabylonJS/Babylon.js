@@ -1937,6 +1937,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Unbind
         this._effectiveMaterial.unbind();
 
+        // Restores default attachments
+        if (scene.prePassRenderer) {
+            scene.prePassRenderer.restoreAttachments();
+        }
+
         for (let step of scene._afterRenderingMeshStage) {
             step.action(this, subMesh, batch);
         }
