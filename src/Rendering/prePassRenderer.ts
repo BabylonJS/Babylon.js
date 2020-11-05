@@ -164,6 +164,13 @@ export class PrePassRenderer {
     }
 
     /**
+     * Set to true to disable gamma transform in PrePass.
+     * Can be useful in case you already proceed to gamma transform on a material level
+     * and your post processes don't need to be in linear color space.
+     */
+    public disableGammaTransform = false;
+
+    /**
      * Instanciates a prepass renderer
      * @param scene The scene
      */
@@ -435,7 +442,7 @@ export class PrePassRenderer {
 
         }
 
-        if (!isIPPAlreadyPresent) {
+        if (!isIPPAlreadyPresent && !this.disableGammaTransform) {
             this._postProcesses.push(this.imageProcessingPostProcess);
         }
         this._bindPostProcessChain();
