@@ -1303,7 +1303,9 @@ export class Camera extends Node {
             camera._setupInputs();
         }
 
-        camera.upVector = Vector3.FromArray(parsedCamera.upVector); // need to force the upVector
+        if (parsedCamera.upVector) {
+            camera.upVector = Vector3.FromArray(parsedCamera.upVector); // need to force the upVector
+        }
 
         if ((<any>camera).setPosition) { // need to force position
             camera.position.copyFromFloats(0, 0, 0);
