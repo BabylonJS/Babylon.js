@@ -115,7 +115,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
             <>
                 {
                     <div className={this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine"}>
-                        <div className="label">
+                        <div className="label" title={this.props.label}>
                             {this.props.label}
                         </div>
                         <div className={className}>

@@ -741,6 +741,8 @@ $line-padding-left: 2px;
                             grid-column: 1;
                             display: flex;
                             align-items: center;
+                            white-space: nowrap;
+                            overflow: hidden;
                         }
 
                         .vector {
