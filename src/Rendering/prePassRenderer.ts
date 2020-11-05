@@ -131,7 +131,7 @@ export class PrePassRenderer {
     }
 
     private _geometryBuffer: Nullable<GeometryBufferRenderer>;
-    private _useGeometryBufferFallback = true;
+    private _useGeometryBufferFallback = false;
     /**
      * Uses the geometry buffer renderer as a fallback for non prepass capable effects
      */
