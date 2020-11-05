@@ -3292,20 +3292,28 @@ export class WebGPUEngine extends Engine {
                     continue;
                 }
 
+                let visibility = 0;
+                if (bindingDefinition.usedInVertex) {
+                    visibility = visibility | WebGPUConstants.ShaderStage.Vertex;
+                }
+                if (bindingDefinition.usedInFragment) {
+                    visibility = visibility | WebGPUConstants.ShaderStage.Fragment;
+                }
+
                 // TODO WEBGPU. Optimize shared samplers visibility for vertex/framgent.
                 if (bindingDefinition.isSampler) {
                     entries.push({
                         binding: j,
-                        visibility: WebGPUConstants.ShaderStage.Vertex | WebGPUConstants.ShaderStage.Fragment,
+                        visibility,
                         type: bindingDefinition.isComparisonSampler ? WebGPUConstants.BindingType.ComparisonSampler : WebGPUConstants.BindingType.Sampler
                     });
                 } else if (bindingDefinition.isTexture) {
                     entries.push({
                         binding: j,
-                        visibility: WebGPUConstants.ShaderStage.Vertex | WebGPUConstants.ShaderStage.Fragment,
+                        visibility,
                         type: WebGPUConstants.BindingType.SampledTexture,
                         viewDimension: bindingDefinition.textureDimension,
-                        //textureComponentType: bindingDefinition.componentType,
+                        textureComponentType: bindingDefinition.componentType,
                         // TODO WEBGPU.
                         // hasDynamicOffset?: boolean;
                         // storageTextureFormat?: GPUTextureFormat;
@@ -3314,7 +3322,7 @@ export class WebGPUEngine extends Engine {
                 } else {
                     entries.push({
                         binding: j,
-                        visibility: WebGPUConstants.ShaderStage.Vertex | WebGPUConstants.ShaderStage.Fragment,
+                        visibility,
                         type: WebGPUConstants.BindingType.UniformBuffer,
                     });
                 }
