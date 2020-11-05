@@ -239,6 +239,13 @@ export class PrePassRenderer {
     }
 
     /**
+     * Restores attachments for single texture draw.
+     */
+    public restoreAttachments() {
+        this._engine.bindAttachments(this._defaultAttachments);
+    }
+
+    /**
      * @hidden
      */
     public _beforeCameraDraw() {
