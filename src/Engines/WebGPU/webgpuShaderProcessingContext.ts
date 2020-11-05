@@ -28,6 +28,8 @@ export interface WebGPUTextureSamplerBindingDescription {
 */
 export interface WebGPUBindingDescription {
     name: string;
+    usedInVertex: boolean;
+    usedInFragment: boolean;
 
     isSampler: boolean;
     isComparisonSampler?: boolean;

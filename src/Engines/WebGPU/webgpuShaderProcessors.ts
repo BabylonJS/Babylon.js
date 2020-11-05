@@ -207,12 +207,22 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
                 if (!webgpuProcessingContext.orderedUBOsAndSamplers[samplerSetIndex]) {
                     webgpuProcessingContext.orderedUBOsAndSamplers[samplerSetIndex] = [];
                 }
-                webgpuProcessingContext.orderedUBOsAndSamplers[samplerSetIndex][samplerBindingIndex] = {
-                    isSampler: true,
-                    isTexture: false,
-                    isComparisonSampler,
-                    name,
-                };
+                if (!webgpuProcessingContext.orderedUBOsAndSamplers[samplerSetIndex][samplerBindingIndex]) {
+                    webgpuProcessingContext.orderedUBOsAndSamplers[samplerSetIndex][samplerBindingIndex] = {
+                        isSampler: true,
+                        isTexture: false,
+                        isComparisonSampler,
+                        usedInVertex: false,
+                        usedInFragment: false,
+                        name,
+                    };
+                }
+
+                if (isFragment) {
+                    webgpuProcessingContext.orderedUBOsAndSamplers[samplerSetIndex][samplerBindingIndex].usedInFragment = true;
+                } else {
+                    webgpuProcessingContext.orderedUBOsAndSamplers[samplerSetIndex][samplerBindingIndex].usedInVertex = true;
+                }
 
                 for (let i = 0; i < arraySize; ++i) {
                     const textureSetIndex = samplerInfo.textures[i].setIndex;
@@ -221,15 +231,24 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
                     if (!webgpuProcessingContext.orderedUBOsAndSamplers[textureSetIndex]) {
                         webgpuProcessingContext.orderedUBOsAndSamplers[textureSetIndex] = [];
                     }
-                    webgpuProcessingContext.orderedUBOsAndSamplers[textureSetIndex][textureBindingIndex] = {
-                        isSampler: false,
-                        isTexture: true,
-                        componentType: isComparisonSampler ? WebGPUConstants.TextureComponentType.DepthComparison :
-                                     componentType === 'u' ? WebGPUConstants.TextureComponentType.Uint :
-                                     componentType === 'i' ? WebGPUConstants.TextureComponentType.Sint : WebGPUConstants.TextureComponentType.Float,
-                        textureDimension,
-                        name: isTextureArray ? name + i.toString() : name,
-                    };
+                    if (!webgpuProcessingContext.orderedUBOsAndSamplers[textureSetIndex][textureBindingIndex]) {
+                        webgpuProcessingContext.orderedUBOsAndSamplers[textureSetIndex][textureBindingIndex] = {
+                            isSampler: false,
+                            isTexture: true,
+                            componentType: isComparisonSampler ? WebGPUConstants.TextureComponentType.DepthComparison :
+                                        componentType === 'u' ? WebGPUConstants.TextureComponentType.Uint :
+                                        componentType === 'i' ? WebGPUConstants.TextureComponentType.Sint : WebGPUConstants.TextureComponentType.Float,
+                            textureDimension,
+                            usedInVertex: false,
+                            usedInFragment: false,
+                            name: isTextureArray ? name + i.toString() : name,
+                        };
+                    }
+                    if (isFragment) {
+                        webgpuProcessingContext.orderedUBOsAndSamplers[textureSetIndex][textureBindingIndex].usedInFragment = true;
+                    } else {
+                        webgpuProcessingContext.orderedUBOsAndSamplers[textureSetIndex][textureBindingIndex].usedInVertex = true;
+                    }
                 }
             }
             else {
@@ -293,7 +312,14 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
             if (!webgpuProcessingContext.orderedUBOsAndSamplers[setIndex]) {
                 webgpuProcessingContext.orderedUBOsAndSamplers[setIndex] = [];
             }
-            webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex] = { isSampler: false, isTexture: false, name };
+            if (!webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex]) {
+                webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex] = { isSampler: false, isTexture: false, name, usedInVertex: false, usedInFragment: false };
+            }
+            if (isFragment) {
+                webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex].usedInFragment = true;
+            } else {
+                webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][bindingIndex].usedInVertex = true;
+            }
 
             uniformBuffer = uniformBuffer.replace("uniform", `layout(set = ${setIndex}, binding = ${bindingIndex}) uniform`);
         }
@@ -392,7 +418,7 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
                 if (!webgpuProcessingContext.orderedUBOsAndSamplers[availableUBO.setIndex]) {
                     webgpuProcessingContext.orderedUBOsAndSamplers[availableUBO.setIndex] = [];
                 }
-                webgpuProcessingContext.orderedUBOsAndSamplers[availableUBO.setIndex][availableUBO.bindingIndex] = { isSampler: false, isTexture: false, name };
+                webgpuProcessingContext.orderedUBOsAndSamplers[availableUBO.setIndex][availableUBO.bindingIndex] = { isSampler: false, isTexture: false, usedInVertex: true, usedInFragment: true, name };
             }
 
             let ubo = `layout(set = ${availableUBO.setIndex}, binding = ${availableUBO.bindingIndex}) uniform ${name} {\n    `;
