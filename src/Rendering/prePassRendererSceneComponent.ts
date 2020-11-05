@@ -3,6 +3,10 @@ import { Scene } from "../scene";
 import { ISceneComponent, SceneComponentConstants } from "../sceneComponent";
 import { PrePassRenderer } from "./prePassRenderer";
 import { Logger } from "../Misc/logger";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { SubMesh } from "../Meshes/subMesh";
+import { _InstancesBatch } from "../Meshes/mesh";
+import { Effect } from "../Materials/effect";
 
 declare module "../abstractScene" {
     export interface AbstractScene {
@@ -96,6 +100,8 @@ export class PrePassRendererSceneComponent implements ISceneComponent {
         this.scene._beforeCameraDrawStage.registerStep(SceneComponentConstants.STEP_BEFORECAMERADRAW_PREPASS, this, this._beforeCameraDraw);
         this.scene._afterCameraDrawStage.registerStep(SceneComponentConstants.STEP_AFTERCAMERADRAW_PREPASS, this, this._afterCameraDraw);
         this.scene._beforeClearStage.registerStep(SceneComponentConstants.STEP_BEFORECLEARSTAGE_PREPASS, this, this._beforeClearStage);
+        this.scene._beforeRenderingMeshStage.registerStep(SceneComponentConstants.STEP_BEFORERENDERINGMESH_PREPASS, this, this._beforeRenderingMeshStage);
+        this.scene._afterRenderingMeshStage.registerStep(SceneComponentConstants.STEP_AFTERRENDERINGMESH_PREPASS, this, this._afterRenderingMeshStage);
     }
 
     private _beforeCameraDraw() {
@@ -113,6 +119,26 @@ export class PrePassRendererSceneComponent implements ISceneComponent {
     private _beforeClearStage() {
         if (this.scene.prePassRenderer) {
             this.scene.prePassRenderer.clear();
+        }
+    }
+
+    private _beforeRenderingMeshStage(mesh: AbstractMesh, subMesh: SubMesh, batch: _InstancesBatch, effect: Nullable<Effect>) {
+        if (!effect) {
+            return;
+        }
+
+        // Render to MRT
+        const scene = mesh.getScene();
+        if (scene.prePassRenderer) {
+            scene.prePassRenderer.bindAttachmentsForEffect(effect, subMesh);
+        }
+    }
+
+    private _afterRenderingMeshStage(mesh: AbstractMesh) {
+        const scene = mesh.getScene();
+
+        if (scene.prePassRenderer) {
+            scene.prePassRenderer.restoreAttachments();
         }
     }
 

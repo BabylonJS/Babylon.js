@@ -1861,10 +1861,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             engine.setAlphaMode(this._effectiveMaterial.alphaMode);
         }
 
-        for (let step of scene._beforeRenderingMeshStage) {
-            step.action(this, subMesh, batch);
-        }
-
         var effect: Nullable<Effect>;
         if (this._effectiveMaterial._storeEffectOnSubMeshes) {
             effect = subMesh.effect;
@@ -1872,13 +1868,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             effect = this._effectiveMaterial.getEffect();
         }
 
-        if (!effect) {
-            return this;
+        for (let step of scene._beforeRenderingMeshStage) {
+            step.action(this, subMesh, batch, effect);
         }
 
-        // Render to MRT
-        if (scene.prePassRenderer) {
-            scene.prePassRenderer.bindAttachmentsForEffect(effect, subMesh);
+        if (!effect) {
+            return this;
         }
 
         const effectiveMesh = effectiveMeshReplacement || this._effectiveMesh;
@@ -1938,7 +1933,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         this._effectiveMaterial.unbind();
 
         for (let step of scene._afterRenderingMeshStage) {
-            step.action(this, subMesh, batch);
+            step.action(this, subMesh, batch, effect);
         }
 
         if (this._internalMeshDataInfo._onAfterRenderObservable) {
