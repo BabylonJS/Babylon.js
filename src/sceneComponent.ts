@@ -10,6 +10,7 @@ import { PickingInfo } from "./Collisions/pickingInfo";
 import { AbstractScene } from "./abstractScene";
 
 declare type Mesh = import("./Meshes/mesh").Mesh;
+declare type Effect = import("./Materials/effect").Effect;
 
 /**
  * Groups all the scene component constants in one place to ease maintenance.
@@ -186,7 +187,7 @@ export type RenderingGroupStageAction = (renderingGroupId: number) => void;
 /**
  * Strong typing of a Mesh Render related stage step action
  */
-export type RenderingMeshStageAction = (mesh: Mesh, subMesh: SubMesh, batch: _InstancesBatch) => void;
+export type RenderingMeshStageAction = (mesh: Mesh, subMesh: SubMesh, batch: _InstancesBatch, effect: Nullable<Effect>) => void;
 
 /**
  * Strong typing of a simple stage step action
