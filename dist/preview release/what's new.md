@@ -4,19 +4,27 @@
 
 - Added particle editor to the Inspector ([Deltakosh](https://github.com/deltakosh))
 - Added sprite editor to the Inspector ([Deltakosh](https://github.com/deltakosh))
-- Added the `ShadowDepthWrapper` class to support accurate shadow generation for custom as well as node material shaders. [Doc](https://doc.babylonjs.com/babylon101/shadows#custom-shadow-map-shaders) ([Popov72](https://github.com/Popov72))
+- Updated skeleton viewer in the Inspector ([Pryme8](https://github.com/Pryme8))
+- Added texture inspection in the Inspector ([DarraghBurkeMS](https://github.com/DarraghBurkeMS))
+- Added PBR support in the node material editor ([Popov72](https://github.com/Popov72))
+- Added new node material editor modes: procedural textures, post processes, particle shaders ([Popov72](https://github.com/Popov72) and [Deltakosh](https://github.com/deltakosh)) 
+- Added customizable frames in the node material editor ([Pamela W](https://github.com/msDestiny14))
+- Added support for code templates in the playground ([sailro]( https://github.com/sailro))
 - Added HDR texture filtering tools to the sandbox. [Doc](https://medium.com/@babylonjs/real-time-pbr-filtering-is-coming-to-babylon-cb0e81159d79) ([Sebavan](https://github.com/sebavan/))
-- Reflection probes can now be used to give accurate shading with PBR ([CraigFeldpsar](https://github.com/craigfeldspar) and ([Sebavan](https://github.com/sebavan/)))
-- Added SubSurfaceScattering on PBR materials ([CraigFeldpsar](https://github.com/craigfeldspar) and ([Sebavan](https://github.com/sebavan/)))
-- Added edition of PBR materials, Post processes and Particle fragment shaders in the node material editor ([Popov72](https://github.com/Popov72))
-- Added edition of procedural texture in the node material editor ([Deltakosh](https://github.com/deltakosh))
-- Added support in `ShadowGenerator` for fast fake soft transparent shadows ([Popov72](https://github.com/Popov72))
+- Revamped documentation ([RaananW](https://github.com/RaananW), [John King](https://github.com/BabylonJSGuide), [Patrick Ryan](https://github.com/PatrickRyanMS), [PiratJC](https://github.com/PirateJC)) 
+- Added KTX2 + BasisU support ([Popov72](https://github.com/Popov72)) 
+- Updated WebXR Support ([RaananW](https://github.com/RaananW))
 - Added support for thin instances for faster mesh instances. [Doc](https://doc.babylonjs.com/how_to/how_to_use_thininstances) ([Popov72](https://github.com/Popov72))
+- Added support in `ShadowGenerator` for soft transparent shadows ([Popov72](https://github.com/Popov72))
+- Added PBR Next features: Reflection probes for accurate shading and Sub Surface Scattering ([CraigFeldpsar](https://github.com/craigfeldspar) and [Sebavan](https://github.com/sebavan/))
+- Added support for latest glTF extensions: KHR_materials_clearcoat, KHR_materials_sheen, KHR_materials_transmission, KHR_texture_basisu ([Sebavan](https://github.com/sebavan/) and [Popov72](https://github.com/Popov72))
+- Added support for 3D Commerce glTF extensions: KHR_material_variants and KHR_xmp ([Sebavan](https://github.com/sebavan/) and [Deltakosh](https://github.com/deltakosh))
+
 
 ## Updates
 
 ### General
-
+- Added the `ShadowDepthWrapper` class to support accurate shadow generation for custom as well as node material shaders. [Doc](https://doc.babylonjs.com/babylon101/shadows#custom-shadow-map-shaders) ([Popov72](https://github.com/Popov72))
 - Added support for postproces serialization ([Deltakosh](https://github.com/deltakosh))
 - Added support for querystrings on KTX file URLs ([abogartz](https://github.com/abogartz))
 - Refactored React refs from old string API to React.createRef() API ([belfortk](https://github.com/belfortk))
