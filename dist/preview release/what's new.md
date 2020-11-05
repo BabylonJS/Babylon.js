@@ -12,7 +12,7 @@
 - Added support for code templates in the playground ([sailro]( https://github.com/sailro))
 - Added HDR texture filtering tools to the sandbox. [Doc](https://medium.com/@babylonjs/real-time-pbr-filtering-is-coming-to-babylon-cb0e81159d79) ([Sebavan](https://github.com/sebavan/))
 - Revamped documentation ([RaananW](https://github.com/RaananW), [John King](https://github.com/BabylonJSGuide), [Patrick Ryan](https://github.com/PatrickRyanMS), [PiratJC](https://github.com/PirateJC)) 
-- Added KTX2 + BasisU support ([Popov72](https://github.com/Popov72)) 
+- Added KTX + BasisU support ([Popov72](https://github.com/Popov72)) 
 - Updated WebXR Support ([RaananW](https://github.com/RaananW))
 - Added support for thin instances for faster mesh instances. [Doc](https://doc.babylonjs.com/how_to/how_to_use_thininstances) ([Popov72](https://github.com/Popov72))
 - Added support in `ShadowGenerator` for soft transparent shadows ([Popov72](https://github.com/Popov72))
