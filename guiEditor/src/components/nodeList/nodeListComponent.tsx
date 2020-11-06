@@ -226,6 +226,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         const allBlocks: any = {
             Custom_Gui: customFrameNames,
             Buttons: ["Text", "Image"],
+            Controls: ["Slider"],
         };
 
         switch (this.props.globalState.mode) {
