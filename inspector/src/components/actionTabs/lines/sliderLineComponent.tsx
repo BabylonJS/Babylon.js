@@ -109,7 +109,7 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
 
         return (
             <div className="sliderLine">
-                <div className={this.props.margin ? "label withMargins" : "label"}>
+                <div className={this.props.margin ? "label withMargins" : "label"}  title={this.props.label}>
                     {this.props.label}
                 </div>
                 <FloatLineComponent smallUI={true} label="" target={this.state} propertyName="value" min={this.props.minimum} max={this.props.maximum}

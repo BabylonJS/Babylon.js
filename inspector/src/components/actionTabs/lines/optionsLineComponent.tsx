@@ -91,12 +91,12 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
     render() {
         return (
             <div className="listLine">
-                <div className="label">{this.props.label}</div>
+                <div className="label" title={this.props.label}>{this.props.label}</div>
                 <div className="options">
                     <select onChange={(evt) => this.updateValue(evt.target.value)} value={this.state.value ?? ""}>
                         {this.props.options.map((option, i) => {
                             return (
-                                <option selected={option.selected} key={option.label + i} value={option.value}>
+                                <option selected={option.selected} key={option.label + i} value={option.value} title={option.label}>
                                     {option.label}
                                 </option>
                             );
