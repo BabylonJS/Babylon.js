@@ -63767,7 +63767,7 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
     CheckBoxLineComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "checkBoxLine" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "checkBox" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkbox", id: "checkbox" + this._uniqueId, className: "cbx hidden", checked: this.state.isSelected, onChange: function () { return _this.onChange(); }, disabled: !!this.props.disabled }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "checkbox" + this._uniqueId, className: "lbl" + (!!this.props.disabled ? ' disabled' : '') }))));
@@ -63907,7 +63907,7 @@ var Color3LineComponent = /** @class */ (function (_super) {
         var expandedIcon = this.state.isExpanded ? minusIcon : plusIcon;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3Line" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorPickerComponent__WEBPACK_IMPORTED_MODULE_4__["ColorPickerLineComponent"], { value: this.state.color, globalState: this.props.globalState, onColorChanged: function (color) {
                             _this.onChange(color);
@@ -64063,7 +64063,7 @@ var Color4LineComponent = /** @class */ (function (_super) {
         var expandedIcon = this.state.isExpanded ? minusIcon : plusIcon;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3Line" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorPickerComponent__WEBPACK_IMPORTED_MODULE_4__["ColorPickerLineComponent"], { globalState: this.props.globalState, value: this.state.color, onColorChanged: function (color) {
                             _this.onChange(color);
@@ -64678,7 +64678,7 @@ var FloatLineComponent = /** @class */ (function (_super) {
         var _this = this;
         var className = this.props.smallUI ? "short" : "value";
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null, react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: className },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", step: this.props.step || "0.01", className: "numeric-input", onBlur: function (evt) {
                         _this.props.globalState.blockKeyboardEvents = false;
@@ -64926,7 +64926,7 @@ var MatrixLineComponent = /** @class */ (function (_super) {
         ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector3Line" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label)),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label)),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_optionsLineComponent__WEBPACK_IMPORTED_MODULE_4__["OptionsLineComponent"], { label: "Mode", className: "no-right-margin", options: modeOptions, target: this, noDirectUpdate: true, getSelection: function () {
                         return _this.state.mode;
@@ -65061,7 +65061,7 @@ var NumericInputComponent = /** @class */ (function (_super) {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "numeric" },
             this.props.label &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "numeric-label" }, this.props.label + ": "),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "numeric-label", title: this.props.label }, this.props.label + ": "),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", onFocus: function () { return _this.props.globalState.blockKeyboardEvents = true; }, onBlur: function (evt) {
                     _this.props.globalState.blockKeyboardEvents = false;
                 }, step: this.props.step, className: "numeric-input", value: this.state.value, onChange: function (evt) { return _this.updateValue(evt); } })));
@@ -65153,10 +65153,10 @@ var OptionsLineComponent = /** @class */ (function (_super) {
         var _this = this;
         var _a;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "listLine" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "options" + (this.props.className ? " " + this.props.className : "") },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { onChange: function (evt) { return _this.updateValue(evt.target.value); }, value: (_a = this.state.value) !== null && _a !== void 0 ? _a : "" }, this.props.options.map(function (option) {
-                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { key: option.label, value: option.value }, option.label));
+                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { key: option.label, value: option.value, title: option.label }, option.label));
                 })))));
     };
     return OptionsLineComponent;
@@ -65355,7 +65355,7 @@ var SliderLineComponent = /** @class */ (function (_super) {
     SliderLineComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "sliderLine" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { globalState: this.props.globalState, smallUI: true, label: "", target: this.state, propertyName: "value", min: this.prepareDataToRead(this.props.minimum), max: this.prepareDataToRead(this.props.maximum), onEnter: function () {
                     _this.onChange(_this.state.value);
                 } }),
@@ -65438,7 +65438,7 @@ var TextInputLineComponent = /** @class */ (function (_super) {
     TextInputLineComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.multilines ? "textInputArea" : "textInputLine" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value" },
                 this.props.multilines && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("textarea", { value: this.state.value, onFocus: function () { return _this.props.globalState.blockKeyboardEvents = true; }, onChange: function (evt) { return _this.updateValue(evt.target.value, false); }, onKeyDown: function (evt) {
@@ -65503,7 +65503,7 @@ var TextLineComponent = /** @class */ (function (_super) {
     };
     TextLineComponent.prototype.render = function () {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.underline ? "textLine underline" : "textLine" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
             this.renderContent()));
     };
     return TextLineComponent;

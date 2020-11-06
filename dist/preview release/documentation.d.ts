@@ -71306,9 +71306,20 @@ declare module BABYLON {
          */
         set motionBlurSamples(samples: number);
         private _motionBlurSamples;
+        /**
+         * Gets wether or not the motion blur post-process is in object based mode.
+         */
+        get isObjectBased(): boolean;
+        /**
+         * Sets wether or not the motion blur post-process is in object based mode.
+         */
+        set isObjectBased(value: boolean);
+        private _isObjectBased;
         private _forceGeometryBuffer;
         private _geometryBufferRenderer;
         private _prePassRenderer;
+        private _invViewProjection;
+        private _previousViewProjection;
         /**
          * Gets a string identifying the name of the class
          * @returns "MotionBlurPostProcess" string
@@ -71345,6 +71356,22 @@ declare module BABYLON {
          * @param camera The camera to dispose the post process on.
          */
         dispose(camera?: Camera): void;
+        /**
+         * Called on the mode changed (object based or screen based).
+         */
+        private _applyMode;
+        /**
+         * Called on the effect is applied when the motion blur post-process is in object based mode.
+         */
+        private _onApplyObjectBased;
+        /**
+         * Called on the effect is applied when the motion blur post-process is in screen based mode.
+         */
+        private _onApplyScreenBased;
+        /**
+         * Called on the effect must be updated (changed mode, samples count, etc.).
+         */
+        private _updateEffect;
         /** @hidden */
         static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<MotionBlurPostProcess>;
     }
