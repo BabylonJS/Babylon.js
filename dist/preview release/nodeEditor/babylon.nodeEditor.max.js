@@ -65764,7 +65764,7 @@ var Vector2LineComponent = /** @class */ (function (_super) {
         var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faMinus"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faPlus"] });
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector3Line" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector" }, "X: " + this.state.value.x.toFixed(2) + ", Y: " + this.state.value.y.toFixed(2)),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" }, chevron)),
             this.state.isExpanded &&
@@ -65864,7 +65864,7 @@ var Vector3LineComponent = /** @class */ (function (_super) {
         var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faMinus"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faPlus"] });
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector3Line" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector" }, "X: " + this.state.value.x.toFixed(2) + ", Y: " + this.state.value.y.toFixed(2) + ", Z: " + this.state.value.z.toFixed(2)),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" }, chevron)),
             this.state.isExpanded &&
@@ -65975,7 +65975,7 @@ var Vector4LineComponent = /** @class */ (function (_super) {
         var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faMinus"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faPlus"] });
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector3Line" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector" }, "X: " + this.state.value.x.toFixed(2) + ", Y: " + this.state.value.y.toFixed(2) + ", Z: " + this.state.value.z.toFixed(2) + ", W: " + this.state.value.w.toFixed(2)),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" }, chevron)),
             this.state.isExpanded &&
