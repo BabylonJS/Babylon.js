@@ -173,7 +173,7 @@ export class GraphNode {
         }
     }
 
-    public constructor(public block: NodeMaterialBlock, globalState: GlobalState, public guiNode: BABYLON.GUI.Container | null | undefined) {
+    public constructor(public block: NodeMaterialBlock, globalState: GlobalState, public guiNode: BABYLON.GUI.Container | BABYLON.GUI.Control | null | undefined) {
         this._globalState = globalState;
 
         guiNode?.onPointerUpObservable.add(evt => {

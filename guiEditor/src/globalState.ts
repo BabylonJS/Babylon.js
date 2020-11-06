@@ -17,6 +17,7 @@ import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialMo
 
 export class GlobalState {
     nodeMaterial: NodeMaterial;
+    guiTexture: BABYLON.GUI.AdvancedDynamicTexture;
     hostElement: HTMLElement;
     hostDocument: HTMLDocument;
     hostWindow: Window;

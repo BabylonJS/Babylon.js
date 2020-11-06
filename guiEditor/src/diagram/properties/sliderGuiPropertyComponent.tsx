@@ -36,12 +36,12 @@ export class SliderPropertyTabComponent extends React.Component<IPropertyCompone
                    this.slider.value = evt;
                 }}>
                 </NumericInputComponent>
-                <NumericInputComponent globalState={this.props.globalState} label="Height" value={this.slider.height} 
+                <NumericInputComponent globalState={this.props.globalState} label="Height" value={this.slider.heightInPixels} 
                 onChange={evt =>{
                    this.slider.height = evt;
                 }}>
                 </NumericInputComponent>
-                <NumericInputComponent globalState={this.props.globalState} label="Width" value={this.slider.width} 
+                <NumericInputComponent globalState={this.props.globalState} label="Width" value={this.slider.widthInPixels} 
                 onChange={evt =>{
                    this.slider.width = evt;
                 }}>

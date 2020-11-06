@@ -878,8 +878,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             }
             delete this._lastControlOver[pointerEvent.pointerId];
             if (this._lastControlDown[pointerEvent.pointerId] && this._lastControlDown[pointerEvent.pointerId] !== this._capturingControl[pointerEvent.pointerId]) {
-               // this._lastControlDown[pointerEvent.pointerId]._forcePointerUp();
-              //  delete this._lastControlDown[pointerEvent.pointerId];
+              // this._lastControlDown[pointerEvent.pointerId]._forcePointerUp();
+              // delete this._lastControlDown[pointerEvent.pointerId];
+              //needs to be uncommented.
             }
         });
     }
