@@ -17,6 +17,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
     private _scene: Nullable<Scene>;
     private _canvasRef: React.RefObject<HTMLCanvasElement>;
     private _downloadManager: DownloadManager;
+    private _unityToolkitWasLoaded = false;
 
     public constructor(props: IRenderingComponentProps) {
         super(props);
@@ -76,6 +77,17 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         });
     }
 
+    private async _loadScriptAsync(url: string) {
+        return new Promise((resolve, reject) => {
+            let script = document.createElement('script');
+            script.src = url;
+            script.onload = () => {
+                resolve();
+            }
+            document.head.appendChild(script);
+        });
+    }
+
     private async _compileAndRunAsync() {
         this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
         this.props.globalState.onErrorObservable.notifyObservers(null);
@@ -110,6 +122,12 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
             if (!code) {
                 return;
+            }
+
+            // Check for Unity Toolkit
+            if (code.indexOf("SceneManager") !== -1 && !this._unityToolkitWasLoaded) {
+                await this._loadScriptAsync("https://raw.githubusercontent.com/MackeyK24/MackeyK24.github.io/master/toolkit/babylon.manager.js");
+                this._unityToolkitWasLoaded = true;
             }
 
             let createEngineFunction = "createDefaultEngine";

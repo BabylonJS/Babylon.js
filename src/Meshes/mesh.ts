@@ -2470,8 +2470,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             Vector2.FromArrayToRef(uvs, (index / 3) * 2, uv);
 
             // Compute height
-            var u = ((Math.abs(uv.x * uvScale.x + uvOffset.x) * heightMapWidth) % heightMapWidth) | 0;
-            var v = ((Math.abs(uv.y * uvScale.y + uvOffset.y) * heightMapHeight) % heightMapHeight) | 0;
+            var u = ((Math.abs(uv.x * uvScale.x + uvOffset.x % 1) * (heightMapWidth - 1)) % heightMapWidth) | 0;
+            var v = ((Math.abs(uv.y * uvScale.y + uvOffset.y % 1) * (heightMapHeight - 1)) % heightMapHeight) | 0;
 
             var pos = (u + v * heightMapWidth) * 4;
             var r = buffer[pos] / 255.0;
