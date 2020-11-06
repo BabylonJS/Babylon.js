@@ -2,10 +2,7 @@
 import * as React from "react";
 import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
 import { IPropertyComponentProps } from './propertyComponentProps';
-import { CheckBoxLineComponent } from '../../sharedComponents/checkBoxLineComponent';
-import { TransformBlock } from 'babylonjs/Materials/Node/Blocks/transformBlock';
 import { GeneralPropertyTabComponent } from './genericNodePropertyComponent';
-import { ColorPickerLineComponent } from '../../sharedComponents/colorPickerComponent';
 import { TextLineComponent } from '../../sharedComponents/textLineComponent';
 import { TextInputLineComponent } from '../../sharedComponents/textInputLineComponent';
 import { NumericInputComponent } from '../../sharedComponents/numericInputComponent';

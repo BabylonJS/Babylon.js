@@ -8,6 +8,7 @@ import { LightInformationPropertyTabComponent } from './properties/lightInformat
 import { TexturePropertyTabComponent } from './properties/texturePropertyTabComponent';
 import { TrigonometryPropertyTabComponent } from './properties/trigonometryNodePropertyComponent';
 import { ButtonPropertyTabComponent } from './properties/buttonGuiPropertyComponent copy';
+import { SliderPropertyTabComponent } from './properties/sliderGuiPropertyComponent';
 
 export class PropertyLedger {
     public static RegisteredControls: {[key: string] : ComponentClass<IPropertyComponentProps>} = {};
@@ -32,3 +33,4 @@ PropertyLedger.RegisteredControls["TrigonometryBlock"] = TrigonometryPropertyTab
 
 
 PropertyGuiLedger.RegisteredControls["Button"] = ButtonPropertyTabComponent;
+PropertyGuiLedger.RegisteredControls["Slider"] = SliderPropertyTabComponent;
