@@ -62,6 +62,15 @@ let readStringFromStore = function(key, defaultValue) {
     return localStorage.getItem(key);
 }
 
+let loadInSequence = async function(versions, index, resolve) {
+    if (index >= versions.length) {
+        resolve();
+        return;
+    }
+    await loadScriptAsync(versions[index]);
+    loadInSequence(versions, index + 1, resolve);
+}
+
 let checkBabylonVersionAsync= function () {
     let activeVersion = readStringFromStore("version", "Latest");
 
@@ -69,13 +78,9 @@ let checkBabylonVersionAsync= function () {
         return Promise.resolve();
     }
 
-    let tasks = [];
-
-    for (var file of Versions[activeVersion]) {
-        tasks.push(loadScriptAsync(file));
-    }
-
-    return Promise.all(tasks);
+    return new Promise((resolve, reject) => {
+        loadInSequence(Versions[activeVersion], 0, resolve);
+    });
 }
 
 var storedPGObbject = BABYLON.Playground;
