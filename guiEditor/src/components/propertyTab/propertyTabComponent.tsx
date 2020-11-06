@@ -315,6 +315,19 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         return true;
     }
 
+    generateCode(guiTexture : BABYLON.GUI.AdvancedDynamicTexture)
+    {
+        let codeString = "";
+        let children = guiTexture.getChildren()[0].children;
+        let guiCount = 0;
+        children.forEach(element => {
+            codeString += `var guiObject${guiCount.toString()} = new BABYLON.GUI.${element.typeName || "button"}("${element.name }");\r\n`;
+
+            ++guiCount;
+        });
+        return codeString;
+    }
+
     render() {
         if (this.state.currentNode) {
             return (
@@ -399,7 +412,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     </LineContainerComponent>
                     <LineContainerComponent title="FILE">
                         <ButtonLineComponent label="Generate code" onClick={() => {
-                            StringTools.DownloadAsFile(this.props.globalState.hostDocument, this.props.globalState.nodeMaterial!.generateCode(), "code.txt");
+                            StringTools.DownloadAsFile(this.props.globalState.hostDocument, this.generateCode(this.props.globalState.guiTexture), "guiCode.txt");
                         }} />
                     </LineContainerComponent>
                 </div>

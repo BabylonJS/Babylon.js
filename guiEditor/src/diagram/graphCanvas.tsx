@@ -971,7 +971,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         camera.attachControl(true);
         
         // GUI
-        this._advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+        this.globalState.guiTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
         
         engine.runRenderLoop(() => {this.updateGUIs(); scene.render()});
     }
@@ -979,7 +979,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
     public addNewButton()
     {
-        if(!this._advancedTexture)
+        if(!this.globalState.guiTexture)
         {
             this.createGUICanvas();
         }
@@ -992,17 +992,39 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         button1.background = "#008000";
         button1.onPointerUpObservable.add(function() {
         });
-        this._guis.push(button1);
+
         var fakeNodeMaterialBlock = new NodeMaterialBlock("Button");
         var newGuiNode = new GraphNode(fakeNodeMaterialBlock, this.globalState, button1);
         newGuiNode.appendVisual(this._graphCanvas, this);
         this._guiNodes.push(newGuiNode);
 
-        this._advancedTexture.addControl(button1);    
+        this.globalState.guiTexture.addControl(button1);    
     }
 
-    private _guis: BABYLON.GUI.Container[] = [];
-    private _advancedTexture: BABYLON.GUI.AdvancedDynamicTexture;
+    public addNewSlider()
+    {
+        if(!this.globalState.guiTexture)
+        {
+            this.createGUICanvas();
+        }
+
+        var slider1 = new BABYLON.GUI.Slider("Slider");
+        slider1.width = "150px"
+        slider1.height = "40px";
+        slider1.color = "#FFFFFF";
+        slider1.background = "#008000";
+        slider1.onPointerUpObservable.add(function() {
+        });
+        var fakeNodeMaterialBlock = new NodeMaterialBlock("Slider");
+        var newGuiNode = new GraphNode(fakeNodeMaterialBlock, this.globalState, slider1);
+        newGuiNode.appendVisual(this._graphCanvas, this);
+        this._guiNodes.push(newGuiNode);
+
+        this.globalState.guiTexture.addControl(slider1);    
+    }
+
+
+    //private _advancedTexture: BABYLON.GUI.AdvancedDynamicTexture;
     updateGUIs()
     {
         this._guiNodes.forEach(element => {

@@ -566,8 +566,14 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         let newNode: GraphNode;
         
         //new code for gui editor.
-        this._graphCanvas.addNewButton();
 
+        if(data === "Slider")
+        {
+            this._graphCanvas.addNewSlider();
+        }
+        else {
+            this._graphCanvas.addNewButton();
+        }
         if (data.indexOf("Block") === -1) {
             newNode = this.addValueNode(data);
         } 
