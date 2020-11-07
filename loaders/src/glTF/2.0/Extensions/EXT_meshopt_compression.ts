@@ -60,7 +60,7 @@ export class EXT_meshopt_compression implements IGLTFLoaderExtension {
         } else {
             return null;
         }
-    };
+    }
 }
 
 GLTFLoader.RegisterExtension(NAME, (loader) => new EXT_meshopt_compression(loader));
