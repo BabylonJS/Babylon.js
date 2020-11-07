@@ -1407,11 +1407,11 @@ export class WebGPUEngine extends Engine {
                         if (this._textureHelper.isImageBitmap(imageBitmap)) {
                             this._textureHelper.updateTexture(imageBitmap, gpuTextureWrapper.underlyingResource!, imageBitmap.width, imageBitmap.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0, this._uploadEncoder);
                             if (!noMipmap && !isCompressed) {
-                                this._generateMipmaps(texture);
+                                this._generateMipmaps(texture, this._uploadEncoder);
                             }
                         }
                     } else if (!noMipmap && !isCompressed) {
-                        this._generateMipmaps(texture);
+                        this._generateMipmaps(texture, this._uploadEncoder);
                     }
 
                     if (scene) {
@@ -1454,7 +1454,7 @@ export class WebGPUEngine extends Engine {
                 this._textureHelper.updateCubeTextures(imageBitmaps, gpuTextureWrapper.underlyingResource!, width, height, gpuTextureWrapper.format, false, false, 0, 0, this._uploadEncoder);
 
                 if (!noMipmap) {
-                    this._generateMipmaps(texture);
+                    this._generateMipmaps(texture, this._uploadEncoder);
                 }
 
                 texture.isReady = true;
@@ -1646,7 +1646,7 @@ export class WebGPUEngine extends Engine {
                 this._createGPUTextureForInternalTexture(texture);
             }
 
-            this._generateMipmaps(texture);
+            this._generateMipmaps(texture, texture.source === InternalTextureSource.RenderTarget ? this._renderTargetEncoder : undefined);
         }
     }
 
@@ -1914,12 +1914,14 @@ export class WebGPUEngine extends Engine {
         return gpuTextureWrapper;
     }
 
-    private _generateMipmaps(texture: InternalTexture) {
+    private _generateMipmaps(texture: InternalTexture, commandEncoder?: GPUCommandEncoder) {
         const gpuTexture = texture._hardwareTexture?.underlyingResource;
 
         if (!gpuTexture) {
             return;
         }
+
+        commandEncoder = commandEncoder ?? (this._currentRenderTarget && !this._currentRenderPass ? this._renderTargetEncoder : !this._currentRenderPass ? this._renderEncoder : this._uploadEncoder);
 
         const format = (texture._hardwareTexture as WebGPUHardwareTexture).format;
         const mipmapCount = WebGPUTextureHelper.computeNumMipmapLevels(texture.width, texture.height);
@@ -1931,9 +1933,9 @@ export class WebGPUEngine extends Engine {
         }
 
         if (texture.isCube) {
-            this._textureHelper.generateCubeMipmaps(gpuTexture, format, mipmapCount, this._uploadEncoder);
+            this._textureHelper.generateCubeMipmaps(gpuTexture, format, mipmapCount, commandEncoder);
         } else {
-            this._textureHelper.generateMipmaps(gpuTexture, format, mipmapCount, 0, this._uploadEncoder);
+            this._textureHelper.generateMipmaps(gpuTexture, format, mipmapCount, 0, commandEncoder);
         }
     }
 
@@ -1957,7 +1959,7 @@ export class WebGPUEngine extends Engine {
         createImageBitmap(canvas).then((bitmap) => {
             this._textureHelper.updateTexture(bitmap, gpuTextureWrapper.underlyingResource!, width, height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, premulAlpha, 0, 0, this._uploadEncoder);
             if (texture.generateMipMaps) {
-                this._generateMipmaps(texture);
+                this._generateMipmaps(texture, this._uploadEncoder);
             }
 
             texture.isReady = true;
@@ -1994,7 +1996,7 @@ export class WebGPUEngine extends Engine {
         createImageBitmap(video).then((bitmap) => {
             this._textureHelper.updateTexture(bitmap, gpuTextureWrapper.underlyingResource!, texture.width, texture.height, texture.depth, gpuTextureWrapper.format, 0, 0, !invertY, false, 0, 0, this._uploadEncoder);
             if (texture.generateMipMaps) {
-                this._generateMipmaps(texture);
+                this._generateMipmaps(texture, this._uploadEncoder);
             }
 
             texture.isReady = true;
@@ -2084,7 +2086,7 @@ export class WebGPUEngine extends Engine {
 
             this._textureHelper.updateTexture(data, gpuTextureWrapper.underlyingResource!, texture.width, texture.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0, this._uploadEncoder);
             if (texture.generateMipMaps) {
-                this._generateMipmaps(texture);
+                this._generateMipmaps(texture, this._uploadEncoder);
             }
         }
 
@@ -2110,7 +2112,7 @@ export class WebGPUEngine extends Engine {
 
         this._textureHelper.updateCubeTextures(data, gpuTextureWrapper.underlyingResource!, texture.width, texture.height, gpuTextureWrapper.format, invertY, false, 0, 0, this._uploadEncoder);
         if (texture.generateMipMaps) {
-            this._generateMipmaps(texture);
+            this._generateMipmaps(texture, this._uploadEncoder);
         }
 
         texture.isReady = true;
@@ -2142,7 +2144,7 @@ export class WebGPUEngine extends Engine {
 
             this._textureHelper.updateTexture(data, gpuTextureWrapper.underlyingResource!, texture.width, texture.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0, this._uploadEncoder);
             if (texture.generateMipMaps) {
-                this._generateMipmaps(texture);
+                this._generateMipmaps(texture, this._uploadEncoder);
             }
         }
 
@@ -2498,6 +2500,7 @@ export class WebGPUEngine extends Engine {
             }
             this._debugPopGroup(1);
             this._resetCurrentViewport(1);
+            this._currentRenderPass = null;
         }
     }
 
@@ -2645,11 +2648,11 @@ export class WebGPUEngine extends Engine {
             this._endRenderTargetRenderPass();
         }
 
-        this._currentRenderTarget = null;
-
         if (texture.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
             this._generateMipmaps(texture);
         }
+
+        this._currentRenderTarget = null;
 
         this._currentRenderPass = this._mainRenderPass;
         this._setDepthTextureFormat(this._getMainDepthTextureFormat());
