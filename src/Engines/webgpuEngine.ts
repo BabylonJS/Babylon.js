@@ -1878,7 +1878,7 @@ export class WebGPUEngine extends Engine {
             texture._source === InternalTextureSource.RenderTarget ? WebGPUConstants.TextureUsage.Sampled | WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.OutputAttachment :
             texture._source === InternalTextureSource.Depth ? WebGPUConstants.TextureUsage.Sampled | WebGPUConstants.TextureUsage.OutputAttachment : -1;
 
-        const generateMipMaps = texture._source === InternalTextureSource.RenderTarget ? false : texture.generateMipMaps;
+        const hasMipMaps = texture.generateMipMaps;
         const layerCount = depth || 1;
 
         if (texture.isCube) {
@@ -1888,7 +1888,7 @@ export class WebGPUEngine extends Engine {
             gpuTextureWrapper.set(gpuTexture);
             gpuTextureWrapper.createView({
                 dimension: WebGPUConstants.TextureViewDimension.Cube,
-                mipLevelCount: generateMipMaps ? WebGPUTextureHelper.computeNumMipmapLevels(width!, height!) : 1,
+                mipLevelCount: hasMipMaps ? WebGPUTextureHelper.computeNumMipmapLevels(width!, height!) : 1,
                 baseArrayLayer: 0,
                 baseMipLevel: 0,
                 aspect: WebGPUConstants.TextureAspect.All
@@ -1899,7 +1899,7 @@ export class WebGPUEngine extends Engine {
             gpuTextureWrapper.set(gpuTexture);
             gpuTextureWrapper.createView({
                 dimension: texture.is2DArray ? WebGPUConstants.TextureViewDimension.E2dArray : texture.is3D ? WebGPUConstants.TextureDimension.E3d : WebGPUConstants.TextureViewDimension.E2d,
-                mipLevelCount: generateMipMaps ? WebGPUTextureHelper.computeNumMipmapLevels(width!, height!) : 1,
+                mipLevelCount: hasMipMaps ? WebGPUTextureHelper.computeNumMipmapLevels(width!, height!) : 1,
                 baseArrayLayer: 0,
                 baseMipLevel: 0,
                 arrayLayerCount: layerCount,
