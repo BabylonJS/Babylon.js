@@ -22,13 +22,17 @@ import { Scalar } from '../../Maths/math.scalar';
 import { WebGPUBufferManager } from './webgpuBufferManager';
 import { Constants } from '../constants';
 import { Nullable } from '../../types';
+import { InternalTexture } from '../../Materials/Textures/internalTexture';
+import { HardwareTextureWrapper } from '../../Materials/Textures/hardwareTextureWrapper';
+import { BaseTexture } from '../../Materials/Textures/baseTexture';
 
 // TODO WEBGPU improve mipmap generation by not using the OutputAttachment flag
 // see https://github.com/toji/web-texture-tool/tree/main/src
 
-const mipmapVertexSource = `
-    #version 450
+// TODO WEBGPU optimize, don't recreate things that can be cached (bind groups, descriptors, etc)
 
+// TODO WEBGPU use WGSL instead of GLSL
+const mipmapVertexSource = `
     const vec2 pos[4] = vec2[4](vec2(-1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(-1.0f, -1.0f), vec2(1.0f, -1.0f));
     const vec2 tex[4] = vec2[4](vec2(0.0f, 0.0f), vec2(1.0f, 0.0f), vec2(0.0f, 1.0f), vec2(1.0f, 1.0f));
 
@@ -41,8 +45,6 @@ const mipmapVertexSource = `
     `;
 
 const mipmapFragmentSource = `
-    #version 450
-
     layout(set = 0, binding = 0) uniform sampler imgSampler;
     layout(set = 0, binding = 1) uniform texture2D img;
 
@@ -54,13 +56,47 @@ const mipmapFragmentSource = `
     }
     `;
 
+const invertYPreMultiplyAlphaVertexSource = `
+    const vec2 pos[4] = vec2[4](vec2(-1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(-1.0f, -1.0f), vec2(1.0f, -1.0f));
+    const vec2 tex[4] = vec2[4](vec2(0.0f, 0.0f), vec2(1.0f, 0.0f), vec2(0.0f, 1.0f), vec2(1.0f, 1.0f));
+
+    layout(location = 0) out vec2 vTex;
+
+    void main() {
+        vTex = tex[gl_VertexIndex];
+    #ifdef INVERTY
+        vTex.y = 1.0 - vTex.y;
+    #endif
+        gl_Position = vec4(pos[gl_VertexIndex], 0.0, 1.0);
+    }
+    `;
+
+const invertYPreMultiplyAlphaFragmentSource = `
+    layout(set = 0, binding = 0) uniform sampler imgSampler;
+    layout(set = 0, binding = 1) uniform texture2D img;
+
+    layout(location = 0) in vec2 vTex;
+    layout(location = 0) out vec4 outColor;
+
+    void main() {
+        vec4 color = texture(sampler2D(img, imgSampler), vTex);
+    #ifdef PREMULTIPLYALPHA
+        color.rgb *= color.a;
+    #endif
+        outColor = color;
+    }
+    `;
+
 export class WebGPUTextureHelper {
 
     private _device: GPUDevice;
     private _glslang: any;
     private _bufferManager: WebGPUBufferManager;
     private _mipmapSampler: GPUSampler;
-    private _mipmapPipelines: { [format: string]: GPURenderPipeline } = {};
+    private _invertYPreMultiplyAlphaSampler: GPUSampler;
+    private _pipelines: { [format: string]: Array<GPURenderPipeline> } = {};
+    private _compiledShaders: GPUShaderModule[][] = [];
+    private _deferredReleaseTextures: Array<[Nullable<InternalTexture>, Nullable<HardwareTextureWrapper | GPUTexture>, Nullable<BaseTexture>, Nullable<InternalTexture>]> = [];
 
     public static computeNumMipmapLevels(width: number, height: number) {
         return Scalar.ILog2(Math.max(width, height)) + 1;
@@ -72,24 +108,42 @@ export class WebGPUTextureHelper {
         this._bufferManager = bufferManager;
 
         this._mipmapSampler = device.createSampler({ minFilter: WebGPUConstants.FilterMode.Linear });
+        this._invertYPreMultiplyAlphaSampler = device.createSampler({ minFilter: WebGPUConstants.FilterMode.Nearest, magFilter: WebGPUConstants.FilterMode.Nearest });
 
         this._getPipeline(WebGPUConstants.TextureFormat.RGBA8Unorm);
     }
 
-    private _getPipeline(format: GPUTextureFormat): GPURenderPipeline {
-        let pipeline = this._mipmapPipelines[format];
+    private _getPipeline(format: GPUTextureFormat, forMipMap = true, invertY = false, premultiplyAlpha = false): GPURenderPipeline {
+        const index = (forMipMap ? 1 : 0) + ((invertY ? 1 : 0) << 1) + (premultiplyAlpha ? 1 : 0) << 2;
+        if (!this._pipelines[format]) {
+            this._pipelines[format] = [];
+        }
+        let pipeline = this._pipelines[format][index];
         if (!pipeline) {
-            pipeline = this._mipmapPipelines[format] = this._device.createRenderPipeline({
+            let defines = "#version 450\r\n";
+            if (invertY) {
+                defines += "#define INVERTY\r\n";
+            }
+            if (premultiplyAlpha) {
+                defines += "define PREMULTIPLYALPHA\r\n";
+            }
+            let modules = this._compiledShaders[index];
+            if (!modules) {
+                const vertexModule = this._device.createShaderModule({
+                    code: this._glslang.compileGLSL(forMipMap ? defines + mipmapVertexSource : defines + invertYPreMultiplyAlphaVertexSource, 'vertex')
+                });
+                const fragmentModule = this._device.createShaderModule({
+                    code: this._glslang.compileGLSL(forMipMap ? defines + mipmapFragmentSource : defines + invertYPreMultiplyAlphaFragmentSource, 'fragment')
+                });
+                modules = this._compiledShaders[index] = [vertexModule, fragmentModule];
+            }
+            pipeline = this._pipelines[format][index] = this._device.createRenderPipeline({
                 vertexStage: {
-                    module: this._device.createShaderModule({
-                        code: this._glslang.compileGLSL(mipmapVertexSource, 'vertex')
-                    }),
+                    module: modules[0],
                     entryPoint: 'main'
                 },
                 fragmentStage: {
-                    module: this._device.createShaderModule({
-                        code: this._glslang.compileGLSL(mipmapFragmentSource, 'fragment')
-                    }),
+                    module: modules[1],
                     entryPoint: 'main'
                 },
                 primitiveTopology: WebGPUConstants.PrimitiveTopology.TriangleStrip,
@@ -97,11 +151,15 @@ export class WebGPUTextureHelper {
                     indexFormat: WebGPUConstants.IndexFormat.Uint16
                 },
                 colorStates: [{
-                    format: format,
+                    format,
                 }]
             });
         }
         return pipeline;
+    }
+
+    private _isHardwareTexture(texture: HardwareTextureWrapper | GPUTexture): texture is HardwareTextureWrapper {
+        return !!(texture as HardwareTextureWrapper).release;
     }
 
     public isImageBitmap(imageBitmap: ImageBitmap | { width: number, height: number }): imageBitmap is ImageBitmap {
@@ -214,6 +272,80 @@ export class WebGPUTextureHelper {
         for (let f = 0; f < 6; ++f) {
             this.generateMipmaps(gpuTexture, format, mipLevelCount, f, commandEncoder);
         }
+
+        commandEncoder!.popDebugGroup();
+
+        if (useOwnCommandEncoder) {
+            this._device.defaultQueue.submit([commandEncoder!.finish()]);
+            commandEncoder = null as any;
+        }
+    }
+
+    public invertYPreMultiplyAlpha(gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY = false, premultiplyAlpha = false, faceIndex= 0, commandEncoder?: GPUCommandEncoder): void {
+        const useOwnCommandEncoder = commandEncoder === undefined;
+        const pipeline = this._getPipeline(format, false, invertY, premultiplyAlpha);
+        const bindGroupLayout = pipeline.getBindGroupLayout(0);
+
+        if (useOwnCommandEncoder) {
+            commandEncoder = this._device.createCommandEncoder({});
+        }
+
+        commandEncoder!.pushDebugGroup(`internal process texture - invertY=${invertY} premultiplyAlpha=${premultiplyAlpha}`);
+
+        const outputTexture = this.createTexture({ width, height, layers: 1 }, false, false, false, false, false, format, 1, commandEncoder, WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.OutputAttachment | WebGPUConstants.TextureUsage.Sampled);
+
+        const passEncoder = commandEncoder!.beginRenderPass({
+            colorAttachments: [{
+                attachment: outputTexture.createView({
+                    dimension: WebGPUConstants.TextureViewDimension.E2d,
+                    baseMipLevel: 0,
+                    mipLevelCount: 1,
+                    arrayLayerCount: 1,
+                    baseArrayLayer: 0,
+                }),
+                loadValue: WebGPUConstants.LoadOp.Load,
+            }],
+        });
+
+        const bindGroup = this._device.createBindGroup({
+            layout: bindGroupLayout,
+            entries: [{
+                binding: 0,
+                resource: this._invertYPreMultiplyAlphaSampler,
+            }, {
+                binding: 1,
+                resource: gpuTexture.createView({
+                    dimension: WebGPUConstants.TextureViewDimension.E2d,
+                    baseMipLevel: 0,
+                    mipLevelCount: 1,
+                    arrayLayerCount: 1,
+                    baseArrayLayer: faceIndex,
+                }),
+            }],
+        });
+
+        passEncoder.setPipeline(pipeline);
+        passEncoder.setBindGroup(0, bindGroup);
+        passEncoder.draw(4, 1, 0, 0);
+        passEncoder.endPass();
+
+        commandEncoder!.copyTextureToTexture({
+                texture: outputTexture,
+            }, {
+                texture: gpuTexture,
+                origin: {
+                    x: 0,
+                    y: 0,
+                    z: Math.max(faceIndex, 0),
+                }
+            }, {
+                width,
+                height,
+                depth: 1,
+            }
+        );
+
+        this._deferredReleaseTextures.push([null, outputTexture, null, null]);
 
         commandEncoder!.popDebugGroup();
 
@@ -491,7 +623,6 @@ export class WebGPUTextureHelper {
         };
 
         if ((imageBitmap as Uint8Array).byteLength !== undefined) {
-            // Note that we can't honor the invertY / premultiplyAlpha flags as we don't know the format of the array
             imageBitmap = imageBitmap as Uint8Array;
 
             const bytesPerRow = Math.ceil(width / blockInformation.width) * blockInformation.length;
@@ -523,6 +654,10 @@ export class WebGPUTextureHelper {
                     offset: 0,
                     bytesPerRow
                 }, textureExtent);
+            }
+
+            if (invertY || premultiplyAlpha) {
+                this.invertYPreMultiplyAlpha(gpuTexture, width, height, format, invertY, premultiplyAlpha, faceIndex, commandEncoder);
             }
         } else {
             imageBitmap = imageBitmap as ImageBitmap;
@@ -575,4 +710,40 @@ export class WebGPUTextureHelper {
 
         return this._bufferManager.readDataFromBuffer(gpuBuffer, size, width, height, bytesPerRow, bytesPerRowAligned, floatFormat, 0, buffer);
     }
+
+    public releaseTexture(texture: InternalTexture): void {
+        const hardwareTexture = texture._hardwareTexture;
+        const irradianceTexture = texture._irradianceTexture;
+        const depthStencilTexture = texture._depthStencilTexture;
+
+        // We can't destroy the objects just now because they could be used in the current frame - we delay the destroying after the end of the frame
+        this._deferredReleaseTextures.push([texture, hardwareTexture, irradianceTexture, depthStencilTexture]);
+    }
+
+    public destroyDeferredTextures(): void {
+        for (let i = 0; i < this._deferredReleaseTextures.length; ++i) {
+            const [texture, hardwareTexture, irradianceTexture, depthStencilTexture] = this._deferredReleaseTextures[i];
+
+            if (hardwareTexture) {
+                if (this._isHardwareTexture(hardwareTexture)) {
+                    hardwareTexture.release();
+                } else {
+                    hardwareTexture.destroy();
+                }
+            }
+            irradianceTexture?.dispose();
+            depthStencilTexture?.dispose();
+
+            // TODO WEBGPU remove debug code
+            if (texture) {
+                if ((texture as any)._swapped) {
+                    delete (texture as any)._swapped;
+                } else {
+                    (texture as any)._released = true;
+                }
+            }
+        }
+
+        this._deferredReleaseTextures.length = 0;
+   }
 }
