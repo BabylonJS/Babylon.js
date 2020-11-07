@@ -167,7 +167,6 @@ export class WebGPUEngine extends Engine {
     private _mainPassSampleCount: number;
     private _textureHelper: WebGPUTextureHelper;
     private _bufferManager: WebGPUBufferManager;
-    private _deferredReleaseTextures: Array<[InternalTexture, Nullable<HardwareTextureWrapper>, Nullable<BaseTexture>, Nullable<InternalTexture>]> = [];
     private _emptyVertexBuffer: VertexBuffer;
     private _counters: {
         numPipelineDescriptorCreation: number;
@@ -1041,17 +1040,12 @@ export class WebGPUEngine extends Engine {
 
     /** @hidden */
     public _releaseTexture(texture: InternalTexture): void {
-        const hardwareTexture = texture._hardwareTexture;
-        const irradianceTexture = texture._irradianceTexture;
-        const depthStencilTexture = texture._depthStencilTexture;
-
         const index = this._internalTexturesCache.indexOf(texture);
         if (index !== -1) {
             this._internalTexturesCache.splice(index, 1);
         }
 
-        // We can't destroy the objects just now because they could be used in the current frame - we delay the destroying after the end of the frame
-        this._deferredReleaseTextures.push([texture, hardwareTexture, irradianceTexture, depthStencilTexture]);
+        this._textureHelper.releaseTexture(texture);
     }
 
     private _getSamplerFilterDescriptor(internalTexture: InternalTexture): {
@@ -2018,7 +2012,7 @@ export class WebGPUEngine extends Engine {
 
         const data = new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength);
 
-        this._textureHelper.updateTexture(data, gpuTextureWrapper.underlyingResource!, width, height, texture.depth, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, 0, 0, this._uploadEncoder);
+        this._textureHelper.updateTexture(data, gpuTextureWrapper.underlyingResource!, width, height, texture.depth, gpuTextureWrapper.format, faceIndex, lod, false, false, 0, 0, this._uploadEncoder);
     }
 
     /** @hidden */
@@ -2395,23 +2389,7 @@ export class WebGPUEngine extends Engine {
             }
         }
 
-        for (let i = 0; i < this._deferredReleaseTextures.length; ++i) {
-            const [texture, hardwareTexture, irradianceTexture, depthStencilTexture] = this._deferredReleaseTextures[i];
-
-            hardwareTexture?.release();
-            irradianceTexture?.dispose();
-            depthStencilTexture?.dispose();
-
-            // TODO WEBGPU remove debug code
-            if ((texture as any)._swapped) {
-                delete (texture as any)._swapped;
-            } else {
-                (texture as any)._released = true;
-            }
-        }
-
-        this._deferredReleaseTextures.length = 0;
-
+        this._textureHelper.destroyDeferredTextures();
         this._bufferManager.destroyDeferredBuffers();
 
         if (ThinEngine.Features._collectUbosUpdatedInFrame) {
