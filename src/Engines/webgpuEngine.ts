@@ -3390,7 +3390,7 @@ export class WebGPUEngine extends Engine {
         return vertexInputs;
     }
 
-    private _getBindGroupsToRender(renderPipeline: GPURenderPipeline): GPUBindGroup[] {
+    private _getBindGroupsToRender(): GPUBindGroup[] {
         const webgpuPipelineContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
         let bindGroups: GPUBindGroup[] = [];
 
@@ -3406,14 +3406,7 @@ export class WebGPUEngine extends Engine {
         for (let i = 0; i < webgpuPipelineContext.shaderProcessingContext.orderedUBOsAndSamplers.length; i++) {
             const setDefinition = webgpuPipelineContext.shaderProcessingContext.orderedUBOsAndSamplers[i];
             if (setDefinition === undefined) {
-                let groupLayout: GPUBindGroupLayout;
-                if (bindGroupLayouts && bindGroupLayouts[i]) {
-                    groupLayout = bindGroupLayouts[i];
-                }
-                else {
-                    // TODO WEBGPU can it happens? we should be able to avoid a dependency on renderPipeline here
-                    groupLayout = renderPipeline.getBindGroupLayout(i);
-                }
+                let groupLayout = bindGroupLayouts[i];
                 bindGroups[i] = this._device.createBindGroup({
                     layout: groupLayout,
                     entries: [],
@@ -3497,14 +3490,7 @@ export class WebGPUEngine extends Engine {
             }
 
             if (entries.length > 0) {
-                let groupLayout: GPUBindGroupLayout;
-                if (bindGroupLayouts && bindGroupLayouts[i]) {
-                    groupLayout = bindGroupLayouts[i];
-                }
-                else {
-                    // TODO WEBGPU can it happens? we should be able to avoid a dependency on renderPipeline here
-                    groupLayout = renderPipeline.getBindGroupLayout(i);
-                }
+                let groupLayout = bindGroupLayouts[i];
                 bindGroups[i] = this._device.createBindGroup({
                     layout: groupLayout,
                     entries,
@@ -3551,7 +3537,7 @@ export class WebGPUEngine extends Engine {
         const vertexInputs = this._getVertexInputsToRender();
         this._bindVertexInputs(vertexInputs);
 
-        const bindGroups = this._getBindGroupsToRender(pipeline);
+        const bindGroups = this._getBindGroupsToRender();
         this._setRenderBindGroups(bindGroups);
 
         if (this._stencilState.stencilTest) {
