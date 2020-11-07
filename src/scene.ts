@@ -55,7 +55,6 @@ import { Frustum } from './Maths/math.frustum';
 import { UniqueIdGenerator } from './Misc/uniqueIdGenerator';
 import { FileTools, LoadFileError, RequestFileError, ReadFileError } from './Misc/fileTools';
 import { IClipPlanesHolder } from './Misc/interfaces/iClipPlanesHolder';
-import { ThinEngine } from './Engines/thinEngine';
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -2004,22 +2003,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param projectionR defines the right Projection matrix to use (if provided)
      */
     public setTransformMatrix(viewL: Matrix, projectionL: Matrix, viewR?: Matrix, projectionR?: Matrix): void {
-        if (ThinEngine.Features.trackUbosInFrame) {
-            const indexBufferBefore = this._sceneUbo._indexBuffer;
-            const viewLUpdateFlag = this._sceneUbo._getMatrixUpdateFlagFromCache("view");
-            const projectionLUpdateFlag = this._sceneUbo._getMatrixUpdateFlagFromCache("projection");
-            const indexBufferAfter = this._sceneUbo._indexBuffer;
-
-            if (viewLUpdateFlag === viewL.updateFlag && projectionLUpdateFlag === projectionL.updateFlag) {
-                if (indexBufferAfter === indexBufferBefore) {
-                    return;
-                } else {
-                    // fall through
-                    // indexBufferAfter !== indexBufferBefore means we have cycled to the first buffer (because of a frame id change): this buffer is in line with
-                    // the matrices passed to setTransformMatrix but the matrices saved in the scene are (may) not (be) ok, we must update them
-                }
-            }
-        } else if (this._viewUpdateFlag === viewL.updateFlag && this._projectionUpdateFlag === projectionL.updateFlag) {
+        if (this._viewUpdateFlag === viewL.updateFlag && this._projectionUpdateFlag === projectionL.updateFlag) {
             return;
         }
 
