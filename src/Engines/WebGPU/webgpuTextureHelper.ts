@@ -203,8 +203,23 @@ export class WebGPUTextureHelper {
     }
 
     public generateCubeMipmaps(gpuTexture: GPUTexture, format: GPUTextureFormat, mipLevelCount: number, commandEncoder?: GPUCommandEncoder): void {
+        const useOwnCommandEncoder = commandEncoder === undefined;
+
+        if (useOwnCommandEncoder) {
+            commandEncoder = this._device.createCommandEncoder({});
+        }
+
+        commandEncoder!.pushDebugGroup(`create cube mipmaps - ${mipLevelCount} levels`);
+
         for (let f = 0; f < 6; ++f) {
             this.generateMipmaps(gpuTexture, format, mipLevelCount, f, commandEncoder);
+        }
+
+        commandEncoder!.popDebugGroup();
+
+        if (useOwnCommandEncoder) {
+            this._device.defaultQueue.submit([commandEncoder!.finish()]);
+            commandEncoder = null as any;
         }
     }
 
@@ -217,7 +232,7 @@ export class WebGPUTextureHelper {
             commandEncoder = this._device.createCommandEncoder({});
         }
 
-        commandEncoder!.pushDebugGroup("create mipmaps");
+        commandEncoder!.pushDebugGroup(`create mipmaps for face #${faceIndex} - ${mipLevelCount} levels`);
 
         for (let i = 1; i < mipLevelCount; ++i) {
             const passEncoder = commandEncoder!.beginRenderPass({

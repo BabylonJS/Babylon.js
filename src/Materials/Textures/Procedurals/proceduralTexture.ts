@@ -593,11 +593,6 @@ export class ProceduralTexture extends Texture {
 
                 // Draw order
                 engine.drawElementsType(Material.TriangleFillMode, 0, 6);
-
-                // Mipmaps
-                if (face === 5) {
-                    engine.generateMipMapsForCubemap(this._texture);
-                }
             }
         } else {
             engine.bindFramebuffer(this._texture, 0, undefined, undefined, true);
@@ -616,6 +611,11 @@ export class ProceduralTexture extends Texture {
 
         // Unbind
         engine.unBindFramebuffer(this._texture, this.isCube);
+
+        // Mipmaps
+        if (this.isCube) {
+            engine.generateMipMapsForCubemap(this._texture);
+        }
 
         engine._debugPopGroup(1);
 

@@ -937,11 +937,12 @@ export class RenderTargetTexture extends Texture {
         }
 
         // Unbind
+        this.unbindFrameBuffer(engine, faceIndex);
+
         if (this.isCube && faceIndex === 5) {
             engine.generateMipMapsForCubemap(this._texture);
         }
 
-        this.unbindFrameBuffer(engine, faceIndex);
         engine._debugPopGroup(1);
     }
 
