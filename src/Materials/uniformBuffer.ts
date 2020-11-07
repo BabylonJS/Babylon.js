@@ -27,7 +27,7 @@ export class UniformBuffer {
 
     private _engine: Engine;
     private _buffer: Nullable<DataBuffer>;
-    private _buffers : Array<[Nullable<DataBuffer>, Float32Array, { [name: string]: number }]>;
+    private _buffers : Array<DataBuffer>;
     private _bufferIndex: number;
     private _createBufferOnWrite: boolean;
     private _data: number[];
@@ -43,7 +43,6 @@ export class UniformBuffer {
     private _currentEffectName: string;
     private _name: string;
     private _currentFrameId: number;
-    private _updateList: Array<[number, number, string?]>;
 
     /** @hidden */
     public _alreadyBound = false;
@@ -218,7 +217,6 @@ export class UniformBuffer {
             this._bufferIndex = -1;
             this._createBufferOnWrite = false;
             this._currentFrameId = 0;
-            this._updateList = [];
         }
 
         if (this._noUBO) {
@@ -525,7 +523,7 @@ export class UniformBuffer {
         }
 
         if (ThinEngine.Features.trackUbosInFrame) {
-            this._buffers.push([this._buffer, this._bufferData, this._valueCache]);
+            this._buffers.push(this._buffer);
             this._bufferIndex = this._buffers.length - 1;
             this._createBufferOnWrite = false;
         }
@@ -574,41 +572,17 @@ export class UniformBuffer {
         this._createBufferOnWrite = ThinEngine.Features.trackUbosInFrame;
     }
 
-    private _createNewBuffer(excludedLocation: number): boolean {
+    private _createNewBuffer() {
         if (this._bufferIndex + 1 < this._buffers.length) {
-            const currentBufferData = this._bufferData;
             this._bufferIndex++;
-            this._buffer = this._buffers[this._bufferIndex][0];
-            this._bufferData = this._buffers[this._bufferIndex][1];
-            this._valueCache = this._buffers[this._bufferIndex][2];
+            this._buffer = this._buffers[this._bufferIndex];
             this._createBufferOnWrite = false;
-            for (let i = 0; i < this._updateList.length; ++i) {
-                let [location, size, name] = this._updateList[i];
-                if (location === excludedLocation) {
-                    continue;
-                } else if (location < 0) {
-                    this._valueCache[name!] = size;
-                } else {
-                    while (size--) {
-                        if (this._bufferData[location + size] !== currentBufferData[location + size]) {
-                            this._bufferData[location + size] = currentBufferData[location + size];
-                            this._needSync = true;
-                        }
-                    }
-                }
-            }
-            if (this._currentEffect && this._buffer) {
-                this._currentEffect.bindUniformBuffer(this._buffer, this._currentEffectName);
-            }
-            return false;
+            this._needSync = true;
         } else {
-            this._bufferData = this._bufferData.slice();
-            this._valueCache = { ...this._valueCache }; // clone
             this._rebuild();
-            if (this._currentEffect && this._buffer) {
-                this._currentEffect.bindUniformBuffer(this._buffer, this._currentEffectName);
-            }
-            return true;
+        }
+        if (this._currentEffect && this._buffer) {
+            this._currentEffect.bindUniformBuffer(this._buffer, this._currentEffectName);
         }
     }
 
@@ -616,17 +590,15 @@ export class UniformBuffer {
         if (ThinEngine.Features.trackUbosInFrame && this._currentFrameId !== this._engine.frameId) {
             this._currentFrameId = this._engine.frameId;
             this._createBufferOnWrite = false;
-            this._updateList.length = 0;
             if (this._buffers && this._buffers.length > 0) {
+                this._needSync = this._bufferIndex !== 0;
                 this._bufferIndex = 0;
-                this._buffer = this._buffers[this._bufferIndex][0];
-                this._bufferData = this._buffers[this._bufferIndex][1];
-                this._valueCache = this._buffers[this._bufferIndex][2];
-                if (this._currentEffect && this._buffer) {
-                    this._currentEffect.bindUniformBuffer(this._buffer, this._currentEffectName);
-                }
+                this._buffer = this._buffers[this._bufferIndex];
             } else {
                 this._bufferIndex = -1;
+            }
+            if (this._currentEffect && this._buffer) {
+                this._currentEffect.bindUniformBuffer(this._buffer, this._currentEffectName);
             }
         }
     }
@@ -663,26 +635,15 @@ export class UniformBuffer {
                 if ((size === 16 && !ThinEngine.Features.uniformBufferHardCheckMatrix) || this._bufferData[location + i] !== data[i]) {
                     changed = true;
                     if (this._createBufferOnWrite) {
-                        if (!this._createNewBuffer(location)) {
-                            // we didn't create a new buffer but advanced to the next one: retry the update, chances are that the new buffer already has the right data for uniformName so we won't set needSync to true
-                            this.updateUniform(uniformName, data, size);
-                            return;
-                        }
+                        this._createNewBuffer();
                     }
                     this._bufferData[location + i] = data[i];
                 }
             }
 
-            if (changed && ThinEngine.Features.trackUbosInFrame) {
-                this._updateList[this._updateList.length] = [location, size];
-            }
-
             this._needSync = this._needSync || changed;
         } else {
             // No cache for dynamic
-            if (this._createBufferOnWrite) {
-                this._createNewBuffer(-1);
-            }
             for (var i = 0; i < size; i++) {
                 this._bufferData[location + i] = data[i];
             }
@@ -719,11 +680,7 @@ export class UniformBuffer {
                 if (this._bufferData[location + baseStride * 4 + countToFour] !== data[i]) {
                     changed = true;
                     if (this._createBufferOnWrite) {
-                        if (!this._createNewBuffer(location)) {
-                            // we didn't create a new buffer but advanced to the next one: retry the update, chances are that the new buffer already has the right data for uniformName so we won't set needSync to true
-                            this.updateUniformArray(uniformName, data, size);
-                            return;
-                        }
+                        this._createNewBuffer();
                     }
                     this._bufferData[location + baseStride * 4 + countToFour] = data[i];
                 }
@@ -737,16 +694,9 @@ export class UniformBuffer {
                 }
             }
 
-            if (changed && ThinEngine.Features.trackUbosInFrame) {
-                this._updateList[this._updateList.length] = [location, baseStride * 4];
-            }
-
             this._needSync = this._needSync || changed;
         } else {
             // No cache for dynamic
-            if (this._createBufferOnWrite) {
-                this._createNewBuffer(-1);
-            }
             for (var i = 0; i < size; i++) {
                 this._bufferData[location + i] = data[i];
             }
@@ -764,21 +714,7 @@ export class UniformBuffer {
             return false;
         }
 
-        if (!this._createBufferOnWrite) {
-            this._valueCache[name] = flag;
-            if (ThinEngine.Features.trackUbosInFrame) {
-                this._updateList[this._updateList.length] = [-1, flag, name];
-            }
-        }
-
         return true;
-    }
-
-    /** @hidden */
-    public _getMatrixUpdateFlagFromCache(matrixName: string): number | undefined {
-        this._checkNewFrame();
-
-        return this._valueCache[matrixName];
     }
 
     // Update methods
@@ -1035,7 +971,7 @@ export class UniformBuffer {
 
         if (ThinEngine.Features.trackUbosInFrame && this._buffers) {
             for (let i = 0; i < this._buffers.length; ++i) {
-                const buffer = this._buffers[i][0];
+                const buffer = this._buffers[i];
                 this._engine._releaseBuffer(buffer!);
             }
         } else if (this._buffer && this._engine._releaseBuffer(this._buffer)) {
