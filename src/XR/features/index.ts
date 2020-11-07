@@ -4,6 +4,7 @@ export * from "./WebXRAnchorSystem";
 export * from "./WebXRPlaneDetector";
 export * from "./WebXRBackgroundRemover";
 export * from "./WebXRControllerTeleportation";
+export * from "./WebXRControllerFirstPerson";
 export * from "./WebXRControllerPointerSelection";
 export * from "./WebXRControllerPhysics";
 export * from "./WebXRHitTest";

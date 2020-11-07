@@ -88,6 +88,10 @@ export class WebXRFeatureName {
      */
     public static readonly TELEPORTATION = "xr-controller-teleportation";
     /**
+     * The name of the first person feature
+     */
+    public static readonly FIRST_PERSON = "xr-controller-first-person";
+    /**
      * The name of the feature points feature.
      */
     public static readonly FEATURE_POINTS = "xr-feature-points";
