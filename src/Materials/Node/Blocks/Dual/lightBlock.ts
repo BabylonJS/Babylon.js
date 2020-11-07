@@ -201,7 +201,7 @@ export class LightBlock extends NodeMaterialBlock {
 
         // Declaration
         if (!this.light) { // Emit for all lights
-            state._emitFunctionFromInclude(state.supportUniformBuffers ? "lightUboDeclaration" : "lightFragmentDeclaration", comments, {
+            state._emitFunctionFromInclude(state.supportUniformBuffers ? "lightVxUboDeclaration" : "lightVxFragmentDeclaration", comments, {
                 repeatKey: "maxSimultaneousLights"
             });
             this._lightId = 0;
@@ -212,7 +212,7 @@ export class LightBlock extends NodeMaterialBlock {
             this._lightId = (state.counters["lightCounter"] !== undefined ? state.counters["lightCounter"] : -1) + 1;
             state.counters["lightCounter"] = this._lightId;
 
-            state._emitFunctionFromInclude(state.supportUniformBuffers ? "lightUboDeclaration" : "lightFragmentDeclaration", comments, {
+            state._emitFunctionFromInclude(state.supportUniformBuffers ? "lightVxUboDeclaration" : "lightVxFragmentDeclaration", comments, {
                 replaceStrings: [{ search: /{X}/g, replace: this._lightId.toString() }]
             }, this._lightId.toString());
         }
