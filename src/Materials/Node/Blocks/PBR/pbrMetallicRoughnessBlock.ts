@@ -941,6 +941,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state.sharedData.hints.needAlphaTesting = state.sharedData.hints.needAlphaTesting || this.useAlphaTest;
 
         state._emitExtension("lod", "#extension GL_EXT_shader_texture_lod : enable", "defined(LODBASEDMICROSFURACE)");
+        state._emitExtension("derivatives", "#extension GL_OES_standard_derivatives : enable");
 
         //
         // Includes
