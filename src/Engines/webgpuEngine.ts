@@ -2983,32 +2983,44 @@ export class WebGPUEngine extends Engine {
         switch (type) {
             case VertexBuffer.BYTE:
                 switch (size) {
+                    case 1:
                     case 2:
                         return normalized ? WebGPUConstants.VertexFormat.Char2Norm : WebGPUConstants.VertexFormat.Char2;
+                    case 3:
                     case 4:
                         return normalized ? WebGPUConstants.VertexFormat.Char4Norm : WebGPUConstants.VertexFormat.Char4;
                 }
+                break;
             case VertexBuffer.UNSIGNED_BYTE:
                 switch (size) {
+                    case 1:
                     case 2:
                         return normalized ? WebGPUConstants.VertexFormat.Uchar2Norm : WebGPUConstants.VertexFormat.Uchar2;
+                    case 3:
                     case 4:
                         return normalized ? WebGPUConstants.VertexFormat.Uchar4Norm : WebGPUConstants.VertexFormat.Uchar4;
                 }
+                break;
             case VertexBuffer.SHORT:
                 switch (size) {
+                    case 1:
                     case 2:
                         return normalized ? WebGPUConstants.VertexFormat.Short2Norm : WebGPUConstants.VertexFormat.Short2;
+                    case 3:
                     case 4:
                         return normalized ? WebGPUConstants.VertexFormat.Short4Norm : WebGPUConstants.VertexFormat.Short4;
                 }
+                break;
             case VertexBuffer.UNSIGNED_SHORT:
                 switch (size) {
+                    case 1:
                     case 2:
                         return normalized ? WebGPUConstants.VertexFormat.Ushort2Norm : WebGPUConstants.VertexFormat.Ushort2;
+                    case 3:
                     case 4:
                         return normalized ? WebGPUConstants.VertexFormat.Ushort4Norm : WebGPUConstants.VertexFormat.Ushort4;
                 }
+                break;
             case VertexBuffer.INT:
                 switch (size) {
                     case 1:
@@ -3020,6 +3032,7 @@ export class WebGPUEngine extends Engine {
                     case 4:
                         return WebGPUConstants.VertexFormat.Int4;
                 }
+                break;
             case VertexBuffer.UNSIGNED_INT:
                 switch (size) {
                     case 1:
@@ -3031,6 +3044,7 @@ export class WebGPUEngine extends Engine {
                     case 4:
                         return WebGPUConstants.VertexFormat.Uint4;
                 }
+                break;
             case VertexBuffer.FLOAT:
                 switch (size) {
                     case 1:
@@ -3042,9 +3056,10 @@ export class WebGPUEngine extends Engine {
                     case 4:
                         return WebGPUConstants.VertexFormat.Float4;
                 }
+                break;
         }
 
-        throw new Error("Invalid Format '" + kind + "'");
+        throw new Error(`Invalid Format '${kind}' - type=${type}, normalized=${normalized}, size=${size}`);
     }
 
     private _getVertexInputDescriptor(topology: GPUPrimitiveTopology): GPUVertexStateDescriptor {
