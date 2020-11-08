@@ -420,7 +420,7 @@ export class WebGPUEngine extends Engine {
             etc1: null,
             etc2: null,
             bptc: this._deviceEnabledExtensions.indexOf(WebGPUConstants.ExtensionName.TextureCompressionBC) >= 0 ? true : undefined,
-            maxAnisotropy: 0,  // TODO: Retrieve this smartly. Currently set to D3D11 maximum allowable value.
+            maxAnisotropy: 16, // TODO WEBGPU: Retrieve this smartly
             uintIndices: true,
             fragmentDepthSupported: true,
             highPrecisionShaderSupported: true,
@@ -1048,99 +1048,6 @@ export class WebGPUEngine extends Engine {
         this._textureHelper.releaseTexture(texture);
     }
 
-    private _getSamplerFilterDescriptor(internalTexture: InternalTexture): {
-        magFilter: GPUFilterMode,
-        minFilter: GPUFilterMode,
-        mipmapFilter: GPUFilterMode,
-        lodMinClamp?: number,
-        lodMaxClamp?: number,
-    } {
-        let magFilter: GPUFilterMode, minFilter: GPUFilterMode, mipmapFilter: GPUFilterMode, lodMinClamp: number | undefined, lodMaxClamp: number | undefined;
-        switch (internalTexture.samplingMode) {
-            case Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST:
-                magFilter = WebGPUConstants.FilterMode.Linear;
-                minFilter = WebGPUConstants.FilterMode.Linear;
-                mipmapFilter = WebGPUConstants.FilterMode.Nearest;
-                break;
-            case Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR:
-            case Constants.TEXTURE_TRILINEAR_SAMPLINGMODE:
-                magFilter = WebGPUConstants.FilterMode.Linear;
-                minFilter = WebGPUConstants.FilterMode.Linear;
-                mipmapFilter = WebGPUConstants.FilterMode.Linear;
-                break;
-            case Constants.TEXTURE_NEAREST_NEAREST_MIPLINEAR:
-                magFilter = WebGPUConstants.FilterMode.Nearest;
-                minFilter = WebGPUConstants.FilterMode.Nearest;
-                mipmapFilter = WebGPUConstants.FilterMode.Linear;
-                break;
-            case Constants.TEXTURE_NEAREST_NEAREST_MIPNEAREST:
-                magFilter = WebGPUConstants.FilterMode.Nearest;
-                minFilter = WebGPUConstants.FilterMode.Nearest;
-                mipmapFilter = WebGPUConstants.FilterMode.Nearest;
-                break;
-            case Constants.TEXTURE_NEAREST_LINEAR_MIPNEAREST:
-                magFilter = WebGPUConstants.FilterMode.Nearest;
-                minFilter = WebGPUConstants.FilterMode.Linear;
-                mipmapFilter = WebGPUConstants.FilterMode.Nearest;
-                break;
-            case Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR:
-                magFilter = WebGPUConstants.FilterMode.Nearest;
-                minFilter = WebGPUConstants.FilterMode.Linear;
-                mipmapFilter = WebGPUConstants.FilterMode.Linear;
-                break;
-            case Constants.TEXTURE_NEAREST_LINEAR:
-                magFilter = WebGPUConstants.FilterMode.Nearest;
-                minFilter = WebGPUConstants.FilterMode.Linear;
-                mipmapFilter = WebGPUConstants.FilterMode.Nearest;
-                lodMinClamp = lodMaxClamp = 0;
-                break;
-            case Constants.TEXTURE_NEAREST_NEAREST:
-            case Constants.TEXTURE_NEAREST_SAMPLINGMODE:
-                magFilter = WebGPUConstants.FilterMode.Nearest;
-                minFilter = WebGPUConstants.FilterMode.Nearest;
-                mipmapFilter = WebGPUConstants.FilterMode.Nearest;
-                lodMinClamp = lodMaxClamp = 0;
-                break;
-            case Constants.TEXTURE_LINEAR_NEAREST_MIPNEAREST:
-                magFilter = WebGPUConstants.FilterMode.Linear;
-                minFilter = WebGPUConstants.FilterMode.Nearest;
-                mipmapFilter = WebGPUConstants.FilterMode.Nearest;
-                break;
-            case Constants.TEXTURE_LINEAR_NEAREST_MIPLINEAR:
-                magFilter = WebGPUConstants.FilterMode.Linear;
-                minFilter = WebGPUConstants.FilterMode.Nearest;
-                mipmapFilter = WebGPUConstants.FilterMode.Linear;
-                break;
-            case Constants.TEXTURE_LINEAR_LINEAR:
-            case Constants.TEXTURE_BILINEAR_SAMPLINGMODE:
-                magFilter = WebGPUConstants.FilterMode.Linear;
-                minFilter = WebGPUConstants.FilterMode.Linear;
-                mipmapFilter = WebGPUConstants.FilterMode.Nearest;
-                lodMinClamp = lodMaxClamp = 0;
-                break;
-            case Constants.TEXTURE_LINEAR_NEAREST:
-                magFilter = WebGPUConstants.FilterMode.Linear;
-                minFilter = WebGPUConstants.FilterMode.Nearest;
-                mipmapFilter = WebGPUConstants.FilterMode.Nearest;
-                lodMinClamp = lodMaxClamp = 0;
-                break;
-            default:
-                magFilter = WebGPUConstants.FilterMode.Nearest;
-                minFilter = WebGPUConstants.FilterMode.Nearest;
-                mipmapFilter = WebGPUConstants.FilterMode.Nearest;
-                lodMinClamp = lodMaxClamp = 0;
-                break;
-        }
-
-        return {
-            magFilter,
-            minFilter,
-            mipmapFilter,
-            lodMinClamp,
-            lodMaxClamp,
-        };
-    }
-
     /** @hidden */
     public _getWebGPUInternalFormat(format: number): GPUTextureFormat {
         let internalFormat = WebGPUConstants.TextureFormat.RGBA8Unorm;
@@ -1340,39 +1247,6 @@ export class WebGPUEngine extends Engine {
         }
 
         return WebGPUConstants.TextureFormat.RGBA8Unorm;
-    }
-
-    private _getWrappingMode(mode: number): GPUAddressMode {
-        switch (mode) {
-            case Engine.TEXTURE_WRAP_ADDRESSMODE:
-                return WebGPUConstants.AddressMode.Repeat;
-            case Engine.TEXTURE_CLAMP_ADDRESSMODE:
-                return WebGPUConstants.AddressMode.ClampToEdge;
-            case Engine.TEXTURE_MIRROR_ADDRESSMODE:
-                return WebGPUConstants.AddressMode.MirrorRepeat;
-        }
-        return WebGPUConstants.AddressMode.Repeat;
-    }
-
-    private _getSamplerWrappingDescriptor(internalTexture: InternalTexture): {
-        addressModeU: GPUAddressMode,
-        addressModeV: GPUAddressMode,
-        addressModeW: GPUAddressMode
-    } {
-        return {
-            addressModeU: this._getWrappingMode(internalTexture._cachedWrapU!),
-            addressModeV: this._getWrappingMode(internalTexture._cachedWrapV!),
-            addressModeW: this._getWrappingMode(internalTexture._cachedWrapR!),
-        };
-    }
-
-    private _getSamplerDescriptor(internalTexture: InternalTexture): GPUSamplerDescriptor {
-        return {
-            ...this._getSamplerFilterDescriptor(internalTexture),
-            ...this._getSamplerWrappingDescriptor(internalTexture),
-            compare: internalTexture._comparisonFunction ? this._getCompareFunction(internalTexture._comparisonFunction) : undefined,
-            // TODO WEBGPU maxAnisotropy: ??,
-        };
     }
 
     public createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
@@ -1651,7 +1525,6 @@ export class WebGPUEngine extends Engine {
         }
 
         texture.samplingMode = samplingMode;
-        // TODO WEBGPU have the sampler associated to the texture rebuilt with the new sampling mode
     }
 
     public updateTextureWrappingMode(texture: InternalTexture, wrapU: Nullable<number>, wrapV: Nullable<number> = null, wrapR: Nullable<number> = null): void {
@@ -1787,13 +1660,19 @@ export class WebGPUEngine extends Engine {
                     texture.wrapV = textureWrapMode;
                 }
 
-                this._setAnisotropicLevel(0, internalTexture, texture.anisotropicFilteringLevel);
-            }
+                if (internalTexture._cachedWrapU !== texture.wrapU) {
+                    internalTexture._cachedWrapU = texture.wrapU;
+                }
 
-            if (internalTexture) {
-                internalTexture._cachedWrapU = texture.wrapU;
-                internalTexture._cachedWrapV = texture.wrapV;
-                internalTexture._cachedWrapR = texture.wrapR;
+                if (internalTexture._cachedWrapV !== texture.wrapV) {
+                    internalTexture._cachedWrapV = texture.wrapV;
+                }
+
+                if (internalTexture.is3D && internalTexture._cachedWrapR !== texture.wrapR) {
+                    internalTexture._cachedWrapR = texture.wrapR;
+                }
+
+                this._setAnisotropicLevel(0, internalTexture, texture.anisotropicFilteringLevel);
             }
 
             if (dbgSanityChecks && internalTexture && (internalTexture as any)._released) {
@@ -1815,18 +1694,8 @@ export class WebGPUEngine extends Engine {
 
     /** @hidden */
     public _setAnisotropicLevel(target: number, internalTexture: InternalTexture, anisotropicFilteringLevel: number) {
-        if (internalTexture.samplingMode !== Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST
-            && internalTexture.samplingMode !== Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR
-            && internalTexture.samplingMode !== Constants.TEXTURE_LINEAR_LINEAR) {
-            anisotropicFilteringLevel = 1; // Forcing the anisotropic to 1 because else webgl will force filters to linear
-        }
-
         if (internalTexture._cachedAnisotropicFilteringLevel !== anisotropicFilteringLevel) {
-            //this._setTextureParameterFloat(target, anisotropicFilterExtension.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(anisotropicFilteringLevel, this._caps.maxAnisotropy), internalTexture);
-            internalTexture._cachedAnisotropicFilteringLevel = anisotropicFilteringLevel;
-            if (dbgShowWarningsNotImplemented) {
-                console.warn("_setAnisotropicLevel not implemented yet");
-            }
+            internalTexture._cachedAnisotropicFilteringLevel = Math.min(anisotropicFilteringLevel, this._caps.maxAnisotropy);
         }
     }
 
@@ -2829,29 +2698,6 @@ export class WebGPUEngine extends Engine {
         }
     }
 
-    private _getCompareFunction(compareFunction: Nullable<number>): GPUCompareFunction {
-        switch (compareFunction) {
-            case Constants.ALWAYS:
-                return WebGPUConstants.CompareFunction.Always;
-            case Constants.EQUAL:
-                return WebGPUConstants.CompareFunction.Equal;
-            case Constants.GREATER:
-                return WebGPUConstants.CompareFunction.Greater;
-            case Constants.GEQUAL:
-                return WebGPUConstants.CompareFunction.GreaterEqual;
-            case Constants.LESS:
-                return WebGPUConstants.CompareFunction.Less;
-            case Constants.LEQUAL:
-                return WebGPUConstants.CompareFunction.LessEqual;
-            case Constants.NEVER:
-                return WebGPUConstants.CompareFunction.Never;
-            case Constants.NOTEQUAL:
-                return WebGPUConstants.CompareFunction.NotEqual;
-            default:
-                return WebGPUConstants.CompareFunction.Less;
-        }
-    }
-
     private _getOpFunction(operation: Nullable<number>, defaultOp: GPUStencilOperation): GPUStencilOperation {
         switch (operation) {
             case Constants.KEEP:
@@ -2881,7 +2727,7 @@ export class WebGPUEngine extends Engine {
         }
 
         const stencilFrontBack: GPUStencilStateFaceDescriptor = {
-            compare: this._getCompareFunction(this._stencilState.stencilFunc),
+            compare: this._textureHelper.getCompareFunction(this._stencilState.stencilFunc),
             depthFailOp: this._getOpFunction(this._stencilState.stencilOpDepthFail, WebGPUConstants.StencilOperation.Keep),
             failOp: this._getOpFunction(this._stencilState.stencilOpStencilFail, WebGPUConstants.StencilOperation.Keep),
             passOp: this._getOpFunction(this._stencilState.stencilOpStencilDepthPass, WebGPUConstants.StencilOperation.Replace)
@@ -2889,7 +2735,7 @@ export class WebGPUEngine extends Engine {
 
         return {
             depthWriteEnabled: this.getDepthWrite(),
-            depthCompare: this.getDepthBuffer() ? this._getCompareFunction(this.getDepthFunction()) : WebGPUConstants.CompareFunction.Always,
+            depthCompare: this.getDepthBuffer() ? this._textureHelper.getCompareFunction(this.getDepthFunction()) : WebGPUConstants.CompareFunction.Always,
             format: this._depthTextureFormat,
             stencilFront: stencilFrontBack,
             stencilBack: stencilFrontBack,
@@ -3425,21 +3271,14 @@ export class WebGPUEngine extends Engine {
                 if (bindingDefinition.isSampler) {
                     const bindingInfo = webgpuPipelineContext.samplers[bindingDefinition.name];
                     if (bindingInfo) {
-                        if (!bindingInfo.sampler) {
-                            const texture = webgpuPipelineContext.textures[bindingInfo.firstTextureName]?.texture;
-                            if (!texture) {
-                                Logger.Error(`Could not create the gpu sampler "${bindingDefinition.name}" because no texture can be looked up for the name "${bindingInfo.firstTextureName}". bindingInfo=${JSON.stringify(bindingInfo)}, webgpuPipelineContext.textures=${webgpuPipelineContext.textures}`, 50);
-                                continue;
-                            }
-                            if (!bindingInfo.sampler) {
-                                const samplerDescriptor: GPUSamplerDescriptor = this._getSamplerDescriptor(texture);
-                                bindingInfo.sampler = this._device.createSampler(samplerDescriptor);
-                            }
+                        const texture = webgpuPipelineContext.textures[bindingInfo.firstTextureName]?.texture;
+                        if (!texture) {
+                            Logger.Error(`Could not create the gpu sampler "${bindingDefinition.name}" because no texture can be looked up for the name "${bindingInfo.firstTextureName}". bindingInfo=${JSON.stringify(bindingInfo)}, webgpuPipelineContext.textures=${webgpuPipelineContext.textures}`, 50);
+                            continue;
                         }
-
                         entries.push({
                             binding: bindingInfo.samplerBinding,
-                            resource: bindingInfo.sampler,
+                            resource: this._textureHelper.getSampler(texture),
                         });
                     } else {
                         Logger.Error(`Sampler "${bindingDefinition.name}" could not be bound. bindingDefinition=${JSON.stringify(bindingDefinition)}, webgpuPipelineContext.samplers=${JSON.stringify(webgpuPipelineContext.samplers)}`, 50);

@@ -25,6 +25,7 @@ import { Nullable } from '../../types';
 import { InternalTexture } from '../../Materials/Textures/internalTexture';
 import { HardwareTextureWrapper } from '../../Materials/Textures/hardwareTextureWrapper';
 import { BaseTexture } from '../../Materials/Textures/baseTexture';
+import { Engine } from '../engine';
 
 // TODO WEBGPU improve mipmap generation by not using the OutputAttachment flag
 // see https://github.com/toji/web-texture-tool/tree/main/src
@@ -87,6 +88,51 @@ const invertYPreMultiplyAlphaFragmentSource = `
     }
     `;
 
+const filterToBits = [
+    0 | 0 << 1 | 0 << 2, // not used
+    0 | 0 << 1 | 0 << 2, // TEXTURE_NEAREST_SAMPLINGMODE / TEXTURE_NEAREST_NEAREST
+    1 | 1 << 1 | 0 << 2, // TEXTURE_BILINEAR_SAMPLINGMODE / TEXTURE_LINEAR_LINEAR
+    1 | 1 << 1 | 1 << 2, // TEXTURE_TRILINEAR_SAMPLINGMODE / TEXTURE_LINEAR_LINEAR_MIPLINEAR
+    0 | 0 << 1 | 0 << 2, // TEXTURE_NEAREST_NEAREST_MIPNEAREST
+    0 | 1 << 1 | 0 << 2, // TEXTURE_NEAREST_LINEAR_MIPNEAREST
+    0 | 1 << 1 | 1 << 2, // TEXTURE_NEAREST_LINEAR_MIPLINEAR
+    0 | 1 << 1 | 0 << 2, // TEXTURE_NEAREST_LINEAR
+    0 | 0 << 1 | 1 << 2, // TEXTURE_NEAREST_NEAREST_MIPLINEAR
+    1 | 0 << 1 | 0 << 2, // TEXTURE_LINEAR_NEAREST_MIPNEAREST
+    1 | 0 << 1 | 1 << 2, // TEXTURE_LINEAR_NEAREST_MIPLINEAR
+    1 | 1 << 1 | 0 << 2, // TEXTURE_LINEAR_LINEAR_MIPNEAREST
+    1 | 0 << 1 | 0 << 2, // TEXTURE_LINEAR_NEAREST
+];
+
+// subtract 0x01FF from the comparison function value before indexing this array!
+const comparisonFunctionToBits = [
+    0 << 3 | 0 << 4 | 0 << 5 | 0 << 6, // undefined
+    0 << 3 | 0 << 4 | 0 << 5 | 1 << 6, // NEVER
+    0 << 3 | 0 << 4 | 1 << 5 | 0 << 6, // LESS
+    0 << 3 | 0 << 4 | 1 << 5 | 1 << 6, // EQUAL
+    0 << 3 | 1 << 4 | 0 << 5 | 0 << 6, // LEQUAL
+    0 << 3 | 1 << 4 | 0 << 5 | 1 << 6, // GREATER
+    0 << 3 | 1 << 4 | 1 << 5 | 0 << 6, // NOTEQUAL
+    0 << 3 | 1 << 4 | 1 << 5 | 1 << 6, // GEQUAL
+    1 << 3 | 0 << 4 | 0 << 5 | 0 << 6, // ALWAYS
+];
+
+const filterNoMipToBits = [
+    0 << 7, // not used
+    1 << 7, // TEXTURE_NEAREST_SAMPLINGMODE / TEXTURE_NEAREST_NEAREST
+    1 << 7, // TEXTURE_BILINEAR_SAMPLINGMODE / TEXTURE_LINEAR_LINEAR
+    0 << 7, // TEXTURE_TRILINEAR_SAMPLINGMODE / TEXTURE_LINEAR_LINEAR_MIPLINEAR
+    0 << 7, // TEXTURE_NEAREST_NEAREST_MIPNEAREST
+    0 << 7, // TEXTURE_NEAREST_LINEAR_MIPNEAREST
+    0 << 7, // TEXTURE_NEAREST_LINEAR_MIPLINEAR
+    1 << 7, // TEXTURE_NEAREST_LINEAR
+    0 << 7, // TEXTURE_NEAREST_NEAREST_MIPLINEAR
+    0 << 7, // TEXTURE_LINEAR_NEAREST_MIPNEAREST
+    0 << 7, // TEXTURE_LINEAR_NEAREST_MIPLINEAR
+    0 << 7, // TEXTURE_LINEAR_LINEAR_MIPNEAREST
+    1 << 7, // TEXTURE_LINEAR_NEAREST
+];
+
 export class WebGPUTextureHelper {
 
     private _device: GPUDevice;
@@ -97,9 +143,23 @@ export class WebGPUTextureHelper {
     private _pipelines: { [format: string]: Array<GPURenderPipeline> } = {};
     private _compiledShaders: GPUShaderModule[][] = [];
     private _deferredReleaseTextures: Array<[Nullable<InternalTexture>, Nullable<HardwareTextureWrapper | GPUTexture>, Nullable<BaseTexture>, Nullable<InternalTexture>]> = [];
+    private _samplers: { [hash: number]: GPUSampler } = {};
 
     public static computeNumMipmapLevels(width: number, height: number) {
         return Scalar.ILog2(Math.max(width, height)) + 1;
+    }
+
+    private static _GetSamplerHashCode(texture: InternalTexture): number {
+        let code =
+            filterToBits[texture.samplingMode] +
+            comparisonFunctionToBits[(texture._comparisonFunction || 0x0202) - 0x0200 + 1] +
+            filterNoMipToBits[texture.samplingMode] + // handle the lodMinClamp = lodMaxClamp = 0 case when no filter used for mip mapping
+            ((texture._cachedWrapU ?? 1) << 8) +
+            ((texture._cachedWrapV ?? 1) << 10) +
+            ((texture._cachedWrapR ?? 1) << 12) +
+            ((texture._cachedAnisotropicFilteringLevel ?? 1) << 14);
+
+        return code;
     }
 
     constructor(device: GPUDevice, glslang: any, bufferManager: WebGPUBufferManager) {
@@ -745,5 +805,165 @@ export class WebGPUTextureHelper {
         }
 
         this._deferredReleaseTextures.length = 0;
-   }
+    }
+
+    public getCompareFunction(compareFunction: Nullable<number>): GPUCompareFunction {
+        switch (compareFunction) {
+            case Constants.ALWAYS:
+                return WebGPUConstants.CompareFunction.Always;
+            case Constants.EQUAL:
+                return WebGPUConstants.CompareFunction.Equal;
+            case Constants.GREATER:
+                return WebGPUConstants.CompareFunction.Greater;
+            case Constants.GEQUAL:
+                return WebGPUConstants.CompareFunction.GreaterEqual;
+            case Constants.LESS:
+                return WebGPUConstants.CompareFunction.Less;
+            case Constants.LEQUAL:
+                return WebGPUConstants.CompareFunction.LessEqual;
+            case Constants.NEVER:
+                return WebGPUConstants.CompareFunction.Never;
+            case Constants.NOTEQUAL:
+                return WebGPUConstants.CompareFunction.NotEqual;
+            default:
+                return WebGPUConstants.CompareFunction.Less;
+        }
+    }
+
+    private _getSamplerFilterDescriptor(internalTexture: InternalTexture): {
+        magFilter: GPUFilterMode,
+        minFilter: GPUFilterMode,
+        mipmapFilter: GPUFilterMode,
+        lodMinClamp?: number,
+        lodMaxClamp?: number,
+    } {
+        let magFilter: GPUFilterMode, minFilter: GPUFilterMode, mipmapFilter: GPUFilterMode, lodMinClamp: number | undefined, lodMaxClamp: number | undefined;
+        switch (internalTexture.samplingMode) {
+            case Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST:
+                magFilter = WebGPUConstants.FilterMode.Linear;
+                minFilter = WebGPUConstants.FilterMode.Linear;
+                mipmapFilter = WebGPUConstants.FilterMode.Nearest;
+                break;
+            case Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR:
+            case Constants.TEXTURE_TRILINEAR_SAMPLINGMODE:
+                magFilter = WebGPUConstants.FilterMode.Linear;
+                minFilter = WebGPUConstants.FilterMode.Linear;
+                mipmapFilter = WebGPUConstants.FilterMode.Linear;
+                break;
+            case Constants.TEXTURE_NEAREST_NEAREST_MIPLINEAR:
+                magFilter = WebGPUConstants.FilterMode.Nearest;
+                minFilter = WebGPUConstants.FilterMode.Nearest;
+                mipmapFilter = WebGPUConstants.FilterMode.Linear;
+                break;
+            case Constants.TEXTURE_NEAREST_NEAREST_MIPNEAREST:
+                magFilter = WebGPUConstants.FilterMode.Nearest;
+                minFilter = WebGPUConstants.FilterMode.Nearest;
+                mipmapFilter = WebGPUConstants.FilterMode.Nearest;
+                break;
+            case Constants.TEXTURE_NEAREST_LINEAR_MIPNEAREST:
+                magFilter = WebGPUConstants.FilterMode.Nearest;
+                minFilter = WebGPUConstants.FilterMode.Linear;
+                mipmapFilter = WebGPUConstants.FilterMode.Nearest;
+                break;
+            case Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR:
+                magFilter = WebGPUConstants.FilterMode.Nearest;
+                minFilter = WebGPUConstants.FilterMode.Linear;
+                mipmapFilter = WebGPUConstants.FilterMode.Linear;
+                break;
+            case Constants.TEXTURE_NEAREST_LINEAR:
+                magFilter = WebGPUConstants.FilterMode.Nearest;
+                minFilter = WebGPUConstants.FilterMode.Linear;
+                mipmapFilter = WebGPUConstants.FilterMode.Nearest;
+                lodMinClamp = lodMaxClamp = 0;
+                break;
+            case Constants.TEXTURE_NEAREST_NEAREST:
+            case Constants.TEXTURE_NEAREST_SAMPLINGMODE:
+                magFilter = WebGPUConstants.FilterMode.Nearest;
+                minFilter = WebGPUConstants.FilterMode.Nearest;
+                mipmapFilter = WebGPUConstants.FilterMode.Nearest;
+                lodMinClamp = lodMaxClamp = 0;
+                break;
+            case Constants.TEXTURE_LINEAR_NEAREST_MIPNEAREST:
+                magFilter = WebGPUConstants.FilterMode.Linear;
+                minFilter = WebGPUConstants.FilterMode.Nearest;
+                mipmapFilter = WebGPUConstants.FilterMode.Nearest;
+                break;
+            case Constants.TEXTURE_LINEAR_NEAREST_MIPLINEAR:
+                magFilter = WebGPUConstants.FilterMode.Linear;
+                minFilter = WebGPUConstants.FilterMode.Nearest;
+                mipmapFilter = WebGPUConstants.FilterMode.Linear;
+                break;
+            case Constants.TEXTURE_LINEAR_LINEAR:
+            case Constants.TEXTURE_BILINEAR_SAMPLINGMODE:
+                magFilter = WebGPUConstants.FilterMode.Linear;
+                minFilter = WebGPUConstants.FilterMode.Linear;
+                mipmapFilter = WebGPUConstants.FilterMode.Nearest;
+                lodMinClamp = lodMaxClamp = 0;
+                break;
+            case Constants.TEXTURE_LINEAR_NEAREST:
+                magFilter = WebGPUConstants.FilterMode.Linear;
+                minFilter = WebGPUConstants.FilterMode.Nearest;
+                mipmapFilter = WebGPUConstants.FilterMode.Nearest;
+                lodMinClamp = lodMaxClamp = 0;
+                break;
+            default:
+                magFilter = WebGPUConstants.FilterMode.Nearest;
+                minFilter = WebGPUConstants.FilterMode.Nearest;
+                mipmapFilter = WebGPUConstants.FilterMode.Nearest;
+                lodMinClamp = lodMaxClamp = 0;
+                break;
+        }
+
+        return {
+            magFilter,
+            minFilter,
+            mipmapFilter,
+            lodMinClamp,
+            lodMaxClamp,
+        };
+    }
+
+    private _getWrappingMode(mode: number): GPUAddressMode {
+        switch (mode) {
+            case Engine.TEXTURE_WRAP_ADDRESSMODE:
+                return WebGPUConstants.AddressMode.Repeat;
+            case Engine.TEXTURE_CLAMP_ADDRESSMODE:
+                return WebGPUConstants.AddressMode.ClampToEdge;
+            case Engine.TEXTURE_MIRROR_ADDRESSMODE:
+                return WebGPUConstants.AddressMode.MirrorRepeat;
+        }
+        return WebGPUConstants.AddressMode.Repeat;
+    }
+
+    private _getSamplerWrappingDescriptor(internalTexture: InternalTexture): {
+        addressModeU: GPUAddressMode,
+        addressModeV: GPUAddressMode,
+        addressModeW: GPUAddressMode
+    } {
+        return {
+            addressModeU: this._getWrappingMode(internalTexture._cachedWrapU!),
+            addressModeV: this._getWrappingMode(internalTexture._cachedWrapV!),
+            addressModeW: this._getWrappingMode(internalTexture._cachedWrapR!),
+        };
+    }
+
+    private _getSamplerDescriptor(internalTexture: InternalTexture): GPUSamplerDescriptor {
+        return {
+            ...this._getSamplerFilterDescriptor(internalTexture),
+            ...this._getSamplerWrappingDescriptor(internalTexture),
+            compare: internalTexture._comparisonFunction ? this.getCompareFunction(internalTexture._comparisonFunction) : undefined,
+            maxAnisotropy: internalTexture._cachedAnisotropicFilteringLevel ?? 1,
+        };
+    }
+
+    public getSampler(internalTexture: InternalTexture): GPUSampler {
+        const hash = WebGPUTextureHelper._GetSamplerHashCode(internalTexture);
+
+        let sampler = this._samplers[hash];
+        if (!sampler) {
+            sampler = this._samplers[hash] = this._device.createSampler(this._getSamplerDescriptor(internalTexture));
+        }
+
+        return sampler;
+    }
 }
