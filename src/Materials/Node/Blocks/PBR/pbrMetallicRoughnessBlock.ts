@@ -973,7 +973,11 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         });
 
         state._emitFunctionFromInclude("pbrDirectLightingFalloffFunctions", comments);
-        state._emitFunctionFromInclude("pbrBRDFFunctions", comments);
+        state._emitFunctionFromInclude("pbrBRDFFunctions", comments, {
+            replaceStrings: [
+                { search: /REFLECTIONMAP_SKYBOX/g, replace: reflectionBlock?._defineSkyboxName ?? "REFLECTIONMAP_SKYBOX" }
+            ]
+        });
         state._emitFunctionFromInclude("hdrFilteringFunctions", comments);
 
         state._emitFunctionFromInclude("pbrDirectLightingFunctions", comments, {
