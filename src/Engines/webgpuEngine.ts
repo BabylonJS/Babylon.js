@@ -2228,7 +2228,7 @@ export class WebGPUEngine extends Engine {
     }
 
     public updateRenderTargetTextureSampleCount(texture: Nullable<InternalTexture>, samples: number): number {
-        // samples is used at creation time in WebGPU, you can't change it afterwards
+        // TODO WEBGPU handle this
 
         return samples;
     }

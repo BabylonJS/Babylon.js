@@ -16,7 +16,9 @@ import { _TypeStore } from '../../../../Misc/typeStore';
 import { Scene } from '../../../../scene';
 
 import "../../../../Shaders/ShadersInclude/lightFragmentDeclaration";
+import "../../../../Shaders/ShadersInclude/lightVxFragmentDeclaration";
 import "../../../../Shaders/ShadersInclude/lightUboDeclaration";
+import "../../../../Shaders/ShadersInclude/lightVxUboDeclaration";
 import "../../../../Shaders/ShadersInclude/lightFragment";
 import "../../../../Shaders/ShadersInclude/helperFunctions";
 import "../../../../Shaders/ShadersInclude/lightsFragmentFunctions";

@@ -120,6 +120,7 @@ export class WebGPUBufferManager {
                             (data as Uint8Array).set(new Uint8Array(copyArrayBuffer));
                             break;
                         case 1: // half float
+                            // TODO WEBGPU use computer shaders (or render pass) to make the conversion?
                             data = this._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, 0, size / 2, copyArrayBuffer);
                             break;
                         case 2: // float
@@ -134,6 +135,7 @@ export class WebGPUBufferManager {
                             (data as Uint8Array).set(new Uint8Array(copyArrayBuffer));
                             break;
                         case 1: // half float
+                            // TODO WEBGPU use computer shaders (or render pass) to make the conversion?
                             data = this._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, 0, size / 2, copyArrayBuffer, buffer as Float32Array);
                             break;
                         case 2: // float
@@ -143,6 +145,7 @@ export class WebGPUBufferManager {
                     }
                 }
                 if (bytesPerRow !== bytesPerRowAlignedAligned) {
+                    // TODO WEBGPU use computer shaders (or render pass) to build the final buffer data?
                     const data2: Uint8Array = data as Uint8Array;
                     let offset = bytesPerRow, offset2 = 0;
                     for (let y = 1; y < height; ++y) {
