@@ -43,6 +43,10 @@ struct subSurfaceOutParams
                 #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
                     const in vec3 irradianceVector_,
                 #endif
+                #if defined(REALTIME_FILTERING)
+                    const in samplerCube reflectionSampler,
+                    const in vec2 vReflectionFilteringInfo,
+                #endif
             #endif
             #ifdef USEIRRADIANCEMAP
                 #ifdef REFLECTIONMAP_3D
@@ -88,6 +92,9 @@ struct subSurfaceOutParams
         #endif
         #ifdef ANISOTROPIC
             const in anisotropicOutParams anisotropicOut,
+        #endif
+        #ifdef REALTIME_FILTERING
+            const in vec2 vRefractionFilteringInfo,
         #endif
     #endif
     #ifdef SS_TRANSLUCENCY
