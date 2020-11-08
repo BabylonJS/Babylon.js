@@ -26,7 +26,6 @@ const _uniformSizes: { [type: string]: number } = {
 export interface IWebGPUPipelineContextSamplerCache {
     samplerBinding: number;
     firstTextureName: string;
-    sampler?: GPUSampler;
 }
 
 /** @hidden */
