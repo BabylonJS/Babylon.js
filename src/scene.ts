@@ -1174,6 +1174,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /** @hidden */
     public _viewMatrix: Matrix;
+    /** @hidden */
     public _projectionMatrix: Matrix;
     /** @hidden */
     public _forcedViewPosition: Nullable<Vector3>;

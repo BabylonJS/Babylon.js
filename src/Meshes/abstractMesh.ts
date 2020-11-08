@@ -697,7 +697,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public onRebuildObservable = new Observable<AbstractMesh>();
 
     /**
-     * The current camera unifom buffer.
+     * The current mesh unifom buffer.
      * @hidden Internal use only.
      */
     public _uniformBuffer: UniformBuffer;
