@@ -952,6 +952,11 @@
             "referenceImage": "shadowsandlod.png"
         },
         {
+            "title": "Shadows CSM and LODs",
+            "playgroundId": "#24HWT9#0",
+            "referenceImage": "shadowscsmandlod.png"
+        },
+        {
             "title": "Glow layer and LODs",
             "playgroundId": "#UNS6ZV#2",
             "referenceImage": "glowlayerandlods.png"
