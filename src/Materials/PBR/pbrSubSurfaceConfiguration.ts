@@ -36,6 +36,7 @@ export interface IMaterialSubSurfaceDefines {
     SS_LINEARSPECULARREFRACTION: boolean;
     SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
     SS_ALBEDOFORREFRACTIONTINT: boolean;
+    SS_ALBEDOFORTRANSLUCENCYTINT: boolean;
 
     SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
     SS_MASK_FROM_THICKNESS_TEXTURE_GLTF: boolean;
@@ -121,6 +122,12 @@ export class PBRSubSurfaceConfiguration {
      */
     @serialize()
     public useAlbedoToTintRefraction: boolean = false;
+
+    /**
+     * When enabled, translucent surfaces will be tinted with the albedo colour (independent of thickness)
+     */
+    @serialize()
+    public useAlbedoToTintTranslucency: boolean = false;
 
     private _thicknessTexture: Nullable<BaseTexture> = null;
     /**
@@ -330,6 +337,7 @@ export class PBRSubSurfaceConfiguration {
             defines.SS_LODINREFRACTIONALPHA = false;
             defines.SS_LINKREFRACTIONTOTRANSPARENCY = false;
             defines.SS_ALBEDOFORREFRACTIONTINT = false;
+            defines.SS_ALBEDOFORTRANSLUCENCYTINT = false;
 
             if (this._isRefractionEnabled || this._isTranslucencyEnabled || this._isScatteringEnabled) {
                 defines.SUBSURFACE = true;
@@ -361,6 +369,10 @@ export class PBRSubSurfaceConfiguration {
                         defines.SS_ALBEDOFORREFRACTIONTINT = this.useAlbedoToTintRefraction;
                     }
                 }
+            }
+
+            if (this._isTranslucencyEnabled) {
+                defines.SS_ALBEDOFORTRANSLUCENCYTINT = this.useAlbedoToTintTranslucency;
             }
         }
     }

@@ -72,7 +72,7 @@ export class KHR_materials_translucency implements IGLTFLoaderExtension {
         pbrMaterial.subSurface.maximumThickness = 0.0;
 
         // Albedo colour will tint transmission.
-        pbrMaterial.subSurface.useAlbedoToTintRefraction = true;
+        pbrMaterial.subSurface.useAlbedoToTintTranslucency = true;
 
         if (extension.translucencyFactor !== undefined) {
             pbrMaterial.subSurface.translucencyIntensity = extension.translucencyFactor;

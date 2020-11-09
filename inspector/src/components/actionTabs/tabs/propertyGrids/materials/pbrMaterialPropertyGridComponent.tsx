@@ -269,6 +269,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                             <SliderLineComponent label="Tint at Distance" target={material.subSurface} propertyName="tintColorAtDistance" minimum={0} maximum={10} step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                             <CheckBoxLineComponent label="Link refraction with transparency" target={material.subSurface} propertyName="linkRefractionWithTransparency" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                             <CheckBoxLineComponent label="Use albedo to tint surface transparency" target={material.subSurface} propertyName="useAlbedoToTintRefraction" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <CheckBoxLineComponent label="Use albedo to tint surface translucency" target={material.subSurface} propertyName="useAlbedoToTintTranslucency" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                         </div>
                     }
 

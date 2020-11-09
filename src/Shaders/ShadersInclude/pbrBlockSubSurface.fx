@@ -99,6 +99,7 @@ struct subSurfaceOutParams
     #endif
     #ifdef SS_TRANSLUCENCY
         const in vec3 vDiffusionDistance,
+        const in vec3 surfaceAlbedo,
     #endif
         out subSurfaceOutParams outParams
     )
@@ -356,6 +357,12 @@ struct subSurfaceOutParams
         #endif
 
         refractionIrradiance.rgb *= transmittance;
+
+        #ifdef SS_ALBEDOFORTRANSLUCENCYTINT
+            // Tint the transmission with albedo.
+            refractionIrradiance.rgb *= surfaceAlbedo.rgb;
+        #endif
+
         outParams.refractionIrradiance = refractionIrradiance.rgb;
     #endif
     }
