@@ -239,7 +239,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                     }
                 }
 
-                if (this._scene.activeCamera || this._scene.activeCameras.length > 0) {
+                if (this._scene.activeCamera || this._scene.activeCameras && this._scene.activeCameras.length > 0) {
                     this._scene.render();
                 }
 
