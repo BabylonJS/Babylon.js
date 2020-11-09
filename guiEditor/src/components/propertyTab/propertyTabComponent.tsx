@@ -320,9 +320,25 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         let codeString = "";
         let children = guiTexture.getChildren()[0].children;
         let guiCount = 0;
+
+        codeString += `var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");\r\n\r\n`;
         children.forEach(element => {
             codeString += `var guiObject${guiCount.toString()} = new BABYLON.GUI.${element.typeName || "button"}("${element.name }");\r\n`;
+            
+            //printing generic code
+            codeString += `guiObject${guiCount.toString()}.color = "${element.color}";\r\n`;
+            codeString += `guiObject${guiCount.toString()}.leftInPixels = ${element.leftInPixels};\r\n`;
+            codeString += `guiObject${guiCount.toString()}.topInPixels = ${element.topInPixels};\r\n`;
+            codeString += `guiObject${guiCount.toString()}.widthInPixels = ${element.widthInPixels};\r\n`;
+            codeString += `guiObject${guiCount.toString()}.heightInPixels = ${element.heightInPixels};\r\n`;
+            
+            //generate gui specific code
 
+            
+            //add gui element to the texture
+            codeString += `advancedTexture.addControl(guiObject${guiCount.toString()});\r\n`;
+
+            codeString += `\r\n`;
             ++guiCount;
         });
         return codeString;
