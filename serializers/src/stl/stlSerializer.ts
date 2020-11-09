@@ -13,9 +13,10 @@ export class STLExport {
     * @param fileName changes the downloads fileName.
     * @param binary changes the STL to a binary type.
     * @param isLittleEndian toggle for binary type exporter.
+    * @param doNotBakeTransform toggle if meshes transforms should be baked or not.
     * @returns the STL as UTF8 string
     */
-    public static CreateSTL(meshes: Mesh[], download: boolean = true, fileName: string = 'stlmesh', binary: boolean = false, isLittleEndian: boolean = true): any {
+    public static CreateSTL(meshes: Mesh[], download: boolean = true, fileName: string = 'stlmesh', binary: boolean = false, isLittleEndian: boolean = true, doNotBakeTransform: boolean = false): any {
 
         //Binary support adapted from https://gist.github.com/paulkaplan/6d5f0ab2c7e8fdc68a61
 
@@ -70,7 +71,9 @@ export class STLExport {
 
         for (let i = 0; i < meshes.length; i++) {
             let mesh = meshes[i];
-            mesh.bakeCurrentTransformIntoVertices();
+            if (!doNotBakeTransform) {
+                mesh.bakeCurrentTransformIntoVertices();
+            }
             let vertices = mesh.getVerticesData(VertexBuffer.PositionKind) || [];
             let indices = mesh.getIndices() || [];
 

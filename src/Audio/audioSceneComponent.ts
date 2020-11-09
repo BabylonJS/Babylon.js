@@ -514,7 +514,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
             } else {
                 var listeningCamera: Nullable<Camera>;
 
-                if (scene.activeCameras.length > 0) {
+                if (scene.activeCameras && scene.activeCameras.length > 0) {
                     listeningCamera = scene.activeCameras[0];
                 } else {
                     listeningCamera = scene.activeCamera;

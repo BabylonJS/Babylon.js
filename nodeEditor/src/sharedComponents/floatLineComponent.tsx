@@ -112,10 +112,10 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         let className = this.props.smallUI ? "short": "value";
 
         return (
-            <div>
+            <>
                 {
                     <div className={this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine"}>
-                        <div className="label">
+                        <div className="label" title={this.props.label}>
                             {this.props.label}
                         </div>
                         <div className={className}>
@@ -139,7 +139,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                         </div>
                     </div>
                 }
-            </div>
+            </>
         );
     }
 }

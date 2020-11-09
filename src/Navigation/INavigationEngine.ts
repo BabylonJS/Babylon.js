@@ -128,6 +128,35 @@ export interface INavigationEnginePlugin {
     getDefaultQueryExtentToRef(result: Vector3): void;
 
     /**
+     * Set the time step of the navigation tick update.
+     * Default is 1/60.
+     * A value of 0 will disable fixed time update
+     * @param newTimeStep the new timestep to apply to this world.
+     */
+    setTimeStep(newTimeStep: number): void;
+
+    /**
+     * Get the time step of the navigation tick update.
+     * @returns the current time step
+     */
+    getTimeStep(): number;
+
+    /**
+     * If delta time in navigation tick update is greater than the time step
+     * a number of sub iterations are done. If more iterations are need to reach deltatime
+     * they will be discarded.
+     * A value of 0 will set to no maximum and update will use as many substeps as needed
+     * @param newStepCount the maximum number of iterations
+     */
+    setMaximumSubStepCount(newStepCount: number): void;
+
+    /**
+     * Get the maximum number of iterations per navigation tick update
+     * @returns the maximum number of iterations
+     */
+    getMaximumSubStepCount(): number;
+
+    /**
      * Release all resources
      */
     dispose(): void;

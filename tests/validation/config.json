@@ -945,6 +945,34 @@
             "referenceImage": "geometrybufferrenderer.png",
             "renderCount": 10,
             "excludeFromAutomaticTesting": true
+        },
+        {
+            "title": "Shadows and LODs",
+            "playgroundId": "#F7KZ7C#9",
+            "referenceImage": "shadowsandlod.png"
+        },
+        {
+            "title": "Shadows CSM and LODs",
+            "playgroundId": "#24HWT9#0",
+            "referenceImage": "shadowscsmandlod.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Glow layer and LODs",
+            "playgroundId": "#UNS6ZV#2",
+            "referenceImage": "glowlayerandlods.png"
+        },
+        {
+            "title": "Shadows with instances in left handed system",
+            "renderCount": 10,
+            "playgroundId": "#MSAHKR#12",
+            "referenceImage": "shadowsinstancesleft.png"
+        },
+        {
+            "title": "Shadows with instances in right handed system",
+            "renderCount": 10,
+            "playgroundId": "#MSAHKR#13",
+            "referenceImage": "shadowsinstancesright.png"
         }
     ]
 }

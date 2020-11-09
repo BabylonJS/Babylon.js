@@ -441,6 +441,10 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
         */
         premulAlpha: boolean;
         /**
+         * Gets or sets a boolean indicating that the canvas must be reverted on Y when updating the texture
+         */
+        applyYInversionOnUpdate: boolean;
+        /**
         * Gets or sets a number used to scale rendering size (2 means that the texture will be twice bigger).
         * Useful when you want more antialiasing
         */
@@ -651,6 +655,16 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
          * @returns a new AdvancedDynamicTexture
          */
         static CreateForMesh(mesh: AbstractMesh, width?: number, height?: number, supportPointerMove?: boolean, onlyAlphaTesting?: boolean, invertY?: boolean): AdvancedDynamicTexture;
+        /**
+         * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh) BUT do not create a new material for the mesh. You will be responsible for connecting the texture
+         * @param mesh defines the mesh which will receive the texture
+         * @param width defines the texture width (1024 by default)
+         * @param height defines the texture height (1024 by default)
+         * @param supportPointerMove defines a boolean indicating if the texture must capture move events (true by default)
+         * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
+         * @returns a new AdvancedDynamicTexture
+         */
+        static CreateForMeshTexture(mesh: AbstractMesh, width?: number, height?: number, supportPointerMove?: boolean, invertY?: boolean): AdvancedDynamicTexture;
         /**
         * Creates a new AdvancedDynamicTexture in fullscreen mode.
         * In this mode the texture will rely on a layer for its rendering.
@@ -4883,6 +4897,10 @@ declare module BABYLON.GUI {
         */
         premulAlpha: boolean;
         /**
+         * Gets or sets a boolean indicating that the canvas must be reverted on Y when updating the texture
+         */
+        applyYInversionOnUpdate: boolean;
+        /**
         * Gets or sets a number used to scale rendering size (2 means that the texture will be twice bigger).
         * Useful when you want more antialiasing
         */
@@ -5093,6 +5111,16 @@ declare module BABYLON.GUI {
          * @returns a new AdvancedDynamicTexture
          */
         static CreateForMesh(mesh: BABYLON.AbstractMesh, width?: number, height?: number, supportPointerMove?: boolean, onlyAlphaTesting?: boolean, invertY?: boolean): AdvancedDynamicTexture;
+        /**
+         * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh) BUT do not create a new material for the mesh. You will be responsible for connecting the texture
+         * @param mesh defines the mesh which will receive the texture
+         * @param width defines the texture width (1024 by default)
+         * @param height defines the texture height (1024 by default)
+         * @param supportPointerMove defines a boolean indicating if the texture must capture move events (true by default)
+         * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
+         * @returns a new AdvancedDynamicTexture
+         */
+        static CreateForMeshTexture(mesh: BABYLON.AbstractMesh, width?: number, height?: number, supportPointerMove?: boolean, invertY?: boolean): AdvancedDynamicTexture;
         /**
         * Creates a new AdvancedDynamicTexture in fullscreen mode.
         * In this mode the texture will rely on a layer for its rendering.
