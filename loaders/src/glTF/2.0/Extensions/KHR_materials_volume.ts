@@ -112,7 +112,7 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
                 }
             }
         }
-        
+
         if (extension.thicknessTexture) {
             return this._loader.loadTextureInfoAsync(context, extension.thicknessTexture)
                 .then((texture: BaseTexture) => {
