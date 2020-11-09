@@ -82,7 +82,7 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
     render() {
         return (
             <div className="checkBoxLine">
-                <div className="label">
+                <div className="label" title={this.props.label}>
                     {this.props.label}
                 </div>
                 <div className="checkBox">

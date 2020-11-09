@@ -155,7 +155,7 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
         return (
             <div className="color3Line">
                 <div className="firstLine">
-                    <div className="label">
+                    <div className="label" title={this.props.label}>
                         {this.props.label}
                     </div>
                     <div className="color3">
