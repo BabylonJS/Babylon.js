@@ -123,7 +123,7 @@ Engine.prototype._renderViews = function() {
         if (camera) {
             scene = camera.getScene();
 
-            if (scene.activeCameras.length) {
+            if (scene.activeCameras && scene.activeCameras.length) {
                 continue;
             }
 

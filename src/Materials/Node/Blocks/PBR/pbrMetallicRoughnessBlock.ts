@@ -941,6 +941,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state.sharedData.hints.needAlphaTesting = state.sharedData.hints.needAlphaTesting || this.useAlphaTest;
 
         state._emitExtension("lod", "#extension GL_EXT_shader_texture_lod : enable", "defined(LODBASEDMICROSFURACE)");
+        state._emitExtension("derivatives", "#extension GL_OES_standard_derivatives : enable");
 
         //
         // Includes
@@ -973,7 +974,11 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         });
 
         state._emitFunctionFromInclude("pbrDirectLightingFalloffFunctions", comments);
-        state._emitFunctionFromInclude("pbrBRDFFunctions", comments);
+        state._emitFunctionFromInclude("pbrBRDFFunctions", comments, {
+            replaceStrings: [
+                { search: /REFLECTIONMAP_SKYBOX/g, replace: reflectionBlock?._defineSkyboxName ?? "REFLECTIONMAP_SKYBOX" }
+            ]
+        });
         state._emitFunctionFromInclude("hdrFilteringFunctions", comments);
 
         state._emitFunctionFromInclude("pbrDirectLightingFunctions", comments, {

@@ -763,7 +763,7 @@ export class RenderTargetTexture extends Texture {
 
                 let meshToRender = mesh._internalAbstractMeshDataInfo._currentLOD;
 
-                mesh._preActivateForIntermediateRendering(sceneRenderId);
+                meshToRender._preActivateForIntermediateRendering(sceneRenderId);
 
                 let isMasked;
                 if (checkLayerMask && camera) {
