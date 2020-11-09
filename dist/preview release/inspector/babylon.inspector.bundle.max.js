@@ -57970,7 +57970,7 @@ var CameraTreeItemComponent = /** @class */ (function (_super) {
         this._onBeforeRenderObserver = scene.onBeforeRenderObservable.add(function () {
             var camera = _this.props.camera;
             // This will deactivate the previous camera when the camera is changed. Multiple camera's cycle frequently so only do this for single cameras
-            if (_this.state.isActive && scene.activeCameras.length <= 1 && scene.activeCamera !== camera) {
+            if (_this.state.isActive && scene.activeCameras && scene.activeCameras.length <= 1 && scene.activeCamera !== camera) {
                 camera.detachControl();
             }
             var newState = scene.activeCamera === camera;
