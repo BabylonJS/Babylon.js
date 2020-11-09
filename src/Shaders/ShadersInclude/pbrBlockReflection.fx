@@ -82,6 +82,9 @@
             const in sampler2D reflectionSamplerHigh,
         #endif
     #endif
+    #ifdef REALTIME_FILTERING
+        const in vec2 vReflectionFilteringInfo,
+    #endif
         out vec4 environmentRadiance
     )
     {
@@ -199,6 +202,9 @@
             const in sampler2D reflectionSamplerHigh,
         #endif
     #endif
+    #ifdef REALTIME_FILTERING
+        const in vec2 vReflectionFilteringInfo,
+    #endif
         out reflectionOutParams outParams
     )
     {
@@ -241,6 +247,9 @@
         #ifndef LODBASEDMICROSFURACE
             reflectionSamplerLow,
             reflectionSamplerHigh,
+        #endif
+        #ifdef REALTIME_FILTERING
+            vReflectionFilteringInfo,
         #endif
             environmentRadiance
         );
