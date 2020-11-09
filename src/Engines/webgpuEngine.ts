@@ -168,6 +168,9 @@ export class WebGPUEngine extends Engine {
     private _textureHelper: WebGPUTextureHelper;
     private _bufferManager: WebGPUBufferManager;
     private _emptyVertexBuffer: VertexBuffer;
+    private _lastCachedWrapU: number;
+    private _lastCachedWrapV: number;
+    private _lastCachedWrapR: number;
     private _counters: {
         numPipelineDescriptorCreation: number;
         numBindGroupsCreation: number;
@@ -1662,14 +1665,17 @@ export class WebGPUEngine extends Engine {
 
                 if (internalTexture._cachedWrapU !== texture.wrapU) {
                     internalTexture._cachedWrapU = texture.wrapU;
+                    this._lastCachedWrapU = texture.wrapU;
                 }
 
                 if (internalTexture._cachedWrapV !== texture.wrapV) {
                     internalTexture._cachedWrapV = texture.wrapV;
+                    this._lastCachedWrapV = texture.wrapV;
                 }
 
                 if (internalTexture.is3D && internalTexture._cachedWrapR !== texture.wrapR) {
                     internalTexture._cachedWrapR = texture.wrapR;
+                    this._lastCachedWrapR = texture.wrapR;
                 }
 
                 this._setAnisotropicLevel(0, internalTexture, texture.anisotropicFilteringLevel);
@@ -1712,7 +1718,17 @@ export class WebGPUEngine extends Engine {
         }
 
         if (texture) {
-            texture._associatedChannel = channel;
+            if (this._lastCachedWrapU !== null && texture._cachedWrapU !== this._lastCachedWrapU) {
+                texture._cachedWrapU = this._lastCachedWrapU;
+            }
+
+            if (this._lastCachedWrapV !== null && texture._cachedWrapV !== this._lastCachedWrapV) {
+                texture._cachedWrapV = this._lastCachedWrapV;
+            }
+
+            if (this._lastCachedWrapR !== null && texture._cachedWrapR !== this._lastCachedWrapR) {
+                texture._cachedWrapR = this._lastCachedWrapR;
+            }
         }
 
         this._setInternalTexture(name, texture);
