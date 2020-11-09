@@ -163,7 +163,7 @@ function runTest(index, done) {
     const excludedEngines = config.tests[index].excludedEngines;
     const webgl1 = !!window.disableWebGL2Support;
     if (Array.isArray(excludedEngines) && (webgl1 && excludedEngines.indexOf("webgl1") >= 0 || !webgl1 && excludedEngines.indexOf("webgl2") >= 0)) {
-        done(false);
+        done(true);
         return;
     }
 
