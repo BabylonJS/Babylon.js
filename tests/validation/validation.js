@@ -160,6 +160,13 @@ function runTest(index, done) {
         done(false);
     }
 
+    const excludedEngines = config.tests[index].excludedEngines;
+    const webgl1 = !!window.disableWebGL2Support;
+    if (Array.isArray(excludedEngines) && (webgl1 && excludedEngines.indexOf("webgl1") >= 0 || !webgl1 && excludedEngines.indexOf("webgl2") >= 0)) {
+        done(true);
+        return;
+    }
+
     // Clear the plugin activated observables in case it is registered in the test.
     BABYLON.SceneLoader.OnPluginActivatedObservable.clear();
 
