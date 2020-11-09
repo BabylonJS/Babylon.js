@@ -88,6 +88,11 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
             const sssColour = new Color3(0.0, 0.0, 0.0);
             sssColour.copyFromFloats(extension.subsurfaceColor[0], extension.subsurfaceColor[1], extension.subsurfaceColor[2]);
             if (sssColour != Color3.Black()) {
+                // This logic may be hard to follow here:
+                // If the KHR_materials_translucency extension is used and we are using scattering,
+                // the assumption is that the amount of scattering is high-enough to use the
+                // diffusion approximation of SSS. That's not compatible with translucency so we turn
+                // off translucency.
                 if (pbrMaterial.subSurface.isTranslucencyEnabled) {
                     pbrMaterial.subSurface.isScatteringEnabled = true;
                     pbrMaterial.subSurface.isTranslucencyEnabled = false;
@@ -97,6 +102,9 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
                     if (scene.subSurfaceConfiguration != null) {
                         scene.subSurfaceConfiguration.metersPerUnit = 0.04; // Should be scaled with the loaded glTF scene.
                     }
+                // If we need scattering with the KHR_materials_transmission extension, the
+                // assumption is that this is a lower amount of scattering and we'll implement
+                // it by turning on translucency in the renderer...
                 } else {
                     pbrMaterial.subSurface.isTranslucencyEnabled = true;
                     pbrMaterial.subSurface.useAlbedoToTintTranslucency = true;
