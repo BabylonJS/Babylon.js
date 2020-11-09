@@ -987,9 +987,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         var button1 = BABYLON.GUI.Button.CreateSimpleButton("but1", "Click Me");
         button1.width = "150px"
         button1.height = "40px";
-        button1.color = "#FFFFFF";
+        button1.color = "#FFFFFFFF";
         button1.cornerRadius = 20;
-        button1.background = "#008000";
+        button1.background = "#138016FF";
         button1.onPointerUpObservable.add(function() {
         });
 
@@ -1011,8 +1011,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         var slider1 = new BABYLON.GUI.Slider("Slider");
         slider1.width = "150px"
         slider1.height = "40px";
-        slider1.color = "#FFFFFF";
-        slider1.background = "#008000";
+        slider1.color = "#FFFFFFFF";
+        slider1.background = "#138016FF";
         slider1.onPointerUpObservable.add(function() {
         });
         var fakeNodeMaterialBlock = new NodeMaterialBlock("Slider");

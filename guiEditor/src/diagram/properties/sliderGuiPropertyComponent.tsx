@@ -5,7 +5,8 @@ import { IPropertyComponentProps } from './propertyComponentProps';
 import { GeneralPropertyTabComponent } from './genericNodePropertyComponent';
 import { TextLineComponent } from '../../sharedComponents/textLineComponent';
 import { NumericInputComponent } from '../../sharedComponents/numericInputComponent';
-import { SketchPicker } from 'react-color';
+import { ColorPickerLineComponent } from '../../sharedComponents/colorPickerComponent';
+import { Color4 } from 'babylonjs';
 
 export class SliderPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
@@ -14,6 +15,11 @@ export class SliderPropertyTabComponent extends React.Component<IPropertyCompone
     }
 
     private slider : BABYLON.GUI.Slider;
+
+    getColorString()
+    {
+        return Color4.FromHexString(this.slider.background);
+    }
 
     render() {
         return (
@@ -46,12 +52,12 @@ export class SliderPropertyTabComponent extends React.Component<IPropertyCompone
                    this.slider.width = evt;
                 }}>
                 </NumericInputComponent>
-                <TextLineComponent label="Color" value={this.slider.color} />
-                <SketchPicker 
-                    color={ this.slider.color }
-                    onChangeComplete={evt =>{
-                        this.slider.color = evt.hex;
-                }}/>
+                <TextLineComponent label="Color" value={this.slider.background} />
+                <ColorPickerLineComponent value={this.getColorString()} globalState={this.props.globalState} 
+                onColorChanged={evt => {
+                        this.slider.background = evt;  
+                }}>
+                </ColorPickerLineComponent>
                 </LineContainerComponent>            
             </>
         );
