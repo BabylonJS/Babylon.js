@@ -954,7 +954,8 @@
         {
             "title": "Shadows CSM and LODs",
             "playgroundId": "#24HWT9#0",
-            "referenceImage": "shadowscsmandlod.png"
+            "referenceImage": "shadowscsmandlod.png",
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "Glow layer and LODs",
