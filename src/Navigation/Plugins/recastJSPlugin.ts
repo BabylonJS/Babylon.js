@@ -31,7 +31,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
     public navMesh: any;
 
     private _maximumSubStepCount: number = 10;
-    private _timeStep: number = 1/60;
+    private _timeStep: number = 1 / 60;
 
     /**
      * Initializes the recastJS plugin
@@ -57,7 +57,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * A value of 0 will disable fixed time update
      * @param newTimeStep the new timestep to apply to this world.
      */
-    setTimeStep(newTimeStep: number = 1./60.): void {
+    setTimeStep(newTimeStep: number = 1 / 60): void {
         this._timeStep = newTimeStep;
     }
 
@@ -635,7 +635,7 @@ export class RecastJSCrowd implements ICrowd {
                 this.recastCrowd.update(timeStep);
             }
         }
-        
+
         // update transforms
         for (let index = 0; index < this.agents.length; index++) {
             this.transforms[index].position = this.getAgentPosition(this.agents[index]);
