@@ -3,7 +3,7 @@ import { Logger } from "../../Misc/logger";
 import { VertexData } from "../../Meshes/mesh.vertexData";
 import { Mesh } from "../../Meshes/mesh";
 import { Scene } from "../../scene";
-import { Vector3 } from '../../Maths/math';
+import { Epsilon, Vector3 } from '../../Maths/math';
 import { TransformNode } from "../../Meshes/transformNode";
 import { Observer } from "../../Misc/observable";
 import { Nullable } from "../../types";
@@ -30,6 +30,9 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      */
     public navMesh: any;
 
+    private _maximumSubStepCount: number = 10;
+    private _timeStep: number = 1/60;
+
     /**
      * Initializes the recastJS plugin
      * @param recastInjection can be used to inject your own recast reference
@@ -45,6 +48,24 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
             Logger.Error("RecastJS is not available. Please make sure you included the js file.");
             return;
         }
+        this.setTimeStep();
+    }
+
+    setTimeStep(newTimeStep: number = 1./60.): void {
+        this._timeStep = newTimeStep;
+    }
+
+    getTimeStep(): number {
+        return this._timeStep;
+    }
+
+    setMaximumSubStepCount(newStepCount: number = 10): void {
+        this._maximumSubStepCount = newStepCount;
+    }
+
+    getMaximumSubStepCount(): number
+    {
+        return this._maximumSubStepCount;
     }
 
     /**
@@ -577,8 +598,23 @@ export class RecastJSCrowd implements ICrowd {
      */
     update(deltaTime: number): void {
         // update crowd
-        this.recastCrowd.update(deltaTime);
-
+        var timeStep = this.bjsRECASTPlugin.getTimeStep();
+        var maxStepCount = this.bjsRECASTPlugin.getMaximumSubStepCount();
+        if (timeStep <= Epsilon) {
+            this.recastCrowd.update(deltaTime);
+        } else {
+            var iterationCount = deltaTime / timeStep;
+            if (maxStepCount && iterationCount > maxStepCount) {
+                iterationCount = maxStepCount
+            }
+            if (iterationCount < 1) {
+                iterationCount = 1;
+            }
+            for (let i = 0; i < iterationCount; i++) {
+                this.recastCrowd.update(timeStep);
+            }
+        }
+        
         // update transforms
         for (let index = 0; index < this.agents.length; index++)
         {
