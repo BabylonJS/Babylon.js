@@ -18,6 +18,7 @@ import { NodeMaterialBlock } from '../../nodeMaterialBlock';
 import { CubeTexture } from '../../../Textures/cubeTexture';
 import { Texture } from '../../../Textures/texture';
 import { NodeMaterialSystemValues } from '../../Enums/nodeMaterialSystemValues';
+import { Scalar } from '../../../../Maths/math.scalar';
 
 /**
  * Block used to implement the refraction part of the sub surface module of the PBR material
@@ -42,6 +43,8 @@ export class RefractionBlock extends NodeMaterialBlock {
     public _vRefractionMicrosurfaceInfosName: string;
     /** @hidden */
     public _vRefractionInfosName: string;
+    /** @hidden */
+    public _vRefractionFilteringInfoName: string;
 
     private _scene: Scene;
 
@@ -221,6 +224,10 @@ export class RefractionBlock extends NodeMaterialBlock {
         effect.setFloat4(this._vRefractionInfosName, refractionTexture.level, 1 / indexOfRefraction, depth, this.invertRefractionY ? -1 : 1);
 
         effect.setFloat3(this._vRefractionMicrosurfaceInfosName, refractionTexture.getSize().width, refractionTexture.lodGenerationScale, refractionTexture.lodGenerationOffset);
+
+        const width = refractionTexture.getSize().width;
+
+        effect.setFloat2(this._vRefractionFilteringInfoName, width, Scalar.Log2(width));
     }
 
     /**
@@ -282,6 +289,10 @@ export class RefractionBlock extends NodeMaterialBlock {
         this._vRefractionInfosName = state._getFreeVariableName("vRefractionInfos");
 
         state._emitUniformFromString(this._vRefractionInfosName, "vec4");
+
+        this._vRefractionFilteringInfoName = state._getFreeVariableName("vRefractionFilteringInfo");
+
+        state._emitUniformFromString(this._vRefractionFilteringInfoName, "vec2");
 
         return code;
     }
