@@ -498,6 +498,7 @@ void main(void) {
         #endif
         #ifdef SS_TRANSLUCENCY
             vDiffusionDistance,
+            surfaceAlbedo,
         #endif
             subSurfaceOut
         );

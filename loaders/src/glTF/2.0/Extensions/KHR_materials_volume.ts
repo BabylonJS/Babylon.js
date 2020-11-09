@@ -6,7 +6,6 @@ import { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import { Color3 } from 'babylonjs/Maths/math.color';
-import { Scene } from 'babylonjs';
 
 const NAME = "KHR_materials_volume";
 
@@ -86,18 +85,26 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
             pbrMaterial.subSurface.tintColor = new Color3(1.0, 1.0, 1.0);
         }
         if (extension.subsurfaceColor !== undefined && extension.subsurfaceColor.length == 3) {
-            const sssColour = new Color3(1.0, 1.0, 1.0);
+            const sssColour = new Color3(0.0, 0.0, 0.0);
             sssColour.copyFromFloats(extension.subsurfaceColor[0], extension.subsurfaceColor[1], extension.subsurfaceColor[2]);
-            pbrMaterial.subSurface.isScatteringEnabled = true;
-            const scene = pbrMaterial.getScene();
-            if (scene.subSurfaceConfiguration != null) {
-                scene.subSurfaceConfiguration.metersPerUnit = 0.04;
+            if (sssColour != Color3.Black()) {
+                if (pbrMaterial.subSurface.isTranslucencyEnabled) {
+                    pbrMaterial.subSurface.isScatteringEnabled = true;
+                    pbrMaterial.subSurface.isTranslucencyEnabled = false;
+                    pbrMaterial.subSurface.isRefractionEnabled = false;
+                    pbrMaterial.subSurface.scatteringDiffusionProfile = sssColour;
+                    const scene = pbrMaterial.getScene();
+                    if (scene.subSurfaceConfiguration != null) {
+                        scene.subSurfaceConfiguration.metersPerUnit = 0.04; // Should be scaled with the loaded glTF scene.
+                    }
+                } else {
+                    pbrMaterial.subSurface.isTranslucencyEnabled = true;
+                    pbrMaterial.subSurface.useAlbedoToTintTranslucency = true;
+                    pbrMaterial.subSurface.isRefractionEnabled = false;
+                }
             }
-            pbrMaterial.subSurface.scatteringDiffusionProfile = sssColour;
-        } else {
-            pbrMaterial.subSurface.tintColor = new Color3(1.0, 1.0, 1.0);
         }
-
+        
         if (extension.thicknessTexture) {
             return this._loader.loadTextureInfoAsync(context, extension.thicknessTexture)
                 .then((texture: BaseTexture) => {
