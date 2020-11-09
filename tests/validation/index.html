@@ -36,12 +36,6 @@
 						}
 
 						var recursiveRunTest = function(i) {
-                            const excludedEngines = config.tests[i].excludedEngines;
-                            const webgl1 = !!window.disableWebGL2Support;
-                            if (Array.isArray(excludedEngines) && (webgl1 && excludedEngines.indexOf("webgl1") >= 0 || !webgl1 && excludedEngines.indexOf("webgl2") >= 0)) {
-                                recursiveRunTest(i + 1);
-                                return;
-                            }
 							runTest(i, function() {
 								i++;
 								if (justOnce || i >= config.tests.length) {
