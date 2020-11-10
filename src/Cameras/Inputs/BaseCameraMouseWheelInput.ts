@@ -62,7 +62,7 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
                 return;
             }
 
-            const event = (pointer.event as unknown as IWheelEvent);
+            const event = (pointer.event as IWheelEvent);
 
             const platformScale = event.deltaMode === WheelEvent.DOM_DELTA_LINE ? this._ffMultiplier : 1;
 
