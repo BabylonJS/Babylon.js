@@ -2031,7 +2031,13 @@ export class WebGPUEngine extends Engine {
     }
 
     public readPixels(x: number, y: number, width: number, height: number, hasAlpha = true): Promise<ArrayBufferView> {
-        return this._textureHelper.readPixels(this._swapChainTexture, x, y, width, height, this._options.swapChainFormat!);
+        const gpuTexture = this._currentRenderTargetPassInfos.colorAttachmentGPUTextures ? this._currentRenderTargetPassInfos.colorAttachmentGPUTextures[0].underlyingResource : this._swapChainTexture;
+        const gpuTextureFormat = this._currentRenderTargetPassInfos.colorAttachmentGPUTextures ? this._currentRenderTargetPassInfos.colorAttachmentGPUTextures[0].format : this._options.swapChainFormat!;
+        if (!gpuTexture) {
+            // we are calling readPixels before the end of the first frame and no RTT is bound, so this._swapChainTexture is not setup yet!
+            return Promise.resolve(new Uint8Array(0));
+        }
+        return this._textureHelper.readPixels(gpuTexture, x, y, width, height, gpuTextureFormat);
     }
 
     /** @hidden */
