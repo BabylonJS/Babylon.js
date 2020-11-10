@@ -146,7 +146,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
 
         #ifdef SUBSURFACE
             vec2 vThicknessParam = vec2(0., ${thickness});
-            vec4 vTintColor = vec4(toLinearSpace(${tintColor}), ${refractionTintAtDistance});
+            vec4 vTintColor = vec4(${tintColor}, ${refractionTintAtDistance});
             vec3 vSubSurfaceIntensity = vec3(${refractionIntensity}, ${translucencyIntensity}, 0.);
 
             subSurfaceBlock(
@@ -218,6 +218,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
             #endif
             #ifdef SS_TRANSLUCENCY
                 ${translucencyDiffusionDistance},
+                surfaceAlbedo
             #endif
                 subSurfaceOut
             );
