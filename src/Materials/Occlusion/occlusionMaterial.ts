@@ -5,6 +5,9 @@ import { ShaderMaterial } from '../shaderMaterial';
 import "../../Shaders/color.fragment";
 import "../../Shaders/color.vertex";
 
+/**
+ * A material to use for fast depth-only rendering.
+ */
 export class OcclusionMaterial extends ShaderMaterial {
     constructor(name: string, scene: Scene) {
         super(name, scene, "color", {
