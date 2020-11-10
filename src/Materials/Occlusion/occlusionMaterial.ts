@@ -2,8 +2,8 @@ import { Color4 } from '../../Maths';
 import { Scene } from "../../scene";
 import { ShaderMaterial } from '../shaderMaterial';
 
-import "../Shaders/color.fragment";
-import "../Shaders/color.vertex";
+import "../../Shaders/color.fragment";
+import "../../Shaders/color.vertex";
 
 export class OcclusionMaterial extends ShaderMaterial {
     constructor(name: string, scene: Scene) {
