@@ -515,7 +515,7 @@ export class Texture extends BaseTexture {
         this._cachedWRotationCenter = this.wRotationCenter;
         this._cachedHomogeneousRotationInUVTransform = this.homogeneousRotationInUVTransform;
 
-        if (!this._cachedTextureMatrix) {
+        if (!this._cachedTextureMatrix || !this._rowGenerationMatrix) {
             this._cachedTextureMatrix = Matrix.Zero();
             this._rowGenerationMatrix = new Matrix();
             this._t0 = Vector3.Zero();
