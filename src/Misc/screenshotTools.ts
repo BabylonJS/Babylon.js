@@ -34,8 +34,6 @@ export class ScreenshotTools {
     public static CreateScreenshot(engine: Engine, camera: Camera, size: IScreenshotSize | number, successCallback?: (data: string) => void, mimeType: string = "image/png"): void {
         const { height, width } = ScreenshotTools._getScreenshotSize(engine, camera, size);
 
-        // TODO WEBGPU use engine.readPixels to get the back buffer
-
         if (!(height && width)) {
             Logger.Error("Invalid 'size' parameter !");
             return;
@@ -61,12 +59,14 @@ export class ScreenshotTools {
         var offsetX = Math.max(0, width - newWidth) / 2;
         var offsetY = Math.max(0, height - newHeight) / 2;
 
-        var renderingCanvas = engine.getRenderingCanvas();
-        if (renderContext && renderingCanvas) {
-            renderContext.drawImage(renderingCanvas, offsetX, offsetY, newWidth, newHeight);
-        }
+        engine.onEndFrameObservable.addOnce(() => {
+            var renderingCanvas = engine.getRenderingCanvas();
+            if (renderContext && renderingCanvas) {
+                renderContext.drawImage(renderingCanvas, offsetX, offsetY, newWidth, newHeight);
+            }
 
-        Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
+            Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
+        });
     }
 
     /**

@@ -574,41 +574,13 @@ export class Tools {
      * @param mimeType defines the mime type of the result
      * @param fileName defines the filename to download. If present, the result will automatically be downloaded
      */
-    public static DumpFramebuffer(width: number, height: number, engine: Engine, successCallback?: (data: string) => void, mimeType: string = "image/png", fileName?: string) {
+    public static async DumpFramebuffer(width: number, height: number, engine: Engine, successCallback?: (data: string) => void, mimeType: string = "image/png", fileName?: string) {
         // Read the contents of the framebuffer
-        var numberOfChannelsByLine = width * 4;
-        var halfHeight = height / 2;
+        let bufferView = await engine.readPixels(0, 0, width, height);
 
-        engine.onEndFrameObservable.addOnce(async () => {
-            let bufferView = await engine.readPixels(0, 0, width, height);
+        const data = new Uint8Array(bufferView.buffer);
 
-            const data = new Uint8Array(bufferView.buffer);
-
-            // To flip image on Y axis.
-            for (var i = 0; i < halfHeight; i++) {
-                for (var j = 0; j < numberOfChannelsByLine; j++) {
-                    var currentCell = j + i * numberOfChannelsByLine;
-                    var targetLine = height - i - 1;
-                    var targetCell = j + targetLine * numberOfChannelsByLine;
-
-                    var temp = data[currentCell];
-                    data[currentCell] = data[targetCell];
-                    data[targetCell] = temp;
-                }
-            }
-
-            // TODO WEBGPU Add a feature in ThinEngine.Features for that instead of testing isWebGPU?
-            if (engine.isWebGPU) {
-                // flip red and blue channels as swap chain is in BGRA format
-                for (var i = 0; i < width * height * 4; i += 4) {
-                    var temp = data[i + 0];
-                    data[i + 0] = data[i + 2];
-                    data[i + 2] = temp;
-                }
-            }
-
-            Tools.DumpData(width, height, data, successCallback, mimeType, fileName);
-        });
+        Tools.DumpData(width, height, data, successCallback, mimeType, fileName, true);
     }
 
     /**
