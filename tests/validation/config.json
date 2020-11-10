@@ -549,6 +549,7 @@
         },
         {
             "title": "GLTF Mesh Primitive Vertex Color",
+            "renderCount": 5,
             "playgroundId": "#DS8AA7#18",
             "replace": "__folder__, Mesh_PrimitiveVertexColor, __page__, 0",
             "referenceImage": "gltfMeshPrimitiveVertexColor.png"
@@ -786,7 +787,7 @@
         },
         {
             "title": "GUI",
-            "renderCount": 2,
+            "renderCount": 5,
             "scriptToRun": "/Demos/GUI/gui.js",
             "functionToCall": "createScene",
             "referenceImage": "GUI.png"
@@ -841,7 +842,7 @@
         },
         {
             "title": "TGA",
-            "renderCount": 2,
+            "renderCount": 5,
             "playgroundId": "#ZI77S7#0",
             "referenceImage": "tga.png"
         },
@@ -856,9 +857,14 @@
             "referenceImage": "dds2d.png"
         },
         {
-            "title": "LightFalloff",
-            "playgroundId": "#20OAV9#201",
-            "referenceImage": "lightFalloff.png"
+            "title": "LightFalloff spots",
+            "playgroundId": "#20OAV9#3311",
+            "referenceImage": "lightFalloffSpots.png"
+        },
+        {
+            "title": "LightFalloff point lights",
+            "playgroundId": "#20OAV9#3312",
+            "referenceImage": "lightFalloffPointLights.png"
         },
         {
             "title": "MeshSimplification",

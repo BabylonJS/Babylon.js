@@ -411,7 +411,8 @@ function init(engineName) {
                     "depth24unorm-stencil8",
                     "depth32float-stencil8"
                 ]
-            }
+            },
+            antialiasing: false,
         });
         engine.enableOfflineSupport = false;
         return new Promise((resolve) => {
