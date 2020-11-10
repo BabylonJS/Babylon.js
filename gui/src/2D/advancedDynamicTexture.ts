@@ -359,6 +359,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             this._resizeObserver = scene.getEngine().onResizeObservable.add(() => this._onResize());
             this._onResize();
         }
+        this._texture.isReady = true;
     }
     /**
     * Get the current class name of the texture useful for serialization or dynamic coding.
