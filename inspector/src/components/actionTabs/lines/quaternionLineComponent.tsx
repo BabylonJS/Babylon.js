@@ -162,9 +162,9 @@ export class QuaternionLineComponent extends React.Component<IQuaternionLineComp
                 {
                     this.state.isExpanded && this.props.useEuler &&
                     <div className="secondLine">
-                        <FloatLineComponent label="x" min={0} max={360} target={euler} propertyName='x' onChange={value => {value = Tools.ToDegrees(euler.x); this.updateStateEulerX(value)} } />
-                        <FloatLineComponent label="y" min={0} max={360} target={euler} propertyName='y' onChange={value => {value = Tools.ToDegrees(euler.y); this.updateStateEulerY(value)} } />
-                        <FloatLineComponent label="z" min={0} max={360} target={euler} propertyName='z' onChange={value => {value = Tools.ToDegrees(euler.z); this.updateStateEulerZ(value)} } />
+                        <FloatLineComponent label="x" target={euler} propertyName='x' onChange={value => {value = Tools.ToDegrees(euler.x); this.updateStateEulerX(value)} } />
+                        <FloatLineComponent label="y" target={euler} propertyName='y' onChange={value => {value = Tools.ToDegrees(euler.y); this.updateStateEulerY(value)} } />
+                        <FloatLineComponent label="z" target={euler} propertyName='z' onChange={value => {value = Tools.ToDegrees(euler.z); this.updateStateEulerZ(value)} } />
                     </div>
                 }
             </div>
