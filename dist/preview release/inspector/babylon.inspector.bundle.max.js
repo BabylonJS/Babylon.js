@@ -46453,7 +46453,6 @@ var QuaternionLineComponent = /** @class */ (function (_super) {
         if (!nextPropsValue.equals(nextState.value) || this._localChange) {
             nextState.value = nextPropsValue.clone();
             nextState.eulerValue = nextPropsValue.toEulerAngles();
-            console.log(Math.abs(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_5__["Tools"].ToDegrees(this.state.eulerValue.y)) + Math.abs(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_5__["Tools"].ToDegrees(nextState.eulerValue.y)));
             // Let's make sure we are not going on the opposite (but correct) value
             if (this._checkRoundCircle(nextState.eulerValue.x, this.state.eulerValue.x)) {
                 nextState.eulerValue.x = this.state.eulerValue.x;

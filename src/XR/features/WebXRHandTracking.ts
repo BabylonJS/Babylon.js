@@ -20,8 +20,8 @@ import { InputBlock } from "../../Materials/Node/Blocks/Input/inputBlock";
 import { Material } from "../../Materials/material";
 import { Engine } from "../../Engines/engine";
 import { Tools } from "../../Misc/tools";
-import { TransformNode } from "../../Meshes";
 import { Axis } from "../../Maths/math.axis";
+import { TransformNode } from '../../Meshes/transformNode';
 
 declare const XRHand: XRHand;
 
@@ -153,7 +153,7 @@ export class WebXRHand implements IDisposable {
      * Construct a new hand object
      * @param xrController the controller to which the hand correlates
      * @param trackedMeshes the meshes to be used to track the hand joints
-     * @param handMesh an optional hand mesh. if not provided, ours will be used
+     * @param _handMesh an optional hand mesh. if not provided, ours will be used
      * @param _rigMapping an optional rig mapping for the hand mesh. if not provided, ours will be used
      */
     constructor(

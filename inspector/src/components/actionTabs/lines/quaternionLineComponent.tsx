@@ -38,8 +38,6 @@ export class QuaternionLineComponent extends React.Component<IQuaternionLineComp
             nextState.value = nextPropsValue.clone();
             nextState.eulerValue = nextPropsValue.toEulerAngles();
 
-            console.log (Math.abs(Tools.ToDegrees(this.state.eulerValue.y)) + Math.abs(Tools.ToDegrees(nextState.eulerValue.y)));
-
             // Let's make sure we are not going on the opposite (but correct) value
             if (this. _checkRoundCircle(nextState.eulerValue.x, this.state.eulerValue.x)) {
                 nextState.eulerValue.x = this.state.eulerValue.x;

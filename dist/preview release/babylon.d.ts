@@ -76847,9 +76847,23 @@ declare module BABYLON {
                 impostorType?: number;
             };
             /**
-             * For future use - a single hand-mesh that will be updated according to the XRHand data provided
+             * Should the default hand mesh be disabled. In this case, the spheres will be visible.
              */
-            handMesh?: AbstractMesh;
+            disableDefaultHandMesh?: boolean;
+            /**
+             * a rigged hand-mesh that will be updated according to the XRHand data provided. This will override the default hand mesh
+             */
+            handMeshes?: {
+                right: AbstractMesh;
+                left: AbstractMesh;
+            };
+            /**
+             * If a hand mesh was provided, this array will define what axis will update which node. This will override the default hand mesh
+             */
+            rigMapping?: {
+                right: string[];
+                left: string[];
+            };
         };
     }
     /**
@@ -76889,6 +76903,11 @@ declare module BABYLON {
         readonly xrController: WebXRInputSource;
         /** the meshes to be used to track the hand joints */
         readonly trackedMeshes: AbstractMesh[];
+        private _handMesh?;
+        private _rigMapping?;
+        private _scene;
+        private _defaultHandMesh;
+        private _transformNodeMapping;
         /**
          * Hand-parts definition (key is HandPart)
          */
@@ -76904,12 +76923,14 @@ declare module BABYLON {
          * Construct a new hand object
          * @param xrController the controller to which the hand correlates
          * @param trackedMeshes the meshes to be used to track the hand joints
+         * @param _handMesh an optional hand mesh. if not provided, ours will be used
+         * @param _rigMapping an optional rig mapping for the hand mesh. if not provided, ours will be used
          */
         constructor(
         /** the controller to which the hand correlates */
         xrController: WebXRInputSource, 
         /** the meshes to be used to track the hand joints */
-        trackedMeshes: AbstractMesh[]);
+        trackedMeshes: AbstractMesh[], _handMesh?: AbstractMesh | undefined, _rigMapping?: string[] | undefined);
         /**
          * Update this hand from the latest xr frame
          * @param xrFrame xrFrame to update from
@@ -76927,6 +76948,7 @@ declare module BABYLON {
          * Dispose this Hand object
          */
         dispose(): void;
+        private _generateDefaultHandMesh;
     }
     /**
      * WebXR Hand Joint tracking feature, available for selected browsers and devices
