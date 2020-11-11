@@ -1057,30 +1057,6 @@ export class WebGPUEngine extends Engine {
     }
 
     /** @hidden */
-    public _getWebGPUInternalFormat(format: number): GPUTextureFormat {
-        let internalFormat = WebGPUConstants.TextureFormat.RGBA8Unorm;
-
-        switch (format) {
-            case Constants.TEXTUREFORMAT_ALPHA:
-                throw "TEXTUREFORMAT_ALPHA format not supported in WebGPU";
-            case Constants.TEXTUREFORMAT_LUMINANCE:
-                throw "TEXTUREFORMAT_LUMINANCE format not supported in WebGPU";
-            case Constants.TEXTUREFORMAT_LUMINANCE_ALPHA:
-                throw "TEXTUREFORMAT_LUMINANCE_ALPHA format not supported in WebGPU";
-            case Constants.TEXTUREFORMAT_RED:
-                internalFormat = WebGPUConstants.TextureFormat.R8Snorm;
-            case Constants.TEXTUREFORMAT_RG:
-                internalFormat = WebGPUConstants.TextureFormat.RG8Snorm;
-            case Constants.TEXTUREFORMAT_RGB:
-                throw "RGB format not supported in WebGPU";
-            case Constants.TEXTUREFORMAT_RGBA:
-                internalFormat = WebGPUConstants.TextureFormat.RGBA8Unorm;
-        }
-
-        return internalFormat;
-    }
-
-    /** @hidden */
     public _getRGBABufferInternalSizedFormat(type: number, format?: number): number {
         return Constants.TEXTUREFORMAT_RGBA;
     }
