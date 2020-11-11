@@ -13,6 +13,7 @@ struct subSurfaceOutParams
 #endif
 #ifdef SS_TRANSLUCENCY
     vec3 transmittance;
+    float translucencyIntensity;
     #ifdef REFLECTION
         vec3 refractionIrradiance;
     #endif
@@ -154,6 +155,7 @@ struct subSurfaceOutParams
         vec3 transmittance = transmittanceBRDF_Burley(vTintColor.rgb, vDiffusionDistance, thickness);
         transmittance *= translucencyIntensity;
         outParams.transmittance = transmittance;
+        outParams.translucencyIntensity = translucencyIntensity;
     #endif
 
     // _____________________________________________________________________________________
