@@ -19,6 +19,7 @@ import { _DevTools } from '../Misc/devTools';
 import { Observer } from '../Misc/observable';
 import { Engine } from '../Engines/engine';
 import { Nullable } from '../types';
+import { Material } from '../Materials/material';
 
 import "../Shaders/geometry.fragment";
 import "../Shaders/geometry.vertex";
@@ -558,9 +559,6 @@ export class GeometryBufferRenderer {
                 }
             }
 
-            // Culling
-            engine.setState(material.backFaceCulling, 0, false, scene.useRightHandedSystem);
-
             // Managing instances
             var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!subMesh.getReplacementMesh());
 
@@ -579,6 +577,25 @@ export class GeometryBufferRenderer {
                 this._effect.setMatrix("view", scene.getViewMatrix());
 
                 if (material) {
+                    var sideOrientation: Nullable<number>;
+                    let instanceDataStorage = (effectiveMesh as Mesh)._instanceDataStorage;
+
+                    if (!instanceDataStorage.isFrozen &&
+                        (material.backFaceCulling || material.overrideMaterialSideOrientation !== null)) {
+                        let mainDeterminant = effectiveMesh._getWorldMatrixDeterminant();
+                        sideOrientation = material.overrideMaterialSideOrientation;
+                        if (sideOrientation == null) {
+                            sideOrientation = material.sideOrientation;
+                        }
+                        if (mainDeterminant < 0) {
+                            sideOrientation = (sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation);
+                        }
+                    } else {
+                        sideOrientation = instanceDataStorage.sideOrientation;
+                    }
+
+                    material._preBind(this._effect, sideOrientation);
+
                     // Alpha test
                     if (material.needAlphaTesting()) {
                         var alphaTexture = material.getAlphaTestTexture();
