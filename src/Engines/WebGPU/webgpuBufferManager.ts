@@ -88,27 +88,19 @@ export class WebGPUBufferManager {
         return (s ? -1 : 1) * Math.pow(2, e - 15) * (1 + (f / Math.pow(2, 10)));
     }
 
-    private _GetHalfFloatAsFloatRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, destArray?: Float32Array): Float32Array {
+    private _GetHalfFloatAsFloatRGBAArrayBuffer(dataLength: number, arrayBuffer: ArrayBuffer, destArray?: Float32Array): Float32Array {
         if (!destArray) {
             destArray = new Float32Array(dataLength);
         }
-        const srcData = new Uint16Array(arrayBuffer, dataOffset);
-        let index = 0;
-        for (let y = 0; y < height; y++) {
-            for (let x = 0; x < width; x++) {
-                const srcPos = (x + y * width) * 4;
-                destArray[index] = this._FromHalfFloat(srcData[srcPos]);
-                destArray[index + 1] = this._FromHalfFloat(srcData[srcPos + 1]);
-                destArray[index + 2] = this._FromHalfFloat(srcData[srcPos + 2]);
-                destArray[index + 3] = this._FromHalfFloat(srcData[srcPos + 3]);
-                index += 4;
-            }
+        const srcData = new Uint16Array(arrayBuffer);
+        while (dataLength--) {
+            destArray[dataLength] = this._FromHalfFloat(srcData[dataLength]);
         }
 
         return destArray;
     }
 
-    public readDataFromBuffer(gpuBuffer: GPUBuffer, size: number, width: number, height: number, bytesPerRow: number, bytesPerRowAlignedAligned: number, floatFormat = 0, offset = 0, buffer: Nullable<ArrayBufferView> = null, destroyBuffer = true): Promise<ArrayBufferView> {
+    public readDataFromBuffer(gpuBuffer: GPUBuffer, size: number, width: number, height: number, bytesPerRow: number, bytesPerRowAligned: number, floatFormat = 0, offset = 0, buffer: Nullable<ArrayBufferView> = null, destroyBuffer = true): Promise<ArrayBufferView> {
         return new Promise((resolve, reject) => {
             gpuBuffer.mapAsync(GPUMapMode.READ, offset, size).then(() => {
                 const copyArrayBuffer = gpuBuffer.getMappedRange(offset, size);
@@ -121,7 +113,7 @@ export class WebGPUBufferManager {
                             break;
                         case 1: // half float
                             // TODO WEBGPU use computer shaders (or render pass) to make the conversion?
-                            data = this._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, 0, size / 2, copyArrayBuffer);
+                            data = this._GetHalfFloatAsFloatRGBAArrayBuffer(size / 2, copyArrayBuffer);
                             break;
                         case 2: // float
                             data = new Float32Array(size / 4);
@@ -136,7 +128,7 @@ export class WebGPUBufferManager {
                             break;
                         case 1: // half float
                             // TODO WEBGPU use computer shaders (or render pass) to make the conversion?
-                            data = this._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, 0, size / 2, copyArrayBuffer, buffer as Float32Array);
+                            data = this._GetHalfFloatAsFloatRGBAArrayBuffer(size / 2, copyArrayBuffer, buffer as Float32Array);
                             break;
                         case 2: // float
                             data = new Float32Array(data.buffer);
@@ -144,12 +136,17 @@ export class WebGPUBufferManager {
                             break;
                     }
                 }
-                if (bytesPerRow !== bytesPerRowAlignedAligned) {
+                if (bytesPerRow !== bytesPerRowAligned) {
                     // TODO WEBGPU use computer shaders (or render pass) to build the final buffer data?
-                    const data2: Uint8Array = data as Uint8Array;
+                    if (floatFormat === 1) {
+                        // half float have been converted to float above
+                        bytesPerRow *= 2;
+                        bytesPerRowAligned *= 2;
+                    }
+                    const data2 = new Uint8Array(data!.buffer);
                     let offset = bytesPerRow, offset2 = 0;
                     for (let y = 1; y < height; ++y) {
-                        offset2 = y * bytesPerRowAlignedAligned;
+                        offset2 = y * bytesPerRowAligned;
                         for (let x = 0; x < bytesPerRow; ++x) {
                             data2[offset++] = data2[offset2++];
                         }
