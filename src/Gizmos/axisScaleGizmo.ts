@@ -50,6 +50,9 @@ export class AxisScaleGizmo extends Gizmo {
     private _hoverMaterial: StandardMaterial;
     private _disableMaterial: StandardMaterial;
     private _dragging: boolean = false;
+    private _tmpVector = new Vector3();
+    private _tmpMatrix = new Matrix();
+    private _tmpMatrix2 = new Matrix();
 
     /**
      * Creates an AxisScaleGizmo
@@ -144,9 +147,15 @@ export class AxisScaleGizmo extends Gizmo {
                     }
                 }
 
-                const scalingMatrix = new Matrix();
-                Matrix.ScalingToRef(1 + tmpVector.x, 1 + tmpVector.y, 1 + tmpVector.z, scalingMatrix);
-                this.attachedNode.getWorldMatrix().copyFrom(scalingMatrix.multiply(this.attachedNode.getWorldMatrix()));
+                Matrix.ScalingToRef(1 + tmpVector.x, 1 + tmpVector.y, 1 + tmpVector.z, this._tmpMatrix2);
+
+                this._tmpMatrix2.multiplyToRef(this.attachedNode.getWorldMatrix(), this._tmpMatrix);
+                this._tmpMatrix.decompose(this._tmpVector);
+
+                let maxScale = 100000;
+                if (Math.abs(this._tmpVector.x) < maxScale && Math.abs(this._tmpVector.y) < maxScale && Math.abs(this._tmpVector.z) < maxScale) {
+                    this.attachedNode.getWorldMatrix().copyFrom(this._tmpMatrix);
+                }
 
                 if (snapped) {
                     tmpSnapEvent.snapDistance = this.snapDistance * dragSteps;

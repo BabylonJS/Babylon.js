@@ -29991,6 +29991,12 @@ declare module BABYLON {
          */
         getActiveTextures(): BaseTexture[];
         /**
+         * Specifies if any sub-materials of this multi-material use a given texture.
+         * @param texture Defines the texture to check against this multi-material's sub-materials.
+         * @returns A boolean specifying if any sub-material of this multi-material uses the texture.
+         */
+        hasTexture(texture: BaseTexture): boolean;
+        /**
          * Gets the current class name of the material e.g. "MultiMaterial"
          * Mainly use in serialization.
          * @returns the class name
@@ -54485,6 +54491,9 @@ declare module BABYLON {
         private _hoverMaterial;
         private _disableMaterial;
         private _dragging;
+        private _tmpVector;
+        private _tmpMatrix;
+        private _tmpMatrix2;
         /**
          * Creates an AxisScaleGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -78617,6 +78626,16 @@ declare module BABYLON.GUI {
          */
         static CreateForMesh(mesh: BABYLON.AbstractMesh, width?: number, height?: number, supportPointerMove?: boolean, onlyAlphaTesting?: boolean, invertY?: boolean): AdvancedDynamicTexture;
         /**
+         * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh) BUT do not create a new material for the mesh. You will be responsible for connecting the texture
+         * @param mesh defines the mesh which will receive the texture
+         * @param width defines the texture width (1024 by default)
+         * @param height defines the texture height (1024 by default)
+         * @param supportPointerMove defines a boolean indicating if the texture must capture move events (true by default)
+         * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
+         * @returns a new AdvancedDynamicTexture
+         */
+        static CreateForMeshTexture(mesh: BABYLON.AbstractMesh, width?: number, height?: number, supportPointerMove?: boolean, invertY?: boolean): AdvancedDynamicTexture;
+        /**
         * Creates a new AdvancedDynamicTexture in fullscreen mode.
         * In this mode the texture will rely on a layer for its rendering.
         * This allows it to be treated like any other layer.
@@ -84267,35 +84286,6 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         dispose(): void;
         /** @hidden */
         loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>>;
-    }
-}
-declare module BABYLON.GLTF2.Loader.Extensions {
-    /**
-     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1553)
-     * !!! Experimental Extension Subject to Changes !!!
-     */
-    export class KHR_xmp implements IGLTFLoaderExtension {
-        /**
-         * The name of this extension.
-         */
-        readonly name: string;
-        /**
-         * Defines whether this extension is enabled.
-         */
-        enabled: boolean;
-        /**
-         * Defines a number that determines the order the extensions are applied.
-         */
-        order: number;
-        private _loader;
-        /** @hidden */
-        constructor(loader: GLTFLoader);
-        /** @hidden */
-        dispose(): void;
-        /**
-         * Called after the loader state changes to LOADING.
-         */
-        onLoading(): void;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
