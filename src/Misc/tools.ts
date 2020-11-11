@@ -580,7 +580,7 @@ export class Tools {
 
         const data = new Uint8Array(bufferView.buffer);
 
-        Tools.DumpData(width, height, data, successCallback, mimeType, fileName, true);
+        Tools.DumpData(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true);
     }
 
     /**
@@ -592,8 +592,9 @@ export class Tools {
      * @param mimeType defines the mime type of the result
      * @param fileName defines the filename to download. If present, the result will automatically be downloaded
      * @param invertY true to invert the picture in the Y dimension
+     * @param toArrayBuffer true to convert the data to an ArrayBuffer (encoded as `mimeType`) instead of a base64 string
      */
-    public static DumpData(width: number, height: number, data: ArrayBufferView, successCallback?: (data: string) => void, mimeType: string = "image/png", fileName?: string, invertY = false) {
+    public static DumpData(width: number, height: number, data: ArrayBufferView, successCallback?: (data: string | ArrayBuffer) => void, mimeType: string = "image/png", fileName?: string, invertY = false, toArrayBuffer = false) {
         // Create a 2D canvas to store the result
         if (!Tools._ScreenshotCanvas) {
             Tools._ScreenshotCanvas = document.createElement('canvas');
@@ -603,6 +604,17 @@ export class Tools {
         var context = Tools._ScreenshotCanvas.getContext('2d');
 
         if (context) {
+            // Convert if data are float32
+            if (data instanceof Float32Array) {
+                const data2 = new Uint8Array(data.length);
+                let n = data.length;
+                while (n--) {
+                    let v = data[n];
+                    data2[n] = v < 0 ? 0 : v > 1 ? 1 : Math.round(v * 255);
+                }
+                data = data2;
+            }
+
             // Copy the pixels to a 2D canvas
             var imageData = context.createImageData(width, height);
             var castData = <any>(imageData.data);
@@ -628,8 +640,39 @@ export class Tools {
                 canvas = canvas2;
             }
 
-            Tools.EncodeScreenshotCanvasData(successCallback, mimeType, fileName, canvas);
+            if (toArrayBuffer) {
+                Tools.ToBlob(canvas, (blob) => {
+                    let fileReader = new FileReader();
+                    fileReader.onload = (event: any) => {
+                        let arrayBuffer = event.target!.result as ArrayBuffer;
+                        if (successCallback) {
+                            successCallback(arrayBuffer);
+                        }
+                    };
+                    fileReader.readAsArrayBuffer(blob!);
+                });
+            } else {
+                Tools.EncodeScreenshotCanvasData(successCallback, mimeType, fileName, canvas);
+            }
         }
+    }
+
+    /**
+     * Dumps an array buffer
+     * @param width defines the rendering width
+     * @param height defines the rendering height
+     * @param data the data array
+     * @param successCallback defines the callback triggered once the data are available
+     * @param mimeType defines the mime type of the result
+     * @param fileName defines the filename to download. If present, the result will automatically be downloaded
+     * @param invertY true to invert the picture in the Y dimension
+     * @param toArrayBuffer true to convert the data to an ArrayBuffer (encoded as `mimeType`) instead of a base64 string
+     * @return a promise that resolve to the final data
+     */
+    public static DumpDataAsync(width: number, height: number, data: ArrayBufferView, mimeType: string = "image/png", fileName?: string, invertY = false, toArrayBuffer = false): Promise<string | ArrayBuffer> {
+        return new Promise((resolve) => {
+            Tools.DumpData(width, height, data, (result) => resolve(result), mimeType, fileName, invertY, toArrayBuffer);
+        });
     }
 
     /**

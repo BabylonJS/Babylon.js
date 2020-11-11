@@ -141,7 +141,7 @@ export class ScreenshotTools {
         texture.renderSprites = renderSprites;
         engine.onEndFrameObservable.addOnce(() => {
             texture.readPixels()!.then((data) => {
-                Tools.DumpData(width, height, data, successCallback, mimeType, fileName, true);
+                Tools.DumpData(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true);
                 texture.dispose();
 
                 if (previousCamera) {
