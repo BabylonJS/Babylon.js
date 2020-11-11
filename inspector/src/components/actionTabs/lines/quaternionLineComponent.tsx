@@ -143,7 +143,7 @@ export class QuaternionLineComponent extends React.Component<IQuaternionLineComp
                         }
                         {
                             this.props.useEuler &&
-                            `X: ${(euler.x).toFixed(2)}, Y: ${(euler.y).toFixed(2)}, Z: ${(euler.z).toFixed(2)}`
+                            `X: ${Tools.ToDegrees(euler.x).toFixed(2)}, Y: ${Tools.ToDegrees(euler.y).toFixed(2)}, Z: ${Tools.ToDegrees(euler.z).toFixed(2)}`
                         }
                     </div>
                     <div className="expand" onClick={() => this.switchExpandState()}>
