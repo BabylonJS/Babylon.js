@@ -1,4 +1,4 @@
-import { Color4 } from '../../Maths';
+import { Color4 } from '../../Maths/math.color';
 import { Scene } from "../../scene";
 import { ShaderMaterial } from '../shaderMaterial';
 
