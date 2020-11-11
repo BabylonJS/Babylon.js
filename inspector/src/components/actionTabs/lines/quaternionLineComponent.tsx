@@ -27,12 +27,29 @@ export class QuaternionLineComponent extends React.Component<IQuaternionLineComp
         this.state = { isExpanded: false, value: quat, eulerValue: quat.toEulerAngles() }
     }
 
+    _checkRoundCircle(a: number, b: number) {
+        return Math.abs(Tools.ToDegrees(a)) + Math.abs(Tools.ToDegrees(b)) === 360
+    }
+
     shouldComponentUpdate(nextProps: IQuaternionLineComponentProps, nextState: { isExpanded: boolean, value: Quaternion, eulerValue: Vector3 }) {
         const nextPropsValue = nextProps.target[nextProps.propertyName];
 
         if (!nextPropsValue.equals(nextState.value) || this._localChange) {
             nextState.value = nextPropsValue.clone();
             nextState.eulerValue = nextPropsValue.toEulerAngles();
+
+            console.log (Math.abs(Tools.ToDegrees(this.state.eulerValue.y)) + Math.abs(Tools.ToDegrees(nextState.eulerValue.y)));
+
+            // Let's make sure we are not going on the opposite (but correct) value
+            if (this. _checkRoundCircle(nextState.eulerValue.x, this.state.eulerValue.x)) {
+                nextState.eulerValue.x = this.state.eulerValue.x;
+            }
+            if (this. _checkRoundCircle(nextState.eulerValue.y, this.state.eulerValue.y)) {
+                nextState.eulerValue.y = this.state.eulerValue.y;
+            }
+            if (this. _checkRoundCircle(nextState.eulerValue.z, this.state.eulerValue.z)) {
+                nextState.eulerValue.z = this.state.eulerValue.z;
+            }
             this._localChange = false;
             return true;
         }
