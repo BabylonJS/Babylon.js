@@ -440,7 +440,7 @@ export class Geometry implements IGetSetVerticesData {
             } else if (data instanceof ArrayBuffer) {
                 return new Float32Array(data, vertexBuffer.byteOffset, count);
             } else {
-                const offset = data.byteOffset + vertexBuffer.byteOffset;
+                let offset = data.byteOffset + vertexBuffer.byteOffset;
                 if (forceCopy || (copyWhenShared && this._meshes.length !== 1)) {
                     let result = new Float32Array(count);
                     let source = new Float32Array(data.buffer, offset, count);
@@ -449,6 +449,14 @@ export class Geometry implements IGetSetVerticesData {
 
                     return result;
                 }
+
+                // Portect against bad data
+                let remainder = offset % 4;
+
+                if (remainder) {
+                    offset = Math.max(0, offset - remainder);
+                }
+
                 return new Float32Array(data.buffer, offset, count);
             }
         }
