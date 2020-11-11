@@ -655,15 +655,10 @@ export class WebGPUTextureHelper {
         }
     }
 
+    // TODO WEBGPU handle data source not being in the same format than the destination texture?
     public updateTexture(imageBitmap: ImageBitmap | Uint8Array, gpuTexture: GPUTexture, width: number, height: number, layers: number, format: GPUTextureFormat, faceIndex: number = 0, mipLevel: number = 0, invertY = false, premultiplyAlpha = false, offsetX = 0, offsetY = 0,
         commandEncoder?: GPUCommandEncoder): void
     {
-        const useOwnCommandEncoder = commandEncoder === undefined;
-
-        if (useOwnCommandEncoder) {
-            commandEncoder = this._device.createCommandEncoder({});
-        }
-
         const blockInformation = this._getBlockInformationFromFormat(format);
 
         const textureCopyView: GPUTextureCopyView = {
@@ -689,6 +684,12 @@ export class WebGPUTextureHelper {
             const aligned = Math.ceil(bytesPerRow / 256) * 256 === bytesPerRow;
 
             if (aligned) {
+                const useOwnCommandEncoder = commandEncoder === undefined;
+
+                if (useOwnCommandEncoder) {
+                    commandEncoder = this._device.createCommandEncoder({});
+                }
+
                 const buffer = this._bufferManager.createRawBuffer(imageBitmap.byteLength, GPUBufferUsage.MAP_WRITE | GPUBufferUsage.COPY_SRC, true);
 
                 const arrayBuffer = buffer.getMappedRange();
