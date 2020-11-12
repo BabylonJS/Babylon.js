@@ -18,7 +18,7 @@
 - Added support in `ShadowGenerator` for soft transparent shadows ([Popov72](https://github.com/Popov72))
 - Added PBR Next features: Reflection probes for accurate shading and Sub Surface Scattering ([CraigFeldpsar](https://github.com/craigfeldspar) and [Sebavan](https://github.com/sebavan/))
 - Added support for latest glTF extensions: KHR_materials_clearcoat, KHR_materials_sheen, KHR_materials_transmission, KHR_texture_basisu ([Sebavan](https://github.com/sebavan/) and [Popov72](https://github.com/Popov72))
-- Added support for 3D Commerce glTF extensions: KHR_material_variants and KHR_xmp ([Sebavan](https://github.com/sebavan/) and [Deltakosh](https://github.com/deltakosh))
+- Added support for 3D Commerce glTF extension: KHR_material_variants ([Sebavan](https://github.com/sebavan/) and [Deltakosh](https://github.com/deltakosh))
 
 
 ## Updates
