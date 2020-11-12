@@ -155,6 +155,7 @@ export class WebXRHand implements IDisposable {
      * @param trackedMeshes the meshes to be used to track the hand joints
      * @param _handMesh an optional hand mesh. if not provided, ours will be used
      * @param _rigMapping an optional rig mapping for the hand mesh. if not provided, ours will be used
+     * @param disableDefaultHandMesh should the default mesh creation be disabled
      */
     constructor(
         /** the controller to which the hand correlates */
