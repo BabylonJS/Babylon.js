@@ -21,7 +21,7 @@ import { Material } from "../../Materials/material";
 import { Engine } from "../../Engines/engine";
 import { Tools } from "../../Misc/tools";
 import { Axis } from "../../Maths/math.axis";
-import { TransformNode } from '../../Meshes/transformNode';
+import { TransformNode } from "../../Meshes/transformNode";
 
 declare const XRHand: XRHand;
 
@@ -72,7 +72,7 @@ export interface IWebXRHandTrackingOptions {
          */
         physicsProps?: { friction?: number; restitution?: number; impostorType?: number };
         /**
-         * Should the default hand mesh be disabled. In this case, the spheres will be visible.
+         * Should the default hand mesh be disabled. In this case, the spheres will be visible (unless set invisible).
          */
         disableDefaultHandMesh?: boolean;
         /**
@@ -162,14 +162,17 @@ export class WebXRHand implements IDisposable {
         /** the meshes to be used to track the hand joints */
         public readonly trackedMeshes: AbstractMesh[],
         private _handMesh?: AbstractMesh,
-        private _rigMapping?: string[]
+        private _rigMapping?: string[],
+        disableDefaultHandMesh?: boolean
     ) {
         this.handPartsDefinition = this.generateHandPartsDefinition(xrController.inputSource.hand!);
         this._scene = trackedMeshes[0].getScene();
         if (this._handMesh && this._rigMapping) {
             this._defaultHandMesh = false;
         } else {
-            this._generateDefaultHandMesh();
+            if (!disableDefaultHandMesh) {
+                this._generateDefaultHandMesh();
+            }
         }
 
         // hide the motion controller, if available/loaded
@@ -507,13 +510,16 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                 newInstance.physicsImpostor = new PhysicsImpostor(newInstance, type, { mass: 0, ...props });
             }
             newInstance.rotationQuaternion = new Quaternion();
+            if (this.options.jointMeshes?.invisible) {
+                newInstance.isVisible = false;
+            }
             trackedMeshes.push(newInstance);
         }
 
         const handedness = xrController.inputSource.handedness === "right" ? "right" : "left";
         const handMesh = this.options.jointMeshes?.handMeshes && this.options.jointMeshes?.handMeshes[handedness];
         const rigMapping = this.options.jointMeshes?.rigMapping && this.options.jointMeshes?.rigMapping[handedness];
-        const webxrHand = new WebXRHand(xrController, trackedMeshes, handMesh, rigMapping);
+        const webxrHand = new WebXRHand(xrController, trackedMeshes, handMesh, rigMapping, this.options.jointMeshes?.disableDefaultHandMesh);
 
         // get two new meshes
         this._hands[xrController.uniqueId] = {
