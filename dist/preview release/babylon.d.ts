@@ -76847,7 +76847,7 @@ declare module BABYLON {
                 impostorType?: number;
             };
             /**
-             * Should the default hand mesh be disabled. In this case, the spheres will be visible.
+             * Should the default hand mesh be disabled. In this case, the spheres will be visible (unless set invisible).
              */
             disableDefaultHandMesh?: boolean;
             /**
@@ -76925,12 +76925,13 @@ declare module BABYLON {
          * @param trackedMeshes the meshes to be used to track the hand joints
          * @param _handMesh an optional hand mesh. if not provided, ours will be used
          * @param _rigMapping an optional rig mapping for the hand mesh. if not provided, ours will be used
+         * @param disableDefaultHandMesh should the default mesh creation be disabled
          */
         constructor(
         /** the controller to which the hand correlates */
         xrController: WebXRInputSource, 
         /** the meshes to be used to track the hand joints */
-        trackedMeshes: AbstractMesh[], _handMesh?: AbstractMesh | undefined, _rigMapping?: string[] | undefined);
+        trackedMeshes: AbstractMesh[], _handMesh?: AbstractMesh | undefined, _rigMapping?: string[] | undefined, disableDefaultHandMesh?: boolean);
         /**
          * Update this hand from the latest xr frame
          * @param xrFrame xrFrame to update from
