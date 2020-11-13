@@ -1110,7 +1110,7 @@ export class ShadowGenerator implements IShadowGenerator {
         if (this.isReady(subMesh, hardwareInstancedRendering, isTransparent)) {
             subMesh._renderId = scene.getRenderId();
 
-            const shadowDepthWrapper = renderingMesh.material?.shadowDepthWrapper;
+            const shadowDepthWrapper = material.shadowDepthWrapper;
 
             let effect = shadowDepthWrapper?.getEffect(subMesh, this) ?? this._effect;
 
