@@ -12,7 +12,7 @@
         },
         {
             "title": "water material",
-            "playgroundId": "#EUH2VL#0"
+            "playgroundId": "#EUH2VL#1"
         },
         {
             "title": "show bounding box",
@@ -44,11 +44,14 @@
         },
         {
             "title": "pillars sphere and torus with PCSS shadows",
-            "playgroundId": "#WL4Q8J#0"
+            "playgroundId": "#WL4Q8J#0",
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "soft transparent shadows",
-            "playgroundId": "#G3DJGA#0"
+            "playgroundId": "#G3DJGA#0",
+            "excludedEngines": ["webgl1"]
+
         },
         {
             "title": "default render pipeline",
@@ -90,7 +93,7 @@
         {
             "title": "show all procedural textures",
             "renderCount": 5,
-            "playgroundId": "#4N0QRP#0"
+            "playgroundId": "#4N0QRP#1"
         },
         {
             "title": "custom handling of materials for render target pass",
@@ -104,7 +107,9 @@
         {
             "title": "cascaded shadow maps and flying saucers",
             "renderCount": 10,
-            "playgroundId": "#IIZ9UU#63"
+            "playgroundId": "#IIZ9UU#63",
+            "excludedEngines": ["webgl1"]
+
         },
         {
             "title": "sprite maps",
