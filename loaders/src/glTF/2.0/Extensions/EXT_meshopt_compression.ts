@@ -35,6 +35,7 @@ export class EXT_meshopt_compression implements IGLTFLoaderExtension {
     public dispose() {
     }
 
+    /** @hidden */
     public loadBufferViewAsync(context: string, bufferView: IBufferView): Nullable<Promise<ArrayBufferView>> {
         if (bufferView.extensions && bufferView.extensions[this.name]) {
             var extensionDef = bufferView.extensions[this.name];
