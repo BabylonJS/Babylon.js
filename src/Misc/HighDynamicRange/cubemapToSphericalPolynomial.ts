@@ -50,23 +50,25 @@ export class CubeMapToSphericalPolynomialTools {
             return null;
         }
 
+        texture.getScene()?.getEngine().flushFramebuffer();
+
         var size = texture.getSize().width;
-        var rightPromise = texture.readPixels(0);
-        var leftPromise = texture.readPixels(1);
+        var rightPromise = texture.readPixels(0, undefined, undefined, false);
+        var leftPromise = texture.readPixels(1, undefined, undefined, false);
 
         var upPromise: Nullable<Promise<ArrayBufferView>>;
         var downPromise: Nullable<Promise<ArrayBufferView>>;
         if (texture.isRenderTarget) {
-            upPromise = texture.readPixels(3);
-            downPromise = texture.readPixels(2);
+            upPromise = texture.readPixels(3, undefined, undefined, false);
+            downPromise = texture.readPixels(2, undefined, undefined, false);
         }
         else {
-            upPromise = texture.readPixels(2);
-            downPromise = texture.readPixels(3);
+            upPromise = texture.readPixels(2, undefined, undefined, false);
+            downPromise = texture.readPixels(3, undefined, undefined, false);
         }
 
-        var frontPromise = texture.readPixels(4);
-        var backPromise = texture.readPixels(5);
+        var frontPromise = texture.readPixels(4, undefined, undefined, false);
+        var backPromise = texture.readPixels(5, undefined, undefined, false);
 
         var gammaSpace = texture.gammaSpace;
         // Always read as RGBA.

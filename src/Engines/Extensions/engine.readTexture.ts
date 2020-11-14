@@ -5,11 +5,11 @@ import { Nullable } from '../../types';
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
         /** @hidden */
-        _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>): Promise<ArrayBufferView>;
+        _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean): Promise<ArrayBufferView>;
     }
 }
 
-ThinEngine.prototype._readTexturePixels = function(texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer: Nullable<ArrayBufferView> = null): Promise<ArrayBufferView> {
+ThinEngine.prototype._readTexturePixels = function(texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer: Nullable<ArrayBufferView> = null, flushRenderer = true): Promise<ArrayBufferView> {
     let gl = this._gl;
     if (!gl) {
         throw new Error ("Engine does not have gl rendering context.");
@@ -46,6 +46,10 @@ ThinEngine.prototype._readTexturePixels = function(texture: InternalTexture, wid
             }
             readType = gl.FLOAT;
             break;
+    }
+
+    if (flushRenderer) {
+        this.flushFramebuffer();
     }
 
     gl.readPixels(0, 0, width, height, gl.RGBA, readType, <DataView>buffer);

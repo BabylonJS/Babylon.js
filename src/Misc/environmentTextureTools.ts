@@ -181,13 +181,11 @@ export class EnvironmentTextureTools {
 
             // All faces of the cube.
             for (let face = 0; face < 6; face++) {
-                let faceData = await texture.readPixels(face, i);
+                let faceData = await texture.readPixels(face, i, undefined, false);
 
                 let tempTexture = engine.createRawTexture(faceData, faceWidth, faceWidth, Constants.TEXTUREFORMAT_RGBA, false, true, Constants.TEXTURE_NEAREST_SAMPLINGMODE, null, textureType);
 
                 await RGBDTextureTools.EncodeTextureToRGBD(tempTexture, hostingScene, textureType);
-
-                engine.flushFramebuffer(); // make sure the tempTexture has its data up to date when reading them just below
 
                 const rgbdEncodedData = await engine._readTexturePixels(tempTexture, faceWidth, faceWidth);
 
