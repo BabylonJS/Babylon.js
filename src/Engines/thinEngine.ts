@@ -4501,12 +4501,16 @@ export class ThinEngine {
      * @param width defines the width of the rectangle where pixels must be read
      * @param height defines the height of the rectangle where pixels must be read
      * @param hasAlpha defines whether the output should have alpha or not (defaults to true)
+     * @param flushRenderer true to flush the renderer from the pending commands before reading the pixels
      * @returns a ArrayBufferView (Uint8Array) containing RGBA colors
      */
-    public readPixels(x: number, y: number, width: number, height: number, hasAlpha = true): Promise<ArrayBufferView> {
+    public readPixels(x: number, y: number, width: number, height: number, hasAlpha = true, flushRenderer = true): Promise<ArrayBufferView> {
         const numChannels = hasAlpha ? 4 : 3;
         const format = hasAlpha ? this._gl.RGBA : this._gl.RGB;
         const data = new Uint8Array(height * width * numChannels);
+        if (flushRenderer) {
+            this.flushFramebuffer();
+        }
         this._gl.readPixels(x, y, width, height, format, this._gl.UNSIGNED_BYTE, data);
         return Promise.resolve(data);
     }

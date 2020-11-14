@@ -2011,7 +2011,7 @@ export class WebGPUEngine extends Engine {
         texture.isReady = true;
     }
 
-    public readPixels(x: number, y: number, width: number, height: number, hasAlpha = true): Promise<ArrayBufferView> {
+    public readPixels(x: number, y: number, width: number, height: number, hasAlpha = true, flushRenderer = true): Promise<ArrayBufferView> {
         const renderPassWrapper = this._rttRenderPassWrapper.renderPass ? this._rttRenderPassWrapper : this._mainRenderPassWrapper;
         const gpuTexture = renderPassWrapper.colorAttachmentGPUTextures![0].underlyingResource;
         const gpuTextureFormat = renderPassWrapper.colorAttachmentGPUTextures![0].format;
@@ -2019,12 +2019,19 @@ export class WebGPUEngine extends Engine {
             // we are calling readPixels before startMainRenderPass has been called and no RTT is bound, so swapChainTexture is not setup yet!
             return Promise.resolve(new Uint8Array(0));
         }
+        if (flushRenderer) {
+            this.flushFramebuffer();
+        }
         return this._textureHelper.readPixels(gpuTexture, x, y, width, height, gpuTextureFormat);
     }
 
     /** @hidden */
-    public _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer: Nullable<ArrayBufferView> = null): Promise<ArrayBufferView> {
+    public _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer: Nullable<ArrayBufferView> = null, flushRenderer = true): Promise<ArrayBufferView> {
         let gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
+
+        if (flushRenderer) {
+            this.flushFramebuffer();
+        }
 
         return this._textureHelper.readPixels(gpuTextureWrapper.underlyingResource!, 0, 0, width, height, gpuTextureWrapper.format, faceIndex, level, buffer);
     }
