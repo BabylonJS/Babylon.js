@@ -129,6 +129,11 @@
             "title": "particle system with custom nme shader",
             "renderCount": 5,
             "playgroundId": "#DMLLV2"
+        },
+        {
+            "title": "create environment texture",
+            "playgroundId": "#L4RXKN#4",
+            "excludedEngines": ["webgl1"]
         }
     ]
 }
