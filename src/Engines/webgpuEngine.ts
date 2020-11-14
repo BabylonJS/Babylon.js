@@ -2521,6 +2521,20 @@ export class WebGPUEngine extends Engine {
     }
 
     public flushFramebuffer(): void {
+        // we need to end the current render pass (main or rtt) if any as we are not allowed to submit the command buffers when being in a pass
+        let currentPassType = 0; // 0 if no pass, 1 for rtt, 2 for main pass
+        if (this._currentRenderPass) {
+            if (this._currentRenderTarget) {
+                if (this._currentRenderPass) {
+                    currentPassType = 1;
+                    this._endRenderTargetRenderPass();
+                }
+            } else {
+                currentPassType = 2;
+                this._endMainRenderPass();
+            }
+        }
+
         this._commandBuffers[0] = this._uploadEncoder.finish();
         this._commandBuffers[1] = this._renderTargetEncoder.finish();
         this._commandBuffers[2] = this._renderEncoder.finish();
@@ -2530,6 +2544,13 @@ export class WebGPUEngine extends Engine {
         this._uploadEncoder = this._device.createCommandEncoder(this._uploadEncoderDescriptor);
         this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
         this._renderTargetEncoder = this._device.createCommandEncoder(this._renderTargetEncoderDescriptor);
+
+        // restart the render pass
+        if (currentPassType === 1) {
+            this._startRenderTargetRenderPass(this._currentRenderTarget!, null, false, false);
+        } else if (currentPassType === 2) {
+            this._startMainRenderPass();
+        }
     }
 
     public restoreDefaultFramebuffer(): void {

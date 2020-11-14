@@ -80,6 +80,7 @@
         {
             "title": "Node material PBR 1",
             "playgroundId": "#D8AK3Z#15",
+            "renderCount": 5,
             "referenceImage": "node-material-pbr-1.png"
         },    
         {
@@ -914,6 +915,7 @@
         {
             "title": "Realtime Filtering",
             "playgroundId": "#FEEK7G#118",
+            "renderCount": 5,
             "referenceImage": "realtimeFiltering.png"
         },
         {
