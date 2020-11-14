@@ -170,6 +170,7 @@
 - Added transmission prerender pass when using KHR_materials_transmission ([MiiBond](https://github.com/MiiBond/))
 - Fixed a bug when loading glTF with interleaved animation data. ([bghgary](https://github.com/bghgary))
 - Added support for KHR_materials_translucency for glTF loader. ([MiiBond](https://github.com/MiiBond/))
+- Added support for EXT_meshopt_compression for glTF loader. ([zeux](https://github.com/zeux))
 
 ### Serializers
 
