@@ -4,6 +4,7 @@ import "../Shaders/rgbdDecode.fragment";
 import { Engine } from '../Engines/engine';
 
 import "../Engines/Extensions/engine.renderTarget";
+import { TextureTools } from './textureTools';
 
 declare type Texture = import("../Materials/Textures/texture").Texture;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
@@ -93,54 +94,9 @@ export class RGBDTextureTools {
      * @param internalTexture the texture to encode
      * @param scene the scene hosting the texture
      * @param outputTextureType type of the texture in which the encoding is performed
+     * @return a promise with the internalTexture having its texture replaced by the result of the processing
      */
     public static EncodeTextureToRGBD(internalTexture: InternalTexture, scene: Scene, outputTextureType = Constants.TEXTURETYPE_UNSIGNED_BYTE): Promise<InternalTexture> {
-        // Gets everything ready.
-        const engine = internalTexture.getEngine() as Engine;
-
-        internalTexture.isReady = false;
-
-        return new Promise((resolve) => {
-            // Encode the texture if possible
-            // Simply run through the encode PP.
-            const rgbdPostProcess = new PostProcess("rgbdEncode", "rgbdEncode", null, null, 1, null, Constants.TEXTURE_NEAREST_SAMPLINGMODE, engine, false, undefined, outputTextureType, undefined, null, false);
-
-            // Hold the output of the decoding.
-            const encodedTexture = engine.createRenderTargetTexture({ width: internalTexture.width, height: internalTexture.height }, {
-                generateDepthBuffer: false,
-                generateMipMaps: false,
-                generateStencilBuffer: false,
-                samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-                type: outputTextureType,
-                format: Constants.TEXTUREFORMAT_RGBA
-            });
-
-            rgbdPostProcess.getEffect().executeWhenCompiled(() => {
-                // PP Render Pass
-                rgbdPostProcess.onApply = (effect) => {
-                    effect._bindTexture("textureSampler", internalTexture);
-                    effect.setFloat2("scale", 1, 1);
-                };
-                scene.postProcessManager.directRender([rgbdPostProcess!], encodedTexture, true);
-
-                // Cleanup
-                engine.restoreDefaultFramebuffer();
-                engine._releaseTexture(internalTexture);
-                engine._releaseFramebufferObjects(encodedTexture);
-                if (rgbdPostProcess) {
-                    rgbdPostProcess.dispose();
-                }
-
-                // Internal Swap
-                encodedTexture._swapAndDie(internalTexture);
-
-                // Ready to get rolling again.
-                internalTexture.type = outputTextureType;
-                internalTexture.format = Constants.TEXTUREFORMAT_RGBA;
-                internalTexture.isReady = true;
-
-                resolve(internalTexture);
-            });
-        });
+        return TextureTools.ApplyPostProcess("rgbdEncode", internalTexture, scene, outputTextureType, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTUREFORMAT_RGBA);
     }
 }
