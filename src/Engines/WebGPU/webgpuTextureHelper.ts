@@ -839,37 +839,62 @@ export class WebGPUTextureHelper {
         lodMaxClamp?: number,
     } {
         let magFilter: GPUFilterMode, minFilter: GPUFilterMode, mipmapFilter: GPUFilterMode, lodMinClamp: number | undefined, lodMaxClamp: number | undefined;
+        const useMipMaps = internalTexture.generateMipMaps;
         switch (internalTexture.samplingMode) {
             case Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST:
                 magFilter = WebGPUConstants.FilterMode.Linear;
                 minFilter = WebGPUConstants.FilterMode.Linear;
                 mipmapFilter = WebGPUConstants.FilterMode.Nearest;
+                if (!useMipMaps) {
+                    lodMinClamp = lodMaxClamp = 0;
+                }
                 break;
             case Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR:
             case Constants.TEXTURE_TRILINEAR_SAMPLINGMODE:
                 magFilter = WebGPUConstants.FilterMode.Linear;
                 minFilter = WebGPUConstants.FilterMode.Linear;
-                mipmapFilter = WebGPUConstants.FilterMode.Linear;
+                if (!useMipMaps) {
+                    mipmapFilter = WebGPUConstants.FilterMode.Nearest;
+                    lodMinClamp = lodMaxClamp = 0;
+                } else {
+                    mipmapFilter = WebGPUConstants.FilterMode.Linear;
+                }
                 break;
             case Constants.TEXTURE_NEAREST_NEAREST_MIPLINEAR:
                 magFilter = WebGPUConstants.FilterMode.Nearest;
                 minFilter = WebGPUConstants.FilterMode.Nearest;
-                mipmapFilter = WebGPUConstants.FilterMode.Linear;
+                if (!useMipMaps) {
+                    mipmapFilter = WebGPUConstants.FilterMode.Nearest;
+                    lodMinClamp = lodMaxClamp = 0;
+                } else {
+                    mipmapFilter = WebGPUConstants.FilterMode.Linear;
+                }
                 break;
             case Constants.TEXTURE_NEAREST_NEAREST_MIPNEAREST:
                 magFilter = WebGPUConstants.FilterMode.Nearest;
                 minFilter = WebGPUConstants.FilterMode.Nearest;
                 mipmapFilter = WebGPUConstants.FilterMode.Nearest;
+                if (!useMipMaps) {
+                    lodMinClamp = lodMaxClamp = 0;
+                }
                 break;
             case Constants.TEXTURE_NEAREST_LINEAR_MIPNEAREST:
                 magFilter = WebGPUConstants.FilterMode.Nearest;
                 minFilter = WebGPUConstants.FilterMode.Linear;
                 mipmapFilter = WebGPUConstants.FilterMode.Nearest;
+                if (!useMipMaps) {
+                    lodMinClamp = lodMaxClamp = 0;
+                }
                 break;
             case Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR:
                 magFilter = WebGPUConstants.FilterMode.Nearest;
                 minFilter = WebGPUConstants.FilterMode.Linear;
-                mipmapFilter = WebGPUConstants.FilterMode.Linear;
+                if (!useMipMaps) {
+                    mipmapFilter = WebGPUConstants.FilterMode.Nearest;
+                    lodMinClamp = lodMaxClamp = 0;
+                } else {
+                    mipmapFilter = WebGPUConstants.FilterMode.Linear;
+                }
                 break;
             case Constants.TEXTURE_NEAREST_LINEAR:
                 magFilter = WebGPUConstants.FilterMode.Nearest;
@@ -888,11 +913,19 @@ export class WebGPUTextureHelper {
                 magFilter = WebGPUConstants.FilterMode.Linear;
                 minFilter = WebGPUConstants.FilterMode.Nearest;
                 mipmapFilter = WebGPUConstants.FilterMode.Nearest;
+                if (!useMipMaps) {
+                    lodMinClamp = lodMaxClamp = 0;
+                }
                 break;
             case Constants.TEXTURE_LINEAR_NEAREST_MIPLINEAR:
                 magFilter = WebGPUConstants.FilterMode.Linear;
                 minFilter = WebGPUConstants.FilterMode.Nearest;
-                mipmapFilter = WebGPUConstants.FilterMode.Linear;
+                if (!useMipMaps) {
+                    mipmapFilter = WebGPUConstants.FilterMode.Nearest;
+                    lodMinClamp = lodMaxClamp = 0;
+                } else {
+                    mipmapFilter = WebGPUConstants.FilterMode.Linear;
+                }
                 break;
             case Constants.TEXTURE_LINEAR_LINEAR:
             case Constants.TEXTURE_BILINEAR_SAMPLINGMODE:
