@@ -1,7 +1,7 @@
 ﻿precision highp float;
 
 // Constants
-uniform vec3 vEyePosition;
+uniform vec4 vEyePosition;
 uniform float alpha;
 uniform vec3 shadowColor;
 
@@ -29,7 +29,7 @@ varying vec3 vNormalW;
 void main(void) {
 #include<clipPlaneFragment>
 
-	vec3 viewDirectionW = normalize(vEyePosition - vPositionW);
+	vec3 viewDirectionW = normalize(vEyePosition.xyz - vPositionW);
 
 	// Normal
 #ifdef NORMAL

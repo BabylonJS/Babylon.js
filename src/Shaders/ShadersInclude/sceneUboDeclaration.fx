@@ -7,6 +7,6 @@ uniform Scene {
 #endif 
 	mat4 view;
 	mat4 projection;
-    vec4 viewPosition;
+    vec4 vEyePosition;
 };
 

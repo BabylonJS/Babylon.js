@@ -1254,7 +1254,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         var shaderName = "pbr";
 
-        var uniforms = ["world", "view", "viewProjection", "vLightsType", "vAmbientColor", "vAlbedoColor", "vReflectivityColor", "vMetallicReflectanceFactors", "vEmissiveColor", "visibility", "vReflectionColor",
+        var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vAlbedoColor", "vReflectivityColor", "vMetallicReflectanceFactors", "vEmissiveColor", "visibility", "vReflectionColor",
             "vFogInfos", "vFogColor", "pointSize",
             "vAlbedoInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vReflectionPosition", "vReflectionSize", "vEmissiveInfos", "vReflectivityInfos", "vReflectionFilteringInfo", "vMetallicReflectanceInfos",
             "vMicroSurfaceSamplerInfos", "vBumpInfos", "vLightmapInfos",
@@ -2050,6 +2050,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
             // Clip plane
             MaterialHelper.BindClipPlane(this._activeEffect, scene);
+
+            this.bindEyePosition(effect);
         }
 
         if (mustRebind || !this.isFrozen) {

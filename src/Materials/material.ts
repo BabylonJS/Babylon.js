@@ -20,6 +20,7 @@ import { Logger } from "../Misc/logger";
 import { IInspectable } from '../Misc/iInspectable';
 import { Plane } from '../Maths/math.plane';
 import { ShadowDepthWrapper } from './shadowDepthWrapper';
+import { MaterialHelper } from './materialHelper';
 
 declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
 declare type Mesh = import("../Meshes/mesh").Mesh;
@@ -620,7 +621,7 @@ export class Material implements IAnimatable {
      * Stores a reference to the scene
      */
     private _scene: Scene;
-    private _needToFinalizeSceneUbo: boolean;
+    private _needToBindSceneUbo: boolean;
 
     /**
      * Stores the fill mode state
@@ -943,21 +944,33 @@ export class Material implements IAnimatable {
         if (!this._useUBO) {
             effect.setMatrix("view", this.getScene().getViewMatrix());
         } else {
-            this._needToFinalizeSceneUbo = true;
-            this.bindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
+            this._needToBindSceneUbo = true;
         }
     }
 
     /**
-     * Binds the view projection matrix to the effect
-     * @param effect defines the effect to bind the view projection matrix to
+     * Binds the view projection and projection matrices to the effect
+     * @param effect defines the effect to bind the view projection and projection matrices to
      */
     public bindViewProjection(effect: Effect): void {
         if (!this._useUBO) {
             effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
+            effect.setMatrix("projection", this.getScene().getProjectionMatrix());
         } else {
-            this._needToFinalizeSceneUbo = true;
-            this.bindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
+            this._needToBindSceneUbo = true;
+        }
+    }
+
+    /**
+     * Binds the view matrix to the effect
+     * @param effect defines the effect to bind the view matrix to
+     * @param variableName name of the shader variable that will hold the eye position
+     */
+    public bindEyePosition(effect: Effect, variableName?: string): void {
+        if (!this._useUBO) {
+            MaterialHelper.BindEyePosition(effect, this._scene, variableName);
+        } else {
+            this._needToBindSceneUbo = true;
         }
     }
 
@@ -965,11 +978,14 @@ export class Material implements IAnimatable {
      * Processes to execute after binding the material to a mesh
      * @param mesh defines the rendered mesh
      */
-    protected _afterBind(mesh?: Mesh): void {
+    protected _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null): void {
         this._scene._cachedMaterial = this;
-        if (this._needToFinalizeSceneUbo) {
-            this._needToFinalizeSceneUbo = false;
-            this.getScene().finalizeSceneUbo();
+        if (this._needToBindSceneUbo) {
+            if (effect) {
+                this._needToBindSceneUbo = false;
+                this.getScene().finalizeSceneUbo();
+                this.bindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
+            }
         }
         if (mesh) {
             this._scene._cachedVisibility = mesh.visibility;

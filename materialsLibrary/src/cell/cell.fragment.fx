@@ -1,7 +1,7 @@
 ﻿precision highp float;
 
 // Constants
-uniform vec3 vEyePosition;
+uniform vec4 vEyePosition;
 uniform vec4 vDiffuseColor;
 
 // Input
@@ -90,7 +90,7 @@ void main(void)
 {
 #include<clipPlaneFragment>
 
-	vec3 viewDirectionW = normalize(vEyePosition - vPositionW);
+	vec3 viewDirectionW = normalize(vEyePosition.xyz - vPositionW);
 
 	// Base color
 	vec4 baseColor = vec4(1., 1., 1., 1.);

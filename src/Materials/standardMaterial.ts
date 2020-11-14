@@ -1566,7 +1566,8 @@ export class StandardMaterial extends PushMaterial {
             // Colors
             scene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
 
-            MaterialHelper.BindEyePosition(effect, scene);
+            this.bindEyePosition(effect);
+
             effect.setColor3("vAmbientColor", this._globalAmbientColor);
         }
 
