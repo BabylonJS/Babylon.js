@@ -508,6 +508,7 @@ declare module INSPECTOR {
     }> {
         private _localChange;
         constructor(props: IQuaternionLineComponentProps);
+        _checkRoundCircle(a: number, b: number): boolean;
         shouldComponentUpdate(nextProps: IQuaternionLineComponentProps, nextState: {
             isExpanded: boolean;
             value: BABYLON.Quaternion;
