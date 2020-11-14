@@ -13,7 +13,6 @@ import { Material } from "babylonjs/Materials/material";
 import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
 import { PBRMetallicRoughnessMaterial } from "babylonjs/Materials/PBR/pbrMetallicRoughnessMaterial";
-import { PostProcess } from "babylonjs/PostProcesses/postProcess";
 import { Scene } from "babylonjs/scene";
 
 import { _Exporter } from "./glTFExporter";
@@ -492,66 +491,22 @@ export class _GLTFMaterialExporter {
      * @returns base64 image string
      */
     private _createBase64FromCanvasAsync(buffer: Uint8Array | Float32Array, width: number, height: number, mimeType: ImageMimeType): Promise<string> {
-        return new Promise<string>((resolve, reject) => {
-            let hostingScene: Scene;
-
+        return new Promise<string>(async (resolve, reject) => {
             const textureType = Constants.TEXTURETYPE_UNSIGNED_INT;
-            const engine = this._exporter._getLocalEngine();
 
-            hostingScene = new Scene(engine);
+            const hostingScene = this._exporter._babylonScene;
+            const engine = hostingScene.getEngine();
 
             // Create a temporary texture with the texture buffer data
             const tempTexture = engine.createRawTexture(buffer, width, height, Constants.TEXTUREFORMAT_RGBA, false, true, Texture.NEAREST_SAMPLINGMODE, null, textureType);
-            const postProcess = new PostProcess("pass", "pass", null, null, 1, null, Texture.NEAREST_SAMPLINGMODE, engine, false, undefined, Constants.TEXTURETYPE_UNSIGNED_INT, undefined, null, false);
-            postProcess.getEffect().executeWhenCompiled(() => {
-                postProcess.onApply = (effect) => {
-                    effect._bindTexture("textureSampler", tempTexture);
-                };
 
-                // Set the size of the texture
-                engine.setSize(width, height);
-                hostingScene.postProcessManager.directRender([postProcess], null);
-                postProcess.dispose();
-                tempTexture.dispose();
+            await TextureTools.ApplyPostProcess("pass", tempTexture, hostingScene, textureType, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTUREFORMAT_RGBA);
 
-                // Read data from WebGL
-                const canvas0 = engine.getRenderingCanvas();
+            const data = await engine._readTexturePixels(tempTexture, width, height);
 
-                let canvas: Nullable<HTMLCanvasElement> = document.createElement("canvas");
+            const base64: string = await (Tools.DumpDataAsync(width, height, data, mimeType, undefined, true, false) as Promise<string>);
 
-                canvas.width = canvas0?.width ?? 0;
-                canvas.height = canvas0?.height ?? 0;
-
-                var destCtx = canvas.getContext('2d');
-                destCtx!.drawImage(canvas0!, 0, 0);
-
-                if (canvas) {
-                    if (!canvas.toBlob) { // fallback for browsers without "canvas.toBlob"
-                        const dataURL = canvas.toDataURL();
-                        resolve(dataURL);
-                    }
-                    else {
-                        Tools.ToBlob(canvas, (blob) => {
-                            canvas = null;
-                            if (blob) {
-                                let fileReader = new FileReader();
-                                fileReader.onload = (event: any) => {
-                                    let base64String = event.target.result as string;
-                                    hostingScene.dispose();
-                                    resolve(base64String);
-                                };
-                                fileReader.readAsDataURL(blob);
-                            }
-                            else {
-                                reject("gltfMaterialExporter: Failed to get blob from image canvas!");
-                            }
-                        }, mimeType);
-                    }
-                }
-                else {
-                    reject("Engine is missing a canvas!");
-                }
-            });
+            resolve(base64);
         });
     }
 
