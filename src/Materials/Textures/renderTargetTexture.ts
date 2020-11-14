@@ -302,7 +302,7 @@ export class RenderTargetTexture extends Texture {
      * @param samples sample count to use when creating the RTT
      */
     constructor(name: string, size: number | { width: number, height: number, layers?: number } | { ratio: number }, scene: Nullable<Scene>, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Constants.TEXTURETYPE_UNSIGNED_INT, isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false, isMulti = false, format = Constants.TEXTUREFORMAT_RGBA, delayAllocation = false, samples?: number) {
-        super(null, scene, !generateMipMaps);
+        super(null, scene, !generateMipMaps, undefined, samplingMode, undefined, undefined, undefined, undefined, format);
         scene = this.getScene();
         if (!scene) {
             return;
@@ -333,14 +333,14 @@ export class RenderTargetTexture extends Texture {
         this._renderTargetOptions = {
             generateMipMaps: generateMipMaps,
             type: type,
-            format: format,
-            samplingMode: samplingMode,
+            format: this._format ?? undefined,
+            samplingMode: this.samplingMode,
             generateDepthBuffer: generateDepthBuffer,
             generateStencilBuffer: generateStencilBuffer,
             samples: samples,
         };
 
-        if (samplingMode === Texture.NEAREST_SAMPLINGMODE) {
+        if (this.samplingMode === Texture.NEAREST_SAMPLINGMODE) {
             this.wrapU = Texture.CLAMP_ADDRESSMODE;
             this.wrapV = Texture.CLAMP_ADDRESSMODE;
         }
