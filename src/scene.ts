@@ -55,6 +55,7 @@ import { Frustum } from './Maths/math.frustum';
 import { UniqueIdGenerator } from './Misc/uniqueIdGenerator';
 import { FileTools, LoadFileError, RequestFileError, ReadFileError } from './Misc/fileTools';
 import { IClipPlanesHolder } from './Misc/interfaces/iClipPlanesHolder';
+import { MaterialHelper } from './Materials/materialHelper';
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -1660,7 +1661,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this._sceneUbo.addUniform("viewProjection", 16);
         this._sceneUbo.addUniform("view", 16);
         this._sceneUbo.addUniform("projection", 16);
-        this._sceneUbo.addUniform("viewPosition", 4);
+        this._sceneUbo.addUniform("vEyePosition", 4);
     }
 
     /**
@@ -2037,13 +2038,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public finalizeSceneUbo(): UniformBuffer {
         const ubo = this.getSceneUniformBuffer();
-        const eyePosition = this._forcedViewPosition ? this._forcedViewPosition : (this._mirroredCameraPosition ? this._mirroredCameraPosition : (this.activeCamera!).globalPosition);
-        const invertNormal = (this.useRightHandedSystem === (this._mirroredCameraPosition != null));
-        ubo.updateFloat4("viewPosition",
+        const eyePosition = MaterialHelper.BindEyePosition(null, this);
+        ubo.updateFloat4("vEyePosition",
             eyePosition.x,
             eyePosition.y,
             eyePosition.z,
-            invertNormal ? -1 : 1);
+            eyePosition.w);
 
         ubo.update();
 

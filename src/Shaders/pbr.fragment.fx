@@ -24,9 +24,6 @@ precision highp float;
 // Declaration
 #include<__decl__pbrFragment>
 
-// TODO WEBGPU Probably create a camera ubo
-#define vEyePosition viewPosition
-
 #include<pbrFragmentExtraDeclaration>
 #include<__decl__lightFragment>[0..maxSimultaneousLights]
 #include<pbrFragmentSamplersDeclaration>
