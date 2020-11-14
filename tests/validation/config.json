@@ -448,20 +448,23 @@
             "renderCount": 2,
             "playgroundId": "#DS8AA7#18",
             "replace": "__folder__, Animation_Skin, __page__, 0",
-            "referenceImage": "gltfAnimationSkin0.png"
+            "referenceImage": "gltfAnimationSkin0.png",
+            "excludedEngines": ["webgpu"]
         },
         {
             "title": "GLTF Animation Skin (1)",
             "renderCount": 2,
             "playgroundId": "#DS8AA7#18",
             "replace": "__folder__, Animation_Skin, __page__, 1",
-            "referenceImage": "gltfAnimationSkin1.png"
+            "referenceImage": "gltfAnimationSkin1.png",
+            "excludedEngines": ["webgpu"]
         },
         {
             "title": "GLTF Animation Skin Type",
             "playgroundId": "#DS8AA7#18",
             "replace": "__folder__, Animation_SkinType, __page__, 0",
-            "referenceImage": "gltfAnimationSkinType.png"
+            "referenceImage": "gltfAnimationSkinType.png",
+            "excludedEngines": ["webgpu"]
         },
         {
             "title": "GLTF Buffer Interleaved",
@@ -539,13 +542,15 @@
             "title": "GLTF Mesh Primitive Mode (0)",
             "playgroundId": "#DS8AA7#18",
             "replace": "__folder__, Mesh_PrimitiveMode, __page__, 0",
-            "referenceImage": "gltfMeshPrimitiveMode0.png"
+            "referenceImage": "gltfMeshPrimitiveMode0.png",
+            "excludedEngines": ["webgpu"]
         },
         {
             "title": "GLTF Mesh Primitive Mode (1)",
             "playgroundId": "#DS8AA7#18",
             "replace": "__folder__, Mesh_PrimitiveMode, __page__, 1",
-            "referenceImage": "gltfMeshPrimitiveMode1.png"
+            "referenceImage": "gltfMeshPrimitiveMode1.png",
+            "excludedEngines": ["webgpu"]
         },
         {
             "title": "GLTF Mesh Primitive Vertex Color",
@@ -876,7 +881,8 @@
             "playgroundId": "#XT1HAS#1",
             "referenceImage": "ssao2.png",
             "renderCount": 200,
-            "excludeFromAutomaticTesting": true
+            "excludeFromAutomaticTesting": true,
+            "excludedEngines": ["webgpu"]
         },
         {
             "title": "DepthRenderer",
@@ -932,21 +938,24 @@
             "playgroundId": "#E5YGEL#2",
             "referenceImage": "motionBlur.png",
             "renderCount": 10,
-            "excludeFromAutomaticTesting": true
+            "excludeFromAutomaticTesting": true,
+            "excludedEngines": ["webgpu"]
         },
         {
             "title": "Screen space reflections",
             "playgroundId": "#PIZ1GK#172",
             "referenceImage": "ssr.png",
             "renderCount": 10,
-            "excludeFromAutomaticTesting": true
+            "excludeFromAutomaticTesting": true,
+            "excludedEngines": ["webgpu"]
         },
         {
             "title": "Geometry buffer renderer",
             "playgroundId": "#PIZ1GK#173",
             "referenceImage": "geometrybufferrenderer.png",
             "renderCount": 10,
-            "excludeFromAutomaticTesting": true
+            "excludeFromAutomaticTesting": true,
+            "excludedEngines": ["webgpu"]
         }
     ]
 }

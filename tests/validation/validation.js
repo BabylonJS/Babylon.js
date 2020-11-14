@@ -5,6 +5,7 @@ var canvas;
 var currentScene;
 var config;
 var justOnce;
+var engineName;
 
 // Random replacement
 var seed = 1;
@@ -178,6 +179,12 @@ function runTest(index, done, listname) {
         done(false);
     }
 
+    const excludedEngines = config.tests[index].excludedEngines;
+    if (Array.isArray(excludedEngines) && excludedEngines.indexOf(engineName) >= 0) {
+        done(true);
+        return;
+    }
+    
     // Clear the plugin activated observables in case it is registered in the test.
     BABYLON.SceneLoader.OnPluginActivatedObservable.clear();
 
@@ -376,8 +383,16 @@ function runTest(index, done, listname) {
 
 }
 
-function init(engineName) {
-    engineName = engineName.toLowerCase();
+function init(_engineName) {
+    _engineName = _engineName ? _engineName.toLowerCase() : "webgl2";
+    if (window.disableWebGL2Support) {
+        _engineName = "webgl1";
+    }
+    if (_engineName === "webgl") {
+        _engineName = "webgl1";
+    }
+
+    engineName = _engineName;
 
     BABYLON.SceneLoader.ShowLoadingScreen = false;
     BABYLON.SceneLoader.ForceFullSceneLoadingForIncremental = true;
@@ -419,7 +434,7 @@ function init(engineName) {
             engine.initAsync(glslangOptions).then(() => resolve());
         });
     } else {
-        engine = new BABYLON.Engine(canvas, false, { useHighPrecisionFloats: true, disableWebGL2Support: window.disableWebGL2Support || engineName === "webgl" || engineName === "webgl1" ? true : false });
+        engine = new BABYLON.Engine(canvas, false, { useHighPrecisionFloats: true, disableWebGL2Support: engineName === "webgl1" ? true : false });
         engine.enableOfflineSupport = false;
         engine.setDitheringState(false);
         return Promise.resolve();
