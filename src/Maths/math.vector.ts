@@ -651,9 +651,7 @@ export class Vector2 {
      * @returns a new Vector2
      */
     public static Center(value1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>): Vector2 {
-        var center = value1.add(value2);
-        center.scaleInPlace(0.5);
-        return center;
+        return Vector2.CenterToRef(value1, value2, Vector2.Zero());
     }
 
     /**
@@ -2025,9 +2023,7 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public static Center(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>): Vector3 {
-        var center = value1.add(value2);
-        center.scaleInPlace(0.5);
-        return center;
+        return Vector3.CenterToRef(value1, value2, Vector3.Zero());
     }
 
     /**
@@ -2038,7 +2034,7 @@ export class Vector3 {
      * @returns ref
      */
     public static CenterToRef(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, ref: DeepImmutable<Vector3>): Vector3 {
-        return ref.copyFromFloats((value1.x + value2.x) / 2, (value1.y + value2.y) / 2, (value1.z + value2.z) / 2);
+        return ref.copyFromFloats((value1._x + value2._x) / 2, (value1._y + value2._y) / 2, (value1._z + value2._z) / 2);
     }
 
     /**
@@ -2726,9 +2722,7 @@ export class Vector4 {
      * @return the center between the two vectors
      */
     public static Center(value1: DeepImmutable<Vector4>, value2: DeepImmutable<Vector4>): Vector4 {
-        var center = value1.add(value2);
-        center.scaleInPlace(0.5);
-        return center;
+        return Vector4.CenterToRef(value1, value2, Vector4.Zero());
     }
 
     /**
