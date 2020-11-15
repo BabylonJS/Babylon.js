@@ -6,6 +6,9 @@ var currentScene;
 var config;
 var justOnce;
 var engineName;
+var currentTestName;
+var numTestsOk = 0;
+var failedTests = [];
 
 // Random replacement
 var seed = 1;
@@ -142,6 +145,12 @@ async function evaluate(test, resultCanvas, result, renderImage, waitRing, done)
     engine._fps = 60;
     engine._performanceMonitor = new BABYLON.PerformanceMonitor();
 
+    if (testRes) {
+        numTestsOk++;
+    } else {
+        failedTests.push(currentTestName);
+    }
+
     done(testRes, renderB64);
 }
 
@@ -167,6 +176,7 @@ function processCurrentScene(test, resultCanvas, result, renderImage, index, wai
             }
             catch (e) {
                 console.error(e);
+                failedTests.push(currentTestName);
                 done(false);
             }
         });
@@ -219,6 +229,8 @@ function runTest(index, done, listname) {
 
     console.log("Running " + (listname ? listname + "/" : "") + test.title);
 
+    currentTestName = test.title;
+
     engine.beginFrame();
 
     var resultContext = resultCanvas.getContext("2d");
@@ -243,6 +255,7 @@ function runTest(index, done, listname) {
                 null,
                 function(loadedScene, msg) {
                     console.error(msg);
+                    failedTests.push(currentTestName);
                     done(false);
                 });
         }
@@ -266,6 +279,7 @@ function runTest(index, done, listname) {
                     }, retryTime);
                 }
                 else {
+                    failedTests.push(currentTestName);
                     done(false);
                 }
             }
@@ -365,12 +379,14 @@ function runTest(index, done, listname) {
                     }
                     catch (e) {
                         console.error(e);
+                        failedTests.push(currentTestName);
                         done(false);
                     }
                 }
             };
             request.onerror = function() {
                 console.error("Network error during test load.");
+                failedTests.push(currentTestName);
                 done(false);
             }
 
@@ -438,6 +454,13 @@ function init(_engineName) {
         engine.enableOfflineSupport = false;
         engine.setDitheringState(false);
         return Promise.resolve();
+    }
+}
+
+function showResultSummary() {
+    console.log(`${numTestsOk} test(s) succeeded, ${failedTests.length} failed.`);
+    if (failedTests.length > 0) {
+        console.log(`List of failed test(s):\r\n  ${failedTests.join("\r\n  ")}`);
     }
 }
 
