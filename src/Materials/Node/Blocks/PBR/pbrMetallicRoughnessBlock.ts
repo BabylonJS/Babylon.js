@@ -30,7 +30,6 @@ import { SubSurfaceBlock } from './subSurfaceBlock';
 import { RefractionBlock } from './refractionBlock';
 import { PerturbNormalBlock } from '../Fragment/perturbNormalBlock';
 import { Constants } from '../../../../Engines/constants';
-import { ThinEngine } from '../../../../Engines/thinEngine';
 
 const mapOutputToVariable: { [name: string] : [string, string] } = {
     "ambient":      ["finalAmbient", ""],
@@ -618,7 +617,9 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         defines.setValue("REALTIME_FILTERING", this.realTimeFiltering, true);
         defines.setValue("NUM_SAMPLES", "" + this.realTimeFilteringQuality, true);
 
-        if (ThinEngine.Features.needTypeSuffixInShaderConstants) {
+        const scene = mesh.getScene();
+
+        if (scene.getEngine()._features.needTypeSuffixInShaderConstants) {
             defines.setValue("NUM_SAMPLES", this.realTimeFilteringQuality + "u", true);
         }
 
@@ -641,8 +642,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         if (!defines._areLightsDirty) {
             return;
         }
-
-        const scene = mesh.getScene();
 
         if (!this.light) {
             // Lights

@@ -11,7 +11,6 @@ import { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 import { Nullable } from "../types";
 import { AbstractMesh } from '../Meshes/abstractMesh';
 import { Material } from '../Materials/material';
-import { ThinEngine } from '../Engines/thinEngine';
 
 /**
  * Renders a pre pass of the scene
@@ -165,7 +164,7 @@ export class PrePassRenderer {
      * Indicates if rendering a prepass is supported
      */
     public get isSupported() {
-        return ThinEngine.Features.supportPrePassRenderer;
+        return this._engine._features.supportPrePassRenderer;
     }
 
     /**

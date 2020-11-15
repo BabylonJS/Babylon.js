@@ -6,7 +6,6 @@ import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTextur
 import { Constants } from "../../Engines/constants";
 
 import "../../Engines/Extensions/engine.multiRender";
-import { ThinEngine } from '../../Engines/thinEngine';
 
 /**
  * Creation options of the multi render target texture.
@@ -67,7 +66,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
      * Get if draw buffers are currently supported by the used hardware and browser.
      */
     public get isSupported(): boolean {
-        return ThinEngine.Features.supportMultipleRenderTargets;
+        return this._engine?._features.supportMultipleRenderTargets ?? false;
     }
 
     /**

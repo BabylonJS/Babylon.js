@@ -22,7 +22,7 @@ import { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import { WebGPUShaderProcessingContext } from "./WebGPU/webgpuShaderProcessingContext";
 import { Tools } from "../Misc/tools";
 import { WebGPUTextureHelper } from './WebGPU/webgpuTextureHelper';
-import { ISceneLike, ThinEngine } from './thinEngine';
+import { ISceneLike } from './thinEngine';
 import { Scene } from '../scene';
 import { WebGPUBufferManager } from './WebGPU/webgpuBufferManager';
 import { DepthTextureCreationOptions } from './depthTextureCreationOptions';
@@ -260,26 +260,6 @@ export class WebGPUEngine extends Engine {
     public constructor(canvas: HTMLCanvasElement, options: WebGPUEngineOptions = {}) {
         super(null);
 
-        ThinEngine.Features.forceBitmapOverHTMLImageElement = true;
-        ThinEngine.Features.supportRenderAndCopyToLodForFloatTextures = true;
-        ThinEngine.Features.framebuffersHaveYTopToBottom = true;
-        ThinEngine.Features.supportDepthStencilTexture = true;
-        ThinEngine.Features.supportShadowSamplers = true;
-        ThinEngine.Features.uniformBufferHardCheckMatrix = true;
-        ThinEngine.Features.allowTexturePrefiltering = true;
-        ThinEngine.Features.trackUbosInFrame = true;
-        ThinEngine.Features.supportCSM = true;
-        ThinEngine.Features.basisNeedsPOT = false;
-        ThinEngine.Features.support3DTextures = false; // TODO WEBGPU change to true when Chrome supports 3D textures
-        ThinEngine.Features.supportMultipleRenderTargets = true;
-        ThinEngine.Features.needTypeSuffixInShaderConstants = true;
-        ThinEngine.Features.supportMSAA = true;
-        ThinEngine.Features.supportSSAO2 = true;
-        ThinEngine.Features.supportExtendedTextureFormats = true;
-        ThinEngine.Features.supportPrePassRenderer = true;
-        ThinEngine.Features.supportSwitchCaseInShader = true;
-        ThinEngine.Features._collectUbosUpdatedInFrame = true;
-
         options.deviceDescriptor = options.deviceDescriptor || { };
         options.swapChainFormat = options.swapChainFormat || WebGPUConstants.TextureFormat.BGRA8Unorm;
         options.antialiasing = false; //options.antialiasing === undefined ? true : options.antialiasing;
@@ -475,6 +455,28 @@ export class WebGPUEngine extends Engine {
         };
 
         this._caps.parallelShaderCompile = null as any;
+
+        this._features = {
+            forceBitmapOverHTMLImageElement: true,
+            supportRenderAndCopyToLodForFloatTextures: true,
+            framebuffersHaveYTopToBottom: true,
+            supportDepthStencilTexture: true,
+            supportShadowSamplers: true,
+            uniformBufferHardCheckMatrix: true,
+            allowTexturePrefiltering: true,
+            trackUbosInFrame: true,
+            supportCSM: true,
+            basisNeedsPOT: false,
+            support3DTextures: false, // TODO WEBGPU change to true when Chrome supports 3D textures
+            supportMultipleRenderTargets: true,
+            needTypeSuffixInShaderConstants: true,
+            supportMSAA: true,
+            supportSSAO2: true,
+            supportExtendedTextureFormats: true,
+            supportPrePassRenderer: true,
+            supportSwitchCaseInShader: true,
+            _collectUbosUpdatedInFrame: true,
+        };
     }
 
     private _initializeContextAndSwapChain(): void {
@@ -2089,7 +2091,7 @@ export class WebGPUEngine extends Engine {
         this._textureHelper.destroyDeferredTextures();
         this._bufferManager.destroyDeferredBuffers();
 
-        if (ThinEngine.Features._collectUbosUpdatedInFrame) {
+        if (this._features._collectUbosUpdatedInFrame) {
             if (dbgVerboseLogsForFirstFrames) {
                 if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
                     const list: Array<string> = [];

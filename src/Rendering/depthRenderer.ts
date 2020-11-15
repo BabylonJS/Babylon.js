@@ -15,7 +15,6 @@ import { Constants } from "../Engines/constants";
 import "../Shaders/depth.fragment";
 import "../Shaders/depth.vertex";
 import { _DevTools } from '../Misc/devTools';
-import { ThinEngine } from '../Engines/thinEngine';
 
 /**
  * This represents a depth renderer in Babylon.
@@ -73,7 +72,7 @@ export class DepthRenderer {
         var engine = scene.getEngine();
 
         // Render target
-        var format = (this.isPacked || !ThinEngine.Features.supportExtendedTextureFormats) ? Constants.TEXTUREFORMAT_RGBA : Constants.TEXTUREFORMAT_R;
+        var format = (this.isPacked || !engine._features.supportExtendedTextureFormats) ? Constants.TEXTUREFORMAT_RGBA : Constants.TEXTUREFORMAT_R;
         this._depthMap = new RenderTargetTexture("depthMap", { width: engine.getRenderWidth(), height: engine.getRenderHeight() }, this._scene, false, true, type,
             false, undefined, undefined, undefined, undefined,
             format);

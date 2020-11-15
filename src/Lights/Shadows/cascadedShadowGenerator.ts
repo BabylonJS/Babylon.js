@@ -23,7 +23,7 @@ import { DepthRenderer } from '../../Rendering/depthRenderer';
 import { DepthReducer } from '../../Misc/depthReducer';
 
 import { Logger } from "../../Misc/logger";
-import { ThinEngine } from '../../Engines/thinEngine';
+import { EngineStore } from '../../Engines/engineStore';
 
 interface ICascade {
     prevBreakDistance: number;
@@ -693,7 +693,11 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     *  Support test.
     */
     public static get IsSupported(): boolean {
-        return ThinEngine.Features.supportCSM;
+        var engine = EngineStore.LastCreatedEngine;
+        if (!engine) {
+            return false;
+        }
+        return engine._features.supportCSM;
     }
 
     /** @hidden */
