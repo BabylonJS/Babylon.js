@@ -523,7 +523,7 @@ export class WebGPUEngine extends Engine {
             mainColorAttachments = [{
                 attachment: this._mainTexture.createView(),
                 loadValue: new Color4(0, 0, 0, 1),
-                storeOp: WebGPUConstants.StoreOp.Clear // Better than "Store" as we don't need to reuse the content of the multisampled texture
+                storeOp: WebGPUConstants.StoreOp.Store
             }];
         }
         else {
@@ -2202,7 +2202,7 @@ export class WebGPUEngine extends Engine {
                 attachment: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
                 resolveTarget: gpuMSAATexture ? colorTextureView : undefined,
                 loadValue: clearColor !== null ? clearColor : WebGPUConstants.LoadOp.Load,
-                storeOp: gpuMSAATexture ? WebGPUConstants.StoreOp.Clear : WebGPUConstants.StoreOp.Store,
+                storeOp: WebGPUConstants.StoreOp.Store,
             }],
             depthStencilAttachment: depthStencilTexture && gpuDepthStencilTexture ? {
                 attachment: depthMSAATextureView ? depthMSAATextureView : depthTextureView!,
