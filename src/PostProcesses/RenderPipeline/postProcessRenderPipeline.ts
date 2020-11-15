@@ -5,6 +5,7 @@ import { Camera } from "../../Cameras/camera";
 import { Engine } from "../../Engines/engine";
 import { PostProcessRenderEffect } from "./postProcessRenderEffect";
 import { IInspectable } from '../../Misc/iInspectable';
+import { ThinEngine } from '../../Engines/thinEngine';
 
 declare type PrePassRenderer = import("../../Rendering/prePassRenderer").PrePassRenderer;
 
@@ -215,7 +216,7 @@ export class PostProcessRenderPipeline {
     }
 
     protected _enableMSAAOnFirstPostProcess(sampleCount: number): boolean {
-        if (this.engine.webGLVersion === 1) {
+        if (!ThinEngine.Features.supportMSAA) {
             return false;
         }
 

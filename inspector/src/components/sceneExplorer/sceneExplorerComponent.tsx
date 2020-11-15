@@ -26,6 +26,7 @@ import { StandardMaterial } from 'babylonjs/Materials/standardMaterial';
 import { PBRMaterial } from 'babylonjs/Materials/PBR/pbrMaterial';
 import { SpriteManager } from 'babylonjs/Sprites/spriteManager';
 import { TargetCamera } from 'babylonjs/Cameras/targetCamera';
+import { ThinEngine } from 'babylonjs/Engines/thinEngine';
 
 require("./sceneExplorer.scss");
 
@@ -291,7 +292,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 });
             }
 
-            if (scene.getEngine().webGLVersion > 1 && !pipelines.some(p => p.getClassName() === "SSAORenderingPipeline")) {
+            if (ThinEngine.Features.supportMultipleRenderTargets && !pipelines.some(p => p.getClassName() === "SSAORenderingPipeline")) {
                 pipelineContextMenus.push({
                     label: "Add new SSAO2 Rendering Pipeline",
                     action: () => {

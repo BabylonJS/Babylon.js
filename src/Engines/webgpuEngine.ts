@@ -230,6 +230,29 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
+     * Returns the name of the engine
+     */
+    public get name(): string {
+        return "WebGPU";
+    }
+
+    /**
+     * Returns a string describing the current engine
+     */
+    public get description(): string {
+        let description = this.name + this.version;
+
+        return description;
+    }
+
+    /**
+     * Returns the version of the engine
+     */
+    public get version(): number {
+        return 1;
+    }
+
+    /**
      * Create a new instance of the gpu engine.
      * @param canvas Defines the canvas to use to display the result
      * @param options Defines the options passed to the engine to create the GPU context dependencies
@@ -248,6 +271,13 @@ export class WebGPUEngine extends Engine {
         ThinEngine.Features.supportCSM = true;
         ThinEngine.Features.basisNeedsPOT = false;
         ThinEngine.Features.support3DTextures = false; // TODO WEBGPU change to true when Chrome supports 3D textures
+        ThinEngine.Features.supportMultipleRenderTargets = true;
+        ThinEngine.Features.needTypeSuffixInShaderConstants = true;
+        ThinEngine.Features.supportMSAA = true;
+        ThinEngine.Features.supportSSAO2 = true;
+        ThinEngine.Features.supportExtendedTextureFormats = true;
+        ThinEngine.Features.supportPrePassRenderer = true;
+        ThinEngine.Features.supportSwitchCaseInShader = true;
         ThinEngine.Features._collectUbosUpdatedInFrame = true;
 
         options.deviceDescriptor = options.deviceDescriptor || { };

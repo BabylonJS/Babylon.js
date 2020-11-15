@@ -41,6 +41,7 @@ import "../../Shaders/pbr.vertex";
 
 import { EffectFallbacks } from '../effectFallbacks';
 import { IMaterialDetailMapDefines, DetailMapConfiguration } from '../material.detailMapConfiguration';
+import { ThinEngine } from '../../Engines/thinEngine';
 
 declare type PrePassRenderer = import("../../Rendering/prePassRenderer").PrePassRenderer;
 
@@ -1388,7 +1389,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                     if (this.realTimeFiltering && this.realTimeFilteringQuality > 0) {
                         defines.NUM_SAMPLES = "" + this.realTimeFilteringQuality;
-                        if (engine.webGLVersion > 1) {
+                        if (ThinEngine.Features.needTypeSuffixInShaderConstants) {
                             defines.NUM_SAMPLES = defines.NUM_SAMPLES + "u";
                         }
 

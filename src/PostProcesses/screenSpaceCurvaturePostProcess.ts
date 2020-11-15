@@ -11,6 +11,7 @@ import "../Shaders/screenSpaceCurvature.fragment";
 import { EngineStore } from '../Engines/engineStore';
 import { _TypeStore } from '../Misc/typeStore';
 import { serialize, SerializationHelper } from '../Misc/decorators';
+import { ThinEngine } from '../Engines/thinEngine';
 
 declare type Engine = import("../Engines/engine").Engine;
 declare type Scene = import("../scene").Scene;
@@ -82,7 +83,7 @@ export class ScreenSpaceCurvaturePostProcess extends PostProcess {
             return false;
         }
 
-        return engine.webGLVersion > 1 || engine.getCaps().drawBuffersExtension;
+        return ThinEngine.Features.supportMultipleRenderTargets;
     }
 
     /** @hidden */
