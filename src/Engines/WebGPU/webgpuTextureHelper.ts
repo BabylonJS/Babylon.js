@@ -1068,15 +1068,6 @@ export class WebGPUTextureHelper {
             }
             irradianceTexture?.dispose();
             depthStencilTexture?.dispose();
-
-            // TODO WEBGPU remove debug code
-            if (texture) {
-                if ((texture as any)._swapped) {
-                    delete (texture as any)._swapped;
-                } else {
-                    (texture as any)._released = true;
-                }
-            }
         }
 
         this._deferredReleaseTextures.length = 0;

@@ -1437,7 +1437,6 @@ export class WebGPUEngine extends Engine {
                 webgpuPipelineContext.textures[name]!.texture = internalTexture!;
             }
             else {
-                // TODO WEBGPU. 121 mapping samplers <-> availableSamplers
                 const availableSampler = webgpuPipelineContext.shaderProcessingContext.availableSamplers[baseName];
                 if (availableSampler) {
                     webgpuPipelineContext.samplers[baseName] = {
@@ -1548,11 +1547,6 @@ export class WebGPUEngine extends Engine {
                 this._setAnisotropicLevel(0, internalTexture, texture.anisotropicFilteringLevel);
             }
 
-            if (dbgSanityChecks && internalTexture && (internalTexture as any)._released) {
-                console.error("using a released texture in engine.setTexture!", internalTexture);
-                debugger;
-            }
-
             this._setInternalTexture(name, internalTexture, baseName, textureIndex);
         } else {
             if (dbgVerboseLogsForFirstFrames) {
@@ -1633,10 +1627,6 @@ export class WebGPUEngine extends Engine {
 
         if (!texture._hardwareTexture?.underlyingResource) {
             gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, width, height);
-        }
-
-        if (dbgSanityChecks && (texture as any)._released) {
-            console.error("Using a released texture in updateDynamicTexture!", texture, gpuTextureWrapper);
         }
 
         createImageBitmap(canvas).then((bitmap) => {
@@ -3019,7 +3009,6 @@ export class WebGPUEngine extends Engine {
                     visibility = visibility | WebGPUConstants.ShaderStage.Fragment;
                 }
 
-                // TODO WEBGPU. Optimize shared samplers visibility for vertex/framgent.
                 if (bindingDefinition.isSampler) {
                     entries.push({
                         binding: j,
@@ -3159,7 +3148,6 @@ export class WebGPUEngine extends Engine {
                     continue;
                 }
 
-                // TODO WEBGPU. Authorize shared samplers and Vertex Textures.
                 if (bindingDefinition.isSampler) {
                     const bindingInfo = webgpuPipelineContext.samplers[bindingDefinition.name];
                     if (bindingInfo) {
@@ -3186,12 +3174,6 @@ export class WebGPUEngine extends Engine {
 
                         if (dbgSanityChecks && !hardwareTexture.view) {
                             Logger.Error(`Trying to bind a null gpu texture! bindingDefinition=${JSON.stringify(bindingDefinition)}, bindingInfo=${JSON.stringify(bindingInfo, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}, isReady=${bindingInfo.texture.isReady}`, 50);
-                            continue;
-                        }
-
-                        // TODO WEBGPU remove this code
-                        if ((bindingInfo.texture as any)._released) {
-                            console.error("Trying to bind a released texture!", bindingInfo.texture, bindingInfo);
                             continue;
                         }
 
