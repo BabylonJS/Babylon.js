@@ -78,6 +78,7 @@
 							runTest(i, function() {
 								i++;
 								if (justOnce || i >= config.tests.length) {
+                                    showResultSummary();
 									return;
 								}
 								recursiveRunTest(i);
