@@ -10,7 +10,23 @@
 </head>
 
 <body>
+    <button id="buttonToggleResult" class="buttonToggleResult">Show only failed tests</button>
+
 	<script>
+        let toggle = 0, ebutton = document.getElementById("buttonToggleResult");
+        ebutton.onclick = function(event) {
+            Array.from(document.getElementsByClassName("container")).forEach((elem) => {
+                const result = elem.getAttribute("result");
+                elem.style.display = toggle === 0 && result !== "false" ? "none" : "";
+            });
+            toggle ^= 1;
+            if (toggle) {
+                ebutton.innerHTML = "Show all tests";
+            } else {
+                ebutton.innerHTML = "Show only failed tests";
+            }
+        };
+
         function QueryString() {
             const idx = window.location.search.indexOf('?');
 
