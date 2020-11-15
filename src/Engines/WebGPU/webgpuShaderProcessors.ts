@@ -357,9 +357,7 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
             }
         }
 
-        // Flip Y.
-        // TODO WEBGPU. Triple check this part and wait on Google News for this issue.
-        // https://github.com/gpuweb/gpuweb/issues/379
+        // Flip Y + convert z range from [-1,1] to [0,1]
         if (!isFragment) {
             const lastClosingCurly = code.lastIndexOf("}");
             code = code.substring(0, lastClosingCurly);

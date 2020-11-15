@@ -31,7 +31,6 @@ attribute vec4 color;
 #include<helperFunctions>
 #include<bonesDeclaration>
 
-// TODO WEBGPU faut-il remettre l'include et supprimer la déclaration de la world matrix ? Ca implique de passer par l'ubo du mesh aussi pour les autres types de material
 // #include<instancesDeclaration>
 #ifdef INSTANCES
 	attribute vec4 world0;

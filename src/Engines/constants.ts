@@ -171,7 +171,7 @@ export class Constants {
     /** Compressed BC2 */
     public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3 = 33778;
     /** Compressed BC1 */
-    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1 = 33776; // TODO WEBGPU it should be 33777 but the ktx2decoder returns the wrong value! Correct the ktx2 decoder and update the value here
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1 = 33777;
 
     /** UNSIGNED_BYTE */
     public static readonly TEXTURETYPE_UNSIGNED_BYTE = 0;
