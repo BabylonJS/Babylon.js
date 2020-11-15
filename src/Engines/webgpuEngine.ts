@@ -262,7 +262,7 @@ export class WebGPUEngine extends Engine {
 
         options.deviceDescriptor = options.deviceDescriptor || { };
         options.swapChainFormat = options.swapChainFormat || WebGPUConstants.TextureFormat.BGRA8Unorm;
-        options.antialiasing = false; //options.antialiasing === undefined ? true : options.antialiasing;
+        options.antialiasing = options.antialiasing === undefined ? true : options.antialiasing;
         options.stencil = options.stencil ?? true;
         options.enableGPUDebugMarkers = options.enableGPUDebugMarkers ?? false;
 
@@ -451,7 +451,7 @@ export class WebGPUEngine extends Engine {
             instancedArrays: true,
             canUseTimestampForTimerQuery: false,
             blendMinMax: true,
-            maxMSAASamples: 8 // TODO WEBGPU what is the right value?
+            maxMSAASamples: 4 // TODO WEBGPU what is the right value?
         };
 
         this._caps.parallelShaderCompile = null as any;
@@ -512,7 +512,7 @@ export class WebGPUEngine extends Engine {
                 mipLevelCount: 1,
                 sampleCount: this._mainPassSampleCount,
                 dimension: WebGPUConstants.TextureDimension.E2d,
-                format: WebGPUConstants.TextureFormat.BGRA8Unorm,
+                format: this._options.swapChainFormat!,
                 usage: WebGPUConstants.TextureUsage.OutputAttachment,
             };
 
@@ -1114,6 +1114,10 @@ export class WebGPUEngine extends Engine {
     /** @hidden */
     public _getRGBABufferInternalSizedFormat(type: number, format?: number): number {
         return Constants.TEXTUREFORMAT_RGBA;
+    }
+
+    public updateTextureComparisonFunction(texture: InternalTexture, comparisonFunction: number): void {
+        texture._comparisonFunction = comparisonFunction;
     }
 
     public createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
@@ -1869,7 +1873,7 @@ export class WebGPUEngine extends Engine {
             fullOptions.type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_INT : options.type;
             fullOptions.samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
             fullOptions.format = options.format === undefined ? Constants.TEXTUREFORMAT_RGBA : options.format;
-            fullOptions.samples = options.samples ?? this._mainPassSampleCount;
+            fullOptions.samples = options.samples ?? 1;
         } else {
             fullOptions.generateMipMaps = <boolean>options;
             fullOptions.generateDepthBuffer = true;
@@ -1877,7 +1881,7 @@ export class WebGPUEngine extends Engine {
             fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
             fullOptions.samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
             fullOptions.format = Constants.TEXTUREFORMAT_RGBA;
-            fullOptions.samples = this._mainPassSampleCount;
+            fullOptions.samples = 1;
         }
 
         const texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
@@ -1941,7 +1945,7 @@ export class WebGPUEngine extends Engine {
             type: Constants.TEXTURETYPE_UNSIGNED_INT,
             samplingMode: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
             format: Constants.TEXTUREFORMAT_RGBA,
-            samples: this._mainPassSampleCount,
+            samples: 1,
             ...options
         };
         fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && fullOptions.generateStencilBuffer;
@@ -2021,7 +2025,7 @@ export class WebGPUEngine extends Engine {
             bilinearFiltering: false,
             comparisonFunction: 0,
             generateStencil: false,
-            samples: this._mainPassSampleCount,
+            samples: 1,
             ...options
         };
 
@@ -2044,7 +2048,7 @@ export class WebGPUEngine extends Engine {
             bilinearFiltering: false,
             comparisonFunction: 0,
             generateStencil: false,
-            samples: this._mainPassSampleCount,
+            samples: 1,
             ...options
         };
 
@@ -2058,7 +2062,20 @@ export class WebGPUEngine extends Engine {
     }
 
     public updateRenderTargetTextureSampleCount(texture: Nullable<InternalTexture>, samples: number): number {
-        // TODO WEBGPU handle this
+        if (!texture || texture.samples === samples) {
+            return samples;
+        }
+
+        samples = Math.min(samples, this.getCaps().maxMSAASamples);
+
+        this._textureHelper.createMSAATexture(texture, samples);
+
+        if (texture._depthStencilTexture) {
+            this._textureHelper.createMSAATexture(texture._depthStencilTexture, samples);
+            texture._depthStencilTexture.samples = samples;
+        }
+
+        texture.samples = samples;
 
         return samples;
     }
@@ -2166,22 +2183,29 @@ export class WebGPUEngine extends Engine {
     private _startRenderTargetRenderPass(internalTexture: InternalTexture, clearColor: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean = false) {
         const gpuWrapper = internalTexture._hardwareTexture as WebGPUHardwareTexture;
         const gpuTexture = gpuWrapper.underlyingResource!;
+        const gpuMSAATexture = gpuWrapper.msaaTexture;
+
         const depthStencilTexture = internalTexture._depthStencilTexture;
-        const gpuDepthStencilTexture = depthStencilTexture?._hardwareTexture?.underlyingResource as Nullable<GPUTexture>;
+        const gpuDepthStencilWrapper = depthStencilTexture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
+        const gpuDepthStencilTexture = gpuDepthStencilWrapper?.underlyingResource as Nullable<GPUTexture>;
+        const gpuDepthStencilMSAATexture = gpuDepthStencilWrapper?.msaaTexture;
 
         const colorTextureView = gpuTexture.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
+        const colorMSAATextureView = gpuMSAATexture?.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
         const depthTextureView = gpuDepthStencilTexture?.createView(this._rttRenderPassWrapper.depthAttachmentViewDescriptor!);
+        const depthMSAATextureView = gpuDepthStencilMSAATexture?.createView(this._rttRenderPassWrapper.depthAttachmentViewDescriptor!);
 
         this._debugPushGroup("render target pass", 1);
 
         this._rttRenderPassWrapper.renderPassDescriptor = {
             colorAttachments: [{
-                attachment: colorTextureView,
+                attachment: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
+                resolveTarget: gpuMSAATexture ? colorTextureView : undefined,
                 loadValue: clearColor !== null ? clearColor : WebGPUConstants.LoadOp.Load,
-                storeOp: WebGPUConstants.StoreOp.Store
+                storeOp: gpuMSAATexture ? WebGPUConstants.StoreOp.Clear : WebGPUConstants.StoreOp.Store,
             }],
             depthStencilAttachment: depthStencilTexture && gpuDepthStencilTexture ? {
-                attachment: depthTextureView!,
+                attachment: depthMSAATextureView ? depthMSAATextureView : depthTextureView!,
                 depthLoadValue: clearDepth && depthStencilTexture._generateDepthBuffer ? this._clearDepthValue : WebGPUConstants.LoadOp.Load,
                 depthStoreOp: WebGPUConstants.StoreOp.Store,
                 stencilLoadValue: clearStencil && depthStencilTexture._generateStencilBuffer ? this._clearStencilValue : WebGPUConstants.LoadOp.Load,
