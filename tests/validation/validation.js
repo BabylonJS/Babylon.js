@@ -145,6 +145,10 @@ async function evaluate(test, resultCanvas, result, renderImage, waitRing, done)
     engine._fps = 60;
     engine._performanceMonitor = new BABYLON.PerformanceMonitor();
 
+    if (resultCanvas.parentElement) {
+        resultCanvas.parentElement.setAttribute("result", testRes);
+    }
+
     if (testRes) {
         numTestsOk++;
     } else {

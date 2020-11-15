@@ -85,3 +85,9 @@ body {
     flex-basis: 50%;
     order: 2;
 }
+
+.buttonToggleResult {
+    position: fixed;
+    right: 10px;
+    top : 10px;
+}
