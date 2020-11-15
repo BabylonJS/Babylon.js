@@ -466,10 +466,6 @@ export class InternalTexture {
         target._hardwareTexture = this._hardwareTexture;
         target._isRGBD = this._isRGBD;
 
-        // TODO WEBGPU debug code, remove this
-        (target as any)._released = false;
-        (target as any)._swapped = true;
-
         if (this._framebuffer) {
             target._framebuffer = this._framebuffer;
         }
