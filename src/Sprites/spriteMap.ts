@@ -13,6 +13,7 @@ import { Effect } from "../Materials/effect";
 import "../Meshes/Builders/planeBuilder";
 import "../Shaders/spriteMap.fragment";
 import "../Shaders/spriteMap.vertex";
+import { ThinEngine } from '../Engines/thinEngine';
 
 /**
  * Defines the basic options interface of a SpriteMap
@@ -226,7 +227,7 @@ export class SpriteMap implements ISpriteMap {
         let shaderString: string = Effect.ShadersStore["spriteMapPixelShader"];
 
         let layerSampleString: string;
-        if (this._scene.getEngine().webGLVersion === 1) {
+        if (!ThinEngine.Features.supportSwitchCaseInShader) {
             layerSampleString = "";
             for (let i = 0; i < options.layerCount; i++) {
                 layerSampleString += `if (${i} == i) { frameID = texture2D(tileMaps[${i}], (tileID + 0.5) / stageSize, 0.).x; }`;

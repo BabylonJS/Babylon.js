@@ -311,7 +311,7 @@ export class Effect implements IDisposable {
             supportsUniformBuffers: this._engine.supportsUniformBuffers,
             shadersRepository: Effect.ShadersRepository,
             includesShadersStore: Effect.IncludesShadersStore,
-            version: (this._engine.webGLVersion * 100).toString(),
+            version: (this._engine.version * 100).toString(),
             platformName: this._engine.shaderPlatformName,
             processingContext: this._processingContext
         };

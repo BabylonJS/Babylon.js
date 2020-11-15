@@ -186,6 +186,13 @@ export class ThinEngine {
         supportCSM: false,
         basisNeedsPOT: false,
         support3DTextures: false,
+        supportMultipleRenderTargets: false,
+        needTypeSuffixInShaderConstants: false,
+        supportMSAA: false,
+        supportSSAO2: false,
+        supportExtendedTextureFormats: false,
+        supportPrePassRenderer: false,
+        supportSwitchCaseInShader: false,
         _collectUbosUpdatedInFrame: false,
     };
 
@@ -193,13 +200,20 @@ export class ThinEngine {
      * Returns a string describing the current engine
      */
     public get description(): string {
-        let description = "WebGL" + this.webGLVersion;
+        let description = this.name + this.webGLVersion;
 
         if (this._caps.parallelShaderCompile) {
             description += " - Parallel shader compilation";
         }
 
         return description;
+    }
+
+    /**
+     * Returns the name of the engine
+     */
+    public get name(): string {
+        return "WebGL";
     }
 
     // Updatable statics so stick with vars here
@@ -731,14 +745,6 @@ export class ThinEngine {
             }
         }
 
-        ThinEngine.Features.supportRenderAndCopyToLodForFloatTextures = this._webGLVersion !== 1;
-        ThinEngine.Features.supportDepthStencilTexture = this._webGLVersion !== 1;
-        ThinEngine.Features.supportShadowSamplers = this._webGLVersion !== 1;
-        ThinEngine.Features.allowTexturePrefiltering = this._webGLVersion !== 1;
-        ThinEngine.Features.supportCSM = this._webGLVersion !== 1;
-        ThinEngine.Features.basisNeedsPOT = this._webGLVersion === 1;
-        ThinEngine.Features.support3DTextures = this._webGLVersion !== 1;
-
         // Ensures a consistent color space unpacking of textures cross browser.
         this._gl.pixelStorei(this._gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, this._gl.NONE);
 
@@ -755,6 +761,21 @@ export class ThinEngine {
 
         this._isStencilEnable = options.stencil ? true : false;
         this._initGLContext();
+
+        ThinEngine.Features.supportRenderAndCopyToLodForFloatTextures = this._webGLVersion !== 1;
+        ThinEngine.Features.supportDepthStencilTexture = this._webGLVersion !== 1;
+        ThinEngine.Features.supportShadowSamplers = this._webGLVersion !== 1;
+        ThinEngine.Features.allowTexturePrefiltering = this._webGLVersion !== 1;
+        ThinEngine.Features.supportCSM = this._webGLVersion !== 1;
+        ThinEngine.Features.basisNeedsPOT = this._webGLVersion === 1;
+        ThinEngine.Features.support3DTextures = this._webGLVersion !== 1;
+        ThinEngine.Features.supportMultipleRenderTargets = this._webGLVersion !== 1 || this.getCaps().drawBuffersExtension;
+        ThinEngine.Features.needTypeSuffixInShaderConstants = this._webGLVersion !== 1;
+        ThinEngine.Features.supportMSAA = this._webGLVersion !== 1;
+        ThinEngine.Features.supportSSAO2 = this._webGLVersion !== 1;
+        ThinEngine.Features.supportExtendedTextureFormats = this._webGLVersion !== 1;
+        ThinEngine.Features.supportPrePassRenderer = this._webGLVersion !== 1;
+        ThinEngine.Features.supportSwitchCaseInShader = this._webGLVersion !== 1;
 
         // Prepare buffer pointers
         for (var i = 0; i < this._caps.maxVertexAttribs; i++) {
@@ -1069,8 +1090,16 @@ export class ThinEngine {
 
     /**
      * Gets version of the current webGL context
+     * Keep it for back compat - use version instead
      */
     public get webGLVersion(): number {
+        return this._webGLVersion;
+    }
+
+    /**
+     * Returns the version of the engine
+     */
+    public get version(): number {
         return this._webGLVersion;
     }
 
