@@ -172,31 +172,6 @@ export class ThinEngine {
     }
 
     /**
-     * Returns the features of the engine
-     */
-    public static Features: EngineFeatures = {
-        forceBitmapOverHTMLImageElement: false,
-        supportRenderAndCopyToLodForFloatTextures: false,
-        framebuffersHaveYTopToBottom: false,
-        supportDepthStencilTexture: false,
-        supportShadowSamplers: false,
-        uniformBufferHardCheckMatrix: false,
-        allowTexturePrefiltering: false,
-        trackUbosInFrame: false,
-        supportCSM: false,
-        basisNeedsPOT: false,
-        support3DTextures: false,
-        supportMultipleRenderTargets: false,
-        needTypeSuffixInShaderConstants: false,
-        supportMSAA: false,
-        supportSSAO2: false,
-        supportExtendedTextureFormats: false,
-        supportPrePassRenderer: false,
-        supportSwitchCaseInShader: false,
-        _collectUbosUpdatedInFrame: false,
-    };
-
-    /**
      * Returns a string describing the current engine
      */
     public get description(): string {
@@ -214,6 +189,13 @@ export class ThinEngine {
      */
     public get name(): string {
         return "WebGL";
+    }
+
+    /**
+     * Returns the version of the engine
+     */
+    public get version(): number {
+        return this._webGLVersion;
     }
 
     // Updatable statics so stick with vars here
@@ -330,6 +312,7 @@ export class ThinEngine {
     protected _hardwareScalingLevel: number;
     /** @hidden */
     public _caps: EngineCapabilities;
+    public _features: EngineFeatures;
     protected _isStencilEnable: boolean;
 
     private _glVersion: string;
@@ -761,21 +744,7 @@ export class ThinEngine {
 
         this._isStencilEnable = options.stencil ? true : false;
         this._initGLContext();
-
-        ThinEngine.Features.supportRenderAndCopyToLodForFloatTextures = this._webGLVersion !== 1;
-        ThinEngine.Features.supportDepthStencilTexture = this._webGLVersion !== 1;
-        ThinEngine.Features.supportShadowSamplers = this._webGLVersion !== 1;
-        ThinEngine.Features.allowTexturePrefiltering = this._webGLVersion !== 1;
-        ThinEngine.Features.supportCSM = this._webGLVersion !== 1;
-        ThinEngine.Features.basisNeedsPOT = this._webGLVersion === 1;
-        ThinEngine.Features.support3DTextures = this._webGLVersion !== 1;
-        ThinEngine.Features.supportMultipleRenderTargets = this._webGLVersion !== 1 || this.getCaps().drawBuffersExtension;
-        ThinEngine.Features.needTypeSuffixInShaderConstants = this._webGLVersion !== 1;
-        ThinEngine.Features.supportMSAA = this._webGLVersion !== 1;
-        ThinEngine.Features.supportSSAO2 = this._webGLVersion !== 1;
-        ThinEngine.Features.supportExtendedTextureFormats = this._webGLVersion !== 1;
-        ThinEngine.Features.supportPrePassRenderer = this._webGLVersion !== 1;
-        ThinEngine.Features.supportSwitchCaseInShader = this._webGLVersion !== 1;
+        this._initFeatures();
 
         // Prepare buffer pointers
         for (var i = 0; i < this._caps.maxVertexAttribs; i++) {
@@ -1088,18 +1057,35 @@ export class ThinEngine {
         }
     }
 
+    protected _initFeatures(): void {
+        this._features = {
+            forceBitmapOverHTMLImageElement: false,
+            supportRenderAndCopyToLodForFloatTextures: this._webGLVersion !== 1,
+            framebuffersHaveYTopToBottom: false,
+            supportDepthStencilTexture: this._webGLVersion !== 1,
+            supportShadowSamplers: this._webGLVersion !== 1,
+            uniformBufferHardCheckMatrix: false,
+            allowTexturePrefiltering: this._webGLVersion !== 1,
+            trackUbosInFrame: false,
+            supportCSM: this._webGLVersion !== 1,
+            basisNeedsPOT: this._webGLVersion === 1,
+            support3DTextures: this._webGLVersion !== 1,
+            supportMultipleRenderTargets: this._webGLVersion !== 1 || this.getCaps().drawBuffersExtension,
+            needTypeSuffixInShaderConstants: this._webGLVersion !== 1,
+            supportMSAA: this._webGLVersion !== 1,
+            supportSSAO2: this._webGLVersion !== 1,
+            supportExtendedTextureFormats: this._webGLVersion !== 1,
+            supportPrePassRenderer: this._webGLVersion !== 1,
+            supportSwitchCaseInShader: this._webGLVersion !== 1,
+            _collectUbosUpdatedInFrame: false,
+        };
+    }
+
     /**
      * Gets version of the current webGL context
      * Keep it for back compat - use version instead
      */
     public get webGLVersion(): number {
-        return this._webGLVersion;
-    }
-
-    /**
-     * Returns the version of the engine
-     */
-    public get version(): number {
         return this._webGLVersion;
     }
 

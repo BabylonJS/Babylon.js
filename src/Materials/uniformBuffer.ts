@@ -7,7 +7,6 @@ import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { Color3 } from '../Maths/math.color';
 import { IMatrixLike } from '../Maths/math.like';
-import { ThinEngine } from '../Engines/thinEngine';
 
 import "../Engines/Extensions/engine.uniformBuffer";
 
@@ -212,7 +211,7 @@ export class UniformBuffer {
         this._uniformLocationPointer = 0;
         this._needSync = false;
 
-        if (ThinEngine.Features.trackUbosInFrame) {
+        if (this._engine._features.trackUbosInFrame) {
             this._buffers = [];
             this._bufferIndex = -1;
             this._createBufferOnWrite = false;
@@ -522,7 +521,7 @@ export class UniformBuffer {
             this._buffer = this._engine.createUniformBuffer(this._bufferData);
         }
 
-        if (ThinEngine.Features.trackUbosInFrame) {
+        if (this._engine._features.trackUbosInFrame) {
             this._buffers.push(this._buffer);
             this._bufferIndex = this._buffers.length - 1;
             this._createBufferOnWrite = false;
@@ -555,13 +554,13 @@ export class UniformBuffer {
         }
 
         if (!this._dynamic && !this._needSync) {
-            this._createBufferOnWrite = ThinEngine.Features.trackUbosInFrame;
+            this._createBufferOnWrite = this._engine._features.trackUbosInFrame;
             return;
         }
 
         this._engine.updateUniformBuffer(this._buffer, this._bufferData);
 
-        if (ThinEngine.Features._collectUbosUpdatedInFrame) {
+        if (this._engine._features._collectUbosUpdatedInFrame) {
             if (!UniformBuffer._updatedUbosInFrame[this._name]) {
                 UniformBuffer._updatedUbosInFrame[this._name] = 0;
             }
@@ -569,7 +568,7 @@ export class UniformBuffer {
         }
 
         this._needSync = false;
-        this._createBufferOnWrite = ThinEngine.Features.trackUbosInFrame;
+        this._createBufferOnWrite = this._engine._features.trackUbosInFrame;
     }
 
     private _createNewBuffer() {
@@ -587,7 +586,7 @@ export class UniformBuffer {
     }
 
     private _checkNewFrame(): void {
-        if (ThinEngine.Features.trackUbosInFrame && this._currentFrameId !== this._engine.frameId) {
+        if (this._engine._features.trackUbosInFrame && this._currentFrameId !== this._engine.frameId) {
             this._currentFrameId = this._engine.frameId;
             this._createBufferOnWrite = false;
             if (this._buffers && this._buffers.length > 0) {
@@ -632,7 +631,7 @@ export class UniformBuffer {
             var changed = false;
 
             for (var i = 0; i < size; i++) {
-                if ((size === 16 && !ThinEngine.Features.uniformBufferHardCheckMatrix) || this._bufferData[location + i] !== data[i]) {
+                if ((size === 16 && !this._engine._features.uniformBufferHardCheckMatrix) || this._bufferData[location + i] !== data[i]) {
                     changed = true;
                     if (this._createBufferOnWrite) {
                         this._createNewBuffer();
@@ -969,7 +968,7 @@ export class UniformBuffer {
             uniformBuffers.pop();
         }
 
-        if (ThinEngine.Features.trackUbosInFrame && this._buffers) {
+        if (this._engine._features.trackUbosInFrame && this._buffers) {
             for (let i = 0; i < this._buffers.length; ++i) {
                 const buffer = this._buffers[i];
                 this._engine._releaseBuffer(buffer!);

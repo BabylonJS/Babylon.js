@@ -20,7 +20,6 @@ import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSc
 
 import "../../../Shaders/ssao2.fragment";
 import "../../../Shaders/ssaoCombine.fragment";
-import { ThinEngine } from '../../../Engines/thinEngine';
 
 /**
  * Render pipeline to produce ssao effect
@@ -163,7 +162,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         if (!engine) {
             return false;
         }
-        return ThinEngine.Features.supportSSAO2;
+        return engine._features.supportSSAO2;
     }
 
     private _scene: Scene;

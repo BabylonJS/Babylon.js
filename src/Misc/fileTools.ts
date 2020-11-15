@@ -8,8 +8,9 @@ import { FilesInputStore } from './filesInputStore';
 import { RetryStrategy } from './retryStrategy';
 import { BaseError } from './baseError';
 import { StringTools } from './stringTools';
-import { ThinEngine } from '../Engines/thinEngine';
 import { ShaderProcessor } from '../Engines/Processors/shaderProcessor';
+import { ThinEngine } from '../Engines/thinEngine';
+import { EngineStore } from '../Engines/engineStore';
 
 /** @ignore */
 export class LoadFileError extends BaseError {
@@ -155,7 +156,9 @@ export class FileTools {
             url = FileTools.PreprocessUrl(input);
         }
 
-        if (typeof Image === "undefined" || ThinEngine.Features.forceBitmapOverHTMLImageElement) {
+        const engine = EngineStore.LastCreatedEngine;
+
+        if (typeof Image === "undefined" || (engine?._features.forceBitmapOverHTMLImageElement ?? false)) {
             FileTools.LoadFile(url, (data) => {
                 createImageBitmap(new Blob([data], { type: mimeType }), { premultiplyAlpha: "none" }).then((imgBmp) => {
                     onLoad(imgBmp);
