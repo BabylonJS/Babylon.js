@@ -391,6 +391,8 @@ export class WebGPUEngine extends Engine {
                 this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
                 this._renderTargetEncoder = this._device.createCommandEncoder(this._renderTargetEncoderDescriptor);
 
+                this._textureHelper.setCommandEncoder(this._uploadEncoder);
+
                 this._emptyVertexBuffer = new VertexBuffer(this, [0], "", false, false, 1, false, 0, 1);
 
                 this._initializeLimits();
@@ -564,6 +566,27 @@ export class WebGPUEngine extends Engine {
         if (this._mainRenderPassWrapper.renderPass !== null) {
             this._endMainRenderPass();
         }
+    }
+
+    /**
+     * Force a specific size of the canvas
+     * @param width defines the new canvas' width
+     * @param height defines the new canvas' height
+     * @returns true if the size was changed
+     */
+    public setSize(width: number, height: number): boolean {
+        if (!super.setSize(width, height)) {
+            return false;
+        }
+
+        if (dbgVerboseLogsForFirstFrames) {
+            if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
+                console.log("frame #" + (this as any)._count + " - setSize called -", width, height);
+            }
+        }
+
+        this._initializeMainAttachments();
+        return true;
     }
 
     /**
@@ -1091,184 +1114,11 @@ export class WebGPUEngine extends Engine {
         return Constants.TEXTUREFORMAT_RGBA;
     }
 
-    private _getWebGPUTextureFormat(type: number, format: number): GPUTextureFormat {
-        switch (format) {
-            case Constants.TEXTUREFORMAT_DEPTH24_STENCIL8:
-                return WebGPUConstants.TextureFormat.Depth24PlusStencil8;
-            case Constants.TEXTUREFORMAT_DEPTH32_FLOAT:
-                return WebGPUConstants.TextureFormat.Depth32Float;
-
-            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM:
-                return WebGPUConstants.TextureFormat.BC7RGBAUnorm;
-            case Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT:
-                return WebGPUConstants.TextureFormat.BC6HRGBUFloat;
-            case Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT:
-                return WebGPUConstants.TextureFormat.BC6HRGBFloat;
-            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5:
-                return WebGPUConstants.TextureFormat.BC3RGBAUnorm;
-            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3:
-                return WebGPUConstants.TextureFormat.BC2RGBAUnorm;
-            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1:
-                return WebGPUConstants.TextureFormat.BC1RGBAUNorm;
-        }
-
-        switch (type) {
-            case Constants.TEXTURETYPE_BYTE:
-                switch (format) {
-                    case Constants.TEXTUREFORMAT_RED:
-                        return WebGPUConstants.TextureFormat.R8Snorm;
-                    case Constants.TEXTUREFORMAT_RG:
-                        return WebGPUConstants.TextureFormat.RG8Snorm;
-                    case Constants.TEXTUREFORMAT_RGB:
-                        throw "RGB format not supported in WebGPU";
-                    case Constants.TEXTUREFORMAT_RED_INTEGER:
-                        return WebGPUConstants.TextureFormat.R8Sint;
-                    case Constants.TEXTUREFORMAT_RG_INTEGER:
-                        return WebGPUConstants.TextureFormat.RG8Sint;
-                    case Constants.TEXTUREFORMAT_RGB_INTEGER:
-                        throw "RGB_INTEGER format not supported in WebGPU";
-                    case Constants.TEXTUREFORMAT_RGBA_INTEGER:
-                        return WebGPUConstants.TextureFormat.RGBA8Sint;
-                    default:
-                        return WebGPUConstants.TextureFormat.RGBA8Snorm;
-                }
-            case Constants.TEXTURETYPE_UNSIGNED_BYTE:
-                switch (format) {
-                    case Constants.TEXTUREFORMAT_RED:
-                        return WebGPUConstants.TextureFormat.R8Unorm;
-                    case Constants.TEXTUREFORMAT_RG:
-                        return WebGPUConstants.TextureFormat.RG8Unorm;
-                    case Constants.TEXTUREFORMAT_RGB:
-                        throw "TEXTUREFORMAT_RGB format not supported in WebGPU";
-                    case Constants.TEXTUREFORMAT_RGBA:
-                        return WebGPUConstants.TextureFormat.RGBA8Unorm;
-                    case Constants.TEXTUREFORMAT_BGRA:
-                        return WebGPUConstants.TextureFormat.BGRA8Unorm;
-                    case Constants.TEXTUREFORMAT_RED_INTEGER:
-                        return WebGPUConstants.TextureFormat.R8Uint;
-                    case Constants.TEXTUREFORMAT_RG_INTEGER:
-                        return WebGPUConstants.TextureFormat.RG8Uint;
-                    case Constants.TEXTUREFORMAT_RGB_INTEGER:
-                        throw "RGB_INTEGER format not supported in WebGPU";
-                    case Constants.TEXTUREFORMAT_RGBA_INTEGER:
-                        return WebGPUConstants.TextureFormat.RGBA8Uint;
-                    case Constants.TEXTUREFORMAT_ALPHA:
-                        throw "TEXTUREFORMAT_ALPHA format not supported in WebGPU";
-                    case Constants.TEXTUREFORMAT_LUMINANCE:
-                        throw "TEXTUREFORMAT_LUMINANCE format not supported in WebGPU";
-                    case Constants.TEXTUREFORMAT_LUMINANCE_ALPHA:
-                        throw "TEXTUREFORMAT_LUMINANCE_ALPHA format not supported in WebGPU";
-                    default:
-                        return WebGPUConstants.TextureFormat.RGBA8Unorm;
-                }
-            case Constants.TEXTURETYPE_SHORT:
-                switch (format) {
-                    case Constants.TEXTUREFORMAT_RED_INTEGER:
-                        return WebGPUConstants.TextureFormat.R16Sint;
-                    case Constants.TEXTUREFORMAT_RG_INTEGER:
-                        return WebGPUConstants.TextureFormat.RG16Sint;
-                    case Constants.TEXTUREFORMAT_RGB_INTEGER:
-                        throw "TEXTUREFORMAT_RGB_INTEGER format not supported in WebGPU";
-                    case Constants.TEXTUREFORMAT_RGBA_INTEGER:
-                        return WebGPUConstants.TextureFormat.RGBA16Sint;
-                    default:
-                        return WebGPUConstants.TextureFormat.RGBA16Sint;
-                }
-            case Constants.TEXTURETYPE_UNSIGNED_SHORT:
-                switch (format) {
-                    case Constants.TEXTUREFORMAT_RED_INTEGER:
-                        return WebGPUConstants.TextureFormat.R16Uint;
-                    case Constants.TEXTUREFORMAT_RG_INTEGER:
-                        return WebGPUConstants.TextureFormat.RG16Uint;
-                    case Constants.TEXTUREFORMAT_RGB_INTEGER:
-                        throw "TEXTUREFORMAT_RGB_INTEGER format not supported in WebGPU";
-                    case Constants.TEXTUREFORMAT_RGBA_INTEGER:
-                        return WebGPUConstants.TextureFormat.RGBA16Uint;
-                    default:
-                        return WebGPUConstants.TextureFormat.RGBA16Uint;
-                }
-            case Constants.TEXTURETYPE_INT:
-                switch (format) {
-                    case Constants.TEXTUREFORMAT_RED_INTEGER:
-                        return WebGPUConstants.TextureFormat.R32Sint;
-                    case Constants.TEXTUREFORMAT_RG_INTEGER:
-                        return WebGPUConstants.TextureFormat.RG32Sint;
-                    case Constants.TEXTUREFORMAT_RGB_INTEGER:
-                        throw "TEXTUREFORMAT_RGB_INTEGER format not supported in WebGPU";
-                    case Constants.TEXTUREFORMAT_RGBA_INTEGER:
-                        return WebGPUConstants.TextureFormat.RGBA32Sint;
-                    default:
-                        return WebGPUConstants.TextureFormat.RGBA32Sint;
-                }
-            case Constants.TEXTURETYPE_UNSIGNED_INTEGER: // Refers to UNSIGNED_INT
-                switch (format) {
-                    case Constants.TEXTUREFORMAT_RED_INTEGER:
-                        return WebGPUConstants.TextureFormat.R32Uint;
-                    case Constants.TEXTUREFORMAT_RG_INTEGER:
-                        return WebGPUConstants.TextureFormat.RG32Uint;
-                    case Constants.TEXTUREFORMAT_RGB_INTEGER:
-                        throw "TEXTUREFORMAT_RGB_INTEGER format not supported in WebGPU";
-                    case Constants.TEXTUREFORMAT_RGBA_INTEGER:
-                        return WebGPUConstants.TextureFormat.RGBA32Uint;
-                    default:
-                        return WebGPUConstants.TextureFormat.RGBA32Uint;
-                }
-            case Constants.TEXTURETYPE_FLOAT:
-                switch (format) {
-                    case Constants.TEXTUREFORMAT_RED:
-                        return WebGPUConstants.TextureFormat.R32Float; // By default. Other possibility is R16Float.
-                    case Constants.TEXTUREFORMAT_RG:
-                        return WebGPUConstants.TextureFormat.RG32Float; // By default. Other possibility is RG16Float.
-                    case Constants.TEXTUREFORMAT_RGB:
-                        throw "TEXTUREFORMAT_RGB format not supported in WebGPU";
-                    case Constants.TEXTUREFORMAT_RGBA:
-                        return WebGPUConstants.TextureFormat.RGBA32Float; // By default. Other possibility is RGBA16Float.
-                    default:
-                        return WebGPUConstants.TextureFormat.RGBA32Float;
-                }
-            case Constants.TEXTURETYPE_HALF_FLOAT:
-                switch (format) {
-                    case Constants.TEXTUREFORMAT_RED:
-                        return WebGPUConstants.TextureFormat.R16Float;
-                    case Constants.TEXTUREFORMAT_RG:
-                        return WebGPUConstants.TextureFormat.RG16Float;
-                    case Constants.TEXTUREFORMAT_RGB:
-                        throw "TEXTUREFORMAT_RGB format not supported in WebGPU";
-                    case Constants.TEXTUREFORMAT_RGBA:
-                        return WebGPUConstants.TextureFormat.RGBA16Float;
-                    default:
-                        return WebGPUConstants.TextureFormat.RGBA16Float;
-                }
-            case Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5:
-                throw "TEXTURETYPE_UNSIGNED_SHORT_5_6_5 format not supported in WebGPU";
-            case Constants.TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV:
-                throw "TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV format not supported in WebGPU";
-            case Constants.TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV:
-                throw "TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV format not supported in WebGPU";
-            case Constants.TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4:
-                throw "TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4 format not supported in WebGPU";
-            case Constants.TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1:
-                throw "TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1 format not supported in WebGPU";
-            case Constants.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV:
-                switch (format) {
-                    case Constants.TEXTUREFORMAT_RGBA:
-                        return WebGPUConstants.TextureFormat.RGB10A2Unorm;
-                    case Constants.TEXTUREFORMAT_RGBA_INTEGER:
-                        throw "TEXTUREFORMAT_RGBA_INTEGER format not supported in WebGPU when type is TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV";
-                    default:
-                        return WebGPUConstants.TextureFormat.RGB10A2Unorm;
-                }
-        }
-
-        return WebGPUConstants.TextureFormat.RGBA8Unorm;
-    }
-
     public createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
         buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
         forcedExtension: Nullable<string> = null, mimeType?: string): InternalTexture {
 
-        // TODO WEBGPU. this._options.textureSize
         return this._createTextureBase(
             url, noMipmap, invertY, scene, samplingMode, onLoad, onError,
             (texture: InternalTexture, extension: string, scene: Nullable<ISceneLike>, img: HTMLImageElement | ImageBitmap | { width: number, height: number }, invertY: boolean, noMipmap: boolean, isCompressed: boolean,
@@ -1284,7 +1134,7 @@ export class WebGPUEngine extends Engine {
                     processFunction(texture.width, texture.height, imageBitmap, extension, texture, () => {});
 
                     if (!texture._hardwareTexture?.underlyingResource) { // the texture could have been created before reaching this point so don't recreate it if already existing
-                        const gpuTextureWrapper = this._createGPUTextureForInternalTexture(texture, imageBitmap.width, imageBitmap.height);
+                        const gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, imageBitmap.width, imageBitmap.height);
 
                         if (this._textureHelper.isImageBitmap(imageBitmap)) {
                             this._textureHelper.updateTexture(imageBitmap, gpuTextureWrapper.underlyingResource!, imageBitmap.width, imageBitmap.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0, this._uploadEncoder);
@@ -1331,7 +1181,7 @@ export class WebGPUEngine extends Engine {
                 this._setCubeMapTextureParams(texture, !noMipmap);
                 texture.format = format ?? -1;
 
-                const gpuTextureWrapper = this._createGPUTextureForInternalTexture(texture, width, height);
+                const gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, width, height);
 
                 this._textureHelper.updateCubeTextures(imageBitmaps, gpuTextureWrapper.underlyingResource!, width, height, gpuTextureWrapper.format, false, false, 0, 0, this._uploadEncoder);
 
@@ -1370,7 +1220,7 @@ export class WebGPUEngine extends Engine {
             texture._bufferView = data;
         }
 
-        this._createGPUTextureForInternalTexture(texture, width, height);
+        this._textureHelper.createGPUTextureForInternalTexture(texture, width, height);
 
         this.updateRawTexture(texture, data, format, invertY, compression, type);
 
@@ -1395,7 +1245,7 @@ export class WebGPUEngine extends Engine {
             texture._bufferViewArray = data;
         }
 
-        this._createGPUTextureForInternalTexture(texture);
+        this._textureHelper.createGPUTextureForInternalTexture(texture);
 
         if (data) {
             this.updateRawCubeTexture(texture, data, format, type, invertY, compression);
@@ -1511,7 +1361,7 @@ export class WebGPUEngine extends Engine {
             texture._bufferView = data;
         }
 
-        this._createGPUTextureForInternalTexture(texture, width, height);
+        this._textureHelper.createGPUTextureForInternalTexture(texture, width, height);
 
         this.updateRawTexture3D(texture, data, format, invertY, compression, textureType);
 
@@ -1525,7 +1375,7 @@ export class WebGPUEngine extends Engine {
             let gpuTexture = texture._hardwareTexture?.underlyingResource;
 
             if (!gpuTexture) {
-                this._createGPUTextureForInternalTexture(texture);
+                this._textureHelper.createGPUTextureForInternalTexture(texture);
             }
 
             this._generateMipmaps(texture, texture.source === InternalTextureSource.RenderTarget ? this._renderTargetEncoder : undefined);
@@ -1565,7 +1415,7 @@ export class WebGPUEngine extends Engine {
 
         texture._hardwareTexture.release(); // don't defer the releasing! Else we will release at the end of this frame the gpu texture we are about to create in the next line...
 
-        this._createGPUTextureForInternalTexture(texture, width, height, depth);
+        this._textureHelper.createGPUTextureForInternalTexture(texture, width, height, depth);
     }
 
     private _setInternalTexture(name: string, internalTexture: Nullable<InternalTexture>, baseName?: string, textureIndex = 0): void {
@@ -1716,12 +1566,6 @@ export class WebGPUEngine extends Engine {
         }
     }
 
-    public bindSamplers(effect: Effect): void { }
-
-    public _bindTextureDirectly(target: number, texture: InternalTexture, forTextureDataUpdate = false, force = false): boolean {
-        return false;
-    }
-
     /** @hidden */
     public _bindTexture(channel: number, texture: InternalTexture, name: string): void {
         if (channel === undefined) {
@@ -1745,65 +1589,6 @@ export class WebGPUEngine extends Engine {
         this._setInternalTexture(name, texture);
     }
 
-    private _createGPUTextureForInternalTexture(texture: InternalTexture, width?: number, height?: number, depth?: number): WebGPUHardwareTexture {
-        if (!texture._hardwareTexture) {
-            texture._hardwareTexture = this._createHardwareTexture();
-        }
-
-        if (width === undefined) {
-            width = texture.width;
-        }
-        if (height === undefined) {
-            height = texture.height;
-        }
-        if (depth === undefined) {
-            depth = texture.depth;
-        }
-
-        const gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
-
-        gpuTextureWrapper.format = this._getWebGPUTextureFormat(texture.type, texture.format);
-
-        const textureUsages =
-            texture._source === InternalTextureSource.RenderTarget ? WebGPUConstants.TextureUsage.Sampled | WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.OutputAttachment :
-            texture._source === InternalTextureSource.Depth ? WebGPUConstants.TextureUsage.Sampled | WebGPUConstants.TextureUsage.OutputAttachment : -1;
-
-        const hasMipMaps = texture.generateMipMaps;
-        const layerCount = depth || 1;
-
-        if (texture.isCube) {
-            // TODO WEBGPU handle depth for cube textures?
-            const gpuTexture = this._textureHelper.createCubeTexture({ width, height }, texture.generateMipMaps, texture.generateMipMaps, texture.invertY, false, gpuTextureWrapper.format, texture.samples || 1, this._uploadEncoder, textureUsages);
-
-            gpuTextureWrapper.set(gpuTexture);
-            gpuTextureWrapper.createView({
-                dimension: WebGPUConstants.TextureViewDimension.Cube,
-                mipLevelCount: hasMipMaps ? WebGPUTextureHelper.computeNumMipmapLevels(width!, height!) : 1,
-                baseArrayLayer: 0,
-                baseMipLevel: 0,
-                aspect: WebGPUConstants.TextureAspect.All
-            });
-        } else {
-            const gpuTexture = this._textureHelper.createTexture({ width, height, layers: layerCount }, texture.generateMipMaps, texture.generateMipMaps, texture.invertY, false, texture.is3D, gpuTextureWrapper.format, texture.samples || 1, this._uploadEncoder, textureUsages);
-
-            gpuTextureWrapper.set(gpuTexture);
-            gpuTextureWrapper.createView({
-                dimension: texture.is2DArray ? WebGPUConstants.TextureViewDimension.E2dArray : texture.is3D ? WebGPUConstants.TextureDimension.E3d : WebGPUConstants.TextureViewDimension.E2d,
-                mipLevelCount: hasMipMaps ? WebGPUTextureHelper.computeNumMipmapLevels(width!, height!) : 1,
-                baseArrayLayer: 0,
-                baseMipLevel: 0,
-                arrayLayerCount: layerCount,
-                aspect: WebGPUConstants.TextureAspect.All
-            });
-        }
-
-        texture.width = texture.baseWidth = width;
-        texture.height = texture.baseHeight = height;
-        texture.depth = texture.baseDepth = depth;
-
-        return gpuTextureWrapper;
-    }
-
     private _generateMipmaps(texture: InternalTexture, commandEncoder?: GPUCommandEncoder) {
         const gpuTexture = texture._hardwareTexture?.underlyingResource;
 
@@ -1811,6 +1596,8 @@ export class WebGPUEngine extends Engine {
             return;
         }
 
+        // try as much as possible to use the command encoder corresponding to the current pass.
+        // If not possible (because the pass is started - generateMipmaps itself creates a pass and it's not allowed to have a pass inside a pass), use _uploadEncoder
         commandEncoder = commandEncoder ?? (this._currentRenderTarget && !this._currentRenderPass ? this._renderTargetEncoder : !this._currentRenderPass ? this._renderEncoder : this._uploadEncoder);
 
         const format = (texture._hardwareTexture as WebGPUHardwareTexture).format;
@@ -1839,7 +1626,7 @@ export class WebGPUEngine extends Engine {
         let gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
 
         if (!texture._hardwareTexture?.underlyingResource) {
-            gpuTextureWrapper = this._createGPUTextureForInternalTexture(texture, width, height);
+            gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, width, height);
         }
 
         if (dbgSanityChecks && (texture as any)._released) {
@@ -1860,7 +1647,7 @@ export class WebGPUEngine extends Engine {
         let gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
 
         if (!texture._hardwareTexture?.underlyingResource) {
-            gpuTextureWrapper = this._createGPUTextureForInternalTexture(texture);
+            gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture);
         }
 
         const data = new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength);
@@ -1880,7 +1667,7 @@ export class WebGPUEngine extends Engine {
         let gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
 
         if (!texture._hardwareTexture?.underlyingResource) {
-            gpuTextureWrapper = this._createGPUTextureForInternalTexture(texture);
+            gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture);
         }
 
         createImageBitmap(video).then((bitmap) => {
@@ -1903,7 +1690,7 @@ export class WebGPUEngine extends Engine {
 
         if (!texture._hardwareTexture?.underlyingResource) {
             texture.format = internalFormat;
-            gpuTextureWrapper = this._createGPUTextureForInternalTexture(texture, width, height);
+            gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, width, height);
         }
 
         const data = new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength);
@@ -1924,7 +1711,7 @@ export class WebGPUEngine extends Engine {
         let gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
 
         if (!texture._hardwareTexture?.underlyingResource) {
-            gpuTextureWrapper = this._createGPUTextureForInternalTexture(texture, width, height);
+            gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, width, height);
         }
 
         const data = new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength);
@@ -1942,7 +1729,7 @@ export class WebGPUEngine extends Engine {
         let gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
 
         if (!texture._hardwareTexture?.underlyingResource) {
-            gpuTextureWrapper = this._createGPUTextureForInternalTexture(texture);
+            gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture);
         }
 
         const bitmap = image as ImageBitmap; // in WebGPU we will always get an ImageBitmap, not an HTMLImageElement
@@ -2135,7 +1922,7 @@ export class WebGPUEngine extends Engine {
             texture.generateMipMaps = true;
         }
 
-        this._createGPUTextureForInternalTexture(texture);
+        this._textureHelper.createGPUTextureForInternalTexture(texture);
 
         if (options !== undefined && typeof options === "object" && options.createMipMaps && !fullOptions.generateMipMaps) {
             texture.generateMipMaps = false;
@@ -2193,7 +1980,7 @@ export class WebGPUEngine extends Engine {
             texture.generateMipMaps = true;
         }
 
-        this._createGPUTextureForInternalTexture(texture);
+        this._textureHelper.createGPUTextureForInternalTexture(texture);
 
         if (options && options.createMipMaps && !fullOptions.generateMipMaps) {
             texture.generateMipMaps = false;
@@ -2240,7 +2027,7 @@ export class WebGPUEngine extends Engine {
 
         this._setupDepthStencilTexture(internalTexture, size, internalOptions.generateStencil, internalOptions.bilinearFiltering, internalOptions.comparisonFunction, internalOptions.samples);
 
-        this._createGPUTextureForInternalTexture(internalTexture);
+        this._textureHelper.createGPUTextureForInternalTexture(internalTexture);
 
         return internalTexture;
     }
@@ -2263,7 +2050,7 @@ export class WebGPUEngine extends Engine {
 
         this._setupDepthStencilTexture(internalTexture, size, internalOptions.generateStencil, internalOptions.bilinearFiltering, internalOptions.comparisonFunction, internalOptions.samples);
 
-        this._createGPUTextureForInternalTexture(internalTexture);
+        this._textureHelper.createGPUTextureForInternalTexture(internalTexture);
 
         return internalTexture;
     }
@@ -2332,6 +2119,41 @@ export class WebGPUEngine extends Engine {
                     console.log("%c frame #" + (this as any)._count + " - begin", "background: #ffff00");
                     }
             }
+        }
+    }
+
+    public flushFramebuffer(): void {
+        // we need to end the current render pass (main or rtt) if any as we are not allowed to submit the command buffers when being in a pass
+        let currentPassType = 0; // 0 if no pass, 1 for rtt, 2 for main pass
+        if (this._currentRenderPass) {
+            if (this._currentRenderTarget) {
+                if (this._currentRenderPass) {
+                    currentPassType = 1;
+                    this._endRenderTargetRenderPass();
+                }
+            } else {
+                currentPassType = 2;
+                this._endMainRenderPass();
+            }
+        }
+
+        this._commandBuffers[0] = this._uploadEncoder.finish();
+        this._commandBuffers[1] = this._renderTargetEncoder.finish();
+        this._commandBuffers[2] = this._renderEncoder.finish();
+
+        this._device.defaultQueue.submit(this._commandBuffers);
+
+        this._uploadEncoder = this._device.createCommandEncoder(this._uploadEncoderDescriptor);
+        this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
+        this._renderTargetEncoder = this._device.createCommandEncoder(this._renderTargetEncoderDescriptor);
+
+        this._textureHelper.setCommandEncoder(this._uploadEncoder);
+
+        // restart the render pass
+        if (currentPassType === 1) {
+            this._startRenderTargetRenderPass(this._currentRenderTarget!, null, false, false);
+        } else if (currentPassType === 2) {
+            this._startMainRenderPass();
         }
     }
 
@@ -2472,7 +2294,7 @@ export class WebGPUEngine extends Engine {
         this._currentRenderTarget = texture;
 
         this._rttRenderPassWrapper.colorAttachmentGPUTextures[0] = hardwareTexture;
-        this._rttRenderPassWrapper.depthTextureFormat = this._currentRenderTarget._depthStencilTexture ? this._getWebGPUTextureFormat(-1, this._currentRenderTarget._depthStencilTexture.format) : undefined;
+        this._rttRenderPassWrapper.depthTextureFormat = this._currentRenderTarget._depthStencilTexture ? this._textureHelper.getWebGPUTextureFormat(-1, this._currentRenderTarget._depthStencilTexture.format) : undefined;
 
         this._setDepthTextureFormat(this._rttRenderPassWrapper);
         this._setColorFormat(this._rttRenderPassWrapper);
@@ -2550,39 +2372,6 @@ export class WebGPUEngine extends Engine {
         this._setColorFormat(this._mainRenderPassWrapper);
     }
 
-    public flushFramebuffer(): void {
-        // we need to end the current render pass (main or rtt) if any as we are not allowed to submit the command buffers when being in a pass
-        let currentPassType = 0; // 0 if no pass, 1 for rtt, 2 for main pass
-        if (this._currentRenderPass) {
-            if (this._currentRenderTarget) {
-                if (this._currentRenderPass) {
-                    currentPassType = 1;
-                    this._endRenderTargetRenderPass();
-                }
-            } else {
-                currentPassType = 2;
-                this._endMainRenderPass();
-            }
-        }
-
-        this._commandBuffers[0] = this._uploadEncoder.finish();
-        this._commandBuffers[1] = this._renderTargetEncoder.finish();
-        this._commandBuffers[2] = this._renderEncoder.finish();
-
-        this._device.defaultQueue.submit(this._commandBuffers);
-
-        this._uploadEncoder = this._device.createCommandEncoder(this._uploadEncoderDescriptor);
-        this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
-        this._renderTargetEncoder = this._device.createCommandEncoder(this._renderTargetEncoderDescriptor);
-
-        // restart the render pass
-        if (currentPassType === 1) {
-            this._startRenderTargetRenderPass(this._currentRenderTarget!, null, false, false);
-        } else if (currentPassType === 2) {
-            this._startMainRenderPass();
-        }
-    }
-
     public restoreDefaultFramebuffer(): void {
         if (this._currentRenderTarget) {
             this.unBindFramebuffer(this._currentRenderTarget);
@@ -2598,10 +2387,6 @@ export class WebGPUEngine extends Engine {
         }
 
         this.wipeCaches();
-    }
-
-    /** @hidden */
-    public _releaseFramebufferObjects(texture: InternalTexture): void {
     }
 
     //------------------------------------------------------------------------------
@@ -3493,30 +3278,6 @@ export class WebGPUEngine extends Engine {
         renderPass.draw(verticesCount, instancesCount || 1, verticesStart, 0);
     }
 
-    /**
-     * Force a specific size of the canvas
-     * @param width defines the new canvas' width
-     * @param height defines the new canvas' height
-     * @returns true if the size was changed
-     */
-    public setSize(width: number, height: number): boolean {
-        if (!super.setSize(width, height)) {
-            return false;
-        }
-
-        if (dbgVerboseLogsForFirstFrames) {
-            if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
-                console.log("frame #" + (this as any)._count + " - setSize called -", width, height);
-            }
-        }
-
-        this._initializeMainAttachments();
-        return true;
-    }
-
-    public applyStates() {
-    }
-
     //------------------------------------------------------------------------------
     //                              Render Bundle
     //------------------------------------------------------------------------------
@@ -3596,6 +3357,7 @@ export class WebGPUEngine extends Engine {
         return this._canvas;
     }
 
+    /** @hidden */
     public _debugPushGroup(groupName: string, targetObject?: number): void {
         if (!this._options.enableGPUDebugMarkers) {
             return;
@@ -3611,6 +3373,7 @@ export class WebGPUEngine extends Engine {
         }
     }
 
+    /** @hidden */
     public _debugPopGroup(targetObject?: number): void {
         if (!this._options.enableGPUDebugMarkers) {
             return;
@@ -3626,6 +3389,7 @@ export class WebGPUEngine extends Engine {
         }
     }
 
+    /** @hidden */
     public _debugInsertMarker(text: string, targetObject?: number): void {
         if (!this._options.enableGPUDebugMarkers) {
             return;
@@ -3672,6 +3436,19 @@ export class WebGPUEngine extends Engine {
     //------------------------------------------------------------------------------
     //                              Unused WebGPU
     //------------------------------------------------------------------------------
+    public bindSamplers(effect: Effect): void { }
+
+    public _bindTextureDirectly(target: number, texture: InternalTexture, forTextureDataUpdate = false, force = false): boolean {
+        return false;
+    }
+
+    /** @hidden */
+    public _releaseFramebufferObjects(texture: InternalTexture): void {
+    }
+
+    public applyStates() {
+    }
+
     public areAllEffectsReady(): boolean {
         // No parallel shader compilation.
         return true;
