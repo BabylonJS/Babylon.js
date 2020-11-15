@@ -8,21 +8,36 @@ import { WebGPUTextureHelper } from './webgpuTextureHelper';
 export class WebGPUHardwareTexture implements HardwareTextureWrapper {
 
     private _webgpuTexture: Nullable<GPUTexture>;
+    private _webgpuMSAATexture: Nullable<GPUTexture>;
 
     public get underlyingResource(): Nullable<GPUTexture> {
         return this._webgpuTexture;
     }
 
+    public get msaaTexture(): Nullable<GPUTexture> {
+        return this._webgpuMSAATexture;
+    }
+
+    public set msaaTexture(texture: Nullable<GPUTexture>) {
+        this._webgpuMSAATexture = texture;
+    }
+
     public view: Nullable<GPUTextureView>;
     public format: GPUTextureFormat = WebGPUConstants.TextureFormat.RGBA8Unorm;
+    public textureUsages = 0;
 
     constructor(existingTexture: Nullable<GPUTexture> = null) {
         this._webgpuTexture = existingTexture;
+        this._webgpuMSAATexture = null;
         this.view = null;
     }
 
     public set(hardwareTexture: GPUTexture): void {
         this._webgpuTexture = hardwareTexture;
+    }
+
+    public setMSAATexture(hardwareTexture: GPUTexture): void {
+        this._webgpuMSAATexture = hardwareTexture;
     }
 
     public setUsage(textureSource: number, generateMipMaps: boolean, isCube: boolean, width: number, height: number): void {
@@ -43,11 +58,13 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
 
     public reset(): void {
         this._webgpuTexture = null;
+        this._webgpuMSAATexture = null;
         this.view = null;
     }
 
     public release(): void {
         this._webgpuTexture?.destroy();
+        this._webgpuMSAATexture?.destroy();
         this.reset();
     }
 }

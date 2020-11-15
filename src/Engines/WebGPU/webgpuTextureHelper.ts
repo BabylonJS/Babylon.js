@@ -388,6 +388,10 @@ export class WebGPUTextureHelper {
         return !!(texture as HardwareTextureWrapper).release;
     }
 
+    private _isInternalTexture(texture: InternalTexture | GPUTexture): texture is InternalTexture {
+        return !!(texture as InternalTexture).dispose;
+    }
+
     public isImageBitmap(imageBitmap: ImageBitmap | { width: number, height: number }): imageBitmap is ImageBitmap {
         return (imageBitmap as ImageBitmap).close !== undefined;
     }
@@ -817,10 +821,6 @@ export class WebGPUTextureHelper {
         }
     }
 
-    //------------------------------------------------------------------------------
-    //                                  Update
-    //------------------------------------------------------------------------------
-
     public createGPUTextureForInternalTexture(texture: InternalTexture, width?: number, height?: number, depth?: number): WebGPUHardwareTexture {
         if (!texture._hardwareTexture) {
             texture._hardwareTexture = new WebGPUHardwareTexture();
@@ -840,7 +840,7 @@ export class WebGPUTextureHelper {
 
         gpuTextureWrapper.format = this.getWebGPUTextureFormat(texture.type, texture.format);
 
-        const textureUsages =
+        gpuTextureWrapper.textureUsages =
             texture._source === InternalTextureSource.RenderTarget ? WebGPUConstants.TextureUsage.Sampled | WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.OutputAttachment :
             texture._source === InternalTextureSource.Depth ? WebGPUConstants.TextureUsage.Sampled | WebGPUConstants.TextureUsage.OutputAttachment : -1;
 
@@ -848,8 +848,7 @@ export class WebGPUTextureHelper {
         const layerCount = depth || 1;
 
         if (texture.isCube) {
-            // TODO WEBGPU handle depth for cube textures?
-            const gpuTexture = this.createCubeTexture({ width, height }, texture.generateMipMaps, texture.generateMipMaps, texture.invertY, false, gpuTextureWrapper.format, texture.samples || 1, this._commandEncoderForCreation, textureUsages);
+            const gpuTexture = this.createCubeTexture({ width, height }, texture.generateMipMaps, texture.generateMipMaps, texture.invertY, false, gpuTextureWrapper.format, 1, this._commandEncoderForCreation, gpuTextureWrapper.textureUsages);
 
             gpuTextureWrapper.set(gpuTexture);
             gpuTextureWrapper.createView({
@@ -860,7 +859,7 @@ export class WebGPUTextureHelper {
                 aspect: WebGPUConstants.TextureAspect.All
             });
         } else {
-            const gpuTexture = this.createTexture({ width, height, layers: layerCount }, texture.generateMipMaps, texture.generateMipMaps, texture.invertY, false, texture.is3D, gpuTextureWrapper.format, texture.samples || 1, this._commandEncoderForCreation, textureUsages);
+            const gpuTexture = this.createTexture({ width, height, layers: layerCount }, texture.generateMipMaps, texture.generateMipMaps, texture.invertY, false, texture.is3D, gpuTextureWrapper.format, 1, this._commandEncoderForCreation, gpuTextureWrapper.textureUsages);
 
             gpuTextureWrapper.set(gpuTexture);
             gpuTextureWrapper.createView({
@@ -877,8 +876,39 @@ export class WebGPUTextureHelper {
         texture.height = texture.baseHeight = height;
         texture.depth = texture.baseDepth = depth;
 
+        this.createMSAATexture(texture, texture.samples);
+
         return gpuTextureWrapper;
     }
+
+    public createMSAATexture(texture: InternalTexture, samples: number): void {
+        const gpuTextureWrapper = texture._hardwareTexture as Nullable<WebGPUHardwareTexture>;
+
+        if (gpuTextureWrapper?.msaaTexture) {
+            this.releaseTexture(gpuTextureWrapper.msaaTexture);
+            gpuTextureWrapper.msaaTexture = null;
+        }
+
+        if (!gpuTextureWrapper || (samples ?? 1) <= 1) {
+            return;
+        }
+
+        const width = texture.width;
+        const height = texture.height;
+        const layerCount = texture.depth || 1;
+
+        if (texture.isCube) {
+            const gpuMSAATexture = this.createCubeTexture({ width, height }, false, false, texture.invertY, false, gpuTextureWrapper.format, samples, this._commandEncoderForCreation, gpuTextureWrapper.textureUsages);
+            gpuTextureWrapper.setMSAATexture(gpuMSAATexture);
+        } else {
+            const gpuMSAATexture = this.createTexture({ width, height, layers: layerCount }, false, false, texture.invertY, false, texture.is3D, gpuTextureWrapper.format, samples, this._commandEncoderForCreation, gpuTextureWrapper.textureUsages);
+            gpuTextureWrapper.setMSAATexture(gpuMSAATexture);
+        }
+    }
+
+    //------------------------------------------------------------------------------
+    //                                  Update
+    //------------------------------------------------------------------------------
 
     public updateCubeTextures(imageBitmaps: ImageBitmap[] | Uint8Array[], gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY = false, premultiplyAlpha = false, offsetX = 0, offsetY = 0,
         commandEncoder?: GPUCommandEncoder): void {
@@ -1012,13 +1042,17 @@ export class WebGPUTextureHelper {
     //                              Dispose
     //------------------------------------------------------------------------------
 
-    public releaseTexture(texture: InternalTexture): void {
-        const hardwareTexture = texture._hardwareTexture;
-        const irradianceTexture = texture._irradianceTexture;
-        const depthStencilTexture = texture._depthStencilTexture;
+    public releaseTexture(texture: InternalTexture | GPUTexture): void {
+        if (this._isInternalTexture(texture)) {
+            const hardwareTexture = texture._hardwareTexture;
+            const irradianceTexture = texture._irradianceTexture;
+            const depthStencilTexture = texture._depthStencilTexture;
 
-        // We can't destroy the objects just now because they could be used in the current frame - we delay the destroying after the end of the frame
-        this._deferredReleaseTextures.push([texture, hardwareTexture, irradianceTexture, depthStencilTexture]);
+            // We can't destroy the objects just now because they could be used in the current frame - we delay the destroying after the end of the frame
+            this._deferredReleaseTextures.push([texture, hardwareTexture, irradianceTexture, depthStencilTexture]);
+        } else {
+            this._deferredReleaseTextures.push([null, texture, null, null]);
+        }
     }
 
     public destroyDeferredTextures(): void {
