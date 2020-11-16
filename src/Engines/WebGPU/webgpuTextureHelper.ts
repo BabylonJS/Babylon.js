@@ -1085,7 +1085,8 @@ export class WebGPUTextureHelper {
             ((texture._cachedWrapU ?? 1) << 8) +
             ((texture._cachedWrapV ?? 1) << 10) +
             ((texture._cachedWrapR ?? 1) << 12) +
-            ((texture._cachedAnisotropicFilteringLevel ?? 1) << 14);
+            ((texture.generateMipMaps ? 1 : 0) << 14) + // need to factor this in because _getSamplerFilterDescriptor depends on samplingMode AND generateMipMaps!
+            ((texture._cachedAnisotropicFilteringLevel ?? 1) << 15);
 
         return code;
     }
