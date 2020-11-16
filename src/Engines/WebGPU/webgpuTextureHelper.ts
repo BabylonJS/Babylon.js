@@ -143,7 +143,7 @@ export class WebGPUTextureHelper {
     private _invertYPreMultiplyAlphaSampler: GPUSampler;
     private _pipelines: { [format: string]: Array<GPURenderPipeline> } = {};
     private _compiledShaders: GPUShaderModule[][] = [];
-    private _deferredReleaseTextures: Array<[Nullable<InternalTexture>, Nullable<HardwareTextureWrapper | GPUTexture>, Nullable<BaseTexture>, Nullable<InternalTexture>]> = [];
+    private _deferredReleaseTextures: Array<[Nullable<HardwareTextureWrapper | GPUTexture>, Nullable<BaseTexture>, Nullable<InternalTexture>]> = [];
     private _samplers: { [hash: number]: GPUSampler } = {};
     private _commandEncoderForCreation: GPUCommandEncoder;
 
@@ -662,7 +662,7 @@ export class WebGPUTextureHelper {
             }
         );
 
-        this._deferredReleaseTextures.push([null, outputTexture, null, null]);
+        this._deferredReleaseTextures.push([outputTexture, null, null]);
 
         commandEncoder!.popDebugGroup();
 
@@ -1049,15 +1049,15 @@ export class WebGPUTextureHelper {
             const depthStencilTexture = texture._depthStencilTexture;
 
             // We can't destroy the objects just now because they could be used in the current frame - we delay the destroying after the end of the frame
-            this._deferredReleaseTextures.push([texture, hardwareTexture, irradianceTexture, depthStencilTexture]);
+            this._deferredReleaseTextures.push([hardwareTexture, irradianceTexture, depthStencilTexture]);
         } else {
-            this._deferredReleaseTextures.push([null, texture, null, null]);
+            this._deferredReleaseTextures.push([texture, null, null]);
         }
     }
 
     public destroyDeferredTextures(): void {
         for (let i = 0; i < this._deferredReleaseTextures.length; ++i) {
-            const [texture, hardwareTexture, irradianceTexture, depthStencilTexture] = this._deferredReleaseTextures[i];
+            const [hardwareTexture, irradianceTexture, depthStencilTexture] = this._deferredReleaseTextures[i];
 
             if (hardwareTexture) {
                 if (this._isHardwareTexture(hardwareTexture)) {
