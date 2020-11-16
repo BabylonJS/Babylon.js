@@ -22,6 +22,12 @@ export interface IWebXRMeshDetectorOptions {
      * Preferred detector configuration, not all preferred options will be supported by all platforms.
      */
     preferredDetectorOptions?: XRGeometryDetectorOptions;
+    /**
+     * If set to true, WebXRMeshDetector will convert coordinate systems for meshes.
+     * If not defined, mesh conversions from right handed to left handed coordinate systems won't be conducted.
+     * Right handed mesh data will be available through IWebXRVertexData.xrMesh.
+     */
+    convertCoordinateSystems?: boolean;
 }
 
 /**
@@ -31,30 +37,40 @@ export interface IWebXRMeshDetectorOptions {
  */
 export interface IWebXRVertexData {
     /**
-     * a babylon-assigned ID for this mesh
+     * A babylon-assigned ID for this mesh
      */
     id: number;
     /**
-     * an array of vertex positions in babylon space. right/left hand system is taken into account.
-     */
-    positions: Float32Array;
-    /**
-     * an array of indices in babylon space. right/left hand system is taken into account.
-     */
-    indices: Uint32Array;
-    /**
-     * an array of vertex normals in babylon space. right/left hand system is taken into account.
-     */
-    normals?: Float32Array;
-    /**
-     * data required for construction a mesh in Babylon.js
+     * Data required for constructing a mesh in Babylon.js.
      */
     xrMesh: XRMesh;
     /**
-     * A transformation matrix to apply on the mesh that will be built using the meshDefinition
-     * Local vs. World are decided if worldParentNode was provided or not in the options when constructing the module
+     * The node to use to transform the local results to world coordinates.
+     * WorldParentNode will only exist if it was declared in the IWebXRMeshDetectorOptions.
      */
-    transformationMatrix: Matrix;
+    worldParentNode?: TransformNode;
+    /**
+     * An array of vertex positions in babylon space. right/left hand system is taken into account.
+     * Positions will only be calculated if convertCoordinateSystems is set to true in the IWebXRMeshDetectorOptions.
+     */
+    positions?: Float32Array;
+    /**
+     * An array of indices in babylon space. right/left hand system is taken into account.
+     * Indices will only be calculated if convertCoordinateSystems is set to true in the IWebXRMeshDetectorOptions.
+     */
+    indices?: Uint32Array;
+    /**
+     * An array of vertex normals in babylon space. right/left hand system is taken into account.
+     * Normals will not be calculated if convertCoordinateSystems is undefined in the IWebXRMeshDetectorOptions.
+     * Different platforms may or may not support mesh normals when convertCoordinateSystems is set to true.
+     */
+    normals?: Float32Array;
+    /**
+     * A transformation matrix to apply on the mesh that will be built using the meshDefinition.
+     * Local vs. World are decided if worldParentNode was provided or not in the options when constructing the module.
+     * TransformationMatrix will only be calculated if convertCoordinateSystems is set to true in the IWebXRMeshDetectorOptions.
+     */
+    transformationMatrix?: Matrix;
 }
 
 let meshIdProvider = 0;
@@ -190,50 +206,55 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
 
     private _updateMeshWithXRMesh(xrMesh: XRMesh, mesh: Partial<IWebXRVertexData>, xrFrame: XRFrame): IWebXRVertexData {
         mesh.xrMesh = xrMesh;
-        if (!this._xrSessionManager.scene.useRightHandedSystem) {
-            mesh.positions = new Float32Array(xrMesh.positions.length);
-            for (let i = 0; i < xrMesh.positions.length; i += 3) {
-                mesh.positions[i] = xrMesh.positions[i];
-                mesh.positions[i + 1] = xrMesh.positions[i + 1];
-                mesh.positions[i + 2] = -1 * xrMesh.positions[i + 2];
+        mesh.worldParentNode = this._options.worldParentNode;
+
+        if (!!this._options.convertCoordinateSystems)
+        {
+            if (!this._xrSessionManager.scene.useRightHandedSystem) {                  
+                mesh.positions = new Float32Array(xrMesh.positions.length);
+                for (let i = 0; i < xrMesh.positions.length; i += 3) {
+                    mesh.positions[i] = xrMesh.positions[i];
+                    mesh.positions[i + 1] = xrMesh.positions[i + 1];
+                    mesh.positions[i + 2] = -1 * xrMesh.positions[i + 2];
+                }
+    
+                mesh.indices = new Uint32Array(xrMesh.indices.length);
+                for (let i = 0; i < xrMesh.indices.length; i += 3) {
+                    mesh.indices[i] = xrMesh.indices[i];
+                    mesh.indices[i + 1] = xrMesh.indices[i + 2];
+                    mesh.indices[i + 2] = xrMesh.indices[i + 1];
+                }
+    
+                if (!!xrMesh.normals) {
+                    mesh.normals = new Float32Array(xrMesh.normals.length);
+                    for (let i = 0; i < xrMesh.normals.length; i += 3) {
+                        mesh.normals[i] = xrMesh.normals[i];
+                        mesh.normals[i + 1] = xrMesh.normals[i + 1];
+                        mesh.normals[i + 2] = -1 * xrMesh.normals[i + 2];
+                    }
+                }
+            }
+            else {
+                mesh.positions = xrMesh.positions;
+                mesh.indices = xrMesh.indices;
+                mesh.normals = xrMesh.normals;
             }
 
-            mesh.indices = new Uint32Array(xrMesh.indices.length);
-            for (let i = 0; i < xrMesh.indices.length; i += 3) {
-                mesh.indices[i] = xrMesh.indices[i];
-                mesh.indices[i + 1] = xrMesh.indices[i + 2];
-                mesh.indices[i + 2] = xrMesh.indices[i + 1];
-            }
-
-            if (!!xrMesh.normals) {
-                mesh.normals = new Float32Array(xrMesh.normals.length);
-                for (let i = 0; i < xrMesh.normals.length; i += 3) {
-                    mesh.normals[i] = xrMesh.normals[i];
-                    mesh.normals[i + 1] = xrMesh.normals[i + 1];
-                    mesh.normals[i + 2] = -1 * xrMesh.normals[i + 2];
+            // matrix
+            const pose = xrFrame.getPose(xrMesh.meshSpace, this._xrSessionManager.referenceSpace);
+            if (pose) {
+                const mat = mesh.transformationMatrix || new Matrix();
+                Matrix.FromArrayToRef(pose.transform.matrix, 0, mat);
+                if (!this._xrSessionManager.scene.useRightHandedSystem) {
+                    mat.toggleModelMatrixHandInPlace();
+                }
+                mesh.transformationMatrix = mat;
+                if (this._options.worldParentNode) {
+                    mat.multiplyToRef(this._options.worldParentNode.getWorldMatrix(), mat);
                 }
             }
         }
-        else {
-            mesh.positions = xrMesh.positions;
-            mesh.indices = xrMesh.indices;
-            mesh.normals = xrMesh.normals;
-        }
 
-        // matrix
-        const pose = xrFrame.getPose(xrMesh.meshSpace, this._xrSessionManager.referenceSpace);
-        if (pose) {
-            const mat = mesh.transformationMatrix || new Matrix();
-            Matrix.FromArrayToRef(pose.transform.matrix, 0, mat);
-            if (!this._xrSessionManager.scene.useRightHandedSystem) {
-                mat.toggleModelMatrixHandInPlace();
-            }
-            mesh.transformationMatrix = mat;
-            if (this._options.worldParentNode) {
-                mat.multiplyToRef(this._options.worldParentNode.getWorldMatrix(), mat);
-            }
-        }
-        
         return <IWebXRVertexData>mesh;
     }
 

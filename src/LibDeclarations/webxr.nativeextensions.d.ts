@@ -35,26 +35,22 @@ interface XRMesh {
     parentSceneObject?: XRSceneObject;
 }
 
-type XRDetectionBoundaryType = "frustum" | "sphere" | "box";
-
-interface XRDetectionBoundary {
-    type: XRDetectionBoundaryType;
-}
-
 interface XRFrustumDetectionBoundary extends XRDetectionBoundary {
-    type: XRDetectionBoundaryType = "frustum"
+    type: "frustum"
     frustum: XRFrustum;
 }
 
 interface XRSphereDetectionBoundary extends XRDetectionBoundary {
-    type: XRDetectionBoundaryType = "sphere";
+    type: "sphere";
     radius: number;
 }
 
 interface XRBoxDetectionBoundary extends XRDetectionBoundary {
-    type: XRDetectionBoundaryType = "box";
+    type: "box";
     extent: DOMPointReadOnly;
 }
+
+type XRDetectionBoundary = XRFrustumDetectionBoundary | XRSphereDetectionBoundary | XRBoxDetectionBoundary;
 
 interface XRGeometryDetectorOptions {
     detectionBoundary?: XRDetectionBoundary;

@@ -152,10 +152,6 @@ interface XRInputSourceEvent extends Event {
 
 type XRInputSourceArray = XRInputSource[];
 
-interface XRWorldTrackingStateOptions {
-    planeDetectionState?: { enabled: boolean };
-};
-
 interface XRSession {
     addEventListener(type: XREventType, listener: XREventHandler, options?: boolean | AddEventListenerOptions): void;
     removeEventListener(type: XREventType, listener: XREventHandler, options?: boolean | EventListenerOptions): void;
@@ -217,7 +213,7 @@ interface XRSession {
     requestHitTest?(ray: XRRay, referenceSpace: XRReferenceSpace): Promise<XRHitResult[]>;
 
     // legacy plane detection
-    updateWorldTrackingState?(options: XRWorldTrackingStateOptions): void;
+    updateWorldTrackingState?(options: { planeDetectionState?: { enabled: boolean } }): void;
 }
 
 interface XRViewerPose extends XRPose {
