@@ -32,6 +32,7 @@ import { IColor4Like } from '../Maths/math.like';
 import { IWebRequest } from '../Misc/interfaces/iWebRequest';
 import { UniformBuffer } from '../Materials/uniformBuffer';
 import { WebGPURenderPassWrapper } from './WebGPU/webgpuRenderPassWrapper';
+import { IMultiRenderTargetOptions } from '../Materials/Textures/multiRenderTarget';
 
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
@@ -172,6 +173,7 @@ export class WebGPUEngine extends Engine {
     private _lastCachedWrapU: number;
     private _lastCachedWrapV: number;
     private _lastCachedWrapR: number;
+    private _mrtAttachments: number[];
     private _counters: {
         numPipelineDescriptorCreation: number;
         numBindGroupsCreation: number;
@@ -1384,7 +1386,7 @@ export class WebGPUEngine extends Engine {
                 this._textureHelper.createGPUTextureForInternalTexture(texture);
             }
 
-            this._generateMipmaps(texture, texture.source === InternalTextureSource.RenderTarget ? this._renderTargetEncoder : undefined);
+            this._generateMipmaps(texture, texture.source === InternalTextureSource.RenderTarget || texture.source === InternalTextureSource.MultiRenderTarget ? this._renderTargetEncoder : undefined);
         }
     }
 
@@ -1930,6 +1932,105 @@ export class WebGPUEngine extends Engine {
         return texture;
     }
 
+    public createMultipleRenderTarget(size: any, options: IMultiRenderTargetOptions): InternalTexture[] {
+        let generateMipMaps = false;
+        let generateDepthBuffer = true;
+        let generateStencilBuffer = false;
+        let generateDepthTexture = false;
+        let textureCount = 1;
+
+        let defaultType = Constants.TEXTURETYPE_UNSIGNED_INT;
+        let defaultSamplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
+
+        let types = new Array<number>();
+        let samplingModes = new Array<number>();
+
+        if (options !== undefined) {
+            generateMipMaps = options.generateMipMaps === undefined ? false : options.generateMipMaps;
+            generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
+            generateStencilBuffer = options.generateStencilBuffer === undefined ? false : options.generateStencilBuffer;
+            generateDepthTexture = options.generateDepthTexture === undefined ? false : options.generateDepthTexture;
+            textureCount = options.textureCount || 1;
+
+            if (options.types) {
+                types = options.types;
+            }
+            if (options.samplingModes) {
+                samplingModes = options.samplingModes;
+            }
+
+        }
+
+        const width = size.width || size;
+        const height = size.height || size;
+
+        let depthStencilTexture = null;
+        if (generateDepthBuffer || generateStencilBuffer || generateDepthTexture) {
+            depthStencilTexture = this.createDepthStencilTexture({ width, height }, {
+                bilinearFiltering: false,
+                comparisonFunction: 0,
+                generateStencil: generateStencilBuffer,
+                isCube: false,
+                samples: 1,
+            });
+        }
+
+        const textures = [];
+        const attachments = [];
+
+        for (let i = 0; i < textureCount; i++) {
+            let samplingMode = samplingModes[i] || defaultSamplingMode;
+            let type = types[i] || defaultType;
+
+            if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+                // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
+                samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+            }
+            else if (type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+                // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
+                samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+            }
+
+            if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
+                type = Constants.TEXTURETYPE_UNSIGNED_INT;
+                Logger.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
+            }
+
+            const texture = new InternalTexture(this, InternalTextureSource.MultiRenderTarget);
+
+            textures.push(texture);
+            attachments.push(i + 1);
+
+            texture._depthStencilTexture = i === 0 ? depthStencilTexture : null;
+            texture._framebuffer = {};
+            texture._depthStencilBuffer = {};
+            texture.baseWidth = width;
+            texture.baseHeight = height;
+            texture.width = width;
+            texture.height = height;
+            texture.isReady = true;
+            texture.samples = 1;
+            texture.generateMipMaps = generateMipMaps;
+            texture.samplingMode = samplingMode;
+            texture.type = type;
+            texture._generateDepthBuffer = generateDepthBuffer;
+            texture._generateStencilBuffer = generateStencilBuffer ? true : false;
+            texture._attachments = attachments;
+            texture._textureArray = textures;
+
+            this._internalTexturesCache.push(texture);
+
+            this._textureHelper.createGPUTextureForInternalTexture(texture);
+        }
+
+        if (depthStencilTexture) {
+            textures.push(depthStencilTexture);
+            this._internalTexturesCache.push(depthStencilTexture);
+        }
+
+        return textures;
+    }
+
     public createRenderTargetCubeTexture(size: number, options?: Partial<RenderTargetCreationOptions>): InternalTexture {
         let fullOptions = {
             generateMipMaps: true,
@@ -2022,6 +2123,7 @@ export class WebGPUEngine extends Engine {
             ...options
         };
 
+        // TODO WEBGPU allow to choose the format?
         internalTexture.format = internalOptions.generateStencil ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT;
 
         this._setupDepthStencilTexture(internalTexture, size, internalOptions.generateStencil, internalOptions.bilinearFiltering, internalOptions.comparisonFunction, internalOptions.samples);
@@ -2045,6 +2147,7 @@ export class WebGPUEngine extends Engine {
             ...options
         };
 
+        // TODO WEBGPU allow to choose the format?
         internalTexture.format = internalOptions.generateStencil ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT;
 
         this._setupDepthStencilTexture(internalTexture, size, internalOptions.generateStencil, internalOptions.bilinearFiltering, internalOptions.comparisonFunction, internalOptions.samples);
@@ -2069,6 +2172,24 @@ export class WebGPUEngine extends Engine {
         }
 
         texture.samples = samples;
+
+        return samples;
+    }
+
+    public updateMultipleRenderTargetTextureSampleCount(textures: Nullable<InternalTexture[]>, samples: number): number {
+        if (!textures || textures[0].samples === samples) {
+            return samples;
+        }
+
+        samples = Math.min(samples, this.getCaps().maxMSAASamples);
+
+        // Note that the last texture of textures is the depth texture (if the depth texture has been generated by the MRT class) and so the MSAA texture
+        // will be recreated for this texture too. As a consequence, there's no need to explicitely recreate the MSAA texture for textures[0]._depthStencilTexture
+        for (let i = 0; i < textures.length; ++i) {
+            const texture = textures[i];
+            this._textureHelper.createMSAATexture(texture, samples);
+            texture.samples = samples;
+        }
 
         return samples;
     }
@@ -2129,7 +2250,7 @@ export class WebGPUEngine extends Engine {
                 (this as any)._count++;
                 if ((this as any)._count !== dbgVerboseLogsNumFrames) {
                     console.log("%c frame #" + (this as any)._count + " - begin", "background: #ffff00");
-                    }
+                }
             }
         }
     }
@@ -2176,27 +2297,60 @@ export class WebGPUEngine extends Engine {
     private _startRenderTargetRenderPass(internalTexture: InternalTexture, clearColor: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean = false) {
         const gpuWrapper = internalTexture._hardwareTexture as WebGPUHardwareTexture;
         const gpuTexture = gpuWrapper.underlyingResource!;
-        const gpuMSAATexture = gpuWrapper.msaaTexture;
 
         const depthStencilTexture = internalTexture._depthStencilTexture;
         const gpuDepthStencilWrapper = depthStencilTexture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
         const gpuDepthStencilTexture = gpuDepthStencilWrapper?.underlyingResource as Nullable<GPUTexture>;
         const gpuDepthStencilMSAATexture = gpuDepthStencilWrapper?.msaaTexture;
 
-        const colorTextureView = gpuTexture.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
-        const colorMSAATextureView = gpuMSAATexture?.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
         const depthTextureView = gpuDepthStencilTexture?.createView(this._rttRenderPassWrapper.depthAttachmentViewDescriptor!);
         const depthMSAATextureView = gpuDepthStencilMSAATexture?.createView(this._rttRenderPassWrapper.depthAttachmentViewDescriptor!);
 
-        this._debugPushGroup("render target pass", 1);
+        const colorAttachments: GPURenderPassColorAttachmentDescriptor[] = [];
 
-        this._rttRenderPassWrapper.renderPassDescriptor = {
-            colorAttachments: [{
+        if (internalTexture._attachments && internalTexture._textureArray) {
+            // multi render targets
+            for (let i = 0; i < internalTexture._attachments.length; ++i) {
+                const index = internalTexture._attachments[i];
+                if (index > 0) {
+                    const mrtTexture = internalTexture._textureArray[index - 1];
+                    const gpuMRTWrapper = mrtTexture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
+                    const gpuMRTTexture = gpuMRTWrapper?.underlyingResource;
+                    if (gpuMRTWrapper && gpuMRTTexture) {
+                        const gpuMSAATexture = gpuMRTWrapper.msaaTexture;
+                        const colorTextureView = gpuMRTTexture.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
+                        const colorMSAATextureView = gpuMSAATexture?.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
+
+                        colorAttachments.push({
+                            attachment: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
+                            resolveTarget: gpuMSAATexture ? colorTextureView : undefined,
+                            loadValue: clearColor !== null ? clearColor : WebGPUConstants.LoadOp.Load,
+                            storeOp: WebGPUConstants.StoreOp.Store,
+                        });
+                    }
+                } else {
+                    // TODO WEBGPU what to do?
+                }
+            }
+            this._mrtAttachments = internalTexture._attachments;
+        } else {
+            // single render target
+            const gpuMSAATexture = gpuWrapper.msaaTexture;
+            const colorTextureView = gpuTexture.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
+            const colorMSAATextureView = gpuMSAATexture?.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
+
+            colorAttachments.push({
                 attachment: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
                 resolveTarget: gpuMSAATexture ? colorTextureView : undefined,
                 loadValue: clearColor !== null ? clearColor : WebGPUConstants.LoadOp.Load,
                 storeOp: WebGPUConstants.StoreOp.Store,
-            }],
+            });
+        }
+
+        this._debugPushGroup("render target pass", 1);
+
+        this._rttRenderPassWrapper.renderPassDescriptor = {
+            colorAttachments,
             depthStencilAttachment: depthStencilTexture && gpuDepthStencilTexture ? {
                 attachment: depthMSAATextureView ? depthMSAATextureView : depthTextureView!,
                 depthLoadValue: clearDepth && depthStencilTexture._generateDepthBuffer ? this._clearDepthValue : WebGPUConstants.LoadOp.Load,
@@ -2244,6 +2398,10 @@ export class WebGPUEngine extends Engine {
         }
 
         return this._currentRenderPass!;
+    }
+
+    private _currentRenderPassIsMRT(): boolean {
+        return !!this._currentRenderTarget?._attachments ?? false;
     }
 
     private _startMainRenderPass(): void {
@@ -2294,6 +2452,10 @@ export class WebGPUEngine extends Engine {
             }
             this._mainRenderPassWrapper.reset(false);
         }
+    }
+
+    public bindAttachments(attachments: number[]): void {
+        this._mrtAttachments = attachments;
     }
 
     public bindFramebuffer(texture: InternalTexture, faceIndex: number = 0, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean, lodLevel = 0, layer = 0): void {
@@ -2382,6 +2544,32 @@ export class WebGPUEngine extends Engine {
 
         if (texture.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
             this._generateMipmaps(texture);
+        }
+
+        this._currentRenderTarget = null;
+
+        this._currentRenderPass = this._mainRenderPassWrapper.renderPass;
+        this._setDepthTextureFormat(this._mainRenderPassWrapper);
+        this._setColorFormat(this._mainRenderPassWrapper);
+    }
+
+    public unBindMultiColorAttachmentFramebuffer(textures: InternalTexture[], disableGenerateMipMaps: boolean = false, onBeforeUnbind?: () => void): void {
+        if (onBeforeUnbind) {
+            onBeforeUnbind();
+        }
+
+        const attachments = textures[0]._attachments!;
+        const count = attachments.length;
+
+        if (this._currentRenderPass && this._currentRenderPass !== this._mainRenderPassWrapper.renderPass) {
+            this._endRenderTargetRenderPass();
+        }
+
+        for (let i = 0; i < count; i++) {
+            const texture = textures[i];
+            if (texture.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
+                this._generateMipmaps(texture);
+            }
         }
 
         this._currentRenderTarget = null;
@@ -2831,12 +3019,28 @@ export class WebGPUEngine extends Engine {
     }
 
     private _getColorStateDescriptors(): GPUColorStateDescriptor[] {
-        return [{
+        const descriptor: GPUColorStateDescriptor = {
             format: this._colorFormat,
             alphaBlend: this._getAphaBlendState(),
             colorBlend: this._getColorBlendState(),
             writeMask: this._getWriteMask(),
-        }];
+        };
+
+        const descriptors: GPUColorStateDescriptor[] = [];
+
+        if (this._currentRenderPassIsMRT()) {
+            for (let i = 0; i < this._mrtAttachments.length; ++i) {
+                if (this._mrtAttachments[i] > 0) {
+                    descriptors.push(descriptor);
+                } else {
+                    // TODO WEBGPU what to do when this._mrtAttachments[i] === 0? The corresponding texture should be bound as an "empty" texture
+                }
+            }
+        } else {
+            descriptors.push(descriptor);
+        }
+
+        return descriptors;
     }
 
     private _getStages(): IWebGPURenderPipelineStageDescriptor {

@@ -841,7 +841,7 @@ export class WebGPUTextureHelper {
         gpuTextureWrapper.format = this.getWebGPUTextureFormat(texture.type, texture.format);
 
         gpuTextureWrapper.textureUsages =
-            texture._source === InternalTextureSource.RenderTarget ? WebGPUConstants.TextureUsage.Sampled | WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.OutputAttachment :
+            texture._source === InternalTextureSource.RenderTarget || texture.source === InternalTextureSource.MultiRenderTarget ? WebGPUConstants.TextureUsage.Sampled | WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.OutputAttachment :
             texture._source === InternalTextureSource.Depth ? WebGPUConstants.TextureUsage.Sampled | WebGPUConstants.TextureUsage.OutputAttachment : -1;
 
         const hasMipMaps = texture.generateMipMaps;
