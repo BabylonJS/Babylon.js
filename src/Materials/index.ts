@@ -10,6 +10,7 @@ export * from "./materialDefines";
 export * from "./thinMaterialHelper";
 export * from "./materialHelper";
 export * from "./multiMaterial";
+export * from "./Occlusion/index";
 export * from "./PBR/index";
 export * from "./pushMaterial";
 export * from "./shaderMaterial";
