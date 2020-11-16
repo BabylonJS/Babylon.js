@@ -43,6 +43,14 @@ export interface IFocusableControl {
     * @returns an array of controls
     */
     keepsFocusWith(): Nullable<Control[]>;
+    /**
+    * Function to focus the control programmatically
+    */
+    focus(): void;
+    /**
+    * Function to unfocus the control programmatically
+    */
+    blur(): void;
 }
 /**
 * Class used to create texture to support 2D GUI elements
