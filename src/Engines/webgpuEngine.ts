@@ -1400,12 +1400,15 @@ export class WebGPUEngine extends Engine {
     public updateTextureWrappingMode(texture: InternalTexture, wrapU: Nullable<number>, wrapV: Nullable<number> = null, wrapR: Nullable<number> = null): void {
         if (wrapU !== null) {
             texture._cachedWrapU = wrapU;
+            this._lastCachedWrapU = wrapU;
         }
         if (wrapV !== null) {
             texture._cachedWrapV = wrapV;
+            this._lastCachedWrapV = wrapV;
         }
         if ((texture.is2DArray || texture.is3D) && (wrapR !== null)) {
             texture._cachedWrapR = wrapR;
+            this._lastCachedWrapR = wrapR;
         }
     }
 
@@ -1529,18 +1532,18 @@ export class WebGPUEngine extends Engine {
                     texture.wrapV = textureWrapMode;
                 }
 
-                if (internalTexture._cachedWrapU !== texture.wrapU) {
-                    internalTexture._cachedWrapU = texture.wrapU;
+                internalTexture._cachedWrapU = texture.wrapU;
+                if (this._lastCachedWrapU !== texture.wrapU) {
                     this._lastCachedWrapU = texture.wrapU;
                 }
 
-                if (internalTexture._cachedWrapV !== texture.wrapV) {
-                    internalTexture._cachedWrapV = texture.wrapV;
+                internalTexture._cachedWrapV = texture.wrapV;
+                if (this._lastCachedWrapV !== texture.wrapV) {
                     this._lastCachedWrapV = texture.wrapV;
                 }
 
-                if (internalTexture.is3D && internalTexture._cachedWrapR !== texture.wrapR) {
-                    internalTexture._cachedWrapR = texture.wrapR;
+                internalTexture._cachedWrapR = texture.wrapR;
+                if (internalTexture.is3D && this._lastCachedWrapR !== texture.wrapR) {
                     this._lastCachedWrapR = texture.wrapR;
                 }
 
@@ -1573,15 +1576,15 @@ export class WebGPUEngine extends Engine {
         }
 
         if (texture) {
-            if (this._lastCachedWrapU !== null && texture._cachedWrapU !== this._lastCachedWrapU) {
+            if (this._lastCachedWrapU !== null) {
                 texture._cachedWrapU = this._lastCachedWrapU;
             }
 
-            if (this._lastCachedWrapV !== null && texture._cachedWrapV !== this._lastCachedWrapV) {
+            if (this._lastCachedWrapV !== null) {
                 texture._cachedWrapV = this._lastCachedWrapV;
             }
 
-            if (this._lastCachedWrapR !== null && texture._cachedWrapR !== this._lastCachedWrapR) {
+            if (this._lastCachedWrapR !== null) {
                 texture._cachedWrapR = this._lastCachedWrapR;
             }
         }
