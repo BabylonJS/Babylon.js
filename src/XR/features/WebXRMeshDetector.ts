@@ -107,7 +107,9 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
             return false;
         }
 
-        if (!!this._xrSessionManager.session.trySetMeshDetectorEnabled) {
+        // Only supported by BabylonNative
+        if (!!this._xrSessionManager.isNativeSession() &&
+            !!this._xrSessionManager.session.trySetMeshDetectorEnabled) {
             this._xrSessionManager.session.trySetMeshDetectorEnabled(false);
         }
 
@@ -173,13 +175,16 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
     }
 
     private _init() {
-        if (!!this._xrSessionManager.session.trySetMeshDetectorEnabled) {
-            this._xrSessionManager.session.trySetMeshDetectorEnabled(true);
-        }
+        // Only supported by BabylonNative
+        if (!!this._xrSessionManager.isNativeSession()) {
+            if (!!this._xrSessionManager.session.trySetMeshDetectorEnabled) {
+                this._xrSessionManager.session.trySetMeshDetectorEnabled(true);
+            }
 
-        if (!!this._options.preferredDetectorOptions &&
-            !!this._xrSessionManager.session.trySetPreferredMeshDetectorOptions) {
-            this._xrSessionManager.session.trySetPreferredMeshDetectorOptions(this._options.preferredDetectorOptions);
+            if (!!this._options.preferredDetectorOptions &&
+                !!this._xrSessionManager.session.trySetPreferredMeshDetectorOptions) {
+                this._xrSessionManager.session.trySetPreferredMeshDetectorOptions(this._options.preferredDetectorOptions);
+            }
         }
     }
 
