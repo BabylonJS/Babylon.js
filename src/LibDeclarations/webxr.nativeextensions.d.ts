@@ -4,6 +4,10 @@
 
 type XRSceneObjectType = "unknown" | "background" | "wall" | "floor" | "ceiling" | "platform";
 
+interface XRSceneObject {
+    type: XRSceneObjectType;
+}
+
 interface XRFieldOfView {
     angleLeft: number;
     angleRight: number;
@@ -19,8 +23,7 @@ interface XRFrustum {
 }
 
 interface XRPlane {
-    parentSceneObjectId?: number;
-    parentSceneObjectType?: XRSceneObjectType;
+    parentSceneObject?: XRSceneObject;
 }
 
 interface XRMesh {
@@ -29,8 +32,7 @@ interface XRMesh {
     indices: Uint32Array;
     normals?: Float32Array;
     lastChangedTime: number;
-    parentSceneObjectId?: number;
-    parentSceneObjectType?: XRSceneObjectType;
+    parentSceneObject?: XRSceneObject;
 }
 
 type XRDetectionBoundaryType = "frustum" | "sphere" | "box";
