@@ -169,6 +169,10 @@ export class LinesMesh extends Mesh {
         return false;
     }
 
+    public set checkCollisions(value: boolean) {
+        // Just ignore it
+    }
+
     /** @hidden */
     public _bind(subMesh: SubMesh, effect: Effect, fillMode: number): Mesh {
         if (!this._geometry) {
