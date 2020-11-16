@@ -81,7 +81,7 @@ export class FocusableButton extends Button implements IFocusableControl {
      * @param evt Defines the KeyboardEvent
      */
     public processKeyboard(evt: KeyboardEvent): void {
-        this.onKeyboardEventProcessedObservable.notifyObservers(evt);
+        this.onKeyboardEventProcessedObservable.notifyObservers(evt, -1, this);
     }
 
     /** @hidden */
