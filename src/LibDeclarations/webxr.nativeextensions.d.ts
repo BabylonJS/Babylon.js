@@ -2,7 +2,7 @@
 // They are intended for use with either Babylon Native https://github.com/BabylonJS/BabylonNative or
 // Babylon React Native: https://github.com/BabylonJS/BabylonReactNative
 
-type XRGeometryType = "unknown" | "background" | "wall" | "floor" | "ceiling" | "platform";
+type XRSceneObjectType = "unknown" | "background" | "wall" | "floor" | "ceiling" | "platform";
 
 interface XRFieldOfView {
     angleLeft: number;
@@ -19,9 +19,8 @@ interface XRFrustum {
 }
 
 interface XRPlane {
-    // Open question: Should parent geometry id's and types be declared on XRPlanes or queried through other means?
-    parentGeometryId?: number;
-    parentGeometryType?: XRWorldGeometryType;
+    parentSceneObjectId?: number;
+    parentSceneObjectType?: XRSceneObjectType;
 }
 
 interface XRMesh {
@@ -30,10 +29,8 @@ interface XRMesh {
     indices: Uint32Array;
     normals?: Float32Array;
     lastChangedTime: number;
-
-    // Open question: Should parent geometry id's and types be declared on XRMeshes or queried through other means?
-    parentGeometryId?: number;
-    parentGeometryType?: XRGeometryType;
+    parentSceneObjectId?: number;
+    parentSceneObjectType?: XRSceneObjectType;
 }
 
 type XRDetectionBoundaryType = "frustum" | "sphere" | "box";

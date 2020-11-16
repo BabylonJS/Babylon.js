@@ -198,9 +198,11 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
             }
         };
 
-        if (!!this._options.preferredDetectorOptions &&
+        // Only supported by BabylonNative
+        if (!!this._xrSessionManager.isNativeSession() &&
+            !!this._options.preferredDetectorOptions &&
             !!this._xrSessionManager.session.trySetPreferredPlaneDetectorOptions) {
-                this._xrSessionManager.session.trySetPreferredPlaneDetectorOptions(this._options.preferredDetectorOptions);
+            this._xrSessionManager.session.trySetPreferredPlaneDetectorOptions(this._options.preferredDetectorOptions);
         }
 
         if (!this._xrSessionManager.session.updateWorldTrackingState) {
