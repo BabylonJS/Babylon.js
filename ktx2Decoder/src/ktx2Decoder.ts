@@ -165,7 +165,6 @@ export class KTX2Decoder {
 
         const mipmaps: Array<IMipmap> = [];
         const dataPromises: Array<Promise<Uint8Array | null>> = [];
-        const mipmapBuffers: Array<ArrayBuffer> = [];
         const decodedData: IDecodedData = { width: 0, height: 0, transcodedFormat, mipmaps, isInGammaSpace: kfr.isInGammaSpace, transcoderName: transcoder.getName() };
 
         let firstImageDescIndex = 0;
@@ -221,9 +220,6 @@ export class KTX2Decoder {
                 const transcodedData = transcoder.transcode(srcTexFormat, targetFormat, level, levelWidth, levelHeight, levelUncompressedByteLength, kfr, imageDesc, encodedData)
                     .then((data) => {
                         mipmap.data = data;
-                        if (data) {
-                            mipmapBuffers.push(data.buffer);
-                        }
                         return data;
                     })
                     .catch((reason) => {

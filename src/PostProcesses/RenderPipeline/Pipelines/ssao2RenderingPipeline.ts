@@ -190,7 +190,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
      * @param cameras The array of cameras that the rendering pipeline will be attached to
      * @param forceGeometryBuffer Set to true if you want to use the legacy geometry buffer renderer
      */
-    constructor(name: string, scene: Scene, ratio: any, cameras?: Camera[], forceGeometryBuffer = false) {
+    constructor(name: string, scene: Scene, ratio: any, cameras?: Camera[], forceGeometryBuffer = true) {
         super(scene.getEngine(), name);
 
         this._scene = scene;
@@ -442,7 +442,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         this._ssaoCombinePostProcess.onApply = (effect: Effect) => {
             let viewport = this._scene.activeCamera!.viewport;
             effect.setVector4("viewport", TmpVectors.Vector4[0].copyFromFloats(viewport.x, viewport.y, viewport.width, viewport.height));
-            effect.setTextureFromPostProcess("originalColor", this._originalColorPostProcess);
+            effect.setTextureFromPostProcessOutput("originalColor", this._originalColorPostProcess);
         };
         this._ssaoCombinePostProcess.samples = this.textureSamples;
 

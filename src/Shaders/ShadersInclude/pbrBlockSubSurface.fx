@@ -13,6 +13,7 @@ struct subSurfaceOutParams
 #endif
 #ifdef SS_TRANSLUCENCY
     vec3 transmittance;
+    float translucencyIntensity;
     #ifdef REFLECTION
         vec3 refractionIrradiance;
     #endif
@@ -42,6 +43,10 @@ struct subSurfaceOutParams
             #ifdef USESPHERICALFROMREFLECTIONMAP
                 #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
                     const in vec3 irradianceVector_,
+                #endif
+                #if defined(REALTIME_FILTERING)
+                    const in samplerCube reflectionSampler,
+                    const in vec2 vReflectionFilteringInfo,
                 #endif
             #endif
             #ifdef USEIRRADIANCEMAP
@@ -88,6 +93,9 @@ struct subSurfaceOutParams
         #endif
         #ifdef ANISOTROPIC
             const in anisotropicOutParams anisotropicOut,
+        #endif
+        #ifdef REALTIME_FILTERING
+            const in vec2 vRefractionFilteringInfo,
         #endif
     #endif
     #ifdef SS_TRANSLUCENCY
@@ -147,6 +155,7 @@ struct subSurfaceOutParams
         vec3 transmittance = transmittanceBRDF_Burley(vTintColor.rgb, vDiffusionDistance, thickness);
         transmittance *= translucencyIntensity;
         outParams.transmittance = transmittance;
+        outParams.translucencyIntensity = translucencyIntensity;
     #endif
 
     // _____________________________________________________________________________________

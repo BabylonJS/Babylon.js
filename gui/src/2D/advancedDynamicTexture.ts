@@ -135,6 +135,10 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     */
     public premulAlpha = false;
     /**
+     * Gets or sets a boolean indicating that the canvas must be reverted on Y when updating the texture
+     */
+    public applyYInversionOnUpdate = true;
+    /**
     * Gets or sets a number used to scale rendering size (2 means that the texture will be twice bigger).
     * Useful when you want more antialiasing
     */
@@ -605,7 +609,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         }
         this._isDirty = false;
         this._render();
-        this.update(true, this.premulAlpha);
+        this.update(this.applyYInversionOnUpdate, this.premulAlpha);
     }
 
     private _clearMeasure = new Measure(0, 0, 0, 0);
@@ -823,7 +827,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 var uv = pi.pickInfo.getTextureCoordinates();
                 if (uv) {
                     let size = this.getSize();
-                    this._doPicking(uv.x * size.width, (1.0 - uv.y) * size.height, pi, pi.type, pointerId, pi.event.button);
+                    this._doPicking(uv.x * size.width, (this.applyYInversionOnUpdate ? (1.0 - uv.y) : uv.y) * size.height, pi, pi.type, pointerId, pi.event.button);
                 }
             } else if (pi.type === PointerEventTypes.POINTERUP) {
                 if (this._lastControlDown[pointerId]) {
@@ -933,6 +937,21 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             material.opacityTexture = result;
         }
         mesh.material = material;
+        result.attachToMesh(mesh, supportPointerMove);
+        return result;
+    }
+
+    /**
+     * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh) BUT do not create a new material for the mesh. You will be responsible for connecting the texture
+     * @param mesh defines the mesh which will receive the texture
+     * @param width defines the texture width (1024 by default)
+     * @param height defines the texture height (1024 by default)
+     * @param supportPointerMove defines a boolean indicating if the texture must capture move events (true by default)
+     * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
+     * @returns a new AdvancedDynamicTexture
+     */
+    public static CreateForMeshTexture(mesh: AbstractMesh, width = 1024, height = 1024, supportPointerMove = true, invertY?: boolean): AdvancedDynamicTexture {
+        var result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, Texture.TRILINEAR_SAMPLINGMODE, invertY);
         result.attachToMesh(mesh, supportPointerMove);
         return result;
     }

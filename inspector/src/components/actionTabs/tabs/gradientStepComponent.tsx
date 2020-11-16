@@ -53,7 +53,7 @@ export class GradientStepComponent extends React.Component<IGradientStepComponen
                     {`#${this.props.lineIndex}`}
                 </div>
                 <div className="color">
-                    <ColorPickerLineComponent value={step.color} disableAlpha={true}
+                    <ColorPickerLineComponent value={step.color}
                             onColorChanged={color => {
                                     this.updateColor(color);
                             }} 

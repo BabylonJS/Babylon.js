@@ -373,6 +373,17 @@ export class VideoTexture extends Texture {
      */
     public static CreateFromStreamAsync(scene: Scene, stream: MediaStream): Promise<VideoTexture> {
         var video = document.createElement("video");
+
+        if (scene.getEngine()._badOS) {
+            // Yes... I know and I hope to remove it soon...
+            document.body.appendChild(video);
+            video.style.transform = 'scale(0.0001, 0.0001)';
+            video.style.opacity = '0';
+            video.style.position = 'fixed';
+            video.style.bottom = '0px';
+            video.style.right = '0px';
+        }
+
         video.setAttribute('autoplay', '');
         video.setAttribute('muted', 'true');
         video.setAttribute('playsinline', '');

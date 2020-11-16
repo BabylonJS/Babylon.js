@@ -291,8 +291,11 @@ export class Gizmo implements IDisposable {
                 bone.getWorldMatrix().multiplyToRef(invParent, boneLocalMatrix);
                 var lmat = bone.getLocalMatrix();
                 lmat.copyFrom(boneLocalMatrix);
-                bone.markAsDirty();
+            } else {
+                var lmat = bone.getLocalMatrix();
+                lmat.copyFrom(bone.getWorldMatrix());
             }
+            bone.markAsDirty();
         }
     }
 

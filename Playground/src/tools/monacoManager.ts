@@ -121,6 +121,8 @@ export class MonacoManager {
     private _setNewContent() {
         this._createEditor();
 
+        this.globalState.currentSnippetToken = "";
+
         if (this.globalState.language === "JS") {
             this._editor?.setValue(`// You have to create a function called createScene. This function must return a BABYLON.Scene object
 // You can reference the following variables: engine, canvas
