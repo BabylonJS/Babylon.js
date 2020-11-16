@@ -12,8 +12,9 @@ import { Observable } from 'babylonjs/Misc/observable';
  * Class used to create a focusable button that can easily handle keyboard events
  */
 export class FocusableButton extends Button implements IFocusableControl {
-    private _isFocused = false;
+    /** Highlight color when button is focused */
     public focusedColor: Nullable<string> = null;
+    private _isFocused = false;
     private _unfocusedColor: Nullable<string> = null;
 
     /** Observable raised when the control gets the focus */
@@ -91,6 +92,7 @@ export class FocusableButton extends Button implements IFocusableControl {
         super._onPointerUp(target, coordinates, pointerId, buttonIndex, notifyClick, pi);
     }
 
+    /** @hidden */
     public displose() {
         super.dispose();
 
