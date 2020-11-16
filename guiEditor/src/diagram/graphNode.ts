@@ -23,8 +23,7 @@ export class GraphNode {
     private _content: HTMLDivElement;    
     private _comments: HTMLDivElement;
     private _inputPorts: NodePort[] = [];
-    private _outputPorts: NodePort[] = [];
-    private _links: NodeLink[] = [];    
+    private _outputPorts: NodePort[] = []; 
     private _x = 0;
     private _y = 0;
     private _gridAlignedX = 0;
@@ -55,12 +54,6 @@ export class GraphNode {
             this._visual.classList.remove("hidden");
             this._upateNodePortNames();
         }
-
-        for (var link of this._links) {
-            link.isVisible = value;
-        }
-
-        this._refreshLinks();
     }
 
     private _upateNodePortNames(){
@@ -79,9 +72,6 @@ export class GraphNode {
         return this._inputPorts;
     }
 
-    public get links() {
-        return this._links;
-    }
 
     public get gridAlignedX() {
         return this._gridAlignedX;
@@ -103,8 +93,6 @@ export class GraphNode {
         
         this._gridAlignedX = this._ownerCanvas.getGridPosition(value);
         this._visual.style.left = `${this._gridAlignedX}px`;
-
-        this._refreshLinks();
         this._refreshFrames();
     }
 
@@ -122,7 +110,6 @@ export class GraphNode {
         this._gridAlignedY = this._ownerCanvas.getGridPosition(value);
         this._visual.style.top = `${this._gridAlignedY}px`;
 
-        this._refreshLinks();
         this._refreshFrames();
     }
 
@@ -264,9 +251,6 @@ export class GraphNode {
         return null;
     }
 
-    public getLinksForConnectionPoint(point: NodeMaterialConnectionPoint) {
-        return this._links.filter(link => link.portA.connectionPoint === point || link.portB!.connectionPoint === point);
-    }
     
     private _refreshFrames() {       
         if (this._ownerCanvas._frameIsMoving || this._ownerCanvas._isLoading) {
@@ -276,15 +260,6 @@ export class GraphNode {
         // Frames
         for (var frame of this._ownerCanvas.frames) {
             frame.syncNode(this);
-        }
-    }
-
-    public _refreshLinks() {
-        if (this._ownerCanvas._isLoading) {
-            return;
-        }
-        for (var link of this._links) {
-            link.update();
         }
     }
 
@@ -505,11 +480,6 @@ export class GraphNode {
 
         for (var port of this._outputPorts) {
             port.dispose();
-        }
-
-        let links = this._links.slice(0);
-        for (var link of links) {
-            link.dispose();           
         }
 
         this.block.dispose();

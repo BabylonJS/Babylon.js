@@ -351,8 +351,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         const link = new NodeLink(this, portA, nodeA, portB, nodeB);
         this._links.push(link);
 
-        nodeA.links.push(link);
-        nodeB.links.push(link);
     }
 
     removeLink(link: NodeLink) {
@@ -647,8 +645,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this._oldY = -1; 
 
         if (this._candidateLink) {       
-            if (this._candidateLinkedHasMoved) {
-                this.processCandidatePort();          
+            if (this._candidateLinkedHasMoved) {       
                 this.props.globalState.onCandidateLinkMoved.notifyObservers(null);
             } else { // is a click event on NodePort
                 if(this._candidateLink.portA instanceof FrameNodePort) { //only on Frame Node Ports
@@ -758,172 +755,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this.y = 0;
     }
 
-    processCandidatePort() {
-        let pointB = this._candidateLink!.portA.connectionPoint;
-        let nodeB = this._candidateLink!.portA.node;
-        let pointA: NodeMaterialConnectionPoint;
-        let nodeA: GraphNode;
-
-        if (this._candidatePort) {
-            pointA = this._candidatePort.connectionPoint;
-            nodeA = this._candidatePort.node;
-        } else {
-            if (pointB.direction === NodeMaterialConnectionPointDirection.Output) {
-                return;
-            }
-
-            // No destination so let's spin a new input block
-            let pointName = "output", inputBlock;
-            let customInputBlock = this._candidateLink!.portA.connectionPoint.createCustomInputBlock();
-            if (!customInputBlock) {
-                inputBlock = new InputBlock(NodeMaterialBlockConnectionPointTypes[this._candidateLink!.portA.connectionPoint.type], undefined, this._candidateLink!.portA.connectionPoint.type);
-            } else {
-                [inputBlock, pointName] = customInputBlock;
-            }
-            this.props.globalState.nodeMaterial.attachedBlocks.push(inputBlock);
-            pointA = (inputBlock as any)[pointName];
-            nodeA = this.appendBlock(inputBlock);
-            
-            nodeA.x = this._dropPointX - 200;
-            nodeA.y = this._dropPointY - 50;    
-        }
-
-        if (pointA.direction === NodeMaterialConnectionPointDirection.Input) {
-            let temp = pointB;
-            pointB = pointA;
-            pointA = temp;
-
-            let tempNode = nodeA;
-            nodeA = nodeB;
-            nodeB = tempNode;
-        }
-
-        if (pointB.connectedPoint === pointA) {
-            return;
-        }
-
-        if (pointB === pointA) {
-            return;
-        }
-
-        if (pointB.direction === pointA.direction) {
-            return;
-        }
-
-        if (pointB.ownerBlock === pointA.ownerBlock) {
-            return;
-        }
-
-        // Check compatibility
-        let isFragmentOutput = pointB.ownerBlock.getClassName() === "FragmentOutputBlock";
-        let compatibilityState = pointA.checkCompatibilityState(pointB);
-        if ((pointA.needDualDirectionValidation || pointB.needDualDirectionValidation) && compatibilityState === NodeMaterialConnectionPointCompatibilityStates.Compatible && !(pointA instanceof InputBlock)) {
-            compatibilityState = pointB.checkCompatibilityState(pointA);
-        }
-        if (compatibilityState === NodeMaterialConnectionPointCompatibilityStates.Compatible) {
-            if (isFragmentOutput) {
-                let fragmentBlock = pointB.ownerBlock as FragmentOutputBlock;
-
-                if (pointB.name === "rgb" && fragmentBlock.rgba.isConnected) {
-                    nodeB.getLinksForConnectionPoint(fragmentBlock.rgba)[0].dispose();
-                } else if (pointB.name === "rgba" && fragmentBlock.rgb.isConnected) {
-                    nodeB.getLinksForConnectionPoint(fragmentBlock.rgb)[0].dispose();
-                }                     
-            }
-        } else {
-            let message = "";
-
-            switch (compatibilityState) {
-                case NodeMaterialConnectionPointCompatibilityStates.TypeIncompatible:
-                    message = "Cannot connect two different connection types";
-                    break;
-                case NodeMaterialConnectionPointCompatibilityStates.TargetIncompatible:
-                    message = "Source block can only work in fragment shader whereas destination block is currently aimed for the vertex shader";
-                    break;
-            }
-
-            this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(message);             
-            return;
-        }
-
-        let linksToNotifyForDispose: Nullable<NodeLink[]> = null;
-
-        if (pointB.isConnected) {
-            let links = nodeB.getLinksForConnectionPoint(pointB);
-
-            linksToNotifyForDispose = links.slice();
-
-            links.forEach(link => {
-                link.dispose(false);
-            });
-        }
-
-        if (pointB.ownerBlock.inputsAreExclusive) { // Disconnect all inputs if block has exclusive inputs
-            pointB.ownerBlock.inputs.forEach(i => {
-                let links = nodeB.getLinksForConnectionPoint(i);
-
-                if (!linksToNotifyForDispose) {
-                    linksToNotifyForDispose = links.slice();
-                } else {
-                    linksToNotifyForDispose.push(...links.slice());
-                }
-
-                links.forEach(link => {
-                    link.dispose(false);
-                });
-            })
-        }
-
-        pointA.connectTo(pointB);
-        this.connectPorts(pointA, pointB);
-
-        if (pointB.innerType === NodeMaterialBlockConnectionPointTypes.AutoDetect) {
-            // need to potentially propagate the type of pointA to other ports of blocks connected to owner of pointB
-
-            const refreshNode = (node: GraphNode) => {
-                node.refresh();
-
-                const links = node.links;
-
-                // refresh first the nodes so that the right types are assigned to the auto-detect ports
-                links.forEach((link) => {
-                    const nodeA = link.nodeA, nodeB = link.nodeB;
-
-                    if (!visitedNodes.has(nodeA)) {
-                        visitedNodes.add(nodeA);
-                        refreshNode(nodeA);
-                    }
-
-                    if (nodeB && !visitedNodes.has(nodeB)) {
-                        visitedNodes.add(nodeB);
-                        refreshNode(nodeB);
-                    }
-                });
-
-                // then refresh the links to display the right color between ports
-                links.forEach((link) => {
-                    if (!visitedLinks.has(link)) {
-                        visitedLinks.add(link);
-                        link.update();
-                    }
-                });
-            };
-
-            const visitedNodes = new Set<GraphNode>([nodeA]);
-            const visitedLinks = new Set<NodeLink>([nodeB.links[nodeB.links.length - 1]]);
-
-            refreshNode(nodeB);
-        } else {
-            nodeB.refresh();
-        }
-
-        linksToNotifyForDispose?.forEach((link) => {
-            link.onDisposedObservable.notifyObservers(link);
-            link.onDisposedObservable.clear();
-        });
-
-        this.props.globalState.onRebuildRequiredObservable.notifyObservers();
-    }
 
     processEditorData(editorData: IEditorData) {
         const frames = this._frames.splice(0);

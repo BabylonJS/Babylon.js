@@ -516,7 +516,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
             this._graphCanvas._isLoading = false;
             for (var node of this._graphCanvas.nodes) {
-                node._refreshLinks();
             }
             this.hideWaitScreen();
         });
