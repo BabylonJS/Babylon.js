@@ -5,7 +5,7 @@ import { Button } from "./button";
 import { Control } from "./control";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
-import { IFocusableControl } from '../advancedDynamicTexture';
+import { IFocusableControl } from "./focusableControl";
 import { Observable } from 'babylonjs/Misc/observable';
 
 /**
@@ -89,7 +89,7 @@ export class FocusableButton extends Button implements IFocusableControl {
         // Clicking on button should focus
         this.focus();
 
-        super._onPointerDown(target, coordinates, pointerId, buttonIndex, pi);
+        return super._onPointerDown(target, coordinates, pointerId, buttonIndex, pi);
     }
 
     /** @hidden */
