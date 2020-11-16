@@ -426,6 +426,20 @@ export class InputText extends Control implements IFocusableControl {
 
     }
 
+    /**
+     * Function to focus an inputText programmatically
+     */
+    public focus() {
+        this._host.moveFocusToControl(this);
+    }
+
+    /**
+     * Function to unfocus an inputText programmatically
+     */
+    public blur() {
+        this._host.focusedControl = null;
+    }
+
     protected _getTypeName(): string {
         return "InputText";
     }
