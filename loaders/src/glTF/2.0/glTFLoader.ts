@@ -2073,17 +2073,17 @@ export class GLTFLoader implements IGLTFLoader {
 
         if (Tools.IsBase64(uri)) {
             const data = new Uint8Array(Tools.DecodeBase64(uri));
-            this.log(`Decoded ${uri.substr(0, 64)}... (${data.length} bytes)`);
+            this.log(`${context}: Decoded ${uri.substr(0, 64)}... (${data.length} bytes)`);
             return Promise.resolve(data);
         }
 
-        this.log(`Loading ${uri}`);
+        this.log(`${context}: Loading ${uri}`);
 
         return this._parent.preprocessUrlAsync(this._rootUrl + uri).then((url) => {
             return new Promise((resolve, reject) => {
                 this._parent._loadFile(url, this._babylonScene, (data) => {
                     if (!this._disposed) {
-                        this.log(`Loaded ${uri} (${(data as ArrayBuffer).byteLength} bytes)`);
+                        this.log(`${context}: Loaded ${uri} (${(data as ArrayBuffer).byteLength} bytes)`);
                         resolve(new Uint8Array(data as ArrayBuffer));
                     }
                 }, true, (request) => {
