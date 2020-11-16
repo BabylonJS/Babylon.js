@@ -22,8 +22,6 @@ export class GraphNode {
     private _outputsContainer: HTMLDivElement;
     private _content: HTMLDivElement;    
     private _comments: HTMLDivElement;
-    private _inputPorts: NodePort[] = [];
-    private _outputPorts: NodePort[] = []; 
     private _x = 0;
     private _y = 0;
     private _gridAlignedX = 0;
@@ -52,26 +50,8 @@ export class GraphNode {
             this._visual.classList.add("hidden");
         } else {
             this._visual.classList.remove("hidden");
-            this._upateNodePortNames();
         }
     }
-
-    private _upateNodePortNames(){
-        for (var port of this._inputPorts.concat(this._outputPorts)) {
-            if(port.hasLabel()){
-                port.portName = port.connectionPoint.displayName || port.connectionPoint.name;
-            }
-        }
-    }
-
-    public get outputPorts() {
-        return this._outputPorts;
-    }
-
-    public get inputPorts() {
-        return this._inputPorts;
-    }
-
 
     public get gridAlignedX() {
         return this._gridAlignedX;
@@ -230,27 +210,6 @@ export class GraphNode {
         }
         return isOverlappingFrame;
     }
-
-    public getPortForConnectionPoint(point: NodeMaterialConnectionPoint) {
-        for (var port of this._inputPorts) {
-            let attachedPoint = port.connectionPoint;
-
-            if (attachedPoint === point) {
-                return port;
-            }
-        }
-
-        for (var port of this._outputPorts) {
-            let attachedPoint = port.connectionPoint;
-
-            if (attachedPoint === point) {
-                return port;
-            }
-        }
-
-        return null;
-    }
-
     
     private _refreshFrames() {       
         if (this._ownerCanvas._frameIsMoving || this._ownerCanvas._isLoading) {
@@ -275,14 +234,6 @@ export class GraphNode {
             }
         } else {
             this._header.innerHTML = this.block.name;
-        }
-
-        for (var port of this._inputPorts) {
-            port.refresh();
-        }
-
-        for (var port of this._outputPorts) {
-            port.refresh();
         }
 
         if(this.enclosingFrameId !== -1) {   
@@ -438,15 +389,6 @@ export class GraphNode {
             
         this._visual.appendChild(this._comments);    
 
-        // Connections
-        for (var input of this.block.inputs) {
-            this._inputPorts.push(NodePort.CreatePortElement(input,  this, this._inputsContainer, this._displayManager, this._globalState));
-        }
-
-        for (var output of this.block.outputs) {
-            this._outputPorts.push(NodePort.CreatePortElement(output,  this, this._outputsContainer, this._displayManager, this._globalState));
-        }
-
         this.refresh();
     }
 
@@ -472,14 +414,6 @@ export class GraphNode {
 
         if (this._onFrameCreatedObserver) {
             this._globalState.onFrameCreatedObservable.remove(this._onFrameCreatedObserver);
-        }
-
-        for (var port of this._inputPorts) {
-            port.dispose();
-        }
-
-        for (var port of this._outputPorts) {
-            port.dispose();
         }
 
         this.block.dispose();
