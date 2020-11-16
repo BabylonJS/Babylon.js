@@ -328,29 +328,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         var nodeA = this.findNodeFromBlock(blockA);
         var nodeB = this.findNodeFromBlock(blockB);
 
-        if (!nodeA || !nodeB) {
-            return;
-        }
-
-        var portA = nodeA.getPortForConnectionPoint(pointA);
-        var portB = nodeB.getPortForConnectionPoint(pointB);
-
-        if (!portA || !portB) {
-            return;
-        }
-
-        for (var currentLink of this._links) {
-            if (currentLink.portA === portA && currentLink.portB === portB) {
-                return;
-            }
-            if (currentLink.portA === portB && currentLink.portB === portA) {
-                return;
-            }
-        }
-
-        const link = new NodeLink(this, portA, nodeA, portB, nodeB);
-        this._links.push(link);
-
     }
 
     removeLink(link: NodeLink) {
