@@ -28129,6 +28129,7 @@ declare module BABYLON {
          * @hidden
          */
         get checkCollisions(): boolean;
+        set checkCollisions(value: boolean);
         /** @hidden */
         _bind(subMesh: SubMesh, effect: Effect, fillMode: number): Mesh;
         /** @hidden */
