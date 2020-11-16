@@ -924,7 +924,9 @@ export class EdgesRenderer implements IEdgesRenderer {
             engine.unbindInstanceAttributes();
         }
 
-        this.customInstances.reset();
+        if (!this._source.getScene()._activeMeshesFrozen) {
+            this.customInstances.reset();
+        }
     }
 }
 

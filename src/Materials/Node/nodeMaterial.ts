@@ -1720,6 +1720,10 @@ export class NodeMaterial extends PushMaterial {
             for (var candidate of source.blocks) {
                 let target = map[candidate.id];
 
+                if (!target) {
+                    continue;
+                }
+
                 for (var input of candidate.inputs) {
                     if (map[input.targetBlockId] === block && input.targetConnectionName === outputPoint.name) {
                         let inputPoint = target.getInputByName(input.inputName);
@@ -1765,6 +1769,10 @@ export class NodeMaterial extends PushMaterial {
         for (var blockIndex = 0; blockIndex < source.blocks.length; blockIndex++) {
             let parsedBlock = source.blocks[blockIndex];
             let block = map[parsedBlock.id];
+
+            if (!block) {
+                continue;
+            }
 
             if (block.inputs.length && !merge) {
                 continue;
@@ -1866,7 +1874,10 @@ export class NodeMaterial extends PushMaterial {
         var material = new NodeMaterial(name, scene);
 
         return new Promise((resolve, reject) => {
-            return material.loadAsync(url).then(() => resolve(material)).catch(reject);
+            return material.loadAsync(url).then(() => {
+                material.build();
+                resolve(material);
+            }).catch(reject);
         });
     }
 

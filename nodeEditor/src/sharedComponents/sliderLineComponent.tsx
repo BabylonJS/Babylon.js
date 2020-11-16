@@ -106,7 +106,7 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
 
         return (
             <div className="sliderLine">
-                <div className="label">
+                <div className="label" title={this.props.label}>
                     {this.props.label}
                 </div>
                 <FloatLineComponent globalState={this.props.globalState} smallUI={true} label="" target={this.state} propertyName="value" min={this.prepareDataToRead(this.props.minimum)} max={this.prepareDataToRead(this.props.maximum)}

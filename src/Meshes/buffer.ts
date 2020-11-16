@@ -13,6 +13,7 @@ export class Buffer {
     private _updatable: boolean;
     private _instanced: boolean;
     private _divisor: number;
+    private _isAlreadyOwned = false;
 
     /**
      * Gets the byte stride.
@@ -168,6 +169,20 @@ export class Buffer {
         }
     }
 
+    /** @hidden */
+    public _increaseReferences() {
+        if (!this._buffer) {
+            return;
+        }
+
+        if (!this._isAlreadyOwned) {
+            this._isAlreadyOwned = true;
+            return;
+        }
+
+        this._buffer.references++;
+    }
+
     /**
      * Release all resources
      */
@@ -279,12 +294,17 @@ export class VertexBuffer {
      * @param normalized whether the data contains normalized data (optional)
      * @param useBytes set to true if stride and offset are in bytes (optional)
      * @param divisor defines the instance divisor to use (1 by default)
+     * @param takeBufferOwnership defines if the buffer should be released when the vertex buffer is disposed
      */
     constructor(engine: any, data: DataArray | Buffer, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number,
-        instanced?: boolean, offset?: number, size?: number, type?: number, normalized = false, useBytes = false, divisor = 1) {
+        instanced?: boolean, offset?: number, size?: number, type?: number, normalized = false, useBytes = false, divisor = 1, takeBufferOwnership = false) {
         if (data instanceof Buffer) {
             this._buffer = data;
-            this._ownsBuffer = false;
+            this._ownsBuffer = takeBufferOwnership;
+
+            if (takeBufferOwnership) {
+                this._buffer._increaseReferences();
+            }
         } else {
             this._buffer = new Buffer(engine, data, updatable, stride, postponeInternalCreation, instanced, useBytes);
             this._ownsBuffer = true;

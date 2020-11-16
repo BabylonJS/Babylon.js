@@ -86,6 +86,9 @@ struct clearcoatOutParams
                 const in sampler2D reflectionSamplerHigh,
             #endif
         #endif
+        #ifdef REALTIME_FILTERING
+            const in vec2 vReflectionFilteringInfo,
+        #endif
     #endif
     #if defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
         #ifdef RADIANCEOCCLUSION
@@ -254,6 +257,9 @@ struct clearcoatOutParams
             #ifndef LODBASEDMICROSFURACE
                 reflectionSamplerLow,
                 reflectionSamplerHigh,
+            #endif
+            #ifdef REALTIME_FILTERING
+                vReflectionFilteringInfo,
             #endif
                 environmentClearCoatRadiance
             );

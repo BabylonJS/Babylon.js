@@ -579,10 +579,10 @@ export class EnvironmentHelper {
             return;
         }
 
-        const diffuseTexture = new Texture(this._options.groundTexture, this._scene, undefined, undefined, undefined, undefined, this._errorHandler);
-        diffuseTexture.gammaSpace = false;
-        diffuseTexture.hasAlpha = true;
-        this._groundMaterial.diffuseTexture = diffuseTexture;
+        this._groundTexture = new Texture(this._options.groundTexture, this._scene, undefined, undefined, undefined, undefined, this._errorHandler);
+        this._groundTexture.gammaSpace = false;
+        this._groundTexture.hasAlpha = true;
+        this._groundMaterial.diffuseTexture = this._groundTexture;
     }
 
     /**

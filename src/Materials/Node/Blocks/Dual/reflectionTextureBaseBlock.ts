@@ -161,7 +161,8 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         defines.setValue(this._defineLocalCubicName, (<any>texture).boundingBoxSize ? true : false, true);
         defines.setValue(this._defineExplicitName, texture.coordinatesMode === Constants.TEXTURE_EXPLICIT_MODE, true);
         defines.setValue(this._defineSkyboxName, texture.coordinatesMode === Constants.TEXTURE_SKYBOX_MODE, true);
-        defines.setValue(this._defineCubicName, texture.coordinatesMode === Constants.TEXTURE_CUBIC_MODE, true);
+        defines.setValue(this._defineCubicName, texture.coordinatesMode === Constants.TEXTURE_CUBIC_MODE || texture.coordinatesMode === Constants.TEXTURE_INVCUBIC_MODE, true);
+        defines.setValue("INVERTCUBICMAP", texture.coordinatesMode === Constants.TEXTURE_INVCUBIC_MODE, true);
         defines.setValue(this._defineSphericalName, texture.coordinatesMode === Constants.TEXTURE_SPHERICAL_MODE, true);
         defines.setValue(this._definePlanarName, texture.coordinatesMode === Constants.TEXTURE_PLANAR_MODE, true);
         defines.setValue(this._defineProjectionName, texture.coordinatesMode === Constants.TEXTURE_PROJECTION_MODE, true);

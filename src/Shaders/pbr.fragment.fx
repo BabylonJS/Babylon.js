@@ -273,6 +273,9 @@ void main(void) {
             reflectionSamplerLow,
             reflectionSamplerHigh,
         #endif
+        #ifdef REALTIME_FILTERING
+            vReflectionFilteringInfo,
+        #endif
             reflectionOut
         );
     #endif
@@ -324,6 +327,9 @@ void main(void) {
             #ifndef LODBASEDMICROSFURACE
                 reflectionSamplerLow,
                 reflectionSamplerHigh,
+            #endif
+            #ifdef REALTIME_FILTERING
+                vReflectionFilteringInfo,
             #endif
             #if !defined(REFLECTIONMAP_SKYBOX) && defined(RADIANCEOCCLUSION)
                 seo,
@@ -406,6 +412,9 @@ void main(void) {
                 reflectionSamplerLow,
                 reflectionSamplerHigh,
             #endif
+            #ifdef REALTIME_FILTERING
+                vReflectionFilteringInfo,
+            #endif
         #endif
         #if defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
             #ifdef RADIANCEOCCLUSION
@@ -445,6 +454,10 @@ void main(void) {
                     #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
                         reflectionOut.irradianceVector,
                     #endif
+                    #if defined(REALTIME_FILTERING)
+                        reflectionSampler,
+                        vReflectionFilteringInfo,
+                    #endif
                 #endif
                 #ifdef USEIRRADIANCEMAP
                     irradianceSampler,
@@ -478,6 +491,9 @@ void main(void) {
             #endif
             #ifdef ANISOTROPIC
                 anisotropicOut,
+            #endif
+            #ifdef REALTIME_FILTERING
+                vRefractionFilteringInfo,
             #endif
         #endif
         #ifdef SS_TRANSLUCENCY
