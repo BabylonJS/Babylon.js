@@ -1,4 +1,5 @@
 import { Nullable } from "babylonjs/types";
+import { Tools } from "babylonjs/Misc/tools";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import { IBufferView } from "../glTFLoaderInterfaces";
@@ -35,7 +36,7 @@ export class EXT_meshopt_compression implements IGLTFLoaderExtension {
         this._loader = loader;
 
         if (this.enabled) {
-            var url = EXT_meshopt_compression.DecoderPath;
+            var url = Tools.GetAbsoluteUrl(EXT_meshopt_compression.DecoderPath);
 
             this._decoder = import(/* webpackIgnore: true */ url).then(function (result) {
                 // Wait for WebAssembly compilation before resolving promise
