@@ -27,6 +27,7 @@ import { HardwareTextureWrapper } from '../../Materials/Textures/hardwareTexture
 import { BaseTexture } from '../../Materials/Textures/baseTexture';
 import { Engine } from '../engine';
 import { WebGPUHardwareTexture } from './webgpuHardwareTexture';
+import { IColor4Like } from '../../Maths/math.like';
 
 // TODO WEBGPU improve mipmap generation by not using the OutputAttachment flag
 // see https://github.com/toji/web-texture-tool/tree/main/src
@@ -89,6 +90,26 @@ const invertYPreMultiplyAlphaFragmentSource = `
     }
     `;
 
+const clearVertexSource = `
+    const vec2 pos[4] = vec2[4](vec2(-1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(-1.0f, -1.0f), vec2(1.0f, -1.0f));
+
+    void main() {
+        gl_Position = vec4(pos[gl_VertexIndex], 0.0, 1.0);
+    }
+    `;
+
+const clearFragmentSource = `
+    layout(set = 0, binding = 0) uniform Uniforms {
+        uniform vec4 color;
+    };
+
+    layout(location = 0) out vec4 outColor;
+
+    void main() {
+        outColor = color;
+    }
+    `;
+
 const filterToBits = [
     0 | 0 << 1 | 0 << 2, // not used
     0 | 0 << 1 | 0 << 2, // TEXTURE_NEAREST_SAMPLINGMODE / TEXTURE_NEAREST_NEAREST
@@ -134,6 +155,23 @@ const filterNoMipToBits = [
     1 << 7, // TEXTURE_LINEAR_NEAREST
 ];
 
+enum PipelineType {
+    MipMap = 0,
+    InvertYPremultiplyAlpha = 1,
+    Clear = 2,
+}
+
+interface pipelineParameters {
+    invertY?: boolean;
+    premultiplyAlpha?: boolean;
+}
+
+const shadersForPipelineType = [
+    { vertex: mipmapVertexSource, fragment: mipmapFragmentSource },
+    { vertex: invertYPreMultiplyAlphaVertexSource, fragment: invertYPreMultiplyAlphaFragmentSource },
+    { vertex: clearVertexSource, fragment: clearFragmentSource },
+];
+
 export class WebGPUTextureHelper {
 
     private _device: GPUDevice;
@@ -166,30 +204,39 @@ export class WebGPUTextureHelper {
         this._getPipeline(WebGPUConstants.TextureFormat.RGBA8Unorm);
     }
 
-    private _getPipeline(format: GPUTextureFormat, forMipMap = true, invertY = false, premultiplyAlpha = false): GPURenderPipeline {
-        const index = (forMipMap ? 1 : 0) + ((invertY ? 1 : 0) << 1) + (premultiplyAlpha ? 1 : 0) << 2;
+    private _getPipeline(format: GPUTextureFormat, type: PipelineType = PipelineType.MipMap, params?: pipelineParameters): GPURenderPipeline {
+        const index =
+                type === PipelineType.MipMap ? 1 << 0 :
+                type === PipelineType.InvertYPremultiplyAlpha ? ((params!.invertY ? 1 : 0) << 1) + ((params!.premultiplyAlpha ? 1 : 0) << 2) :
+                type === PipelineType.Clear ? 1 << 3 : 0;
+
         if (!this._pipelines[format]) {
             this._pipelines[format] = [];
         }
+
         let pipeline = this._pipelines[format][index];
         if (!pipeline) {
             let defines = "#version 450\r\n";
-            if (invertY) {
-                defines += "#define INVERTY\r\n";
+            if (type === PipelineType.InvertYPremultiplyAlpha) {
+                if (params!.invertY) {
+                    defines += "#define INVERTY\r\n";
+                }
+                if (params!.premultiplyAlpha) {
+                    defines += "define PREMULTIPLYALPHA\r\n";
+                }
             }
-            if (premultiplyAlpha) {
-                defines += "define PREMULTIPLYALPHA\r\n";
-            }
+
             let modules = this._compiledShaders[index];
             if (!modules) {
                 const vertexModule = this._device.createShaderModule({
-                    code: this._glslang.compileGLSL(forMipMap ? defines + mipmapVertexSource : defines + invertYPreMultiplyAlphaVertexSource, 'vertex')
+                    code: this._glslang.compileGLSL(defines + shadersForPipelineType[type].vertex, 'vertex')
                 });
                 const fragmentModule = this._device.createShaderModule({
-                    code: this._glslang.compileGLSL(forMipMap ? defines + mipmapFragmentSource : defines + invertYPreMultiplyAlphaFragmentSource, 'fragment')
+                    code: this._glslang.compileGLSL(defines + shadersForPipelineType[type].fragment, 'fragment')
                 });
                 modules = this._compiledShaders[index] = [vertexModule, fragmentModule];
             }
+
             pipeline = this._pipelines[format][index] = this._device.createRenderPipeline({
                 vertexStage: {
                     module: modules[0],
@@ -208,6 +255,7 @@ export class WebGPUTextureHelper {
                 }]
             });
         }
+
         return pipeline;
     }
 
@@ -600,7 +648,7 @@ export class WebGPUTextureHelper {
 
     public invertYPreMultiplyAlpha(gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY = false, premultiplyAlpha = false, faceIndex= 0, commandEncoder?: GPUCommandEncoder): void {
         const useOwnCommandEncoder = commandEncoder === undefined;
-        const pipeline = this._getPipeline(format, false, invertY, premultiplyAlpha);
+        const pipeline = this._getPipeline(format, PipelineType.InvertYPremultiplyAlpha, { invertY, premultiplyAlpha });
         const bindGroupLayout = pipeline.getBindGroupLayout(0);
 
         if (useOwnCommandEncoder) {
@@ -670,6 +718,35 @@ export class WebGPUTextureHelper {
             this._device.defaultQueue.submit([commandEncoder!.finish()]);
             commandEncoder = null as any;
         }
+    }
+
+    public clear(format: GPUTextureFormat, color: IColor4Like, passEncoder: GPURenderPassEncoder): void {
+        const pipeline = this._getPipeline(format, PipelineType.Clear);
+        const bindGroupLayout = pipeline.getBindGroupLayout(0);
+
+        const buffer = this._bufferManager.createRawBuffer(4 * 4, WebGPUConstants.BufferUsage.CopySrc | WebGPUConstants.BufferUsage.Uniform, true);
+
+        /*const arrayBuffer = buffer.getMappedRange();
+
+        new Float32Array(arrayBuffer).set([color.r, color.g, color.b, color.a]);
+
+        buffer.unmap();*/
+
+        const bindGroup = this._device.createBindGroup({
+            layout: bindGroupLayout,
+            entries: [{
+                binding: 0,
+                resource: {
+                    buffer,
+                },
+            }],
+        });
+
+        passEncoder.setPipeline(pipeline);
+        passEncoder.setBindGroup(0, bindGroup);
+        passEncoder.draw(4, 1, 0, 0);
+
+        this._bufferManager.releaseBuffer(buffer);
     }
 
     //------------------------------------------------------------------------------
@@ -956,7 +1033,7 @@ export class WebGPUTextureHelper {
                     commandEncoder = this._device.createCommandEncoder({});
                 }
 
-                const buffer = this._bufferManager.createRawBuffer(imageBitmap.byteLength, GPUBufferUsage.MAP_WRITE | GPUBufferUsage.COPY_SRC, true);
+                const buffer = this._bufferManager.createRawBuffer(imageBitmap.byteLength, WebGPUConstants.BufferUsage.MapWrite | WebGPUConstants.BufferUsage.CopySrc, true);
 
                 const arrayBuffer = buffer.getMappedRange();
 
@@ -1008,7 +1085,7 @@ export class WebGPUTextureHelper {
 
         const size = bytesPerRowAligned * height;
 
-        const gpuBuffer = this._bufferManager.createRawBuffer(size, GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST);
+        const gpuBuffer = this._bufferManager.createRawBuffer(size, WebGPUConstants.BufferUsage.MapRead | WebGPUConstants.BufferUsage.CopyDst);
 
         const commandEncoder = this._device.createCommandEncoder({});
 
