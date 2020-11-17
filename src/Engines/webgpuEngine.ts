@@ -37,6 +37,9 @@ import { IMultiRenderTargetOptions } from '../Materials/Textures/multiRenderTarg
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
 
+//import "../Shaders/clearQuad.vertex.fx";
+//import "../Shaders/clearQuad.fragment.fx";
+
 // TODO WEBGPU remove when not needed anymore
 function assert(condition: any, msg?: string): asserts condition {
     if (!condition) {
@@ -46,7 +49,7 @@ function assert(condition: any, msg?: string): asserts condition {
 
 const dbgShowShaderCode = false;
 const dbgSanityChecks = false;
-const dbgGenerateLogs = false;
+const dbgGenerateLogs = true;
 const dbgVerboseLogsForFirstFrames = false;
 const dbgVerboseLogsNumFrames = 10;
 const dbgShowWarningsNotImplemented = false;
@@ -174,6 +177,7 @@ export class WebGPUEngine extends Engine {
     private _lastCachedWrapV: number;
     private _lastCachedWrapR: number;
     private _mrtAttachments: number[];
+    private _privateShaders: { [name: string]: IWebGPURenderPipelineStageDescriptor } = {};
     private _counters: {
         numPipelineDescriptorCreation: number;
         numBindGroupsCreation: number;
@@ -682,7 +686,7 @@ export class WebGPUEngine extends Engine {
 
             if (dbgVerboseLogsForFirstFrames) {
                 if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
-                    console.log("frame #" + (this as any)._count + " - _viewport applied - (", x, y, w, h, ") current pass is main pass=" + (renderPass === this._mainRenderPassWrapper.renderPass));
+                    console.log("frame #" + (this as any)._count + " - viewport applied - (", x, y, w, h, ") current pass is main pass=" + (renderPass === this._mainRenderPassWrapper.renderPass));
                 }
             }
         }
@@ -696,16 +700,61 @@ export class WebGPUEngine extends Engine {
         this._viewportCached.w = height;
     }
 
-    public enableScissor(x: number, y: number, width: number, height: number): void {
-        const renderPass = this._getCurrentRenderPass();
+    private _scissorsCurrent: Array<{ x: number, y: number, w: number, h: number }> = [{ x: 0, y: 0, w: 0, h: 0 }, { x: 0, y: 0, w: 0, h: 0 }];
+    protected _scissorCached = { x: 0, y: 0, z: 0, w: 0 };
 
-        renderPass.setScissorRect(x, y, width, height);
+    private _resetCurrentScissor(index: number) {
+        this._scissorsCurrent[index].x = 0;
+        this._scissorsCurrent[index].y = 0;
+        this._scissorsCurrent[index].w = 0;
+        this._scissorsCurrent[index].h = 0;
+    }
+
+    private _applyScissor(renderPass: GPURenderPassEncoder): void {
+        const index = renderPass === this._mainRenderPassWrapper.renderPass ? 0 : 1;
+
+        const x = this._scissorCached.x,
+              y = this._scissorCached.y,
+              w = this._scissorCached.z,
+              h = this._scissorCached.w;
+
+        if (this._scissorsCurrent[index].x !== x || this._scissorsCurrent[index].y !== y ||
+            this._scissorsCurrent[index].w !== w || this._scissorsCurrent[index].h !== h)
+        {
+            this._scissorsCurrent[index].x = x;
+            this._scissorsCurrent[index].y = y;
+            this._scissorsCurrent[index].w = w;
+            this._scissorsCurrent[index].h = h;
+
+            renderPass.setScissorRect(x, y, w, h);
+
+            if (dbgVerboseLogsForFirstFrames) {
+                if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
+                    console.log("frame #" + (this as any)._count + " - scissor applied - (", x, y, w, h, ") current pass is main pass=" + (renderPass === this._mainRenderPassWrapper.renderPass));
+                }
+            }
+        }
+    }
+
+    private _scissorIsActive() {
+        return  this._scissorCached.x !== 0 ||
+                this._scissorCached.y !== 0 ||
+                this._scissorCached.z !== this.getRenderWidth() ||
+                this._scissorCached.w !== this.getRenderHeight();
+    }
+
+    public enableScissor(x: number, y: number, width: number, height: number): void {
+        this._scissorCached.x = x;
+        this._scissorCached.y = y;
+        this._scissorCached.z = width;
+        this._scissorCached.w = height;
     }
 
     public disableScissor() {
-        const renderPass = this._getCurrentRenderPass();
-
-        renderPass.setScissorRect(0, 0, this.getRenderWidth(), this.getRenderHeight());
+        this._scissorCached.x = 0;
+        this._scissorCached.y = 0;
+        this._scissorCached.z = this.getRenderWidth();
+        this._scissorCached.w = this.getRenderHeight();
     }
 
     public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
@@ -727,16 +776,7 @@ export class WebGPUEngine extends Engine {
             }
             this._startRenderTargetRenderPass(this._currentRenderTarget!, backBuffer ? color : null, depth, stencil);
         } else {
-            if (this.useReverseDepthBuffer) {
-                this._depthCullingState.depthFunc = Constants.GREATER;
-            }
-
-            (this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments as GPURenderPassColorAttachmentDescriptor[])[0].loadValue = backBuffer && color ? color : WebGPUConstants.LoadOp.Load;
-
-            this._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.depthLoadValue = depth ? (this.useReverseDepthBuffer ? this._clearReverseDepthValue : this._clearDepthValue) : WebGPUConstants.LoadOp.Load;
-            this._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.stencilLoadValue = stencil ? this._clearStencilValue : WebGPUConstants.LoadOp.Load;
-
-            this._startMainRenderPass();
+            this._startMainRenderPass(true, backBuffer ? color : null, depth, stencil);
         }
     }
 
@@ -2286,7 +2326,7 @@ export class WebGPUEngine extends Engine {
         if (currentPassType === 1) {
             this._startRenderTargetRenderPass(this._currentRenderTarget!, null, false, false);
         } else if (currentPassType === 2) {
-            this._startMainRenderPass();
+            this._startMainRenderPass(false);
         }
     }
 
@@ -2294,7 +2334,7 @@ export class WebGPUEngine extends Engine {
     //                              Render Pass
     //------------------------------------------------------------------------------
 
-    private _startRenderTargetRenderPass(internalTexture: InternalTexture, clearColor: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean = false) {
+    private _startRenderTargetRenderPass(internalTexture: InternalTexture, clearColor: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean) {
         const gpuWrapper = internalTexture._hardwareTexture as WebGPUHardwareTexture;
         const gpuTexture = gpuWrapper.underlyingResource!;
 
@@ -2372,6 +2412,7 @@ export class WebGPUEngine extends Engine {
         this._debugFlushPendingCommands();
 
         this._resetCurrentViewport(1);
+        this._resetCurrentScissor(1);
     }
 
     private _endRenderTargetRenderPass() {
@@ -2384,6 +2425,7 @@ export class WebGPUEngine extends Engine {
             }
             this._debugPopGroup(1);
             this._resetCurrentViewport(1);
+            this._resetCurrentScissor(1);
             this._currentRenderPass = null;
             this._rttRenderPassWrapper.reset();
         }
@@ -2394,7 +2436,7 @@ export class WebGPUEngine extends Engine {
             // delayed creation of the render target pass, but we now need to create it as we are requested the render pass
             this._startRenderTargetRenderPass(this._currentRenderTarget, null, false, false);
         } else if (!this._currentRenderPass) {
-            this._startMainRenderPass();
+            this._startMainRenderPass(false);
         }
 
         return this._currentRenderPass!;
@@ -2404,9 +2446,25 @@ export class WebGPUEngine extends Engine {
         return !!this._currentRenderTarget?._attachments ?? false;
     }
 
-    private _startMainRenderPass(): void {
+    private _startMainRenderPass(setClearStates: boolean, clearColor?: Nullable<IColor4Like>, clearDepth?: boolean, clearStencil?: boolean): void {
         if (this._mainRenderPassWrapper.renderPass) {
             this._endMainRenderPass();
+        }
+
+        if (this.useReverseDepthBuffer) {
+            this.setDepthFunctionToGreater();
+        }
+
+        const scissorIsActive = this._scissorIsActive();
+
+        if (setClearStates) {
+            const colorClearValue = scissorIsActive ? WebGPUConstants.LoadOp.Load : clearColor ? clearColor : WebGPUConstants.LoadOp.Load;
+            const depthClearValue = scissorIsActive ? WebGPUConstants.LoadOp.Load : clearDepth ? (this.useReverseDepthBuffer ? this._clearReverseDepthValue : this._clearDepthValue) : WebGPUConstants.LoadOp.Load;
+            const stencilClearValue = scissorIsActive ? WebGPUConstants.LoadOp.Load : clearStencil ? this._clearStencilValue : WebGPUConstants.LoadOp.Load;
+
+            (this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments as GPURenderPassColorAttachmentDescriptor[])[0].loadValue = colorClearValue;
+            this._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.depthLoadValue = depthClearValue;
+            this._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.stencilLoadValue = stencilClearValue;
         }
 
         this._swapChainTexture = this._swapChain.getCurrentTexture();
@@ -2435,6 +2493,105 @@ export class WebGPUEngine extends Engine {
         this._debugFlushPendingCommands();
 
         this._resetCurrentViewport(0);
+        this._resetCurrentScissor(0);
+
+        if (setClearStates && scissorIsActive) {
+            this._applyScissor(this._currentRenderPass);
+            const pipeline = this._device.createRenderPipeline({
+                sampleCount: this._currentRenderTarget ? this._currentRenderTarget.samples : this._mainPassSampleCount,
+                primitiveTopology: WebGPUConstants.PrimitiveTopology.TriangleStrip,
+                vertexState: {
+                    indexFormat: WebGPUConstants.IndexFormat.Uint16
+                },
+
+                depthStencilState: this._depthTextureFormat === undefined ? undefined : {
+                    depthWriteEnabled: clearDepth,
+                    depthCompare: WebGPUConstants.CompareFunction.Always,
+                    format: this._depthTextureFormat,
+                    /*stencilFront: {
+                        compare: clearStencil ? WebGPUConstants.CompareFunction.Always : WebGPUConstants.CompareFunction.Never,
+                        passOp: clearStencil ? WebGPUConstants.StencilOperation.Replace : WebGPUConstants.StencilOperation.Keep,
+                    },*/
+                    stencilReadMask: 0xFF,
+                    stencilWriteMask: clearStencil ? 0xFF : 0,
+                },
+
+                colorStates: [{
+                    format: this._colorFormat,
+                    writeMask: clearColor ? WebGPUConstants.ColorWrite.All : 0,
+                }],
+
+                ...this._getCompiledShaders("clearQuad"),
+            });
+
+            const bindGroupLayout = pipeline.getBindGroupLayout(0);
+
+            const buffer = this._bufferManager.createBuffer(4 * 4, WebGPUConstants.BufferUsage.CopyDst | WebGPUConstants.BufferUsage.Uniform) as WebGPUDataBuffer;
+
+            if (clearColor) {
+                const data = new Float32Array([clearColor.r, clearColor.g, clearColor.b, clearColor.a]);
+                this._bufferManager.setSubData(buffer, 0, data);
+            }
+
+            const bindGroup = this._device.createBindGroup({
+                layout: bindGroupLayout,
+                entries: [{
+                    binding: 0,
+                    resource: {
+                        buffer: buffer.underlyingResource,
+                    },
+                }],
+            });
+
+            this._currentRenderPass.setPipeline(pipeline);
+            this._currentRenderPass.setBindGroup(0, bindGroup);
+            this._currentRenderPass.draw(4, 1, 0, 0);
+
+            this._bufferManager.releaseBuffer(buffer);
+        }
+    }
+
+    private _getCompiledShaders(name: string): IWebGPURenderPipelineStageDescriptor {
+        let shaders = this._privateShaders[name];
+        if (!shaders) {
+            const vertexShader = /*Effect.ShadersStore[name + "VertexShader"];*/`
+                #version 450
+
+                const vec2 pos[4] = vec2[4](vec2(-1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(-1.0f, -1.0f), vec2(1.0f, -1.0f));
+
+                void main() {
+                    gl_Position = vec4(pos[gl_VertexIndex], 0.0, 1.0);
+                }
+            `;
+            const fragmentShader = /*Effect.ShadersStore[name + "PixelShader"];*/`
+                #version 450
+
+                layout(set = 0, binding = 0) uniform Uniforms {
+                    uniform vec4 color;
+                };
+
+                layout(location = 0) out vec4 outColor;
+
+                void main() {
+                    outColor = color;
+                }
+            `;
+            shaders = this._privateShaders[name] = {
+                vertexStage: {
+                    module: this._device.createShaderModule({
+                        code: this._glslang.compileGLSL(vertexShader, 'vertex')
+                    }),
+                    entryPoint: 'main'
+                },
+                fragmentStage: {
+                    module: this._device.createShaderModule({
+                        code: this._glslang.compileGLSL(fragmentShader, 'fragment')
+                    }),
+                    entryPoint: 'main'
+                }
+            };
+        }
+        return shaders;
     }
 
     private _endMainRenderPass(): void {
@@ -2447,6 +2604,7 @@ export class WebGPUEngine extends Engine {
             }
             this._debugPopGroup(0);
             this._resetCurrentViewport(0);
+            this._resetCurrentScissor(0);
             if (this._mainRenderPassWrapper.renderPass === this._currentRenderPass) {
                 this._currentRenderPass = null;
             }
@@ -3255,7 +3413,7 @@ export class WebGPUEngine extends Engine {
         return this._device.createPipelineLayout({ bindGroupLayouts });
     }
 
-    private _getRenderPipeline(topology: GPUPrimitiveTopology): GPURenderPipeline {
+    private _getRenderPipeline(topology: GPUPrimitiveTopology, createLayout = true): GPURenderPipeline {
         this._counters.numPipelineDescriptorCreation++;
 
         // Unsupported at the moment but needs to be extracted from the MSAA param.
@@ -3264,7 +3422,7 @@ export class WebGPUEngine extends Engine {
         const colorStateDescriptors = this._getColorStateDescriptors();
         const stages = this._getStages();
         const inputStateDescriptor = this._getVertexInputDescriptor(topology);
-        const pipelineLayout = this._getPipelineLayout();
+        const pipelineLayout = createLayout ? this._getPipelineLayout() : undefined;
 
         return this._device.createRenderPipeline({
             sampleCount: this._currentRenderTarget ? this._currentRenderTarget.samples : this._mainPassSampleCount,
@@ -3472,6 +3630,7 @@ export class WebGPUEngine extends Engine {
 
         if (renderPass !== this._bundleEncoder) {
             this._applyViewport(renderPass as GPURenderPassEncoder);
+            this._applyScissor(renderPass as GPURenderPassEncoder);
         }
     }
 
