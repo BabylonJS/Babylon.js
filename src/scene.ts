@@ -931,7 +931,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /** All of the active cameras added to this scene. */
-    public activeCameras = new Array<Camera>();
+    public activeCameras: Nullable<Camera[]> = new Array<Camera>();
 
     /** @hidden */
     public _activeCamera: Nullable<Camera>;
@@ -2220,10 +2220,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             }
         }
         // Remove from activeCameras
-        var index2 = this.activeCameras.indexOf(toRemove);
-        if (index2 !== -1) {
-            // Remove from the scene if mesh found
-            this.activeCameras.splice(index2, 1);
+        if (this.activeCameras) {
+            var index2 = this.activeCameras.indexOf(toRemove);
+            if (index2 !== -1) {
+                // Remove from the scene if mesh found
+                this.activeCameras.splice(index2, 1);
+            }
         }
         // Reset the activeCamera
         if (this.activeCamera === toRemove) {
@@ -3448,7 +3450,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public getCollidingSubMeshCandidates: (mesh: AbstractMesh, collider: Collider) => ISmartArrayLike<SubMesh>;
 
-    private _activeMeshesFrozen = false;
+    /** @hidden */
+    public _activeMeshesFrozen = false;
     private _skipEvaluateActiveMeshesCompletely = false;
 
     /**
@@ -3547,6 +3550,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         const len = meshes.length;
         for (let i = 0; i < len; i++) {
             const mesh = meshes.data[i];
+            mesh._internalAbstractMeshDataInfo._currentLODIsUpToDate = false;
             if (mesh.isBlocked) {
                 continue;
             }
@@ -3566,10 +3570,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
             // Switch to current LOD
             let meshToRender = this.customLODSelector ? this.customLODSelector(mesh, this.activeCamera) : mesh.getLOD(this.activeCamera);
+            mesh._internalAbstractMeshDataInfo._currentLOD = meshToRender;
+            mesh._internalAbstractMeshDataInfo._currentLODIsUpToDate = true;
             if (meshToRender === undefined || meshToRender === null) {
                 continue;
             }
-            mesh._internalAbstractMeshDataInfo._currentLOD = meshToRender;
 
             // Compute world matrix if LOD is billboard
             if (meshToRender !== mesh && meshToRender.billboardMode !== TransformNode.BILLBOARDMODE_NONE) {
@@ -3997,7 +4002,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         // Update Cameras
         if (updateCameras) {
-            if (this.activeCameras.length > 0) {
+            if (this.activeCameras && this.activeCameras.length > 0) {
                 for (var cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
                     let camera = this.activeCameras[cameraIndex];
                     camera.update();
@@ -4079,7 +4084,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         // Multi-cameras?
-        if (this.activeCameras.length > 0) {
+        if (this.activeCameras && this.activeCameras.length > 0) {
             for (var cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
                 if (cameraIndex > 0) {
                     this._engine.clear(null, false, true, true);

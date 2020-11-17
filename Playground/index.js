@@ -10,6 +10,16 @@ var Versions = {
         "https://preview.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js",
         "https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js",
         "https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js"
+    ],    
+    "4.2.0": [
+        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.0/dist/babylon.js",
+        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.0/dist/gui/babylon.gui.min.js",
+        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.0/dist/inspector/babylon.inspector.bundle.js",
+        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.0/dist/materialsLibrary/babylonjs.materials.min.js",
+        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.0/dist/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js",
+        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.0/dist/postProcessesLibrary/babylonjs.postProcess.min.js",
+        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.0/dist/loaders/babylonjs.loaders.min.js",
+        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.0/dist/serializers/babylonjs.serializers.min.js"
     ],
     "4.1.0": [
         "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.1.0/dist/babylon.js",
@@ -62,6 +72,15 @@ let readStringFromStore = function(key, defaultValue) {
     return localStorage.getItem(key);
 }
 
+let loadInSequence = async function(versions, index, resolve) {
+    if (index >= versions.length) {
+        resolve();
+        return;
+    }
+    await loadScriptAsync(versions[index]);
+    loadInSequence(versions, index + 1, resolve);
+}
+
 let checkBabylonVersionAsync= function () {
     let activeVersion = readStringFromStore("version", "Latest");
 
@@ -69,13 +88,9 @@ let checkBabylonVersionAsync= function () {
         return Promise.resolve();
     }
 
-    let tasks = [];
-
-    for (var file of Versions[activeVersion]) {
-        tasks.push(loadScriptAsync(file));
-    }
-
-    return Promise.all(tasks);
+    return new Promise((resolve, reject) => {
+        loadInSequence(Versions[activeVersion], 0, resolve);
+    });
 }
 
 var storedPGObbject = BABYLON.Playground;

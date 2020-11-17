@@ -7,7 +7,7 @@
     ],
     "name": "babylonjs",
     "description": "Babylon.js is a JavaScript 3D engine based on webgl.",
-    "version": "4.2.0-beta.19",
+    "version": "5.0.0-alpha.0",
     "repository": {
         "type": "git",
         "url": "https://github.com/BabylonJS/Babylon.js.git"
@@ -90,7 +90,6 @@
         "prompt": "^1.0.0",
         "re-resizable": "~4.9.1",
         "react": "~16.13.1",
-        "react-color": "^2.18.1",
         "react-contextmenu": "~2.14.0",
         "react-dom": "~16.13.1",
         "sass-loader": "^8.0.2",

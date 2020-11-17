@@ -120,6 +120,8 @@ export class NodeMaterialBuildState {
             this.compilationString = `\r\n${emitComments ? "//Attributes\r\n" : ""}${this._attributeDeclaration}\r\n${this.compilationString}`;
         }
 
+        this.compilationString = "precision highp float;\r\n" + this.compilationString;
+
         for (var extensionName in this.extensions) {
             let extension = this.extensions[extensionName];
             this.compilationString = `\r\n${extension}\r\n${this.compilationString}`;

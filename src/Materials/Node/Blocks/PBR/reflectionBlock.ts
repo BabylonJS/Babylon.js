@@ -403,6 +403,9 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
                     ${this._2DSamplerName},
                 #endif
             #endif
+            #ifdef REALTIME_FILTERING
+                ${this._vReflectionFilteringInfoName},
+            #endif
                 reflectionOut
             );
         #endif\r\n`;

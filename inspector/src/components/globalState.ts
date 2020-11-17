@@ -33,7 +33,6 @@ export class GlobalState {
         MSFT_minecraftMesh: { enabled: true },
         MSFT_sRGBFactors: { enabled: true },
         MSFT_audio_emitter: { enabled: true },
-        KHR_xmp: { enabled: true },
         KHR_draco_mesh_compression: { enabled: true },
         KHR_mesh_quantization: { enabled: true },
         KHR_materials_pbrSpecularGlossiness: { enabled: true },

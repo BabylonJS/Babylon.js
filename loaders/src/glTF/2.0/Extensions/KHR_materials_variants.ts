@@ -21,8 +21,7 @@ interface IExtensionMetadata {
 }
 
 /**
- * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1681)
- * !!! Experimental Extension Subject to Changes !!!
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_variants/README.md)
  */
 export class KHR_materials_variants implements IGLTFLoaderExtension {
     /**

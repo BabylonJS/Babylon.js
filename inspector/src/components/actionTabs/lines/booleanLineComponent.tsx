@@ -19,7 +19,7 @@ export class BooleanLineComponent extends React.Component<IBooleanLineComponentP
 
         return (
             <div className="textLine">
-                <div className="label">
+                <div className="label" title={this.props.label}>
                     {this.props.label}
                 </div>
                 <div className={className}>
