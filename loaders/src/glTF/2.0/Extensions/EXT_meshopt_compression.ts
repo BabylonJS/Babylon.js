@@ -3,8 +3,6 @@ import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import { IBufferView } from "../glTFLoaderInterfaces";
 
-import { MeshoptDecoder } from "./meshopt_decoder.module.js";
-
 const NAME = "EXT_meshopt_compression";
 
 /**
@@ -23,12 +21,28 @@ export class EXT_meshopt_compression implements IGLTFLoaderExtension {
      */
     public enabled: boolean;
 
+    /**
+     * Path to decoder module; defaults to https://preview.babylonjs.com/meshopt_decoder.module.js
+     */
+    public static DecoderPath: string = "https://preview.babylonjs.com/meshopt_decoder.module.js";
+
     private _loader: GLTFLoader;
+    private _decoder: Promise<any>;
 
     /** @hidden */
     constructor(loader: GLTFLoader) {
-        this.enabled = loader.isExtensionUsed(NAME) && MeshoptDecoder.supported;
+        this.enabled = loader.isExtensionUsed(NAME);
         this._loader = loader;
+
+        if (this.enabled) {
+            var url = EXT_meshopt_compression.DecoderPath;
+
+            this._decoder = import(/* webpackIgnore: true */ url).then(function (result) {
+                // Wait for WebAssembly compilation before resolving promise
+                var MeshoptDecoder = result.MeshoptDecoder;
+                return MeshoptDecoder.ready.then(() => MeshoptDecoder);
+            });
+        }
     }
 
     /** @hidden */
@@ -44,10 +58,10 @@ export class EXT_meshopt_compression implements IGLTFLoaderExtension {
             }
 
             var view = this._loader.loadBufferViewAsync(context, extensionDef);
-            var decoder = MeshoptDecoder;
 
-            extensionDef._decoded = Promise.all([view, decoder.ready]).then(function (res) {
+            extensionDef._decoded = Promise.all([view, this._decoder]).then(function (res) {
                 var source = res[0] as Uint8Array;
+                var decoder = res[1];
                 var count = extensionDef.count;
                 var stride = extensionDef.byteStride;
                 var result = new Uint8Array(new ArrayBuffer(count * stride));
