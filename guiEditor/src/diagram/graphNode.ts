@@ -11,7 +11,6 @@ import { DisplayLedger } from './displayLedger';
 import { IDisplayManager } from './display/displayManager';
 import { NodeLink } from './nodeLink';
 import { NodePort } from './nodePort';
-import { GraphFrame } from './graphFrame';
 import { Vector2 } from 'babylonjs';
 
 export class GraphNode {
@@ -29,9 +28,8 @@ export class GraphNode {
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null    
     private _globalState: GlobalState;
-    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphFrame | GraphNode | NodeLink | NodePort | FramePortData>>>;  
-    private _onSelectionBoxMovedObserver: Nullable<Observer<ClientRect | DOMRect>>;  
-    private _onFrameCreatedObserver: Nullable<Observer<GraphFrame>>; 
+    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode | NodeLink | NodePort | FramePortData>>>;  
+    private _onSelectionBoxMovedObserver: Nullable<Observer<ClientRect | DOMRect>>;   
     private _onUpdateRequiredObserver: Nullable<Observer<void>>;  
     private _ownerCanvas: GraphCanvasComponent; 
     private _isSelected: boolean;
@@ -181,35 +179,9 @@ export class GraphNode {
             this.isSelected = overlap;
         });
 
-        this._onFrameCreatedObserver = this._globalState.onFrameCreatedObservable.add(frame => {      
-            if (this._ownerCanvas.frames.some(f => f.nodes.indexOf(this) !== -1)) {
-                return;
-            }
-            
-            if (this.isOverlappingFrame(frame)) {
-                frame.nodes.push(this);
-            }
-        });
     }
 
-    public isOverlappingFrame(frame: GraphFrame) {
-        const rect2 = this._visual.getBoundingClientRect();
-        const rect1 = frame.element.getBoundingClientRect();
 
-        // Add a tiny margin
-        rect1.width -= 5;
-        rect1.height -= 5;
-
-        const isOverlappingFrame = !(rect1.right < rect2.left || 
-            rect1.left > rect2.right || 
-            rect1.bottom < rect2.top || 
-            rect1.top > rect2.bottom);
-
-        if (isOverlappingFrame) {
-            this.enclosingFrameId = frame.id;
-        }
-        return isOverlappingFrame;
-    }
     
     private _refreshFrames() {       
         if (this._ownerCanvas._frameIsMoving || this._ownerCanvas._isLoading) {
@@ -217,9 +189,7 @@ export class GraphNode {
         }
         
         // Frames
-        for (var frame of this._ownerCanvas.frames) {
-            frame.syncNode(this);
-        }
+
     }
 
     public refresh() {
@@ -236,12 +206,7 @@ export class GraphNode {
             this._header.innerHTML = this.block.name;
         }
 
-        if(this.enclosingFrameId !== -1) {   
-            let index = this._ownerCanvas.frames.findIndex(frame => frame.id === this.enclosingFrameId);
-            if(index >= 0 && this._ownerCanvas.frames[index].isCollapsed) {
-                this._ownerCanvas.frames[index].redrawFramePorts();
-            }
-        }   
+ 
         this._comments.innerHTML = this.block.comments || "";
         this._comments.title = this.block.comments || "";
 
@@ -396,9 +361,9 @@ export class GraphNode {
         // notify frame observers that this node is being deleted
         this._globalState.onGraphNodeRemovalObservable.notifyObservers(this);
 
-        if (this._onSelectionChangedObserver) {
+        /*if (this._onSelectionChangedObserver) {
             this._globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
-        }
+        }*/
 
         if (this._onUpdateRequiredObserver) {
             this._globalState.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
@@ -412,9 +377,6 @@ export class GraphNode {
             this._visual.parentElement.removeChild(this._visual);
         }
 
-        if (this._onFrameCreatedObserver) {
-            this._globalState.onFrameCreatedObservable.remove(this._onFrameCreatedObserver);
-        }
 
         this.block.dispose();
     }

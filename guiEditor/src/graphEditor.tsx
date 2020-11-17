@@ -19,7 +19,6 @@ import { PreviewAreaComponent } from './components/preview/previewAreaComponent'
 import { SerializationTools } from './serializationTools';
 import { GraphCanvasComponent } from './diagram/graphCanvas';
 import { GraphNode } from './diagram/graphNode';
-import { GraphFrame } from './diagram/graphFrame';
 import * as ReactDOM from 'react-dom';
 import { IInspectorOptions } from "babylonjs/Debug/debugLayer";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
@@ -162,7 +161,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             this.props.globalState.nodeMaterial.attachedBlocks.slice(-(frameData.blocks.length)).forEach((block: NodeMaterialBlock) => {
                 this.createNodeFromObject(block);
             });
-            this._graphCanvas.addFrame(frameData);
             this.reOrganize(this.props.globalState.nodeMaterial.editorData, true);
         })
 
@@ -198,29 +196,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     this._graphCanvas.selectedLink.dispose();
                 }
 
-                if (this._graphCanvas.selectedFrame) {
-                    var frame = this._graphCanvas.selectedFrame;
-                    
-                    if(frame.isCollapsed) {
-                        while(frame.nodes.length > 0) {
-                            let targetBlock = frame.nodes[0].block;
-                            this.props.globalState.nodeMaterial!.removeBlock(targetBlock);
-                            let blockIndex = this._blocks.indexOf(targetBlock);
-        
-                            if (blockIndex > -1) {
-                                this._blocks.splice(blockIndex, 1);
-                            }
-                            frame.nodes[0].dispose();            
-                        }
-                        frame.isCollapsed = false;
-                    }
-                    else {
-                        frame.nodes.forEach(node => {
-                            node.enclosingFrameId = -1;
-                        });
-                    }
-                    this._graphCanvas.selectedFrame.dispose();
-                }
+                
 
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(null);  
                 this.props.globalState.onRebuildRequiredObservable.notifyObservers();  
