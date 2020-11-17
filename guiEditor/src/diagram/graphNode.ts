@@ -9,7 +9,6 @@ import * as React from 'react';
 import { GenericPropertyComponent } from './properties/genericNodePropertyComponent';
 import { DisplayLedger } from './displayLedger';
 import { IDisplayManager } from './display/displayManager';
-import { NodeLink } from './nodeLink';
 import { NodePort } from './nodePort';
 import { Vector2 } from 'babylonjs';
 
@@ -28,7 +27,7 @@ export class GraphNode {
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null    
     private _globalState: GlobalState;
-    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode | NodeLink | NodePort | FramePortData>>>;  
+    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode | NodePort | FramePortData>>>;  
     private _onSelectionBoxMovedObserver: Nullable<Observer<ClientRect | DOMRect>>;   
     private _onUpdateRequiredObserver: Nullable<Observer<void>>;  
     private _ownerCanvas: GraphCanvasComponent; 
