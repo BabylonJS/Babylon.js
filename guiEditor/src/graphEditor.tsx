@@ -191,12 +191,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                         this._blocks.splice(blockIndex, 1);
                     }                                  
                 }
-
-                if (this._graphCanvas.selectedLink) {
-                    this._graphCanvas.selectedLink.dispose();
-                }
-
-                
+               
 
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(null);  
                 this.props.globalState.onRebuildRequiredObservable.notifyObservers();  

@@ -5,7 +5,6 @@ import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/
 import { GraphNode } from './graphNode';
 import * as dagre from 'dagre';
 import { Nullable } from 'babylonjs/types';
-import { NodeLink } from './nodeLink';
 import { NodePort } from './nodePort';
 import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection, NodeMaterialConnectionPointCompatibilityStates } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
 import { Vector2 } from 'babylonjs/Maths/math.vector';
@@ -49,7 +48,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _rootContainer: HTMLDivElement;
     private _nodes: GraphNode[] = [];
     private _guiNodes: GraphNode[] = [];
-    private _links: NodeLink[] = [];
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null
     private _dropPointX = 0;
@@ -62,9 +60,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _zoom = 1;
     private _selectedNodes: GraphNode[] = [];
     private _selectedGuiNodes: GraphNode[] = [];
-    private _selectedLink: Nullable<NodeLink> = null;
     private _selectedPort: Nullable<NodePort> = null;
-    private _candidateLink: Nullable<NodeLink> = null;
     private _candidatePort: Nullable<NodePort | FrameNodePort> = null;
     private _gridSize = 20;
     private _selectionBox: Nullable<HTMLDivElement> = null;    
@@ -93,10 +89,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
     public get nodes() {
         return this._nodes;
-    }
-
-    public get links() {
-        return this._links;
     }
 
     public get zoom() {
@@ -141,10 +133,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         return this._selectedGuiNodes;
     }
 
-    public get selectedLink() {
-        return this._selectedLink;
-    }
-
     public get selectedPort() {
         return this._selectedPort;
     }
@@ -179,15 +167,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 }); 
                 this._selectedNodes = [];
                 this._selectedGuiNodes = [];
-                this._selectedLink = null;
                 this._selectedPort = null;
             } else {
-                if (selection instanceof NodeLink) {
-                    this._selectedNodes = [];
-                    this._selectedGuiNodes = [];
-                    this._selectedLink = selection;
-                    this._selectedPort = null;
-                }  else if (selection instanceof GraphNode){
+                if (selection instanceof GraphNode){
                     if (this._ctrlKeyIsPressed) {
                         if (this._selectedNodes.indexOf(selection) === -1) {
                             this._selectedNodes.push(selection);
@@ -200,12 +182,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 } else if(selection instanceof NodePort){
                     this._selectedNodes = [];
                     this._selectedGuiNodes = [];
-                    this._selectedLink = null;
                     this._selectedPort = selection;
                 } else {
                     this._selectedNodes = [];
                     this._selectedGuiNodes = [];
-                    this._selectedLink = null;
                     //this._selectedPort = selection.port;
                 }
             }
@@ -289,7 +269,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         
 
         this._nodes = [];
-        this._links = [];
         this._graphCanvas.innerHTML = "";
         this._svgCanvas.innerHTML = "";
     }
@@ -302,15 +281,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
     }
 
-    removeLink(link: NodeLink) {
-        let index = this._links.indexOf(link);
-
-        if (index > -1) {
-            this._links.splice(index, 1);
-        }
-
-        link.dispose();
-    }
 
     appendBlock(block: NodeMaterialBlock) {
         let newNode = new GraphNode(block, this.props.globalState, null);
@@ -545,11 +515,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
         // Port dragging
         if (evt.nativeEvent.srcElement && (evt.nativeEvent.srcElement as HTMLElement).nodeName === "IMG") {
-            if (!this._candidateLink) {
-                let portElement = ((evt.nativeEvent.srcElement as HTMLElement).parentElement as any).port as NodePort;
-                this._candidateLink = new NodeLink(this, portElement, portElement.node);
-                this._candidateLinkedHasMoved = false;
-            }  
             return;
         }
 
@@ -564,21 +529,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this._rootContainer.releasePointerCapture(evt.pointerId);   
         this._oldY = -1; 
 
-        if (this._candidateLink) {       
-            if (this._candidateLinkedHasMoved) {       
-                this.props.globalState.onCandidateLinkMoved.notifyObservers(null);
-            } else { // is a click event on NodePort
-                if(this._candidateLink.portA instanceof FrameNodePort) { //only on Frame Node Ports
-                    const port = this._candidateLink.portA;
-                
-                } else if(this._candidateLink.portA instanceof NodePort){
-                    this.props.globalState.onSelectionChangedObservable.notifyObservers(this._candidateLink.portA );
-                }
-            }
-            this._candidateLink.dispose();
-            this._candidateLink = null;
-            this._candidatePort = null;
-        }
+        
 
         if (this._selectionBox) {
            this._selectionBox.parentElement!.removeChild(this._selectionBox);
