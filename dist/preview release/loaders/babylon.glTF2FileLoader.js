@@ -1201,7 +1201,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var NAME = "KHR_materials_sheen";
 /**
- * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1688)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_sheen/README.md)
  * [Playground Sample](https://www.babylonjs-playground.com/frame.html#BNIZX6#4)
  * !!! Experimental Extension Subject to Changes !!!
  */
@@ -1655,8 +1655,7 @@ var TransmissionHelper = /** @class */ (function () {
 }());
 var NAME = "KHR_materials_transmission";
 /**
- * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1698)
- * !!! Experimental Extension Subject to Changes !!!
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_transmission/README.md)
  */
 var KHR_materials_transmission = /** @class */ (function () {
     /** @hidden */
@@ -1832,8 +1831,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var NAME = "KHR_materials_variants";
 /**
- * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1681)
- * !!! Experimental Extension Subject to Changes !!!
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_variants/README.md)
  */
 var KHR_materials_variants = /** @class */ (function () {
     /** @hidden */
@@ -4756,15 +4754,15 @@ var GLTFLoader = /** @class */ (function () {
         }
         if (babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Tools"].IsBase64(uri)) {
             var data = new Uint8Array(babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Tools"].DecodeBase64(uri));
-            this.log("Decoded " + uri.substr(0, 64) + "... (" + data.length + " bytes)");
+            this.log(context + ": Decoded " + uri.substr(0, 64) + "... (" + data.length + " bytes)");
             return Promise.resolve(data);
         }
-        this.log("Loading " + uri);
+        this.log(context + ": Loading " + uri);
         return this._parent.preprocessUrlAsync(this._rootUrl + uri).then(function (url) {
             return new Promise(function (resolve, reject) {
                 _this._parent._loadFile(url, _this._babylonScene, function (data) {
                     if (!_this._disposed) {
-                        _this.log("Loaded " + uri + " (" + data.byteLength + " bytes)");
+                        _this.log(context + ": Loaded " + uri + " (" + data.byteLength + " bytes)");
                         resolve(new Uint8Array(data));
                     }
                 }, true, function (request) {

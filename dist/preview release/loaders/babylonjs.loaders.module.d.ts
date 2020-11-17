@@ -1984,7 +1984,7 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_sheen" {
     import { IGLTFLoaderExtension } from "babylonjs-loaders/glTF/2.0/glTFLoaderExtension";
     import { GLTFLoader } from "babylonjs-loaders/glTF/2.0/glTFLoader";
     /**
-     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1688)
+     * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_sheen/README.md)
      * [Playground Sample](https://www.babylonjs-playground.com/frame.html#BNIZX6#4)
      * !!! Experimental Extension Subject to Changes !!!
      */
@@ -2089,8 +2089,7 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_variants" {
     import { AbstractMesh } from 'babylonjs/Meshes/abstractMesh';
     import { INode, IMeshPrimitive, IMesh } from "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces";
     /**
-     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1681)
-     * !!! Experimental Extension Subject to Changes !!!
+     * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_variants/README.md)
      */
     export class KHR_materials_variants implements IGLTFLoaderExtension {
         /**
@@ -2167,8 +2166,7 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_transmission
     import { IGLTFLoaderExtension } from "babylonjs-loaders/glTF/2.0/glTFLoaderExtension";
     import { GLTFLoader } from "babylonjs-loaders/glTF/2.0/glTFLoader";
     /**
-     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1698)
-     * !!! Experimental Extension Subject to Changes !!!
+     * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_transmission/README.md)
      */
     export class KHR_materials_transmission implements IGLTFLoaderExtension {
         /**
@@ -4726,7 +4724,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
     /**
-     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1688)
+     * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_sheen/README.md)
      * [Playground Sample](https://www.babylonjs-playground.com/frame.html#BNIZX6#4)
      * !!! Experimental Extension Subject to Changes !!!
      */
@@ -4815,8 +4813,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
     /**
-     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1681)
-     * !!! Experimental Extension Subject to Changes !!!
+     * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_variants/README.md)
      */
     export class KHR_materials_variants implements IGLTFLoaderExtension {
         /**
@@ -4888,8 +4885,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
     /**
-     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1698)
-     * !!! Experimental Extension Subject to Changes !!!
+     * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_transmission/README.md)
      */
     export class KHR_materials_transmission implements IGLTFLoaderExtension {
         /**
