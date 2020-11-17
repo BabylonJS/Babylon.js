@@ -44,7 +44,6 @@ interface IInternalPreviewAreaOptions extends IInspectorOptions {
 }
 
 export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditorState> {
-    private readonly NodeWidth = 100;
     private _graphCanvas: GraphCanvasComponent;
 
     private _startX: number;
@@ -56,8 +55,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     private _blocks = new Array<NodeMaterialBlock>();
 
     private _previewManager: PreviewManager;
-    private _copiedNodes: GraphNode[] = [];
-    private _copiedFrame: Nullable<GraphFrame> = null;
     private _mouseLocationX = 0;
     private _mouseLocationY = 0;
     private _onWidgetKeyUpPointer: any;
@@ -235,14 +232,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             }
 
             if (evt.key === "c") { // Copy
-                this._copiedNodes = [];
-                this._copiedFrame = null;
-
-                if (this._graphCanvas.selectedFrame) {
-                    this._copiedFrame = this._graphCanvas.selectedFrame;
-                    return;
-                }
-
+              
                 let selectedItems = this._graphCanvas.selectedNodes;
                 if (!selectedItems.length) {
                     return;
@@ -254,56 +244,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     return;
                 }
 
-                this._copiedNodes = selectedItems.slice(0);
             } else if (evt.key === "v") { // Paste
                 const rootElement = this.props.globalState.hostDocument!.querySelector(".diagram-container") as HTMLDivElement;
                 const zoomLevel = this._graphCanvas.zoom;
                 let currentY = (this._mouseLocationY - rootElement.offsetTop - this._graphCanvas.y - 20) / zoomLevel;
 
-                if (this._copiedFrame) {                    
-                    // New frame
-                    let newFrame = new GraphFrame(null, this._graphCanvas, true);
-                    this._graphCanvas.frames.push(newFrame);
-
-                    newFrame.width = this._copiedFrame.width;
-                    newFrame.height = this._copiedFrame.height;newFrame.width / 2
-                    newFrame.name = this._copiedFrame.name;
-                    newFrame.color = this._copiedFrame.color;
-
-                    let currentX = (this._mouseLocationX - rootElement.offsetLeft - this._graphCanvas.x) / zoomLevel;
-                    newFrame.x = currentX - newFrame.width / 2;
-                    newFrame.y = currentY;
-
-                    // Paste nodes
-                    if (this._copiedFrame.nodes.length) {
-                        currentX = newFrame.x + this._copiedFrame.nodes[0].x - this._copiedFrame.x;
-                        currentY = newFrame.y + this._copiedFrame.nodes[0].y - this._copiedFrame.y;
-                        
-                        this._graphCanvas._frameIsMoving = true;
-                        let newNodes = this.pasteSelection(this._copiedFrame.nodes, currentX, currentY);       
-                        if (newNodes) {           
-                            for (var node of newNodes) {
-                                newFrame.syncNode(node);
-                            }
-                        }
-                        this._graphCanvas._frameIsMoving = false;
-                    }
-
-                    if (this._copiedFrame.isCollapsed) {
-                        newFrame.isCollapsed = true;
-                    }
-
-                    // Select
-                    this.props.globalState.onSelectionChangedObservable.notifyObservers(newFrame);
-                    return;
-                }
-
-                if (!this._copiedNodes.length) {
-                    return;
-                }
-
-                let currentX = (this._mouseLocationX - rootElement.offsetLeft - this._graphCanvas.x - this.NodeWidth) / zoomLevel;
-                this.pasteSelection(this._copiedNodes, currentX, currentY, true);
             }
 
         }, false);
@@ -593,7 +538,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             newNode = this.createNodeFromObject(block);
         };
 
-        let x = event.clientX - event.currentTarget.offsetLeft - this._graphCanvas.x - this.NodeWidth;
+        let x = event.clientX - event.currentTarget.offsetLeft - this._graphCanvas.x;
         let y = event.clientY - event.currentTarget.offsetTop - this._graphCanvas.y - 20;
         
         newNode.x = x / this._graphCanvas.zoom;
@@ -604,8 +549,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         this.props.globalState.onSelectionChangedObservable.notifyObservers(newNode);
 
         let block = newNode.block;
-
-        x -= this.NodeWidth + 150;
 
         block.inputs.forEach((connection) => {       
             if (connection.connectedPoint) {
