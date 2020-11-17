@@ -16,34 +16,13 @@ import { Scene } from "babylonjs/scene";
 
 import { Container } from "./controls/container";
 import { Control } from "./controls/control";
+import { IFocusableControl } from './controls/focusableControl';
 import { Style } from "./style";
 import { Measure } from "./measure";
 import { Constants } from 'babylonjs/Engines/constants';
 import { Viewport } from 'babylonjs/Maths/math.viewport';
 import { Color3 } from 'babylonjs/Maths/math.color';
-/**
-* Interface used to define a control that can receive focus
-*/
-export interface IFocusableControl {
-    /**
-     * Function called when the control receives the focus
-     */
-    onFocus(): void;
-    /**
-     * Function called when the control loses the focus
-     */
-    onBlur(): void;
-    /**
-     * Function called to let the control handle keyboard events
-     * @param evt defines the current keyboard event
-     */
-    processKeyboard(evt: KeyboardEvent): void;
-    /**
-    * Function called to get the list of controls that should not steal the focus from this control
-    * @returns an array of controls
-    */
-    keepsFocusWith(): Nullable<Control[]>;
-}
+
 /**
 * Class used to create texture to support 2D GUI elements
 * @see https://doc.babylonjs.com/how_to/gui
