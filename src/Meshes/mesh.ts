@@ -1861,10 +1861,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             engine.setAlphaMode(this._effectiveMaterial.alphaMode);
         }
 
-        for (let step of scene._beforeRenderingMeshStage) {
-            step.action(this, subMesh, batch);
-        }
-
         var effect: Nullable<Effect>;
         if (this._effectiveMaterial._storeEffectOnSubMeshes) {
             effect = subMesh.effect;
@@ -1872,13 +1868,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             effect = this._effectiveMaterial.getEffect();
         }
 
-        if (!effect) {
-            return this;
+        for (let step of scene._beforeRenderingMeshStage) {
+            step.action(this, subMesh, batch, effect);
         }
 
-        // Render to MRT
-        if (scene.prePassRenderer) {
-            scene.prePassRenderer.bindAttachmentsForEffect(effect, subMesh);
+        if (!effect) {
+            return this;
         }
 
         const effectiveMesh = effectiveMeshReplacement || this._effectiveMesh;
@@ -1938,7 +1933,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         this._effectiveMaterial.unbind();
 
         for (let step of scene._afterRenderingMeshStage) {
-            step.action(this, subMesh, batch);
+            step.action(this, subMesh, batch, effect);
         }
 
         if (this._internalMeshDataInfo._onAfterRenderObservable) {
@@ -2475,8 +2470,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             Vector2.FromArrayToRef(uvs, (index / 3) * 2, uv);
 
             // Compute height
-            var u = ((Math.abs(uv.x * uvScale.x + uvOffset.x) * heightMapWidth) % heightMapWidth) | 0;
-            var v = ((Math.abs(uv.y * uvScale.y + uvOffset.y) * heightMapHeight) % heightMapHeight) | 0;
+            var u = ((Math.abs(uv.x * uvScale.x + uvOffset.x % 1) * (heightMapWidth - 1)) % heightMapWidth) | 0;
+            var v = ((Math.abs(uv.y * uvScale.y + uvOffset.y % 1) * (heightMapHeight - 1)) % heightMapHeight) | 0;
 
             var pos = (u + v * heightMapWidth) * 4;
             var r = buffer[pos] / 255.0;

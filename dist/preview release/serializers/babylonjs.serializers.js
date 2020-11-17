@@ -5813,14 +5813,16 @@ var STLExport = /** @class */ (function () {
     * @param fileName changes the downloads fileName.
     * @param binary changes the STL to a binary type.
     * @param isLittleEndian toggle for binary type exporter.
+    * @param doNotBakeTransform toggle if meshes transforms should be baked or not.
     * @returns the STL as UTF8 string
     */
-    STLExport.CreateSTL = function (meshes, download, fileName, binary, isLittleEndian) {
+    STLExport.CreateSTL = function (meshes, download, fileName, binary, isLittleEndian, doNotBakeTransform) {
         //Binary support adapted from https://gist.github.com/paulkaplan/6d5f0ab2c7e8fdc68a61
         if (download === void 0) { download = true; }
         if (fileName === void 0) { fileName = 'stlmesh'; }
         if (binary === void 0) { binary = false; }
         if (isLittleEndian === void 0) { isLittleEndian = true; }
+        if (doNotBakeTransform === void 0) { doNotBakeTransform = false; }
         var getFaceData = function (indices, vertices, i) {
             var id = [indices[i] * 3, indices[i + 1] * 3, indices[i + 2] * 3];
             var v = [
@@ -5863,7 +5865,9 @@ var STLExport = /** @class */ (function () {
         }
         for (var i = 0; i < meshes.length; i++) {
             var mesh = meshes[i];
-            mesh.bakeCurrentTransformIntoVertices();
+            if (!doNotBakeTransform) {
+                mesh.bakeCurrentTransformIntoVertices();
+            }
             var vertices = mesh.getVerticesData(babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].PositionKind) || [];
             var indices = mesh.getIndices() || [];
             for (var i_1 = 0; i_1 < indices.length; i_1 += 3) {

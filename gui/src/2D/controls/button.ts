@@ -172,7 +172,7 @@ export class Button extends Rectangle {
      * @returns a new Button
      */
     public static CreateImageButton(name: string, text: string, imageUrl: string): Button {
-        var result = new Button(name);
+        var result = new this(name);
 
         // Adding text
         var textBlock = new TextBlock(name + "_button", text);
@@ -202,7 +202,7 @@ export class Button extends Rectangle {
      * @returns a new Button
      */
     public static CreateImageOnlyButton(name: string, imageUrl: string): Button {
-        var result = new Button(name);
+        var result = new this(name);
 
         // Adding image
         var iconImage = new Image(name + "_icon", imageUrl);
@@ -223,7 +223,7 @@ export class Button extends Rectangle {
      * @returns a new Button
      */
     public static CreateSimpleButton(name: string, text: string): Button {
-        var result = new Button(name);
+        var result = new this(name);
 
         // Adding text
         var textBlock = new TextBlock(name + "_button", text);
@@ -245,7 +245,7 @@ export class Button extends Rectangle {
      * @returns a new Button
      */
     public static CreateImageWithCenterTextButton(name: string, text: string, imageUrl: string): Button {
-        var result = new Button(name);
+        var result = new this(name);
 
         // Adding image
         var iconImage = new Image(name + "_icon", imageUrl);

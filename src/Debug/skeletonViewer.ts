@@ -60,6 +60,11 @@ export class SkeletonViewer {
         uniform mat4 worldViewProjection;
 
         #include<bonesDeclaration>
+        #if NUM_BONE_INFLUENCERS == 0
+            attribute vec4 matricesIndices;
+            attribute vec4 matricesWeights;
+        #endif
+
         #include<instancesDeclaration>
 
         varying vec3 vColor;
@@ -121,7 +126,7 @@ export class SkeletonViewer {
             fragment: 'boneWeights:' + skeleton.name
         },
         {
-            attributes: ['position', 'normal'],
+            attributes: ['position', 'normal', 'matricesIndices', 'matricesWeights'],
             uniforms: [
                 'world', 'worldView', 'worldViewProjection', 'view', 'projection', 'viewProjection',
                 'colorBase', 'colorZero', 'colorQuarter', 'colorHalf', 'colorFull', 'targetBoneIndex'
@@ -195,6 +200,10 @@ export class SkeletonViewer {
             uniform float colorMap[` + ((skeleton.bones.length) * 4) + `];
 
             #include<bonesDeclaration>
+            #if NUM_BONE_INFLUENCERS == 0
+                attribute vec4 matricesIndices;
+                attribute vec4 matricesWeights;
+            #endif
             #include<instancesDeclaration>
 
             varying vec3 vColor;
@@ -242,7 +251,7 @@ export class SkeletonViewer {
             `
         },
         {
-            attributes: ['position', 'normal'],
+            attributes: ['position', 'normal', 'matricesIndices', 'matricesWeights'],
             uniforms: [
                 'world', 'worldView', 'worldViewProjection', 'view', 'projection', 'viewProjection',
                 'colorMap'

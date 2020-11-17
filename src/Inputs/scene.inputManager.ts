@@ -816,7 +816,6 @@ export class InputManager {
         // Keyboard events
         this._onCanvasFocusObserver = engine.onCanvasFocusObservable.add(
             (() => {
-
                 if (document.activeElement === elementToAttachTo) {
                     attachedFunction();
                 }
@@ -898,6 +897,7 @@ export class InputManager {
         // Keyboard
         this._alreadyAttachedTo.removeEventListener("keydown", this._onKeyDown);
         this._alreadyAttachedTo.removeEventListener("keyup", this._onKeyUp);
+        this._keyboardIsAttached = false;
 
         // Cursor
         if (!this._scene.doNotHandleCursors) {

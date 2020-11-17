@@ -122,11 +122,19 @@ export class Action implements IAction {
     }
 
     /**
-     * Gets the trigger parameters
-     * @returns the trigger parameters
+     * Gets the trigger parameter
+     * @returns the trigger parameter
      */
     public getTriggerParameter(): any {
         return this._triggerParameter;
+    }
+
+    /**
+     * Sets the trigger parameter
+     * @param value defines the new trigger parameter
+     */
+    public setTriggerParameter(value: any) {
+        this._triggerParameter = value;
     }
 
     /**
