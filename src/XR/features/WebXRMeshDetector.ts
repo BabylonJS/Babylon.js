@@ -79,8 +79,7 @@ let meshIdProvider = 0;
  * The mesh detector is used to detect meshes in the real world when in AR
  */
 export class WebXRMeshDetector extends WebXRAbstractFeature {
-    private _detectedMeshes: Array<IWebXRVertexData> = [];
-    private _lastDetectedSet: XRMeshSet = new Set();
+    private _detectedMeshes: Map<XRMesh, IWebXRVertexData> = new Map<XRMesh, IWebXRVertexData>();
 
     /**
      * The module's name
@@ -130,12 +129,11 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
         }
 
         if (!this._options.doNotRemoveMeshesOnSessionEnded) {
-            while (this._detectedMeshes.length) {
-                const toRemove = this._detectedMeshes.pop();
-                if (toRemove) {
-                    this.onMeshRemovedObservable.notifyObservers(toRemove);
-                }
-            }
+            this._detectedMeshes.forEach((mesh) => {
+                this.onMeshRemovedObservable.notifyObservers(mesh);
+            });
+
+            this._detectedMeshes.clear();
         }
 
         return true;
@@ -149,44 +147,52 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
     }
 
     protected _onXRFrame(frame: XRFrame) {
-        if (!this.attached || !frame) {
-            return;
-        }
+        // TODO remove try catch
+        try {
+            if (!this.attached || !frame) {
+                return;
+            }
 
-        const detectedMeshes = frame.worldInformation?.detectedMeshes;
-        if (!!detectedMeshes) {
-            const toRemove = this._detectedMeshes
-                .filter((mesh) => !detectedMeshes.has(mesh.xrMesh))
-                .map((mesh) => {
-                    return this._detectedMeshes.indexOf(mesh);
-                });
-            let idxTracker = 0;
-            toRemove.forEach((index) => {
-                const mesh = this._detectedMeshes.splice(index - idxTracker, 1)[0];
-                this.onMeshRemovedObservable.notifyObservers(mesh);
-                idxTracker++;
-            });
-            // now check for new ones
-            detectedMeshes.forEach((xrMesh) => {
-                if (!this._lastDetectedSet.has(xrMesh)) {
-                    const newMesh: Partial<IWebXRVertexData> = {
-                        id: meshIdProvider++,
-                        xrMesh: xrMesh,
-                    };
-                    const mesh = this._updateMeshWithXRMesh(xrMesh, newMesh, frame);
-                    this._detectedMeshes.push(mesh);
-                    this.onMeshAddedObservable.notifyObservers(mesh);
-                } else {
-                    // updated?
-                    if (xrMesh.lastChangedTime === this._xrSessionManager.currentTimestamp) {
-                        let index = this._findIndexInMeshArray(xrMesh);
-                        const mesh = this._detectedMeshes[index];
-                        this._updateMeshWithXRMesh(xrMesh, mesh, frame);
-                        this.onMeshUpdatedObservable.notifyObservers(mesh);
+            const detectedMeshes = frame.worldInformation?.detectedMeshes;
+            if (!!detectedMeshes) {
+                let toRemove = new Set<XRMesh>();
+                this._detectedMeshes.forEach((vertexData, xrMesh) => {
+                    if (!detectedMeshes.has(xrMesh)) {
+                        toRemove.add(xrMesh);
                     }
-                }
-            });
-            this._lastDetectedSet = detectedMeshes;
+                });
+                toRemove.forEach((xrMesh) => {
+                    const vertexData = this._detectedMeshes.get(xrMesh);
+                    if (!!vertexData) {
+                        this.onMeshRemovedObservable.notifyObservers(vertexData);
+                        this._detectedMeshes.delete(xrMesh);
+                    }
+                });
+
+                // now check for new ones
+                detectedMeshes.forEach((xrMesh) => {
+                    if (!this._detectedMeshes.has(xrMesh)) {
+                        const partialVertexData: Partial<IWebXRVertexData> = {
+                            id: meshIdProvider++,
+                            xrMesh: xrMesh,
+                        };
+                        const vertexData = this._updateVertexDataWithXRMesh(xrMesh, partialVertexData, frame);
+                        this._detectedMeshes.set(xrMesh, vertexData);
+                        this.onMeshAddedObservable.notifyObservers(vertexData);
+                    } else {
+                        // updated?
+                        if (xrMesh.lastChangedTime === this._xrSessionManager.currentTimestamp) {
+                            const vertexData = this._detectedMeshes.get(xrMesh);
+                            if (!!vertexData) {
+                                this._updateVertexDataWithXRMesh(xrMesh, vertexData, frame);
+                                this.onMeshUpdatedObservable.notifyObservers(vertexData);
+                            }
+                        }
+                    }
+                });
+            }
+        } catch (error) {
+            console.log(error.stack);
         }
     }
 
@@ -204,7 +210,7 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
         }
     }
 
-    private _updateMeshWithXRMesh(xrMesh: XRMesh, mesh: Partial<IWebXRVertexData>, xrFrame: XRFrame): IWebXRVertexData {
+    private _updateVertexDataWithXRMesh(xrMesh: XRMesh, mesh: Partial<IWebXRVertexData>, xrFrame: XRFrame): IWebXRVertexData {
         mesh.xrMesh = xrMesh;
         mesh.worldParentNode = this._options.worldParentNode;
 
@@ -256,15 +262,6 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
         }
 
         return <IWebXRVertexData>mesh;
-    }
-
-    private _findIndexInMeshArray(xrMesh: XRMesh) {
-        for (let i = 0; i < this._detectedMeshes.length; ++i) {
-            if (this._detectedMeshes[i].xrMesh === xrMesh) {
-                return i;
-            }
-        }
-        return -1;
     }
 }
 
