@@ -9511,10 +9511,15 @@ declare module BABYLON {
          */
         _prepare(): void;
         /**
-         * Gets the trigger parameters
-         * @returns the trigger parameters
+         * Gets the trigger parameter
+         * @returns the trigger parameter
          */
         getTriggerParameter(): any;
+        /**
+         * Sets the trigger parameter
+         * @param value defines the new trigger parameter
+         */
+        setTriggerParameter(value: any): void;
         /**
          * Internal only - executes current action event
          * @hidden
@@ -28129,6 +28134,7 @@ declare module BABYLON {
          * @hidden
          */
         get checkCollisions(): boolean;
+        set checkCollisions(value: boolean);
         /** @hidden */
         _bind(subMesh: SubMesh, effect: Effect, fillMode: number): Mesh;
         /** @hidden */

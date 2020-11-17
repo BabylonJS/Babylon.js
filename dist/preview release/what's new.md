@@ -4,6 +4,9 @@
 
 ## Updates
 
+- Added a `FocusableButton` gui control to simplify creating menus with keyboard navigation ([Flux159](https://github.com/Flux159))
+- Added `focus()` and `blur()` functions for controls that implement `IFocusableControl` ([Flux159](https://github.com/Flux159))
+
 ### General
 
 - Added static CenterToRef for vectors 2/3/4  ([aWeirdo](https://github.com/aWeirdo))

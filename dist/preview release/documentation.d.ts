@@ -9511,10 +9511,15 @@ declare module BABYLON {
          */
         _prepare(): void;
         /**
-         * Gets the trigger parameters
-         * @returns the trigger parameters
+         * Gets the trigger parameter
+         * @returns the trigger parameter
          */
         getTriggerParameter(): any;
+        /**
+         * Sets the trigger parameter
+         * @param value defines the new trigger parameter
+         */
+        setTriggerParameter(value: any): void;
         /**
          * Internal only - executes current action event
          * @hidden
@@ -28129,6 +28134,7 @@ declare module BABYLON {
          * @hidden
          */
         get checkCollisions(): boolean;
+        set checkCollisions(value: boolean);
         /** @hidden */
         _bind(subMesh: SubMesh, effect: Effect, fillMode: number): Mesh;
         /** @hidden */
@@ -84184,7 +84190,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
     /**
-     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1688)
+     * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_sheen/README.md)
      * [Playground Sample](https://www.babylonjs-playground.com/frame.html#BNIZX6#4)
      * !!! Experimental Extension Subject to Changes !!!
      */
@@ -84273,8 +84279,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
     /**
-     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1681)
-     * !!! Experimental Extension Subject to Changes !!!
+     * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_variants/README.md)
      */
     export class KHR_materials_variants implements IGLTFLoaderExtension {
         /**
@@ -84346,8 +84351,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
     /**
-     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1698)
-     * !!! Experimental Extension Subject to Changes !!!
+     * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_transmission/README.md)
      */
     export class KHR_materials_transmission implements IGLTFLoaderExtension {
         /**
