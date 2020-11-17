@@ -125,8 +125,8 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             }
 
             // Check for Unity Toolkit
-            if (location.href.indexOf("UnityToolkit") !== -1 && !this._unityToolkitWasLoaded) {
-                await this._loadScriptAsync("https://raw.githubusercontent.com/MackeyK24/MackeyK24.github.io/master/toolkit/babylon.manager.js");
+            if ((location.href.indexOf("UnityToolkit") !== -1 || Utilities.ReadBoolFromStore("unity-toolkit", false)) && !this._unityToolkitWasLoaded) {
+                await this._loadScriptAsync("/libs/babylon.manager.js");
                 this._unityToolkitWasLoaded = true;
             }
 
@@ -239,7 +239,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                     }
                 }
 
-                if (this._scene.activeCamera || this._scene.activeCameras.length > 0) {
+                if (this._scene.activeCamera || this._scene.activeCameras && this._scene.activeCameras.length > 0) {
                     this._scene.render();
                 }
 

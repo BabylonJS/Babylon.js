@@ -65,6 +65,9 @@
                 const in sampler2D reflectionSamplerHigh,
             #endif
         #endif
+        #ifdef REALTIME_FILTERING
+            const in vec2 vReflectionFilteringInfo,
+        #endif
         #if !defined(REFLECTIONMAP_SKYBOX) && defined(RADIANCEOCCLUSION)
             const in float seo,
         #endif
@@ -166,6 +169,9 @@
             #ifndef LODBASEDMICROSFURACE
                 reflectionSamplerLow,
                 reflectionSamplerHigh,
+            #endif
+            #ifdef REALTIME_FILTERING
+                vReflectionFilteringInfo,
             #endif
                 environmentSheenRadiance
             );

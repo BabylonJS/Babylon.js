@@ -32,7 +32,7 @@ export class UtilityLayerRenderer implements IDisposable {
             return this._renderCamera;
         } else {
             let activeCam: Camera;
-            if (this.originalScene.activeCameras.length > 1) {
+            if (this.originalScene.activeCameras && this.originalScene.activeCameras.length > 1) {
                 activeCam = this.originalScene.activeCameras[this.originalScene.activeCameras.length - 1];
             } else {
                 activeCam = <Camera>(this.originalScene.activeCamera!);
