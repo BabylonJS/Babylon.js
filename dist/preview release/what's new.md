@@ -4,9 +4,6 @@
 
 ## Updates
 
-- Added a `FocusableButton` gui control to simplify creating menus with keyboard navigation ([Flux159](https://github.com/Flux159))
-- Added `focus()` and `blur()` functions for controls that implement `IFocusableControl` ([Flux159](https://github.com/Flux159))
-
 ### General
 
 - Added static CenterToRef for vectors 2/3/4  ([aWeirdo](https://github.com/aWeirdo))
@@ -14,6 +11,11 @@
 ### Materials
 
 - Added an `OcclusionMaterial` to simplify depth-only rendering of geometry ([rgerd](https://github.com/rgerd))
+
+### GUI
+
+- Added a `FocusableButton` gui control to simplify creating menus with keyboard navigation ([Flux159](https://github.com/Flux159))
+- Added `focus()` and `blur()` functions for controls that implement `IFocusableControl` ([Flux159](https://github.com/Flux159))
 
 ## Bugs
 
