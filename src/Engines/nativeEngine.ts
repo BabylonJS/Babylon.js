@@ -1155,7 +1155,10 @@ export class NativeEngine extends Engine {
     }
 
     public _releaseFramebufferObjects(texture: InternalTexture): void {
-        // TODO
+        if (texture._framebuffer) {
+            this._native.deleteFramebuffer(texture._framebuffer);
+            texture._framebuffer = null;
+        }
     }
 
     /**
