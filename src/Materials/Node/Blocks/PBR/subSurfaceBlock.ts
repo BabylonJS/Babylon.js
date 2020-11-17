@@ -165,7 +165,11 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
                         #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
                             reflectionOut.irradianceVector,
                         #endif
-                    #endif
+                        #if defined(REALTIME_FILTERING)
+                            ${reflectionBlock?._cubeSamplerName},
+                            ${reflectionBlock?._vReflectionFilteringInfoName},
+                        #endif
+                        #endif
                     #ifdef USEIRRADIANCEMAP
                         irradianceSampler,
                     #endif
@@ -207,6 +211,9 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
                 #endif
                 #ifdef ANISOTROPIC
                     anisotropicOut,
+                #endif
+                #ifdef REALTIME_FILTERING
+                    ${refractionBlock?._vRefractionFilteringInfoName ?? ""},
                 #endif
             #endif
             #ifdef SS_TRANSLUCENCY

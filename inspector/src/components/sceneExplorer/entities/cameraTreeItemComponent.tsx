@@ -46,7 +46,7 @@ export class CameraTreeItemComponent extends React.Component<ICameraTreeItemComp
         this._onBeforeRenderObserver = scene.onBeforeRenderObservable.add(() => {
             const camera = this.props.camera;
             // This will deactivate the previous camera when the camera is changed. Multiple camera's cycle frequently so only do this for single cameras
-            if (this.state.isActive && scene.activeCameras.length <= 1 && scene.activeCamera !== camera) {
+            if (this.state.isActive && scene.activeCameras && scene.activeCameras.length <= 1 && scene.activeCamera !== camera) {
                 camera.detachControl();
             }
             let newState = scene.activeCamera === camera;

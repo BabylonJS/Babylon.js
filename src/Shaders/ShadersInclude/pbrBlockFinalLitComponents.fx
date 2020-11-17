@@ -34,7 +34,7 @@
     #endif
 
     #if defined(SS_TRANSLUCENCY)
-        finalIrradiance *= (1.0 - subSurfaceOut.transmittance);
+        finalIrradiance *= (1.0 - subSurfaceOut.translucencyIntensity);
         finalIrradiance += subSurfaceOut.refractionIrradiance;
     #endif
 
