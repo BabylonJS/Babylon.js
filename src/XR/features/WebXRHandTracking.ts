@@ -285,7 +285,7 @@ export class WebXRHand implements IDisposable {
             };
 
             const handShader = new NodeMaterial("leftHandShader", this._scene, { emitComments: false });
-            await handShader.loadAsync("https://patrickryanms.github.io/BabylonJStextures/Demos/xrHandMesh/handsShader.json");
+            await handShader.loadAsync("https://assets.babylonjs.com/meshes/HandMeshes/handsShader.json");
             // build node materials
             handShader.build(false);
 

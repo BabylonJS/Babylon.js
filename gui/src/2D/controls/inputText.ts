@@ -5,7 +5,7 @@ import { ClipboardEventTypes, ClipboardInfo } from "babylonjs/Events/clipboardEv
 import { PointerInfo, PointerEventTypes, PointerInfoBase } from 'babylonjs/Events/pointerEvents';
 
 import { Control } from "./control";
-import { IFocusableControl } from "../advancedDynamicTexture";
+import { IFocusableControl } from "./focusableControl";
 import { ValueAndUnit } from "../valueAndUnit";
 import { VirtualKeyboard } from "./virtualKeyboard";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
@@ -424,6 +424,20 @@ export class InputText extends Control implements IFocusableControl {
             this._selectAllText();
         }
 
+    }
+
+    /**
+     * Function to focus an inputText programmatically
+     */
+    public focus() {
+        this._host.moveFocusToControl(this);
+    }
+
+    /**
+     * Function to unfocus an inputText programmatically
+     */
+    public blur() {
+        this._host.focusedControl = null;
     }
 
     protected _getTypeName(): string {

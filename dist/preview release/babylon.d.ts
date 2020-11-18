@@ -2828,6 +2828,14 @@ declare module BABYLON {
          */
         static Center(value1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>): Vector2;
         /**
+         * Gets the center of the vectors "value1" and "value2" and stores the result in the vector "ref"
+         * @param value1 defines first vector
+         * @param value2 defines second vector
+         * @param ref defines third vector
+         * @returns ref
+         */
+        static CenterToRef(value1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, ref: DeepImmutable<Vector2>): Vector2;
+        /**
          * Gets the shortest distance (float) between the point "p" and the segment defined by the two points "segA" and "segB".
          * @param p defines the middle point
          * @param segA defines one point of the segment
@@ -3595,6 +3603,14 @@ declare module BABYLON {
          */
         static Center(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>): Vector3;
         /**
+         * Gets the center of the vectors "value1" and "value2" and stores the result in the vector "ref"
+         * @param value1 defines first vector
+         * @param value2 defines second vector
+         * @param ref defines third vector
+         * @returns ref
+         */
+        static CenterToRef(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, ref: DeepImmutable<Vector3>): Vector3;
+        /**
          * Given three orthogonal normalized left-handed oriented Vector3 axis in space (target system),
          * RotationFromAxis() returns the rotation Euler angles (ex : rotation.x, rotation.y, rotation.z) to apply
          * to something in order to rotate it from its local system to the given target system
@@ -4011,6 +4027,14 @@ declare module BABYLON {
          * @return the center between the two vectors
          */
         static Center(value1: DeepImmutable<Vector4>, value2: DeepImmutable<Vector4>): Vector4;
+        /**
+         * Gets the center of the vectors "value1" and "value2" and stores the result in the vector "ref"
+         * @param value1 defines first vector
+         * @param value2 defines second vector
+         * @param ref defines third vector
+         * @returns ref
+         */
+        static CenterToRef(value1: DeepImmutable<Vector4>, value2: DeepImmutable<Vector4>, ref: DeepImmutable<Vector4>): Vector4;
         /**
          * Returns a new Vector4 set with the result of the normal transformation by the given matrix of the given vector.
          * This methods computes transformed normalized direction vectors only.
@@ -9487,10 +9511,15 @@ declare module BABYLON {
          */
         _prepare(): void;
         /**
-         * Gets the trigger parameters
-         * @returns the trigger parameters
+         * Gets the trigger parameter
+         * @returns the trigger parameter
          */
         getTriggerParameter(): any;
+        /**
+         * Sets the trigger parameter
+         * @param value defines the new trigger parameter
+         */
+        setTriggerParameter(value: any): void;
         /**
          * Internal only - executes current action event
          * @hidden
@@ -28105,6 +28134,7 @@ declare module BABYLON {
          * @hidden
          */
         get checkCollisions(): boolean;
+        set checkCollisions(value: boolean);
         /** @hidden */
         _bind(subMesh: SubMesh, effect: Effect, fillMode: number): Mesh;
         /** @hidden */
@@ -62813,6 +62843,14 @@ declare module BABYLON {
          * So you could set this variable to your engine import to make it work.
          */
         static LoaderInjectedPhysicsEngine: any;
+    }
+}
+declare module BABYLON {
+    /**
+     * A material to use for fast depth-only rendering.
+     */
+    export class OcclusionMaterial extends ShaderMaterial {
+        constructor(name: string, scene: Scene);
     }
 }
 declare module BABYLON {

@@ -2828,6 +2828,14 @@ declare module BABYLON {
          */
         static Center(value1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>): Vector2;
         /**
+         * Gets the center of the vectors "value1" and "value2" and stores the result in the vector "ref"
+         * @param value1 defines first vector
+         * @param value2 defines second vector
+         * @param ref defines third vector
+         * @returns ref
+         */
+        static CenterToRef(value1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, ref: DeepImmutable<Vector2>): Vector2;
+        /**
          * Gets the shortest distance (float) between the point "p" and the segment defined by the two points "segA" and "segB".
          * @param p defines the middle point
          * @param segA defines one point of the segment
@@ -3595,6 +3603,14 @@ declare module BABYLON {
          */
         static Center(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>): Vector3;
         /**
+         * Gets the center of the vectors "value1" and "value2" and stores the result in the vector "ref"
+         * @param value1 defines first vector
+         * @param value2 defines second vector
+         * @param ref defines third vector
+         * @returns ref
+         */
+        static CenterToRef(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, ref: DeepImmutable<Vector3>): Vector3;
+        /**
          * Given three orthogonal normalized left-handed oriented Vector3 axis in space (target system),
          * RotationFromAxis() returns the rotation Euler angles (ex : rotation.x, rotation.y, rotation.z) to apply
          * to something in order to rotate it from its local system to the given target system
@@ -4011,6 +4027,14 @@ declare module BABYLON {
          * @return the center between the two vectors
          */
         static Center(value1: DeepImmutable<Vector4>, value2: DeepImmutable<Vector4>): Vector4;
+        /**
+         * Gets the center of the vectors "value1" and "value2" and stores the result in the vector "ref"
+         * @param value1 defines first vector
+         * @param value2 defines second vector
+         * @param ref defines third vector
+         * @returns ref
+         */
+        static CenterToRef(value1: DeepImmutable<Vector4>, value2: DeepImmutable<Vector4>, ref: DeepImmutable<Vector4>): Vector4;
         /**
          * Returns a new Vector4 set with the result of the normal transformation by the given matrix of the given vector.
          * This methods computes transformed normalized direction vectors only.
@@ -9487,10 +9511,15 @@ declare module BABYLON {
          */
         _prepare(): void;
         /**
-         * Gets the trigger parameters
-         * @returns the trigger parameters
+         * Gets the trigger parameter
+         * @returns the trigger parameter
          */
         getTriggerParameter(): any;
+        /**
+         * Sets the trigger parameter
+         * @param value defines the new trigger parameter
+         */
+        setTriggerParameter(value: any): void;
         /**
          * Internal only - executes current action event
          * @hidden
@@ -28105,6 +28134,7 @@ declare module BABYLON {
          * @hidden
          */
         get checkCollisions(): boolean;
+        set checkCollisions(value: boolean);
         /** @hidden */
         _bind(subMesh: SubMesh, effect: Effect, fillMode: number): Mesh;
         /** @hidden */
@@ -62817,6 +62847,14 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * A material to use for fast depth-only rendering.
+     */
+    export class OcclusionMaterial extends ShaderMaterial {
+        constructor(name: string, scene: Scene);
+    }
+}
+declare module BABYLON {
+    /**
      * The Physically based simple base material of BJS.
      *
      * This enables better naming and convention enforcements on top of the pbrMaterial.
@@ -84152,7 +84190,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
     /**
-     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1688)
+     * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_sheen/README.md)
      * [Playground Sample](https://www.babylonjs-playground.com/frame.html#BNIZX6#4)
      * !!! Experimental Extension Subject to Changes !!!
      */
@@ -84241,8 +84279,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
     /**
-     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1681)
-     * !!! Experimental Extension Subject to Changes !!!
+     * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_variants/README.md)
      */
     export class KHR_materials_variants implements IGLTFLoaderExtension {
         /**
@@ -84314,8 +84351,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
     /**
-     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1698)
-     * !!! Experimental Extension Subject to Changes !!!
+     * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_transmission/README.md)
      */
     export class KHR_materials_transmission implements IGLTFLoaderExtension {
         /**
