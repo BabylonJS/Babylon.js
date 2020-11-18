@@ -8,6 +8,10 @@
 
 - Added static CenterToRef for vectors 2/3/4  ([aWeirdo](https://github.com/aWeirdo))
 
+### Loaders
+
+- Added support for EXT_meshopt_compression for glTF loader. ([zeux](https://github.com/zeux))
+
 ### Materials
 
 - Added an `OcclusionMaterial` to simplify depth-only rendering of geometry ([rgerd](https://github.com/rgerd))
