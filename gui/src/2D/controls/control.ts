@@ -1170,6 +1170,31 @@ export class Control {
         this._host._linkedControls.push(this);
     }
 
+    /**
+     * Sets the four padding values at once on the control. Works similar to CSS `padding` shorthand property.
+     * @param { number} paddingTop - The value in pixels of the top padding.
+     * @param { number} paddingRight - The value in pixels of the right padding. If omitted, top is used.
+     * @param { number} paddingBottom - The value in pixels of the bottom padding. If omitted, top is used.
+     * @param { number} paddingLeft - The value in pixels of the left padding. If omitted, right is used.
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     */
+    public setPaddingInPixels(
+        paddingTop: number,
+        paddingRight?: number,
+        paddingBottom?: number,
+        paddingLeft?: number
+    ) {
+        const top = paddingTop;
+        const right = paddingRight ?? top;
+        const bottom = paddingBottom ?? top;
+        const left = paddingLeft ?? right;
+
+        this.paddingTopInPixels = top;
+        this.paddingRightInPixels = right;
+        this.paddingBottomInPixels = bottom;
+        this.paddingLeftInPixels = left;
+    }
+
     /** @hidden */
     public _moveToProjectedPosition(projectedPosition: Vector3): void {
         let oldLeft = this._left.getValue(this._host);
