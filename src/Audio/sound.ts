@@ -24,10 +24,24 @@ export class Sound {
      * Does the sound autoplay once loaded.
      */
     public autoplay: boolean = false;
+    
+    private _loop = false;
     /**
      * Does the sound loop after it finishes playing once.
      */
-    public loop: boolean = false;
+    public get loop(): boolean {
+        return this._loop;
+    }
+
+    public set loop(value: boolean) {
+        if (value === this._loop) {
+            return;
+        }
+
+        this._loop = value;
+        this.updateOptions({loop: value});
+    }
+    
     /**
      * Does the sound use a custom attenuation curve to simulate the falloff
      * happening when the source gets further away from the camera.
@@ -165,7 +179,7 @@ export class Sound {
         };
         if (options) {
             this.autoplay = options.autoplay || false;
-            this.loop = options.loop || false;
+            this._loop = options.loop || false;
             // if volume === 0, we need another way to check this option
             if (options.volume !== undefined) {
                 this._volume = options.volume;
@@ -382,6 +396,14 @@ export class Sound {
      */
     public isReady(): boolean {
         return this._isReadyToPlay;
+    }
+
+    /**
+     * Get the current class name.
+     * @returns current class name
+     */
+    public getClassName(): string {
+        return "Sound";
     }
 
     private _soundLoaded(audioData: ArrayBuffer) {

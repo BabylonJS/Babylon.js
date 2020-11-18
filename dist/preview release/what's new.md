@@ -16,6 +16,10 @@
 
 - Added an `OcclusionMaterial` to simplify depth-only rendering of geometry ([rgerd](https://github.com/rgerd))
 
+### Inspector
+
+- Added support for sounds in the inspector ([Deltakosh](https://github.com/deltakosh))
+
 ### GUI
 
 - Added a `FocusableButton` gui control to simplify creating menus with keyboard navigation ([Flux159](https://github.com/Flux159))
