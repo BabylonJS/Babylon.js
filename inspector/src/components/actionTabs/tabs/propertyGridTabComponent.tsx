@@ -98,6 +98,8 @@ import { Sprite } from 'babylonjs/Sprites/sprite';
 import { TargetedAnimationGridComponent } from './propertyGrids/animations/targetedAnimationPropertyGridComponent';
 import { FollowCamera } from 'babylonjs/Cameras/followCamera';
 import { FollowCameraPropertyGridComponent } from './propertyGrids/cameras/followCameraPropertyGridComponent';
+import { Sound } from 'babylonjs/Audio/sound';
+import { SoundPropertyGridComponent } from './propertyGrids/sounds/soundPropertyGridComponent';
 
 export class PropertyGridTabComponent extends PaneComponent {
     private _timerIntervalId: number;
@@ -141,6 +143,14 @@ export class PropertyGridTabComponent extends PaneComponent {
                     globalState={this.props.globalState}
                     lockObject={this._lockObject}
                     onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className === "Sound") {
+                const sound = entity as Sound;
+                return (<SoundPropertyGridComponent sound={sound}
+                    globalState={this.props.globalState}
+                    lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
 
