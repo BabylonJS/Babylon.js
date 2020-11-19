@@ -134,6 +134,9 @@ export class WebXRHand implements IDisposable {
      */
     public handPartsDefinition: { [key: string]: number[] };
 
+    /**
+     * Observers will be triggered when the mesh for this hand was initialized.
+     */
     public onHandMeshReadyObservable: Observable<WebXRHand> = new Observable();
 
     /**
@@ -172,6 +175,7 @@ export class WebXRHand implements IDisposable {
         this._scene = trackedMeshes[0].getScene();
         if (this._handMesh && this._rigMapping) {
             this._defaultHandMesh = false;
+            this.onHandMeshReadyObservable.notifyObservers(this);
         } else {
             if (!disableDefaultHandMesh) {
                 this._generateDefaultHandMesh();
