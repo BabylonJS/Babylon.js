@@ -24,7 +24,7 @@ export class Sound {
      * Does the sound autoplay once loaded.
      */
     public autoplay: boolean = false;
-    
+
     private _loop = false;
     /**
      * Does the sound loop after it finishes playing once.
@@ -41,7 +41,7 @@ export class Sound {
         this._loop = value;
         this.updateOptions({loop: value});
     }
-    
+
     /**
      * Does the sound use a custom attenuation curve to simulate the falloff
      * happening when the source gets further away from the camera.

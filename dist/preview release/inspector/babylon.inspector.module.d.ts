@@ -2825,6 +2825,26 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/cam
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/sounds/soundPropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    import { GlobalState } from "babylonjs-inspector/components/globalState";
+    import { Sound } from 'babylonjs/Audio/sound';
+    import { IExplorerExtensibilityGroup } from 'babylonjs/Debug/debugLayer';
+    interface ISoundPropertyGridComponentProps {
+        globalState: GlobalState;
+        sound: Sound;
+        extensibilityGroups?: IExplorerExtensibilityGroup[];
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class SoundPropertyGridComponent extends React.Component<ISoundPropertyGridComponentProps> {
+        constructor(props: ISoundPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGridTabComponent" {
     import { PaneComponent, IPaneComponentProps } from "babylonjs-inspector/components/actionTabs/paneComponent";
     export class PropertyGridTabComponent extends PaneComponent {
@@ -3302,6 +3322,20 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/targetedAn
     }
     export class TargetedAnimationItemComponent extends React.Component<ITargetedAnimationItemComponentProps> {
         constructor(props: ITargetedAnimationItemComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/sceneExplorer/entities/soundTreeItemComponent" {
+    import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+    import * as React from "react";
+    import { Sound } from 'babylonjs/Audio/sound';
+    interface ISoundTreeItemComponentProps {
+        sound: Sound;
+        extensibilityGroups?: IExplorerExtensibilityGroup[];
+        onClick: () => void;
+    }
+    export class SoundTreeItemComponent extends React.Component<ISoundTreeItemComponentProps> {
+        constructor(props: ISoundTreeItemComponentProps);
         render(): JSX.Element;
     }
 }
@@ -6853,6 +6887,19 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface ISoundPropertyGridComponentProps {
+        globalState: GlobalState;
+        sound: BABYLON.Sound;
+        extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class SoundPropertyGridComponent extends React.Component<ISoundPropertyGridComponentProps> {
+        constructor(props: ISoundPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     export class PropertyGridTabComponent extends PaneComponent {
         private _timerIntervalId;
         private _lockObject;
@@ -7254,6 +7301,17 @@ declare module INSPECTOR {
     }
     export class TargetedAnimationItemComponent extends React.Component<ITargetedAnimationItemComponentProps> {
         constructor(props: ITargetedAnimationItemComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface ISoundTreeItemComponentProps {
+        sound: BABYLON.Sound;
+        extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
+        onClick: () => void;
+    }
+    export class SoundTreeItemComponent extends React.Component<ISoundTreeItemComponentProps> {
+        constructor(props: ISoundTreeItemComponentProps);
         render(): JSX.Element;
     }
 }
