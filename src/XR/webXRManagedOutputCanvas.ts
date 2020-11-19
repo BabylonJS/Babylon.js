@@ -3,6 +3,7 @@ import { ThinEngine } from "../Engines/thinEngine";
 import { WebXRRenderTarget } from "./webXRTypes";
 import { WebXRSessionManager } from "./webXRSessionManager";
 import { Observable } from "../Misc/observable";
+import { Tools } from "../Misc/tools";
 
 /**
  * COnfiguration object for WebXR output canvas
@@ -118,10 +119,20 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
             return Promise.resolve(this.xrLayer);
         }
 
-        return (this.canvasContext as any).makeXRCompatible().then(() => {
-            this.xrLayer = createLayer();
-            return this.xrLayer;
-        });
+        return (this.canvasContext as any)
+            .makeXRCompatible()
+            .then(
+                // catch any error and continue. When using the emulator is throws this error for no apparent reason.
+                () => {},
+                () => {
+                    // log the error, continue nonetheless!
+                    Tools.Warn("Error executing makeXRCompatible. This does not mean that the session will work incorrectly.");
+                }
+            )
+            .then(() => {
+                this.xrLayer = createLayer();
+                return this.xrLayer;
+            });
     }
 
     private _addCanvas() {
