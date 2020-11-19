@@ -14,6 +14,7 @@ import { Measure } from "../measure";
 import { Style } from "../style";
 import { Matrix2D, Vector2WithInfo } from "../math2D";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { SerializationHelper, serialize } from 'babylonjs/Misc/decorators';
 
 /**
  * Root class used for all 2D controls
@@ -119,37 +120,45 @@ export class Control {
 
     /**
      * Gets or sets an object used to store user defined information for the node
-     */
+     */    
+    @serialize()
     public metadata: any = null;
 
     /** Gets or sets a boolean indicating if the control can be hit with pointer events */
+    @serialize()
     public isHitTestVisible = true;
     /** Gets or sets a boolean indicating if the control can block pointer events */
+    @serialize()
     public isPointerBlocker = false;
     /** Gets or sets a boolean indicating if the control can be focusable */
+    @serialize()
     public isFocusInvisible = false;
 
     /**
      * Gets or sets a boolean indicating if the children are clipped to the current control bounds.
      * Please note that not clipping children may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
      */
+    @serialize()
     public clipChildren = true;
 
     /**
      * Gets or sets a boolean indicating that control content must be clipped
      * Please note that not clipping children may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
      */
+    @serialize()
     public clipContent = true;
 
     /**
      * Gets or sets a boolean indicating that the current control should cache its rendering (useful when the control does not change often)
      */
+    @serialize()
     public useBitmapCache = false;
 
     private _cacheData: Nullable<ImageData>;
 
     private _shadowOffsetX = 0;
     /** Gets or sets a value indicating the offset to apply on X axis to render the shadow */
+    @serialize()
     public get shadowOffsetX() {
         return this._shadowOffsetX;
     }
@@ -165,6 +174,7 @@ export class Control {
 
     private _shadowOffsetY = 0;
     /** Gets or sets a value indicating the offset to apply on Y axis to render the shadow */
+    @serialize()
     public get shadowOffsetY() {
         return this._shadowOffsetY;
     }
@@ -180,6 +190,7 @@ export class Control {
 
     private _shadowBlur = 0;
     /** Gets or sets a value indicating the amount of blur to use to render the shadow */
+    @serialize()
     public get shadowBlur() {
         return this._shadowBlur;
     }
@@ -195,6 +206,7 @@ export class Control {
 
     private _shadowColor = 'black';
     /** Gets or sets a value indicating the color of the shadow (black by default ie. "#000") */
+    @serialize()
     public get shadowColor() {
         return this._shadowColor;
     }
@@ -209,6 +221,7 @@ export class Control {
     }
 
     /** Gets or sets the cursor to use when the control is hovered */
+    @serialize()
     public hoverCursor = "";
 
     /** @hidden */
@@ -293,6 +306,7 @@ export class Control {
     }
 
     /** Gets or set information about font offsets (used to render and align text) */
+    @serialize()
     public get fontOffset(): { ascent: number, height: number, descent: number } {
         return this._fontOffset;
     }
@@ -302,6 +316,7 @@ export class Control {
     }
 
     /** Gets or sets alpha value for the control (1 means opaque and 0 means entirely transparent) */
+    @serialize()
     public get alpha(): number {
         return this._alpha;
     }
@@ -334,6 +349,7 @@ export class Control {
     /** Gets or sets a value indicating the scale factor on X axis (1 by default)
      * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
     */
+   @serialize()
     public get scaleX(): number {
         return this._scaleX;
     }
@@ -351,6 +367,7 @@ export class Control {
     /** Gets or sets a value indicating the scale factor on Y axis (1 by default)
      * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
     */
+   @serialize()
     public get scaleY(): number {
         return this._scaleY;
     }
@@ -368,6 +385,7 @@ export class Control {
     /** Gets or sets the rotation angle (0 by default)
      * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
     */
+   @serialize()
     public get rotation(): number {
         return this._rotation;
     }
@@ -385,6 +403,7 @@ export class Control {
     /** Gets or sets the transformation center on Y axis (0 by default)
      * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
     */
+   @serialize()
     public get transformCenterY(): number {
         return this._transformCenterY;
     }
@@ -402,6 +421,7 @@ export class Control {
     /** Gets or sets the transformation center on X axis (0 by default)
      * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
     */
+   @serialize()
     public get transformCenterX(): number {
         return this._transformCenterX;
     }
@@ -420,6 +440,7 @@ export class Control {
      * Gets or sets the horizontal alignment
      * @see https://doc.babylonjs.com/how_to/gui#alignments
      */
+    @serialize()
     public get horizontalAlignment(): number {
         return this._horizontalAlignment;
     }
@@ -437,6 +458,7 @@ export class Control {
      * Gets or sets the vertical alignment
      * @see https://doc.babylonjs.com/how_to/gui#alignments
      */
+    @serialize()
     public get verticalAlignment(): number {
         return this._verticalAlignment;
     }
@@ -456,6 +478,7 @@ export class Control {
      * The first dimension used in the computation is the last one set (by setting width / widthInPixels or height / heightInPixels), and the
      * second dimension is computed as first dimension * fixedRatio
      */
+    @serialize()
     public fixedRatio = 0;
 
     private _fixedRatioMasterIsWidth = true;
@@ -464,6 +487,7 @@ export class Control {
      * Gets or sets control width
      * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
+    @serialize()
     public get width(): string | number {
         return this._width.toString(this._host);
     }
@@ -500,6 +524,7 @@ export class Control {
      * Gets or sets control height
      * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
+    @serialize()
     public get height(): string | number {
         return this._height.toString(this._host);
     }
@@ -533,6 +558,7 @@ export class Control {
     }
 
     /** Gets or set font family */
+    @serialize()
     public get fontFamily(): string {
         if (!this._fontSet) {
             return "";
@@ -550,6 +576,7 @@ export class Control {
     }
 
     /** Gets or sets font style */
+    @serialize()
     public get fontStyle(): string {
         return this._fontStyle;
     }
@@ -564,6 +591,7 @@ export class Control {
     }
 
     /** Gets or sets font weight */
+    @serialize()
     public get fontWeight(): string {
         return this._fontWeight;
     }
@@ -581,6 +609,7 @@ export class Control {
      * Gets or sets style
      * @see https://doc.babylonjs.com/how_to/gui#styles
      */
+    @serialize()
     public get style(): Nullable<Style> {
         return this._style;
     }
@@ -628,6 +657,7 @@ export class Control {
     }
 
     /** Gets or sets font size */
+    @serialize()
     public get fontSize(): string | number {
         return this._fontSize.toString(this._host);
     }
@@ -644,6 +674,7 @@ export class Control {
     }
 
     /** Gets or sets foreground color */
+    @serialize()
     public get color(): string {
         return this._color;
     }
@@ -658,6 +689,7 @@ export class Control {
     }
 
     /** Gets or sets z index which is used to reorder controls on the z axis */
+    @serialize()
     public get zIndex(): number {
         return this._zIndex;
     }
@@ -675,6 +707,7 @@ export class Control {
     }
 
     /** Gets or sets a boolean indicating if the control can be rendered */
+    @serialize()
     public get notRenderable(): boolean {
         return this._doNotRender;
     }
@@ -689,6 +722,7 @@ export class Control {
     }
 
     /** Gets or sets a boolean indicating if the control is visible */
+    @serialize()
     public get isVisible(): boolean {
         return this._isVisible;
     }
@@ -718,6 +752,7 @@ export class Control {
      * Gets or sets a value indicating the padding to use on the left of the control
      * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
+    @serialize()
     public get paddingLeft(): string | number {
         return this._paddingLeft.toString(this._host);
     }
@@ -747,6 +782,7 @@ export class Control {
      * Gets or sets a value indicating the padding to use on the right of the control
      * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
+    @serialize()
     public get paddingRight(): string | number {
         return this._paddingRight.toString(this._host);
     }
@@ -776,6 +812,7 @@ export class Control {
      * Gets or sets a value indicating the padding to use on the top of the control
      * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
+    @serialize()
     public get paddingTop(): string | number {
         return this._paddingTop.toString(this._host);
     }
@@ -805,6 +842,7 @@ export class Control {
      * Gets or sets a value indicating the padding to use on the bottom of the control
      * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
+    @serialize()
     public get paddingBottom(): string | number {
         return this._paddingBottom.toString(this._host);
     }
@@ -834,6 +872,7 @@ export class Control {
      * Gets or sets a value indicating the left coordinate of the control
      * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
+    @serialize()
     public get left(): string | number {
         return this._left.toString(this._host);
     }
@@ -863,6 +902,7 @@ export class Control {
      * Gets or sets a value indicating the top coordinate of the control
      * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
+    @serialize()
     public get top(): string | number {
         return this._top.toString(this._host);
     }
@@ -892,6 +932,7 @@ export class Control {
      * Gets or sets a value indicating the offset on X axis to the linked mesh
      * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
      */
+    @serialize()
     public get linkOffsetX(): string | number {
         return this._linkOffsetX.toString(this._host);
     }
@@ -921,6 +962,7 @@ export class Control {
      * Gets or sets a value indicating the offset on Y axis to the linked mesh
      * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
      */
+    @serialize()
     public get linkOffsetY(): string | number {
         return this._linkOffsetY.toString(this._host);
     }
@@ -956,7 +998,8 @@ export class Control {
         return this._currentMeasure.top + this._currentMeasure.height / 2;
     }
 
-    /** Gets or sets if control is Enabled*/
+    /** Gets or sets if control is Enabled */
+    @serialize()
     public get isEnabled(): boolean {
         return this._isEnabled;
     }
@@ -969,7 +1012,8 @@ export class Control {
         this._isEnabled = value;
         this._markAsDirty();
     }
-    /** Gets or sets background color of control if it's disabled*/
+    /** Gets or sets background color of control if it's disabled */
+    @serialize()
     public get disabledColor(): string {
         return this._disabledColor;
     }
@@ -982,7 +1026,8 @@ export class Control {
         this._disabledColor = value;
         this._markAsDirty();
     }
-    /** Gets or sets front color of control if it's disabled*/
+    /** Gets or sets front color of control if it's disabled */
+    @serialize()
     public get disabledColorItem(): string {
         return this._disabledColorItem;
     }
@@ -1920,6 +1965,16 @@ export class Control {
         }
 
         this._fontOffset = Control._GetFontOffset(this._font);
+    }
+
+    /**
+     * Serializes the current control
+     * @param serializationObject defined the JSON serialized object
+     */
+    public serializeContent(serializationObject: any) {
+        SerializationHelper.Serialize(this, serializationObject);
+        serializationObject.name = this.name;
+        serializationObject.className = this.getClassName();
     }
 
     /** Releases associated resources */
