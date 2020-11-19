@@ -15,6 +15,10 @@
 
 - Added support for EXT_meshopt_compression for glTF loader. ([zeux](https://github.com/zeux))
 
+### Navigation
+
+- Added support for thin instances in navigation mesh creation ([CedricGuillemet](https://github.com/CedricGuillemet))
+
 ### Materials
 
 - Added an `OcclusionMaterial` to simplify depth-only rendering of geometry ([rgerd](https://github.com/rgerd))
