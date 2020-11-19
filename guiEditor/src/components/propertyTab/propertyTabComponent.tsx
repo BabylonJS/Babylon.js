@@ -25,7 +25,6 @@ import { Vector3LineComponent } from '../../sharedComponents/vector3LineComponen
 import { Vector4LineComponent } from '../../sharedComponents/vector4LineComponent';
 import { Observer } from 'babylonjs/Misc/observable';
 import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
-import { NodePort } from '../../diagram/nodePort';
 import { isFramePortData } from '../../diagram/workbench';
 import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
 import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
@@ -39,7 +38,6 @@ interface IPropertyTabComponentProps {
 
 interface IPropertyTabComponentState {
     currentNode: Nullable<GraphNode>;
-    currentNodePort: Nullable<NodePort>;
  }
 
 export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
@@ -49,7 +47,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     constructor(props: IPropertyTabComponentProps) {
         super(props);
 
-        this.state = { currentNode: null, currentNodePort: null };
+        this.state = { currentNode: null, };
 
         this._modeSelect = React.createRef();
     }
@@ -336,7 +334,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             NODE MATERIAL EDITOR
                         </div>
                     </div>
-                    {this.state.currentNode?.renderProperties() || this.state.currentNodePort?.node.renderProperties()}
+                    {this.state.currentNode?.renderProperties()}
                 </div>
             );
         }
