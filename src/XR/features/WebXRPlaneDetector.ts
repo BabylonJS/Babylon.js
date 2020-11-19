@@ -199,7 +199,7 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
         };
 
         // Only supported by BabylonNative
-        if (!!this._xrSessionManager.isNativeSession() &&
+        if (!!this._xrSessionManager.isNative &&
             !!this._options.preferredDetectorOptions &&
             !!this._xrSessionManager.session.trySetPreferredPlaneDetectorOptions) {
             this._xrSessionManager.session.trySetPreferredPlaneDetectorOptions(this._options.preferredDetectorOptions);
