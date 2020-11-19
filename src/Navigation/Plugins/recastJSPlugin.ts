@@ -3,7 +3,7 @@ import { Logger } from "../../Misc/logger";
 import { VertexData } from "../../Meshes/mesh.vertexData";
 import { Mesh } from "../../Meshes/mesh";
 import { Scene } from "../../scene";
-import { Epsilon, Vector3 } from '../../Maths/math';
+import { Epsilon, Vector3, Matrix } from '../../Maths/math';
 import { TransformNode } from "../../Meshes/transformNode";
 import { Observer } from "../../Misc/observable";
 import { Nullable } from "../../types";
@@ -134,21 +134,37 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
                     continue;
                 }
 
-                const wm = mesh.computeWorldMatrix(true);
+                var worldMatrices = [];
+                const worldMatrix = mesh.computeWorldMatrix(true);
 
-                for (tri = 0; tri < meshIndices.length; tri++) {
-                    indices.push(meshIndices[tri] + offset);
+                if (mesh.hasThinInstances) {
+                    let thinMatrices = (mesh as Mesh).thinInstanceGetWorldMatrices();
+                    for (let instanceIndex = 0; instanceIndex < thinMatrices.length; instanceIndex++) {
+                        const tmpMatrix = new Matrix();
+                        let thinMatrix = thinMatrices[instanceIndex];
+                        thinMatrix.multiplyToRef(worldMatrix, tmpMatrix);
+                        worldMatrices.push(tmpMatrix);
+                    }
+                } else {
+                    worldMatrices.push(worldMatrix);
                 }
 
-                var transformed = Vector3.Zero();
-                var position = Vector3.Zero();
-                for (pt = 0; pt < meshPositions.length; pt += 3) {
-                    Vector3.FromArrayToRef(meshPositions, pt, position);
-                    Vector3.TransformCoordinatesToRef(position, wm, transformed);
-                    positions.push(transformed.x, transformed.y, transformed.z);
-                }
+                for (let matrixIndex = 0; matrixIndex < worldMatrices.length; matrixIndex ++) {
+                    const wm = worldMatrices[matrixIndex];
+                    for (tri = 0; tri < meshIndices.length; tri++) {
+                        indices.push(meshIndices[tri] + offset);
+                    }
 
-                offset += meshPositions.length / 3;
+                    var transformed = Vector3.Zero();
+                    var position = Vector3.Zero();
+                    for (pt = 0; pt < meshPositions.length; pt += 3) {
+                        Vector3.FromArrayToRef(meshPositions, pt, position);
+                        Vector3.TransformCoordinatesToRef(position, wm, transformed);
+                        positions.push(transformed.x, transformed.y, transformed.z);
+                    }
+
+                    offset += meshPositions.length / 3;
+                }
             }
         }
 
