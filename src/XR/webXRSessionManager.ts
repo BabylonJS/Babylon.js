@@ -333,9 +333,9 @@ export class WebXRSessionManager implements IDisposable {
     }
 
     /**
-     * Returns true if the session's backend is BabylonNative, otherwise false
+     * Returns true if Babylon.js is using the BabylonNative backend, otherwise false
      */
-    public isNativeSession(): boolean {
+    public get isNative(): boolean {
         return this._xrNavigator.xr.native ?? false;
     }
 

@@ -123,7 +123,7 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
         }
 
         // Only supported by BabylonNative
-        if (!!this._xrSessionManager.isNativeSession() &&
+        if (!!this._xrSessionManager.isNative &&
             !!this._xrSessionManager.session.trySetMeshDetectorEnabled) {
             this._xrSessionManager.session.trySetMeshDetectorEnabled(false);
         }
@@ -198,7 +198,7 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
 
     private _init() {
         // Only supported by BabylonNative
-        if (!!this._xrSessionManager.isNativeSession()) {
+        if (!!this._xrSessionManager.isNative) {
             if (!!this._xrSessionManager.session.trySetMeshDetectorEnabled) {
                 this._xrSessionManager.session.trySetMeshDetectorEnabled(true);
             }
