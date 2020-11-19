@@ -135,6 +135,11 @@ export class WebXRHand implements IDisposable {
     public handPartsDefinition: { [key: string]: number[] };
 
     /**
+     * Observers will be triggered when the mesh for this hand was initialized.
+     */
+    public onHandMeshReadyObservable: Observable<WebXRHand> = new Observable();
+
+    /**
      * Populate the HandPartsDefinition object.
      * This is called as a side effect since certain browsers don't have XRHand defined.
      */
@@ -170,6 +175,7 @@ export class WebXRHand implements IDisposable {
         this._scene = trackedMeshes[0].getScene();
         if (this._handMesh && this._rigMapping) {
             this._defaultHandMesh = false;
+            this.onHandMeshReadyObservable.notifyObservers(this);
         } else {
             if (!disableDefaultHandMesh) {
                 this._generateDefaultHandMesh();
@@ -199,6 +205,13 @@ export class WebXRHand implements IDisposable {
                 motionController.rootMesh.setEnabled(false);
             }
         });
+    }
+
+    /**
+     * Get the hand mesh. It is possible that the hand mesh is not yet ready!
+     */
+    public get handMesh() {
+        return this._handMesh;
     }
 
     /**
@@ -265,6 +278,7 @@ export class WebXRHand implements IDisposable {
      */
     public dispose() {
         this.trackedMeshes.forEach((mesh) => mesh.dispose());
+        this.onHandMeshReadyObservable.clear();
         // dispose the hand mesh, if it is the default one
         if (this._defaultHandMesh && this._handMesh) {
             this._handMesh.dispose();
@@ -307,6 +321,7 @@ export class WebXRHand implements IDisposable {
             handNodes.tipFresnel.value = handColors.tipFresnel;
 
             loaded.meshes[1].material = handShader;
+            loaded.meshes[1].alwaysSelectAsActiveMesh = true;
 
             this._defaultHandMesh = true;
             this._handMesh = loaded.meshes[0];
@@ -344,6 +359,7 @@ export class WebXRHand implements IDisposable {
             } else {
                 tm.parent && (tm.parent as AbstractMesh).rotate(Axis.Y, Math.PI);
             }
+            this.onHandMeshReadyObservable.notifyObservers(this);
         } catch (e) {
             Tools.Error("error loading hand mesh");
             console.log(e);
@@ -492,6 +508,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
         const hand = xrController.inputSource.hand;
         const trackedMeshes: AbstractMesh[] = [];
         const originalMesh = this.options.jointMeshes?.sourceMesh || SphereBuilder.CreateSphere("jointParent", { diameter: 1 });
+        originalMesh.scaling.set(0.01, 0.01, 0.01);
         originalMesh.isVisible = !!this.options.jointMeshes?.keepOriginalVisible;
         for (let i = 0; i < hand.length; ++i) {
             let newInstance: AbstractMesh = originalMesh.createInstance(`${xrController.uniqueId}-handJoint-${i}`);

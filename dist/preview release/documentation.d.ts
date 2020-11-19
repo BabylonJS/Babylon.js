@@ -45123,10 +45123,12 @@ declare module BABYLON {
          * Does the sound autoplay once loaded.
          */
         autoplay: boolean;
+        private _loop;
         /**
          * Does the sound loop after it finishes playing once.
          */
-        loop: boolean;
+        get loop(): boolean;
+        set loop(value: boolean);
         /**
          * Does the sound use a custom attenuation curve to simulate the falloff
          * happening when the source gets further away from the camera.
@@ -45239,6 +45241,11 @@ declare module BABYLON {
          * @returns true if ready, otherwise false
          */
         isReady(): boolean;
+        /**
+         * Get the current class name.
+         * @returns current class name
+         */
+        getClassName(): string;
         private _soundLoaded;
         /**
          * Sets the data of the sound from an audiobuffer
@@ -76953,6 +76960,10 @@ declare module BABYLON {
             [key: string]: number[];
         };
         /**
+         * Observers will be triggered when the mesh for this hand was initialized.
+         */
+        onHandMeshReadyObservable: Observable<WebXRHand>;
+        /**
          * Populate the HandPartsDefinition object.
          * This is called as a side effect since certain browsers don't have XRHand defined.
          */
@@ -76970,6 +76981,10 @@ declare module BABYLON {
         xrController: WebXRInputSource, 
         /** the meshes to be used to track the hand joints */
         trackedMeshes: AbstractMesh[], _handMesh?: AbstractMesh | undefined, _rigMapping?: string[] | undefined, disableDefaultHandMesh?: boolean);
+        /**
+         * Get the hand mesh. It is possible that the hand mesh is not yet ready!
+         */
+        get handMesh(): AbstractMesh | undefined;
         /**
          * Update this hand from the latest xr frame
          * @param xrFrame xrFrame to update from
@@ -78168,6 +78183,39 @@ declare module BABYLON.GLTF1 {
 }
 declare module BABYLON.GUI {
     /**
+    * Interface used to define a control that can receive focus
+    */
+    export interface IFocusableControl {
+        /**
+         * Function called when the control receives the focus
+         */
+        onFocus(): void;
+        /**
+         * Function called when the control loses the focus
+         */
+        onBlur(): void;
+        /**
+         * Function called to let the control handle keyboard events
+         * @param evt defines the current keyboard event
+         */
+        processKeyboard(evt: KeyboardEvent): void;
+        /**
+        * Function called to get the list of controls that should not steal the focus from this control
+        * @returns an array of controls
+        */
+        keepsFocusWith(): BABYLON.Nullable<Control[]>;
+        /**
+        * Function to focus the control programmatically
+        */
+        focus(): void;
+        /**
+        * Function to unfocus the control programmatically
+        */
+        blur(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
      * Class used to specific a value and its associated unit
      */
     export class ValueAndUnit {
@@ -78476,29 +78524,6 @@ declare module BABYLON.GUI {
     }
 }
 declare module BABYLON.GUI {
-    /**
-    * Interface used to define a control that can receive focus
-    */
-    export interface IFocusableControl {
-        /**
-         * Function called when the control receives the focus
-         */
-        onFocus(): void;
-        /**
-         * Function called when the control loses the focus
-         */
-        onBlur(): void;
-        /**
-         * Function called to let the control handle keyboard events
-         * @param evt defines the current keyboard event
-         */
-        processKeyboard(evt: KeyboardEvent): void;
-        /**
-        * Function called to get the list of controls that should not steal the focus from this control
-        * @returns an array of controls
-        */
-        keepsFocusWith(): BABYLON.Nullable<Control[]>;
-    }
     /**
     * Class used to create texture to support 2D GUI elements
     * @see https://doc.babylonjs.com/how_to/gui
@@ -80348,6 +80373,14 @@ declare module BABYLON.GUI {
         onBlur(): void;
         /** @hidden */
         onFocus(): void;
+        /**
+         * Function to focus an inputText programmatically
+         */
+        focus(): void;
+        /**
+         * Function to unfocus an inputText programmatically
+         */
+        blur(): void;
         protected _getTypeName(): string;
         /**
          * Function called to get the list of controls that should not steal the focus from this control
@@ -80603,6 +80636,51 @@ declare module BABYLON.GUI {
         protected _localDraw(context: CanvasRenderingContext2D): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _clipForChildren(context: CanvasRenderingContext2D): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a focusable button that can easily handle keyboard events
+     */
+    export class FocusableButton extends Button implements IFocusableControl {
+        name?: string | undefined;
+        /** Highlight color when button is focused */
+        focusedColor: BABYLON.Nullable<string>;
+        private _isFocused;
+        private _unfocusedColor;
+        /** BABYLON.Observable raised when the control gets the focus */
+        onFocusObservable: BABYLON.Observable<Button>;
+        /** BABYLON.Observable raised when the control loses the focus */
+        onBlurObservable: BABYLON.Observable<Button>;
+        /** BABYLON.Observable raised when a key event was processed */
+        onKeyboardEventProcessedObservable: BABYLON.Observable<KeyboardEvent>;
+        constructor(name?: string | undefined);
+        /** @hidden */
+        onBlur(): void;
+        /** @hidden */
+        onFocus(): void;
+        /**
+         * Function called to get the list of controls that should not steal the focus from this control
+         * @returns an array of controls
+         */
+        keepsFocusWith(): BABYLON.Nullable<Control[]>;
+        /**
+         * Function to focus a button programmatically
+         */
+        focus(): void;
+        /**
+         * Function to unfocus a button programmatically
+         */
+        blur(): void;
+        /**
+         * Handles the keyboard event
+         * @param evt Defines the KeyboardEvent
+         */
+        processKeyboard(evt: KeyboardEvent): void;
+        /** @hidden */
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
+        /** @hidden */
+        displose(): void;
     }
 }
 declare module BABYLON.GUI {
@@ -84035,6 +84113,35 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         dispose(): void;
         /** @hidden */
         loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>>;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
+     * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Vendor/EXT_meshopt_compression)
+     *
+     * This extension uses a WebAssembly decoder module from https://github.com/zeux/meshoptimizer/tree/master/js
+     */
+    export class EXT_meshopt_compression implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /**
+         * Path to decoder module; defaults to https://preview.babylonjs.com/meshopt_decoder.module.js
+         */
+        static DecoderPath: string;
+        private _loader;
+        private _decoder;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        loadBufferViewAsync(context: string, bufferView: IBufferView): Nullable<Promise<ArrayBufferView>>;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {

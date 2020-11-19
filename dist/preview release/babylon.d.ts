@@ -45123,10 +45123,12 @@ declare module BABYLON {
          * Does the sound autoplay once loaded.
          */
         autoplay: boolean;
+        private _loop;
         /**
          * Does the sound loop after it finishes playing once.
          */
-        loop: boolean;
+        get loop(): boolean;
+        set loop(value: boolean);
         /**
          * Does the sound use a custom attenuation curve to simulate the falloff
          * happening when the source gets further away from the camera.
@@ -45239,6 +45241,11 @@ declare module BABYLON {
          * @returns true if ready, otherwise false
          */
         isReady(): boolean;
+        /**
+         * Get the current class name.
+         * @returns current class name
+         */
+        getClassName(): string;
         private _soundLoaded;
         /**
          * Sets the data of the sound from an audiobuffer
@@ -76953,6 +76960,10 @@ declare module BABYLON {
             [key: string]: number[];
         };
         /**
+         * Observers will be triggered when the mesh for this hand was initialized.
+         */
+        onHandMeshReadyObservable: Observable<WebXRHand>;
+        /**
          * Populate the HandPartsDefinition object.
          * This is called as a side effect since certain browsers don't have XRHand defined.
          */
@@ -76970,6 +76981,10 @@ declare module BABYLON {
         xrController: WebXRInputSource, 
         /** the meshes to be used to track the hand joints */
         trackedMeshes: AbstractMesh[], _handMesh?: AbstractMesh | undefined, _rigMapping?: string[] | undefined, disableDefaultHandMesh?: boolean);
+        /**
+         * Get the hand mesh. It is possible that the hand mesh is not yet ready!
+         */
+        get handMesh(): AbstractMesh | undefined;
         /**
          * Update this hand from the latest xr frame
          * @param xrFrame xrFrame to update from

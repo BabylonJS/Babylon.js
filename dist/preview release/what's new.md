@@ -4,16 +4,34 @@
 
 ## Updates
 
-- Added a `FocusableButton` gui control to simplify creating menus with keyboard navigation ([Flux159](https://github.com/Flux159))
-- Added `focus()` and `blur()` functions for controls that implement `IFocusableControl` ([Flux159](https://github.com/Flux159))
-
 ### General
 
 - Added static CenterToRef for vectors 2/3/4  ([aWeirdo](https://github.com/aWeirdo))
 
+### Loaders
+
+- Added support for EXT_meshopt_compression for glTF loader. ([zeux](https://github.com/zeux))
+
+### Navigation
+
+- Added support for thin instances in navigation mesh creation ([CedricGuillemet](https://github.com/CedricGuillemet))
+
 ### Materials
 
 - Added an `OcclusionMaterial` to simplify depth-only rendering of geometry ([rgerd](https://github.com/rgerd))
+
+### Inspector
+
+- Added support for sounds in the inspector ([Deltakosh](https://github.com/deltakosh))
+
+### GUI
+
+- Added a `FocusableButton` gui control to simplify creating menus with keyboard navigation ([Flux159](https://github.com/Flux159))
+- Added `focus()` and `blur()` functions for controls that implement `IFocusableControl` ([Flux159](https://github.com/Flux159))
+
+### WebXR
+
+- A browser error preventing the emulator to render scene is now correctly dealt with ([RaananW](https://github.com/RaananW))
 
 ## Bugs
 

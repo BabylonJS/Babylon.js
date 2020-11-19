@@ -372,6 +372,21 @@
             }
         }
 
+        .soundTools {
+            grid-column: 2;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr auto 5px;
+            align-items: center;
+            min-width: 0;
+           
+            .extensions {
+                width: 20px;
+                grid-column: 2;
+            }
+        }
+
+
         .meshTools {
             grid-column: 2;
             width: 100%;

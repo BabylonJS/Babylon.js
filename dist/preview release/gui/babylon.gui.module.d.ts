@@ -1,3 +1,38 @@
+declare module "babylonjs-gui/2D/controls/focusableControl" {
+    import { Nullable } from "babylonjs/types";
+    import { Control } from "babylonjs-gui/2D/controls/control";
+    /**
+    * Interface used to define a control that can receive focus
+    */
+    export interface IFocusableControl {
+        /**
+         * Function called when the control receives the focus
+         */
+        onFocus(): void;
+        /**
+         * Function called when the control loses the focus
+         */
+        onBlur(): void;
+        /**
+         * Function called to let the control handle keyboard events
+         * @param evt defines the current keyboard event
+         */
+        processKeyboard(evt: KeyboardEvent): void;
+        /**
+        * Function called to get the list of controls that should not steal the focus from this control
+        * @returns an array of controls
+        */
+        keepsFocusWith(): Nullable<Control[]>;
+        /**
+        * Function to focus the control programmatically
+        */
+        focus(): void;
+        /**
+        * Function to unfocus the control programmatically
+        */
+        blur(): void;
+    }
+}
 declare module "babylonjs-gui/2D/valueAndUnit" {
     import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
     /**
@@ -326,31 +361,9 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
     import { Scene } from "babylonjs/scene";
     import { Container } from "babylonjs-gui/2D/controls/container";
     import { Control } from "babylonjs-gui/2D/controls/control";
+    import { IFocusableControl } from "babylonjs-gui/2D/controls/focusableControl";
     import { Style } from "babylonjs-gui/2D/style";
     import { Viewport } from 'babylonjs/Maths/math.viewport';
-    /**
-    * Interface used to define a control that can receive focus
-    */
-    export interface IFocusableControl {
-        /**
-         * Function called when the control receives the focus
-         */
-        onFocus(): void;
-        /**
-         * Function called when the control loses the focus
-         */
-        onBlur(): void;
-        /**
-         * Function called to let the control handle keyboard events
-         * @param evt defines the current keyboard event
-         */
-        processKeyboard(evt: KeyboardEvent): void;
-        /**
-        * Function called to get the list of controls that should not steal the focus from this control
-        * @returns an array of controls
-        */
-        keepsFocusWith(): Nullable<Control[]>;
-    }
     /**
     * Class used to create texture to support 2D GUI elements
     * @see https://doc.babylonjs.com/how_to/gui
@@ -2123,7 +2136,7 @@ declare module "babylonjs-gui/2D/controls/inputText" {
     import { Vector2 } from "babylonjs/Maths/math.vector";
     import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
     import { Control } from "babylonjs-gui/2D/controls/control";
-    import { IFocusableControl } from "babylonjs-gui/2D/advancedDynamicTexture";
+    import { IFocusableControl } from "babylonjs-gui/2D/controls/focusableControl";
     import { VirtualKeyboard } from "babylonjs-gui/2D/controls/virtualKeyboard";
     import { Measure } from "babylonjs-gui/2D/measure";
     import { TextWrapper } from "babylonjs-gui/2D/controls/textWrapper";
@@ -2256,6 +2269,14 @@ declare module "babylonjs-gui/2D/controls/inputText" {
         onBlur(): void;
         /** @hidden */
         onFocus(): void;
+        /**
+         * Function to focus an inputText programmatically
+         */
+        focus(): void;
+        /**
+         * Function to unfocus an inputText programmatically
+         */
+        blur(): void;
         protected _getTypeName(): string;
         /**
          * Function called to get the list of controls that should not steal the focus from this control
@@ -2525,6 +2546,58 @@ declare module "babylonjs-gui/2D/controls/ellipse" {
         protected _localDraw(context: CanvasRenderingContext2D): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _clipForChildren(context: CanvasRenderingContext2D): void;
+    }
+}
+declare module "babylonjs-gui/2D/controls/focusableButton" {
+    import { Nullable } from "babylonjs/types";
+    import { Vector2 } from "babylonjs/Maths/math.vector";
+    import { Button } from "babylonjs-gui/2D/controls/button";
+    import { Control } from "babylonjs-gui/2D/controls/control";
+    import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
+    import { IFocusableControl } from "babylonjs-gui/2D/controls/focusableControl";
+    import { Observable } from 'babylonjs/Misc/observable';
+    /**
+     * Class used to create a focusable button that can easily handle keyboard events
+     */
+    export class FocusableButton extends Button implements IFocusableControl {
+        name?: string | undefined;
+        /** Highlight color when button is focused */
+        focusedColor: Nullable<string>;
+        private _isFocused;
+        private _unfocusedColor;
+        /** Observable raised when the control gets the focus */
+        onFocusObservable: Observable<Button>;
+        /** Observable raised when the control loses the focus */
+        onBlurObservable: Observable<Button>;
+        /** Observable raised when a key event was processed */
+        onKeyboardEventProcessedObservable: Observable<KeyboardEvent>;
+        constructor(name?: string | undefined);
+        /** @hidden */
+        onBlur(): void;
+        /** @hidden */
+        onFocus(): void;
+        /**
+         * Function called to get the list of controls that should not steal the focus from this control
+         * @returns an array of controls
+         */
+        keepsFocusWith(): Nullable<Control[]>;
+        /**
+         * Function to focus a button programmatically
+         */
+        focus(): void;
+        /**
+         * Function to unfocus a button programmatically
+         */
+        blur(): void;
+        /**
+         * Handles the keyboard event
+         * @param evt Defines the KeyboardEvent
+         */
+        processKeyboard(evt: KeyboardEvent): void;
+        /** @hidden */
+        _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean;
+        /** @hidden */
+        displose(): void;
     }
 }
 declare module "babylonjs-gui/2D/controls/inputPassword" {
@@ -3540,6 +3613,7 @@ declare module "babylonjs-gui/2D/controls/index" {
     export * from "babylonjs-gui/2D/controls/container";
     export * from "babylonjs-gui/2D/controls/control";
     export * from "babylonjs-gui/2D/controls/ellipse";
+    export * from "babylonjs-gui/2D/controls/focusableButton";
     export * from "babylonjs-gui/2D/controls/grid";
     export * from "babylonjs-gui/2D/controls/image";
     export * from "babylonjs-gui/2D/controls/inputText";
@@ -4476,6 +4550,39 @@ declare module "babylonjs-gui" {
 }
 declare module BABYLON.GUI {
     /**
+    * Interface used to define a control that can receive focus
+    */
+    export interface IFocusableControl {
+        /**
+         * Function called when the control receives the focus
+         */
+        onFocus(): void;
+        /**
+         * Function called when the control loses the focus
+         */
+        onBlur(): void;
+        /**
+         * Function called to let the control handle keyboard events
+         * @param evt defines the current keyboard event
+         */
+        processKeyboard(evt: KeyboardEvent): void;
+        /**
+        * Function called to get the list of controls that should not steal the focus from this control
+        * @returns an array of controls
+        */
+        keepsFocusWith(): BABYLON.Nullable<Control[]>;
+        /**
+        * Function to focus the control programmatically
+        */
+        focus(): void;
+        /**
+        * Function to unfocus the control programmatically
+        */
+        blur(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
      * Class used to specific a value and its associated unit
      */
     export class ValueAndUnit {
@@ -4784,29 +4891,6 @@ declare module BABYLON.GUI {
     }
 }
 declare module BABYLON.GUI {
-    /**
-    * Interface used to define a control that can receive focus
-    */
-    export interface IFocusableControl {
-        /**
-         * Function called when the control receives the focus
-         */
-        onFocus(): void;
-        /**
-         * Function called when the control loses the focus
-         */
-        onBlur(): void;
-        /**
-         * Function called to let the control handle keyboard events
-         * @param evt defines the current keyboard event
-         */
-        processKeyboard(evt: KeyboardEvent): void;
-        /**
-        * Function called to get the list of controls that should not steal the focus from this control
-        * @returns an array of controls
-        */
-        keepsFocusWith(): BABYLON.Nullable<Control[]>;
-    }
     /**
     * Class used to create texture to support 2D GUI elements
     * @see https://doc.babylonjs.com/how_to/gui
@@ -6656,6 +6740,14 @@ declare module BABYLON.GUI {
         onBlur(): void;
         /** @hidden */
         onFocus(): void;
+        /**
+         * Function to focus an inputText programmatically
+         */
+        focus(): void;
+        /**
+         * Function to unfocus an inputText programmatically
+         */
+        blur(): void;
         protected _getTypeName(): string;
         /**
          * Function called to get the list of controls that should not steal the focus from this control
@@ -6911,6 +7003,51 @@ declare module BABYLON.GUI {
         protected _localDraw(context: CanvasRenderingContext2D): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _clipForChildren(context: CanvasRenderingContext2D): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a focusable button that can easily handle keyboard events
+     */
+    export class FocusableButton extends Button implements IFocusableControl {
+        name?: string | undefined;
+        /** Highlight color when button is focused */
+        focusedColor: BABYLON.Nullable<string>;
+        private _isFocused;
+        private _unfocusedColor;
+        /** BABYLON.Observable raised when the control gets the focus */
+        onFocusObservable: BABYLON.Observable<Button>;
+        /** BABYLON.Observable raised when the control loses the focus */
+        onBlurObservable: BABYLON.Observable<Button>;
+        /** BABYLON.Observable raised when a key event was processed */
+        onKeyboardEventProcessedObservable: BABYLON.Observable<KeyboardEvent>;
+        constructor(name?: string | undefined);
+        /** @hidden */
+        onBlur(): void;
+        /** @hidden */
+        onFocus(): void;
+        /**
+         * Function called to get the list of controls that should not steal the focus from this control
+         * @returns an array of controls
+         */
+        keepsFocusWith(): BABYLON.Nullable<Control[]>;
+        /**
+         * Function to focus a button programmatically
+         */
+        focus(): void;
+        /**
+         * Function to unfocus a button programmatically
+         */
+        blur(): void;
+        /**
+         * Handles the keyboard event
+         * @param evt Defines the KeyboardEvent
+         */
+        processKeyboard(evt: KeyboardEvent): void;
+        /** @hidden */
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
+        /** @hidden */
+        displose(): void;
     }
 }
 declare module BABYLON.GUI {
