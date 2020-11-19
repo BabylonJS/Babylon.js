@@ -10,7 +10,7 @@ import { GraphNode } from './graphNode';
 import { NodeLink } from './nodeLink';
 import { GraphFrame } from './graphFrame';
 import { FrameNodePort } from './frameNodePort';
-import { FramePortData } from './graphCanvas';
+import { FramePortData } from './workbench';
 
 export class NodePort {
     protected _element: HTMLDivElement;

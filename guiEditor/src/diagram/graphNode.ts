@@ -2,15 +2,13 @@ import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
 import { GlobalState } from '../globalState';
 import { Nullable } from 'babylonjs/types';
 import { Observer } from 'babylonjs/Misc/observable';
-import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
-import { GraphCanvasComponent, FramePortData } from './graphCanvas';
-import { PropertyGuiLedger, PropertyLedger } from './propertyLedger';
+import { GraphCanvasComponent, FramePortData } from './workbench';
+import { PropertyGuiLedger } from './propertyLedger';
 import * as React from 'react';
 import { GenericPropertyComponent } from './properties/genericNodePropertyComponent';
 import { DisplayLedger } from './displayLedger';
 import { IDisplayManager } from './display/displayManager';
 import { NodePort } from './nodePort';
-import { Vector2 } from 'babylonjs';
 
 export class GraphNode {
     private _visual: HTMLDivElement;

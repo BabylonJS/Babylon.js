@@ -1,5 +1,5 @@
 import { GraphNode } from './graphNode';
-import { GraphCanvasComponent, FramePortData } from './graphCanvas';
+import { GraphCanvasComponent, FramePortData } from './workbench';
 import { Nullable } from 'babylonjs/types';
 import { Observer, Observable } from 'babylonjs/Misc/observable';
 import { NodeLink } from './nodeLink';
