@@ -890,6 +890,30 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             this._lastControlDown = {};
         });
     }
+
+
+    /**
+     * Serializes the entire GUI system
+     * @returns an object with the JSON serialized data
+     */
+    public serializeContent(): any {
+        let serializationObject = {
+            root: {}
+        };
+
+        this._rootContainer.serializeContent(serializationObject.root);
+
+        return serializationObject;
+    }
+
+    /**
+     * Recreate the content of the ADT from a JSON object
+     * @param serializedObject define the JSON serialized object to restore from 
+     */
+    public parseContent(serializedObject: any) {
+
+    }
+
     // Statics
     /**
      * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh)

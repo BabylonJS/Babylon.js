@@ -6,6 +6,7 @@ import { Measure } from "../measure";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
+import { serialize } from 'babylonjs/Misc/decorators';
 
 /**
  * Root class for 2D containers
@@ -31,9 +32,11 @@ export class Container extends Control {
     /**
      * Gets or sets the number of layout cycles (a change involved by a control while evaluating the layout) allowed
      */
+    @serialize()
     public maxLayoutCycle = 3;
 
     /** Gets or sets a boolean indicating if the container should try to adapt to its children height */
+    @serialize()
     public get adaptHeightToChildren(): boolean {
         return this._adaptHeightToChildren;
     }
@@ -53,6 +56,7 @@ export class Container extends Control {
     }
 
     /** Gets or sets a boolean indicating if the container should try to adapt to its children width */
+    @serialize()
     public get adaptWidthToChildren(): boolean {
         return this._adaptWidthToChildren;
     }
@@ -72,6 +76,7 @@ export class Container extends Control {
     }
 
     /** Gets or sets background color */
+    @serialize()
     public get background(): string {
         return this._background;
     }
@@ -451,6 +456,25 @@ export class Container extends Control {
         super._additionalProcessing(parentMeasure, context);
 
         this._measureForChildren.copyFrom(this._currentMeasure);
+    }
+
+     /**
+     * Serializes the current control
+     * @param serializationObject defined the JSON serialized object
+     */
+    public serializeContent(serializationObject: any) {
+        super.serializeContent(serializationObject);
+        if (!this.children.length) {
+            return;
+        }
+
+        serializationObject.children = [];
+
+        for (var child of this.children) {
+            let childSerializationObject = {};
+            child.serializeContent(childSerializationObject);
+            serializationObject.children.push(childSerializationObject);
+        }
     }
 
     /** Releases associated resources */
