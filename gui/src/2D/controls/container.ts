@@ -462,8 +462,8 @@ export class Container extends Control {
      * Serializes the current control
      * @param serializationObject defined the JSON serialized object
      */
-    public serializeContent(serializationObject: any) {
-        super.serializeContent(serializationObject);
+    public serialize(serializationObject: any) {
+        super.serialize(serializationObject);
         if (!this.children.length) {
             return;
         }
@@ -472,7 +472,7 @@ export class Container extends Control {
 
         for (var child of this.children) {
             let childSerializationObject = {};
-            child.serializeContent(childSerializationObject);
+            child.serialize(childSerializationObject);
             serializationObject.children.push(childSerializationObject);
         }
     }
