@@ -1971,7 +1971,7 @@ export class Control {
      * Serializes the current control
      * @param serializationObject defined the JSON serialized object
      */
-    public serializeContent(serializationObject: any) {
+    public serialize(serializationObject: any) {
         SerializationHelper.Serialize(this, serializationObject);
         serializationObject.name = this.name;
         serializationObject.className = this.getClassName();

@@ -901,7 +901,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             root: {}
         };
 
-        this._rootContainer.serializeContent(serializationObject.root);
+        this._rootContainer.serialize(serializationObject.root);
 
         return serializationObject;
     }
