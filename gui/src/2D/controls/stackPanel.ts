@@ -4,6 +4,7 @@ import { Container } from "./container";
 import { Measure } from "../measure";
 import { Control } from "./control";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { serialize } from 'babylonjs/Misc/decorators';
 
 /**
  * Class used to create a 2D stack panel container
@@ -17,9 +18,11 @@ export class StackPanel extends Container {
     /**
      * Gets or sets a boolean indicating that layou warnings should be ignored
      */
+    @serialize()
     public ignoreLayoutWarnings = false;
 
     /** Gets or sets a boolean indicating if the stack panel is vertical or horizontal*/
+    @serialize()
     public get isVertical(): boolean {
         return this._isVertical;
     }
@@ -37,6 +40,7 @@ export class StackPanel extends Container {
      * Gets or sets panel width.
      * This value should not be set when in horizontal mode as it will be computed automatically
      */
+    @serialize()
     public set width(value: string | number) {
         if (!this._doNotTrackManualChanges) {
             this._manualWidth = true;
@@ -59,6 +63,7 @@ export class StackPanel extends Container {
      * Gets or sets panel height.
      * This value should not be set when in vertical mode as it will be computed automatically
      */
+    @serialize()
     public set height(value: string | number) {
         if (!this._doNotTrackManualChanges) {
             this._manualHeight = true;
