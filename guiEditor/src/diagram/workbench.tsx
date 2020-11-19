@@ -4,7 +4,6 @@ import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
 import { GraphNode } from './graphNode';
 import * as dagre from 'dagre';
 import { Nullable } from 'babylonjs/types';
-import { NodePort } from './nodePort';
 
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { IEditorData} from '../nodeLocationInfo';
@@ -55,7 +54,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _zoom = 1;
     private _selectedNodes: GraphNode[] = [];
     private _selectedGuiNodes: GraphNode[] = [];
-    private _selectedPort: Nullable<NodePort> = null;
     private _gridSize = 20;
     private _selectionBox: Nullable<HTMLDivElement> = null;    
     private _frameCandidate: Nullable<HTMLDivElement> = null;
@@ -127,10 +125,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         return this._selectedGuiNodes;
     }
 
-    public get selectedPort() {
-        return this._selectedPort;
-    }
-
     public get canvasContainer() {
         return this._graphCanvas;
     }
@@ -161,7 +155,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 }); 
                 this._selectedNodes = [];
                 this._selectedGuiNodes = [];
-                this._selectedPort = null;
             } else {
                 if (selection instanceof GraphNode){
                     if (this._ctrlKeyIsPressed) {
@@ -173,14 +166,11 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                         this._selectedNodes = [selection];
                         this._selectedGuiNodes = [selection];
                     }
-                } else if(selection instanceof NodePort){
-                    this._selectedNodes = [];
-                    this._selectedGuiNodes = [];
-                    this._selectedPort = selection;
+                
                 } else {
                     this._selectedNodes = [];
                     this._selectedGuiNodes = [];
-                    //this._selectedPort = selection.port;
+
                 }
             }
         });

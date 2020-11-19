@@ -8,8 +8,6 @@ import * as React from 'react';
 import { GenericPropertyComponent } from './properties/genericNodePropertyComponent';
 import { DisplayLedger } from './displayLedger';
 import { IDisplayManager } from './display/displayManager';
-import { NodePort } from './nodePort';
-
 export class GraphNode {
     private _visual: HTMLDivElement;
     private _header: HTMLDivElement;
@@ -25,7 +23,7 @@ export class GraphNode {
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null    
     private _globalState: GlobalState;
-    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode | NodePort | FramePortData>>>;  
+    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode | FramePortData>>>;  
     private _onSelectionBoxMovedObserver: Nullable<Observer<ClientRect | DOMRect>>;   
     private _onUpdateRequiredObserver: Nullable<Observer<void>>;  
     private _ownerCanvas: GraphCanvasComponent; 
