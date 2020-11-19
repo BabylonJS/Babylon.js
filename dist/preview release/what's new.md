@@ -19,6 +19,10 @@
 
 - Added an `OcclusionMaterial` to simplify depth-only rendering of geometry ([rgerd](https://github.com/rgerd))
 
+### WebXR
+
+- A browser error preventing the emulator to render scene is now correctly dealt with ([RaananW](https://github.com/RaananW))
+
 ## Bugs
 
 - Fix issue with the Promise polyfill where a return value was expected from resolve() ([Deltakosh](https://github.com/deltakosh))
