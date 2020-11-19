@@ -8,10 +8,6 @@ import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { Color4 } from 'babylonjs/Maths/math.color';
 import { GraphNode } from './diagram/graphNode';
 import { Vector2 } from 'babylonjs/Maths/math.vector';
-import { NodePort } from './diagram/nodePort';
-import { NodeLink } from './diagram/nodeLink';
-import { GraphFrame } from './diagram/graphFrame';
-import { FrameNodePort } from './diagram/frameNodePort';
 import { FramePortData } from './diagram/workbench';
 import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
 
@@ -21,7 +17,7 @@ export class GlobalState {
     hostElement: HTMLElement;
     hostDocument: HTMLDocument;
     hostWindow: Window;
-    onSelectionChangedObservable = new Observable<Nullable<GraphNode | NodeLink | GraphFrame | NodePort | FramePortData>>();
+    onSelectionChangedObservable = new Observable<Nullable<GraphNode | FramePortData>>();
     onRebuildRequiredObservable = new Observable<void>();
     onBuiltObservable = new Observable<void>();
     onResetRequiredObservable = new Observable<void>();
@@ -39,8 +35,6 @@ export class GlobalState {
     onAnimationCommandActivated = new Observable<void>();
     onCandidateLinkMoved = new Observable<Nullable<Vector2>>();
     onSelectionBoxMoved = new Observable<ClientRect | DOMRect>();
-    onFrameCreatedObservable = new Observable<GraphFrame>();
-    onCandidatePortSelectedObservable = new Observable<Nullable<NodePort | FrameNodePort>>();
     onImportFrameObservable = new Observable<any>();
     onGraphNodeRemovalObservable = new Observable<GraphNode>();
     onGetNodeFromBlock: (block: NodeMaterialBlock) => GraphNode;
@@ -58,7 +52,7 @@ export class GlobalState {
     directionalLight0: boolean;
     directionalLight1: boolean;
     controlCamera: boolean;
-    storeEditorData: (serializationObject: any, frame?: Nullable<GraphFrame>) => void;
+    storeEditorData: (serializationObject: any, frame?: Nullable<null>) => void;
     _mode: NodeMaterialModes;
 
     /** Gets the mode */
