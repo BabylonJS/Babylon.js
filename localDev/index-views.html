@@ -118,6 +118,8 @@
                 BABYLON.GLTFValidation.Configuration = {
                     url: "../dist/preview%20release/gltf_validator.js"
                 };
+                BABYLON.GLTF2.Loader.Extensions.EXT_meshopt_compression.DecoderPath =
+                    "../dist/preview%20release/meshopt_decoder.module.js";
 
                 if (BABYLON.Engine.isSupported()) {
                     if (typeof createEngine !== "undefined") {
