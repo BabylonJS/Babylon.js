@@ -2,12 +2,14 @@ import { Container } from "./container";
 import { Control } from "./control";
 import { Measure } from "../measure";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { serialize } from 'babylonjs/Misc/decorators';
 
 /** Class used to create 2D ellipse containers */
 export class Ellipse extends Container {
     private _thickness = 1;
 
     /** Gets or sets border thickness */
+    @serialize()
     public get thickness(): number {
         return this._thickness;
     }

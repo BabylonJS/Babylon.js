@@ -5,6 +5,7 @@ import { Tools } from "babylonjs/Misc/tools";
 import { Control } from "./control";
 import { Measure } from "../measure";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { expandToProperty, serialize } from 'babylonjs/Misc/decorators';
 
 /**
  * Class used to create 2D images
@@ -17,6 +18,8 @@ export class Image extends Control {
     private _imageHeight: number;
     private _loaded = false;
     private _stretch = Image.STRETCH_FILL;
+    @serialize()
+    @expandToProperty("source")
     private _source: Nullable<string>;
     private _autoScale = false;
 
@@ -64,6 +67,7 @@ export class Image extends Control {
     /**
      * Gets or sets a boolean indicating if nine patch slices (left, top, right, bottom) should be read from image data
      */
+    @serialize()
     public get populateNinePatchSlicesFromImage(): boolean {
         return this._populateNinePatchSlicesFromImage;
     }
@@ -84,6 +88,7 @@ export class Image extends Control {
      * Gets or sets a boolean indicating if pointers should only be validated on pixels with alpha > 0.
      * Beware using this as this will comsume more memory as the image has to be stored twice
      */
+    @serialize()
     public get detectPointerOnOpaqueOnly(): boolean {
         return this._detectPointerOnOpaqueOnly;
     }
@@ -99,6 +104,7 @@ export class Image extends Control {
     /**
      * Gets or sets the left value for slicing (9-patch)
      */
+    @serialize()
     public get sliceLeft(): number {
         return this._sliceLeft;
     }
@@ -116,6 +122,7 @@ export class Image extends Control {
     /**
      * Gets or sets the right value for slicing (9-patch)
      */
+    @serialize()
     public get sliceRight(): number {
         return this._sliceRight;
     }
@@ -133,6 +140,7 @@ export class Image extends Control {
     /**
      * Gets or sets the top value for slicing (9-patch)
      */
+    @serialize()
     public get sliceTop(): number {
         return this._sliceTop;
     }
@@ -150,6 +158,7 @@ export class Image extends Control {
     /**
      * Gets or sets the bottom value for slicing (9-patch)
      */
+    @serialize()
     public get sliceBottom(): number {
         return this._sliceBottom;
     }
@@ -167,6 +176,7 @@ export class Image extends Control {
     /**
      * Gets or sets the left coordinate in the source image
      */
+    @serialize()
     public get sourceLeft(): number {
         return this._sourceLeft;
     }
@@ -184,6 +194,7 @@ export class Image extends Control {
     /**
      * Gets or sets the top coordinate in the source image
      */
+    @serialize()
     public get sourceTop(): number {
         return this._sourceTop;
     }
@@ -201,6 +212,7 @@ export class Image extends Control {
     /**
      * Gets or sets the width to capture in the source image
      */
+    @serialize()
     public get sourceWidth(): number {
         return this._sourceWidth;
     }
@@ -218,6 +230,7 @@ export class Image extends Control {
     /**
      * Gets or sets the height to capture in the source image
      */
+    @serialize()
     public get sourceHeight(): number {
         return this._sourceHeight;
     }
@@ -246,6 +259,7 @@ export class Image extends Control {
      * Gets or sets a boolean indicating if the image can force its container to adapt its size
      * @see https://doc.babylonjs.com/how_to/gui#image
      */
+    @serialize()
     public get autoScale(): boolean {
         return this._autoScale;
     }
@@ -263,6 +277,7 @@ export class Image extends Control {
     }
 
     /** Gets or sets the streching mode used by the image */
+    @serialize()
     public get stretch(): number {
         return this._stretch;
     }
