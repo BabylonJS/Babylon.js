@@ -13,7 +13,7 @@ import { Button } from 'babylonjs-gui/2D/controls/button';
 import { Engine } from 'babylonjs/Engines/engine';
 import { Scene } from 'babylonjs/scene';
 import { Container, Rectangle } from 'babylonjs-gui';
-import { GuiNode } from './guiNode';
+
 
 require("./graphCanvas.scss");
 
