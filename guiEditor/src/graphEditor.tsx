@@ -17,7 +17,7 @@ import { IEditorData } from './nodeLocationInfo';
 import { PreviewMeshControlComponent } from './components/preview/previewMeshControlComponent';
 import { PreviewAreaComponent } from './components/preview/previewAreaComponent';
 import { SerializationTools } from './serializationTools';
-import { GraphCanvasComponent } from './diagram/graphCanvas';
+import { GraphCanvasComponent } from './diagram/workbench';
 import { GraphNode } from './diagram/graphNode';
 import * as ReactDOM from 'react-dom';
 import { IInspectorOptions } from "babylonjs/Debug/debugLayer";
@@ -92,14 +92,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         // Graph
         const node = this._graphCanvas.appendBlock(block);
 
-        // Links
-        if (block.inputs.length && recursion) {
-            for (var input of block.inputs) {
-                if (input.isConnected) {
-                    this._graphCanvas.connectPorts(input.connectedPoint!, input);
-                }
-            }
-        }
 
         return node;
     }
@@ -260,7 +252,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 sourceInput._connectedPoint!.connectTo(currentInput);
             }
 
-            this._graphCanvas.connectPorts(currentInput.connectedPoint!, currentInput);
         }
 
         currentNode.refresh();
@@ -384,17 +375,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         material.attachedBlocks.forEach((n: any) => {
             this.createNodeFromObject(n, true);
         });
-
-        // Links
-        material.attachedBlocks.forEach((n: any) => {
-            if (n.inputs.length) {
-                for (var input of n.inputs) {
-                    if (input.isConnected) {
-                        this._graphCanvas.connectPorts(input.connectedPoint!, input);
-                    }
-                }
-            }
-        });           
+          
     }
 
     showWaitScreen() {

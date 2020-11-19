@@ -12,7 +12,7 @@ import { NodePort } from './diagram/nodePort';
 import { NodeLink } from './diagram/nodeLink';
 import { GraphFrame } from './diagram/graphFrame';
 import { FrameNodePort } from './diagram/frameNodePort';
-import { FramePortData } from './diagram/graphCanvas';
+import { FramePortData } from './diagram/workbench';
 import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
 
 export class GlobalState {

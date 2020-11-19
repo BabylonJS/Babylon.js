@@ -9,7 +9,7 @@ import { Observer } from 'babylonjs/Misc/observable';
 import { NodePort } from '../nodePort';
 import { GraphNode } from '../graphNode';
 import { NodeLink } from '../nodeLink';
-import { FramePortData } from '../graphCanvas';
+import { FramePortData } from '../workbench';
 import { CheckBoxLineComponent } from '../../sharedComponents/checkBoxLineComponent';
 import { TextLineComponent } from '../../sharedComponents/textLineComponent';
 

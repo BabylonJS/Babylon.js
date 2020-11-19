@@ -30,7 +30,7 @@ import { Observer } from 'babylonjs/Misc/observable';
 import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
 import { FrameNodePort } from '../../diagram/frameNodePort';
 import { NodePort } from '../../diagram/nodePort';
-import { isFramePortData } from '../../diagram/graphCanvas';
+import { isFramePortData } from '../../diagram/workbench';
 import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
 import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
 import { PreviewType } from '../preview/previewType';
