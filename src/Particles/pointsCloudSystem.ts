@@ -470,7 +470,7 @@ export class PointsCloudSystem implements IDisposable {
 
         var clone = <Mesh>mesh.clone();
         clone.setEnabled(false);
-        this._promises.push(new Promise((resolve) => {
+        this._promises.push(new Promise((resolve: (_: void) => void) => {
             BaseTexture.WhenAllReady(textureList, () => {
                 let n = pointsGroup._textureNb;
                 if (n < 0) {
