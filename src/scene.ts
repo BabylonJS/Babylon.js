@@ -55,7 +55,6 @@ import { Frustum } from './Maths/math.frustum';
 import { UniqueIdGenerator } from './Misc/uniqueIdGenerator';
 import { FileTools, LoadFileError, RequestFileError, ReadFileError } from './Misc/fileTools';
 import { IClipPlanesHolder } from './Misc/interfaces/iClipPlanesHolder';
-import { MaterialHelper } from './Materials/materialHelper';
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -2040,24 +2039,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this._sceneUbo.updateMatrix("view", this._viewMatrix);
             this._sceneUbo.updateMatrix("projection", this._projectionMatrix);
         }
-    }
-
-    /**
-     * Update the scene ubo before it can be used in rendering processing
-     * @returns the scene UniformBuffer
-     */
-    public finalizeSceneUbo(): UniformBuffer {
-        const ubo = this.getSceneUniformBuffer();
-        const eyePosition = MaterialHelper.BindEyePosition(null, this);
-        ubo.updateFloat4("vEyePosition",
-            eyePosition.x,
-            eyePosition.y,
-            eyePosition.z,
-            eyePosition.w);
-
-        ubo.update();
-
-        return ubo;
     }
 
     /**
