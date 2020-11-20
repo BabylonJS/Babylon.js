@@ -35,7 +35,6 @@ import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponen
 import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
 import { PreviewType } from '../preview/previewType';
 import { TextInputLineComponent } from '../../sharedComponents/textInputLineComponent';
-import { InputPropertyTabComponent } from '../../diagram/properties/inputNodePropertyComponent';
 import { InputsPropertyTabComponent } from './inputsPropertyTabComponent';
 require("./propertyTab.scss");
 

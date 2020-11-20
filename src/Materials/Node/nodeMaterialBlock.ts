@@ -156,11 +156,11 @@ export class NodeMaterialBlock {
         return null;
     }
 
-     /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
-     public visibleInInspector = false;
-     
-     /** Gets or sets a boolean indicating that this input can be edited from a collapsed frame*/
-     public visibleOnFrame = false;
+    /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
+    public visibleInInspector = false;
+
+    /** Gets or sets a boolean indicating that this input can be edited from a collapsed frame*/
+    public visibleOnFrame = false;
 
     /**
      * Creates a new NodeMaterialBlock
