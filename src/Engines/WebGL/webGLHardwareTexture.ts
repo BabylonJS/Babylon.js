@@ -39,4 +39,4 @@ export class WebGLHardwareTexture implements HardwareTextureWrapper {
         }
         this.reset();
     }
-};
+}
