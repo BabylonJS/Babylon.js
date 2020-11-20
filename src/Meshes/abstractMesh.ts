@@ -37,6 +37,7 @@ declare type Ray = import("../Culling/ray").Ray;
 declare type Collider = import("../Collisions/collider").Collider;
 declare type TrianglePickingPredicate = import("../Culling/ray").TrianglePickingPredicate;
 declare type RenderingGroup = import("../Rendering/renderingGroup").RenderingGroup;
+declare type IEdgesRendererOptions = import("../Rendering/edgesRenderer").IEdgesRendererOptions;
 
 /** @hidden */
 class _FacetDataStorage {
@@ -87,6 +88,8 @@ class _InternalAbstractMeshDataInfo {
     public _isActiveIntermediate = false;
     public _onlyForInstancesIntermediate = false;
     public _actAsRegularMesh = false;
+    public _currentLOD: Nullable<AbstractMesh> = null;
+    public _currentLODIsUpToDate: boolean = false;
 }
 
 /**
@@ -1546,21 +1549,25 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @param onlyBoundingInfo defines a boolean indicating if picking should only happen using bounding info (false by default)
      * @param worldToUse defines the world matrix to use to get the world coordinate of the intersection point
+     * @param skipBoundingInfo a boolean indicating if we should skip the bounding info check
      * @returns the picking info
      * @see https://doc.babylonjs.com/babylon101/intersect_collisions_-_mesh
      */
-    public intersects(ray: Ray, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate, onlyBoundingInfo = false, worldToUse?: Matrix): PickingInfo {
+    public intersects(ray: Ray, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate, onlyBoundingInfo = false, worldToUse?: Matrix, skipBoundingInfo = false): PickingInfo {
         var pickingInfo = new PickingInfo();
         const intersectionThreshold = this.getClassName() === "InstancedLinesMesh" || this.getClassName() === "LinesMesh" ? (this as any).intersectionThreshold : 0;
         const boundingInfo = this._boundingInfo;
-        if (!this.subMeshes || !boundingInfo || !ray.intersectsSphere(boundingInfo.boundingSphere, intersectionThreshold) || !ray.intersectsBox(boundingInfo.boundingBox, intersectionThreshold)) {
+        if (!this.subMeshes || !boundingInfo) {
+            return pickingInfo;
+        }
+        if (!skipBoundingInfo && (!ray.intersectsSphere(boundingInfo.boundingSphere, intersectionThreshold) || !ray.intersectsBox(boundingInfo.boundingBox, intersectionThreshold))) {
             return pickingInfo;
         }
 
         if (onlyBoundingInfo) {
-            pickingInfo.hit = true;
-            pickingInfo.pickedMesh = this;
-            pickingInfo.distance = Vector3.Distance(ray.origin, boundingInfo.boundingSphere.center);
+            pickingInfo.hit = skipBoundingInfo ? false : true;
+            pickingInfo.pickedMesh = skipBoundingInfo ? null : this;
+            pickingInfo.distance = skipBoundingInfo ? 0 : Vector3.Distance(ray.origin, boundingInfo.boundingSphere.center);
             pickingInfo.subMeshId = 0;
             return pickingInfo;
         }
@@ -1573,6 +1580,35 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
         var subMeshes = this._scene.getIntersectingSubMeshCandidates(this, ray);
         var len: number = subMeshes.length;
+
+        // Check if all submeshes are using a material that don't allow picking (point/lines rendering)
+        // if no submesh can be picked that way, then fallback to BBox picking
+        var anySubmeshSupportIntersect = false;
+        for (var index = 0; index < len; index++) {
+            var subMesh = subMeshes.data[index];
+            var material = subMesh.getMaterial();
+            if (!material) {
+                continue;
+            }
+            if (this.getIndices()?.length && (material.fillMode == Constants.MATERIAL_TriangleStripDrawMode ||
+                    material.fillMode == Constants.MATERIAL_TriangleFillMode ||
+                    material.fillMode == Constants.MATERIAL_WireFrameFillMode ||
+                    material.fillMode == Constants.MATERIAL_PointFillMode)) {
+                anySubmeshSupportIntersect = true;
+                break;
+            }
+        }
+
+        // no sub mesh support intersection, fallback to BBox that has already be done
+        if (!anySubmeshSupportIntersect) {
+            pickingInfo.hit = true;
+            pickingInfo.pickedMesh = this;
+            pickingInfo.distance = Vector3.Distance(ray.origin, boundingInfo.boundingSphere.center);
+            pickingInfo.subMeshId = -1;
+            return pickingInfo;
+        }
+
+        // at least 1 submesh supports intersection, keep going
         for (var index = 0; index < len; index++) {
             var subMesh = subMeshes.data[index];
 
@@ -2231,10 +2267,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * This mode makes the mesh edges visible
      * @param epsilon defines the maximal distance between two angles to detect a face
      * @param checkVerticesInsteadOfIndices indicates that we should check vertex list directly instead of faces
+     * @param options options to the edge renderer
      * @returns the currentAbstractMesh
      * @see https://www.babylonjs-playground.com/#19O9TU#0
      */
-    enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): AbstractMesh {
+    enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean, options?: IEdgesRendererOptions): AbstractMesh {
         throw _DevTools.WarnImport("EdgesRenderer");
     }
 

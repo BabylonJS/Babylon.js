@@ -107,6 +107,8 @@ export class InternalTexture {
      * Gets the URL used to load this texture
      */
     public url: string = "";
+    /** @hidden */
+    public _originalUrl: string; // not empty only if different from url
     /**
      * Gets the sampling mode of the texture
      */
@@ -342,7 +344,7 @@ export class InternalTexture {
                 return;
 
             case InternalTextureSource.Url:
-                proxy = this._engine.createTexture(this.url, !this.generateMipMaps, this.invertY, null, this.samplingMode, () => {
+                proxy = this._engine.createTexture(this._originalUrl ?? this.url, !this.generateMipMaps, this.invertY, null, this.samplingMode, () => {
                     proxy._swapAndDie(this);
                     this.isReady = true;
                 }, null, this._buffer, undefined, this.format);

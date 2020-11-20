@@ -36,6 +36,9 @@ struct clearcoatOutParams
         const in vec3 geometricNormalW,
         const in vec3 viewDirectionW,
         const in vec2 vClearCoatParams,
+    #if defined(CLEARCOAT_TEXTURE_ROUGHNESS) && !defined(CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL) && !defined(CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE)
+        const in vec4 clearCoatMapRoughnessData,
+    #endif
         const in vec3 specularEnvironmentR0,
     #ifdef CLEARCOAT_TEXTURE
         const in vec2 clearCoatMapData,
@@ -83,6 +86,9 @@ struct clearcoatOutParams
                 const in sampler2D reflectionSamplerHigh,
             #endif
         #endif
+        #ifdef REALTIME_FILTERING
+            const in vec2 vReflectionFilteringInfo,
+        #endif
     #endif
     #if defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
         #ifdef RADIANCEOCCLUSION
@@ -98,9 +104,20 @@ struct clearcoatOutParams
 
         #ifdef CLEARCOAT_TEXTURE
             clearCoatIntensity *= clearCoatMapData.x;
-            clearCoatRoughness *= clearCoatMapData.y;
+            #ifdef CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE
+                clearCoatRoughness *= clearCoatMapData.y;
+            #endif
             #if DEBUGMODE > 0
                 outParams.clearCoatMapData = clearCoatMapData;
+            #endif
+        #endif
+
+
+        #if defined(CLEARCOAT_TEXTURE_ROUGHNESS) && !defined(CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE)
+            #ifdef CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL
+                clearCoatRoughness *= clearCoatMapData.y;
+            #else
+                clearCoatRoughness *= clearCoatMapRoughnessData.y;
             #endif
         #endif
 
@@ -240,6 +257,9 @@ struct clearcoatOutParams
             #ifndef LODBASEDMICROSFURACE
                 reflectionSamplerLow,
                 reflectionSamplerHigh,
+            #endif
+            #ifdef REALTIME_FILTERING
+                vReflectionFilteringInfo,
             #endif
                 environmentClearCoatRadiance
             );

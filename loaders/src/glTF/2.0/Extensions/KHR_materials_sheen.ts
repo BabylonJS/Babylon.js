@@ -2,7 +2,7 @@ import { Nullable } from "babylonjs/types";
 import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
 import { Material } from "babylonjs/Materials/material";
 
-import { IMaterial } from "../glTFLoaderInterfaces";
+import { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import { Color3 } from 'babylonjs/Maths/math.color';
@@ -11,7 +11,7 @@ import { IKHRMaterialsSheen } from 'babylonjs-gltf2interface';
 const NAME = "KHR_materials_sheen";
 
 /**
- * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1688)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_sheen/README.md)
  * [Playground Sample](https://www.babylonjs-playground.com/frame.html#BNIZX6#4)
  * !!! Experimental Extension Subject to Changes !!!
  */
@@ -71,8 +71,8 @@ export class KHR_materials_sheen implements IGLTFLoaderExtension {
             babylonMaterial.sheen.color = Color3.Black();
         }
 
-        if (properties.sheenTexture) {
-            promises.push(this._loader.loadTextureInfoAsync(`${context}/sheenTexture`, properties.sheenTexture, (texture) => {
+        if (properties.sheenColorTexture) {
+            promises.push(this._loader.loadTextureInfoAsync(`${context}/sheenColorTexture`, properties.sheenColorTexture, (texture) => {
                 texture.name = `${babylonMaterial.name} (Sheen Color)`;
                 babylonMaterial.sheen.texture = texture;
             }));
@@ -84,7 +84,16 @@ export class KHR_materials_sheen implements IGLTFLoaderExtension {
             babylonMaterial.sheen.roughness = 0;
         }
 
+        if (properties.sheenRoughnessTexture) {
+            (properties.sheenRoughnessTexture as ITextureInfo).nonColorData = true;
+            promises.push(this._loader.loadTextureInfoAsync(`${context}/sheenRoughnessTexture`, properties.sheenRoughnessTexture, (texture) => {
+                texture.name = `${babylonMaterial.name} (Sheen Roughness)`;
+                babylonMaterial.sheen.textureRoughness = texture;
+            }));
+        }
+
         babylonMaterial.sheen.albedoScaling = true;
+        babylonMaterial.sheen.useRoughnessFromMainTexture = false;
 
         return Promise.all(promises).then(() => { });
     }

@@ -52,6 +52,7 @@ export class LightBlock extends NodeMaterialBlock {
         this.registerInput("glossPower", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("diffuseColor", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("specularColor", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("view", NodeMaterialBlockConnectionPointTypes.Matrix, true);
 
         this.registerOutput("diffuseOutput", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("specularOutput", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
@@ -113,6 +114,13 @@ export class LightBlock extends NodeMaterialBlock {
     */
     public get specularColor(): NodeMaterialConnectionPoint {
         return this._inputs[6];
+    }
+
+    /**
+    * Gets the view matrix component
+    */
+    public get view(): NodeMaterialConnectionPoint {
+        return this._inputs[7];
     }
 
     /**
@@ -179,7 +187,8 @@ export class LightBlock extends NodeMaterialBlock {
             if (!defines["LIGHT" + lightIndex]) {
                 break;
             }
-            MaterialHelper.PrepareUniformsAndSamplersForLight(lightIndex, state.uniforms, state.samplers, defines["PROJECTEDLIGHTTEXTURE" + lightIndex], uniformBuffers);
+            const onlyUpdateBuffersList = state.uniforms.indexOf("vLightData" + lightIndex) >= 0;
+            MaterialHelper.PrepareUniformsAndSamplersForLight(lightIndex, state.uniforms, state.samplers, defines["PROJECTEDLIGHTTEXTURE" + lightIndex], uniformBuffers, onlyUpdateBuffersList);
         }
     }
 
@@ -234,6 +243,9 @@ export class LightBlock extends NodeMaterialBlock {
             });
         } else {
             state.compilationString += `vec4 worldPos = ${worldPos.associatedVariableName};\r\n`;
+            if (this.view.isConnected) {
+                state.compilationString += `mat4 view = ${this.view.associatedVariableName};\r\n`;
+            }
             state.compilationString += state._emitCodeFromInclude("shadowsVertex", comments, {
                 repeatKey: "maxSimultaneousLights"
             });

@@ -41,10 +41,10 @@ export class PropertiesBar extends React.PureComponent<IPropertiesBarProps,IProp
 
     private _faces = [
         require('./assets/posX.svg'),
-        require('./assets/posY.svg'),
-        require('./assets/posZ.svg'),
         require('./assets/negX.svg'),
+        require('./assets/posY.svg'),
         require('./assets/negY.svg'),
+        require('./assets/posZ.svg'),
         require('./assets/negZ.svg')
     ]
 

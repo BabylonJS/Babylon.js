@@ -109,7 +109,7 @@
 			scene = new BABYLON.Scene(engine);
 
 			var camera = new BABYLON.ArcRotateCamera("Camera", Math.PI / 2, Math.PI / 6, 50, BABYLON.Vector3.Zero(), scene);
-			camera.attachControl(canvas, true);
+			camera.attachControl(true);
 			camera.minZ = 0.1;
 
 			// Lights

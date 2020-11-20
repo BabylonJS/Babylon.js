@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [   
         {
+            "title": "Sprites",
+            "playgroundId": "#ZX8DJ3#1",
+            "referenceImage": "Sprites.png"
+        },
+        {
             "title": "Procedural texture with NME",       
             "renderCount": 10,
             "playgroundId": "#8S19ZC#1",            
@@ -31,8 +36,8 @@
         {
             "title": "Sprite maps",
             "playgroundId": "#ARLADE#23",
-            "referenceImage": "sprite-maps.png",            
-            "excludedEngines": ["webgl1"]
+            "referenceImage": "sprite-maps.png",
+            "excludeFromAutomaticTesting": true
         },              
         {
             "title": "Point light shadows",
@@ -43,7 +48,8 @@
             "title": "Node material 0",
             "playgroundId": "#M5VQE9#20",
             "referenceImage": "node-material0.png",
-            "renderCount": 5
+            "renderCount": 5,
+            "excludeFromAutomaticTesting": true
         },    
         {
             "title": "Node material 1",
@@ -73,12 +79,12 @@
         },                     
         {
             "title": "Node material 6",
-            "playgroundId": "#2XY3Z4#0",
+            "playgroundId": "#2XY3Z4#1",
             "referenceImage": "node-material6.png"
         },    
         {
             "title": "Node material PBR 1",
-            "playgroundId": "#D8AK3Z#15",
+            "playgroundId": "#D8AK3Z#17",
             "renderCount": 5,
             "referenceImage": "node-material-pbr-1.png"
         },    
@@ -614,6 +620,18 @@
             "referenceImage": "gltfTextureSampler1.png"
         },
         {
+            "title": "GLTF Sheen",
+            "playgroundId": "#YG3BBF#2",
+            "referenceImage": "glTFSheen.png"
+        },
+        {
+            "title": "GLTF ClearCoat",
+            "playgroundId": "#YG3BBF#4",
+            "referenceImage": "glTFClearCoat.png",
+            "renderCount": 50,
+            "excludeFromAutomaticTesting": true
+        },
+        {
             "title": "GLTF Serializer with Negative World Matrix",
             "playgroundId": "#KX53VK#35",
             "referenceImage": "glTFSerializerNegativeWorldMatrix.png",
@@ -807,7 +825,8 @@
             "scriptToRun": "/Demos/Procedural/proceduralTexture.js",
             "functionToCall": "CreateProceduralTextureTestScene",
             "referenceImage": "procedural.png",
-            "replace": "./land, https://cdn.rawgit.com/BabylonJS/Website/06ecbea7/Demos/Procedural/land"
+            "replace": "./land, https://cdn.rawgit.com/BabylonJS/Website/06ecbea7/Demos/Procedural/land",
+            "excludeFromAutomaticTesting": true
         },
         {
             "title": "Instances",
@@ -816,7 +835,7 @@
             "functionToCall": "CreateInstancesTestScene",
             "referenceImage": "instances.png",
             "replace": "ground., Ground.",
-            "excludedEngines": ["webgl1"]
+            "excludeFromAutomaticTesting": true
         },
         {
             "title": "Instanced Bones",
@@ -880,7 +899,8 @@
             "playgroundId": "#XT1HAS#1",
             "referenceImage": "ssao2.png",
             "renderCount": 200,
-            "excludedEngines": ["webgl1", "webgpu"]
+            "excludedEngines": ["webgl1", "webgpu"],
+            "excludeFromAutomaticTesting": true
         },
         {
             "title": "DepthRenderer",
@@ -937,21 +957,52 @@
             "playgroundId": "#E5YGEL#2",
             "referenceImage": "motionBlur.png",
             "renderCount": 10,
-            "excludedEngines": ["webgl1", "webgpu"]
+            "excludedEngines": ["webgl1", "webgpu"],
+            "excludeFromAutomaticTesting": true
         },
         {
             "title": "Screen space reflections",
             "playgroundId": "#PIZ1GK#172",
             "referenceImage": "ssr.png",
             "renderCount": 10,
-            "excludedEngines": ["webgl1", "webgpu"]
+            "excludedEngines": ["webgl1", "webgpu"],
+            "excludeFromAutomaticTesting": true
         },
         {
             "title": "Geometry buffer renderer",
             "playgroundId": "#PIZ1GK#173",
             "referenceImage": "geometrybufferrenderer.png",
             "renderCount": 10,
-            "excludedEngines": ["webgl1", "webgpu"]
+            "excludedEngines": ["webgl1"],
+            "excludeFromAutomaticTesting": true
+        },
+        {
+            "title": "Shadows and LODs",
+            "playgroundId": "#F7KZ7C#9",
+            "referenceImage": "shadowsandlod.png"
+        },
+        {
+            "title": "Shadows CSM and LODs",
+            "playgroundId": "#24HWT9#0",
+            "referenceImage": "shadowscsmandlod.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Glow layer and LODs",
+            "playgroundId": "#UNS6ZV#2",
+            "referenceImage": "glowlayerandlods.png"
+        },
+        {
+            "title": "Shadows with instances in left handed system",
+            "renderCount": 10,
+            "playgroundId": "#MSAHKR#12",
+            "referenceImage": "shadowsinstancesleft.png"
+        },
+        {
+            "title": "Shadows with instances in right handed system",
+            "renderCount": 10,
+            "playgroundId": "#MSAHKR#13",
+            "referenceImage": "shadowsinstancesright.png"
         }
     ]
 }

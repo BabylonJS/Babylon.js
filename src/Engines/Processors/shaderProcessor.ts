@@ -14,6 +14,7 @@ declare type WebRequest = import("../../Misc/webRequest").WebRequest;
 declare type LoadFileError = import("../../Misc/fileTools").LoadFileError;
 declare type IOfflineProvider = import("../../Offline/IOfflineProvider").IOfflineProvider;
 declare type IFileRequest  = import("../../Misc/fileRequest").IFileRequest;
+declare type ThinEngine = import("../thinEngine").ThinEngine;
 
 const regexSE = /defined\s*?\((.+?)\)/g;
 const regexSERevert = /defined\s*?\[(.+?)\]/g;
@@ -26,9 +27,9 @@ export class ShaderProcessor {
         }
     }
 
-    public static Process(sourceCode: string, options: ProcessingOptions, callback: (migratedCode: string) => void) {
+    public static Process(sourceCode: string, options: ProcessingOptions, callback: (migratedCode: string) => void, engine: ThinEngine) {
         this._ProcessIncludes(sourceCode, options, (codeWithIncludes) => {
-            let migratedCode = this._ProcessShaderConversion(codeWithIncludes, options);
+            let migratedCode = this._ProcessShaderConversion(codeWithIncludes, options, engine);
             callback(migratedCode);
         });
     }
@@ -267,7 +268,7 @@ export class ShaderProcessor {
         return preprocessors;
     }
 
-    private static _ProcessShaderConversion(sourceCode: string, options: ProcessingOptions): string {
+    private static _ProcessShaderConversion(sourceCode: string, options: ProcessingOptions, engine: ThinEngine): string {
 
         var preparedSourceCode = this._ProcessPrecision(sourceCode, options);
 
@@ -293,7 +294,7 @@ export class ShaderProcessor {
 
         // Post processing
         if (options.processor.postProcessor) {
-            preparedSourceCode = options.processor.postProcessor(preparedSourceCode, defines, options.isFragment, options.processingContext);
+            preparedSourceCode = options.processor.postProcessor(preparedSourceCode, defines, options.isFragment, options.processingContext, engine);
         }
 
         return preparedSourceCode;

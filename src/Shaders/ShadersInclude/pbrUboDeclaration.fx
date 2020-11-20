@@ -62,8 +62,9 @@ uniform Material {
 
     vec2 vClearCoatParams;
     vec4 vClearCoatRefractionParams;
-    vec2 vClearCoatInfos;
+    vec4 vClearCoatInfos;
     mat4 clearCoatMatrix;
+    mat4 clearCoatRoughnessMatrix;
     vec2 vClearCoatBumpInfos;
     vec2 vClearCoatTangentSpaceParams;
     mat4 clearCoatBumpMatrix;
@@ -78,12 +79,13 @@ uniform Material {
 
     vec4 vSheenColor;
     float vSheenRoughness;
-    vec2 vSheenInfos;
+    vec4 vSheenInfos;
     mat4 sheenMatrix;
+    mat4 sheenRoughnessMatrix;
 
     vec3 vRefractionMicrosurfaceInfos;
-    vec4 vRefractionInfos;
     vec2 vRefractionFilteringInfo;
+    vec4 vRefractionInfos;
     mat4 refractionMatrix;
     vec2 vThicknessInfos;
     mat4 thicknessMatrix;

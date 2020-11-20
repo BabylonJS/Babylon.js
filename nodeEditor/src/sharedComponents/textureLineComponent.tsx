@@ -56,11 +56,11 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
         TextureLineComponent.UpdatePreview(this.canvasRef.current as HTMLCanvasElement, this.props.texture, this.props.width, this.state, undefined, this.props.globalState);
     }
 
-    public static UpdatePreview(previewCanvas: HTMLCanvasElement, texture: BaseTexture, width: number, options: ITextureLineComponentState, onReady?: ()=> void, globalState?: any) {
+    public static async UpdatePreview(previewCanvas: HTMLCanvasElement, texture: BaseTexture, width: number, options: ITextureLineComponentState, onReady?: () => void, globalState?: any) {
         if (!texture.isReady() && texture._texture) {
             texture._texture.onLoadedObservable.addOnce(() => {
                 TextureLineComponent.UpdatePreview(previewCanvas, texture, width, options, onReady, globalState);
-            })
+            });
         }
         var scene = texture.getScene()!;
         var engine = scene.getEngine();
@@ -111,7 +111,8 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
             var halfHeight = height / 2;
 
             //Reading datas from WebGL
-            var data = engine.readPixels(0, 0, width, height);
+            const bufferView = await engine.readPixels(0, 0, width, height);
+            const data = new Uint8Array(bufferView.buffer);
 
             if (!texture.isCube) {
                 if (!options.displayRed || !options.displayGreen || !options.displayBlue) {

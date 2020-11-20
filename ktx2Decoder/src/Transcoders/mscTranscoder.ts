@@ -21,6 +21,12 @@ export class MSCTranscoder extends Transcoder {
 
     public static UseFromWorkerThread = true;
 
+    public static Name = "MSCTranscoder";
+
+    public getName(): string {
+        return MSCTranscoder.Name;
+    }
+
     private _mscBasisTranscoderPromise: Promise<any>;
     private _mscBasisModule: any;
 
@@ -45,7 +51,7 @@ export class MSCTranscoder extends Transcoder {
         return this._mscBasisTranscoderPromise;
     }
 
-    public static CanTranscode(src: sourceTextureFormat, dst: transcodeTarget): boolean {
+    public static CanTranscode(src: sourceTextureFormat, dst: transcodeTarget, isInGammaSpace: boolean): boolean {
         return true;
     }
 

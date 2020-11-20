@@ -10,6 +10,7 @@ import { PickingInfo } from "./Collisions/pickingInfo";
 import { AbstractScene } from "./abstractScene";
 
 declare type Mesh = import("./Meshes/mesh").Mesh;
+declare type Effect = import("./Materials/effect").Effect;
 
 /**
  * Groups all the scene component constants in one place to ease maintenance.
@@ -42,7 +43,7 @@ export class SceneComponentConstants {
 
     public static readonly STEP_EVALUATESUBMESH_BOUNDINGBOXRENDERER = 0;
 
-    public static readonly STEP_ACTIVEMESH_BOUNDINGBOXRENDERER = 0;
+    public static readonly STEP_PREACTIVEMESH_BOUNDINGBOXRENDERER = 0;
 
     public static readonly STEP_CAMERADRAWRENDERTARGET_EFFECTLAYER = 1;
 
@@ -52,9 +53,11 @@ export class SceneComponentConstants {
 
     public static readonly STEP_BEFORERENDERTARGETDRAW_LAYER = 0;
 
-    public static readonly STEP_BEFORERENDERINGMESH_OUTLINE = 0;
+    public static readonly STEP_BEFORERENDERINGMESH_PREPASS = 0;
+    public static readonly STEP_BEFORERENDERINGMESH_OUTLINE = 1;
 
-    public static readonly STEP_AFTERRENDERINGMESH_OUTLINE = 0;
+    public static readonly STEP_AFTERRENDERINGMESH_PREPASS = 0;
+    public static readonly STEP_AFTERRENDERINGMESH_OUTLINE = 1;
 
     public static readonly STEP_AFTERRENDERINGGROUPDRAW_EFFECTLAYER_DRAW = 0;
     public static readonly STEP_AFTERRENDERINGGROUPDRAW_BOUNDINGBOXRENDERER = 1;
@@ -159,9 +162,9 @@ export type MeshStageAction = (mesh: AbstractMesh, hardwareInstancedRendering: b
 export type EvaluateSubMeshStageAction = (mesh: AbstractMesh, subMesh: SubMesh) => void;
 
 /**
- * Strong typing of a Active Mesh related stage step action
+ * Strong typing of a pre active Mesh related stage step action
  */
-export type ActiveMeshStageAction = (sourceMesh: AbstractMesh, mesh: AbstractMesh) => void;
+export type PreActiveMeshStageAction = (mesh: AbstractMesh) => void;
 
 /**
  * Strong typing of a Camera related stage step action
@@ -186,7 +189,7 @@ export type RenderingGroupStageAction = (renderingGroupId: number) => void;
 /**
  * Strong typing of a Mesh Render related stage step action
  */
-export type RenderingMeshStageAction = (mesh: Mesh, subMesh: SubMesh, batch: _InstancesBatch) => void;
+export type RenderingMeshStageAction = (mesh: Mesh, subMesh: SubMesh, batch: _InstancesBatch, effect: Nullable<Effect>) => void;
 
 /**
  * Strong typing of a simple stage step action

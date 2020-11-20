@@ -19,7 +19,8 @@ import { FrameNodePort } from './frameNodePort';
 require("./graphCanvas.scss");
 
 export interface IGraphCanvasComponentProps {
-    globalState: GlobalState
+    globalState: GlobalState,
+    onEmitNewBlock: (block: NodeMaterialBlock) => GraphNode
 }
 
 export type FramePortData = {
@@ -234,13 +235,13 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this.props.globalState.storeEditorData = (editorData, graphFrame) => {
             editorData.frames = [];
             if (graphFrame) {
-                editorData.frames.push(graphFrame!.serialize());
+                editorData.frames.push(graphFrame!.serialize(false));
             } else {
                 editorData.x = this.x;
                 editorData.y = this.y;
                 editorData.zoom = this.zoom;
                 for (var frame of this._frames) {
-                    editorData.frames.push(frame.serialize());
+                    editorData.frames.push(frame.serialize(true));
                 }
             }
         }
@@ -414,6 +415,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         // Update graph
         let dagreNodes = graph.nodes().map(node => graph.node(node));
         dagreNodes.forEach((dagreNode: any) => {
+            if (!dagreNode) {
+                return;
+            }
             if (dagreNode.type === "node") {
                 for (var node of this._nodes) {
                     if (node.id === dagreNode.id) {
@@ -740,19 +744,40 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             }
 
             // No destination so let's spin a new input block
-            let pointName = "output", inputBlock;
+            let pointName = "output", emittedBlock;
             let customInputBlock = this._candidateLink!.portA.connectionPoint.createCustomInputBlock();
             if (!customInputBlock) {
-                inputBlock = new InputBlock(NodeMaterialBlockConnectionPointTypes[this._candidateLink!.portA.connectionPoint.type], undefined, this._candidateLink!.portA.connectionPoint.type);
+                emittedBlock = new InputBlock(NodeMaterialBlockConnectionPointTypes[this._candidateLink!.portA.connectionPoint.type], undefined, this._candidateLink!.portA.connectionPoint.type);
             } else {
-                [inputBlock, pointName] = customInputBlock;
+                [emittedBlock, pointName] = customInputBlock;
             }
-            this.props.globalState.nodeMaterial.attachedBlocks.push(inputBlock);
-            pointA = (inputBlock as any)[pointName];
-            nodeA = this.appendBlock(inputBlock);
-            
+            this.props.globalState.nodeMaterial.attachedBlocks.push(emittedBlock);
+            pointA = (emittedBlock as any)[pointName];
+            if (!emittedBlock.isInput) {
+                emittedBlock.autoConfigure(this.props.globalState.nodeMaterial); 
+                nodeA = this.props.onEmitNewBlock(emittedBlock);
+            } else {
+                nodeA = this.appendBlock(emittedBlock);
+            }        
             nodeA.x = this._dropPointX - 200;
             nodeA.y = this._dropPointY - 50;    
+
+            let x = nodeA.x - 250;
+            let y = nodeA.y;
+
+            emittedBlock.inputs.forEach((connection) => {       
+                if (connection.connectedPoint) {
+                    var existingNodes = this.nodes.filter((n) => { return n.block === (connection as any).connectedPoint.ownerBlock });
+                    let connectedNode = existingNodes[0];
+
+                    if (connectedNode.x === 0 && connectedNode.y === 0) {
+                        connectedNode.x = x; 
+                        connectedNode.y = y;
+                        connectedNode.cleanAccumulation();
+                        y += 80;
+                    }
+                }
+            });
         }
 
         if (pointA.direction === NodeMaterialConnectionPointDirection.Input) {

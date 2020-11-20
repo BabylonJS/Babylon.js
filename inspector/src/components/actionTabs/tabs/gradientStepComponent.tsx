@@ -1,11 +1,11 @@
 import * as React from 'react';
 import { GlobalState } from '../../globalState';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { Color3 } from 'babylonjs/Maths/math.color';
 import { GradientBlockColorStep } from 'babylonjs/Materials/Node/Blocks/gradientBlock';
 import { ColorPickerLineComponent } from '../lines/colorPickerComponent';
 
+const deleteButton = require('../lines/delete.svg');
+const copyIcon = require('../lines/copyStep.svg');
 
 interface IGradientStepComponentProps {
     globalState: GlobalState;
@@ -14,6 +14,7 @@ interface IGradientStepComponentProps {
     onDelete: () => void;
     onUpdateStep: () => void;
     onCheckForReOrder: () => void;
+    onCopy?: () => void;
 }
 
 export class GradientStepComponent extends React.Component<IGradientStepComponentProps, {gradient: number}> {
@@ -52,7 +53,7 @@ export class GradientStepComponent extends React.Component<IGradientStepComponen
                     {`#${this.props.lineIndex}`}
                 </div>
                 <div className="color">
-                    <ColorPickerLineComponent value={step.color} disableAlpha={true}
+                    <ColorPickerLineComponent value={step.color}
                             onColorChanged={color => {
                                     this.updateColor(color);
                             }} 
@@ -66,8 +67,11 @@ export class GradientStepComponent extends React.Component<IGradientStepComponen
                         onPointerUp={evt => this.onPointerUp()}
                         onChange={evt => this.updateStep(parseFloat(evt.target.value))} />
                 </div>
-                <div className="gradient-delete" onClick={() => this.props.onDelete()}>
-                    <FontAwesomeIcon icon={faTrash} />
+                <div className="gradient-copy" onClick={() => {if(this.props.onCopy) this.props.onCopy()}} title="Copy Step">
+                    <img className="img" src={copyIcon} />
+                </div>
+                <div className="gradient-delete" onClick={() => this.props.onDelete()} title={"Delete Step"}>
+                    <img className="img" src={deleteButton}/>
                 </div>
             </div>
         )

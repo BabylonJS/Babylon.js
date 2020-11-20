@@ -62,6 +62,11 @@ export class WebXREnterExitUIOptions {
      * A list of optional features to init the session with
      */
     requiredFeatures?: string[];
+
+    /**
+     * If defined, this function will be executed if the UI encounters an error when entering XR
+     */
+    onError?: (error: any) => void;
 }
 /**
  * UI to allow the user to enter/exit XR mode
@@ -180,6 +185,9 @@ export class WebXREnterExitUI implements IDisposable {
                                     const prevTitle = element.title;
                                     element.title = "Error entering XR session : " + prevTitle;
                                     element.classList.add("xr-error");
+                                    if (options.onError) {
+                                        options.onError(e);
+                                    }
                                 }
                             }
                         }

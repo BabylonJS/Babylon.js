@@ -130,8 +130,6 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         "Rotate2dBlock": "Rotates UV coordinates around the W axis.",
         "PBRMetallicRoughnessBlock": "PBR metallic/roughness material",
         "SheenBlock": "PBR Sheen block",
-        "AmbientOcclusionBlock": "PBR Ambient occlusion block",
-        "ReflectivityBlock": "PBR Reflectivity block",
         "AnisotropyBlock": "PBR Anisotropy block",
         "ReflectionBlock": "PBR Reflection block",
         "ClearCoatBlock": "PBR ClearCoat block",
@@ -238,7 +236,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock"],
             Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
             Particle: ["ParticleBlendMultiplyBlock", "ParticleColorBlock", "ParticlePositionWorldBlock", "ParticleRampGradientBlock", "ParticleTextureBlock", "ParticleTextureMaskBlock", "ParticleUVBlock"],
-            PBR: ["PBRMetallicRoughnessBlock", "AmbientOcclusionBlock", "AnisotropyBlock", "ClearCoatBlock", "ReflectionBlock", "ReflectivityBlock", "RefractionBlock", "SheenBlock", "SubSurfaceBlock"],
+            PBR: ["PBRMetallicRoughnessBlock", "AnisotropyBlock", "ClearCoatBlock", "ReflectionBlock", "RefractionBlock", "SheenBlock", "SubSurfaceBlock"],
             PostProcess: ["ScreenPositionBlock", "CurrentScreenBlock"],
             Procedural__Texture: ["ScreenPositionBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
@@ -257,18 +255,21 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 delete allBlocks["Mesh"];
                 delete allBlocks["Particle"];
                 delete allBlocks["Procedural__Texture"];
+                delete allBlocks["PBR"];
                 break;
             case NodeMaterialModes.ProceduralTexture:
                 delete allBlocks["Animation"];
                 delete allBlocks["Mesh"];  
                 delete allBlocks["Particle"];              
                 delete allBlocks["PostProcess"];
+                delete allBlocks["PBR"];
                 break;
             case NodeMaterialModes.Particle:
                 delete allBlocks["Animation"];
                 delete allBlocks["Mesh"];
                 delete allBlocks["PostProcess"];            
                 delete allBlocks["Procedural__Texture"];
+                delete allBlocks["PBR"];
                 allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("VertexOutputBlock"), 1);
                 break;
         }

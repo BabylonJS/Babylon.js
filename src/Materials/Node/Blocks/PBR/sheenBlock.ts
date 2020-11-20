@@ -99,6 +99,7 @@ export class SheenBlock extends NodeMaterialBlock {
         super.prepareDefines(mesh, nodeMaterial, defines);
 
         defines.setValue("SHEEN", true);
+        defines.setValue("SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE", true, true);
         defines.setValue("SHEEN_LINKWITHALBEDO", this.linkSheenWithAlbedo, true);
         defines.setValue("SHEEN_ROUGHNESS", this.roughness.isConnected, true);
         defines.setValue("SHEEN_ALBEDOSCALING", this.albedoScaling, true);

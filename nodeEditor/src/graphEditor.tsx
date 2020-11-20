@@ -202,6 +202,26 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 }
 
                 if (this._graphCanvas.selectedFrame) {
+                    var frame = this._graphCanvas.selectedFrame;
+                    
+                    if(frame.isCollapsed) {
+                        while(frame.nodes.length > 0) {
+                            let targetBlock = frame.nodes[0].block;
+                            this.props.globalState.nodeMaterial!.removeBlock(targetBlock);
+                            let blockIndex = this._blocks.indexOf(targetBlock);
+        
+                            if (blockIndex > -1) {
+                                this._blocks.splice(blockIndex, 1);
+                            }
+                            frame.nodes[0].dispose();            
+                        }
+                        frame.isCollapsed = false;
+                    }
+                    else {
+                        frame.nodes.forEach(node => {
+                            node.enclosingFrameId = -1;
+                        });
+                    }
                     this._graphCanvas.selectedFrame.dispose();
                 }
 
@@ -849,7 +869,12 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                             event.preventDefault();
                         }}
                     >                        
-                        <GraphCanvasComponent ref={"graphCanvas"} globalState={this.props.globalState}/>
+                        <GraphCanvasComponent ref={"graphCanvas"} 
+                            globalState={this.props.globalState}
+                            onEmitNewBlock={ block => {
+                                return this.createNodeFromObject(block);
+                            }
+                            }/>
                     </div>
 
                     <div id="rightGrab"

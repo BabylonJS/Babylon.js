@@ -85,7 +85,7 @@ export class ColorGradientStepGridComponent extends React.Component<IColorGradie
                 <div className="color1">
                     <ColorPickerLineComponent value={gradient instanceof Color3Gradient ? gradient.color : gradient.color1} onColorChanged={color => {
                         this.updateColor1(color);
-                    }} disableAlpha={gradient instanceof Color3Gradient}/>
+                    }}/>
                 </div>
                 {
                     this.props.host instanceof ParticleSystem && gradient instanceof ColorGradient &&

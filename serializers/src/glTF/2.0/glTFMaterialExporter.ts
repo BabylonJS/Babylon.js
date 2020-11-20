@@ -604,7 +604,7 @@ export class _GLTFMaterialExporter {
      * @param mimeType the mime type to use for the texture
      * @returns pbr metallic roughness interface or null
      */
-    private _convertSpecularGlossinessTexturesToMetallicRoughnessAsync(diffuseTexture: BaseTexture, specularGlossinessTexture: BaseTexture, factors: _IPBRSpecularGlossiness, mimeType: ImageMimeType): Promise<_IPBRMetallicRoughness> {
+    private async _convertSpecularGlossinessTexturesToMetallicRoughnessAsync(diffuseTexture: BaseTexture, specularGlossinessTexture: BaseTexture, factors: _IPBRSpecularGlossiness, mimeType: ImageMimeType): Promise<_IPBRMetallicRoughness> {
         let promises = [];
         if (!(diffuseTexture || specularGlossinessTexture)) {
             return Promise.reject('_ConvertSpecularGlosinessTexturesToMetallicRoughness: diffuse and specular glossiness textures are not defined!');
@@ -622,8 +622,8 @@ export class _GLTFMaterialExporter {
             const width = diffuseSize.width;
             const height = diffuseSize.height;
 
-            let diffusePixels = resizedTextures.texture1.readPixels();
-            let specularPixels = resizedTextures.texture2.readPixels();
+            let diffusePixels = await resizedTextures.texture1.readPixels();
+            let specularPixels = await resizedTextures.texture2.readPixels();
 
             if (diffusePixels) {
                 diffuseBuffer = this._convertPixelArrayToFloat32(diffusePixels);
