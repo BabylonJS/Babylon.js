@@ -1699,7 +1699,7 @@ export class Engine extends ThinEngine {
         this._gl.deleteBuffer(buffer);
     }
 
-    private _clientWaitAsync(sync: WebGLSync, flags = 0, interval_ms = 10) {
+    private _clientWaitAsync(sync: WebGLSync, flags = 0, interval_ms = 10): Promise<void> {
         let gl = <WebGL2RenderingContext>(this._gl as any);
         return new Promise((resolve, reject) => {
             let check = () => {

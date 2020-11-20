@@ -265,7 +265,7 @@ function workerFunc(): void {
                 // Override wasm binary
                 Module = { wasmBinary: (event.data.wasmBinary) };
                 importScripts(event.data.url);
-                transcoderModulePromise = new Promise((res) => {
+                transcoderModulePromise = new Promise((res: (_: void) => void) => {
                     Module.onRuntimeInitialized = () => {
                         Module.initializeBasis();
                         res();
