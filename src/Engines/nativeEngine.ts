@@ -799,6 +799,25 @@ export class NativeEngine extends Engine {
             maxMSAASamples: 1
         };
 
+        this._features = {
+            forceBitmapOverHTMLImageElement: false,
+            supportRenderAndCopyToLodForFloatTextures: false,
+            supportDepthStencilTexture: false,
+            supportShadowSamplers: false,
+            uniformBufferHardCheckMatrix: false,
+            allowTexturePrefiltering: false,
+            trackUbosInFrame: false,
+            supportCSM: false,
+            basisNeedsPOT: false,
+            support3DTextures: false,
+            needTypeSuffixInShaderConstants: false,
+            supportMSAA: false,
+            supportSSAO2: false,
+            supportExtendedTextureFormats: false,
+            supportSwitchCaseInShader: false,
+            _collectUbosUpdatedInFrame: false,
+        };
+
         Tools.Log("Babylon Native (v" + Engine.Version + ") launched");
 
         Tools.LoadScript = function (scriptUrl, onSuccess, onError, scriptId) {

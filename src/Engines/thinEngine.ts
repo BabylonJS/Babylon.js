@@ -1065,7 +1065,6 @@ export class ThinEngine {
         this._features = {
             forceBitmapOverHTMLImageElement: false,
             supportRenderAndCopyToLodForFloatTextures: this._webGLVersion !== 1,
-            framebuffersHaveYTopToBottom: false,
             supportDepthStencilTexture: this._webGLVersion !== 1,
             supportShadowSamplers: this._webGLVersion !== 1,
             uniformBufferHardCheckMatrix: false,

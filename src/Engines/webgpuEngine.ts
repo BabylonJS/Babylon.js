@@ -460,7 +460,6 @@ export class WebGPUEngine extends Engine {
         this._features = {
             forceBitmapOverHTMLImageElement: true,
             supportRenderAndCopyToLodForFloatTextures: true,
-            framebuffersHaveYTopToBottom: true,
             supportDepthStencilTexture: true,
             supportShadowSamplers: true,
             uniformBufferHardCheckMatrix: true,
