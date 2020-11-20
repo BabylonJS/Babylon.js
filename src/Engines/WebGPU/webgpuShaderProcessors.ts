@@ -4,8 +4,9 @@ import { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 import { WebGPUTextureSamplerBindingDescription, WebGPUShaderProcessingContext } from './webgpuShaderProcessingContext';
 import * as WebGPUConstants from './webgpuConstants';
 import { ShaderCodeInliner } from '../Processors/shaderCodeInliner';
-import { dbgShowDebugInliningProcess } from '../webgpuEngine';
 import { Logger } from '../../Misc/logger';
+
+const dbgShowDebugInliningProcess = false;
 
 const _knownUBOs: { [key: string]: { setIndex: number, bindingIndex: number} } = {
     "Scene": { setIndex: 0, bindingIndex: 0 },
