@@ -2828,6 +2828,14 @@ declare module BABYLON {
          */
         static Center(value1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>): Vector2;
         /**
+         * Gets the center of the vectors "value1" and "value2" and stores the result in the vector "ref"
+         * @param value1 defines first vector
+         * @param value2 defines second vector
+         * @param ref defines third vector
+         * @returns ref
+         */
+        static CenterToRef(value1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, ref: DeepImmutable<Vector2>): Vector2;
+        /**
          * Gets the shortest distance (float) between the point "p" and the segment defined by the two points "segA" and "segB".
          * @param p defines the middle point
          * @param segA defines one point of the segment
@@ -3595,6 +3603,14 @@ declare module BABYLON {
          */
         static Center(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>): Vector3;
         /**
+         * Gets the center of the vectors "value1" and "value2" and stores the result in the vector "ref"
+         * @param value1 defines first vector
+         * @param value2 defines second vector
+         * @param ref defines third vector
+         * @returns ref
+         */
+        static CenterToRef(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, ref: DeepImmutable<Vector3>): Vector3;
+        /**
          * Given three orthogonal normalized left-handed oriented Vector3 axis in space (target system),
          * RotationFromAxis() returns the rotation Euler angles (ex : rotation.x, rotation.y, rotation.z) to apply
          * to something in order to rotate it from its local system to the given target system
@@ -4011,6 +4027,14 @@ declare module BABYLON {
          * @return the center between the two vectors
          */
         static Center(value1: DeepImmutable<Vector4>, value2: DeepImmutable<Vector4>): Vector4;
+        /**
+         * Gets the center of the vectors "value1" and "value2" and stores the result in the vector "ref"
+         * @param value1 defines first vector
+         * @param value2 defines second vector
+         * @param ref defines third vector
+         * @returns ref
+         */
+        static CenterToRef(value1: DeepImmutable<Vector4>, value2: DeepImmutable<Vector4>, ref: DeepImmutable<Vector4>): Vector4;
         /**
          * Returns a new Vector4 set with the result of the normal transformation by the given matrix of the given vector.
          * This methods computes transformed normalized direction vectors only.
@@ -9487,10 +9511,15 @@ declare module BABYLON {
          */
         _prepare(): void;
         /**
-         * Gets the trigger parameters
-         * @returns the trigger parameters
+         * Gets the trigger parameter
+         * @returns the trigger parameter
          */
         getTriggerParameter(): any;
+        /**
+         * Sets the trigger parameter
+         * @param value defines the new trigger parameter
+         */
+        setTriggerParameter(value: any): void;
         /**
          * Internal only - executes current action event
          * @hidden
@@ -10463,7 +10492,9 @@ declare module BABYLON {
         static readonly STEP_BEFORECAMERADRAW_LAYER: number;
         static readonly STEP_BEFORECAMERADRAW_PREPASS: number;
         static readonly STEP_BEFORERENDERTARGETDRAW_LAYER: number;
+        static readonly STEP_BEFORERENDERINGMESH_PREPASS: number;
         static readonly STEP_BEFORERENDERINGMESH_OUTLINE: number;
+        static readonly STEP_AFTERRENDERINGMESH_PREPASS: number;
         static readonly STEP_AFTERRENDERINGMESH_OUTLINE: number;
         static readonly STEP_AFTERRENDERINGGROUPDRAW_EFFECTLAYER_DRAW: number;
         static readonly STEP_AFTERRENDERINGGROUPDRAW_BOUNDINGBOXRENDERER: number;
@@ -10570,7 +10601,7 @@ declare module BABYLON {
     /**
      * Strong typing of a Mesh Render related stage step action
      */
-    export type RenderingMeshStageAction = (mesh: Mesh, subMesh: SubMesh, batch: _InstancesBatch) => void;
+    export type RenderingMeshStageAction = (mesh: Mesh, subMesh: SubMesh, batch: _InstancesBatch, effect: Nullable<Effect>) => void;
     /**
      * Strong typing of a simple stage step action
      */
@@ -12462,6 +12493,8 @@ declare module BABYLON {
         _vRefractionMicrosurfaceInfosName: string;
         /** @hidden */
         _vRefractionInfosName: string;
+        /** @hidden */
+        _vRefractionFilteringInfoName: string;
         private _scene;
         /**
          * The properties below are set by the main PBR block prior to calling methods of this class.
@@ -22233,6 +22266,12 @@ declare module BABYLON {
         get useGeometryBufferFallback(): boolean;
         set useGeometryBufferFallback(value: boolean);
         /**
+         * Set to true to disable gamma transform in PrePass.
+         * Can be useful in case you already proceed to gamma transform on a material level
+         * and your post processes don't need to be in linear color space.
+         */
+        disableGammaTransform: boolean;
+        /**
          * Instanciates a prepass renderer
          * @param scene The scene
          */
@@ -22249,6 +22288,10 @@ declare module BABYLON {
          * @param subMesh Submesh on which the effect is applied
          */
         bindAttachmentsForEffect(effect: Effect, subMesh: SubMesh): void;
+        /**
+         * Restores attachments for single texture draw.
+         */
+        restoreAttachments(): void;
         /**
          * @hidden
          */
@@ -28091,6 +28134,7 @@ declare module BABYLON {
          * @hidden
          */
         get checkCollisions(): boolean;
+        set checkCollisions(value: boolean);
         /** @hidden */
         _bind(subMesh: SubMesh, effect: Effect, fillMode: number): Mesh;
         /** @hidden */
@@ -43417,7 +43461,7 @@ declare module BABYLON {
         set lightsEnabled(value: boolean);
         get lightsEnabled(): boolean;
         /** All of the active cameras added to this scene. */
-        activeCameras: Camera[];
+        activeCameras: Nullable<Camera[]>;
         /** @hidden */
         _activeCamera: Nullable<Camera>;
         /** Gets or sets the current active camera */
@@ -45079,10 +45123,12 @@ declare module BABYLON {
          * Does the sound autoplay once loaded.
          */
         autoplay: boolean;
+        private _loop;
         /**
          * Does the sound loop after it finishes playing once.
          */
-        loop: boolean;
+        get loop(): boolean;
+        set loop(value: boolean);
         /**
          * Does the sound use a custom attenuation curve to simulate the falloff
          * happening when the source gets further away from the camera.
@@ -45195,6 +45241,11 @@ declare module BABYLON {
          * @returns true if ready, otherwise false
          */
         isReady(): boolean;
+        /**
+         * Get the current class name.
+         * @returns current class name
+         */
+        getClassName(): string;
         private _soundLoaded;
         /**
          * Sets the data of the sound from an audiobuffer
@@ -48574,7 +48625,7 @@ declare module BABYLON {
          * @param timeout amount of time in milliseconds to wait for a response from the sensor (default: infinite)
          * @returns a promise that will resolve on orientation change
          */
-        static WaitForOrientationChangeAsync(timeout?: number): Promise<unknown>;
+        static WaitForOrientationChangeAsync(timeout?: number): Promise<void>;
         /**
          * @hidden
          */
@@ -61954,7 +62005,7 @@ declare module BABYLON {
           * @param onFinished Callback when filtering is done
           * @return Promise called when prefiltering is done
           */
-        prefilter(texture: BaseTexture, onFinished?: Nullable<() => void>): Promise<unknown> | undefined;
+        prefilter(texture: BaseTexture, onFinished?: Nullable<() => void>): Promise<void>;
     }
 }
 declare module BABYLON {
@@ -62799,6 +62850,14 @@ declare module BABYLON {
          * So you could set this variable to your engine import to make it work.
          */
         static LoaderInjectedPhysicsEngine: any;
+    }
+}
+declare module BABYLON {
+    /**
+     * A material to use for fast depth-only rendering.
+     */
+    export class OcclusionMaterial extends ShaderMaterial {
+        constructor(name: string, scene: Scene);
     }
 }
 declare module BABYLON {
@@ -68269,6 +68328,31 @@ declare module BABYLON {
          */
         getDefaultQueryExtentToRef(result: Vector3): void;
         /**
+         * Set the time step of the navigation tick update.
+         * Default is 1/60.
+         * A value of 0 will disable fixed time update
+         * @param newTimeStep the new timestep to apply to this world.
+         */
+        setTimeStep(newTimeStep: number): void;
+        /**
+         * Get the time step of the navigation tick update.
+         * @returns the current time step
+         */
+        getTimeStep(): number;
+        /**
+         * If delta time in navigation tick update is greater than the time step
+         * a number of sub iterations are done. If more iterations are need to reach deltatime
+         * they will be discarded.
+         * A value of 0 will set to no maximum and update will use as many substeps as needed
+         * @param newStepCount the maximum number of iterations
+         */
+        setMaximumSubStepCount(newStepCount: number): void;
+        /**
+         * Get the maximum number of iterations per navigation tick update
+         * @returns the maximum number of iterations
+         */
+        getMaximumSubStepCount(): number;
+        /**
          * Release all resources
          */
         dispose(): void;
@@ -68504,11 +68588,38 @@ declare module BABYLON {
          * the first navmesh created. We might extend this to support multiple navmeshes
          */
         navMesh: any;
+        private _maximumSubStepCount;
+        private _timeStep;
         /**
          * Initializes the recastJS plugin
          * @param recastInjection can be used to inject your own recast reference
          */
         constructor(recastInjection?: any);
+        /**
+         * Set the time step of the navigation tick update.
+         * Default is 1/60.
+         * A value of 0 will disable fixed time update
+         * @param newTimeStep the new timestep to apply to this world.
+         */
+        setTimeStep(newTimeStep?: number): void;
+        /**
+         * Get the time step of the navigation tick update.
+         * @returns the current time step
+         */
+        getTimeStep(): number;
+        /**
+         * If delta time in navigation tick update is greater than the time step
+         * a number of sub iterations are done. If more iterations are need to reach deltatime
+         * they will be discarded.
+         * A value of 0 will set to no maximum and update will use as many substeps as needed
+         * @param newStepCount the maximum number of iterations
+         */
+        setMaximumSubStepCount(newStepCount?: number): void;
+        /**
+         * Get the maximum number of iterations per navigation tick update
+         * @returns the maximum number of iterations
+         */
+        getMaximumSubStepCount(): number;
         /**
          * Creates a navigation mesh
          * @param meshes array of all the geometry used to compute the navigatio mesh
@@ -71294,9 +71405,20 @@ declare module BABYLON {
          */
         set motionBlurSamples(samples: number);
         private _motionBlurSamples;
+        /**
+         * Gets wether or not the motion blur post-process is in object based mode.
+         */
+        get isObjectBased(): boolean;
+        /**
+         * Sets wether or not the motion blur post-process is in object based mode.
+         */
+        set isObjectBased(value: boolean);
+        private _isObjectBased;
         private _forceGeometryBuffer;
         private _geometryBufferRenderer;
         private _prePassRenderer;
+        private _invViewProjection;
+        private _previousViewProjection;
         /**
          * Gets a string identifying the name of the class
          * @returns "MotionBlurPostProcess" string
@@ -71312,7 +71434,7 @@ declare module BABYLON {
          * @param engine The engine which the post process will be applied. (default: current engine)
          * @param reusable If the post process can be reused on the same frame. (default: false)
          * @param textureType Type of textures used when performing the post process. (default: 0)
-         * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
+         * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: true)
          * @param forceGeometryBuffer If this post process should use geometry buffer instead of prepass (default: false)
          */
         constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, blockCompilation?: boolean, forceGeometryBuffer?: boolean);
@@ -71333,6 +71455,22 @@ declare module BABYLON {
          * @param camera The camera to dispose the post process on.
          */
         dispose(camera?: Camera): void;
+        /**
+         * Called on the mode changed (object based or screen based).
+         */
+        private _applyMode;
+        /**
+         * Called on the effect is applied when the motion blur post-process is in object based mode.
+         */
+        private _onApplyObjectBased;
+        /**
+         * Called on the effect is applied when the motion blur post-process is in screen based mode.
+         */
+        private _onApplyScreenBased;
+        /**
+         * Called on the effect must be updated (changed mode, samples count, etc.).
+         */
+        private _updateEffect;
         /** @hidden */
         static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<MotionBlurPostProcess>;
     }
@@ -72446,7 +72584,7 @@ declare module BABYLON {
          * @param engine The engine which the post process will be applied. (default: current engine)
          * @param reusable If the post process can be reused on the same frame. (default: false)
          * @param textureType Type of textures used when performing the post process. (default: 0)
-         * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
+         * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: true)
          * @param forceGeometryBuffer If this post process should use geometry buffer instead of prepass (default: false)
          */
         constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, blockCompilation?: boolean, forceGeometryBuffer?: boolean);
@@ -73339,6 +73477,8 @@ declare module BABYLON {
         private _beforeCameraDraw;
         private _afterCameraDraw;
         private _beforeClearStage;
+        private _beforeRenderingMeshStage;
+        private _afterRenderingMeshStage;
         /**
          * Rebuilds the elements related to this component in case of
          * context lost for instance.
@@ -74879,7 +75019,7 @@ declare module BABYLON {
         /**
          * The resolve method of the promise associated with this deferred object.
          */
-        get resolve(): (value?: T | PromiseLike<T> | undefined) => void;
+        get resolve(): (value: T | PromiseLike<T>) => void;
         /**
          * The reject method of the promise associated with this deferred object.
          */
@@ -76752,9 +76892,23 @@ declare module BABYLON {
                 impostorType?: number;
             };
             /**
-             * For future use - a single hand-mesh that will be updated according to the XRHand data provided
+             * Should the default hand mesh be disabled. In this case, the spheres will be visible (unless set invisible).
              */
-            handMesh?: AbstractMesh;
+            disableDefaultHandMesh?: boolean;
+            /**
+             * a rigged hand-mesh that will be updated according to the XRHand data provided. This will override the default hand mesh
+             */
+            handMeshes?: {
+                right: AbstractMesh;
+                left: AbstractMesh;
+            };
+            /**
+             * If a hand mesh was provided, this array will define what axis will update which node. This will override the default hand mesh
+             */
+            rigMapping?: {
+                right: string[];
+                left: string[];
+            };
         };
     }
     /**
@@ -76794,12 +76948,21 @@ declare module BABYLON {
         readonly xrController: WebXRInputSource;
         /** the meshes to be used to track the hand joints */
         readonly trackedMeshes: AbstractMesh[];
+        private _handMesh?;
+        private _rigMapping?;
+        private _scene;
+        private _defaultHandMesh;
+        private _transformNodeMapping;
         /**
          * Hand-parts definition (key is HandPart)
          */
         handPartsDefinition: {
             [key: string]: number[];
         };
+        /**
+         * Observers will be triggered when the mesh for this hand was initialized.
+         */
+        onHandMeshReadyObservable: Observable<WebXRHand>;
         /**
          * Populate the HandPartsDefinition object.
          * This is called as a side effect since certain browsers don't have XRHand defined.
@@ -76809,12 +76972,19 @@ declare module BABYLON {
          * Construct a new hand object
          * @param xrController the controller to which the hand correlates
          * @param trackedMeshes the meshes to be used to track the hand joints
+         * @param _handMesh an optional hand mesh. if not provided, ours will be used
+         * @param _rigMapping an optional rig mapping for the hand mesh. if not provided, ours will be used
+         * @param disableDefaultHandMesh should the default mesh creation be disabled
          */
         constructor(
         /** the controller to which the hand correlates */
         xrController: WebXRInputSource, 
         /** the meshes to be used to track the hand joints */
-        trackedMeshes: AbstractMesh[]);
+        trackedMeshes: AbstractMesh[], _handMesh?: AbstractMesh | undefined, _rigMapping?: string[] | undefined, disableDefaultHandMesh?: boolean);
+        /**
+         * Get the hand mesh. It is possible that the hand mesh is not yet ready!
+         */
+        get handMesh(): AbstractMesh | undefined;
         /**
          * Update this hand from the latest xr frame
          * @param xrFrame xrFrame to update from
@@ -76832,6 +77002,7 @@ declare module BABYLON {
          * Dispose this Hand object
          */
         dispose(): void;
+        private _generateDefaultHandMesh;
     }
     /**
      * WebXR Hand Joint tracking feature, available for selected browsers and devices
