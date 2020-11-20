@@ -603,6 +603,7 @@ export class Tools {
      * @param successCallback defines the callback triggered once the data are available
      * @param mimeType defines the mime type of the result
      * @param fileName defines the filename to download. If present, the result will automatically be downloaded
+     * @return a void promise
      */
     public static async DumpFramebuffer(width: number, height: number, engine: Engine, successCallback?: (data: string) => void, mimeType: string = "image/png", fileName?: string) {
         // Read the contents of the framebuffer

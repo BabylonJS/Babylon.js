@@ -221,7 +221,9 @@ export class InternalTexture {
     public _comparisonFunction: number = 0;
     /** @hidden */
     public _sphericalPolynomial: Nullable<SphericalPolynomial> = null;
+    /** @hidden */
     public _sphericalPolynomialPromise: Nullable<Promise<SphericalPolynomial>> = null;
+    /** @hidden */
     public _sphericalPolynomialComputed = false;
     /** @hidden */
     public _lodGenerationScale: number = 0;

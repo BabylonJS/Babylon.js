@@ -148,6 +148,7 @@ export class Effect implements IDisposable {
     public _uniformBuffersNames: { [key: string]: number } = {};
     /** @hidden */
     public _samplerList: string[];
+    /** @hidden */
     public _multiTarget: boolean = false;
 
     private static _uniqueIdSeed = 0;

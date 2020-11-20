@@ -53,7 +53,8 @@ const dbgGenerateLogs = true;
 const dbgVerboseLogsForFirstFrames = false;
 const dbgVerboseLogsNumFrames = 10;
 const dbgShowWarningsNotImplemented = false;
-export const dbgShowDebugInliningProcess = false;
+/** @hidden */
+export let dbgShowDebugInliningProcess = false;
 
 /**
  * Options to load the associated Glslang library
@@ -219,7 +220,6 @@ export class WebGPUEngine extends Engine {
 
     /**
      * Gets a boolean indicating that the engine supports uniform buffers
-     * @see http://doc.babylonjs.com/features/webgl2#uniform-buffer-objets
      */
     public get supportsUniformBuffers(): boolean {
         return true;
@@ -612,6 +612,11 @@ export class WebGPUEngine extends Engine {
     //                          Static Pipeline WebGPU States
     //------------------------------------------------------------------------------
 
+    /**
+     * Force the entire cache to be cleared
+     * You should not have to use this function unless your engine needs to share the WebGPU context with another engine
+     * @param bruteForce defines a boolean to force clearing ALL caches (including stencil, detoh and alpha states)
+     */
     public wipeCaches(bruteForce?: boolean): void {
         if (this.preventCacheWipeBetweenFrames && !bruteForce) {
             return;
@@ -643,10 +648,18 @@ export class WebGPUEngine extends Engine {
         this._cachedEffectForVertexBuffers = null;
     }
 
+    /**
+     * Enable or disable color writing
+     * @param enable defines the state to set
+     */
     public setColorWrite(enable: boolean): void {
         this.__colorWrite = enable;
     }
 
+    /**
+     * Gets a boolean indicating if color writing is enabled
+     * @returns the current color writing state
+     */
     public getColorWrite(): boolean {
         return this.__colorWrite;
     }
@@ -755,6 +768,13 @@ export class WebGPUEngine extends Engine {
         this._scissorCached.w = this.getRenderHeight();
     }
 
+    /**
+     * Clear the current render buffer or the current render target (if any is set up)
+     * @param color defines the color to use
+     * @param backBuffer defines if the back buffer must be cleared
+     * @param depth defines if the depth buffer must be cleared
+     * @param stencil defines if the stencil buffer must be cleared
+     */
     public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
         // Some PGs are using color3...
         if (color && color.a === undefined) {
@@ -782,6 +802,11 @@ export class WebGPUEngine extends Engine {
     //                              Vertex/Index Buffers
     //------------------------------------------------------------------------------
 
+    /**
+     * Creates a vertex buffer
+     * @param data the data for the vertex buffer
+     * @returns the new buffer
+     */
     public createVertexBuffer(data: DataArray): DataBuffer {
         let view: ArrayBufferView;
 
@@ -799,10 +824,22 @@ export class WebGPUEngine extends Engine {
         return dataBuffer;
     }
 
+    /**
+     * Creates a vertex buffer
+     * @param data the data for the dynamic vertex buffer
+     * @returns the new buffer
+     */
     public createDynamicVertexBuffer(data: DataArray): DataBuffer {
         return this.createVertexBuffer(data);
     }
 
+    /**
+     * Updates a vertex buffer.
+     * @param vertexBuffer the vertex buffer to update
+     * @param data the data used to update the vertex buffer
+     * @param byteOffset the byte offset of the data
+     * @param byteLength the byte length of the data
+     */
     public updateDynamicVertexBuffer(vertexBuffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void {
         const dataBuffer = vertexBuffer as WebGPUDataBuffer;
         if (byteOffset === undefined) {
@@ -836,23 +873,29 @@ export class WebGPUEngine extends Engine {
         this._bufferManager.setSubData(dataBuffer, byteOffset, view, 0, byteLength);
     }
 
-    public createIndexBuffer(data: IndicesArray): DataBuffer {
+    /**
+     * Creates a new index buffer
+     * @param indices defines the content of the index buffer
+     * @param updatable defines if the index buffer must be updatable - not used in WebGPU
+     * @returns a new buffer
+     */
+    public createIndexBuffer(indices: IndicesArray, updatable?: boolean): DataBuffer {
         let is32Bits = true;
         let view: ArrayBufferView;
 
-        if (data instanceof Uint32Array || data instanceof Int32Array) {
-            view = data;
+        if (indices instanceof Uint32Array || indices instanceof Int32Array) {
+            view = indices;
         }
-        else if (data instanceof Uint16Array) {
-            view = data;
+        else if (indices instanceof Uint16Array) {
+            view = indices;
             is32Bits = false;
         }
         else {
-            if (data.length > 65535) {
-                view = new Uint32Array(data);
+            if (indices.length > 65535) {
+                view = new Uint32Array(indices);
             }
             else {
-                view = new Uint16Array(data);
+                view = new Uint16Array(indices);
                 is32Bits = false;
             }
         }
@@ -862,6 +905,12 @@ export class WebGPUEngine extends Engine {
         return dataBuffer;
     }
 
+    /**
+     * Update an index buffer
+     * @param indexBuffer defines the target index buffer
+     * @param indices defines the data to update
+     * @param offset defines the offset in the target index buffer where update should start
+     */
     public updateDynamicIndexBuffer(indexBuffer: DataBuffer, indices: IndicesArray, offset: number = 0): void {
         const gpuBuffer = indexBuffer as WebGPUDataBuffer;
 
@@ -894,14 +943,22 @@ export class WebGPUEngine extends Engine {
         this._bufferManager.setSubData(gpuBuffer, offset, view);
     }
 
+    /** @hidden */
     public bindBuffersDirectly(vertexBuffer: DataBuffer, indexBuffer: DataBuffer, vertexDeclaration: number[], vertexStrideSize: number, effect: Effect): void {
         throw "Not implemented on WebGPU so far.";
     }
 
+    /** @hidden */
     public updateAndBindInstancesBuffer(instancesBuffer: DataBuffer, data: Float32Array, offsetLocations: number[] | InstancingAttributeInfo[]): void {
         throw "Not implemented on WebGPU so far.";
     }
 
+    /**
+     * Bind a list of vertex buffers with the engine
+     * @param vertexBuffers defines the list of vertex buffers to bind
+     * @param indexBuffer defines the index buffer to bind
+     * @param effect defines the effect associated with the vertex buffers
+     */
     public bindBuffers(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, indexBuffer: Nullable<DataBuffer>, effect: Effect): void {
         this._currentIndexBuffer = indexBuffer;
         this._currentVertexBuffers = vertexBuffers;
@@ -966,6 +1023,19 @@ export class WebGPUEngine extends Engine {
     //                              Effects
     //------------------------------------------------------------------------------
 
+    /**
+     * Create a new effect (used to store vertex/fragment shaders)
+     * @param baseName defines the base name of the effect (The name of file without .fragment.fx or .vertex.fx)
+     * @param attributesNamesOrOptions defines either a list of attribute names or an IEffectCreationOptions object
+     * @param uniformsNamesOrEngine defines either a list of uniform names or the engine to use
+     * @param samplers defines an array of string used to represent textures
+     * @param defines defines the string containing the defines to use to compile the shaders
+     * @param fallbacks defines the list of potential fallbacks to use if shader conmpilation fails
+     * @param onCompiled defines a function to call when the effect creation is successful
+     * @param onError defines a function to call when the effect creation has failed
+     * @param indexParameters defines an object containing the index values to use to compile shaders (like the maximum number of simultaneous lights)
+     * @returns the new Effect
+     */
     public createEffect(baseName: any, attributesNamesOrOptions: string[] | IEffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers?: string[], defines?: string, fallbacks?: EffectFallbacks,
         onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any): Effect {
         const vertex = baseName.vertexElement || baseName.vertex || baseName.vertexToken || baseName.vertexSource || baseName;
@@ -1032,14 +1102,21 @@ export class WebGPUEngine extends Engine {
         return program;
     }
 
+    /** @hidden */
     public createRawShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, context?: WebGLRenderingContext, transformFeedbackVaryings: Nullable<string[]> = null): WebGLProgram {
         throw "Not available on WebGPU";
     }
 
+    /** @hidden */
     public createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings: Nullable<string[]> = null): WebGLProgram {
         throw "Not available on WebGPU";
     }
 
+    /**
+     * Creates a new pipeline context
+     * @param shaderProcessingContext defines the shader processing context used during the processing if available
+     * @returns the new pipeline
+     */
     public createPipelineContext(shaderProcessingContext: Nullable<ShaderProcessingContext>): IPipelineContext {
         var pipelineContext = new WebGPUPipelineContext(shaderProcessingContext! as WebGPUShaderProcessingContext, this);
         pipelineContext.engine = this;
@@ -1075,6 +1152,12 @@ export class WebGPUEngine extends Engine {
         }
     }
 
+    /**
+     * Gets the list of active attributes for a given WebGPU program
+     * @param pipelineContext defines the pipeline context to use
+     * @param attributesNames defines the list of attribute names to get
+     * @returns an array of indices indicating the offset of each attribute
+     */
     public getAttributes(pipelineContext: IPipelineContext, attributesNames: string[]): number[] {
         const results = new Array(attributesNames.length);
         const gpuPipelineContext = (pipelineContext as WebGPUPipelineContext);
@@ -1094,6 +1177,10 @@ export class WebGPUEngine extends Engine {
         return results;
     }
 
+    /**
+     * Activates an effect, mkaing it the current one (ie. the one used for rendering)
+     * @param effect defines the effect to activate
+     */
     public enableEffect(effect: Nullable<Effect>): void {
         if (!effect || effect === this._currentEffect && !this._forceEnableEffect) {
             return;
@@ -1110,6 +1197,7 @@ export class WebGPUEngine extends Engine {
         }
     }
 
+    /** @hidden */
     public _releaseEffect(effect: Effect): void {
         // Effect gets garbage collected without explicit destroy in WebGPU.
     }
@@ -1132,6 +1220,10 @@ export class WebGPUEngine extends Engine {
     //                              Textures
     //------------------------------------------------------------------------------
 
+    /**
+     * Gets a boolean indicating that only power of 2 textures are supported
+     * Please note that you can still use non power of 2 textures but in this case the engine will forcefully convert them
+     */
     public get needPOTTextures(): boolean {
         return false;
     }
@@ -1160,6 +1252,27 @@ export class WebGPUEngine extends Engine {
         texture._comparisonFunction = comparisonFunction;
     }
 
+    /**
+     * Usually called from Texture.ts.
+     * Passed information to create a hardware texture
+     * @param url defines a value which contains one of the following:
+     * * A conventional http URL, e.g. 'http://...' or 'file://...'
+     * * A base64 string of in-line texture data, e.g. 'data:image/jpg;base64,/...'
+     * * An indicator that data being passed using the buffer parameter, e.g. 'data:mytexture.jpg'
+     * @param noMipmap defines a boolean indicating that no mipmaps shall be generated.  Ignored for compressed textures.  They must be in the file
+     * @param invertY when true, image is flipped when loaded.  You probably want true. Certain compressed textures may invert this if their default is inverted (eg. ktx)
+     * @param scene needed for loading to the correct scene
+     * @param samplingMode mode with should be used sample / access the texture (Default: Texture.TRILINEAR_SAMPLINGMODE)
+     * @param onLoad optional callback to be called upon successful completion
+     * @param onError optional callback to be called upon failure
+     * @param buffer a source of a file previously fetched as either a base64 string, an ArrayBuffer (compressed or image format), HTMLImageElement (image format), or a Blob
+     * @param fallback an internal argument in case the function must be called again, due to etc1 not having alpha capabilities
+     * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
+     * @param forcedExtension defines the extension to use to pick the right loader
+     * @param mimeType defines an optional mime type
+     * @param loaderOptions options to be passed to the loader
+     * @returns a InternalTexture for assignment back into BABYLON.Texture
+     */
     public createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
         buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
@@ -1213,6 +1326,23 @@ export class WebGPUEngine extends Engine {
         texture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
     }
 
+    /**
+     * Creates a cube texture
+     * @param rootUrl defines the url where the files to load is located
+     * @param scene defines the current scene
+     * @param files defines the list of files to load (1 per face)
+     * @param noMipmap defines a boolean indicating that no mipmaps shall be generated (false by default)
+     * @param onLoad defines an optional callback raised when the texture is loaded
+     * @param onError defines an optional callback raised if there is an issue to load the texture
+     * @param format defines the format of the data
+     * @param forcedExtension defines the extension to use to pick the right loader
+     * @param createPolynomials if a polynomial sphere should be created for the cube texture
+     * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
+     * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
+     * @param fallback defines texture to use while falling back when (compressed) texture file not found.
+     * @param loaderOptions options to be passed to the loader
+     * @returns the cube texture as an InternalTexture
+     */
     public createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null,
         onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials: boolean = false, lodScale: number = 0, lodOffset: number = 0, fallback: Nullable<InternalTexture> = null): InternalTexture {
 
@@ -1247,6 +1377,19 @@ export class WebGPUEngine extends Engine {
         );
     }
 
+    /**
+     * Creates a raw texture
+     * @param data defines the data to store in the texture
+     * @param width defines the width of the texture
+     * @param height defines the height of the texture
+     * @param format defines the format of the data
+     * @param generateMipMaps defines if the engine should generate the mip levels
+     * @param invertY defines if data must be stored with Y axis inverted
+     * @param samplingMode defines the required sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
+     * @param compression defines the compression used (null by default)
+     * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+     * @returns the raw texture inside an InternalTexture
+     */
     public createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number,
         compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture
     {
@@ -1275,6 +1418,18 @@ export class WebGPUEngine extends Engine {
         return texture;
     }
 
+    /**
+     * Creates a new raw cube texture
+     * @param data defines the array of data to use to create each face
+     * @param size defines the size of the textures
+     * @param format defines the format of the data
+     * @param type defines the type of the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
+     * @param generateMipMaps  defines if the engine should generate the mip levels
+     * @param invertY defines if data must be stored with Y axis inverted
+     * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
+     * @param compression defines the compression used (null by default)
+     * @returns the cube texture as an InternalTexture
+     */
     public createRawCubeTexture(data: Nullable<ArrayBufferView[]>, size: number, format: number, type: number,
         generateMipMaps: boolean, invertY: boolean, samplingMode: number,
         compression: Nullable<string> = null): InternalTexture
@@ -1300,6 +1455,22 @@ export class WebGPUEngine extends Engine {
         return texture;
     }
 
+    /**
+     * Creates a new raw cube texture from a specified url
+     * @param url defines the url where the data is located
+     * @param scene defines the current scene
+     * @param size defines the size of the textures
+     * @param format defines the format of the data
+     * @param type defines the type fo the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
+     * @param noMipmap defines if the engine should avoid generating the mip levels
+     * @param callback defines a callback used to extract texture data from loaded data
+     * @param mipmapGenerator defines to provide an optional tool to generate mip levels
+     * @param onLoad defines a callback called when texture is loaded
+     * @param onError defines a callback called if there is an error
+     * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
+     * @param invertY defines if data must be stored with Y axis inverted
+     * @returns the cube texture as an InternalTexture
+     */
     public createRawCubeTextureFromUrl(url: string, scene: Nullable<Scene>, size: number, format: number, type: number, noMipmap: boolean,
         callback: (ArrayBuffer: ArrayBuffer) => Nullable<ArrayBufferView[]>,
         mipmapGenerator: Nullable<((faces: ArrayBufferView[]) => ArrayBufferView[][])>,
@@ -1372,6 +1543,20 @@ export class WebGPUEngine extends Engine {
         return texture;
     }
 
+    /**
+     * Creates a new raw 2D array texture
+     * @param data defines the data used to create the texture
+     * @param width defines the width of the texture
+     * @param height defines the height of the texture
+     * @param depth defines the number of layers of the texture
+     * @param format defines the format of the texture
+     * @param generateMipMaps defines if the engine must generate mip levels
+     * @param invertY defines if data must be stored with Y axis inverted
+     * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
+     * @param compression defines the compressed used (can be null)
+     * @param textureType defines the compressed used (can be null)
+     * @returns a new raw 2D array texture (stored in an InternalTexture)
+     */
     public createRawTexture2DArray(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number,
         compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture
     {
@@ -1385,6 +1570,20 @@ export class WebGPUEngine extends Engine {
         return texture;
     }
 
+    /**
+     * Creates a new raw 3D texture
+     * @param data defines the data used to create the texture
+     * @param width defines the width of the texture
+     * @param height defines the height of the texture
+     * @param depth defines the depth of the texture
+     * @param format defines the format of the texture
+     * @param generateMipMaps defines if the engine must generate mip levels
+     * @param invertY defines if data must be stored with Y axis inverted
+     * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
+     * @param compression defines the compressed used (can be null)
+     * @param textureType defines the compressed used (can be null)
+     * @returns a new raw 3D texture (stored in an InternalTexture)
+     */
     public createRawTexture3D(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number,
         compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture
     {
@@ -1428,6 +1627,12 @@ export class WebGPUEngine extends Engine {
         }
     }
 
+    /**
+     * Update the sampling mode of a given texture
+     * @param samplingMode defines the required sampling mode
+     * @param texture defines the texture to update
+     * @param generateMipMaps defines whether to generate mipmaps for the texture
+     */
     public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture, generateMipMaps: boolean = false): void {
         if (generateMipMaps) {
             texture.generateMipMaps = true;
@@ -1437,6 +1642,13 @@ export class WebGPUEngine extends Engine {
         texture.samplingMode = samplingMode;
     }
 
+    /**
+     * Update the sampling mode of a given texture
+     * @param texture defines the texture to update
+     * @param wrapU defines the texture wrap mode of the u coordinates
+     * @param wrapV defines the texture wrap mode of the v coordinates
+     * @param wrapR defines the texture wrap mode of the r coordinates
+     */
     public updateTextureWrappingMode(texture: InternalTexture, wrapU: Nullable<number>, wrapV: Nullable<number> = null, wrapR: Nullable<number> = null): void {
         if (wrapU !== null) {
             texture._cachedWrapU = wrapU;
@@ -1452,6 +1664,13 @@ export class WebGPUEngine extends Engine {
         }
     }
 
+    /**
+     * Update the dimensions of a texture
+     * @param texture texture to update
+     * @param width new width of the texture
+     * @param height new height of the texture
+     * @param depth new depth of the texture
+     */
     public updateTextureDimensions(texture: InternalTexture, width: number, height: number, depth: number = 1): void {
         if (!texture._hardwareTexture) {
             // the gpu texture is not created yet, so when it is it will be created with the right dimensions
@@ -1495,11 +1714,25 @@ export class WebGPUEngine extends Engine {
         }
     }
 
-    public setTexture(channel: number, _: Nullable<WebGLUniformLocation>, texture: Nullable<BaseTexture>, name: string): void {
+    /**
+     * Sets a texture to the according uniform.
+     * @param channel The texture channel
+     * @param unused unused parameter
+     * @param texture The texture to apply
+     * @param name The name of the uniform in the effect
+     */
+    public setTexture(channel: number, unused: Nullable<WebGLUniformLocation>, texture: Nullable<BaseTexture>, name: string): void {
         this._setTexture(channel, texture, false, false, name, name);
     }
 
-    public setTextureArray(channel: number, _: Nullable<WebGLUniformLocation>, textures: BaseTexture[], name: string): void {
+    /**
+     * Sets an array of texture to the WebGPU context
+     * @param channel defines the channel where the texture array must be set
+     * @param unused unused parameter
+     * @param textures defines the array of textures to bind
+     * @param name name of the channel
+     */
+    public setTextureArray(channel: number, unused: Nullable<WebGLUniformLocation>, textures: BaseTexture[], name: string): void {
         for (var index = 0; index < textures.length; index++) {
             this._setTexture(-1, textures[index], true, false, name + index.toString(), name, index);
         }
@@ -1644,7 +1877,7 @@ export class WebGPUEngine extends Engine {
         commandEncoder = commandEncoder ?? (this._currentRenderTarget && !this._currentRenderPass ? this._renderTargetEncoder : !this._currentRenderPass ? this._renderEncoder : this._uploadEncoder);
 
         const format = (texture._hardwareTexture as WebGPUHardwareTexture).format;
-        const mipmapCount = WebGPUTextureHelper.computeNumMipmapLevels(texture.width, texture.height);
+        const mipmapCount = WebGPUTextureHelper.ComputeNumMipmapLevels(texture.width, texture.height);
 
         if (dbgVerboseLogsForFirstFrames) {
             if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
@@ -1659,6 +1892,15 @@ export class WebGPUEngine extends Engine {
         }
     }
 
+    /**
+     * Update the content of a texture
+     * @param texture defines the texture to update
+     * @param canvas defines the source containing the data
+     * @param invertY defines if data must be stored with Y axis inverted
+     * @param premulAlpha defines if alpha is stored as premultiplied
+     * @param format defines the format of the data
+     * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
+     */
     public updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement | OffscreenCanvas, invertY: boolean, premulAlpha: boolean = false, format?: number, forceBindTexture?: boolean): void {
         if (!texture) {
             return;
@@ -1682,6 +1924,17 @@ export class WebGPUEngine extends Engine {
         });
     }
 
+    /**
+     * Update a portion of an internal texture
+     * @param texture defines the texture to update
+     * @param imageData defines the data to store into the texture
+     * @param xOffset defines the x coordinates of the update rectangle
+     * @param yOffset defines the y coordinates of the update rectangle
+     * @param width defines the width of the update rectangle
+     * @param height defines the height of the update rectangle
+     * @param faceIndex defines the face index if texture is a cube (0 by default)
+     * @param lod defines the lod level to update (0 by default)
+     */
     public updateTextureData(texture: InternalTexture, imageData: ArrayBufferView, xOffset: number, yOffset: number, width: number, height: number, faceIndex: number = 0, lod: number = 0): void {
         let gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
 
@@ -1694,6 +1947,12 @@ export class WebGPUEngine extends Engine {
         this._textureHelper.updateTexture(data, gpuTextureWrapper.underlyingResource!, width, height, texture.depth, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, xOffset, yOffset, this._uploadEncoder);
     }
 
+    /**
+     * Update a video texture
+     * @param texture defines the texture to update
+     * @param video defines the video element to use
+     * @param invertY defines if data must be stored with Y axis inverted
+     */
     public updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void {
         if (!texture || texture._isDisabled) {
             return;
@@ -1779,6 +2038,15 @@ export class WebGPUEngine extends Engine {
         this._textureHelper.updateTexture(bitmap, gpuTextureWrapper.underlyingResource!, width, height, texture.depth, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, 0, 0, this._uploadEncoder);
     }
 
+    /**
+     * Update a raw texture
+     * @param texture defines the texture to update
+     * @param bufferView defines the data to store in the texture
+     * @param format defines the format of the data
+     * @param invertY defines if data must be stored with Y axis inverted
+     * @param compression defines the compression used (null by default)
+     * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+     */
     public updateRawTexture(texture: Nullable<InternalTexture>, bufferView: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): void {
         if (!texture) {
             return;
@@ -1809,6 +2077,16 @@ export class WebGPUEngine extends Engine {
         texture.isReady = true;
     }
 
+    /**
+     * Update a raw cube texture
+     * @param texture defines the texture to udpdate
+     * @param bufferView defines the data to store
+     * @param format defines the data format
+     * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+     * @param invertY defines if data must be stored with Y axis inverted
+     * @param compression defines the compression used (null by default)
+     * @param level defines which level of the texture to update
+     */
     public updateRawCubeTexture(texture: InternalTexture, bufferView: ArrayBufferView[], format: number, type: number, invertY: boolean, compression: Nullable<string> = null, level: number = 0): void {
         texture._bufferViewArray = bufferView;
         texture.invertY = invertY;
@@ -1834,14 +2112,32 @@ export class WebGPUEngine extends Engine {
         texture.isReady = true;
     }
 
+    /**
+     * Update a raw 2D array texture
+     * @param texture defines the texture to update
+     * @param bufferView defines the data to store
+     * @param format defines the data format
+     * @param invertY defines if data must be stored with Y axis inverted
+     * @param compression defines the used compression (can be null)
+     * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
+     */
     public updateRawTexture2DArray(texture: InternalTexture, bufferView: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): void {
         if (dbgShowWarningsNotImplemented) {
             console.warn("updateRawTexture2DArray not implemented yet in WebGPU");
         }
     }
 
+    /**
+     * Update a raw 3D texture
+     * @param texture defines the texture to update
+     * @param bufferView defines the data to store
+     * @param format defines the data format
+     * @param invertY defines if data must be stored with Y axis inverted
+     * @param compression defines the used compression (can be null)
+     * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
+     */
     public updateRawTexture3D(texture: InternalTexture, bufferView: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): void {
-        if (!this._doNotHandleContextLost) {
+    if (!this._doNotHandleContextLost) {
             texture._bufferView = bufferView;
             texture.format = format;
             texture.invertY = invertY;
@@ -1867,6 +2163,16 @@ export class WebGPUEngine extends Engine {
         texture.isReady = true;
     }
 
+    /**
+     * Reads pixels from the current frame buffer. Please note that this function can be slow
+     * @param x defines the x coordinate of the rectangle where pixels must be read
+     * @param y defines the y coordinate of the rectangle where pixels must be read
+     * @param width defines the width of the rectangle where pixels must be read
+     * @param height defines the height of the rectangle where pixels must be read
+     * @param hasAlpha defines whether the output should have alpha or not (defaults to true)
+     * @param flushRenderer true to flush the renderer from the pending commands before reading the pixels
+     * @returns a ArrayBufferView promise (Uint8Array) containing RGBA colors
+     */
     public readPixels(x: number, y: number, width: number, height: number, hasAlpha = true, flushRenderer = true): Promise<ArrayBufferView> {
         const renderPassWrapper = this._rttRenderPassWrapper.renderPass ? this._rttRenderPassWrapper : this._mainRenderPassWrapper;
         const gpuTexture = renderPassWrapper.colorAttachmentGPUTextures![0].underlyingResource;
@@ -1896,6 +2202,12 @@ export class WebGPUEngine extends Engine {
     //                              Render Target Textures
     //------------------------------------------------------------------------------
 
+    /**
+     * Creates a new render target texture
+     * @param size defines the size of the texture
+     * @param options defines the options used to create the texture
+     * @returns a new render target texture stored in an InternalTexture
+     */
     public createRenderTargetTexture(size: any, options: boolean | RenderTargetCreationOptions): InternalTexture {
         let fullOptions = new RenderTargetCreationOptions();
 
@@ -1970,6 +2282,12 @@ export class WebGPUEngine extends Engine {
         return texture;
     }
 
+    /**
+     * Create a multi render target texture
+     * @param size defines the size of the texture
+     * @param options defines the creation options
+     * @returns the cube texture as an InternalTexture
+     */
     public createMultipleRenderTarget(size: any, options: IMultiRenderTargetOptions): InternalTexture[] {
         let generateMipMaps = false;
         let generateDepthBuffer = true;
@@ -2069,6 +2387,12 @@ export class WebGPUEngine extends Engine {
         return textures;
     }
 
+    /**
+     * Creates a new render target cube texture
+     * @param size defines the size of the texture
+     * @param options defines the options used to create the texture
+     * @returns a new render target cube texture stored in an InternalTexture
+     */
     public createRenderTargetCubeTexture(size: number, options?: Partial<RenderTargetCreationOptions>): InternalTexture {
         let fullOptions = {
             generateMipMaps: true,
@@ -2214,6 +2538,12 @@ export class WebGPUEngine extends Engine {
         return samples;
     }
 
+    /**
+     * Update the sample count for a given multiple render target texture
+     * @param textures defines the textures to update
+     * @param samples defines the sample count to set
+     * @returns the effective sample count (could be 0 if multisample render targets are not supported)
+     */
     public updateMultipleRenderTargetTextureSampleCount(textures: Nullable<InternalTexture[]>, samples: number): number {
         if (!textures || textures[0].samples === samples) {
             return samples;
@@ -2293,6 +2623,9 @@ export class WebGPUEngine extends Engine {
         }
     }
 
+    /**
+     * Force a WebGPU flush (ie. a flush of all waiting commands)
+     */
     public flushFramebuffer(): void {
         // we need to end the current render pass (main or rtt) if any as we are not allowed to submit the command buffers when being in a pass
         let currentPassType = 0; // 0 if no pass, 1 for rtt, 2 for main pass
@@ -2610,10 +2943,24 @@ export class WebGPUEngine extends Engine {
         }
     }
 
+    /**
+     * Select a subsets of attachments to draw to.
+     * @param attachments index of attachments
+     */
     public bindAttachments(attachments: number[]): void {
         this._mrtAttachments = attachments;
     }
 
+    /**
+     * Binds the frame buffer to the specified texture.
+     * @param texture The texture to render to or null for the default canvas
+     * @param faceIndex The face of the texture to render to in case of cube texture
+     * @param requiredWidth The width of the target to render to
+     * @param requiredHeight The height of the target to render to
+     * @param forceFullscreenViewport Forces the viewport to be the entire texture/screen if true
+     * @param lodLevel defines the lod level to bind to the frame buffer
+     * @param layer defines the 2d array index to bind to frame buffer to
+     */
     public bindFramebuffer(texture: InternalTexture, faceIndex: number = 0, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean, lodLevel = 0, layer = 0): void {
         const hardwareTexture = texture._hardwareTexture as Nullable<WebGPUHardwareTexture>;
         const gpuTexture = hardwareTexture?.underlyingResource as Nullable<GPUTexture>;
@@ -2686,6 +3033,12 @@ export class WebGPUEngine extends Engine {
         this.wipeCaches();
     }
 
+    /**
+     * Unbind the current render target texture from the WebGPU context
+     * @param texture defines the render target texture to unbind
+     * @param disableGenerateMipMaps defines a boolean indicating that mipmaps must not be generated
+     * @param onBeforeUnbind defines a function which will be called before the effective unbind
+     */
     public unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
         // TODO WEBGPU remove the assert debugging code
         assert(this._currentRenderTarget === null || (this._currentRenderTarget !== null && texture === this._currentRenderTarget), "unBindFramebuffer - the texture we wan't to unbind is not the same than the currentRenderTarget! texture=" + texture + ", this._currentRenderTarget=" + this._currentRenderTarget);
@@ -2709,6 +3062,12 @@ export class WebGPUEngine extends Engine {
         this._setColorFormat(this._mainRenderPassWrapper);
     }
 
+    /**
+     * Unbind a list of render target textures from the WebGPU context
+     * @param textures defines the render target textures to unbind
+     * @param disableGenerateMipMaps defines a boolean indicating that mipmaps must not be generated
+     * @param onBeforeUnbind defines a function which will be called before the effective unbind
+     */
     public unBindMultiColorAttachmentFramebuffer(textures: InternalTexture[], disableGenerateMipMaps: boolean = false, onBeforeUnbind?: () => void): void {
         if (onBeforeUnbind) {
             onBeforeUnbind();
@@ -2735,6 +3094,9 @@ export class WebGPUEngine extends Engine {
         this._setColorFormat(this._mainRenderPassWrapper);
     }
 
+    /**
+     * Unbind the current render target and bind the default framebuffer
+     */
     public restoreDefaultFramebuffer(): void {
         if (this._currentRenderTarget) {
             this.unBindFramebuffer(this._currentRenderTarget);
@@ -2959,7 +3321,7 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * Set various states to the webGL context
+     * Set various states to the context
      * @param culling defines backface culling state
      * @param zOffset defines the value to apply to zOffset (0 by default)
      * @param force defines if states must be applied even if cache is up to date
@@ -3632,6 +3994,13 @@ export class WebGPUEngine extends Engine {
         }
     }
 
+    /**
+     * Draw a list of indexed primitives
+     * @param fillMode defines the primitive to use
+     * @param indexStart defines the starting index
+     * @param indexCount defines the number of index to draw
+     * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
+     */
     public drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount: number = 1): void {
         const renderPass = this._bundleEncoder || this._getCurrentRenderPass();
 
@@ -3640,6 +4009,13 @@ export class WebGPUEngine extends Engine {
         renderPass.drawIndexed(indexCount, instancesCount || 1, indexStart, 0, 0);
     }
 
+    /**
+     * Draw a list of unindexed primitives
+     * @param fillMode defines the primitive to use
+     * @param verticesStart defines the index of first vertex to draw
+     * @param verticesCount defines the count of vertices to draw
+     * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
+     */
     public drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount: number = 1): void {
         const renderPass = this._bundleEncoder || this._getCurrentRenderPass();
 
@@ -3709,6 +4085,11 @@ export class WebGPUEngine extends Engine {
     //                              Misc
     //------------------------------------------------------------------------------
 
+    /**
+     * Gets the current render width
+     * @param useScreen defines if screen size must be used (or the current render target if any)
+     * @returns a number defining the current render width
+     */
     public getRenderWidth(useScreen = false): number {
         if (!useScreen && this._currentRenderTarget) {
             return this._currentRenderTarget.width;
@@ -3717,6 +4098,11 @@ export class WebGPUEngine extends Engine {
         return this._canvas.width;
     }
 
+    /**
+     * Gets the current render height
+     * @param useScreen defines if screen size must be used (or the current render target if any)
+     * @returns a number defining the current render height
+     */
     public getRenderHeight(useScreen = false): number {
         if (!useScreen && this._currentRenderTarget) {
             return this._currentRenderTarget.height;
@@ -3725,6 +4111,10 @@ export class WebGPUEngine extends Engine {
         return this._canvas.height;
     }
 
+    /**
+     * Gets the HTML canvas attached with the current WebGPU context
+     * @returns a HTML canvas
+     */
     public getRenderingCanvas(): Nullable<HTMLCanvasElement> {
         return this._canvas;
     }
@@ -3800,6 +4190,10 @@ export class WebGPUEngine extends Engine {
     //                              Errors
     //------------------------------------------------------------------------------
 
+    /**
+     * Get the current error code of the WebGPU context
+     * @returns the error code
+     */
     public getError(): number {
         // TODO WEBGPU. from the webgpu errors.
         return 0;
@@ -3808,39 +4202,48 @@ export class WebGPUEngine extends Engine {
     //------------------------------------------------------------------------------
     //                              Unused WebGPU
     //------------------------------------------------------------------------------
+
+    /** @hidden */
     public bindSamplers(effect: Effect): void { }
 
+    /** @hidden */
     public _bindTextureDirectly(target: number, texture: InternalTexture, forTextureDataUpdate = false, force = false): boolean {
         return false;
     }
 
     /** @hidden */
-    public _releaseFramebufferObjects(texture: InternalTexture): void {
-    }
+    public _releaseFramebufferObjects(texture: InternalTexture): void { }
 
-    public applyStates() {
-    }
+    /** @hidden */
+    public applyStates() { }
 
+    /**
+     * Gets a boolean indicating if all created effects are ready
+     * @returns always true - No parallel shader compilation
+     */
     public areAllEffectsReady(): boolean {
-        // No parallel shader compilation.
         return true;
     }
 
+    /** @hidden */
     public _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineContext, action: () => void) {
         // No parallel shader compilation.
         // No Async, so direct launch
         action();
     }
 
+    /** @hidden */
     public _isRenderingStateCompiled(pipelineContext: IPipelineContext): boolean {
         // No parallel shader compilation.
         return true;
     }
 
+    /** @hidden */
     public _getUnpackAlignement(): number {
         return 1;
     }
 
+    /** @hidden */
     public _unpackFlipY(value: boolean) { }
 
     // TODO WEBGPU. All of the below should go once engine split with baseEngine.
@@ -3850,69 +4253,86 @@ export class WebGPUEngine extends Engine {
         throw "_getSamplingParameters is not available in WebGPU";
     }
 
+    /** @hidden */
     public bindUniformBlock(pipelineContext: IPipelineContext, blockName: string, index: number): void {
     }
 
+    /** @hidden */
     public getUniforms(pipelineContext: IPipelineContext, uniformsNames: string[]): Nullable<WebGLUniformLocation>[] {
         return [];
     }
 
+    /** @hidden */
     public setIntArray(uniform: WebGLUniformLocation, array: Int32Array): boolean {
         return false;
     }
 
+    /** @hidden */
     public setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): boolean {
         return false;
     }
 
+    /** @hidden */
     public setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): boolean {
         return false;
     }
 
+    /** @hidden */
     public setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): boolean {
         return false;
     }
 
+    /** @hidden */
     public setArray(uniform: WebGLUniformLocation, array: number[]): boolean {
         return false;
     }
 
+    /** @hidden */
     public setArray2(uniform: WebGLUniformLocation, array: number[]): boolean {
         return false;
     }
 
+    /** @hidden */
     public setArray3(uniform: WebGLUniformLocation, array: number[]): boolean {
         return false;
     }
 
+    /** @hidden */
     public setArray4(uniform: WebGLUniformLocation, array: number[]): boolean {
         return false;
     }
 
+    /** @hidden */
     public setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): boolean {
         return false;
     }
 
+    /** @hidden */
     public setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): boolean {
         return false;
     }
 
+    /** @hidden */
     public setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): boolean {
         return false;
     }
 
+    /** @hidden */
     public setFloat(uniform: WebGLUniformLocation, value: number): boolean {
         return false;
     }
 
+    /** @hidden */
     public setFloat2(uniform: WebGLUniformLocation, x: number, y: number): boolean {
         return false;
     }
 
+    /** @hidden */
     public setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): boolean {
         return false;
     }
 
+    /** @hidden */
     public setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): boolean {
         return false;
     }

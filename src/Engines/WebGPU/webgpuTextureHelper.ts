@@ -172,6 +172,7 @@ const shadersForPipelineType = [
     { vertex: clearVertexSource, fragment: clearFragmentSource },
 ];
 
+/** @hidden */
 export class WebGPUTextureHelper {
 
     private _device: GPUDevice;
@@ -185,7 +186,7 @@ export class WebGPUTextureHelper {
     private _samplers: { [hash: number]: GPUSampler } = {};
     private _commandEncoderForCreation: GPUCommandEncoder;
 
-    public static computeNumMipmapLevels(width: number, height: number) {
+    public static ComputeNumMipmapLevels(width: number, height: number) {
         return Scalar.ILog2(Math.max(width, height)) + 1;
     }
 
@@ -763,7 +764,7 @@ export class WebGPUTextureHelper {
             depth: layerCount,
         };
 
-        const mipLevelCount = hasMipmaps ? WebGPUTextureHelper.computeNumMipmapLevels(imageBitmap.width, imageBitmap.height) : 1;
+        const mipLevelCount = hasMipmaps ? WebGPUTextureHelper.ComputeNumMipmapLevels(imageBitmap.width, imageBitmap.height) : 1;
         const usages = usage >= 0 ? usage : WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.CopyDst | WebGPUConstants.TextureUsage.Sampled;
         const additionalUsages = hasMipmaps && !this.isCompressedFormat(format) ? WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.OutputAttachment : 0;
 
@@ -793,7 +794,7 @@ export class WebGPUTextureHelper {
         const width = this.isImageBitmapArray(imageBitmaps) ? imageBitmaps[0].width : imageBitmaps.width;
         const height = this.isImageBitmapArray(imageBitmaps) ? imageBitmaps[0].height : imageBitmaps.height;
 
-        const mipLevelCount = hasMipmaps ? WebGPUTextureHelper.computeNumMipmapLevels(width, height) : 1;
+        const mipLevelCount = hasMipmaps ? WebGPUTextureHelper.ComputeNumMipmapLevels(width, height) : 1;
         const usages = usage >= 0 ? usage : WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.CopyDst | WebGPUConstants.TextureUsage.Sampled;
         const additionalUsages = hasMipmaps && !this.isCompressedFormat(format) ? WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.OutputAttachment : 0;
 
@@ -930,7 +931,7 @@ export class WebGPUTextureHelper {
             gpuTextureWrapper.set(gpuTexture);
             gpuTextureWrapper.createView({
                 dimension: WebGPUConstants.TextureViewDimension.Cube,
-                mipLevelCount: hasMipMaps ? WebGPUTextureHelper.computeNumMipmapLevels(width!, height!) : 1,
+                mipLevelCount: hasMipMaps ? WebGPUTextureHelper.ComputeNumMipmapLevels(width!, height!) : 1,
                 baseArrayLayer: 0,
                 baseMipLevel: 0,
                 aspect: WebGPUConstants.TextureAspect.All
@@ -941,7 +942,7 @@ export class WebGPUTextureHelper {
             gpuTextureWrapper.set(gpuTexture);
             gpuTextureWrapper.createView({
                 dimension: texture.is2DArray ? WebGPUConstants.TextureViewDimension.E2dArray : texture.is3D ? WebGPUConstants.TextureDimension.E3d : WebGPUConstants.TextureViewDimension.E2d,
-                mipLevelCount: hasMipMaps ? WebGPUTextureHelper.computeNumMipmapLevels(width!, height!) : 1,
+                mipLevelCount: hasMipMaps ? WebGPUTextureHelper.ComputeNumMipmapLevels(width!, height!) : 1,
                 baseArrayLayer: 0,
                 baseMipLevel: 0,
                 arrayLayerCount: layerCount,

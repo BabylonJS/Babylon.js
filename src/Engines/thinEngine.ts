@@ -313,6 +313,7 @@ export class ThinEngine {
     protected _hardwareScalingLevel: number;
     /** @hidden */
     public _caps: EngineCapabilities;
+    /** @hidden */
     public _features: EngineFeatures;
     protected _isStencilEnable: boolean;
 
@@ -2457,7 +2458,7 @@ export class ThinEngine {
     }
 
     /**
-     * Gets the lsit of active attributes for a given webGL program
+     * Gets the list of active attributes for a given webGL program
      * @param pipelineContext defines the pipeline context to use
      * @param attributesNames defines the list of attribute names to get
      * @returns an array of indices indicating the offset of each attribute
@@ -3409,6 +3410,7 @@ export class ThinEngine {
 
     /**
      * Update the dimensions of a texture
+     * @param texture texture to update
      * @param width new width of the texture
      * @param height new height of the texture
      * @param depth new depth of the texture
@@ -3965,6 +3967,7 @@ export class ThinEngine {
      * @param channel defines the channel where the texture array must be set
      * @param uniform defines the associated uniform location
      * @param textures defines the array of textures to bind
+     * @param name name of the channel
      */
     public setTextureArray(channel: number, uniform: Nullable<WebGLUniformLocation>, textures: ThinTexture[], name: string): void {
         if (channel === undefined || !uniform) {
@@ -4522,7 +4525,7 @@ export class ThinEngine {
      * @param height defines the height of the rectangle where pixels must be read
      * @param hasAlpha defines whether the output should have alpha or not (defaults to true)
      * @param flushRenderer true to flush the renderer from the pending commands before reading the pixels
-     * @returns a ArrayBufferView (Uint8Array) containing RGBA colors
+     * @returns a ArrayBufferView promise (Uint8Array) containing RGBA colors
      */
     public readPixels(x: number, y: number, width: number, height: number, hasAlpha = true, flushRenderer = true): Promise<ArrayBufferView> {
         const numChannels = hasAlpha ? 4 : 3;
