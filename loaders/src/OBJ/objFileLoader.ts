@@ -961,7 +961,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             babylonMeshesArray.push(babylonMesh);
         }
 
-        let mtlPromises: Array<Promise<any>> = [];
+        let mtlPromises: Array<Promise<void>> = [];
         //load the materials
         //Check if we have a file to load
         if (fileToLoad !== "" && this._meshLoadOptions.SkipMaterials === false) {
