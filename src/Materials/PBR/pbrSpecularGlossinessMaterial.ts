@@ -50,13 +50,6 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
     public specularGlossinessTexture: BaseTexture;
 
     /**
-     * Specifies if the reflectivity texture contains the glossiness information in its alpha channel.
-    */
-    public get useMicroSurfaceFromReflectivityMapAlpha() {
-        return this._useMicroSurfaceFromReflectivityMapAlpha;
-    }
-
-    /**
      * Instantiates a new PBRSpecularGlossinessMaterial instance.
      *
      * @param name The material name
