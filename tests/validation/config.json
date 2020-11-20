@@ -899,7 +899,7 @@
             "playgroundId": "#XT1HAS#1",
             "referenceImage": "ssao2.png",
             "renderCount": 200,
-            "excludedEngines": ["webgl1", "webgpu"],
+            "excludedEngines": ["webgl1"],
             "excludeFromAutomaticTesting": true
         },
         {
@@ -957,7 +957,7 @@
             "playgroundId": "#E5YGEL#2",
             "referenceImage": "motionBlur.png",
             "renderCount": 10,
-            "excludedEngines": ["webgl1", "webgpu"],
+            "excludedEngines": ["webgl1"],
             "excludeFromAutomaticTesting": true
         },
         {
@@ -965,7 +965,7 @@
             "playgroundId": "#PIZ1GK#172",
             "referenceImage": "ssr.png",
             "renderCount": 10,
-            "excludedEngines": ["webgl1", "webgpu"],
+            "excludedEngines": ["webgl1"],
             "excludeFromAutomaticTesting": true
         },
         {
@@ -973,7 +973,7 @@
             "playgroundId": "#PIZ1GK#173",
             "referenceImage": "geometrybufferrenderer.png",
             "renderCount": 10,
-            "excludedEngines": ["webgl1"],
+            "excludedEngines": ["webgl1", "webgpu"],
             "excludeFromAutomaticTesting": true
         },
         {
