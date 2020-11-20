@@ -2929,6 +2929,32 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
+     * Restores the WebGPU state to only draw on the main color attachment
+     */
+    public restoreSingleAttachment(): void {
+        this.bindAttachments([]);
+    }
+
+    /**
+     * Creates a layout object to draw/clear on specific textures in a MRT
+     * @param textureStatus textureStatus[i] indicates if the i-th is active
+     * @returns A layout to be fed to the engine, calling `bindAttachments`.
+     */
+    public buildTextureLayout(textureStatus: boolean[]): number[] {
+        const result = [];
+
+        for (let i = 0; i < textureStatus.length; i++) {
+            if (textureStatus[i]) {
+                result.push(i + 1);
+            } else {
+                result.push(0);
+            }
+        }
+
+        return result;
+    }
+
+    /**
      * Select a subsets of attachments to draw to.
      * @param attachments index of attachments
      */
