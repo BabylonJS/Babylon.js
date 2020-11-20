@@ -25,7 +25,7 @@ export class KhronosTextureContainer2 {
      *     URLConfig.wasmUASTCToRGBA_SRGB
      *     URLConfig.jsMSCTranscoder
      *     URLConfig.wasmMSCTranscoder
-     * You can see their default values in this PG: https://playground.babylonjs.com/#EIJH8L#9
+     * You can see their default values in this PG: https://playground.babylonjs.com/#EIJH8L#22
      */
     public static URLConfig = {
         jsDecoderModule: "https://preview.babylonjs.com/babylon.ktx2Decoder.js",
