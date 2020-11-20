@@ -56,7 +56,7 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
      * @param timeout amount of time in milliseconds to wait for a response from the sensor (default: infinite)
      * @returns a promise that will resolve on orientation change
      */
-    public static WaitForOrientationChangeAsync(timeout?: number) {
+    public static WaitForOrientationChangeAsync(timeout?: number): Promise<void> {
         return new Promise((res, rej) => {
             var gotValue = false;
             var eventHandler = () => {
