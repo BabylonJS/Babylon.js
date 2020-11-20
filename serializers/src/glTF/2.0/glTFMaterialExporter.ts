@@ -848,10 +848,13 @@ export class _GLTFMaterialExporter {
      */
     private _convertMetalRoughFactorsToMetallicRoughnessAsync(babylonPBRMaterial: PBRBaseMaterial, mimeType: ImageMimeType, glTFPbrMetallicRoughness: IMaterialPbrMetallicRoughness, hasTextureCoords: boolean): Promise<_IPBRMetallicRoughness> {
         const promises = [];
+        const baseColor = (babylonPBRMaterial as PBRMaterial).albedoColor || (babylonPBRMaterial as PBRMetallicRoughnessMaterial).baseColor;
+        const metallic = (babylonPBRMaterial as PBRMaterial).metallic || (babylonPBRMaterial as PBRMetallicRoughnessMaterial).metallic;
+        const roughness = (babylonPBRMaterial as PBRMaterial).roughness || (babylonPBRMaterial as PBRMetallicRoughnessMaterial).roughness;
         const metallicRoughness: _IPBRMetallicRoughness = {
-            baseColor: (babylonPBRMaterial as any).albedoColor,
-            metallic: (babylonPBRMaterial as any).metallic,
-            roughness: (babylonPBRMaterial as any).roughness
+            baseColor: baseColor,
+            metallic: metallic,
+            roughness: roughness
         };
 
         if (hasTextureCoords) {
