@@ -48625,7 +48625,7 @@ declare module BABYLON {
          * @param timeout amount of time in milliseconds to wait for a response from the sensor (default: infinite)
          * @returns a promise that will resolve on orientation change
          */
-        static WaitForOrientationChangeAsync(timeout?: number): Promise<unknown>;
+        static WaitForOrientationChangeAsync(timeout?: number): Promise<void>;
         /**
          * @hidden
          */
@@ -62005,7 +62005,7 @@ declare module BABYLON {
           * @param onFinished Callback when filtering is done
           * @return Promise called when prefiltering is done
           */
-        prefilter(texture: BaseTexture, onFinished?: Nullable<() => void>): Promise<unknown> | undefined;
+        prefilter(texture: BaseTexture, onFinished?: Nullable<() => void>): Promise<void>;
     }
 }
 declare module BABYLON {
@@ -63028,6 +63028,10 @@ declare module BABYLON {
          * Specifies both the specular color RGB and the glossiness A of the material per pixels.
          */
         specularGlossinessTexture: BaseTexture;
+        /**
+         * Specifies if the reflectivity texture contains the glossiness information in its alpha channel.
+        */
+        get useMicroSurfaceFromReflectivityMapAlpha(): boolean;
         /**
          * Instantiates a new PBRSpecularGlossinessMaterial instance.
          *
@@ -75019,7 +75023,7 @@ declare module BABYLON {
         /**
          * The resolve method of the promise associated with this deferred object.
          */
-        get resolve(): (value?: T | PromiseLike<T> | undefined) => void;
+        get resolve(): (value: T | PromiseLike<T>) => void;
         /**
          * The reject method of the promise associated with this deferred object.
          */

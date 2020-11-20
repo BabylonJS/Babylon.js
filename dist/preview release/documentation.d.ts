@@ -48625,7 +48625,7 @@ declare module BABYLON {
          * @param timeout amount of time in milliseconds to wait for a response from the sensor (default: infinite)
          * @returns a promise that will resolve on orientation change
          */
-        static WaitForOrientationChangeAsync(timeout?: number): Promise<unknown>;
+        static WaitForOrientationChangeAsync(timeout?: number): Promise<void>;
         /**
          * @hidden
          */
@@ -62005,7 +62005,7 @@ declare module BABYLON {
           * @param onFinished Callback when filtering is done
           * @return Promise called when prefiltering is done
           */
-        prefilter(texture: BaseTexture, onFinished?: Nullable<() => void>): Promise<unknown> | undefined;
+        prefilter(texture: BaseTexture, onFinished?: Nullable<() => void>): Promise<void>;
     }
 }
 declare module BABYLON {
@@ -63028,6 +63028,10 @@ declare module BABYLON {
          * Specifies both the specular color RGB and the glossiness A of the material per pixels.
          */
         specularGlossinessTexture: BaseTexture;
+        /**
+         * Specifies if the reflectivity texture contains the glossiness information in its alpha channel.
+        */
+        get useMicroSurfaceFromReflectivityMapAlpha(): boolean;
         /**
          * Instantiates a new PBRSpecularGlossinessMaterial instance.
          *
@@ -75019,7 +75023,7 @@ declare module BABYLON {
         /**
          * The resolve method of the promise associated with this deferred object.
          */
-        get resolve(): (value?: T | PromiseLike<T> | undefined) => void;
+        get resolve(): (value: T | PromiseLike<T>) => void;
         /**
          * The reject method of the promise associated with this deferred object.
          */
@@ -85310,8 +85314,8 @@ declare module BABYLON.GLTF2.Exporter {
          */
         private _convertSpecGlossFactorsToMetallicRoughnessAsync;
         /**
-         * Converts a Babylon PBR Metallic Roughness Material to a glTF Material
-         * @param babylonPBRMaterial BJS PBR Metallic Roughness Material
+         * Converts a Babylon PBR Base Material to a glTF Material
+         * @param babylonPBRMaterial BJS PBR Base Material
          * @param mimeType mime type to use for the textures
          * @param images array of glTF image interfaces
          * @param textures array of glTF texture interfaces
@@ -85319,7 +85323,7 @@ declare module BABYLON.GLTF2.Exporter {
          * @param imageData map of image file name to data
          * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
          */
-        _convertPBRMaterialAsync(babylonPBRMaterial: PBRMaterial, mimeType: ImageMimeType, hasTextureCoords: boolean): Promise<IMaterial>;
+        _convertPBRMaterialAsync(babylonPBRMaterial: PBRBaseMaterial, mimeType: ImageMimeType, hasTextureCoords: boolean): Promise<IMaterial>;
         private setMetallicRoughnessPbrMaterial;
         private getPixelsFromTexture;
         /**
