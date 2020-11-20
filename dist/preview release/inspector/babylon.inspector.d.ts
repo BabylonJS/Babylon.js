@@ -2264,6 +2264,19 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface ISoundPropertyGridComponentProps {
+        globalState: GlobalState;
+        sound: BABYLON.Sound;
+        extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class SoundPropertyGridComponent extends React.Component<ISoundPropertyGridComponentProps> {
+        constructor(props: ISoundPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     export class PropertyGridTabComponent extends PaneComponent {
         private _timerIntervalId;
         private _lockObject;
@@ -2665,6 +2678,17 @@ declare module INSPECTOR {
     }
     export class TargetedAnimationItemComponent extends React.Component<ITargetedAnimationItemComponentProps> {
         constructor(props: ITargetedAnimationItemComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface ISoundTreeItemComponentProps {
+        sound: BABYLON.Sound;
+        extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
+        onClick: () => void;
+    }
+    export class SoundTreeItemComponent extends React.Component<ISoundTreeItemComponentProps> {
+        constructor(props: ISoundTreeItemComponentProps);
         render(): JSX.Element;
     }
 }
