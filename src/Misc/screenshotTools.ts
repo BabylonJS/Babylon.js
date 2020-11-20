@@ -133,13 +133,15 @@ export class ScreenshotTools {
         engine.setSize(width, height);
 
         var scene = camera.getScene();
-        scene.render();
 
         var previousCamera: Nullable<Camera> = null;
-        if (scene.activeCamera !== camera) {
+        var previousCameras = scene.activeCameras;
+        if (scene.activeCamera !== camera || scene.activeCameras && scene.activeCameras.length) {
             previousCamera = scene.activeCamera;
             scene.activeCamera = camera;
         }
+
+        scene.render();
 
         // At this point size can be a number, or an object (according to engine.prototype.createRenderTargetTexture method)
         var texture = new RenderTargetTexture("screenShot", targetTextureSize, scene, false, false, Constants.TEXTURETYPE_UNSIGNED_INT, false, Texture.NEAREST_SAMPLINGMODE, undefined, enableStencilBuffer);
@@ -159,6 +161,7 @@ export class ScreenshotTools {
             if (previousCamera) {
                 scene.activeCamera = previousCamera;
             }
+            scene.activeCameras = previousCameras;
 
             engine.setSize(originalSize.width, originalSize.height);
             camera.getProjectionMatrix(true); // Force cache refresh;

@@ -11,7 +11,7 @@ import { Light } from '../../../../Lights/light';
 import { Nullable } from '../../../../types';
 import { _TypeStore } from '../../../../Misc/typeStore';
 import { AbstractMesh } from '../../../../Meshes/abstractMesh';
-import { Effect, IEffectCreationOptions } from '../../../effect';
+import { Effect } from '../../../effect';
 import { Mesh } from '../../../../Meshes/mesh';
 import { PBRBaseMaterial } from '../../../PBR/pbrBaseMaterial';
 import { Scene } from '../../../../scene';
@@ -647,10 +647,11 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         defines.setValue("SPECULAROVERALPHA", this.useSpecularOverAlpha, true);
         defines.setValue("SPECULARAA", this._scene.getEngine().getCaps().standardDerivatives && this.enableSpecularAntiAliasing, true);
         defines.setValue("REALTIME_FILTERING", this.realTimeFiltering, true);
-        defines.setValue("NUM_SAMPLES", "" + this.realTimeFilteringQuality, true);
 
         if (this._scene.getEngine().webGLVersion > 1) {
             defines.setValue("NUM_SAMPLES", this.realTimeFilteringQuality + "u", true);
+        } else {
+            defines.setValue("NUM_SAMPLES", "" + this.realTimeFilteringQuality, true);
         }
 
         // Advanced
@@ -700,13 +701,13 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     }
 
     public updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, uniformBuffers: string[]) {
-        MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
-            uniformsNames: state.uniforms,
-            uniformBuffersNames: uniformBuffers,
-            samplers: state.samplers,
-            defines: defines,
-            maxSimultaneousLights: nodeMaterial.maxSimultaneousLights
-        });
+        for (var lightIndex = 0; lightIndex < nodeMaterial.maxSimultaneousLights; lightIndex++) {
+            if (!defines["LIGHT" + lightIndex]) {
+                break;
+            }
+            const onlyUpdateBuffersList = state.uniforms.indexOf("vLightData" + lightIndex) >= 0;
+            MaterialHelper.PrepareUniformsAndSamplersForLight(lightIndex, state.uniforms, state.samplers, defines["PROJECTEDLIGHTTEXTURE" + lightIndex], uniformBuffers, onlyUpdateBuffersList);
+        }
     }
 
     public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
@@ -940,6 +941,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state.sharedData.hints.needAlphaTesting = state.sharedData.hints.needAlphaTesting || this.useAlphaTest;
 
         state._emitExtension("lod", "#extension GL_EXT_shader_texture_lod : enable", "defined(LODBASEDMICROSFURACE)");
+        state._emitExtension("derivatives", "#extension GL_OES_standard_derivatives : enable");
 
         //
         // Includes
@@ -972,7 +974,11 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         });
 
         state._emitFunctionFromInclude("pbrDirectLightingFalloffFunctions", comments);
-        state._emitFunctionFromInclude("pbrBRDFFunctions", comments);
+        state._emitFunctionFromInclude("pbrBRDFFunctions", comments, {
+            replaceStrings: [
+                { search: /REFLECTIONMAP_SKYBOX/g, replace: reflectionBlock?._defineSkyboxName ?? "REFLECTIONMAP_SKYBOX" }
+            ]
+        });
         state._emitFunctionFromInclude("hdrFilteringFunctions", comments);
 
         state._emitFunctionFromInclude("pbrDirectLightingFunctions", comments, {

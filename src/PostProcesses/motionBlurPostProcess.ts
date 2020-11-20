@@ -1,6 +1,6 @@
 import { Nullable } from "../types";
 import { Logger } from "../Misc/logger";
-import { Vector2 } from "../Maths/math.vector";
+import { Matrix, Vector2 } from "../Maths/math.vector";
 import { Camera } from "../Cameras/camera";
 import { Effect } from "../Materials/effect";
 import { PostProcess, PostProcessOptions } from "./postProcess";
@@ -41,6 +41,7 @@ export class MotionBlurPostProcess extends PostProcess {
     /**
      * Gets the number of iterations are used for motion blur quality. Default value is equal to 32
      */
+    @serialize()
     public get motionBlurSamples(): number {
         return this._motionBlurSamples;
     }
@@ -50,18 +51,39 @@ export class MotionBlurPostProcess extends PostProcess {
      */
     public set motionBlurSamples(samples: number) {
         this._motionBlurSamples = samples;
-
-        if (this._geometryBufferRenderer) {
-            this.updateEffect("#define GEOMETRY_SUPPORTED\n#define SAMPLES " + samples.toFixed(1));
-        }
+        this._updateEffect();
     }
 
-    @serialize("motionBlurSamples")
     private _motionBlurSamples: number = 32;
 
+    /**
+     * Gets wether or not the motion blur post-process is in object based mode.
+     */
+    @serialize()
+    public get isObjectBased(): boolean {
+        return this._isObjectBased;
+    }
+
+    /**
+     * Sets wether or not the motion blur post-process is in object based mode.
+     */
+    public set isObjectBased(value: boolean) {
+        if (this._isObjectBased === value) {
+            return;
+        }
+
+        this._isObjectBased = value;
+        this._applyMode();
+    }
+
+    private _isObjectBased: boolean = true;
+
     private _forceGeometryBuffer: boolean = false;
-    private _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
-    private _prePassRenderer: PrePassRenderer;
+    private _geometryBufferRenderer: Nullable<GeometryBufferRenderer> = null;
+    private _prePassRenderer: Nullable<PrePassRenderer> = null;
+
+    private _invViewProjection: Nullable<Matrix> = null;
+    private _previousViewProjection: Nullable<Matrix> = null;
 
     /**
      * Gets a string identifying the name of the class
@@ -81,11 +103,11 @@ export class MotionBlurPostProcess extends PostProcess {
      * @param engine The engine which the post process will be applied. (default: current engine)
      * @param reusable If the post process can be reused on the same frame. (default: false)
      * @param textureType Type of textures used when performing the post process. (default: 0)
-     * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
+     * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: true)
      * @param forceGeometryBuffer If this post process should use geometry buffer instead of prepass (default: false)
      */
-    constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false, forceGeometryBuffer = false) {
-        super(name, "motionBlur", ["motionStrength", "motionScale", "screenSize"], ["velocitySampler"], options, camera, samplingMode, engine, reusable, "#define GEOMETRY_SUPPORTED\n#define SAMPLES 64.0", textureType, undefined, null, blockCompilation);
+    constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false, forceGeometryBuffer = true) {
+        super(name, "motionBlur", ["motionStrength", "motionScale", "screenSize", "inverseViewProjection", "prevViewProjection"], ["velocitySampler"], options, camera, samplingMode, engine, reusable, "#define GEOMETRY_SUPPORTED\n#define SAMPLES 64.0\n#define OBJECT_BASED", textureType, undefined, null, blockCompilation);
 
         this._forceGeometryBuffer = forceGeometryBuffer;
 
@@ -97,31 +119,15 @@ export class MotionBlurPostProcess extends PostProcess {
                 this._geometryBufferRenderer.enableVelocity = true;
             }
         } else {
-            this._prePassRenderer = <PrePassRenderer>scene.enablePrePassRenderer();
-            this._prePassRenderer.markAsDirty();
-            this._prePassEffectConfiguration = new MotionBlurConfiguration();
+            this._prePassRenderer = scene.enablePrePassRenderer();
+
+            if (this._prePassRenderer) {
+                this._prePassRenderer.markAsDirty();
+                this._prePassEffectConfiguration = new MotionBlurConfiguration();
+            }
         }
 
-        if (!this._geometryBufferRenderer && !this._prePassRenderer) {
-            // We can't get a velocity texture. So, work as a passthrough.
-            Logger.Warn("Multiple Render Target support needed to compute object based motion blur");
-            this.updateEffect();
-        } else {
-            this.onApply = (effect: Effect) => {
-                effect.setVector2("screenSize", new Vector2(this.width, this.height));
-
-                effect.setFloat("motionScale", scene.getAnimationRatio());
-                effect.setFloat("motionStrength", this.motionStrength);
-
-                if (this._geometryBufferRenderer) {
-                    const velocityIndex = this._geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.VELOCITY_TEXTURE_TYPE);
-                    effect.setTexture("velocitySampler", this._geometryBufferRenderer.getGBuffer().textures[velocityIndex]);
-                } else {
-                    const velocityIndex = this._prePassRenderer.getIndex(Constants.PREPASS_VELOCITY_TEXTURE_TYPE);
-                    effect.setTexture("velocitySampler", this._prePassRenderer.prePassRT.textures[velocityIndex]);
-                }
-            };
-        }
+        this._applyMode();
     }
 
     /**
@@ -179,6 +185,98 @@ export class MotionBlurPostProcess extends PostProcess {
         }
 
         super.dispose(camera);
+    }
+
+    /**
+     * Called on the mode changed (object based or screen based).
+     */
+    private _applyMode(): void {
+        if (!this._geometryBufferRenderer && !this._prePassRenderer) {
+            // We can't get a velocity or depth texture. So, work as a passthrough.
+            Logger.Warn("Multiple Render Target support needed to compute object based motion blur");
+            return this.updateEffect();
+        }
+
+        this._updateEffect();
+
+        this._invViewProjection = null;
+        this._previousViewProjection = null;
+
+        if (this.isObjectBased) {
+            if (this._prePassRenderer && this._prePassEffectConfiguration) {
+                this._prePassEffectConfiguration.texturesRequired[0] = Constants.PREPASS_VELOCITY_TEXTURE_TYPE;
+            }
+
+            this.onApply = (effect: Effect) => this._onApplyObjectBased(effect);
+        } else {
+            this._invViewProjection = Matrix.Identity();
+            this._previousViewProjection = Matrix.Identity();
+
+            if (this._prePassRenderer && this._prePassEffectConfiguration) {
+                this._prePassEffectConfiguration.texturesRequired[0] = Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE;
+            }
+
+            this.onApply = (effect: Effect) => this._onApplyScreenBased(effect);
+        }
+    }
+
+    /**
+     * Called on the effect is applied when the motion blur post-process is in object based mode.
+     */
+    private _onApplyObjectBased(effect: Effect): void {
+        effect.setVector2("screenSize", new Vector2(this.width, this.height));
+
+        effect.setFloat("motionScale", this._scene.getAnimationRatio());
+        effect.setFloat("motionStrength", this.motionStrength);
+
+        if (this._geometryBufferRenderer) {
+            const velocityIndex = this._geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.VELOCITY_TEXTURE_TYPE);
+            effect.setTexture("velocitySampler", this._geometryBufferRenderer.getGBuffer().textures[velocityIndex]);
+        } else if (this._prePassRenderer) {
+            const velocityIndex = this._prePassRenderer.getIndex(Constants.PREPASS_VELOCITY_TEXTURE_TYPE);
+            effect.setTexture("velocitySampler", this._prePassRenderer.prePassRT.textures[velocityIndex]);
+        }
+    }
+
+    /**
+     * Called on the effect is applied when the motion blur post-process is in screen based mode.
+     */
+    private _onApplyScreenBased(effect: Effect): void {
+        const viewProjection = this._scene.getProjectionMatrix().multiply(this._scene.getViewMatrix());
+
+        viewProjection.invertToRef(this._invViewProjection!);
+        effect.setMatrix("inverseViewProjection", this._invViewProjection!);
+
+        effect.setMatrix("prevViewProjection", this._previousViewProjection!);
+        this._previousViewProjection = viewProjection;
+
+        effect.setVector2("screenSize", new Vector2(this.width, this.height));
+
+        effect.setFloat("motionScale", this._scene.getAnimationRatio());
+        effect.setFloat("motionStrength", this.motionStrength);
+
+        if (this._geometryBufferRenderer) {
+            const depthIndex = this._geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.DEPTHNORMAL_TEXTURE_TYPE);
+            effect.setTexture("depthSampler", this._geometryBufferRenderer.getGBuffer().textures[depthIndex]);
+        } else if (this._prePassRenderer) {
+            const depthIndex = this._prePassRenderer.getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE);
+            effect.setTexture("depthSampler", this._prePassRenderer.prePassRT.textures[depthIndex]);
+        }
+    }
+
+    /**
+     * Called on the effect must be updated (changed mode, samples count, etc.).
+     */
+    private _updateEffect(): void {
+        if (this._geometryBufferRenderer || this._prePassRenderer) {
+            const defines: string[] = [
+                "#define GEOMETRY_SUPPORTED",
+                "#define SAMPLES " + this._motionBlurSamples.toFixed(1),
+                this._isObjectBased ? "#define OBJECT_BASED" : "#define SCREEN_BASED"
+            ];
+
+            this.updateEffect(defines.join("\n"));
+        }
     }
 
     /** @hidden */

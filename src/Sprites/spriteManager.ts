@@ -17,6 +17,9 @@ import { ISize } from '../Maths/math.size';
 
 declare type Ray = import("../Culling/ray").Ray;
 
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect
+declare const Reflect: any;
+
 /**
  * Defines the minimum interface to fullfil in order to be a sprite manager.
  */
@@ -303,7 +306,7 @@ export class SpriteManager implements ISpriteManager {
                     celldata.frames = frametemp;
                 }
 
-                let spritemap = (<string[]>(<any>Reflect).ownKeys(celldata.frames));
+                let spritemap = (<string[]>(Reflect).ownKeys(celldata.frames));
 
                 this._spriteMap = spritemap;
                 this._packedAndReady = true;
@@ -333,7 +336,7 @@ export class SpriteManager implements ISpriteManager {
             xmlhttp.onload = () => {
                 try {
                     let celldata  = JSON.parse(xmlhttp.response);
-                    let spritemap = (<string[]>(<any>Reflect).ownKeys(celldata.frames));
+                    let spritemap = (<string[]>(Reflect).ownKeys(celldata.frames));
                     this._spriteMap = spritemap;
                     this._packedAndReady = true;
                     this._cellData = celldata.frames;
