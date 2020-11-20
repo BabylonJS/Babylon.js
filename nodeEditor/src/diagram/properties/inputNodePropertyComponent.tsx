@@ -330,6 +330,10 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                             this.props.globalState.onRebuildRequiredObservable.notifyObservers();
                         }} />
                     }
+                {
+                    inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === AnimatedInputBlockTypes.None &&
+                    <CheckBoxLineComponent label="Visible on frame" target={(this.props.block as InputBlock)} propertyName={"visibleOnFrame"}></CheckBoxLineComponent>
+                }
                 </LineContainerComponent>
             </div>
         );
