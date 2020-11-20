@@ -4004,6 +4004,7 @@ export class WebGPUEngine extends Engine {
         this._setRenderPipeline(fillMode);
 
         renderPass.drawIndexed(indexCount, instancesCount || 1, indexStart, 0, 0);
+        this._reportDrawCall();
     }
 
     /**
@@ -4021,6 +4022,7 @@ export class WebGPUEngine extends Engine {
         this._setRenderPipeline(fillMode);
 
         renderPass.draw(verticesCount, instancesCount || 1, verticesStart, 0);
+        this._reportDrawCall();
     }
 
     //------------------------------------------------------------------------------
