@@ -2092,6 +2092,28 @@ export class Control {
         return result;
     }
 
+    /** @hidden */
+    public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
+        // Nothing here but children can overwrite it
+    }
+
+    /**
+     * Creates a Control from parsed data
+     * @param serializedObject defines parsed data
+     * @param host defines the hosting AdvancedDynamicTexture
+     * @returns a new Control
+     */    
+    public static Parse(serializedObject: any, host: AdvancedDynamicTexture): Control {
+        let controlType = Tools.Instantiate("BABYLON.GUI." + serializedObject.className);
+        let control = SerializationHelper.Parse(() => new controlType, serializedObject, null);
+
+        control.name = serializedObject.name;
+
+        control._parseFromContent(serializedObject, host);
+
+        return control;
+    }    
+
     /**
      * Creates a stack panel that can be used to render headers
      * @param control defines the control to associate with the header

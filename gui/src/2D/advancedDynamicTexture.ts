@@ -911,7 +911,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param serializedObject define the JSON serialized object to restore from 
      */
     public parseContent(serializedObject: any) {
-
+        this._rootContainer = Control.Parse(serializedObject.root, this) as Container;
     }
 
     // Statics
