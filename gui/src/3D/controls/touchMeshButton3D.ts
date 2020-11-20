@@ -1,9 +1,22 @@
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
+import { Vector3 } from "babylonjs/Maths/math.vector";
 import { Scene } from "babylonjs/scene";
 
 import { MeshButton3D } from "./meshButton3D";
+
+/**
+ * Enum for Button States
+ */
+export enum ButtonState {
+    /** None */
+    None = 0,
+    /** Pointer Entered */
+    Hover = 1,
+    /** Pointer Down */
+    Press = 2
+}
 
 /**
  * Class used to create an interactable object. It's a 3D button using a mesh coming from the current scene
@@ -11,6 +24,7 @@ import { MeshButton3D } from "./meshButton3D";
 export class TouchMeshButton3D extends MeshButton3D {
     /** @hidden */
     protected _currentMesh: Mesh;
+    protected _buttonState: ButtonState;
 
     /**
      * Creates a new 3D button based on a mesh
@@ -20,6 +34,7 @@ export class TouchMeshButton3D extends MeshButton3D {
     constructor(mesh: Mesh, name?: string) {
         super(mesh, name);
         this._currentMesh = mesh;
+        this._buttonState = ButtonState.None;
     }
 
     protected _getTypeName(): string {
@@ -37,13 +52,60 @@ export class TouchMeshButton3D extends MeshButton3D {
         var _this = this;
         scene.registerBeforeRender(function () {
             //Check for collision with haaaaand
-            const thumbTipMeshes = scene.getMeshesByTags("indexTip");
-            thumbTipMeshes.forEach(function (thumbMesh: Mesh) {
-                const distance = _this._currentMesh.getAbsolutePosition().subtract(thumbMesh.getAbsolutePosition()).length();
+            const indexTipMeshes = scene.getMeshesByTags("indexTip");
+            indexTipMeshes.forEach(function (indexMesh: Mesh) {
+                const distance = _this._currentMesh.getAbsolutePosition().subtract(indexMesh.getAbsolutePosition()).length();
+                console.log(distance);
 
-                if (distance < 1)
+                // for some reason the absolute positions don't line up? I'll have to ask about that.
+
+                const dummyPosition = Vector3.Zero();
+                const dummyPointerId = 0;
+                const dummyButtonIndex = 0;// left click;
+
+                // Update button state and fire events
+                switch(_this._buttonState)
                 {
-                    _this._onPointerEnter(_this);// call Control3D._processObservables instead?
+                    case ButtonState.None:
+                        if (distance < 1)
+                        {
+                            console.log("Now hovering");
+                            _this._buttonState = ButtonState.Hover;
+                            _this._onPointerEnter(_this);// call Control3D._processObservables instead?
+                        }
+
+                        break;
+                    case ButtonState.Hover:
+                        if (distance > 1.1)
+                        {
+                            console.log("Out of range");
+                            _this._buttonState = ButtonState.None;
+                            _this._onPointerOut(_this);
+                        }
+                        else if (distance < 0.4)
+                        {
+                            console.log("now pressing");
+                            _this._buttonState = ButtonState.Press;
+                            _this._onPointerDown(_this, dummyPosition, dummyPointerId, dummyButtonIndex);
+                        }
+                        else
+                        {
+                            _this._onPointerMove(_this, dummyPosition);
+                        }
+
+                        break;
+                    case ButtonState.Press:
+                        if (distance > 0.5)
+                        {
+                            console.log("no longer pressing");
+                            _this._buttonState = ButtonState.Hover;                            _this._onPointerUp(_this, dummyPosition, dummyPointerId, dummyButtonIndex, false /*notifyClick*/);
+                        }
+                        else
+                        {
+                            _this._onPointerMove(_this, dummyPosition);
+                        }
+
+                        break;
                 }
             });
         });
