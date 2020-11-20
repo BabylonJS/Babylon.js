@@ -50,8 +50,6 @@ const dbgGenerateLogs = true;
 const dbgVerboseLogsForFirstFrames = false;
 const dbgVerboseLogsNumFrames = 10;
 const dbgShowWarningsNotImplemented = false;
-/** @hidden */
-export let dbgShowDebugInliningProcess = false;
 
 /**
  * Options to load the associated Glslang library
