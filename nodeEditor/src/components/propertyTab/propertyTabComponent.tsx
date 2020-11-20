@@ -35,6 +35,8 @@ import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponen
 import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
 import { PreviewType } from '../preview/previewType';
 import { TextInputLineComponent } from '../../sharedComponents/textInputLineComponent';
+import { InputPropertyTabComponent } from '../../diagram/properties/inputNodePropertyComponent';
+import { InputsPropertyTabComponent } from './inputsPropertyTabComponent';
 require("./propertyTab.scss");
 
 interface IPropertyTabComponentProps {
@@ -453,16 +455,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             }} />
                         </LineContainerComponent>
                     }
-                    <LineContainerComponent title="INPUTS">
-                    {
-                        this.props.globalState.nodeMaterial.getInputBlocks().map((ib) => {
-                            if (!ib.isUniform || ib.isSystemValue || !ib.name) {
-                                return null;
-                            }
-                            return this.renderInputBlock(ib);
-                        })
-                    }
-                    </LineContainerComponent>
+                    <InputsPropertyTabComponent globalState={this.props.globalState} inputs={this.props.globalState.nodeMaterial.getInputBlocks()}></InputsPropertyTabComponent>
                 </div>
             </div>
         );
