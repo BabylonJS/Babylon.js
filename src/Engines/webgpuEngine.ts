@@ -37,9 +37,6 @@ import { IMultiRenderTargetOptions } from '../Materials/Textures/multiRenderTarg
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
 
-//import "../Shaders/clearQuad.vertex.fx";
-//import "../Shaders/clearQuad.fragment.fx";
-
 // TODO WEBGPU remove when not needed anymore
 function assert(condition: any, msg?: string): asserts condition {
     if (!condition) {
