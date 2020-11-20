@@ -4,6 +4,7 @@ import { Vector2 } from "babylonjs/Maths/math.vector";
 import { Control } from "../control";
 import { ValueAndUnit } from "../../valueAndUnit";
 import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
+import { serialize } from "babylonjs/Misc/decorators";
 
 /**
  * Class used to create slider controls
@@ -35,6 +36,7 @@ export class BaseSlider extends Control {
     public onValueChangedObservable = new Observable<number>();
 
     /** Gets or sets a boolean indicating if the thumb must be rendered */
+    @serialize()
     public get displayThumb(): boolean {
         return this._displayThumb;
     }
@@ -49,6 +51,7 @@ export class BaseSlider extends Control {
     }
 
     /** Gets or sets a step to apply to values (0 by default) */
+    @serialize()
     public get step(): number {
         return this._step;
     }
@@ -63,6 +66,7 @@ export class BaseSlider extends Control {
     }
 
     /** Gets or sets main bar offset (ie. the margin applied to the value bar) */
+    @serialize()
     public get barOffset(): string | number {
         return this._barOffset.toString(this._host);
     }
@@ -83,6 +87,7 @@ export class BaseSlider extends Control {
     }
 
     /** Gets or sets thumb width */
+    @serialize()
     public get thumbWidth(): string | number {
         return this._thumbWidth.toString(this._host);
     }
@@ -103,6 +108,7 @@ export class BaseSlider extends Control {
     }
 
     /** Gets or sets minimum value */
+    @serialize()
     public get minimum(): number {
         return this._minimum;
     }
@@ -119,6 +125,7 @@ export class BaseSlider extends Control {
     }
 
     /** Gets or sets maximum value */
+    @serialize()
     public get maximum(): number {
         return this._maximum;
     }
@@ -135,6 +142,7 @@ export class BaseSlider extends Control {
     }
 
     /** Gets or sets current value */
+    @serialize()
     public get value(): number {
         return this._value;
     }
@@ -152,6 +160,7 @@ export class BaseSlider extends Control {
     }
 
     /**Gets or sets a boolean indicating if the slider should be vertical or horizontal */
+    @serialize()
     public get isVertical(): boolean {
         return this._isVertical;
     }
@@ -166,6 +175,7 @@ export class BaseSlider extends Control {
     }
 
     /** Gets or sets a value indicating if the thumb can go over main bar extends */
+    @serialize()
     public get isThumbClamped(): boolean {
         return this._isThumbClamped;
     }

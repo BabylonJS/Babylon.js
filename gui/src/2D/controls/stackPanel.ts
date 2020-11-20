@@ -5,6 +5,7 @@ import { Measure } from "../measure";
 import { Control } from "./control";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { serialize } from 'babylonjs/Misc/decorators';
+import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 
 /**
  * Class used to create a 2D stack panel container
@@ -201,5 +202,24 @@ export class StackPanel extends Container {
 
         super._postMeasure();
     }
+
+    /**
+     * Serializes the current control
+     * @param serializationObject defined the JSON serialized object
+     */
+    public serialize(serializationObject: any) {
+        super.serialize(serializationObject);
+        serializationObject.manualWidth = this._manualWidth;
+        serializationObject.manualHeight = this._manualHeight;
+    }
+
+    /** @hidden */
+    public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {           
+        this._manualWidth = serializedObject.manualWidth;
+        this._manualHeight = serializedObject.manualHeight;
+
+        super._parseFromContent(serializedObject, host);
+    }
+
 }
 _TypeStore.RegisteredTypes["BABYLON.GUI.StackPanel"] = StackPanel;

@@ -485,5 +485,19 @@ export class Container extends Control {
             this.children[index].dispose();
         }
     }
+
+    /** @hidden */
+    public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
+        super._parseFromContent(serializedObject, host);
+        this._link(host);
+
+        if (!serializedObject.children) {
+            return;
+        }
+
+        for (var childData of serializedObject.children) {
+            this.addControl(Control.Parse(childData, host));
+        }
+    }
 }
 _TypeStore.RegisteredTypes["BABYLON.GUI.Container"] = Container;
