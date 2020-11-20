@@ -560,7 +560,7 @@ var KHR_lights_punctual = /** @class */ (function () {
                             }
                             parentNode.extensions[NAME] = lightReference;
                             // Do not export the original node
-                            resolve(undefined);
+                            resolve(null);
                             return;
                         }
                     }

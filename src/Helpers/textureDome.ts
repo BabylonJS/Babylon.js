@@ -66,6 +66,7 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
             this._texture.wrapV = Texture.CLAMP_ADDRESSMODE;
             this._material.reflectionTexture = this._texture;
         }
+        this._changeTextureMode(this._textureMode);
     }
 
     /**

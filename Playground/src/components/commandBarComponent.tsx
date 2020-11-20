@@ -143,7 +143,13 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                     {
                         label: "QR code",
                         onClick: () => {this.props.globalState.onQRCodeRequiredObservable.notifyObservers(true)}
-                    }
+                    },                 
+                    {
+                        label: "Load Unity Toolkit",
+                        storeKey: "unity-toolkit",
+                        defaultValue: false,
+                        onCheck: () => {}
+                    }, 
                 ]}/>
                 </div>
                 <div className="commands-right">

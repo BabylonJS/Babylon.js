@@ -1155,7 +1155,10 @@ export class NativeEngine extends Engine {
     }
 
     public _releaseFramebufferObjects(texture: InternalTexture): void {
-        // TODO
+        if (texture._framebuffer) {
+            this._native.deleteFramebuffer(texture._framebuffer);
+            texture._framebuffer = null;
+        }
     }
 
     /**
@@ -1262,7 +1265,7 @@ export class NativeEngine extends Engine {
             // Reorder from [+X, +Y, +Z, -X, -Y, -Z] to [+X, -X, +Y, -Y, +Z, -Z].
             const reorderedFiles = [files[0], files[3], files[1], files[4], files[2], files[5]];
             Promise.all(reorderedFiles.map((file) => Tools.LoadFileAsync(file).then((data) => new Uint8Array(data as ArrayBuffer)))).then((data) => {
-                return new Promise((resolve, reject) => {
+                return new Promise((resolve: (_: void) => void, reject) => {
                     this._native.loadCubeTexture(texture._webGLTexture!, data, !noMipmap, resolve, reject);
                 });
             }).then(() => {

@@ -27,12 +27,27 @@ export class QuaternionLineComponent extends React.Component<IQuaternionLineComp
         this.state = { isExpanded: false, value: quat, eulerValue: quat.toEulerAngles() }
     }
 
+    _checkRoundCircle(a: number, b: number) {
+        return Math.abs(Tools.ToDegrees(a)) + Math.abs(Tools.ToDegrees(b)) === 360
+    }
+
     shouldComponentUpdate(nextProps: IQuaternionLineComponentProps, nextState: { isExpanded: boolean, value: Quaternion, eulerValue: Vector3 }) {
         const nextPropsValue = nextProps.target[nextProps.propertyName];
 
         if (!nextPropsValue.equals(nextState.value) || this._localChange) {
             nextState.value = nextPropsValue.clone();
             nextState.eulerValue = nextPropsValue.toEulerAngles();
+
+            // Let's make sure we are not going on the opposite (but correct) value
+            if (this. _checkRoundCircle(nextState.eulerValue.x, this.state.eulerValue.x)) {
+                nextState.eulerValue.x = this.state.eulerValue.x;
+            }
+            if (this. _checkRoundCircle(nextState.eulerValue.y, this.state.eulerValue.y)) {
+                nextState.eulerValue.y = this.state.eulerValue.y;
+            }
+            if (this. _checkRoundCircle(nextState.eulerValue.z, this.state.eulerValue.z)) {
+                nextState.eulerValue.z = this.state.eulerValue.z;
+            }
             this._localChange = false;
             return true;
         }
@@ -128,11 +143,14 @@ export class QuaternionLineComponent extends React.Component<IQuaternionLineComp
         const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />
 
         let quat = this.state.value;
-        let euler = this.state.eulerValue;
+        let eulerDegrees = this.state.eulerValue.clone();
+        eulerDegrees.x = Tools.ToDegrees(eulerDegrees.x);
+        eulerDegrees.y = Tools.ToDegrees(eulerDegrees.y);
+        eulerDegrees.z = Tools.ToDegrees(eulerDegrees.z);
 
         return (
             <div className="vector3Line">
-                <div className="firstLine">
+                <div className="firstLine" title={this.props.label + (" (Using Quaternion)")}>
                     <div className="label">
                         {this.props.label + (" (Using Quaternion)")} 
                     </div>
@@ -143,7 +161,7 @@ export class QuaternionLineComponent extends React.Component<IQuaternionLineComp
                         }
                         {
                             this.props.useEuler &&
-                            `X: ${Tools.ToDegrees(euler.x).toFixed(2)}, Y: ${Tools.ToDegrees(euler.y).toFixed(2)}, Z: ${Tools.ToDegrees(euler.z).toFixed(2)}`
+                            `X: ${eulerDegrees.x.toFixed(2)}, Y: ${eulerDegrees.y.toFixed(2)}, Z: ${eulerDegrees.z.toFixed(2)}`
                         }
                     </div>
                     <div className="expand" onClick={() => this.switchExpandState()}>
@@ -162,9 +180,9 @@ export class QuaternionLineComponent extends React.Component<IQuaternionLineComp
                 {
                     this.state.isExpanded && this.props.useEuler &&
                     <div className="secondLine">
-                        <FloatLineComponent label="x" min={0} max={360} target={euler} propertyName='x' onChange={value => {value = Tools.ToDegrees(euler.x); this.updateStateEulerX(value)} } />
-                        <FloatLineComponent label="y" min={0} max={360} target={euler} propertyName='y' onChange={value => {value = Tools.ToDegrees(euler.y); this.updateStateEulerY(value)} } />
-                        <FloatLineComponent label="z" min={0} max={360} target={euler} propertyName='z' onChange={value => {value = Tools.ToDegrees(euler.z); this.updateStateEulerZ(value)} } />
+                        <FloatLineComponent label="x" target={eulerDegrees} propertyName='x' onChange={value => {this.updateStateEulerX(value)} } />
+                        <FloatLineComponent label="y" target={eulerDegrees} propertyName='y' onChange={value => {this.updateStateEulerY(value)} } />
+                        <FloatLineComponent label="z" target={eulerDegrees} propertyName='z' onChange={value => {this.updateStateEulerZ(value)} } />
                     </div>
                 }
             </div>

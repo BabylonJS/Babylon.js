@@ -515,7 +515,7 @@ export class Texture extends BaseTexture {
         this._cachedWRotationCenter = this.wRotationCenter;
         this._cachedHomogeneousRotationInUVTransform = this.homogeneousRotationInUVTransform;
 
-        if (!this._cachedTextureMatrix) {
+        if (!this._cachedTextureMatrix || !this._rowGenerationMatrix) {
             this._cachedTextureMatrix = Matrix.Zero();
             this._rowGenerationMatrix = new Matrix();
             this._t0 = Vector3.Zero();
@@ -741,6 +741,33 @@ export class Texture extends BaseTexture {
             return null;
         }
 
+        const onLoaded = () => {
+            // Clear cache
+            if (texture && texture._texture) {
+                texture._texture._cachedWrapU = null;
+                texture._texture._cachedWrapV = null;
+                texture._texture._cachedWrapR = null;
+            }
+
+            // Update Sampling Mode
+            if (parsedTexture.samplingMode) {
+                var sampling: number = parsedTexture.samplingMode;
+                if (texture && texture.samplingMode !== sampling) {
+                    texture.updateSamplingMode(sampling);
+                }
+            }
+            // Animations
+            if (texture && parsedTexture.animations) {
+                for (var animationIndex = 0; animationIndex < parsedTexture.animations.length; animationIndex++) {
+                    var parsedAnimation = parsedTexture.animations[animationIndex];
+                    const internalClass = _TypeStore.GetClass("BABYLON.Animation");
+                    if (internalClass) {
+                        texture.animations.push(internalClass.Parse(parsedAnimation));
+                    }
+                }
+            }
+        };
+
         var texture = SerializationHelper.Parse(() => {
             var generateMipMaps: boolean = true;
             if (parsedTexture.noMipmap) {
@@ -750,7 +777,7 @@ export class Texture extends BaseTexture {
                 var mirrorTexture = Texture._CreateMirror(parsedTexture.name, parsedTexture.renderTargetSize, scene, generateMipMaps);
                 mirrorTexture._waitingRenderList = parsedTexture.renderList;
                 mirrorTexture.mirrorPlane = Plane.FromArray(parsedTexture.mirrorPlane);
-
+                onLoaded();
                 return mirrorTexture;
             } else if (parsedTexture.isRenderTarget) {
                 let renderTargetTexture: Nullable<RenderTargetTexture> = null;
@@ -768,12 +795,12 @@ export class Texture extends BaseTexture {
                     renderTargetTexture = Texture._CreateRenderTargetTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene, generateMipMaps);
                     renderTargetTexture._waitingRenderList = parsedTexture.renderList;
                 }
-
+                onLoaded();
                 return renderTargetTexture;
             } else {
                 var texture: Texture;
                 if (parsedTexture.base64String) {
-                    texture = Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene, !generateMipMaps, parsedTexture.invertY);
+                    texture = Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene, !generateMipMaps, parsedTexture.invertY, undefined, onLoaded);
                 } else {
                     let url: string;
                     if (parsedTexture.name && parsedTexture.name.indexOf("://") > 0) {
@@ -786,37 +813,12 @@ export class Texture extends BaseTexture {
                     if (StringTools.StartsWith(parsedTexture.url, "data:") || (Texture.UseSerializedUrlIfAny && parsedTexture.url)) {
                         url = parsedTexture.url;
                     }
-                    texture = new Texture(url, scene, !generateMipMaps, parsedTexture.invertY);
+                    texture = new Texture(url, scene, !generateMipMaps, parsedTexture.invertY, undefined, onLoaded);
                 }
 
                 return texture;
             }
         }, parsedTexture, scene);
-
-        // Clear cache
-        if (texture && texture._texture) {
-            texture._texture._cachedWrapU = null;
-            texture._texture._cachedWrapV = null;
-            texture._texture._cachedWrapR = null;
-        }
-
-        // Update Sampling Mode
-        if (parsedTexture.samplingMode) {
-            var sampling: number = parsedTexture.samplingMode;
-            if (texture && texture.samplingMode !== sampling) {
-                texture.updateSamplingMode(sampling);
-            }
-        }
-        // Animations
-        if (texture && parsedTexture.animations) {
-            for (var animationIndex = 0; animationIndex < parsedTexture.animations.length; animationIndex++) {
-                var parsedAnimation = parsedTexture.animations[animationIndex];
-                const internalClass = _TypeStore.GetClass("BABYLON.Animation");
-                if (internalClass) {
-                    texture.animations.push(internalClass.Parse(parsedAnimation));
-                }
-            }
-        }
 
         return texture;
     }
