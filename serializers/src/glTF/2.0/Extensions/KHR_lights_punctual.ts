@@ -186,7 +186,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
                             parentNode.extensions[NAME] = lightReference;
 
                             // Do not export the original node
-                            resolve(undefined);
+                            resolve(null);
                             return;
                         }
                     }

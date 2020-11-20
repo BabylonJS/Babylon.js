@@ -27,10 +27,10 @@ export class MSCTranscoder extends Transcoder {
         return MSCTranscoder.Name;
     }
 
-    private _mscBasisTranscoderPromise: Promise<any>;
+    private _mscBasisTranscoderPromise: Promise<void>;
     private _mscBasisModule: any;
 
-    private _getMSCBasisTranscoder(): Promise<any> {
+    private _getMSCBasisTranscoder(): Promise<void> {
         if (this._mscBasisTranscoderPromise) {
             return this._mscBasisTranscoderPromise;
         }
