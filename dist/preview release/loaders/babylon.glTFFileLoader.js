@@ -5424,7 +5424,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
 /**
  * Helper class for working with arrays when loading the glTF asset
  */
@@ -5583,9 +5582,10 @@ var GLTFLoader = /** @class */ (function () {
     /** @hidden */
     GLTFLoader.prototype.importMeshAsync = function (meshesNames, scene, forAssetContainer, data, rootUrl, onProgress, fileName) {
         var _this = this;
-        if (fileName === void 0) { fileName = ""; }
         return Promise.resolve().then(function () {
             _this._babylonScene = scene;
+            _this._rootUrl = rootUrl;
+            _this._fileName = fileName || "scene";
             _this._forAssetContainer = forAssetContainer;
             _this._loadData(data);
             var nodes = null;
@@ -5608,7 +5608,7 @@ var GLTFLoader = /** @class */ (function () {
                     return node;
                 });
             }
-            return _this._loadAsync(rootUrl, fileName, nodes, function () {
+            return _this._loadAsync(nodes, function () {
                 return {
                     meshes: _this._getMeshes(),
                     particleSystems: [],
@@ -5624,19 +5624,18 @@ var GLTFLoader = /** @class */ (function () {
     /** @hidden */
     GLTFLoader.prototype.loadAsync = function (scene, data, rootUrl, onProgress, fileName) {
         var _this = this;
-        if (fileName === void 0) { fileName = ""; }
         return Promise.resolve().then(function () {
             _this._babylonScene = scene;
+            _this._rootUrl = rootUrl;
+            _this._fileName = fileName || "scene";
             _this._loadData(data);
-            return _this._loadAsync(rootUrl, fileName, null, function () { return undefined; });
+            return _this._loadAsync(null, function () { return undefined; });
         });
     };
-    GLTFLoader.prototype._loadAsync = function (rootUrl, fileName, nodes, resultFunc) {
+    GLTFLoader.prototype._loadAsync = function (nodes, resultFunc) {
         var _this = this;
         return Promise.resolve().then(function () {
-            _this._rootUrl = rootUrl;
-            _this._uniqueRootUrl = (!babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["StringTools"].StartsWith(rootUrl, "file:") && fileName) ? rootUrl : "" + rootUrl + Date.now() + "/";
-            _this._fileName = fileName;
+            _this._uniqueRootUrl = (_this._rootUrl.indexOf("file:") === -1 && _this._fileName) ? _this._rootUrl : "" + _this._rootUrl + Date.now() + "/";
             _this._loadExtensions();
             _this._checkExtensions();
             var loadingToReadyCounterName = _glTFFileLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoaderState"][_glTFFileLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoaderState"].LOADING] + " => " + _glTFFileLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoaderState"][_glTFFileLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoaderState"].READY];
