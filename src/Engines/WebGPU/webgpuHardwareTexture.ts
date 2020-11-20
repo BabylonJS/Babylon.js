@@ -1,8 +1,8 @@
 import { HardwareTextureWrapper } from '../../Materials/Textures/hardwareTextureWrapper';
 import { InternalTextureSource } from '../../Materials/Textures/internalTexture';
+import { Scalar } from '../../Maths/math.scalar';
 import { Nullable } from '../../types';
 import * as WebGPUConstants from './webgpuConstants';
-import { WebGPUTextureHelper } from './webgpuTextureHelper';
 
 /** @hidden */
 export class WebGPUHardwareTexture implements HardwareTextureWrapper {
@@ -45,7 +45,7 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
 
         this.createView({
             dimension: isCube ? WebGPUConstants.TextureViewDimension.Cube : WebGPUConstants.TextureViewDimension.E2d,
-            mipLevelCount: generateMipMaps ? WebGPUTextureHelper.ComputeNumMipmapLevels(width, height) : 1,
+            mipLevelCount: generateMipMaps ? Scalar.ILog2(Math.max(width, height)) + 1 : 1,
             baseArrayLayer: 0,
             baseMipLevel: 0,
             aspect: WebGPUConstants.TextureAspect.All
