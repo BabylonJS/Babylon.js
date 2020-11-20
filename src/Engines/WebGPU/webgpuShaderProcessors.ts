@@ -90,7 +90,7 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
 
         const webgpuProcessingContext = processingContext! as WebGPUShaderProcessingContext;
 
-        const varyingRegex = new RegExp(/\s*varying\s+(\S+)\s+(\S+)\s*;/gm);
+        const varyingRegex = new RegExp(/\s*varying\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s+(\S+)\s*;/gm);
         const match = varyingRegex.exec(varying);
         if (match != null) {
             const varyingType = match[1];
