@@ -60,7 +60,7 @@ export class Logger {
             return;
         }
         if (entry.current === entry.limit) {
-            switch(messageType) {
+            switch (messageType) {
                 case 0:
                     Logger.Log(Logger.MessageLimitReached.replace(/%LIMIT%/g, "" + entry.limit).replace(/%TYPE%/g, "log"));
                     break;
