@@ -615,8 +615,8 @@ export class SceneLoader {
             name = filename;
         }
 
-        if (StringTools.StartsWith(url, "file:") && name) {
-            file = FilesInputStore.FilesToLoad[name.toLowerCase()];
+        if (!file && name && StringTools.StartsWith(url, "file:")) {
+            file = FilesInputStore.FilesToLoad[name.toLowerCase()] || null;
         }
 
         return {
