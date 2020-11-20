@@ -35,6 +35,7 @@ import { Logger } from 'babylonjs/Misc/logger';
 import { Light } from 'babylonjs/Lights/light';
 import { TmpVectors } from 'babylonjs/Maths/math.vector';
 import { BoundingInfo } from 'babylonjs/Culling/boundingInfo';
+import { StringTools } from 'babylonjs/Misc/stringTools';
 
 interface TypedArrayLike extends ArrayBufferView {
     readonly length: number;
@@ -224,11 +225,9 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     /** @hidden */
-    public importMeshAsync(meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<ISceneLoaderAsyncResult> {
+    public importMeshAsync(meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName = ""): Promise<ISceneLoaderAsyncResult> {
         return Promise.resolve().then(() => {
             this._babylonScene = scene;
-            this._rootUrl = rootUrl;
-            this._fileName = fileName || "scene";
             this._forAssetContainer = forAssetContainer;
             this._loadData(data);
 
@@ -255,7 +254,7 @@ export class GLTFLoader implements IGLTFLoader {
                 });
             }
 
-            return this._loadAsync(nodes, () => {
+            return this._loadAsync(rootUrl, fileName, nodes, () => {
                 return {
                     meshes: this._getMeshes(),
                     particleSystems: [],
@@ -270,19 +269,19 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     /** @hidden */
-    public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<void> {
+    public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName = ""): Promise<void> {
         return Promise.resolve().then(() => {
             this._babylonScene = scene;
-            this._rootUrl = rootUrl;
-            this._fileName = fileName || "scene";
             this._loadData(data);
-            return this._loadAsync(null, () => undefined);
+            return this._loadAsync(rootUrl, fileName, null, () => undefined);
         });
     }
 
-    private _loadAsync<T>(nodes: Nullable<Array<number>>, resultFunc: () => T): Promise<T> {
+    private _loadAsync<T>(rootUrl: string, fileName: string, nodes: Nullable<Array<number>>, resultFunc: () => T): Promise<T> {
         return Promise.resolve().then(() => {
-            this._uniqueRootUrl = (this._rootUrl.indexOf("file:") === -1 && this._fileName) ? this._rootUrl : `${this._rootUrl}${Date.now()}/`;
+            this._rootUrl = rootUrl;
+            this._uniqueRootUrl = (!StringTools.StartsWith(rootUrl, "file:") && fileName) ? rootUrl : `${rootUrl}${Date.now()}/`;
+            this._fileName = fileName;
 
             this._loadExtensions();
             this._checkExtensions();
