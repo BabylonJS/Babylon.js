@@ -196,10 +196,10 @@ export class HDRFiltering {
       * @param onFinished Callback when filtering is done
       * @return Promise called when prefiltering is done
       */
-    public prefilter(texture: BaseTexture, onFinished: Nullable<() => void> = null) {
+    public prefilter(texture: BaseTexture, onFinished: Nullable<() => void> = null): Promise<void> {
         if (!this._engine._features.allowTexturePrefiltering) {
             Logger.Warn("HDR prefiltering is not available in WebGL 1., you can use real time filtering instead.");
-            return;
+            return Promise.reject("HDR prefiltering is not available in WebGL 1., you can use real time filtering instead.");
         }
 
         return new Promise((resolve) => {
