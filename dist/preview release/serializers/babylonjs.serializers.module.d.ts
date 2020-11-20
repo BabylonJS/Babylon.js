@@ -128,7 +128,7 @@ declare module "babylonjs-serializers/glTF/2.0/glTFMaterialExporter" {
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { Material } from "babylonjs/Materials/material";
     import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
-    import { PBRBaseMaterial } from "babylonjs/Materials/PBR/pbrBaseMaterial";
+    import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
     import { PBRMetallicRoughnessMaterial } from "babylonjs/Materials/PBR/pbrMetallicRoughnessMaterial";
     import { _Exporter } from "babylonjs-serializers/glTF/2.0/glTFExporter";
     /**
@@ -319,8 +319,8 @@ declare module "babylonjs-serializers/glTF/2.0/glTFMaterialExporter" {
          */
         private _convertSpecGlossFactorsToMetallicRoughnessAsync;
         /**
-         * Converts a Babylon PBR Base Material to a glTF Material
-         * @param babylonPBRMaterial BJS PBR Base Material
+         * Converts a Babylon PBR Metallic Roughness Material to a glTF Material
+         * @param babylonPBRMaterial BJS PBR Metallic Roughness Material
          * @param mimeType mime type to use for the textures
          * @param images array of glTF image interfaces
          * @param textures array of glTF texture interfaces
@@ -328,7 +328,7 @@ declare module "babylonjs-serializers/glTF/2.0/glTFMaterialExporter" {
          * @param imageData map of image file name to data
          * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
          */
-        _convertPBRMaterialAsync(babylonPBRMaterial: PBRBaseMaterial, mimeType: ImageMimeType, hasTextureCoords: boolean): Promise<IMaterial>;
+        _convertPBRMaterialAsync(babylonPBRMaterial: PBRMaterial, mimeType: ImageMimeType, hasTextureCoords: boolean): Promise<IMaterial>;
         private setMetallicRoughnessPbrMaterial;
         private getPixelsFromTexture;
         /**
@@ -1674,8 +1674,8 @@ declare module BABYLON.GLTF2.Exporter {
          */
         private _convertSpecGlossFactorsToMetallicRoughnessAsync;
         /**
-         * Converts a Babylon PBR Base Material to a glTF Material
-         * @param babylonPBRMaterial BJS PBR Base Material
+         * Converts a Babylon PBR Metallic Roughness Material to a glTF Material
+         * @param babylonPBRMaterial BJS PBR Metallic Roughness Material
          * @param mimeType mime type to use for the textures
          * @param images array of glTF image interfaces
          * @param textures array of glTF texture interfaces
@@ -1683,7 +1683,7 @@ declare module BABYLON.GLTF2.Exporter {
          * @param imageData map of image file name to data
          * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
          */
-        _convertPBRMaterialAsync(babylonPBRMaterial: PBRBaseMaterial, mimeType: ImageMimeType, hasTextureCoords: boolean): Promise<IMaterial>;
+        _convertPBRMaterialAsync(babylonPBRMaterial: PBRMaterial, mimeType: ImageMimeType, hasTextureCoords: boolean): Promise<IMaterial>;
         private setMetallicRoughnessPbrMaterial;
         private getPixelsFromTexture;
         /**
