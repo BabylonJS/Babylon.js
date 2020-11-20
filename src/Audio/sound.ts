@@ -8,71 +8,7 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { TransformNode } from "../Meshes/transformNode";
 import { Logger } from "../Misc/logger";
 import { _DevTools } from "../Misc/devTools";
-
-/**
- * Interface used to define options for Sound class
- */
-export interface ISoundOptions {
-    /**
-     * Does the sound autoplay once loaded.
-     */
-    autoplay?: boolean;
-    /**
-     * Does the sound loop after it finishes playing once.
-     */
-    loop?: boolean;
-    /**
-     * Sound's volume
-     */
-    volume?: number;
-    /**
-     * Is it a spatial sound?
-     */
-    spatialSound?: boolean;
-    /**
-     * Maximum distance to hear that sound
-     */
-    maxDistance?: number;
-    /**
-     * Uses user defined attenuation function
-     */
-    useCustomAttenuation?: boolean;
-    /**
-     * Define the roll off factor of spatial sounds.
-     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
-     */
-    rolloffFactor?: number;
-    /**
-     * Define the reference distance the sound should be heard perfectly.
-     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
-     */
-    refDistance?: number;
-    /**
-     * Define the distance attenuation model the sound will follow.
-     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
-     */
-    distanceModel?: string;
-    /**
-     * Defines the playback speed (1 by default)
-     */
-    playbackRate?: number;
-    /**
-     * Defines if the sound is from a streaming source
-     */
-    streaming?: boolean;
-    /**
-     * Defines an optional length (in seconds) inside the sound file
-     */
-    length?: number;
-    /**
-     * Defines an optional offset (in seconds) inside the sound file
-     */
-    offset?: number;
-    /**
-     * If true, URLs will not be required to state the audio file codec to use.
-     */
-    skipCodecCheck?: boolean;
-}
+import { ISoundOptions } from './Interfaces/ISoundOptions';
 
 /**
  * Defines a sound that can be played in the application.
@@ -150,6 +86,21 @@ export class Sound {
      */
     public onEndedObservable = new Observable<Sound>();
 
+    /**
+     * Gets the current time for the sound.
+     */
+    public get currentTime(): number {
+        if (this._htmlAudioElement) {
+            return this._htmlAudioElement.currentTime;
+        }
+
+        let currentTime: number = this._startOffset;
+        if (this.isPlaying && Engine.audioEngine.audioContext) {
+            currentTime += Engine.audioEngine.audioContext.currentTime - this._startTime;
+        }
+        return currentTime;
+    }
+
     private _panningModel: string = "equalpower";
     private _playbackRate: number = 1;
     private _streaming: boolean = false;
@@ -168,8 +119,8 @@ export class Sound {
     private _streamingSource: AudioNode;
     private _soundPanner: Nullable<PannerNode>;
     private _soundGain: Nullable<GainNode>;
-    private _inputAudioNode: AudioNode;
-    private _outputAudioNode: AudioNode;
+    private _inputAudioNode: Nullable<AudioNode>;
+    private _outputAudioNode: Nullable<AudioNode>;
     // Used if you'd like to create a directional sound.
     // If not set, the sound will be omnidirectional
     private _coneInnerAngle: number = 360;
@@ -233,13 +184,13 @@ export class Sound {
 
         if (Engine.audioEngine.canUseWebAudio && Engine.audioEngine.audioContext) {
             this._soundGain = Engine.audioEngine.audioContext.createGain();
-            this._soundGain.gain.value = this._volume;
+            this._soundGain!.gain.value = this._volume;
             this._inputAudioNode = this._soundGain;
             this._outputAudioNode = this._soundGain;
             if (this.spatialSound) {
                 this._createSpatialParameters();
             }
-            this._scene.mainSoundTrack.AddSound(this);
+            this._scene.mainSoundTrack.addSound(this);
             var validParameter = true;
 
             // if no parameter is passed, you need to call setAudioBuffer yourself to prepare the sound
@@ -292,6 +243,7 @@ export class Sound {
                                     (url.indexOf(".mp3", url.length - 4) !== -1 && Engine.audioEngine.isMP3supported) ||
                                     (url.indexOf(".ogg", url.length - 4) !== -1 && Engine.audioEngine.isOGGsupported) ||
                                     url.indexOf(".wav", url.length - 4) !== -1 ||
+                                    url.indexOf(".m4a", url.length - 4) !== -1 ||
                                     url.indexOf("blob:") !== -1;
                                 if (codecSupportedFound) {
                                     // Loading sound using XHR2
@@ -309,7 +261,7 @@ export class Sound {
                                                     Logger.Error("XHR " + exception.status + " error on: " + url + ".");
                                                 }
                                                 Logger.Error("Sound creation aborted.");
-                                                this._scene.mainSoundTrack.RemoveSound(this);
+                                                this._scene.mainSoundTrack.removeSound(this);
                                             }
                                         );
                                     }
@@ -358,12 +310,12 @@ export class Sound {
                     }
                 } catch (ex) {
                     Logger.Error("Unexpected error. Sound creation aborted.");
-                    this._scene.mainSoundTrack.RemoveSound(this);
+                    this._scene.mainSoundTrack.removeSound(this);
                 }
             }
         } else {
             // Adding an empty sound to avoid breaking audio calls for non Web Audio browsers
-            this._scene.mainSoundTrack.AddSound(this);
+            this._scene.mainSoundTrack.addSound(this);
             if (!Engine.audioEngine.WarnedWebAudioUnsupported) {
                 Logger.Error("Web Audio is not supported by your browser.");
                 Engine.audioEngine.WarnedWebAudioUnsupported = true;
@@ -389,9 +341,9 @@ export class Sound {
             }
             this._isReadyToPlay = false;
             if (this.soundTrackId === -1) {
-                this._scene.mainSoundTrack.RemoveSound(this);
+                this._scene.mainSoundTrack.removeSound(this);
             } else if (this._scene.soundTracks) {
-                this._scene.soundTracks[this.soundTrackId].RemoveSound(this);
+                this._scene.soundTracks[this.soundTrackId].removeSound(this);
             }
             if (this._soundGain) {
                 this._soundGain.disconnect();
@@ -511,9 +463,11 @@ export class Sound {
                 this._panningModel = "HRTF";
             }
             this._soundPanner = Engine.audioEngine.audioContext.createPanner();
-            this._updateSpatialParameters();
-            this._soundPanner.connect(this._outputAudioNode);
-            this._inputAudioNode = this._soundPanner;
+            if (this._soundPanner && this._outputAudioNode) {
+                this._updateSpatialParameters();
+                this._soundPanner.connect(this._outputAudioNode);
+                this._inputAudioNode = this._soundPanner;
+            }
         }
     }
 
@@ -567,7 +521,7 @@ export class Sound {
      * @param soundTrackAudioNode the sound track audio node to connect to
      */
     public connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode): void {
-        if (Engine.audioEngine.canUseWebAudio) {
+        if (Engine.audioEngine.canUseWebAudio && this._outputAudioNode) {
             if (this._isOutputConnected) {
                 this._outputAudioNode.disconnect();
             }
@@ -738,7 +692,9 @@ export class Sound {
                         this._htmlAudioElement.playbackRate = this._playbackRate;
                     }
                     this._streamingSource.disconnect();
-                    this._streamingSource.connect(this._inputAudioNode);
+                    if (this._inputAudioNode) {
+                        this._streamingSource.connect(this._inputAudioNode);
+                    }
                     if (this._htmlAudioElement) {
                         // required to manage properly the new suspended default state of Chrome
                         // When the option 'streaming: true' is used, we need first to wait for
@@ -785,22 +741,24 @@ export class Sound {
                                 };
                             }
                             this._soundSource = Engine.audioEngine.audioContext.createBufferSource();
-                            this._soundSource.buffer = this._audioBuffer;
-                            this._soundSource.connect(this._inputAudioNode);
-                            this._soundSource.loop = this.loop;
-                            if (offset !== undefined) {
-                                this._soundSource.loopStart = offset;
+                            if (this._soundSource && this._inputAudioNode) {
+                                this._soundSource.buffer = this._audioBuffer;
+                                this._soundSource.connect(this._inputAudioNode);
+                                this._soundSource.loop = this.loop;
+                                if (offset !== undefined) {
+                                    this._soundSource.loopStart = offset;
+                                }
+                                if (length !== undefined) {
+                                    this._soundSource.loopEnd = (offset! | 0) + length!;
+                                }
+                                this._soundSource.playbackRate.value = this._playbackRate;
+                                this._soundSource.onended = () => {
+                                    this._onended();
+                                };
+                                startTime = time ? Engine.audioEngine.audioContext!.currentTime + time : Engine.audioEngine.audioContext!.currentTime;
+                                const actualOffset = this.isPaused ? this._startOffset % this._soundSource!.buffer!.duration : offset ? offset : 0;
+                                this._soundSource!.start(startTime, actualOffset, this.loop ? undefined : length);
                             }
-                            if (length !== undefined) {
-                                this._soundSource.loopEnd = (offset! | 0) + length!;
-                            }
-                            this._soundSource.playbackRate.value = this._playbackRate;
-                            this._soundSource.onended = () => {
-                                this._onended();
-                            };
-                            startTime = time ? Engine.audioEngine.audioContext!.currentTime + time : Engine.audioEngine.audioContext!.currentTime;
-                            const actualOffset = this.isPaused ? this._startOffset % this._soundSource!.buffer!.duration : offset ? offset : 0;
-                            this._soundSource!.start(startTime, actualOffset, this.loop ? undefined : length);
                         }
                     };
 
@@ -835,6 +793,7 @@ export class Sound {
 
     private _onended() {
         this.isPlaying = false;
+        this._startOffset = 0;
         if (this.onended) {
             this.onended();
         }

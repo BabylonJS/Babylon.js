@@ -21,6 +21,8 @@ export class KhronosTextureContainer2 {
      *     URLConfig.jsDecoderModule
      *     URLConfig.wasmUASTCToASTC
      *     URLConfig.wasmUASTCToBC7
+     *     URLConfig.wasmUASTCToRGBA_UNORM
+     *     URLConfig.wasmUASTCToRGBA_SRGB
      *     URLConfig.jsMSCTranscoder
      *     URLConfig.wasmMSCTranscoder
      * You can see their default values in this PG: https://playground.babylonjs.com/#EIJH8L#9
@@ -29,8 +31,10 @@ export class KhronosTextureContainer2 {
         jsDecoderModule: "https://preview.babylonjs.com/babylon.ktx2Decoder.js",
         wasmUASTCToASTC: null,
         wasmUASTCToBC7: null,
+        wasmUASTCToRGBA_UNORM: null,
+        wasmUASTCToRGBA_SRGB: null,
         jsMSCTranscoder: null,
-        wasmMSCTranscoder: null
+        wasmMSCTranscoder: null,
     };
 
     /**
@@ -109,7 +113,7 @@ export class KhronosTextureContainer2 {
     }
 
     /** @hidden */
-    public uploadAsync(data: ArrayBufferView, internalTexture: InternalTexture): Promise<void> {
+    public uploadAsync(data: ArrayBufferView, internalTexture: InternalTexture, options?: any): Promise<void> {
         const caps = this._engine.getCaps();
 
         const compressedTexturesCaps = {
@@ -140,7 +144,7 @@ export class KhronosTextureContainer2 {
                                     reject({ message: message.data.msg });
                                 } else {
                                     try {
-                                        this._createTexture(message.data.decodedData, internalTexture);
+                                        this._createTexture(message.data.decodedData, internalTexture, options);
                                         resolve();
                                     } catch (err) {
                                         reject({ message: err });
@@ -154,7 +158,7 @@ export class KhronosTextureContainer2 {
                         worker.addEventListener("message", onMessage);
 
                         // note: we can't transfer the ownership of data.buffer because if using a fallback texture the data.buffer buffer will be used by the current thread
-                        worker.postMessage({ action: "decode", data, caps: compressedTexturesCaps }/*, [data.buffer]*/);
+                        worker.postMessage({ action: "decode", data, caps: compressedTexturesCaps, options }/*, [data.buffer]*/);
                     });
                 });
             });
@@ -187,10 +191,17 @@ export class KhronosTextureContainer2 {
         delete KhronosTextureContainer2._WorkerPoolPromise;
     }
 
-    protected _createTexture(data: any /* IEncodedData */, internalTexture: InternalTexture) {
-        const oglTexture2D = 3553;
+    protected _createTexture(data: any /* IEncodedData */, internalTexture: InternalTexture, options?: any) {
+        const oglTexture2D = 3553; // gl.TEXTURE_2D
 
         this._engine._bindTextureDirectly(oglTexture2D, internalTexture);
+
+        if (options) {
+            // return back some information about the decoded data
+            options.transcodedFormat = data.transcodedFormat;
+            options.isInGammaSpace = data.isInGammaSpace;
+            options.transcoderName = data.transcoderName;
+        }
 
         if (data.transcodedFormat === 0x8058 /* RGBA8 */) {
             internalTexture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
@@ -269,6 +280,12 @@ function workerFunc(): void {
                 if (urls.wasmUASTCToBC7 !== null) {
                     KTX2DECODER.LiteTranscoder_UASTC_BC7.WasmModuleURL = urls.wasmUASTCToBC7;
                 }
+                if (urls.wasmUASTCToRGBA_UNORM !== null) {
+                    KTX2DECODER.LiteTranscoder_UASTC_RGBA_UNORM.WasmModuleURL = urls.wasmUASTCToRGBA_UNORM;
+                }
+                if (urls.wasmUASTCToRGBA_SRGB !== null) {
+                    KTX2DECODER.LiteTranscoder_UASTC_RGBA_SRGB.WasmModuleURL = urls.wasmUASTCToRGBA_SRGB;
+                }
                 if (urls.jsMSCTranscoder !== null) {
                     KTX2DECODER.MSCTranscoder.JSModuleURL = urls.jsMSCTranscoder;
                 }
@@ -279,7 +296,7 @@ function workerFunc(): void {
                 postMessage({ action: "init" });
                 break;
             case "decode":
-                ktx2Decoder.decode(event.data.data, event.data.caps).then((data: any) => {
+                ktx2Decoder.decode(event.data.data, event.data.caps, event.data.options).then((data: any) => {
                     const buffers = [];
                     for (let mip = 0; mip < data.mipmaps.length; ++mip) {
                         const mipmap = data.mipmaps[mip];

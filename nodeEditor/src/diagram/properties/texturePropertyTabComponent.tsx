@@ -26,7 +26,7 @@ type ReflectionTexture = ReflectionTextureBlock | ReflectionBlock | RefractionBl
 
 type AnyTexture = TextureBlock | ReflectionTexture | CurrentScreenBlock | ParticleTextureBlock;
 
-export class TexturePropertyTabComponent extends React.Component<IPropertyComponentProps, {isEmbedded: boolean, loadAsCubeTexture: boolean}> {
+export class TexturePropertyTabComponent extends React.Component<IPropertyComponentProps, {isEmbedded: boolean, loadAsCubeTexture: boolean, textureIsPrefiltered: boolean}> {
 
     get textureBlock(): AnyTexture {
         return this.props.block as AnyTexture;
@@ -37,7 +37,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
 
         let texture = this.textureBlock.texture as BaseTexture;
 
-        this.state = {isEmbedded: !texture || texture.name.substring(0, 4) === "data", loadAsCubeTexture: texture && texture.isCube};
+        this.state = {isEmbedded: !texture || texture.name.substring(0, 4) === "data", loadAsCubeTexture: texture && texture.isCube, textureIsPrefiltered: true};
     }
 
     UNSAFE_componentWillUpdate(nextProps: IPropertyComponentProps, nextState: {isEmbedded: boolean, loadAsCubeTexture: boolean}) {
@@ -109,7 +109,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
             var blob = new Blob([data], { type: "octet/stream" });
 
             var reader = new FileReader();
-            reader.readAsDataURL(blob); 
+            reader.readAsDataURL(blob);
             reader.onloadend = () => {
                 let base64data = reader.result as string;                
 
@@ -119,8 +119,11 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                 } else if (file.name.toLowerCase().indexOf(".env") > 0) {
                     extension = ".env";
                 }
-
-                (texture as Texture).updateURL(base64data, extension, () => this.updateAfterTextureLoad());
+                if (texture.isCube) {
+                    (texture as CubeTexture).updateURL(base64data, extension, () => this.updateAfterTextureLoad(), this.state.textureIsPrefiltered);
+                } else {
+                    (texture as Texture).updateURL(base64data, extension, () => this.updateAfterTextureLoad());
+                }
             }
         }, undefined, true);
     }
@@ -137,7 +140,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                 extension = ".env";
             }
 
-            (texture as Texture).updateURL(url, extension, () => this.updateAfterTextureLoad());
+            (texture as CubeTexture).updateURL(url, extension, () => this.updateAfterTextureLoad(), this.state.textureIsPrefiltered);
         } else {
             (texture as Texture).updateURL(url, null, () => this.updateAfterTextureLoad());
         }
@@ -155,6 +158,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
 
         let isInReflectionMode = this.textureBlock instanceof ReflectionTextureBlock || this.textureBlock instanceof ReflectionBlock || this.textureBlock instanceof RefractionBlock;
         let isFrozenTexture = this.textureBlock instanceof CurrentScreenBlock || this.textureBlock instanceof ParticleTextureBlock;
+        let showIsInGammaSpace = this.textureBlock instanceof ReflectionBlock;
 
         var reflectionModeOptions: {label: string, value: number}[] = [
             {
@@ -194,14 +198,20 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                         this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                     }}/> 
                     {
-                        texture && !isInReflectionMode &&
+                        !isInReflectionMode &&
                         <CheckBoxLineComponent label="Convert to gamma space" propertyName="convertToGammaSpace" target={this.props.block} onValueChanged={() => {                        
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         }}/>
                     }
                     {
-                        texture && !isInReflectionMode &&
+                        !isInReflectionMode &&
                         <CheckBoxLineComponent label="Convert to linear space" propertyName="convertToLinearSpace" target={this.props.block} onValueChanged={() => {                        
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        }}/>
+                    }
+                    {
+                        texture && showIsInGammaSpace &&
+                        <CheckBoxLineComponent label="Is in gamma space" propertyName="gammaSpace" target={texture} onValueChanged={() => {                        
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         }}/>
                     }
@@ -259,7 +269,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                     }
                     {
                         texture && !isInReflectionMode && !isFrozenTexture &&
-                        <SliderLineComponent label="Rotation U" target={texture} propertyName="uAng" minimum={0} maximum={Math.PI * 2} useEuler={true} step={0.1}
+                        <SliderLineComponent label="Rotation U" target={texture} globalState={this.props.globalState} propertyName="uAng" minimum={0} maximum={Math.PI * 2} useEuler={true} step={0.1}
                         onChange={() => {
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         }}
@@ -267,7 +277,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                     }
                     {
                         texture && !isInReflectionMode && !isFrozenTexture &&
-                        <SliderLineComponent label="Rotation V" target={texture} propertyName="vAng" minimum={0} maximum={Math.PI * 2} useEuler={true} step={0.1}
+                        <SliderLineComponent label="Rotation V" target={texture} globalState={this.props.globalState} propertyName="vAng" minimum={0} maximum={Math.PI * 2} useEuler={true} step={0.1}
                         onChange={() => {
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         }}
@@ -275,7 +285,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                     }                    
                     {
                         texture && !isInReflectionMode && !isFrozenTexture &&
-                        <SliderLineComponent label="Rotation W" target={texture} propertyName="wAng" minimum={0} maximum={Math.PI * 2} useEuler={true} step={0.1}
+                        <SliderLineComponent label="Rotation W" target={texture} globalState={this.props.globalState} propertyName="wAng" minimum={0} maximum={Math.PI * 2} useEuler={true} step={0.1}
                         onChange={() => {
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         }}
@@ -292,6 +302,11 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                         isInReflectionMode &&
                         <CheckBoxLineComponent label="Load as cube texture" isSelected={() => this.state.loadAsCubeTexture} 
                             onSelect={value => this.setState({loadAsCubeTexture: value})}/> 
+                    }
+                    {
+                        isInReflectionMode && this.state.loadAsCubeTexture &&
+                        <CheckBoxLineComponent label="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Texture is prefiltered" isSelected={() => this.state.textureIsPrefiltered} 
+                            onSelect={value => this.setState({textureIsPrefiltered: value})}/> 
                     }
                     {
                         this.state.isEmbedded &&

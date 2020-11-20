@@ -10,7 +10,7 @@ import { BoxBuilder } from "../Meshes/Builders/boxBuilder";
 import { CylinderBuilder } from "../Meshes/Builders/cylinderBuilder";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
-import { Gizmo } from "./gizmo";
+import { Gizmo, GizmoAxisCache } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { ScaleGizmo } from "./scaleGizmo";
 import { Color3 } from '../Maths/math.color';
@@ -45,9 +45,14 @@ export class AxisScaleGizmo extends Gizmo {
     private _isEnabled: boolean = true;
     private _parent: Nullable<ScaleGizmo> = null;
 
-    private _arrow: AbstractMesh;
+    private _gizmoMesh: Mesh;
     private _coloredMaterial: StandardMaterial;
     private _hoverMaterial: StandardMaterial;
+    private _disableMaterial: StandardMaterial;
+    private _dragging: boolean = false;
+    private _tmpVector = new Vector3();
+    private _tmpMatrix = new Matrix();
+    private _tmpMatrix2 = new Matrix();
 
     /**
      * Creates an AxisScaleGizmo
@@ -65,26 +70,40 @@ export class AxisScaleGizmo extends Gizmo {
         this._coloredMaterial.specularColor = color.subtract(new Color3(0.1, 0.1, 0.1));
 
         this._hoverMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
-        this._hoverMaterial.diffuseColor = color.add(new Color3(0.3, 0.3, 0.3));
+        this._hoverMaterial.diffuseColor = Color3.Yellow();
 
-        // Build mesh on root node
-        this._arrow = new AbstractMesh("", gizmoLayer.utilityLayerScene);
-        var arrowMesh = BoxBuilder.CreateBox("yPosMesh", { size: 0.4 * (1 + (thickness - 1) / 4) }, gizmoLayer.utilityLayerScene);
-        var arrowTail = CylinderBuilder.CreateCylinder("cylinder", { diameterTop: 0.005 * thickness, height: 0.275, diameterBottom: 0.005 * thickness, tessellation: 96 }, gizmoLayer.utilityLayerScene);
-        arrowTail.material = this._coloredMaterial;
-        this._arrow.addChild(arrowMesh);
-        this._arrow.addChild(arrowTail);
+        this._disableMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
+        this._disableMaterial.diffuseColor = Color3.Gray();
+        this._disableMaterial.alpha = 0.4;
 
-        // Position arrow pointing in its drag axis
-        arrowMesh.scaling.scaleInPlace(0.1);
-        arrowMesh.material = this._coloredMaterial;
-        arrowMesh.rotation.x = Math.PI / 2;
-        arrowMesh.position.z += 0.3;
-        arrowTail.position.z += 0.275 / 2;
-        arrowTail.rotation.x = Math.PI / 2;
-        this._arrow.lookAt(this._rootMesh.position.add(dragAxis));
-        this._rootMesh.addChild(this._arrow);
-        this._arrow.scaling.scaleInPlace(1 / 3);
+        // Build mesh + Collider
+        this._gizmoMesh = new Mesh("axis", gizmoLayer.utilityLayerScene);
+        const { arrowMesh, arrowTail } = this._createGizmoMesh(this._gizmoMesh, thickness);
+        const collider = this._createGizmoMesh(this._gizmoMesh, thickness + 4, true);
+
+        this._gizmoMesh.lookAt(this._rootMesh.position.add(dragAxis));
+        this._rootMesh.addChild(this._gizmoMesh);
+        this._gizmoMesh.scaling.scaleInPlace(1 / 3);
+
+        // Closure of inital prop values for resetting
+        const nodePosition = arrowMesh.position.clone();
+        const linePosition = arrowTail.position.clone();
+        const lineScale = arrowTail.scaling.clone();
+
+        const increaseGizmoMesh = (dragDistance: number) => {
+            const dragStrength = (dragDistance * (3 / this._rootMesh.scaling.length())) * 6;
+
+            arrowMesh.position.z += dragStrength / 3.5;
+            arrowTail.scaling.y += dragStrength;
+            arrowTail.position.z = arrowMesh.position.z / 2;
+        };
+
+        const resetGizmoMesh = () => {
+            arrowMesh.position.set(nodePosition.x, nodePosition.y, nodePosition.z);
+            arrowTail.position.set(linePosition.x, linePosition.y, linePosition.z);
+            arrowTail.scaling.set(lineScale.x, lineScale.y, lineScale.z);
+            this._dragging = false;
+        };
 
         // Add drag behavior to handle events when the gizmo is dragged
         this.dragBehavior = new PointerDragBehavior({ dragAxis: dragAxis });
@@ -128,9 +147,15 @@ export class AxisScaleGizmo extends Gizmo {
                     }
                 }
 
-                const scalingMatrix = new Matrix();
-                Matrix.ScalingToRef(1 + tmpVector.x, 1 + tmpVector.y, 1 + tmpVector.z, scalingMatrix);
-                this.attachedNode.getWorldMatrix().copyFrom(scalingMatrix.multiply(this.attachedNode.getWorldMatrix()));
+                Matrix.ScalingToRef(1 + tmpVector.x, 1 + tmpVector.y, 1 + tmpVector.z, this._tmpMatrix2);
+
+                this._tmpMatrix2.multiplyToRef(this.attachedNode.getWorldMatrix(), this._tmpMatrix);
+                this._tmpMatrix.decompose(this._tmpVector);
+
+                let maxScale = 100000;
+                if (Math.abs(this._tmpVector.x) < maxScale && Math.abs(this._tmpVector.y) < maxScale && Math.abs(this._tmpVector.z) < maxScale) {
+                    this.attachedNode.getWorldMatrix().copyFrom(this._tmpMatrix);
+                }
 
                 if (snapped) {
                     tmpSnapEvent.snapDistance = this.snapDistance * dragSteps;
@@ -139,23 +164,69 @@ export class AxisScaleGizmo extends Gizmo {
                 this._matrixChanged();
             }
         });
+        // On Drag Listener: to move gizmo mesh with user action
+        this.dragBehavior.onDragStartObservable.add(() => { this._dragging = true; });
+        this.dragBehavior.onDragObservable.add((e) => increaseGizmoMesh(e.dragDistance));
+        this.dragBehavior.onDragEndObservable.add(resetGizmoMesh);
+
+        // Listeners for Universal Scalar
+        parent?.uniformScaleGizmo?.dragBehavior?.onDragObservable?.add((e) => increaseGizmoMesh(e.delta.y));
+        parent?.uniformScaleGizmo?.dragBehavior?.onDragEndObservable?.add(resetGizmoMesh);
+
+        const cache: GizmoAxisCache = {
+            gizmoMeshes: [arrowMesh, arrowTail],
+            colliderMeshes: [collider.arrowMesh, collider.arrowTail],
+            material: this._coloredMaterial,
+            hoverMaterial: this._hoverMaterial,
+            disableMaterial: this._disableMaterial,
+            active: false
+        };
+        this._parent?.addToAxisCache(this._gizmoMesh, cache);
 
         this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
             if (this._customMeshSet) {
                 return;
             }
-            this._isHovered = !!(pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1));
-            var material = this._isHovered ? this._hoverMaterial : this._coloredMaterial;
-            this._rootMesh.getChildMeshes().forEach((m) => {
-                m.material = material;
-                if ((<LinesMesh>m).color) {
-                    (<LinesMesh>m).color = material.diffuseColor;
-                }
-            });
+            this._isHovered = !!(cache.colliderMeshes.indexOf(<Mesh>pointerInfo?.pickInfo?.pickedMesh) != -1);
+            if (!this._parent) {
+                var material = this._isHovered || this._dragging ? this._hoverMaterial : this._coloredMaterial;
+                cache.gizmoMeshes.forEach((m: Mesh) => {
+                    m.material = material;
+                    if ((<LinesMesh>m).color) {
+                        (<LinesMesh>m).color = material.diffuseColor;
+                    }
+                });
+            }
         });
 
         var light = gizmoLayer._getSharedGizmoLight();
         light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._rootMesh.getChildMeshes());
+    }
+
+    /** Create Geometry for Gizmo */
+    private _createGizmoMesh(parentMesh: AbstractMesh, thickness: number, isCollider = false) {
+        var arrowMesh = BoxBuilder.CreateBox("yPosMesh", { size: 0.4 * (1 + (thickness - 1) / 4) }, this.gizmoLayer.utilityLayerScene);
+        var arrowTail = CylinderBuilder.CreateCylinder("cylinder", { diameterTop: 0.005 * thickness, height: 0.275, diameterBottom: 0.005 * thickness, tessellation: 96 }, this.gizmoLayer.utilityLayerScene);
+
+        // Position arrow pointing in its drag axis
+        arrowMesh.scaling.scaleInPlace(0.1);
+        arrowMesh.material = this._coloredMaterial;
+        arrowMesh.rotation.x = Math.PI / 2;
+        arrowMesh.position.z += 0.3;
+
+        arrowTail.material = this._coloredMaterial;
+        arrowTail.position.z += 0.275 / 2;
+        arrowTail.rotation.x = Math.PI / 2;
+
+        if (isCollider) {
+            arrowMesh.visibility = 0;
+            arrowTail.visibility = 0;
+        }
+
+        parentMesh.addChild(arrowMesh);
+        parentMesh.addChild(arrowTail);
+
+        return { arrowMesh, arrowTail };
     }
 
     protected _attachedNodeChanged(value: Nullable<Node>) {
@@ -165,8 +236,8 @@ export class AxisScaleGizmo extends Gizmo {
     }
 
     /**
- * If the gizmo is enabled
- */
+     * If the gizmo is enabled
+     */
     public set isEnabled(value: boolean) {
         this._isEnabled = value;
         if (!value) {
@@ -191,10 +262,10 @@ export class AxisScaleGizmo extends Gizmo {
         this.onSnapObservable.clear();
         this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
         this.dragBehavior.detach();
-        if (this._arrow) {
-            this._arrow.dispose();
+        if (this._gizmoMesh) {
+            this._gizmoMesh.dispose();
         }
-        [this._coloredMaterial, this._hoverMaterial].forEach((matl) => {
+        [this._coloredMaterial, this._hoverMaterial, this._disableMaterial].forEach((matl) => {
             if (matl) {
                 matl.dispose();
             }

@@ -19,7 +19,7 @@ export class ValueLineComponent extends React.Component<IValueLineComponentProps
 
         return (
             <div className="textLine">
-                <div className="label">
+                <div className="label" title={this.props.label}>
                     {this.props.label}
                 </div>
                 <div className="value" style={{ color: this.props.color ? this.props.color : "" }}>

@@ -33,9 +33,6 @@ export interface EngineFeatures {
     /** Indicates that the engine supports 3D textures */
     support3DTextures: boolean;
 
-    /** Indicates that the engine supports rendering to multiple render targets */
-    supportMultipleRenderTargets: boolean;
-
     /** Indicates that constants need a type suffix in shaders (used by realtime filtering...) */
     needTypeSuffixInShaderConstants: boolean;
 
@@ -47,9 +44,6 @@ export interface EngineFeatures {
 
     /** Indicates that some additional texture formats are supported (like TEXTUREFORMAT_R for eg) */
     supportExtendedTextureFormats: boolean;
-
-    /** Indicates that the pre-pass renderer can be used */
-    supportPrePassRenderer: boolean;
 
     /** Indicates that the switch/case construct is supported in shaders */
     supportSwitchCaseInShader: boolean;

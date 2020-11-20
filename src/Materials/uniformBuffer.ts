@@ -631,6 +631,8 @@ export class UniformBuffer {
             var changed = false;
 
             for (var i = 0; i < size; i++) {
+                // We are checking the matrix cache before calling updateUniform so we do not need to check it here
+                // Hence the test for size === 16 to simply commit the matrix values
                 if ((size === 16 && !this._engine._features.uniformBufferHardCheckMatrix) || this._bufferData[location + i] !== data[i]) {
                     changed = true;
                     if (this._createBufferOnWrite) {

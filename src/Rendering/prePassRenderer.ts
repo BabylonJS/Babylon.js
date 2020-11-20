@@ -11,6 +11,8 @@ import { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 import { Nullable } from "../types";
 import { AbstractMesh } from '../Meshes/abstractMesh';
 import { Material } from '../Materials/material';
+import { SubMesh } from '../Meshes/subMesh';
+import { GeometryBufferRenderer } from '../Rendering/geometryBufferRenderer';
 
 /**
  * Renders a pre pass of the scene
@@ -59,6 +61,13 @@ export class PrePassRenderer {
      * To save performance, we can excluded skinned meshes from the prepass
      */
     public excludedSkinnedMesh: AbstractMesh[] = [];
+
+    /**
+     * Force material to be excluded from the prepass
+     * Can be useful when `useGeometryBufferFallback` is set to `true`
+     * and you don't want a material to show in the effect.
+     */
+    public excludedMaterials: Material[] = [];
 
     private _textureIndices: number[] = [];
 
@@ -121,6 +130,46 @@ export class PrePassRenderer {
         this.prePassRT.samples = n;
     }
 
+    private _geometryBuffer: Nullable<GeometryBufferRenderer>;
+    private _useGeometryBufferFallback = false;
+    /**
+     * Uses the geometry buffer renderer as a fallback for non prepass capable effects
+     */
+    public get useGeometryBufferFallback() : boolean {
+        return this._useGeometryBufferFallback;
+    }
+
+    public set useGeometryBufferFallback(value: boolean) {
+        this._useGeometryBufferFallback = value;
+
+        if (value) {
+            this._geometryBuffer = this._scene.enableGeometryBufferRenderer();
+
+            if (!this._geometryBuffer) {
+                // Not supported
+                this._useGeometryBufferFallback = false;
+                return;
+            }
+
+            this._geometryBuffer.renderList = [];
+            this._geometryBuffer._linkPrePassRenderer(this);
+            this._updateGeometryBufferLayout();
+        } else {
+            if (this._geometryBuffer) {
+                this._geometryBuffer._unlinkPrePassRenderer();
+            }
+            this._geometryBuffer = null;
+            this._scene.disableGeometryBufferRenderer();
+        }
+    }
+
+    /**
+     * Set to true to disable gamma transform in PrePass.
+     * Can be useful in case you already proceed to gamma transform on a material level
+     * and your post processes don't need to be in linear color space.
+     */
+    public disableGammaTransform = false;
+
     /**
      * Instanciates a prepass renderer
      * @param scene The scene
@@ -130,31 +179,38 @@ export class PrePassRenderer {
         this._engine = scene.getEngine();
 
         PrePassRenderer._SceneComponentInitialization(this._scene);
-
         this._resetLayout();
     }
 
     private _initializeAttachments() {
-        let gl = this._engine._gl;
-
-        this._multiRenderAttachments = [];
-        this._clearAttachments = [gl.NONE];
-        this._defaultAttachments = [gl.COLOR_ATTACHMENT0];
+        const multiRenderLayout = [];
+        const clearLayout = [false];
+        const defaultLayout = [true];
 
         for (let i = 0; i < this.mrtCount; i++) {
-            this._multiRenderAttachments.push((<any>gl)["COLOR_ATTACHMENT" + i]);
+            multiRenderLayout.push(true);
 
             if (i > 0) {
-                this._clearAttachments.push((<any>gl)["COLOR_ATTACHMENT" + i]);
-                this._defaultAttachments.push(gl.NONE);
+                clearLayout.push(true);
+                defaultLayout.push(false);
             }
         }
+
+        this._multiRenderAttachments = this._engine.buildTextureLayout(multiRenderLayout);
+        this._clearAttachments = this._engine.buildTextureLayout(clearLayout);
+        this._defaultAttachments = this._engine.buildTextureLayout(defaultLayout);
     }
 
     private _createCompositionEffect() {
         this.prePassRT = new MultiRenderTarget("sceneprePassRT", { width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() }, this.mrtCount, this._scene,
             { generateMipMaps: false, generateDepthTexture: true, defaultType: Constants.TEXTURETYPE_UNSIGNED_INT, types: this._mrtFormats });
         this.prePassRT.samples = 1;
+
+        this._initializeAttachments();
+        if (this._useGeometryBufferFallback && !this._geometryBuffer) {
+            // Initializes the link with geometry buffer
+            this.useGeometryBufferFallback = true;
+        }
 
         this.imageProcessingPostProcess = new ImageProcessingPostProcess("sceneCompositionPass", 1, null, undefined, this._engine);
         this.imageProcessingPostProcess.autoClear = false;
@@ -164,20 +220,37 @@ export class PrePassRenderer {
      * Indicates if rendering a prepass is supported
      */
     public get isSupported() {
-        return this._engine._features.supportPrePassRenderer;
+        return this._scene.getEngine().getCaps().drawBuffersExtension;
     }
 
     /**
      * Sets the proper output textures to draw in the engine.
      * @param effect The effect that is drawn. It can be or not be compatible with drawing to several output textures.
+     * @param subMesh Submesh on which the effect is applied
      */
-    public bindAttachmentsForEffect(effect: Effect) {
+    public bindAttachmentsForEffect(effect: Effect, subMesh: SubMesh) {
         if (this.enabled) {
             if (effect._multiTarget) {
                 this._engine.bindAttachments(this._multiRenderAttachments);
             } else {
                 this._engine.bindAttachments(this._defaultAttachments);
+
+                if (this._geometryBuffer) {
+                    const material = subMesh.getMaterial();
+                    if (material && this.excludedMaterials.indexOf(material) === -1) {
+                        this._geometryBuffer.renderList!.push(subMesh.getRenderingMesh());
+                    }
+                }
             }
+        }
+    }
+
+    /**
+     * Restores attachments for single texture draw.
+     */
+    public restoreAttachments() {
+        if (this.enabled && this._defaultAttachments) {
+            this._engine.bindAttachments(this._defaultAttachments);
         }
     }
 
@@ -189,6 +262,10 @@ export class PrePassRenderer {
             this._update();
         }
 
+        if (this._geometryBuffer) {
+            this._geometryBuffer.renderList!.length = 0;
+        }
+
         this._bindFrameBuffer();
     }
 
@@ -198,7 +275,7 @@ export class PrePassRenderer {
     public _afterCameraDraw() {
         if (this._enabled) {
             const firstCameraPP = this._scene.activeCamera && this._scene.activeCamera._getFirstPostProcess();
-            if (firstCameraPP) {
+            if (firstCameraPP && this._postProcesses.length) {
                 this._scene.postProcessManager._prepareFrame();
             }
             this._scene.postProcessManager.directRender(this._postProcesses, firstCameraPP ? firstCameraPP.inputTexture : null);
@@ -214,6 +291,7 @@ export class PrePassRenderer {
         if (width !== requiredWidth || height !== requiredHeight) {
             this.prePassRT.resize({ width: requiredWidth, height: requiredHeight });
 
+            this._updateGeometryBufferLayout();
             this._bindPostProcessChain();
         }
     }
@@ -244,7 +322,7 @@ export class PrePassRenderer {
             // Clearing other attachment with 0 on all other attachments
             this._engine.bindAttachments(this._clearAttachments);
             this._engine.clear(this._clearColor, true, false, false);
-            this._engine.bindAttachments(this._multiRenderAttachments);
+            this._engine.bindAttachments(this._defaultAttachments);
         }
     }
 
@@ -254,6 +332,50 @@ export class PrePassRenderer {
 
         if (this.imageProcessingPostProcess) {
             this.imageProcessingPostProcess.imageProcessingConfiguration.applyByPostProcess = enabled;
+        }
+    }
+
+    private _updateGeometryBufferLayout() {
+        if (this._geometryBuffer) {
+            this._geometryBuffer._resetLayout();
+
+            const texturesActivated = [];
+
+            for (let i = 0; i < this._mrtLayout.length; i++) {
+                texturesActivated.push(false);
+            }
+
+            this._geometryBuffer._linkInternalTexture(this.prePassRT.getInternalTexture()!);
+
+            const matches = [
+                {
+                    prePassConstant: Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE,
+                    geometryBufferConstant: GeometryBufferRenderer.DEPTHNORMAL_TEXTURE_TYPE,
+                },
+                {
+                    prePassConstant: Constants.PREPASS_POSITION_TEXTURE_TYPE,
+                    geometryBufferConstant: GeometryBufferRenderer.POSITION_TEXTURE_TYPE,
+                },
+                {
+                    prePassConstant: Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE,
+                    geometryBufferConstant: GeometryBufferRenderer.REFLECTIVITY_TEXTURE_TYPE,
+                },
+                {
+                    prePassConstant: Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
+                    geometryBufferConstant: GeometryBufferRenderer.VELOCITY_TEXTURE_TYPE,
+                }
+            ];
+
+            // replace textures in the geometryBuffer RT
+            for (let i = 0; i < matches.length; i++) {
+                const index = this._mrtLayout.indexOf(matches[i].prePassConstant);
+                if (index !== -1) {
+                    this._geometryBuffer._forceTextureType(matches[i].geometryBufferConstant, index);
+                    texturesActivated[index] = true;
+                }
+            }
+
+            this._geometryBuffer._setAttachments(this._engine.buildTextureLayout(texturesActivated));
         }
     }
 
@@ -298,6 +420,7 @@ export class PrePassRenderer {
             this.prePassRT.updateCount(this.mrtCount, { types: this._mrtFormats });
         }
 
+        this._updateGeometryBufferLayout();
         this._resetPostProcessChain();
 
         for (let i = 0; i < this._effectConfigurations.length; i++) {
@@ -318,7 +441,19 @@ export class PrePassRenderer {
             this._createCompositionEffect();
         }
 
-        this._postProcesses.push(this.imageProcessingPostProcess);
+        let isIPPAlreadyPresent = false;
+        if (this._scene.activeCamera?._postProcesses) {
+            for (let i = 0; i < this._scene.activeCamera._postProcesses.length; i++) {
+                if (this._scene.activeCamera._postProcesses[i]?.getClassName() === "ImageProcessingPostProcess") {
+                    isIPPAlreadyPresent = true;
+                }
+            }
+
+        }
+
+        if (!isIPPAlreadyPresent && !this.disableGammaTransform) {
+            this._postProcesses.push(this.imageProcessingPostProcess);
+        }
         this._bindPostProcessChain();
         this._setState(true);
     }
@@ -357,7 +492,14 @@ export class PrePassRenderer {
     }
 
     private _bindPostProcessChain() {
-        this._postProcesses[0].inputTexture = this.prePassRT.getInternalTexture()!;
+        if (this._postProcesses.length) {
+            this._postProcesses[0].inputTexture = this.prePassRT.getInternalTexture()!;
+        } else {
+            const pp = this._scene.activeCamera?._getFirstPostProcess();
+            if (pp) {
+                pp.inputTexture = this.prePassRT.getInternalTexture()!;
+            }
+        }
     }
 
     /**
@@ -418,7 +560,8 @@ export class PrePassRenderer {
 
         if (!this.enabled) {
             // Prepass disabled, we render only on 1 color attachment
-            this._engine.bindAttachments([this._engine._gl.COLOR_ATTACHMENT0]);
+            this._engine.restoreDefaultFramebuffer();
+            this._engine.restoreSingleAttachment();
         }
     }
 

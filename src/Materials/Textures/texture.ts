@@ -1,7 +1,7 @@
 import { serialize, SerializationHelper } from "../../Misc/decorators";
 import { Observable } from "../../Misc/observable";
 import { Nullable } from "../../types";
-import { Matrix, Vector3 } from "../../Maths/math.vector";
+import { Matrix, TmpVectors, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Constants } from "../../Engines/constants";
 import { _TypeStore } from '../../Misc/typeStore';
@@ -12,6 +12,7 @@ import { TimingTools } from '../../Misc/timingTools';
 import { InstantiationTools } from '../../Misc/instantiationTools';
 import { Plane } from '../../Maths/math.plane';
 import { StringTools } from '../../Misc/stringTools';
+import { CopyTools } from '../../Misc/copyTools';
 
 declare type CubeTexture = import("../../Materials/Textures/cubeTexture").CubeTexture;
 declare type MirrorTexture = import("../../Materials/Textures/mirrorTexture").MirrorTexture;
@@ -27,6 +28,12 @@ export class Texture extends BaseTexture {
      * Gets or sets a general boolean used to indicate that textures containing direct data (buffers) must be saved as part of the serialization process
      */
     public static SerializeBuffers = true;
+
+    /**
+     * Gets or sets a general boolean used to indicate that texture buffers must be saved as part of the serialization process.
+     * If no buffer exists, one will be created as base64 string from the internal webgl data.
+     */
+    public static ForceSerializeBuffers = false;
 
     /** @hidden */
     public static _CubeTextureParser = (jsonTexture: any, scene: Scene, rootUrl: string): CubeTexture => {
@@ -182,6 +189,12 @@ export class Texture extends BaseTexture {
     public wRotationCenter = 0.5;
 
     /**
+     * Sets this property to true to avoid deformations when rotating the texture with non-uniform scaling
+     */
+    @serialize()
+    public homogeneousRotationInUVTransform = false;
+
+    /**
      * Are mip maps generated for this texture or not.
      */
     get noMipmap(): boolean {
@@ -212,6 +225,10 @@ export class Texture extends BaseTexture {
     private _cachedVAng: number = -1;
     private _cachedWAng: number = -1;
     private _cachedProjectionMatrixId: number = -1;
+    private _cachedURotationCenter: number = -1;
+    private _cachedVRotationCenter: number = -1;
+    private _cachedWRotationCenter: number = -1;
+    private _cachedHomogeneousRotationInUVTransform: boolean = false;
     private _cachedCoordinatesMode: number = -1;
 
     /** @hidden */
@@ -224,6 +241,7 @@ export class Texture extends BaseTexture {
     private _delayedOnLoad: Nullable<() => void> = null;
     private _delayedOnError: Nullable<() => void> = null;
     private _mimeType?: string;
+    private _loaderOptions?: any;
 
     /** Returns the texture mime type if it was defined by a loader (undefined else) */
     public get mimeType() {
@@ -281,8 +299,12 @@ export class Texture extends BaseTexture {
      * @param deleteBuffer defines if the buffer we are loading the texture from should be deleted after load
      * @param format defines the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
      * @param mimeType defines an optional mime type information
+     * @param loaderOptions options to be passed to the loader
      */
-    constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | ThinEngine>, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, deleteBuffer: boolean = false, format?: number, mimeType?: string) {
+    constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | ThinEngine>, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
+            onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null,
+            deleteBuffer: boolean = false, format?: number, mimeType?: string, loaderOptions?: any)
+    {
         super(sceneOrEngine);
 
         this.name = url || "";
@@ -293,6 +315,7 @@ export class Texture extends BaseTexture {
         this._buffer = buffer;
         this._deleteBuffer = deleteBuffer;
         this._mimeType = mimeType;
+        this._loaderOptions = loaderOptions;
         if (format) {
             this._format = format;
         }
@@ -349,7 +372,7 @@ export class Texture extends BaseTexture {
 
         if (!this._texture) {
             if (!scene || !scene.useDelayedTextureLoading) {
-                this._texture = engine.createTexture(this.url, noMipmap, invertY, scene, samplingMode, load, onError, this._buffer, undefined, this._format, null, mimeType);
+                this._texture = engine.createTexture(this.url, noMipmap, invertY, scene, samplingMode, load, onError, this._buffer, undefined, this._format, null, mimeType, loaderOptions);
                 if (deleteBuffer) {
                     this._buffer = null;
                 }
@@ -411,7 +434,7 @@ export class Texture extends BaseTexture {
         this._texture = this._getFromCache(this.url, this._noMipmap, this.samplingMode, this._invertY);
 
         if (!this._texture) {
-            this._texture = scene.getEngine().createTexture(this.url, this._noMipmap, this._invertY, scene, this.samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer, null, this._format, null, this._mimeType);
+            this._texture = scene.getEngine().createTexture(this.url, this._noMipmap, this._invertY, scene, this.samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer, null, this._format, null, this._mimeType, this._loaderOptions);
             if (this._deleteBuffer) {
                 this._buffer = null;
             }
@@ -445,6 +468,22 @@ export class Texture extends BaseTexture {
     }
 
     /**
+     * Checks if the texture has the same transform matrix than another texture
+     * @param texture texture to check against
+     * @returns true if the transforms are the same, else false
+     */
+    public checkTransformsAreIdentical(texture: Nullable<Texture>): boolean {
+        return texture !== null &&
+                this.uOffset === texture.uOffset &&
+                this.vOffset === texture.vOffset &&
+                this.uScale === texture.uScale &&
+                this.vScale === texture.vScale &&
+                this.uAng === texture.uAng &&
+                this.vAng === texture.vAng &&
+                this.wAng === texture.wAng;
+    }
+
+    /**
      * Get the current texture matrix which includes the requested offsetting, tiling and rotation components.
      * @returns the transform matrix of the texture.
      */
@@ -456,7 +495,11 @@ export class Texture extends BaseTexture {
             this.vScale === this._cachedVScale &&
             this.uAng === this._cachedUAng &&
             this.vAng === this._cachedVAng &&
-            this.wAng === this._cachedWAng) {
+            this.wAng === this._cachedWAng &&
+            this.uRotationCenter === this._cachedURotationCenter &&
+            this.vRotationCenter === this._cachedVRotationCenter &&
+            this.wRotationCenter === this._cachedWRotationCenter &&
+            this.homogeneousRotationInUVTransform === this._cachedHomogeneousRotationInUVTransform) {
             return this._cachedTextureMatrix!;
         }
 
@@ -467,8 +510,12 @@ export class Texture extends BaseTexture {
         this._cachedUAng = this.uAng;
         this._cachedVAng = this.vAng;
         this._cachedWAng = this.wAng;
+        this._cachedURotationCenter = this.uRotationCenter;
+        this._cachedVRotationCenter = this.vRotationCenter;
+        this._cachedWRotationCenter = this.wRotationCenter;
+        this._cachedHomogeneousRotationInUVTransform = this.homogeneousRotationInUVTransform;
 
-        if (!this._cachedTextureMatrix) {
+        if (!this._cachedTextureMatrix || !this._rowGenerationMatrix) {
             this._cachedTextureMatrix = Matrix.Zero();
             this._rowGenerationMatrix = new Matrix();
             this._t0 = Vector3.Zero();
@@ -478,20 +525,35 @@ export class Texture extends BaseTexture {
 
         Matrix.RotationYawPitchRollToRef(this.vAng, this.uAng, this.wAng, this._rowGenerationMatrix!);
 
-        this._prepareRowForTextureGeneration(0, 0, 0, this._t0!);
-        this._prepareRowForTextureGeneration(1.0, 0, 0, this._t1!);
-        this._prepareRowForTextureGeneration(0, 1.0, 0, this._t2!);
+        if (this.homogeneousRotationInUVTransform) {
+            Matrix.TranslationToRef(-this._cachedURotationCenter, -this._cachedVRotationCenter, -this._cachedWRotationCenter, TmpVectors.Matrix[0]);
+            Matrix.TranslationToRef(this._cachedURotationCenter, this._cachedVRotationCenter, this._cachedWRotationCenter, TmpVectors.Matrix[1]);
+            Matrix.ScalingToRef(this._cachedUScale, this._cachedVScale, 0, TmpVectors.Matrix[2]);
+            Matrix.TranslationToRef(this._cachedUOffset, this._cachedVOffset, 0, TmpVectors.Matrix[3]);
 
-        this._t1!.subtractInPlace(this._t0!);
-        this._t2!.subtractInPlace(this._t0!);
+            TmpVectors.Matrix[0].multiplyToRef(this._rowGenerationMatrix!, this._cachedTextureMatrix);
+            this._cachedTextureMatrix.multiplyToRef(TmpVectors.Matrix[1], this._cachedTextureMatrix);
+            this._cachedTextureMatrix.multiplyToRef(TmpVectors.Matrix[2], this._cachedTextureMatrix);
+            this._cachedTextureMatrix.multiplyToRef(TmpVectors.Matrix[3], this._cachedTextureMatrix);
 
-        Matrix.FromValuesToRef(
-            this._t1!.x, this._t1!.y, this._t1!.z, 0.0,
-            this._t2!.x, this._t2!.y, this._t2!.z, 0.0,
-            this._t0!.x, this._t0!.y, this._t0!.z, 0.0,
-            0.0, 0.0, 0.0, 1.0,
-            this._cachedTextureMatrix
-        );
+            // copy the translation row to the 3rd row of the matrix so that we don't need to update the shaders (which expects the translation to be on the 3rd row)
+            this._cachedTextureMatrix.setRowFromFloats(2, this._cachedTextureMatrix.m[12], this._cachedTextureMatrix.m[13], this._cachedTextureMatrix.m[14], 1);
+        } else {
+            this._prepareRowForTextureGeneration(0, 0, 0, this._t0!);
+            this._prepareRowForTextureGeneration(1.0, 0, 0, this._t1!);
+            this._prepareRowForTextureGeneration(0, 1.0, 0, this._t2!);
+
+            this._t1!.subtractInPlace(this._t0!);
+            this._t2!.subtractInPlace(this._t0!);
+
+            Matrix.FromValuesToRef(
+                this._t1!.x, this._t1!.y, this._t1!.z, 0.0,
+                this._t2!.x, this._t2!.y, this._t2!.z, 0.0,
+                this._t0!.x, this._t0!.y, this._t0!.z, 0.0,
+                0.0, 0.0, 0.0, 1.0,
+                this._cachedTextureMatrix
+            );
+        }
 
         let scene = this.getScene();
 
@@ -612,12 +674,14 @@ export class Texture extends BaseTexture {
             return null;
         }
 
-        if (Texture.SerializeBuffers) {
+        if (Texture.SerializeBuffers || Texture.ForceSerializeBuffers) {
             if (typeof this._buffer === "string" && (this._buffer as string).substr(0, 5) === "data:") {
                 serializationObject.base64String = this._buffer;
                 serializationObject.name = serializationObject.name.replace("data:", "");
             } else if (this.url && StringTools.StartsWith(this.url, "data:") && this._buffer instanceof Uint8Array) {
                 serializationObject.base64String = "data:image/png;base64," + StringTools.EncodeArrayBufferToBase64(this._buffer);
+            } else if (Texture.ForceSerializeBuffers) {
+                serializationObject.base64String = CopyTools.GenerateBase64StringFromTexture(this); // TODO WEBGPU serialize should turn asynchronous as GenerateBase64StringFromTexture now returns a promise...
             }
         }
 

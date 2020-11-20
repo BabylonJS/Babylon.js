@@ -57,6 +57,11 @@ export class EventState {
      * If it is the first function in the callback chain it will be the event data.
      */
     public lastReturnValue?: any;
+
+     /**
+     * User defined information that will be sent to observers
+     */
+    public userInfo?: any;
 }
 
 /**
@@ -303,9 +308,10 @@ export class Observable<T> {
      * @param mask defines the mask of the current notification (observers with incompatible mask (ie mask & observer.mask === 0) will not be notified)
      * @param target defines the original target of the state
      * @param currentTarget defines the current target of the state
+     * @param userInfo defines any user info to send to observers
      * @returns false if the complete observer chain was not processed (because one observer set the skipNextObservers to true)
      */
-    public notifyObservers(eventData: T, mask: number = -1, target?: any, currentTarget?: any): boolean {
+    public notifyObservers(eventData: T, mask: number = -1, target?: any, currentTarget?: any, userInfo?: any): boolean {
         if (!this._observers.length) {
             return true;
         }
@@ -316,6 +322,7 @@ export class Observable<T> {
         state.currentTarget = currentTarget;
         state.skipNextObservers = false;
         state.lastReturnValue = eventData;
+        state.userInfo = userInfo;
 
         for (var obs of this._observers) {
             if (obs._willBeUnregistered) {
@@ -351,9 +358,10 @@ export class Observable<T> {
      * @param mask is used to filter observers defaults to -1
      * @param target defines the callback target (see EventState)
      * @param currentTarget defines he current object in the bubbling phase
+     * @param userInfo defines any user info to send to observers
      * @returns {Promise<T>} will return a Promise than resolves when all callbacks executed successfully.
      */
-    public notifyObserversWithPromise(eventData: T, mask: number = -1, target?: any, currentTarget?: any): Promise<T> {
+    public notifyObserversWithPromise(eventData: T, mask: number = -1, target?: any, currentTarget?: any, userInfo?: any): Promise<T> {
 
         // create an empty promise
         let p: Promise<any> = Promise.resolve(eventData);
@@ -368,6 +376,7 @@ export class Observable<T> {
         state.target = target;
         state.currentTarget = currentTarget;
         state.skipNextObservers = false;
+        state.userInfo = userInfo;
 
         // execute one callback after another (not using Promise.all, the order is important)
         this._observers.forEach((obs) => {

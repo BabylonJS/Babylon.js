@@ -128,8 +128,9 @@ export class ScreenshotTools {
 
         var scene = camera.getScene();
         var previousCamera: Nullable<Camera> = null;
+        var previousCameras = scene.activeCameras;
 
-        if (scene.activeCamera !== camera) {
+        if (scene.activeCamera !== camera || scene.activeCameras && scene.activeCameras.length) {
             previousCamera = scene.activeCamera;
             scene.activeCamera = camera;
         }
@@ -147,6 +148,7 @@ export class ScreenshotTools {
                 if (previousCamera) {
                     scene.activeCamera = previousCamera;
                 }
+                scene.activeCameras = previousCameras;
                 camera.getProjectionMatrix(true); // Force cache refresh;
             });
         });

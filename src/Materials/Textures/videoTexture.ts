@@ -18,6 +18,11 @@ export interface VideoTextureSettings {
     autoPlay?: boolean;
 
     /**
+     * Applies `muted` to video, if specified
+     */
+    muted?: boolean;
+
+    /**
      * Applies `loop` to video, if specified
      */
     loop?: boolean;
@@ -110,12 +115,14 @@ export class VideoTexture extends Texture {
         if (settings.poster) {
             this.video.poster = settings.poster;
         }
-
         if (settings.autoPlay !== undefined) {
             this.video.autoplay = settings.autoPlay;
         }
         if (settings.loop !== undefined) {
             this.video.loop = settings.loop;
+        }
+        if (settings.muted !== undefined) {
+            this.video.muted = settings.muted;
         }
 
         this.video.setAttribute("playsinline", "");
@@ -125,6 +132,10 @@ export class VideoTexture extends Texture {
         this.video.addEventListener("emptied", this.reset);
         this._createInternalTextureOnEvent = (settings.poster && !settings.autoPlay) ? "play" : "canplay";
         this.video.addEventListener(this._createInternalTextureOnEvent, this._createInternalTexture);
+
+        if (settings.autoPlay) {
+            this.video.play();
+        }
 
         const videoHasEnoughData = (this.video.readyState >= this.video.HAVE_CURRENT_DATA);
         if (settings.poster &&
@@ -359,6 +370,17 @@ export class VideoTexture extends Texture {
      */
     public static CreateFromStreamAsync(scene: Scene, stream: MediaStream): Promise<VideoTexture> {
         var video = document.createElement("video");
+
+        if (scene.getEngine()._badOS) {
+            // Yes... I know and I hope to remove it soon...
+            document.body.appendChild(video);
+            video.style.transform = 'scale(0.0001, 0.0001)';
+            video.style.opacity = '0';
+            video.style.position = 'fixed';
+            video.style.bottom = '0px';
+            video.style.right = '0px';
+        }
+
         video.setAttribute('autoplay', '');
         video.setAttribute('muted', 'true');
         video.setAttribute('playsinline', '');

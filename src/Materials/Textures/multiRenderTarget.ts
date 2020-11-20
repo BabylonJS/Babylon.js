@@ -66,7 +66,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
      * Get if draw buffers are currently supported by the used hardware and browser.
      */
     public get isSupported(): boolean {
-        return this._engine?._features.supportMultipleRenderTargets ?? false;
+        return this._engine?.getCaps().drawBuffersExtension ?? false;
     }
 
     /**
@@ -214,6 +214,18 @@ export class MultiRenderTarget extends RenderTargetTexture {
 
         // Keeps references to frame buffer and stencil/depth buffer
         this._texture = this._internalTextures[0];
+    }
+
+    /**
+     * Replaces a texture within the MRT.
+     * @param texture The new texture to insert in the MRT
+     * @param index The index of the texture to replace
+     */
+    public replaceTexture(texture: Texture, index: number) {
+        if (texture._texture) {
+            this._textures[index] = texture;
+            this._internalTextures[index] = texture._texture;
+        }
     }
 
     /**

@@ -16,6 +16,7 @@ import { Material } from '../Materials/material';
 import { StandardMaterial } from '../Materials/standardMaterial';
 import { MultiMaterial } from '../Materials/multiMaterial';
 import { PickingInfo } from '../Collisions/pickingInfo';
+import { Tools } from '../Misc/tools';
 
 /**
  * The SPS is a single updatable mesh. The solid particles are simply separate parts or faces fo this big mesh.
@@ -365,9 +366,9 @@ export class SolidParticleSystem implements IDisposable {
             var idx: number = this.nbParticles;
             var shape: Vector3[] = this._posToShape(facetPos);
             var shapeUV: number[] = this._uvsToShapeUV(facetUV);
-            var shapeInd = Array.from(facetInd);
-            var shapeCol = Array.from(facetCol);
-            var shapeNor = Array.from(facetNor);
+            var shapeInd = Tools.Slice(facetInd);
+            var shapeCol = Tools.Slice(facetCol);
+            var shapeNor = Tools.Slice(facetNor);
 
             // compute the barycenter of the shape
             barycenter.copyFromFloats(0, 0, 0);
@@ -675,9 +676,9 @@ export class SolidParticleSystem implements IDisposable {
         var meshCol = <FloatArray>mesh.getVerticesData(VertexBuffer.ColorKind);
         var meshNor = <FloatArray>mesh.getVerticesData(VertexBuffer.NormalKind);
         this.recomputeNormals = (meshNor) ? false : true;
-        var indices = Array.from(meshInd);
-        var shapeNormals = Array.from(meshNor);
-        var shapeColors = (meshCol) ? Array.from(meshCol) : [];
+        var indices = Tools.SliceToArray<IndicesArray, number>(meshInd);
+        var shapeNormals = Tools.SliceToArray<number[] | Float32Array, number>(meshNor);
+        var shapeColors = (meshCol) ? Tools.SliceToArray<number[] | Float32Array, number>(meshCol) : [];
         var storage = (options && options.storage) ? options.storage : null;
         var bbInfo: Nullable<BoundingInfo> = null;
         if (this._particlesIntersect) {

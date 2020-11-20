@@ -1,6 +1,7 @@
 import { DataBuffer } from '../../Meshes/dataBuffer';
 import { WebGPUDataBuffer } from '../../Meshes/WebGPU/webgpuDataBuffer';
 import { Nullable } from '../../types';
+import * as WebGPUConstants from './webgpuConstants';
 
 /** @hidden */
 export class WebGPUBufferManager {
@@ -102,7 +103,7 @@ export class WebGPUBufferManager {
 
     public readDataFromBuffer(gpuBuffer: GPUBuffer, size: number, width: number, height: number, bytesPerRow: number, bytesPerRowAligned: number, floatFormat = 0, offset = 0, buffer: Nullable<ArrayBufferView> = null, destroyBuffer = true): Promise<ArrayBufferView> {
         return new Promise((resolve, reject) => {
-            gpuBuffer.mapAsync(GPUMapMode.READ, offset, size).then(() => {
+            gpuBuffer.mapAsync(WebGPUConstants.MapMode.Read, offset, size).then(() => {
                 const copyArrayBuffer = gpuBuffer.getMappedRange(offset, size);
                 let data: Nullable<ArrayBufferView> | Uint8Array | Float32Array = buffer;
                 if (data === null) {

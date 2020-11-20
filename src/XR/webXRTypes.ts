@@ -24,6 +24,24 @@ export enum WebXRState {
 }
 
 /**
+ * The state of the XR camera's tracking
+ */
+export enum WebXRTrackingState {
+    /**
+     * No transformation received, device is not being tracked
+     */
+    NOT_TRACKING,
+    /**
+     * Tracking lost - using emulated position
+     */
+    TRACKING_LOST,
+    /**
+     * Transformation tracking works normally
+     */
+    TRACKING
+}
+
+/**
  * Abstraction of the XR render target
  */
 export interface WebXRRenderTarget extends IDisposable {

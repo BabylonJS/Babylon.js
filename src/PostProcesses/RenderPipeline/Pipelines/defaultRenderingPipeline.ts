@@ -1,6 +1,6 @@
 import { Nullable } from "../../../types";
 import { serialize, SerializationHelper } from "../../../Misc/decorators";
-import { Observer } from "../../../Misc/observable";
+import { Observable, Observer } from "../../../Misc/observable";
 import { IAnimatable } from '../../../Animations/animatable.interface';
 import { Logger } from "../../../Misc/logger";
 import { Camera } from "../../../Cameras/camera";
@@ -111,6 +111,11 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
     private _grainEnabled: boolean = false;
 
     private _buildAllowed = true;
+
+    /**
+     * This is triggered each time the pipeline has been built.
+     */
+    public onBuildObservable = new Observable<DefaultRenderingPipeline>();
 
     /**
      * Gets active scene
@@ -633,6 +638,8 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
         if (!this._enableMSAAOnFirstPostProcess(this.samples) && this.samples > 1) {
             Logger.Warn("MSAA failed to enable, MSAA is only supported in browsers that support webGL >= 2.0");
         }
+
+        this.onBuildObservable.notifyObservers(this);
     }
 
     private _disposePostProcesses(disposeNonRecreated = false): void {
@@ -714,6 +721,7 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
      * Dispose of the pipeline and stop all post processes
      */
     public dispose(): void {
+        this.onBuildObservable.clear();
         this._disposePostProcesses(true);
         this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._cameras);
         this._scene.autoClear = true;

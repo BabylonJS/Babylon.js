@@ -13,6 +13,7 @@ import { LinesBuilder } from "../../Meshes/Builders/linesBuilder";
 import { LinesMesh } from '../../Meshes/linesMesh';
 import { PhysicsRaycastResult } from "../physicsRaycastResult";
 import { Scalar } from "../../Maths/math.scalar";
+import { Epsilon } from '../../Maths/math.constants';
 
 declare var Ammo: any;
 
@@ -55,6 +56,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     private _tmpAmmoVectorRCA: any;
     private _tmpAmmoVectorRCB: any;
     private _raycastResult: PhysicsRaycastResult;
+    private _tmpContactPoint = new Vector3();
 
     private static readonly DISABLE_COLLISION_FLAG = 4;
     private static readonly KINEMATIC_FLAG = 2;
@@ -87,7 +89,14 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         this.world = new this.bjsAMMO.btSoftRigidDynamicsWorld(this._dispatcher, this._overlappingPairCache, this._solver, this._collisionConfiguration, this._softBodySolver);
 
         this._tmpAmmoConcreteContactResultCallback = new this.bjsAMMO.ConcreteContactResultCallback();
-        this._tmpAmmoConcreteContactResultCallback.addSingleResult = () => { this._tmpContactCallbackResult = true; };
+        this._tmpAmmoConcreteContactResultCallback.addSingleResult = (contactPoint: any, colObj0Wrap: any, partId0: any, index0: any) => {
+            contactPoint = this.bjsAMMO.wrapPointer(contactPoint, Ammo.btManifoldPoint);
+            const worldPoint = contactPoint.getPositionWorldOnA();
+            this._tmpContactPoint.x = worldPoint.x();
+            this._tmpContactPoint.y = worldPoint.y();
+            this._tmpContactPoint.z = worldPoint.z();
+            this._tmpContactCallbackResult = true;
+        };
 
         this._raycastResult = new PhysicsRaycastResult();
 
@@ -219,8 +228,8 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                         for (var otherImpostor of collideCallback.otherImpostors) {
                             if (mainImpostor.physicsBody.isActive() || otherImpostor.physicsBody.isActive()) {
                                 if (this._isImpostorPairInContact(mainImpostor, otherImpostor)) {
-                                    mainImpostor.onCollide({ body: otherImpostor.physicsBody });
-                                    otherImpostor.onCollide({ body: mainImpostor.physicsBody });
+                                    mainImpostor.onCollide({ body: otherImpostor.physicsBody, point: this._tmpContactPoint });
+                                    otherImpostor.onCollide({ body: mainImpostor.physicsBody, point: this._tmpContactPoint });
                                 }
                             }
                         }
@@ -1033,13 +1042,13 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
 
         // If rotation/position has changed update and activate rigged body
         if (
-            trans.getOrigin().x() != newPosition.x ||
-            trans.getOrigin().y() != newPosition.y ||
-            trans.getOrigin().z() != newPosition.z ||
-            trans.getRotation().x() != newRotation.x ||
-            trans.getRotation().y() != newRotation.y ||
-            trans.getRotation().z() != newRotation.z ||
-            trans.getRotation().w() != newRotation.w
+            Math.abs(trans.getOrigin().x() - newPosition.x) > Epsilon ||
+            Math.abs(trans.getOrigin().y() - newPosition.y) > Epsilon ||
+            Math.abs(trans.getOrigin().z() - newPosition.z) > Epsilon ||
+            Math.abs(trans.getRotation().x() - newRotation.x) > Epsilon ||
+            Math.abs(trans.getRotation().y() - newRotation.y) > Epsilon ||
+            Math.abs(trans.getRotation().z() - newRotation.z) > Epsilon ||
+            Math.abs(trans.getRotation().w() - newRotation.w) > Epsilon
         ) {
             this._tmpAmmoVectorA.setValue(newPosition.x, newPosition.y, newPosition.z);
             trans.setOrigin(this._tmpAmmoVectorA);

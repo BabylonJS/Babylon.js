@@ -452,6 +452,7 @@ export class MaterialHelper {
         defines["SHADOWPCSS" + lightIndex] = false;
         defines["SHADOWPOISSON" + lightIndex] = false;
         defines["SHADOWESM" + lightIndex] = false;
+        defines["SHADOWCLOSEESM" + lightIndex] = false;
         defines["SHADOWCUBE" + lightIndex] = false;
         defines["SHADOWLOWQUALITY" + lightIndex] = false;
         defines["SHADOWMEDIUMQUALITY" + lightIndex] = false;
@@ -536,6 +537,7 @@ export class MaterialHelper {
                 defines["SHADOWPCSS" + index] = false;
                 defines["SHADOWPOISSON" + index] = false;
                 defines["SHADOWESM" + index] = false;
+                defines["SHADOWCLOSEESM" + index] = false;
                 defines["SHADOWCUBE" + index] = false;
                 defines["SHADOWLOWQUALITY" + index] = false;
                 defines["SHADOWMEDIUMQUALITY" + index] = false;
@@ -567,8 +569,17 @@ export class MaterialHelper {
      * @param samplersList The sampler list
      * @param projectedLightTexture defines if projected texture must be used
      * @param uniformBuffersList defines an optional list of uniform buffers
+     * @param updateOnlyBuffersList True to only update the uniformBuffersList array
      */
-    public static PrepareUniformsAndSamplersForLight(lightIndex: number, uniformsList: string[], samplersList: string[], projectedLightTexture?: any, uniformBuffersList: Nullable<string[]> = null) {
+    public static PrepareUniformsAndSamplersForLight(lightIndex: number, uniformsList: string[], samplersList: string[], projectedLightTexture?: any, uniformBuffersList: Nullable<string[]> = null, updateOnlyBuffersList = false) {
+        if (uniformBuffersList) {
+            uniformBuffersList.push("Light" + lightIndex);
+        }
+
+        if (updateOnlyBuffersList) {
+            return;
+        }
+
         uniformsList.push(
             "vLightData" + lightIndex,
             "vLightDiffuse" + lightIndex,
@@ -580,10 +591,6 @@ export class MaterialHelper {
             "shadowsInfo" + lightIndex,
             "depthValues" + lightIndex,
         );
-
-        if (uniformBuffersList) {
-            uniformBuffersList.push("Light" + lightIndex);
-        }
 
         samplersList.push("shadowSampler" + lightIndex);
         samplersList.push("depthSampler" + lightIndex);
@@ -681,6 +688,10 @@ export class MaterialHelper {
 
                 if (defines["SHADOWESM" + lightIndex]) {
                     fallbacks.addFallback(rank, "SHADOWESM" + lightIndex);
+                }
+
+                if (defines["SHADOWCLOSEESM" + lightIndex]) {
+                    fallbacks.addFallback(rank, "SHADOWCLOSEESM" + lightIndex);
                 }
             }
         }

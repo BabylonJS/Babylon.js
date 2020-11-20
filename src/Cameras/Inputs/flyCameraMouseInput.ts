@@ -7,6 +7,7 @@ import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 import { Scene } from "../../scene";
 import { Quaternion } from "../../Maths/math.vector";
 import { Axis } from '../../Maths/math.axis';
+import { Tools } from '../../Misc/tools';
 /**
  * Listen to mouse events to control the camera.
  * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -59,7 +60,6 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
     @serialize()
     public angularSensibility = 1000.0;
 
-    private _mousemoveCallback: (e: MouseEvent) => void;
     private _observer: Nullable<Observer<PointerInfo>>;
     private _rollObserver: Nullable<Observer<Scene>>;
     private previousPosition: Nullable<{ x: number, y: number }> = null;
@@ -76,11 +76,10 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
 
     /**
      * Attach the mouse control to the HTML DOM element.
-     * @param element Defines the element that listens to the input events.
      * @param noPreventDefault Defines whether events caught by the controls should call preventdefault().
      */
-    public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
-        this.element = element;
+    public attachControl(noPreventDefault?: boolean): void {
+        noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         this.noPreventDefault = noPreventDefault;
 
         this._observer = this.camera.getScene().onPointerObservable.add(
@@ -98,27 +97,22 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
                 }
             }
         );
-
-        // Helper function to keep 'this'.
-        this._mousemoveCallback = (e: any) => {
-            this._onMouseMove(e);
-        };
-        element.addEventListener("mousemove", this._mousemoveCallback, false);
     }
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param element Defines the element to stop listening the inputs from
      */
-    public detachControl(element: Nullable<HTMLElement>): void {
-        if (this._observer && element) {
+    public detachControl(): void;
+
+    /**
+     * Detach the current controls from the specified dom element.
+     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     */
+    public detachControl(ignored?: any): void {
+        if (this._observer) {
             this.camera.getScene().onPointerObservable.remove(this._observer);
 
             this.camera.getScene().onBeforeRenderObservable.remove(this._rollObserver);
-
-            if (this._mousemoveCallback) {
-                element.removeEventListener("mousemove", this._mousemoveCallback);
-            }
 
             this._observer = null;
             this._rollObserver = null;
@@ -184,6 +178,11 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
                 e.preventDefault();
                 this.element.focus();
             }
+
+            // This is required to move while pointer button is down
+            if (engine.isPointerLock) {
+                this._onMouseMove(p.event);
+            }
         } else
             // Mouse up.
             if (p.type === PointerEventTypes.POINTERUP && srcElement) {
@@ -202,7 +201,11 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
             } else
                 // Mouse move.
                 if (p.type === PointerEventTypes.POINTERMOVE) {
-                    if (!this.previousPosition || engine.isPointerLock) {
+                    if (!this.previousPosition) {
+                        if (engine.isPointerLock) {
+                            this._onMouseMove(p.event);
+                        }
+
                         return;
                     }
 

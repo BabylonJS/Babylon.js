@@ -228,6 +228,9 @@ export class ShadowGenerator implements IShadowGenerator {
     /** Gets or sets the custom shader name to use */
     public customShaderOptions: ICustomShaderOptions;
 
+    /** Gets or sets a custom function to allow/disallow rendering a sub mesh in the shadow map */
+    public customAllowRendering: (subMesh: SubMesh) => boolean;
+
     /**
      * Observable triggered before the shadow is rendered. Can be used to update internal effect state
      */
@@ -809,6 +812,19 @@ export class ShadowGenerator implements IShadowGenerator {
     }
 
     /**
+     * Gets or sets the size of the texture what stores the shadows
+     */
+    public get mapSize(): number {
+        return this._mapSize;
+    }
+
+    public set mapSize(size: number) {
+        this._mapSize = size;
+        this._light._markMeshesAsLightDirty();
+        this.recreateShadowMap();
+    }
+
+    /**
      * Creates a ShadowGenerator object.
      * A ShadowGenerator is the required tool to use the shadows.
      * Each light casting shadows needs to use its own ShadowGenerator.
@@ -1071,7 +1087,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
         effectiveMesh._internalAbstractMeshDataInfo._isActiveIntermediate = false;
 
-        if (!material || subMesh.verticesCount === 0) {
+        if (!material || subMesh.verticesCount === 0 || subMesh._renderId === scene.getRenderId()) {
             return;
         }
 
@@ -1085,8 +1101,15 @@ export class ShadowGenerator implements IShadowGenerator {
         }
 
         var hardwareInstancedRendering = engine.getCaps().instancedArrays && (batch.visibleInstances[subMesh._id] !== null && batch.visibleInstances[subMesh._id] !== undefined || renderingMesh.hasThinInstances);
+
+        if (this.customAllowRendering && !this.customAllowRendering(subMesh)) {
+            return;
+        }
+
         if (this.isReady(subMesh, hardwareInstancedRendering, isTransparent)) {
-            const shadowDepthWrapper = renderingMesh.material?.shadowDepthWrapper;
+            subMesh._renderId = scene.getRenderId();
+
+            const shadowDepthWrapper = material.shadowDepthWrapper;
 
             let effect = shadowDepthWrapper?.getEffect(subMesh, this) ?? subMesh._getCustomEffect(this._nameForCustomEffect, false)!.effect;
 
@@ -1110,7 +1133,7 @@ export class ShadowGenerator implements IShadowGenerator {
             }
 
             if (isTransparent && this.enableSoftTransparentShadow) {
-                effect.setFloat("softTransparentShadowSM", effectiveMesh.visibility);
+                effect.setFloat("softTransparentShadowSM", effectiveMesh.visibility * material.alpha);
             }
 
             if (shadowDepthWrapper) {

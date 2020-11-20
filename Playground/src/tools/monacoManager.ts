@@ -121,7 +121,9 @@ export class MonacoManager {
     private _setNewContent() {
         this._createEditor();
 
-        if(this.globalState.language === "JS"){
+        this.globalState.currentSnippetToken = "";
+
+        if (this.globalState.language === "JS") {
             this._editor?.setValue(`// You have to create a function called createScene. This function must return a BABYLON.Scene object
 // You can reference the following variables: engine, canvas
 // You must at least define a camera
@@ -131,6 +133,11 @@ var createScene = function() {
 
     //var camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2, 12, BABYLON.Vector3.Zero(), scene);
     var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
+
+    // This targets the camera to scene origin
+    camera.setTarget(BABYLON.Vector3.Zero());
+
+    // This attaches the camera to the canvas
     camera.attachControl(canvas, true);
 
     return scene;
@@ -145,6 +152,11 @@ class Playground {
 
         //var camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2, 12, BABYLON.Vector3.Zero(), scene);
         var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
+
+        // This targets the camera to scene origin
+        camera.setTarget(BABYLON.Vector3.Zero());
+
+        // This attaches the camera to the canvas
         camera.attachControl(canvas, true);
 
         return scene;
@@ -209,25 +221,33 @@ class Playground {
     public async setupMonacoAsync(hostElement: HTMLDivElement, initialCall = false) {
         this._hostElement = hostElement;
 
-        let response = await fetch("https://preview.babylonjs.com/babylon.d.ts");
-        if (!response.ok) {
-            return;
+        const declarations = [
+            "https://preview.babylonjs.com/babylon.d.ts",
+            "https://preview.babylonjs.com/gui/babylon.gui.d.ts",
+            "https://preview.babylonjs.com/glTF2Interface/babylon.glTF2Interface.d.ts",
+            "https://preview.babylonjs.com/loaders/babylonjs.loaders.d.ts",
+            "https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.d.ts",
+            "https://preview.babylonjs.com/nodeEditor/babylon.nodeEditor.d.ts",
+            "https://preview.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.d.ts",
+            "https://preview.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.d.ts",
+            "https://preview.babylonjs.com/serializers/babylonjs.serializers.d.ts",
+            "https://preview.babylonjs.com/inspector/babylon.inspector.d.ts",
+        ];
+
+        let libContent = "";
+        const responses = await Promise.all(declarations.map((declaration) => fetch(declaration)));
+        for (const response of responses) {
+            if (!response.ok) {
+                return;
+            }
+
+            libContent += await response.text();
         }
-
-        let libContent = await response.text();
-
-        response = await fetch("https://preview.babylonjs.com/gui/babylon.gui.d.ts");
-        if (!response.ok) {
-            return;
-        }
-
-        libContent += await response.text();
 
         this._createEditor();
 
         // Definition worker
         this._setupDefinitionWorker(libContent);
-
 
         // Setup the Monaco compilation pipeline, so we can reuse it directly for our scrpting needs
         this._setupMonacoCompilationPipeline(libContent);
@@ -237,20 +257,19 @@ class Playground {
 
         if (initialCall) {
             // Load code templates
-            response = await fetch("templates.json");
+            const response = await fetch("templates.json");
             if (response.ok) {
                 this._templates = await response.json();
-            }        
-            
+            }
+
             // enhance templates with extra properties
             for (const template of this._templates) {
                 (template.kind = monaco.languages.CompletionItemKind.Snippet), (template.sortText = "!" + template.label); // make sure templates are on top of the completion window
                 template.insertTextRules = monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet;
-            }       
-            
+            }
+
             this._hookMonacoCompletionProvider();
         }
-
 
         if (!this.globalState.loadingCodeInProgress) {
             this._setDefaultContent();
@@ -288,7 +307,6 @@ class Playground {
     var ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 6, height: 6}, scene);
 
     return scene;
-
 };`);
         } else {
             this._editor.setValue(`class Playground {

@@ -82,7 +82,7 @@ export class ScreenSpaceCurvaturePostProcess extends PostProcess {
             return false;
         }
 
-        return engine._features.supportMultipleRenderTargets;
+        return engine.getCaps().drawBuffersExtension;
     }
 
     /** @hidden */

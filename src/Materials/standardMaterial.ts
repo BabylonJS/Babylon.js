@@ -804,11 +804,21 @@ export class StandardMaterial extends PushMaterial {
             return true;
         }
 
-        return this._diffuseTexture != null && this._diffuseTexture.hasAlpha && (this._transparencyMode == null || this._transparencyMode === Material.MATERIAL_ALPHATEST);
+        return this._hasAlphaChannel() && (this._transparencyMode == null || this._transparencyMode === Material.MATERIAL_ALPHATEST);
     }
 
+    /**
+     * Specifies whether or not the alpha value of the diffuse texture should be used for alpha blending.
+     */
     protected _shouldUseAlphaFromDiffuseTexture(): boolean {
         return this._diffuseTexture != null && this._diffuseTexture.hasAlpha && this._useAlphaFromDiffuseTexture && this._transparencyMode !== Material.MATERIAL_OPAQUE;
+    }
+
+    /**
+     * Specifies whether or not there is a usable alpha channel for transparency.
+     */
+    protected _hasAlphaChannel(): boolean {
+        return (this._diffuseTexture != null && this._diffuseTexture.hasAlpha) || this._opacityTexture != null;
     }
 
     /**
@@ -1430,9 +1440,6 @@ export class StandardMaterial extends PushMaterial {
                         ubo.updateFloat2("vDiffuseInfos", this._diffuseTexture.coordinatesIndex, this._diffuseTexture.level);
                         MaterialHelper.BindTextureMatrix(this._diffuseTexture, ubo, "diffuse");
 
-                        if (this._diffuseTexture.hasAlpha) {
-                            effect.setFloat("alphaCutOff", this.alphaCutOff);
-                        }
                     }
 
                     if (this._ambientTexture && StandardMaterial.AmbientTextureEnabled) {
@@ -1443,6 +1450,10 @@ export class StandardMaterial extends PushMaterial {
                     if (this._opacityTexture && StandardMaterial.OpacityTextureEnabled) {
                         ubo.updateFloat2("vOpacityInfos", this._opacityTexture.coordinatesIndex, this._opacityTexture.level);
                         MaterialHelper.BindTextureMatrix(this._opacityTexture, ubo, "opacity");
+                    }
+
+                    if (this._hasAlphaChannel()) {
+                        effect.setFloat("alphaCutOff", this.alphaCutOff);
                     }
 
                     if (this._reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {

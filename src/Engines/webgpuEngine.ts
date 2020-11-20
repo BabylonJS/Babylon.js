@@ -474,12 +474,10 @@ export class WebGPUEngine extends Engine {
             supportCSM: true,
             basisNeedsPOT: false,
             support3DTextures: false, // TODO WEBGPU change to true when Chrome supports 3D textures
-            supportMultipleRenderTargets: true,
             needTypeSuffixInShaderConstants: true,
             supportMSAA: true,
             supportSSAO2: true,
             supportExtendedTextureFormats: true,
-            supportPrePassRenderer: true,
             supportSwitchCaseInShader: true,
             _collectUbosUpdatedInFrame: true,
         };
@@ -739,8 +737,8 @@ export class WebGPUEngine extends Engine {
     private _scissorIsActive() {
         return  this._scissorCached.x !== 0 ||
                 this._scissorCached.y !== 0 ||
-                this._scissorCached.z !== this.getRenderWidth() ||
-                this._scissorCached.w !== this.getRenderHeight();
+                (this._scissorCached.z !== this.getRenderWidth() && this._scissorCached.z !== 0) ||
+                (this._scissorCached.w !== this.getRenderHeight() && this._scissorCached.w !== 0);
     }
 
     public enableScissor(x: number, y: number, width: number, height: number): void {
@@ -1165,7 +1163,7 @@ export class WebGPUEngine extends Engine {
     public createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
         buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
-        forcedExtension: Nullable<string> = null, mimeType?: string): InternalTexture {
+        forcedExtension: Nullable<string> = null, mimeType?: string, loaderOptions?: any): InternalTexture {
 
         return this._createTextureBase(
             url, noMipmap, invertY, scene, samplingMode, onLoad, onError,
@@ -1204,7 +1202,7 @@ export class WebGPUEngine extends Engine {
                     texture.onLoadedObservable.clear();
             },
             () => false,
-            buffer, fallback, format, forcedExtension, mimeType
+            buffer, fallback, format, forcedExtension, mimeType, loaderOptions
         );
     }
 

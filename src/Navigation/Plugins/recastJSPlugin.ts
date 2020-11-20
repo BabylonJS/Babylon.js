@@ -3,7 +3,7 @@ import { Logger } from "../../Misc/logger";
 import { VertexData } from "../../Meshes/mesh.vertexData";
 import { Mesh } from "../../Meshes/mesh";
 import { Scene } from "../../scene";
-import { Vector3 } from '../../Maths/math';
+import { Epsilon, Vector3 } from '../../Maths/math';
 import { TransformNode } from "../../Meshes/transformNode";
 import { Observer } from "../../Misc/observable";
 import { Nullable } from "../../types";
@@ -30,6 +30,9 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      */
     public navMesh: any;
 
+    private _maximumSubStepCount: number = 10;
+    private _timeStep: number = 1 / 60;
+
     /**
      * Initializes the recastJS plugin
      * @param recastInjection can be used to inject your own recast reference
@@ -45,6 +48,45 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
             Logger.Error("RecastJS is not available. Please make sure you included the js file.");
             return;
         }
+        this.setTimeStep();
+    }
+
+    /**
+     * Set the time step of the navigation tick update.
+     * Default is 1/60.
+     * A value of 0 will disable fixed time update
+     * @param newTimeStep the new timestep to apply to this world.
+     */
+    setTimeStep(newTimeStep: number = 1 / 60): void {
+        this._timeStep = newTimeStep;
+    }
+
+    /**
+     * Get the time step of the navigation tick update.
+     * @returns the current time step
+     */
+    getTimeStep(): number {
+        return this._timeStep;
+    }
+
+    /**
+     * If delta time in navigation tick update is greater than the time step
+     * a number of sub iterations are done. If more iterations are need to reach deltatime
+     * they will be discarded.
+     * A value of 0 will set to no maximum and update will use as many substeps as needed
+     * @param newStepCount the maximum number of iterations
+     */
+    setMaximumSubStepCount(newStepCount: number = 10): void {
+        this._maximumSubStepCount = newStepCount;
+    }
+
+    /**
+     * Get the maximum number of iterations per navigation tick update
+     * @returns the maximum number of iterations
+     */
+    getMaximumSubStepCount(): number
+    {
+        return this._maximumSubStepCount;
     }
 
     /**
@@ -461,6 +503,44 @@ export class RecastJSCrowd implements ICrowd {
     }
 
     /**
+     * Returns the agent next target point on the path
+     * @param index agent index returned by addAgent
+     * @returns world space position
+     */
+    getAgentNextTargetPath(index: number): Vector3 {
+        var pathTargetPos = this.recastCrowd.getAgentNextTargetPath(index);
+        return new Vector3(pathTargetPos.x, pathTargetPos.y, pathTargetPos.z);
+    }
+
+    /**
+     * Returns the agent next target point on the path
+     * @param index agent index returned by addAgent
+     * @param result output world space position
+     */
+    getAgentNextTargetPathToRef(index: number, result: Vector3): void {
+        var pathTargetPos = this.recastCrowd.getAgentNextTargetPath(index);
+        result.set(pathTargetPos.x, pathTargetPos.y, pathTargetPos.z);
+    }
+
+    /**
+     * Gets the agent state
+     * @param index agent index returned by addAgent
+     * @returns agent state
+     */
+    getAgentState(index: number): number {
+        return this.recastCrowd.getAgentState(index);
+    }
+
+    /**
+     * returns true if the agent in over an off mesh link connection
+     * @param index agent index returned by addAgent
+     * @returns true if over an off mesh link connection
+     */
+    overOffmeshConnection(index: number): boolean {
+        return this.recastCrowd.overOffmeshConnection(index);
+    }
+
+    /**
      * Asks a particular agent to go to a destination. That destination is constrained by the navigation mesh
      * @param index agent index returned by addAgent
      * @param destination targeted world position
@@ -539,11 +619,25 @@ export class RecastJSCrowd implements ICrowd {
      */
     update(deltaTime: number): void {
         // update crowd
-        this.recastCrowd.update(deltaTime);
+        var timeStep = this.bjsRECASTPlugin.getTimeStep();
+        var maxStepCount = this.bjsRECASTPlugin.getMaximumSubStepCount();
+        if (timeStep <= Epsilon) {
+            this.recastCrowd.update(deltaTime);
+        } else {
+            var iterationCount = deltaTime / timeStep;
+            if (maxStepCount && iterationCount > maxStepCount) {
+                iterationCount = maxStepCount;
+            }
+            if (iterationCount < 1) {
+                iterationCount = 1;
+            }
+            for (let i = 0; i < iterationCount; i++) {
+                this.recastCrowd.update(timeStep);
+            }
+        }
 
         // update transforms
-        for (let index = 0; index < this.agents.length; index++)
-        {
+        for (let index = 0; index < this.agents.length; index++) {
             this.transforms[index].position = this.getAgentPosition(this.agents[index]);
         }
     }

@@ -35,7 +35,7 @@ import { ActionEvent } from "./Actions/actionEvent";
 import { PostProcessManager } from "./PostProcesses/postProcessManager";
 import { IOfflineProvider } from "./Offline/IOfflineProvider";
 import { RenderingGroupInfo, RenderingManager, IRenderingManagerAutoClearSetup } from "./Rendering/renderingManager";
-import { ISceneComponent, ISceneSerializableComponent, Stage, SimpleStageAction, RenderTargetsStageAction, RenderTargetStageAction, MeshStageAction, EvaluateSubMeshStageAction, ActiveMeshStageAction, CameraStageAction, RenderingGroupStageAction, RenderingMeshStageAction, PointerMoveStageAction, PointerUpDownStageAction, CameraStageFrameBufferAction } from "./sceneComponent";
+import { ISceneComponent, ISceneSerializableComponent, Stage, SimpleStageAction, RenderTargetsStageAction, RenderTargetStageAction, MeshStageAction, EvaluateSubMeshStageAction, PreActiveMeshStageAction, CameraStageAction, RenderingGroupStageAction, RenderingMeshStageAction, PointerMoveStageAction, PointerUpDownStageAction, CameraStageFrameBufferAction } from "./sceneComponent";
 import { Engine } from "./Engines/engine";
 import { Node } from "./node";
 import { MorphTarget } from "./Morph/morphTarget";
@@ -594,9 +594,19 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public onNewMaterialAddedObservable = new Observable<Material>();
 
     /**
+    * An event triggered when a multi material is created
+    */
+   public onNewMultiMaterialAddedObservable = new Observable<MultiMaterial>();
+
+    /**
     * An event triggered when a material is removed
     */
     public onMaterialRemovedObservable = new Observable<Material>();
+
+    /**
+    * An event triggered when a multi material is removed
+    */
+    public onMultiMaterialRemovedObservable = new Observable<MultiMaterial>();
 
     /**
     * An event triggered when a texture is created
@@ -923,7 +933,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /** All of the active cameras added to this scene. */
-    public activeCameras = new Array<Camera>();
+    public activeCameras: Nullable<Camera[]> = new Array<Camera>();
 
     /** @hidden */
     public _activeCamera: Nullable<Camera>;
@@ -1304,7 +1314,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @hidden
      * Defines the actions happening during the active mesh stage.
      */
-    public _activeMeshStage = Stage.Create<ActiveMeshStageAction>();
+    public _preActiveMeshStage = Stage.Create<PreActiveMeshStageAction>();
     /**
      * @hidden
      * Defines the actions happening during the per camera render target step.
@@ -2235,10 +2245,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             }
         }
         // Remove from activeCameras
-        var index2 = this.activeCameras.indexOf(toRemove);
-        if (index2 !== -1) {
-            // Remove from the scene if mesh found
-            this.activeCameras.splice(index2, 1);
+        if (this.activeCameras) {
+            var index2 = this.activeCameras.indexOf(toRemove);
+            if (index2 !== -1) {
+                // Remove from the scene if mesh found
+                this.activeCameras.splice(index2, 1);
+            }
         }
         // Reset the activeCamera
         if (this.activeCamera === toRemove) {
@@ -2311,6 +2323,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         if (index !== -1) {
             this.multiMaterials.splice(index, 1);
         }
+
+        this.onMultiMaterialRemovedObservable.notifyObservers(toRemove);
+
         return index;
     }
 
@@ -2471,6 +2486,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             return;
         }
         this.multiMaterials.push(newMultiMaterial);
+        this.onNewMultiMaterialAddedObservable.notifyObservers(newMultiMaterial);
     }
 
     /**
@@ -2547,11 +2563,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         if (this.activeCamera) {
-            this.activeCamera.detachControl(canvas);
+            this.activeCamera.detachControl();
         }
         this.activeCamera = newCamera;
         if (attachControl) {
-            newCamera.attachControl(canvas);
+            newCamera.attachControl();
         }
     }
 
@@ -3459,17 +3475,21 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public getCollidingSubMeshCandidates: (mesh: AbstractMesh, collider: Collider) => ISmartArrayLike<SubMesh>;
 
-    private _activeMeshesFrozen = false;
+    /** @hidden */
+    public _activeMeshesFrozen = false;
     private _skipEvaluateActiveMeshesCompletely = false;
 
     /**
      * Use this function to stop evaluating active meshes. The current list will be keep alive between frames
      * @param skipEvaluateActiveMeshes defines an optional boolean indicating that the evaluate active meshes step must be completely skipped
+     * @param onSuccess optional success callback
+     * @param onError optional error callback
      * @returns the current scene
      */
-    public freezeActiveMeshes(skipEvaluateActiveMeshes = false): Scene {
+    public freezeActiveMeshes(skipEvaluateActiveMeshes = false, onSuccess?: () => void, onError?: (message: string) => void): Scene {
         this.executeWhenReady(() => {
             if (!this.activeCamera) {
+                onError && onError('No active camera found');
                 return;
             }
 
@@ -3484,6 +3504,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             for (var index = 0; index < this._activeMeshes.length; index++) {
                 this._activeMeshes.data[index]._freeze();
             }
+            onSuccess && onSuccess();
         });
         return this;
     }
@@ -3554,6 +3575,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         const len = meshes.length;
         for (let i = 0; i < len; i++) {
             const mesh = meshes.data[i];
+            mesh._internalAbstractMeshDataInfo._currentLODIsUpToDate = false;
             if (mesh.isBlocked) {
                 continue;
             }
@@ -3573,6 +3595,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
             // Switch to current LOD
             let meshToRender = this.customLODSelector ? this.customLODSelector(mesh, this.activeCamera) : mesh.getLOD(this.activeCamera);
+            mesh._internalAbstractMeshDataInfo._currentLOD = meshToRender;
+            mesh._internalAbstractMeshDataInfo._currentLODIsUpToDate = true;
             if (meshToRender === undefined || meshToRender === null) {
                 continue;
             }
@@ -3590,6 +3614,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
                 if (meshToRender !== mesh) {
                     meshToRender._activate(this._renderId, false);
+                }
+
+                for (let step of this._preActiveMeshStage) {
+                    step.action(mesh);
                 }
 
                 if (mesh._activate(this._renderId, false)) {
@@ -3640,10 +3668,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             if (!mesh.computeBonesUsingShaders) {
                 this._softwareSkinnedMeshes.pushNoDuplicate(<Mesh>mesh);
             }
-        }
-
-        for (let step of this._activeMeshStage) {
-            step.action(sourceMesh, mesh);
         }
 
         if (
@@ -3810,7 +3834,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         // Finalize frame
         if (this.postProcessManager && !camera._multiviewTexture) {
-            this.postProcessManager._finalizeFrame(camera.isIntermediate);
+            // if the camera has an output render target, render the post process to the render target
+            const texture = camera.outputRenderTarget ? camera.outputRenderTarget.getInternalTexture()! : undefined;
+            this.postProcessManager._finalizeFrame(camera.isIntermediate, texture);
         }
 
         // Reset some special arrays
@@ -4002,7 +4028,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         // Update Cameras
         if (updateCameras) {
-            if (this.activeCameras.length > 0) {
+            if (this.activeCameras && this.activeCameras.length > 0) {
                 for (var cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
                     let camera = this.activeCameras[cameraIndex];
                     camera.update();
@@ -4031,7 +4057,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         if (engine.isWebGPU) {
             const webgpuEngine = (engine as WebGPUEngine);
             if (this._activeMeshesFrozen) {
-                if (this.activeCameras.length) {
+                if (this.activeCameras?.length) {
                     for (let cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
                         const camera = this.activeCameras[cameraIndex];
                         this.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix());
@@ -4118,7 +4144,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         // Multi-cameras?
-        if (this.activeCameras.length > 0) {
+        if (this.activeCameras && this.activeCameras.length > 0) {
             for (var cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
                 if (cameraIndex > 0) {
                     this._engine.clear(null, false, true, true);
@@ -4209,7 +4235,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this._isReadyForMeshStage.clear();
         this._beforeEvaluateActiveMeshStage.clear();
         this._evaluateSubMeshStage.clear();
-        this._activeMeshStage.clear();
+        this._preActiveMeshStage.clear();
         this._cameraDrawRenderTargetStage.clear();
         this._beforeCameraDrawStage.clear();
         this._beforeRenderTargetDrawStage.clear();
@@ -4299,7 +4325,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.onNewSkeletonAddedObservable.clear();
         this.onSkeletonRemovedObservable.clear();
         this.onNewMaterialAddedObservable.clear();
+        this.onNewMultiMaterialAddedObservable.clear();
         this.onMaterialRemovedObservable.clear();
+        this.onMultiMaterialRemovedObservable.clear();
         this.onNewTextureAddedObservable.clear();
         this.onTextureRemovedObservable.clear();
         this.onPrePointerObservable.clear();
@@ -4316,7 +4344,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         if (canvas) {
             var index;
             for (index = 0; index < this.cameras.length; index++) {
-                this.cameras[index].detachControl(canvas);
+                this.cameras[index].detachControl();
             }
         }
 

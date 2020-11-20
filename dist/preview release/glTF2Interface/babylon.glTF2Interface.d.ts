@@ -1028,8 +1028,9 @@ declare module BABYLON.GLTF2 {
     /** @hidden */
     interface IKHRMaterialsSheen {
         sheenColorFactor?: number[];
-        sheenTexture?: ITextureInfo;
+        sheenColorTexture?: ITextureInfo;
         sheenRoughnessFactor?: number;
+        sheenRoughnessTexture?: ITextureInfo;
     }
 
     /**
@@ -1053,6 +1054,17 @@ declare module BABYLON.GLTF2 {
     interface IKHRMaterialsTransmission {
         transmissionFactor?: number;
         transmissionTexture?: ITextureInfo;
+    }
+
+    /**
+     * Interfaces from the KHR_materials_translucency extension
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+
+    /** @hidden */
+    interface IKHRMaterialsTranslucency {
+        translucencyFactor?: number;
+        translucencyTexture?: ITextureInfo;
     }
 
     /**

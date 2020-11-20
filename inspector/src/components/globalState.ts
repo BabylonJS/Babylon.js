@@ -1,4 +1,4 @@
-import { GLTFFileLoader, IGLTFLoaderExtension, GLTFLoaderAnimationStartMode, GLTFLoaderCoordinateSystemMode } from "babylonjs-loaders/glTF/index";
+import { GLTFLoaderAnimationStartMode, GLTFLoaderCoordinateSystemMode } from "babylonjs-loaders/glTF/index";
 import { IGLTFValidationResults } from "babylonjs-gltf2interface";
 
 import { Nullable } from "babylonjs/types";
@@ -10,8 +10,8 @@ import { Camera } from "babylonjs/Cameras/camera";
 import { LightGizmo } from "babylonjs/Gizmos/lightGizmo";
 import { CameraGizmo } from "babylonjs/Gizmos/cameraGizmo";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
-import { ReplayRecorder } from './replayRecorder';
-import { DataStorage } from 'babylonjs/Misc/dataStorage';
+import { ReplayRecorder } from "./replayRecorder";
+import { DataStorage } from "babylonjs/Misc/dataStorage";
 
 export class GlobalState {
     public onSelectionChangedObservable: Observable<any>;
@@ -26,45 +26,45 @@ export class GlobalState {
     public validationResults: Nullable<IGLTFValidationResults> = null;
     public onValidationResultsUpdatedObservable = new Observable<Nullable<IGLTFValidationResults>>();
 
-    public onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
+    public onExtensionLoadedObservable: Observable<import("babylonjs-loaders/glTF/index").IGLTFLoaderExtension>;
 
     public glTFLoaderExtensionDefaults: { [name: string]: { [key: string]: any } } = {
-        "MSFT_lod": { enabled: true, maxLODsToLoad: 10 },
-        "MSFT_minecraftMesh": { enabled: true },
-        "MSFT_sRGBFactors": { enabled: true },
-        "MSFT_audio_emitter": { enabled: true },
-        "KHR_xmp": { enabled: true },
-        "KHR_draco_mesh_compression": { enabled: true },
-        "KHR_mesh_quantization": { enabled: true },
-        "KHR_materials_pbrSpecularGlossiness": { enabled: true },
-        "KHR_materials_clearcoat": { enabled: true },
-        "KHR_materials_ior": { enabled: true },
-        "KHR_materials_sheen": { enabled: true },
-        "KHR_materials_specular": { enabled: true },
-        "KHR_materials_unlit": { enabled: true },
-        "KHR_materials_variants": { enabled: true },
-        "KHR_materials_transmission": { enabled: true },
-        "KHR_lights_punctual": { enabled: true },
-        "KHR_texture_basisu": { enabled: true },
-        "KHR_texture_transform": { enabled: true },
-        "EXT_lights_image_based": { enabled: true },
-        "EXT_mesh_gpu_instancing": { enabled: true },
-        "EXT_texture_webp": { enabled: true },
+        MSFT_lod: { enabled: true, maxLODsToLoad: 10 },
+        MSFT_minecraftMesh: { enabled: true },
+        MSFT_sRGBFactors: { enabled: true },
+        MSFT_audio_emitter: { enabled: true },
+        KHR_draco_mesh_compression: { enabled: true },
+        KHR_mesh_quantization: { enabled: true },
+        KHR_materials_pbrSpecularGlossiness: { enabled: true },
+        KHR_materials_clearcoat: { enabled: true },
+        KHR_materials_ior: { enabled: true },
+        KHR_materials_sheen: { enabled: true },
+        KHR_materials_specular: { enabled: true },
+        KHR_materials_unlit: { enabled: true },
+        KHR_materials_variants: { enabled: true },
+        KHR_materials_transmission: { enabled: true },
+        KHR_materials_translucency: { enabled: true },
+        KHR_lights_punctual: { enabled: true },
+        KHR_texture_basisu: { enabled: true },
+        KHR_texture_transform: { enabled: true },
+        EXT_lights_image_based: { enabled: true },
+        EXT_mesh_gpu_instancing: { enabled: true },
+        EXT_texture_webp: { enabled: true },
     };
 
     public glTFLoaderDefaults: { [key: string]: any } = {
-        "animationStartMode": GLTFLoaderAnimationStartMode.FIRST,
-        "capturePerformanceCounters": false,
-        "compileMaterials": false,
-        "compileShadowGenerators": false,
-        "coordinateSystemMode": GLTFLoaderCoordinateSystemMode.AUTO,
-        "loggingEnabled": false,
-        "transparencyAsCoverage": false,
-        "useClipPlane": false,
-        "validate": true,
+        animationStartMode: typeof GLTFLoaderAnimationStartMode !== 'undefined' ? GLTFLoaderAnimationStartMode.FIRST : 1 ,
+        capturePerformanceCounters: false,
+        compileMaterials: false,
+        compileShadowGenerators: false,
+        coordinateSystemMode: typeof GLTFLoaderCoordinateSystemMode !== 'undefined' ? GLTFLoaderCoordinateSystemMode.AUTO : 0,
+        loggingEnabled: false,
+        transparencyAsCoverage: false,
+        useClipPlane: false,
+        validate: true,
     };
 
-    public glTFLoaderExtensions: { [key: string]: IGLTFLoaderExtension } = {};
+    public glTFLoaderExtensions: { [key: string]: import("babylonjs-loaders/glTF/index").IGLTFLoaderExtension } = {};
 
     public blockMutationUpdates = false;
     public selectedLineContainerTitles: Array<string> = [];
@@ -107,12 +107,12 @@ export class GlobalState {
     public init(propertyChangedObservable: Observable<PropertyChangedEvent>) {
         this.onPropertyChangedObservable = propertyChangedObservable;
 
-        this.onNewSceneObservable.add(scene => {
+        this.onNewSceneObservable.add((scene) => {
             this.recorder.cancel();
         });
     }
 
-    public prepareGLTFPlugin(loader: GLTFFileLoader) {
+    public prepareGLTFPlugin(loader: import("babylonjs-loaders/glTF/index").GLTFFileLoader) {
         this.glTFLoaderExtensions = {};
         var loaderState = this.glTFLoaderDefaults;
         if (loaderState !== undefined) {
@@ -121,7 +121,7 @@ export class GlobalState {
             }
         }
 
-        loader.onExtensionLoadedObservable.add((extension: IGLTFLoaderExtension) => {
+        loader.onExtensionLoadedObservable.add((extension: import("babylonjs-loaders/glTF/index").IGLTFLoaderExtension) => {
             var extensionState = this.glTFLoaderExtensionDefaults[extension.name];
             if (extensionState !== undefined) {
                 for (const key in extensionState) {
@@ -153,11 +153,11 @@ export class GlobalState {
     public enableLightGizmo(light: Light, enable = true) {
         if (enable) {
             if (!light.reservedDataStore) {
-                light.reservedDataStore = {}
+                light.reservedDataStore = {};
             }
             if (!light.reservedDataStore.lightGizmo) {
                 light.reservedDataStore.lightGizmo = new LightGizmo();
-                this.lightGizmos.push(light.reservedDataStore.lightGizmo)
+                this.lightGizmos.push(light.reservedDataStore.lightGizmo);
                 light.reservedDataStore.lightGizmo.light = light;
                 light.reservedDataStore.lightGizmo.material.reservedDataStore = { hidden: true };
             }
@@ -172,11 +172,11 @@ export class GlobalState {
     public enableCameraGizmo(camera: Camera, enable = true) {
         if (enable) {
             if (!camera.reservedDataStore) {
-                camera.reservedDataStore = {}
+                camera.reservedDataStore = {};
             }
             if (!camera.reservedDataStore.cameraGizmo) {
                 camera.reservedDataStore.cameraGizmo = new CameraGizmo();
-                this.cameraGizmos.push(camera.reservedDataStore.cameraGizmo)
+                this.cameraGizmos.push(camera.reservedDataStore.cameraGizmo);
                 camera.reservedDataStore.cameraGizmo.camera = camera;
                 camera.reservedDataStore.cameraGizmo.material.reservedDataStore = { hidden: true };
             }

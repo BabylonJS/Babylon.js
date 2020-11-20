@@ -34,6 +34,7 @@ import { isFramePortData } from '../../diagram/graphCanvas';
 import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
 import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
 import { PreviewType } from '../preview/previewType';
+import { TextInputLineComponent } from '../../sharedComponents/textInputLineComponent';
 require("./propertyTab.scss");
 
 interface IPropertyTabComponentProps {
@@ -112,7 +113,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             {
                                 !block.isBoolean && !cantDisplaySlider &&
                                 <SliderLineComponent key={block.uniqueId} label={block.name} target={block} propertyName="value"
-                                step={(block.max - block.min) / 100.0} minimum={block.min} maximum={block.max}
+                                step={(block.max - block.min) / 100.0} minimum={block.min} maximum={block.max} globalState={this.props.globalState}
                                 onChange={() => this.processInputBlockUpdate(block)}/>
                             }
                         </div>
@@ -369,6 +370,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <OptionsLineComponent ref={this._modeSelect} label="Mode" target={this} getSelection={(target) => this.props.globalState.mode} options={modeList} onSelect={(value) => this.changeMode(value)} />
                         <TextLineComponent label="Version" value={Engine.Version}/>
                         <TextLineComponent label="Help" value="doc.babylonjs.com" underline={true} onLink={() => window.open('https://doc.babylonjs.com/how_to/node_material', '_blank')}/>
+                        <TextInputLineComponent label="Comment" multilines={true} value={this.props.globalState.nodeMaterial!.comment} target={this.props.globalState.nodeMaterial} propertyName="comment" globalState={this.props.globalState}/>
                         <ButtonLineComponent label="Reset to default" onClick={() => {
                             switch (this.props.globalState.mode) {
                                 case NodeMaterialModes.Material:
@@ -403,7 +405,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             }}
                         />
                         <SliderLineComponent label="Grid size" minimum={0} maximum={100} step={5}
-                            decimalCount={0}
+                            decimalCount={0} globalState={this.props.globalState}
                             directValue={gridSize}
                             onChange={(value) => {
                                 DataStorage.WriteNumber("GridSize", value);

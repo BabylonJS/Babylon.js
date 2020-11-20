@@ -104,27 +104,27 @@ export class WaterMaterial extends PushMaterial {
     public maxSimultaneousLights: number;
 
     /**
-    * @param {number}: Represents the wind force
-    */
+     * Defines the wind force.
+     */
     @serialize()
     public windForce: number = 6;
     /**
-    * @param {Vector2}: The direction of the wind in the plane (X, Z)
-    */
+     * Defines the direction of the wind in the plane (X, Z).
+     */
     @serializeAsVector2()
     public windDirection: Vector2 = new Vector2(0, 1);
     /**
-    * @param {number}: Wave height, represents the height of the waves
-    */
+     * Defines the height of the waves.
+     */
     @serialize()
     public waveHeight: number = 0.4;
     /**
-    * @param {number}: Bump height, represents the bump height related to the bump map
-    */
+     * Defines the bump height related to the bump map.
+     */
     @serialize()
     public bumpHeight: number = 0.4;
     /**
-     * @param {boolean}: Add a smaller moving bump to less steady waves.
+     * Defines wether or not: to add a smaller moving bump to less steady waves.
      */
     @serialize("bumpSuperimpose")
     private _bumpSuperimpose = false;
@@ -132,7 +132,7 @@ export class WaterMaterial extends PushMaterial {
     public bumpSuperimpose: boolean;
 
     /**
-     * @param {boolean}: Color refraction and reflection differently with .waterColor2 and .colorBlendFactor2. Non-linear (physically correct) fresnel.
+     * Defines wether or not color refraction and reflection differently with .waterColor2 and .colorBlendFactor2. Non-linear (physically correct) fresnel.
      */
     @serialize("fresnelSeparate")
     private _fresnelSeparate = false;
@@ -140,7 +140,7 @@ export class WaterMaterial extends PushMaterial {
     public fresnelSeparate: boolean;
 
     /**
-     * @param {boolean}: bump Waves modify the reflection.
+     * Defines wether or not bump Wwves modify the reflection.
      */
     @serialize("bumpAffectsReflection")
     private _bumpAffectsReflection = false;
@@ -148,36 +148,42 @@ export class WaterMaterial extends PushMaterial {
     public bumpAffectsReflection: boolean;
 
     /**
-    * @param {number}: The water color blended with the refraction (near)
-    */
+     * Defines the water color blended with the refraction (near).
+     */
     @serializeAsColor3()
     public waterColor: Color3 = new Color3(0.1, 0.1, 0.6);
     /**
-    * @param {number}: The blend factor related to the water color
-    */
+     * Defines the blend factor related to the water color.
+     */
     @serialize()
     public colorBlendFactor: number = 0.2;
     /**
-     * @param {number}: The water color blended with the reflection (far)
+     * Defines the water color blended with the reflection (far).
      */
     @serializeAsColor3()
     public waterColor2: Color3 = new Color3(0.1, 0.1, 0.6);
     /**
-     * @param {number}: The blend factor related to the water color (reflection, far)
+     * Defines the blend factor related to the water color (reflection, far).
      */
     @serialize()
     public colorBlendFactor2: number = 0.2;
     /**
-    * @param {number}: Represents the maximum length of a wave
-    */
+     * Defines the maximum length of a wave.
+     */
     @serialize()
     public waveLength: number = 0.1;
 
     /**
-    * @param {number}: Defines the waves speed
-    */
+     * Defines the waves speed.
+     */
     @serialize()
     public waveSpeed: number = 1.0;
+
+    /**
+     * Defines the number of times waves are repeated. This is typically used to adjust waves count according to the ground's size where the material is applied on.
+     */
+    @serialize()
+    public waveCount: number = 20;
     /**
      * Sets or gets whether or not automatic clipping should be enabled or not. Setting to true will save performances and
      * will avoid calculating useless pixels in the pixel shader of the water material.
@@ -441,7 +447,8 @@ export class WaterMaterial extends PushMaterial {
 
                 // Water
                 "worldReflectionViewProjection", "windDirection", "waveLength", "time", "windForce",
-                "cameraPosition", "bumpHeight", "waveHeight", "waterColor", "waterColor2", "colorBlendFactor", "colorBlendFactor2", "waveSpeed"
+                "cameraPosition", "bumpHeight", "waveHeight", "waterColor", "waterColor2", "colorBlendFactor", "colorBlendFactor2", "waveSpeed",
+                "waveCount"
             ];
             var samplers = ["normalSampler",
                 // Water
@@ -573,6 +580,7 @@ export class WaterMaterial extends PushMaterial {
         this._activeEffect.setColor4("waterColor2", this.waterColor2, 1.0);
         this._activeEffect.setFloat("colorBlendFactor2", this.colorBlendFactor2);
         this._activeEffect.setFloat("waveSpeed", this.waveSpeed);
+        this._activeEffect.setFloat("waveCount", this.waveCount);
 
         // image processing
         if (this._imageProcessingConfiguration && !this._imageProcessingConfiguration.applyByPostProcess) {

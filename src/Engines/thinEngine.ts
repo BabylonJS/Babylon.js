@@ -18,13 +18,14 @@ import { DataBuffer } from '../Meshes/dataBuffer';
 import { IFileRequest } from '../Misc/fileRequest';
 import { Logger } from '../Misc/logger';
 import { DomManagement } from '../Misc/domManagement';
+import { WebGLShaderProcessor } from './WebGL/webGLShaderProcessors';
 import { WebGL2ShaderProcessor } from './WebGL/webGL2ShaderProcessors';
 import { WebGLDataBuffer } from '../Meshes/WebGL/webGLDataBuffer';
 import { IPipelineContext } from './IPipelineContext';
 import { WebGLPipelineContext } from './WebGL/webGLPipelineContext';
 import { VertexBuffer } from '../Meshes/buffer';
 import { InstancingAttributeInfo } from './instancingAttributeInfo';
-import { BaseTexture } from '../Materials/Textures/baseTexture';
+import { ThinTexture } from '../Materials/Textures/thinTexture';
 import { IOfflineProvider } from '../Offline/IOfflineProvider';
 import { IEffectFallbacks } from '../Materials/iEffectFallbacks';
 import { IWebRequest } from '../Misc/interfaces/iWebRequest';
@@ -161,14 +162,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.2.0-beta.5";
+        return "babylonjs@5.0.0-alpha.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.2.0-beta.5";
+        return "5.0.0-alpha.0";
     }
 
     /**
@@ -547,7 +548,7 @@ export class ThinEngine {
      * @param options defines further options to be sent to the getContext() function
      * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
      */
-    constructor(canvasOrContext: Nullable<HTMLCanvasElement | WebGLRenderingContext | WebGL2RenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio: boolean = false) {
+    constructor(canvasOrContext: Nullable<HTMLCanvasElement | OffscreenCanvas | WebGLRenderingContext | WebGL2RenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio: boolean = false) {
 
         let canvas: Nullable<HTMLCanvasElement> = null;
 
@@ -754,19 +755,21 @@ export class ThinEngine {
         // Shader processor
         if (this.webGLVersion > 1) {
             this._shaderProcessor = new WebGL2ShaderProcessor();
+        } else {
+            this._shaderProcessor = new WebGLShaderProcessor();
         }
 
         // Detect if we are running on a faulty buggy OS.
         this._badOS = /iPad/i.test(navigator.userAgent) || /iPhone/i.test(navigator.userAgent);
 
         // Starting with iOS 14, we can trust the browser
-        let matches = navigator.userAgent.match(/Version\/(\d+)/);
+        // let matches = navigator.userAgent.match(/Version\/(\d+)/);
 
-        if (matches && matches.length === 2) {
-            if (parseInt(matches[1]) >= 14) {
-                this._badOS = false;
-            }
-        }
+        // if (matches && matches.length === 2) {
+        //     if (parseInt(matches[1]) >= 14) {
+        //         this._badOS = false;
+        //     }
+        // }
 
         // Detect if we are running on a faulty buggy desktop OS.
         this._badDesktopOS = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
@@ -1070,12 +1073,10 @@ export class ThinEngine {
             supportCSM: this._webGLVersion !== 1,
             basisNeedsPOT: this._webGLVersion === 1,
             support3DTextures: this._webGLVersion !== 1,
-            supportMultipleRenderTargets: this._webGLVersion !== 1 || this.getCaps().drawBuffersExtension,
             needTypeSuffixInShaderConstants: this._webGLVersion !== 1,
             supportMSAA: this._webGLVersion !== 1,
             supportSSAO2: this._webGLVersion !== 1,
             supportExtendedTextureFormats: this._webGLVersion !== 1,
-            supportPrePassRenderer: this._webGLVersion !== 1,
             supportSwitchCaseInShader: this._webGLVersion !== 1,
             _collectUbosUpdatedInFrame: false,
         };
@@ -3037,8 +3038,7 @@ export class ThinEngine {
             processFunction: (width: number, height: number, img: HTMLImageElement | ImageBitmap | { width: number, height: number }, extension: string, texture: InternalTexture, continuationCallback: () => void) => boolean, samplingMode: number) => void,
         prepareTextureProcessFunction: (width: number, height: number, img: HTMLImageElement | ImageBitmap | { width: number, height: number }, extension: string, texture: InternalTexture, continuationCallback: () => void) => boolean,
         buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
-        forcedExtension: Nullable<string> = null, mimeType?: string): InternalTexture {
-
+        forcedExtension: Nullable<string> = null, mimeType?: string, loaderOptions?: any): InternalTexture {
         url = url || "";
         const fromData = url.substr(0, 5) === "data:";
         const fromBlob = url.substr(0, 5) === "blob:";
@@ -3049,6 +3049,10 @@ export class ThinEngine {
         const originalUrl = url;
         if (this._transformTextureUrl && !isBase64 && !fallback && !buffer) {
             url = this._transformTextureUrl(url);
+        }
+
+        if (originalUrl !== url) {
+            texture._originalUrl = originalUrl;
         }
 
         // establish the file extension, if possible
@@ -3111,7 +3115,7 @@ export class ThinEngine {
             else {
                 // fall back to the original url if the transformed url fails to load
                 Logger.Warn(`Failed to load ${url}, falling back to ${originalUrl}`);
-                this._createTextureBase(originalUrl, noMipmap, texture.invertY, scene, samplingMode, onLoad, onError, prepareTexture, prepareTextureProcessFunction, buffer, texture, format, forcedExtension, mimeType);
+                this._createTextureBase(originalUrl, noMipmap, texture.invertY, scene, samplingMode, onLoad, onError, prepareTexture, prepareTextureProcessFunction, buffer, texture, format, forcedExtension, mimeType, loaderOptions);
             }
         };
 
@@ -3127,7 +3131,7 @@ export class ThinEngine {
                             return false;
                         }, samplingMode);
                     }
-                });
+                }, loaderOptions);
             };
 
             if (!buffer) {
@@ -3194,12 +3198,13 @@ export class ThinEngine {
      * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
      * @param forcedExtension defines the extension to use to pick the right loader
      * @param mimeType defines an optional mime type
+     * @param loaderOptions options to be passed to the loader
      * @returns a InternalTexture for assignment back into BABYLON.Texture
      */
     public createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
         buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
-        forcedExtension: Nullable<string> = null, mimeType?: string): InternalTexture {
+        forcedExtension: Nullable<string> = null, mimeType?: string, loaderOptions?: any): InternalTexture {
 
         return this._createTextureBase(
             url, noMipmap, invertY, scene, samplingMode, onLoad, onError,
@@ -3248,7 +3253,7 @@ export class ThinEngine {
 
                 return true;
             },
-            buffer, fallback, format, forcedExtension, mimeType
+            buffer, fallback, format, forcedExtension, mimeType, loaderOptions
         );
     }
 
@@ -3828,7 +3833,7 @@ export class ThinEngine {
      * @param texture The texture to apply
      * @param name The name of the uniform in the effect
      */
-    public setTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<BaseTexture>, name: string): void {
+    public setTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<ThinTexture>, name: string): void {
         if (channel === undefined) {
             return;
         }
@@ -3861,7 +3866,7 @@ export class ThinEngine {
         return this._gl.REPEAT;
     }
 
-    protected _setTexture(channel: number, texture: Nullable<BaseTexture>, isPartOfTextureArray = false, depthStencilTexture = false, name = ""): boolean {
+    protected _setTexture(channel: number, texture: Nullable<ThinTexture>, isPartOfTextureArray = false, depthStencilTexture = false, name = ""): boolean {
         // Not ready?
         if (!texture) {
             if (this._boundTexturesCache[channel] != null) {
@@ -3961,7 +3966,7 @@ export class ThinEngine {
      * @param uniform defines the associated uniform location
      * @param textures defines the array of textures to bind
      */
-    public setTextureArray(channel: number, uniform: Nullable<WebGLUniformLocation>, textures: BaseTexture[], name: string): void {
+    public setTextureArray(channel: number, uniform: Nullable<WebGLUniformLocation>, textures: ThinTexture[], name: string): void {
         if (channel === undefined || !uniform) {
             return;
         }
