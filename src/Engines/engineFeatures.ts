@@ -6,9 +6,6 @@ export interface EngineFeatures {
     /** Indicates that the engine support rendering to as well as copying to lod float textures */
     supportRenderAndCopyToLodForFloatTextures: boolean;
 
-    /** Indicates that framebuffers have Y going from top to bottom for increasing y values */
-    framebuffersHaveYTopToBottom: boolean;
-
     /** Indicates that the engine support handling depth/stencil textures */
     supportDepthStencilTexture: boolean;
 
