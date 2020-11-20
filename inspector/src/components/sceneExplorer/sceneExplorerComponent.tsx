@@ -438,6 +438,10 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 {
                     scene.animationGroups.length > 0 &&
                     <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.animationGroups} label="Animation groups" offset={1} filter={this.state.filter} />
+                }                
+                {
+                    scene.mainSoundTrack && scene.mainSoundTrack.soundCollection.length > 0 &&
+                    <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.mainSoundTrack.soundCollection} label="Sounds" offset={1} filter={this.state.filter} />
                 }
             </div>
         );
