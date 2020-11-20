@@ -196,6 +196,7 @@ export class UniformBuffer {
      * @param engine Define the engine the buffer is associated with
      * @param data Define the data contained in the buffer
      * @param dynamic Define if the buffer is updatable
+     * @param name to assign to the buffer (debugging purpose)
      */
     constructor(engine: Engine, data?: number[], dynamic?: boolean, name?: string) {
         this._engine = engine;
@@ -538,6 +539,7 @@ export class UniformBuffer {
         return this._bufferIndex;
     }
 
+    /** Gets the name of this buffer */
     public get name(): string {
         return this._name;
     }

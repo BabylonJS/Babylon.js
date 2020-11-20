@@ -45,7 +45,7 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
 
         this.createView({
             dimension: isCube ? WebGPUConstants.TextureViewDimension.Cube : WebGPUConstants.TextureViewDimension.E2d,
-            mipLevelCount: generateMipMaps ? WebGPUTextureHelper.computeNumMipmapLevels(width, height) : 1,
+            mipLevelCount: generateMipMaps ? WebGPUTextureHelper.ComputeNumMipmapLevels(width, height) : 1,
             baseArrayLayer: 0,
             baseMipLevel: 0,
             aspect: WebGPUConstants.TextureAspect.All

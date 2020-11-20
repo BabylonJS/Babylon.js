@@ -35,7 +35,7 @@ export class MaterialHelper {
      * @param effect The effect to be bound
      * @param scene The scene the eyes position is used from
      * @param variableName name of the shader variable that will hold the eye position
-     * @isVector3 true to indicates that variableName is a Vector3 and not a Vector4
+     * @param isVector3 true to indicates that variableName is a Vector3 and not a Vector4
      * @return the computed eye position
      */
     public static BindEyePosition(effect: Nullable<Effect>, scene: Scene, variableName = "vEyePosition", isVector3 = false): Vector4 {

@@ -750,7 +750,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Gets a boolean indicating if depth testing is enabled
-     * @param enable defines the state to set
+     * @returns the current state
      */
     public getDepthBuffer(): boolean {
         return this._depthCullingState.depthTest;
@@ -1183,6 +1183,7 @@ export class Engine extends ThinEngine {
      * Sets a texture to the webGL context from a postprocess
      * @param channel defines the channel to use
      * @param postProcess defines the source postprocess
+     * @param name name of the channel
      */
     public setTextureFromPostProcess(channel: number, postProcess: Nullable<PostProcess>, name: string): void {
         this._bindTexture(channel, postProcess ? postProcess._textures.data[postProcess._currentRenderTextureInd] : null, name);
@@ -1192,6 +1193,7 @@ export class Engine extends ThinEngine {
      * Binds the output of the passed in post process to the texture channel specified
      * @param channel The channel the texture should be bound to
      * @param postProcess The post process which's output should be bound
+     * @param name name of the channel
      */
     public setTextureFromPostProcessOutput(channel: number, postProcess: Nullable<PostProcess>, name: string): void {
         this._bindTexture(channel, postProcess ? postProcess._outputTexture : null, name);

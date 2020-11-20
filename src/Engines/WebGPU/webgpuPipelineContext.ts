@@ -44,6 +44,7 @@ export interface IWebGPUPipelineContextVertexInputsCache {
     vertexOffsets: number[];
 }
 
+/** @hidden */
 export interface IWebGPURenderPipelineStageDescriptor {
     vertexStage: GPUProgrammableStageDescriptor;
     fragmentStage?: GPUProgrammableStageDescriptor;

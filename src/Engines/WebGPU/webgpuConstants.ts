@@ -1,3 +1,4 @@
+/** @hidden */
 export enum ExtensionName {
     DepthClamping = "depth-clamping",
     Depth24UnormStencil8 = "depth24unorm-stencil8",
@@ -6,11 +7,13 @@ export enum ExtensionName {
     TextureCompressionBC = "texture-compression-bc",
     TimestampQuery = "timestamp-query"
 }
+/** @hidden */
 export enum AddressMode {
     ClampToEdge = "clamp-to-edge",
     Repeat = "repeat",
     MirrorRepeat = "mirror-repeat"
 }
+/** @hidden */
 export enum BindingType {
     UniformBuffer = "uniform-buffer",
     StorageBuffer = "storage-buffer",
@@ -21,6 +24,7 @@ export enum BindingType {
     ReadonlyStorageTexture = "readonly-storage-texture",
     WriteonlyStorageTexture = "writeonly-storage-texture"
 }
+/** @hidden */
 export enum BlendFactor {
     Zero = "zero",
     One = "one",
@@ -36,6 +40,7 @@ export enum BlendFactor {
     BlendColor = "blend-color",
     OneMinusBlendColor = "one-minus-blend-color"
 }
+/** @hidden */
 export enum BlendOperation {
     Add = "add",
     Subtract = "subtract",
@@ -43,6 +48,7 @@ export enum BlendOperation {
     Min = "min",
     Max = "max"
 }
+/** @hidden */
 export enum CompareFunction {
     Never = "never",
     Less = "less",
@@ -53,30 +59,37 @@ export enum CompareFunction {
     GreaterEqual = "greater-equal",
     Always = "always"
 }
+/** @hidden */
 export enum CullMode {
     None = "none",
     Front = "front",
     Back = "back"
 }
+/** @hidden */
 export enum FilterMode {
     Nearest = "nearest",
     Linear = "linear"
 }
+/** @hidden */
 export enum FrontFace {
     CCW = "ccw",
     CW = "cw"
 }
+/** @hidden */
 export enum IndexFormat {
     Uint16 = "uint16",
     Uint32 = "uint32"
 }
+/** @hidden */
 export enum InputStepMode {
     Vertex = "vertex",
     Instance = "instance"
 }
+/** @hidden */
 export enum LoadOp {
     Load = "load"
 }
+/** @hidden */
 export enum PrimitiveTopology {
     PointList = "point-list",
     LineList = "line-list",
@@ -84,6 +97,7 @@ export enum PrimitiveTopology {
     TriangleList = "triangle-list",
     TriangleStrip = "triangle-strip"
 }
+/** @hidden */
 export enum StencilOperation {
     Keep = "keep",
     Zero = "zero",
@@ -94,15 +108,18 @@ export enum StencilOperation {
     IncrementWrap = "increment-wrap",
     DecrementWrap = "decrement-wrap"
 }
+/** @hidden */
 export enum StoreOp {
     Store = "store",
     Clear = "clear"
 }
+/** @hidden */
 export enum TextureDimension {
     E1d = "1d",
     E2d = "2d",
     E3d = "3d"
 }
+/** @hidden */
 export enum TextureFormat {
     // 8-bit formats
     R8Unorm = "r8unorm",
@@ -181,6 +198,7 @@ export enum TextureFormat {
     // "depth32float-stencil8" feature
     Depth32FloatStencil8 = "depth32float-stencil8"
 }
+/** @hidden */
 export enum TextureComponentType {
     Float = "float",
     Sint = "sint",
@@ -188,6 +206,7 @@ export enum TextureComponentType {
     // Texture is used with comparison sampling only.
     DepthComparison = "depth-comparison"
 }
+/** @hidden */
 export enum TextureViewDimension {
     E1d = "1d",
     E2d = "2d",
@@ -196,6 +215,7 @@ export enum TextureViewDimension {
     CubeArray = "cube-array",
     E3d = "3d"
 }
+/** @hidden */
 export enum VertexFormat {
     Uchar2 = "uchar2",
     Uchar4 = "uchar4",
@@ -228,19 +248,23 @@ export enum VertexFormat {
     Int3 = "int3",
     Int4 = "int4"
 }
+/** @hidden */
 export enum TextureAspect {
     All = "all",
     StencilOnly = "stencil-only",
     DepthOnly = "depth-only"
 }
+/** @hidden */
 export enum CompilationMessageType {
     Error = "error",
     Warning = "warning",
     Info = "info"
 }
+/** @hidden */
 export enum QueryType {
     Occlusion = "occlusion"
 }
+/** @hidden */
 export enum BufferUsage {
     MapRead = 1,
     MapWrite = 2,
@@ -253,6 +277,7 @@ export enum BufferUsage {
     Indirect = 256,
     QueryResolve = 512
 }
+/** @hidden */
 export enum ColorWrite {
     Red = 1,
     Green = 2,
@@ -260,11 +285,13 @@ export enum ColorWrite {
     Alpha = 8,
     All = 15
 }
+/** @hidden */
 export enum ShaderStage {
     Vertex = 1,
     Fragment = 2,
     Compute = 4
 }
+/** @hidden */
 export enum TextureUsage {
     CopySrc = 1,
     CopyDst = 2,
@@ -272,6 +299,7 @@ export enum TextureUsage {
     Storage = 8,
     OutputAttachment = 16
 }
+/** @hidden */
 export enum MapMode {
     Read = 1,
     Write = 2
