@@ -158,6 +158,9 @@ export class NodeMaterialBlock {
 
      /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
      public visibleInInspector = false;
+     
+     /** Gets or sets a boolean indicating that this input can be edited from a collapsed frame*/
+     public visibleOnFrame = false;
 
     /**
      * Creates a new NodeMaterialBlock
@@ -591,7 +594,7 @@ export class NodeMaterialBlock {
 
     protected _dumpPropertiesCode() {
         let variableName = this._codeVariableName;
-        return `${variableName}.visibleInInspector = ${this.visibleInInspector};\r\n`;
+        return `${variableName}.visibleInInspector = ${this.visibleInInspector};\r\n ${variableName}.visibleOnFrame = ${this.visibleOnFrame};\r\n`;
     }
 
     /** @hidden */
@@ -712,6 +715,7 @@ export class NodeMaterialBlock {
         serializationObject.name = this.name;
         serializationObject.comments = this.comments;
         serializationObject.visibleInInspector = this.visibleInInspector;
+        serializationObject.visibleOnFrame = this.visibleOnFrame;
 
         serializationObject.inputs = [];
         serializationObject.outputs = [];
@@ -732,6 +736,7 @@ export class NodeMaterialBlock {
         this.name = serializationObject.name;
         this.comments = serializationObject.comments;
         this.visibleInInspector = !!serializationObject.visibleInInspector;
+        this.visibleOnFrame = !!serializationObject.visibleOnFrame;
         this._deserializePortDisplayNamesAndExposedOnFrame(serializationObject);
     }
 

@@ -8,6 +8,8 @@ import { TextInputLineComponent } from '../../sharedComponents/textInputLineComp
 import { ButtonLineComponent } from '../../sharedComponents/buttonLineComponent';
 import { Nullable } from 'babylonjs/types';
 import { Observer } from 'babylonjs/Misc/observable';
+import { InputBlock} from 'babylonjs';
+import { InputsPropertyTabComponent } from '../../components/propertyTab/inputsPropertyTabComponent';
 
 export interface IFramePropertyTabComponentProps {
     globalState: GlobalState
@@ -31,9 +33,21 @@ export class FramePropertyTabComponent extends React.Component<IFramePropertyTab
             this.props.frame.onExpandStateChanged.remove(this.onFrameExpandStateChangedObserver);
             this.onFrameExpandStateChangedObserver = null;
         }
-    }    
+    }
+    
+    render() {
 
-    render() {      
+        let configurableInputBlocks: InputBlock[] = [];
+        this.props.frame.nodes.forEach(node => {
+            if(node.block.isInput && node.block.visibleOnFrame) {
+                configurableInputBlocks.push(node.block as InputBlock);
+            }
+        });
+
+        configurableInputBlocks = configurableInputBlocks.sort((a, b) => {
+            return a.name.localeCompare(b.name);
+        });
+
         return (
             <div id="propertyTab">
             <div id="header">
@@ -63,6 +77,7 @@ export class FramePropertyTabComponent extends React.Component<IFramePropertyTab
                                 this.props.frame!.export();
                             }} />
                 </LineContainerComponent>
+                <InputsPropertyTabComponent globalState={this.props.globalState} inputs={configurableInputBlocks}></InputsPropertyTabComponent>
             </div>
         </div>
         );
