@@ -1769,27 +1769,15 @@ export class WebGPUEngine extends Engine {
             }
             else if (texture.isCube) {
                 internalTexture = this.emptyCubeTexture;
-                if (dbgGenerateLogs) {
-                    console.log("Using a temporary empty cube texture. internalTexture.uniqueId=", texture.uniqueId, texture);
-                }
             }
             else if (texture.is3D) {
                 internalTexture = this.emptyTexture3D;
-                if (dbgGenerateLogs) {
-                    console.log("Using a temporary empty 3D texture. internalTexture.uniqueId=", texture.uniqueId, texture);
-                }
             }
             else if (texture.is2DArray) {
                 internalTexture = this.emptyTexture2DArray;
-                if (dbgGenerateLogs) {
-                    console.log("Using a temporary empty 2D array texture. internalTexture.uniqueId=", texture.uniqueId, texture);
-                }
             }
             else {
                 internalTexture = this.emptyTexture;
-                if (dbgGenerateLogs) {
-                    console.log("Using a temporary empty texture. internalTexture.uniqueId=", texture.uniqueId, texture);
-                }
             }
 
             if (internalTexture && !internalTexture.isMultiview) {
