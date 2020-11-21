@@ -403,6 +403,12 @@ function runTest(index, done, listname) {
 
 }
 
+function GetAbsoluteUrl(url) {
+    const a = document.createElement("a");
+    a.href = url;
+    return a.href;
+}
+
 function init(_engineName) {
     _engineName = _engineName ? _engineName.toLowerCase() : "webgl2";
     if (window.disableWebGL2Support) {
@@ -425,6 +431,16 @@ function init(_engineName) {
 
     BABYLON.GLTFValidation.Configuration = {
         url: "../../dist/preview%20release/gltf_validator.js"
+    };
+
+    BABYLON.KhronosTextureContainer2.URLConfig = {
+        jsDecoderModule: GetAbsoluteUrl("../../dist/preview%20release/babylon.ktx2Decoder.js"),
+        wasmUASTCToASTC: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/uastc_astc.wasm"),
+        wasmUASTCToBC7: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/uastc_bc7.wasm"),
+        wasmUASTCToRGBA_UNORM: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/uastc_rgba32_unorm.wasm"),
+        wasmUASTCToRGBA_SRGB: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/uastc_rgba32_srgb.wasm"),
+        jsMSCTranscoder: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/msc_basis_transcoder.js"),
+        wasmMSCTranscoder: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/msc_basis_transcoder.wasm")
     };
 
     canvas = document.createElement("canvas");

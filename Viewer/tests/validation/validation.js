@@ -293,6 +293,12 @@ function prepareMeshForViewer(viewer, configuration, test) {
     console.log("sphere created");
 }
 
+function GetAbsoluteUrl(url) {
+    const a = document.createElement("a");
+    a.href = url;
+    return a.href;
+}
+
 function init() {
     BABYLON.SceneLoader.ShowLoadingScreen = false;
     BABYLON.SceneLoader.ForceFullSceneLoadingForIncremental = true;
@@ -305,6 +311,16 @@ function init() {
 
     BABYLON.GLTFValidation.Configuration = {
         url: "../../dist/preview%20release/gltf_validator.js"
+    };
+
+    BABYLON.KhronosTextureContainer2.URLConfig = {
+        jsDecoderModule: GetAbsoluteUrl("../../dist/preview%20release/babylon.ktx2Decoder.js"),
+        wasmUASTCToASTC: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/uastc_astc.wasm"),
+        wasmUASTCToBC7: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/uastc_bc7.wasm"),
+        wasmUASTCToRGBA_UNORM: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/uastc_rgba32_unorm.wasm"),
+        wasmUASTCToRGBA_SRGB: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/uastc_rgba32_srgb.wasm"),
+        jsMSCTranscoder: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/msc_basis_transcoder.js"),
+        wasmMSCTranscoder: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/msc_basis_transcoder.wasm")
     };
 
     viewerElement = document.createElement("babylon");
