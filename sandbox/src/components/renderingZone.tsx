@@ -12,7 +12,7 @@ import { EnvironmentTools } from "../tools/environmentTools";
 import { Tools } from "babylonjs/Misc/tools";
 import { FilesInput } from "babylonjs/Misc/filesInput";
 import { Animation } from "babylonjs/Animations/animation";
-import { PBRMaterial, StringTools, Texture } from "babylonjs";
+import { PBRBaseMaterial, PBRMaterial, StringTools, Texture } from "babylonjs";
 import { Mesh } from "babylonjs/Meshes/mesh";
 
 require("../scss/renderingZone.scss");
@@ -213,8 +213,8 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             }
         } else {
             var pbrPresent = false;
-            for (var i = 0; i < this._scene.materials.length; i++) {
-                if (this._scene.materials[i].transparencyMode !== undefined) {
+            for (const material of this._scene.materials) {
+                if (material instanceof PBRBaseMaterial) {
                     pbrPresent = true;
                     break;
                 }
