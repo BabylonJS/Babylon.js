@@ -1322,7 +1322,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Enf the current frame
+     * End the current frame
      */
     public endFrame(): void {
         super.endFrame();
@@ -1331,27 +1331,32 @@ export class Engine extends ThinEngine {
         this.onEndFrameObservable.notifyObservers(this);
     }
 
-    public resize(): void {
+    /**
+     * Resize the view according to the canvas' size
+     * @param forceSetSize true to force setting the sizes of the underlying canvas
+     */
+    public resize(forceSetSize = false): void {
         // We're not resizing the size of the canvas while in VR mode & presenting
         if (this.isVRPresenting()) {
             return;
         }
 
-        super.resize();
+        super.resize(forceSetSize);
     }
 
     /**
      * Force a specific size of the canvas
      * @param width defines the new canvas' width
      * @param height defines the new canvas' height
+     * @param forceSetSize true to force setting the sizes of the underlying canvas
      * @returns true if the size was changed
      */
-    public setSize(width: number, height: number): boolean {
+    public setSize(width: number, height: number, forceSetSize = false): boolean {
         if (!this._renderingCanvas) {
             return false;
         }
 
-        if (!super.setSize(width, height)) {
+        if (!super.setSize(width, height, forceSetSize)) {
             return false;
         }
 

@@ -451,6 +451,9 @@ export class WebGPUEngine extends Engine {
             vertexArrayObject: false,
             instancedArrays: true,
             canUseTimestampForTimerQuery: false,
+            multiview: false,
+            oculusMultiview: false,
+            parallelShaderCompile: undefined,
             blendMinMax: true,
             maxMSAASamples: 4 // TODO WEBGPU what is the right value?
         };
@@ -572,10 +575,11 @@ export class WebGPUEngine extends Engine {
      * Force a specific size of the canvas
      * @param width defines the new canvas' width
      * @param height defines the new canvas' height
+     * @param forceSetSize true to force setting the sizes of the underlying canvas
      * @returns true if the size was changed
      */
-    public setSize(width: number, height: number): boolean {
-        if (!super.setSize(width, height)) {
+    public setSize(width: number, height: number, forceSetSize = false): boolean {
+        if (!super.setSize(width, height, forceSetSize)) {
             return false;
         }
 
