@@ -4,7 +4,6 @@ import { IAnimatable } from '../Animations/animatable.interface';
 import { SmartArray } from "../Misc/smartArray";
 import { Observer, Observable } from "../Misc/observable";
 import { Nullable } from "../types";
-import { Scene } from "../scene";
 import { Matrix } from "../Maths/math.vector";
 import { EngineStore } from "../Engines/engineStore";
 import { SubMesh } from "../Meshes/subMesh";
@@ -26,6 +25,7 @@ declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRen
 declare type Mesh = import("../Meshes/mesh").Mesh;
 declare type Animation = import("../Animations/animation").Animation;
 declare type InstancedMesh = import('../Meshes/instancedMesh').InstancedMesh;
+declare type Scene = import("../scene").Scene;
 
 declare var BABYLON: any;
 

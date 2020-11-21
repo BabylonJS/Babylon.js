@@ -1,5 +1,4 @@
 import { Nullable } from "../types";
-import { Material } from "../Materials/material";
 import { InternalTexture } from "../Materials/Textures/internalTexture";
 import { PostProcess } from "./postProcess";
 import { VertexBuffer } from "../Meshes/buffer";
@@ -130,7 +129,7 @@ export class PostProcessManager {
                 engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
 
                 // Draw order
-                engine.drawElementsType(Material.TriangleFillMode, 0, 6);
+                engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, 6);
 
                 pp.onAfterRenderObservable.notifyObservers(effect);
             }
@@ -193,7 +192,7 @@ export class PostProcessManager {
                 engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
 
                 // Draw order
-                engine.drawElementsType(Material.TriangleFillMode, 0, 6);
+                engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, 6);
 
                 pp.onAfterRenderObservable.notifyObservers(effect);
             }
