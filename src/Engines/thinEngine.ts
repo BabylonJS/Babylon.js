@@ -1390,8 +1390,9 @@ export class ThinEngine {
 
     /**
      * Resize the view according to the canvas' size
+     * @param forceSetSize true to force setting the sizes of the underlying canvas
      */
-    public resize(): void {
+    public resize(forceSetSize = false): void {
         let width: number;
         let height: number;
 
@@ -1403,16 +1404,17 @@ export class ThinEngine {
             height = this._renderingCanvas ? this._renderingCanvas.height : 100;
         }
 
-        this.setSize(width / this._hardwareScalingLevel, height / this._hardwareScalingLevel);
+        this.setSize(width / this._hardwareScalingLevel, height / this._hardwareScalingLevel, forceSetSize);
     }
 
     /**
      * Force a specific size of the canvas
      * @param width defines the new canvas' width
      * @param height defines the new canvas' height
+     * @param forceSetSize true to force setting the sizes of the underlying canvas
      * @returns true if the size was changed
      */
-    public setSize(width: number, height: number): boolean {
+    public setSize(width: number, height: number, forceSetSize = false): boolean {
         if (!this._renderingCanvas) {
             return false;
         }
@@ -1420,7 +1422,7 @@ export class ThinEngine {
         width = width | 0;
         height = height | 0;
 
-        if (this._renderingCanvas.width === width && this._renderingCanvas.height === height) {
+        if (!forceSetSize && this._renderingCanvas.width === width && this._renderingCanvas.height === height) {
             return false;
         }
 
