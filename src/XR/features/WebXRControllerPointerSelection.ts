@@ -511,7 +511,8 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             (<StandardMaterial>controllerData.selectionMesh.material).disableLighting = this.disableSelectionMeshLighting;
 
             if (controllerData.pick) {
-                this._scene.simulatePointerMove(controllerData.pick, { pointerId: controllerData.id });
+            // TODO find out why this causes a crash when hand data passes through here
+           //     this._scene.simulatePointerMove(controllerData.pick, { pointerId: controllerData.id });
             }
         });
         if (xrController.inputSource.gamepad) {
