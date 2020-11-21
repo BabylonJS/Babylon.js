@@ -116,7 +116,7 @@ export class PostProcessManager {
                 } else if (!doNotBindFrambuffer) {
                     engine.restoreDefaultFramebuffer();
                 }
-                //engine._debugInsertMarker(`post process ${postProcesses[index].name} output`);
+                engine._debugInsertMarker(`post process ${postProcesses[index].name} output`);
             }
 
             var pp = postProcesses[index];
@@ -176,7 +176,7 @@ export class PostProcessManager {
                     engine.restoreDefaultFramebuffer();
                     pp._outputTexture = null;
                 }
-                //engine._debugInsertMarker(`post process ${postProcesses[index].name} output`);
+                engine._debugInsertMarker(`post process ${postProcesses[index].name} output`);
             }
 
             if (doNotPresent) {
