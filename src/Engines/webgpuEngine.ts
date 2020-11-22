@@ -33,6 +33,7 @@ import { IWebRequest } from '../Misc/interfaces/iWebRequest';
 import { UniformBuffer } from '../Materials/uniformBuffer';
 import { WebGPURenderPassWrapper } from './WebGPU/webgpuRenderPassWrapper';
 import { IMultiRenderTargetOptions } from '../Materials/Textures/multiRenderTarget';
+import { WebGPUCacheSampler } from "./WebGPU/webgpuCacheSampler";
 
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
@@ -168,6 +169,7 @@ export class WebGPUEngine extends Engine {
     private _mainPassSampleCount: number;
     private _textureHelper: WebGPUTextureHelper;
     private _bufferManager: WebGPUBufferManager;
+    private _cacheSampler: WebGPUCacheSampler;
     private _emptyVertexBuffer: VertexBuffer;
     private _lastCachedWrapU: number;
     private _lastCachedWrapV: number;
@@ -360,6 +362,7 @@ export class WebGPUEngine extends Engine {
             .then(() => {
                 this._bufferManager = new WebGPUBufferManager(this._device);
                 this._textureHelper = new WebGPUTextureHelper(this._device, this._glslang, this._bufferManager);
+                this._cacheSampler = new WebGPUCacheSampler(this._device);
 
                 if (dbgVerboseLogsForFirstFrames) {
                     if ((this as any)._count === undefined) {
@@ -450,6 +453,7 @@ export class WebGPUEngine extends Engine {
             depthTextureExtension: true,
             vertexArrayObject: false,
             instancedArrays: true,
+            timerQuery: undefined,
             canUseTimestampForTimerQuery: false,
             multiview: false,
             oculusMultiview: false,
@@ -1293,7 +1297,7 @@ export class WebGPUEngine extends Engine {
                     if (!texture._hardwareTexture?.underlyingResource) { // the texture could have been created before reaching this point so don't recreate it if already existing
                         const gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, imageBitmap.width, imageBitmap.height);
 
-                        if (this._textureHelper.isImageBitmap(imageBitmap)) {
+                        if (WebGPUTextureHelper.IsImageBitmap(imageBitmap)) {
                             this._textureHelper.updateTexture(imageBitmap, gpuTextureWrapper.underlyingResource!, imageBitmap.width, imageBitmap.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0, this._uploadEncoder);
                             if (!noMipmap && !isCompressed) {
                                 this._generateMipmaps(texture, this._uploadEncoder);
@@ -2990,7 +2994,7 @@ export class WebGPUEngine extends Engine {
         this._currentRenderTarget = texture;
 
         this._rttRenderPassWrapper.colorAttachmentGPUTextures[0] = hardwareTexture;
-        this._rttRenderPassWrapper.depthTextureFormat = this._currentRenderTarget._depthStencilTexture ? this._textureHelper.getWebGPUTextureFormat(-1, this._currentRenderTarget._depthStencilTexture.format) : undefined;
+        this._rttRenderPassWrapper.depthTextureFormat = this._currentRenderTarget._depthStencilTexture ? WebGPUTextureHelper.GetWebGPUTextureFormat(-1, this._currentRenderTarget._depthStencilTexture.format) : undefined;
 
         this._setDepthTextureFormat(this._rttRenderPassWrapper);
         this._setColorFormat(this._rttRenderPassWrapper);
@@ -3315,7 +3319,7 @@ export class WebGPUEngine extends Engine {
         }
 
         const stencilFrontBack: GPUStencilStateFaceDescriptor = {
-            compare: this._textureHelper.getCompareFunction(this._stencilState.stencilFunc),
+            compare: WebGPUTextureHelper.GetCompareFunction(this._stencilState.stencilFunc),
             depthFailOp: this._getOpFunction(this._stencilState.stencilOpDepthFail, WebGPUConstants.StencilOperation.Keep),
             failOp: this._getOpFunction(this._stencilState.stencilOpStencilFail, WebGPUConstants.StencilOperation.Keep),
             passOp: this._getOpFunction(this._stencilState.stencilOpStencilDepthPass, WebGPUConstants.StencilOperation.Replace)
@@ -3323,7 +3327,7 @@ export class WebGPUEngine extends Engine {
 
         return {
             depthWriteEnabled: this.getDepthWrite(),
-            depthCompare: this.getDepthBuffer() ? this._textureHelper.getCompareFunction(this.getDepthFunction()) : WebGPUConstants.CompareFunction.Always,
+            depthCompare: this.getDepthBuffer() ? WebGPUTextureHelper.GetCompareFunction(this.getDepthFunction()) : WebGPUConstants.CompareFunction.Always,
             format: this._depthTextureFormat,
             stencilFront: stencilFrontBack,
             stencilBack: stencilFrontBack,
@@ -3895,7 +3899,7 @@ export class WebGPUEngine extends Engine {
                         }
                         entries.push({
                             binding: bindingInfo.samplerBinding,
-                            resource: this._textureHelper.getSampler(texture),
+                            resource: this._cacheSampler.getSampler(texture),
                         });
                     } else {
                         Logger.Error(`Sampler "${bindingDefinition.name}" could not be bound. bindingDefinition=${JSON.stringify(bindingDefinition)}, webgpuPipelineContext.samplers=${JSON.stringify(webgpuPipelineContext.samplers)}`, 50);
