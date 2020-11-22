@@ -1699,6 +1699,21 @@ declare module "babylonjs-node-editor/components/nodeList/nodeListComponent" {
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-node-editor/components/propertyTab/inputsPropertyTabComponent" {
+    import * as React from "react";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
+    interface IInputsPropertyTabComponentProps {
+        globalState: GlobalState;
+        inputs: InputBlock[];
+    }
+    export class InputsPropertyTabComponent extends React.Component<IInputsPropertyTabComponentProps> {
+        constructor(props: IInputsPropertyTabComponentProps);
+        processInputBlockUpdate(ib: InputBlock): void;
+        renderInputBlock(block: InputBlock): JSX.Element | null;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-node-editor/diagram/properties/framePropertyComponent" {
     import * as React from "react";
     import { GraphFrame } from "babylonjs-node-editor/diagram/graphFrame";
@@ -3413,6 +3428,18 @@ declare module NODEEDITOR {
         filterContent(filter: string): void;
         loadCustomFrame(file: File): void;
         removeItem(value: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IInputsPropertyTabComponentProps {
+        globalState: GlobalState;
+        inputs: BABYLON.InputBlock[];
+    }
+    export class InputsPropertyTabComponent extends React.Component<IInputsPropertyTabComponentProps> {
+        constructor(props: IInputsPropertyTabComponentProps);
+        processInputBlockUpdate(ib: BABYLON.InputBlock): void;
+        renderInputBlock(block: BABYLON.InputBlock): JSX.Element | null;
         render(): JSX.Element;
     }
 }
