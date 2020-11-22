@@ -45,13 +45,6 @@ function assert(condition: any, msg?: string): asserts condition {
     }
 }
 
-const dbgShowShaderCode = false;
-const dbgSanityChecks = false;
-const dbgGenerateLogs = true;
-const dbgVerboseLogsForFirstFrames = false;
-const dbgVerboseLogsNumFrames = 10;
-const dbgShowWarningsNotImplemented = false;
-
 /**
  * Options to load the associated Glslang library
  */
@@ -179,9 +172,11 @@ export class WebGPUEngine extends Engine {
     private _counters: {
         numPipelineDescriptorCreation: number;
         numBindGroupsCreation: number;
+        numVertexInputCacheCreation: number;
     } = {
         numPipelineDescriptorCreation: 0,
         numBindGroupsCreation: 0,
+        numVertexInputCacheCreation: 0,
     };
 
     // Some of the internal state might change during the render pass.
@@ -214,6 +209,20 @@ export class WebGPUEngine extends Engine {
     private __colorWrite = true;
     private _uniformsBuffers: { [name: string]: WebGPUDataBuffer } = {};
     private _forceEnableEffect = false;
+
+    // TODO WEBGPU remove those variables when code stabilized
+    /** @hidden */
+    public dbgShowShaderCode = false;
+    /** @hidden */
+    public dbgSanityChecks = false;
+    /** @hidden */
+    public dbgGenerateLogs = true;
+    /** @hidden */
+    public dbgVerboseLogsForFirstFrames = false;
+    /** @hidden */
+    public dbgVerboseLogsNumFrames = 10;
+    /** @hidden */
+    public dbgShowWarningsNotImplemented = false;
 
     /**
      * Gets a boolean indicating that the engine supports uniform buffers
@@ -364,7 +373,7 @@ export class WebGPUEngine extends Engine {
                 this._textureHelper = new WebGPUTextureHelper(this._device, this._glslang, this._bufferManager);
                 this._cacheSampler = new WebGPUCacheSampler(this._device);
 
-                if (dbgVerboseLogsForFirstFrames) {
+                if (this.dbgVerboseLogsForFirstFrames) {
                     if ((this as any)._count === undefined) {
                         (this as any)._count = 0;
                         console.log("%c frame #" + (this as any)._count + " - begin", "background: #ffff00");
@@ -494,7 +503,7 @@ export class WebGPUEngine extends Engine {
         this._colorFormat = this._options.swapChainFormat!;
         this._mainRenderPassWrapper.colorAttachmentGPUTextures = [new WebGPUHardwareTexture()];
         this._mainRenderPassWrapper.colorAttachmentGPUTextures[0].format = this._colorFormat;
-        if (dbgGenerateLogs) {
+        if (this.dbgGenerateLogs) {
             this._context.getSwapChainPreferredFormat(this._device).then((format) => {
                 console.log("Swap chain preferred format:", format);
             });
@@ -587,8 +596,8 @@ export class WebGPUEngine extends Engine {
             return false;
         }
 
-        if (dbgVerboseLogsForFirstFrames) {
-            if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
+        if (this.dbgVerboseLogsForFirstFrames) {
+            if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                 console.log("frame #" + (this as any)._count + " - setSize called -", width, height);
             }
         }
@@ -697,8 +706,8 @@ export class WebGPUEngine extends Engine {
 
             renderPass.setViewport(x, y, w, h, 0, 1);
 
-            if (dbgVerboseLogsForFirstFrames) {
-                if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
+            if (this.dbgVerboseLogsForFirstFrames) {
+                if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                     console.log("frame #" + (this as any)._count + " - viewport applied - (", x, y, w, h, ") current pass is main pass=" + (renderPass === this._mainRenderPassWrapper.renderPass));
                 }
             }
@@ -741,8 +750,8 @@ export class WebGPUEngine extends Engine {
 
             renderPass.setScissorRect(x, y, w, h);
 
-            if (dbgVerboseLogsForFirstFrames) {
-                if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
+            if (this.dbgVerboseLogsForFirstFrames) {
+                if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                     console.log("frame #" + (this as any)._count + " - scissor applied - (", x, y, w, h, ") current pass is main pass=" + (renderPass === this._mainRenderPassWrapper.renderPass));
                 }
             }
@@ -783,8 +792,8 @@ export class WebGPUEngine extends Engine {
             color.a = 1;
         }
 
-        if (dbgVerboseLogsForFirstFrames) {
-            if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
+        if (this.dbgVerboseLogsForFirstFrames) {
+            if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                 console.log("frame #" + (this as any)._count + " - clear called - backBuffer=", backBuffer, " depth=", depth, " stencil=", stencil);
             }
         }
@@ -1133,7 +1142,7 @@ export class WebGPUEngine extends Engine {
         key: string) {
         const webGpuContext = pipelineContext as WebGPUPipelineContext;
 
-        if (dbgShowShaderCode) {
+        if (this.dbgShowShaderCode) {
             console.log(defines);
             console.log(vertexSourceCode);
             console.log(fragmentSourceCode);
@@ -1565,7 +1574,7 @@ export class WebGPUEngine extends Engine {
         var source = InternalTextureSource.Raw2DArray;
         var texture = new InternalTexture(this, source);
 
-        if (dbgShowWarningsNotImplemented) {
+        if (this.dbgShowWarningsNotImplemented) {
             console.warn("createRawTexture2DArray not implemented yet in WebGPU");
         }
 
@@ -1815,8 +1824,8 @@ export class WebGPUEngine extends Engine {
 
             this._setInternalTexture(name, internalTexture, baseName, textureIndex);
         } else {
-            if (dbgVerboseLogsForFirstFrames) {
-                if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
+            if (this.dbgVerboseLogsForFirstFrames) {
+                if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                     console.log("frame #" + (this as any)._count + " - _setTexture called with a null _currentEffect! texture=", texture);
                 }
             }
@@ -1869,8 +1878,8 @@ export class WebGPUEngine extends Engine {
         const format = (texture._hardwareTexture as WebGPUHardwareTexture).format;
         const mipmapCount = WebGPUTextureHelper.ComputeNumMipmapLevels(texture.width, texture.height);
 
-        if (dbgVerboseLogsForFirstFrames) {
-            if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
+        if (this.dbgVerboseLogsForFirstFrames) {
+            if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                 console.log("frame #" + (this as any)._count + " - generate mipmaps called - width=", texture.width, "height=", texture.height, "isCube=", texture.isCube);
             }
         }
@@ -2112,7 +2121,7 @@ export class WebGPUEngine extends Engine {
      * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
      */
     public updateRawTexture2DArray(texture: InternalTexture, bufferView: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): void {
-        if (dbgShowWarningsNotImplemented) {
+        if (this.dbgShowWarningsNotImplemented) {
             console.warn("updateRawTexture2DArray not implemented yet in WebGPU");
         }
     }
@@ -2571,9 +2580,10 @@ export class WebGPUEngine extends Engine {
 
         this.flushFramebuffer();
 
-        if (dbgVerboseLogsForFirstFrames) {
-            if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
-                console.log("frame #" + (this as any)._count + " - counters - numPipelineDescriptorCreation=", this._counters.numPipelineDescriptorCreation, ", numBindGroupsCreation=", this._counters.numBindGroupsCreation);
+        if (this.dbgVerboseLogsForFirstFrames) {
+            if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
+                console.log("frame #" + (this as any)._count + " - counters - numPipelineDescriptorCreation=", this._counters.numPipelineDescriptorCreation, ", numBindGroupsCreation=", this._counters.numBindGroupsCreation,
+                    ", numVertexInputCacheCreation=", this._counters.numVertexInputCacheCreation);
             }
         }
 
@@ -2581,8 +2591,8 @@ export class WebGPUEngine extends Engine {
         this._bufferManager.destroyDeferredBuffers();
 
         if (this._features._collectUbosUpdatedInFrame) {
-            if (dbgVerboseLogsForFirstFrames) {
-                if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
+            if (this.dbgVerboseLogsForFirstFrames) {
+                if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                     const list: Array<string> = [];
                     for (const name in UniformBuffer._updatedUbosInFrame) {
                         list.push(name + ":" + UniformBuffer._updatedUbosInFrame[name]);
@@ -2595,18 +2605,19 @@ export class WebGPUEngine extends Engine {
 
         this._counters.numPipelineDescriptorCreation = 0;
         this._counters.numBindGroupsCreation = 0;
+        this._counters.numVertexInputCacheCreation = 0;
 
         this._pendingDebugCommands.length = 0;
 
         super.endFrame();
 
-        if (dbgVerboseLogsForFirstFrames) {
-            if ((this as any)._count < dbgVerboseLogsNumFrames) {
+        if (this.dbgVerboseLogsForFirstFrames) {
+            if ((this as any)._count < this.dbgVerboseLogsNumFrames) {
                 console.log("%c frame #" + (this as any)._count + " - end", "background: #ffff00");
             }
-            if ((this as any)._count < dbgVerboseLogsNumFrames) {
+            if ((this as any)._count < this.dbgVerboseLogsNumFrames) {
                 (this as any)._count++;
-                if ((this as any)._count !== dbgVerboseLogsNumFrames) {
+                if ((this as any)._count !== this.dbgVerboseLogsNumFrames) {
                     console.log("%c frame #" + (this as any)._count + " - begin", "background: #ffff00");
                 }
             }
@@ -2722,8 +2733,8 @@ export class WebGPUEngine extends Engine {
         };
         this._rttRenderPassWrapper.renderPass = this._renderTargetEncoder.beginRenderPass(this._rttRenderPassWrapper.renderPassDescriptor);
 
-        if (dbgVerboseLogsForFirstFrames) {
-            if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
+        if (this.dbgVerboseLogsForFirstFrames) {
+            if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                 console.log("frame #" + (this as any)._count + " - render target begin pass - internalTexture.uniqueId=", internalTexture.uniqueId, this._rttRenderPassWrapper.renderPassDescriptor);
             }
         }
@@ -2739,8 +2750,8 @@ export class WebGPUEngine extends Engine {
     private _endRenderTargetRenderPass() {
         if (this._currentRenderPass) {
             this._currentRenderPass.endPass();
-            if (dbgVerboseLogsForFirstFrames) {
-                if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
+            if (this.dbgVerboseLogsForFirstFrames) {
+                if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                     console.log("frame #" + (this as any)._count + " - render target end pass - internalTexture.uniqueId=", this._currentRenderTarget?.uniqueId);
                 }
             }
@@ -2799,8 +2810,8 @@ export class WebGPUEngine extends Engine {
             (this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments as GPURenderPassColorAttachmentDescriptor[])[0].attachment = this._swapChainTexture.createView();
         }
 
-        if (dbgVerboseLogsForFirstFrames) {
-            if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
+        if (this.dbgVerboseLogsForFirstFrames) {
+            if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                 console.log("frame #" + (this as any)._count + " - main begin pass - texture width=" + (this._mainTextureExtends as any).width, " height=" + (this._mainTextureExtends as any).height, this._mainRenderPassWrapper.renderPassDescriptor);
             }
         }
@@ -2918,8 +2929,8 @@ export class WebGPUEngine extends Engine {
     private _endMainRenderPass(): void {
         if (this._mainRenderPassWrapper.renderPass !== null) {
             this._mainRenderPassWrapper.renderPass.endPass();
-            if (dbgVerboseLogsForFirstFrames) {
-                if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
+            if (this.dbgVerboseLogsForFirstFrames) {
+                if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                     console.log("frame #" + (this as any)._count + " - main end pass");
                 }
             }
@@ -2982,7 +2993,7 @@ export class WebGPUEngine extends Engine {
         const gpuTexture = hardwareTexture?.underlyingResource as Nullable<GPUTexture>;
 
         if (!hardwareTexture || !gpuTexture) {
-            if (dbgSanityChecks) {
+            if (this.dbgSanityChecks) {
                 console.error("bindFramebuffer: Trying to bind a texture that does not have a hardware texture or that has a webgpu texture empty!", texture, hardwareTexture, gpuTexture);
             }
             return;
@@ -3019,8 +3030,8 @@ export class WebGPUEngine extends Engine {
             aspect: WebGPUConstants.TextureAspect.All
         };
 
-        if (dbgVerboseLogsForFirstFrames) {
-            if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
+        if (this.dbgVerboseLogsForFirstFrames) {
+            if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                 console.log("frame #" + (this as any)._count + " - bindFramebuffer called - face=", faceIndex, "lodLevel=", lodLevel, "layer=", layer, this._rttRenderPassWrapper.colorAttachmentViewDescriptor, this._rttRenderPassWrapper.depthAttachmentViewDescriptor);
             }
         }
@@ -3816,6 +3827,8 @@ export class WebGPUEngine extends Engine {
     private _getVertexInputsToRender(): IWebGPUPipelineContextVertexInputsCache {
         const effect = this._currentEffect!;
 
+        this._counters.numVertexInputCacheCreation++;
+
         let vertexInputs: IWebGPUPipelineContextVertexInputsCache = {
             indexBuffer: null,
             indexOffset: 0,
@@ -3907,13 +3920,13 @@ export class WebGPUEngine extends Engine {
                 } else if (bindingDefinition.isTexture) {
                     const bindingInfo = webgpuPipelineContext.textures[bindingDefinition.name];
                     if (bindingInfo) {
-                        if (dbgSanityChecks && bindingInfo.texture === null) {
+                        if (this.dbgSanityChecks && bindingInfo.texture === null) {
                             Logger.Error(`Trying to bind a null texture! bindingDefinition=${JSON.stringify(bindingDefinition)}, bindingInfo=${JSON.stringify(bindingInfo, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}`, 50);
                             continue;
                         }
                         const hardwareTexture = bindingInfo.texture._hardwareTexture as WebGPUHardwareTexture;
 
-                        if (dbgSanityChecks && !hardwareTexture.view) {
+                        if (this.dbgSanityChecks && !hardwareTexture.view) {
                             Logger.Error(`Trying to bind a null gpu texture! bindingDefinition=${JSON.stringify(bindingDefinition)}, bindingInfo=${JSON.stringify(bindingInfo, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}, isReady=${bindingInfo.texture.isReady}`, 50);
                             continue;
                         }
