@@ -7,6 +7,7 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { SubMesh } from "../Meshes/subMesh";
 import { _InstancesBatch } from "../Meshes/mesh";
 import { Effect } from "../Materials/effect";
+import { Camera } from '../Cameras/camera';
 
 declare module "../abstractScene" {
     export interface AbstractScene {
@@ -104,15 +105,15 @@ export class PrePassRendererSceneComponent implements ISceneComponent {
         this.scene._afterRenderingMeshStage.registerStep(SceneComponentConstants.STEP_AFTERRENDERINGMESH_PREPASS, this, this._afterRenderingMeshStage);
     }
 
-    private _beforeCameraDraw() {
+    private _beforeCameraDraw(camera: Camera) {
         if (this.scene.prePassRenderer) {
-            this.scene.prePassRenderer._beforeCameraDraw();
+            this.scene.prePassRenderer._beforeCameraDraw(camera);
         }
     }
 
-    private _afterCameraDraw() {
+    private _afterCameraDraw(camera: Camera) {
         if (this.scene.prePassRenderer) {
-            this.scene.prePassRenderer._afterCameraDraw();
+            this.scene.prePassRenderer._afterCameraDraw(camera);
         }
     }
 
