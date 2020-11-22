@@ -313,16 +313,16 @@ export class PrePassRenderer {
         if (this._enabled) {
             this._bindFrameBuffer();
 
+            // Clearing other attachment with 0 on all other attachments
+            this._engine.bindAttachments(this._clearAttachments);
+            this._engine.clear(this._clearColor, true, false, false);
+
             // Regular clear color with the scene clear color of the 1st attachment
+            this._engine.bindAttachments(this._defaultAttachments);
             this._engine.clear(this._scene.clearColor,
                 this._scene.autoClear || this._scene.forceWireframe || this._scene.forcePointsCloud,
                 this._scene.autoClearDepthAndStencil,
                 this._scene.autoClearDepthAndStencil);
-
-            // Clearing other attachment with 0 on all other attachments
-            this._engine.bindAttachments(this._clearAttachments);
-            this._engine.clear(this._clearColor, true, false, false);
-            this._engine.bindAttachments(this._defaultAttachments);
         }
     }
 
