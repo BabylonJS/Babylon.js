@@ -34,6 +34,10 @@ import { UniformBuffer } from '../Materials/uniformBuffer';
 import { WebGPURenderPassWrapper } from './WebGPU/webgpuRenderPassWrapper';
 import { IMultiRenderTargetOptions } from '../Materials/Textures/multiRenderTarget';
 import { WebGPUCacheSampler } from "./WebGPU/webgpuCacheSampler";
+import { WebGPUShaderManager } from "./WebGPU/webgpuShaderManager";
+
+import "../Shaders/clearQuad.vertex";
+import "../Shaders/clearQuad.fragment";
 
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
@@ -162,13 +166,13 @@ export class WebGPUEngine extends Engine {
     private _mainPassSampleCount: number;
     private _textureHelper: WebGPUTextureHelper;
     private _bufferManager: WebGPUBufferManager;
+    private _shaderManager: WebGPUShaderManager;
     private _cacheSampler: WebGPUCacheSampler;
     private _emptyVertexBuffer: VertexBuffer;
     private _lastCachedWrapU: number;
     private _lastCachedWrapV: number;
     private _lastCachedWrapR: number;
     private _mrtAttachments: number[];
-    private _privateShaders: { [name: string]: IWebGPURenderPipelineStageDescriptor } = {};
     private _counters: {
         numPipelineDescriptorCreation: number;
         numBindGroupsCreation: number;
@@ -371,6 +375,7 @@ export class WebGPUEngine extends Engine {
             .then(() => {
                 this._bufferManager = new WebGPUBufferManager(this._device);
                 this._textureHelper = new WebGPUTextureHelper(this._device, this._glslang, this._bufferManager);
+                this._shaderManager = new WebGPUShaderManager(this._device);
                 this._cacheSampler = new WebGPUCacheSampler(this._device);
 
                 if (this.dbgVerboseLogsForFirstFrames) {
@@ -2829,6 +2834,7 @@ export class WebGPUEngine extends Engine {
 
         if (setClearStates && scissorIsActive) {
             this._applyScissor(this._currentRenderPass);
+            // TODO WEBGPU cache things, move this code somewhere else
             const pipeline = this._device.createRenderPipeline({
                 sampleCount: this._currentRenderTarget ? this._currentRenderTarget.samples : this._mainPassSampleCount,
                 primitiveTopology: WebGPUConstants.PrimitiveTopology.TriangleStrip,
@@ -2840,10 +2846,10 @@ export class WebGPUEngine extends Engine {
                     depthWriteEnabled: clearDepth,
                     depthCompare: WebGPUConstants.CompareFunction.Always,
                     format: this._depthTextureFormat,
-                    /*stencilFront: {
+                    stencilFront: {
                         compare: clearStencil ? WebGPUConstants.CompareFunction.Always : WebGPUConstants.CompareFunction.Never,
                         passOp: clearStencil ? WebGPUConstants.StencilOperation.Replace : WebGPUConstants.StencilOperation.Keep,
-                    },*/
+                    },
                     stencilReadMask: 0xFF,
                     stencilWriteMask: clearStencil ? 0xFF : 0,
                 },
@@ -2853,7 +2859,7 @@ export class WebGPUEngine extends Engine {
                     writeMask: clearColor ? WebGPUConstants.ColorWrite.All : 0,
                 }],
 
-                ...this._getCompiledShaders("clearQuad"),
+                ...this._shaderManager.getCompiledShaders("clearQuad"),
             });
 
             const bindGroupLayout = pipeline.getBindGroupLayout(0);
@@ -2875,55 +2881,17 @@ export class WebGPUEngine extends Engine {
                 }],
             });
 
+            this._currentRenderPass.setStencilReference(this._clearStencilValue);
             this._currentRenderPass.setPipeline(pipeline);
             this._currentRenderPass.setBindGroup(0, bindGroup);
             this._currentRenderPass.draw(4, 1, 0, 0);
 
+            if (this._stencilState.stencilTest) {
+                this._getCurrentRenderPass().setStencilReference(this._stencilState.stencilFuncRef);
+            }
+
             this._bufferManager.releaseBuffer(buffer);
         }
-    }
-
-    private _getCompiledShaders(name: string): IWebGPURenderPipelineStageDescriptor {
-        let shaders = this._privateShaders[name];
-        if (!shaders) {
-            const vertexShader = /*Effect.ShadersStore[name + "VertexShader"];*/`
-                #version 450
-
-                const vec2 pos[4] = vec2[4](vec2(-1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(-1.0f, -1.0f), vec2(1.0f, -1.0f));
-
-                void main() {
-                    gl_Position = vec4(pos[gl_VertexIndex], 0.0, 1.0);
-                }
-            `;
-            const fragmentShader = /*Effect.ShadersStore[name + "PixelShader"];*/`
-                #version 450
-
-                layout(set = 0, binding = 0) uniform Uniforms {
-                    uniform vec4 color;
-                };
-
-                layout(location = 0) out vec4 outColor;
-
-                void main() {
-                    outColor = color;
-                }
-            `;
-            shaders = this._privateShaders[name] = {
-                vertexStage: {
-                    module: this._device.createShaderModule({
-                        code: this._glslang.compileGLSL(vertexShader, 'vertex')
-                    }),
-                    entryPoint: 'main'
-                },
-                fragmentStage: {
-                    module: this._device.createShaderModule({
-                        code: this._glslang.compileGLSL(fragmentShader, 'fragment')
-                    }),
-                    entryPoint: 'main'
-                }
-            };
-        }
-        return shaders;
     }
 
     private _endMainRenderPass(): void {
@@ -4007,13 +3975,13 @@ export class WebGPUEngine extends Engine {
         const bindGroups = this._getBindGroupsToRender();
         this._setRenderBindGroups(bindGroups);
 
-        if (this._stencilState.stencilTest) {
+        // TODO WEBGPU add dirty mechanism as for _alphaState._blendConstants
+        if (this._stencilState.stencilTest && renderPass !== this._bundleEncoder) {
             this._getCurrentRenderPass().setStencilReference(this._stencilState.stencilFuncRef);
         }
 
         // TODO WebGPU add back the dirty mechanism, but we need to distinguish between the main render pass and the RTT pass (if any)
         if (this._alphaState.alphaBlend /* && this._alphaState._isBlendConstantsDirty*/ && renderPass !== this._bundleEncoder) {
-            // TODO WebGPU. should use renderPass.
             this._getCurrentRenderPass().setBlendColor(this._alphaState._blendConstants as any);
         }
 

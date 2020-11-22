@@ -14,6 +14,11 @@ const _knownUBOs: { [key: string]: { setIndex: number, bindingIndex: number} } =
     "Light1": { setIndex: 0, bindingIndex: 6 },
     "Light2": { setIndex: 0, bindingIndex: 7 },
     "Light3": { setIndex: 0, bindingIndex: 8 },
+    "Light4": { setIndex: 0, bindingIndex: 9 },
+    "Light5": { setIndex: 0, bindingIndex: 10 },
+    "Light6": { setIndex: 0, bindingIndex: 11 },
+    "Light7": { setIndex: 0, bindingIndex: 12 },
+    "Light8": { setIndex: 0, bindingIndex: 13 },
     "Material": { setIndex: 1, bindingIndex: 0 },
     "Mesh": { setIndex: 1, bindingIndex: 1 },
 };

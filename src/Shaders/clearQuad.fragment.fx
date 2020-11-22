@@ -1,11 +1,12 @@
-#version 450
-
-layout(set = 0, binding = 0) uniform Uniforms {
-    uniform vec4 color;
+[[block]] struct Uniforms {
+  [[offset(0)]] color : vec4<f32>;
 };
+[[binding(0), set(0)]] var<uniform> uniforms : Uniforms;
 
-layout(location = 0) out vec4 outColor;
+[[location(0)]] var<out> outColor : vec4<f32>;
 
-void main() {
-    outColor = color;
+[[stage(fragment)]]
+fn main() -> void {
+  outColor = uniforms.color;
+  return;
 }

@@ -51,8 +51,7 @@ const filterNoMipToBits = [
 /** @hidden */
 export class WebGPUCacheSampler {
 
-    private static _samplers: { [hash: number]: GPUSampler } = {};
-
+    private _samplers: { [hash: number]: GPUSampler } = {};
     private _device: GPUDevice;
 
     constructor(device: GPUDevice) {
@@ -235,11 +234,11 @@ export class WebGPUCacheSampler {
     public getSampler(internalTexture: InternalTexture, bypassCache = false): GPUSampler {
         const hash = bypassCache ? 0 : WebGPUCacheSampler._GetSamplerHashCode(internalTexture);
 
-        let sampler = bypassCache ? undefined : WebGPUCacheSampler._samplers[hash];
+        let sampler = bypassCache ? undefined : this._samplers[hash];
         if (!sampler) {
             sampler =  this._device.createSampler(WebGPUCacheSampler._GetSamplerDescriptor(internalTexture));
             if (!bypassCache) {
-                WebGPUCacheSampler._samplers[hash] = sampler;
+                this._samplers[hash] = sampler;
             }
         }
 
