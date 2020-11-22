@@ -304,6 +304,7 @@ export class PostProcess {
     */
     public restoreDefaultInputTexture() {
         this._forcedOutputTexture = null;
+        this.markTextureDirty();
     }
 
     /**

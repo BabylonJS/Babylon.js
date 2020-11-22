@@ -10,6 +10,7 @@ import { Color4 } from "../Maths/math.color";
 import { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 import { Nullable } from "../types";
 import { AbstractMesh } from '../Meshes/abstractMesh';
+import { Camera } from '../Cameras/camera';
 import { Material } from '../Materials/material';
 import { SubMesh } from '../Meshes/subMesh';
 import { GeometryBufferRenderer } from '../Rendering/geometryBufferRenderer';
@@ -107,6 +108,8 @@ export class PrePassRenderer {
     private _mrtLayout: number[];
 
     private _enabled: boolean = false;
+
+    private _needsComposition = false;
 
     /**
      * Indicates if the prepass is enabled
@@ -213,7 +216,6 @@ export class PrePassRenderer {
         }
 
         this.imageProcessingPostProcess = new ImageProcessingPostProcess("sceneCompositionPass", 1, null, undefined, this._engine);
-        this.imageProcessingPostProcess.autoClear = false;
     }
 
     /**
@@ -257,28 +259,48 @@ export class PrePassRenderer {
     /**
      * @hidden
      */
-    public _beforeCameraDraw() {
+    public _beforeCameraDraw(camera: Camera) {
         if (this._isDirty) {
             this._update();
+        }
+
+        if (!this._enabled) {
+            return;
         }
 
         if (this._geometryBuffer) {
             this._geometryBuffer.renderList!.length = 0;
         }
 
-        this._bindFrameBuffer();
+        this._setupOutputForCamera(camera);
     }
 
     /**
      * @hidden
      */
-    public _afterCameraDraw() {
+    public _afterCameraDraw(camera: Camera) {
         if (this._enabled) {
-            const firstCameraPP = this._scene.activeCamera && this._scene.activeCamera._getFirstPostProcess();
-            if (firstCameraPP && this._postProcesses.length) {
-                this._scene.postProcessManager._prepareFrame();
+            this._scene.postProcessManager._prepareFrame();
+            const firstCameraPP = camera && camera._getFirstPostProcess();
+            let outputTexture = firstCameraPP ? firstCameraPP.inputTexture : null
+
+            // Build post process chain for this prepass post draw
+            let postProcessChain = this._postProcesses;
+            if (this._needsComposition) {
+                postProcessChain = postProcessChain.concat([this.imageProcessingPostProcess]);
             }
-            this._scene.postProcessManager.directRender(this._postProcesses, firstCameraPP ? firstCameraPP.inputTexture : null);
+
+            // Activates the chain
+            if (postProcessChain.length) {
+                this._scene.postProcessManager._prepareFrame(this.prePassRT.getInternalTexture()!, postProcessChain);
+            }
+
+            // Renders the post process chain 
+            this._scene.postProcessManager.directRender(postProcessChain, outputTexture);
+
+            if (!outputTexture) {
+                this._engine.restoreDefaultFramebuffer();
+            }
         }
     }
 
@@ -292,7 +314,6 @@ export class PrePassRenderer {
             this.prePassRT.resize({ width: requiredWidth, height: requiredHeight });
 
             this._updateGeometryBufferLayout();
-            this._bindPostProcessChain();
         }
     }
 
@@ -441,20 +462,6 @@ export class PrePassRenderer {
             this._createCompositionEffect();
         }
 
-        let isIPPAlreadyPresent = false;
-        if (this._scene.activeCamera?._postProcesses) {
-            for (let i = 0; i < this._scene.activeCamera._postProcesses.length; i++) {
-                if (this._scene.activeCamera._postProcesses[i]?.getClassName() === "ImageProcessingPostProcess") {
-                    isIPPAlreadyPresent = true;
-                }
-            }
-
-        }
-
-        if (!isIPPAlreadyPresent && !this.disableGammaTransform) {
-            this._postProcesses.push(this.imageProcessingPostProcess);
-        }
-        this._bindPostProcessChain();
         this._setState(true);
     }
 
@@ -478,28 +485,63 @@ export class PrePassRenderer {
         this.mrtCount = 1;
     }
 
+    // private _bindPostProcessChain() {
+    //     if (this._postProcesses.length) {
+    //         this._postProcesses[0].inputTexture = this.prePassRT.getInternalTexture()!;
+    //     } else {
+    //         const pp = this._scene.activeCamera?._getFirstPostProcess();
+    //         if (pp) {
+    //             pp.inputTexture = this.prePassRT.getInternalTexture()!;
+    //         }
+    //     }
+    // }
+
     private _resetPostProcessChain() {
         this._postProcesses = [];
-        if (this.imageProcessingPostProcess) {
-            this.imageProcessingPostProcess.restoreDefaultInputTexture();
-        }
-
-        for (let i = 0; i < this._effectConfigurations.length; i++) {
-            if (this._effectConfigurations[i].postProcess) {
-                this._effectConfigurations[i].postProcess!.restoreDefaultInputTexture();
-            }
-        }
     }
 
-    private _bindPostProcessChain() {
-        if (this._postProcesses.length) {
-            this._postProcesses[0].inputTexture = this.prePassRT.getInternalTexture()!;
-        } else {
-            const pp = this._scene.activeCamera?._getFirstPostProcess();
-            if (pp) {
-                pp.inputTexture = this.prePassRT.getInternalTexture()!;
+    private _setupOutputForCamera(camera: Camera) {
+        // Here we search for an image composition post process
+        // If no ipp if found, we use the prepass built-in
+        // We also set the framebuffer to the input texture of the first post process that is to come
+        const secondaryCamera = this._scene.activeCameras && this._scene.activeCameras.length && this._scene.activeCameras.indexOf(camera) !== 0;
+        this._needsComposition = !this._cameraHasImageProcessing(camera) && !this.disableGammaTransform && !secondaryCamera;
+        const firstCameraPP = camera && camera._getFirstPostProcess();
+        const firstPrePassPP = this._postProcesses && this._postProcesses[0];
+        let firstPP = null;
+
+        this.imageProcessingPostProcess.restoreDefaultInputTexture();
+
+        // Setting the prepassRT as input texture of the first PP
+        if (firstPrePassPP) {
+            firstPrePassPP.inputTexture = this.prePassRT.getInternalTexture()!;
+            firstPP = firstPrePassPP;
+        } else if (this._needsComposition) {
+            this.imageProcessingPostProcess.inputTexture = this.prePassRT.getInternalTexture()!;
+            firstPP = this.imageProcessingPostProcess;
+        } else if (firstCameraPP) {
+            firstCameraPP.inputTexture = this.prePassRT.getInternalTexture()!;
+            firstPP = firstCameraPP;
+        }
+        
+        if (firstPP) {
+            firstPP.autoClear = false;
+        }
+
+        this._bindFrameBuffer();
+    }
+
+    private _cameraHasImageProcessing(camera: Camera): boolean {
+        let isIPPAlreadyPresent = false;
+        if (camera._postProcesses) {
+            for (let i = 0; i < camera._postProcesses.length; i++) {
+                if (camera._postProcesses[i]?.getClassName() === "ImageProcessingPostProcess") {
+                    isIPPAlreadyPresent = true;
+                }
             }
         }
+
+        return isIPPAlreadyPresent;
     }
 
     /**

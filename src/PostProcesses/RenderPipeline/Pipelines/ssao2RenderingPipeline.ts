@@ -190,7 +190,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
      * @param cameras The array of cameras that the rendering pipeline will be attached to
      * @param forceGeometryBuffer Set to true if you want to use the legacy geometry buffer renderer
      */
-    constructor(name: string, scene: Scene, ratio: any, cameras?: Camera[], forceGeometryBuffer = true) {
+    constructor(name: string, scene: Scene, ratio: any, cameras?: Camera[], forceGeometryBuffer = false) {
         super(scene.getEngine(), name);
 
         this._scene = scene;
