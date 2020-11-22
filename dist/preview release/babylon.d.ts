@@ -13066,6 +13066,8 @@ declare module BABYLON {
         getOutputByName(name: string): Nullable<NodeMaterialConnectionPoint>;
         /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
         visibleInInspector: boolean;
+        /** Gets or sets a boolean indicating that this input can be edited from a collapsed frame*/
+        visibleOnFrame: boolean;
         /**
          * Creates a new NodeMaterialBlock
          * @param name defines the block name
