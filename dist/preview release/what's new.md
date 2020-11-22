@@ -24,6 +24,10 @@
 
 - Added support for sounds in the inspector ([Deltakosh](https://github.com/deltakosh))
 
+### NME
+
+- Added ability to make input node's properties visible in the properties of a custom frame ([msDestiny14](https://github.com/msDestiny14))
+
 ### GUI
 
 - Added a `FocusableButton` gui control to simplify creating menus with keyboard navigation ([Flux159](https://github.com/Flux159))
