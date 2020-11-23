@@ -57563,10 +57563,6 @@ var GlobalState = /** @class */ (function () {
             }
             _this.glTFLoaderExtensions[extension.name] = extension;
         });
-        if (this.validationResults) {
-            this.validationResults = null;
-            this.onValidationResultsUpdatedObservable.notifyObservers(null);
-        }
         loader.onValidatedObservable.add(function (results) {
             _this.validationResults = results;
             _this.onValidationResultsUpdatedObservable.notifyObservers(results);
@@ -57575,6 +57571,12 @@ var GlobalState = /** @class */ (function () {
                 _this.onTabChangedObservable.notifyObservers(3);
             }
         });
+    };
+    GlobalState.prototype.resetGLTFValidationResults = function () {
+        if (this.validationResults) {
+            this.validationResults = null;
+            this.onValidationResultsUpdatedObservable.notifyObservers(null);
+        }
     };
     GlobalState.prototype.enableLightGizmo = function (light, enable) {
         if (enable === void 0) { enable = true; }
@@ -60409,6 +60411,7 @@ var Inspector = /** @class */ (function () {
         var _this = this;
         if (!this._GlobalState.onPluginActivatedObserver) {
             this._GlobalState.onPluginActivatedObserver = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_3__["SceneLoader"].OnPluginActivatedObservable.add(function (rawLoader) {
+                _this._GlobalState.resetGLTFValidationResults();
                 var loader = rawLoader;
                 if (loader.name === "gltf") {
                     _this._GlobalState.prepareGLTFPlugin(loader);

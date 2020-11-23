@@ -75082,7 +75082,11 @@ declare module BABYLON {
         /**
          * Callback called when a file is processed
          */
-        onProcessFileCallback: (file: File, name: string, extension: string) => boolean;
+        onProcessFileCallback: (file: File, name: string, extension: string, setSceneFileToLoad: (sceneFile: File) => void) => boolean;
+        /**
+         * Function used when loading the scene file
+         */
+        loadAsync: (sceneFile: File, onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void>) => Promise<Scene>;
         private _engine;
         private _currentScene;
         private _sceneLoadedCallback;
