@@ -63031,6 +63031,10 @@ declare module BABYLON {
          */
         specularGlossinessTexture: BaseTexture;
         /**
+         * Specifies if the reflectivity texture contains the glossiness information in its alpha channel.
+        */
+        get useMicroSurfaceFromReflectivityMapAlpha(): boolean;
+        /**
          * Instantiates a new PBRSpecularGlossinessMaterial instance.
          *
          * @param name The material name
