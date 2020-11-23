@@ -578,7 +578,7 @@ export class GeometryBufferRenderer {
 
                 if (material) {
                     var sideOrientation: Nullable<number>;
-                    let instanceDataStorage = (effectiveMesh as Mesh)._instanceDataStorage;
+                    let instanceDataStorage = (renderingMesh as Mesh)._instanceDataStorage;
 
                     if (!instanceDataStorage.isFrozen &&
                         (material.backFaceCulling || material.overrideMaterialSideOrientation !== null)) {
