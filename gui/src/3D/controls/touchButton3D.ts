@@ -49,17 +49,19 @@ export class TouchButton3D extends Button3D {
                 const distance = _this._collisionMesh.getAbsolutePosition().subtract(indexMesh.getAbsolutePosition()).length();
                 console.log(distance);
 
-                // for some reason the absolute positions don't line up? I'll have to ask about that.
-
                 const dummyPosition = Vector3.Zero();
                 const dummyPointerId = 0;
                 const dummyButtonIndex = 0;// left click;
+
+                const touchDepth = 0.5;
+                const hoverDepth = 0.8;
+                const flickerDelta = 0.05; // A delta to avoid state flickering when on the threshold
 
                 // Update button state and fire events
                 switch(_this._buttonState)
                 {
                     case ButtonState.None:
-                        if (distance < 1)
+                        if (distance < hoverDepth - flickerDelta)
                         {
                             console.log("Now hovering");
                             _this._buttonState = ButtonState.Hover;
@@ -68,13 +70,13 @@ export class TouchButton3D extends Button3D {
 
                         break;
                     case ButtonState.Hover:
-                        if (distance > 1.1)
+                        if (distance > hoverDepth + flickerDelta)
                         {
                             console.log("Out of range");
                             _this._buttonState = ButtonState.None;
                             _this._onPointerOut(_this);
                         }
-                        else if (distance < 0.4)
+                        else if (distance < touchDepth - flickerDelta)
                         {
                             console.log("now pressing");
                             _this._buttonState = ButtonState.Press;
@@ -87,7 +89,7 @@ export class TouchButton3D extends Button3D {
 
                         break;
                     case ButtonState.Press:
-                        if (distance > 0.5)
+                        if (distance > touchDepth + flickerDelta)
                         {
                             console.log("no longer pressing");
                             _this._buttonState = ButtonState.Hover;                            _this._onPointerUp(_this, dummyPosition, dummyPointerId, dummyButtonIndex, false /*notifyClick*/);
