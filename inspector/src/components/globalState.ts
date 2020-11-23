@@ -133,11 +133,6 @@ export class GlobalState {
             this.glTFLoaderExtensions[extension.name] = extension;
         });
 
-        if (this.validationResults) {
-            this.validationResults = null;
-            this.onValidationResultsUpdatedObservable.notifyObservers(null);
-        }
-
         loader.onValidatedObservable.add((results: IGLTFValidationResults) => {
             this.validationResults = results;
             this.onValidationResultsUpdatedObservable.notifyObservers(results);
@@ -147,6 +142,13 @@ export class GlobalState {
                 this.onTabChangedObservable.notifyObservers(3);
             }
         });
+    }
+
+    public resetGLTFValidationResults() {
+        if (this.validationResults) {
+            this.validationResults = null;
+            this.onValidationResultsUpdatedObservable.notifyObservers(null);
+        }
     }
 
     // Light gizmos

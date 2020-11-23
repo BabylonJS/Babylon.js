@@ -77,13 +77,13 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         });
     }
 
-    private async _loadScriptAsync(url: string) {
+    private async _loadScriptAsync(url: string): Promise<void> {
         return new Promise((resolve, reject) => {
             let script = document.createElement('script');
             script.src = url;
             script.onload = () => {
                 resolve();
-            }
+            };
             document.head.appendChild(script);
         });
     }
@@ -93,7 +93,6 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         this.props.globalState.onErrorObservable.notifyObservers(null);
 
         const displayInspector = this._scene?.debugLayer.isVisible();
-
 
         if (this._engine) {
             try {
@@ -126,7 +125,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
             // Check for Unity Toolkit
             if ((location.href.indexOf("UnityToolkit") !== -1 || Utilities.ReadBoolFromStore("unity-toolkit", false)) && !this._unityToolkitWasLoaded) {
-                await this._loadScriptAsync("https://raw.githubusercontent.com/MackeyK24/MackeyK24.github.io/master/toolkit/babylon.manager.js");
+                await this._loadScriptAsync("/libs/babylon.manager.js");
                 this._unityToolkitWasLoaded = true;
             }
 
