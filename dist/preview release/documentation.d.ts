@@ -63031,6 +63031,10 @@ declare module BABYLON {
          */
         specularGlossinessTexture: BaseTexture;
         /**
+         * Specifies if the reflectivity texture contains the glossiness information in its alpha channel.
+        */
+        get useMicroSurfaceFromReflectivityMapAlpha(): boolean;
+        /**
          * Instantiates a new PBRSpecularGlossinessMaterial instance.
          *
          * @param name The material name
@@ -75082,7 +75086,11 @@ declare module BABYLON {
         /**
          * Callback called when a file is processed
          */
-        onProcessFileCallback: (file: File, name: string, extension: string) => boolean;
+        onProcessFileCallback: (file: File, name: string, extension: string, setSceneFileToLoad: (sceneFile: File) => void) => boolean;
+        /**
+         * Function used when loading the scene file
+         */
+        loadAsync: (sceneFile: File, onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void>) => Promise<Scene>;
         private _engine;
         private _currentScene;
         private _sceneLoadedCallback;
@@ -85312,8 +85320,8 @@ declare module BABYLON.GLTF2.Exporter {
          */
         private _convertSpecGlossFactorsToMetallicRoughnessAsync;
         /**
-         * Converts a Babylon PBR Metallic Roughness Material to a glTF Material
-         * @param babylonPBRMaterial BJS PBR Metallic Roughness Material
+         * Converts a Babylon PBR Base Material to a glTF Material
+         * @param babylonPBRMaterial BJS PBR Base Material
          * @param mimeType mime type to use for the textures
          * @param images array of glTF image interfaces
          * @param textures array of glTF texture interfaces
@@ -85321,7 +85329,7 @@ declare module BABYLON.GLTF2.Exporter {
          * @param imageData map of image file name to data
          * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
          */
-        _convertPBRMaterialAsync(babylonPBRMaterial: PBRMaterial, mimeType: ImageMimeType, hasTextureCoords: boolean): Promise<IMaterial>;
+        _convertPBRMaterialAsync(babylonPBRMaterial: PBRBaseMaterial, mimeType: ImageMimeType, hasTextureCoords: boolean): Promise<IMaterial>;
         private setMetallicRoughnessPbrMaterial;
         private getPixelsFromTexture;
         /**
