@@ -2828,6 +2828,14 @@ declare module BABYLON {
          */
         static Center(value1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>): Vector2;
         /**
+         * Gets the center of the vectors "value1" and "value2" and stores the result in the vector "ref"
+         * @param value1 defines first vector
+         * @param value2 defines second vector
+         * @param ref defines third vector
+         * @returns ref
+         */
+        static CenterToRef(value1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, ref: DeepImmutable<Vector2>): Vector2;
+        /**
          * Gets the shortest distance (float) between the point "p" and the segment defined by the two points "segA" and "segB".
          * @param p defines the middle point
          * @param segA defines one point of the segment
@@ -3595,6 +3603,14 @@ declare module BABYLON {
          */
         static Center(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>): Vector3;
         /**
+         * Gets the center of the vectors "value1" and "value2" and stores the result in the vector "ref"
+         * @param value1 defines first vector
+         * @param value2 defines second vector
+         * @param ref defines third vector
+         * @returns ref
+         */
+        static CenterToRef(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, ref: DeepImmutable<Vector3>): Vector3;
+        /**
          * Given three orthogonal normalized left-handed oriented Vector3 axis in space (target system),
          * RotationFromAxis() returns the rotation Euler angles (ex : rotation.x, rotation.y, rotation.z) to apply
          * to something in order to rotate it from its local system to the given target system
@@ -4011,6 +4027,14 @@ declare module BABYLON {
          * @return the center between the two vectors
          */
         static Center(value1: DeepImmutable<Vector4>, value2: DeepImmutable<Vector4>): Vector4;
+        /**
+         * Gets the center of the vectors "value1" and "value2" and stores the result in the vector "ref"
+         * @param value1 defines first vector
+         * @param value2 defines second vector
+         * @param ref defines third vector
+         * @returns ref
+         */
+        static CenterToRef(value1: DeepImmutable<Vector4>, value2: DeepImmutable<Vector4>, ref: DeepImmutable<Vector4>): Vector4;
         /**
          * Returns a new Vector4 set with the result of the normal transformation by the given matrix of the given vector.
          * This methods computes transformed normalized direction vectors only.
@@ -9487,10 +9511,15 @@ declare module BABYLON {
          */
         _prepare(): void;
         /**
-         * Gets the trigger parameters
-         * @returns the trigger parameters
+         * Gets the trigger parameter
+         * @returns the trigger parameter
          */
         getTriggerParameter(): any;
+        /**
+         * Sets the trigger parameter
+         * @param value defines the new trigger parameter
+         */
+        setTriggerParameter(value: any): void;
         /**
          * Internal only - executes current action event
          * @hidden
@@ -13037,6 +13066,8 @@ declare module BABYLON {
         getOutputByName(name: string): Nullable<NodeMaterialConnectionPoint>;
         /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
         visibleInInspector: boolean;
+        /** Gets or sets a boolean indicating that this input can be edited from a collapsed frame*/
+        visibleOnFrame: boolean;
         /**
          * Creates a new NodeMaterialBlock
          * @param name defines the block name
@@ -28105,6 +28136,7 @@ declare module BABYLON {
          * @hidden
          */
         get checkCollisions(): boolean;
+        set checkCollisions(value: boolean);
         /** @hidden */
         _bind(subMesh: SubMesh, effect: Effect, fillMode: number): Mesh;
         /** @hidden */
@@ -45093,10 +45125,12 @@ declare module BABYLON {
          * Does the sound autoplay once loaded.
          */
         autoplay: boolean;
+        private _loop;
         /**
          * Does the sound loop after it finishes playing once.
          */
-        loop: boolean;
+        get loop(): boolean;
+        set loop(value: boolean);
         /**
          * Does the sound use a custom attenuation curve to simulate the falloff
          * happening when the source gets further away from the camera.
@@ -45209,6 +45243,11 @@ declare module BABYLON {
          * @returns true if ready, otherwise false
          */
         isReady(): boolean;
+        /**
+         * Get the current class name.
+         * @returns current class name
+         */
+        getClassName(): string;
         private _soundLoaded;
         /**
          * Sets the data of the sound from an audiobuffer
@@ -48588,7 +48627,7 @@ declare module BABYLON {
          * @param timeout amount of time in milliseconds to wait for a response from the sensor (default: infinite)
          * @returns a promise that will resolve on orientation change
          */
-        static WaitForOrientationChangeAsync(timeout?: number): Promise<unknown>;
+        static WaitForOrientationChangeAsync(timeout?: number): Promise<void>;
         /**
          * @hidden
          */
@@ -61968,7 +62007,7 @@ declare module BABYLON {
           * @param onFinished Callback when filtering is done
           * @return Promise called when prefiltering is done
           */
-        prefilter(texture: BaseTexture, onFinished?: Nullable<() => void>): Promise<unknown> | undefined;
+        prefilter(texture: BaseTexture, onFinished?: Nullable<() => void>): Promise<void>;
     }
 }
 declare module BABYLON {
@@ -62817,6 +62856,14 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * A material to use for fast depth-only rendering.
+     */
+    export class OcclusionMaterial extends ShaderMaterial {
+        constructor(name: string, scene: Scene);
+    }
+}
+declare module BABYLON {
+    /**
      * The Physically based simple base material of BJS.
      *
      * This enables better naming and convention enforcements on top of the pbrMaterial.
@@ -62983,6 +63030,10 @@ declare module BABYLON {
          * Specifies both the specular color RGB and the glossiness A of the material per pixels.
          */
         specularGlossinessTexture: BaseTexture;
+        /**
+         * Specifies if the reflectivity texture contains the glossiness information in its alpha channel.
+        */
+        get useMicroSurfaceFromReflectivityMapAlpha(): boolean;
         /**
          * Instantiates a new PBRSpecularGlossinessMaterial instance.
          *
@@ -74974,7 +75025,7 @@ declare module BABYLON {
         /**
          * The resolve method of the promise associated with this deferred object.
          */
-        get resolve(): (value?: T | PromiseLike<T> | undefined) => void;
+        get resolve(): (value: T | PromiseLike<T>) => void;
         /**
          * The reject method of the promise associated with this deferred object.
          */
@@ -75035,7 +75086,11 @@ declare module BABYLON {
         /**
          * Callback called when a file is processed
          */
-        onProcessFileCallback: (file: File, name: string, extension: string) => boolean;
+        onProcessFileCallback: (file: File, name: string, extension: string, setSceneFileToLoad: (sceneFile: File) => void) => boolean;
+        /**
+         * Function used when loading the scene file
+         */
+        loadAsync: (sceneFile: File, onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void>) => Promise<Scene>;
         private _engine;
         private _currentScene;
         private _sceneLoadedCallback;
@@ -76847,9 +76902,23 @@ declare module BABYLON {
                 impostorType?: number;
             };
             /**
-             * For future use - a single hand-mesh that will be updated according to the XRHand data provided
+             * Should the default hand mesh be disabled. In this case, the spheres will be visible (unless set invisible).
              */
-            handMesh?: AbstractMesh;
+            disableDefaultHandMesh?: boolean;
+            /**
+             * a rigged hand-mesh that will be updated according to the XRHand data provided. This will override the default hand mesh
+             */
+            handMeshes?: {
+                right: AbstractMesh;
+                left: AbstractMesh;
+            };
+            /**
+             * If a hand mesh was provided, this array will define what axis will update which node. This will override the default hand mesh
+             */
+            rigMapping?: {
+                right: string[];
+                left: string[];
+            };
         };
     }
     /**
@@ -76889,12 +76958,21 @@ declare module BABYLON {
         readonly xrController: WebXRInputSource;
         /** the meshes to be used to track the hand joints */
         readonly trackedMeshes: AbstractMesh[];
+        private _handMesh?;
+        private _rigMapping?;
+        private _scene;
+        private _defaultHandMesh;
+        private _transformNodeMapping;
         /**
          * Hand-parts definition (key is HandPart)
          */
         handPartsDefinition: {
             [key: string]: number[];
         };
+        /**
+         * Observers will be triggered when the mesh for this hand was initialized.
+         */
+        onHandMeshReadyObservable: Observable<WebXRHand>;
         /**
          * Populate the HandPartsDefinition object.
          * This is called as a side effect since certain browsers don't have XRHand defined.
@@ -76904,12 +76982,19 @@ declare module BABYLON {
          * Construct a new hand object
          * @param xrController the controller to which the hand correlates
          * @param trackedMeshes the meshes to be used to track the hand joints
+         * @param _handMesh an optional hand mesh. if not provided, ours will be used
+         * @param _rigMapping an optional rig mapping for the hand mesh. if not provided, ours will be used
+         * @param disableDefaultHandMesh should the default mesh creation be disabled
          */
         constructor(
         /** the controller to which the hand correlates */
         xrController: WebXRInputSource, 
         /** the meshes to be used to track the hand joints */
-        trackedMeshes: AbstractMesh[]);
+        trackedMeshes: AbstractMesh[], _handMesh?: AbstractMesh | undefined, _rigMapping?: string[] | undefined, disableDefaultHandMesh?: boolean);
+        /**
+         * Get the hand mesh. It is possible that the hand mesh is not yet ready!
+         */
+        get handMesh(): AbstractMesh | undefined;
         /**
          * Update this hand from the latest xr frame
          * @param xrFrame xrFrame to update from
@@ -76927,6 +77012,7 @@ declare module BABYLON {
          * Dispose this Hand object
          */
         dispose(): void;
+        private _generateDefaultHandMesh;
     }
     /**
      * WebXR Hand Joint tracking feature, available for selected browsers and devices

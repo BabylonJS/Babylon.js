@@ -250,8 +250,7 @@ class TransmissionHelper {
 const NAME = "KHR_materials_transmission";
 
 /**
- * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1698)
- * !!! Experimental Extension Subject to Changes !!!
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_transmission/README.md)
  */
 export class KHR_materials_transmission implements IGLTFLoaderExtension {
     /**

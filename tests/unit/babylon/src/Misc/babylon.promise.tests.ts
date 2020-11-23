@@ -21,7 +21,7 @@ describe('Babylon.Promise', function() {
     describe('#Composition', () => {
         it('should chain promises correctly #1', (done) => {
             var tempString = "";
-            var p1 = new Promise((resolve, reject) => {
+            var p1 = new Promise((resolve: (_: void) => void, reject) => {
                 tempString = "Initial";
                 resolve();
             }).then(() => {
@@ -43,7 +43,7 @@ describe('Babylon.Promise', function() {
 
         it('should chain promises correctly #2', (done) => {
             var tempString = "";
-            var p1 = new Promise((resolve, reject) => {
+            var p1 = new Promise((resolve: (_: void) => void, reject) => {
                 tempString = "Initial";
                 resolve();
             }).then(() => {

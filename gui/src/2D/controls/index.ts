@@ -4,6 +4,7 @@ export * from "./colorpicker";
 export * from "./container";
 export * from "./control";
 export * from "./ellipse";
+export * from './focusableButton';
 export * from "./grid";
 export * from "./image";
 export * from "./inputText";
