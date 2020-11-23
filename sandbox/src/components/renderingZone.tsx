@@ -17,14 +17,12 @@ import { Mesh } from "babylonjs/Meshes/mesh";
 
 require("../scss/renderingZone.scss");
 
-interface IRenderingZoneProps {
-    globalState: GlobalState;
-    assetUrl?: string;
-    cameraPosition?: Vector3;
-    expanded: boolean;
-}
-
 function isTextureAsset(name: string): boolean {
+    var queryStringIndex = name.indexOf("?");
+    if (queryStringIndex !== -1) {
+        name = name.substring(0, queryStringIndex);
+    }
+
     return (
         StringTools.EndsWith(name, ".ktx") ||
         StringTools.EndsWith(name, ".ktx2") ||
@@ -32,6 +30,13 @@ function isTextureAsset(name: string): boolean {
         StringTools.EndsWith(name, ".jpg") ||
         StringTools.EndsWith(name, ".jpeg")
     );
+}
+
+interface IRenderingZoneProps {
+    globalState: GlobalState;
+    assetUrl?: string;
+    cameraPosition?: Vector3;
+    expanded: boolean;
 }
 
 export class RenderingZone extends React.Component<IRenderingZoneProps> {
