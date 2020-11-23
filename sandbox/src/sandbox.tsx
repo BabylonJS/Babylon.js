@@ -12,14 +12,14 @@ var fullScreenLogo = require("./img/logo-fullscreen.svg");
 interface ISandboxProps {
 }
 
-export class Sandbox extends React.Component<ISandboxProps, {isFooterVisible: boolean, errorMessage: string}> {
+export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: boolean, errorMessage: string }> {
     private _globalState: GlobalState;
-    private _assetUrl?: string;    
+    private _assetUrl?: string;
     private _cameraPosition?: Vector3;
-    private _logoRef: React.RefObject<HTMLImageElement>;    
+    private _logoRef: React.RefObject<HTMLImageElement>;
     private _dropTextRef: React.RefObject<HTMLDivElement>;
     private _clickInterceptorRef: React.RefObject<HTMLDivElement>;
-    
+
     public constructor(props: ISandboxProps) {
         super(props);
         this._globalState = new GlobalState();
@@ -27,14 +27,14 @@ export class Sandbox extends React.Component<ISandboxProps, {isFooterVisible: bo
         this._dropTextRef = React.createRef();
         this._clickInterceptorRef = React.createRef();
 
-        this.state = {isFooterVisible: true, errorMessage: ""};
-        
+        this.state = { isFooterVisible: true, errorMessage: "" };
+
         this.checkUrl();
 
         EnvironmentTools.HookWithEnvironmentChange(this._globalState);
 
         // Events
-        this._globalState.onSceneLoaded.add(info => {
+        this._globalState.onSceneLoaded.add((info) => {
             document.title = "Babylon.js - " + info.filename;
 
             this._globalState.currentScene = info.scene;
@@ -47,13 +47,13 @@ export class Sandbox extends React.Component<ISandboxProps, {isFooterVisible: bo
             }
         });
 
-        this._globalState.onError.add(error => {
+        this._globalState.onError.add((error) => {
             if (error.scene) {
                 this._globalState.showDebugLayer();
             }
 
             if (error.message) {
-                this.setState({errorMessage: error.message});
+                this.setState({ errorMessage: error.message });
             }
         });
 
@@ -68,10 +68,10 @@ export class Sandbox extends React.Component<ISandboxProps, {isFooterVisible: bo
         });
 
         // Keyboard
-        window.addEventListener("keydown", (event: KeyboardEvent) =>{
+        window.addEventListener("keydown", (event: KeyboardEvent) => {
             // Press space to toggle footer
             if (event.keyCode === 32 && event.target && (event.target as HTMLElement).nodeName !== "INPUT") {
-                this.setState({isFooterVisible: !this.state.isFooterVisible});
+                this.setState({ isFooterVisible: !this.state.isFooterVisible });
             }
         });
     }
@@ -91,11 +91,11 @@ export class Sandbox extends React.Component<ISandboxProps, {isFooterVisible: bo
                         break;
                     }
                     case "cameraPosition": {
-                        this._cameraPosition = Vector3.FromArray(value.split(",").map(function(component) { return +component; }));
+                        this._cameraPosition = Vector3.FromArray(value.split(",").map(function (component) { return +component; }));
                         break;
                     }
                     case "kiosk": {
-                        this.state = {isFooterVisible: value === "true" ? false : true, errorMessage: ""};
+                        this.state = { isFooterVisible: value === "true" ? false : true, errorMessage: "" };
                         break;
                     }
                 }
@@ -113,11 +113,11 @@ export class Sandbox extends React.Component<ISandboxProps, {isFooterVisible: bo
         return (
             <div id="root">
                 <p id="droptext" ref={this._dropTextRef}>Drag and drop gltf, glb, obj or babylon files to view them</p>
-                <RenderingZone globalState={this._globalState} 
-                    assetUrl={this._assetUrl} 
-                    cameraPosition={this._cameraPosition} 
-                    expanded={!this.state.isFooterVisible}/>                
-                <div ref={this._clickInterceptorRef} 
+                <RenderingZone globalState={this._globalState}
+                    assetUrl={this._assetUrl}
+                    cameraPosition={this._cameraPosition}
+                    expanded={!this.state.isFooterVisible} />
+                <div ref={this._clickInterceptorRef}
                     onClick={() => {
                         this._globalState.onClickInterceptorClicked.notifyObservers();
                         this._clickInterceptorRef.current!.classList.add("hidden");
@@ -128,26 +128,26 @@ export class Sandbox extends React.Component<ISandboxProps, {isFooterVisible: bo
                     <Footer globalState={this._globalState} />
                 }
                 <div id="logoContainer">
-                    <img id="logo" src={fullScreenLogo} ref={this._logoRef}/>
-                </div>                      
+                    <img id="logo" src={fullScreenLogo} ref={this._logoRef} />
+                </div>
                 {
                     this.state.errorMessage &&
                     <div id="errorZone">
                         <div className="message">
                             {this.state.errorMessage}
                         </div>
-                        <button type="button" className="close" 
-                            onClick={() => this.setState({errorMessage: ""})}
+                        <button type="button" className="close"
+                            onClick={() => this.setState({ errorMessage: "" })}
                             data-dismiss="alert">&times;</button>
-                    </div>                           
-                } 
-            </div>   
-        )
+                    </div>
+                }
+            </div>
+        );
     }
 
     public static Show(hostElement: HTMLElement) {
         const sandBox = React.createElement(Sandbox, {});
-        
+
         ReactDOM.render(sandBox, hostElement);
     }
 }

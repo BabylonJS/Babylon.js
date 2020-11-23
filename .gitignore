@@ -166,6 +166,7 @@ node_modules
 !dist/**/*.js.map
 !lib.d.ts
 !src/LibDeclarations/*.d.ts
+!Playground/libs/*.d.ts
 *.fragment.ts
 *.vertex.ts
 **/ShadersInclude/**/*.ts
