@@ -396,6 +396,10 @@ export class EnvironmentTextureTools {
                             effect.setFloat2("scale", 1, 1);
                         };
 
+                        if (!engine.scenes.length) {
+                            return;
+                        }
+
                         engine.scenes[0].postProcessManager.directRender([rgbdPostProcess!], cubeRtt, true, face, i);
 
                         // Cleanup

@@ -13066,6 +13066,8 @@ declare module BABYLON {
         getOutputByName(name: string): Nullable<NodeMaterialConnectionPoint>;
         /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
         visibleInInspector: boolean;
+        /** Gets or sets a boolean indicating that this input can be edited from a collapsed frame*/
+        visibleOnFrame: boolean;
         /**
          * Creates a new NodeMaterialBlock
          * @param name defines the block name
@@ -63029,10 +63031,6 @@ declare module BABYLON {
          */
         specularGlossinessTexture: BaseTexture;
         /**
-         * Specifies if the reflectivity texture contains the glossiness information in its alpha channel.
-        */
-        get useMicroSurfaceFromReflectivityMapAlpha(): boolean;
-        /**
          * Instantiates a new PBRSpecularGlossinessMaterial instance.
          *
          * @param name The material name
@@ -75084,7 +75082,11 @@ declare module BABYLON {
         /**
          * Callback called when a file is processed
          */
-        onProcessFileCallback: (file: File, name: string, extension: string) => boolean;
+        onProcessFileCallback: (file: File, name: string, extension: string, setSceneFileToLoad: (sceneFile: File) => void) => boolean;
+        /**
+         * Function used when loading the scene file
+         */
+        loadAsync: (sceneFile: File, onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void>) => Promise<Scene>;
         private _engine;
         private _currentScene;
         private _sceneLoadedCallback;
