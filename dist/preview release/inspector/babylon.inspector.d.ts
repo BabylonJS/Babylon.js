@@ -57,6 +57,7 @@ declare module INSPECTOR {
         set ignoreBackfacesForPicking(value: boolean);
         init(propertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>): void;
         prepareGLTFPlugin(loader: import("babylonjs-loaders/glTF/index").GLTFFileLoader): void;
+        resetGLTFValidationResults(): void;
         lightGizmos: Array<BABYLON.LightGizmo>;
         enableLightGizmo(light: BABYLON.Light, enable?: boolean): void;
         cameraGizmos: Array<BABYLON.CameraGizmo>;
