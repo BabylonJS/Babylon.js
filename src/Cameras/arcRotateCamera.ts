@@ -891,14 +891,20 @@ export class ArcRotateCamera extends TargetCamera {
                 this._transformedDirection = Vector3.Zero();
             }
 
-            this._localDirection.copyFromFloats(this.inertialPanningX, this.inertialPanningY, this.inertialPanningY);
-            this._localDirection.multiplyInPlace(this.panningAxis);
             this._viewMatrix.invertToRef(this._cameraTransformMatrix);
-            Vector3.TransformNormalToRef(this._localDirection, this._cameraTransformMatrix, this._transformedDirection);
-            //Eliminate y if map panning is enabled (panningAxis == 1,0,1)
-            if (!this.panningAxis.y) {
-                this._transformedDirection.y = 0;
-            }
+            Vector3.TransformNormalToRef(new Vector3(1,0,0), this._cameraTransformMatrix, this._transformedDirection);
+
+            // panning on X Axis
+            this._transformedDirection.x *= this.panningAxis.x * this.inertialPanningX;
+            this._transformedDirection.y *= this.panningAxis.x * this.inertialPanningX;
+            this._transformedDirection.z *= this.panningAxis.x * this.inertialPanningX;
+
+            // panning on Y axis
+            this._transformedDirection.y += this.panningAxis.y * this.inertialPanningY;
+
+            // panning on Z axis
+            this._transformedDirection.x -= Math.cos(this.alpha) * this.panningAxis.z * this.inertialPanningY;
+            this._transformedDirection.z -= Math.sin(this.alpha) * this.panningAxis.z * this.inertialPanningY;
 
             if (!this._targetHost) {
                 if (this.panningDistanceLimit) {
