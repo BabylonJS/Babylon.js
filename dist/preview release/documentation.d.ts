@@ -7489,8 +7489,8 @@ declare module BABYLON {
         /**
          * Define if the texture is having a usable alpha value (can be use for transparency or glossiness for instance).
          */
-        set hasAlpha(value: boolean);
         get hasAlpha(): boolean;
+        set hasAlpha(value: boolean);
         /**
          * Defines if the alpha value should be determined via the rgb values.
          * If true the luminance of the pixel might be used to find the corresponding alpha value.
@@ -40369,6 +40369,8 @@ declare module BABYLON {
         _references: number;
         /** @hidden */
         _gammaSpace: Nullable<boolean>;
+        /** @hidden */
+        _hasAlpha: Nullable<boolean>;
         private _engine;
         /**
          * Gets the Engine the texture belongs to.
@@ -46755,7 +46757,6 @@ declare module BABYLON {
          * Defines the allowed panning axis.
          */
         panningAxis: Vector3;
-        protected _localDirection: Vector3;
         protected _transformedDirection: Vector3;
         private _bouncingBehavior;
         /**
