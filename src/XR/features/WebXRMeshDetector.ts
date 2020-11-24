@@ -214,23 +214,22 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
         mesh.xrMesh = xrMesh;
         mesh.worldParentNode = this._options.worldParentNode;
 
-        if (!!this._options.convertCoordinateSystems)
-        {
-            if (!this._xrSessionManager.scene.useRightHandedSystem) {                  
+        if (!!this._options.convertCoordinateSystems) {
+            if (!this._xrSessionManager.scene.useRightHandedSystem) {
                 mesh.positions = new Float32Array(xrMesh.positions.length);
                 for (let i = 0; i < xrMesh.positions.length; i += 3) {
                     mesh.positions[i] = xrMesh.positions[i];
                     mesh.positions[i + 1] = xrMesh.positions[i + 1];
                     mesh.positions[i + 2] = -1 * xrMesh.positions[i + 2];
                 }
-    
+
                 mesh.indices = new Uint32Array(xrMesh.indices.length);
                 for (let i = 0; i < xrMesh.indices.length; i += 3) {
                     mesh.indices[i] = xrMesh.indices[i];
                     mesh.indices[i + 1] = xrMesh.indices[i + 2];
                     mesh.indices[i + 2] = xrMesh.indices[i + 1];
                 }
-    
+
                 if (!!xrMesh.normals) {
                     mesh.normals = new Float32Array(xrMesh.normals.length);
                     for (let i = 0; i < xrMesh.normals.length; i += 3) {
