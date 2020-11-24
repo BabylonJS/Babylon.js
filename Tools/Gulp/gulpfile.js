@@ -21,6 +21,7 @@ require("./tasks/gulpTasks-remapPaths");
 require("./tasks/gulpTasks-npmPackages");
 require("./tasks/gulpTasks-dependencies");
 require("./tasks/gulpTasks-testsES6");
+require("./tasks/gulpTasks-symlink");
 
 /**
  * Temp cleanup after upgrade.
@@ -52,44 +53,44 @@ gulp.task("cleanup", function(cb) {
 /**
  * Full TsLint.
  */
-gulp.task("tsLint", gulp.series("typescript-libraries-tsLint"));
+gulp.task("tsLint", gulp.series("generate-symlinks", "typescript-libraries-tsLint"));
 
 /**
  * Full ImportLint.
  */
-gulp.task("importLint", gulp.series("typescript-libraries-importLint"));
+gulp.task("importLint", gulp.series("generate-symlinks", "typescript-libraries-importLint"));
 
 /**
  * Full Lint.
  */
-gulp.task("fullLint", gulp.series("tsLint", "importLint", "circularDependencies"));
+gulp.task("fullLint", gulp.series("generate-symlinks", "tsLint", "importLint", "circularDependencies"));
 
 /**
  * Validate compile the code and check the comments and style case convention through typedoc
  */
-gulp.task("typedoc-check", gulp.series("core", "gui", "loaders", "serializers", "typedoc-generate", "typedoc-validate"));
+gulp.task("typedoc-check", gulp.series("generate-symlinks", "core", "gui", "loaders", "serializers", "typedoc-generate", "typedoc-validate"));
 
 /**
  * Combine Webserver and Watch as long as vscode does not handle multi tasks.
  */
-gulp.task("run", gulp.series("cleanup", "watchCore", "watchLibraries", "watchApps", "webserver"));
+gulp.task("run", gulp.series("generate-symlinks", "cleanup", "watchCore", "watchLibraries", "watchApps", "webserver"));
 
 /**
  * Do it all (Build).
  */
-gulp.task("typescript-all", gulp.series("typescript-libraries", "typescript-es6", "typescript-apps", "netlify-cleanup"));
+gulp.task("typescript-all", gulp.series("generate-symlinks", "typescript-libraries", "typescript-es6", "typescript-apps", "netlify-cleanup"));
 
 /**
  * Do it all (tests).
  */
-gulp.task("tests-all", gulp.series("tests-unit", "tests-modules", "deployAndTests-es6Modules", "tests-validation-virtualscreen", "tests-validation-browserstack"));
+gulp.task("tests-all", gulp.series("generate-symlinks", "tests-unit", "tests-modules", "deployAndTests-es6Modules", "tests-validation-virtualscreen", "tests-validation-browserstack"));
 
 /**
  * Get Ready to test Npm Packages.
  */
-gulp.task("npmPackages", gulp.series("npmPackages-all"));
+gulp.task("npmPackages", gulp.series("generate-symlinks", "npmPackages-all"));
 
 /**
  * The default task, concat and min the main BJS files.
  */
-gulp.task("default", gulp.series("cleanup", "tsLint", "importLint", "circularDependencies", "typescript-all", "documentation", "typedoc-all", "tests-all"));
+gulp.task("default", gulp.series("generate-symlinks", "cleanup", "tsLint", "importLint", "circularDependencies", "typescript-all", "documentation", "typedoc-all", "tests-all"));
