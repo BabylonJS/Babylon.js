@@ -1812,7 +1812,7 @@ export class NativeEngine extends Engine {
             // Reorder from [+X, +Y, +Z, -X, -Y, -Z] to [+X, -X, +Y, -Y, +Z, -Z].
             const reorderedFiles = [files[0], files[3], files[1], files[4], files[2], files[5]];
             Promise.all(reorderedFiles.map((file) => Tools.LoadFileAsync(file).then((data) => new Uint8Array(data as ArrayBuffer)))).then((data) => {
-                return new Promise((resolve: (_: void) => void, reject) => {
+                return new Promise<void>((resolve, reject) => {
                     this._native.loadCubeTexture(texture._hardwareTexture!.underlyingResource, data, !noMipmap, resolve, reject);
                 });
             }).then(() => {

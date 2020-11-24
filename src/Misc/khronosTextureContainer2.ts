@@ -200,6 +200,7 @@ export class KhronosTextureContainer2 {
             // return back some information about the decoded data
             options.transcodedFormat = data.transcodedFormat;
             options.isInGammaSpace = data.isInGammaSpace;
+            options.hasAlpha = data.hasAlpha;
             options.transcoderName = data.transcoderName;
         }
 
@@ -212,6 +213,7 @@ export class KhronosTextureContainer2 {
 
         internalTexture._gammaSpace = data.isInGammaSpace;
         internalTexture.generateMipMaps = data.mipmaps.length > 1;
+        internalTexture._hasAlpha = data.hasAlpha;
 
         if (data.errors) {
             throw new Error("KTX2 container - could not transcode the data. " + data.errors);
