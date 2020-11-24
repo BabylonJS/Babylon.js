@@ -3061,7 +3061,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Geometry
         serializationObject.isUnIndexed = this.isUnIndexed;
         var geometry = this._geometry;
-        if (geometry) {
+        if (geometry && this.subMeshes) {
             var geometryId = geometry.id;
             serializationObject.geometryId = geometryId;
 
