@@ -36,7 +36,8 @@
             "BABYLON"
         ],
         "typedocJSON": "../../.temp/babylon.typedoc.json",
-        "typedocValidationBaseline": "../../dist/preview release/typedocValidationBaseline.json"
+        "typedocValidationBaseline": "../../dist/preview release/typedocValidationBaseline.json",
+        "sharedUiComponentsSrc": "sharedUiComponents"
     },
     "modules": [
         "core",
@@ -543,6 +544,7 @@
                 "re-resizable",
                 "glTF"
             ],
+            "sharedUiComponents": "src/sharedUiComponents/",
             "umd": {
                 "packageName": "babylonjs-inspector",
                 "webpackRoot": "INSPECTOR",
@@ -572,8 +574,7 @@
                 "webpackBuild": true,
                 "buildDependencies": [
                     "node_modules/re-resizable/lib/index.es5.js",
-                    "Tools/**/*",
-                    "sharedUiComponents/**/*"
+                    "Tools/**/*"
                 ],
                 "packageName": "@babylonjs/inspector",
                 "readme": "dist/preview release/inspector/readme-es6.md",
@@ -607,6 +608,7 @@
                 "glTF",
                 "file-saver"
             ],
+            "sharedUiComponents": "src/sharedUiComponents/",
             "umd": {
                 "packageName": "babylonjs-node-editor",
                 "webpackRoot": "NODEEDITOR",
@@ -627,8 +629,7 @@
                 "webpackBuild": true,
                 "buildDependencies": [
                     "node_modules/re-resizable/lib/index.es5.js",
-                    "Tools/**/*",
-                    "sharedUiComponents/**/*"
+                    "Tools/**/*"
                 ],
                 "packageName": "@babylonjs/node-editor",
                 "readme": "dist/preview release/nodeEditor/readme-es6.md",
