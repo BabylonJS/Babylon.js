@@ -48,3 +48,4 @@
 ## Breaking changes
 
 - Use both `mesh.visibility` and `material.alpha` values to compute the global alpha value used by the soft transparent shadow rendering code. Formerly was only using `mesh.visibility` ([Popov72](https://github.com/Popov72))
+- The `Texture.hasAlpha` property is automatically set by the KTX2 loader if the texture has an alpha channel ([Popov72](https://github.com/Popov72))
