@@ -921,7 +921,7 @@
         },
         {
             "title": "KTX2 decoder test",
-            "playgroundId": "#EIJH8L#1",
+            "playgroundId": "#EIJH8L#26",
             "referenceImage": "ktx2decoder.png",
             "excludeFromAutomaticTesting": true
         },

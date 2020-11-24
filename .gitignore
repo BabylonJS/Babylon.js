@@ -205,3 +205,7 @@ Playground/dist/
 Playground/temp/
 Sandbox/public/dist/
 ktx2Decoder/dist/
+
+# Symlinks
+inspector/src/sharedUiComponents/**/*
+nodeEditor/src/sharedUiComponents/**/*
