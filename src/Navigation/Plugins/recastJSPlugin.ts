@@ -648,8 +648,9 @@ export class RecastJSCrowd implements ICrowd {
                 iterationCount = 1;
             }
 
+            var step = deltaTime / iterationCount;
             for (let i = 0; i < iterationCount; i++) {
-                this.recastCrowd.update(deltaTime/iterationCount);
+                this.recastCrowd.update(step);
             }
         }
 
