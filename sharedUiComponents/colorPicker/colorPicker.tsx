@@ -48,7 +48,7 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
 
         evt.currentTarget.setPointerCapture(evt.pointerId);
     }
-    
+
     onSaturationPointerUp(evt: React.PointerEvent<HTMLDivElement>) {
         this._isSaturationPointerDown = false;
         evt.currentTarget.releasePointerCapture(evt.pointerId);
@@ -107,7 +107,7 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
         }
 
         let hsv = this.state.color.toHSV();
-        Color3.HSVtoRGBToRef(hue, Math.max(hsv.g, 0.0001), hsv.b, this.state.color);
+        Color3.HSVtoRGBToRef(hue, Math.max(hsv.g, 0.0001), Math.max(hsv.b, 0.0001), this.state.color);
         this.setState({color: this.state.color});
     }
 

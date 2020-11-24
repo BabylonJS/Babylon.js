@@ -47,8 +47,7 @@
         "serializers",
         "gui",
         "inspector",
-        "nodeEditor",
-        "uiControls"
+        "nodeEditor"
     ],
     "es6modules": [
         "core",
@@ -60,8 +59,7 @@
         "gui",
         "inspector",
         "viewer",
-        "nodeEditor",
-        "uiControls"
+        "nodeEditor"
     ],
     "apps": [
         "playground",
@@ -574,7 +572,8 @@
                 "webpackBuild": true,
                 "buildDependencies": [
                     "node_modules/re-resizable/lib/index.es5.js",
-                    "Tools/**/*"
+                    "Tools/**/*",
+                    "sharedUiComponents/**/*"
                 ],
                 "packageName": "@babylonjs/inspector",
                 "readme": "dist/preview release/inspector/readme-es6.md",
@@ -628,7 +627,8 @@
                 "webpackBuild": true,
                 "buildDependencies": [
                     "node_modules/re-resizable/lib/index.es5.js",
-                    "Tools/**/*"
+                    "Tools/**/*",
+                    "sharedUiComponents/**/*"
                 ],
                 "packageName": "@babylonjs/node-editor",
                 "readme": "dist/preview release/nodeEditor/readme-es6.md",
@@ -640,55 +640,6 @@
                 ],
                 "typings": "babylon.nodeEditor.module.d.ts",
                 "index": "babylon.nodeEditor.max.js"
-            }
-        }
-    },
-    "uiControls": {
-        "libraries": [
-            {
-                "output": "babylon.uiControls.js",
-                "entry": "./legacy/legacy.ts"
-            }
-        ],
-        "build": {            
-            "ignoreInWorkerMode": true,
-            "ignoreInTestMode": true,
-            "mainFolder": "./uiControls/",
-            "uncheckedLintImports": [
-                "react",
-                "react-dom"
-            ],
-            "umd": {
-                "packageName": "babylonjs-ui-controls",
-                "webpackRoot": "UICONTROLS",
-                "processDeclaration": {
-                    "filename": "babylon.uiControls.module.d.ts",
-                    "moduleName": "UICONTROLS",
-                    "importsToRemove": [],
-                    "classMap": {
-                        "babylonjs": "BABYLON",
-                        "react": "React",
-                        "@babylonjs/core": "BABYLON",
-                        "@fortawesome": false,
-                        "react-contextmenu": false
-                    }
-                }
-            },
-            "es6": {
-                "webpackBuild": true,
-                "buildDependencies": [
-                    "Tools/**/*"
-                ],
-                "packageName": "@babylonjs/ui-controls",
-                "readme": "dist/preview release/uiControls/readme-es6.md",
-                "packagesFiles": [
-                    "babylon.uiControls.max.js",
-                    "babylon.uiControls.max.js.map",
-                    "babylon.uiControls.module.d.ts",
-                    "readme.md"
-                ],
-                "typings": "babylon.uiControls.module.d.ts",
-                "index": "babylon.uiControls.max.js"
             }
         }
     },

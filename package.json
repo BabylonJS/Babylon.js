@@ -98,6 +98,7 @@
         "split.js": "^1.5.11",
         "style-loader": "^1.2.1",
         "svg-url-loader": "^6.0.0",
+        "symlink-dir": "^4.1.0",
         "through2": "~3.0.1",
         "ts-loader": "^7.0.5",
         "tslib": ">=1.10.0",
