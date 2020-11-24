@@ -109,9 +109,13 @@ export class ToggleButton extends Rectangle {
 
         // Update the visual state based on the new value
         if (this._isActive) {
-            this.toActiveAnimation();
+            if (this.toActiveAnimation) {
+                this.toActiveAnimation();
+            }
         } else {
-            this.toInactiveAnimation();
+            if (this.toInactiveAnimation) {
+                this.toInactiveAnimation?.();
+            }
         }
 
         this._markAsDirty();
