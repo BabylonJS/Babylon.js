@@ -131,7 +131,7 @@ export class GLTFValidation {
                 worker.addEventListener("error", onError);
                 worker.addEventListener("message", onMessage);
 
-                worker.postMessage({ id: "init", url: Tools.GetAbsoluteUrl(this.Configuration.url) });
+                worker.postMessage({ id: "init", url: this.Configuration.url });
                 worker.postMessage({ id: "validate", data: data, rootUrl: rootUrl, fileName: fileName });
             });
         }
