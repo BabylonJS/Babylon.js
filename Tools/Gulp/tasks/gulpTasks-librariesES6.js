@@ -4,6 +4,7 @@ var path = require("path");
 var fs = require("fs-extra");
 var shelljs = require("shelljs");
 var concat = require('gulp-concat');
+var symlinkDir = require('symlink-dir');
 
 // Gulp Helpers
 var rmDir = require("../../NodeHelpers/rmDir");
@@ -265,6 +266,21 @@ var copyWebpackDist = function(settings, module) {
 }
 
 /**
+ * Generate our required symlinked for the shared components.
+ */
+var generateSymlink = function(done) {
+    var sharedUiComponents = path.resolve(__dirname, "../../../.temp/sourceES6/sharedUiComponents/");
+    var inspectorSharedUiComponents = path.resolve(__dirname, "../../../.temp/sourceES6/inspector/src/sharedUiComponents/");
+    var nodeEditorSharedUiComponents = path.resolve(__dirname, "../../../.temp/sourceES6/nodeEditor/src/sharedUiComponents/");
+
+    symlinkDir(sharedUiComponents, inspectorSharedUiComponents).then(() => {
+        symlinkDir(sharedUiComponents, nodeEditorSharedUiComponents).then(() => {
+             done();
+        });
+    });
+};
+
+/**
  * Dynamic es 6 module creation.
  */
 function buildES6Library(settings, module) {
@@ -278,6 +294,7 @@ function buildES6Library(settings, module) {
     }
     var copySource = function() { return source(settings); };
     var dependencies = function() { return dep(settings); };
+    var symlink = function(cb) { return generateSymlink(cb); };
     var adaptSourceImportPaths = function() { return modifySourcesImports(settings); };
     var adaptSourceConstants = function() { return modifySourcesConstants(settings); };
     var adaptTsConfigImportPaths = function(cb) { return modifyTsConfig(settings, cb); };
@@ -298,7 +315,7 @@ function buildES6Library(settings, module) {
         ];
     }
 
-    tasks.push(...cleanAndShaderTasks, copySource, dependencies, adaptSourceImportPaths, adaptSourceConstants, adaptTsConfigImportPaths, ...buildSteps);
+    tasks.push(...cleanAndShaderTasks, copySource, dependencies, symlink, adaptSourceImportPaths, adaptSourceConstants, adaptTsConfigImportPaths, ...buildSteps);
 
     return gulp.series.apply(this, tasks);
 }
