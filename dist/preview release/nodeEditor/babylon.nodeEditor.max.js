@@ -10027,10 +10027,10 @@ module.exports = exports;
 
 /***/ }),
 
-/***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./sharedComponents/colorPicker/colorPicker.scss":
-/*!************************************************************************************************************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./sharedComponents/colorPicker/colorPicker.scss ***!
-  \************************************************************************************************************************************************************************************/
+/***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss":
+/*!**************************************************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss ***!
+  \**************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -64069,303 +64069,6 @@ var Color4LineComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
-/***/ "./sharedComponents/colorPicker/colorComponentEntry.tsx":
-/*!**************************************************************!*\
-  !*** ./sharedComponents/colorPicker/colorComponentEntry.tsx ***!
-  \**************************************************************/
-/*! exports provided: ColorComponentEntry */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ColorComponentEntry", function() { return ColorComponentEntry; });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-
-
-var ColorComponentEntry = /** @class */ (function (_super) {
-    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ColorComponentEntry, _super);
-    function ColorComponentEntry(props) {
-        return _super.call(this, props) || this;
-    }
-    ColorComponentEntry.prototype.updateValue = function (valueString) {
-        if (/[^0-9\.\-]/g.test(valueString)) {
-            return;
-        }
-        var valueAsNumber = parseInt(valueString);
-        if (isNaN(valueAsNumber)) {
-            return;
-        }
-        if (this.props.max != undefined && (valueAsNumber > this.props.max)) {
-            valueAsNumber = this.props.max;
-        }
-        if (this.props.min != undefined && (valueAsNumber < this.props.min)) {
-            valueAsNumber = this.props.min;
-        }
-        this.props.onChange(valueAsNumber);
-    };
-    ColorComponentEntry.prototype.render = function () {
-        var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-component" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-component-value" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", step: 1, className: "numeric-input", value: this.props.value, onChange: function (evt) { return _this.updateValue(evt.target.value); } })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-component-label" }, this.props.label)));
-    };
-    return ColorComponentEntry;
-}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
-
-
-
-/***/ }),
-
-/***/ "./sharedComponents/colorPicker/colorPicker.scss":
-/*!*******************************************************!*\
-  !*** ./sharedComponents/colorPicker/colorPicker.scss ***!
-  \*******************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-var api = __webpack_require__(/*! ../../../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js */ "../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js");
-            var content = __webpack_require__(/*! !../../../../node_modules/css-loader/dist/cjs.js!../../../../node_modules/sass-loader/dist/cjs.js!./colorPicker.scss */ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./sharedComponents/colorPicker/colorPicker.scss");
-
-            content = content.__esModule ? content.default : content;
-
-            if (typeof content === 'string') {
-              content = [[module.i, content, '']];
-            }
-
-var options = {};
-
-options.insert = "head";
-options.singleton = false;
-
-var update = api(content, options);
-
-
-
-module.exports = content.locals || {};
-
-/***/ }),
-
-/***/ "./sharedComponents/colorPicker/colorPicker.tsx":
-/*!******************************************************!*\
-  !*** ./sharedComponents/colorPicker/colorPicker.tsx ***!
-  \******************************************************/
-/*! exports provided: ColorPicker */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ColorPicker", function() { return ColorPicker; });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/dataStorage");
-/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./colorComponentEntry */ "./sharedComponents/colorPicker/colorComponentEntry.tsx");
-/* harmony import */ var _hexColor__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./hexColor */ "./sharedComponents/colorPicker/hexColor.tsx");
-
-
-
-
-
-__webpack_require__(/*! ./colorPicker.scss */ "./sharedComponents/colorPicker/colorPicker.scss");
-/**
- * Class used to create a color picker
- */
-var ColorPicker = /** @class */ (function (_super) {
-    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ColorPicker, _super);
-    function ColorPicker(props) {
-        var _this = _super.call(this, props) || this;
-        if (_this.props.color instanceof babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"]) {
-            _this.state = { color: new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"](_this.props.color.r, _this.props.color.g, _this.props.color.b), alpha: _this.props.color.a };
-        }
-        else {
-            _this.state = { color: _this.props.color.clone(), alpha: 1 };
-        }
-        _this._saturationRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
-        _this._hueRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
-        return _this;
-    }
-    ColorPicker.prototype.onSaturationPointerDown = function (evt) {
-        this._evaluateSaturation(evt);
-        this._isSaturationPointerDown = true;
-        evt.currentTarget.setPointerCapture(evt.pointerId);
-    };
-    ColorPicker.prototype.onSaturationPointerUp = function (evt) {
-        this._isSaturationPointerDown = false;
-        evt.currentTarget.releasePointerCapture(evt.pointerId);
-    };
-    ColorPicker.prototype.onSaturationPointerMove = function (evt) {
-        if (!this._isSaturationPointerDown) {
-            return;
-        }
-        this._evaluateSaturation(evt);
-    };
-    ColorPicker.prototype.onHuePointerDown = function (evt) {
-        this._evaluateHue(evt);
-        this._isHuePointerDown = true;
-        evt.currentTarget.setPointerCapture(evt.pointerId);
-    };
-    ColorPicker.prototype.onHuePointerUp = function (evt) {
-        this._isHuePointerDown = false;
-        evt.currentTarget.releasePointerCapture(evt.pointerId);
-    };
-    ColorPicker.prototype.onHuePointerMove = function (evt) {
-        if (!this._isHuePointerDown) {
-            return;
-        }
-        this._evaluateHue(evt);
-    };
-    ColorPicker.prototype._evaluateSaturation = function (evt) {
-        var left = evt.nativeEvent.offsetX;
-        var top = evt.nativeEvent.offsetY;
-        var saturation = Math.min(1, Math.max(0.0001, left / this._saturationRef.current.clientWidth));
-        var value = Math.min(1, Math.max(0.0001, 1 - (top / this._saturationRef.current.clientHeight)));
-        if (this.props.debugMode) {
-            console.log("Saturation: " + saturation);
-            console.log("Value: " + value);
-        }
-        var hsv = this.state.color.toHSV();
-        babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].HSVtoRGBToRef(hsv.r, saturation, value, this.state.color);
-        this.setState({ color: this.state.color });
-    };
-    ColorPicker.prototype._evaluateHue = function (evt) {
-        var left = evt.nativeEvent.offsetX;
-        var hue = 360 * Math.min(0.9999, Math.max(0.0001, left / this._hueRef.current.clientWidth));
-        if (this.props.debugMode) {
-            console.log("Hue: " + hue);
-        }
-        var hsv = this.state.color.toHSV();
-        babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].HSVtoRGBToRef(hue, Math.max(hsv.g, 0.0001), hsv.b, this.state.color);
-        this.setState({ color: this.state.color });
-    };
-    ColorPicker.prototype.componentDidUpdate = function () {
-        this.raiseOnColorChanged();
-    };
-    ColorPicker.prototype.raiseOnColorChanged = function () {
-        if (!this.props.onColorChanged) {
-            return;
-        }
-        if (this.props.color instanceof babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"]) {
-            var newColor4 = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"].FromColor3(this.state.color, this.state.alpha);
-            this.props.onColorChanged(newColor4);
-            return;
-        }
-        this.props.onColorChanged(this.state.color.clone());
-    };
-    ColorPicker.prototype.render = function () {
-        var _this = this;
-        var colorHex = this.state.color.toHexString();
-        var hsv = this.state.color.toHSV();
-        var colorRef = new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"]();
-        babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].HSVtoRGBToRef(hsv.r, 1, 1, colorRef);
-        var colorHexRef = colorRef.toHexString();
-        var hasAlpha = this.props.color instanceof babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"];
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-container" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation", onPointerMove: function (e) { return _this.onSaturationPointerMove(e); }, onPointerDown: function (e) { return _this.onSaturationPointerDown(e); }, onPointerUp: function (e) { return _this.onSaturationPointerUp(e); }, ref: this._saturationRef, style: {
-                    background: colorHexRef
-                } },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation-white" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation-black" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation-cursor", style: {
-                        top: -(hsv.b * 100) + 100 + "%",
-                        left: hsv.g * 100 + "%",
-                    } })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue-color", style: {
-                        background: colorHex
-                    } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue-slider", ref: this._hueRef, onPointerMove: function (e) { return _this.onHuePointerMove(e); }, onPointerDown: function (e) { return _this.onHuePointerDown(e); }, onPointerUp: function (e) { return _this.onHuePointerUp(e); } },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue-cursor", style: {
-                            left: (hsv.r / 360.0) * 100 + "%",
-                            border: "1px solid " + colorHexRef
-                        } }))),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-rgb" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "red" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "R", min: 0, max: 255, value: this.state.color.r * 255 | 0, onChange: function (value) {
-                            _this.state.color.r = value / 255.0;
-                            _this.forceUpdate();
-                        } })),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "green" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "G", min: 0, max: 255, value: this.state.color.g * 255 | 0, onChange: function (value) {
-                            _this.state.color.g = value / 255.0;
-                            _this.forceUpdate();
-                        } })),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "blue" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "B", min: 0, max: 255, value: this.state.color.b * 255 | 0, onChange: function (value) {
-                            _this.state.color.b = value / 255.0;
-                            _this.forceUpdate();
-                        } })),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "alpha" + (hasAlpha ? "" : " grayed") },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "A", min: 0, max: 255, value: this.state.alpha * 255 | 0, onChange: function (value) {
-                            _this.setState({ alpha: value / 255.0 });
-                            _this.forceUpdate();
-                        } }))),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hex" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hex-label" }, "Hex"),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hex-value" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_hexColor__WEBPACK_IMPORTED_MODULE_4__["HexColor"], { expectedLength: 6, value: colorHex, onChange: function (value) {
-                            _this.setState({ color: babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromHexString(value) });
-                        } })))));
-    };
-    return ColorPicker;
-}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
-
-
-
-/***/ }),
-
-/***/ "./sharedComponents/colorPicker/hexColor.tsx":
-/*!***************************************************!*\
-  !*** ./sharedComponents/colorPicker/hexColor.tsx ***!
-  \***************************************************/
-/*! exports provided: HexColor */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HexColor", function() { return HexColor; });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-
-
-var HexColor = /** @class */ (function (_super) {
-    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(HexColor, _super);
-    function HexColor(props) {
-        var _this = _super.call(this, props) || this;
-        _this.state = { hex: _this.props.value.replace("#", "") };
-        return _this;
-    }
-    HexColor.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        if (nextProps.value !== this.props.value) {
-            nextState.hex = nextProps.value.replace("#", "");
-        }
-        return true;
-    };
-    HexColor.prototype.updateHexValue = function (valueString) {
-        if (valueString != "" && /^[0-9A-Fa-f]+$/g.test(valueString) == false) {
-            return;
-        }
-        this.setState({ hex: valueString });
-        if (valueString.length !== this.props.expectedLength) {
-            return;
-        }
-        this.props.onChange("#" + valueString);
-    };
-    HexColor.prototype.render = function () {
-        var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "string", className: "hex-input", value: this.state.hex, onChange: function (evt) { return _this.updateHexValue(evt.target.value); } }));
-    };
-    return HexColor;
-}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
-
-
-
-/***/ }),
-
 /***/ "./sharedComponents/colorPickerComponent.tsx":
 /*!***************************************************!*\
   !*** ./sharedComponents/colorPickerComponent.tsx ***!
@@ -64379,7 +64082,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _colorPicker_colorPicker__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./colorPicker/colorPicker */ "./sharedComponents/colorPicker/colorPicker.tsx");
+/* harmony import */ var _sharedUiComponents_colorPicker_colorPicker__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../sharedUiComponents/colorPicker/colorPicker */ "./sharedUiComponents/colorPicker/colorPicker.tsx");
 
 
 
@@ -64436,7 +64139,7 @@ var ColorPickerLineComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-cover", onClick: function () { return _this.setPickerState(false); } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-float", ref: this._floatRef },
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorPicker_colorPicker__WEBPACK_IMPORTED_MODULE_2__["ColorPicker"], { color: color, onColorChanged: function (color) {
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_colorPicker_colorPicker__WEBPACK_IMPORTED_MODULE_2__["ColorPicker"], { color: color, onColorChanged: function (color) {
                                 var hex = color.toHexString();
                                 _this.setState({ hex: hex, color: color });
                                 _this.props.onColorChanged(hex);
@@ -65972,6 +65675,303 @@ var Vector4LineComponent = /** @class */ (function (_super) {
         step: 0.001,
     };
     return Vector4LineComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./sharedUiComponents/colorPicker/colorComponentEntry.tsx":
+/*!****************************************************************!*\
+  !*** ./sharedUiComponents/colorPicker/colorComponentEntry.tsx ***!
+  \****************************************************************/
+/*! exports provided: ColorComponentEntry */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ColorComponentEntry", function() { return ColorComponentEntry; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+
+
+var ColorComponentEntry = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ColorComponentEntry, _super);
+    function ColorComponentEntry(props) {
+        return _super.call(this, props) || this;
+    }
+    ColorComponentEntry.prototype.updateValue = function (valueString) {
+        if (/[^0-9\.\-]/g.test(valueString)) {
+            return;
+        }
+        var valueAsNumber = parseInt(valueString);
+        if (isNaN(valueAsNumber)) {
+            return;
+        }
+        if (this.props.max != undefined && (valueAsNumber > this.props.max)) {
+            valueAsNumber = this.props.max;
+        }
+        if (this.props.min != undefined && (valueAsNumber < this.props.min)) {
+            valueAsNumber = this.props.min;
+        }
+        this.props.onChange(valueAsNumber);
+    };
+    ColorComponentEntry.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-component" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-component-value" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", step: 1, className: "numeric-input", value: this.props.value, onChange: function (evt) { return _this.updateValue(evt.target.value); } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-component-label" }, this.props.label)));
+    };
+    return ColorComponentEntry;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./sharedUiComponents/colorPicker/colorPicker.scss":
+/*!*********************************************************!*\
+  !*** ./sharedUiComponents/colorPicker/colorPicker.scss ***!
+  \*********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var api = __webpack_require__(/*! ../../../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js */ "../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js");
+            var content = __webpack_require__(/*! !../../../../node_modules/css-loader/dist/cjs.js!../../../../node_modules/sass-loader/dist/cjs.js!./colorPicker.scss */ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss");
+
+            content = content.__esModule ? content.default : content;
+
+            if (typeof content === 'string') {
+              content = [[module.i, content, '']];
+            }
+
+var options = {};
+
+options.insert = "head";
+options.singleton = false;
+
+var update = api(content, options);
+
+
+
+module.exports = content.locals || {};
+
+/***/ }),
+
+/***/ "./sharedUiComponents/colorPicker/colorPicker.tsx":
+/*!********************************************************!*\
+  !*** ./sharedUiComponents/colorPicker/colorPicker.tsx ***!
+  \********************************************************/
+/*! exports provided: ColorPicker */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ColorPicker", function() { return ColorPicker; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/dataStorage");
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./colorComponentEntry */ "./sharedUiComponents/colorPicker/colorComponentEntry.tsx");
+/* harmony import */ var _hexColor__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./hexColor */ "./sharedUiComponents/colorPicker/hexColor.tsx");
+
+
+
+
+
+__webpack_require__(/*! ./colorPicker.scss */ "./sharedUiComponents/colorPicker/colorPicker.scss");
+/**
+ * Class used to create a color picker
+ */
+var ColorPicker = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ColorPicker, _super);
+    function ColorPicker(props) {
+        var _this = _super.call(this, props) || this;
+        if (_this.props.color instanceof babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"]) {
+            _this.state = { color: new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"](_this.props.color.r, _this.props.color.g, _this.props.color.b), alpha: _this.props.color.a };
+        }
+        else {
+            _this.state = { color: _this.props.color.clone(), alpha: 1 };
+        }
+        _this._saturationRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this._hueRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        return _this;
+    }
+    ColorPicker.prototype.onSaturationPointerDown = function (evt) {
+        this._evaluateSaturation(evt);
+        this._isSaturationPointerDown = true;
+        evt.currentTarget.setPointerCapture(evt.pointerId);
+    };
+    ColorPicker.prototype.onSaturationPointerUp = function (evt) {
+        this._isSaturationPointerDown = false;
+        evt.currentTarget.releasePointerCapture(evt.pointerId);
+    };
+    ColorPicker.prototype.onSaturationPointerMove = function (evt) {
+        if (!this._isSaturationPointerDown) {
+            return;
+        }
+        this._evaluateSaturation(evt);
+    };
+    ColorPicker.prototype.onHuePointerDown = function (evt) {
+        this._evaluateHue(evt);
+        this._isHuePointerDown = true;
+        evt.currentTarget.setPointerCapture(evt.pointerId);
+    };
+    ColorPicker.prototype.onHuePointerUp = function (evt) {
+        this._isHuePointerDown = false;
+        evt.currentTarget.releasePointerCapture(evt.pointerId);
+    };
+    ColorPicker.prototype.onHuePointerMove = function (evt) {
+        if (!this._isHuePointerDown) {
+            return;
+        }
+        this._evaluateHue(evt);
+    };
+    ColorPicker.prototype._evaluateSaturation = function (evt) {
+        var left = evt.nativeEvent.offsetX;
+        var top = evt.nativeEvent.offsetY;
+        var saturation = Math.min(1, Math.max(0.0001, left / this._saturationRef.current.clientWidth));
+        var value = Math.min(1, Math.max(0.0001, 1 - (top / this._saturationRef.current.clientHeight)));
+        if (this.props.debugMode) {
+            console.log("Saturation: " + saturation);
+            console.log("Value: " + value);
+        }
+        var hsv = this.state.color.toHSV();
+        babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].HSVtoRGBToRef(hsv.r, saturation, value, this.state.color);
+        this.setState({ color: this.state.color });
+    };
+    ColorPicker.prototype._evaluateHue = function (evt) {
+        var left = evt.nativeEvent.offsetX;
+        var hue = 360 * Math.min(0.9999, Math.max(0.0001, left / this._hueRef.current.clientWidth));
+        if (this.props.debugMode) {
+            console.log("Hue: " + hue);
+        }
+        var hsv = this.state.color.toHSV();
+        babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].HSVtoRGBToRef(hue, Math.max(hsv.g, 0.0001), Math.max(hsv.b, 0.0001), this.state.color);
+        this.setState({ color: this.state.color });
+    };
+    ColorPicker.prototype.componentDidUpdate = function () {
+        this.raiseOnColorChanged();
+    };
+    ColorPicker.prototype.raiseOnColorChanged = function () {
+        if (!this.props.onColorChanged) {
+            return;
+        }
+        if (this.props.color instanceof babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"]) {
+            var newColor4 = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"].FromColor3(this.state.color, this.state.alpha);
+            this.props.onColorChanged(newColor4);
+            return;
+        }
+        this.props.onColorChanged(this.state.color.clone());
+    };
+    ColorPicker.prototype.render = function () {
+        var _this = this;
+        var colorHex = this.state.color.toHexString();
+        var hsv = this.state.color.toHSV();
+        var colorRef = new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"]();
+        babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].HSVtoRGBToRef(hsv.r, 1, 1, colorRef);
+        var colorHexRef = colorRef.toHexString();
+        var hasAlpha = this.props.color instanceof babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"];
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-container" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation", onPointerMove: function (e) { return _this.onSaturationPointerMove(e); }, onPointerDown: function (e) { return _this.onSaturationPointerDown(e); }, onPointerUp: function (e) { return _this.onSaturationPointerUp(e); }, ref: this._saturationRef, style: {
+                    background: colorHexRef
+                } },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation-white" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation-black" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation-cursor", style: {
+                        top: -(hsv.b * 100) + 100 + "%",
+                        left: hsv.g * 100 + "%",
+                    } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue-color", style: {
+                        background: colorHex
+                    } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue-slider", ref: this._hueRef, onPointerMove: function (e) { return _this.onHuePointerMove(e); }, onPointerDown: function (e) { return _this.onHuePointerDown(e); }, onPointerUp: function (e) { return _this.onHuePointerUp(e); } },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue-cursor", style: {
+                            left: (hsv.r / 360.0) * 100 + "%",
+                            border: "1px solid " + colorHexRef
+                        } }))),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-rgb" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "red" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "R", min: 0, max: 255, value: this.state.color.r * 255 | 0, onChange: function (value) {
+                            _this.state.color.r = value / 255.0;
+                            _this.forceUpdate();
+                        } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "green" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "G", min: 0, max: 255, value: this.state.color.g * 255 | 0, onChange: function (value) {
+                            _this.state.color.g = value / 255.0;
+                            _this.forceUpdate();
+                        } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "blue" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "B", min: 0, max: 255, value: this.state.color.b * 255 | 0, onChange: function (value) {
+                            _this.state.color.b = value / 255.0;
+                            _this.forceUpdate();
+                        } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "alpha" + (hasAlpha ? "" : " grayed") },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "A", min: 0, max: 255, value: this.state.alpha * 255 | 0, onChange: function (value) {
+                            _this.setState({ alpha: value / 255.0 });
+                            _this.forceUpdate();
+                        } }))),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hex" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hex-label" }, "Hex"),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hex-value" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_hexColor__WEBPACK_IMPORTED_MODULE_4__["HexColor"], { expectedLength: 6, value: colorHex, onChange: function (value) {
+                            _this.setState({ color: babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromHexString(value) });
+                        } })))));
+    };
+    return ColorPicker;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./sharedUiComponents/colorPicker/hexColor.tsx":
+/*!*****************************************************!*\
+  !*** ./sharedUiComponents/colorPicker/hexColor.tsx ***!
+  \*****************************************************/
+/*! exports provided: HexColor */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HexColor", function() { return HexColor; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+
+
+var HexColor = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(HexColor, _super);
+    function HexColor(props) {
+        var _this = _super.call(this, props) || this;
+        _this.state = { hex: _this.props.value.replace("#", "") };
+        return _this;
+    }
+    HexColor.prototype.shouldComponentUpdate = function (nextProps, nextState) {
+        if (nextProps.value !== this.props.value) {
+            nextState.hex = nextProps.value.replace("#", "");
+        }
+        return true;
+    };
+    HexColor.prototype.updateHexValue = function (valueString) {
+        if (valueString != "" && /^[0-9A-Fa-f]+$/g.test(valueString) == false) {
+            return;
+        }
+        this.setState({ hex: valueString });
+        if (valueString.length !== this.props.expectedLength) {
+            return;
+        }
+        this.props.onChange("#" + valueString);
+    };
+    HexColor.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "string", className: "hex-input", value: this.state.hex, onChange: function (evt) { return _this.updateHexValue(evt.target.value); } }));
+    };
+    return HexColor;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
