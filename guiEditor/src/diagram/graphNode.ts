@@ -372,7 +372,8 @@ export class GraphNode {
             this._visual.parentElement.removeChild(this._visual);
         }
 
-
+        this.guiNode?.dispose();
+        
         this.block.dispose();
     }
 }

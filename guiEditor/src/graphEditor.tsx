@@ -170,21 +170,20 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         this.props.globalState.hostDocument!.addEventListener("keydown", evt => {
             if ((evt.keyCode === 46 || evt.keyCode === 8) && !this.props.globalState.blockKeyboardEvents) { // Delete                
-                let selectedItems = this._graphCanvas.selectedNodes;
+                let selectedItems = this._graphCanvas.selectedGuiNodes;
 
                 for (var selectedItem of selectedItems) {
                     selectedItem.dispose();
 
-                    let targetBlock = selectedItem.block;
-                    this.props.globalState.nodeMaterial!.removeBlock(targetBlock);
-                    let blockIndex = this._blocks.indexOf(targetBlock);
+                    //let targetBlock = selectedItem.block;
+                    //this.props.globalState.nodeMaterial!.removeBlock(targetBlock);
+                    //let blockIndex = this._blocks.indexOf(targetBlock);
 
-                    if (blockIndex > -1) {
-                        this._blocks.splice(blockIndex, 1);
-                    }                                  
+                    //if (blockIndex > -1) {
+                    //    this._blocks.splice(blockIndex, 1);
+                    //}                                  
                 }
                
-
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(null);  
                 this.props.globalState.onRebuildRequiredObservable.notifyObservers();  
                 return;
