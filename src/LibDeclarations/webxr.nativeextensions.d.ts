@@ -65,11 +65,11 @@ interface XRSession {
 }
 
 interface XRFrame {
-    featurePointCloud? : Array<number>;
+    featurePointCloud?: Array<number>;
 }
 
 type XRMeshSet = Set<XRMesh>;
 
 interface XRWorldInformation {
-    detectedMeshes? : XRMeshSet;
+    detectedMeshes?: XRMeshSet;
 }
