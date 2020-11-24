@@ -205,17 +205,11 @@ export class Effect implements IDisposable {
      * @param onError Callback that will be called if an error occurs during shader compilation.
      * @param indexParameters Parameters to be used with Babylons include syntax to iterate over an array (eg. {lights: 10})
      * @param key Effect Key identifying uniquely compiled shader variants
-     * @param sources Already processed sources for the current key.
      */
     constructor(baseName: any, attributesNamesOrOptions: string[] | IEffectCreationOptions, uniformsNamesOrEngine: string[] | ThinEngine, samplers: Nullable<string[]> = null,
         engine?: ThinEngine, defines: Nullable<string> = null,
-        fallbacks: Nullable<IEffectFallbacks> = null, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null, indexParameters?: any, key: string = "",
-        sources?: {
-            vertex: string,
-            fragment: string,
-            rawVertex: string,
-            rawFragment: string,
-        }) {
+        fallbacks: Nullable<IEffectFallbacks> = null, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null, indexParameters?: any, key: string = "")
+    {
         this.name = baseName;
         this._key = key;
 
@@ -262,15 +256,6 @@ export class Effect implements IDisposable {
         this._attributeLocationByName = { };
 
         this.uniqueId = Effect._uniqueIdSeed++;
-
-        if (sources) {
-            this._fragmentSourceCode = sources.fragment;
-            this._vertexSourceCode = sources.vertex;
-            this._rawFragmentSourceCode = sources.rawFragment;
-            this._rawVertexSourceCode = sources.rawVertex;
-            this._prepareEffect();
-            return;
-        }
 
         var vertexSource: any;
         var fragmentSource: any;
