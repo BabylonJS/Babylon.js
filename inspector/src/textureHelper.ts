@@ -62,12 +62,13 @@ export class TextureHelper {
             effect.setFloat("lod", lod);
         };
 
-        let internalTexture = rtt.getInternalTexture();
+        const rttInternalTexture = rtt.getInternalTexture();
+        const internalTexture = texture.getInternalTexture();
 
-        if (internalTexture) {
+        if (rttInternalTexture && internalTexture) {
             const samplingMode = internalTexture.samplingMode;
             texture.updateSamplingMode(Texture.NEAREST_NEAREST_MIPNEAREST);
-            scene.postProcessManager.directRender([lodPostProcess], internalTexture);
+            scene.postProcessManager.directRender([lodPostProcess], rttInternalTexture);
             texture.updateSamplingMode(samplingMode);
 
             // Read the contents of the framebuffer
@@ -146,7 +147,7 @@ export class TextureHelper {
             resolve(data);
 
             // Unbind
-            engine.unBindFramebuffer(internalTexture);
+            engine.unBindFramebuffer(rttInternalTexture);
         } else {
             reject();
         }

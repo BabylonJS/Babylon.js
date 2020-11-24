@@ -56,6 +56,12 @@
     <canvas id="renderCanvas" touch-action="none"></canvas>
 
     <script>
+        function GetAbsoluteUrl(url) {
+            const a = document.createElement("a");
+            a.href = url;
+            return a.href;
+        }
+
         var canvas = document.getElementById("renderCanvas");
         //	canvas = WebGLDebugUtils.makeLostContextSimulatingCanvas(canvas);
         var divFps = document.getElementById("fps");
@@ -89,6 +95,15 @@
                 };
                 BABYLON.GLTF2.Loader.Extensions.EXT_meshopt_compression.DecoderPath =
                     "../dist/preview%20release/meshopt_decoder.module.js";
+                BABYLON.KhronosTextureContainer2.URLConfig = {
+                    jsDecoderModule: GetAbsoluteUrl("../dist/preview%20release/babylon.ktx2Decoder.js"),
+                    wasmUASTCToASTC: GetAbsoluteUrl("../dist/preview%20release/ktx2Transcoders/uastc_astc.wasm"),
+                    wasmUASTCToBC7: GetAbsoluteUrl("../dist/preview%20release/ktx2Transcoders/uastc_bc7.wasm"),
+                    wasmUASTCToRGBA_UNORM: GetAbsoluteUrl("../dist/preview%20release/ktx2Transcoders/uastc_rgba32_unorm.wasm"),
+                    wasmUASTCToRGBA_SRGB: GetAbsoluteUrl("../dist/preview%20release/ktx2Transcoders/uastc_rgba32_srgb.wasm"),
+                    jsMSCTranscoder: GetAbsoluteUrl("../dist/preview%20release/ktx2Transcoders/msc_basis_transcoder.js"),
+                    wasmMSCTranscoder: GetAbsoluteUrl("../dist/preview%20release/ktx2Transcoders/msc_basis_transcoder.wasm")
+                };
 
                 if (BABYLON.Engine.isSupported()) {
                     if (typeof createEngine !== "undefined") {

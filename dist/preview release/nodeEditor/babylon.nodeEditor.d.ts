@@ -1413,6 +1413,18 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    interface IInputsPropertyTabComponentProps {
+        globalState: GlobalState;
+        inputs: BABYLON.InputBlock[];
+    }
+    export class InputsPropertyTabComponent extends React.Component<IInputsPropertyTabComponentProps> {
+        constructor(props: IInputsPropertyTabComponentProps);
+        processInputBlockUpdate(ib: BABYLON.InputBlock): void;
+        renderInputBlock(block: BABYLON.InputBlock): JSX.Element | null;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
     export interface IFramePropertyTabComponentProps {
         globalState: GlobalState;
         frame: GraphFrame;

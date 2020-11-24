@@ -69,6 +69,7 @@ declare module "babylonjs-inspector/components/globalState" {
         set ignoreBackfacesForPicking(value: boolean);
         init(propertyChangedObservable: Observable<PropertyChangedEvent>): void;
         prepareGLTFPlugin(loader: import("babylonjs-loaders/glTF/index").GLTFFileLoader): void;
+        resetGLTFValidationResults(): void;
         lightGizmos: Array<LightGizmo>;
         enableLightGizmo(light: Light, enable?: boolean): void;
         cameraGizmos: Array<CameraGizmo>;
@@ -384,7 +385,7 @@ declare module "babylonjs-inspector/components/actionTabs/lines/numericInputComp
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-inspector/components/controls/colorPicker/colorComponentEntry" {
+declare module "babylonjs-inspector/sharedUiComponents/colorPicker/colorComponentEntry" {
     import * as React from "react";
     export interface IColorComponentEntryProps {
         value: number;
@@ -399,7 +400,7 @@ declare module "babylonjs-inspector/components/controls/colorPicker/colorCompone
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-inspector/components/controls/colorPicker/hexColor" {
+declare module "babylonjs-inspector/sharedUiComponents/colorPicker/hexColor" {
     import * as React from "react";
     export interface IHexColorProps {
         value: string;
@@ -417,7 +418,7 @@ declare module "babylonjs-inspector/components/controls/colorPicker/hexColor" {
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-inspector/components/controls/colorPicker/colorPicker" {
+declare module "babylonjs-inspector/sharedUiComponents/colorPicker/colorPicker" {
     import * as React from "react";
     import { Color3, Color4 } from "babylonjs/Maths/math.color";
     /**
@@ -4680,6 +4681,7 @@ declare module INSPECTOR {
         set ignoreBackfacesForPicking(value: boolean);
         init(propertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>): void;
         prepareGLTFPlugin(loader: import("babylonjs-loaders/glTF/index").GLTFFileLoader): void;
+        resetGLTFValidationResults(): void;
         lightGizmos: Array<BABYLON.LightGizmo>;
         enableLightGizmo(light: BABYLON.Light, enable?: boolean): void;
         cameraGizmos: Array<BABYLON.CameraGizmo>;

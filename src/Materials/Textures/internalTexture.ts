@@ -263,6 +263,8 @@ export class InternalTexture {
 
     /** @hidden */
     public _gammaSpace: Nullable<boolean> = null;
+    /** @hidden */
+    public _hasAlpha: Nullable<boolean> = null;
 
     private _engine: ThinEngine;
     private _uniqueId: number;

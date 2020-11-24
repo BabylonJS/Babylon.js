@@ -78,7 +78,12 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     */
     public set samples(n: number) {
         this._samples = n;
-        this._ssaoPostProcess.updateEffect(this._getDefinesForSSAO());
+        if (this._prePassRenderer) {
+            this._prePassRenderer.samples = n;
+        }
+        else {
+            this._ssaoPostProcess.updateEffect(this._getDefinesForSSAO());
+        }
         this._sampleSphere = this._generateHemisphere();
     }
     public get samples(): number {

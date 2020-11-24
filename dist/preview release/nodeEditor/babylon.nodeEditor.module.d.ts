@@ -699,7 +699,7 @@ declare module "babylonjs-node-editor/components/propertyTab/properties/vector2P
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-node-editor/sharedComponents/colorPicker/colorComponentEntry" {
+declare module "babylonjs-node-editor/sharedUiComponents/colorPicker/colorComponentEntry" {
     import * as React from "react";
     export interface IColorComponentEntryProps {
         value: number;
@@ -714,7 +714,7 @@ declare module "babylonjs-node-editor/sharedComponents/colorPicker/colorComponen
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-node-editor/sharedComponents/colorPicker/hexColor" {
+declare module "babylonjs-node-editor/sharedUiComponents/colorPicker/hexColor" {
     import * as React from "react";
     export interface IHexColorProps {
         value: string;
@@ -732,7 +732,7 @@ declare module "babylonjs-node-editor/sharedComponents/colorPicker/hexColor" {
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-node-editor/sharedComponents/colorPicker/colorPicker" {
+declare module "babylonjs-node-editor/sharedUiComponents/colorPicker/colorPicker" {
     import * as React from "react";
     import { Color3, Color4 } from "babylonjs/Maths/math.color";
     /**
@@ -1696,6 +1696,21 @@ declare module "babylonjs-node-editor/components/nodeList/nodeListComponent" {
         filterContent(filter: string): void;
         loadCustomFrame(file: File): void;
         removeItem(value: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/components/propertyTab/inputsPropertyTabComponent" {
+    import * as React from "react";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
+    interface IInputsPropertyTabComponentProps {
+        globalState: GlobalState;
+        inputs: InputBlock[];
+    }
+    export class InputsPropertyTabComponent extends React.Component<IInputsPropertyTabComponentProps> {
+        constructor(props: IInputsPropertyTabComponentProps);
+        processInputBlockUpdate(ib: InputBlock): void;
+        renderInputBlock(block: InputBlock): JSX.Element | null;
         render(): JSX.Element;
     }
 }
@@ -3413,6 +3428,18 @@ declare module NODEEDITOR {
         filterContent(filter: string): void;
         loadCustomFrame(file: File): void;
         removeItem(value: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IInputsPropertyTabComponentProps {
+        globalState: GlobalState;
+        inputs: BABYLON.InputBlock[];
+    }
+    export class InputsPropertyTabComponent extends React.Component<IInputsPropertyTabComponentProps> {
+        constructor(props: IInputsPropertyTabComponentProps);
+        processInputBlockUpdate(ib: BABYLON.InputBlock): void;
+        renderInputBlock(block: BABYLON.InputBlock): JSX.Element | null;
         render(): JSX.Element;
     }
 }
