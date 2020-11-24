@@ -500,8 +500,7 @@ export class ArcRotateCamera extends TargetCamera {
      * Defines the allowed panning axis.
      */
     public panningAxis: Vector3 = new Vector3(1, 1, 0);
-    protected _localDirection: Vector3;
-    protected _transformedDirection: Vector3;
+    protected _transformedDirection: Vector3 = new Vector3();
 
     // Behaviors
     private _bouncingBehavior: Nullable<BouncingBehavior>;
@@ -886,11 +885,6 @@ export class ArcRotateCamera extends TargetCamera {
 
         // Panning inertia
         if (this.inertialPanningX !== 0 || this.inertialPanningY !== 0) {
-            if (!this._localDirection) {
-                this._localDirection = Vector3.Zero();
-                this._transformedDirection = Vector3.Zero();
-            }
-
             this._viewMatrix.invertToRef(this._cameraTransformMatrix);
             this._transformedDirection.set(this._cameraTransformMatrix.m[0], this._cameraTransformMatrix.m[1], this._cameraTransformMatrix.m[2]);
 
