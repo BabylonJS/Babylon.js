@@ -122,20 +122,22 @@ export class ToggleButton extends Rectangle {
 
         this.onIsActiveChangedObservable.notifyObservers(value);
 
-        if (this._isActive && this._host) {
-            // Update all controls from same group
+        if (this._isActive && this._host && this._group) {
+            // A toggle button in a group can only have 1 active element at a given time.
+            // If this toggle button has a group, set other toggle buttons in the group to inactive.
             this._host.executeOnAllControls((control) => {
-                if (control == this) {
-                    return;
-                }
+                // Check for control type ToggleButton
+                if ((<any>control)._getTypeName === "ToggleButton") {
+                    // Don't do anything to this toggle button
+                    if (control === this) {
+                        return;
+                    }
 
-                if ((<any>control).group === undefined) {
-                    return;
-                }
-                const childToggle = <ToggleButton>control;
-                // A toggle group can only have 1 active element at a given time. So if this toggle has a group, we need to ensure other toggles in this group get set to inactive.
-                if (childToggle.group === this.group) {
-                    childToggle.isActive = false; // Set other toggles in group as inactive
+                    const childToggle = <ToggleButton>control;
+                    // If toggle button is in same group, set isActive to false
+                    if (childToggle.group === this.group) {
+                        childToggle.isActive = false;
+                    }
                 }
             });
         }
