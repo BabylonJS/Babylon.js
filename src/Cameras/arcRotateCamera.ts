@@ -892,7 +892,7 @@ export class ArcRotateCamera extends TargetCamera {
             }
 
             this._viewMatrix.invertToRef(this._cameraTransformMatrix);
-            Vector3.TransformNormalToRef(new Vector3(1,0,0), this._cameraTransformMatrix, this._transformedDirection);
+            this._transformedDirection.set(this._cameraTransformMatrix.m[0], this._cameraTransformMatrix.m[1], this._cameraTransformMatrix.m[2]);
 
             // panning on X Axis
             this._transformedDirection.x *= this.panningAxis.x * this.inertialPanningX;
