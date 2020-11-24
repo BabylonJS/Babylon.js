@@ -36,7 +36,7 @@ interface XRMesh {
 }
 
 interface XRFrustumDetectionBoundary extends XRDetectionBoundary {
-    type: "frustum"
+    type: "frustum";
     frustum: XRFrustum;
 }
 
