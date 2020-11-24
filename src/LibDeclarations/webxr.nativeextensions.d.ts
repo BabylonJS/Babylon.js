@@ -35,17 +35,17 @@ interface XRMesh {
     parentSceneObject?: XRSceneObject;
 }
 
-interface XRFrustumDetectionBoundary extends XRDetectionBoundary {
+interface XRFrustumDetectionBoundary {
     type: "frustum";
     frustum: XRFrustum;
 }
 
-interface XRSphereDetectionBoundary extends XRDetectionBoundary {
+interface XRSphereDetectionBoundary {
     type: "sphere";
     radius: number;
 }
 
-interface XRBoxDetectionBoundary extends XRDetectionBoundary {
+interface XRBoxDetectionBoundary {
     type: "box";
     extent: DOMPointReadOnly;
 }
