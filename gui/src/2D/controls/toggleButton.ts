@@ -24,36 +24,36 @@ export class ToggleButton extends Rectangle {
     public toInactiveAnimation: () => void;
 
     /**
-     * Function called to generate a pointer enter animation when the toggle is active.
+     * Function called to generate a pointer enter animation when the toggle button is active.
      */
     public pointerEnterActiveAnimation: () => void;
     /**
-     * Function called to generate a pointer out animation when the toggle is active.
+     * Function called to generate a pointer out animation when the toggle button is active.
      */
     public pointerOutActiveAnimation: () => void;
     /**
-     * Function called to generate a pointer down animation when the toggle is active.
+     * Function called to generate a pointer down animation when the toggle button is active.
      */
     public pointerDownActiveAnimation: () => void;
     /**
-     * Function called to generate a pointer up animation when the toggle is active.
+     * Function called to generate a pointer up animation when the toggle button is active.
      */
     public pointerUpActiveAnimation: () => void;
 
     /**
-     * Function called to generate a pointer enter animation when the toggle is inactive.
+     * Function called to generate a pointer enter animation when the toggle button is inactive.
      */
     public pointerEnterInactiveAnimation: () => void;
     /**
-     * Function called to generate a pointer out animation when the toggle is inactive.
+     * Function called to generate a pointer out animation when the toggle button is inactive.
      */
     public pointerOutInactiveAnimation: () => void;
     /**
-     * Function called to generate a pointer down animation when the toggle is inactive.
+     * Function called to generate a pointer down animation when the toggle button is inactive.
      */
     public pointerDownInactiveAnimation: () => void;
     /**
-     * Function called to generate a pointer up animation when the toggle is inactive.
+     * Function called to generate a pointer up animation when the toggle button is inactive.
      */
     public pointerUpInactiveAnimation: () => void;
 
@@ -61,13 +61,13 @@ export class ToggleButton extends Rectangle {
     public onIsActiveChangedObservable = new Observable<boolean>();
 
     /**
-     * Gets or sets a boolean indicating that the toggle will let internal controls handle picking instead of doing it directly using its bounding info
+     * Gets or sets a boolean indicating that the toggle button will let internal controls handle picking instead of doing it directly using its bounding info
      */
     public delegatePickingToChildren = false;
 
     private _image: Nullable<Image>;
     /**
-     * Returns the image part of the button (if any)
+     * Returns the ToggleButton's image control if it exists
      */
     public get image(): Nullable<Image> {
         return this._image;
@@ -75,14 +75,14 @@ export class ToggleButton extends Rectangle {
 
     private _textBlock: Nullable<TextBlock>;
     /**
-     * Returns the image part of the button (if any)
+     * Returns the ToggleButton's child TextBlock control if it exists
      */
     public get textBlock(): Nullable<TextBlock> {
         return this._textBlock;
     }
 
     private _group: string;
-    /** Gets or sets group name this toggle belongs to */
+    /** Gets or sets group name this toggle button belongs to */
     public get group(): string {
         return this._group;
     }
@@ -129,7 +129,7 @@ export class ToggleButton extends Rectangle {
                     return;
                 }
                 const childToggle = <ToggleButton>control;
-                // A toggle group can only have 1 active element at a given time. So if this toggle has a group, we need to ensure other toggles in this group get set to inactive
+                // A toggle group can only have 1 active element at a given time. So if this toggle has a group, we need to ensure other toggles in this group get set to inactive.
                 if (childToggle.group === this.group) {
                     childToggle.isActive = false; // Set other toggles in group as inactive
                 }
@@ -205,7 +205,7 @@ export class ToggleButton extends Rectangle {
         return "ToggleButton";
     }
 
-    // While being a container, the button behaves like a control.
+    // While being a container, the toggle button behaves like a control.
     /** @hidden */
     public _processPicking(x: number, y: number, pi: PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
         if (!this._isEnabled || !this.isHitTestVisible || !this.isVisible || this.notRenderable) {
