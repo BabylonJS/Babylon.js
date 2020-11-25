@@ -220,7 +220,7 @@ export class WebGPUEngine extends Engine {
     /** @hidden */
     public dbgSanityChecks = false;
     /** @hidden */
-    public dbgGenerateLogs = true;
+    public dbgGenerateLogs = false;
     /** @hidden */
     public dbgVerboseLogsForFirstFrames = false;
     /** @hidden */
@@ -2689,24 +2689,20 @@ export class WebGPUEngine extends Engine {
             // multi render targets
             for (let i = 0; i < internalTexture._attachments.length; ++i) {
                 const index = internalTexture._attachments[i];
-                if (index > 0) {
-                    const mrtTexture = internalTexture._textureArray[index - 1];
-                    const gpuMRTWrapper = mrtTexture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
-                    const gpuMRTTexture = gpuMRTWrapper?.underlyingResource;
-                    if (gpuMRTWrapper && gpuMRTTexture) {
-                        const gpuMSAATexture = gpuMRTWrapper.msaaTexture;
-                        const colorTextureView = gpuMRTTexture.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
-                        const colorMSAATextureView = gpuMSAATexture?.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
+                const mrtTexture = internalTexture._textureArray[index - 1];
+                const gpuMRTWrapper = mrtTexture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
+                const gpuMRTTexture = gpuMRTWrapper?.underlyingResource;
+                if (gpuMRTWrapper && gpuMRTTexture) {
+                    const gpuMSAATexture = gpuMRTWrapper.msaaTexture;
+                    const colorTextureView = gpuMRTTexture.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
+                    const colorMSAATextureView = gpuMSAATexture?.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
 
-                        colorAttachments.push({
-                            attachment: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
-                            resolveTarget: gpuMSAATexture ? colorTextureView : undefined,
-                            loadValue: clearColor !== null ? clearColor : WebGPUConstants.LoadOp.Load,
-                            storeOp: WebGPUConstants.StoreOp.Store,
-                        });
-                    }
-                } else {
-                    // TODO WEBGPU what to do?
+                    colorAttachments.push({
+                        attachment: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
+                        resolveTarget: gpuMSAATexture ? colorTextureView : undefined,
+                        loadValue: clearColor !== null ? clearColor : WebGPUConstants.LoadOp.Load,
+                        storeOp: WebGPUConstants.StoreOp.Store,
+                    });
                 }
             }
             this._mrtAttachments = internalTexture._attachments;
@@ -3532,25 +3528,37 @@ export class WebGPUEngine extends Engine {
     }
 
     private _getColorStateDescriptors(): GPUColorStateDescriptor[] {
-        const descriptor: GPUColorStateDescriptor = {
-            format: this._colorFormat,
-            alphaBlend: this._getAphaBlendState(),
-            colorBlend: this._getColorBlendState(),
-            writeMask: this._getWriteMask(),
-        };
-
         const descriptors: GPUColorStateDescriptor[] = [];
 
+        const alphaBlend = this._getAphaBlendState();
+        const colorBlend = this._getColorBlendState();
+        const writeMask = this._getWriteMask();
+
         if (this._currentRenderPassIsMRT()) {
+            const textureArray = this._currentRenderTarget!._textureArray!;
             for (let i = 0; i < this._mrtAttachments.length; ++i) {
-                if (this._mrtAttachments[i] > 0) {
-                    descriptors.push(descriptor);
+                const index = this._mrtAttachments[i];
+                if (index > 0) {
+                    const mrtTexture = textureArray[index - 1];
+                    const gpuMRTWrapper = mrtTexture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
+                    const gpuMRTTexture = gpuMRTWrapper?.underlyingResource as Nullable<WebGPUHardwareTexture>;
+                    descriptors.push({
+                        format: gpuMRTTexture?.format ?? this._colorFormat,
+                        alphaBlend,
+                        colorBlend,
+                        writeMask,
+                    });
                 } else {
                     // TODO WEBGPU what to do when this._mrtAttachments[i] === 0? The corresponding texture should be bound as an "empty" texture
                 }
             }
         } else {
-            descriptors.push(descriptor);
+            descriptors.push({
+                format: this._colorFormat,
+                alphaBlend,
+                colorBlend,
+                writeMask,
+            });
         }
 
         return descriptors;
