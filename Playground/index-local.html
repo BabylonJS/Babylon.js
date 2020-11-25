@@ -62,19 +62,19 @@
             }
 
             // Load the scripts + map file to allow vscode debug.
-            BABYLONDEVTOOLS.Loader       
+            BABYLONDEVTOOLS.Loader
                 .require("index.js")
                 .load(() => {
                     BABYLON.DracoCompression.Configuration.decoder = {
-                        wasmUrl: "../dist/preview%20release/draco_wasm_wrapper_gltf.js",
-                        wasmBinaryUrl: "../dist/preview%20release/draco_decoder_gltf.wasm",
-                        fallbackUrl: "../dist/preview%20release/draco_decoder_gltf.js"
+                        wasmUrl: GetAbsoluteUrl("../dist/preview%20release/draco_wasm_wrapper_gltf.js"),
+                        wasmBinaryUrl: GetAbsoluteUrl("../dist/preview%20release/draco_decoder_gltf.wasm"),
+                        fallbackUrl: GetAbsoluteUrl("../dist/preview%20release/draco_decoder_gltf.js")
                     };
                     BABYLON.GLTFValidation.Configuration = {
-                        url: "../dist/preview%20release/gltf_validator.js"
+                        url: GetAbsoluteUrl("../dist/preview%20release/gltf_validator.js")
                     };
                     BABYLON.GLTF2.Loader.Extensions.EXT_meshopt_compression.DecoderPath =
-                        "../dist/preview%20release/meshopt_decoder.module.js";
+                        GetAbsoluteUrl("../dist/preview%20release/meshopt_decoder.js");
                     BABYLON.KhronosTextureContainer2.URLConfig = {
                         jsDecoderModule: GetAbsoluteUrl("../dist/preview%20release/babylon.ktx2Decoder.js"),
                         wasmUASTCToASTC: GetAbsoluteUrl("../dist/preview%20release/ktx2Transcoders/uastc_astc.wasm"),

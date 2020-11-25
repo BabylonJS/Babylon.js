@@ -1,10 +1,17 @@
 import { Nullable } from "babylonjs/types";
 import { Tools } from "babylonjs/Misc/tools";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
-import { GLTFLoader } from "../glTFLoader";
+import { ArrayItem, GLTFLoader } from "../glTFLoader";
 import { IBufferView } from "../glTFLoaderInterfaces";
+import { IEXTMeshoptCompression } from "babylonjs-gltf2interface";
 
 const NAME = "EXT_meshopt_compression";
+
+declare var MeshoptDecoder: any;
+
+interface IBufferViewMeshopt extends IBufferView {
+    _meshOptData?: Promise<ArrayBufferView>;
+}
 
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Vendor/EXT_meshopt_compression)
@@ -23,12 +30,12 @@ export class EXT_meshopt_compression implements IGLTFLoaderExtension {
     public enabled: boolean;
 
     /**
-     * Path to decoder module; defaults to https://preview.babylonjs.com/meshopt_decoder.module.js
+     * Path to decoder module; defaults to https://preview.babylonjs.com/meshopt_decoder.js
      */
-    public static DecoderPath: string = "https://preview.babylonjs.com/meshopt_decoder.module.js";
+    public static DecoderPath: string = "https://preview.babylonjs.com/meshopt_decoder.js";
 
     private _loader: GLTFLoader;
-    private _decoder: Promise<any>;
+    private _decoderPromise?: Promise<any>;
 
     /** @hidden */
     constructor(loader: GLTFLoader) {
@@ -36,46 +43,41 @@ export class EXT_meshopt_compression implements IGLTFLoaderExtension {
         this._loader = loader;
 
         if (this.enabled) {
-            var url = Tools.GetAbsoluteUrl(EXT_meshopt_compression.DecoderPath);
-
-            this._decoder = import(/* webpackIgnore: true */ url).then(function (result) {
+            this._decoderPromise = Tools.LoadScriptAsync(EXT_meshopt_compression.DecoderPath).then(() => {
                 // Wait for WebAssembly compilation before resolving promise
-                var MeshoptDecoder = result.MeshoptDecoder;
-                return MeshoptDecoder.ready.then(() => MeshoptDecoder);
+                return MeshoptDecoder.ready;
             });
         }
     }
 
     /** @hidden */
     public dispose() {
+        (this._loader as any) = null;
+        delete this._decoderPromise;
     }
 
     /** @hidden */
     public loadBufferViewAsync(context: string, bufferView: IBufferView): Nullable<Promise<ArrayBufferView>> {
-        if (bufferView.extensions && bufferView.extensions[this.name]) {
-            var extensionDef = bufferView.extensions[this.name];
-            if (extensionDef._decoded) {
-                return extensionDef._decoded;
+        return GLTFLoader.LoadExtensionAsync<IEXTMeshoptCompression, ArrayBufferView>(context, bufferView, this.name, (extensionContext, extension) => {
+            const bufferViewMeshopt = bufferView as IBufferViewMeshopt;
+            if (bufferViewMeshopt._meshOptData) {
+                return bufferViewMeshopt._meshOptData;
             }
 
-            var view = this._loader.loadBufferViewAsync(context, extensionDef);
+            const buffer = ArrayItem.Get(`${context}/buffer`, this._loader.gltf.buffers, extension.buffer);
+            const bufferPromise = this._loader.loadBufferAsync(`/buffers/${buffer.index}`, buffer, (extension.byteOffset || 0), extension.byteLength);
 
-            extensionDef._decoded = Promise.all([view, this._decoder]).then(function (res) {
-                var source = res[0] as Uint8Array;
-                var decoder = res[1];
-                var count = extensionDef.count;
-                var stride = extensionDef.byteStride;
-                var result = new Uint8Array(new ArrayBuffer(count * stride));
-
-                decoder.decodeGltfBuffer(result, count, stride, source, extensionDef.mode, extensionDef.filter);
-
+            bufferViewMeshopt._meshOptData = Promise.all([bufferPromise, this._decoderPromise]).then((res) => {
+                const source = res[0] as Uint8Array;
+                const count = extension.count;
+                const stride = extension.byteStride;
+                const result = new Uint8Array(new ArrayBuffer(count * stride));
+                MeshoptDecoder.decodeGltfBuffer(result, count, stride, source, extension.mode, extension.filter);
                 return Promise.resolve(result);
             });
 
-            return extensionDef._decoded;
-        } else {
-            return null;
-        }
+            return bufferViewMeshopt._meshOptData;
+        });
     }
 }
 
