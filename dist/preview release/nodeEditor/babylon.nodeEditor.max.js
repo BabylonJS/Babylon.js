@@ -65247,103 +65247,112 @@ var TextureLineComponent = /** @class */ (function (_super) {
         TextureLineComponent.UpdatePreview(this.canvasRef.current, this.props.texture, this.props.width, this.state, undefined, this.props.globalState);
     };
     TextureLineComponent.UpdatePreview = function (previewCanvas, texture, width, options, onReady, globalState) {
-        if (!texture.isReady() && texture._texture) {
-            texture._texture.onLoadedObservable.addOnce(function () {
-                TextureLineComponent.UpdatePreview(previewCanvas, texture, width, options, onReady, globalState);
+        return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function () {
+            var scene, engine, size, ratio, height, passPostProcess, passCubePostProcess, rtt, internalTexture, numberOfChannelsByLine, halfHeight, bufferView, data, i, alpha, i, j, currentCell, targetLine, targetCell, temp, context, imageData, castData;
+            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (!texture.isReady() && texture._texture) {
+                            texture._texture.onLoadedObservable.addOnce(function () {
+                                TextureLineComponent.UpdatePreview(previewCanvas, texture, width, options, onReady, globalState);
+                            });
+                        }
+                        scene = texture.getScene();
+                        engine = scene.getEngine();
+                        size = texture.getSize();
+                        ratio = size.width / size.height;
+                        height = (width / ratio) | 1;
+                        if (!texture.isCube) {
+                            passPostProcess = new babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["PassPostProcess"]("pass", 1, null, babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["Texture"].NEAREST_SAMPLINGMODE, engine, false, babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_UNSIGNED_INT);
+                        }
+                        else {
+                            passCubePostProcess = new babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["PassCubePostProcess"]("pass", 1, null, babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["Texture"].NEAREST_SAMPLINGMODE, engine, false, babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_UNSIGNED_INT);
+                            passCubePostProcess.face = options.face;
+                            passPostProcess = passCubePostProcess;
+                        }
+                        if (!passPostProcess.getEffect().isReady()) {
+                            // Try again later
+                            passPostProcess.dispose();
+                            setTimeout(function () { return TextureLineComponent.UpdatePreview(previewCanvas, texture, width, options, onReady, globalState); }, 250);
+                            return [2 /*return*/];
+                        }
+                        if (globalState) {
+                            globalState.blockMutationUpdates = true;
+                        }
+                        rtt = new babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["RenderTargetTexture"]("temp", { width: width, height: height }, scene, false);
+                        passPostProcess.onApply = function (effect) {
+                            effect.setTexture("textureSampler", texture);
+                        };
+                        internalTexture = rtt.getInternalTexture();
+                        if (!internalTexture) return [3 /*break*/, 2];
+                        scene.postProcessManager.directRender([passPostProcess], internalTexture);
+                        numberOfChannelsByLine = width * 4;
+                        halfHeight = height / 2;
+                        return [4 /*yield*/, engine.readPixels(0, 0, width, height)];
+                    case 1:
+                        bufferView = _a.sent();
+                        data = new Uint8Array(bufferView.buffer);
+                        if (!texture.isCube) {
+                            if (!options.displayRed || !options.displayGreen || !options.displayBlue) {
+                                for (i = 0; i < width * height * 4; i += 4) {
+                                    if (!options.displayRed) {
+                                        data[i] = 0;
+                                    }
+                                    if (!options.displayGreen) {
+                                        data[i + 1] = 0;
+                                    }
+                                    if (!options.displayBlue) {
+                                        data[i + 2] = 0;
+                                    }
+                                    if (options.displayAlpha) {
+                                        alpha = data[i + 2];
+                                        data[i] = alpha;
+                                        data[i + 1] = alpha;
+                                        data[i + 2] = alpha;
+                                        data[i + 2] = 0;
+                                    }
+                                }
+                            }
+                        }
+                        //To flip image on Y axis.
+                        if (texture.invertY || texture.isCube) {
+                            for (i = 0; i < halfHeight; i++) {
+                                for (j = 0; j < numberOfChannelsByLine; j++) {
+                                    currentCell = j + i * numberOfChannelsByLine;
+                                    targetLine = height - i - 1;
+                                    targetCell = j + targetLine * numberOfChannelsByLine;
+                                    temp = data[currentCell];
+                                    data[currentCell] = data[targetCell];
+                                    data[targetCell] = temp;
+                                }
+                            }
+                        }
+                        previewCanvas.width = width;
+                        previewCanvas.height = height;
+                        context = previewCanvas.getContext('2d');
+                        if (context) {
+                            imageData = context.createImageData(width, height);
+                            castData = imageData.data;
+                            castData.set(data);
+                            context.putImageData(imageData, 0, 0);
+                            if (onReady) {
+                                onReady();
+                            }
+                        }
+                        // Unbind
+                        engine.unBindFramebuffer(internalTexture);
+                        _a.label = 2;
+                    case 2:
+                        rtt.dispose();
+                        passPostProcess.dispose();
+                        previewCanvas.style.height = height + "px";
+                        if (globalState) {
+                            globalState.blockMutationUpdates = false;
+                        }
+                        return [2 /*return*/];
+                }
             });
-        }
-        var scene = texture.getScene();
-        var engine = scene.getEngine();
-        var size = texture.getSize();
-        var ratio = size.width / size.height;
-        var height = (width / ratio) | 1;
-        var passPostProcess;
-        if (!texture.isCube) {
-            passPostProcess = new babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["PassPostProcess"]("pass", 1, null, babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["Texture"].NEAREST_SAMPLINGMODE, engine, false, babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_UNSIGNED_INT);
-        }
-        else {
-            var passCubePostProcess = new babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["PassCubePostProcess"]("pass", 1, null, babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["Texture"].NEAREST_SAMPLINGMODE, engine, false, babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_UNSIGNED_INT);
-            passCubePostProcess.face = options.face;
-            passPostProcess = passCubePostProcess;
-        }
-        if (!passPostProcess.getEffect().isReady()) {
-            // Try again later
-            passPostProcess.dispose();
-            setTimeout(function () { return TextureLineComponent.UpdatePreview(previewCanvas, texture, width, options, onReady, globalState); }, 250);
-            return;
-        }
-        if (globalState) {
-            globalState.blockMutationUpdates = true;
-        }
-        var rtt = new babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["RenderTargetTexture"]("temp", { width: width, height: height }, scene, false);
-        passPostProcess.onApply = function (effect) {
-            effect.setTexture("textureSampler", texture);
-        };
-        var internalTexture = rtt.getInternalTexture();
-        if (internalTexture) {
-            scene.postProcessManager.directRender([passPostProcess], internalTexture);
-            // Read the contents of the framebuffer
-            var numberOfChannelsByLine = width * 4;
-            var halfHeight = height / 2;
-            //Reading datas from WebGL
-            var data = engine.readPixels(0, 0, width, height);
-            if (!texture.isCube) {
-                if (!options.displayRed || !options.displayGreen || !options.displayBlue) {
-                    for (var i = 0; i < width * height * 4; i += 4) {
-                        if (!options.displayRed) {
-                            data[i] = 0;
-                        }
-                        if (!options.displayGreen) {
-                            data[i + 1] = 0;
-                        }
-                        if (!options.displayBlue) {
-                            data[i + 2] = 0;
-                        }
-                        if (options.displayAlpha) {
-                            var alpha = data[i + 2];
-                            data[i] = alpha;
-                            data[i + 1] = alpha;
-                            data[i + 2] = alpha;
-                            data[i + 2] = 0;
-                        }
-                    }
-                }
-            }
-            //To flip image on Y axis.
-            if (texture.invertY || texture.isCube) {
-                for (var i = 0; i < halfHeight; i++) {
-                    for (var j = 0; j < numberOfChannelsByLine; j++) {
-                        var currentCell = j + i * numberOfChannelsByLine;
-                        var targetLine = height - i - 1;
-                        var targetCell = j + targetLine * numberOfChannelsByLine;
-                        var temp = data[currentCell];
-                        data[currentCell] = data[targetCell];
-                        data[targetCell] = temp;
-                    }
-                }
-            }
-            previewCanvas.width = width;
-            previewCanvas.height = height;
-            var context = previewCanvas.getContext('2d');
-            if (context) {
-                // Copy the pixels to the preview canvas
-                var imageData = context.createImageData(width, height);
-                var castData = imageData.data;
-                castData.set(data);
-                context.putImageData(imageData, 0, 0);
-                if (onReady) {
-                    onReady();
-                }
-            }
-            // Unbind
-            engine.unBindFramebuffer(internalTexture);
-        }
-        rtt.dispose();
-        passPostProcess.dispose();
-        previewCanvas.style.height = height + "px";
-        if (globalState) {
-            globalState.blockMutationUpdates = false;
-        }
+        });
     };
     TextureLineComponent.prototype.render = function () {
         var _this = this;
