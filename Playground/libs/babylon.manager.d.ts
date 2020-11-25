@@ -2314,7 +2314,7 @@ declare module BABYLON {
         protected m_agentQuaternion: BABYLON.Quaternion;
         protected m_agentDestination: BABYLON.Vector3;
         protected awake(): void;
-        protected update(): void;
+        protected late(): void;
         protected destroy(): void;
         /** Register handler that is triggered before the navigation update */
         onPreUpdateObservable: Observable<TransformNode>;
