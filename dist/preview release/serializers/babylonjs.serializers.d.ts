@@ -646,10 +646,6 @@ declare module BABYLON.GLTF2.Exporter {
          * @returns A boolean indicating whether the extension has been un-registered
          */
         static UnregisterExtension(name: string): boolean;
-        /**
-         * Lazy load a local engine
-         */
-        _getLocalEngine(): Engine;
         private reorderIndicesBasedOnPrimitiveMode;
         /**
          * Reorders the vertex attribute data based on the primitive mode.  This is necessary when indices are not available and the winding order is

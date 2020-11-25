@@ -641,44 +641,42 @@ var EXT_meshopt_compression = /** @class */ (function () {
         this.enabled = loader.isExtensionUsed(NAME);
         this._loader = loader;
         if (this.enabled) {
-            var url = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__["Tools"].GetAbsoluteUrl(EXT_meshopt_compression.DecoderPath);
-            this._decoder = import(/* webpackIgnore: true */ url).then(function (result) {
+            this._decoderPromise = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__["Tools"].LoadScriptAsync(EXT_meshopt_compression.DecoderPath).then(function () {
                 // Wait for WebAssembly compilation before resolving promise
-                var MeshoptDecoder = result.MeshoptDecoder;
-                return MeshoptDecoder.ready.then(function () { return MeshoptDecoder; });
+                return MeshoptDecoder.ready;
             });
         }
     }
     /** @hidden */
     EXT_meshopt_compression.prototype.dispose = function () {
+        this._loader = null;
+        delete this._decoderPromise;
     };
     /** @hidden */
     EXT_meshopt_compression.prototype.loadBufferViewAsync = function (context, bufferView) {
-        if (bufferView.extensions && bufferView.extensions[this.name]) {
-            var extensionDef = bufferView.extensions[this.name];
-            if (extensionDef._decoded) {
-                return extensionDef._decoded;
+        var _this = this;
+        return _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoader"].LoadExtensionAsync(context, bufferView, this.name, function (extensionContext, extension) {
+            var bufferViewMeshopt = bufferView;
+            if (bufferViewMeshopt._meshOptData) {
+                return bufferViewMeshopt._meshOptData;
             }
-            var view = this._loader.loadBufferViewAsync(context, extensionDef);
-            extensionDef._decoded = Promise.all([view, this._decoder]).then(function (res) {
+            var buffer = _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["ArrayItem"].Get(context + "/buffer", _this._loader.gltf.buffers, extension.buffer);
+            var bufferPromise = _this._loader.loadBufferAsync("/buffers/" + buffer.index, buffer, (extension.byteOffset || 0), extension.byteLength);
+            bufferViewMeshopt._meshOptData = Promise.all([bufferPromise, _this._decoderPromise]).then(function (res) {
                 var source = res[0];
-                var decoder = res[1];
-                var count = extensionDef.count;
-                var stride = extensionDef.byteStride;
+                var count = extension.count;
+                var stride = extension.byteStride;
                 var result = new Uint8Array(new ArrayBuffer(count * stride));
-                decoder.decodeGltfBuffer(result, count, stride, source, extensionDef.mode, extensionDef.filter);
+                MeshoptDecoder.decodeGltfBuffer(result, count, stride, source, extension.mode, extension.filter);
                 return Promise.resolve(result);
             });
-            return extensionDef._decoded;
-        }
-        else {
-            return null;
-        }
+            return bufferViewMeshopt._meshOptData;
+        });
     };
     /**
-     * Path to decoder module; defaults to https://preview.babylonjs.com/meshopt_decoder.module.js
+     * Path to decoder module; defaults to https://preview.babylonjs.com/meshopt_decoder.js
      */
-    EXT_meshopt_compression.DecoderPath = "https://preview.babylonjs.com/meshopt_decoder.module.js";
+    EXT_meshopt_compression.DecoderPath = "https://preview.babylonjs.com/meshopt_decoder.js";
     return EXT_meshopt_compression;
 }());
 
@@ -4329,7 +4327,15 @@ var GLTFLoader = /** @class */ (function () {
         });
         return sampler._data;
     };
-    GLTFLoader.prototype._loadBufferAsync = function (context, buffer, byteOffset, byteLength) {
+    /**
+     * Loads a glTF buffer.
+     * @param context The context when loading the asset
+     * @param buffer The glTF buffer property
+     * @param byteOffset The byte offset to use
+     * @param byteLength The byte length to use
+     * @returns A promise that resolves with the loaded data when the load is complete
+     */
+    GLTFLoader.prototype.loadBufferAsync = function (context, buffer, byteOffset, byteLength) {
         var extensionPromise = this._extensionsLoadBufferAsync(context, buffer, byteOffset, byteLength);
         if (extensionPromise) {
             return extensionPromise;
@@ -4369,7 +4375,7 @@ var GLTFLoader = /** @class */ (function () {
             return bufferView._data;
         }
         var buffer = ArrayItem.Get(context + "/buffer", this._gltf.buffers, bufferView.buffer);
-        bufferView._data = this._loadBufferAsync("/buffers/" + buffer.index, buffer, (bufferView.byteOffset || 0), bufferView.byteLength);
+        bufferView._data = this.loadBufferAsync("/buffers/" + buffer.index, buffer, (bufferView.byteOffset || 0), bufferView.byteLength);
         return bufferView._data;
     };
     GLTFLoader.prototype._loadAccessorAsync = function (context, accessor, constructor) {
@@ -6293,7 +6299,7 @@ var GLTFValidation = /** @class */ (function () {
                 };
                 worker.addEventListener("error", onError);
                 worker.addEventListener("message", onMessage);
-                worker.postMessage({ id: "init", url: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__["Tools"].GetAbsoluteUrl(_this.Configuration.url) });
+                worker.postMessage({ id: "init", url: _this.Configuration.url });
                 worker.postMessage({ id: "validate", data: data, rootUrl: rootUrl, fileName: fileName });
             });
         }
