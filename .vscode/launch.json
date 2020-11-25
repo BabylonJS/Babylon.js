@@ -226,6 +226,21 @@
             ]
         },        
         {
+            "name": "Launch Local Dev (Chrome Canary)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:1338/localDevWebGPU/index.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "preLaunchTask": "run",
+            "userDataDir": "${workspaceRoot}/.tempChromeCanaryProfileForDebug",
+            "runtimeExecutable": "C:/Users/alexis/AppData/Local/Google/Chrome SxS/Application/Chrome.exe",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis",
+                "--enable-unsafe-webgpu"
+            ]
+        },        
+        {
             "name": "Launch Local Dev (Edge)",
             "type": "edge",
             "version": "dev",

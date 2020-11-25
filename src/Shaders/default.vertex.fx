@@ -25,7 +25,13 @@ attribute vec4 color;
 #include<bonesDeclaration>
 
 // Uniforms
-#include<instancesDeclaration>
+// #include<instancesDeclaration>
+#ifdef INSTANCES
+	attribute vec4 world0;
+	attribute vec4 world1;
+	attribute vec4 world2;
+	attribute vec4 world3;
+#endif
 #include<prePassVertexDeclaration>
 
 #ifdef MAINUV1
@@ -83,7 +89,7 @@ varying vec4 vColor;
 #include<clipPlaneVertexDeclaration>
 
 #include<fogVertexDeclaration>
-#include<__decl__lightFragment>[0..maxSimultaneousLights]
+#include<__decl__lightVxFragment>[0..maxSimultaneousLights]
 
 #include<morphTargetsVertexGlobalDeclaration>
 #include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]
