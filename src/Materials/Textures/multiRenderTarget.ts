@@ -66,7 +66,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
      * Get if draw buffers are currently supported by the used hardware and browser.
      */
     public get isSupported(): boolean {
-        return this._getEngine()!.webGLVersion > 1 || this._getEngine()!.getCaps().drawBuffersExtension;
+        return this._engine?.getCaps().drawBuffersExtension ?? false;
     }
 
     /**

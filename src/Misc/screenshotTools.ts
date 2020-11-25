@@ -59,12 +59,14 @@ export class ScreenshotTools {
         var offsetX = Math.max(0, width - newWidth) / 2;
         var offsetY = Math.max(0, height - newHeight) / 2;
 
-        var renderingCanvas = engine.getRenderingCanvas();
-        if (renderContext && renderingCanvas) {
-            renderContext.drawImage(renderingCanvas, offsetX, offsetY, newWidth, newHeight);
-        }
+        engine.onEndFrameObservable.addOnce(() => {
+            var renderingCanvas = engine.getRenderingCanvas();
+            if (renderContext && renderingCanvas) {
+                renderContext.drawImage(renderingCanvas, offsetX, offsetY, newWidth, newHeight);
+            }
 
-        Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
+            Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
+        });
     }
 
     /**
@@ -123,20 +125,14 @@ export class ScreenshotTools {
             Logger.Error("Invalid 'size' parameter !");
             return;
         }
-        var renderCanvas = engine.getRenderingCanvas();
-        if (!renderCanvas) {
-            Logger.Error("No rendering canvas found !");
-            return;
-        }
-
-        var originalSize = { width: renderCanvas.width, height: renderCanvas.height };
-        engine.setSize(width, height);
 
         var scene = camera.getScene();
-
         var previousCamera: Nullable<Camera> = null;
         var previousCameras = scene.activeCameras;
-        if (scene.activeCamera !== camera || scene.activeCameras && scene.activeCameras.length) {
+
+        scene.activeCameras = null;
+
+        if (scene.activeCamera !== camera) {
             previousCamera = scene.activeCamera;
             scene.activeCamera = camera;
         }
@@ -144,27 +140,27 @@ export class ScreenshotTools {
         scene.render();
 
         // At this point size can be a number, or an object (according to engine.prototype.createRenderTargetTexture method)
-        var texture = new RenderTargetTexture("screenShot", targetTextureSize, scene, false, false, Constants.TEXTURETYPE_UNSIGNED_INT, false, Texture.NEAREST_SAMPLINGMODE, undefined, enableStencilBuffer);
+        var texture = new RenderTargetTexture("screenShot", targetTextureSize, scene, false, false, Constants.TEXTURETYPE_UNSIGNED_INT, false, Texture.NEAREST_SAMPLINGMODE, undefined, enableStencilBuffer, undefined, undefined, undefined, samples);
         texture.renderList = null;
         texture.samples = samples;
         texture.renderSprites = renderSprites;
-        texture.onAfterRenderObservable.add(() => {
-            Tools.DumpFramebuffer(width, height, engine, successCallback, mimeType, fileName);
+        engine.onEndFrameObservable.addOnce(() => {
+            texture.readPixels(undefined, undefined, undefined, false)!.then((data) => {
+                Tools.DumpData(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true);
+                texture.dispose();
+
+                if (previousCamera) {
+                    scene.activeCamera = previousCamera;
+                }
+                scene.activeCameras = previousCameras;
+                camera.getProjectionMatrix(true); // Force cache refresh;
+            });
         });
 
         const renderToTexture = () => {
             scene.incrementRenderId();
             scene.resetCachedMaterial();
             texture.render(true);
-            texture.dispose();
-
-            if (previousCamera) {
-                scene.activeCamera = previousCamera;
-            }
-            scene.activeCameras = previousCameras;
-
-            engine.setSize(originalSize.width, originalSize.height);
-            camera.getProjectionMatrix(true); // Force cache refresh;
         };
 
         if (antialiasing) {

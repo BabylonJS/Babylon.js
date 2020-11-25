@@ -152,9 +152,14 @@ export class ReflectionProbe {
             scene._forcedViewPosition = this.position;
         });
 
+        this._renderTargetTexture.onBeforeBindObservable.add(() => {
+            scene.getEngine()._debugPushGroup(`reflection probe generation for ${name}`, 1);
+        });
+
         this._renderTargetTexture.onAfterUnbindObservable.add(() => {
             scene._forcedViewPosition = null;
             scene.updateTransformMatrix(true);
+            scene.getEngine()._debugPopGroup(1);
         });
     }
 

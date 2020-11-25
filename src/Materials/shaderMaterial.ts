@@ -812,13 +812,13 @@ export class ShaderMaterial extends Material {
         const seffect = this._effect;
 
         this._effect = effect; // make sure the active effect is the right one if there are some observers for onBind that would need to get the current effect
-        this._afterBind(mesh);
+        this._afterBind(mesh, effect);
         this._effect = seffect;
     }
 
-    protected _afterBind(mesh?: Mesh): void {
-        super._afterBind(mesh);
-        this.getScene()._cachedEffect = this._effect;
+    protected _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null): void {
+        super._afterBind(mesh, effect);
+        this.getScene()._cachedEffect = effect;
     }
 
     /**

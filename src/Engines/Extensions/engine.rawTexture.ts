@@ -357,6 +357,7 @@ ThinEngine.prototype.createRawCubeTexture = function(data: Nullable<ArrayBufferV
     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
 
     texture.generateMipMaps = generateMipMaps;
+    texture.samplingMode = samplingMode;
 
     return texture;
 };

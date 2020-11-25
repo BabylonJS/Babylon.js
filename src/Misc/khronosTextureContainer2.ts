@@ -25,7 +25,7 @@ export class KhronosTextureContainer2 {
      *     URLConfig.wasmUASTCToRGBA_SRGB
      *     URLConfig.jsMSCTranscoder
      *     URLConfig.wasmMSCTranscoder
-     * You can see their default values in this PG: https://playground.babylonjs.com/#EIJH8L#9
+     * You can see their default values in this PG: https://playground.babylonjs.com/#EIJH8L#22
      */
     public static URLConfig = {
         jsDecoderModule: "https://preview.babylonjs.com/babylon.ktx2Decoder.js",
@@ -191,8 +191,10 @@ export class KhronosTextureContainer2 {
         delete KhronosTextureContainer2._WorkerPoolPromise;
     }
 
-    protected _createTexture(data: any /* IDecodedData */, internalTexture: InternalTexture, options?: any) {
-        this._engine._bindTextureDirectly(this._engine._gl.TEXTURE_2D, internalTexture);
+    protected _createTexture(data: any /* IEncodedData */, internalTexture: InternalTexture, options?: any) {
+        const oglTexture2D = 3553; // gl.TEXTURE_2D
+
+        this._engine._bindTextureDirectly(oglTexture2D, internalTexture);
 
         if (options) {
             // return back some information about the decoded data
@@ -210,6 +212,7 @@ export class KhronosTextureContainer2 {
         }
 
         internalTexture._gammaSpace = data.isInGammaSpace;
+        internalTexture.generateMipMaps = data.mipmaps.length > 1;
         internalTexture._hasAlpha = data.hasAlpha;
 
         if (data.errors) {
@@ -236,10 +239,9 @@ export class KhronosTextureContainer2 {
 
         internalTexture.width = data.mipmaps[0].width;
         internalTexture.height = data.mipmaps[0].height;
-        internalTexture.generateMipMaps = data.mipmaps.length > 1;
         internalTexture.isReady = true;
 
-        this._engine._bindTextureDirectly(this._engine._gl.TEXTURE_2D, null);
+        this._engine._bindTextureDirectly(oglTexture2D, null);
     }
 
     /**

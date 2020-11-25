@@ -113,7 +113,7 @@
         return esm;
     }
 
-    #ifdef WEBGL2
+    #if defined(WEBGL2) || defined(WEBGPU)
         #define inline
         float computeShadowCSM(float layer, vec4 vPositionFromLight, float depthMetric, highp sampler2DArray shadowSampler, float darkness, float frustumEdgeFalloff)
         {
@@ -249,7 +249,7 @@
         }
     }
 
-    #ifdef WEBGL2
+    #if defined(WEBGL2) || defined(WEBGPU)
         #define GREATEST_LESS_THAN_ONE 0.99999994
 
         // Shadow PCF kernel size 1 with a single tap (lowest quality)
@@ -419,6 +419,8 @@
             {
                 vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
                 vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
+
+                //uvDepth.y = 1.0 - uvDepth.y;
 
                 vec2 uv = uvDepth.xy * shadowMapSizeAndInverse.x;	// uv in texel units
                 uv += 0.5;											// offset of half to be in the center of the texel
