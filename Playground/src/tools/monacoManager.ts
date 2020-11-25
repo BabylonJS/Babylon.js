@@ -234,6 +234,11 @@ class Playground {
             "https://preview.babylonjs.com/inspector/babylon.inspector.d.ts",
         ];
 
+        // Check for Unity Toolkit
+        if (location.href.indexOf("UnityToolkit") !== -1 || Utilities.ReadBoolFromStore("unity-toolkit", false)) {
+            declarations.push("https://playground.babylonjs.com/libs/babylon.manager.d.ts");
+        }
+
         let libContent = "";
         const responses = await Promise.all(declarations.map((declaration) => fetch(declaration)));
         for (const response of responses) {
