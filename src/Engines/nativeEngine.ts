@@ -195,6 +195,10 @@ class NativePipelineContext implements IPipelineContext {
     public onCompiled?: () => void;
     public transformFeedback?: WebGLTransformFeedback | null;
 
+    constructor(engine: NativeEngine) {
+        this.engine = engine;
+    }
+
     public _fillEffectInformation(effect: Effect, uniformBuffersNames: { [key: string]: number }, uniformsNames: string[], uniforms: { [key: string]: Nullable<WebGLUniformLocation> }, samplerList: string[], samplers: { [key: string]: number }, attributesNames: string[], attributes: number[]) {
         const engine = this.engine;
         if (engine.supportsUniformBuffers) {
@@ -1046,7 +1050,7 @@ export class NativeEngine extends Engine {
     }
 
     public createPipelineContext(): IPipelineContext {
-        return new NativePipelineContext();
+        return new NativePipelineContext(this);
     }
 
     public _preparePipelineContext(pipelineContext: IPipelineContext, vertexSourceCode: string, fragmentSourceCode: string, createAsRaw: boolean, rawVertexSourceCode: string, rawFragmentSourceCode: string, rebuildRebind: any, defines: Nullable<string>, transformFeedbackVaryings: Nullable<string[]>) {
