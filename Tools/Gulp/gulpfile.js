@@ -78,7 +78,7 @@ gulp.task("run", gulp.series("generate-symlinks", "cleanup", "watchCore", "watch
 /**
  * Do it all (Build).
  */
-gulp.task("typescript-all", gulp.series("generate-symlinks", "typescript-libraries", "typescript-es6", "typescript-apps", "netlify-cleanup"));
+gulp.task("typescript-all", gulp.series("typescript-libraries", "typescript-es6", "typescript-apps", "netlify-cleanup"));
 
 /**
  * Do it all (tests).
@@ -88,9 +88,9 @@ gulp.task("tests-all", gulp.series("generate-symlinks", "tests-unit", "tests-mod
 /**
  * Get Ready to test Npm Packages.
  */
-gulp.task("npmPackages", gulp.series("generate-symlinks", "npmPackages-all"));
+gulp.task("npmPackages", gulp.series("npmPackages-all"));
 
 /**
  * The default task, concat and min the main BJS files.
  */
-gulp.task("default", gulp.series("generate-symlinks", "cleanup", "tsLint", "importLint", "circularDependencies", "typescript-all", "documentation", "typedoc-all", "tests-all"));
+gulp.task("default", gulp.series("cleanup", "tsLint", "importLint", "circularDependencies", "typescript-all", "documentation", "typedoc-all", "tests-all"));
