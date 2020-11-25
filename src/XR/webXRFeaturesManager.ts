@@ -72,6 +72,10 @@ export class WebXRFeatureName {
      */
     public static readonly HIT_TEST = "xr-hit-test";
     /**
+     * The name of the mesh detection feature
+     */
+    public static readonly MESH_DETECTION = "xr-mesh-detection";
+    /**
      * physics impostors for xr controllers feature
      */
     public static readonly PHYSICS_CONTROLLERS = "xr-physics-controller";
