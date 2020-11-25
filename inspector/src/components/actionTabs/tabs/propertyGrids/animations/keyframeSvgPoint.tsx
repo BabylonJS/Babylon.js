@@ -6,13 +6,21 @@ const keyInactive = require("./assets/keyInactiveIcon.svg") as string;
 const keySelected = require("./assets/keySelectedIcon.svg") as string;
 
 export interface IKeyframeSvgPoint {
+    // Keyframe point to render in svg canvas
     keyframePoint: Vector2;
+    // Right control point (controls curve)
     rightControlPoint: Vector2 | null;
+    // Left control point (controls curve)
     leftControlPoint: Vector2 | null;
+    // svg keyframe id
     id: string;
+    // If the keyframe is selected on canvas
     selected: boolean;
+    // I the left control point is being dragged or active
     isLeftActive: boolean;
+    // I the right control point is being dragged or active
     isRightActive: boolean;
+    // The parent curve id
     curveId?: ICurveMetaData;
 }
 
@@ -23,15 +31,25 @@ export interface ICurveMetaData {
 }
 
 interface IKeyframeSvgPointProps {
+    // Keyframe point to render in svg canvas
     keyframePoint: Vector2;
+    // Left control point (controls curve)
     leftControlPoint: Vector2 | null;
+    // Right control point (controls curve)
     rightControlPoint: Vector2 | null;
+    // svg keyframe id
     id: string;
+    // If the keyframe is selected on canvas
     selected: boolean;
+    // Select keyframe and mode of selection
     selectKeyframe: (id: string, multiselect: boolean) => void;
+    // Returns the id of the selected keyframe and its animation property type
     selectedControlPoint: (type: string, id: string) => void;
+    // I the left control point is being dragged or active
     isLeftActive: boolean;
+    // I the right control point is being dragged or active
     isRightActive: boolean;
+    // Current visible frames in canvas
     framesInCanvasView: { from: number; to: number };
 }
 
@@ -44,6 +62,10 @@ export class KeyframeSvgPoint extends React.Component<IKeyframeSvgPointProps> {
         super(props);
     }
 
+    /**
+     * Select a keyframe. If the control key is pressed, multiselect keyframes
+     * @param e Mouse event
+     */
     select = (e: React.MouseEvent<SVGImageElement>) => {
         e.preventDefault();
         let multiSelect = false;
@@ -53,6 +75,10 @@ export class KeyframeSvgPoint extends React.Component<IKeyframeSvgPointProps> {
         this.props.selectKeyframe(this.props.id, multiSelect);
     };
 
+    /**
+     * Send the ID of the selected keyframe
+     * @param type Type of selected keyframe
+     */
     selectedControlPointId = (type: string) => {
         this.props.selectedControlPoint(type, this.props.id);
     };
