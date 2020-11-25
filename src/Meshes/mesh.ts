@@ -1913,7 +1913,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         var world = effectiveMesh.getWorldMatrix();
-
         if (this._effectiveMaterial._storeEffectOnSubMeshes) {
             this._effectiveMaterial.bindForSubMesh(world, this, subMesh);
         } else {

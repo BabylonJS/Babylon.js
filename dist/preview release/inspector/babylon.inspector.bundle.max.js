@@ -52189,7 +52189,7 @@ var PropertiesBar = /** @class */ (function (_super) {
         var _a = this.props, mipLevel = _a.mipLevel, setMipLevel = _a.setMipLevel, pixelData = _a.pixelData, resizeTexture = _a.resizeTexture, texture = _a.texture, face = _a.face, setFace = _a.setFace, saveTexture = _a.saveTexture, resetTexture = _a.resetTexture, uploadTexture = _a.uploadTexture;
         var maxLevels = Math.floor(Math.log2(Math.max(texture.getSize().width, texture.getSize().height)));
         var engine = texture.getScene().getEngine();
-        var mipsEnabled = (!texture.noMipmap && (engine.webGLVersion == 2 || engine._gl.getExtension('EXT_shader_texture_lod')));
+        var mipsEnabled = (!texture.noMipmap && engine.getCaps().textureLOD);
         return react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: 'properties' },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'tab', id: 'logo-tab' },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { className: 'icon', src: this._babylonLogo })),
@@ -52552,29 +52552,42 @@ var TextureCanvasManager = /** @class */ (function () {
         });
     };
     TextureCanvasManager.prototype.pushTexture = function () {
-        var _this = this;
         var _a;
-        if (this._canPush) {
-            this._target.update(this._originalTexture.invertY);
-            (_a = this._target._texture) === null || _a === void 0 ? void 0 : _a.updateSize(this._size.width, this._size.height);
-            if (this._editing3D) {
-                this._imageData = this._3DEngine.readPixels(0, 0, this._size.width, this._size.height);
-            }
-            else {
-                this._imageData = this._2DCanvas.getContext('2d').getImageData(0, 0, this._size.width, this._size.height).data;
-            }
-            this._canPush = false;
-            this._shouldPush = false;
-            setTimeout(function () {
-                _this._canPush = true;
-                if (_this._shouldPush) {
-                    _this.pushTexture();
+        return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function () {
+            var bufferView;
+            var _this = this;
+            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        if (!this._canPush) return [3 /*break*/, 4];
+                        this._target.update(this._originalTexture.invertY);
+                        (_a = this._target._texture) === null || _a === void 0 ? void 0 : _a.updateSize(this._size.width, this._size.height);
+                        if (!this._editing3D) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this._3DEngine.readPixels(0, 0, this._size.width, this._size.height)];
+                    case 1:
+                        bufferView = _b.sent();
+                        this._imageData = new Uint8Array(bufferView.buffer);
+                        return [3 /*break*/, 3];
+                    case 2:
+                        this._imageData = this._2DCanvas.getContext('2d').getImageData(0, 0, this._size.width, this._size.height).data;
+                        _b.label = 3;
+                    case 3:
+                        this._canPush = false;
+                        this._shouldPush = false;
+                        setTimeout(function () {
+                            _this._canPush = true;
+                            if (_this._shouldPush) {
+                                _this.pushTexture();
+                            }
+                        }, this.PUSH_FREQUENCY);
+                        return [3 /*break*/, 5];
+                    case 4:
+                        this._shouldPush = true;
+                        _b.label = 5;
+                    case 5: return [2 /*return*/];
                 }
-            }, this.PUSH_FREQUENCY);
-        }
-        else {
-            this._shouldPush = true;
-        }
+            });
+        });
     };
     TextureCanvasManager.prototype.startPainting = function () {
         return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function () {
@@ -52615,8 +52628,9 @@ var TextureCanvasManager = /** @class */ (function () {
         }
         var editingAllChannels = true;
         this._channels.forEach(function (channel) {
-            if (!channel.editable)
+            if (!channel.editable) {
                 editingAllChannels = false;
+            }
         });
         var oldData;
         if (!editingAllChannels) {
@@ -52779,8 +52793,9 @@ var TextureCanvasManager = /** @class */ (function () {
     });
     Object.defineProperty(TextureCanvasManager.prototype, "mipLevel", {
         set: function (mipLevel) {
-            if (this._mipLevel === mipLevel)
+            if (this._mipLevel === mipLevel) {
                 return;
+            }
             this._mipLevel = mipLevel;
             this.grabOriginalTexture();
         },
@@ -52808,8 +52823,9 @@ var TextureCanvasManager = /** @class */ (function () {
         configurable: true
     });
     TextureCanvasManager.prototype.makePlane = function () {
-        if (this._plane)
+        if (this._plane) {
             this._plane.dispose();
+        }
         this._plane = babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["PlaneBuilder"].CreatePlane("plane", { width: this._size.width, height: this._size.height }, this._scene);
         this._plane.enableEdgesRendering();
         this._plane.edgesWidth = 4.0;
@@ -56453,7 +56469,7 @@ var StatisticsTabComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "SYSTEM INFO" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Resolution", value: engine.getRenderWidth() + "x" + engine.getRenderHeight() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Hardware scaling level", value: engine.getHardwareScalingLevel().toString() }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "WebGL version", value: engine.webGLVersion.toString() }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Engine", value: engine.description }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_booleanLineComponent__WEBPACK_IMPORTED_MODULE_7__["BooleanLineComponent"], { label: "Std derivatives", value: caps.standardDerivatives }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_booleanLineComponent__WEBPACK_IMPORTED_MODULE_7__["BooleanLineComponent"], { label: "Compressed textures", value: caps.s3tc !== undefined }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_booleanLineComponent__WEBPACK_IMPORTED_MODULE_7__["BooleanLineComponent"], { label: "Hardware instances", value: caps.instancedArrays }),
@@ -59181,7 +59197,7 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
                     }
                 });
             }
-            if (scene.getEngine().webGLVersion > 1 && !pipelines.some(function (p) { return p.getClassName() === "SSAORenderingPipeline"; })) {
+            if (scene.getEngine().getCaps().drawBuffersExtension && !pipelines.some(function (p) { return p.getClassName() === "SSAORenderingPipeline"; })) {
                 pipelineContextMenus.push({
                     label: "Add new SSAO2 Rendering Pipeline",
                     action: function () {
@@ -60687,10 +60703,12 @@ var HexColor = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TextureHelper", function() { return TextureHelper; });
-/* harmony import */ var babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/PostProcesses/postProcess */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _lod__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./lod */ "./lod.ts");
-/* harmony import */ var _lodCube__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./lodCube */ "./lodCube.ts");
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/PostProcesses/postProcess */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _lod__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./lod */ "./lod.ts");
+/* harmony import */ var _lodCube__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./lodCube */ "./lodCube.ts");
+
 
 
 
@@ -60700,132 +60718,142 @@ var TextureHelper = /** @class */ (function () {
     function TextureHelper() {
     }
     TextureHelper._ProcessAsync = function (texture, width, height, face, channels, lod, globalState, resolve, reject) {
-        var _this = this;
-        var scene = texture.getScene();
-        var engine = scene.getEngine();
-        var lodPostProcess;
-        if (!texture.isCube) {
-            lodPostProcess = new babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_0__["PostProcess"]("lod", "lod", ["lod"], null, 1.0, null, babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_0__["Texture"].NEAREST_NEAREST_MIPNEAREST, engine);
-        }
-        else {
-            var faceDefines = [
-                "#define POSITIVEX",
-                "#define NEGATIVEX",
-                "#define POSITIVEY",
-                "#define NEGATIVEY",
-                "#define POSITIVEZ",
-                "#define NEGATIVEZ",
-            ];
-            lodPostProcess = new babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_0__["PostProcess"]("lodCube", "lodCube", ["lod"], null, 1.0, null, babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_0__["Texture"].NEAREST_NEAREST_MIPNEAREST, engine, false, faceDefines[face]);
-        }
-        if (!lodPostProcess.getEffect().isReady()) {
-            // Try again later
-            lodPostProcess.dispose();
-            setTimeout(function () {
-                _this._ProcessAsync(texture, width, height, face, channels, lod, globalState, resolve, reject);
-            }, 250);
-            return;
-        }
-        if (globalState) {
-            globalState.blockMutationUpdates = true;
-        }
-        var rtt = new babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_0__["RenderTargetTexture"]("temp", { width: width, height: height }, scene, false);
-        lodPostProcess.onApply = function (effect) {
-            effect.setTexture("textureSampler", texture);
-            effect.setFloat("lod", lod);
-        };
-        var rttInternalTexture = rtt.getInternalTexture();
-        var internalTexture = texture.getInternalTexture();
-        if (rttInternalTexture && internalTexture) {
-            var samplingMode = internalTexture.samplingMode;
-            texture.updateSamplingMode(babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_0__["Texture"].NEAREST_NEAREST_MIPNEAREST);
-            scene.postProcessManager.directRender([lodPostProcess], rttInternalTexture);
-            texture.updateSamplingMode(samplingMode);
-            // Read the contents of the framebuffer
-            var numberOfChannelsByLine = width * 4;
-            var halfHeight = height / 2;
-            //Reading datas from WebGL
-            var data = engine.readPixels(0, 0, width, height);
-            if (!channels.R || !channels.G || !channels.B || !channels.A) {
-                for (var i = 0; i < width * height * 4; i += 4) {
-                    // If alpha is the only channel, just display alpha across all channels
-                    if (channels.A && !channels.R && !channels.G && !channels.B) {
-                        data[i] = data[i + 3];
-                        data[i + 1] = data[i + 3];
-                        data[i + 2] = data[i + 3];
-                        data[i + 3] = 255;
-                        continue;
-                    }
-                    var r = data[i], g = data[i + 1], b = data[i + 2], a = data[i + 3];
-                    // If alpha is not visible, make everything 100% alpha
-                    if (!channels.A) {
-                        a = 255;
-                    }
-                    // If only one color channel is selected, map both colors to it. If two are selected, the unused one gets set to 0
-                    if (!channels.R) {
-                        if (channels.G && !channels.B) {
-                            r = g;
-                        }
-                        else if (channels.B && !channels.G) {
-                            r = b;
+        return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function () {
+            var scene, engine, lodPostProcess, faceDefines, rtt, rttInternalTexture, internalTexture, samplingMode, numberOfChannelsByLine, halfHeight, bufferView, data, i, r, g, b, a, i, j, currentCell, targetLine, targetCell, temp;
+            var _this = this;
+            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        scene = texture.getScene();
+                        engine = scene.getEngine();
+                        if (!texture.isCube) {
+                            lodPostProcess = new babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_1__["PostProcess"]("lod", "lod", ["lod"], null, 1.0, null, babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_NEAREST_MIPNEAREST, engine);
                         }
                         else {
-                            r = 0;
+                            faceDefines = [
+                                "#define POSITIVEX",
+                                "#define NEGATIVEX",
+                                "#define POSITIVEY",
+                                "#define NEGATIVEY",
+                                "#define POSITIVEZ",
+                                "#define NEGATIVEZ",
+                            ];
+                            lodPostProcess = new babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_1__["PostProcess"]("lodCube", "lodCube", ["lod"], null, 1.0, null, babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_NEAREST_MIPNEAREST, engine, false, faceDefines[face]);
                         }
-                    }
-                    if (!channels.G) {
-                        if (channels.R && !channels.B) {
-                            g = r;
+                        if (!lodPostProcess.getEffect().isReady()) {
+                            // Try again later
+                            lodPostProcess.dispose();
+                            setTimeout(function () {
+                                _this._ProcessAsync(texture, width, height, face, channels, lod, globalState, resolve, reject);
+                            }, 250);
+                            return [2 /*return*/];
                         }
-                        else if (channels.B && !channels.R) {
-                            g = b;
+                        if (globalState) {
+                            globalState.blockMutationUpdates = true;
                         }
-                        else {
-                            g = 0;
+                        rtt = new babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_1__["RenderTargetTexture"]("temp", { width: width, height: height }, scene, false);
+                        lodPostProcess.onApply = function (effect) {
+                            effect.setTexture("textureSampler", texture);
+                            effect.setFloat("lod", lod);
+                        };
+                        rttInternalTexture = rtt.getInternalTexture();
+                        internalTexture = texture.getInternalTexture();
+                        if (!(rttInternalTexture && internalTexture)) return [3 /*break*/, 2];
+                        samplingMode = internalTexture.samplingMode;
+                        texture.updateSamplingMode(babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_NEAREST_MIPNEAREST);
+                        scene.postProcessManager.directRender([lodPostProcess], rttInternalTexture);
+                        texture.updateSamplingMode(samplingMode);
+                        numberOfChannelsByLine = width * 4;
+                        halfHeight = height / 2;
+                        return [4 /*yield*/, engine.readPixels(0, 0, width, height)];
+                    case 1:
+                        bufferView = _a.sent();
+                        data = new Uint8Array(bufferView.buffer);
+                        if (!channels.R || !channels.G || !channels.B || !channels.A) {
+                            for (i = 0; i < width * height * 4; i += 4) {
+                                // If alpha is the only channel, just display alpha across all channels
+                                if (channels.A && !channels.R && !channels.G && !channels.B) {
+                                    data[i] = data[i + 3];
+                                    data[i + 1] = data[i + 3];
+                                    data[i + 2] = data[i + 3];
+                                    data[i + 3] = 255;
+                                    continue;
+                                }
+                                r = data[i], g = data[i + 1], b = data[i + 2], a = data[i + 3];
+                                // If alpha is not visible, make everything 100% alpha
+                                if (!channels.A) {
+                                    a = 255;
+                                }
+                                // If only one color channel is selected, map both colors to it. If two are selected, the unused one gets set to 0
+                                if (!channels.R) {
+                                    if (channels.G && !channels.B) {
+                                        r = g;
+                                    }
+                                    else if (channels.B && !channels.G) {
+                                        r = b;
+                                    }
+                                    else {
+                                        r = 0;
+                                    }
+                                }
+                                if (!channels.G) {
+                                    if (channels.R && !channels.B) {
+                                        g = r;
+                                    }
+                                    else if (channels.B && !channels.R) {
+                                        g = b;
+                                    }
+                                    else {
+                                        g = 0;
+                                    }
+                                }
+                                if (!channels.B) {
+                                    if (channels.R && !channels.G) {
+                                        b = r;
+                                    }
+                                    else if (channels.G && !channels.R) {
+                                        b = g;
+                                    }
+                                    else {
+                                        b = 0;
+                                    }
+                                }
+                                data[i] = r;
+                                data[i + 1] = g;
+                                data[i + 2] = b;
+                                data[i + 3] = a;
+                            }
                         }
-                    }
-                    if (!channels.B) {
-                        if (channels.R && !channels.G) {
-                            b = r;
+                        //To flip image on Y axis.
+                        if (texture.invertY || texture.isCube) {
+                            for (i = 0; i < halfHeight; i++) {
+                                for (j = 0; j < numberOfChannelsByLine; j++) {
+                                    currentCell = j + i * numberOfChannelsByLine;
+                                    targetLine = height - i - 1;
+                                    targetCell = j + targetLine * numberOfChannelsByLine;
+                                    temp = data[currentCell];
+                                    data[currentCell] = data[targetCell];
+                                    data[targetCell] = temp;
+                                }
+                            }
                         }
-                        else if (channels.G && !channels.R) {
-                            b = g;
+                        resolve(data);
+                        // Unbind
+                        engine.unBindFramebuffer(rttInternalTexture);
+                        return [3 /*break*/, 3];
+                    case 2:
+                        reject();
+                        _a.label = 3;
+                    case 3:
+                        rtt.dispose();
+                        lodPostProcess.dispose();
+                        if (globalState) {
+                            globalState.blockMutationUpdates = false;
                         }
-                        else {
-                            b = 0;
-                        }
-                    }
-                    data[i] = r;
-                    data[i + 1] = g;
-                    data[i + 2] = b;
-                    data[i + 3] = a;
+                        return [2 /*return*/];
                 }
-            }
-            //To flip image on Y axis.
-            if (texture.invertY || texture.isCube) {
-                for (var i = 0; i < halfHeight; i++) {
-                    for (var j = 0; j < numberOfChannelsByLine; j++) {
-                        var currentCell = j + i * numberOfChannelsByLine;
-                        var targetLine = height - i - 1;
-                        var targetCell = j + targetLine * numberOfChannelsByLine;
-                        var temp = data[currentCell];
-                        data[currentCell] = data[targetCell];
-                        data[targetCell] = temp;
-                    }
-                }
-            }
-            resolve(data);
-            // Unbind
-            engine.unBindFramebuffer(rttInternalTexture);
-        }
-        else {
-            reject();
-        }
-        rtt.dispose();
-        lodPostProcess.dispose();
-        if (globalState) {
-            globalState.blockMutationUpdates = false;
-        }
+            });
+        });
     };
     TextureHelper.GetTextureDataAsync = function (texture, width, height, face, channels, globalState, lod) {
         var _this = this;

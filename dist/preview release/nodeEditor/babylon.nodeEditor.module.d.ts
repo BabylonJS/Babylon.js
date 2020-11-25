@@ -1443,7 +1443,7 @@ declare module "babylonjs-node-editor/sharedComponents/textureLineComponent" {
         componentDidMount(): void;
         componentDidUpdate(): void;
         updatePreview(): void;
-        static UpdatePreview(previewCanvas: HTMLCanvasElement, texture: BaseTexture, width: number, options: ITextureLineComponentState, onReady?: () => void, globalState?: any): void;
+        static UpdatePreview(previewCanvas: HTMLCanvasElement, texture: BaseTexture, width: number, options: ITextureLineComponentState, onReady?: () => void, globalState?: any): Promise<void>;
         render(): JSX.Element;
     }
 }
@@ -3209,7 +3209,7 @@ declare module NODEEDITOR {
         componentDidMount(): void;
         componentDidUpdate(): void;
         updatePreview(): void;
-        static UpdatePreview(previewCanvas: HTMLCanvasElement, texture: BABYLON.BaseTexture, width: number, options: ITextureLineComponentState, onReady?: () => void, globalState?: any): void;
+        static UpdatePreview(previewCanvas: HTMLCanvasElement, texture: BABYLON.BaseTexture, width: number, options: ITextureLineComponentState, onReady?: () => void, globalState?: any): Promise<void>;
         render(): JSX.Element;
     }
 }

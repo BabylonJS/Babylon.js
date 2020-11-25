@@ -681,7 +681,7 @@ export class Texture extends BaseTexture {
             } else if (this.url && StringTools.StartsWith(this.url, "data:") && this._buffer instanceof Uint8Array) {
                 serializationObject.base64String = "data:image/png;base64," + StringTools.EncodeArrayBufferToBase64(this._buffer);
             } else if (Texture.ForceSerializeBuffers) {
-                serializationObject.base64String = CopyTools.GenerateBase64StringFromTexture(this);
+                serializationObject.base64String = CopyTools.GenerateBase64StringFromTexture(this); // TODO WEBGPU serialize should turn asynchronous as GenerateBase64StringFromTexture now returns a promise...
             }
         }
 

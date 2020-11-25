@@ -65,4 +65,5 @@ interface HTMLVideoElement {
 interface Math {
     fround(x: number): number;
     imul(a: number, b: number): number;
+    log2(x: number): number;
 }

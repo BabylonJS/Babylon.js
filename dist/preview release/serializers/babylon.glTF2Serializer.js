@@ -1902,8 +1902,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
-
 /**
  * Converts Babylon Scene into glTF 2.0.
  * @hidden
@@ -2074,20 +2072,6 @@ var _Exporter = /** @class */ (function () {
             _Exporter._ExtensionNames.splice(index, 1);
         }
         return true;
-    };
-    /**
-     * Lazy load a local engine
-     */
-    _Exporter.prototype._getLocalEngine = function () {
-        if (!this._localEngine) {
-            var localCanvas = document.createElement('canvas');
-            localCanvas.id = "WriteCanvas";
-            localCanvas.width = 2048;
-            localCanvas.height = 2048;
-            this._localEngine = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Engine"](localCanvas, true, { premultipliedAlpha: babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].IsSafari(), preserveDrawingBuffer: true });
-            this._localEngine.setViewport(new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Viewport"](0, 0, 1, 1));
-        }
-        return this._localEngine;
     };
     _Exporter.prototype.reorderIndicesBasedOnPrimitiveMode = function (submesh, primitiveMode, babylonIndices, byteOffset, binaryWriter) {
         switch (primitiveMode) {
@@ -3779,9 +3763,9 @@ var __IGLTFExporterExtensionV2 = 0; // I am here to allow dts to be created
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "_GLTFMaterialExporter", function() { return _GLTFMaterialExporter; });
-/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Maths/math.vector");
-/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__);
-
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__);
 
 
 
@@ -3813,9 +3797,9 @@ var _GLTFMaterialExporter = /** @class */ (function () {
      * @param epsilon threshold value
      */
     _GLTFMaterialExporter.FuzzyEquals = function (color1, color2, epsilon) {
-        return babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Scalar"].WithinEpsilon(color1.r, color2.r, epsilon) &&
-            babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Scalar"].WithinEpsilon(color1.g, color2.g, epsilon) &&
-            babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Scalar"].WithinEpsilon(color1.b, color2.b, epsilon);
+        return babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Scalar"].WithinEpsilon(color1.r, color2.r, epsilon) &&
+            babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Scalar"].WithinEpsilon(color1.g, color2.g, epsilon) &&
+            babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Scalar"].WithinEpsilon(color1.b, color2.b, epsilon);
     };
     /**
      * Gets the materials from a Babylon scene and converts them to glTF materials
@@ -3831,14 +3815,14 @@ var _GLTFMaterialExporter = /** @class */ (function () {
         var promises = [];
         for (var _i = 0, babylonMaterials_1 = babylonMaterials; _i < babylonMaterials_1.length; _i++) {
             var babylonMaterial = babylonMaterials_1[_i];
-            if (babylonMaterial instanceof babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["StandardMaterial"]) {
+            if (babylonMaterial instanceof babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["StandardMaterial"]) {
                 promises.push(this._convertStandardMaterialAsync(babylonMaterial, mimeType, hasTextureCoords));
             }
-            else if (babylonMaterial instanceof babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["PBRBaseMaterial"]) {
+            else if (babylonMaterial instanceof babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["PBRBaseMaterial"]) {
                 promises.push(this._convertPBRMaterialAsync(babylonMaterial, mimeType, hasTextureCoords));
             }
             else {
-                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Tools"].Warn("Unsupported material type: " + babylonMaterial.name);
+                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Unsupported material type: " + babylonMaterial.name);
             }
         }
         return Promise.all(promises).then(function () { });
@@ -3889,10 +3873,10 @@ var _GLTFMaterialExporter = /** @class */ (function () {
      * @returns glTF Metallic Roughness Material representation
      */
     _GLTFMaterialExporter.prototype._convertToGLTFPBRMetallicRoughness = function (babylonStandardMaterial) {
-        var P0 = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Vector2"](0, 1);
-        var P1 = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Vector2"](0, 0.1);
-        var P2 = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Vector2"](0, 0.1);
-        var P3 = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Vector2"](1300, 0.1);
+        var P0 = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](0, 1);
+        var P1 = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](0, 0.1);
+        var P2 = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](0, 0.1);
+        var P3 = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](1300, 0.1);
         /**
          * Given the control points, solve for x based on a given t for a cubic bezier curve
          * @param t a value between 0 and 1
@@ -3921,7 +3905,7 @@ var _GLTFMaterialExporter = /** @class */ (function () {
         }
         var diffuse = babylonStandardMaterial.diffuseColor.toLinearSpace().scale(0.5);
         var opacity = babylonStandardMaterial.alpha;
-        var specularPower = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Scalar"].Clamp(babylonStandardMaterial.specularPower, 0, _GLTFMaterialExporter._MaxSpecularPower);
+        var specularPower = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp(babylonStandardMaterial.specularPower, 0, _GLTFMaterialExporter._MaxSpecularPower);
         var roughness = _solveForRoughness(specularPower);
         var glTFPbrMetallicRoughness = {
             baseColorFactor: [
@@ -3951,7 +3935,7 @@ var _GLTFMaterialExporter = /** @class */ (function () {
         var b = diffuse * oneMinusSpecularStrength / (1.0 - this._DielectricSpecular.r) + specular - 2.0 * this._DielectricSpecular.r;
         var c = this._DielectricSpecular.r - specular;
         var D = b * b - 4.0 * a * c;
-        return babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Scalar"].Clamp((-b + Math.sqrt(D)) / (2.0 * a), 0, 1);
+        return babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp((-b + Math.sqrt(D)) / (2.0 * a), 0, 1);
     };
     /**
      * Sets the glTF alpha mode to a glTF material from the Babylon Material
@@ -3985,7 +3969,7 @@ var _GLTFMaterialExporter = /** @class */ (function () {
         var glTFMaterial = { name: babylonStandardMaterial.name };
         if (babylonStandardMaterial.backFaceCulling != null && !babylonStandardMaterial.backFaceCulling) {
             if (!babylonStandardMaterial.twoSidedLighting) {
-                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Tools"].Warn(babylonStandardMaterial.name + ": Back-face culling enabled and two-sided lighting disabled is not supported in glTF.");
+                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn(babylonStandardMaterial.name + ": Back-face culling enabled and two-sided lighting disabled is not supported in glTF.");
             }
             glTFMaterial.doubleSided = true;
         }
@@ -4028,14 +4012,14 @@ var _GLTFMaterialExporter = /** @class */ (function () {
             }
         }
         if (babylonStandardMaterial.alpha < 1.0 || babylonStandardMaterial.opacityTexture) {
-            if (babylonStandardMaterial.alphaMode === babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Constants"].ALPHA_COMBINE) {
+            if (babylonStandardMaterial.alphaMode === babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Constants"].ALPHA_COMBINE) {
                 glTFMaterial.alphaMode = "BLEND" /* BLEND */;
             }
             else {
-                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Tools"].Warn(babylonStandardMaterial.name + ": glTF 2.0 does not support alpha mode: " + babylonStandardMaterial.alphaMode.toString());
+                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn(babylonStandardMaterial.name + ": glTF 2.0 does not support alpha mode: " + babylonStandardMaterial.alphaMode.toString());
             }
         }
-        if (babylonStandardMaterial.emissiveColor && !_GLTFMaterialExporter.FuzzyEquals(babylonStandardMaterial.emissiveColor, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Color3"].Black(), _GLTFMaterialExporter._Epsilon)) {
+        if (babylonStandardMaterial.emissiveColor && !_GLTFMaterialExporter.FuzzyEquals(babylonStandardMaterial.emissiveColor, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color3"].Black(), _GLTFMaterialExporter._Epsilon)) {
             glTFMaterial.emissiveFactor = babylonStandardMaterial.emissiveColor.asArray();
         }
         glTFMaterial.pbrMetallicRoughness = glTFPbrMetallicRoughness;
@@ -4140,7 +4124,7 @@ var _GLTFMaterialExporter = /** @class */ (function () {
                 }));
             }
         }
-        if (_GLTFMaterialExporter.FuzzyEquals(babylonPBRMetalRoughMaterial.emissiveColor, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Color3"].Black(), _GLTFMaterialExporter._Epsilon)) {
+        if (_GLTFMaterialExporter.FuzzyEquals(babylonPBRMetalRoughMaterial.emissiveColor, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color3"].Black(), _GLTFMaterialExporter._Epsilon)) {
             glTFMaterial.emissiveFactor = babylonPBRMetalRoughMaterial.emissiveColor.asArray();
         }
         glTFMaterial.pbrMetallicRoughness = glTFPbrMetallicRoughness;
@@ -4158,59 +4142,29 @@ var _GLTFMaterialExporter = /** @class */ (function () {
      */
     _GLTFMaterialExporter.prototype._createBase64FromCanvasAsync = function (buffer, width, height, mimeType) {
         var _this = this;
-        return new Promise(function (resolve, reject) {
-            var hostingScene;
-            var textureType = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Constants"].TEXTURETYPE_UNSIGNED_INT;
-            var engine = _this._exporter._getLocalEngine();
-            hostingScene = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Scene"](engine);
-            // Create a temporary texture with the texture buffer data
-            var tempTexture = engine.createRawTexture(buffer, width, height, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Constants"].TEXTUREFORMAT_RGBA, false, true, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Texture"].NEAREST_SAMPLINGMODE, null, textureType);
-            var postProcess = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["PostProcess"]("pass", "pass", null, null, 1, null, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Texture"].NEAREST_SAMPLINGMODE, engine, false, undefined, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Constants"].TEXTURETYPE_UNSIGNED_INT, undefined, null, false);
-            postProcess.getEffect().executeWhenCompiled(function () {
-                var _a, _b;
-                postProcess.onApply = function (effect) {
-                    effect._bindTexture("textureSampler", tempTexture);
-                };
-                // Set the size of the texture
-                engine.setSize(width, height);
-                hostingScene.postProcessManager.directRender([postProcess], null);
-                postProcess.dispose();
-                tempTexture.dispose();
-                // Read data from WebGL
-                var canvas0 = engine.getRenderingCanvas();
-                var canvas = document.createElement("canvas");
-                canvas.width = (_a = canvas0 === null || canvas0 === void 0 ? void 0 : canvas0.width) !== null && _a !== void 0 ? _a : 0;
-                canvas.height = (_b = canvas0 === null || canvas0 === void 0 ? void 0 : canvas0.height) !== null && _b !== void 0 ? _b : 0;
-                var destCtx = canvas.getContext('2d');
-                destCtx.drawImage(canvas0, 0, 0);
-                if (canvas) {
-                    if (!canvas.toBlob) { // fallback for browsers without "canvas.toBlob"
-                        var dataURL = canvas.toDataURL();
-                        resolve(dataURL);
-                    }
-                    else {
-                        babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Tools"].ToBlob(canvas, function (blob) {
-                            canvas = null;
-                            if (blob) {
-                                var fileReader = new FileReader();
-                                fileReader.onload = function (event) {
-                                    var base64String = event.target.result;
-                                    hostingScene.dispose();
-                                    resolve(base64String);
-                                };
-                                fileReader.readAsDataURL(blob);
-                            }
-                            else {
-                                reject("gltfMaterialExporter: Failed to get blob from image canvas!");
-                            }
-                        }, mimeType);
-                    }
-                }
-                else {
-                    reject("Engine is missing a canvas!");
+        return new Promise(function (resolve, reject) { return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(_this, void 0, void 0, function () {
+            var textureType, hostingScene, engine, tempTexture, data, base64;
+            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        textureType = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Constants"].TEXTURETYPE_UNSIGNED_INT;
+                        hostingScene = this._exporter._babylonScene;
+                        engine = hostingScene.getEngine();
+                        tempTexture = engine.createRawTexture(buffer, width, height, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Constants"].TEXTUREFORMAT_RGBA, false, true, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_SAMPLINGMODE, null, textureType);
+                        return [4 /*yield*/, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["TextureTools"].ApplyPostProcess("pass", tempTexture, hostingScene, textureType, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Constants"].TEXTURE_NEAREST_SAMPLINGMODE, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Constants"].TEXTUREFORMAT_RGBA)];
+                    case 1:
+                        _a.sent();
+                        return [4 /*yield*/, engine._readTexturePixels(tempTexture, width, height)];
+                    case 2:
+                        data = _a.sent();
+                        return [4 /*yield*/, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].DumpDataAsync(width, height, data, mimeType, undefined, true, false)];
+                    case 3:
+                        base64 = _a.sent();
+                        resolve(base64);
+                        return [2 /*return*/];
                 }
             });
-        });
+        }); });
     };
     /**
      * Generates a white texture based on the specified width and height
@@ -4224,7 +4178,7 @@ var _GLTFMaterialExporter = /** @class */ (function () {
         for (var i = 0; i < data.length; i = i + 4) {
             data[i] = data[i + 1] = data[i + 2] = data[i + 3] = 0xFF;
         }
-        var rawTexture = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["RawTexture"].CreateRGBATexture(data, width, height, scene);
+        var rawTexture = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["RawTexture"].CreateRGBATexture(data, width, height, scene);
         return rawTexture;
     };
     /**
@@ -4240,8 +4194,8 @@ var _GLTFMaterialExporter = /** @class */ (function () {
         var resizedTexture1;
         var resizedTexture2;
         if (texture1Size.width < texture2Size.width) {
-            if (texture1 && texture1 instanceof babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Texture"]) {
-                resizedTexture1 = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["TextureTools"].CreateResizedCopy(texture1, texture2Size.width, texture2Size.height, true);
+            if (texture1 && texture1 instanceof babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Texture"]) {
+                resizedTexture1 = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["TextureTools"].CreateResizedCopy(texture1, texture2Size.width, texture2Size.height, true);
             }
             else {
                 resizedTexture1 = this._createWhiteTexture(texture2Size.width, texture2Size.height, scene);
@@ -4249,8 +4203,8 @@ var _GLTFMaterialExporter = /** @class */ (function () {
             resizedTexture2 = texture2;
         }
         else if (texture1Size.width > texture2Size.width) {
-            if (texture2 && texture2 instanceof babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Texture"]) {
-                resizedTexture2 = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["TextureTools"].CreateResizedCopy(texture2, texture1Size.width, texture1Size.height, true);
+            if (texture2 && texture2 instanceof babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Texture"]) {
+                resizedTexture2 = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["TextureTools"].CreateResizedCopy(texture2, texture1Size.width, texture1Size.height, true);
             }
             else {
                 resizedTexture2 = this._createWhiteTexture(texture1Size.width, texture1Size.height, scene);
@@ -4299,115 +4253,123 @@ var _GLTFMaterialExporter = /** @class */ (function () {
      * @returns pbr metallic roughness interface or null
      */
     _GLTFMaterialExporter.prototype._convertSpecularGlossinessTexturesToMetallicRoughnessAsync = function (diffuseTexture, specularGlossinessTexture, factors, mimeType) {
-        var promises = [];
-        if (!(diffuseTexture || specularGlossinessTexture)) {
-            return Promise.reject('_ConvertSpecularGlosinessTexturesToMetallicRoughness: diffuse and specular glossiness textures are not defined!');
-        }
-        var scene = diffuseTexture ? diffuseTexture.getScene() : specularGlossinessTexture ? specularGlossinessTexture.getScene() : null;
-        if (scene) {
-            var resizedTextures = this._resizeTexturesToSameDimensions(diffuseTexture, specularGlossinessTexture, scene);
-            var diffuseSize = resizedTextures.texture1.getSize();
-            var diffuseBuffer = void 0;
-            var specularGlossinessBuffer = void 0;
-            var width = diffuseSize.width;
-            var height = diffuseSize.height;
-            var diffusePixels = resizedTextures.texture1.readPixels();
-            var specularPixels = resizedTextures.texture2.readPixels();
-            if (diffusePixels) {
-                diffuseBuffer = this._convertPixelArrayToFloat32(diffusePixels);
-            }
-            else {
-                return Promise.reject("Failed to retrieve pixels from diffuse texture!");
-            }
-            if (specularPixels) {
-                specularGlossinessBuffer = this._convertPixelArrayToFloat32(specularPixels);
-            }
-            else {
-                return Promise.reject("Failed to retrieve pixels from specular glossiness texture!");
-            }
-            var byteLength = specularGlossinessBuffer.byteLength;
-            var metallicRoughnessBuffer = new Uint8Array(byteLength);
-            var baseColorBuffer = new Uint8Array(byteLength);
-            var strideSize = 4;
-            var maxBaseColor = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Color3"].Black();
-            var maxMetallic = 0;
-            var maxRoughness = 0;
-            for (var h = 0; h < height; ++h) {
-                for (var w = 0; w < width; ++w) {
-                    var offset = (width * h + w) * strideSize;
-                    var diffuseColor = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Color3"](diffuseBuffer[offset], diffuseBuffer[offset + 1], diffuseBuffer[offset + 2]).toLinearSpace().multiply(factors.diffuseColor);
-                    var specularColor = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Color3"](specularGlossinessBuffer[offset], specularGlossinessBuffer[offset + 1], specularGlossinessBuffer[offset + 2]).toLinearSpace().multiply(factors.specularColor);
-                    var glossiness = (specularGlossinessBuffer[offset + 3]) * factors.glossiness;
-                    var specularGlossiness = {
-                        diffuseColor: diffuseColor,
-                        specularColor: specularColor,
-                        glossiness: glossiness
-                    };
-                    var metallicRoughness = this._convertSpecularGlossinessToMetallicRoughness(specularGlossiness);
-                    maxBaseColor.r = Math.max(maxBaseColor.r, metallicRoughness.baseColor.r);
-                    maxBaseColor.g = Math.max(maxBaseColor.g, metallicRoughness.baseColor.g);
-                    maxBaseColor.b = Math.max(maxBaseColor.b, metallicRoughness.baseColor.b);
-                    maxMetallic = Math.max(maxMetallic, metallicRoughness.metallic);
-                    maxRoughness = Math.max(maxRoughness, metallicRoughness.roughness);
-                    baseColorBuffer[offset] = metallicRoughness.baseColor.r * 255;
-                    baseColorBuffer[offset + 1] = metallicRoughness.baseColor.g * 255;
-                    baseColorBuffer[offset + 2] = metallicRoughness.baseColor.b * 255;
-                    baseColorBuffer[offset + 3] = resizedTextures.texture1.hasAlpha ? diffuseBuffer[offset + 3] * 255 : 255;
-                    metallicRoughnessBuffer[offset] = 0;
-                    metallicRoughnessBuffer[offset + 1] = metallicRoughness.roughness * 255;
-                    metallicRoughnessBuffer[offset + 2] = metallicRoughness.metallic * 255;
-                    metallicRoughnessBuffer[offset + 3] = 255;
+        return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function () {
+            var promises, scene, resizedTextures, diffuseSize, diffuseBuffer, specularGlossinessBuffer, width, height, diffusePixels, specularPixels, byteLength, metallicRoughnessBuffer, baseColorBuffer, strideSize, maxBaseColor, maxMetallic, maxRoughness, h, w, offset, diffuseColor, specularColor, glossiness, specularGlossiness, metallicRoughness, metallicRoughnessFactors_1, writeOutMetallicRoughnessTexture, writeOutBaseColorTexture, h, w, destinationOffset, linearBaseColorPixel, sRGBBaseColorPixel, metallicRoughnessPixel, promise, promise;
+            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        promises = [];
+                        if (!(diffuseTexture || specularGlossinessTexture)) {
+                            return [2 /*return*/, Promise.reject('_ConvertSpecularGlosinessTexturesToMetallicRoughness: diffuse and specular glossiness textures are not defined!')];
+                        }
+                        scene = diffuseTexture ? diffuseTexture.getScene() : specularGlossinessTexture ? specularGlossinessTexture.getScene() : null;
+                        if (!scene) return [3 /*break*/, 3];
+                        resizedTextures = this._resizeTexturesToSameDimensions(diffuseTexture, specularGlossinessTexture, scene);
+                        diffuseSize = resizedTextures.texture1.getSize();
+                        diffuseBuffer = void 0;
+                        specularGlossinessBuffer = void 0;
+                        width = diffuseSize.width;
+                        height = diffuseSize.height;
+                        return [4 /*yield*/, resizedTextures.texture1.readPixels()];
+                    case 1:
+                        diffusePixels = _a.sent();
+                        return [4 /*yield*/, resizedTextures.texture2.readPixels()];
+                    case 2:
+                        specularPixels = _a.sent();
+                        if (diffusePixels) {
+                            diffuseBuffer = this._convertPixelArrayToFloat32(diffusePixels);
+                        }
+                        else {
+                            return [2 /*return*/, Promise.reject("Failed to retrieve pixels from diffuse texture!")];
+                        }
+                        if (specularPixels) {
+                            specularGlossinessBuffer = this._convertPixelArrayToFloat32(specularPixels);
+                        }
+                        else {
+                            return [2 /*return*/, Promise.reject("Failed to retrieve pixels from specular glossiness texture!")];
+                        }
+                        byteLength = specularGlossinessBuffer.byteLength;
+                        metallicRoughnessBuffer = new Uint8Array(byteLength);
+                        baseColorBuffer = new Uint8Array(byteLength);
+                        strideSize = 4;
+                        maxBaseColor = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color3"].Black();
+                        maxMetallic = 0;
+                        maxRoughness = 0;
+                        for (h = 0; h < height; ++h) {
+                            for (w = 0; w < width; ++w) {
+                                offset = (width * h + w) * strideSize;
+                                diffuseColor = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color3"](diffuseBuffer[offset], diffuseBuffer[offset + 1], diffuseBuffer[offset + 2]).toLinearSpace().multiply(factors.diffuseColor);
+                                specularColor = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color3"](specularGlossinessBuffer[offset], specularGlossinessBuffer[offset + 1], specularGlossinessBuffer[offset + 2]).toLinearSpace().multiply(factors.specularColor);
+                                glossiness = (specularGlossinessBuffer[offset + 3]) * factors.glossiness;
+                                specularGlossiness = {
+                                    diffuseColor: diffuseColor,
+                                    specularColor: specularColor,
+                                    glossiness: glossiness
+                                };
+                                metallicRoughness = this._convertSpecularGlossinessToMetallicRoughness(specularGlossiness);
+                                maxBaseColor.r = Math.max(maxBaseColor.r, metallicRoughness.baseColor.r);
+                                maxBaseColor.g = Math.max(maxBaseColor.g, metallicRoughness.baseColor.g);
+                                maxBaseColor.b = Math.max(maxBaseColor.b, metallicRoughness.baseColor.b);
+                                maxMetallic = Math.max(maxMetallic, metallicRoughness.metallic);
+                                maxRoughness = Math.max(maxRoughness, metallicRoughness.roughness);
+                                baseColorBuffer[offset] = metallicRoughness.baseColor.r * 255;
+                                baseColorBuffer[offset + 1] = metallicRoughness.baseColor.g * 255;
+                                baseColorBuffer[offset + 2] = metallicRoughness.baseColor.b * 255;
+                                baseColorBuffer[offset + 3] = resizedTextures.texture1.hasAlpha ? diffuseBuffer[offset + 3] * 255 : 255;
+                                metallicRoughnessBuffer[offset] = 0;
+                                metallicRoughnessBuffer[offset + 1] = metallicRoughness.roughness * 255;
+                                metallicRoughnessBuffer[offset + 2] = metallicRoughness.metallic * 255;
+                                metallicRoughnessBuffer[offset + 3] = 255;
+                            }
+                        }
+                        metallicRoughnessFactors_1 = {
+                            baseColor: maxBaseColor,
+                            metallic: maxMetallic,
+                            roughness: maxRoughness
+                        };
+                        writeOutMetallicRoughnessTexture = false;
+                        writeOutBaseColorTexture = false;
+                        for (h = 0; h < height; ++h) {
+                            for (w = 0; w < width; ++w) {
+                                destinationOffset = (width * h + w) * strideSize;
+                                baseColorBuffer[destinationOffset] /= metallicRoughnessFactors_1.baseColor.r > _GLTFMaterialExporter._Epsilon ? metallicRoughnessFactors_1.baseColor.r : 1;
+                                baseColorBuffer[destinationOffset + 1] /= metallicRoughnessFactors_1.baseColor.g > _GLTFMaterialExporter._Epsilon ? metallicRoughnessFactors_1.baseColor.g : 1;
+                                baseColorBuffer[destinationOffset + 2] /= metallicRoughnessFactors_1.baseColor.b > _GLTFMaterialExporter._Epsilon ? metallicRoughnessFactors_1.baseColor.b : 1;
+                                linearBaseColorPixel = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color3"].FromInts(baseColorBuffer[destinationOffset], baseColorBuffer[destinationOffset + 1], baseColorBuffer[destinationOffset + 2]);
+                                sRGBBaseColorPixel = linearBaseColorPixel.toGammaSpace();
+                                baseColorBuffer[destinationOffset] = sRGBBaseColorPixel.r * 255;
+                                baseColorBuffer[destinationOffset + 1] = sRGBBaseColorPixel.g * 255;
+                                baseColorBuffer[destinationOffset + 2] = sRGBBaseColorPixel.b * 255;
+                                if (!_GLTFMaterialExporter.FuzzyEquals(sRGBBaseColorPixel, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color3"].White(), _GLTFMaterialExporter._Epsilon)) {
+                                    writeOutBaseColorTexture = true;
+                                }
+                                metallicRoughnessBuffer[destinationOffset + 1] /= metallicRoughnessFactors_1.roughness > _GLTFMaterialExporter._Epsilon ? metallicRoughnessFactors_1.roughness : 1;
+                                metallicRoughnessBuffer[destinationOffset + 2] /= metallicRoughnessFactors_1.metallic > _GLTFMaterialExporter._Epsilon ? metallicRoughnessFactors_1.metallic : 1;
+                                metallicRoughnessPixel = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color3"].FromInts(255, metallicRoughnessBuffer[destinationOffset + 1], metallicRoughnessBuffer[destinationOffset + 2]);
+                                if (!_GLTFMaterialExporter.FuzzyEquals(metallicRoughnessPixel, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color3"].White(), _GLTFMaterialExporter._Epsilon)) {
+                                    writeOutMetallicRoughnessTexture = true;
+                                }
+                            }
+                        }
+                        if (writeOutMetallicRoughnessTexture) {
+                            promise = this._createBase64FromCanvasAsync(metallicRoughnessBuffer, width, height, mimeType).then(function (metallicRoughnessBase64) {
+                                metallicRoughnessFactors_1.metallicRoughnessTextureBase64 = metallicRoughnessBase64;
+                            });
+                            promises.push(promise);
+                        }
+                        if (writeOutBaseColorTexture) {
+                            promise = this._createBase64FromCanvasAsync(baseColorBuffer, width, height, mimeType).then(function (baseColorBase64) {
+                                metallicRoughnessFactors_1.baseColorTextureBase64 = baseColorBase64;
+                            });
+                            promises.push(promise);
+                        }
+                        return [2 /*return*/, Promise.all(promises).then(function () {
+                                return metallicRoughnessFactors_1;
+                            })];
+                    case 3: return [2 /*return*/, Promise.reject("_ConvertSpecularGlossinessTexturesToMetallicRoughness: Scene from textures is missing!")];
                 }
-            }
-            // Retrieves the metallic roughness factors from the maximum texture values.
-            var metallicRoughnessFactors_1 = {
-                baseColor: maxBaseColor,
-                metallic: maxMetallic,
-                roughness: maxRoughness
-            };
-            var writeOutMetallicRoughnessTexture = false;
-            var writeOutBaseColorTexture = false;
-            for (var h = 0; h < height; ++h) {
-                for (var w = 0; w < width; ++w) {
-                    var destinationOffset = (width * h + w) * strideSize;
-                    baseColorBuffer[destinationOffset] /= metallicRoughnessFactors_1.baseColor.r > _GLTFMaterialExporter._Epsilon ? metallicRoughnessFactors_1.baseColor.r : 1;
-                    baseColorBuffer[destinationOffset + 1] /= metallicRoughnessFactors_1.baseColor.g > _GLTFMaterialExporter._Epsilon ? metallicRoughnessFactors_1.baseColor.g : 1;
-                    baseColorBuffer[destinationOffset + 2] /= metallicRoughnessFactors_1.baseColor.b > _GLTFMaterialExporter._Epsilon ? metallicRoughnessFactors_1.baseColor.b : 1;
-                    var linearBaseColorPixel = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromInts(baseColorBuffer[destinationOffset], baseColorBuffer[destinationOffset + 1], baseColorBuffer[destinationOffset + 2]);
-                    var sRGBBaseColorPixel = linearBaseColorPixel.toGammaSpace();
-                    baseColorBuffer[destinationOffset] = sRGBBaseColorPixel.r * 255;
-                    baseColorBuffer[destinationOffset + 1] = sRGBBaseColorPixel.g * 255;
-                    baseColorBuffer[destinationOffset + 2] = sRGBBaseColorPixel.b * 255;
-                    if (!_GLTFMaterialExporter.FuzzyEquals(sRGBBaseColorPixel, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Color3"].White(), _GLTFMaterialExporter._Epsilon)) {
-                        writeOutBaseColorTexture = true;
-                    }
-                    metallicRoughnessBuffer[destinationOffset + 1] /= metallicRoughnessFactors_1.roughness > _GLTFMaterialExporter._Epsilon ? metallicRoughnessFactors_1.roughness : 1;
-                    metallicRoughnessBuffer[destinationOffset + 2] /= metallicRoughnessFactors_1.metallic > _GLTFMaterialExporter._Epsilon ? metallicRoughnessFactors_1.metallic : 1;
-                    var metallicRoughnessPixel = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromInts(255, metallicRoughnessBuffer[destinationOffset + 1], metallicRoughnessBuffer[destinationOffset + 2]);
-                    if (!_GLTFMaterialExporter.FuzzyEquals(metallicRoughnessPixel, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Color3"].White(), _GLTFMaterialExporter._Epsilon)) {
-                        writeOutMetallicRoughnessTexture = true;
-                    }
-                }
-            }
-            if (writeOutMetallicRoughnessTexture) {
-                var promise = this._createBase64FromCanvasAsync(metallicRoughnessBuffer, width, height, mimeType).then(function (metallicRoughnessBase64) {
-                    metallicRoughnessFactors_1.metallicRoughnessTextureBase64 = metallicRoughnessBase64;
-                });
-                promises.push(promise);
-            }
-            if (writeOutBaseColorTexture) {
-                var promise = this._createBase64FromCanvasAsync(baseColorBuffer, width, height, mimeType).then(function (baseColorBase64) {
-                    metallicRoughnessFactors_1.baseColorTextureBase64 = baseColorBase64;
-                });
-                promises.push(promise);
-            }
-            return Promise.all(promises).then(function () {
-                return metallicRoughnessFactors_1;
             });
-        }
-        else {
-            return Promise.reject("_ConvertSpecularGlossinessTexturesToMetallicRoughness: Scene from textures is missing!");
-        }
+        });
     };
     /**
      * Converts specular glossiness material properties to metallic roughness
@@ -4421,7 +4383,7 @@ var _GLTFMaterialExporter = /** @class */ (function () {
         var metallic = _GLTFMaterialExporter._SolveMetallic(diffusePerceivedBrightness, specularPerceivedBrightness, oneMinusSpecularStrength);
         var baseColorFromDiffuse = specularGlossiness.diffuseColor.scale(oneMinusSpecularStrength / (1.0 - _GLTFMaterialExporter._DielectricSpecular.r) / Math.max(1 - metallic, _GLTFMaterialExporter._Epsilon));
         var baseColorFromSpecular = specularGlossiness.specularColor.subtract(_GLTFMaterialExporter._DielectricSpecular.scale(1 - metallic)).scale(1 / Math.max(metallic, _GLTFMaterialExporter._Epsilon));
-        var baseColor = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Color3"].Lerp(baseColorFromDiffuse, baseColorFromSpecular, metallic * metallic);
+        var baseColor = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color3"].Lerp(baseColorFromDiffuse, baseColorFromSpecular, metallic * metallic);
         baseColor = baseColor.clampToRef(0, 1, baseColor);
         var metallicRoughness = {
             baseColor: baseColor,
@@ -4497,65 +4459,65 @@ var _GLTFMaterialExporter = /** @class */ (function () {
     };
     _GLTFMaterialExporter.prototype._getGLTFTextureSampler = function (texture) {
         var sampler = this._getGLTFTextureWrapModesSampler(texture);
-        var samplingMode = texture instanceof babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Texture"] ? texture.samplingMode : null;
+        var samplingMode = texture instanceof babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Texture"] ? texture.samplingMode : null;
         if (samplingMode != null) {
             switch (samplingMode) {
-                case babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Texture"].LINEAR_LINEAR: {
+                case babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Texture"].LINEAR_LINEAR: {
                     sampler.magFilter = 9729 /* LINEAR */;
                     sampler.minFilter = 9729 /* LINEAR */;
                     break;
                 }
-                case babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Texture"].LINEAR_NEAREST: {
+                case babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Texture"].LINEAR_NEAREST: {
                     sampler.magFilter = 9729 /* LINEAR */;
                     sampler.minFilter = 9728 /* NEAREST */;
                     break;
                 }
-                case babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Texture"].NEAREST_LINEAR: {
+                case babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_LINEAR: {
                     sampler.magFilter = 9728 /* NEAREST */;
                     sampler.minFilter = 9729 /* LINEAR */;
                     break;
                 }
-                case babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Texture"].NEAREST_LINEAR_MIPLINEAR: {
+                case babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_LINEAR_MIPLINEAR: {
                     sampler.magFilter = 9728 /* NEAREST */;
                     sampler.minFilter = 9987 /* LINEAR_MIPMAP_LINEAR */;
                     break;
                 }
-                case babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Texture"].NEAREST_NEAREST: {
+                case babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_NEAREST: {
                     sampler.magFilter = 9728 /* NEAREST */;
                     sampler.minFilter = 9728 /* NEAREST */;
                     break;
                 }
-                case babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Texture"].NEAREST_LINEAR_MIPNEAREST: {
+                case babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_LINEAR_MIPNEAREST: {
                     sampler.magFilter = 9728 /* NEAREST */;
                     sampler.minFilter = 9985 /* LINEAR_MIPMAP_NEAREST */;
                     break;
                 }
-                case babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Texture"].LINEAR_NEAREST_MIPNEAREST: {
+                case babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Texture"].LINEAR_NEAREST_MIPNEAREST: {
                     sampler.magFilter = 9729 /* LINEAR */;
                     sampler.minFilter = 9984 /* NEAREST_MIPMAP_NEAREST */;
                     break;
                 }
-                case babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Texture"].LINEAR_NEAREST_MIPLINEAR: {
+                case babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Texture"].LINEAR_NEAREST_MIPLINEAR: {
                     sampler.magFilter = 9729 /* LINEAR */;
                     sampler.minFilter = 9986 /* NEAREST_MIPMAP_LINEAR */;
                     break;
                 }
-                case babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Texture"].NEAREST_NEAREST_MIPLINEAR: {
+                case babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_NEAREST_MIPLINEAR: {
                     sampler.magFilter = 9728 /* NEAREST */;
                     sampler.minFilter = 9986 /* NEAREST_MIPMAP_LINEAR */;
                     break;
                 }
-                case babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Texture"].LINEAR_LINEAR_MIPLINEAR: {
+                case babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Texture"].LINEAR_LINEAR_MIPLINEAR: {
                     sampler.magFilter = 9729 /* LINEAR */;
                     sampler.minFilter = 9987 /* LINEAR_MIPMAP_LINEAR */;
                     break;
                 }
-                case babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Texture"].LINEAR_LINEAR_MIPNEAREST: {
+                case babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Texture"].LINEAR_LINEAR_MIPNEAREST: {
                     sampler.magFilter = 9729 /* LINEAR */;
                     sampler.minFilter = 9985 /* LINEAR_MIPMAP_NEAREST */;
                     break;
                 }
-                case babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Texture"].NEAREST_NEAREST_MIPNEAREST: {
+                case babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_NEAREST_MIPNEAREST: {
                     sampler.magFilter = 9728 /* NEAREST */;
                     sampler.minFilter = 9984 /* NEAREST_MIPMAP_NEAREST */;
                     break;
@@ -4566,24 +4528,24 @@ var _GLTFMaterialExporter = /** @class */ (function () {
     };
     _GLTFMaterialExporter.prototype._getGLTFTextureWrapMode = function (wrapMode) {
         switch (wrapMode) {
-            case babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Texture"].WRAP_ADDRESSMODE: {
+            case babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Texture"].WRAP_ADDRESSMODE: {
                 return 10497 /* REPEAT */;
             }
-            case babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Texture"].CLAMP_ADDRESSMODE: {
+            case babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Texture"].CLAMP_ADDRESSMODE: {
                 return 33071 /* CLAMP_TO_EDGE */;
             }
-            case babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Texture"].MIRROR_ADDRESSMODE: {
+            case babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Texture"].MIRROR_ADDRESSMODE: {
                 return 33648 /* MIRRORED_REPEAT */;
             }
             default: {
-                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Tools"].Error("Unsupported Texture Wrap Mode " + wrapMode + "!");
+                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("Unsupported Texture Wrap Mode " + wrapMode + "!");
                 return 10497 /* REPEAT */;
             }
         }
     };
     _GLTFMaterialExporter.prototype._getGLTFTextureWrapModesSampler = function (texture) {
-        var wrapS = this._getGLTFTextureWrapMode(texture instanceof babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Texture"] ? texture.wrapU : babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Texture"].WRAP_ADDRESSMODE);
-        var wrapT = this._getGLTFTextureWrapMode(texture instanceof babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Texture"] ? texture.wrapV : babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Texture"].WRAP_ADDRESSMODE);
+        var wrapS = this._getGLTFTextureWrapMode(texture instanceof babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Texture"] ? texture.wrapU : babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Texture"].WRAP_ADDRESSMODE);
+        var wrapT = this._getGLTFTextureWrapMode(texture instanceof babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Texture"] ? texture.wrapV : babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Texture"].WRAP_ADDRESSMODE);
         if (wrapS === 10497 /* REPEAT */ && wrapT === 10497 /* REPEAT */) { // default wrapping mode in glTF, so omitting
             return {};
         }
@@ -4605,8 +4567,8 @@ var _GLTFMaterialExporter = /** @class */ (function () {
         return Promise.resolve().then(function () {
             var samplers = _this._exporter._samplers;
             var textures = _this._exporter._textures;
-            var diffuseColor = babylonPBRMaterial.albedoColor || babylonPBRMaterial.diffuseColor || babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Color3"].White();
-            var specularColor = babylonPBRMaterial.reflectivityColor || babylonPBRMaterial.specularColor || babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Color3"].White();
+            var diffuseColor = babylonPBRMaterial.albedoColor || babylonPBRMaterial.diffuseColor || babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color3"].White();
+            var specularColor = babylonPBRMaterial.reflectivityColor || babylonPBRMaterial.specularColor || babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color3"].White();
             var glossiness = babylonPBRMaterial.microSurface || babylonPBRMaterial.glossiness || 1;
             var specGloss = {
                 diffuseColor: diffuseColor,
@@ -4691,7 +4653,7 @@ var _GLTFMaterialExporter = /** @class */ (function () {
         var promises = [];
         if (metallicRoughness) {
             _GLTFMaterialExporter._SetAlphaMode(glTFMaterial, babylonPBRMaterial);
-            if (!(_GLTFMaterialExporter.FuzzyEquals(metallicRoughness.baseColor, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Color3"].White(), _GLTFMaterialExporter._Epsilon) && babylonPBRMaterial.alpha >= _GLTFMaterialExporter._Epsilon)) {
+            if (!(_GLTFMaterialExporter.FuzzyEquals(metallicRoughness.baseColor, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color3"].White(), _GLTFMaterialExporter._Epsilon) && babylonPBRMaterial.alpha >= _GLTFMaterialExporter._Epsilon)) {
                 glTFPbrMetallicRoughness.baseColorFactor = [
                     metallicRoughness.baseColor.r,
                     metallicRoughness.baseColor.g,
@@ -4707,7 +4669,7 @@ var _GLTFMaterialExporter = /** @class */ (function () {
             }
             if (babylonPBRMaterial.backFaceCulling != null && !babylonPBRMaterial.backFaceCulling) {
                 if (!(babylonPBRMaterial.twoSidedLighting || babylonPBRMaterial.doubleSided)) {
-                    babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Tools"].Warn(babylonPBRMaterial.name + ": Back-face culling enabled and two-sided lighting disabled is not supported in glTF.");
+                    babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn(babylonPBRMaterial.name + ": Back-face culling enabled and two-sided lighting disabled is not supported in glTF.");
                 }
                 glTFMaterial.doubleSided = true;
             }
@@ -4752,7 +4714,7 @@ var _GLTFMaterialExporter = /** @class */ (function () {
                 }
             }
             var emissiveColor = babylonPBRMaterial.emissiveColor || babylonPBRMaterial.emissiveColor;
-            if (!_GLTFMaterialExporter.FuzzyEquals(emissiveColor, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Color3"].Black(), _GLTFMaterialExporter._Epsilon)) {
+            if (!_GLTFMaterialExporter.FuzzyEquals(emissiveColor, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color3"].Black(), _GLTFMaterialExporter._Epsilon)) {
                 glTFMaterial.emissiveFactor = emissiveColor.asArray();
             }
             glTFMaterial.pbrMetallicRoughness = glTFPbrMetallicRoughness;
@@ -4762,7 +4724,8 @@ var _GLTFMaterialExporter = /** @class */ (function () {
         return this._finishMaterial(promises, glTFMaterial, babylonPBRMaterial, mimeType);
     };
     _GLTFMaterialExporter.prototype.getPixelsFromTexture = function (babylonTexture) {
-        var pixels = babylonTexture.textureType === babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Constants"].TEXTURETYPE_UNSIGNED_INT ? babylonTexture.readPixels() : babylonTexture.readPixels();
+        // TODO WEBGPU remove the as unknown cast once using the new babylonjs package to compile the glTF material exporter
+        var pixels = babylonTexture.textureType === babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Constants"].TEXTURETYPE_UNSIGNED_INT ? babylonTexture.readPixels() : babylonTexture.readPixels();
         return pixels;
     };
     /**
@@ -4786,58 +4749,63 @@ var _GLTFMaterialExporter = /** @class */ (function () {
     };
     _GLTFMaterialExporter.prototype._exportTextureInfoAsync = function (babylonTexture, mimeType) {
         var _this = this;
-        return Promise.resolve().then(function () {
-            var textureUid = babylonTexture.uid;
-            if (textureUid in _this._textureMap) {
-                return _this._textureMap[textureUid];
-            }
-            else {
-                var pixels = _this.getPixelsFromTexture(babylonTexture);
-                if (!pixels) {
-                    return null;
+        return Promise.resolve().then(function () { return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(_this, void 0, void 0, function () {
+            var textureUid, pixels, samplers, sampler, samplerIndex_1, foundSamplerIndex, i, s, size;
+            var _this = this;
+            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        textureUid = babylonTexture.uid;
+                        if (!(textureUid in this._textureMap)) return [3 /*break*/, 1];
+                        return [2 /*return*/, this._textureMap[textureUid]];
+                    case 1: return [4 /*yield*/, this.getPixelsFromTexture(babylonTexture)];
+                    case 2:
+                        pixels = _a.sent();
+                        if (!pixels) {
+                            return [2 /*return*/, null];
+                        }
+                        samplers = this._exporter._samplers;
+                        sampler = this._getGLTFTextureSampler(babylonTexture);
+                        samplerIndex_1 = null;
+                        foundSamplerIndex = null;
+                        for (i = 0; i < samplers.length; ++i) {
+                            s = samplers[i];
+                            if (s.minFilter === sampler.minFilter && s.magFilter === sampler.magFilter &&
+                                s.wrapS === sampler.wrapS && s.wrapT === sampler.wrapT) {
+                                foundSamplerIndex = i;
+                                break;
+                            }
+                        }
+                        if (foundSamplerIndex == null) {
+                            samplers.push(sampler);
+                            samplerIndex_1 = samplers.length - 1;
+                        }
+                        else {
+                            samplerIndex_1 = foundSamplerIndex;
+                        }
+                        size = babylonTexture.getSize();
+                        // Preserve texture mime type if defined
+                        if (babylonTexture.mimeType) {
+                            switch (babylonTexture.mimeType) {
+                                case "image/jpeg":
+                                    mimeType = "image/jpeg" /* JPEG */;
+                                    break;
+                                case "image/png":
+                                    mimeType = "image/png" /* PNG */;
+                                    break;
+                            }
+                        }
+                        return [2 /*return*/, this._createBase64FromCanvasAsync(pixels, size.width, size.height, mimeType).then(function (base64Data) {
+                                var textureInfo = _this._getTextureInfoFromBase64(base64Data, babylonTexture.name.replace(/\.\/|\/|\.\\|\\/g, "_"), mimeType, babylonTexture.coordinatesIndex, samplerIndex_1);
+                                if (textureInfo) {
+                                    _this._textureMap[textureUid] = textureInfo;
+                                    _this._exporter._extensionsPostExportTextures("linkTextureInfo", textureInfo, babylonTexture);
+                                }
+                                return textureInfo;
+                            })];
                 }
-                var samplers = _this._exporter._samplers;
-                var sampler = _this._getGLTFTextureSampler(babylonTexture);
-                var samplerIndex_1 = null;
-                //  if a pre-existing sampler with identical parameters exists, then reuse the previous sampler
-                var foundSamplerIndex = null;
-                for (var i = 0; i < samplers.length; ++i) {
-                    var s = samplers[i];
-                    if (s.minFilter === sampler.minFilter && s.magFilter === sampler.magFilter &&
-                        s.wrapS === sampler.wrapS && s.wrapT === sampler.wrapT) {
-                        foundSamplerIndex = i;
-                        break;
-                    }
-                }
-                if (foundSamplerIndex == null) {
-                    samplers.push(sampler);
-                    samplerIndex_1 = samplers.length - 1;
-                }
-                else {
-                    samplerIndex_1 = foundSamplerIndex;
-                }
-                var size = babylonTexture.getSize();
-                // Preserve texture mime type if defined
-                if (babylonTexture.mimeType) {
-                    switch (babylonTexture.mimeType) {
-                        case "image/jpeg":
-                            mimeType = "image/jpeg" /* JPEG */;
-                            break;
-                        case "image/png":
-                            mimeType = "image/png" /* PNG */;
-                            break;
-                    }
-                }
-                return _this._createBase64FromCanvasAsync(pixels, size.width, size.height, mimeType).then(function (base64Data) {
-                    var textureInfo = _this._getTextureInfoFromBase64(base64Data, babylonTexture.name.replace(/\.\/|\/|\.\\|\\/g, "_"), mimeType, babylonTexture.coordinatesIndex, samplerIndex_1);
-                    if (textureInfo) {
-                        _this._textureMap[textureUid] = textureInfo;
-                        _this._exporter._extensionsPostExportTextures("linkTextureInfo", textureInfo, babylonTexture);
-                    }
-                    return textureInfo;
-                });
-            }
-        });
+            });
+        }); });
     };
     /**
      * Builds a texture from base64 string
@@ -4872,7 +4840,7 @@ var _GLTFMaterialExporter = /** @class */ (function () {
         var textureName = baseTextureName + extension;
         var originalTextureName = textureName;
         if (textureName in imageData) {
-            textureName = baseTextureName + "_" + babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Tools"].RandomId() + extension;
+            textureName = baseTextureName + "_" + babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].RandomId() + extension;
         }
         imageData[textureName] = imageValues;
         if (mimeType === "image/jpeg" /* JPEG */ || mimeType === "image/png" /* PNG */) {
@@ -4903,14 +4871,14 @@ var _GLTFMaterialExporter = /** @class */ (function () {
             }
         }
         else {
-            babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Tools"].Error("Unsupported texture mime type " + mimeType);
+            babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("Unsupported texture mime type " + mimeType);
         }
         return textureInfo;
     };
     /**
      * Represents the dielectric specular values for R, G and B
      */
-    _GLTFMaterialExporter._DielectricSpecular = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Color3"](0.04, 0.04, 0.04);
+    _GLTFMaterialExporter._DielectricSpecular = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.04, 0.04, 0.04);
     /**
      * Allows the maximum specular power to be defined for material calculations
      */

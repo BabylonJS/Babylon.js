@@ -75,6 +75,7 @@ export class HDRFiltering {
         const texture = this._engine.createRenderTargetCubeTexture(size, {
             format: Constants.TEXTUREFORMAT_RGBA,
             type: textureType,
+            createMipMaps: true,
             generateMipMaps: false,
             generateDepthBuffer: false,
             generateStencilBuffer: false,
@@ -92,7 +93,7 @@ export class HDRFiltering {
 
     private _prefilterInternal(texture: BaseTexture): BaseTexture {
         const width = texture.getSize().width;
-        const mipmapsCount = Math.round(Scalar.Log2(width)) + 1;
+        const mipmapsCount = Scalar.ILog2(width) + 1;
 
         const effect = this._effectWrapper.effect;
         const outputTexture = this._createRenderTarget(width);
@@ -196,7 +197,7 @@ export class HDRFiltering {
       * @return Promise called when prefiltering is done
       */
     public prefilter(texture: BaseTexture, onFinished: Nullable<() => void> = null): Promise<void> {
-        if (this._engine.webGLVersion === 1) {
+        if (!this._engine._features.allowTexturePrefiltering) {
             Logger.Warn("HDR prefiltering is not available in WebGL 1., you can use real time filtering instead.");
             return Promise.reject("HDR prefiltering is not available in WebGL 1., you can use real time filtering instead.");
         }

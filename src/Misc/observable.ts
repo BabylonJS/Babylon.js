@@ -415,11 +415,19 @@ export class Observable<T> {
      * @param mask is used to filter observers defaults to -1
      */
     public notifyObserver(observer: Observer<T>, eventData: T, mask: number = -1): void {
+        if (observer._willBeUnregistered) {
+            return;
+        }
+
         let state = this._eventState;
         state.mask = mask;
         state.skipNextObservers = false;
 
         observer.callback(eventData, state);
+
+        if (observer.unregisterOnNextCall) {
+            this._deferUnregister(observer);
+        }
     }
 
     /**

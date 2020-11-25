@@ -4,6 +4,7 @@ import { RenderTargetCreationOptions } from "../../Materials/Textures/renderTarg
 import { Constants } from "../../Engines/constants";
 import { _DevTools } from '../../Misc/devTools';
 import { Engine } from '../../Engines/engine';
+import { HardwareTextureWrapper } from "./hardwareTextureWrapper";
 
 declare type ThinEngine = import("../../Engines/thinEngine").ThinEngine;
 declare type BaseTexture = import("../../Materials/Textures/baseTexture").BaseTexture;
@@ -221,6 +222,10 @@ export class InternalTexture {
     /** @hidden */
     public _sphericalPolynomial: Nullable<SphericalPolynomial> = null;
     /** @hidden */
+    public _sphericalPolynomialPromise: Nullable<Promise<SphericalPolynomial>> = null;
+    /** @hidden */
+    public _sphericalPolynomialComputed = false;
+    /** @hidden */
     public _lodGenerationScale: number = 0;
     /** @hidden */
     public _lodGenerationOffset: number = 0;
@@ -251,7 +256,8 @@ export class InternalTexture {
     public _irradianceTexture: Nullable<BaseTexture> = null;
 
     /** @hidden */
-    public _webGLTexture: Nullable<WebGLTexture> = null;
+    public _hardwareTexture: Nullable<HardwareTextureWrapper> = null;
+
     /** @hidden */
     public _references: number = 1;
 
@@ -261,6 +267,14 @@ export class InternalTexture {
     public _hasAlpha: Nullable<boolean> = null;
 
     private _engine: ThinEngine;
+    private _uniqueId: number;
+
+    private static _Counter = 0;
+
+    /** Gets the unique id of the internal texture */
+    public get uniqueId() {
+        return this._uniqueId;
+    }
 
     /**
      * Gets the Engine the texture belongs to.
@@ -286,9 +300,10 @@ export class InternalTexture {
     constructor(engine: ThinEngine, source: InternalTextureSource, delayAllocation = false) {
         this._engine = engine;
         this._source = source;
+        this._uniqueId = InternalTexture._Counter++;
 
         if (!delayAllocation) {
-            this._webGLTexture = engine._createTexture();
+            this._hardwareTexture = engine._createHardwareTexture();
         }
     }
 
@@ -306,6 +321,8 @@ export class InternalTexture {
      * @param depth defines the new depth (1 by default)
      */
     public updateSize(width: int, height: int, depth: int = 1): void {
+        this._engine.updateTextureDimensions(this, width, height, depth);
+
         this.width = width;
         this.height = height;
         this.depth = depth;
@@ -397,7 +414,8 @@ export class InternalTexture {
                     bilinearFiltering: this.samplingMode !== Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
                     comparisonFunction: this._comparisonFunction,
                     generateStencil: this._generateStencilBuffer,
-                    isCube: this.isCube
+                    isCube: this.isCube,
+                    samples: this.samples
                 };
 
                 let size = {
@@ -447,7 +465,11 @@ export class InternalTexture {
 
     /** @hidden */
     public _swapAndDie(target: InternalTexture): void {
-        target._webGLTexture = this._webGLTexture;
+        // TODO what about refcount on target?
+
+        this._hardwareTexture?.setUsage(target._source, this.generateMipMaps, this.isCube, this.width, this.height);
+
+        target._hardwareTexture = this._hardwareTexture;
         target._isRGBD = this._isRGBD;
 
         if (this._framebuffer) {
@@ -504,14 +526,10 @@ export class InternalTexture {
      * Dispose the current allocated resources
      */
     public dispose(): void {
-        if (!this._webGLTexture) {
-            return;
-        }
-
         this._references--;
         if (this._references === 0) {
             this._engine._releaseTexture(this);
-            this._webGLTexture = null;
+            this._hardwareTexture = null;
         }
     }
 }
