@@ -44,29 +44,31 @@ export class CubeMapToSphericalPolynomialTools {
      * @param texture The texture to extract the information from.
      * @return The Spherical Polynomial data.
      */
-    public static ConvertCubeMapTextureToSphericalPolynomial(texture: BaseTexture) {
+    public static ConvertCubeMapTextureToSphericalPolynomial(texture: BaseTexture): Nullable<Promise<SphericalPolynomial>> {
         if (!texture.isCube) {
             // Only supports cube Textures currently.
             return null;
         }
 
-        var size = texture.getSize().width;
-        var right = texture.readPixels(0);
-        var left = texture.readPixels(1);
+        texture.getScene()?.getEngine().flushFramebuffer();
 
-        var up: Nullable<ArrayBufferView>;
-        var down: Nullable<ArrayBufferView>;
+        var size = texture.getSize().width;
+        var rightPromise = texture.readPixels(0, undefined, undefined, false);
+        var leftPromise = texture.readPixels(1, undefined, undefined, false);
+
+        var upPromise: Nullable<Promise<ArrayBufferView>>;
+        var downPromise: Nullable<Promise<ArrayBufferView>>;
         if (texture.isRenderTarget) {
-            up = texture.readPixels(3);
-            down = texture.readPixels(2);
+            upPromise = texture.readPixels(3, undefined, undefined, false);
+            downPromise = texture.readPixels(2, undefined, undefined, false);
         }
         else {
-            up = texture.readPixels(2);
-            down = texture.readPixels(3);
+            upPromise = texture.readPixels(2, undefined, undefined, false);
+            downPromise = texture.readPixels(3, undefined, undefined, false);
         }
 
-        var front = texture.readPixels(4);
-        var back = texture.readPixels(5);
+        var frontPromise = texture.readPixels(4, undefined, undefined, false);
+        var backPromise = texture.readPixels(5, undefined, undefined, false);
 
         var gammaSpace = texture.gammaSpace;
         // Always read as RGBA.
@@ -76,20 +78,24 @@ export class CubeMapToSphericalPolynomialTools {
             type = Constants.TEXTURETYPE_FLOAT;
         }
 
-        var cubeInfo: CubeMapInfo = {
-            size,
-            right,
-            left,
-            up,
-            down,
-            front,
-            back,
-            format,
-            type,
-            gammaSpace,
-        };
+        return new Promise((resolve, reject) => {
+            Promise.all([leftPromise, rightPromise, upPromise, downPromise, frontPromise, backPromise]).then(([left, right, up, down, front, back]) => {
+                var cubeInfo: CubeMapInfo = {
+                    size,
+                    right,
+                    left,
+                    up,
+                    down,
+                    front,
+                    back,
+                    format,
+                    type,
+                    gammaSpace,
+                };
 
-        return this.ConvertCubeMapToSphericalPolynomial(cubeInfo);
+                resolve(this.ConvertCubeMapToSphericalPolynomial(cubeInfo));
+            });
+        });
     }
 
     /**

@@ -5,7 +5,7 @@
 precision highp float;
 
 // Constants
-uniform vec3 vEyePosition;
+uniform vec4 vEyePosition;
 uniform vec4 vDiffuseColor;
 
 #ifdef SPECULARTERM
@@ -38,7 +38,9 @@ varying vec4 vColor;
 // Samplers
 #ifdef BUMP
 varying vec2 vNormalUV;
-varying vec2 vNormalUV2;
+#ifdef BUMPSUPERIMPOSE
+    varying vec2 vNormalUV2;
+#endif
 uniform sampler2D normalSampler;
 uniform vec2 vNormalInfos;
 #endif
@@ -76,7 +78,7 @@ void main(void) {
 	// Clip plane
     #include<clipPlaneFragment>
 
-	vec3 viewDirectionW = normalize(vEyePosition - vPositionW);
+	vec3 viewDirectionW = normalize(vEyePosition.xyz - vPositionW);
 
 	// Base color
 	vec4 baseColor = vec4(1., 1., 1., 1.);

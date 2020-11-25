@@ -1,4 +1,8 @@
+import { Nullable } from '../../types';
 import { IShaderProcessor } from '../Processors/iShaderProcessor';
+import { ShaderProcessingContext } from '../Processors/shaderProcessingOptions';
+
+declare type ThinEngine = import("../thinEngine").ThinEngine;
 
 /** @hidden */
 export class WebGL2ShaderProcessor implements IShaderProcessor {
@@ -10,7 +14,7 @@ export class WebGL2ShaderProcessor implements IShaderProcessor {
         return varying.replace("varying", isFragment ? "in" : "out");
     }
 
-    public postProcessor(code: string, defines: string[], isFragment: boolean) {
+    public postProcessor(code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>, engine: ThinEngine) {
         const hasDrawBuffersExtension = code.search(/#extension.+GL_EXT_draw_buffers.+require/) !== -1;
 
         // Remove extensions

@@ -1,8 +1,11 @@
 import * as React from "react";
 
 interface IPlayheadProps {
+    // Message to display
     message: string;
+    // open or close state
     open: boolean;
+    // event to close the notification bar
     close: () => void;
 }
 

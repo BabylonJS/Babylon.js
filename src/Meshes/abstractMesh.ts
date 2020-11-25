@@ -21,6 +21,7 @@ import { IEdgesRenderer } from "../Rendering/edgesRenderer";
 import { SolidParticle } from "../Particles/solidParticle";
 import { Constants } from "../Engines/constants";
 import { AbstractActionManager } from '../Actions/abstractActionManager';
+import { UniformBuffer } from "../Materials/uniformBuffer";
 import { _MeshCollisionData } from '../Collisions/meshCollisionData';
 import { _DevTools } from '../Misc/devTools';
 import { RawTexture } from '../Materials/Textures/rawTexture';
@@ -698,6 +699,12 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      */
     public onRebuildObservable = new Observable<AbstractMesh>();
 
+    /**
+     * The current mesh unifom buffer.
+     * @hidden Internal use only.
+     */
+    public _uniformBuffer: UniformBuffer;
+
     // Constructor
 
     /**
@@ -711,6 +718,37 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         this.getScene().addMesh(this);
 
         this._resyncLightSources();
+
+        // Mesh Uniform Buffer.
+        this._uniformBuffer = new UniformBuffer(this.getScene().getEngine(), undefined, undefined, name);
+        this._buildUniformLayout();
+    }
+
+    protected _buildUniformLayout(): void {
+        this._uniformBuffer.addUniform("world", 16);
+        this._uniformBuffer.addUniform("visibility", 1);
+        this._uniformBuffer.create();
+    }
+
+    /**
+     * Transfer the mesh values to its UBO.
+     * @param world The world matrix associated with the mesh
+     */
+    public transferToEffect(world: Matrix): void {
+        const ubo = this._uniformBuffer;
+
+        ubo.updateMatrix("world", world);
+        ubo.updateFloat("visibility", this._internalAbstractMeshDataInfo._visibility);
+
+        ubo.update();
+    }
+
+    /**
+     * Gets the mesh uniform buffer.
+     * @return the uniform buffer of the mesh.
+     */
+    public getMeshUniformBuffer(): UniformBuffer {
+        return this._uniformBuffer;
     }
 
     /**

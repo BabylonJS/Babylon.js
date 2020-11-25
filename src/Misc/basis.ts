@@ -106,7 +106,7 @@ export class BasisTools {
      */
     public static GetInternalFormatFromBasisFormat(basisFormat: number) {
         // Corrisponding internal formats
-        var COMPRESSED_RGB_S3TC_DXT1_EXT  = 0x83F0;
+        var COMPRESSED_RGB_S3TC_DXT1_EXT  = 0x83F1;
         var COMPRESSED_RGBA_S3TC_DXT5_EXT = 0x83F3;
         var RGB_ETC1_Format = 36196;
 
@@ -195,7 +195,7 @@ export class BasisTools {
                 texture.type = Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
                 texture.format = Constants.TEXTUREFORMAT_RGB;
 
-                if (engine.webGLVersion < 2 && (Scalar.Log2(rootImage.width) % 1 !== 0 || Scalar.Log2(rootImage.height) % 1 !== 0)) {
+                if (engine._features.basisNeedsPOT && (Scalar.Log2(rootImage.width) % 1 !== 0 || Scalar.Log2(rootImage.height) % 1 !== 0)) {
                     // Create non power of two texture
                     let source = new InternalTexture(engine, InternalTextureSource.Temp);
 
@@ -232,7 +232,7 @@ export class BasisTools {
                     engine._uploadCompressedDataToTextureDirectly(texture, BasisTools.GetInternalFormatFromBasisFormat(transcodeResult.format!), level.width, level.height, level.transcodedPixels, i, index);
                 });
 
-                if (engine.webGLVersion < 2 && (Scalar.Log2(texture.width) % 1 !== 0 || Scalar.Log2(texture.height) % 1 !== 0)) {
+                if (engine._features.basisNeedsPOT && (Scalar.Log2(texture.width) % 1 !== 0 || Scalar.Log2(texture.height) % 1 !== 0)) {
                     Tools.Warn("Loaded .basis texture width and height are not a power of two. Texture wrapping will be set to Texture.CLAMP_ADDRESSMODE as other modes are not supported with non power of two dimensions in webGL 1.");
                     texture._cachedWrapU = Texture.CLAMP_ADDRESSMODE;
                     texture._cachedWrapV = Texture.CLAMP_ADDRESSMODE;
