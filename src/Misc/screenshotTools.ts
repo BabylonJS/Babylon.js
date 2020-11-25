@@ -130,10 +130,14 @@ export class ScreenshotTools {
         var previousCamera: Nullable<Camera> = null;
         var previousCameras = scene.activeCameras;
 
-        if (scene.activeCamera !== camera || scene.activeCameras && scene.activeCameras.length) {
+        scene.activeCameras = null;
+
+        if (scene.activeCamera !== camera) {
             previousCamera = scene.activeCamera;
             scene.activeCamera = camera;
         }
+
+        scene.render();
 
         // At this point size can be a number, or an object (according to engine.prototype.createRenderTargetTexture method)
         var texture = new RenderTargetTexture("screenShot", targetTextureSize, scene, false, false, Constants.TEXTURETYPE_UNSIGNED_INT, false, Texture.NEAREST_SAMPLINGMODE, undefined, enableStencilBuffer, undefined, undefined, undefined, samples);
