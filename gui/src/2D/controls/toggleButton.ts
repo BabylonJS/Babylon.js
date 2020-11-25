@@ -123,7 +123,7 @@ export class ToggleButton extends Rectangle {
             // If this toggle button has a group, set other toggle buttons in the group to inactive.
             this._host.executeOnAllControls((control) => {
                 // Check for control type ToggleButton
-                if ((<any>control)._getTypeName === "ToggleButton") {
+                if (control.typeName === "ToggleButton") {
                     // Don't do anything to this toggle button
                     if (control === this) {
                         return;
