@@ -56,6 +56,7 @@ float viewZToOrthographicDepth( const in float viewZ, const in float near, const
 	uniform float base;
 	uniform float xViewport;
 	uniform float yViewport;
+	uniform int orthoProjection;
 	uniform float maxZ;
 	uniform float minZAspect;
 	uniform vec2 texelSize;
@@ -81,7 +82,7 @@ float viewZToOrthographicDepth( const in float viewZ, const in float near, const
 		float correctedRadius = min(radius, minZAspect * depth / near);
 
 		vec3 vViewRay = vec3((vUV.x * 2.0 - 1.0)*xViewport, (vUV.y * 2.0 - 1.0)*yViewport, depthSign);
-		vec3 origin = vViewRay * depth;
+		vec3 origin = orthoProjection > 0 ? vec3(vViewRay.x, vViewRay.y, vViewRay.z * depth) : vViewRay * depth;
 		vec3 rvec = random * 2.0 - 1.0;
 		rvec.z = 0.0;
 

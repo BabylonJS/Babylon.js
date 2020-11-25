@@ -401,7 +401,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             [
                 "sampleSphere", "samplesFactor", "randTextureTiles", "totalStrength", "radius",
                 "base", "range", "projection", "near", "far", "texelSize",
-                "xViewport", "yViewport", "maxZ", "minZAspect"
+                "xViewport", "yViewport", "maxZ", "minZAspect", "orthoProjection"
             ],
             samplers,
             ratio, null, Texture.BILINEAR_SAMPLINGMODE,
@@ -424,8 +424,21 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             effect.setFloat("base", this.base);
             effect.setFloat("near", this._scene.activeCamera.minZ);
             effect.setFloat("far", this._scene.activeCamera.maxZ);
-            effect.setFloat("xViewport", Math.tan(this._scene.activeCamera.fov / 2) * this._scene.getEngine().getAspectRatio(this._scene.activeCamera, true));
-            effect.setFloat("yViewport", Math.tan(this._scene.activeCamera.fov / 2));
+            if (this._scene.activeCamera.mode === Camera.PERSPECTIVE_CAMERA) {
+                effect.setInt("orthoProjection", 0);
+                effect.setFloat("xViewport", Math.tan(this._scene.activeCamera.fov / 2) * this._scene.getEngine().getAspectRatio(this._scene.activeCamera, true));
+                effect.setFloat("yViewport", Math.tan(this._scene.activeCamera.fov / 2));
+            } else {
+                const halfWidth = this._scene.getEngine().getRenderWidth() / 2.0;
+                const halfHeight = this._scene.getEngine().getRenderHeight() / 2.0;
+                const orthoLeft = this._scene.activeCamera.orthoLeft ?? -halfWidth;
+                const orthoRight = this._scene.activeCamera.orthoRight ?? halfWidth;
+                const orthoBottom = this._scene.activeCamera.orthoBottom ?? -halfHeight;
+                const orthoTop = this._scene.activeCamera.orthoTop ?? halfHeight;
+                effect.setInt("orthoProjection", 1);
+                effect.setFloat("xViewport", (orthoRight - orthoLeft) * 0.5);
+                effect.setFloat("yViewport", (orthoTop - orthoBottom) * 0.5);
+            }
             effect.setMatrix("projection", this._scene.getProjectionMatrix());
 
             if (this._forceGeometryBuffer) {
