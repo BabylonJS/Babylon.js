@@ -120,7 +120,12 @@ export class TouchButton3D extends Button3D {
                 }
 
                 // Debug line mesh
-                debugLineMesh.dispose();
+                if (debugLineMesh)
+                {
+                    // remove the previous line before drawing the new one
+                    debugLineMesh.dispose();
+                }
+                
                 debugLineMesh = Mesh.CreateLines("debug_line", [
                     _this._collisionMesh.getAbsolutePosition(),
                     indexMesh.getAbsolutePosition()
