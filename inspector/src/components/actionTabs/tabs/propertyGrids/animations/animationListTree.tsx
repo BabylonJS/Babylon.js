@@ -8,13 +8,21 @@ import { IconButtonLineComponent } from "../../../lines/iconButtonLineComponent"
 import { Nullable } from "babylonjs/types";
 
 interface IAnimationListTreeProps {
+    // If the animation is targeted animation or not
     isTargetedAnimation: boolean;
+    // The entity that is being targetd by the animations
     entity: IAnimatable | TargetedAnimation;
+    // The currently selected animations
     selected: Animation | null;
+    // The obeservable
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    // Event to send the selected animation and the coordinate to render the correct curve
     selectAnimation: (selected: Animation, coordinate?: SelectedCoordinate) => void;
+    // Event to empty the animation list
     empty: () => void;
+    // Event to edit the selected animation
     editAnimation: (selected: Animation) => void;
+    // Event to deselect the animation
     deselectAnimation: () => void;
 }
 
@@ -26,6 +34,7 @@ interface Item {
     open: boolean;
 }
 
+// Collection of coordinates available in different animated target property types.
 export enum SelectedCoordinate {
     x = 0,
     y = 1,
@@ -60,7 +69,10 @@ export class AnimationListTree extends React.Component<
     constructor(props: IAnimationListTreeProps) {
         super(props);
 
-        const animations = this.props.entity instanceof TargetedAnimation ? (this.props.entity as TargetedAnimation).animation : (this.props.entity as IAnimatable).animations;
+        const animations =
+            this.props.entity instanceof TargetedAnimation
+                ? (this.props.entity as TargetedAnimation).animation
+                : (this.props.entity as IAnimatable).animations;
 
         this.state = {
             selectedCoordinate: 0,
@@ -70,6 +82,10 @@ export class AnimationListTree extends React.Component<
         };
     }
 
+    /**
+     * Set the animation list if has changed properties
+     * @param prevProps previous properties
+     */
     componentDidUpdate(prevProps: IAnimationListTreeProps) {
         if (this.props.entity instanceof TargetedAnimation) {
             if ((this.props.entity as TargetedAnimation).animation !== (prevProps.entity as TargetedAnimation).animation) {
@@ -88,6 +104,9 @@ export class AnimationListTree extends React.Component<
         }
     }
 
+    /**
+     * Delete animation from list
+     */
     deleteAnimation = () => {
         let currentSelected = this.props.selected;
         if (this.props.entity instanceof TargetedAnimation) {
@@ -120,6 +139,11 @@ export class AnimationListTree extends React.Component<
         }
     };
 
+    /**
+     * Update the animations collection
+     * @param newValue new animation list
+     * @param previousValue previous animation list
+     */
     raiseOnPropertyChanged(newValue: Animation[], previousValue: Animation[]) {
         if (!this.props.onPropertyChangedObservable) {
             return;
@@ -133,6 +157,9 @@ export class AnimationListTree extends React.Component<
         });
     }
 
+    /**
+     * Renders the animation list
+     */
     generateList() {
         let animationList =
             (this.props.entity as IAnimatable).animations &&
@@ -151,6 +178,10 @@ export class AnimationListTree extends React.Component<
         return animationList ?? null;
     }
 
+    /**
+     * Open or closes the animation to show its coordinate animations
+     * @param index Animation index
+     */
     toggleProperty(index: number) {
         if (this.state.animationList) {
             const updated = this.state.animationList.map((a) => {
@@ -163,14 +194,30 @@ export class AnimationListTree extends React.Component<
         }
     }
 
+    /**
+     * Select the animation to render
+     * @param animation Selected animation
+     * @param coordinate Selected coordinate (x, y, z)
+     * @param index Index
+     */
     setSelectedCoordinate(animation: Animation, coordinate: SelectedCoordinate, index: number) {
         this.setState({ selectedCoordinate: coordinate, selectedAnimation: index });
         this.props.selectAnimation(animation, coordinate);
     }
 
+    /**
+     * Renders the coordinate belonging to an animation
+     * @param i Index
+     * @param animation Selected animation
+     * @param coordinate Coordinate name
+     * @param color Color identifier
+     * @param selectedCoordinate Selected coordinate (x, y, z)
+     */
     coordinateItem(i: number, animation: Animation, coordinate: string, color: string, selectedCoordinate: SelectedCoordinate) {
         const setSelectedCoordinate = () => this.setSelectedCoordinate(animation, selectedCoordinate, i);
-        const handleClass = `handle-indicator ${this.state.selectedCoordinate === selectedCoordinate && this.state.selectedAnimation === i ? "show" : "hide"}`;
+        const handleClass = `handle-indicator ${
+            this.state.selectedCoordinate === selectedCoordinate && this.state.selectedAnimation === i ? "show" : "hide"
+        }`;
         return (
             <li key={`${i}_${coordinate}`} id={`${i}_${coordinate}`} className="property" style={{ color: color }} onClick={setSelectedCoordinate}>
                 <div className={handleClass}></div>
@@ -179,13 +226,22 @@ export class AnimationListTree extends React.Component<
         );
     }
 
+    /**
+     * Render animation
+     * @param animation selected animations
+     * @param i index
+     * @param childrenElements its coordinate (x,y,z) animations
+     */
     typeAnimationItem(animation: Animation, i: number, childrenElements: ItemCoordinate[]) {
         const editAnimation = () => this.props.editAnimation(animation);
         const selectAnimation = () => this.props.selectAnimation(animation);
         const toggle = () => this.toggleProperty(i);
         return (
             <li className={this.props.selected && this.props.selected.name === animation.name ? "property sub active" : "property sub"} key={i}>
-                <div className={`animation-arrow ${this.state.animationList && this.state.animationList[i].open ? "" : "flip"}`} onClick={toggle}></div>
+                <div
+                    className={`animation-arrow ${this.state.animationList && this.state.animationList[i].open ? "" : "flip"}`}
+                    onClick={toggle}
+                ></div>
                 <p onClick={selectAnimation}>{animation.targetProperty}</p>
                 <IconButtonLineComponent tooltip="Options" icon="small animation-options" onClick={editAnimation} />
                 {!((this.props.entity as TargetedAnimation).getClassName() === "TargetedAnimation") ? (
@@ -202,13 +258,22 @@ export class AnimationListTree extends React.Component<
         );
     }
 
+    /**
+     * Render animation item
+     * @param animation Selected aniamtion
+     * @param i index
+     */
     setListItem(animation: Animation, i: number) {
         switch (animation.dataType) {
             case Animation.ANIMATIONTYPE_FLOAT:
                 const editAnimation = () => this.props.editAnimation(animation);
                 const selectAnimation = () => this.props.selectAnimation(animation, 0);
                 return (
-                    <li className={this.props.selected && this.props.selected.name === animation.name ? "property active" : "property"} key={i} onClick={selectAnimation}>
+                    <li
+                        className={this.props.selected && this.props.selected.name === animation.name ? "property active" : "property"}
+                        key={i}
+                        onClick={selectAnimation}
+                    >
                         <div className={`animation-bullet`}></div>
                         <p>{animation.targetProperty}</p>
                         <IconButtonLineComponent tooltip="Options" icon="small animation-options" onClick={editAnimation} />

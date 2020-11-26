@@ -23,6 +23,7 @@ precision highp float;
 
 // Declaration
 #include<__decl__pbrFragment>
+
 #include<pbrFragmentExtraDeclaration>
 #include<__decl__lightFragment>[0..maxSimultaneousLights]
 #include<pbrFragmentSamplersDeclaration>

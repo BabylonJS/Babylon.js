@@ -699,7 +699,7 @@ declare module "babylonjs-node-editor/components/propertyTab/properties/vector2P
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-node-editor/sharedComponents/colorPicker/colorComponentEntry" {
+declare module "babylonjs-node-editor/sharedUiComponents/colorPicker/colorComponentEntry" {
     import * as React from "react";
     export interface IColorComponentEntryProps {
         value: number;
@@ -714,7 +714,7 @@ declare module "babylonjs-node-editor/sharedComponents/colorPicker/colorComponen
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-node-editor/sharedComponents/colorPicker/hexColor" {
+declare module "babylonjs-node-editor/sharedUiComponents/colorPicker/hexColor" {
     import * as React from "react";
     export interface IHexColorProps {
         value: string;
@@ -732,7 +732,7 @@ declare module "babylonjs-node-editor/sharedComponents/colorPicker/hexColor" {
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-node-editor/sharedComponents/colorPicker/colorPicker" {
+declare module "babylonjs-node-editor/sharedUiComponents/colorPicker/colorPicker" {
     import * as React from "react";
     import { Color3, Color4 } from "babylonjs/Maths/math.color";
     /**
@@ -1443,7 +1443,7 @@ declare module "babylonjs-node-editor/sharedComponents/textureLineComponent" {
         componentDidMount(): void;
         componentDidUpdate(): void;
         updatePreview(): void;
-        static UpdatePreview(previewCanvas: HTMLCanvasElement, texture: BaseTexture, width: number, options: ITextureLineComponentState, onReady?: () => void, globalState?: any): void;
+        static UpdatePreview(previewCanvas: HTMLCanvasElement, texture: BaseTexture, width: number, options: ITextureLineComponentState, onReady?: () => void, globalState?: any): Promise<void>;
         render(): JSX.Element;
     }
 }
@@ -3209,7 +3209,7 @@ declare module NODEEDITOR {
         componentDidMount(): void;
         componentDidUpdate(): void;
         updatePreview(): void;
-        static UpdatePreview(previewCanvas: HTMLCanvasElement, texture: BABYLON.BaseTexture, width: number, options: ITextureLineComponentState, onReady?: () => void, globalState?: any): void;
+        static UpdatePreview(previewCanvas: HTMLCanvasElement, texture: BABYLON.BaseTexture, width: number, options: ITextureLineComponentState, onReady?: () => void, globalState?: any): Promise<void>;
         render(): JSX.Element;
     }
 }

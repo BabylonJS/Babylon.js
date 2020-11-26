@@ -63,6 +63,7 @@ declare type Animatable = import("./Animations/animatable").Animatable;
 declare type AnimationGroup = import("./Animations/animationGroup").AnimationGroup;
 declare type AnimationPropertiesOverride = import("./Animations/animationPropertiesOverride").AnimationPropertiesOverride;
 declare type Collider = import("./Collisions/collider").Collider;
+declare type WebGPUEngine = import("./Engines/webgpuEngine").WebGPUEngine;
 declare type PostProcess = import("./PostProcesses/postProcess").PostProcess;
 
 /**
@@ -1183,7 +1184,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /** @hidden */
     public _viewMatrix: Matrix;
-    private _projectionMatrix: Matrix;
+    /** @hidden */
+    public _projectionMatrix: Matrix;
     /** @hidden */
     public _forcedViewPosition: Nullable<Vector3>;
 
@@ -1382,6 +1384,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * an optional map from Geometry Id to Geometry index in the 'geometries' array
      */
     private geometriesByUniqueId: Nullable<{ [uniqueId: string]: number | undefined }> = null;
+
+    private _renderBundles: Nullable<GPURenderBundle[]> = null;
 
     /**
      * Creates a new Scene
@@ -1662,9 +1666,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     private _createUbo(): void {
-        this._sceneUbo = new UniformBuffer(this._engine, undefined, true);
+        this._sceneUbo = new UniformBuffer(this._engine, undefined, false, "scene");
         this._sceneUbo.addUniform("viewProjection", 16);
         this._sceneUbo.addUniform("view", 16);
+        this._sceneUbo.addUniform("projection", 16);
+        this._sceneUbo.addUniform("vEyePosition", 4);
     }
 
     /**
@@ -2031,7 +2037,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         } else if (this._sceneUbo.useUbo) {
             this._sceneUbo.updateMatrix("viewProjection", this._transformMatrix);
             this._sceneUbo.updateMatrix("view", this._viewMatrix);
-            this._sceneUbo.update();
+            this._sceneUbo.updateMatrix("projection", this._projectionMatrix);
         }
     }
 
@@ -3798,6 +3804,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         // Render
         this.onBeforeDrawPhaseObservable.notifyObservers(this);
+
         this._renderingManager.render(null, null, true, true);
         this.onAfterDrawPhaseObservable.notifyObservers(this);
 
@@ -4027,9 +4034,43 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         // Before render
         this.onBeforeRenderObservable.notifyObservers(this);
 
+        var engine = this.getEngine();
+        if (engine.isWebGPU) {
+            const webgpuEngine = (engine as WebGPUEngine);
+            if (this._activeMeshesFrozen) {
+                if (this.activeCameras?.length) {
+                    for (let cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
+                        const camera = this.activeCameras[cameraIndex];
+                        this.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix());
+                    }
+                }
+                else {
+                    const camera = this.activeCamera!;
+                    this.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix());
+                }
+
+                if (this._renderBundles) {
+                    webgpuEngine.executeBundles(this._renderBundles);
+                    return;
+                }
+
+                webgpuEngine.startRecordBundle();
+                webgpuEngine.onEndFrameObservable.addOnce(() => {
+                    this._renderBundles = [ webgpuEngine.stopRecordBundle() ];
+                    // TODO. WEBGPU. Frame lost.
+                    // webgpuEngine.executeBundles(this._renderBundles);
+                });
+            }
+            else {
+                if (this._renderBundles) {
+                    this._renderBundles = null;
+                }
+            }
+        }
+
         // Customs render targets
         this.onBeforeRenderTargetsRenderObservable.notifyObservers(this);
-        var engine = this.getEngine();
+
         var currentActiveCamera = this.activeCamera;
         if (this.renderTargetsEnabled) {
             Tools.StartPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
@@ -4160,6 +4201,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Releases all held ressources
      */
     public dispose(): void {
+        this._renderBundles = null;
+
         this.beforeRender = null;
         this.afterRender = null;
 

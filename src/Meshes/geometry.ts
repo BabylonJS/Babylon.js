@@ -208,7 +208,7 @@ export class Geometry implements IGetSetVerticesData {
 
         // Index buffer
         if (this._meshes.length !== 0 && this._indices) {
-            this._indexBuffer = this._engine.createIndexBuffer(this._indices);
+            this._indexBuffer = this._engine.createIndexBuffer(this._indices, this._updatable);
         }
 
         // Vertex buffers
@@ -752,7 +752,7 @@ export class Geometry implements IGetSetVerticesData {
 
         // indexBuffer
         if (numOfMeshes === 1 && this._indices && this._indices.length > 0) {
-            this._indexBuffer = this._engine.createIndexBuffer(this._indices);
+            this._indexBuffer = this._engine.createIndexBuffer(this._indices, this._updatable);
         }
         if (this._indexBuffer) {
             this._indexBuffer.references = numOfMeshes;

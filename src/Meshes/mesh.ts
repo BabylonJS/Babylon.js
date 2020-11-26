@@ -1913,7 +1913,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         var world = effectiveMesh.getWorldMatrix();
-
         if (this._effectiveMaterial._storeEffectOnSubMeshes) {
             this._effectiveMaterial.bindForSubMesh(world, this, subMesh);
         } else {
@@ -3061,7 +3060,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Geometry
         serializationObject.isUnIndexed = this.isUnIndexed;
         var geometry = this._geometry;
-        if (geometry) {
+        if (geometry && this.subMeshes) {
             var geometryId = geometry.id;
             serializationObject.geometryId = geometryId;
 

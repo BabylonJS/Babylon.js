@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Color4, Color3 } from 'babylonjs/Maths/math.color';
 import { GlobalState } from '../globalState';
-import { ColorPicker } from './colorPicker/colorPicker';
+import { ColorPicker } from '../sharedUiComponents/colorPicker/colorPicker';
 
 export interface IColorPickerComponentProps {
     value: Color4 | Color3;
