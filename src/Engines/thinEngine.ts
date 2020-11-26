@@ -912,7 +912,8 @@ export class ThinEngine {
             blendMinMax: false,
             multiview: this._gl.getExtension('OVR_multiview2'),
             oculusMultiview: this._gl.getExtension('OCULUS_multiview'),
-            depthTextureExtension: false
+            depthTextureExtension: false,
+            canUseGLInstanceID: !(this._badOS && this._webGLVersion <= 1),
         };
 
         // Infos
