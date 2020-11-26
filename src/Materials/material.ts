@@ -659,15 +659,18 @@ export class Material implements IAnimatable {
      * @param name defines the name of the material
      * @param scene defines the scene to reference
      * @param doNotAdd specifies if the material should be added to the scene
+     * @param enforceUniqueId true (default) to enforce unique ids for materials in the scene
      */
-    constructor(name: string, scene: Scene, doNotAdd?: boolean) {
+    constructor(name: string, scene: Scene, doNotAdd?: boolean, enforceUniqueId = true) {
         this.name = name;
         let idSubscript = 1;
         this._scene = scene || EngineStore.LastCreatedScene;
 
         this.id = name || Tools.RandomId();
-        while (this._scene.getMaterialByID(this.id)) {
-            this.id = name + " " + idSubscript++;
+        if (enforceUniqueId) {
+            while (this._scene.getMaterialByID(this.id)) {
+                this.id = name + " " + idSubscript++;
+            }
         }
 
         this.uniqueId = this._scene.getUniqueId();
