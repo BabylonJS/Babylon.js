@@ -800,7 +800,8 @@ export class NativeEngine extends Engine {
             instancedArrays: false,
             canUseTimestampForTimerQuery: false,
             blendMinMax: false,
-            maxMSAASamples: 1
+            maxMSAASamples: 1,
+            canUseGLInstanceID: true,
         };
 
         this._features = {
