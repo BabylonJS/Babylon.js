@@ -28,6 +28,8 @@ export class TouchButton3D extends Button3D {
     protected _collisionMesh: Mesh;
     protected _collidableFront: Vector3;
 
+    protected _drawDebugData = true;
+
     /**
      * Creates a new button
      * @param collisionMesh mesh to track collisions with
@@ -65,9 +67,12 @@ export class TouchButton3D extends Button3D {
                 const dummyPointerId = 0;
                 const buttonIndex = 0; // Left click
 
-                const touchDepth = 0.5;
-                const hoverDepth = 0.8;
-                const flickerDelta = 0.05; // A delta to avoid state flickering when on the threshold
+                const scale = 0.4;
+                const touchDepth = scale * 0.5;
+                const hoverDepth = scale * 0.8;
+
+                // A delta to avoid state flickering when on the threshold
+                const flickerDelta = scale * 0.05; 
 
                 debugColour = Color3.Red();
 
@@ -79,7 +84,7 @@ export class TouchButton3D extends Button3D {
                         {
                             console.log("Now hovering");
                             _this._buttonState = ButtonState.Hover;
-                            _this._onPointerEnter(_this);// call Control3D._processObservables instead?
+                            _this._onPointerEnter(_this);
                         }
 
                         break;
@@ -119,18 +124,27 @@ export class TouchButton3D extends Button3D {
                         break;
                 }
 
-                // Debug line mesh
-                if (debugLineMesh)
+                if (_this._drawDebugData)
                 {
-                    // remove the previous line before drawing the new one
+                    // Debug line mesh
+                    if (debugLineMesh)
+                    {
+                        // remove the previous line before drawing the new one
+                        // Commented out as it causes memory crashes
+                   //     debugLineMesh.dispose();
+                    }
+                    
+                    // Draw a line from the button front to the button to the hand
+                    debugLineMesh = Mesh.CreateLines("debug_line", [
+                        _this._collisionMesh.getAbsolutePosition().add(_this._collidableFront).scale(scale),
+                        _this._collisionMesh.getAbsolutePosition(),
+                        indexMesh.getAbsolutePosition()
+                    ], scene);
+                    debugLineMesh.color = debugColour;
+                }
+                else if (debugLineMesh) {
                     debugLineMesh.dispose();
                 }
-                
-                debugLineMesh = Mesh.CreateLines("debug_line", [
-                    _this._collisionMesh.getAbsolutePosition(),
-                    indexMesh.getAbsolutePosition()
-                ], scene);
-                debugLineMesh.color = debugColour;
             });
         });
     }
