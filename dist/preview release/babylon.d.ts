@@ -39409,6 +39409,8 @@ declare module BABYLON {
         maxMSAASamples: number;
         /** Defines if the blend min max extension is supported */
         blendMinMax: boolean;
+        /** In some iOS + WebGL1, gl_InstanceID (and gl_InstanceIDEXT) is undefined even if instancedArrays is true. So don't use gl_InstanceID in those cases */
+        canUseGLInstanceID: boolean;
     }
 }
 declare module BABYLON {
@@ -74978,6 +74980,8 @@ declare module BABYLON {
         private _hemisphereSample_uniform;
         private _generateHemisphere;
         private _getDefinesForSSAO;
+        private static readonly ORTHO_DEPTH_PROJECTION;
+        private static readonly PERSPECTIVE_DEPTH_PROJECTION;
         private _createSSAOPostProcess;
         private _createSSAOCombinePostProcess;
         private _createRandomTexture;

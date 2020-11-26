@@ -59236,26 +59236,33 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
                 _this.props.globalState.onSelectionChangedObservable.notifyObservers(newFreeCamera);
             }
         });
+        var getUniqueName = function (name) {
+            var idSubscript = 1;
+            while (scene.getMaterialByID(name)) {
+                name = name + " " + idSubscript++;
+            }
+            return name;
+        };
         // Materials
         var materialsContextMenus = [];
         materialsContextMenus.push({
             label: "Add new standard material",
             action: function () {
-                var newStdMaterial = new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["StandardMaterial"]("Standard material", scene);
+                var newStdMaterial = new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["StandardMaterial"](getUniqueName("Standard material"), scene);
                 _this.props.globalState.onSelectionChangedObservable.notifyObservers(newStdMaterial);
             }
         });
         materialsContextMenus.push({
             label: "Add new PBR material",
             action: function () {
-                var newPBRMaterial = new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["PBRMaterial"]("PBR material", scene);
+                var newPBRMaterial = new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["PBRMaterial"](getUniqueName("PBR material"), scene);
                 _this.props.globalState.onSelectionChangedObservable.notifyObservers(newPBRMaterial);
             }
         });
         materialsContextMenus.push({
             label: "Add new node material",
             action: function () {
-                var newNodeMaterial = new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["NodeMaterial"]("node material", scene);
+                var newNodeMaterial = new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["NodeMaterial"](getUniqueName("node material"), scene);
                 newNodeMaterial.setToDefault();
                 newNodeMaterial.build();
                 _this.props.globalState.onSelectionChangedObservable.notifyObservers(newNodeMaterial);
