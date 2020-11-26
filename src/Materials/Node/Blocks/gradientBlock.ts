@@ -183,6 +183,8 @@ export class GradientBlock extends NodeMaterialBlock {
     protected _dumpPropertiesCode() {
         var codeString = "";
 
+        codeString += `${this._codeVariableName}.colorSteps = [];\r\n`;
+
         for (var colorStep of this.colorSteps) {
             codeString += `${this._codeVariableName}.colorSteps.push(new BABYLON.GradientBlockColorStep(${colorStep.step}, new BABYLON.Color3(${colorStep.color.r}, ${colorStep.color.g}, ${colorStep.color.b})));\r\n`;
         }
