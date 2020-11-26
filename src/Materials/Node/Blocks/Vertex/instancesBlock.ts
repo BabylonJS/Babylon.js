@@ -9,7 +9,7 @@ import { NodeMaterialSystemValues } from '../../Enums/nodeMaterialSystemValues';
 import { InputBlock } from '../Input/inputBlock';
 import { _TypeStore } from '../../../../Misc/typeStore';
 import { SubMesh } from '../../../../Meshes/subMesh';
-import { Engine } from "../../../../Engines";
+import { Engine } from "../../../../Engines/engine";
 
 /**
  * Block used to add support for instances
