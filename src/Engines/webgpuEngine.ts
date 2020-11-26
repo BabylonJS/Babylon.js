@@ -473,7 +473,8 @@ export class WebGPUEngine extends Engine {
             oculusMultiview: false,
             parallelShaderCompile: undefined,
             blendMinMax: true,
-            maxMSAASamples: 4 // TODO WEBGPU what is the right value?
+            maxMSAASamples: 4,
+            canUseGLInstanceID: true,
         };
 
         this._caps.parallelShaderCompile = null as any;
