@@ -131,7 +131,15 @@ export class MultiRenderTarget extends RenderTargetTexture {
         var generateDepthTexture = options && options.generateDepthTexture ? options.generateDepthTexture : false;
         var doNotChangeAspectRatio = !options || options.doNotChangeAspectRatio === undefined ? true : options.doNotChangeAspectRatio;
 
-        super(name, size, scene, generateMipMaps, doNotChangeAspectRatio);
+        super(name, size, scene, generateMipMaps, doNotChangeAspectRatio, 
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            true);
 
         if (!this.isSupported) {
             this.dispose();
