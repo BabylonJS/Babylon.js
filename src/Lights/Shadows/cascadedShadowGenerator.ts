@@ -697,7 +697,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         if (!engine) {
             return false;
         }
-        return engine.webGLVersion != 1;
+        return engine._features.supportCSM;
     }
 
     /** @hidden */
@@ -716,7 +716,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
      */
     constructor(mapSize: number, light: DirectionalLight, usefulFloatFirst?: boolean) {
         if (!CascadedShadowGenerator.IsSupported) {
-            Logger.Error("CascadedShadowMap needs WebGL 2 support.");
+            Logger.Error("CascadedShadowMap is not supported by the current engine.");
             return;
         }
 
@@ -797,17 +797,21 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             }
         }
 
+        let engine = this._scene.getEngine();
+
+        this._shadowMap.onBeforeBindObservable.clear();
+        this._shadowMap.onBeforeRenderObservable.clear();
+
         this._shadowMap.onBeforeRenderObservable.add((layer: number) => {
             this._currentLayer = layer;
-            if (this._scene.getSceneUniformBuffer().useUbo) {
-                const sceneUBO = this._scene.getSceneUniformBuffer();
-                sceneUBO.updateMatrix("viewProjection", this.getCascadeTransformMatrix(layer)!);
-                sceneUBO.updateMatrix("view", this.getCascadeViewMatrix(layer)!);
-                sceneUBO.update();
+            if (this._filter === ShadowGenerator.FILTER_PCF) {
+                engine.setColorWrite(false);
             }
+            this._scene.setTransformMatrix(this.getCascadeViewMatrix(layer)!, this.getCascadeProjectionMatrix(layer)!);
         });
 
         this._shadowMap.onBeforeBindObservable.add(() => {
+            engine._debugPushGroup(`cascaded shadow map generation for ${this._nameForCustomEffect}`, 1);
             if (this._breaksAreDirty) {
                 this._splitFrustum();
             }

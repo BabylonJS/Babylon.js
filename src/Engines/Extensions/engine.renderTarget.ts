@@ -109,7 +109,7 @@ ThinEngine.prototype.createRenderTargetTexture = function(this: ThinEngine, size
 
     // No need to rebind on every frame
     if (!texture.is2DArray) {
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture._webGLTexture, 0);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture._hardwareTexture?.underlyingResource, 0);
     }
 
     this._bindUnboundFramebuffer(currentFrameBuffer);

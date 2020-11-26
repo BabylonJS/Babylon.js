@@ -50,22 +50,40 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
      */
     public reservedDataStore: any = null;
 
-    @serialize("hasAlpha")
     private _hasAlpha = false;
     /**
      * Define if the texture is having a usable alpha value (can be use for transparency or glossiness for instance).
      */
-    public set hasAlpha(value: boolean) {
-        if (this._hasAlpha === value) {
-            return;
+    @serialize()
+    public get hasAlpha(): boolean {
+        if (!this._texture) {
+            return this._hasAlpha;
+        } else {
+            if (this._texture._hasAlpha === null) {
+                this._texture._hasAlpha = this._hasAlpha;
+            }
         }
-        this._hasAlpha = value;
+
+        return this._texture._hasAlpha;
+    }
+
+    public set hasAlpha(value: boolean) {
+        if (!this._texture) {
+            if (this._hasAlpha === value) {
+                return;
+            }
+
+            this._hasAlpha = value;
+        } else {
+            if (this._texture._hasAlpha === value) {
+                return;
+            }
+            this._texture._hasAlpha = value;
+        }
+
         if (this._scene) {
             this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag | Constants.MATERIAL_MiscDirtyFlag);
         }
-    }
-    public get hasAlpha(): boolean {
-        return this._hasAlpha;
     }
 
     /**
@@ -592,9 +610,10 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
      * @param faceIndex defines the face of the texture to read (in case of cube texture)
      * @param level defines the LOD level of the texture to read (in case of Mip Maps)
      * @param buffer defines a user defined buffer to fill with data (can be null)
-     * @returns The Array buffer containing the pixels data.
+     * @param flushRenderer true to flush the renderer from the pending commands before reading the pixels
+     * @returns The Array buffer promise containing the pixels data.
      */
-    public readPixels(faceIndex = 0, level = 0, buffer: Nullable<ArrayBufferView> = null): Nullable<ArrayBufferView> {
+    public readPixels(faceIndex = 0, level = 0, buffer: Nullable<ArrayBufferView> = null, flushRenderer = true): Nullable<Promise<ArrayBufferView>> {
         if (!this._texture) {
             return null;
         }
@@ -618,10 +637,10 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
 
         try {
             if (this._texture.isCube) {
-                return engine._readTexturePixels(this._texture, width, height, faceIndex, level, buffer);
+                return engine._readTexturePixels(this._texture, width, height, faceIndex, level, buffer, flushRenderer);
             }
 
-            return engine._readTexturePixels(this._texture, width, height, -1, level, buffer);
+            return engine._readTexturePixels(this._texture, width, height, -1, level, buffer, flushRenderer);
         } catch (e) {
             return null;
         }

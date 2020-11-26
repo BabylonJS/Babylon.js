@@ -13,14 +13,23 @@ import { IAnimatable } from "babylonjs/Animations/animatable.interface";
 import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
 
 interface ILoadSnippetProps {
+    // Animations to load
     animations: Animation[];
+    // Observable
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    // Global lock object
     lockObject: LockObject;
+    // Global state
     globalState: GlobalState;
+    // Snippet server address
     snippetServer: string;
+    // Function to set the id of the snippert
     setSnippetId: (id: string) => void;
+    // entity to reference the animations
     entity: IAnimatable | TargetedAnimation;
+    // sets the message for error or warning
     setNotificationMessage: (message: string) => void;
+    // tells if animation have loaded successfully
     animationsLoaded: (numberOfAnimations: number) => void;
 }
 
@@ -35,11 +44,19 @@ export class LoadSnippet extends React.Component<ILoadSnippetProps, { snippetId:
         this.state = { snippetId: "" };
     }
 
+    /**
+     * Set the animations snippet id
+     * @param value Snippet ID
+     */
     change = (value: string) => {
         this.setState({ snippetId: value });
         this.props.setSnippetId(value);
     };
 
+    /**
+     * Select a local file to load animations
+     * @param file File name
+     */
     loadFromFile = (file: File) => {
         Tools.ReadFile(
             file,
@@ -70,6 +87,9 @@ export class LoadSnippet extends React.Component<ILoadSnippetProps, { snippetId:
         );
     };
 
+    /**
+     * Load animations from server identified with a snippet id
+     */
     loadFromSnippet = () => {
         if (this.state.snippetId !== "") {
             //Notify observers

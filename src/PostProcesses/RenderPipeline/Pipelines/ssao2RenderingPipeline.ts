@@ -167,7 +167,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         if (!engine) {
             return false;
         }
-        return engine.webGLVersion >= 2;
+        return engine._features.supportSSAO2;
     }
 
     private _scene: Scene;
@@ -203,7 +203,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         this._forceGeometryBuffer = forceGeometryBuffer;
 
         if (!this.isSupported) {
-            Logger.Error("SSAO 2 needs WebGL 2 support.");
+            Logger.Error("The current engine does not support SSAO 2.");
             return;
         }
 

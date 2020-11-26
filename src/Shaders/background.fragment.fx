@@ -9,7 +9,7 @@ precision highp float;
 #define RECIPROCAL_PI2 0.15915494
 
 // Constants
-uniform vec3 vEyePosition;
+uniform vec4 vEyePosition;
 
 // Input
 varying vec3 vPositionW;
@@ -114,7 +114,7 @@ varying vec3 vNormalW;
 void main(void) {
 #include<clipPlaneFragment>
 
-    vec3 viewDirectionW = normalize(vEyePosition - vPositionW);
+    vec3 viewDirectionW = normalize(vEyePosition.xyz - vPositionW);
 
 // _____________________________ Normal Information ______________________________
 #ifdef NORMAL
@@ -248,7 +248,7 @@ void main(void) {
         vec3 reflectionAmount = vReflectionControl.xxx;
         vec3 reflectionReflectance0 = vReflectionControl.yyy;
         vec3 reflectionReflectance90 = vReflectionControl.zzz;
-        float VdotN = dot(normalize(vEyePosition), normalW);
+        float VdotN = dot(normalize(vEyePosition.xyz), normalW);
 
         vec3 planarReflectionFresnel = fresnelSchlickEnvironmentGGX(saturate(VdotN), reflectionReflectance0, reflectionReflectance90, 1.0);
         reflectionAmount *= planarReflectionFresnel;
@@ -263,7 +263,7 @@ void main(void) {
     #endif
 
     #ifdef OPACITYFRESNEL
-        float viewAngleToFloor = dot(normalW, normalize(vEyePosition - vBackgroundCenter));
+        float viewAngleToFloor = dot(normalW, normalize(vEyePosition.xyz - vBackgroundCenter));
 
         // Fade out the floor plane as the angle between the floor and the camera tends to 0 (starting from startAngle)
         const float startAngle = 0.1;

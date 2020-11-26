@@ -16,7 +16,6 @@ import { PBRBaseSimpleMaterial } from "babylonjs/Materials/PBR/pbrBaseSimpleMate
 import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
 import { PBRMetallicRoughnessMaterial } from "babylonjs/Materials/PBR/pbrMetallicRoughnessMaterial";
 import { PBRSpecularGlossinessMaterial } from "babylonjs/Materials/PBR/pbrSpecularGlossinessMaterial";
-import { PostProcess } from "babylonjs/PostProcesses/postProcess";
 import { Scene } from "babylonjs/scene";
 
 import { _Exporter } from "./glTFExporter";
@@ -492,66 +491,22 @@ export class _GLTFMaterialExporter {
      * @returns base64 image string
      */
     private _createBase64FromCanvasAsync(buffer: Uint8Array | Float32Array, width: number, height: number, mimeType: ImageMimeType): Promise<string> {
-        return new Promise<string>((resolve, reject) => {
-            let hostingScene: Scene;
-
+        return new Promise<string>(async (resolve, reject) => {
             const textureType = Constants.TEXTURETYPE_UNSIGNED_INT;
-            const engine = this._exporter._getLocalEngine();
 
-            hostingScene = new Scene(engine);
+            const hostingScene = this._exporter._babylonScene;
+            const engine = hostingScene.getEngine();
 
             // Create a temporary texture with the texture buffer data
             const tempTexture = engine.createRawTexture(buffer, width, height, Constants.TEXTUREFORMAT_RGBA, false, true, Texture.NEAREST_SAMPLINGMODE, null, textureType);
-            const postProcess = new PostProcess("pass", "pass", null, null, 1, null, Texture.NEAREST_SAMPLINGMODE, engine, false, undefined, Constants.TEXTURETYPE_UNSIGNED_INT, undefined, null, false);
-            postProcess.getEffect().executeWhenCompiled(() => {
-                postProcess.onApply = (effect) => {
-                    effect._bindTexture("textureSampler", tempTexture);
-                };
 
-                // Set the size of the texture
-                engine.setSize(width, height);
-                hostingScene.postProcessManager.directRender([postProcess], null);
-                postProcess.dispose();
-                tempTexture.dispose();
+            await TextureTools.ApplyPostProcess("pass", tempTexture, hostingScene, textureType, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTUREFORMAT_RGBA);
 
-                // Read data from WebGL
-                const canvas0 = engine.getRenderingCanvas();
+            const data = await engine._readTexturePixels(tempTexture, width, height);
 
-                let canvas: Nullable<HTMLCanvasElement> = document.createElement("canvas");
+            const base64: string = await (Tools.DumpDataAsync(width, height, data, mimeType, undefined, true, false) as Promise<string>);
 
-                canvas.width = canvas0?.width ?? 0;
-                canvas.height = canvas0?.height ?? 0;
-
-                var destCtx = canvas.getContext('2d');
-                destCtx!.drawImage(canvas0!, 0, 0);
-
-                if (canvas) {
-                    if (!canvas.toBlob) { // fallback for browsers without "canvas.toBlob"
-                        const dataURL = canvas.toDataURL();
-                        resolve(dataURL);
-                    }
-                    else {
-                        Tools.ToBlob(canvas, (blob) => {
-                            canvas = null;
-                            if (blob) {
-                                let fileReader = new FileReader();
-                                fileReader.onload = (event: any) => {
-                                    let base64String = event.target.result as string;
-                                    hostingScene.dispose();
-                                    resolve(base64String);
-                                };
-                                fileReader.readAsDataURL(blob);
-                            }
-                            else {
-                                reject("gltfMaterialExporter: Failed to get blob from image canvas!");
-                            }
-                        }, mimeType);
-                    }
-                }
-                else {
-                    reject("Engine is missing a canvas!");
-                }
-            });
+            resolve(base64);
         });
     }
 
@@ -649,7 +604,7 @@ export class _GLTFMaterialExporter {
      * @param mimeType the mime type to use for the texture
      * @returns pbr metallic roughness interface or null
      */
-    private _convertSpecularGlossinessTexturesToMetallicRoughnessAsync(diffuseTexture: BaseTexture, specularGlossinessTexture: BaseTexture, factors: _IPBRSpecularGlossiness, mimeType: ImageMimeType): Promise<_IPBRMetallicRoughness> {
+    private async _convertSpecularGlossinessTexturesToMetallicRoughnessAsync(diffuseTexture: BaseTexture, specularGlossinessTexture: BaseTexture, factors: _IPBRSpecularGlossiness, mimeType: ImageMimeType): Promise<_IPBRMetallicRoughness> {
         let promises = [];
         if (!(diffuseTexture || specularGlossinessTexture)) {
             return Promise.reject('_ConvertSpecularGlosinessTexturesToMetallicRoughness: diffuse and specular glossiness textures are not defined!');
@@ -667,8 +622,8 @@ export class _GLTFMaterialExporter {
             const width = diffuseSize.width;
             const height = diffuseSize.height;
 
-            let diffusePixels = resizedTextures.texture1.readPixels();
-            let specularPixels = resizedTextures.texture2.readPixels();
+            let diffusePixels = await resizedTextures.texture1.readPixels();
+            let specularPixels = await resizedTextures.texture2.readPixels();
 
             if (diffusePixels) {
                 diffuseBuffer = this._convertPixelArrayToFloat32(diffusePixels);
@@ -1164,8 +1119,9 @@ export class _GLTFMaterialExporter {
         return this._finishMaterial(promises, glTFMaterial, babylonPBRMaterial, mimeType);
     }
 
-    private getPixelsFromTexture(babylonTexture: BaseTexture): Nullable<Uint8Array | Float32Array> {
-        const pixels = babylonTexture.textureType === Constants.TEXTURETYPE_UNSIGNED_INT ? babylonTexture.readPixels() as Uint8Array : babylonTexture.readPixels() as Float32Array;
+    private getPixelsFromTexture(babylonTexture: BaseTexture): Promise<Nullable<Uint8Array | Float32Array>> {
+        // TODO WEBGPU remove the as unknown cast once using the new babylonjs package to compile the glTF material exporter
+        const pixels = babylonTexture.textureType === Constants.TEXTURETYPE_UNSIGNED_INT ? babylonTexture.readPixels() as unknown as Promise<Uint8Array> : babylonTexture.readPixels() as unknown as Promise<Float32Array>;
         return pixels;
     }
 
@@ -1190,13 +1146,13 @@ export class _GLTFMaterialExporter {
     }
 
     public _exportTextureInfoAsync(babylonTexture: BaseTexture, mimeType: ImageMimeType): Promise<Nullable<ITextureInfo>> {
-        return Promise.resolve().then(() => {
+        return Promise.resolve().then(async () => {
             const textureUid = babylonTexture.uid;
             if (textureUid in this._textureMap) {
                 return this._textureMap[textureUid];
             }
             else {
-                const pixels = this.getPixelsFromTexture(babylonTexture);
+                const pixels = await this.getPixelsFromTexture(babylonTexture);
                 if (!pixels) {
                     return null;
                 }

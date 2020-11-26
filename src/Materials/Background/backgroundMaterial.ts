@@ -1149,9 +1149,9 @@ export class BackgroundMaterial extends PushMaterial {
             }
         }
 
-        this._uniformBuffer.update();
-
         this._afterBind(mesh, this._activeEffect);
+
+        this._uniformBuffer.update();
     }
 
     /**

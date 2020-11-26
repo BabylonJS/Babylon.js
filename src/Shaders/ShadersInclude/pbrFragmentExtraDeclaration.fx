@@ -1,12 +1,7 @@
-uniform vec4 vEyePosition;
-uniform vec3 vAmbientColor;
-uniform vec4 vCameraInfos;
-
 // Input
 varying vec3 vPositionW;
 
 #if DEBUGMODE > 0
-    uniform vec2 vDebugMode;
     varying vec4 vClipSpacePosition;
 #endif
 
