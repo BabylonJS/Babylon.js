@@ -309,15 +309,17 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         // Default emitter type
         this.particleEmitterType = new BoxParticleEmitter();
+        let noiseTextureData: Nullable<Uint8Array> = null;
 
         // Update
         this.updateFunction = (particles: Particle[]): void => {
             let noiseTextureSize: Nullable<ISize> = null;
-            let noiseTextureData: Nullable<Uint8Array> = null;
 
             if (this.noiseTexture) { // We need to get texture data back to CPU
                 noiseTextureSize = this.noiseTexture.getSize();
-                noiseTextureData = <Nullable<Uint8Array>>(this.noiseTexture.getContent());
+                this.noiseTexture.getContent()?.then((data) => {
+                    noiseTextureData = data as Uint8Array;
+                });
             }
 
             for (var index = 0; index < particles.length; index++) {
