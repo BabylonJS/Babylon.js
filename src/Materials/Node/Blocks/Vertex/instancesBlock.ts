@@ -9,7 +9,6 @@ import { NodeMaterialSystemValues } from '../../Enums/nodeMaterialSystemValues';
 import { InputBlock } from '../Input/inputBlock';
 import { _TypeStore } from '../../../../Misc/typeStore';
 import { SubMesh } from '../../../../Meshes/subMesh';
-import { Engine } from "../../../../Engines/engine";
 
 /**
  * Block used to add support for instances
@@ -160,6 +159,8 @@ export class InstancesBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
+        const engine = state.sharedData.scene.getEngine();
+
         // Register for defines
         state.sharedData.blocksWithDefines.push(this);
 
@@ -176,7 +177,7 @@ export class InstancesBlock extends NodeMaterialBlock {
         state.compilationString += `#ifdef THIN_INSTANCES\r\n`;
         state.compilationString += `${output.associatedVariableName} = ${this.world.associatedVariableName} * ${output.associatedVariableName};\r\n`;
         state.compilationString += `#endif\r\n`;
-        if (Engine.LastCreatedEngine && !Engine.LastCreatedEngine._caps.canUseGLInstanceID) {
+        if (engine._caps.canUseGLInstanceID) {
             state.compilationString += this._declareOutput(instanceID, state) + ` = 0.0;\r\n`;
         } else {
             state.compilationString += this._declareOutput(instanceID, state) + ` = float(gl_InstanceID);\r\n`;
