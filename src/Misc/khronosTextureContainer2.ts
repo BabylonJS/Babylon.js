@@ -213,7 +213,6 @@ export class KhronosTextureContainer2 {
 
         internalTexture._gammaSpace = data.isInGammaSpace;
         internalTexture.generateMipMaps = data.mipmaps.length > 1;
-        internalTexture._hasAlpha = data.hasAlpha;
 
         if (data.errors) {
             throw new Error("KTX2 container - could not transcode the data. " + data.errors);
