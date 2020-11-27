@@ -1452,23 +1452,23 @@ export class ThinEngine {
 
         const gl = this._gl;
         if (texture.is2DArray) {
-            gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, texture._hardwareTexture!.underlyingResource, lodLevel, layer);
+            gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, texture._hardwareTexture?.underlyingResource, lodLevel, layer);
         }
         else if (texture.isCube) {
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture._hardwareTexture!.underlyingResource, lodLevel);
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture._hardwareTexture?.underlyingResource, lodLevel);
         }
 
         const depthStencilTexture = texture._depthStencilTexture;
         if (depthStencilTexture) {
             const attachment = (depthStencilTexture._generateStencilBuffer) ? gl.DEPTH_STENCIL_ATTACHMENT : gl.DEPTH_ATTACHMENT;
             if (texture.is2DArray) {
-                gl.framebufferTextureLayer(gl.FRAMEBUFFER, attachment, depthStencilTexture._hardwareTexture!.underlyingResource, lodLevel, layer);
+                gl.framebufferTextureLayer(gl.FRAMEBUFFER, attachment, depthStencilTexture._hardwareTexture?.underlyingResource, lodLevel, layer);
             }
             else if (texture.isCube) {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, depthStencilTexture._hardwareTexture!.underlyingResource, lodLevel);
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, depthStencilTexture._hardwareTexture?.underlyingResource, lodLevel);
             }
             else {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, gl.TEXTURE_2D, depthStencilTexture._hardwareTexture!.underlyingResource, lodLevel);
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, gl.TEXTURE_2D, depthStencilTexture._hardwareTexture?.underlyingResource, lodLevel);
             }
         }
 
@@ -3596,7 +3596,7 @@ export class ThinEngine {
             return;
         }
 
-        if (!texture._hardwareTexture!.underlyingResource) {
+        if (!texture._hardwareTexture) {
             //  this.resetTextureCache();
             if (scene) {
                 scene._removePendingData(texture);
@@ -3780,7 +3780,7 @@ export class ThinEngine {
             if (texture && texture.isMultiview) {
                 this._gl.bindTexture(target, texture ? texture._colorTextureArray : null);
             } else {
-                this._gl.bindTexture(target, texture ? texture._hardwareTexture!.underlyingResource : null);
+                this._gl.bindTexture(target, texture?._hardwareTexture?.underlyingResource ?? null);
             }
 
             this._boundTexturesCache[this._activeChannel] = texture;
