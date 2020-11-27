@@ -7743,8 +7743,8 @@ declare module BABYLON {
         /**
          * Define if the texture is having a usable alpha value (can be use for transparency or glossiness for instance).
          */
-        get hasAlpha(): boolean;
         set hasAlpha(value: boolean);
+        get hasAlpha(): boolean;
         /**
          * Defines if the alpha value should be determined via the rgb values.
          * If true the luminance of the pixel might be used to find the corresponding alpha value.
@@ -41300,8 +41300,6 @@ declare module BABYLON {
         _references: number;
         /** @hidden */
         _gammaSpace: Nullable<boolean>;
-        /** @hidden */
-        _hasAlpha: Nullable<boolean>;
         private _engine;
         private _uniqueId;
         private static _Counter;

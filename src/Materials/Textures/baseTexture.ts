@@ -50,40 +50,22 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
      */
     public reservedDataStore: any = null;
 
+    @serialize("hasAlpha")
     private _hasAlpha = false;
     /**
      * Define if the texture is having a usable alpha value (can be use for transparency or glossiness for instance).
      */
-    @serialize()
-    public get hasAlpha(): boolean {
-        if (!this._texture) {
-            return this._hasAlpha;
-        } else {
-            if (this._texture._hasAlpha === null) {
-                this._texture._hasAlpha = this._hasAlpha;
-            }
-        }
-
-        return this._texture._hasAlpha;
-    }
-
     public set hasAlpha(value: boolean) {
-        if (!this._texture) {
-            if (this._hasAlpha === value) {
-                return;
-            }
-
-            this._hasAlpha = value;
-        } else {
-            if (this._texture._hasAlpha === value) {
-                return;
-            }
-            this._texture._hasAlpha = value;
+        if (this._hasAlpha === value) {
+            return;
         }
-
+        this._hasAlpha = value;
         if (this._scene) {
             this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag | Constants.MATERIAL_MiscDirtyFlag);
         }
+    }
+    public get hasAlpha(): boolean {
+        return this._hasAlpha;
     }
 
     /**
