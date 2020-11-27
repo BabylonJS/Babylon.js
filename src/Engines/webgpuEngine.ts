@@ -603,6 +603,7 @@ export class WebGPUEngine extends Engine {
         }
 
         if (this.dbgVerboseLogsForFirstFrames) {
+            if ((this as any)._count === undefined) { (this as any)._count = 0; }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                 console.log("frame #" + (this as any)._count + " - setSize called -", width, height);
             }
@@ -713,6 +714,7 @@ export class WebGPUEngine extends Engine {
             renderPass.setViewport(x, y, w, h, 0, 1);
 
             if (this.dbgVerboseLogsForFirstFrames) {
+                if ((this as any)._count === undefined) { (this as any)._count = 0; }
                 if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                     console.log("frame #" + (this as any)._count + " - viewport applied - (", x, y, w, h, ") current pass is main pass=" + (renderPass === this._mainRenderPassWrapper.renderPass));
                 }
@@ -757,6 +759,7 @@ export class WebGPUEngine extends Engine {
             renderPass.setScissorRect(x, y, w, h);
 
             if (this.dbgVerboseLogsForFirstFrames) {
+                if ((this as any)._count === undefined) { (this as any)._count = 0; }
                 if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                     console.log("frame #" + (this as any)._count + " - scissor applied - (", x, y, w, h, ") current pass is main pass=" + (renderPass === this._mainRenderPassWrapper.renderPass));
                 }
@@ -799,6 +802,7 @@ export class WebGPUEngine extends Engine {
         }
 
         if (this.dbgVerboseLogsForFirstFrames) {
+            if ((this as any)._count === undefined) { (this as any)._count = 0; }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                 console.log("frame #" + (this as any)._count + " - clear called - backBuffer=", backBuffer, " depth=", depth, " stencil=", stencil);
             }
@@ -1831,6 +1835,7 @@ export class WebGPUEngine extends Engine {
             this._setInternalTexture(name, internalTexture, baseName, textureIndex);
         } else {
             if (this.dbgVerboseLogsForFirstFrames) {
+                if ((this as any)._count === undefined) { (this as any)._count = 0; }
                 if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                     console.log("frame #" + (this as any)._count + " - _setTexture called with a null _currentEffect! texture=", texture);
                 }
@@ -1885,6 +1890,7 @@ export class WebGPUEngine extends Engine {
         const mipmapCount = WebGPUTextureHelper.ComputeNumMipmapLevels(texture.width, texture.height);
 
         if (this.dbgVerboseLogsForFirstFrames) {
+            if ((this as any)._count === undefined) { (this as any)._count = 0; }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                 console.log("frame #" + (this as any)._count + " - generate mipmaps called - width=", texture.width, "height=", texture.height, "isCube=", texture.isCube);
             }
@@ -2587,6 +2593,7 @@ export class WebGPUEngine extends Engine {
         this.flushFramebuffer();
 
         if (this.dbgVerboseLogsForFirstFrames) {
+            if ((this as any)._count === undefined) { (this as any)._count = 0; }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                 console.log("frame #" + (this as any)._count + " - counters - numPipelineDescriptorCreation=", this._counters.numPipelineDescriptorCreation, ", numBindGroupsCreation=", this._counters.numBindGroupsCreation,
                     ", numVertexInputCacheCreation=", this._counters.numVertexInputCacheCreation);
@@ -2598,6 +2605,7 @@ export class WebGPUEngine extends Engine {
 
         if (this._features._collectUbosUpdatedInFrame) {
             if (this.dbgVerboseLogsForFirstFrames) {
+                if ((this as any)._count === undefined) { (this as any)._count = 0; }
                 if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                     const list: Array<string> = [];
                     for (const name in UniformBuffer._updatedUbosInFrame) {
@@ -2618,6 +2626,7 @@ export class WebGPUEngine extends Engine {
         super.endFrame();
 
         if (this.dbgVerboseLogsForFirstFrames) {
+            if ((this as any)._count === undefined) { (this as any)._count = 0; }
             if ((this as any)._count < this.dbgVerboseLogsNumFrames) {
                 console.log("%c frame #" + (this as any)._count + " - end", "background: #ffff00");
             }
@@ -2736,6 +2745,7 @@ export class WebGPUEngine extends Engine {
         this._rttRenderPassWrapper.renderPass = this._renderTargetEncoder.beginRenderPass(this._rttRenderPassWrapper.renderPassDescriptor);
 
         if (this.dbgVerboseLogsForFirstFrames) {
+            if ((this as any)._count === undefined) { (this as any)._count = 0; }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                 console.log("frame #" + (this as any)._count + " - render target begin pass - internalTexture.uniqueId=", internalTexture.uniqueId, this._rttRenderPassWrapper.renderPassDescriptor);
             }
@@ -2753,6 +2763,7 @@ export class WebGPUEngine extends Engine {
         if (this._currentRenderPass) {
             this._currentRenderPass.endPass();
             if (this.dbgVerboseLogsForFirstFrames) {
+                if ((this as any)._count === undefined) { (this as any)._count = 0; }
                 if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                     console.log("frame #" + (this as any)._count + " - render target end pass - internalTexture.uniqueId=", this._currentRenderTarget?.uniqueId);
                 }
@@ -2813,6 +2824,7 @@ export class WebGPUEngine extends Engine {
         }
 
         if (this.dbgVerboseLogsForFirstFrames) {
+            if ((this as any)._count === undefined) { (this as any)._count = 0; }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                 console.log("frame #" + (this as any)._count + " - main begin pass - texture width=" + (this._mainTextureExtends as any).width, " height=" + (this._mainTextureExtends as any).height, this._mainRenderPassWrapper.renderPassDescriptor);
             }
@@ -2895,6 +2907,7 @@ export class WebGPUEngine extends Engine {
         if (this._mainRenderPassWrapper.renderPass !== null) {
             this._mainRenderPassWrapper.renderPass.endPass();
             if (this.dbgVerboseLogsForFirstFrames) {
+                if ((this as any)._count === undefined) { (this as any)._count = 0; }
                 if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                     console.log("frame #" + (this as any)._count + " - main end pass");
                 }
@@ -2996,6 +3009,7 @@ export class WebGPUEngine extends Engine {
         };
 
         if (this.dbgVerboseLogsForFirstFrames) {
+            if ((this as any)._count === undefined) { (this as any)._count = 0; }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                 console.log("frame #" + (this as any)._count + " - bindFramebuffer called - face=", faceIndex, "lodLevel=", lodLevel, "layer=", layer, this._rttRenderPassWrapper.colorAttachmentViewDescriptor, this._rttRenderPassWrapper.depthAttachmentViewDescriptor);
             }
