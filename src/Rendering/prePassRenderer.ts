@@ -87,7 +87,6 @@ export class PrePassRenderer {
 
     private _multiRenderAttachments: number[];
     private _defaultAttachments: number[];
-    private _clearAttachments: number[];
 
     private _postProcesses: PostProcess[] = [];
 
@@ -197,7 +196,6 @@ export class PrePassRenderer {
         }
 
         this._multiRenderAttachments = this._engine.buildTextureLayout(multiRenderLayout);
-        this._clearAttachments = this._engine.buildTextureLayout(clearLayout);
         this._defaultAttachments = this._engine.buildTextureLayout(defaultLayout);
     }
 
@@ -313,15 +311,14 @@ export class PrePassRenderer {
         if (this._enabled) {
             this._bindFrameBuffer();
 
-            // Regular clear color with the scene clear color of the 1st attachment
-            this._engine.clear(this._scene.clearColor,
-                this._scene.autoClear || this._scene.forceWireframe || this._scene.forcePointsCloud,
+            this._engine.clearAttachments(
+                this._multiRenderAttachments,
+                this._scene.autoClear || this._scene.forceWireframe || this._scene.forcePointsCloud ? this._scene.clearColor : null,
+                this._clearColor,
                 this._scene.autoClearDepthAndStencil,
-                this._scene.autoClearDepthAndStencil);
+                this._scene.autoClearDepthAndStencil,
+            );
 
-            // Clearing other attachment with 0 on all other attachments
-            this._engine.bindAttachments(this._clearAttachments);
-            this._engine.clear(this._clearColor, true, false, false);
             this._engine.bindAttachments(this._defaultAttachments);
         }
     }
