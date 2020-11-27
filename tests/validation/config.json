@@ -632,6 +632,12 @@
             "excludeFromAutomaticTesting": true
         },
         {
+            "title": "GLTF Alpha Blend",
+            "playgroundId": "#SYQW69#577",
+            "referenceImage": "glTFAlphaBlend.png",
+            "renderCount": 1
+        },
+        {
             "title": "GLTF Serializer with Negative World Matrix",
             "playgroundId": "#KX53VK#35",
             "referenceImage": "glTFSerializerNegativeWorldMatrix.png",
