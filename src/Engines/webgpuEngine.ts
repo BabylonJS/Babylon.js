@@ -813,10 +813,29 @@ export class WebGPUEngine extends Engine {
             if (this._currentRenderPass) {
                 this._endRenderTargetRenderPass();
             }
-            this._startRenderTargetRenderPass(this._currentRenderTarget!, backBuffer ? color : null, depth, stencil);
+            this._startRenderTargetRenderPass(this._currentRenderTarget!, backBuffer ? color : null, backBuffer ? color : null, depth, stencil);
         } else {
             this._startMainRenderPass(true, backBuffer ? color : null, depth, stencil);
         }
+    }
+
+    /**
+     * Clears a list of attachments
+     * @param attachments list of the attachments
+     * @param colorMain clear color for the main attachment (the first one)
+     * @param colorOthers clear color for the other attachments
+     * @param clearDepth true to clear the depth buffer. Used only for the first attachment
+     * @param clearStencil true to clear the stencil buffer. Used only for the first attachment
+     */
+    public clearAttachments(attachments: number[], colorMain: Nullable<IColor4Like>, colorOthers: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean): void {
+        if (attachments.length === 0 || !this._currentRenderTarget) {
+            return;
+        }
+
+        if (this._currentRenderPass) {
+            this._endRenderTargetRenderPass();
+        }
+        this._startRenderTargetRenderPass(this._currentRenderTarget!, colorMain, colorOthers, clearDepth, clearStencil);
     }
 
     //------------------------------------------------------------------------------
@@ -2671,7 +2690,7 @@ export class WebGPUEngine extends Engine {
 
         // restart the render pass
         if (currentPassType === 1) {
-            this._startRenderTargetRenderPass(this._currentRenderTarget!, null, false, false);
+            this._startRenderTargetRenderPass(this._currentRenderTarget!, null, null, false, false);
         } else if (currentPassType === 2) {
             this._startMainRenderPass(false);
         }
@@ -2681,7 +2700,7 @@ export class WebGPUEngine extends Engine {
     //                              Render Pass
     //------------------------------------------------------------------------------
 
-    private _startRenderTargetRenderPass(internalTexture: InternalTexture, clearColor: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean) {
+    private _startRenderTargetRenderPass(internalTexture: InternalTexture, clearColorMain: Nullable<IColor4Like>, clearColorOtherAttachments: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean) {
         const gpuWrapper = internalTexture._hardwareTexture as WebGPUHardwareTexture;
         const gpuTexture = gpuWrapper.underlyingResource!;
 
@@ -2703,14 +2722,19 @@ export class WebGPUEngine extends Engine {
                 const gpuMRTWrapper = mrtTexture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
                 const gpuMRTTexture = gpuMRTWrapper?.underlyingResource;
                 if (gpuMRTWrapper && gpuMRTTexture) {
+                    const viewDescriptor = {
+                        ...this._rttRenderPassWrapper.colorAttachmentViewDescriptor,
+                        format: gpuMRTWrapper.format,
+                    };
                     const gpuMSAATexture = gpuMRTWrapper.msaaTexture;
-                    const colorTextureView = gpuMRTTexture.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
-                    const colorMSAATextureView = gpuMSAATexture?.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
+                    const colorTextureView = gpuMRTTexture.createView(viewDescriptor);
+                    const colorMSAATextureView = gpuMSAATexture?.createView(viewDescriptor);
+                    const clearColor = i === 0 ? (clearColorMain ? clearColorMain : WebGPUConstants.LoadOp.Load) : (clearColorOtherAttachments ? clearColorOtherAttachments : WebGPUConstants.LoadOp.Load);
 
                     colorAttachments.push({
                         attachment: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
                         resolveTarget: gpuMSAATexture ? colorTextureView : undefined,
-                        loadValue: clearColor !== null ? clearColor : WebGPUConstants.LoadOp.Load,
+                        loadValue: clearColor,
                         storeOp: WebGPUConstants.StoreOp.Store,
                     });
                 }
@@ -2725,7 +2749,7 @@ export class WebGPUEngine extends Engine {
             colorAttachments.push({
                 attachment: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
                 resolveTarget: gpuMSAATexture ? colorTextureView : undefined,
-                loadValue: clearColor !== null ? clearColor : WebGPUConstants.LoadOp.Load,
+                loadValue: clearColorMain !== null ? clearColorMain : WebGPUConstants.LoadOp.Load,
                 storeOp: WebGPUConstants.StoreOp.Store,
             });
         }
@@ -2779,7 +2803,7 @@ export class WebGPUEngine extends Engine {
     private _getCurrentRenderPass(): GPURenderPassEncoder {
         if (this._currentRenderTarget && !this._currentRenderPass) {
             // delayed creation of the render target pass, but we now need to create it as we are requested the render pass
-            this._startRenderTargetRenderPass(this._currentRenderTarget, null, false, false);
+            this._startRenderTargetRenderPass(this._currentRenderTarget, null, null, false, false);
         } else if (!this._currentRenderPass) {
             this._startMainRenderPass(false);
         }
@@ -3556,15 +3580,14 @@ export class WebGPUEngine extends Engine {
                 if (index > 0) {
                     const mrtTexture = textureArray[index - 1];
                     const gpuMRTWrapper = mrtTexture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
-                    const gpuMRTTexture = gpuMRTWrapper?.underlyingResource as Nullable<WebGPUHardwareTexture>;
                     descriptors.push({
-                        format: gpuMRTTexture?.format ?? this._colorFormat,
+                        format: gpuMRTWrapper?.format ?? this._colorFormat,
                         alphaBlend,
                         colorBlend,
                         writeMask,
                     });
                 } else {
-                    // TODO WEBGPU what to do when this._mrtAttachments[i] === 0? The corresponding texture should be bound as an "empty" texture
+                    descriptors.push(undefined as any); // TODO WEBGPU what to do when this._mrtAttachments[i] === 0? The corresponding texture should be bound as an "empty" texture
                 }
             }
         } else {
