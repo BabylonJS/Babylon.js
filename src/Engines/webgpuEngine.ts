@@ -603,6 +603,7 @@ export class WebGPUEngine extends Engine {
         }
 
         if (this.dbgVerboseLogsForFirstFrames) {
+            if ((this as any)._count === undefined) { (this as any)._count = 0; }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                 console.log("frame #" + (this as any)._count + " - setSize called -", width, height);
             }
@@ -713,6 +714,7 @@ export class WebGPUEngine extends Engine {
             renderPass.setViewport(x, y, w, h, 0, 1);
 
             if (this.dbgVerboseLogsForFirstFrames) {
+                if ((this as any)._count === undefined) { (this as any)._count = 0; }
                 if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                     console.log("frame #" + (this as any)._count + " - viewport applied - (", x, y, w, h, ") current pass is main pass=" + (renderPass === this._mainRenderPassWrapper.renderPass));
                 }
@@ -757,6 +759,7 @@ export class WebGPUEngine extends Engine {
             renderPass.setScissorRect(x, y, w, h);
 
             if (this.dbgVerboseLogsForFirstFrames) {
+                if ((this as any)._count === undefined) { (this as any)._count = 0; }
                 if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                     console.log("frame #" + (this as any)._count + " - scissor applied - (", x, y, w, h, ") current pass is main pass=" + (renderPass === this._mainRenderPassWrapper.renderPass));
                 }
@@ -799,6 +802,7 @@ export class WebGPUEngine extends Engine {
         }
 
         if (this.dbgVerboseLogsForFirstFrames) {
+            if ((this as any)._count === undefined) { (this as any)._count = 0; }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                 console.log("frame #" + (this as any)._count + " - clear called - backBuffer=", backBuffer, " depth=", depth, " stencil=", stencil);
             }
@@ -809,10 +813,29 @@ export class WebGPUEngine extends Engine {
             if (this._currentRenderPass) {
                 this._endRenderTargetRenderPass();
             }
-            this._startRenderTargetRenderPass(this._currentRenderTarget!, backBuffer ? color : null, depth, stencil);
+            this._startRenderTargetRenderPass(this._currentRenderTarget!, backBuffer ? color : null, backBuffer ? color : null, depth, stencil);
         } else {
             this._startMainRenderPass(true, backBuffer ? color : null, depth, stencil);
         }
+    }
+
+    /**
+     * Clears a list of attachments
+     * @param attachments list of the attachments
+     * @param colorMain clear color for the main attachment (the first one)
+     * @param colorOthers clear color for the other attachments
+     * @param clearDepth true to clear the depth buffer. Used only for the first attachment
+     * @param clearStencil true to clear the stencil buffer. Used only for the first attachment
+     */
+    public clearAttachments(attachments: number[], colorMain: Nullable<IColor4Like>, colorOthers: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean): void {
+        if (attachments.length === 0 || !this._currentRenderTarget) {
+            return;
+        }
+
+        if (this._currentRenderPass) {
+            this._endRenderTargetRenderPass();
+        }
+        this._startRenderTargetRenderPass(this._currentRenderTarget!, colorMain, colorOthers, clearDepth, clearStencil);
     }
 
     //------------------------------------------------------------------------------
@@ -1831,6 +1854,7 @@ export class WebGPUEngine extends Engine {
             this._setInternalTexture(name, internalTexture, baseName, textureIndex);
         } else {
             if (this.dbgVerboseLogsForFirstFrames) {
+                if ((this as any)._count === undefined) { (this as any)._count = 0; }
                 if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                     console.log("frame #" + (this as any)._count + " - _setTexture called with a null _currentEffect! texture=", texture);
                 }
@@ -1885,6 +1909,7 @@ export class WebGPUEngine extends Engine {
         const mipmapCount = WebGPUTextureHelper.ComputeNumMipmapLevels(texture.width, texture.height);
 
         if (this.dbgVerboseLogsForFirstFrames) {
+            if ((this as any)._count === undefined) { (this as any)._count = 0; }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                 console.log("frame #" + (this as any)._count + " - generate mipmaps called - width=", texture.width, "height=", texture.height, "isCube=", texture.isCube);
             }
@@ -2587,6 +2612,7 @@ export class WebGPUEngine extends Engine {
         this.flushFramebuffer();
 
         if (this.dbgVerboseLogsForFirstFrames) {
+            if ((this as any)._count === undefined) { (this as any)._count = 0; }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                 console.log("frame #" + (this as any)._count + " - counters - numPipelineDescriptorCreation=", this._counters.numPipelineDescriptorCreation, ", numBindGroupsCreation=", this._counters.numBindGroupsCreation,
                     ", numVertexInputCacheCreation=", this._counters.numVertexInputCacheCreation);
@@ -2598,6 +2624,7 @@ export class WebGPUEngine extends Engine {
 
         if (this._features._collectUbosUpdatedInFrame) {
             if (this.dbgVerboseLogsForFirstFrames) {
+                if ((this as any)._count === undefined) { (this as any)._count = 0; }
                 if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                     const list: Array<string> = [];
                     for (const name in UniformBuffer._updatedUbosInFrame) {
@@ -2618,6 +2645,7 @@ export class WebGPUEngine extends Engine {
         super.endFrame();
 
         if (this.dbgVerboseLogsForFirstFrames) {
+            if ((this as any)._count === undefined) { (this as any)._count = 0; }
             if ((this as any)._count < this.dbgVerboseLogsNumFrames) {
                 console.log("%c frame #" + (this as any)._count + " - end", "background: #ffff00");
             }
@@ -2662,7 +2690,7 @@ export class WebGPUEngine extends Engine {
 
         // restart the render pass
         if (currentPassType === 1) {
-            this._startRenderTargetRenderPass(this._currentRenderTarget!, null, false, false);
+            this._startRenderTargetRenderPass(this._currentRenderTarget!, null, null, false, false);
         } else if (currentPassType === 2) {
             this._startMainRenderPass(false);
         }
@@ -2672,7 +2700,7 @@ export class WebGPUEngine extends Engine {
     //                              Render Pass
     //------------------------------------------------------------------------------
 
-    private _startRenderTargetRenderPass(internalTexture: InternalTexture, clearColor: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean) {
+    private _startRenderTargetRenderPass(internalTexture: InternalTexture, clearColorMain: Nullable<IColor4Like>, clearColorOtherAttachments: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean) {
         const gpuWrapper = internalTexture._hardwareTexture as WebGPUHardwareTexture;
         const gpuTexture = gpuWrapper.underlyingResource!;
 
@@ -2694,14 +2722,19 @@ export class WebGPUEngine extends Engine {
                 const gpuMRTWrapper = mrtTexture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
                 const gpuMRTTexture = gpuMRTWrapper?.underlyingResource;
                 if (gpuMRTWrapper && gpuMRTTexture) {
+                    const viewDescriptor = {
+                        ...this._rttRenderPassWrapper.colorAttachmentViewDescriptor,
+                        format: gpuMRTWrapper.format,
+                    };
                     const gpuMSAATexture = gpuMRTWrapper.msaaTexture;
-                    const colorTextureView = gpuMRTTexture.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
-                    const colorMSAATextureView = gpuMSAATexture?.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
+                    const colorTextureView = gpuMRTTexture.createView(viewDescriptor);
+                    const colorMSAATextureView = gpuMSAATexture?.createView(viewDescriptor);
+                    const clearColor = i === 0 ? (clearColorMain ? clearColorMain : WebGPUConstants.LoadOp.Load) : (clearColorOtherAttachments ? clearColorOtherAttachments : WebGPUConstants.LoadOp.Load);
 
                     colorAttachments.push({
                         attachment: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
                         resolveTarget: gpuMSAATexture ? colorTextureView : undefined,
-                        loadValue: clearColor !== null ? clearColor : WebGPUConstants.LoadOp.Load,
+                        loadValue: clearColor,
                         storeOp: WebGPUConstants.StoreOp.Store,
                     });
                 }
@@ -2716,7 +2749,7 @@ export class WebGPUEngine extends Engine {
             colorAttachments.push({
                 attachment: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
                 resolveTarget: gpuMSAATexture ? colorTextureView : undefined,
-                loadValue: clearColor !== null ? clearColor : WebGPUConstants.LoadOp.Load,
+                loadValue: clearColorMain !== null ? clearColorMain : WebGPUConstants.LoadOp.Load,
                 storeOp: WebGPUConstants.StoreOp.Store,
             });
         }
@@ -2736,6 +2769,7 @@ export class WebGPUEngine extends Engine {
         this._rttRenderPassWrapper.renderPass = this._renderTargetEncoder.beginRenderPass(this._rttRenderPassWrapper.renderPassDescriptor);
 
         if (this.dbgVerboseLogsForFirstFrames) {
+            if ((this as any)._count === undefined) { (this as any)._count = 0; }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                 console.log("frame #" + (this as any)._count + " - render target begin pass - internalTexture.uniqueId=", internalTexture.uniqueId, this._rttRenderPassWrapper.renderPassDescriptor);
             }
@@ -2753,6 +2787,7 @@ export class WebGPUEngine extends Engine {
         if (this._currentRenderPass) {
             this._currentRenderPass.endPass();
             if (this.dbgVerboseLogsForFirstFrames) {
+                if ((this as any)._count === undefined) { (this as any)._count = 0; }
                 if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                     console.log("frame #" + (this as any)._count + " - render target end pass - internalTexture.uniqueId=", this._currentRenderTarget?.uniqueId);
                 }
@@ -2768,7 +2803,7 @@ export class WebGPUEngine extends Engine {
     private _getCurrentRenderPass(): GPURenderPassEncoder {
         if (this._currentRenderTarget && !this._currentRenderPass) {
             // delayed creation of the render target pass, but we now need to create it as we are requested the render pass
-            this._startRenderTargetRenderPass(this._currentRenderTarget, null, false, false);
+            this._startRenderTargetRenderPass(this._currentRenderTarget, null, null, false, false);
         } else if (!this._currentRenderPass) {
             this._startMainRenderPass(false);
         }
@@ -2813,6 +2848,7 @@ export class WebGPUEngine extends Engine {
         }
 
         if (this.dbgVerboseLogsForFirstFrames) {
+            if ((this as any)._count === undefined) { (this as any)._count = 0; }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                 console.log("frame #" + (this as any)._count + " - main begin pass - texture width=" + (this._mainTextureExtends as any).width, " height=" + (this._mainTextureExtends as any).height, this._mainRenderPassWrapper.renderPassDescriptor);
             }
@@ -2895,6 +2931,7 @@ export class WebGPUEngine extends Engine {
         if (this._mainRenderPassWrapper.renderPass !== null) {
             this._mainRenderPassWrapper.renderPass.endPass();
             if (this.dbgVerboseLogsForFirstFrames) {
+                if ((this as any)._count === undefined) { (this as any)._count = 0; }
                 if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                     console.log("frame #" + (this as any)._count + " - main end pass");
                 }
@@ -2996,6 +3033,7 @@ export class WebGPUEngine extends Engine {
         };
 
         if (this.dbgVerboseLogsForFirstFrames) {
+            if ((this as any)._count === undefined) { (this as any)._count = 0; }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                 console.log("frame #" + (this as any)._count + " - bindFramebuffer called - face=", faceIndex, "lodLevel=", lodLevel, "layer=", layer, this._rttRenderPassWrapper.colorAttachmentViewDescriptor, this._rttRenderPassWrapper.depthAttachmentViewDescriptor);
             }
@@ -3542,15 +3580,14 @@ export class WebGPUEngine extends Engine {
                 if (index > 0) {
                     const mrtTexture = textureArray[index - 1];
                     const gpuMRTWrapper = mrtTexture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
-                    const gpuMRTTexture = gpuMRTWrapper?.underlyingResource as Nullable<WebGPUHardwareTexture>;
                     descriptors.push({
-                        format: gpuMRTTexture?.format ?? this._colorFormat,
+                        format: gpuMRTWrapper?.format ?? this._colorFormat,
                         alphaBlend,
                         colorBlend,
                         writeMask,
                     });
                 } else {
-                    // TODO WEBGPU what to do when this._mrtAttachments[i] === 0? The corresponding texture should be bound as an "empty" texture
+                    descriptors.push(undefined as any); // TODO WEBGPU what to do when this._mrtAttachments[i] === 0? The corresponding texture should be bound as an "empty" texture
                 }
             }
         } else {

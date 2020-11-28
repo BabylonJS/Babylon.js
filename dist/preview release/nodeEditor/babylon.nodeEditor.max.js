@@ -65291,7 +65291,7 @@ var TextureLineComponent = /** @class */ (function (_super) {
                         return [4 /*yield*/, engine.readPixels(0, 0, width, height)];
                     case 1:
                         bufferView = _a.sent();
-                        data = new Uint8Array(bufferView.buffer);
+                        data = new Uint8Array(bufferView.buffer, 0, bufferView.byteLength);
                         if (!texture.isCube) {
                             if (!options.displayRed || !options.displayGreen || !options.displayBlue) {
                                 for (i = 0; i < width * height * 4; i += 4) {
