@@ -18219,6 +18219,15 @@ declare module BABYLON {
              * Restores the webgl state to only draw on the main color attachment
              */
             restoreSingleAttachment(): void;
+            /**
+             * Clears a list of attachments
+             * @param attachments list of the attachments
+             * @param colorMain clear color for the main attachment (the first one)
+             * @param colorOthers clear color for the other attachments
+             * @param clearDepth true to clear the depth buffer. Used only for the first attachment
+             * @param clearStencil true to clear the stencil buffer. Used only for the first attachment
+             */
+            clearAttachments(attachments: number[], colorMain: Nullable<IColor4Like>, colorOthers: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean): void;
         }
 }
 declare module BABYLON {
@@ -22923,7 +22932,6 @@ declare module BABYLON {
         prePassRT: MultiRenderTarget;
         private _multiRenderAttachments;
         private _defaultAttachments;
-        private _clearAttachments;
         private _postProcesses;
         private readonly _clearColor;
         /**
@@ -44908,6 +44916,15 @@ declare module BABYLON {
          * @param stencil defines if the stencil buffer must be cleared
          */
         clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil?: boolean): void;
+        /**
+         * Clears a list of attachments
+         * @param attachments list of the attachments
+         * @param colorMain clear color for the main attachment (the first one)
+         * @param colorOthers clear color for the other attachments
+         * @param clearDepth true to clear the depth buffer. Used only for the first attachment
+         * @param clearStencil true to clear the stencil buffer. Used only for the first attachment
+         */
+        clearAttachments(attachments: number[], colorMain: Nullable<IColor4Like>, colorOthers: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean): void;
         /**
          * Creates a vertex buffer
          * @param data the data for the vertex buffer
