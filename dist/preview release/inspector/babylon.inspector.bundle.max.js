@@ -52566,7 +52566,7 @@ var TextureCanvasManager = /** @class */ (function () {
                         return [4 /*yield*/, this._3DEngine.readPixels(0, 0, this._size.width, this._size.height)];
                     case 1:
                         bufferView = _b.sent();
-                        this._imageData = new Uint8Array(bufferView.buffer);
+                        this._imageData = new Uint8Array(bufferView.buffer, 0, bufferView.byteLength);
                         return [3 /*break*/, 3];
                     case 2:
                         this._imageData = this._2DCanvas.getContext('2d').getImageData(0, 0, this._size.width, this._size.height).data;
@@ -60775,7 +60775,7 @@ var TextureHelper = /** @class */ (function () {
                         return [4 /*yield*/, engine.readPixels(0, 0, width, height)];
                     case 1:
                         bufferView = _a.sent();
-                        data = new Uint8Array(bufferView.buffer);
+                        data = new Uint8Array(bufferView.buffer, 0, bufferView.byteLength);
                         if (!channels.R || !channels.G || !channels.B || !channels.A) {
                             for (i = 0; i < width * height * 4; i += 4) {
                                 // If alpha is the only channel, just display alpha across all channels
