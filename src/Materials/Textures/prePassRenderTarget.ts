@@ -7,6 +7,7 @@ import { Scene } from "../../scene";
 import { Constants } from "../../Engines/constants";
 import { PostProcess } from "../../PostProcesses/postProcess";
 import { ImageProcessingPostProcess } from "../../PostProcesses/imageProcessingPostProcess";
+import { PrePassEffectConfiguration } from "../../Rendering/prePassEffectConfiguration";
 
 /**
  * A multi render target designed to render the prepass.
@@ -36,6 +37,11 @@ export class PrePassRenderTarget extends MultiRenderTarget {
      * Image processing post process for composition
      */
     public imageProcessingPostProcess: ImageProcessingPostProcess;
+
+    /**
+     * Configuration for prepass effects
+     */
+    public _effectConfigurations: PrePassEffectConfiguration[] = [];
 
     private _prePassRenderer: PrePassRenderer;
 
@@ -139,6 +145,25 @@ export class PrePassRenderTarget extends MultiRenderTarget {
 	}
 
 	/**
+	 * Adds an effect configuration to the prepass render target.
+	 * If an effect has already been added, it won't add it twice and will return the configuration
+	 * already present.
+	 * @param cfg the effect configuration
+	 * @return the effect configuration now used by the prepass
+	 */
+	public _addEffectConfiguration(cfg: PrePassEffectConfiguration) : PrePassEffectConfiguration {
+	    // Do not add twice
+	    for (let i = 0; i < this._effectConfigurations.length; i++) {
+	        if (this._effectConfigurations[i].name === cfg.name) {
+	            return this._effectConfigurations[i];
+	        }
+	    }
+
+	    this._effectConfigurations.push(cfg);
+	    return cfg;
+	}
+
+	/**
 	 * Prepares this rt to rebuild attachments according to the current texture layout
 	 */
 	public _reinitializeAttachments() {
@@ -166,7 +191,9 @@ export class PrePassRenderTarget extends MultiRenderTarget {
 	        this.useGeometryBufferFallback = true;
 	    }
 
+	    const applyByPostProcess = this._scene.imageProcessingConfiguration?.applyByPostProcess;
 	    this.imageProcessingPostProcess = new ImageProcessingPostProcess("prePassComposition", 1, null, undefined, this._engine);
+	    this.imageProcessingPostProcess.imageProcessingConfiguration.applyByPostProcess = applyByPostProcess;
 	}
 
 	public _updateGeometryBufferLayout() {
@@ -255,6 +282,13 @@ export class PrePassRenderTarget extends MultiRenderTarget {
 	 */
 	public dispose() {
 		super.dispose();
+
+		for (let i = 0; i < this._effectConfigurations.length; i++) {
+		    if (this._effectConfigurations[i].dispose) {
+		        this._effectConfigurations[i].dispose!();
+		    }
+		}
+
 		if (this.imageProcessingPostProcess) {
 	        this.imageProcessingPostProcess.dispose();
 		}

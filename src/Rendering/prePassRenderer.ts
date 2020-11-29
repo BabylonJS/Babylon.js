@@ -6,12 +6,13 @@ import { PostProcess } from "../PostProcesses/postProcess";
 import { Effect } from "../Materials/effect";
 import { _DevTools } from '../Misc/devTools';
 import { Color4 } from "../Maths/math.color";
-import { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 import { Nullable } from "../types";
 import { AbstractMesh } from '../Meshes/abstractMesh';
 import { Camera } from '../Cameras/camera';
 import { Material } from '../Materials/material';
 import { SubMesh } from '../Meshes/subMesh';
+import { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
+import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 
 /**
  * Renders a pre pass of the scene
@@ -68,14 +69,9 @@ export class PrePassRenderer {
 
     private readonly _clearColor = new Color4(0, 0, 0, 0);
 
-    /**
-     * Configuration for prepass effects
-     */
-    private _effectConfigurations: PrePassEffectConfiguration[] = [];
-
     private _enabled: boolean = false;
 
-    private _needsCompositionForThisCamera = false;
+    private _needsCompositionForThisPass = false;
 
     /**
      * Indicates if the prepass is enabled
@@ -101,9 +97,10 @@ export class PrePassRenderer {
 
         PrePassRenderer._SceneComponentInitialization(this._scene);
         this.defaultRT = this._createRenderTarget();
+        this._setRenderTarget(null);
     }
 
-    private _createRenderTarget() : PrePassRenderTarget {
+    public _createRenderTarget() : PrePassRenderTarget {
         const rt = new PrePassRenderTarget("sceneprePassRT", this, { width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() }, 0, this._scene,
             { generateMipMaps: false, generateDepthTexture: true, defaultType: Constants.TEXTURETYPE_UNSIGNED_INT, types: [] });
         rt.samples = 1;
@@ -154,12 +151,20 @@ export class PrePassRenderer {
     /**
      * @hidden
      */
-    public _beforeCameraDraw(camera: Camera) {
+    public _beforeDraw(camera: Nullable<Camera>, texture: Nullable<RenderTargetTexture>) {
         if (this._isDirty) {
             this._update(this._currentTarget);
         }
 
         if (!this._enabled) {
+            // Prepass disabled, we render only on 1 color attachment
+            if (texture) {
+                texture._bindFrameBuffer();
+            } else {
+                this._engine.restoreDefaultFramebuffer();
+            }
+            this._engine.restoreSingleAttachment();
+
             return;
         }
 
@@ -168,17 +173,17 @@ export class PrePassRenderer {
             this._currentTarget._geometryBuffer.renderList!.length = 0;
         }
 
-        this._setupOutputForCamera(this._currentTarget, camera);
+        this._setupOutputForThisPass(this._currentTarget, camera, texture ? texture.postProcesses : []);
     }
 
     /**
      * @hidden
      */
-    public _afterCameraDraw(camera: Camera) {
+    public _afterDraw(camera: Nullable<Camera>, texture: Nullable<RenderTargetTexture>) {
         if (this._enabled) {
             this._scene.postProcessManager._prepareFrame();
             const firstCameraPP = camera && camera._getFirstPostProcess();
-            let outputTexture = firstCameraPP ? firstCameraPP.inputTexture : null
+            let outputTexture = firstCameraPP ? firstCameraPP.inputTexture : (texture ? texture.getInternalTexture() : null);
 
             // Build post process chain for this prepass post draw
             let postProcessChain = this._currentTarget._beforeCompositionPostProcesses;
@@ -187,8 +192,8 @@ export class PrePassRenderer {
             if (this._currentTarget !== this.defaultRT) {
                 postProcessChain = [];
             }
-            
-            if (this._needsCompositionForThisCamera) {
+
+            if (this._needsCompositionForThisPass) {
                 postProcessChain = postProcessChain.concat([this._currentTarget.imageProcessingPostProcess]);
             }
 
@@ -248,31 +253,22 @@ export class PrePassRenderer {
     }
 
     /**
-     * Adds an effect configuration to the prepass.
+     * Adds an effect configuration to the current prepass render target.
      * If an effect has already been added, it won't add it twice and will return the configuration
      * already present.
      * @param cfg the effect configuration
      * @return the effect configuration now used by the prepass
      */
-    public addEffectConfiguration(cfg: PrePassEffectConfiguration) : PrePassEffectConfiguration {
-        // Do not add twice
-        for (let i = 0; i < this._effectConfigurations.length; i++) {
-            if (this._effectConfigurations[i].name === cfg.name) {
-                return this._effectConfigurations[i];
-            }
-        }
-
-        this._effectConfigurations.push(cfg);
-        return cfg;
+    public addEffectConfiguration(effectConfiguration: PrePassEffectConfiguration): PrePassEffectConfiguration {
+        return this.getRenderTarget()._addEffectConfiguration(effectConfiguration);
     }
 
     private _enable(prePassRenderTarget: PrePassRenderTarget) {
-        // TODO : loop over all rts, this function shouldn't be called with prePassRenderTarget
         const previousMrtCount = prePassRenderTarget.mrtCount;
 
-        for (let i = 0; i < this._effectConfigurations.length; i++) {
-            if (this._effectConfigurations[i].enabled) {
-                this._enableTextures(prePassRenderTarget, this._effectConfigurations[i].texturesRequired);
+        for (let i = 0; i < prePassRenderTarget._effectConfigurations.length; i++) {
+            if (prePassRenderTarget._effectConfigurations[i].enabled) {
+                this._enableTextures(prePassRenderTarget, prePassRenderTarget._effectConfigurations[i].texturesRequired);
             }
         }
 
@@ -283,15 +279,17 @@ export class PrePassRenderer {
         prePassRenderTarget._updateGeometryBufferLayout();
         prePassRenderTarget._resetPostProcessChain();
 
-        for (let i = 0; i < this._effectConfigurations.length; i++) {
-            if (this._effectConfigurations[i].enabled) {
-                // TODO : 1 post process per prepass RT to avoid recreating textures if size are differing
-                if (!this._effectConfigurations[i].postProcess && this._effectConfigurations[i].createPostProcess) {
-                    this._effectConfigurations[i].createPostProcess!();
+        for (let i = 0; i < prePassRenderTarget._effectConfigurations.length; i++) {
+            if (prePassRenderTarget._effectConfigurations[i].enabled) {
+                // TODO : subsurface scattering has 1 scene-wide effect configuration
+                // solution : do not stock postProcess on effectConfiguration, but in the prepassRenderTarget (hashmap configuration => postProcess)
+                // And call createPostProcess whenever the post process does not exist in the RT
+                if (!prePassRenderTarget._effectConfigurations[i].postProcess && prePassRenderTarget._effectConfigurations[i].createPostProcess) {
+                    prePassRenderTarget._effectConfigurations[i].createPostProcess!();
                 }
 
-                if (this._effectConfigurations[i].postProcess) {
-                    prePassRenderTarget._beforeCompositionPostProcesses.push(this._effectConfigurations[i].postProcess!);
+                if (prePassRenderTarget._effectConfigurations[i].postProcess) {
+                    prePassRenderTarget._beforeCompositionPostProcesses.push(prePassRenderTarget._effectConfigurations[i].postProcess!);
                 }
             }
         }
@@ -308,11 +306,10 @@ export class PrePassRenderer {
     private _disable(prePassRenderTarget: PrePassRenderTarget) {
         this._setState(prePassRenderTarget, false);
 
-        // TODO : separate and loop over all rt, this function shouldn't need to be called with prePassRenderTarget
         prePassRenderTarget._resetLayout();
 
-        for (let i = 0; i < this._effectConfigurations.length; i++) {
-            this._effectConfigurations[i].enabled = false;
+        for (let i = 0; i < prePassRenderTarget._effectConfigurations.length; i++) {
+            prePassRenderTarget._effectConfigurations[i].enabled = false;
         }
     }
 
@@ -327,27 +324,31 @@ export class PrePassRenderer {
     //     }
     // }
 
-    private _setupOutputForCamera(prePassRenderTarget: PrePassRenderTarget, camera: Camera) {
+    private _setupOutputForThisPass(prePassRenderTarget: PrePassRenderTarget, camera: Nullable<Camera>, postProcesses: Nullable<PostProcess>[] = []) {
         // Here we search for an image composition post process
         // If no ipp if found, we use the prepass built-in
         // We also set the framebuffer to the input texture of the first post process that is to come
-        const secondaryCamera = this._scene.activeCameras && this._scene.activeCameras.length && this._scene.activeCameras.indexOf(camera) !== 0;
-        this._needsCompositionForThisCamera = !this._cameraHasImageProcessing(camera) && !this.disableGammaTransform && !secondaryCamera;
-        const firstCameraPP = camera && camera._getFirstPostProcess();
+        // Order is : draw ===> prePassRenderTarget._postProcesses ==> ipp ==> camera._postProcesses
+        const secondaryCamera = camera && this._scene.activeCameras && !!this._scene.activeCameras.length && this._scene.activeCameras.indexOf(camera) !== 0;
+        const postProcessesSource = camera ? camera._postProcesses : postProcesses;
+        this._needsCompositionForThisPass = !this._hasImageProcessing(postProcessesSource) && 
+            !this.disableGammaTransform && 
+            !secondaryCamera;
+        const firstCameraPP = this._getFirstPostProcess(postProcessesSource);
         const firstPrePassPP = prePassRenderTarget._beforeCompositionPostProcesses && prePassRenderTarget._beforeCompositionPostProcesses[0];
         let firstPP = null;
 
         prePassRenderTarget.imageProcessingPostProcess.restoreDefaultInputTexture();
 
-        // Setting the defaultRT as input texture of the first PP
+        // Setting the prePassRenderTarget as input texture of the first PP
         if (firstPrePassPP) {
-            firstPrePassPP.inputTexture = this.defaultRT.getInternalTexture()!;
+            firstPrePassPP.inputTexture = prePassRenderTarget.getInternalTexture()!;
             firstPP = firstPrePassPP;
-        } else if (this._needsCompositionForThisCamera) {
-            prePassRenderTarget.imageProcessingPostProcess.inputTexture = this.defaultRT.getInternalTexture()!;
+        } else if (this._needsCompositionForThisPass) {
+            prePassRenderTarget.imageProcessingPostProcess.inputTexture = prePassRenderTarget.getInternalTexture()!;
             firstPP = prePassRenderTarget.imageProcessingPostProcess;
         } else if (firstCameraPP) {
-            firstCameraPP.inputTexture = this.defaultRT.getInternalTexture()!;
+            firstCameraPP.inputTexture = prePassRenderTarget.getInternalTexture()!;
             firstPP = firstCameraPP;
         }
         
@@ -358,17 +359,30 @@ export class PrePassRenderer {
         this._bindFrameBuffer(prePassRenderTarget);
     }
 
-    private _cameraHasImageProcessing(camera: Camera): boolean {
+    private _hasImageProcessing(postProcesses: Nullable<PostProcess>[]): boolean {
         let isIPPAlreadyPresent = false;
-        if (camera._postProcesses) {
-            for (let i = 0; i < camera._postProcesses.length; i++) {
-                if (camera._postProcesses[i]?.getClassName() === "ImageProcessingPostProcess") {
+        if (postProcesses) {
+            for (let i = 0; i < postProcesses.length; i++) {
+                if (postProcesses[i]?.getClassName() === "ImageProcessingPostProcess") {
                     isIPPAlreadyPresent = true;
                 }
             }
         }
 
         return isIPPAlreadyPresent;
+    }
+
+    /**
+     * Internal, gets the first post proces.
+     * @returns the first post process to be run on this camera.
+     */
+    private _getFirstPostProcess(postProcesses: Nullable<PostProcess>[]): Nullable<PostProcess> {
+        for (var ppIndex = 0; ppIndex < postProcesses.length; ppIndex++) {
+            if (postProcesses[ppIndex] !== null) {
+                return postProcesses[ppIndex];
+            }
+        }
+        return null;
     }
 
     /**
@@ -426,12 +440,6 @@ export class PrePassRenderer {
         if (enablePrePass) {
             this._enable(prePassRenderTarget);
         }
-
-        if (!this.enabled) {
-            // Prepass disabled, we render only on 1 color attachment
-            this._engine.restoreDefaultFramebuffer();
-            this._engine.restoreSingleAttachment();
-        }
     }
 
     private _markAllMaterialsAsPrePassDirty() {
@@ -446,12 +454,6 @@ export class PrePassRenderer {
      * Disposes the prepass renderer.
      */
     public dispose() {
-        for (let i = 0; i < this._effectConfigurations.length; i++) {
-            if (this._effectConfigurations[i].dispose) {
-                this._effectConfigurations[i].dispose!();
-            }
-        }
-
         for (let i = 0; i < this._renderTargets.length; i++) {
             this._renderTargets[i].dispose();
         }
