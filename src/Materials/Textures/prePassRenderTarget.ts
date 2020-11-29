@@ -78,7 +78,7 @@ export class PrePassRenderTarget extends MultiRenderTarget {
 	    {
 	        type: Constants.PREPASS_POSITION_TEXTURE_TYPE,
 	        format: Constants.TEXTURETYPE_HALF_FLOAT,
-	    },
+	    },z
 	    {
 	        type: Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
 	        format: Constants.TEXTURETYPE_HALF_FLOAT,
