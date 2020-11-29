@@ -107,6 +107,8 @@ export class PrePassRendererSceneComponent implements ISceneComponent {
 
     private _beforeCameraDraw(camera: Camera) {
         if (this.scene.prePassRenderer) {
+            // TODO choose the right rt
+            this.scene.prePassRenderer._setRenderTarget(null);
             this.scene.prePassRenderer._beforeCameraDraw(camera);
         }
     }
@@ -119,7 +121,9 @@ export class PrePassRendererSceneComponent implements ISceneComponent {
 
     private _beforeClearStage() {
         if (this.scene.prePassRenderer) {
-            this.scene.prePassRenderer.clear();
+            // TODO choose the right rt
+            this.scene.prePassRenderer._setRenderTarget(null)
+            this.scene.prePassRenderer._clear();
         }
     }
 

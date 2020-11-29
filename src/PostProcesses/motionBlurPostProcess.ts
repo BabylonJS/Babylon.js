@@ -233,8 +233,8 @@ export class MotionBlurPostProcess extends PostProcess {
             const velocityIndex = this._geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.VELOCITY_TEXTURE_TYPE);
             effect.setTexture("velocitySampler", this._geometryBufferRenderer.getGBuffer().textures[velocityIndex]);
         } else if (this._prePassRenderer) {
-            const velocityIndex = this._prePassRenderer.getIndex(Constants.PREPASS_VELOCITY_TEXTURE_TYPE);
-            effect.setTexture("velocitySampler", this._prePassRenderer.prePassRT.textures[velocityIndex]);
+            const velocityIndex = this._prePassRenderer.getRenderTarget().getIndex(Constants.PREPASS_VELOCITY_TEXTURE_TYPE);
+            effect.setTexture("velocitySampler", this._prePassRenderer.getRenderTarget().textures[velocityIndex]);
         }
     }
 
@@ -259,8 +259,8 @@ export class MotionBlurPostProcess extends PostProcess {
             const depthIndex = this._geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.DEPTHNORMAL_TEXTURE_TYPE);
             effect.setTexture("depthSampler", this._geometryBufferRenderer.getGBuffer().textures[depthIndex]);
         } else if (this._prePassRenderer) {
-            const depthIndex = this._prePassRenderer.getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE);
-            effect.setTexture("depthSampler", this._prePassRenderer.prePassRT.textures[depthIndex]);
+            const depthIndex = this._prePassRenderer.getRenderTarget().getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE);
+            effect.setTexture("depthSampler", this._prePassRenderer.getRenderTarget().textures[depthIndex]);
         }
     }
 

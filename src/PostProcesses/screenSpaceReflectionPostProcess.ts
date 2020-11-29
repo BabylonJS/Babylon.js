@@ -121,13 +121,13 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
                 effect.setTexture("reflectivitySampler", geometryBufferRenderer.getGBuffer().textures[roughnessIndex]);
             } else {
                 // Samplers
-                const positionIndex = prePassRenderer.getIndex(Constants.PREPASS_POSITION_TEXTURE_TYPE);
-                const roughnessIndex = prePassRenderer.getIndex(Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE);
-                const normalIndex = prePassRenderer.getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE);
+                const positionIndex = prePassRenderer.getRenderTarget().getIndex(Constants.PREPASS_POSITION_TEXTURE_TYPE);
+                const roughnessIndex = prePassRenderer.getRenderTarget().getIndex(Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE);
+                const normalIndex = prePassRenderer.getRenderTarget().getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE);
 
-                effect.setTexture("normalSampler", prePassRenderer.prePassRT.textures[normalIndex]);
-                effect.setTexture("positionSampler", prePassRenderer.prePassRT.textures[positionIndex]);
-                effect.setTexture("reflectivitySampler", prePassRenderer.prePassRT.textures[roughnessIndex]);
+                effect.setTexture("normalSampler", prePassRenderer.getRenderTarget().textures[normalIndex]);
+                effect.setTexture("positionSampler", prePassRenderer.getRenderTarget().textures[positionIndex]);
+                effect.setTexture("reflectivitySampler", prePassRenderer.getRenderTarget().textures[roughnessIndex]);
             }
 
             // Uniforms
