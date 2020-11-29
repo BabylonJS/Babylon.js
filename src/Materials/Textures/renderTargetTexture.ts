@@ -111,12 +111,7 @@ export class RenderTargetTexture extends Texture {
      * Define if sprites should be rendered in your texture.
      */
     public renderSprites = false;
-    /**
-    * @hidden
-     * Defines if prepass should be rendered in your texture.
-     * This is automatically set by the prepass renderer
-     */
-    public _renderPrePass = false;
+
     /**
      * Define the camera used to render the texture.
      */
@@ -148,6 +143,10 @@ export class RenderTargetTexture extends Texture {
     }
     private _postProcesses: PostProcess[];
     private _resizeObserver: Nullable<Observer<Engine>>;
+
+    private get _prePass() {
+        return !!this._prePassRenderTarget && this._prePassRenderTarget.enabled;
+    }
 
     /**
     * An event triggered when the texture is unbind.
@@ -862,7 +861,7 @@ export class RenderTargetTexture extends Texture {
         }
 
         // Bind
-        if (!this._renderPrePass) {
+        if (!this._prePass) {
             if (this._postProcessManager) {
                 this._postProcessManager._prepareFrame(this._texture, this._postProcesses);
             }
@@ -904,7 +903,7 @@ export class RenderTargetTexture extends Texture {
         if (this.onClearObservable.hasObservers()) {
             this.onClearObservable.notifyObservers(engine);
         } else {
-            if (!this._renderPrePass) {
+            if (!this._prePass) {
                 engine.clear(this.clearColor || scene.clearColor, true, true, true);
             }
         }
@@ -1069,6 +1068,10 @@ export class RenderTargetTexture extends Texture {
         if (this._postProcessManager) {
             this._postProcessManager.dispose();
             this._postProcessManager = null;
+        }
+
+        if (this._prePassRenderTarget) {
+            this._prePassRenderTarget.dispose();
         }
 
         this.clearPostProcesses(true);

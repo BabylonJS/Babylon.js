@@ -24,6 +24,11 @@ export class PrePassRenderTarget extends MultiRenderTarget {
 	 */
 	public mrtCount: number = 0;
 
+	/**
+	 * Is rendering on this prepass texture enabled
+	 */
+	public enabled: boolean = false;
+
 	public _mrtFormats: number[] = [];
 	public _mrtLayout: number[];
     public _textureIndices: number[] = [];
@@ -31,6 +36,8 @@ export class PrePassRenderTarget extends MultiRenderTarget {
     public _multiRenderAttachments: number[];
     public _defaultAttachments: number[];
     public _clearAttachments: number[];
+
+    public _isDirty: boolean = false;
 
     public _beforeCompositionPostProcesses: PostProcess[] = [];
     /**
@@ -283,10 +290,8 @@ export class PrePassRenderTarget extends MultiRenderTarget {
 	public dispose() {
 		super.dispose();
 
-		for (let i = 0; i < this._effectConfigurations.length; i++) {
-		    if (this._effectConfigurations[i].dispose) {
-		        this._effectConfigurations[i].dispose!();
-		    }
+		if (this._scene.prePassRenderer) {
+			this._scene.prePassRenderer.renderTargets.splice(this._scene.prePassRenderer.renderTargets.indexOf(this));
 		}
 
 		if (this.imageProcessingPostProcess) {
