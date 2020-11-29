@@ -8,6 +8,8 @@ import { SubMesh } from "../Meshes/subMesh";
 import { _InstancesBatch } from "../Meshes/mesh";
 import { Effect } from "../Materials/effect";
 import { Camera } from '../Cameras/camera';
+import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { PrePassRenderTarget } from "../Materials/Textures/prePassRenderTarget";
 
 declare module "../abstractScene" {
     export interface AbstractScene {
@@ -29,6 +31,12 @@ declare module "../abstractScene" {
          * Disables the prepass associated with the scene
          */
         disablePrePassRenderer(): void;
+    }
+}
+
+declare module "../Materials/Textures/renderTargetTexture" {
+    export interface RenderTargetTexture {
+        prePassRenderTarget: PrePassRenderTarget;
     }
 }
 
@@ -100,22 +108,41 @@ export class PrePassRendererSceneComponent implements ISceneComponent {
     public register(): void {
         this.scene._beforeCameraDrawStage.registerStep(SceneComponentConstants.STEP_BEFORECAMERADRAW_PREPASS, this, this._beforeCameraDraw);
         this.scene._afterCameraDrawStage.registerStep(SceneComponentConstants.STEP_AFTERCAMERADRAW_PREPASS, this, this._afterCameraDraw);
+        this.scene._beforeRenderTargetDrawStage.registerStep(SceneComponentConstants.STEP_BEFORERENDERTARGETDRAW_PREPASS, this, this._beforeRenderTargetDraw);
+        this.scene._afterRenderTargetDrawStage.registerStep(SceneComponentConstants.STEP_AFTERCAMERADRAW_PREPASS, this, this._afterRenderTargetDraw);
+
         this.scene._beforeClearStage.registerStep(SceneComponentConstants.STEP_BEFORECLEARSTAGE_PREPASS, this, this._beforeClearStage);
+
         this.scene._beforeRenderingMeshStage.registerStep(SceneComponentConstants.STEP_BEFORERENDERINGMESH_PREPASS, this, this._beforeRenderingMeshStage);
         this.scene._afterRenderingMeshStage.registerStep(SceneComponentConstants.STEP_AFTERRENDERINGMESH_PREPASS, this, this._afterRenderingMeshStage);
     }
 
+    private _beforeRenderTargetDraw(renderTarget: RenderTargetTexture) {
+        if (this.scene.prePassRenderer) {
+            if (!renderTarget.prePassRenderTarget) {
+                renderTarget.prePassRenderTarget = this.scene.prePassRenderer._createRenderTarget();
+            }
+            this.scene.prePassRenderer._setRenderTarget(renderTarget.prePassRenderTarget);
+            this.scene.prePassRenderer._beforeDraw(null, renderTarget);
+        }
+    }
+
+    private _afterRenderTargetDraw(renderTarget: RenderTargetTexture) {
+        if (this.scene.prePassRenderer) {
+            this.scene.prePassRenderer._afterDraw(null, renderTarget);
+        }
+    }
+
     private _beforeCameraDraw(camera: Camera) {
         if (this.scene.prePassRenderer) {
-            // TODO choose the right rt
             this.scene.prePassRenderer._setRenderTarget(null);
-            this.scene.prePassRenderer._beforeCameraDraw(camera);
+            this.scene.prePassRenderer._beforeDraw(camera, null);
         }
     }
 
     private _afterCameraDraw(camera: Camera) {
         if (this.scene.prePassRenderer) {
-            this.scene.prePassRenderer._afterCameraDraw(camera);
+            this.scene.prePassRenderer._afterDraw(camera, null);
         }
     }
 

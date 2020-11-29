@@ -51,7 +51,8 @@ export class SceneComponentConstants {
     public static readonly STEP_BEFORECAMERADRAW_LAYER = 1;
     public static readonly STEP_BEFORECAMERADRAW_PREPASS = 2;
 
-    public static readonly STEP_BEFORERENDERTARGETDRAW_LAYER = 0;
+    public static readonly STEP_BEFORERENDERTARGETDRAW_PREPASS = 0;
+    public static readonly STEP_BEFORERENDERTARGETDRAW_LAYER = 1;
 
     public static readonly STEP_BEFORERENDERINGMESH_PREPASS = 0;
     public static readonly STEP_BEFORERENDERINGMESH_OUTLINE = 1;
@@ -67,7 +68,8 @@ export class SceneComponentConstants {
 
     public static readonly STEP_BEFORECLEAR_PROCEDURALTEXTURE = 0;
 
-    public static readonly STEP_AFTERRENDERTARGETDRAW_LAYER = 0;
+    public static readonly STEP_AFTERRENDERTARGETDRAW_PREPASS = 0;
+    public static readonly STEP_AFTERRENDERTARGETDRAW_LAYER = 1;
 
     public static readonly STEP_AFTERCAMERADRAW_PREPASS = 0;
     public static readonly STEP_AFTERCAMERADRAW_EFFECTLAYER = 1;

@@ -112,6 +112,12 @@ export class RenderTargetTexture extends Texture {
      */
     public renderSprites = false;
     /**
+    * @hidden
+     * Defines if prepass should be rendered in your texture.
+     * This is automatically set by the prepass renderer
+     */
+    public _renderPrePass = false;
+    /**
      * Define the camera used to render the texture.
      */
     public activeCamera: Nullable<Camera>;
@@ -133,6 +139,13 @@ export class RenderTargetTexture extends Texture {
     public ignoreCameraViewport: boolean = false;
 
     private _postProcessManager: Nullable<PostProcessManager>;
+
+    /**
+     * Post-processes for this render target
+     */
+    public get postProcesses() {
+        return this._postProcesses;
+    }
     private _postProcesses: PostProcess[];
     private _resizeObserver: Nullable<Observer<Engine>>;
 
@@ -849,11 +862,13 @@ export class RenderTargetTexture extends Texture {
         }
 
         // Bind
-        if (this._postProcessManager) {
-            this._postProcessManager._prepareFrame(this._texture, this._postProcesses);
-        }
-        else if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(this._texture)) {
-            this._bindFrameBuffer(faceIndex, layer);
+        if (!this._renderPrePass) {
+            if (this._postProcessManager) {
+                this._postProcessManager._prepareFrame(this._texture, this._postProcesses);
+            }
+            else if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(this._texture)) {
+                this._bindFrameBuffer(faceIndex, layer);
+            }
         }
 
         if (this.is2DArray) {
@@ -889,7 +904,9 @@ export class RenderTargetTexture extends Texture {
         if (this.onClearObservable.hasObservers()) {
             this.onClearObservable.notifyObservers(engine);
         } else {
-            engine.clear(this.clearColor || scene.clearColor, true, true, true);
+            if (!this._renderPrePass) {
+                engine.clear(this.clearColor || scene.clearColor, true, true, true);
+            }
         }
 
         if (!this._doNotChangeAspectRatio) {
