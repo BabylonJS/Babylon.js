@@ -36,7 +36,7 @@ declare module "../abstractScene" {
 
 declare module "../Materials/Textures/renderTargetTexture" {
     export interface RenderTargetTexture {
-        prePassRenderTarget: PrePassRenderTarget;
+        _prePassRenderTarget: PrePassRenderTarget;
     }
 }
 
@@ -119,10 +119,11 @@ export class PrePassRendererSceneComponent implements ISceneComponent {
 
     private _beforeRenderTargetDraw(renderTarget: RenderTargetTexture) {
         if (this.scene.prePassRenderer) {
-            if (!renderTarget.prePassRenderTarget) {
-                renderTarget.prePassRenderTarget = this.scene.prePassRenderer._createRenderTarget();
+            if (!renderTarget._prePassRenderTarget) {
+                renderTarget._prePassRenderTarget = this.scene.prePassRenderer._createRenderTarget();
             }
-            this.scene.prePassRenderer._setRenderTarget(renderTarget.prePassRenderTarget);
+            this.scene.prePassRenderer._setRenderTarget(renderTarget._prePassRenderTarget);
+            this.scene.prePassRenderer._clear();
             this.scene.prePassRenderer._beforeDraw(null, renderTarget);
         }
     }
@@ -148,7 +149,6 @@ export class PrePassRendererSceneComponent implements ISceneComponent {
 
     private _beforeClearStage() {
         if (this.scene.prePassRenderer) {
-            // TODO choose the right rt
             this.scene.prePassRenderer._setRenderTarget(null)
             this.scene.prePassRenderer._clear();
         }

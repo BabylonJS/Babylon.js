@@ -896,7 +896,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
     * Flag indicating that the frame buffer binding is handled by another component
     */
-    public prePass: boolean = false;
+    public get prePass(): boolean {
+        return !!this.prePassRenderer && this.prePassRenderer.defaultRT.enabled;
+    }
 
     // Lights
     private _shadowsEnabled = true;
