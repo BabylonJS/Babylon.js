@@ -120,7 +120,7 @@ export class PrePassRendererSceneComponent implements ISceneComponent {
     private _beforeRenderTargetDraw(renderTarget: RenderTargetTexture) {
         if (this.scene.prePassRenderer) {
             if (!renderTarget._prePassRenderTarget) {
-                renderTarget._prePassRenderTarget = this.scene.prePassRenderer._createRenderTarget();
+                renderTarget._prePassRenderTarget = this.scene.prePassRenderer._createRenderTarget(renderTarget.name + "_prePassRTT");
             }
             this.scene.prePassRenderer._setRenderTarget(renderTarget._prePassRenderTarget);
             this.scene.prePassRenderer._clear();

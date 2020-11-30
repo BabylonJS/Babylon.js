@@ -37,7 +37,7 @@ export class PrePassRenderTarget extends MultiRenderTarget {
     public _defaultAttachments: number[];
     public _clearAttachments: number[];
 
-    public _isDirty: boolean = false;
+    public _isDirty: boolean = true;
 
     public _beforeCompositionPostProcesses: PostProcess[] = [];
     /**
@@ -78,7 +78,7 @@ export class PrePassRenderTarget extends MultiRenderTarget {
 	    {
 	        type: Constants.PREPASS_POSITION_TEXTURE_TYPE,
 	        format: Constants.TEXTURETYPE_HALF_FLOAT,
-	    },z
+	    },
 	    {
 	        type: Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
 	        format: Constants.TEXTURETYPE_HALF_FLOAT,
