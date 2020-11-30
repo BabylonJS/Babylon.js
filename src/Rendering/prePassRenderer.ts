@@ -99,12 +99,12 @@ export class PrePassRenderer {
         this._engine = scene.getEngine();
 
         PrePassRenderer._SceneComponentInitialization(this._scene);
-        this.defaultRT = this._createRenderTarget();
+        this.defaultRT = this._createRenderTarget("sceneprePassRT");
         this._setRenderTarget(null);
     }
 
-    public _createRenderTarget() : PrePassRenderTarget {
-        const rt = new PrePassRenderTarget("sceneprePassRT", this, { width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() }, 0, this._scene,
+    public _createRenderTarget(name: string) : PrePassRenderTarget {
+        const rt = new PrePassRenderTarget(name, this, { width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() }, 0, this._scene,
             { generateMipMaps: false, generateDepthTexture: true, defaultType: Constants.TEXTURETYPE_UNSIGNED_INT, types: [] });
         rt.samples = 1;
 
@@ -168,10 +168,11 @@ export class PrePassRenderer {
             // Prepass disabled, we render only on 1 color attachment
             if (texture) {
                 texture._bindFrameBuffer();
+                this._engine.restoreSingleAttachmentForRenderTarget();
             } else {
                 this._engine.restoreDefaultFramebuffer();
+                this._engine.restoreSingleAttachment();
             }
-            this._engine.restoreSingleAttachment();
 
             return;
         }

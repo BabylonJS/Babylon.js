@@ -49,8 +49,15 @@ declare module "../../Engines/thinEngine" {
 
         /**
          * Restores the webgl state to only draw on the main color attachment
+         * when the frame buffer associated is the canvas frame buffer
          */
         restoreSingleAttachment() : void;
+
+        /**
+         * Restores the webgl state to only draw on the main color attachment
+         * when the frame buffer associated is not the canvas frame buffer
+         */
+        restoreSingleAttachmentForRenderTarget() : void;
     }
 }
 
@@ -58,6 +65,13 @@ ThinEngine.prototype.restoreSingleAttachment = function(): void {
     const gl = this._gl;
 
     this.bindAttachments([gl.BACK]);
+};
+
+
+ThinEngine.prototype.restoreSingleAttachmentForRenderTarget = function(): void {
+    const gl = this._gl;
+
+    this.bindAttachments([gl.COLOR_ATTACHMENT0]);
 };
 
 ThinEngine.prototype.buildTextureLayout = function(textureStatus: boolean[]): number[] {
