@@ -558,7 +558,6 @@ export class Control {
     }
 
     /** Gets or set font family */
-    @serialize()
     public get fontFamily(): string {
         if (!this._fontSet) {
             return "";
@@ -576,7 +575,6 @@ export class Control {
     }
 
     /** Gets or sets font style */
-    @serialize()
     public get fontStyle(): string {
         return this._fontStyle;
     }
@@ -591,7 +589,6 @@ export class Control {
     }
 
     /** Gets or sets font weight */
-    @serialize()
     public get fontWeight(): string {
         return this._fontWeight;
     }
@@ -657,7 +654,6 @@ export class Control {
     }
 
     /** Gets or sets font size */
-    @serialize()
     public get fontSize(): string | number {
         return this._fontSize.toString(this._host);
     }
@@ -1975,7 +1971,33 @@ export class Control {
         SerializationHelper.Serialize(this, serializationObject);
         serializationObject.name = this.name;
         serializationObject.className = this.getClassName();
+
+        if (this._font) {
+            serializationObject.fontFamily = this.fontFamily;
+            serializationObject.fontSize = this.fontSize;
+            serializationObject.fontWeight = this.fontWeight;
+            serializationObject.fontStyle = this.fontStyle;
+        }
     }
+
+    /** @hidden */
+    public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
+        if (serializedObject.fontFamily) {
+            this.fontFamily = serializedObject.fontFamily;
+        }
+
+        if (serializedObject.fontSize) {
+            this.fontSize = serializedObject.fontSize;
+        }
+
+        if (serializedObject.fontWeight) {
+            this.fontWeight = serializedObject.fontWeight;
+        }
+
+        if (serializedObject.fontStyle) {
+            this.fontStyle = serializedObject.fontStyle;
+        }
+    }    
 
     /** Releases associated resources */
     public dispose() {
@@ -2092,11 +2114,6 @@ export class Control {
         return result;
     }
 
-    /** @hidden */
-    public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
-        // Nothing here but children can overwrite it
-    }
-
     /**
      * Creates a Control from parsed data
      * @param serializedObject defines parsed data
@@ -2105,7 +2122,7 @@ export class Control {
      */
     public static Parse(serializedObject: any, host: AdvancedDynamicTexture): Control {
         let controlType = Tools.Instantiate("BABYLON.GUI." + serializedObject.className);
-        let control = SerializationHelper.Parse(() => new controlType, serializedObject, null);
+        let control = SerializationHelper.Parse(() => new controlType(), serializedObject, null);
 
         control.name = serializedObject.name;
 
