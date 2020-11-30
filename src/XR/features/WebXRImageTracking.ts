@@ -154,6 +154,7 @@ export class WebXRImageTracking extends WebXRAbstractFeature {
      * Get a tracked image by its ID.
      *
      * @param id the id of the image to load (position in the init array)
+     * @returns a trackable image, if exists in this location
      */
     public getTrackedImageById(id: number): Nullable<IWebXRTrackedImage> {
         return this._trackedImages[id] || null;
@@ -175,6 +176,7 @@ export class WebXRImageTracking extends WebXRAbstractFeature {
 
     /**
      * Extends the session init object if needed
+     * @returns augmentation object fo the xr session init object.
      */
     public async getXRSessionInitExtension(): Promise<Partial<XRSessionInit>> {
         if (!this.options.images || !this.options.images.length) {
