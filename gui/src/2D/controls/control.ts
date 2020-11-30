@@ -1997,7 +1997,7 @@ export class Control {
         if (serializedObject.fontStyle) {
             this.fontStyle = serializedObject.fontStyle;
         }
-    }    
+    }
 
     /** Releases associated resources */
     public dispose() {
