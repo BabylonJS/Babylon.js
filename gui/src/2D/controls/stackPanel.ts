@@ -214,7 +214,7 @@ export class StackPanel extends Container {
     }
 
     /** @hidden */
-    public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {           
+    public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
         this._manualWidth = serializedObject.manualWidth;
         this._manualHeight = serializedObject.manualHeight;
 

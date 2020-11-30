@@ -120,7 +120,7 @@ export class Control {
 
     /**
      * Gets or sets an object used to store user defined information for the node
-     */    
+     */
     @serialize()
     public metadata: any = null;
 
@@ -2102,7 +2102,7 @@ export class Control {
      * @param serializedObject defines parsed data
      * @param host defines the hosting AdvancedDynamicTexture
      * @returns a new Control
-     */    
+     */
     public static Parse(serializedObject: any, host: AdvancedDynamicTexture): Control {
         let controlType = Tools.Instantiate("BABYLON.GUI." + serializedObject.className);
         let control = SerializationHelper.Parse(() => new controlType, serializedObject, null);
@@ -2112,7 +2112,7 @@ export class Control {
         control._parseFromContent(serializedObject, host);
 
         return control;
-    }    
+    }
 
     /**
      * Creates a stack panel that can be used to render headers
