@@ -86,6 +86,10 @@
                 .version-text {
                     display: none;
                 }
+                
+                .version-number {
+                    font-size: 16px;
+                }
             }
         }
     }
@@ -104,7 +108,6 @@
                 }
             }
         }
-
         
         .command-bar {  
             display: none;
