@@ -592,9 +592,10 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
      * @param faceIndex defines the face of the texture to read (in case of cube texture)
      * @param level defines the LOD level of the texture to read (in case of Mip Maps)
      * @param buffer defines a user defined buffer to fill with data (can be null)
-     * @returns The Array buffer containing the pixels data.
+     * @param flushRenderer true to flush the renderer from the pending commands before reading the pixels
+     * @returns The Array buffer promise containing the pixels data.
      */
-    public readPixels(faceIndex = 0, level = 0, buffer: Nullable<ArrayBufferView> = null): Nullable<ArrayBufferView> {
+    public readPixels(faceIndex = 0, level = 0, buffer: Nullable<ArrayBufferView> = null, flushRenderer = true): Nullable<Promise<ArrayBufferView>> {
         if (!this._texture) {
             return null;
         }
@@ -618,10 +619,10 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
 
         try {
             if (this._texture.isCube) {
-                return engine._readTexturePixels(this._texture, width, height, faceIndex, level, buffer);
+                return engine._readTexturePixels(this._texture, width, height, faceIndex, level, buffer, flushRenderer);
             }
 
-            return engine._readTexturePixels(this._texture, width, height, -1, level, buffer);
+            return engine._readTexturePixels(this._texture, width, height, -1, level, buffer, flushRenderer);
         } catch (e) {
             return null;
         }

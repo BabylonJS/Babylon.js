@@ -332,6 +332,13 @@ export class WebXRSessionManager implements IDisposable {
         }
     }
 
+    /**
+     * Returns true if Babylon.js is using the BabylonNative backend, otherwise false
+     */
+    public get isNative(): boolean {
+        return this._xrNavigator.xr.native ?? false;
+    }
+
     private _createRenderTargetTexture(width: number, height: number, framebuffer: Nullable<WebGLFramebuffer> = null) {
         // Create internal texture
         var internalTexture = new InternalTexture(this.scene.getEngine(), InternalTextureSource.Unknown, true);

@@ -1,4 +1,4 @@
-attribute vec2 vUV;
+varying vec2 vUV;
 
 uniform sampler2D textureSampler;
 

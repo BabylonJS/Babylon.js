@@ -215,7 +215,7 @@ export class PostProcessRenderPipeline {
     }
 
     protected _enableMSAAOnFirstPostProcess(sampleCount: number): boolean {
-        if (this.engine.webGLVersion === 1) {
+        if (!this.engine._features.supportMSAA) {
             return false;
         }
 

@@ -156,6 +156,16 @@ export class MirrorTexture extends RenderTargetTexture {
             this._updateGammaSpace;
         });
 
+        const engine = this.getScene()!.getEngine();
+
+        this.onBeforeBindObservable.add(() => {
+            engine._debugPushGroup(`mirror generation for ${name}`, 1);
+        });
+
+        this.onAfterUnbindObservable.add(() => {
+            engine._debugPopGroup(1);
+        });
+
         this.onBeforeRenderObservable.add(() => {
             Matrix.ReflectionToRef(this.mirrorPlane, this._mirrorMatrix);
             this._savedViewMatrix = scene.getViewMatrix();

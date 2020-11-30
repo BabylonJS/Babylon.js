@@ -36,7 +36,8 @@
             "BABYLON"
         ],
         "typedocJSON": "../../.temp/babylon.typedoc.json",
-        "typedocValidationBaseline": "../../dist/preview release/typedocValidationBaseline.json"
+        "typedocValidationBaseline": "../../dist/preview release/typedocValidationBaseline.json",
+        "sharedUiComponentsSrc": "sharedUiComponents"
     },
     "modules": [
         "core",
@@ -47,8 +48,7 @@
         "serializers",
         "gui",
         "inspector",
-        "nodeEditor",
-        "uiControls"
+        "nodeEditor"
     ],
     "es6modules": [
         "core",
@@ -60,8 +60,7 @@
         "gui",
         "inspector",
         "viewer",
-        "nodeEditor",
-        "uiControls"
+        "nodeEditor"
     ],
     "apps": [
         "playground",
@@ -150,7 +149,8 @@
             "es6": {
                 "packageName": "@babylonjs/core",
                 "readme": "readme-es6.md",
-                "license": "license.md"
+                "license": "license.md",
+                "type": "module"
             }
         }
     },
@@ -252,7 +252,8 @@
             },
             "es6": {
                 "packageName": "@babylonjs/materials",
-                "readme": "dist/preview release/materialsLibrary/readme-es6.md"
+                "readme": "dist/preview release/materialsLibrary/readme-es6.md",
+                "type": "module"
             }
         }
     },
@@ -289,7 +290,8 @@
             },
             "es6": {
                 "packageName": "@babylonjs/post-processes",
-                "readme": "dist/preview release/postProcessesLibrary/readme-es6.md"
+                "readme": "dist/preview release/postProcessesLibrary/readme-es6.md",
+                "type": "module"
             }
         }
     },
@@ -366,7 +368,8 @@
             },
             "es6": {
                 "packageName": "@babylonjs/procedural-textures",
-                "readme": "dist/preview release/proceduralTexturesLibrary/readme-es6.md"
+                "readme": "dist/preview release/proceduralTexturesLibrary/readme-es6.md",
+                "type": "module"
             }
         }
     },
@@ -437,7 +440,8 @@
             },
             "es6": {
                 "packageName": "@babylonjs/loaders",
-                "readme": "dist/preview release/loaders/readme-es6.md"
+                "readme": "dist/preview release/loaders/readme-es6.md",
+                "type": "module"
             }
         }
     },
@@ -495,7 +499,8 @@
             },
             "es6": {
                 "packageName": "@babylonjs/serializers",
-                "readme": "dist/preview release/serializers/readme-es6.md"
+                "readme": "dist/preview release/serializers/readme-es6.md",
+                "type": "module"
             }
         }
     },
@@ -524,7 +529,8 @@
             },
             "es6": {
                 "packageName": "@babylonjs/gui",
-                "readme": "dist/preview release/gui/readme-es6.md"
+                "readme": "dist/preview release/gui/readme-es6.md",
+                "type": "module"
             }
         }
     },
@@ -545,6 +551,7 @@
                 "re-resizable",
                 "glTF"
             ],
+            "sharedUiComponents": "src/sharedUiComponents/",
             "umd": {
                 "packageName": "babylonjs-inspector",
                 "webpackRoot": "INSPECTOR",
@@ -608,6 +615,7 @@
                 "glTF",
                 "file-saver"
             ],
+            "sharedUiComponents": "src/sharedUiComponents/",
             "umd": {
                 "packageName": "babylonjs-node-editor",
                 "webpackRoot": "NODEEDITOR",
@@ -640,55 +648,6 @@
                 ],
                 "typings": "babylon.nodeEditor.module.d.ts",
                 "index": "babylon.nodeEditor.max.js"
-            }
-        }
-    },
-    "uiControls": {
-        "libraries": [
-            {
-                "output": "babylon.uiControls.js",
-                "entry": "./legacy/legacy.ts"
-            }
-        ],
-        "build": {            
-            "ignoreInWorkerMode": true,
-            "ignoreInTestMode": true,
-            "mainFolder": "./uiControls/",
-            "uncheckedLintImports": [
-                "react",
-                "react-dom"
-            ],
-            "umd": {
-                "packageName": "babylonjs-ui-controls",
-                "webpackRoot": "UICONTROLS",
-                "processDeclaration": {
-                    "filename": "babylon.uiControls.module.d.ts",
-                    "moduleName": "UICONTROLS",
-                    "importsToRemove": [],
-                    "classMap": {
-                        "babylonjs": "BABYLON",
-                        "react": "React",
-                        "@babylonjs/core": "BABYLON",
-                        "@fortawesome": false,
-                        "react-contextmenu": false
-                    }
-                }
-            },
-            "es6": {
-                "webpackBuild": true,
-                "buildDependencies": [
-                    "Tools/**/*"
-                ],
-                "packageName": "@babylonjs/ui-controls",
-                "readme": "dist/preview release/uiControls/readme-es6.md",
-                "packagesFiles": [
-                    "babylon.uiControls.max.js",
-                    "babylon.uiControls.max.js.map",
-                    "babylon.uiControls.module.d.ts",
-                    "readme.md"
-                ],
-                "typings": "babylon.uiControls.module.d.ts",
-                "index": "babylon.uiControls.max.js"
             }
         }
     },

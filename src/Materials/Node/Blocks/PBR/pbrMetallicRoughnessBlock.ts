@@ -648,7 +648,9 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         defines.setValue("SPECULARAA", this._scene.getEngine().getCaps().standardDerivatives && this.enableSpecularAntiAliasing, true);
         defines.setValue("REALTIME_FILTERING", this.realTimeFiltering, true);
 
-        if (this._scene.getEngine().webGLVersion > 1) {
+        const scene = mesh.getScene();
+
+        if (scene.getEngine()._features.needTypeSuffixInShaderConstants) {
             defines.setValue("NUM_SAMPLES", this.realTimeFilteringQuality + "u", true);
         } else {
             defines.setValue("NUM_SAMPLES", "" + this.realTimeFilteringQuality, true);
@@ -673,8 +675,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         if (!defines._areLightsDirty) {
             return;
         }
-
-        const scene = mesh.getScene();
 
         if (!this.light) {
             // Lights
@@ -708,6 +708,14 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             const onlyUpdateBuffersList = state.uniforms.indexOf("vLightData" + lightIndex) >= 0;
             MaterialHelper.PrepareUniformsAndSamplersForLight(lightIndex, state.uniforms, state.samplers, defines["PROJECTEDLIGHTTEXTURE" + lightIndex], uniformBuffers, onlyUpdateBuffersList);
         }
+    }
+
+    public isReady() {
+        if (this._environmentBRDFTexture && !this._environmentBRDFTexture.isReady()) {
+            return false;
+        }
+
+        return true;
     }
 
     public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
@@ -761,7 +769,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         // Declaration
         if (!this.light) { // Emit for all lights
-            state._emitFunctionFromInclude(state.supportUniformBuffers ? "lightUboDeclaration" : "lightFragmentDeclaration", comments, {
+            state._emitFunctionFromInclude(state.supportUniformBuffers ? "lightVxUboDeclaration" : "lightVxFragmentDeclaration", comments, {
                 repeatKey: "maxSimultaneousLights"
             });
             this._lightId = 0;
@@ -771,7 +779,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             this._lightId = (state.counters["lightCounter"] !== undefined ? state.counters["lightCounter"] : -1) + 1;
             state.counters["lightCounter"] = this._lightId;
 
-            state._emitFunctionFromInclude(state.supportUniformBuffers ? "lightUboDeclaration" : "lightFragmentDeclaration", comments, {
+            state._emitFunctionFromInclude(state.supportUniformBuffers ? "lightVxUboDeclaration" : "lightVxFragmentDeclaration", comments, {
                 replaceStrings: [{ search: /{X}/g, replace: this._lightId.toString() }]
             }, this._lightId.toString());
         }
@@ -928,6 +936,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         // Fragment
         state.sharedData.bindableBlocks.push(this);
         state.sharedData.blocksWithDefines.push(this);
+        state.sharedData.blockingBlocks.push(this);
 
         let comments = `//${this.name}`;
         let worldPosVarName = "v_" + this.worldPosition.associatedVariableName;

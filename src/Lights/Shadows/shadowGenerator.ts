@@ -12,7 +12,7 @@ import { IShadowLight } from "../../Lights/shadowLight";
 import { Light } from "../../Lights/light";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { MaterialHelper } from "../../Materials/materialHelper";
-import { Effect } from "../../Materials/effect";
+import { Effect, IEffectCreationOptions } from "../../Materials/effect";
 import { Texture } from "../../Materials/Textures/texture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 
@@ -142,6 +142,8 @@ export interface IShadowGenerator {
  * Documentation: https://doc.babylonjs.com/babylon101/shadows
  */
 export class ShadowGenerator implements IShadowGenerator {
+
+    private static _Counter = 0;
 
     /**
      * Name of the shadow generator class
@@ -416,7 +418,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
         // Weblg1 fallback for PCF.
         if (value === ShadowGenerator.FILTER_PCF || value === ShadowGenerator.FILTER_PCSS) {
-            if (this._scene.getEngine().webGLVersion === 1) {
+            if (!this._scene.getEngine()._features.supportShadowSamplers) {
                 this.usePoissonSampling = true;
                 return;
             }
@@ -785,8 +787,6 @@ export class ShadowGenerator implements IShadowGenerator {
     protected _scene: Scene;
     protected _lightDirection = Vector3.Zero();
 
-    protected _effect: Effect;
-
     protected _viewMatrix = Matrix.Zero();
     protected _projectionMatrix = Matrix.Zero();
     protected _transformMatrix = Matrix.Zero();
@@ -804,6 +804,7 @@ export class ShadowGenerator implements IShadowGenerator {
     protected _textureType: number;
     protected _defaultTextureMatrix = Matrix.Identity();
     protected _storedUniqueId: Nullable<number>;
+    protected _nameForCustomEffect: string;
 
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
@@ -838,6 +839,8 @@ export class ShadowGenerator implements IShadowGenerator {
         this._scene = light.getScene();
         light._shadowGenerator = this;
         this.id = light.id;
+
+        this._nameForCustomEffect = Constants.CUSTOMEFFECT_PREFIX_SHADOWGENERATOR + ShadowGenerator._Counter++;
 
         ShadowGenerator._SceneComponentInitialization(this._scene);
 
@@ -876,8 +879,7 @@ export class ShadowGenerator implements IShadowGenerator {
     }
 
     protected _createTargetRenderTexture(): void {
-        let engine = this._scene.getEngine();
-        if (engine.webGLVersion > 1) {
+        if (this._scene.getEngine()._features.supportDepthStencilTexture) {
             this._shadowMap = new RenderTargetTexture(this._light.name + "_shadowMap", this._mapSize, this._scene, false, true, this._textureType, this._light.needCube(), undefined, false, false);
             this._shadowMap.createDepthStencilTexture(Constants.LESS, true);
         }
@@ -915,33 +917,29 @@ export class ShadowGenerator implements IShadowGenerator {
 
         let engine = this._scene.getEngine();
 
+        this._shadowMap.onBeforeBindObservable.add(() => {
+            engine._debugPushGroup(`shadow map generation for ${this._nameForCustomEffect}`, 1);
+        });
+
         // Record Face Index before render.
         this._shadowMap.onBeforeRenderObservable.add((faceIndex: number) => {
             this._currentFaceIndex = faceIndex;
             if (this._filter === ShadowGenerator.FILTER_PCF) {
                 engine.setColorWrite(false);
             }
-            if (this._scene.getSceneUniformBuffer().useUbo) {
-                const sceneUBO = this._scene.getSceneUniformBuffer();
-                sceneUBO.updateMatrix("viewProjection", this.getTransformMatrix());
-                sceneUBO.updateMatrix("view", this._viewMatrix);
-                sceneUBO.update();
-            }
+            this.getTransformMatrix(); // generate the view/projection matrix
+            this._scene.setTransformMatrix(this._viewMatrix, this._projectionMatrix);
         });
 
         // Blur if required afer render.
         this._shadowMap.onAfterUnbindObservable.add(() => {
-            if (this._scene.getSceneUniformBuffer().useUbo) {
-                const sceneUBO = this._scene.getSceneUniformBuffer();
-                sceneUBO.updateMatrix("viewProjection", this._scene.getTransformMatrix());
-                sceneUBO.updateMatrix("view", this._scene.getViewMatrix());
-                sceneUBO.update();
-            }
+            this._scene.updateTransformMatrix(); // restore the view/projection matrices of the active camera
 
             if (this._filter === ShadowGenerator.FILTER_PCF) {
                 engine.setColorWrite(true);
             }
             if (!this.useBlurExponentialShadowMap && !this.useBlurCloseExponentialShadowMap) {
+                engine._debugPopGroup(1);
                 return;
             }
             let shadowMap = this.getShadowMapForRendering();
@@ -950,6 +948,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 const texture = shadowMap.getInternalTexture()!;
                 this._scene.postProcessManager.directRender(this._blurPostProcesses, texture, true);
                 engine.unBindFramebuffer(texture, true);
+                engine._debugPopGroup(1);
             }
         });
 
@@ -988,7 +987,7 @@ export class ShadowGenerator implements IShadowGenerator {
         var targetSize = this._mapSize / this.blurScale;
 
         if (!this.useKernelBlur || this.blurScale !== 1.0) {
-            this._shadowMap2 = new RenderTargetTexture(this._light.name + "_shadowMap2", targetSize, this._scene, false, true, this._textureType);
+            this._shadowMap2 = new RenderTargetTexture(this._light.name + "_shadowMap2", targetSize, this._scene, false, true, this._textureType, undefined, undefined, false);
             this._shadowMap2.wrapU = Texture.CLAMP_ADDRESSMODE;
             this._shadowMap2.wrapV = Texture.CLAMP_ADDRESSMODE;
             this._shadowMap2.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
@@ -1112,7 +1111,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
             const shadowDepthWrapper = material.shadowDepthWrapper;
 
-            let effect = shadowDepthWrapper?.getEffect(subMesh, this) ?? this._effect;
+            let effect = shadowDepthWrapper?.getEffect(subMesh, this) ?? subMesh._getCustomEffect(this._nameForCustomEffect, false)!.effect;
 
             engine.enableEffect(effect);
 
@@ -1337,6 +1336,10 @@ export class ShadowGenerator implements IShadowGenerator {
 
         this._prepareShadowDefines(subMesh, useInstances, defines, isTransparent);
 
+        const subMeshEffect = subMesh._getCustomEffect(this._nameForCustomEffect)!;
+
+        let { effect, defines: cachedDefines } = subMeshEffect;
+
         if (shadowDepthWrapper) {
             if (!shadowDepthWrapper.isReadyForSubMesh(subMesh, defines, this, useInstances)) {
                 return false;
@@ -1457,8 +1460,8 @@ export class ShadowGenerator implements IShadowGenerator {
 
             // Get correct effect
             var join = defines.join("\n");
-            if (this._cachedDefines !== join) {
-                this._cachedDefines = join;
+            if (cachedDefines !== join) {
+                cachedDefines = join;
 
                 let shaderName = "shadowMap";
                 let uniforms = ["world", "mBones", "viewProjection", "diffuseMatrix", "lightDataSM", "depthValuesSM", "biasAndScaleSM", "morphTargetInfluences", "boneTextureWidth",
@@ -1494,13 +1497,25 @@ export class ShadowGenerator implements IShadowGenerator {
                     }
                 }
 
-                this._effect = this._scene.getEngine().createEffect(shaderName,
-                    attribs, uniforms,
-                    samplers, join,
-                    fallbacks, undefined, undefined, { maxSimultaneousMorphTargets: morphInfluencers });
+                const engine = this._scene.getEngine();
+
+                effect = engine.createEffect(shaderName, <IEffectCreationOptions>{
+                    attributes: attribs,
+                    uniformsNames: uniforms,
+                    uniformBuffersNames: [],
+                    samplers: samplers,
+                    defines: join,
+                    fallbacks: fallbacks,
+                    onCompiled: null,
+                    onError: null,
+                    indexParameters: { maxSimultaneousMorphTargets: morphInfluencers },
+                }, engine);
             }
 
-            if (!this._effect.isReady()) {
+            subMeshEffect.effect = effect;
+            subMeshEffect.defines = cachedDefines;
+
+            if (!effect.isReady()) {
                 return false;
             }
         }
@@ -1757,7 +1772,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
         serializationObject.className = this.getClassName();
         serializationObject.lightId = this._light.id;
-        serializationObject.id = this._light.id;
+        serializationObject.id = this.id;
         serializationObject.mapSize = shadowMap.getRenderSize();
         serializationObject.forceBackFacesOnly = this.forceBackFacesOnly;
         serializationObject.darkness = this.getDarkness();
