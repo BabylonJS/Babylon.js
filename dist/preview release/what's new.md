@@ -34,6 +34,7 @@
 - Added a `FocusableButton` gui control to simplify creating menus with keyboard navigation ([Flux159](https://github.com/Flux159))
 - Added `focus()` and `blur()` functions for controls that implement `IFocusableControl` ([Flux159](https://github.com/Flux159))
 - Added `ToggleButton` GUI control ([kintz09](https://github.com/kintz09))
+- Added shorthand methods which set all padding values at once, named `setPadding` and `setPaddingInPixels`, to the control class  ([kintz09](https://github.com/kintz09))
 
 ### WebXR
 
