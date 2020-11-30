@@ -891,7 +891,6 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         });
     }
 
-
     /**
      * Serializes the entire GUI system
      * @returns an object with the JSON serialized data
@@ -908,7 +907,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
 
     /**
      * Recreate the content of the ADT from a JSON object
-     * @param serializedObject define the JSON serialized object to restore from 
+     * @param serializedObject define the JSON serialized object to restore from
      */
     public parseContent(serializedObject: any) {
         this._rootContainer = Control.Parse(serializedObject.root, this) as Container;
