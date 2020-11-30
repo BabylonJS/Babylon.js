@@ -37,6 +37,8 @@
 ### WebXR
 
 - A browser error preventing the emulator to render scene is now correctly dealt with ([RaananW](https://github.com/RaananW))
+- Added a way to extend the XRSessionInit Object from inside of a feature ([RaananW](https://github.com/RaananW))
+- Added image tracking feature ([RaananW](https://github.com/RaananW))
 
 ## Bugs
 
