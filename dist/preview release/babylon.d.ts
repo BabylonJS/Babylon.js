@@ -44825,6 +44825,11 @@ declare module BABYLON {
         /** @hidden */
         dbgShowWarningsNotImplemented: boolean;
         /**
+         * Gets a boolean indicating if the engine can be instanciated (ie. if a WebGPU context can be found)
+         * @returns true if the engine can be created
+         */
+        static get IsSupported(): boolean;
+        /**
          * Gets a boolean indicating that the engine supports uniform buffers
          */
         get supportsUniformBuffers(): boolean;
