@@ -18,7 +18,7 @@ const _uniformSizes: { [type: string]: number } = {
     "vec4": 4,
     "ivec4": 4,
     "mat2": 4,
-    "mat3": 9,
+    "mat3": 12,
     "mat4": 16
 };
 
