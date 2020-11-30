@@ -10120,10 +10120,10 @@ module.exports = exports;
 
 /***/ }),
 
-/***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./sharedComponents/colorPicker/colorPicker.scss":
-/*!************************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./sharedComponents/colorPicker/colorPicker.scss ***!
-  \************************************************************************************************************************************************************************/
+/***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss":
+/*!**************************************************************************************************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss ***!
+  \**************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -56692,6 +56692,97 @@ module.exports = "data:image/svg+xml,%3Csvg viewBox='0 0 20 20' version='1.1' xm
 
 /***/ }),
 
+/***/ "./components/propertyTab/inputsPropertyTabComponent.tsx":
+/*!***************************************************************!*\
+  !*** ./components/propertyTab/inputsPropertyTabComponent.tsx ***!
+  \***************************************************************/
+/*! exports provided: InputsPropertyTabComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "InputsPropertyTabComponent", function() { return InputsPropertyTabComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
+/* harmony import */ var _sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../sharedComponents/checkBoxLineComponent */ "./sharedComponents/checkBoxLineComponent.tsx");
+/* harmony import */ var _sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../sharedComponents/sliderLineComponent */ "./sharedComponents/sliderLineComponent.tsx");
+/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Misc/dataStorage");
+/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _sharedComponents_color3LineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../sharedComponents/color3LineComponent */ "./sharedComponents/color3LineComponent.tsx");
+/* harmony import */ var _sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../sharedComponents/floatLineComponent */ "./sharedComponents/floatLineComponent.tsx");
+/* harmony import */ var _sharedComponents_color4LineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../sharedComponents/color4LineComponent */ "./sharedComponents/color4LineComponent.tsx");
+/* harmony import */ var _sharedComponents_vector2LineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../sharedComponents/vector2LineComponent */ "./sharedComponents/vector2LineComponent.tsx");
+/* harmony import */ var _sharedComponents_vector3LineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../sharedComponents/vector3LineComponent */ "./sharedComponents/vector3LineComponent.tsx");
+/* harmony import */ var _sharedComponents_vector4LineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../sharedComponents/vector4LineComponent */ "./sharedComponents/vector4LineComponent.tsx");
+
+
+
+
+
+
+
+
+
+
+
+
+__webpack_require__(/*! ./propertyTab.scss */ "./components/propertyTab/propertyTab.scss");
+var InputsPropertyTabComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(InputsPropertyTabComponent, _super);
+    function InputsPropertyTabComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    InputsPropertyTabComponent.prototype.processInputBlockUpdate = function (ib) {
+        this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+        if (ib.isConstant) {
+            this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+        }
+    };
+    InputsPropertyTabComponent.prototype.renderInputBlock = function (block) {
+        var _this = this;
+        switch (block.type) {
+            case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Float:
+                var cantDisplaySlider = (isNaN(block.min) || isNaN(block.max) || block.min === block.max);
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: block.uniqueId },
+                    block.isBoolean &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { key: block.uniqueId, label: block.name, target: block, propertyName: "value", onValueChanged: function () {
+                                _this.processInputBlockUpdate(block);
+                            } }),
+                    !block.isBoolean && cantDisplaySlider &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { globalState: this.props.globalState, key: block.uniqueId, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }),
+                    !block.isBoolean && !cantDisplaySlider &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { key: block.uniqueId, label: block.name, target: block, propertyName: "value", step: (block.max - block.min) / 100.0, minimum: block.min, maximum: block.max, globalState: this.props.globalState, onChange: function () { return _this.processInputBlockUpdate(block); } })));
+            case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Color3:
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_color3LineComponent__WEBPACK_IMPORTED_MODULE_6__["Color3LineComponent"], { globalState: this.props.globalState, key: block.uniqueId, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }));
+            case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Color4:
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_color4LineComponent__WEBPACK_IMPORTED_MODULE_8__["Color4LineComponent"], { globalState: this.props.globalState, key: block.uniqueId, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }));
+            case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Vector2:
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector2LineComponent__WEBPACK_IMPORTED_MODULE_9__["Vector2LineComponent"], { globalState: this.props.globalState, key: block.uniqueId, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }));
+            case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Vector3:
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector3LineComponent__WEBPACK_IMPORTED_MODULE_10__["Vector3LineComponent"], { globalState: this.props.globalState, key: block.uniqueId, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }));
+            case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Vector4:
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector4LineComponent__WEBPACK_IMPORTED_MODULE_11__["Vector4LineComponent"], { globalState: this.props.globalState, key: block.uniqueId, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }));
+        }
+        return null;
+    };
+    InputsPropertyTabComponent.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "INPUTS" }, this.props.inputs.map(function (ib) {
+            if (!ib.isUniform || ib.isSystemValue || !ib.name) {
+                return null;
+            }
+            return _this.renderInputBlock(ib);
+        })));
+    };
+    return InputsPropertyTabComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
 /***/ "./components/propertyTab/properties/color3PropertyTabComponent.tsx":
 /*!**************************************************************************!*\
   !*** ./components/propertyTab/properties/color3PropertyTabComponent.tsx ***!
@@ -57010,6 +57101,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ../../sharedComponents/optionsLineComponent */ "./sharedComponents/optionsLineComponent.tsx");
 /* harmony import */ var _preview_previewType__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ../preview/previewType */ "./components/preview/previewType.ts");
 /* harmony import */ var _sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! ../../sharedComponents/textInputLineComponent */ "./sharedComponents/textInputLineComponent.tsx");
+/* harmony import */ var _inputsPropertyTabComponent__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ./inputsPropertyTabComponent */ "./components/propertyTab/inputsPropertyTabComponent.tsx");
+
 
 
 
@@ -57347,12 +57440,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Save to snippet server", onClick: function () {
                                 _this.saveToSnippetServer();
                             } })),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "INPUTS" }, this.props.globalState.nodeMaterial.getInputBlocks().map(function (ib) {
-                    if (!ib.isUniform || ib.isSystemValue || !ib.name) {
-                        return null;
-                    }
-                    return _this.renderInputBlock(ib);
-                })))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_inputsPropertyTabComponent__WEBPACK_IMPORTED_MODULE_27__["InputsPropertyTabComponent"], { globalState: this.props.globalState, inputs: this.props.globalState.nodeMaterial.getInputBlocks() }))));
     };
     return PropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -61259,6 +61347,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedComponents_color3LineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../sharedComponents/color3LineComponent */ "./sharedComponents/color3LineComponent.tsx");
 /* harmony import */ var _sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../sharedComponents/textInputLineComponent */ "./sharedComponents/textInputLineComponent.tsx");
 /* harmony import */ var _sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../sharedComponents/buttonLineComponent */ "./sharedComponents/buttonLineComponent.tsx");
+/* harmony import */ var _components_propertyTab_inputsPropertyTabComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../components/propertyTab/inputsPropertyTabComponent */ "./components/propertyTab/inputsPropertyTabComponent.tsx");
+
 
 
 
@@ -61282,6 +61372,15 @@ var FramePropertyTabComponent = /** @class */ (function (_super) {
     };
     FramePropertyTabComponent.prototype.render = function () {
         var _this = this;
+        var configurableInputBlocks = [];
+        this.props.frame.nodes.forEach(function (node) {
+            if (node.block.isInput && node.block.visibleOnFrame) {
+                configurableInputBlocks.push(node.block);
+            }
+        });
+        configurableInputBlocks = configurableInputBlocks.sort(function (a, b) {
+            return a.name.localeCompare(b.name);
+        });
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "propertyTab" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "header" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { id: "logo", src: "https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" }),
@@ -61301,7 +61400,8 @@ var FramePropertyTabComponent = /** @class */ (function (_super) {
                             } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__["ButtonLineComponent"], { label: "Export", onClick: function () {
                             _this.props.frame.export();
-                        } })))));
+                        } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_inputsPropertyTabComponent__WEBPACK_IMPORTED_MODULE_6__["InputsPropertyTabComponent"], { globalState: this.props.globalState, inputs: configurableInputBlocks }))));
     };
     return FramePropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -61951,7 +62051,9 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
                             _this.forceUpdate();
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                             _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
-                        } }))));
+                        } }),
+                inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["AnimatedInputBlockTypes"].None &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_15__["CheckBoxLineComponent"], { label: "Visible on frame", target: this.props.block, propertyName: "visibleOnFrame" }))));
     };
     return InputPropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -64086,303 +64188,6 @@ var Color4LineComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
-/***/ "./sharedComponents/colorPicker/colorComponentEntry.tsx":
-/*!**************************************************************!*\
-  !*** ./sharedComponents/colorPicker/colorComponentEntry.tsx ***!
-  \**************************************************************/
-/*! exports provided: ColorComponentEntry */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ColorComponentEntry", function() { return ColorComponentEntry; });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-
-
-var ColorComponentEntry = /** @class */ (function (_super) {
-    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ColorComponentEntry, _super);
-    function ColorComponentEntry(props) {
-        return _super.call(this, props) || this;
-    }
-    ColorComponentEntry.prototype.updateValue = function (valueString) {
-        if (/[^0-9\.\-]/g.test(valueString)) {
-            return;
-        }
-        var valueAsNumber = parseInt(valueString);
-        if (isNaN(valueAsNumber)) {
-            return;
-        }
-        if (this.props.max != undefined && (valueAsNumber > this.props.max)) {
-            valueAsNumber = this.props.max;
-        }
-        if (this.props.min != undefined && (valueAsNumber < this.props.min)) {
-            valueAsNumber = this.props.min;
-        }
-        this.props.onChange(valueAsNumber);
-    };
-    ColorComponentEntry.prototype.render = function () {
-        var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-component" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-component-value" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", step: 1, className: "numeric-input", value: this.props.value, onChange: function (evt) { return _this.updateValue(evt.target.value); } })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-component-label" }, this.props.label)));
-    };
-    return ColorComponentEntry;
-}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
-
-
-
-/***/ }),
-
-/***/ "./sharedComponents/colorPicker/colorPicker.scss":
-/*!*******************************************************!*\
-  !*** ./sharedComponents/colorPicker/colorPicker.scss ***!
-  \*******************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-var api = __webpack_require__(/*! ../../../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js */ "../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js");
-            var content = __webpack_require__(/*! !../../../../node_modules/css-loader/dist/cjs.js!../../../../node_modules/sass-loader/dist/cjs.js!./colorPicker.scss */ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./sharedComponents/colorPicker/colorPicker.scss");
-
-            content = content.__esModule ? content.default : content;
-
-            if (typeof content === 'string') {
-              content = [[module.i, content, '']];
-            }
-
-var options = {};
-
-options.insert = "head";
-options.singleton = false;
-
-var update = api(content, options);
-
-
-
-module.exports = content.locals || {};
-
-/***/ }),
-
-/***/ "./sharedComponents/colorPicker/colorPicker.tsx":
-/*!******************************************************!*\
-  !*** ./sharedComponents/colorPicker/colorPicker.tsx ***!
-  \******************************************************/
-/*! exports provided: ColorPicker */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ColorPicker", function() { return ColorPicker; });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/dataStorage");
-/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./colorComponentEntry */ "./sharedComponents/colorPicker/colorComponentEntry.tsx");
-/* harmony import */ var _hexColor__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./hexColor */ "./sharedComponents/colorPicker/hexColor.tsx");
-
-
-
-
-
-__webpack_require__(/*! ./colorPicker.scss */ "./sharedComponents/colorPicker/colorPicker.scss");
-/**
- * Class used to create a color picker
- */
-var ColorPicker = /** @class */ (function (_super) {
-    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ColorPicker, _super);
-    function ColorPicker(props) {
-        var _this = _super.call(this, props) || this;
-        if (_this.props.color instanceof babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"]) {
-            _this.state = { color: new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"](_this.props.color.r, _this.props.color.g, _this.props.color.b), alpha: _this.props.color.a };
-        }
-        else {
-            _this.state = { color: _this.props.color.clone(), alpha: 1 };
-        }
-        _this._saturationRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
-        _this._hueRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
-        return _this;
-    }
-    ColorPicker.prototype.onSaturationPointerDown = function (evt) {
-        this._evaluateSaturation(evt);
-        this._isSaturationPointerDown = true;
-        evt.currentTarget.setPointerCapture(evt.pointerId);
-    };
-    ColorPicker.prototype.onSaturationPointerUp = function (evt) {
-        this._isSaturationPointerDown = false;
-        evt.currentTarget.releasePointerCapture(evt.pointerId);
-    };
-    ColorPicker.prototype.onSaturationPointerMove = function (evt) {
-        if (!this._isSaturationPointerDown) {
-            return;
-        }
-        this._evaluateSaturation(evt);
-    };
-    ColorPicker.prototype.onHuePointerDown = function (evt) {
-        this._evaluateHue(evt);
-        this._isHuePointerDown = true;
-        evt.currentTarget.setPointerCapture(evt.pointerId);
-    };
-    ColorPicker.prototype.onHuePointerUp = function (evt) {
-        this._isHuePointerDown = false;
-        evt.currentTarget.releasePointerCapture(evt.pointerId);
-    };
-    ColorPicker.prototype.onHuePointerMove = function (evt) {
-        if (!this._isHuePointerDown) {
-            return;
-        }
-        this._evaluateHue(evt);
-    };
-    ColorPicker.prototype._evaluateSaturation = function (evt) {
-        var left = evt.nativeEvent.offsetX;
-        var top = evt.nativeEvent.offsetY;
-        var saturation = Math.min(1, Math.max(0.0001, left / this._saturationRef.current.clientWidth));
-        var value = Math.min(1, Math.max(0.0001, 1 - (top / this._saturationRef.current.clientHeight)));
-        if (this.props.debugMode) {
-            console.log("Saturation: " + saturation);
-            console.log("Value: " + value);
-        }
-        var hsv = this.state.color.toHSV();
-        babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].HSVtoRGBToRef(hsv.r, saturation, value, this.state.color);
-        this.setState({ color: this.state.color });
-    };
-    ColorPicker.prototype._evaluateHue = function (evt) {
-        var left = evt.nativeEvent.offsetX;
-        var hue = 360 * Math.min(0.9999, Math.max(0.0001, left / this._hueRef.current.clientWidth));
-        if (this.props.debugMode) {
-            console.log("Hue: " + hue);
-        }
-        var hsv = this.state.color.toHSV();
-        babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].HSVtoRGBToRef(hue, Math.max(hsv.g, 0.0001), hsv.b, this.state.color);
-        this.setState({ color: this.state.color });
-    };
-    ColorPicker.prototype.componentDidUpdate = function () {
-        this.raiseOnColorChanged();
-    };
-    ColorPicker.prototype.raiseOnColorChanged = function () {
-        if (!this.props.onColorChanged) {
-            return;
-        }
-        if (this.props.color instanceof babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"]) {
-            var newColor4 = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"].FromColor3(this.state.color, this.state.alpha);
-            this.props.onColorChanged(newColor4);
-            return;
-        }
-        this.props.onColorChanged(this.state.color.clone());
-    };
-    ColorPicker.prototype.render = function () {
-        var _this = this;
-        var colorHex = this.state.color.toHexString();
-        var hsv = this.state.color.toHSV();
-        var colorRef = new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"]();
-        babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].HSVtoRGBToRef(hsv.r, 1, 1, colorRef);
-        var colorHexRef = colorRef.toHexString();
-        var hasAlpha = this.props.color instanceof babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"];
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-container" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation", onPointerMove: function (e) { return _this.onSaturationPointerMove(e); }, onPointerDown: function (e) { return _this.onSaturationPointerDown(e); }, onPointerUp: function (e) { return _this.onSaturationPointerUp(e); }, ref: this._saturationRef, style: {
-                    background: colorHexRef
-                } },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation-white" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation-black" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation-cursor", style: {
-                        top: -(hsv.b * 100) + 100 + "%",
-                        left: hsv.g * 100 + "%",
-                    } })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue-color", style: {
-                        background: colorHex
-                    } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue-slider", ref: this._hueRef, onPointerMove: function (e) { return _this.onHuePointerMove(e); }, onPointerDown: function (e) { return _this.onHuePointerDown(e); }, onPointerUp: function (e) { return _this.onHuePointerUp(e); } },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue-cursor", style: {
-                            left: (hsv.r / 360.0) * 100 + "%",
-                            border: "1px solid " + colorHexRef
-                        } }))),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-rgb" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "red" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "R", min: 0, max: 255, value: this.state.color.r * 255 | 0, onChange: function (value) {
-                            _this.state.color.r = value / 255.0;
-                            _this.forceUpdate();
-                        } })),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "green" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "G", min: 0, max: 255, value: this.state.color.g * 255 | 0, onChange: function (value) {
-                            _this.state.color.g = value / 255.0;
-                            _this.forceUpdate();
-                        } })),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "blue" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "B", min: 0, max: 255, value: this.state.color.b * 255 | 0, onChange: function (value) {
-                            _this.state.color.b = value / 255.0;
-                            _this.forceUpdate();
-                        } })),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "alpha" + (hasAlpha ? "" : " grayed") },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "A", min: 0, max: 255, value: this.state.alpha * 255 | 0, onChange: function (value) {
-                            _this.setState({ alpha: value / 255.0 });
-                            _this.forceUpdate();
-                        } }))),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hex" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hex-label" }, "Hex"),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hex-value" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_hexColor__WEBPACK_IMPORTED_MODULE_4__["HexColor"], { expectedLength: 6, value: colorHex, onChange: function (value) {
-                            _this.setState({ color: babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromHexString(value) });
-                        } })))));
-    };
-    return ColorPicker;
-}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
-
-
-
-/***/ }),
-
-/***/ "./sharedComponents/colorPicker/hexColor.tsx":
-/*!***************************************************!*\
-  !*** ./sharedComponents/colorPicker/hexColor.tsx ***!
-  \***************************************************/
-/*! exports provided: HexColor */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HexColor", function() { return HexColor; });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-
-
-var HexColor = /** @class */ (function (_super) {
-    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(HexColor, _super);
-    function HexColor(props) {
-        var _this = _super.call(this, props) || this;
-        _this.state = { hex: _this.props.value.replace("#", "") };
-        return _this;
-    }
-    HexColor.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        if (nextProps.value !== this.props.value) {
-            nextState.hex = nextProps.value.replace("#", "");
-        }
-        return true;
-    };
-    HexColor.prototype.updateHexValue = function (valueString) {
-        if (valueString != "" && /^[0-9A-Fa-f]+$/g.test(valueString) == false) {
-            return;
-        }
-        this.setState({ hex: valueString });
-        if (valueString.length !== this.props.expectedLength) {
-            return;
-        }
-        this.props.onChange("#" + valueString);
-    };
-    HexColor.prototype.render = function () {
-        var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "string", className: "hex-input", value: this.state.hex, onChange: function (evt) { return _this.updateHexValue(evt.target.value); } }));
-    };
-    return HexColor;
-}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
-
-
-
-/***/ }),
-
 /***/ "./sharedComponents/colorPickerComponent.tsx":
 /*!***************************************************!*\
   !*** ./sharedComponents/colorPickerComponent.tsx ***!
@@ -64396,7 +64201,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _colorPicker_colorPicker__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./colorPicker/colorPicker */ "./sharedComponents/colorPicker/colorPicker.tsx");
+/* harmony import */ var _sharedUiComponents_colorPicker_colorPicker__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../sharedUiComponents/colorPicker/colorPicker */ "./sharedUiComponents/colorPicker/colorPicker.tsx");
 
 
 
@@ -64453,7 +64258,7 @@ var ColorPickerLineComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-cover", onClick: function () { return _this.setPickerState(false); } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-float", ref: this._floatRef },
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorPicker_colorPicker__WEBPACK_IMPORTED_MODULE_2__["ColorPicker"], { color: color, onColorChanged: function (color) {
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_colorPicker_colorPicker__WEBPACK_IMPORTED_MODULE_2__["ColorPicker"], { color: color, onColorChanged: function (color) {
                                 var hex = color.toHexString();
                                 _this.setState({ hex: hex, color: color });
                                 _this.props.onColorChanged(hex);
@@ -65561,103 +65366,112 @@ var TextureLineComponent = /** @class */ (function (_super) {
         TextureLineComponent.UpdatePreview(this.canvasRef.current, this.props.texture, this.props.width, this.state, undefined, this.props.globalState);
     };
     TextureLineComponent.UpdatePreview = function (previewCanvas, texture, width, options, onReady, globalState) {
-        if (!texture.isReady() && texture._texture) {
-            texture._texture.onLoadedObservable.addOnce(function () {
-                TextureLineComponent.UpdatePreview(previewCanvas, texture, width, options, onReady, globalState);
+        return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function () {
+            var scene, engine, size, ratio, height, passPostProcess, passCubePostProcess, rtt, internalTexture, numberOfChannelsByLine, halfHeight, bufferView, data, i, alpha, i, j, currentCell, targetLine, targetCell, temp, context, imageData, castData;
+            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (!texture.isReady() && texture._texture) {
+                            texture._texture.onLoadedObservable.addOnce(function () {
+                                TextureLineComponent.UpdatePreview(previewCanvas, texture, width, options, onReady, globalState);
+                            });
+                        }
+                        scene = texture.getScene();
+                        engine = scene.getEngine();
+                        size = texture.getSize();
+                        ratio = size.width / size.height;
+                        height = (width / ratio) | 1;
+                        if (!texture.isCube) {
+                            passPostProcess = new babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["PassPostProcess"]("pass", 1, null, babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["Texture"].NEAREST_SAMPLINGMODE, engine, false, babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_UNSIGNED_INT);
+                        }
+                        else {
+                            passCubePostProcess = new babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["PassCubePostProcess"]("pass", 1, null, babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["Texture"].NEAREST_SAMPLINGMODE, engine, false, babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_UNSIGNED_INT);
+                            passCubePostProcess.face = options.face;
+                            passPostProcess = passCubePostProcess;
+                        }
+                        if (!passPostProcess.getEffect().isReady()) {
+                            // Try again later
+                            passPostProcess.dispose();
+                            setTimeout(function () { return TextureLineComponent.UpdatePreview(previewCanvas, texture, width, options, onReady, globalState); }, 250);
+                            return [2 /*return*/];
+                        }
+                        if (globalState) {
+                            globalState.blockMutationUpdates = true;
+                        }
+                        rtt = new babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["RenderTargetTexture"]("temp", { width: width, height: height }, scene, false);
+                        passPostProcess.onApply = function (effect) {
+                            effect.setTexture("textureSampler", texture);
+                        };
+                        internalTexture = rtt.getInternalTexture();
+                        if (!internalTexture) return [3 /*break*/, 2];
+                        scene.postProcessManager.directRender([passPostProcess], internalTexture);
+                        numberOfChannelsByLine = width * 4;
+                        halfHeight = height / 2;
+                        return [4 /*yield*/, engine.readPixels(0, 0, width, height)];
+                    case 1:
+                        bufferView = _a.sent();
+                        data = new Uint8Array(bufferView.buffer, 0, bufferView.byteLength);
+                        if (!texture.isCube) {
+                            if (!options.displayRed || !options.displayGreen || !options.displayBlue) {
+                                for (i = 0; i < width * height * 4; i += 4) {
+                                    if (!options.displayRed) {
+                                        data[i] = 0;
+                                    }
+                                    if (!options.displayGreen) {
+                                        data[i + 1] = 0;
+                                    }
+                                    if (!options.displayBlue) {
+                                        data[i + 2] = 0;
+                                    }
+                                    if (options.displayAlpha) {
+                                        alpha = data[i + 2];
+                                        data[i] = alpha;
+                                        data[i + 1] = alpha;
+                                        data[i + 2] = alpha;
+                                        data[i + 2] = 0;
+                                    }
+                                }
+                            }
+                        }
+                        //To flip image on Y axis.
+                        if (texture.invertY || texture.isCube) {
+                            for (i = 0; i < halfHeight; i++) {
+                                for (j = 0; j < numberOfChannelsByLine; j++) {
+                                    currentCell = j + i * numberOfChannelsByLine;
+                                    targetLine = height - i - 1;
+                                    targetCell = j + targetLine * numberOfChannelsByLine;
+                                    temp = data[currentCell];
+                                    data[currentCell] = data[targetCell];
+                                    data[targetCell] = temp;
+                                }
+                            }
+                        }
+                        previewCanvas.width = width;
+                        previewCanvas.height = height;
+                        context = previewCanvas.getContext('2d');
+                        if (context) {
+                            imageData = context.createImageData(width, height);
+                            castData = imageData.data;
+                            castData.set(data);
+                            context.putImageData(imageData, 0, 0);
+                            if (onReady) {
+                                onReady();
+                            }
+                        }
+                        // Unbind
+                        engine.unBindFramebuffer(internalTexture);
+                        _a.label = 2;
+                    case 2:
+                        rtt.dispose();
+                        passPostProcess.dispose();
+                        previewCanvas.style.height = height + "px";
+                        if (globalState) {
+                            globalState.blockMutationUpdates = false;
+                        }
+                        return [2 /*return*/];
+                }
             });
-        }
-        var scene = texture.getScene();
-        var engine = scene.getEngine();
-        var size = texture.getSize();
-        var ratio = size.width / size.height;
-        var height = (width / ratio) | 1;
-        var passPostProcess;
-        if (!texture.isCube) {
-            passPostProcess = new babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["PassPostProcess"]("pass", 1, null, babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["Texture"].NEAREST_SAMPLINGMODE, engine, false, babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_UNSIGNED_INT);
-        }
-        else {
-            var passCubePostProcess = new babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["PassCubePostProcess"]("pass", 1, null, babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["Texture"].NEAREST_SAMPLINGMODE, engine, false, babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_UNSIGNED_INT);
-            passCubePostProcess.face = options.face;
-            passPostProcess = passCubePostProcess;
-        }
-        if (!passPostProcess.getEffect().isReady()) {
-            // Try again later
-            passPostProcess.dispose();
-            setTimeout(function () { return TextureLineComponent.UpdatePreview(previewCanvas, texture, width, options, onReady, globalState); }, 250);
-            return;
-        }
-        if (globalState) {
-            globalState.blockMutationUpdates = true;
-        }
-        var rtt = new babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["RenderTargetTexture"]("temp", { width: width, height: height }, scene, false);
-        passPostProcess.onApply = function (effect) {
-            effect.setTexture("textureSampler", texture);
-        };
-        var internalTexture = rtt.getInternalTexture();
-        if (internalTexture) {
-            scene.postProcessManager.directRender([passPostProcess], internalTexture);
-            // Read the contents of the framebuffer
-            var numberOfChannelsByLine = width * 4;
-            var halfHeight = height / 2;
-            //Reading datas from WebGL
-            var data = engine.readPixels(0, 0, width, height);
-            if (!texture.isCube) {
-                if (!options.displayRed || !options.displayGreen || !options.displayBlue) {
-                    for (var i = 0; i < width * height * 4; i += 4) {
-                        if (!options.displayRed) {
-                            data[i] = 0;
-                        }
-                        if (!options.displayGreen) {
-                            data[i + 1] = 0;
-                        }
-                        if (!options.displayBlue) {
-                            data[i + 2] = 0;
-                        }
-                        if (options.displayAlpha) {
-                            var alpha = data[i + 2];
-                            data[i] = alpha;
-                            data[i + 1] = alpha;
-                            data[i + 2] = alpha;
-                            data[i + 2] = 0;
-                        }
-                    }
-                }
-            }
-            //To flip image on Y axis.
-            if (texture.invertY || texture.isCube) {
-                for (var i = 0; i < halfHeight; i++) {
-                    for (var j = 0; j < numberOfChannelsByLine; j++) {
-                        var currentCell = j + i * numberOfChannelsByLine;
-                        var targetLine = height - i - 1;
-                        var targetCell = j + targetLine * numberOfChannelsByLine;
-                        var temp = data[currentCell];
-                        data[currentCell] = data[targetCell];
-                        data[targetCell] = temp;
-                    }
-                }
-            }
-            previewCanvas.width = width;
-            previewCanvas.height = height;
-            var context = previewCanvas.getContext('2d');
-            if (context) {
-                // Copy the pixels to the preview canvas
-                var imageData = context.createImageData(width, height);
-                var castData = imageData.data;
-                castData.set(data);
-                context.putImageData(imageData, 0, 0);
-                if (onReady) {
-                    onReady();
-                }
-            }
-            // Unbind
-            engine.unBindFramebuffer(internalTexture);
-        }
-        rtt.dispose();
-        passPostProcess.dispose();
-        previewCanvas.style.height = height + "px";
-        if (globalState) {
-            globalState.blockMutationUpdates = false;
-        }
+        });
     };
     TextureLineComponent.prototype.render = function () {
         var _this = this;
@@ -65989,6 +65803,303 @@ var Vector4LineComponent = /** @class */ (function (_super) {
         step: 0.001,
     };
     return Vector4LineComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./sharedUiComponents/colorPicker/colorComponentEntry.tsx":
+/*!****************************************************************!*\
+  !*** ./sharedUiComponents/colorPicker/colorComponentEntry.tsx ***!
+  \****************************************************************/
+/*! exports provided: ColorComponentEntry */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ColorComponentEntry", function() { return ColorComponentEntry; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+
+
+var ColorComponentEntry = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ColorComponentEntry, _super);
+    function ColorComponentEntry(props) {
+        return _super.call(this, props) || this;
+    }
+    ColorComponentEntry.prototype.updateValue = function (valueString) {
+        if (/[^0-9\.\-]/g.test(valueString)) {
+            return;
+        }
+        var valueAsNumber = parseInt(valueString);
+        if (isNaN(valueAsNumber)) {
+            return;
+        }
+        if (this.props.max != undefined && (valueAsNumber > this.props.max)) {
+            valueAsNumber = this.props.max;
+        }
+        if (this.props.min != undefined && (valueAsNumber < this.props.min)) {
+            valueAsNumber = this.props.min;
+        }
+        this.props.onChange(valueAsNumber);
+    };
+    ColorComponentEntry.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-component" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-component-value" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", step: 1, className: "numeric-input", value: this.props.value, onChange: function (evt) { return _this.updateValue(evt.target.value); } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-component-label" }, this.props.label)));
+    };
+    return ColorComponentEntry;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./sharedUiComponents/colorPicker/colorPicker.scss":
+/*!*********************************************************!*\
+  !*** ./sharedUiComponents/colorPicker/colorPicker.scss ***!
+  \*********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var api = __webpack_require__(/*! ../../../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js */ "../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js");
+            var content = __webpack_require__(/*! !../../../../node_modules/css-loader/dist/cjs.js!../../../../node_modules/sass-loader/dist/cjs.js!./colorPicker.scss */ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss");
+
+            content = content.__esModule ? content.default : content;
+
+            if (typeof content === 'string') {
+              content = [[module.i, content, '']];
+            }
+
+var options = {};
+
+options.insert = "head";
+options.singleton = false;
+
+var update = api(content, options);
+
+
+
+module.exports = content.locals || {};
+
+/***/ }),
+
+/***/ "./sharedUiComponents/colorPicker/colorPicker.tsx":
+/*!********************************************************!*\
+  !*** ./sharedUiComponents/colorPicker/colorPicker.tsx ***!
+  \********************************************************/
+/*! exports provided: ColorPicker */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ColorPicker", function() { return ColorPicker; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/dataStorage");
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./colorComponentEntry */ "./sharedUiComponents/colorPicker/colorComponentEntry.tsx");
+/* harmony import */ var _hexColor__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./hexColor */ "./sharedUiComponents/colorPicker/hexColor.tsx");
+
+
+
+
+
+__webpack_require__(/*! ./colorPicker.scss */ "./sharedUiComponents/colorPicker/colorPicker.scss");
+/**
+ * Class used to create a color picker
+ */
+var ColorPicker = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ColorPicker, _super);
+    function ColorPicker(props) {
+        var _this = _super.call(this, props) || this;
+        if (_this.props.color instanceof babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"]) {
+            _this.state = { color: new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"](_this.props.color.r, _this.props.color.g, _this.props.color.b), alpha: _this.props.color.a };
+        }
+        else {
+            _this.state = { color: _this.props.color.clone(), alpha: 1 };
+        }
+        _this._saturationRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this._hueRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        return _this;
+    }
+    ColorPicker.prototype.onSaturationPointerDown = function (evt) {
+        this._evaluateSaturation(evt);
+        this._isSaturationPointerDown = true;
+        evt.currentTarget.setPointerCapture(evt.pointerId);
+    };
+    ColorPicker.prototype.onSaturationPointerUp = function (evt) {
+        this._isSaturationPointerDown = false;
+        evt.currentTarget.releasePointerCapture(evt.pointerId);
+    };
+    ColorPicker.prototype.onSaturationPointerMove = function (evt) {
+        if (!this._isSaturationPointerDown) {
+            return;
+        }
+        this._evaluateSaturation(evt);
+    };
+    ColorPicker.prototype.onHuePointerDown = function (evt) {
+        this._evaluateHue(evt);
+        this._isHuePointerDown = true;
+        evt.currentTarget.setPointerCapture(evt.pointerId);
+    };
+    ColorPicker.prototype.onHuePointerUp = function (evt) {
+        this._isHuePointerDown = false;
+        evt.currentTarget.releasePointerCapture(evt.pointerId);
+    };
+    ColorPicker.prototype.onHuePointerMove = function (evt) {
+        if (!this._isHuePointerDown) {
+            return;
+        }
+        this._evaluateHue(evt);
+    };
+    ColorPicker.prototype._evaluateSaturation = function (evt) {
+        var left = evt.nativeEvent.offsetX;
+        var top = evt.nativeEvent.offsetY;
+        var saturation = Math.min(1, Math.max(0.0001, left / this._saturationRef.current.clientWidth));
+        var value = Math.min(1, Math.max(0.0001, 1 - (top / this._saturationRef.current.clientHeight)));
+        if (this.props.debugMode) {
+            console.log("Saturation: " + saturation);
+            console.log("Value: " + value);
+        }
+        var hsv = this.state.color.toHSV();
+        babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].HSVtoRGBToRef(hsv.r, saturation, value, this.state.color);
+        this.setState({ color: this.state.color });
+    };
+    ColorPicker.prototype._evaluateHue = function (evt) {
+        var left = evt.nativeEvent.offsetX;
+        var hue = 360 * Math.min(0.9999, Math.max(0.0001, left / this._hueRef.current.clientWidth));
+        if (this.props.debugMode) {
+            console.log("Hue: " + hue);
+        }
+        var hsv = this.state.color.toHSV();
+        babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].HSVtoRGBToRef(hue, Math.max(hsv.g, 0.0001), Math.max(hsv.b, 0.0001), this.state.color);
+        this.setState({ color: this.state.color });
+    };
+    ColorPicker.prototype.componentDidUpdate = function () {
+        this.raiseOnColorChanged();
+    };
+    ColorPicker.prototype.raiseOnColorChanged = function () {
+        if (!this.props.onColorChanged) {
+            return;
+        }
+        if (this.props.color instanceof babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"]) {
+            var newColor4 = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"].FromColor3(this.state.color, this.state.alpha);
+            this.props.onColorChanged(newColor4);
+            return;
+        }
+        this.props.onColorChanged(this.state.color.clone());
+    };
+    ColorPicker.prototype.render = function () {
+        var _this = this;
+        var colorHex = this.state.color.toHexString();
+        var hsv = this.state.color.toHSV();
+        var colorRef = new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"]();
+        babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].HSVtoRGBToRef(hsv.r, 1, 1, colorRef);
+        var colorHexRef = colorRef.toHexString();
+        var hasAlpha = this.props.color instanceof babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"];
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-container" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation", onPointerMove: function (e) { return _this.onSaturationPointerMove(e); }, onPointerDown: function (e) { return _this.onSaturationPointerDown(e); }, onPointerUp: function (e) { return _this.onSaturationPointerUp(e); }, ref: this._saturationRef, style: {
+                    background: colorHexRef
+                } },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation-white" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation-black" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation-cursor", style: {
+                        top: -(hsv.b * 100) + 100 + "%",
+                        left: hsv.g * 100 + "%",
+                    } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue-color", style: {
+                        background: colorHex
+                    } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue-slider", ref: this._hueRef, onPointerMove: function (e) { return _this.onHuePointerMove(e); }, onPointerDown: function (e) { return _this.onHuePointerDown(e); }, onPointerUp: function (e) { return _this.onHuePointerUp(e); } },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue-cursor", style: {
+                            left: (hsv.r / 360.0) * 100 + "%",
+                            border: "1px solid " + colorHexRef
+                        } }))),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-rgb" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "red" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "R", min: 0, max: 255, value: this.state.color.r * 255 | 0, onChange: function (value) {
+                            _this.state.color.r = value / 255.0;
+                            _this.forceUpdate();
+                        } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "green" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "G", min: 0, max: 255, value: this.state.color.g * 255 | 0, onChange: function (value) {
+                            _this.state.color.g = value / 255.0;
+                            _this.forceUpdate();
+                        } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "blue" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "B", min: 0, max: 255, value: this.state.color.b * 255 | 0, onChange: function (value) {
+                            _this.state.color.b = value / 255.0;
+                            _this.forceUpdate();
+                        } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "alpha" + (hasAlpha ? "" : " grayed") },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "A", min: 0, max: 255, value: this.state.alpha * 255 | 0, onChange: function (value) {
+                            _this.setState({ alpha: value / 255.0 });
+                            _this.forceUpdate();
+                        } }))),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hex" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hex-label" }, "Hex"),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hex-value" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_hexColor__WEBPACK_IMPORTED_MODULE_4__["HexColor"], { expectedLength: 6, value: colorHex, onChange: function (value) {
+                            _this.setState({ color: babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromHexString(value) });
+                        } })))));
+    };
+    return ColorPicker;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./sharedUiComponents/colorPicker/hexColor.tsx":
+/*!*****************************************************!*\
+  !*** ./sharedUiComponents/colorPicker/hexColor.tsx ***!
+  \*****************************************************/
+/*! exports provided: HexColor */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HexColor", function() { return HexColor; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+
+
+var HexColor = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(HexColor, _super);
+    function HexColor(props) {
+        var _this = _super.call(this, props) || this;
+        _this.state = { hex: _this.props.value.replace("#", "") };
+        return _this;
+    }
+    HexColor.prototype.shouldComponentUpdate = function (nextProps, nextState) {
+        if (nextProps.value !== this.props.value) {
+            nextState.hex = nextProps.value.replace("#", "");
+        }
+        return true;
+    };
+    HexColor.prototype.updateHexValue = function (valueString) {
+        if (valueString != "" && /^[0-9A-Fa-f]+$/g.test(valueString) == false) {
+            return;
+        }
+        this.setState({ hex: valueString });
+        if (valueString.length !== this.props.expectedLength) {
+            return;
+        }
+        this.props.onChange("#" + valueString);
+    };
+    HexColor.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "string", className: "hex-input", value: this.state.hex, onChange: function (evt) { return _this.updateHexValue(evt.target.value); } }));
+    };
+    return HexColor;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 

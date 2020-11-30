@@ -1190,7 +1190,7 @@ declare module NODEEDITOR {
         componentDidMount(): void;
         componentDidUpdate(): void;
         updatePreview(): void;
-        static UpdatePreview(previewCanvas: HTMLCanvasElement, texture: BABYLON.BaseTexture, width: number, options: ITextureLineComponentState, onReady?: () => void, globalState?: any): void;
+        static UpdatePreview(previewCanvas: HTMLCanvasElement, texture: BABYLON.BaseTexture, width: number, options: ITextureLineComponentState, onReady?: () => void, globalState?: any): Promise<void>;
         render(): JSX.Element;
     }
 }
@@ -1409,6 +1409,18 @@ declare module NODEEDITOR {
         filterContent(filter: string): void;
         loadCustomFrame(file: File): void;
         removeItem(value: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IInputsPropertyTabComponentProps {
+        globalState: GlobalState;
+        inputs: BABYLON.InputBlock[];
+    }
+    export class InputsPropertyTabComponent extends React.Component<IInputsPropertyTabComponentProps> {
+        constructor(props: IInputsPropertyTabComponentProps);
+        processInputBlockUpdate(ib: BABYLON.InputBlock): void;
+        renderInputBlock(block: BABYLON.InputBlock): JSX.Element | null;
         render(): JSX.Element;
     }
 }

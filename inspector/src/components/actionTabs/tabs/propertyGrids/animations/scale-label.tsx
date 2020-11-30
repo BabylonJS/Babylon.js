@@ -2,7 +2,9 @@ import * as React from "react";
 import { CurveScale } from "./animationCurveEditorComponent";
 
 interface ISwitchButtonProps {
+    /** Current scale */
     current: CurveScale;
+    /** On click change of scale */
     action?: (event: CurveScale) => void;
 }
 

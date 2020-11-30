@@ -35,6 +35,7 @@ export interface IDecodedData {
     transcodedFormat: number;
     mipmaps: Array<IMipmap>;
     isInGammaSpace: boolean;
+    hasAlpha: boolean;
     errors?: string;
     transcoderName?: string;
 }
@@ -165,7 +166,7 @@ export class KTX2Decoder {
 
         const mipmaps: Array<IMipmap> = [];
         const dataPromises: Array<Promise<Uint8Array | null>> = [];
-        const decodedData: IDecodedData = { width: 0, height: 0, transcodedFormat, mipmaps, isInGammaSpace: kfr.isInGammaSpace, transcoderName: transcoder.getName() };
+        const decodedData: IDecodedData = { width: 0, height: 0, transcodedFormat, mipmaps, isInGammaSpace: kfr.isInGammaSpace, hasAlpha: kfr.hasAlpha, transcoderName: transcoder.getName() };
 
         let firstImageDescIndex = 0;
 
@@ -174,8 +175,8 @@ export class KTX2Decoder {
                 firstImageDescIndex += Math.max(kfr.header.layerCount, 1) * kfr.header.faceCount * Math.max(kfr.header.pixelDepth >> (level - 1), 1);
             }
 
-            const levelWidth = Math.floor(width / (1 << level));
-            const levelHeight = Math.floor(height / (1 << level));
+            const levelWidth = Math.floor(width / (1 << level)) || 1;
+            const levelHeight = Math.floor(height / (1 << level)) || 1;
 
             const numImagesInLevel = kfr.header.faceCount; // note that cubemap are not supported yet (see KTX2FileReader), so faceCount == 1
             const levelImageByteLength = ((levelWidth + 3) >> 2) * ((levelHeight + 3) >> 2) * kfr.dfdBlock.bytesPlane[0];

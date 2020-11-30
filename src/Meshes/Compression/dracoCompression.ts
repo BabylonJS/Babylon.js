@@ -164,14 +164,6 @@ function worker(): void {
     };
 }
 
-function getAbsoluteUrl<T>(url: T): T | string {
-    if (typeof document !== "object" || typeof url !== "string") {
-        return url;
-    }
-
-    return Tools.GetAbsoluteUrl(url);
-}
-
 /**
  * Configuration for Draco compression
  */
@@ -295,7 +287,7 @@ export class DracoCompression implements IDisposable {
         const decoderInfo: { url: string | undefined, wasmBinaryPromise: Promise<ArrayBuffer | string | undefined> } =
             (decoder.wasmUrl && decoder.wasmBinaryUrl && typeof WebAssembly === "object") ? {
                 url: decoder.wasmUrl,
-                wasmBinaryPromise: Tools.LoadFileAsync(getAbsoluteUrl(decoder.wasmBinaryUrl))
+                wasmBinaryPromise: Tools.LoadFileAsync(decoder.wasmBinaryUrl)
             } : {
                 url: decoder.fallbackUrl,
                 wasmBinaryPromise: Promise.resolve(undefined)
@@ -329,7 +321,7 @@ export class DracoCompression implements IDisposable {
                         worker.postMessage({
                             id: "init",
                             decoder: {
-                                url: getAbsoluteUrl(decoderInfo.url),
+                                url: decoderInfo.url,
                                 wasmBinary: decoderWasmBinary,
                             }
                         });

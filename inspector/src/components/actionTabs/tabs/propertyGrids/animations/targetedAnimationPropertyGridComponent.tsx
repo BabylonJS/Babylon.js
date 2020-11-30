@@ -82,8 +82,20 @@ export class TargetedAnimationGridComponent extends React.Component<ITargetedAni
                     {targetedAnimation.target.name && <TextLineComponent label="Target" value={targetedAnimation.target.name} onLink={() => this.props.globalState.onSelectionChangedObservable.notifyObservers(targetedAnimation)} />}
                     {/* <ButtonLineComponent label="Edit animation" onClick={this.onOpenAnimationCurveEditor} />
                     {this._isCurveEditorOpen && (
-                        <PopupComponent id="curve-editor" title="Curve Animation Editor" size={{ width: 1024, height: 512 }} onOpen={(window: Window) => {}} onClose={this.onCloseAnimationCurveEditor}>
-                            <AnimationCurveEditorComponent scene={this.props.scene} entity={targetedAnimation as any} playOrPause={this.playOrPause} lockObject={this.props.lockObject} globalState={this.props.globalState} />
+                        <PopupComponent
+                            id="curve-editor"
+                            title="Curve Animation Editor"
+                            size={{ width: 1024, height: 512 }}
+                            onOpen={(window: Window) => {}}
+                            onClose={this.onCloseAnimationCurveEditor}
+                        >
+                            <AnimationCurveEditorComponent
+                                scene={this.props.scene}
+                                entity={targetedAnimation as any}
+                                playOrPause={this.playOrPause}
+                                lockObject={this.props.lockObject}
+                                globalState={this.props.globalState}
+                            />
                         </PopupComponent>
                     )} */}
                     <ButtonLineComponent label="Dispose" onClick={this.deleteAnimation} />

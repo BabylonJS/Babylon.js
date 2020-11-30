@@ -82,7 +82,7 @@ export class ScreenSpaceCurvaturePostProcess extends PostProcess {
             return false;
         }
 
-        return engine.webGLVersion > 1 || engine.getCaps().drawBuffersExtension;
+        return engine.getCaps().drawBuffersExtension;
     }
 
     /** @hidden */

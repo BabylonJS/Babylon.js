@@ -640,15 +640,17 @@ export class RecastJSCrowd implements ICrowd {
         if (timeStep <= Epsilon) {
             this.recastCrowd.update(deltaTime);
         } else {
-            var iterationCount = deltaTime / timeStep;
+            var iterationCount = Math.floor(deltaTime / timeStep);
             if (maxStepCount && iterationCount > maxStepCount) {
                 iterationCount = maxStepCount;
             }
             if (iterationCount < 1) {
                 iterationCount = 1;
             }
+
+            var step = deltaTime / iterationCount;
             for (let i = 0; i < iterationCount; i++) {
-                this.recastCrowd.update(timeStep);
+                this.recastCrowd.update(step);
             }
         }
 

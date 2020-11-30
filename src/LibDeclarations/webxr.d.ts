@@ -124,6 +124,10 @@ interface XRPose {
     readonly emulatedPosition: boolean;
 }
 
+interface XRWorldInformation {
+    detectedPlanes?: XRPlaneSet;
+}
+
 interface XRFrame {
     readonly session: XRSession;
     getPose(space: XRSpace, baseSpace: XRSpace): XRPose | undefined;
@@ -135,10 +139,8 @@ interface XRFrame {
     // Anchors
     trackedAnchors?: XRAnchorSet;
     createAnchor?(pose: XRRigidTransform, space: XRSpace): Promise<XRAnchor>;
-    // Planes
-    worldInformation?: {
-        detectedPlanes?: XRPlaneSet;
-    };
+    // World geometries
+    worldInformation?: XRWorldInformation;
     // Hand tracking
     getJointPose?(joint: XRJointSpace, baseSpace: XRSpace): XRJointPose;
 }

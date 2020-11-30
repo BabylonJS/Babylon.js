@@ -1408,6 +1408,12 @@ var NormalMapProceduralTexture = /** @class */ (function (_super) {
         // We need to update the "size" uniform
         this.updateShaderUniforms();
     };
+    NormalMapProceduralTexture.prototype.isReady = function () {
+        if (!this._baseTexture || !this._baseTexture.isReady()) {
+            return false;
+        }
+        return _super.prototype.isReady.call(this);
+    };
     Object.defineProperty(NormalMapProceduralTexture.prototype, "baseTexture", {
         get: function () {
             return this._baseTexture;
