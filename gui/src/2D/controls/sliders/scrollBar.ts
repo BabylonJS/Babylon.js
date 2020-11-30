@@ -3,6 +3,7 @@ import { BaseSlider } from "./baseSlider";
 import { Control } from "../control";
 import { Measure } from "../../measure";
 import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
+import { serialize } from "babylonjs/Misc/decorators";
 
 /**
  * Class used to create slider controls
@@ -13,6 +14,7 @@ export class ScrollBar extends BaseSlider {
     private _tempMeasure = new Measure(0, 0, 0, 0);
 
     /** Gets or sets border color */
+    @serialize()
     public get borderColor(): string {
         return this._borderColor;
     }
@@ -27,6 +29,7 @@ export class ScrollBar extends BaseSlider {
     }
 
     /** Gets or sets background color */
+    @serialize()
     public get background(): string {
         return this._background;
     }
