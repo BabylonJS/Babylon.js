@@ -18,7 +18,7 @@ import { PreviewMeshControlComponent } from './components/preview/previewMeshCon
 import { PreviewAreaComponent } from './components/preview/previewAreaComponent';
 import { SerializationTools } from './serializationTools';
 import { WorkbenchComponent } from './diagram/workbench';
-import { GraphNode } from './diagram/graphNode';
+import { GUINode } from './diagram/graphNode';
 import * as ReactDOM from 'react-dom';
 import { IInspectorOptions } from "babylonjs/Debug/debugLayer";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
@@ -200,7 +200,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     return;
                 }
     
-                let selectedItem = selectedItems[0] as GraphNode;
+                let selectedItem = selectedItems[0] as GUINode;
     
                 if (!selectedItem.block) {
                     return;
@@ -216,7 +216,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         }, false);
     }
 
-    reconnectNewNodes(nodeIndex: number, newNodes:GraphNode[], sourceNodes:GraphNode[], done: boolean[]) {
+    reconnectNewNodes(nodeIndex: number, newNodes:GUINode[], sourceNodes:GUINode[], done: boolean[]) {
         if (done[nodeIndex]) {
             return;
         }
@@ -258,11 +258,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         done[nodeIndex] = true;
     }
 
-    pasteSelection(copiedNodes: GraphNode[], currentX: number, currentY: number, selectNew = false) {
+    pasteSelection(copiedNodes: GUINode[], currentX: number, currentY: number, selectNew = false) {
 
-        let originalNode: Nullable<GraphNode> = null;
+        let originalNode: Nullable<GUINode> = null;
 
-        let newNodes:GraphNode[] = [];
+        let newNodes:GUINode[] = [];
 
         // Copy to prevent recursive side effects while creating nodes.
         copiedNodes = copiedNodes.slice();
@@ -458,7 +458,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
     emitNewBlock(event: React.DragEvent<HTMLDivElement>) {
         var data = event.dataTransfer.getData("babylonjs-material-node") as string;
-        let newNode: GraphNode;
+        let newNode: GUINode;
         
         //new code for gui editor.
 

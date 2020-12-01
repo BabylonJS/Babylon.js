@@ -10,7 +10,7 @@ import { Tools } from 'babylonjs/Misc/tools';
 import { SerializationTools } from '../../serializationTools';
 import { CheckBoxLineComponent } from '../../sharedComponents/checkBoxLineComponent';
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
-import { GraphNode } from '../../diagram/graphNode';
+import { GUINode } from '../../diagram/graphNode';
 import { SliderLineComponent } from '../../sharedComponents/sliderLineComponent';
 
 import { TextLineComponent } from '../../sharedComponents/textLineComponent';
@@ -38,7 +38,7 @@ interface IPropertyTabComponentProps {
 }
 
 interface IPropertyTabComponentState {
-    currentNode: Nullable<GraphNode>;
+    currentNode: Nullable<GUINode>;
  }
 
 export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
@@ -55,7 +55,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
     componentDidMount() {
         this.props.globalState.onSelectionChangedObservable.add((selection) => {
-            if (selection instanceof GraphNode) {
+            if (selection instanceof GUINode) {
                 this.setState({ currentNode: selection});
             } else {
                 this.setState({ currentNode: null });
