@@ -17,7 +17,7 @@ import { IEditorData } from './nodeLocationInfo';
 import { PreviewMeshControlComponent } from './components/preview/previewMeshControlComponent';
 import { PreviewAreaComponent } from './components/preview/previewAreaComponent';
 import { SerializationTools } from './serializationTools';
-import { GraphCanvasComponent } from './diagram/workbench';
+import { WorkbenchComponent } from './diagram/workbench';
 import { GraphNode } from './diagram/graphNode';
 import * as ReactDOM from 'react-dom';
 import { IInspectorOptions } from "babylonjs/Debug/debugLayer";
@@ -43,7 +43,7 @@ interface IInternalPreviewAreaOptions extends IInspectorOptions {
 }
 
 export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditorState> {
-    private _graphCanvas: GraphCanvasComponent;
+    private _graphCanvas: WorkbenchComponent;
 
     private _startX: number;
     private _moveInProgress: boolean;
@@ -105,7 +105,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
     componentDidMount() {
         if (this.props.globalState.hostDocument) {
-            this._graphCanvas = (this.refs["graphCanvas"] as GraphCanvasComponent);
+            this._graphCanvas = (this.refs["graphCanvas"] as WorkbenchComponent);
             this._previewManager = new PreviewManager(this.props.globalState.hostDocument.getElementById("preview-canvas") as HTMLCanvasElement, this.props.globalState);
         }
 
@@ -747,7 +747,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                             event.preventDefault();
                         }}
                     >                        
-                        <GraphCanvasComponent ref={"graphCanvas"} globalState={this.props.globalState}/>
+                        <WorkbenchComponent ref={"graphCanvas"} globalState={this.props.globalState}/>
                     </div>
 
                     <div id="rightGrab"

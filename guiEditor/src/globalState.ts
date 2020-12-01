@@ -8,7 +8,7 @@ import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { Color4 } from 'babylonjs/Maths/math.color';
 import { GraphNode } from './diagram/graphNode';
 import { Vector2 } from 'babylonjs/Maths/math.vector';
-import { FramePortData, GraphCanvasComponent } from './diagram/workbench';
+import { FramePortData, WorkbenchComponent } from './diagram/workbench';
 import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
 
 export class GlobalState {
@@ -52,7 +52,7 @@ export class GlobalState {
     directionalLight0: boolean;
     directionalLight1: boolean;
     controlCamera: boolean;
-    workbench: GraphCanvasComponent;
+    workbench: WorkbenchComponent;
     storeEditorData: (serializationObject: any, frame?: Nullable<null>) => void;
     _mode: NodeMaterialModes;
 
