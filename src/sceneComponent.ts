@@ -181,7 +181,7 @@ export type CameraStageFrameBufferAction = (camera: Camera) => boolean;
 /**
  * Strong typing of a Render Target related stage step action
  */
-export type RenderTargetStageAction = (renderTarget: RenderTargetTexture) => void;
+export type RenderTargetStageAction = (renderTarget: RenderTargetTexture, faceIndex?: number, layer?: number) => void;
 
 /**
  * Strong typing of a RenderingGroup related stage step action

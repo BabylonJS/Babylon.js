@@ -117,39 +117,39 @@ export class PrePassRendererSceneComponent implements ISceneComponent {
         this.scene._afterRenderingMeshStage.registerStep(SceneComponentConstants.STEP_AFTERRENDERINGMESH_PREPASS, this, this._afterRenderingMeshStage);
     }
 
-    private _beforeRenderTargetDraw(renderTarget: RenderTargetTexture) {
+    private _beforeRenderTargetDraw(renderTarget: RenderTargetTexture, faceIndex?: number, layer?: number) {
         if (this.scene.prePassRenderer) {
             if (!renderTarget._prePassRenderTarget) {
                 renderTarget._prePassRenderTarget = this.scene.prePassRenderer._createRenderTarget(renderTarget.name + "_prePassRTT", renderTarget);
             }
             this.scene.prePassRenderer._setRenderTarget(renderTarget._prePassRenderTarget);
             this.scene.prePassRenderer._clear();
-            this.scene.prePassRenderer._beforeDraw(null, renderTarget);
+            this.scene.prePassRenderer._beforeDraw(undefined, faceIndex, layer);
         }
     }
 
-    private _afterRenderTargetDraw(renderTarget: RenderTargetTexture) {
+    private _afterRenderTargetDraw(renderTarget: RenderTargetTexture, faceIndex?: number, layer?: number) {
         if (this.scene.prePassRenderer) {
-            this.scene.prePassRenderer._afterDraw(null, renderTarget);
+            this.scene.prePassRenderer._afterDraw(faceIndex, layer);
         }
     }
 
     private _beforeCameraDraw(camera: Camera) {
         if (this.scene.prePassRenderer) {
             this.scene.prePassRenderer._setRenderTarget(null);
-            this.scene.prePassRenderer._beforeDraw(camera, null);
+            this.scene.prePassRenderer._beforeDraw(camera);
         }
     }
 
     private _afterCameraDraw(camera: Camera) {
         if (this.scene.prePassRenderer) {
-            this.scene.prePassRenderer._afterDraw(camera, null);
+            this.scene.prePassRenderer._afterDraw();
         }
     }
 
     private _beforeClearStage() {
         if (this.scene.prePassRenderer) {
-            this.scene.prePassRenderer._setRenderTarget(null)
+            this.scene.prePassRenderer._setRenderTarget(null);
             this.scene.prePassRenderer._clear();
         }
     }
