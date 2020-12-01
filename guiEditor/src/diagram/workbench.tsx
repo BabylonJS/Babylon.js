@@ -1,7 +1,7 @@
 import * as React from "react";
 import { GlobalState } from '../globalState';
 import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
-import { GraphNode } from './graphNode';
+import { GUINode } from './graphNode';
 import * as dagre from 'dagre';
 import { Nullable } from 'babylonjs/types';
 
@@ -40,8 +40,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _frameContainer: HTMLDivElement;
     private _svgCanvas: HTMLElement;
     private _rootContainer: HTMLDivElement;
-    private _nodes: GraphNode[] = [];
-    private _guiNodes: GraphNode[] = [];
+    private _nodes: GUINode[] = [];
+    private _guiNodes: GUINode[] = [];
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null
     private _dropPointX = 0;
@@ -51,8 +51,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _x = 0;
     private _y = 0;
     private _zoom = 1;
-    private _selectedNodes: GraphNode[] = [];
-    private _selectedGuiNodes: GraphNode[] = [];
+    private _selectedNodes: GUINode[] = [];
+    private _selectedGuiNodes: GUINode[] = [];
     private _gridSize = 20;
     private _selectionBox: Nullable<HTMLDivElement> = null;    
     private _frameCandidate: Nullable<HTMLDivElement> = null;
@@ -157,7 +157,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 this._selectedNodes = [];
                 this._selectedGuiNodes = [];
             } else {
-                if (selection instanceof GraphNode){
+                if (selection instanceof GUINode){
                     if (this._ctrlKeyIsPressed) {
                         if (this._selectedNodes.indexOf(selection) === -1) {
                             this._selectedNodes.push(selection);
@@ -259,7 +259,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
 
     appendBlock(block: NodeMaterialBlock) {
-        let newNode = new GraphNode(block, this.props.globalState, null);
+        let newNode = new GUINode(block, this.props.globalState, null);
 
         newNode.appendVisual(this._graphCanvas, this);
 
@@ -619,7 +619,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         });
 
         var fakeNodeMaterialBlock = new NodeMaterialBlock("Button");
-        var newGuiNode = new GraphNode(fakeNodeMaterialBlock, this.globalState, button1);
+        var newGuiNode = new GUINode(fakeNodeMaterialBlock, this.globalState, button1);
         newGuiNode.appendVisual(this._graphCanvas, this);
         this._guiNodes.push(newGuiNode);
 
@@ -636,7 +636,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         slider1.onPointerUpObservable.add(function() {
         });
         var fakeNodeMaterialBlock = new NodeMaterialBlock("Slider");
-        var newGuiNode = new GraphNode(fakeNodeMaterialBlock, this.globalState, slider1);
+        var newGuiNode = new GUINode(fakeNodeMaterialBlock, this.globalState, slider1);
         newGuiNode.appendVisual(this._graphCanvas, this);
         this._guiNodes.push(newGuiNode);
 
