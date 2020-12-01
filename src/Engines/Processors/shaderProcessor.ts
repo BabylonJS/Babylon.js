@@ -18,6 +18,7 @@ declare type ThinEngine = import("../thinEngine").ThinEngine;
 
 const regexSE = /defined\s*?\((.+?)\)/g;
 const regexSERevert = /defined\s*?\[(.+?)\]/g;
+const regexShaderInclude = /#include\s?<(.+)>(\((.*)\))*(\[(.*)\])*/g;
 
 /** @hidden */
 export class ShaderProcessor {
@@ -301,8 +302,7 @@ export class ShaderProcessor {
     }
 
     private static _ProcessIncludes(sourceCode: string, options: ProcessingOptions, callback: (data: any) => void): void {
-        var regex = /#include<(.+)>(\((.*)\))*(\[(.*)\])*/g;
-        var match = regex.exec(sourceCode);
+        var match = regexShaderInclude.exec(sourceCode);
 
         var returnValue = new String(sourceCode);
         var keepProcessing = false;
@@ -371,7 +371,10 @@ export class ShaderProcessor {
                 // Replace
                 returnValue = returnValue.replace(match[0], includeContent);
 
-                keepProcessing = keepProcessing || includeContent.indexOf("#include<") >= 0;
+                keepProcessing =
+                    keepProcessing ||
+                    includeContent.indexOf("#include<") >= 0 ||
+                    includeContent.indexOf("#include <") >= 0;
             } else {
                 var includeShaderUrl = options.shadersRepository + "ShadersInclude/" + includeFile + ".fx";
 
