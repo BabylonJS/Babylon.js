@@ -847,6 +847,15 @@ export class RenderTargetTexture extends Texture {
         });
     }
 
+    public _prepareFrame(scene: Scene, faceIndex?: number, layer?: number, useCameraPostProcess?: boolean) {
+        if (this._postProcessManager) {
+            this._postProcessManager._prepareFrame(this._texture, this._postProcesses);
+        }
+        else if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(this._texture)) {
+            this._bindFrameBuffer(faceIndex, layer);
+        }
+    }
+
     private renderToTarget(faceIndex: number, useCameraPostProcess: boolean, dumpForDebug: boolean, layer = 0, camera: Nullable<Camera> = null): void {
         var scene = this.getScene();
 
@@ -862,12 +871,7 @@ export class RenderTargetTexture extends Texture {
 
         // Bind
         if (!this._prePass) {
-            if (this._postProcessManager) {
-                this._postProcessManager._prepareFrame(this._texture, this._postProcesses);
-            }
-            else if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(this._texture)) {
-                this._bindFrameBuffer(faceIndex, layer);
-            }
+            this._prepareFrame(scene, faceIndex, layer, useCameraPostProcess);
         }
 
         if (this.is2DArray) {
@@ -914,7 +918,7 @@ export class RenderTargetTexture extends Texture {
 
         // Before Camera Draw
         for (let step of scene._beforeRenderTargetDrawStage) {
-            step.action(this);
+            step.action(this, faceIndex, layer);
         }
 
         // Render
@@ -922,7 +926,7 @@ export class RenderTargetTexture extends Texture {
 
         // After Camera Draw
         for (let step of scene._afterRenderTargetDrawStage) {
-            step.action(this);
+            step.action(this, faceIndex, layer);
         }
 
         if (this._postProcessManager) {

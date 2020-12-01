@@ -303,8 +303,10 @@ export class PostProcess {
     * the only way to unset it is to use this function to restore its internal state
     */
     public restoreDefaultInputTexture() {
-        this._forcedOutputTexture = null;
-        this.markTextureDirty();
+        if (this._forcedOutputTexture) {
+            this._forcedOutputTexture = null;
+            this.markTextureDirty();
+        }
     }
 
     /**
