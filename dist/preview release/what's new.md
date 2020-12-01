@@ -12,7 +12,7 @@
 ### Loaders
 
 - Added support for EXT_meshopt_compression for glTF loader. ([zeux](https://github.com/zeux))
-- Increased transmission render target texture default size. ([Drigax](https://github.com/drigax))
+- Increased KHR_materials_transmission render target texture default size. ([Drigax](https://github.com/drigax))
 
 ### Navigation
 
