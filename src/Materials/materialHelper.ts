@@ -350,10 +350,10 @@ export class MaterialHelper {
 
         if (scene.prePassRenderer && scene.prePassRenderer.enabled && scene.prePassRenderer.getRenderTarget().enabled && canRenderToMRT) {
             defines.PREPASS = true;
-            defines.SCENE_MRT_COUNT = scene.prePassRenderer.getRenderTarget().mrtCount;
+            defines.SCENE_MRT_COUNT = scene.prePassRenderer.mrtCount;
 
             for (let i = 0; i < texturesList.length; i++) {
-                const index = scene.prePassRenderer.getRenderTarget().getIndex(texturesList[i].type);
+                const index = scene.prePassRenderer.getIndex(texturesList[i].type);
                 if (index !== -1) {
                     defines[texturesList[i].define] = true;
                     defines[texturesList[i].index] = index;
@@ -868,7 +868,7 @@ export class MaterialHelper {
 
                 if (matrices) {
                     effect.setMatrices("mBones", matrices);
-                    if (prePassConfiguration && mesh.getScene().prePassRenderer && mesh.getScene().prePassRenderer!.getRenderTarget().getIndex(Constants.PREPASS_VELOCITY_TEXTURE_TYPE)) {
+                    if (prePassConfiguration && mesh.getScene().prePassRenderer && mesh.getScene().prePassRenderer!.getIndex(Constants.PREPASS_VELOCITY_TEXTURE_TYPE)) {
                         if (prePassConfiguration.previousBones[mesh.uniqueId]) {
                             effect.setMatrices("mPreviousBones", prePassConfiguration.previousBones[mesh.uniqueId]);
                         }
