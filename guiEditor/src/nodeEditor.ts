@@ -42,7 +42,7 @@ export class NodeEditor {
         if (!hostElement) {
             hostElement = Popup.CreatePopup("BABYLON.JS NODE EDITOR", "node-editor", 1000, 800)!;
         }
-        
+
         let globalState = new GlobalState();
         globalState.nodeMaterial = options.nodeMaterial;
         globalState.mode = options.nodeMaterial.mode;
@@ -56,6 +56,11 @@ export class NodeEditor {
         });
 
         ReactDOM.render(graphEditor, hostElement);
+        
+        // create the middle workbench canvas
+        if(!globalState.guiTexture) {
+            globalState.workbench.createGUICanvas();
+        }
 
         if (options.customLoadObservable) {
             options.customLoadObservable.add(data => {

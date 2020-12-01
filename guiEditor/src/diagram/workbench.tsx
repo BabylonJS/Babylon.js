@@ -48,7 +48,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _dropPointY = 0;
     private _selectionStartX = 0;
     private _selectionStartY = 0;
-    private _candidateLinkedHasMoved = false;
     private _x = 0;
     private _y = 0;
     private _zoom = 1;
@@ -64,6 +63,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
     public _frameIsMoving = false;
     public _isLoading = false;
+
+    
 
     public get gridSize() {
         return this._gridSize;
@@ -201,6 +202,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 editorData.zoom = this.zoom;
             }
         }
+        this.props.globalState.workbench = this;
     }
 
     public getGridPosition(position: number, useCeil = false) {
@@ -589,7 +591,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
 
-    createGUICanvas()
+    public createGUICanvas()
     {
         // Get the canvas element from the DOM.
         const canvas = document.getElementById("graph-canvas") as HTMLCanvasElement;
@@ -617,11 +619,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
     public addNewButton()
     {
-        if(!this.globalState.guiTexture)
-        {
-            this.createGUICanvas();
-        }
-
         var button1 = BABYLON.GUI.Button.CreateSimpleButton("but1", "Click Me");
         button1.width = "150px"
         button1.height = "40px";
@@ -641,11 +638,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
     public addNewSlider()
     {
-        if(!this.globalState.guiTexture)
-        {
-            this.createGUICanvas();
-        }
-
         var slider1 = new BABYLON.GUI.Slider("Slider");
         slider1.width = "150px"
         slider1.height = "40px";
@@ -661,8 +653,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this.globalState.guiTexture.addControl(slider1);    
     }
 
-
-    //private _advancedTexture: BABYLON.GUI.AdvancedDynamicTexture;
     updateGUIs()
     {
         this._guiNodes.forEach(element => {
@@ -672,8 +662,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
  
     render() {
-
-        //var canv = new HTMLCanvasElement;
+ 
         var canv = <canvas id="graph-canvas" 
         onWheel={evt => this.onWheel(evt)}
         onPointerMove={evt => this.onMove(evt)}
@@ -681,8 +670,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         onPointerUp={evt =>  this.onUp(evt)} 
         >   
         <div id="graph-container">
-            <div id="graph-canvas-container">
-                
+            <div id="graph-canvas-container">  
             </div>     
             <div id="frame-container">                        
             </div>
