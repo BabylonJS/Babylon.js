@@ -51,7 +51,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     private _leftWidth = DataStorage.ReadNumber("LeftWidth", 200);
     private _rightWidth = DataStorage.ReadNumber("RightWidth", 300);
 
-    private _blocks = new Array<NodeMaterialBlock>();
+    private _blocks = new Array<BABYLON.GUI.Container | BABYLON.GUI.Control>();
 
     private _previewManager: PreviewManager;
     private _mouseLocationX = 0;
@@ -65,29 +65,12 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
      * Creates a node and recursivly creates its parent nodes from it's input
      * @param nodeMaterialBlock 
      */
-    public createNodeFromObject(block: NodeMaterialBlock, recursion = true) {
+    public createNodeFromObject(block: BABYLON.GUI.Container | BABYLON.GUI.Control, recursion = true) {
         if (this._blocks.indexOf(block) !== -1) {        
-            return this._graphCanvas.nodes.filter(n => n.block === block)[0];
+            return this._graphCanvas.nodes.filter(n => n.guiNode === block)[0];
         }
 
         this._blocks.push(block);
-
-        if (this.props.globalState.nodeMaterial!.attachedBlocks.indexOf(block) === -1) {
-            this.props.globalState.nodeMaterial!.attachedBlocks.push(block);
-        }
-
-        if (block.isFinalMerger) {
-            this.props.globalState.nodeMaterial!.addOutputNode(block);
-        }
-
-        // Connections
-        if (block.inputs.length) {
-            for (var input of block.inputs) {
-                if (input.isConnected && recursion) {
-                    this.createNodeFromObject(input.sourceBlock!);
-                }
-            }
-        }
 
         // Graph
         const node = this._graphCanvas.appendBlock(block);
@@ -99,8 +82,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     addValueNode(type: string) {
         let nodeType: NodeMaterialBlockConnectionPointTypes = BlockTools.GetConnectionNodeTypeFromString(type);
 
-        let newInputBlock = new InputBlock(type, undefined, nodeType);
-        return this.createNodeFromObject(newInputBlock);
+        //let newInputBlock = new InputBlock(type, undefined, nodeType);
+        //return this.createNodeFromObject(newInputBlock);
     }
 
     componentDidMount() {
@@ -147,13 +130,13 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         });
 
         this.props.globalState.onImportFrameObservable.add((source: any) => {
-            const frameData = source.editorData.frames[0];
+            /*const frameData = source.editorData.frames[0];
 
             // create new graph nodes for only blocks from frame (last blocks added)
             this.props.globalState.nodeMaterial.attachedBlocks.slice(-(frameData.blocks.length)).forEach((block: NodeMaterialBlock) => {
-                this.createNodeFromObject(block);
+                this.createNodeFromObject();
             });
-            this.reOrganize(this.props.globalState.nodeMaterial.editorData, true);
+            this.reOrganize(this.props.globalState.nodeMaterial.editorData, true);*/
         })
 
         this.props.globalState.onZoomToFitRequiredObservable.add(() => {
@@ -164,9 +147,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             this.reOrganize();
         });
 
-        this.props.globalState.onGetNodeFromBlock = (block) => {
+        /*this.props.globalState.onGetNodeFromBlock = (block) => {
              return this._graphCanvas.findNodeFromBlock(block);
-        }
+        }*/
 
         this.props.globalState.hostDocument!.addEventListener("keydown", evt => {
             if ((evt.keyCode === 46 || evt.keyCode === 8) && !this.props.globalState.blockKeyboardEvents) { // Delete                
@@ -202,7 +185,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     
                 let selectedItem = selectedItems[0] as GUINode;
     
-                if (!selectedItem.block) {
+                if (!selectedItem.guiNode) {
                     return;
                 }
 
@@ -222,36 +205,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         }
 
         const currentNode = newNodes[nodeIndex];
-        const block = currentNode.block;
+        const block = currentNode.guiNode;
         const sourceNode = sourceNodes[nodeIndex];
 
-        for (var inputIndex = 0; inputIndex < sourceNode.block.inputs.length; inputIndex++) {
-            let sourceInput = sourceNode.block.inputs[inputIndex];
-            const currentInput = block.inputs[inputIndex];
-            if (!sourceInput.isConnected) {
-                continue;
-            }
-            const sourceBlock = sourceInput.connectedPoint!.ownerBlock;
-            const activeNodes = sourceNodes.filter(s => s.block === sourceBlock);
-
-            if (activeNodes.length > 0) {
-                const activeNode = activeNodes[0];
-                let indexInList = sourceNodes.indexOf(activeNode);
-
-                // First make sure to connect the other one
-                this.reconnectNewNodes(indexInList, newNodes, sourceNodes, done);
-
-                // Then reconnect
-                const outputIndex = sourceBlock.outputs.indexOf(sourceInput.connectedPoint!);
-                const newOutput = newNodes[indexInList].block.outputs[outputIndex];
-
-                newOutput.connectTo(currentInput);
-            } else {
-                // Connect with outside blocks
-                sourceInput._connectedPoint!.connectTo(currentInput);
-            }
-
-        }
 
         currentNode.refresh();
 
@@ -272,13 +228,13 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         // Create new nodes
         for (var node of copiedNodes) {
-            let block = node.block;
+            let block = node.guiNode;
 
             if (!block) {
                 continue;
             }
 
-            let clone = block.clone(this.props.globalState.nodeMaterial.getScene());
+            let clone = null;//block.clone(this.props.globalState.nodeMaterial.getScene());
 
             if (!clone) {
                 return;
@@ -297,7 +253,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 y = currentY;
             }
 
-            newNode.x = x;
+            /*newNode.x = x;
             newNode.y = y;
             newNode.cleanAccumulation();
 
@@ -305,7 +261,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
             if (selectNew) {
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newNode);
-            }
+            }*/
         }
 
         // Relink
@@ -396,7 +352,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 // Locations
                 for (var location of editorData.locations) {
                     for (var node of this._graphCanvas.nodes) {
-                        if (node.block && node.block.uniqueId === location.blockId) {
+                        if (node.guiNode && node.guiNode.uniqueId === location.blockId) {
                             node.x = location.x;
                             node.y = location.y;
                             node.cleanAccumulation();
@@ -469,7 +425,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         else {
             this._graphCanvas.addNewButton();
         }
-        if (data.indexOf("Block") === -1) {
+       
+        /*if (data.indexOf("Block") === -1) {
             newNode = this.addValueNode(data);
         } 
         else {
@@ -513,7 +470,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     y += 80;
                 }
             }
-        });
+        });*/
 
         this.forceUpdate();
     }
