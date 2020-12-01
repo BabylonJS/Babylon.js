@@ -37,7 +37,7 @@ class TransmissionHelper {
      */
     private static _getDefaultOptions(): ITransmissionHelperOptions {
         return {
-            renderSize: 512
+            renderSize: 1024
         };
     }
 
