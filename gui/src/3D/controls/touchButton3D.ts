@@ -1,6 +1,7 @@
-import { Nullable } from "babylonjs/types";
+import { Nullable, DeepImmutableObject } from "babylonjs/types";
 import { Vector3 } from "babylonjs/Maths/math.vector";
 import { Mesh } from "babylonjs/Meshes/mesh";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { LinesMesh } from "babylonjs/Meshes/linesMesh";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { Scene } from "babylonjs/scene";
@@ -29,6 +30,7 @@ export class TouchButton3D extends Button3D {
     protected _buttonState: ButtonState;
     protected _collisionMesh: Mesh;
     protected _collidableFrontDirection: Vector3;
+    private _lastTouchPoint: Vector3;
 
     protected _drawDebugData = true;
 
@@ -66,7 +68,7 @@ export class TouchButton3D extends Button3D {
         // On a circular button, we can just check the rejectionLength
         // For all other buttons, we should do a proper collision check
         const ray = new Ray(collidable, frontToButton, maxDist);
-        const pickingInfo = this._collisionMesh.intersects(ray);
+        const pickingInfo = ray.intersectsMesh(this._collisionMesh as DeepImmutableObject<AbstractMesh>);
 
         if (pickingInfo.hit && (pickingInfo.pickedMesh == this._collisionMesh))
         {
@@ -88,7 +90,6 @@ export class TouchButton3D extends Button3D {
     protected _enableCollisions(scene: Scene) {
         var _this = this;
         var debugLineMesh: LinesMesh;
-        var debugColour: Color3;
         scene.registerBeforeRender(function () {
             //Check for collision with haaaaand
             const indexTipMeshes = scene.getMeshesByTags("indexTip");
@@ -97,6 +98,7 @@ export class TouchButton3D extends Button3D {
                 console.log(distance);
 
                 var debugButtonPoint = _this._collisionMesh.getAbsolutePosition();
+                var debugColour = Color3.Red();
 
                 const dummyPointerId = 0;
                 const buttonIndex = 0; // Left click
@@ -115,8 +117,8 @@ export class TouchButton3D extends Button3D {
                 }
 
                 if (touchPoint) {
-                    debugColour = Color3.Red();
                     debugButtonPoint = touchPoint;
+                    _this._lastTouchPoint = touchPoint;
 
                     // Update button state and fire events
                     switch(_this._buttonState) {
@@ -156,6 +158,20 @@ export class TouchButton3D extends Button3D {
                                 _this._onPointerMove(_this, touchPoint);
                             }
 
+                            break;
+                    }
+                }
+                else
+                {
+                    // Safely return to ButtonState.None
+                    switch(_this._buttonState) {
+                        case ButtonState.Hover:
+                            _this._buttonState = ButtonState.None;
+                            _this._onPointerOut(_this);
+                            break;
+                        case ButtonState.Press:
+                            _this._buttonState = ButtonState.Hover;
+                            _this._onPointerUp(_this, _this._lastTouchPoint, dummyPointerId, buttonIndex, false /*notifyClick*/);
                             break;
                     }
                 }
