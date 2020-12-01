@@ -558,18 +558,18 @@ export class Geometry implements IGetSetVerticesData {
         if (!this._indexBuffer) {
             this._indexBuffer = new IndexBuffer(this._engine, indices, updatable);
         } else {
-            this._indexBuffer.recreate(indices, updatable);
+            const needToUpdateSubMeshes = this._indexBuffer.update(indices, undefined, false);
+            if (needToUpdateSubMeshes) {
+                for (const mesh of this._meshes) {
+                    mesh._createGlobalSubMesh(true);
+                }
+            }
         }
-
-        this._disposeVertexArrayObjects();
 
         if (totalVertices != undefined) {
             // including null and undefined
             this._totalVertices = totalVertices;
-        }
-
-        for (const mesh of this._meshes) {
-            mesh._createGlobalSubMesh(true);
+            this._disposeVertexArrayObjects();
         }
 
         this.notifyUpdate();
@@ -989,7 +989,7 @@ export class Geometry implements IGetSetVerticesData {
         const clone = new Geometry('clone_' + this.id, this._scene, undefined, this._updatable);
 
         if (this._indexBuffer) {
-            clone._indexBuffer = this._indexBuffer.makeNewReference();
+            clone._indexBuffer = this._indexBuffer.clone()
         }
 
         for (const kind in this._vertexBuffers) {

@@ -79,6 +79,7 @@ abstract class Buffer {
         return this._data;
     }
 
+    /** Set current buffer's data */
     public setData(data: DataArray): void {
         this._data = data; // TODO: Doesn't actually update anything, part of CPU setup
     }
@@ -112,6 +113,10 @@ abstract class Buffer {
         this._bufferReferenceCount++;
     }
 
+    public getEngine() {
+        return this._engine
+    }
+
     /**
      * Release all resources
      */
@@ -136,6 +141,9 @@ export class VertexBufferBuffer extends Buffer {
      */
     public readonly byteStride: number;
 
+    private _instanced: boolean;
+    private _divisor: number;
+
     /**
      * Gets the stride in float32 units (i.e. byte stride / 4).
      * May not be an integer if the byte stride is not divisible by 4.
@@ -157,12 +165,20 @@ export class VertexBufferBuffer extends Buffer {
      * @param useBytes set to true if the stride in in bytes (optional)
      * @param divisor sets an optional divisor for instances (1 by default)
      */
-    constructor(engine: any, data: DataArray, updatable: boolean, stride = 0, postponeInternalCreation = false, instanced = false, useBytes = false, divisor?: number) {
+    constructor(engine: any, data: DataArray, updatable: boolean, stride = 0, postponeInternalCreation = false, instanced?: boolean, divisior?: number, useBytes = false) {
         super(engine, data, updatable);
         this.byteStride = useBytes ? stride : stride * Float32Array.BYTES_PER_ELEMENT;
-
-        if (!postponeInternalCreation) { // by default
+        if (!postponeInternalCreation) {
             this.create(null);
+        }
+        if (instanced === undefined) {
+            instanced = false;
+        }
+        this._instanced = instanced;
+        if (divisior === undefined) {
+            this._divisor = instanced ? 1 : 0;
+        } else {
+            this._divisor = divisior;
         }
     }
 
@@ -229,7 +245,7 @@ export class IndexBufferBuffer extends Buffer {
     constructor(engine: any, data: DataArray, updatable: boolean, postponeInternalCreation: boolean) {
         super(engine, data, updatable);
 
-        if (!postponeInternalCreation) { // by default
+        if (!postponeInternalCreation) {
             this.create(null);
         }
     }
@@ -248,21 +264,56 @@ export class IndexBufferBuffer extends Buffer {
     }
 
     /**
-     * Updates the data directly.
+     * Updates the GPU-data directly. Will forget CPU-side data.
      * @param data the new data
      * @param offset the new offset
      * @param vertexCount the vertex count (optional)
      * @param useBytes set to true if the offset is in bytes
      */
-    public updateDirectly(data: IndicesArray, offset: number, vertexCount?: number, useBytes: boolean = false): void {
+    public updateDirectly(data: IndicesArray, offset: number, useBytes: boolean = false): void {
         if (this._buffer && this._updatable) { // update buffer
             this._engine.updateDynamicIndexBuffer(this._buffer, data, offset); // TODO: Multiply offset by 2 or 4 depending on size of index?
             this._data = null;
         }
     }
+
+    /**
+     * Update content of the buffer
+     * @param indices new indices to use
+     * @param offset optional offset in the target buffer
+     * @param gpuMemoryOnly specifies if the CPU memory should be updated
+     * @returns true if size changed
+     */
+    public update(indices: IndicesArray, offset?: number, gpuMemoryOnly = false): boolean {
+        const needToUpdateSubMeshes = this._data === null || indices.length !== (this._data as IndicesArray).length; // Doesn't work since DataArray now
+
+        if (!this._updatable || !gpuMemoryOnly) {
+            this.setData(indices.slice());
+        }
+
+        if (!this._updatable) {
+            this.recreate(indices, this._updatable);
+            // TODO: Should we return true or false here?
+            return true;
+        } else if (this._buffer) {
+            this._engine.updateDynamicIndexBuffer(this._buffer, indices, offset);
+        }
+        return needToUpdateSubMeshes;
+    }
+
+    public recreate(indices: IndicesArray, updatable: boolean) {
+        if (this._buffer) {
+            this._engine._releaseBuffer(this._buffer);
+            this._buffer = null;
+        }
+        this._data = indices;
+        this._updatable = updatable;
+        this.create();
+    }
 }
 
 export class IndexBuffer {
+    private _ownsBuffer: boolean;
     private _buffer: IndexBufferBuffer;
 
     public get updatable(): boolean {
@@ -287,12 +338,22 @@ export class IndexBuffer {
     /**
      * Constructor
      * @param engine the engine
-     * @param data the data to use for this buffer
+     * @param data the data to use for this buffer (or a previously created buffer)
      * @param updatable whether the data is updatable
      * @param postponeInternalCreation whether to postpone creating the internal WebGL buffer (optional)
+     * @param takeBufferOwnership defines if the buffer should be released when the vertex buffer is disposed
      */
-    constructor (engine: ThinEngine, data: IndicesArray, updatable = false, postponeInternalCreation = false) {
-        this._buffer = new IndexBufferBuffer(engine, data, updatable, postponeInternalCreation);
+    constructor (engine: ThinEngine, data: IndicesArray | IndexBufferBuffer, updatable = false, postponeInternalCreation = false, takeBufferOwnership: boolean = false) {
+        if (data instanceof IndexBufferBuffer) {
+            this._buffer = data
+            if (takeBufferOwnership) {
+                data._increaseReferences()
+            }
+            this._ownsBuffer = takeBufferOwnership;
+        } else {
+            this._buffer = new IndexBufferBuffer(engine, data, updatable, postponeInternalCreation);
+            this._ownsBuffer = true;
+        }
     }
 
     /**
@@ -307,42 +368,11 @@ export class IndexBuffer {
      * Will only do actual dispose if this was the last usage of the index buffer.
      */
     public dispose() {
-        if (this._buffer) {
-            if (this._engine._releaseBuffer(this._buffer)) {
-                this._buffer = null;
-                if (this._restoreContextObserver) {
-                    this._engine.onContextRestoredObservable.remove(this._restoreContextObserver);
-                }
-            }
-        }
+        this._buffer.dispose(this._ownsBuffer)
     }
 
-    /**
-     * Restore the IndexBuffer on the GPU. Used to restore buffer after a context lost.
-     */
-    private _rebuild() {
-        if (this._buffer === null) {
-            return;
-        }
-        // Make sure we retain theo riginal reference count of the buffer. Calling .create will reset it to 1.
-        const restore_references = this._buffer.references;
-        this._buffer = null;
-        this.create();
-        // The typescript compiler fails to realize that this.create() always recreates this._buffer, hence the ignore.
-        // @ts-ignore
-        this._buffer.references = restore_references;
-    }
-
-    /**
-     * Increase reference count to indicate that we have one more owner.
-     * This lets the outside call dispose() once more without deleting the actual buffer.
-     * @returns the same index buffer with a higher reference count
-     */
-    public makeNewReference(): IndexBuffer {
-        if (this._buffer) {
-            this._buffer.references++;
-        }
-        return this;
+    public clone(): IndexBuffer {
+        return new IndexBuffer(this._buffer.getEngine(), this._buffer, this._buffer.isUpdatable(), true)
     }
 
     /**
@@ -353,22 +383,7 @@ export class IndexBuffer {
      * @returns true if size changed
      */
     public update(indices: IndicesArray, offset?: number, gpuMemoryOnly = false): boolean {
-        if (!this._buffer) {
-            return false;
-        }
-
-        const needToUpdateSubMeshes = indices.length !== this._data.length;
-
-        if (!this._updatable) {
-            this.recreate(indices, this._updatable);
-            // Should we return true or false here?
-        } else {
-            if (!gpuMemoryOnly) {
-                this._data = indices.slice();
-            }
-            this._engine.updateDynamicIndexBuffer(this._buffer, indices, offset);
-        }
-        return needToUpdateSubMeshes;
+        return this._buffer.update(indices, offset, gpuMemoryOnly)
     }
 
     /**
@@ -377,21 +392,7 @@ export class IndexBuffer {
      * @param updatable specifies if the new buffer should be updatable
      */
     public recreate(indices: IndicesArray, updatable: boolean = false): void {
-        var restore_references = 0;
-
-        if (this._buffer) {
-            restore_references = this._buffer.references;
-            this._engine._releaseBuffer(this._buffer);
-            this._buffer = null;
-        }
-
-        this._data = indices;
-        this._updatable = updatable;
-        this.create();
-
-        // The typescript compiler fails to realize that this.create() always recreates this._buffer, hence the ignore.
-        // @ts-ignore
-        this._buffer.references = restore_references;
+        this._buffer.recreate(indices, updatable)
     }
 }
 
@@ -506,7 +507,7 @@ export class VertexBuffer {
                 this._buffer._increaseReferences();
             }
         } else {
-            this._buffer = new VertexBufferBuffer(engine, data, updatable, stride, postponeInternalCreation, instanced, useBytes);
+            this._buffer = new VertexBufferBuffer(engine, data, updatable, stride, postponeInternalCreation, useBytes);
             this._ownsBuffer = true;
         }
 

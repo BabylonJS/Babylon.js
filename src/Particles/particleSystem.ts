@@ -3,8 +3,7 @@ import { FactorGradient, ColorGradient, Color3Gradient, GradientHelper } from ".
 import { Observable, Observer } from "../Misc/observable";
 import { Vector3, Matrix, TmpVectors, Vector4 } from "../Maths/math.vector";
 import { Scalar } from "../Maths/math.scalar";
-import { VertexBuffer } from "../Meshes/buffer";
-import { Buffer } from "../Meshes/buffer";
+import { VertexBuffer, VertexBufferBuffer } from "../Meshes/buffer";
 import { Effect } from "../Materials/effect";
 import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
 import { RawTexture } from "../Materials/Textures/rawTexture";
@@ -106,9 +105,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     private _stockParticles = new Array<Particle>();
     private _newPartsExcess = 0;
     private _vertexData: Float32Array;
-    private _vertexBuffer: Nullable<Buffer>;
+    private _vertexBuffer: Nullable<VertexBufferBuffer>;
     private _vertexBuffers: { [key: string]: VertexBuffer } = {};
-    private _spriteBuffer: Nullable<Buffer>;
+    private _spriteBuffer: Nullable<VertexBufferBuffer>;
     private _indexBuffer: Nullable<DataBuffer>;
     private _effect: Effect;
     private _customEffect: { [blendMode: number] : Nullable<Effect> };
@@ -1014,7 +1013,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         let engine = this._engine;
         this._vertexData = new Float32Array(this._capacity * this._vertexBufferSize * (this._useInstancing ? 1 : 4));
-        this._vertexBuffer = new Buffer(engine, this._vertexData, true, this._vertexBufferSize);
+        this._vertexBuffer = new VertexBufferBuffer(engine, this._vertexData, true, this._vertexBufferSize);
 
         let dataOffset = 0;
         var positions = this._vertexBuffer.createVertexBuffer(VertexBuffer.PositionKind, dataOffset, 3, this._vertexBufferSize, this._useInstancing);
@@ -1054,7 +1053,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         var offsets: VertexBuffer;
         if (this._useInstancing) {
             var spriteData = new Float32Array([0, 0, 1, 0, 0, 1, 1, 1]);
-            this._spriteBuffer = new Buffer(engine, spriteData, false, 2);
+            this._spriteBuffer = new VertexBufferBuffer(engine, spriteData, false, 2);
             offsets = this._spriteBuffer.createVertexBuffer("offset", 0, 2);
         } else {
             offsets = this._vertexBuffer.createVertexBuffer("offset", dataOffset, 2, this._vertexBufferSize, this._useInstancing);

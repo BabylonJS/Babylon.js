@@ -3,7 +3,7 @@ import { Bone } from "babylonjs/Bones/bone";
 import { Skeleton } from "babylonjs/Bones/skeleton";
 import { Material } from "babylonjs/Materials/material";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { Buffer, VertexBuffer } from "babylonjs/Meshes/buffer";
+import { VertexBufferBuffer, VertexBuffer } from "babylonjs/Meshes/buffer";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 
@@ -78,7 +78,7 @@ export interface IBufferView extends GLTF2.IBufferView, IArrayItem {
     _data?: Promise<ArrayBufferView>;
 
     /** @hidden */
-    _babylonBuffer?: Promise<Buffer>;
+    _babylonBuffer?: Promise<VertexBufferBuffer>;
 }
 
 /**

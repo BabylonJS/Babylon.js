@@ -3,7 +3,7 @@ import { Constants } from "../Engines/constants";
 import { IMatrixLike } from '../Maths/math.like';
 import { ThinEngine } from "../Engines/thinEngine";
 import { DataBuffer } from "../Meshes/dataBuffer";
-import { Buffer, VertexBuffer } from "../Meshes/buffer";
+import { VertexBufferBuffer, VertexBuffer } from "../Meshes/buffer";
 import { Effect } from "../Materials/effect";
 import { ThinSprite } from './thinSprite';
 import { ISize } from '../Maths/math.size';
@@ -80,9 +80,9 @@ export class SpriteRenderer {
 
     private _vertexBufferSize: number;
     private _vertexData: Float32Array;
-    private _buffer: Buffer;
+    private _buffer: VertexBufferBuffer;
     private _vertexBuffers: { [key: string]: VertexBuffer } = {};
-    private _spriteBuffer: Nullable<Buffer>;
+    private _spriteBuffer: Nullable<VertexBufferBuffer>;
     private _indexBuffer: DataBuffer;
     private _effectBase: Effect;
     private _effectFog: Effect;
@@ -130,7 +130,7 @@ export class SpriteRenderer {
         // 16 when using instances
         this._vertexBufferSize = this._useInstancing ? 16 : 18;
         this._vertexData = new Float32Array(capacity * this._vertexBufferSize * (this._useInstancing ? 1 : 4));
-        this._buffer = new Buffer(engine, this._vertexData, true, this._vertexBufferSize);
+        this._buffer = new VertexBufferBuffer(engine, this._vertexData, true, this._vertexBufferSize);
 
         const positions = this._buffer.createVertexBuffer(VertexBuffer.PositionKind, 0, 4, this._vertexBufferSize, this._useInstancing);
         const options = this._buffer.createVertexBuffer("options", 4, 2, this._vertexBufferSize, this._useInstancing);
@@ -140,7 +140,7 @@ export class SpriteRenderer {
 
         if (this._useInstancing) {
             var spriteData = new Float32Array([0, 0, 1, 0, 0, 1, 1, 1]);
-            this._spriteBuffer = new Buffer(engine, spriteData, false, 2);
+            this._spriteBuffer = new VertexBufferBuffer(engine, spriteData, false, 2);
             offsets = this._spriteBuffer.createVertexBuffer("offsets", 0, 2);
         } else {
             offsets = this._buffer.createVertexBuffer("offsets", offset, 2, this._vertexBufferSize, this._useInstancing);

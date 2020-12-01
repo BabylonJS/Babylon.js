@@ -1,6 +1,6 @@
 import { Nullable, DeepImmutableObject } from "../types";
 import { Mesh, _InstancesBatch } from "../Meshes/mesh";
-import { VertexBuffer, Buffer } from './buffer';
+import { VertexBuffer, VertexBufferBuffer } from './buffer';
 import { Matrix, Vector3, TmpVectors } from '../Maths/math.vector';
 
 declare module "./mesh" {
@@ -206,7 +206,7 @@ Mesh.prototype.thinInstanceSetBuffer = function(kind: string, buffer: Nullable<F
         if (buffer !== null) {
             this._thinInstanceDataStorage.instancesCount = buffer.length / stride;
 
-            const matrixBuffer = new Buffer(this.getEngine(), buffer, !staticBuffer, stride, false, true);
+            const matrixBuffer = new VertexBufferBuffer(this.getEngine(), buffer, !staticBuffer, stride, false, true);
 
             this._thinInstanceDataStorage.matrixBuffer = matrixBuffer;
 
@@ -354,7 +354,7 @@ Mesh.prototype._thinInstanceUpdateBufferSize = function(kind: string, numInstanc
         if (kindIsMatrix) {
             this._thinInstanceDataStorage.matrixBuffer?.dispose();
 
-            const matrixBuffer = new Buffer(this.getEngine(), data, true, stride, false, true);
+            const matrixBuffer = new VertexBufferBuffer(this.getEngine(), data, true, stride, false, true);
 
             this._thinInstanceDataStorage.matrixBuffer = matrixBuffer;
             this._thinInstanceDataStorage.matrixData = data;
