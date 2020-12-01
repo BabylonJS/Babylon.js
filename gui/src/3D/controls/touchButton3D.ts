@@ -49,19 +49,19 @@ export class TouchButton3D extends Button3D {
     // as determined by this._collidableFrontDirection.
     private _getTouchPoint(collidable: Vector3, maxDist: number): Nullable<Vector3> {
         const frontToButton = this._collidableFrontDirection.negate();
-        const collidableToButton = _this._collisionMesh.getAbsolutePosition() - collidable;
+        const collidableToButton = this._collisionMesh.getAbsolutePosition().subtract(collidable);
 
-        const projectionScalar = collidableToButton.dot(frontToButton);
+        const projectionScalar = Vector3.Dot(collidableToButton, frontToButton);
         if (projectionScalar <= 0)
         {
             // Collidable is behind the button
-            return false;
+            return null;
         }
 
-        const projection = projectionScalar * frontToButton;
-        const rejection = collidableToButton - projection;
+      //  const projection = frontToButton.scale(projectionScalar);
+      //  const rejection = collidableToButton.subtract(projection);
 
-        const rejectionLength = rejection.length();
+      //  const rejectionLength = rejection.length();
 
         // On a circular button, we can just check the rejectionLength
         // For all other buttons, we should do a proper collision check
@@ -96,28 +96,32 @@ export class TouchButton3D extends Button3D {
                 const distance = _this._collisionMesh.getAbsolutePosition().subtract(indexMesh.getAbsolutePosition()).length();
                 console.log(distance);
 
+                var debugButtonPoint = _this._collisionMesh.getAbsolutePosition();
+
                 const dummyPointerId = 0;
                 const buttonIndex = 0; // Left click
 
                 const scale = 0.4;
                 const touchDepth = scale * 0.5;
                 const hoverDepth = scale * 0.8;
+                const hitTestDistance = scale * 1.0;
 
                 // A delta to avoid state flickering when on the threshold
                 const flickerDelta = scale * 0.05;
 
-                const touchPoint = _getTouchPoint(indexMesh.getAbsolutePosition(), hoverDepth);
+                var touchPoint: Nullable<Vector3> = null;
+                if (distance < hitTestDistance) {
+                    touchPoint = _this._getTouchPoint(indexMesh.getAbsolutePosition(), hoverDepth);
+                }
 
-                if (touchPoint)
-                {
+                if (touchPoint) {
                     debugColour = Color3.Red();
+                    debugButtonPoint = touchPoint;
 
                     // Update button state and fire events
-                    switch(_this._buttonState)
-                    {
+                    switch(_this._buttonState) {
                         case ButtonState.None:
-                            if (distance < hoverDepth - flickerDelta)
-                            {
+                            if (distance < hoverDepth - flickerDelta) {
                                 console.log("Now hovering");
                                 _this._buttonState = ButtonState.Hover;
                                 _this._onPointerEnter(_this);
@@ -126,34 +130,29 @@ export class TouchButton3D extends Button3D {
                             break;
                         case ButtonState.Hover:
                             debugColour = Color3.Yellow();
-                            if (distance > hoverDepth + flickerDelta)
-                            {
+                            if (distance > hoverDepth + flickerDelta) {
                                 console.log("Out of range");
                                 _this._buttonState = ButtonState.None;
                                 _this._onPointerOut(_this);
                             }
-                            else if (distance < touchDepth - flickerDelta)
-                            {
+                            else if (distance < touchDepth - flickerDelta) {
                                 console.log("now pressing");
                                 _this._buttonState = ButtonState.Press;
                                 _this._onPointerDown(_this, touchPoint, dummyPointerId, buttonIndex);
                             }
-                            else
-                            {
+                            else {
                                 _this._onPointerMove(_this, touchPoint);
                             }
 
                             break;
                         case ButtonState.Press:
                             debugColour = Color3.Green();
-                            if (distance > touchDepth + flickerDelta)
-                            {
+                            if (distance > touchDepth + flickerDelta) {
                                 console.log("no longer pressing");
                                 _this._buttonState = ButtonState.Hover;
                                 _this._onPointerUp(_this, touchPoint, dummyPointerId, buttonIndex, false /*notifyClick*/);
                             }
-                            else
-                            {
+                            else {
                                 _this._onPointerMove(_this, touchPoint);
                             }
 
@@ -161,11 +160,9 @@ export class TouchButton3D extends Button3D {
                     }
                 }
 
-                if (_this._drawDebugData)
-                {
+                if (_this._drawDebugData) {
                     // Debug line mesh
-                    if (debugLineMesh)
-                    {
+                    if (debugLineMesh) {
                         // remove the previous line before drawing the new one
                         // Commented out as it causes memory crashes
                    //     debugLineMesh.dispose();
@@ -173,8 +170,8 @@ export class TouchButton3D extends Button3D {
                     
                     // Draw a line from the button front to the button to the hand
                     debugLineMesh = Mesh.CreateLines("debug_line", [
-                        _this._collisionMesh.getAbsolutePosition().add(_this._collidableFrontDirection).scale(scale),
-                        _this._collisionMesh.getAbsolutePosition(),
+                  //      _this._collisionMesh.getAbsolutePosition().add(_this._collidableFrontDirection).scale(scale),
+                        debugButtonPoint,
                         indexMesh.getAbsolutePosition()
                     ], scene);
                     debugLineMesh.color = debugColour;
