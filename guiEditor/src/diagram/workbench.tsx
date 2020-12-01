@@ -16,7 +16,7 @@ import { Container, Rectangle } from 'babylonjs-gui';
 
 require("./graphCanvas.scss");
 
-export interface IGraphCanvasComponentProps {
+export interface IWorkbenchComponentProps {
     globalState: GlobalState
 }
 
@@ -30,7 +30,7 @@ export const isFramePortData = (variableToCheck: any): variableToCheck is FrameP
     else return false;
 }
 
-export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentProps> {
+export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps> {
     private readonly MinZoom = 0.1;
     private readonly MaxZoom = 4;
 
@@ -146,7 +146,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         return this._frameContainer;
     }
 
-    constructor(props: IGraphCanvasComponentProps) {
+    constructor(props: IWorkbenchComponentProps) {
         super(props);
 
         props.globalState.onSelectionChangedObservable.add(selection => {  
@@ -557,9 +557,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 minY = node.y;
             }
         });
-
-
-
         // Restore to 0
 
         this._nodes.forEach(node => {
@@ -578,18 +575,11 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this.y = 0;
     }
 
-
     processEditorData(editorData: IEditorData) {
-
-
         this.x = editorData.x || 0;
         this.y = editorData.y || 0;
         this.zoom = editorData.zoom || 1;
-
-        // Frames
-
     }
-
 
     public createGUICanvas()
     {

@@ -2,7 +2,7 @@ import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
 import { GlobalState } from '../globalState';
 import { Nullable } from 'babylonjs/types';
 import { Observer } from 'babylonjs/Misc/observable';
-import { GraphCanvasComponent, FramePortData } from './workbench';
+import { WorkbenchComponent, FramePortData } from './workbench';
 import { PropertyGuiLedger } from './propertyLedger';
 import * as React from 'react';
 import { GenericPropertyComponent } from './properties/genericNodePropertyComponent';
@@ -26,7 +26,7 @@ export class GraphNode {
     private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode | FramePortData>>>;  
     private _onSelectionBoxMovedObserver: Nullable<Observer<ClientRect | DOMRect>>;   
     private _onUpdateRequiredObserver: Nullable<Observer<void>>;  
-    private _ownerCanvas: GraphCanvasComponent; 
+    private _ownerCanvas: WorkbenchComponent; 
     private _isSelected: boolean;
     private _displayManager: Nullable<IDisplayManager> = null;
     private _isVisible = true;
@@ -297,7 +297,7 @@ export class GraphNode {
         }
     }
 
-    public appendVisual(root: HTMLDivElement, owner: GraphCanvasComponent) {
+    public appendVisual(root: HTMLDivElement, owner: WorkbenchComponent) {
         this._ownerCanvas = owner;
 
         // Display manager
