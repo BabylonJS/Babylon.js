@@ -66,7 +66,6 @@ export class GUINode {
         
         this._gridAlignedX = this._ownerCanvas.getGridPosition(value);
         this._visual.style.left = `${this._gridAlignedX}px`;
-        this._refreshFrames();
     }
 
     public get y() {
@@ -83,7 +82,6 @@ export class GUINode {
         this._gridAlignedY = this._ownerCanvas.getGridPosition(value);
         this._visual.style.top = `${this._gridAlignedY}px`;
 
-        this._refreshFrames();
     }
 
     public get width() {
@@ -95,11 +93,11 @@ export class GUINode {
     }
 
     public get id() {
-        return this.block.uniqueId;
+        return this.guiNode.uniqueId;
     }
 
     public get name() {
-        return this.block.name;
+        return this.guiNode.name;
     }
 
     public get isSelected() {
@@ -133,7 +131,7 @@ export class GUINode {
         }
     }
 
-    public constructor(public block: NodeMaterialBlock, globalState: GlobalState, public guiNode: BABYLON.GUI.Container | BABYLON.GUI.Control | null | undefined) {
+    public constructor(globalState: GlobalState, public guiNode: BABYLON.GUI.Container | BABYLON.GUI.Control) {
         this._globalState = globalState;
 
         guiNode?.onPointerUpObservable.add(evt => {
@@ -149,15 +147,7 @@ export class GUINode {
 
 
         this._onSelectionChangedObserver = this._globalState.onSelectionChangedObservable.add(node => {
-            /*if (node === this) {
-                this._visual.classList.add("selected");
-            } else {
-                setTimeout(() => {
-                    if (this._ownerCanvas.selectedNodes.indexOf(this) === -1) {
-                        this._visual.classList.remove("selected");
-                    }
-                })
-            }*/
+
         });
 
         this._onUpdateRequiredObserver = this._globalState.onUpdateRequiredObservable.add(() => {
@@ -175,35 +165,9 @@ export class GUINode {
         });
 
     }
-
-
     
-    private _refreshFrames() {       
-        if (this._ownerCanvas._frameIsMoving || this._ownerCanvas._isLoading) {
-            return;
-        }
-        
-        // Frames
-
-    }
-
     public refresh() {
-        if (this._displayManager) {
-            this._header.innerHTML = this._displayManager.getHeaderText(this.block);
-            this._displayManager.updatePreviewContent(this.block, this._content);
-            this._visual.style.background = this._displayManager.getBackgroundColor(this.block);
-            let additionalClass = this._displayManager.getHeaderClass(this.block);
-            this._header.classList.value = "header";
-            if (additionalClass) {
-                this._header.classList.add(additionalClass);
-            }
-        } else {
-            this._header.innerHTML = this.block.name;
-        }
 
- 
-        this._comments.innerHTML = this.block.comments || "";
-        this._comments.title = this.block.comments || "";
 
     }
 
@@ -275,17 +239,13 @@ export class GUINode {
             control = GenericPropertyComponent;
         }
 
-        if(this.guiNode) {
-            return React.createElement(control, {
-            globalState: this._globalState,
-            block: this.block,
-            guiBlock: this.guiNode
-            });
-        }
+        
         return React.createElement(control, {
-            globalState: this._globalState,
-            block: this.block
+        globalState: this._globalState,
+        guiBlock: this.guiNode
         });
+        
+
     }
 
     public updateVisual()
@@ -301,12 +261,6 @@ export class GUINode {
         this._ownerCanvas = owner;
 
         // Display manager
-        let displayManagerClass = DisplayLedger.RegisteredControls[this.block.getClassName()];
-        
-
-        if (displayManagerClass) {
-            this._displayManager = new displayManagerClass();
-        }
 
         // DOM
         this._visual = root.ownerDocument!.createElement("div");
@@ -372,8 +326,7 @@ export class GUINode {
             this._visual.parentElement.removeChild(this._visual);
         }
 
-        this.guiNode?.dispose();
-        
-        this.block.dispose();
+        this.guiNode.dispose();   
+
     }
 }

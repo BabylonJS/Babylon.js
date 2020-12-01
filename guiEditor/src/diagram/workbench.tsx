@@ -40,7 +40,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _frameContainer: HTMLDivElement;
     private _svgCanvas: HTMLElement;
     private _rootContainer: HTMLDivElement;
-    private _nodes: GUINode[] = [];
     private _guiNodes: GUINode[] = [];
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null
@@ -81,7 +80,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     public get nodes() {
-        return this._nodes;
+        return this._guiNodes;
     }
 
     public get zoom() {
@@ -242,30 +241,30 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     findNodeFromBlock(block: NodeMaterialBlock) {
-        return this.nodes.filter(n => n.block === block)[0];
+       // return this._guiNodes.filter(n => n.block === block)[0];
     }
 
     reset() {
-        for (var node of this._nodes) {
+        for (var node of this._guiNodes) {
             node.dispose();
         }
         
 
-        this._nodes = [];
+        this._guiNodes = [];
         this._graphCanvas.innerHTML = "";
         this._svgCanvas.innerHTML = "";
     }
 
 
 
-    appendBlock(block: NodeMaterialBlock) {
-        let newNode = new GUINode(block, this.props.globalState, null);
+    appendBlock(block: BABYLON.GUI.Container | BABYLON.GUI.Control) {
+        /*let newNode = new GUINode(block, this.props.globalState, null);
 
         newNode.appendVisual(this._graphCanvas, this);
 
         this._nodes.push(newNode);
 
-        return newNode;
+        return newNode;*/
     }
 
     distributeGraph() {
@@ -279,7 +278,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         graph.graph().rankdir = "LR";
 
         // Build dagre graph
-        this._nodes.forEach(node => {
+        this._guiNodes.forEach(node => {
 
 
             graph.setNode(node.id.toString(), {
@@ -287,16 +286,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 type: "node",
                 width: node.width,
                 height: node.height
-            });
-        });
-
-       
-        this._nodes.forEach(node => {
-            node.block.outputs.forEach(output => {
-                if (!output.hasEndpoints) {
-                    return;
-                }
-
             });
         });
 
@@ -310,7 +299,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 return;
             }
             if (dagreNode.type === "node") {
-                for (var node of this._nodes) {
+                for (var node of this._guiNodes) {
                     if (node.id === dagreNode.id) {
                         node.x = dagreNode.x - dagreNode.width / 2;
                         node.y = dagreNode.y - dagreNode.height / 2;
@@ -518,7 +507,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this._frameCandidate.parentElement!.removeChild(this._frameCandidate);
             this._frameCandidate = null;
 
-         }
+        }
     }
 
     onWheel(evt: React.WheelEvent) {
@@ -548,7 +537,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         // Get negative offset
         let minX = 0;
         let minY = 0;
-        this._nodes.forEach(node => {
+        this._guiNodes.forEach(node => {
 
             if (node.x < minX) {
                 minX = node.x;
@@ -559,7 +548,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         });
         // Restore to 0
 
-        this._nodes.forEach(node => {
+        this._guiNodes.forEach(node => {
             node.x += -minX;
             node.y += -minY;            
             node.cleanAccumulation();
@@ -618,8 +607,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         button1.onPointerUpObservable.add(function() {
         });
 
-        var fakeNodeMaterialBlock = new NodeMaterialBlock("Button");
-        var newGuiNode = new GUINode(fakeNodeMaterialBlock, this.globalState, button1);
+        var newGuiNode = new GUINode(this.globalState, button1);
         newGuiNode.appendVisual(this._graphCanvas, this);
         this._guiNodes.push(newGuiNode);
 
@@ -634,9 +622,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         slider1.color = "#FFFFFFFF";
         slider1.background = "#138016FF";
         slider1.onPointerUpObservable.add(function() {
-        });
-        var fakeNodeMaterialBlock = new NodeMaterialBlock("Slider");
-        var newGuiNode = new GUINode(fakeNodeMaterialBlock, this.globalState, slider1);
+        });;
+        var newGuiNode = new GUINode(this.globalState, slider1);
         newGuiNode.appendVisual(this._graphCanvas, this);
         this._guiNodes.push(newGuiNode);
 

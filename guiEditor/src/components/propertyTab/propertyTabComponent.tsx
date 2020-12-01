@@ -15,7 +15,6 @@ import { SliderLineComponent } from '../../sharedComponents/sliderLineComponent'
 
 import { TextLineComponent } from '../../sharedComponents/textLineComponent';
 import { Engine } from 'babylonjs/Engines/engine';
-import { FramePropertyTabComponent } from '../../diagram/properties/framePropertyComponent';
 
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
