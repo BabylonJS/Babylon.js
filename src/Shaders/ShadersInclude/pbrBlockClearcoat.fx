@@ -165,7 +165,9 @@ struct clearcoatOutParams
             #if defined(TANGENT) && defined(NORMAL)
                 mat3 TBNClearCoat = vTBN;
             #else
-                mat3 TBNClearCoat = cotangent_frame(clearCoatNormalW * clearCoatNormalScale, vPositionW, vClearCoatBumpUV, vClearCoatTangentSpaceParams);
+                // flip the uv for the backface
+                vec2 TBNClearCoatUV = gl_FrontFacing ? vClearCoatBumpUV : -vClearCoatBumpUV;
+                mat3 TBNClearCoat = cotangent_frame(clearCoatNormalW * clearCoatNormalScale, vPositionW, TBNClearCoatUV, vClearCoatTangentSpaceParams);
             #endif
 
             #if DEBUGMODE > 0
