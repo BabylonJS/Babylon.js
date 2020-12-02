@@ -4,6 +4,7 @@ import { Control } from "../control";
 import { Image } from "../image";
 import { Measure } from "../../measure";
 import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
+import { serialize } from "babylonjs/Misc/decorators";
 
 /**
  * Class used to create slider controls
@@ -19,6 +20,7 @@ export class ImageScrollBar extends BaseSlider {
     private _tempMeasure = new Measure(0, 0, 0, 0);
 
     /** Number of 90° rotation to apply on the images when in vertical mode */
+    @serialize()
     public num90RotationInVerticalMode = 1;
 
     /**
