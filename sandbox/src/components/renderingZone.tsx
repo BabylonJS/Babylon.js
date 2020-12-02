@@ -35,6 +35,7 @@ function isTextureAsset(name: string): boolean {
 interface IRenderingZoneProps {
     globalState: GlobalState;
     assetUrl?: string;
+    autoRotate?: boolean;
     cameraPosition?: Vector3;
     expanded: boolean;
 }
@@ -168,6 +169,10 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                     return mesh.isVisible && mesh.isEnabled();
                 });
                 framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
+            }
+
+            if (this.props.autoRotate) {
+                camera.useAutoRotationBehavior = true;
             }
 
             if (this.props.cameraPosition) {
