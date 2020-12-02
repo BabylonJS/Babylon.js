@@ -136,6 +136,11 @@ export interface EngineOptions extends WebGLContextAttributes {
      * Will prevent the system from falling back to software implementation if a hardware device cannot be created
      */
     failIfMajorPerformanceCaveat?: boolean;
+
+    /**
+     * Defines whether to adapt to the device's viewport characteristics (default: false)
+     */
+    adaptToDeviceRatio?: boolean;
 }
 
 /**
@@ -549,7 +554,7 @@ export class ThinEngine {
      * @param options defines further options to be sent to the getContext() function
      * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
      */
-    constructor(canvasOrContext: Nullable<HTMLCanvasElement | OffscreenCanvas | WebGLRenderingContext | WebGL2RenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio: boolean = false) {
+    constructor(canvasOrContext: Nullable<HTMLCanvasElement | OffscreenCanvas | WebGLRenderingContext | WebGL2RenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio?: boolean) {
 
         let canvas: Nullable<HTMLCanvasElement> = null;
 
@@ -561,11 +566,13 @@ export class ThinEngine {
             return;
         }
 
+        adaptToDeviceRatio = adaptToDeviceRatio ?? options.adaptToDeviceRatio ?? false;
+
         if ((canvasOrContext as any).getContext) {
             canvas = <HTMLCanvasElement>canvasOrContext;
             this._renderingCanvas = canvas;
 
-            if (antialias != null) {
+            if (antialias !== undefined) {
                 options.antialias = antialias;
             }
 
