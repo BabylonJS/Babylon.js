@@ -1,14 +1,10 @@
 import * as React from "react";
 import { GlobalState } from './globalState';
-
-import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
 import { NodeListComponent } from './components/nodeList/nodeListComponent';
 import { PropertyTabComponent } from './components/propertyTab/propertyTabComponent';
 import { Portal } from './portal';
 import { LogComponent, LogEntry } from './components/log/logComponent';
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
-import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
-import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { Nullable } from 'babylonjs/types';
 import { MessageDialogComponent } from './sharedComponents/messageDialog';
 import { BlockTools } from './blockTools';
@@ -199,21 +195,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         }, false);
     }
 
-    reconnectNewNodes(nodeIndex: number, newNodes:GUINode[], sourceNodes:GUINode[], done: boolean[]) {
-        if (done[nodeIndex]) {
-            return;
-        }
-
-        const currentNode = newNodes[nodeIndex];
-        const block = currentNode.guiNode;
-        const sourceNode = sourceNodes[nodeIndex];
-
-
-        currentNode.refresh();
-
-        done[nodeIndex] = true;
-    }
-
     pasteSelection(copiedNodes: GUINode[], currentX: number, currentY: number, selectNew = false) {
 
         let originalNode: Nullable<GUINode> = null;
@@ -240,7 +221,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 return;
             }
 
-            let newNode = this.createNodeFromObject(clone, false);
+            //let newNode = this.createNodeFromObject(clone, false);
 
             let x = 0;
             let y = 0;
@@ -262,12 +243,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             if (selectNew) {
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newNode);
             }*/
-        }
-
-        // Relink
-        let done = new Array<boolean>(newNodes.length);
-        for (var index = 0; index < newNodes.length; index++) {
-            this.reconnectNewNodes(index, newNodes, copiedNodes, done);
         }
 
         return newNodes;
