@@ -2,6 +2,7 @@ import { BaseSlider } from "./baseSlider";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { Nullable } from 'babylonjs/types';
 import { Measure } from '../../measure';
+import { serialize } from "babylonjs/Misc/decorators";
 
 /**
  * Class used to create slider controls
@@ -14,6 +15,7 @@ export class Slider extends BaseSlider {
     protected _displayValueBar = true;
 
     /** Gets or sets a boolean indicating if the value bar must be rendered */
+    @serialize()
     public get displayValueBar(): boolean {
         return this._displayValueBar;
     }
@@ -28,6 +30,7 @@ export class Slider extends BaseSlider {
     }
 
     /** Gets or sets border color */
+    @serialize()
     public get borderColor(): string {
         return this._borderColor;
     }
@@ -42,6 +45,7 @@ export class Slider extends BaseSlider {
     }
 
     /** Gets or sets background color */
+    @serialize()
     public get background(): string {
         return this._background;
     }
@@ -56,6 +60,7 @@ export class Slider extends BaseSlider {
     }
 
     /** Gets or sets thumb's color */
+    @serialize()
     public get thumbColor(): string {
         return this._thumbColor;
     }
@@ -70,6 +75,7 @@ export class Slider extends BaseSlider {
     }
 
     /** Gets or sets a boolean indicating if the thumb should be round or square */
+    @serialize()
     public get isThumbCircle(): boolean {
         return this._isThumbCircle;
     }

@@ -234,6 +234,14 @@ export class WebGPUEngine extends Engine {
     public dbgShowWarningsNotImplemented = false;
 
     /**
+     * Gets a boolean indicating if the engine can be instanciated (ie. if a WebGPU context can be found)
+     * @returns true if the engine can be created
+     */
+    public static get IsSupported(): boolean {
+        return !!navigator.gpu;
+    }
+
+    /**
      * Gets a boolean indicating that the engine supports uniform buffers
      */
     public get supportsUniformBuffers(): boolean {

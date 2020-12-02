@@ -44825,6 +44825,11 @@ declare module BABYLON {
         /** @hidden */
         dbgShowWarningsNotImplemented: boolean;
         /**
+         * Gets a boolean indicating if the engine can be instanciated (ie. if a WebGPU context can be found)
+         * @returns true if the engine can be created
+         */
+        static get IsSupported(): boolean;
+        /**
          * Gets a boolean indicating that the engine supports uniform buffers
          */
         get supportsUniformBuffers(): boolean;
@@ -53517,6 +53522,10 @@ declare module BABYLON {
          * A list of (Babylon WebXR) features this feature depends on
          */
         dependsOn?: string[];
+        /**
+         * If this feature requires to extend the XRSessionInit object, this function will return the partial XR session init object
+         */
+        getXRSessionInitExtension?: () => Promise<Partial<XRSessionInit>>;
     }
     /**
      * A list of the currently available features without referencing them
@@ -53562,6 +53571,10 @@ declare module BABYLON {
          * The name of the hand tracking feature.
          */
         static readonly HAND_TRACKING: string;
+        /**
+         * The name of the image tracking feature
+         */
+        static readonly IMAGE_TRACKING: string;
     }
     /**
      * Defining the constructor of a feature. Used to register the modules.
@@ -53677,14 +53690,14 @@ declare module BABYLON {
          */
         getEnabledFeatures(): string[];
         /**
-         * This function will exten the session creation configuration object with enabled features.
+         * This function will extend the session creation configuration object with enabled features.
          * If, for example, the anchors feature is enabled, it will be automatically added to the optional or required features list,
          * according to the defined "required" variable, provided during enableFeature call
          * @param xrSessionInit the xr Session init object to extend
          *
          * @returns an extended XRSessionInit object
          */
-        extendXRSessionInitObject(xrSessionInit: XRSessionInit): XRSessionInit;
+        _extendXRSessionInitObject(xrSessionInit: XRSessionInit): Promise<XRSessionInit>;
     }
 }
 declare module BABYLON {
@@ -79784,6 +79797,141 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Options interface for the background remover plugin
+     */
+    export interface IWebXRImageTrackingOptions {
+        /**
+         * A required array with images to track
+         */
+        images: {
+            /**
+             * The source of the image. can be a URL or an image bitmap
+             */
+            src: string | ImageBitmap;
+            /**
+             * The estimated width in the real world (in meters)
+             */
+            estimatedRealWorldWidth: number;
+        }[];
+    }
+    /**
+     * An object representing an image tracked by the system
+     */
+    export interface IWebXRTrackedImage {
+        /**
+         * The ID of this image (which is the same as the position in the array that was used to initialize the feature)
+         */
+        id: number;
+        /**
+         * Is the transformation provided emulated. If it is, the system "guesses" its real position. Otherwise it can be considered as exact position.
+         */
+        emulated?: boolean;
+        /**
+         * Just in case it is needed - the image bitmap that is being tracked
+         */
+        originalBitmap: ImageBitmap;
+        /**
+         * The native XR result image tracking result, untouched
+         */
+        xrTrackingResult?: XRImageTrackingResult;
+        /**
+         * Width in real world (meters)
+         */
+        realWorldWidth?: number;
+        /**
+         * A transformation matrix of this current image in the current reference space.
+         */
+        transformationMatrix: Matrix;
+        /**
+         * The width/height ratio of this image. can be used to calculate the size of the detected object/image
+         */
+        ratio?: number;
+    }
+    /**
+     * Image tracking for immersive AR sessions.
+     * Providing a list of images and their estimated widths will enable tracking those images in the real world.
+     */
+    export class WebXRImageTracking extends WebXRAbstractFeature {
+        /**
+         * read-only options to be used in this module
+         */
+        readonly options: IWebXRImageTrackingOptions;
+        /**
+         * The module's name
+         */
+        static readonly Name: string;
+        /**
+         * The (Babylon) version of this module.
+         * This is an integer representing the implementation version.
+         * This number does not correspond to the WebXR specs version
+         */
+        static readonly Version: number;
+        /**
+         * This will be triggered if the underlying system deems an image untrackable.
+         * The index is the index of the image from the array used to initialize the feature.
+         */
+        onUntrackableImageFoundObservable: Observable<number>;
+        /**
+         * An image was deemed trackable, and the system will start tracking it.
+         */
+        onTrackableImageFoundObservable: Observable<IWebXRTrackedImage>;
+        /**
+         * The image was found and its state was updated.
+         */
+        onTrackedImageUpdatedObservable: Observable<IWebXRTrackedImage>;
+        private _trackedImages;
+        private _originalTrackingRequest;
+        /**
+         * constructs the image tracking feature
+         * @param _xrSessionManager the session manager for this module
+         * @param options read-only options to be used in this module
+         */
+        constructor(_xrSessionManager: WebXRSessionManager, 
+        /**
+         * read-only options to be used in this module
+         */
+        options: IWebXRImageTrackingOptions);
+        /**
+         * attach this feature
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        attach(): boolean;
+        /**
+         * detach this feature.
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        detach(): boolean;
+        /**
+         * Check if the needed objects are defined.
+         * This does not mean that the feature is enabled, but that the objects needed are well defined.
+         */
+        isCompatible(): boolean;
+        /**
+         * Get a tracked image by its ID.
+         *
+         * @param id the id of the image to load (position in the init array)
+         * @returns a trackable image, if exists in this location
+         */
+        getTrackedImageById(id: number): Nullable<IWebXRTrackedImage>;
+        /**
+         * Dispose this feature and all of the resources attached
+         */
+        dispose(): void;
+        /**
+         * Extends the session init object if needed
+         * @returns augmentation object fo the xr session init object.
+         */
+        getXRSessionInitExtension(): Promise<Partial<XRSessionInit>>;
+        protected _onXRFrame(_xrFrame: XRFrame): void;
+        private _init;
+    }
+}
+declare module BABYLON {
+    /**
      * The motion controller class for all microsoft mixed reality controllers
      */
     export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionController {
@@ -81539,6 +81687,7 @@ interface XRLayer extends EventTarget {}
 interface XRSessionInit {
     optionalFeatures?: string[];
     requiredFeatures?: string[];
+    trackedImages?: XRTrackedImageInit[];
 }
 
 interface XRSessionEvent extends Event {
@@ -81638,6 +81787,8 @@ interface XRFrame {
     worldInformation?: XRWorldInformation;
     // Hand tracking
     getJointPose?(joint: XRJointSpace, baseSpace: XRSpace): XRJointPose;
+    // Image tracking
+    getImageTrackingResults?(): Array<XRImageTrackingResult>;
 }
 
 interface XRInputSourceEvent extends Event {
@@ -81709,6 +81860,9 @@ interface XRSession {
 
     // legacy plane detection
     updateWorldTrackingState?(options: { planeDetectionState?: { enabled: boolean } }): void;
+
+    // image tracking
+    getTrackedImageScores?(): XRImageTrackingScore[];
 }
 
 interface XRViewerPose extends XRPose {
@@ -81839,6 +81993,21 @@ interface XRHand extends Iterable<XRJointSpace> {
     readonly LITTLE_PHALANX_INTERMEDIATE: number;
     readonly LITTLE_PHALANX_DISTAL: number;
     readonly LITTLE_PHALANX_TIP: number;
+}
+
+type XRImageTrackingState = "tracked" | "emulated";
+type XRImageTrackingScore = "untrackable" | "trackable";
+
+interface XRTrackedImageInit {
+    image: ImageBitmap;
+    widthInMeters: number;
+}
+
+interface XRImageTrackingResult {
+    readonly imageSpace: XRSpace;
+    readonly index: number;
+    readonly trackingState: XRImageTrackingState;
+    readonly measuredWidthInMeters: number;
 }
 
 // This file contains native only extensions for WebXR. These APIs are not supported in the browser yet.

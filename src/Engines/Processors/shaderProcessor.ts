@@ -301,8 +301,8 @@ export class ShaderProcessor {
     }
 
     private static _ProcessIncludes(sourceCode: string, options: ProcessingOptions, callback: (data: any) => void): void {
-        var regex = /#include<(.+)>(\((.*)\))*(\[(.*)\])*/g;
-        var match = regex.exec(sourceCode);
+        const regexShaderInclude = /#include\s?<(.+)>(\((.*)\))*(\[(.*)\])*/g;
+        var match = regexShaderInclude.exec(sourceCode);
 
         var returnValue = new String(sourceCode);
         var keepProcessing = false;
@@ -371,7 +371,10 @@ export class ShaderProcessor {
                 // Replace
                 returnValue = returnValue.replace(match[0], includeContent);
 
-                keepProcessing = keepProcessing || includeContent.indexOf("#include<") >= 0;
+                keepProcessing =
+                    keepProcessing ||
+                    includeContent.indexOf("#include<") >= 0 ||
+                    includeContent.indexOf("#include <") >= 0;
             } else {
                 var includeShaderUrl = options.shadersRepository + "ShadersInclude/" + includeFile + ".fx";
 
@@ -382,7 +385,7 @@ export class ShaderProcessor {
                 return;
             }
 
-            match = regex.exec(sourceCode);
+            match = regexShaderInclude.exec(sourceCode);
         }
 
         if (keepProcessing) {
