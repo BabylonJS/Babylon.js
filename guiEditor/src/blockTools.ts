@@ -11,6 +11,15 @@ export class BlockTools {
                 return new BABYLON.GUI.Ellipse("Ellipse");
             case "Rectangle":
                 return new BABYLON.GUI.Rectangle("Rectangle");
+            case "Line":
+                var line = new BABYLON.GUI.Line();
+                line.x1 = 10;
+                line.y1 = 10;
+                line.x2 = 100;
+                line.y2 = 100;
+                line.lineWidth = 5;
+                line.dash = [50, 10];
+                return line;
 
         }
 
