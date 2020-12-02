@@ -95,6 +95,9 @@ struct clearcoatOutParams
             const in float ambientMonochrome,
         #endif
     #endif
+    #if defined(CLEARCOAT_BUMP) || defined(TWOSIDEDLIGHTING)
+        const in float frontFacingMultiplier,
+    #endif
         out clearcoatOutParams outParams
     )
     {
@@ -166,7 +169,7 @@ struct clearcoatOutParams
                 mat3 TBNClearCoat = vTBN;
             #else
                 // flip the uv for the backface
-                vec2 TBNClearCoatUV = gl_FrontFacing ? vClearCoatBumpUV : -vClearCoatBumpUV;
+                vec2 TBNClearCoatUV = vClearCoatBumpUV * frontFacingMultiplier;
                 mat3 TBNClearCoat = cotangent_frame(clearCoatNormalW * clearCoatNormalScale, vPositionW, TBNClearCoatUV, vClearCoatTangentSpaceParams);
             #endif
 
@@ -187,7 +190,7 @@ struct clearcoatOutParams
         #endif
 
         #if defined(TWOSIDEDLIGHTING) && defined(NORMAL)
-            clearCoatNormalW = gl_FrontFacing ? clearCoatNormalW : -clearCoatNormalW;
+            clearCoatNormalW = clearCoatNormalW * frontFacingMultiplier;
         #endif
 
         outParams.clearCoatNormalW = clearCoatNormalW;
