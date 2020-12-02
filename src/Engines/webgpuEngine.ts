@@ -2977,7 +2977,7 @@ export class WebGPUEngine extends Engine {
      * Restores the WebGPU state to only draw on the main color attachment
      */
     public restoreSingleAttachment(): void {
-        this.bindAttachments([]);
+        // nothing to do, this is done automatically in the unBindFramebuffer function
     }
 
     /**
@@ -3004,7 +3004,7 @@ export class WebGPUEngine extends Engine {
      * @param attachments index of attachments
      */
     public bindAttachments(attachments: number[]): void {
-        this._mrtAttachments = attachments;
+        // nothing to do, this is done automatically in the _startRenderTargetRenderPass function
     }
 
     /**
@@ -3114,6 +3114,7 @@ export class WebGPUEngine extends Engine {
 
         this._currentRenderTarget = null;
 
+        this._mrtAttachments = [];
         this._currentRenderPass = this._mainRenderPassWrapper.renderPass;
         this._setDepthTextureFormat(this._mainRenderPassWrapper);
         this._setColorFormat(this._mainRenderPassWrapper);
