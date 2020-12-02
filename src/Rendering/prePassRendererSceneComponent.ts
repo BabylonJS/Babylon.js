@@ -112,6 +112,7 @@ export class PrePassRendererSceneComponent implements ISceneComponent {
         this.scene._afterRenderTargetDrawStage.registerStep(SceneComponentConstants.STEP_AFTERCAMERADRAW_PREPASS, this, this._afterRenderTargetDraw);
 
         this.scene._beforeClearStage.registerStep(SceneComponentConstants.STEP_BEFORECLEARSTAGE_PREPASS, this, this._beforeClearStage);
+        this.scene._beforeRenderTargetClearStage.registerStep(SceneComponentConstants.STEP_BEFORERENDERTARGETCLEARSTAGE_PREPASS, this, this._beforeRenderTargetClearStage);
 
         this.scene._beforeRenderingMeshStage.registerStep(SceneComponentConstants.STEP_BEFORERENDERINGMESH_PREPASS, this, this._beforeRenderingMeshStage);
         this.scene._afterRenderingMeshStage.registerStep(SceneComponentConstants.STEP_AFTERRENDERINGMESH_PREPASS, this, this._afterRenderingMeshStage);
@@ -123,7 +124,6 @@ export class PrePassRendererSceneComponent implements ISceneComponent {
                 renderTarget._prePassRenderTarget = this.scene.prePassRenderer._createRenderTarget(renderTarget.name + "_prePassRTT", renderTarget);
             }
             this.scene.prePassRenderer._setRenderTarget(renderTarget._prePassRenderTarget);
-            this.scene.prePassRenderer._clear();
             this.scene.prePassRenderer._beforeDraw(undefined, faceIndex, layer);
         }
     }
@@ -131,6 +131,13 @@ export class PrePassRendererSceneComponent implements ISceneComponent {
     private _afterRenderTargetDraw(renderTarget: RenderTargetTexture, faceIndex?: number, layer?: number) {
         if (this.scene.prePassRenderer) {
             this.scene.prePassRenderer._afterDraw(faceIndex, layer);
+        }
+    }
+
+    private _beforeRenderTargetClearStage(renderTarget: RenderTargetTexture, faceIndex?: number, layer?: number) {
+        if (this.scene.prePassRenderer) {
+            this.scene.prePassRenderer._setRenderTarget(renderTarget._prePassRenderTarget);
+            this.scene.prePassRenderer._clear();
         }
     }
 

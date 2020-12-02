@@ -1286,6 +1286,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public _beforeClearStage = Stage.Create<SimpleStageAction>();
     /**
      * @hidden
+     * Defines the actions happening before clear the canvas.
+     */
+    public _beforeRenderTargetClearStage = Stage.Create<RenderTargetStageAction>();
+    /**
+     * @hidden
      * Defines the actions when collecting render targets for the frame.
      */
     public _gatherRenderTargetsStage = Stage.Create<RenderTargetsStageAction>();
@@ -3671,7 +3676,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(force));
     }
 
-    private _bindFrameBuffer() {
+    public _bindFrameBuffer() {
         if (this.activeCamera && this.activeCamera._multiviewTexture) {
             this.activeCamera._multiviewTexture._bindFrameBuffer();
         } else if (this.activeCamera && this.activeCamera.outputRenderTarget) {
@@ -4073,7 +4078,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         // Clear
-        if ((this.autoClearDepthAndStencil || this.autoClear) && !this.prePass) {
+        if (this.autoClearDepthAndStencil || this.autoClear) {
             this._engine.clear(this.clearColor,
                 this.autoClear || this.forceWireframe || this.forcePointsCloud,
                 this.autoClearDepthAndStencil,

@@ -87,6 +87,7 @@ export class SceneComponentConstants {
     public static readonly STEP_GATHERACTIVECAMERARENDERTARGETS_DEPTHRENDERER = 0;
 
     public static readonly STEP_BEFORECLEARSTAGE_PREPASS = 0;
+    public static readonly STEP_BEFORERENDERTARGETCLEARSTAGE_PREPASS = 0;
 
     public static readonly STEP_POINTERMOVE_SPRITE = 0;
     public static readonly STEP_POINTERDOWN_SPRITE = 0;
