@@ -20,7 +20,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
     private _onResetRequiredObserver: Nullable<Observer<void>>;
 
     private static _Tooltips: {[key: string]: string} = {
-        "BonesBlock": "Provides a world matrix for each vertex, based on skeletal (bone/joint) animation",
+        "Buttons": "Provides a world matrix for each vertex, based on skeletal (bone/joint) animation",
     };
 
     constructor(props: INodeListComponentProps) {

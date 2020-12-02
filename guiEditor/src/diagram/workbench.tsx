@@ -413,27 +413,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             return;
         }
 
-        // Frame?
-        if (evt.currentTarget === this._hostCanvas && evt.shiftKey) {
-            this._frameCandidate = this.props.globalState.hostDocument.createElement("div");
-            this._frameCandidate.classList.add("frame-box");
-            this._frameContainer.appendChild(this._frameCandidate);
-
-            const rootRect = this.canvasContainer.getBoundingClientRect();      
-            this._selectionStartX = (evt.pageX - rootRect.left);
-            this._selectionStartY = (evt.pageY - rootRect.top);
-            this._frameCandidate.style.left = `${this._selectionStartX / this.zoom}px`;
-            this._frameCandidate.style.top = `${this._selectionStartY / this.zoom}px`;
-            this._frameCandidate.style.width = "0px";
-            this._frameCandidate.style.height = "0px";
-            return;
-        }
-
-        // Port dragging
-        if (evt.nativeEvent.srcElement && (evt.nativeEvent.srcElement as HTMLElement).nodeName === "IMG") {
-            return;
-        }
-
         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         this._mouseStartPointX = evt.clientX;
         this._mouseStartPointY = evt.clientY;        
@@ -510,6 +489,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         const yFactor = this._rootContainer.clientHeight / this._rootContainer.scrollHeight;
         const zoomFactor = xFactor < yFactor ? xFactor : yFactor;
         
+
         this.zoom = zoomFactor;
         this.x = 0;
         this.y = 0;
@@ -545,6 +525,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         // GUI
         this.globalState.guiTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
         
+        // Watch for browser/canvas resize events
+        window.addEventListener("resize", function () {
+        engine.resize();
+        });
+
         engine.runRenderLoop(() => {this.updateGUIs(); scene.render()});
     }
     

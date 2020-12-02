@@ -24,7 +24,7 @@ export class SliderPropertyTabComponent extends React.Component<IPropertyCompone
     render() {
         return (
             <>                
-                <GeneralPropertyTabComponent globalState={this.props.globalState} block={this.props.block}/>
+                <GeneralPropertyTabComponent globalState={this.props.globalState} guiBlock={this.props.guiBlock}/>
                 <LineContainerComponent title="PROPERTIES"> 
                 <NumericInputComponent globalState={this.props.globalState} label="Minimum Value" value={this.slider.minimum}
                 onChange={evt =>{

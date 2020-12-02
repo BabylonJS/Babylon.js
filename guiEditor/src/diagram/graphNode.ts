@@ -132,12 +132,12 @@ export class GUINode {
     public constructor(globalState: GlobalState, public guiNode: BABYLON.GUI.Container | BABYLON.GUI.Control) {
         this._globalState = globalState;
 
-        guiNode?.onPointerUpObservable.add(evt => {
+        guiNode.onPointerUpObservable.add(evt => {
             this.isSelected = true;
             this.clicked = false;
         });
 
-        guiNode?.onPointerDownObservable.add( evt => {this.clicked = true; this._onDown(evt);}
+        guiNode.onPointerDownObservable.add( evt => {this.clicked = true; this._onDown(evt);}
         );
 
         //guiNode?.onPointerMoveObservable.add( evt => {this._onMove(evt);} );
@@ -199,12 +199,14 @@ export class GUINode {
         this.y = this._ownerCanvas.getGridPosition(this.y, useCeil);
     }
 
-    private _onUp(evt: BABYLON.GUI.Vector2WithInfo) {
+    private _onUp(evt: BABYLON.Vector2) {
         //evt.stopPropagation();
 
        //for (var selectedNode of this._ownerCanvas.selectedNodes) {
         //this.cleanAccumulation();
         //}
+
+        this.clicked = false;
         
         this._mouseStartPointX = null;
         this._mouseStartPointY = null;
@@ -231,14 +233,13 @@ export class GUINode {
     }
 
     public renderProperties(): Nullable<JSX.Element> {
-        let className = this.guiNode ? this.guiNode.getClassName() : "";
+        let className = this.guiNode.getClassName();
         let control = PropertyGuiLedger.RegisteredControls[className];
         
         if (!control) {
             control = GenericPropertyComponent;
         }
 
-        
         return React.createElement(control, {
         globalState: this._globalState,
         guiBlock: this.guiNode
@@ -266,7 +267,7 @@ export class GUINode {
         this._visual.classList.add("visual");
 
         //this._visual.addEventListener("pointerdown", evt => this._onDown(evt));
-        //this._visual.addEventListener("pointerup", evt => this._onUp(evt));
+        //this._visual.addEventListener("pointerup", evt => this._onUp(new BABYLON.Vector2(evt.x, evt.y)));
         //this._visual.addEventListener("pointermove", evt => this._onMove(evt));
 
         this._header = root.ownerDocument!.createElement("div");
