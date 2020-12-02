@@ -73,14 +73,14 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         this._blocks.push(block);
 
         // Graph
-        const node = this._graphCanvas.appendBlock(block);
+        const node = null;// this._graphCanvas.appendBlock(block);
 
 
         return node;
     }
     
     addValueNode(type: string) {
-        let nodeType: NodeMaterialBlockConnectionPointTypes = BlockTools.GetConnectionNodeTypeFromString(type);
+        //let nodeType: NodeMaterialBlockConnectionPointTypes = BlockTools.GetConnectionNodeTypeFromString(type);
 
         //let newInputBlock = new InputBlock(type, undefined, nodeType);
         //return this.createNodeFromObject(newInputBlock);
@@ -414,63 +414,25 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
     emitNewBlock(event: React.DragEvent<HTMLDivElement>) {
         var data = event.dataTransfer.getData("babylonjs-material-node") as string;
-        let newNode: GUINode;
+
+        let guiElement = BlockTools.GetGuiFromString(data);
+
+        guiElement.width = "150px"
+        guiElement.height = "40px";
+        guiElement.color = "#FFFFFFFF";
+        guiElement.background = "#138016FF";
+
+        let newGuiNode = this._graphCanvas.appendBlock(guiElement);
         
-        //new code for gui editor.
+        /*let x = event.clientX;// - event.currentTarget.offsetLeft - this._graphCanvas.x;
+        let y = event.clientY;// - event.currentTarget.offsetTop - this._graphCanvas.y - 20; 
 
-        if(data === "Slider")
-        {
-            this._graphCanvas.addNewSlider();
-        }
-        else {
-            this._graphCanvas.addNewButton();
-        }
-       
-        /*if (data.indexOf("Block") === -1) {
-            newNode = this.addValueNode(data);
-        } 
-        else {
-            let block = BlockTools.GetBlockFromString(data, this.props.globalState.nodeMaterial.getScene(), this.props.globalState.nodeMaterial)!;   
-            
-            if (block.isUnique) {
-                const className = block.getClassName();
-                for (var other of this._blocks) {
-                    if (other !== block && other.getClassName() === className) {
-                        this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(`You can only have one ${className} per graph`);                                
-                        return;
-                    }
-                }
-            } 
-
-            block.autoConfigure(this.props.globalState.nodeMaterial);       
-            newNode = this.createNodeFromObject(block);
-        };
-
-        let x = event.clientX - event.currentTarget.offsetLeft - this._graphCanvas.x;
-        let y = event.clientY - event.currentTarget.offsetTop - this._graphCanvas.y - 20;
-        
-        newNode.x = x / this._graphCanvas.zoom;
-        newNode.y = y / this._graphCanvas.zoom;
-        newNode.cleanAccumulation();
+        newGuiNode.x += (x - newGuiNode.x);
+        newGuiNode.y += y - newGuiNode.y;
+        //newGuiNode.cleanAccumulation();*/
 
         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-        this.props.globalState.onSelectionChangedObservable.notifyObservers(newNode);
-
-        let block = newNode.block;
-
-        block.inputs.forEach((connection) => {       
-            if (connection.connectedPoint) {
-                var existingNodes = this._graphCanvas.nodes.filter((n) => { return n.block === (connection as any).connectedPoint.ownerBlock });
-                let connectedNode = existingNodes[0];
-
-                if (connectedNode.x === 0 && connectedNode.y === 0) {
-                    connectedNode.x = x / this._graphCanvas.zoom; 
-                    connectedNode.y = y / this._graphCanvas.zoom;
-                    connectedNode.cleanAccumulation();
-                    y += 80;
-                }
-            }
-        });*/
+        this.props.globalState.onSelectionChangedObservable.notifyObservers(newGuiNode);
 
         this.forceUpdate();
     }

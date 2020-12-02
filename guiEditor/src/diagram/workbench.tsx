@@ -257,14 +257,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
 
 
-    appendBlock(block: BABYLON.GUI.Container | BABYLON.GUI.Control) {
-        /*let newNode = new GUINode(block, this.props.globalState, null);
-
-        newNode.appendVisual(this._graphCanvas, this);
-
-        this._nodes.push(newNode);
-
-        return newNode;*/
+    appendBlock(guiElement: BABYLON.GUI.Container | BABYLON.GUI.Control) {
+        var newGuiNode = new GUINode(this.props.globalState, guiElement);
+        newGuiNode.appendVisual(this._graphCanvas, this);
+        this._guiNodes.push(newGuiNode);
+        this.globalState.guiTexture.addControl(guiElement);  
+        return newGuiNode;
     }
 
     distributeGraph() {
@@ -355,46 +353,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             return;
         }
 
-        // Candidate frame box
-        if (this._frameCandidate) {
-            const rootRect = this.canvasContainer.getBoundingClientRect();      
-
-            const localX = evt.pageX - rootRect.left;
-            const localY = evt.pageY - rootRect.top;
-
-            if (localX > this._selectionStartX) {
-                this._frameCandidate.style.left = `${this._selectionStartX / this.zoom}px`;
-                this._frameCandidate.style.width = `${(localX - this._selectionStartX) / this.zoom}px`;
-            } else {
-                this._frameCandidate.style.left = `${localX / this.zoom}px`;
-                this._frameCandidate.style.width = `${(this._selectionStartX - localX) / this.zoom}px`;
-            }
-
-            if (localY > this._selectionStartY) {                
-                this._frameCandidate.style.top = `${this._selectionStartY / this.zoom}px`;
-                this._frameCandidate.style.height = `${(localY - this._selectionStartY) / this.zoom}px`;
-            } else {
-                this._frameCandidate.style.top = `${localY / this.zoom}px`;
-                this._frameCandidate.style.height = `${(this._selectionStartY - localY) / this.zoom}px`;
-            }
-
-            return;
-        }        
-
-        // Candidate link
-        if (this._candidateLink) {        
-            const rootRect = this.canvasContainer.getBoundingClientRect();       
-            this._candidatePort = null; 
-            this.props.globalState.onCandidateLinkMoved.notifyObservers(new Vector2(evt.pageX, evt.pageY));
-            this._dropPointX = (evt.pageX - rootRect.left) / this.zoom;
-            this._dropPointY = (evt.pageY - rootRect.top) / this.zoom;
-
-            this._candidateLink.update(this._dropPointX, this._dropPointY, true);
-            this._candidateLinkedHasMoved = true;
-            
-            return;
-        }          
-
+        
         // Zoom with mouse + alt
         if (this._altKeyIsPressed && evt.buttons === 1) {
             if (this._oldY < 0) {
@@ -580,9 +539,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         
         // Create our first scene.
         var scene = new BABYLON.Scene(engine);
+        scene.clearColor = new BABYLON.Color4(0.2, 0.2, 0.3, 0.5);
+        
         // This creates and positions a free camera (non-mesh)
         var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
-        
+
         // This targets the camera to scene origin
         camera.setTarget(BABYLON.Vector3.Zero());
         
