@@ -76,8 +76,17 @@ export class PrePassRenderTarget extends MultiRenderTarget {
      * Checks that the size of this RT is still adapted to the desired render size.
      */
     public _checkSize() {
-        var requiredWidth = this._engine.getRenderWidth(true);
-        var requiredHeight = this._engine.getRenderHeight(true);
+        var requiredWidth;
+        var requiredHeight;
+
+        if (this.renderTargetTexture) {
+        	requiredWidth = this.renderTargetTexture.getRenderWidth();
+        	requiredHeight = this.renderTargetTexture.getRenderHeight();
+        } else {
+        	requiredWidth = this._engine.getRenderWidth(true);
+        	requiredHeight = this._engine.getRenderHeight(true);
+        }
+        
         var width = this.getRenderWidth();
         var height = this.getRenderHeight();
 

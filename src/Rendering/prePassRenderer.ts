@@ -47,13 +47,13 @@ export class PrePassRenderer {
      */
     public mrtCount: number = 0;
 
-    public _mrtFormats: number[] = [];
-    public _mrtLayout: number[];
-    public _textureIndices: number[] = [];
+    private _mrtFormats: number[] = [];
+    private _mrtLayout: number[];
+    private _textureIndices: number[] = [];
 
-    public _multiRenderAttachments: number[];
-    public _defaultAttachments: number[];
-    public _clearAttachments: number[];
+    private _multiRenderAttachments: number[];
+    private _defaultAttachments: number[];
+    private _clearAttachments: number[];
 
     /**
      * Returns the index of a texture in the multi render target texture array.
@@ -103,7 +103,6 @@ export class PrePassRenderer {
     public defaultRT: PrePassRenderTarget;
 
     /**
-     * TODO : public ?
      * Configuration for prepass effects
      */
     private _effectConfigurations: PrePassEffectConfiguration[] = [];
@@ -133,8 +132,9 @@ export class PrePassRenderer {
         return this._currentTarget === this.defaultRT;
     }
 
-    public _geometryBuffer: Nullable<GeometryBufferRenderer>;
-    public _useGeometryBufferFallback = false;
+    private _geometryBuffer: Nullable<GeometryBufferRenderer>;
+    private _useGeometryBufferFallback = true;
+
     /**
      * Uses the geometry buffer renderer as a fallback for non prepass capable effects
      */
@@ -235,13 +235,12 @@ export class PrePassRenderer {
             } else {
                 this._engine.bindAttachments(this._defaultAttachments);
 
-                // TODO : geometry buffer renderer
-                // if (this._geometryBuffer) {
-                //     const material = subMesh.getMaterial();
-                //     if (material && this.excludedMaterials.indexOf(material) === -1) {
-                //         this._geometryBuffer.renderList!.push(subMesh.getRenderingMesh());
-                //     }
-                // }
+                if (this._geometryBuffer && this.currentRTisSceneRT) {
+                    const material = subMesh.getMaterial();
+                    if (material && this.excludedMaterials.indexOf(material) === -1) {
+                        this._geometryBuffer.renderList!.push(subMesh.getRenderingMesh());
+                    }
+                }
             }
         }
     }
@@ -342,17 +341,16 @@ export class PrePassRenderer {
         if (!this._enabled || !this._currentTarget.enabled) {
             // Prepass disabled, we render only on 1 color attachment
             if (texture) {
-                texture._prepareFrame(this._scene, faceIndex, layer, texture.useCameraPostProcesses);
-                this._engine.restoreSingleAttachmentForRenderTarget();
+                // this._engine.restoreSingleAttachment();
+                // texture._prepareFrame(this._scene, faceIndex, layer, texture.useCameraPostProcesses);
             } else {
-                this._engine.restoreDefaultFramebuffer();
-                this._engine.restoreSingleAttachment();
+                // this._engine.restoreDefaultFramebuffer();
+                // this._engine.restoreSingleAttachment();
             }
 
             return;
         }
 
-        // TODO : handle geometry buffer renderer fallback
         if (this._geometryBuffer) {
             this._geometryBuffer.renderList!.length = 0;
         }
@@ -410,13 +408,8 @@ export class PrePassRenderer {
             // Clearing other attachment with 0 on all other attachments
             this._engine.bindAttachments(this._clearAttachments);
             this._engine.clear(this._clearColor, true, false, false);
-
             // Regular clear color with the scene clear color of the 1st attachment
             this._engine.bindAttachments(this._defaultAttachments);
-            this._engine.clear(this._scene.clearColor,
-                this._scene.autoClear || this._scene.forceWireframe || this._scene.forcePointsCloud,
-                this._scene.autoClearDepthAndStencil,
-                this._scene.autoClearDepthAndStencil);
         }
     }
 
@@ -433,7 +426,6 @@ export class PrePassRenderer {
     private _setState(enabled: boolean) {
         this._enabled = enabled;
 
-        // TODO : enable/disable per texture
         for (let i = 0; i < this.renderTargets.length; i++) {
             const prePassRenderTarget = this.renderTargets[i];
 
@@ -473,12 +465,13 @@ export class PrePassRenderer {
             }
         }
 
+        this._updateGeometryBufferLayout();
+
         for (let i = 0; i < this.renderTargets.length; i++) {
             if (this.mrtCount !== previousMrtCount) {
                 this.renderTargets[i].updateCount(this.mrtCount, { types: this._mrtFormats });
             }
-            // TODO : gbr
-            this._updateGeometryBufferLayout();
+
             this.renderTargets[i]._resetPostProcessChain();
 
             for (let j = 0; j < this._effectConfigurations.length; j++) {
