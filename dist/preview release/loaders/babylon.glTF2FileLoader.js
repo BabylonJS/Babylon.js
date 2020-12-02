@@ -1571,7 +1571,7 @@ var TransmissionHelper = /** @class */ (function () {
      */
     TransmissionHelper._getDefaultOptions = function () {
         return {
-            renderSize: 512
+            renderSize: 1024
         };
     };
     /**
