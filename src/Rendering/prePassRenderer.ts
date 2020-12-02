@@ -47,13 +47,13 @@ export class PrePassRenderer {
      */
     public mrtCount: number = 0;
 
-    public _mrtFormats: number[] = [];
-    public _mrtLayout: number[];
-    public _textureIndices: number[] = [];
+    private _mrtFormats: number[] = [];
+    private _mrtLayout: number[];
+    private _textureIndices: number[] = [];
 
-    public _multiRenderAttachments: number[];
-    public _defaultAttachments: number[];
-    public _clearAttachments: number[];
+    private _multiRenderAttachments: number[];
+    private _defaultAttachments: number[];
+    private _clearAttachments: number[];
 
     /**
      * Returns the index of a texture in the multi render target texture array.
@@ -103,7 +103,6 @@ export class PrePassRenderer {
     public defaultRT: PrePassRenderTarget;
 
     /**
-     * TODO : public ?
      * Configuration for prepass effects
      */
     private _effectConfigurations: PrePassEffectConfiguration[] = [];
@@ -133,8 +132,9 @@ export class PrePassRenderer {
         return this._currentTarget === this.defaultRT;
     }
 
-    public _geometryBuffer: Nullable<GeometryBufferRenderer>;
-    public _useGeometryBufferFallback = false;
+    private _geometryBuffer: Nullable<GeometryBufferRenderer>;
+    private _useGeometryBufferFallback = true;
+
     /**
      * Uses the geometry buffer renderer as a fallback for non prepass capable effects
      */
@@ -209,7 +209,7 @@ export class PrePassRenderer {
 
     public _createRenderTarget(name: string, renderTargetTexture: Nullable<RenderTargetTexture>) : PrePassRenderTarget {
         const rt = new PrePassRenderTarget(name, renderTargetTexture, { width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() }, 0, this._scene,
-            { generateMipMaps: false, generateDepthTexture: true, defaultType: Constants.TEXTURETYPE_UNSIGNED_INT, types: [] });
+            { generateMipMaps: false, generateStencilBuffer: true, defaultType: Constants.TEXTURETYPE_UNSIGNED_INT, types: [] });
         rt.samples = 1;
 
         this.renderTargets.push(rt);
@@ -235,13 +235,12 @@ export class PrePassRenderer {
             } else {
                 this._engine.bindAttachments(this._defaultAttachments);
 
-                // TODO : geometry buffer renderer
-                // if (this._geometryBuffer) {
-                //     const material = subMesh.getMaterial();
-                //     if (material && this.excludedMaterials.indexOf(material) === -1) {
-                //         this._geometryBuffer.renderList!.push(subMesh.getRenderingMesh());
-                //     }
-                // }
+                if (this._geometryBuffer && this.currentRTisSceneRT) {
+                    const material = subMesh.getMaterial();
+                    if (material && this.excludedMaterials.indexOf(material) === -1) {
+                        this._geometryBuffer.renderList!.push(subMesh.getRenderingMesh());
+                    }
+                }
             }
         }
     }
@@ -344,17 +343,16 @@ export class PrePassRenderer {
         if (previousEnabled && (!this._enabled || !this._currentTarget.enabled)) {
             // Prepass disabled, we render only on 1 color attachment
             if (texture) {
-                texture._prepareFrame(this._scene, faceIndex, layer, texture.useCameraPostProcesses);
-                this._engine.restoreSingleAttachmentForRenderTarget();
+                // this._engine.restoreSingleAttachment();
+                // texture._prepareFrame(this._scene, faceIndex, layer, texture.useCameraPostProcesses);
             } else {
-                this._engine.restoreDefaultFramebuffer();
-                this._engine.restoreSingleAttachment();
+                // this._engine.restoreDefaultFramebuffer();
+                // this._engine.restoreSingleAttachment();
             }
 
             return;
         }
 
-        // TODO : handle geometry buffer renderer fallback
         if (this._geometryBuffer) {
             this._geometryBuffer.renderList!.length = 0;
         }
@@ -385,10 +383,10 @@ export class PrePassRenderer {
 
         // Activates and renders the chain
         if (postProcessChain.length) {
+            // Do not mess with stencil
             this._scene.postProcessManager._prepareFrame(this._currentTarget.getInternalTexture()!, postProcessChain);
             this._scene.postProcessManager.directRender(postProcessChain, outputTexture, false, faceIndex);
         }
-
     }
 
     /**
@@ -412,13 +410,8 @@ export class PrePassRenderer {
             // Clearing other attachment with 0 on all other attachments
             this._engine.bindAttachments(this._clearAttachments);
             this._engine.clear(this._clearColor, true, false, false);
-
             // Regular clear color with the scene clear color of the 1st attachment
             this._engine.bindAttachments(this._defaultAttachments);
-            this._engine.clear(this._scene.clearColor,
-                this._scene.autoClear || this._scene.forceWireframe || this._scene.forcePointsCloud,
-                this._scene.autoClearDepthAndStencil,
-                this._scene.autoClearDepthAndStencil);
         }
     }
 
@@ -437,13 +430,11 @@ export class PrePassRenderer {
     }
 
     private _setRenderTargetState(prePassRenderTarget: PrePassRenderTarget, enabled: boolean) {
-        for (let i = 0; i < this.renderTargets.length; i++) {
-            prePassRenderTarget.enabled = enabled;
+        prePassRenderTarget.enabled = enabled;
 
-            if (prePassRenderTarget.imageProcessingPostProcess) {
-                prePassRenderTarget.imageProcessingPostProcess.imageProcessingConfiguration.applyByPostProcess = enabled;
-            }  
-        }
+        if (prePassRenderTarget.imageProcessingPostProcess) {
+            prePassRenderTarget.imageProcessingPostProcess.imageProcessingConfiguration.applyByPostProcess = enabled;
+        }  
     }
 
     /**
@@ -474,12 +465,13 @@ export class PrePassRenderer {
             }
         }
 
+        this._updateGeometryBufferLayout();
+
         for (let i = 0; i < this.renderTargets.length; i++) {
             if (this.mrtCount !== previousMrtCount) {
                 this.renderTargets[i].updateCount(this.mrtCount, { types: this._mrtFormats });
             }
-            // TODO : gbr
-            this._updateGeometryBufferLayout();
+
             this.renderTargets[i]._resetPostProcessChain();
 
             for (let j = 0; j < this._effectConfigurations.length; j++) {
@@ -520,16 +512,6 @@ export class PrePassRenderer {
         }
     }
 
-    // private _bindPostProcessChain() {
-    //     if (this._postProcesses.length) {
-    //         this._postProcesses[0].inputTexture = this.defaultRT.getInternalTexture()!;
-    //     } else {
-    //         const pp = this._scene.activeCamera?._getFirstPostProcess();
-    //         if (pp) {
-    //             pp.inputTexture = this.defaultRT.getInternalTexture()!;
-    //         }
-    //     }
-    // }
     private _getPostProcessesSource(prePassRenderTarget: PrePassRenderTarget, camera?: Camera) : Nullable<PostProcess>[] {
         if (camera) {
             return camera._postProcesses;
@@ -560,7 +542,6 @@ export class PrePassRenderer {
         const firstCameraPP = this._getFirstPostProcess(this._postProcessesSourceForThisPass);
         const firstPrePassPP = prePassRenderTarget._beforeCompositionPostProcesses && prePassRenderTarget._beforeCompositionPostProcesses[0];
         let firstPP = null;
-
 
         // Setting the prePassRenderTarget as input texture of the first PP
         if (firstPrePassPP) {
@@ -640,9 +621,11 @@ export class PrePassRenderer {
             if (this._scene.materials[i].setPrePassRenderer(this)) {
                 enablePrePass = true;
 
-                for (let j = 0; j < this.renderTargets.length; j++) {
-                    this._setRenderTargetState(this.renderTargets[j], true);
-                }
+                this._setRenderTargetState(this.defaultRT, true);
+                // TODO : desactivate sss for render targets
+                // for (let j = 0; j < this.renderTargets.length; j++) {
+                //     this._setRenderTargetState(this.renderTargets[j], true);
+                // }
             }
         }
 

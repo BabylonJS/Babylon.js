@@ -348,7 +348,7 @@ export class MaterialHelper {
             index: "PREPASS_DEPTHNORMAL_INDEX",
         }];
 
-        if (scene.prePassRenderer && scene.prePassRenderer.enabled && scene.prePassRenderer.getRenderTarget().enabled && canRenderToMRT) {
+        if (scene.prePassRenderer && scene.prePassRenderer.enabled && canRenderToMRT) {
             defines.PREPASS = true;
             defines.SCENE_MRT_COUNT = scene.prePassRenderer.mrtCount;
 

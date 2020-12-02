@@ -166,8 +166,10 @@ export class MultiRenderTarget extends RenderTargetTexture {
 
         this._count = count;
 
-        this._createInternalTextures();
-        this._createTextures();
+        if (count > 0) {
+            this._createInternalTextures();
+            this._createTextures();
+        }
     }
 
     private _initTypes(count: number, types: number[], samplingModes: number[], options?: IMultiRenderTargetOptions) {
