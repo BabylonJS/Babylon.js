@@ -421,7 +421,7 @@ void main(void) {
             #ifdef RADIANCEOCCLUSION
                 ambientMonochrome,
             #endif
-        #endif,
+        #endif
         #if defined(CLEARCOAT_BUMP) || defined(TWOSIDEDLIGHTING)
             gl_FrontFacing ? 1. : -1.,
         #endif
