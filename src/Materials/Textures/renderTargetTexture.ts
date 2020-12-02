@@ -849,7 +849,9 @@ export class RenderTargetTexture extends Texture {
 
     public _prepareFrame(scene: Scene, faceIndex?: number, layer?: number, useCameraPostProcess?: boolean) {
         if (this._postProcessManager) {
-            this._postProcessManager._prepareFrame(this._texture, this._postProcesses);
+            if (!this._prePass) {
+                this._postProcessManager._prepareFrame(this._texture, this._postProcesses);
+            }
         }
         else if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(this._texture)) {
             this._bindFrameBuffer(faceIndex, layer);
@@ -870,9 +872,7 @@ export class RenderTargetTexture extends Texture {
         }
 
         // Bind
-        if (!this._prePass) {
-            this._prepareFrame(scene, faceIndex, layer, useCameraPostProcess);
-        }
+        this._prepareFrame(scene, faceIndex, layer, useCameraPostProcess);
 
         if (this.is2DArray) {
             this.onBeforeRenderObservable.notifyObservers(layer);
@@ -903,13 +903,16 @@ export class RenderTargetTexture extends Texture {
             this._prepareRenderingManager(currentRenderList, currentRenderList.length, camera, false);
         }
 
+        // Before clear
+        for (let step of scene._beforeRenderTargetClearStage) {
+            step.action(this, faceIndex, layer);
+        }
+
         // Clear
         if (this.onClearObservable.hasObservers()) {
             this.onClearObservable.notifyObservers(engine);
         } else {
-            if (!this._prePass) {
-                engine.clear(this.clearColor || scene.clearColor, true, true, true);
-            }
+            engine.clear(this.clearColor || scene.clearColor, true, true, true);
         }
 
         if (!this._doNotChangeAspectRatio) {
