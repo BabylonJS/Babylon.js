@@ -39884,6 +39884,10 @@ declare module BABYLON {
          * Will prevent the system from falling back to software implementation if a hardware device cannot be created
          */
         failIfMajorPerformanceCaveat?: boolean;
+        /**
+         * Defines whether to adapt to the device's viewport characteristics (default: false)
+         */
+        adaptToDeviceRatio?: boolean;
     }
     /**
      * The base engine class (root of all engines)
@@ -44760,6 +44764,10 @@ declare module BABYLON {
          * Defines wether we should generate debug markers in the gpu command lists (can be seen with PIX for eg)
          */
         enableGPUDebugMarkers?: boolean;
+        /**
+         * Options to load the associated Glslang library
+         */
+        glslangOptions?: GlslangOptions;
     }
     /**
      * The web GPU engine class provides support for WebGPU version of babylon.js.
@@ -44825,6 +44833,11 @@ declare module BABYLON {
         /** @hidden */
         dbgShowWarningsNotImplemented: boolean;
         /**
+         * Gets a boolean indicating if the engine can be instanciated (ie. if a WebGPU context can be found)
+         * @returns true if the engine can be created
+         */
+        static get IsSupported(): boolean;
+        /**
          * Gets a boolean indicating that the engine supports uniform buffers
          */
         get supportsUniformBuffers(): boolean;
@@ -44844,6 +44857,13 @@ declare module BABYLON {
          * Returns the version of the engine
          */
         get version(): number;
+        /**
+         * Create a new instance of the gpu engine asynchronously
+         * @param canvas Defines the canvas to use to display the result
+         * @param options Defines the options passed to the engine to create the GPU context dependencies
+         * @returns a promise that resolves with the created engine
+         */
+        static CreateAsync(canvas: HTMLCanvasElement, options?: WebGPUEngineOptions): Promise<WebGPUEngine>;
         /**
          * Create a new instance of the gpu engine.
          * @param canvas Defines the canvas to use to display the result
@@ -53517,6 +53537,10 @@ declare module BABYLON {
          * A list of (Babylon WebXR) features this feature depends on
          */
         dependsOn?: string[];
+        /**
+         * If this feature requires to extend the XRSessionInit object, this function will return the partial XR session init object
+         */
+        getXRSessionInitExtension?: () => Promise<Partial<XRSessionInit>>;
     }
     /**
      * A list of the currently available features without referencing them
@@ -53562,6 +53586,10 @@ declare module BABYLON {
          * The name of the hand tracking feature.
          */
         static readonly HAND_TRACKING: string;
+        /**
+         * The name of the image tracking feature
+         */
+        static readonly IMAGE_TRACKING: string;
     }
     /**
      * Defining the constructor of a feature. Used to register the modules.
@@ -53677,14 +53705,14 @@ declare module BABYLON {
          */
         getEnabledFeatures(): string[];
         /**
-         * This function will exten the session creation configuration object with enabled features.
+         * This function will extend the session creation configuration object with enabled features.
          * If, for example, the anchors feature is enabled, it will be automatically added to the optional or required features list,
          * according to the defined "required" variable, provided during enableFeature call
          * @param xrSessionInit the xr Session init object to extend
          *
          * @returns an extended XRSessionInit object
          */
-        extendXRSessionInitObject(xrSessionInit: XRSessionInit): XRSessionInit;
+        _extendXRSessionInitObject(xrSessionInit: XRSessionInit): Promise<XRSessionInit>;
     }
 }
 declare module BABYLON {
@@ -59924,6 +59952,20 @@ declare module BABYLON {
         private _getNativeTextureFormat;
         private _getNativeAlphaMode;
         private _getNativeAttribType;
+    }
+}
+declare module BABYLON {
+    /**
+     * Helper class to create the best engine depending on the current hardware
+     */
+    export class EngineFactory {
+        /**
+         * Creates an engine based on the capabilities of the underlying hardware
+         * @param canvas Defines the canvas to use to display the result
+         * @param options Defines the options passed to the engine to create the context dependencies
+         * @returns a promise that resolves with the created engine
+         */
+        static CreateAsync(canvas: HTMLCanvasElement, options: any): Promise<ThinEngine>;
     }
 }
 declare module BABYLON {
@@ -79784,6 +79826,141 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Options interface for the background remover plugin
+     */
+    export interface IWebXRImageTrackingOptions {
+        /**
+         * A required array with images to track
+         */
+        images: {
+            /**
+             * The source of the image. can be a URL or an image bitmap
+             */
+            src: string | ImageBitmap;
+            /**
+             * The estimated width in the real world (in meters)
+             */
+            estimatedRealWorldWidth: number;
+        }[];
+    }
+    /**
+     * An object representing an image tracked by the system
+     */
+    export interface IWebXRTrackedImage {
+        /**
+         * The ID of this image (which is the same as the position in the array that was used to initialize the feature)
+         */
+        id: number;
+        /**
+         * Is the transformation provided emulated. If it is, the system "guesses" its real position. Otherwise it can be considered as exact position.
+         */
+        emulated?: boolean;
+        /**
+         * Just in case it is needed - the image bitmap that is being tracked
+         */
+        originalBitmap: ImageBitmap;
+        /**
+         * The native XR result image tracking result, untouched
+         */
+        xrTrackingResult?: XRImageTrackingResult;
+        /**
+         * Width in real world (meters)
+         */
+        realWorldWidth?: number;
+        /**
+         * A transformation matrix of this current image in the current reference space.
+         */
+        transformationMatrix: Matrix;
+        /**
+         * The width/height ratio of this image. can be used to calculate the size of the detected object/image
+         */
+        ratio?: number;
+    }
+    /**
+     * Image tracking for immersive AR sessions.
+     * Providing a list of images and their estimated widths will enable tracking those images in the real world.
+     */
+    export class WebXRImageTracking extends WebXRAbstractFeature {
+        /**
+         * read-only options to be used in this module
+         */
+        readonly options: IWebXRImageTrackingOptions;
+        /**
+         * The module's name
+         */
+        static readonly Name: string;
+        /**
+         * The (Babylon) version of this module.
+         * This is an integer representing the implementation version.
+         * This number does not correspond to the WebXR specs version
+         */
+        static readonly Version: number;
+        /**
+         * This will be triggered if the underlying system deems an image untrackable.
+         * The index is the index of the image from the array used to initialize the feature.
+         */
+        onUntrackableImageFoundObservable: Observable<number>;
+        /**
+         * An image was deemed trackable, and the system will start tracking it.
+         */
+        onTrackableImageFoundObservable: Observable<IWebXRTrackedImage>;
+        /**
+         * The image was found and its state was updated.
+         */
+        onTrackedImageUpdatedObservable: Observable<IWebXRTrackedImage>;
+        private _trackedImages;
+        private _originalTrackingRequest;
+        /**
+         * constructs the image tracking feature
+         * @param _xrSessionManager the session manager for this module
+         * @param options read-only options to be used in this module
+         */
+        constructor(_xrSessionManager: WebXRSessionManager, 
+        /**
+         * read-only options to be used in this module
+         */
+        options: IWebXRImageTrackingOptions);
+        /**
+         * attach this feature
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        attach(): boolean;
+        /**
+         * detach this feature.
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        detach(): boolean;
+        /**
+         * Check if the needed objects are defined.
+         * This does not mean that the feature is enabled, but that the objects needed are well defined.
+         */
+        isCompatible(): boolean;
+        /**
+         * Get a tracked image by its ID.
+         *
+         * @param id the id of the image to load (position in the init array)
+         * @returns a trackable image, if exists in this location
+         */
+        getTrackedImageById(id: number): Nullable<IWebXRTrackedImage>;
+        /**
+         * Dispose this feature and all of the resources attached
+         */
+        dispose(): void;
+        /**
+         * Extends the session init object if needed
+         * @returns augmentation object fo the xr session init object.
+         */
+        getXRSessionInitExtension(): Promise<Partial<XRSessionInit>>;
+        protected _onXRFrame(_xrFrame: XRFrame): void;
+        private _init;
+    }
+}
+declare module BABYLON {
+    /**
      * The motion controller class for all microsoft mixed reality controllers
      */
     export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionController {
@@ -81539,6 +81716,7 @@ interface XRLayer extends EventTarget {}
 interface XRSessionInit {
     optionalFeatures?: string[];
     requiredFeatures?: string[];
+    trackedImages?: XRTrackedImageInit[];
 }
 
 interface XRSessionEvent extends Event {
@@ -81638,6 +81816,8 @@ interface XRFrame {
     worldInformation?: XRWorldInformation;
     // Hand tracking
     getJointPose?(joint: XRJointSpace, baseSpace: XRSpace): XRJointPose;
+    // Image tracking
+    getImageTrackingResults?(): Array<XRImageTrackingResult>;
 }
 
 interface XRInputSourceEvent extends Event {
@@ -81709,6 +81889,9 @@ interface XRSession {
 
     // legacy plane detection
     updateWorldTrackingState?(options: { planeDetectionState?: { enabled: boolean } }): void;
+
+    // image tracking
+    getTrackedImageScores?(): XRImageTrackingScore[];
 }
 
 interface XRViewerPose extends XRPose {
@@ -81839,6 +82022,21 @@ interface XRHand extends Iterable<XRJointSpace> {
     readonly LITTLE_PHALANX_INTERMEDIATE: number;
     readonly LITTLE_PHALANX_DISTAL: number;
     readonly LITTLE_PHALANX_TIP: number;
+}
+
+type XRImageTrackingState = "tracked" | "emulated";
+type XRImageTrackingScore = "untrackable" | "trackable";
+
+interface XRTrackedImageInit {
+    image: ImageBitmap;
+    widthInMeters: number;
+}
+
+interface XRImageTrackingResult {
+    readonly imageSpace: XRSpace;
+    readonly index: number;
+    readonly trackingState: XRImageTrackingState;
+    readonly measuredWidthInMeters: number;
 }
 
 // This file contains native only extensions for WebXR. These APIs are not supported in the browser yet.
@@ -82565,6 +82763,16 @@ declare module BABYLON.GUI {
         private _attachToOnPointerOut;
         private _attachToOnBlur;
         /**
+         * Serializes the entire GUI system
+         * @returns an object with the JSON serialized data
+         */
+        serializeContent(): any;
+        /**
+         * Recreate the content of the ADT from a JSON object
+         * @param serializedObject define the JSON serialized object to restore from
+         */
+        parseContent(serializedObject: any): void;
+        /**
          * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh)
          * @param mesh defines the mesh which will receive the texture
          * @param width defines the texture width (1024 by default)
@@ -83033,13 +83241,13 @@ declare module BABYLON.GUI {
         get centerX(): number;
         /** Gets the center coordinate on Y axis */
         get centerY(): number;
-        /** Gets or sets if control is Enabled*/
+        /** Gets or sets if control is Enabled */
         get isEnabled(): boolean;
         set isEnabled(value: boolean);
-        /** Gets or sets background color of control if it's disabled*/
+        /** Gets or sets background color of control if it's disabled */
         get disabledColor(): string;
         set disabledColor(value: string);
-        /** Gets or sets front color of control if it's disabled*/
+        /** Gets or sets front color of control if it's disabled */
         get disabledColorItem(): string;
         set disabledColorItem(value: string);
         /**
@@ -83110,6 +83318,24 @@ declare module BABYLON.GUI {
          * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
          */
         linkWithMesh(mesh: BABYLON.Nullable<BABYLON.TransformNode>): void;
+        /**
+        * Shorthand funtion to set the top, right, bottom, and left padding values on the control.
+        * @param { string | number} paddingTop - The value of the top padding.
+        * @param { string | number} paddingRight - The value of the right padding. If omitted, top is used.
+        * @param { string | number} paddingBottom - The value of the bottom padding. If omitted, top is used.
+        * @param { string | number} paddingLeft - The value of the left padding. If omitted, right is used.
+        * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+        */
+        setPadding(paddingTop: string | number, paddingRight?: string | number, paddingBottom?: string | number, paddingLeft?: string | number): void;
+        /**
+         * Shorthand funtion to set the top, right, bottom, and left padding values in pixels on the control.
+         * @param { number} paddingTop - The value in pixels of the top padding.
+         * @param { number} paddingRight - The value in pixels of the right padding. If omitted, top is used.
+         * @param { number} paddingBottom - The value in pixels of the bottom padding. If omitted, top is used.
+         * @param { number} paddingLeft - The value in pixels of the left padding. If omitted, right is used.
+         * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+         */
+        setPaddingInPixels(paddingTop: number, paddingRight?: number, paddingBottom?: number, paddingLeft?: number): void;
         /** @hidden */
         _moveToProjectedPosition(projectedPosition: BABYLON.Vector3): void;
         /** @hidden */
@@ -83188,6 +83414,13 @@ declare module BABYLON.GUI {
         /** @hidden */
         _processObservables(type: number, x: number, y: number, pi: BABYLON.PointerInfoBase, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         private _prepareFont;
+        /**
+         * Serializes the current control
+         * @param serializationObject defined the JSON serialized object
+         */
+        serialize(serializationObject: any): void;
+        /** @hidden */
+        _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
         /** Releases associated resources */
         dispose(): void;
         private static _HORIZONTAL_ALIGNMENT_LEFT;
@@ -83215,6 +83448,13 @@ declare module BABYLON.GUI {
             height: number;
             descent: number;
         };
+        /**
+         * Creates a Control from parsed data
+         * @param serializedObject defines parsed data
+         * @param host defines the hosting AdvancedDynamicTexture
+         * @returns a new Control
+         */
+        static Parse(serializedObject: any, host: AdvancedDynamicTexture): Control;
         /**
          * Creates a stack panel that can be used to render headers
          * @param control defines the control to associate with the header
@@ -83338,8 +83578,15 @@ declare module BABYLON.GUI {
         _processPicking(x: number, y: number, pi: BABYLON.PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        /**
+        * Serializes the current control
+        * @param serializationObject defined the JSON serialized object
+        */
+        serialize(serializationObject: any): void;
         /** Releases associated resources */
         dispose(): void;
+        /** @hidden */
+        _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
     }
 }
 declare module BABYLON.GUI {
@@ -83834,6 +84081,13 @@ declare module BABYLON.GUI {
         protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _postMeasure(): void;
+        /**
+         * Serializes the current control
+         * @param serializationObject defined the JSON serialized object
+         */
+        serialize(serializationObject: any): void;
+        /** @hidden */
+        _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
     }
 }
 declare module BABYLON.GUI {

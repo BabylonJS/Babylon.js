@@ -5,6 +5,7 @@ import { Nullable } from "babylonjs/types";
 import { Scene } from "babylonjs/scene";
 import { Utilities } from "../tools/utilities";
 import { DownloadManager } from "../tools/downloadManager";
+import { WebGPUEngine } from "babylonjs";
 
 require("../scss/rendering.scss");
 
@@ -94,7 +95,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
         const displayInspector = this._scene?.debugLayer.isVisible();
 
-        const useWebGPU = location.href.indexOf("webgpu") !== -1 ;
+        const useWebGPU = location.href.indexOf("webgpu") !== -1 && WebGPUEngine.IsSupported;
 
         if (this._engine) {
             try {

@@ -12,6 +12,7 @@
 ### Loaders
 
 - Added support for EXT_meshopt_compression for glTF loader. ([zeux](https://github.com/zeux))
+- Increased KHR_materials_transmission render target texture default size. ([Drigax](https://github.com/drigax))
 
 ### Navigation
 
@@ -34,10 +35,13 @@
 - Added a `FocusableButton` gui control to simplify creating menus with keyboard navigation ([Flux159](https://github.com/Flux159))
 - Added `focus()` and `blur()` functions for controls that implement `IFocusableControl` ([Flux159](https://github.com/Flux159))
 - Added `ToggleButton` GUI control ([kintz09](https://github.com/kintz09))
+- Added shorthand methods which set all padding values at once, named `setPadding` and `setPaddingInPixels`, to the control class  ([kintz09](https://github.com/kintz09))
 
 ### WebXR
 
 - A browser error preventing the emulator to render scene is now correctly dealt with ([RaananW](https://github.com/RaananW))
+- Added a way to extend the XRSessionInit Object from inside of a feature ([RaananW](https://github.com/RaananW))
+- Added image tracking feature ([RaananW](https://github.com/RaananW))
 
 ## Bugs
 
