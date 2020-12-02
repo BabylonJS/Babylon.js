@@ -1,4 +1,3 @@
-import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
 import { GlobalState } from '../globalState';
 import { Nullable } from 'babylonjs/types';
 import { Observer } from 'babylonjs/Misc/observable';
@@ -6,7 +5,6 @@ import { WorkbenchComponent, FramePortData } from './workbench';
 import { PropertyGuiLedger } from './propertyLedger';
 import * as React from 'react';
 import { GenericPropertyComponent } from './properties/genericNodePropertyComponent';
-import { DisplayLedger } from './displayLedger';
 import { IDisplayManager } from './display/displayManager';
 export class GUINode {
     private _visual: HTMLDivElement;
@@ -311,9 +309,9 @@ export class GUINode {
         // notify frame observers that this node is being deleted
         this._globalState.onGraphNodeRemovalObservable.notifyObservers(this);
 
-        /*if (this._onSelectionChangedObserver) {
+        if (this._onSelectionChangedObserver) {
             this._globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
-        }*/
+        }
 
         if (this._onUpdateRequiredObserver) {
             this._globalState.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
