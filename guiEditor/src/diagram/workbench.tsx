@@ -1,6 +1,5 @@
 import * as React from "react";
 import { GlobalState } from '../globalState';
-import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
 import { GUINode } from './graphNode';
 import * as dagre from 'dagre';
 import { Nullable } from 'babylonjs/types';
@@ -170,7 +169,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 } else {
                     this._selectedNodes = [];
                     this._selectedGuiNodes = [];
-
                 }
             }
         });
@@ -240,22 +238,18 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._oldY = -1;
     }
 
-    findNodeFromBlock(block: NodeMaterialBlock) {
-       // return this._guiNodes.filter(n => n.block === block)[0];
+    findNodeFromGuiElement(guiElement: BABYLON.GUI.Container | BABYLON.GUI.Control) {
+       return this._guiNodes.filter(n => n.guiNode === guiElement)[0];
     }
 
     reset() {
         for (var node of this._guiNodes) {
             node.dispose();
         }
-        
-
         this._guiNodes = [];
         this._graphCanvas.innerHTML = "";
         this._svgCanvas.innerHTML = "";
     }
-
-
 
     appendBlock(guiElement: BABYLON.GUI.Container | BABYLON.GUI.Control) {
         var newGuiNode = new GUINode(this.props.globalState, guiElement);
@@ -326,7 +320,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     onMove(evt: React.PointerEvent) {        
         // Selection box
-        /*if (this._selectionBox) {
+        if (this._selectionBox) {
             const rootRect = this.canvasContainer.getBoundingClientRect();      
 
             const localX = evt.pageX - rootRect.left;
@@ -379,27 +373,25 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             return;
         }   
 
-        // Move canvas
-        this._rootContainer.style.cursor = "move";
-        */
+        // Move canvas and/or guiNodes
         if (this._mouseStartPointX != null && this._mouseStartPointY != null) {
 
-        //this.x += evt.clientX - this._mouseStartPointX;
-        //this.y += evt.clientY - this._mouseStartPointY;
+            var x = this._mouseStartPointX;
+            var y = this._mouseStartPointY;
+            let selected = false;
+            this._guiNodes.forEach(element => {
+                selected = element._onMove(new BABYLON.Vector2(evt.clientX, evt.clientY), 
+                new BABYLON.Vector2( x, y)) || selected;
+            });
 
-        var x = this._mouseStartPointX;
-        var y = this._mouseStartPointY;
-        this._guiNodes.forEach(element => {
-            element._onMove(new BABYLON.Vector2(evt.clientX, evt.clientY), 
-            new BABYLON.Vector2( x, y));
-        });
-
-        this._mouseStartPointX = evt.clientX;
-        this._mouseStartPointY = evt.clientY;
-
-        //doing the dragging for the gui node.
-
-     }
+            if(!selected) {
+                this._rootContainer.style.cursor = "move";
+                this.x += evt.clientX - this._mouseStartPointX;
+                this.y += evt.clientY - this._mouseStartPointY;
+            }
+            this._mouseStartPointX = evt.clientX;
+            this._mouseStartPointY = evt.clientY;
+        }
     }
 
     onDown(evt: React.PointerEvent<HTMLElement>) {
@@ -539,8 +531,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         
         // Create our first scene.
         var scene = new BABYLON.Scene(engine);
-        scene.clearColor = new BABYLON.Color4(0.2, 0.2, 0.3, 0.5);
-        
+        scene.clearColor = new BABYLON.Color4(0.2, 0.2, 0.3, 0.1);
+
         // This creates and positions a free camera (non-mesh)
         var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
 
@@ -556,41 +548,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         engine.runRenderLoop(() => {this.updateGUIs(); scene.render()});
     }
     
-
-    public addNewButton()
-    {
-        var button1 = BABYLON.GUI.Button.CreateSimpleButton("but1", "Click Me");
-        button1.width = "150px"
-        button1.height = "40px";
-        button1.color = "#FFFFFFFF";
-        button1.cornerRadius = 20;
-        button1.background = "#138016FF";
-        button1.onPointerUpObservable.add(function() {
-        });
-
-        var newGuiNode = new GUINode(this.globalState, button1);
-        newGuiNode.appendVisual(this._graphCanvas, this);
-        this._guiNodes.push(newGuiNode);
-
-        this.globalState.guiTexture.addControl(button1);    
-    }
-
-    public addNewSlider()
-    {
-        var slider1 = new BABYLON.GUI.Slider("Slider");
-        slider1.width = "150px"
-        slider1.height = "40px";
-        slider1.color = "#FFFFFFFF";
-        slider1.background = "#138016FF";
-        slider1.onPointerUpObservable.add(function() {
-        });;
-        var newGuiNode = new GUINode(this.globalState, slider1);
-        newGuiNode.appendVisual(this._graphCanvas, this);
-        this._guiNodes.push(newGuiNode);
-
-        this.globalState.guiTexture.addControl(slider1);    
-    }
-
     updateGUIs()
     {
         this._guiNodes.forEach(element => {
@@ -601,7 +558,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
  
     render() {
  
-        var canv = <canvas id="graph-canvas" 
+        return <canvas id="graph-canvas" 
         onWheel={evt => this.onWheel(evt)}
         onPointerMove={evt => this.onMove(evt)}
         onPointerDown={evt =>  this.onDown(evt)}   
@@ -618,9 +575,5 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             </div>
         </div>
         </canvas>
-
-        return (
-            canv
-        );
     }
 }
