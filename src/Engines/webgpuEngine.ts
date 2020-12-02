@@ -131,6 +131,11 @@ export interface WebGPUEngineOptions extends GPURequestAdapterOptions {
      * Defines wether we should generate debug markers in the gpu command lists (can be seen with PIX for eg)
      */
     enableGPUDebugMarkers?: boolean;
+
+    /**
+     * Options to load the associated Glslang library
+     */
+    glslangOptions?: GlslangOptions;
 }
 
 /**
@@ -277,6 +282,20 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
+     * Create a new instance of the gpu engine asynchronously
+     * @param canvas Defines the canvas to use to display the result
+     * @param options Defines the options passed to the engine to create the GPU context dependencies
+     * @returns a promise that resolves with the created engine
+     */
+    public static CreateAsync(canvas: HTMLCanvasElement, options: WebGPUEngineOptions = {}): Promise<WebGPUEngine> {
+        const engine = new WebGPUEngine(canvas, options);
+
+        return new Promise((resolve) => {
+            engine.initAsync(options.glslangOptions).then(() => resolve(engine));
+        });
+    }
+
+    /**
      * Create a new instance of the gpu engine.
      * @param canvas Defines the canvas to use to display the result
      * @param options Defines the options passed to the engine to create the GPU context dependencies
@@ -345,7 +364,7 @@ export class WebGPUEngine extends Engine {
      * @returns a promise notifying the readiness of the engine.
      */
     public initAsync(glslangOptions?: GlslangOptions): Promise<void> {
-        return this._initGlslang(glslangOptions)
+        return this._initGlslang(glslangOptions ?? this._options?.glslangOptions)
             .then((glslang: any) => {
                 this._glslang = glslang;
                 return navigator.gpu!.requestAdapter(this._options);
@@ -492,7 +511,7 @@ export class WebGPUEngine extends Engine {
             supportRenderAndCopyToLodForFloatTextures: true,
             supportDepthStencilTexture: true,
             supportShadowSamplers: true,
-            uniformBufferHardCheckMatrix: true,
+            uniformBufferHardCheckMatrix: false,
             allowTexturePrefiltering: true,
             trackUbosInFrame: true,
             supportCSM: true,
