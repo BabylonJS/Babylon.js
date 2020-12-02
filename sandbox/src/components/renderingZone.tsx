@@ -149,29 +149,29 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
 
             camera = this._scene.activeCamera! as ArcRotateCamera;
 
+            if (this._currentPluginName === "gltf") {
+                // glTF assets use a +Z forward convention while the default camera faces +Z. Rotate the camera to look at the front of the asset.
+                camera.alpha += Math.PI;
+            }
+
+            // Enable camera's behaviors
+            camera.useFramingBehavior = true;
+
+            var framingBehavior = camera.getBehaviorByName("Framing") as FramingBehavior;
+            framingBehavior.framingTime = 0;
+            framingBehavior.elevationReturnTime = -1;
+
+            if (this._scene.meshes.length) {
+                camera.lowerRadiusLimit = null;
+
+                var worldExtends = this._scene.getWorldExtends(function (mesh) {
+                    return mesh.isVisible && mesh.isEnabled();
+                });
+                framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
+            }
+
             if (this.props.cameraPosition) {
                 camera.setPosition(this.props.cameraPosition);
-            } else {
-                if (this._currentPluginName === "gltf") {
-                    // glTF assets use a +Z forward convention while the default camera faces +Z. Rotate the camera to look at the front of the asset.
-                    camera.alpha += Math.PI;
-                }
-
-                // Enable camera's behaviors
-                camera.useFramingBehavior = true;
-
-                var framingBehavior = camera.getBehaviorByName("Framing") as FramingBehavior;
-                framingBehavior.framingTime = 0;
-                framingBehavior.elevationReturnTime = -1;
-
-                if (this._scene.meshes.length) {
-                    camera.lowerRadiusLimit = null;
-
-                    var worldExtends = this._scene.getWorldExtends(function (mesh) {
-                        return mesh.isVisible && mesh.isEnabled();
-                    });
-                    framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
-                }
             }
 
             camera.pinchPrecision = 200 / camera.radius;
