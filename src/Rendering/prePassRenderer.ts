@@ -333,13 +333,15 @@ export class PrePassRenderer {
      * @hidden
      */
     public _beforeDraw(camera?: Camera, faceIndex?: number, layer?: number) {
+        const previousEnabled = this._enabled && this._currentTarget.enabled;
+
         if (this._isDirty) {
             this._update();
         }
 
         const texture = this._currentTarget.renderTargetTexture;
 
-        if (!this._enabled || !this._currentTarget.enabled) {
+        if (previousEnabled && (!this._enabled || !this._currentTarget.enabled)) {
             // Prepass disabled, we render only on 1 color attachment
             if (texture) {
                 texture._prepareFrame(this._scene, faceIndex, layer, texture.useCameraPostProcesses);
@@ -432,16 +434,15 @@ export class PrePassRenderer {
 
     private _setState(enabled: boolean) {
         this._enabled = enabled;
+    }
 
-        // TODO : enable/disable per texture
+    private _setRenderTargetState(prePassRenderTarget: PrePassRenderTarget, enabled: boolean) {
         for (let i = 0; i < this.renderTargets.length; i++) {
-            const prePassRenderTarget = this.renderTargets[i];
-
             prePassRenderTarget.enabled = enabled;
 
             if (prePassRenderTarget.imageProcessingPostProcess) {
                 prePassRenderTarget.imageProcessingPostProcess.imageProcessingConfiguration.applyByPostProcess = enabled;
-            }
+            }  
         }
     }
 
@@ -507,6 +508,10 @@ export class PrePassRenderer {
 
     private _disable() {
         this._setState(false);
+
+        for (let i = 0; i < this.renderTargets.length; i++) {
+            this._setRenderTargetState(this.renderTargets[i], false);
+        }
 
         this._resetLayout();
 
@@ -634,6 +639,10 @@ export class PrePassRenderer {
         for (let i = 0; i < this._scene.materials.length; i++) {
             if (this._scene.materials[i].setPrePassRenderer(this)) {
                 enablePrePass = true;
+
+                for (let j = 0; j < this.renderTargets.length; j++) {
+                    this._setRenderTargetState(this.renderTargets[j], true);
+                }
             }
         }
 
@@ -658,8 +667,9 @@ export class PrePassRenderer {
             postProcesses = (<Nullable<PostProcess[]>>postProcesses.filter((pp) => { return pp != null; }));
 
             if (postProcesses) {
-                for (let i = 0; i < postProcesses.length; i++) {
-                    if (postProcesses[i].setPrePassRenderer(this)) {
+                for (let j = 0; j < postProcesses.length; j++) {
+                    if (postProcesses[j].setPrePassRenderer(this)) {
+                        this._setRenderTargetState(this.renderTargets[i], true);
                         enablePrePass = true;
                     }
                 }
