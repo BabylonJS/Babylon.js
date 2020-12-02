@@ -11,4 +11,5 @@ export * from "./spherePanel";
 export * from "./stackPanel3D";
 export * from "./touchButton3D";
 export * from "./touchMeshButton3D";
+export * from "./touchHolographicButton";
 export * from "./volumeBasedPanel";
