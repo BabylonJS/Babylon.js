@@ -633,7 +633,8 @@ export class PrePassRenderer {
 
         for (let i = 0; i < this.renderTargets.length; i++) {
             if (this.renderTargets[i].renderTargetTexture) {
-                postProcesses = this.renderTargets[i].renderTargetTexture!.activeCamera?._postProcesses;
+                if (this.renderTargets[i])
+                postProcesses = this._getPostProcessesSource(this.renderTargets[i]);
             } else {
                 const camera = this._scene.activeCamera;
                 if (!camera) {
