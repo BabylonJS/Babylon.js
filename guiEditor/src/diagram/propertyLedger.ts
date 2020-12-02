@@ -9,6 +9,8 @@ import { TexturePropertyTabComponent } from './properties/texturePropertyTabComp
 import { TrigonometryPropertyTabComponent } from './properties/trigonometryNodePropertyComponent';
 import { ButtonPropertyTabComponent } from './properties/buttonGuiPropertyComponent copy';
 import { SliderPropertyTabComponent } from './properties/sliderGuiPropertyComponent';
+import { CheckboxPropertyTabComponent } from './properties/checkboxGuiPropertyComponent';
+import { ShapePropertyTabComponent } from './properties/shapeGuiPropertyComponent';
 
 export class PropertyLedger {
     public static RegisteredControls: {[key: string] : ComponentClass<IPropertyComponentProps>} = {};
@@ -34,3 +36,6 @@ PropertyLedger.RegisteredControls["TrigonometryBlock"] = TrigonometryPropertyTab
 
 PropertyGuiLedger.RegisteredControls["Button"] = ButtonPropertyTabComponent;
 PropertyGuiLedger.RegisteredControls["Slider"] = SliderPropertyTabComponent;
+PropertyGuiLedger.RegisteredControls["Checkbox"] = CheckboxPropertyTabComponent;
+PropertyGuiLedger.RegisteredControls["Rectangle"] = ShapePropertyTabComponent;
+PropertyGuiLedger.RegisteredControls["Ellipse"] = ShapePropertyTabComponent;
