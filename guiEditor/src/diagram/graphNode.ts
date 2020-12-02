@@ -215,7 +215,7 @@ export class GUINode {
     public clicked: boolean;
     public _onMove(evt: BABYLON.Vector2, startPos: BABYLON.Vector2) {
        
-        if(!this.clicked) return;
+        if(!this.clicked) return false;
 
         let newX = (evt.x - startPos.x) ;// / this._ownerCanvas.zoom;
         let newY = (evt.y - startPos.y) ;// / this._ownerCanvas.zoom;
@@ -228,6 +228,7 @@ export class GUINode {
         this._mouseStartPointX = evt.x;
         this._mouseStartPointY = evt.y;   
 
+        return true;
         //evt.stopPropagation();
     }
 
