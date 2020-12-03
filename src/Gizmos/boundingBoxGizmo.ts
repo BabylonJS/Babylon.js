@@ -439,7 +439,6 @@ export class BoundingBoxGizmo extends Gizmo {
             // Update bounding dimensions/positions
             var boundingMinMax = this.attachedMesh.getHierarchyBoundingVectors(!this.ignoreChildren, this.includeChildPredicate);
             boundingMinMax.max.subtractToRef(boundingMinMax.min, this._boundingDimensions);
-            console.log(this._boundingDimensions);
 
             // Update gizmo to match bounding box scaling and rotation
             // The position set here is the offset from the origin for the boundingbox when the attached mesh is at the origin
