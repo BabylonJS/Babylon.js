@@ -3519,6 +3519,38 @@ export class WebGPUEngine extends Engine {
         this._alphaMode = mode;
     }
 
+    /**
+     * Sets the current alpha equation
+     * @param equation defines the equation to use (one of the Engine.ALPHA_EQUATION_XXX)
+     */
+    public setAlphaEquation(equation: number): void {
+        if (this._alphaEquation === equation) {
+            return;
+        }
+
+        switch (equation) {
+            case Constants.ALPHA_EQUATION_ADD:
+                this._alphaState.setAlphaEquationParameters(this._gl.FUNC_ADD, this._gl.FUNC_ADD);
+                break;
+            case Constants.ALPHA_EQUATION_SUBSTRACT:
+                this._alphaState.setAlphaEquationParameters(this._gl.FUNC_SUBTRACT, this._gl.FUNC_SUBTRACT);
+                break;
+            case Constants.ALPHA_EQUATION_REVERSE_SUBTRACT:
+                this._alphaState.setAlphaEquationParameters(this._gl.FUNC_REVERSE_SUBTRACT, this._gl.FUNC_REVERSE_SUBTRACT);
+                break;
+            case Constants.ALPHA_EQUATION_MAX:
+                this._alphaState.setAlphaEquationParameters(this._gl.MAX, this._gl.MAX);
+                break;
+            case Constants.ALPHA_EQUATION_MIN:
+                this._alphaState.setAlphaEquationParameters(this._gl.MIN, this._gl.MIN);
+                break;
+            case Constants.ALPHA_EQUATION_DARKEN:
+                this._alphaState.setAlphaEquationParameters(this._gl.MIN, this._gl.FUNC_ADD);
+                break;
+        }
+        this._alphaEquation = equation;
+    }
+
     private _getAphaBlendOperation(operation: Nullable<number>): GPUBlendOperation {
         switch (operation) {
             case 0x8006:
@@ -3527,6 +3559,10 @@ export class WebGPUEngine extends Engine {
                 return WebGPUConstants.BlendOperation.Subtract;
             case 0x800B:
                 return WebGPUConstants.BlendOperation.ReverseSubtract;
+            case 0x8007:
+                return WebGPUConstants.BlendOperation.Min;
+            case 0x8008:
+                return WebGPUConstants.BlendOperation.Max;
             default:
                 return WebGPUConstants.BlendOperation.Add;
         }
