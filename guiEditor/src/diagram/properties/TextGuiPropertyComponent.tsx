@@ -6,7 +6,7 @@ import { GeneralPropertyTabComponent } from './genericNodePropertyComponent';
 import { FloatLineComponent } from '../../sharedComponents/floatLineComponent';
 import { Vector2LineComponent } from '../../sharedComponents/vector2LineComponent';
 
-export class LinePropertyTabComponent extends React.Component<IPropertyComponentProps> {
+export class TextPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
         super(props);
         this.line = this.props.guiBlock as BABYLON.GUI.Line;
