@@ -1,4 +1,5 @@
-interface rcConfig {
+declare module Recast {
+export class rcConfig {
     new ();
     width: number;
     height: number;
@@ -20,34 +21,34 @@ interface rcConfig {
     detailSampleDist: number;
     detailSampleMaxError: number;
 }
-interface Vec3 {
+export class Vec3 {
     new ();
     new (x: number, y: number, z: number);
     x: number;
     y: number;
     z: number;
 }
-interface Triangle {
+export class Triangle {
     new ();
     getPoint(n: number): Vec3;
 }
-interface DebugNavMesh {
+export class DebugNavMesh {
     new ();
     getTriangleCount(): number;
     getTriangle(n: number): Triangle;
 }
-interface dtNavMesh {
+export class dtNavMesh {
 }
-interface NavmeshData {
+export class NavmeshData {
     new ();
     dataPointer: any;
     size: number;
 }
-interface NavPath {
+export class NavPath {
     getPointCount(): number;
     getPoint(n: number): Vec3;
 }
-interface dtCrowdAgentParams {
+export class dtCrowdAgentParams {
     new ();
     radius: number;
     height: number;
@@ -61,7 +62,7 @@ interface dtCrowdAgentParams {
     queryFilterType: number;
     userData: unknown;
 }
-interface NavMesh {
+export class NavMesh {
     new ();
     destroy(): void;
     build(positions: any, positionCount: number, indices: any, indexCount: number, config: rcConfig): void;
@@ -77,7 +78,7 @@ interface NavMesh {
     setDefaultQueryExtent(extent: Vec3): void;
     getDefaultQueryExtent(): Vec3;
 }
-interface Crowd {
+export class Crowd {
     new (maxAgents: number, maxAgentRadius: number, nav: dtNavMesh);
     destroy(): void;
     addAgent(position: Vec3, params: dtCrowdAgentParams): number;
@@ -94,4 +95,5 @@ interface Crowd {
     setAgentParameters(idx: number, params: dtCrowdAgentParams): void;
     setDefaultQueryExtent(extent: Vec3): void;
     getDefaultQueryExtent(): Vec3;
+}
 }
