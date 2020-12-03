@@ -37,6 +37,7 @@ export interface IMaterialSubSurfaceDefines {
     SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
     SS_ALBEDOFORREFRACTIONTINT: boolean;
     SS_ALBEDOFORTRANSLUCENCYTINT: boolean;
+    SS_MULTALBEDOBYSCATTERCOLOR: boolean;
 
     SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
     SS_MASK_FROM_THICKNESS_TEXTURE_GLTF: boolean;
@@ -81,7 +82,7 @@ export class PBRSubSurfaceConfiguration {
      * Diffusion profile for subsurface scattering.
      * Useful for better scattering in the skins or foliages.
      */
-    public get scatteringDiffusionProfile() : Nullable<Color3> {
+    public get scatteringDiffusionProfile(): Nullable<Color3> {
         if (!this._scene.subSurfaceConfiguration) {
             return null;
         }
@@ -128,6 +129,12 @@ export class PBRSubSurfaceConfiguration {
      */
     @serialize()
     public useAlbedoToTintTranslucency: boolean = false;
+
+    /**
+     * When enabled, the albedo colour will be multiplied by the scatter colour
+     */
+    @serialize()
+    public multAlbedoByScatterColor: boolean = false;
 
     private _thicknessTexture: Nullable<BaseTexture> = null;
     /**
@@ -338,6 +345,7 @@ export class PBRSubSurfaceConfiguration {
             defines.SS_LINKREFRACTIONTOTRANSPARENCY = false;
             defines.SS_ALBEDOFORREFRACTIONTINT = false;
             defines.SS_ALBEDOFORTRANSLUCENCYTINT = false;
+            defines.SS_MULTALBEDOBYSCATTERCOLOR = false;
 
             if (this._isRefractionEnabled || this._isTranslucencyEnabled || this._isScatteringEnabled) {
                 defines.SUBSURFACE = true;
@@ -373,6 +381,9 @@ export class PBRSubSurfaceConfiguration {
 
             if (this._isTranslucencyEnabled) {
                 defines.SS_ALBEDOFORTRANSLUCENCYTINT = this.useAlbedoToTintTranslucency;
+            }
+            if (this._isScatteringEnabled) {
+                defines.SS_MULTALBEDOBYSCATTERCOLOR = this.multAlbedoByScatterColor;
             }
         }
     }
