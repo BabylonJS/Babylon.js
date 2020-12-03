@@ -220,6 +220,7 @@ export class DetailMapConfiguration {
      */
     public static AddUniforms(uniforms: string[]): void {
         uniforms.push("vDetailInfos");
+        uniforms.push("detailMatrix");
     }
 
     /**
