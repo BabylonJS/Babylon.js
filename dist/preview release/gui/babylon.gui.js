@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!*****************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \*****************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \************************************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -7248,14 +7248,14 @@ var Image = /** @class */ (function (_super) {
     /** @hidden */
     Image.prototype._rotate90 = function (n, preserveProperties) {
         if (preserveProperties === void 0) { preserveProperties = false; }
-        var canvas = document.createElement('canvas');
-        var context = canvas.getContext('2d');
+        var canvas = document.createElement("canvas");
+        var context = canvas.getContext("2d");
         var width = this._domImage.width;
         var height = this._domImage.height;
         canvas.width = height;
         canvas.height = width;
         context.translate(canvas.width / 2, canvas.height / 2);
-        context.rotate(n * Math.PI / 2);
+        context.rotate((n * Math.PI) / 2);
         context.drawImage(this._domImage, 0, 0, width, height, -width / 2, -height / 2, width, height);
         var dataUrl = canvas.toDataURL("image/jpg");
         var rotatedImage = new Image(this.name + "rotated", dataUrl);
@@ -7353,10 +7353,10 @@ var Image = /** @class */ (function (_super) {
     };
     Image.prototype._extractNinePatchSliceDataFromImage = function () {
         if (!this._workingCanvas) {
-            this._workingCanvas = document.createElement('canvas');
+            this._workingCanvas = document.createElement("canvas");
         }
         var canvas = this._workingCanvas;
-        var context = canvas.getContext('2d');
+        var context = canvas.getContext("2d");
         var width = this._domImage.width;
         var height = this._domImage.height;
         canvas.width = width;
@@ -7394,6 +7394,12 @@ var Image = /** @class */ (function (_super) {
     };
     Object.defineProperty(Image.prototype, "source", {
         /**
+         * Gets the image source url
+         */
+        get: function () {
+            return this._source;
+        },
+        /**
          * Gets or sets image source url
          */
         set: function (value) {
@@ -7424,10 +7430,10 @@ var Image = /** @class */ (function (_super) {
      */
     Image.prototype._svgCheck = function (value) {
         var _this = this;
-        if (window.SVGSVGElement && (value.search(/.svg#/gi) !== -1) && (value.indexOf("#") === value.lastIndexOf("#"))) {
+        if (window.SVGSVGElement && value.search(/.svg#/gi) !== -1 && value.indexOf("#") === value.lastIndexOf("#")) {
             this._isSVG = true;
-            var svgsrc = value.split('#')[0];
-            var elemid = value.split('#')[1];
+            var svgsrc = value.split("#")[0];
+            var elemid = value.split("#")[1];
             // check if object alr exist in document
             var svgExist = document.body.querySelector('object[data="' + svgsrc + '"]');
             if (svgExist) {
@@ -7500,8 +7506,8 @@ var Image = /** @class */ (function (_super) {
                 // compute source coordinates and dimensions
                 this.sourceLeft = ((elem_matrix_a * elem_bbox.x + elem_matrix_e) * docwidth) / vb_width;
                 this.sourceTop = ((elem_matrix_d * elem_bbox.y + elem_matrix_f) * docheight) / vb_height;
-                this.sourceWidth = (elem_bbox.width * elem_matrix_a) * (docwidth / vb_width);
-                this.sourceHeight = (elem_bbox.height * elem_matrix_d) * (docheight / vb_height);
+                this.sourceWidth = elem_bbox.width * elem_matrix_a * (docwidth / vb_width);
+                this.sourceHeight = elem_bbox.height * elem_matrix_d * (docheight / vb_height);
                 this._svgAttributesComputationCompleted = true;
                 this.onSVGAttributesComputedObservable.notifyObservers(this);
             }
@@ -7615,7 +7621,8 @@ var Image = /** @class */ (function (_super) {
                     if (this._autoScale) {
                         this.synchronizeSizeWithContent();
                     }
-                    if (this.parent && this.parent.parent) { // Will update root size if root is not the top root
+                    if (this.parent && this.parent.parent) {
+                        // Will update root size if root is not the top root
                         this.parent.adaptWidthToChildren = true;
                         this.parent.adaptHeightToChildren = true;
                     }
@@ -7629,7 +7636,7 @@ var Image = /** @class */ (function (_super) {
             return;
         }
         if (!this._workingCanvas) {
-            this._workingCanvas = document.createElement('canvas');
+            this._workingCanvas = document.createElement("canvas");
         }
         var canvas = this._workingCanvas;
         var width = this._currentMeasure.width;
@@ -7753,10 +7760,6 @@ var Image = /** @class */ (function (_super) {
     /** NINE_PATCH */
     Image.STRETCH_NINE_PATCH = 4;
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
-        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])(),
-        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["expandToProperty"])("source")
-    ], Image.prototype, "_source", void 0);
-    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], Image.prototype, "populateNinePatchSlicesFromImage", null);
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
@@ -7792,6 +7795,9 @@ var Image = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], Image.prototype, "stretch", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Image.prototype, "source", null);
     return Image;
 }(_control__WEBPACK_IMPORTED_MODULE_2__["Control"]));
 
