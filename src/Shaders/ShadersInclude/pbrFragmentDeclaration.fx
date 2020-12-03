@@ -166,7 +166,6 @@ uniform mat4 view;
 
 #ifdef DETAIL
     uniform vec4 vDetailInfos;
-    uniform mat4 detailMatrix;
 #endif
 
 #ifdef USESPHERICALFROMREFLECTIONMAP
