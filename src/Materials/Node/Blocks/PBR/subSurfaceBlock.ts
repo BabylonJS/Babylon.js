@@ -218,7 +218,9 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
             #endif
             #ifdef SS_TRANSLUCENCY
                 ${translucencyDiffusionDistance},
-                surfaceAlbedo
+            #endif
+            #if defined(SS_TRANSLUCENCY) || defined(SS_SCATTERING)
+                surfaceAlbedo,
             #endif
                 subSurfaceOut
             );
@@ -228,6 +230,8 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
                 #ifdef SS_LINKREFRACTIONTOTRANSPARENCY
                     alpha = subSurfaceOut.alpha;
                 #endif
+            #elif defined(SS_MULTALBEDOBYSCATTERCOLOR) && defined(SS_SCATTERING)
+                surfaceAlbedo = subSurfaceOut.surfaceAlbedo;
             #endif
         #else
             subSurfaceOut.specularEnvironmentReflectance = specularEnvironmentReflectance;

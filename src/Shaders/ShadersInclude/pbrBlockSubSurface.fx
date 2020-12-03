@@ -1,9 +1,9 @@
 struct subSurfaceOutParams
 {
     vec3 specularEnvironmentReflectance;
+    vec3 surfaceAlbedo;
 #ifdef SS_REFRACTION
     vec3 finalRefraction;
-    vec3 surfaceAlbedo;
     #ifdef SS_LINKREFRACTIONTOTRANSPARENCY
         float alpha;
     #endif
@@ -100,6 +100,8 @@ struct subSurfaceOutParams
     #endif
     #ifdef SS_TRANSLUCENCY
         const in vec3 vDiffusionDistance,
+    #endif
+    #if defined(SS_TRANSLUCENCY) || defined(SS_SCATTERING)
         const in vec3 surfaceAlbedo,
     #endif
         out subSurfaceOutParams outParams
@@ -118,7 +120,7 @@ struct subSurfaceOutParams
             outParams.alpha = 1.0;
         #endif
     #endif
-    #ifdef SS_TRANSLUCENCY
+    #if defined(SS_TRANSLUCENCY) || defined(SS_SCATTERING)
         float translucencyIntensity = vSubSurfaceIntensity.y;
     #endif
 
@@ -139,7 +141,7 @@ struct subSurfaceOutParams
         #elif defined(SS_MASK_FROM_THICKNESS_TEXTURE_GLTF)
             #ifdef SS_REFRACTION
                 refractionIntensity *= thicknessMap.r;
-            #elif defined(SS_TRANSLUCENCY)
+            #elif defined(SS_TRANSLUCENCY) || defined(SS_SCATTERING)
                 translucencyIntensity *= thicknessMap.r;
             #endif
             thickness = thicknessMap.g * vThicknessParam.y + vThicknessParam.x;
@@ -313,6 +315,9 @@ struct subSurfaceOutParams
         #endif
     #endif
 
+    #if defined(SS_MULTALBEDOBYSCATTERCOLOR) && defined(SS_SCATTERING)
+        outParams.surfaceAlbedo = mix(surfaceAlbedo, surfaceAlbedo * vTintColor.rgb, translucencyIntensity);
+    #endif
     // __________________________________________________________________________________
     // _______________________________  IBL Translucency ________________________________
     // __________________________________________________________________________________

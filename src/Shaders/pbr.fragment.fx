@@ -499,6 +499,8 @@ void main(void) {
         #endif
         #ifdef SS_TRANSLUCENCY
             vDiffusionDistance,
+        #endif
+        #if defined(SS_TRANSLUCENCY) || defined(SS_SCATTERING)
             surfaceAlbedo,
         #endif
             subSurfaceOut
@@ -509,6 +511,8 @@ void main(void) {
             #ifdef SS_LINKREFRACTIONTOTRANSPARENCY
                 alpha = subSurfaceOut.alpha;
             #endif
+        #elif defined(SS_SCATTERING) && defined(SS_MULTALBEDOBYSCATTERCOLOR)
+            surfaceAlbedo = subSurfaceOut.surfaceAlbedo;
         #endif
     #else
         subSurfaceOut.specularEnvironmentReflectance = specularEnvironmentReflectance;
