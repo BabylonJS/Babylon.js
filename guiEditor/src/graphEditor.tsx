@@ -392,10 +392,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         let guiElement = BlockTools.GetGuiFromString(data);
 
-        guiElement.width = "150px"
-        guiElement.height = "40px";
-        guiElement.color = "#FFFFFFFF";
-        guiElement.background = "#138016FF";
+        //guiElement.background = "#138016FF";
 
         let newGuiNode = this._graphCanvas.appendBlock(guiElement);
         

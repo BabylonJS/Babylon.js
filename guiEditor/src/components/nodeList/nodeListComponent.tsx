@@ -44,11 +44,11 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
     render() {    
         // Block types used to create the menu from
         const allBlocks: any = {
-            Buttons: ["Text", "ImageButton"],
+            Buttons: ["TextButton", "ImageButton"],
             Controls: ["Slider", "Checkbox", "ColorPicker", "VisualKeyboard"],
             Containers: ["DisplayGrid", "Grid", "StackPanel"],
             Shapes: ["Ellipse","Image", "Line","Rectangle" ],
-            Inputs: ["textBlock", "intputText", "inputPassword"]
+            Inputs: ["Text", "IntputText", "InputPassword"]
         };
 
         // Create node menu

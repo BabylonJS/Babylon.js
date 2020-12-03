@@ -1,28 +1,44 @@
 export class BlockTools {
     public static GetGuiFromString(data: string) {
+
+        let element;
         switch (data) {
             case "Slider":
-                return new BABYLON.GUI.Slider("Slider");
+                element = new BABYLON.GUI.Slider("Slider");
+                break;
             case "Checkbox":
-                return new BABYLON.GUI.Checkbox("Checkbox");
+                element = new BABYLON.GUI.Checkbox("Checkbox");
+                break;
             case "ColorPicker":
-                return new BABYLON.GUI.ColorPicker("ColorPicker");
+                element = new BABYLON.GUI.ColorPicker("ColorPicker");
+                break;
             case "Ellipse":
-                return new BABYLON.GUI.Ellipse("Ellipse");
+                element = new BABYLON.GUI.Ellipse("Ellipse");
+                break;
             case "Rectangle":
-                return new BABYLON.GUI.Rectangle("Rectangle");
+                element = new BABYLON.GUI.Rectangle("Rectangle");
+                break;
             case "Line":
-                var line = new BABYLON.GUI.Line();
-                line.x1 = 10;
-                line.y1 = 10;
-                line.x2 = 100;
-                line.y2 = 100;
-                line.lineWidth = 5;
-                line.dash = [50, 10];
-                return line;
-
-        }
-
-        return BABYLON.GUI.Button.CreateSimpleButton("Button", "Click Me");
+                element = new BABYLON.GUI.Line();
+                element.x1 = 10;
+                element.y1 = 10;
+                element.x2 = 100;
+                element.y2 = 100;
+                element.lineWidth = 5;
+                element.dash = [50, 10];
+                return element;
+            case "Text":
+                element = new BABYLON.GUI.TextBlock("Textblock");
+                element.text = "My Text";
+                return element;
+            default:
+                element = BABYLON.GUI.Button.CreateSimpleButton("Button", "Click Me");
+                break;
+            }
+        
+        element.width = "150px"
+        element.height = "40px";
+        element.color = "#FFFFFFFF";
+        return element;
     }
 }
