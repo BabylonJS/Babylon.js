@@ -49063,6 +49063,10 @@ declare module BABYLON {
          */
         useNaturalPinchZoom: boolean;
         /**
+         * Defines whether zoom (2 fingers pinch) is enabled through multitouch
+         */
+        pinchZoom: boolean;
+        /**
          * Defines the pointer panning sensibility or how fast is the camera moving.
          */
         panningSensibility: number;
@@ -49082,6 +49086,14 @@ declare module BABYLON {
         private _isPanClick;
         private _twoFingerActivityCount;
         private _isPinching;
+        /**
+         * Move camera from multi touch panning positions.
+         */
+        private _computeMultiTouchPanning;
+        /**
+         * Move camera from pinch zoom distances.
+         */
+        private _computePinchZoom;
         /**
          * Called on pointer POINTERMOVE event if only a single touch is active.
          */
