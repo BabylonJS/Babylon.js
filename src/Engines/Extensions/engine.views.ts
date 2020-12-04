@@ -123,7 +123,7 @@ Engine.prototype._renderViews = function() {
         if (camera) {
             scene = camera.getScene();
 
-            if (scene.activeCameras.length) {
+            if (scene.activeCameras && scene.activeCameras.length) {
                 continue;
             }
 
@@ -142,7 +142,7 @@ Engine.prototype._renderViews = function() {
             canvas.height = canvas.clientHeight;
             parent.width = canvas.clientWidth;
             parent.height = canvas.clientHeight;
-            this.resize();
+            this.resize(true);
         }
 
         if (!parent.width || !parent.height) {

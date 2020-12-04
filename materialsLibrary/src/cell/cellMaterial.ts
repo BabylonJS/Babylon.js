@@ -43,6 +43,7 @@ class CellMaterialDefines extends MaterialDefines {
     public CUSTOMUSERLIGHTING = true;
     public CELLBASIC = true;
     public DEPTHPREPASS = false;
+    public IMAGEPROCESSINGPOSTPROCESS = false;
 
     constructor() {
         super();
@@ -157,6 +158,8 @@ export class CellMaterial extends PushMaterial {
             if (defines.NUM_BONE_INFLUENCERS > 0) {
                 fallbacks.addCPUSkinningFallback(0, mesh);
             }
+
+            defines.IMAGEPROCESSINGPOSTPROCESS = scene.imageProcessingConfiguration.applyByPostProcess;
 
             //Attributes
             var attribs = [VertexBuffer.PositionKind];

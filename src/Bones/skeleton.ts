@@ -66,6 +66,9 @@ export class Skeleton implements IAnimatable {
     /** @hidden */
     public _hasWaitingData: Nullable<boolean> = null;
 
+    /** @hidden */
+    public _waitingOverrideMeshId: Nullable<string> = null;
+
     /**
      * Specifies if the skeleton should be serialized
      */
@@ -413,7 +416,7 @@ export class Skeleton implements IAnimatable {
      * @returns the original skeleton
      */
     public static MakeAnimationAdditive(skeleton: Skeleton, referenceFrame = 0, range: string): Nullable<Skeleton> {
-        var rangeValue = skeleton.getAnimationRange(name);
+        var rangeValue = skeleton.getAnimationRange(range);
 
         // We can't make a range additive if it doesn't exist
         if (!rangeValue) {
@@ -706,6 +709,7 @@ export class Skeleton implements IAnimatable {
         serializationObject.bones = [];
 
         serializationObject.needInitialSkinMatrix = this.needInitialSkinMatrix;
+        serializationObject.overrideMeshId = this.overrideMesh?.id;
 
         for (var index = 0; index < this.bones.length; index++) {
             var bone = this.bones[index];
@@ -713,9 +717,11 @@ export class Skeleton implements IAnimatable {
 
             var serializedBone: any = {
                 parentBoneIndex: parent ? this.bones.indexOf(parent) : -1,
+                index: bone.getIndex(),
                 name: bone.name,
                 matrix: bone.getBaseMatrix().toArray(),
-                rest: bone.getRestPose().toArray()
+                rest: bone.getRestPose().toArray(),
+                linkedTransformNodeId: bone.getTransformNode()?.id
             };
 
             serializationObject.bones.push(serializedBone);
@@ -764,16 +770,22 @@ export class Skeleton implements IAnimatable {
 
         skeleton.needInitialSkinMatrix = parsedSkeleton.needInitialSkinMatrix;
 
+        if (parsedSkeleton.overrideMeshId) {
+            skeleton._hasWaitingData = true;
+            skeleton._waitingOverrideMeshId = parsedSkeleton.overrideMeshId;
+        }
+
         let index: number;
         for (index = 0; index < parsedSkeleton.bones.length; index++) {
             var parsedBone = parsedSkeleton.bones[index];
-
+            var parsedBoneIndex = parsedSkeleton.bones[index].index;
             var parentBone = null;
             if (parsedBone.parentBoneIndex > -1) {
                 parentBone = skeleton.bones[parsedBone.parentBoneIndex];
             }
+
             var rest: Nullable<Matrix> = parsedBone.rest ? Matrix.FromArray(parsedBone.rest) : null;
-            var bone = new Bone(parsedBone.name, skeleton, parentBone, Matrix.FromArray(parsedBone.matrix), rest);
+            var bone = new Bone(parsedBone.name, skeleton, parentBone, Matrix.FromArray(parsedBone.matrix), rest, null, parsedBoneIndex);
 
             if (parsedBone.id !== undefined && parsedBone.id !== null) {
                 bone.id = parsedBone.id;
@@ -867,5 +879,14 @@ export class Skeleton implements IAnimatable {
         }
 
         bones.push(bone);
+    }
+
+    /**
+     * Set the current local matrix as the restPose for all bones in the skeleton.
+     */
+    public setCurrentPoseAsRest(): void {
+        this.bones.forEach((b) => {
+            b.setCurrentPoseAsRest();
+        });
     }
 }

@@ -11,6 +11,7 @@ import { TransformNode } from '../Meshes/transformNode';
 import { ParticleSystem } from '../Particles/particleSystem';
 import { MorphTargetManager } from '../Morph/morphTargetManager';
 import { ShadowGenerator } from '../Lights/Shadows/shadowGenerator';
+import { PostProcess } from '../PostProcesses/postProcess';
 
 /**
  * Class used to record delta files between 2 scene states
@@ -89,7 +90,7 @@ export class SceneRecorder {
                         deltaJSON[key] = [];
                     }
                     newObject.__state = {
-                        id: currentObject.id
+                        id: currentObject.id || currentObject.name
                     };
                     deltaJSON[key].push(newObject);
                 }
@@ -97,7 +98,7 @@ export class SceneRecorder {
                 // We need to delete
                 let newObject: any = {
                     __state: {
-                        deleteId: originalObject.id
+                        deleteId: originalObject.id || originalObject.name
                     }
                 };
                 deltaJSON[key].push(newObject);
@@ -230,6 +231,9 @@ export class SceneRecorder {
                         break;
                     case "morphTargetManagers":
                         this._ApplyDeltaForEntity(source, scene, scene.getMorphTargetById.bind(scene), (data) => MorphTargetManager.Parse(data, scene));
+                        break;
+                    case "postProcesses":
+                        this._ApplyDeltaForEntity(source, scene, scene.getPostProcessByName.bind(scene), (data) => PostProcess.Parse(data, scene, ""));
                         break;
                 }
             } else if (!isNaN(property)) {

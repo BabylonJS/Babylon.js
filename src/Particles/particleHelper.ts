@@ -167,7 +167,9 @@ export class ParticleHelper {
      */
     public static CreateFromSnippetAsync(snippetId: string, scene: Scene, gpu: boolean = false, rootUrl: string = ""): Promise<IParticleSystem> {
         if (snippetId === "_BLANK") {
-            return Promise.resolve(this.CreateDefault(null));
+            let system = this.CreateDefault(null);
+            system.start();
+            return Promise.resolve(system);
         }
 
         return new Promise((resolve, reject) => {

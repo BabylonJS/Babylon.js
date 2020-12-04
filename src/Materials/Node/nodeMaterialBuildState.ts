@@ -120,6 +120,8 @@ export class NodeMaterialBuildState {
             this.compilationString = `\r\n${emitComments ? "//Attributes\r\n" : ""}${this._attributeDeclaration}\r\n${this.compilationString}`;
         }
 
+        this.compilationString = "precision highp float;\r\n" + this.compilationString;
+
         for (var extensionName in this.extensions) {
             let extension = this.extensions[extensionName];
             this.compilationString = `\r\n${extension}\r\n${this.compilationString}`;
@@ -171,8 +173,10 @@ export class NodeMaterialBuildState {
 
     /** @hidden */
     public _emit2DSampler(name: string) {
-        this._samplerDeclaration += `uniform sampler2D ${name};\r\n`;
-        this.samplers.push(name);
+        if (this.samplers.indexOf(name) < 0) {
+            this._samplerDeclaration += `uniform sampler2D ${name};\r\n`;
+            this.samplers.push(name);
+        }
     }
 
     /** @hidden */

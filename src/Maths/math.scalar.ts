@@ -73,6 +73,39 @@ export class Scalar {
     }
 
     /**
+     * the floor part of a log2 value.
+     * @param value the value to compute log2 of
+     * @returns the log2 of value.
+     */
+    public static ILog2(value: number): number {
+        if (Math.log2) {
+            return Math.floor(Math.log2(value));
+        }
+
+        if (value < 0) {
+            return NaN;
+        } else if (value === 0) {
+            return -Infinity;
+        }
+
+        let n = 0;
+        if (value < 1) {
+            while (value < 1) {
+                n++;
+                value = value * 2;
+            }
+            n = -n;
+        } else if (value > 1) {
+            while (value > 1) {
+                n++;
+                value = Math.floor(value / 2);
+            }
+        }
+
+        return n;
+    }
+
+    /**
     * Loops the value, so that it is never larger than length and never smaller than 0.
     *
     * This is similar to the modulo operator but it works with floating point numbers.

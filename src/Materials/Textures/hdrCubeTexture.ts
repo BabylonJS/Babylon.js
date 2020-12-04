@@ -44,11 +44,6 @@ export class HDRCubeTexture extends BaseTexture {
      */
     public url: string;
 
-    /**
-     * The texture coordinates mode. As this texture is stored in a cube format, please modify carefully.
-     */
-    public coordinatesMode = Texture.CUBIC_MODE;
-
     protected _isBlocking: boolean = true;
     /**
      * Sets wether or not the texture is blocking during loading.
@@ -124,6 +119,7 @@ export class HDRCubeTexture extends BaseTexture {
             return;
         }
 
+        this._coordinatesMode = Texture.CUBIC_MODE;
         this.name = url;
         this.url = url;
         this.hasAlpha = false;
@@ -241,7 +237,7 @@ export class HDRCubeTexture extends BaseTexture {
             return results;
         };
 
-        if (this._getEngine()!.webGLVersion >= 2 && this._prefilterOnLoad) {
+        if (engine._features.allowTexturePrefiltering && this._prefilterOnLoad) {
             const previousOnLoad = this._onLoad;
             const hdrFiltering = new HDRFiltering(engine);
             this._onLoad = () => {

@@ -17,6 +17,7 @@ import "../Materials/Textures/baseTexture.polynomial";
 import "../Shaders/rgbdEncode.fragment";
 import "../Shaders/rgbdDecode.fragment";
 import { Engine } from '../Engines/engine';
+import { RGBDTextureTools } from './rgbdTextureTools';
 
 /**
  * Raw texture data and descriptor sufficient for WebGL texture upload
@@ -145,24 +146,16 @@ export class EnvironmentTextureTools {
      * @param texture defines the cube texture to convert in env file
      * @return a promise containing the environment data if succesfull.
      */
-    public static CreateEnvTextureAsync(texture: BaseTexture): Promise<ArrayBuffer> {
+    public static async CreateEnvTextureAsync(texture: BaseTexture): Promise<ArrayBuffer> {
         let internalTexture = texture.getInternalTexture();
         if (!internalTexture) {
             return Promise.reject("The cube texture is invalid.");
         }
 
         let engine = internalTexture.getEngine() as Engine;
-        if (engine && engine.premultipliedAlpha) {
-            return Promise.reject("Env texture can only be created when the engine is created with the premultipliedAlpha option set to false.");
-        }
 
         if (texture.textureType === Constants.TEXTURETYPE_UNSIGNED_INT) {
             return Promise.reject("The cube texture should allow HDR (Full Float or Half Float).");
-        }
-
-        let canvas = engine.getRenderingCanvas();
-        if (!canvas) {
-            return Promise.reject("Env texture can only be created when the engine is associated to a canvas.");
         }
 
         let textureType = Constants.TEXTURETYPE_FLOAT;
@@ -176,122 +169,97 @@ export class EnvironmentTextureTools {
         let cubeWidth = internalTexture.width;
         let hostingScene = new Scene(engine);
         let specularTextures: { [key: number]: ArrayBuffer } = {};
-        let promises: Promise<void>[] = [];
+
+        // As we are going to readPixels the faces of the cube, make sure the drawing/update commands for the cube texture are fully sent to the GPU in case it is drawn for the first time in this very frame!
+        engine.flushFramebuffer();
 
         // Read and collect all mipmaps data from the cube.
-        let mipmapsCount = Scalar.Log2(internalTexture.width);
-        mipmapsCount = Math.round(mipmapsCount);
+        let mipmapsCount = Scalar.ILog2(internalTexture.width);
         for (let i = 0; i <= mipmapsCount; i++) {
             let faceWidth = Math.pow(2, mipmapsCount - i);
 
             // All faces of the cube.
             for (let face = 0; face < 6; face++) {
-                let data = texture.readPixels(face, i);
+                let faceData = await texture.readPixels(face, i, undefined, false);
 
-                // Creates a temp texture with the face data.
-                let tempTexture = engine.createRawTexture(data, faceWidth, faceWidth, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, null, textureType);
-                // And rgbdEncode them.
-                let promise = new Promise<void>((resolve, reject) => {
-                    let rgbdPostProcess = new PostProcess("rgbdEncode", "rgbdEncode", null, null, 1, null, Constants.TEXTURE_NEAREST_SAMPLINGMODE, engine, false, undefined, Constants.TEXTURETYPE_UNSIGNED_INT, undefined, null, false);
-                    rgbdPostProcess.getEffect().executeWhenCompiled(() => {
-                        rgbdPostProcess.onApply = (effect) => {
-                            effect._bindTexture("textureSampler", tempTexture);
-                        };
+                let tempTexture = engine.createRawTexture(faceData, faceWidth, faceWidth, Constants.TEXTUREFORMAT_RGBA, false, true, Constants.TEXTURE_NEAREST_SAMPLINGMODE, null, textureType);
 
-                        // As the process needs to happen on the main canvas, keep track of the current size
-                        let currentW = engine.getRenderWidth();
-                        let currentH = engine.getRenderHeight();
+                await RGBDTextureTools.EncodeTextureToRGBD(tempTexture, hostingScene, textureType);
 
-                        // Set the desired size for the texture
-                        engine.setSize(faceWidth, faceWidth);
-                        hostingScene.postProcessManager.directRender([rgbdPostProcess], null);
+                const rgbdEncodedData = await engine._readTexturePixels(tempTexture, faceWidth, faceWidth);
 
-                        // Reading datas from WebGL
-                        Tools.ToBlob(canvas!, (blob) => {
-                            let fileReader = new FileReader();
-                            fileReader.onload = (event: any) => {
-                                let arrayBuffer = event.target!.result as ArrayBuffer;
-                                specularTextures[i * 6 + face] = arrayBuffer;
-                                resolve();
-                            };
-                            fileReader.readAsArrayBuffer(blob!);
-                        });
+                const pngEncodedata = await Tools.DumpDataAsync(faceWidth, faceWidth, rgbdEncodedData, "image/png", undefined, false, true);
 
-                        // Reapply the previous canvas size
-                        engine.setSize(currentW, currentH);
-                    });
-                });
-                promises.push(promise);
+                specularTextures[i * 6 + face] = pngEncodedata as ArrayBuffer;
+
+                tempTexture.dispose();
             }
         }
 
-        // Once all the textures haves been collected as RGBD stored in PNGs
-        return Promise.all(promises).then(() => {
-            // We can delete the hosting scene keeping track of all the creation objects
-            hostingScene.dispose();
+        // We can delete the hosting scene keeping track of all the creation objects
+        hostingScene.dispose();
 
-            // Creates the json header for the env texture
-            let info: EnvironmentTextureInfo = {
-                version: 1,
-                width: cubeWidth,
-                irradiance: this._CreateEnvTextureIrradiance(texture),
-                specular: {
-                    mipmaps: [],
-                    lodGenerationScale: texture.lodGenerationScale
-                }
-            };
-
-            // Sets the specular image data information
-            let position = 0;
-            for (let i = 0; i <= mipmapsCount; i++) {
-                for (let face = 0; face < 6; face++) {
-                    let byteLength = specularTextures[i * 6 + face].byteLength;
-                    info.specular.mipmaps.push({
-                        length: byteLength,
-                        position: position
-                    });
-                    position += byteLength;
-                }
+        // Creates the json header for the env texture
+        let info: EnvironmentTextureInfo = {
+            version: 1,
+            width: cubeWidth,
+            irradiance: this._CreateEnvTextureIrradiance(texture),
+            specular: {
+                mipmaps: [],
+                lodGenerationScale: texture.lodGenerationScale
             }
+        };
 
-            // Encode the JSON as an array buffer
-            let infoString = JSON.stringify(info);
-            let infoBuffer = new ArrayBuffer(infoString.length + 1);
-            let infoView = new Uint8Array(infoBuffer); // Limited to ascii subset matching unicode.
-            for (let i = 0, strLen = infoString.length; i < strLen; i++) {
-                infoView[i] = infoString.charCodeAt(i);
+        // Sets the specular image data information
+        let position = 0;
+        for (let i = 0; i <= mipmapsCount; i++) {
+            for (let face = 0; face < 6; face++) {
+                let byteLength = specularTextures[i * 6 + face].byteLength;
+                info.specular.mipmaps.push({
+                    length: byteLength,
+                    position: position
+                });
+                position += byteLength;
             }
-            // Ends up with a null terminator for easier parsing
-            infoView[infoString.length] = 0x00;
+        }
 
-            // Computes the final required size and creates the storage
-            let totalSize = EnvironmentTextureTools._MagicBytes.length + position + infoBuffer.byteLength;
-            let finalBuffer = new ArrayBuffer(totalSize);
-            let finalBufferView = new Uint8Array(finalBuffer);
-            let dataView = new DataView(finalBuffer);
+        // Encode the JSON as an array buffer
+        let infoString = JSON.stringify(info);
+        let infoBuffer = new ArrayBuffer(infoString.length + 1);
+        let infoView = new Uint8Array(infoBuffer); // Limited to ascii subset matching unicode.
+        for (let i = 0, strLen = infoString.length; i < strLen; i++) {
+            infoView[i] = infoString.charCodeAt(i);
+        }
+        // Ends up with a null terminator for easier parsing
+        infoView[infoString.length] = 0x00;
 
-            // Copy the magic bytes identifying the file in
-            let pos = 0;
-            for (let i = 0; i < EnvironmentTextureTools._MagicBytes.length; i++) {
-                dataView.setUint8(pos++, EnvironmentTextureTools._MagicBytes[i]);
+        // Computes the final required size and creates the storage
+        let totalSize = EnvironmentTextureTools._MagicBytes.length + position + infoBuffer.byteLength;
+        let finalBuffer = new ArrayBuffer(totalSize);
+        let finalBufferView = new Uint8Array(finalBuffer);
+        let dataView = new DataView(finalBuffer);
+
+        // Copy the magic bytes identifying the file in
+        let pos = 0;
+        for (let i = 0; i < EnvironmentTextureTools._MagicBytes.length; i++) {
+            dataView.setUint8(pos++, EnvironmentTextureTools._MagicBytes[i]);
+        }
+
+        // Add the json info
+        finalBufferView.set(new Uint8Array(infoBuffer), pos);
+        pos += infoBuffer.byteLength;
+
+        // Finally inserts the texture data
+        for (let i = 0; i <= mipmapsCount; i++) {
+            for (let face = 0; face < 6; face++) {
+                let dataBuffer = specularTextures[i * 6 + face];
+                finalBufferView.set(new Uint8Array(dataBuffer), pos);
+                pos += dataBuffer.byteLength;
             }
+        }
 
-            // Add the json info
-            finalBufferView.set(new Uint8Array(infoBuffer), pos);
-            pos += infoBuffer.byteLength;
-
-            // Finally inserts the texture data
-            for (let i = 0; i <= mipmapsCount; i++) {
-                for (let face = 0; face < 6; face++) {
-                    let dataBuffer = specularTextures[i * 6 + face];
-                    finalBufferView.set(new Uint8Array(dataBuffer), pos);
-                    pos += dataBuffer.byteLength;
-                }
-            }
-
-            // Voila
-            return finalBuffer;
-        });
+        // Voila
+        return finalBuffer;
     }
 
     /**
@@ -396,6 +364,10 @@ export class EnvironmentTextureTools {
                             effect.setFloat2("scale", 1, 1);
                         };
 
+                        if (!engine.scenes.length) {
+                            return;
+                        }
+
                         engine.scenes[0].postProcessManager.directRender([rgbdPostProcess!], cubeRtt, true, face, i);
 
                         // Cleanup
@@ -432,7 +404,7 @@ export class EnvironmentTextureTools {
             throw new Error("Texture size must be a power of two");
         }
 
-        const mipmapsCount = Math.round(Scalar.Log2(texture.width)) + 1;
+        const mipmapsCount = Scalar.ILog2(texture.width) + 1;
 
         // Gets everything ready.
         let engine = texture.getEngine() as Engine;
@@ -456,7 +428,7 @@ export class EnvironmentTextureTools {
             lodTextures = {};
         }
         // in webgl 1 there are no ways to either render or copy lod level information for float textures.
-        else if (engine.webGLVersion < 2) {
+        else if (!engine._features.supportRenderAndCopyToLodForFloatTextures) {
             expandTexture = false;
         }
         // If half float available we can uncompress the texture
@@ -545,8 +517,8 @@ export class EnvironmentTextureTools {
                 let url = URL.createObjectURL(blob);
                 let promise: Promise<void>;
 
-                if (typeof Image === "undefined") {
-                    promise = createImageBitmap(blob).then((img) => {
+                if (typeof Image === "undefined" || engine._features.forceBitmapOverHTMLImageElement) {
+                    promise = createImageBitmap(blob, { premultiplyAlpha: "none" }).then((img) => {
                         return this._OnImageReadyAsync(img, engine, expandTexture, rgbdPostProcess, url, face, i, generateNonLODTextures, lodTextures, cubeRtt, texture);
                     });
                 } else {

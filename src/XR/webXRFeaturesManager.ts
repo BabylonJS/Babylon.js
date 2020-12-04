@@ -40,9 +40,24 @@ export interface IWebXRFeature extends IDisposable {
     isCompatible(): boolean;
 
     /**
+     * Was this feature disposed;
+     */
+    isDisposed: boolean;
+
+    /**
      * The name of the native xr feature name, if applicable (like anchor, hit-test, or hand-tracking)
      */
     xrNativeFeatureName?: string;
+
+    /**
+     * A list of (Babylon WebXR) features this feature depends on
+     */
+    dependsOn?: string[];
+
+    /**
+     * If this feature requires to extend the XRSessionInit object, this function will return the partial XR session init object
+     */
+    getXRSessionInitExtension?: () => Promise<Partial<XRSessionInit>>;
 }
 
 /**
@@ -52,31 +67,47 @@ export class WebXRFeatureName {
     /**
      * The name of the anchor system feature
      */
-    public static ANCHOR_SYSTEM = "xr-anchor-system";
+    public static readonly ANCHOR_SYSTEM = "xr-anchor-system";
     /**
      * The name of the background remover feature
      */
-    public static BACKGROUND_REMOVER = "xr-background-remover";
+    public static readonly BACKGROUND_REMOVER = "xr-background-remover";
     /**
      * The name of the hit test feature
      */
-    public static HIT_TEST = "xr-hit-test";
+    public static readonly HIT_TEST = "xr-hit-test";
+    /**
+     * The name of the mesh detection feature
+     */
+    public static readonly MESH_DETECTION = "xr-mesh-detection";
     /**
      * physics impostors for xr controllers feature
      */
-    public static PHYSICS_CONTROLLERS = "xr-physics-controller";
+    public static readonly PHYSICS_CONTROLLERS = "xr-physics-controller";
     /**
      * The name of the plane detection feature
      */
-    public static PLANE_DETECTION = "xr-plane-detection";
+    public static readonly PLANE_DETECTION = "xr-plane-detection";
     /**
      * The name of the pointer selection feature
      */
-    public static POINTER_SELECTION = "xr-controller-pointer-selection";
+    public static readonly POINTER_SELECTION = "xr-controller-pointer-selection";
     /**
      * The name of the teleportation feature
      */
-    public static TELEPORTATION = "xr-controller-teleportation";
+    public static readonly TELEPORTATION = "xr-controller-teleportation";
+    /**
+     * The name of the feature points feature.
+     */
+    public static readonly FEATURE_POINTS = "xr-feature-points";
+    /**
+     * The name of the hand tracking feature.
+     */
+    public static readonly HAND_TRACKING = "xr-hand-tracking";
+    /**
+     * The name of the image tracking feature
+     */
+    public static readonly IMAGE_TRACKING = "xr-image-tracking";
 }
 
 /**
@@ -308,6 +339,12 @@ export class WebXRFeaturesManager implements IDisposable {
         }
 
         const constructed = constructFunction();
+        if (constructed.dependsOn) {
+            const dependentsFound = constructed.dependsOn.every((featureName) => !!this._features[featureName]);
+            if (!dependentsFound) {
+                throw new Error(`Dependant features missing. Make sure the following features are enabled - ${constructed.dependsOn.join(", ")}`);
+            }
+        }
         if (constructed.isCompatible()) {
             this._features[name] = {
                 featureImplementation: constructed,
@@ -318,7 +355,7 @@ export class WebXRFeaturesManager implements IDisposable {
 
             if (attachIfPossible) {
                 // if session started already, request and enable
-                if (this._xrSessionManager.session && !feature.featureImplementation.attached) {
+                if (this._xrSessionManager.session && !this._features[name].featureImplementation.attached) {
                     // enable feature
                     this.attachFeature(name);
                 }
@@ -356,16 +393,16 @@ export class WebXRFeaturesManager implements IDisposable {
     }
 
     /**
-     * This function will exten the session creation configuration object with enabled features.
+     * This function will extend the session creation configuration object with enabled features.
      * If, for example, the anchors feature is enabled, it will be automatically added to the optional or required features list,
      * according to the defined "required" variable, provided during enableFeature call
      * @param xrSessionInit the xr Session init object to extend
      *
      * @returns an extended XRSessionInit object
      */
-    public extendXRSessionInitObject(xrSessionInit: XRSessionInit): XRSessionInit {
+    public async _extendXRSessionInitObject(xrSessionInit: XRSessionInit): Promise<XRSessionInit> {
         const enabledFeatures = this.getEnabledFeatures();
-        enabledFeatures.forEach((featureName) => {
+        for (const featureName of enabledFeatures) {
             const feature = this._features[featureName];
             const nativeName = feature.featureImplementation.xrNativeFeatureName;
             if (nativeName) {
@@ -381,7 +418,14 @@ export class WebXRFeaturesManager implements IDisposable {
                     }
                 }
             }
-        });
+            if (feature.featureImplementation.getXRSessionInitExtension) {
+                const extended = await feature.featureImplementation.getXRSessionInitExtension();
+                xrSessionInit = {
+                    ...xrSessionInit,
+                    ...extended,
+                };
+            }
+        }
         return xrSessionInit;
     }
 }

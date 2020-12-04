@@ -104,6 +104,8 @@ export class Constants {
     // Stencil Actions Constants.
     /** Passed to stencilOperation to specify that stencil value must be kept */
     public static readonly KEEP = 0x1E00;
+    /** Passed to stencilOperation to specify that stencil value must be zero */
+    public static readonly ZERO = 0x0000;
     /** Passed to stencilOperation to specify that stencil value must be replaced */
     public static readonly REPLACE = 0x1E01;
     /** Passed to stencilOperation to specify that stencil value must be incremented */
@@ -150,6 +152,26 @@ export class Constants {
     public static readonly TEXTUREFORMAT_RGB_INTEGER = 10;
     /** RGBA_INTEGER */
     public static readonly TEXTUREFORMAT_RGBA_INTEGER = 11;
+    /** BGRA */
+    public static readonly TEXTUREFORMAT_BGRA = 12;
+
+    /** Depth 24 bits + Stencil 8 bits */
+    public static readonly TEXTUREFORMAT_DEPTH24_STENCIL8 = 13;
+    /** Depth 32 bits float */
+    public static readonly TEXTUREFORMAT_DEPTH32_FLOAT = 14;
+
+    /** Compressed BC7 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM = 36492;
+    /** Compressed BC6 unsigned float */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT = 36495;
+    /** Compressed BC6 signed float */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT = 36494;
+    /** Compressed BC3 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5 = 33779;
+    /** Compressed BC2 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3 = 33778;
+    /** Compressed BC1 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1 = 33777;
 
     /** UNSIGNED_BYTE */
     public static readonly TEXTURETYPE_UNSIGNED_BYTE = 0;
@@ -282,9 +304,13 @@ export class Constants {
      */
     public static readonly MATERIAL_MiscDirtyFlag = 16;
     /**
+     * The dirty prepass flag value
+     */
+    public static readonly MATERIAL_PrePassDirtyFlag = 32;
+    /**
      * The all dirty flag value
      */
-    public static readonly MATERIAL_AllDirtyFlag = 31;
+    public static readonly MATERIAL_AllDirtyFlag = 63;
 
     /**
      * Returns the triangle fill mode
@@ -486,22 +512,43 @@ export class Constants {
     public static readonly SCENELOADER_DETAILED_LOGGING = 3;
 
     /**
-     * Prepass texture index for color
+     * Constant used to retrieve the irradiance texture index in the textures array in the prepass
+     * using getIndex(Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE)
      */
-    public static readonly PREPASS_COLOR_INDEX = 0;
+    public static readonly PREPASS_IRRADIANCE_TEXTURE_TYPE = 0;
+    /**
+     * Constant used to retrieve the position texture index in the textures array in the prepass
+     * using getIndex(Constants.PREPASS_POSITION_TEXTURE_INDEX)
+     */
+    public static readonly PREPASS_POSITION_TEXTURE_TYPE = 1;
+    /**
+     * Constant used to retrieve the velocity texture index in the textures array in the prepass
+     * using getIndex(Constants.PREPASS_VELOCITY_TEXTURE_INDEX)
+     */
+    public static readonly PREPASS_VELOCITY_TEXTURE_TYPE = 2;
+    /**
+     * Constant used to retrieve the reflectivity texture index in the textures array in the prepass
+     * using the getIndex(Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE)
+     */
+    public static readonly PREPASS_REFLECTIVITY_TEXTURE_TYPE = 3;
+    /**
+     * Constant used to retrieve the lit color texture index in the textures array in the prepass
+     * using the getIndex(Constants.PREPASS_COLOR_TEXTURE_TYPE)
+     */
+    public static readonly PREPASS_COLOR_TEXTURE_TYPE = 4;
+    /**
+     * Constant used to retrieve depth + normal index in the textures array in the prepass
+     * using the getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE)
+     */
+    public static readonly PREPASS_DEPTHNORMAL_TEXTURE_TYPE = 5;
+    /**
+     * Constant used to retrieve albedo index in the textures array in the prepass
+     * using the getIndex(Constants.PREPASS_ALBEDO_TEXTURE_TYPE)
+     */
+    public static readonly PREPASS_ALBEDO_TEXTURE_TYPE = 6;
 
     /**
-     * Prepass texture index for irradiance
+     * Prefixes used by the engine for custom effects
      */
-    public static readonly PREPASS_IRRADIANCE_INDEX = 1;
-
-    /**
-     * Prepass texture index for depth + normal
-     */
-    public static readonly PREPASS_DEPTHNORMAL_INDEX = 2;
-
-    /**
-     * Prepass texture index for albedo
-     */
-    public static readonly PREPASS_ALBEDO_INDEX = 3;
+    public static readonly CUSTOMEFFECT_PREFIX_SHADOWGENERATOR = "bjs_shadowgenerator_";
 }

@@ -23,6 +23,10 @@ const tempTypingsFilePath = path.join(tempFolder, tempTypingsFileName);
 
 const tscPath = path.resolve(rootFolder, "node_modules/typescript/bin/tsc");
 
+const sharedUiComponentsFilesGlob = config.build.sharedUiComponentsSrc + "/**/*";
+const sharedUiComponentsSrcPath = path.join(rootFolder, config.build.sharedUiComponentsSrc);
+const es6SharedUiComponentsSrcPath = path.join(sourceES6Folder, config.build.sharedUiComponentsSrc);
+
 config.computed = {
     rootFolder,
     tempFolder,
@@ -39,7 +43,10 @@ config.computed = {
     tempTypingsFileName,
     tempTypingsAMDFilePath,
     tempTypingsFilePath,
-    tscPath
+    tscPath,
+    sharedUiComponentsFilesGlob,
+    sharedUiComponentsSrcPath,
+    es6SharedUiComponentsSrcPath,
 }
 
 config.additionalNpmPackages.forEach(package => {
@@ -77,6 +84,7 @@ allModules.map(function(module) {
     const distDirectory = path.join(outputFolder, distFolder);
     const localDevES6Directory = path.join(localDevES6Folder, module);
     const localDevUMDDirectory = path.join(localDevUMDFolder, distFolder);
+    const localDevAppDirectory = path.join(localDevUMDFolder, module);
     const packageUMDDirectory = path.join(packageUMDFolder, module);
     const packageUMDDevDirectory = path.join(packageUMDDevFolder, module);
     const sourceES6Directory = path.join(sourceES6Folder, module);
@@ -89,12 +97,13 @@ allModules.map(function(module) {
     const packageJSONPath = settings.build.packageJSON ? 
         path.join(rootFolder, settings.build.packageJSON) : 
         path.join(distDirectory, 'package.json');
-
+    
     settings.computed = {
         mainDirectory,
         distDirectory,
         localDevES6Directory,
         localDevUMDDirectory,
+        localDevAppDirectory,
         packageUMDDirectory,
         packageUMDDevDirectory,
         sourceES6Directory,

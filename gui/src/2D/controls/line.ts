@@ -8,6 +8,7 @@ import { Control } from "./control";
 import { ValueAndUnit } from "../valueAndUnit";
 import { Measure } from "../measure";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { serialize } from 'babylonjs/Misc/decorators';
 
 /** Class used to render 2D lines */
 export class Line extends Control {
@@ -21,6 +22,7 @@ export class Line extends Control {
     private _connectedControlDirtyObserver: Nullable<Observer<Control>>;
 
     /** Gets or sets the dash pattern */
+    @serialize()
     public get dash(): Array<number> {
         return this._dash;
     }
@@ -58,6 +60,7 @@ export class Line extends Control {
     }
 
     /** Gets or sets start coordinates on X axis */
+    @serialize()
     public get x1(): string | number {
         return this._x1.toString(this._host);
     }
@@ -73,6 +76,7 @@ export class Line extends Control {
     }
 
     /** Gets or sets start coordinates on Y axis */
+    @serialize()
     public get y1(): string | number {
         return this._y1.toString(this._host);
     }
@@ -88,6 +92,7 @@ export class Line extends Control {
     }
 
     /** Gets or sets end coordinates on X axis */
+    @serialize()
     public get x2(): string | number {
         return this._x2.toString(this._host);
     }
@@ -103,6 +108,7 @@ export class Line extends Control {
     }
 
     /** Gets or sets end coordinates on Y axis */
+    @serialize()
     public get y2(): string | number {
         return this._y2.toString(this._host);
     }
@@ -118,6 +124,7 @@ export class Line extends Control {
     }
 
     /** Gets or sets line width */
+    @serialize()
     public get lineWidth(): number {
         return this._lineWidth;
     }

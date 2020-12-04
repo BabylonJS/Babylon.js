@@ -156,6 +156,12 @@ export class NodeMaterialBlock {
         return null;
     }
 
+    /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
+    public visibleInInspector = false;
+
+    /** Gets or sets a boolean indicating that this input can be edited from a collapsed frame*/
+    public visibleOnFrame = false;
+
     /**
      * Creates a new NodeMaterialBlock
      * @param name defines the block name
@@ -422,8 +428,12 @@ export class NodeMaterialBlock {
         return true;
     }
 
-    protected _linkConnectionTypes(inputIndex0: number, inputIndex1: number) {
-        this._inputs[inputIndex0]._linkedConnectionSource = this._inputs[inputIndex1];
+    protected _linkConnectionTypes(inputIndex0: number, inputIndex1: number, looseCoupling = false) {
+        if (looseCoupling) {
+            this._inputs[inputIndex1]._acceptedConnectionPointType = this._inputs[inputIndex0];
+        } else {
+            this._inputs[inputIndex0]._linkedConnectionSource = this._inputs[inputIndex1];
+        }
         this._inputs[inputIndex1]._linkedConnectionSource = this._inputs[inputIndex0];
     }
 
@@ -583,7 +593,8 @@ export class NodeMaterialBlock {
     }
 
     protected _dumpPropertiesCode() {
-        return "";
+        let variableName = this._codeVariableName;
+        return `${variableName}.visibleInInspector = ${this.visibleInInspector};\r\n ${variableName}.visibleOnFrame = ${this.visibleOnFrame};\r\n`;
     }
 
     /** @hidden */
@@ -703,6 +714,8 @@ export class NodeMaterialBlock {
         serializationObject.id = this.uniqueId;
         serializationObject.name = this.name;
         serializationObject.comments = this.comments;
+        serializationObject.visibleInInspector = this.visibleInInspector;
+        serializationObject.visibleOnFrame = this.visibleOnFrame;
 
         serializationObject.inputs = [];
         serializationObject.outputs = [];
@@ -722,6 +735,8 @@ export class NodeMaterialBlock {
     public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         this.name = serializationObject.name;
         this.comments = serializationObject.comments;
+        this.visibleInInspector = !!serializationObject.visibleInInspector;
+        this.visibleOnFrame = !!serializationObject.visibleOnFrame;
         this._deserializePortDisplayNamesAndExposedOnFrame(serializationObject);
     }
 
@@ -735,6 +750,7 @@ export class NodeMaterialBlock {
                 }
                 if (port.isExposedOnFrame) {
                     this.inputs[i].isExposedOnFrame = port.isExposedOnFrame;
+                    this.inputs[i].exposedPortPosition = port.exposedPortPosition;
                 }
             });
         }
@@ -745,6 +761,7 @@ export class NodeMaterialBlock {
                 }
                 if (port.isExposedOnFrame) {
                     this.outputs[i].isExposedOnFrame = port.isExposedOnFrame;
+                    this.outputs[i].exposedPortPosition = port.exposedPortPosition;
                 }
             });
         }

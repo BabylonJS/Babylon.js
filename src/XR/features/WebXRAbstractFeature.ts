@@ -16,6 +16,11 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
     }[] = [];
 
     /**
+     * Is this feature disposed?
+     */
+    public isDisposed: boolean = false;
+
+    /**
      * Should auto-attach be disabled?
      */
     public disableAutoAttach: boolean = false;
@@ -23,7 +28,7 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
     /**
      * The name of the native xr feature name (like anchor, hit-test, or hand-tracking)
      */
-    public xrNativeFeatureName: string = '';
+    public xrNativeFeatureName: string = "";
 
     /**
      * Construct a new (abstract) WebXR feature
@@ -45,6 +50,10 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
      * @returns true if successful, false is failed or already attached
      */
     public attach(force?: boolean): boolean {
+        // do not attach a disposed feature
+        if (this.isDisposed) {
+            return false;
+        }
         if (!force) {
             if (this.attached) {
                 return false;
@@ -83,6 +92,7 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
      */
     public dispose(): void {
         this.detach();
+        this.isDisposed = true;
     }
 
     /**

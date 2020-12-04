@@ -1,5 +1,4 @@
 import { VirtualJoystick, JoystickAxis } from "../../Misc/virtualJoystick";
-import { Nullable } from "../../types";
 import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { FreeCamera } from "../../Cameras/freeCamera";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
@@ -78,10 +77,8 @@ export class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> 
 
     /**
      * Attach the input controls to a specific dom element to get the input from.
-     * @param element Defines the element the controls should be listened from
-     * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
+    public attachControl(): void {
         this._leftjoystick = new VirtualJoystick(true);
         this._leftjoystick.setAxisForUpDown(JoystickAxis.Z);
         this._leftjoystick.setAxisForLeftRight(JoystickAxis.X);
@@ -96,9 +93,14 @@ export class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> 
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param element Defines the element to stop listening the inputs from
      */
-    public detachControl(element: Nullable<HTMLElement>): void {
+    public detachControl(): void;
+
+    /**
+     * Detach the current controls from the specified dom element.
+     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     */
+    public detachControl(ignored?: any): void {
         this._leftjoystick.releaseCanvas();
         this._rightjoystick.releaseCanvas();
     }

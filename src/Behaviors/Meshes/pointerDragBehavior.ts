@@ -153,7 +153,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
     private _alternatePickedPoint = new Vector3(0, 0, 0);
     private _worldDragAxis = new Vector3(0, 0, 0);
     private _targetPosition = new Vector3(0, 0, 0);
-    private _attachedElement: Nullable<HTMLElement> = null;
+    private _attachedToElement: boolean = false;
     /**
      * Attaches the drag behavior the passed in mesh
      * @param ownerNode The mesh that will be dragged around once attached
@@ -203,12 +203,16 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
                 var pointerId = (<PointerEvent>pointerInfo.event).pointerId;
 
                 // If drag was started with anyMouseID specified, set pointerID to the next mouse that moved
-                if (this.currentDraggingPointerID === PointerDragBehavior._AnyMouseID && pointerId !== PointerDragBehavior._AnyMouseID && (<PointerEvent>pointerInfo.event).pointerType == "mouse") {
-                    if (this._lastPointerRay[this.currentDraggingPointerID]) {
-                        this._lastPointerRay[pointerId] = this._lastPointerRay[this.currentDraggingPointerID];
-                        delete this._lastPointerRay[this.currentDraggingPointerID];
+                if (this.currentDraggingPointerID === PointerDragBehavior._AnyMouseID && pointerId !== PointerDragBehavior._AnyMouseID) {
+                    const evt = <PointerEvent>pointerInfo.event;
+                    const isMouseEvent = evt.pointerType === "mouse" || (!this._scene.getEngine().hostInformation.isMobile && evt instanceof MouseEvent);
+                    if (isMouseEvent) {
+                        if (this._lastPointerRay[this.currentDraggingPointerID]) {
+                            this._lastPointerRay[pointerId] = this._lastPointerRay[this.currentDraggingPointerID];
+                            delete this._lastPointerRay[this.currentDraggingPointerID];
+                        }
+                        this.currentDraggingPointerID = pointerId;
                     }
-                    this.currentDraggingPointerID = pointerId;
                 }
 
                 // Keep track of last pointer ray, this is used simulating the start of a drag in startDrag()
@@ -246,21 +250,22 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
      */
     public releaseDrag() {
         if (this.dragging) {
-            this.onDragEndObservable.notifyObservers({ dragPlanePoint: this.lastDragPosition, pointerId: this.currentDraggingPointerID });
             this.dragging = false;
+            this.onDragEndObservable.notifyObservers({ dragPlanePoint: this.lastDragPosition, pointerId: this.currentDraggingPointerID });
         }
 
         this.currentDraggingPointerID = -1;
         this._moving = false;
 
         // Reattach camera controls
-        if (this.detachCameraControls && this._attachedElement && this._scene.activeCamera && !this._scene.activeCamera.leftCamera) {
+        if (this.detachCameraControls && this._attachedToElement && this._scene.activeCamera && !this._scene.activeCamera.leftCamera) {
             if (this._scene.activeCamera.getClassName() === "ArcRotateCamera") {
                 const arcRotateCamera = this._scene.activeCamera as ArcRotateCamera;
-                arcRotateCamera.attachControl(this._attachedElement, arcRotateCamera.inputs ? arcRotateCamera.inputs.noPreventDefault : true, arcRotateCamera._useCtrlForPanning, arcRotateCamera._panningMouseButton);
+                arcRotateCamera.attachControl(arcRotateCamera.inputs ? arcRotateCamera.inputs.noPreventDefault : true, arcRotateCamera._useCtrlForPanning, arcRotateCamera._panningMouseButton);
             } else {
-                this._scene.activeCamera.attachControl(this._attachedElement, this._scene.activeCamera.inputs ? this._scene.activeCamera.inputs.noPreventDefault : true);
+                this._scene.activeCamera.attachControl(this._scene.activeCamera.inputs ? this._scene.activeCamera.inputs.noPreventDefault : true);
             }
+            this._attachedToElement = false;
         }
     }
 
@@ -286,7 +291,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
         }
     }
 
-    private _startDrag(pointerId: number, fromRay?: Ray, startPickedPoint?: Vector3) {
+    protected _startDrag(pointerId: number, fromRay?: Ray, startPickedPoint?: Vector3) {
         if (!this._scene.activeCamera || this.dragging || !this.attachedNode) {
             return;
         }
@@ -314,11 +319,11 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
 
             // Detatch camera controls
             if (this.detachCameraControls && this._scene.activeCamera && this._scene.activeCamera.inputs && !this._scene.activeCamera.leftCamera) {
-                if (this._scene.activeCamera.inputs.attachedElement) {
-                    this._attachedElement = this._scene.activeCamera.inputs.attachedElement;
-                    this._scene.activeCamera.detachControl(this._scene.activeCamera.inputs.attachedElement);
+                if (this._scene.activeCamera.inputs.attachedToElement) {
+                    this._scene.activeCamera.detachControl();
+                    this._attachedToElement = true;
                 } else {
-                    this._attachedElement = null;
+                    this._attachedToElement = false;
                 }
             }
         }
@@ -326,7 +331,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
     }
 
     private _dragDelta = new Vector3();
-    private _moveDrag(ray: Ray) {
+    protected _moveDrag(ray: Ray) {
         this._moving = true;
         var pickedPoint = this._pickWithRayOnDragPlane(ray);
 

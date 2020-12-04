@@ -39,7 +39,7 @@ export class KHR_lights implements IGLTFLoaderExtension {
 
     /** @hidden */
     public dispose() {
-        delete this._loader;
+        (this._loader as any) = null;
         delete this._lights;
     }
 

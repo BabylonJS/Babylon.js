@@ -38,6 +38,7 @@ export interface IMaterialSubSurfaceDefines {
     SS_ALBEDOFORREFRACTIONTINT: boolean;
 
     SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
+    SS_MASK_FROM_THICKNESS_TEXTURE_GLTF: boolean;
 
     /** @hidden */
     _areTexturesDirty: boolean;
@@ -80,22 +81,22 @@ export class PBRSubSurfaceConfiguration {
      * Useful for better scattering in the skins or foliages.
      */
     public get scatteringDiffusionProfile() : Nullable<Color3> {
-        if (!this._scene.prePassRenderer) {
+        if (!this._scene.subSurfaceConfiguration) {
             return null;
         }
 
-        return this._scene.prePassRenderer.subSurfaceConfiguration.ssDiffusionProfileColors[this._scatteringDiffusionProfileIndex];
+        return this._scene.subSurfaceConfiguration.ssDiffusionProfileColors[this._scatteringDiffusionProfileIndex];
     }
 
     public set scatteringDiffusionProfile(c: Nullable<Color3>) {
-        if (!this._scene.enablePrePassRenderer()) {
+        if (!this._scene.enableSubSurfaceForPrePass()) {
             // Not supported
             return;
         }
 
         // addDiffusionProfile automatically checks for doubles
         if (c) {
-            this._scatteringDiffusionProfileIndex = this._scene.prePassRenderer!.subSurfaceConfiguration.addDiffusionProfile(c);
+            this._scatteringDiffusionProfileIndex = this._scene.subSurfaceConfiguration!.addDiffusionProfile(c);
         }
     }
 
@@ -154,6 +155,7 @@ export class PBRSubSurfaceConfiguration {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public indexOfRefraction = 1.5;
 
+    @serialize()
     private _volumeIndexOfRefraction = -1.0;
 
     /**
@@ -163,7 +165,6 @@ export class PBRSubSurfaceConfiguration {
      * This ONLY impacts refraction. If not provided or given a non-valid value,
      * the volume will use the same IOR as the surface.
      */
-    @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public get volumeIndexOfRefraction(): number {
         if (this._volumeIndexOfRefraction >= 1.0) {
@@ -242,6 +243,16 @@ export class PBRSubSurfaceConfiguration {
     public useMaskFromThicknessTexture: boolean = false;
 
     private _scene: Scene;
+    private _useMaskFromThicknessTextureGltf = false;
+    /**
+     * Stores the intensity of the different subsurface effects in the thickness texture. This variation
+     * matches the channel-packing that is used by glTF.
+     * * the red channel is the transmission/translucency intensity.
+     * * the green channel is the thickness.
+     */
+    @serialize()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public useMaskFromThicknessTextureGltf: boolean = false;
 
     /** @hidden */
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;
@@ -253,6 +264,7 @@ export class PBRSubSurfaceConfiguration {
     }
     /** @hidden */
     public _markScenePrePassDirty(): void {
+        this._internalMarkAllSubMeshesAsTexturesDirty();
         this._internalMarkScenePrePassDirty();
     }
 
@@ -308,6 +320,7 @@ export class PBRSubSurfaceConfiguration {
             defines.SS_SCATTERING = this._isScatteringEnabled;
             defines.SS_THICKNESSANDMASK_TEXTURE = false;
             defines.SS_MASK_FROM_THICKNESS_TEXTURE = false;
+            defines.SS_MASK_FROM_THICKNESS_TEXTURE_GLTF = false;
             defines.SS_REFRACTION = false;
             defines.SS_REFRACTIONMAP_3D = false;
             defines.SS_GAMMAREFRACTION = false;
@@ -330,6 +343,7 @@ export class PBRSubSurfaceConfiguration {
                 }
 
                 defines.SS_MASK_FROM_THICKNESS_TEXTURE = this._useMaskFromThicknessTexture;
+                defines.SS_MASK_FROM_THICKNESS_TEXTURE_GLTF = this._useMaskFromThicknessTextureGltf;
             }
 
             if (this._isRefractionEnabled) {

@@ -1,15 +1,17 @@
 import { Logger } from "../Misc/logger";
-import { Observable } from "../Misc/observable";
+import { Observable, Observer } from "../Misc/observable";
 import { Nullable } from "../types";
 import { Vector3 } from "../Maths/math.vector";
 import { Color3 } from '../Maths/math.color';
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Node } from "../node";
 import { Mesh } from "../Meshes/mesh";
-import { Gizmo } from "./gizmo";
+import { Gizmo, GizmoAxisCache } from "./gizmo";
 import { AxisDragGizmo } from "./axisDragGizmo";
 import { PlaneDragGizmo } from "./planeDragGizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
+import { PointerInfo } from "../Events/pointerEvents";
+import { GizmoManager } from './gizmoManager';
 /**
  * Gizmo that enables dragging a mesh along 3 axis
  */
@@ -44,9 +46,11 @@ export class PositionGizmo extends Gizmo {
      */
     private _meshAttached: Nullable<AbstractMesh> = null;
     private _nodeAttached: Nullable<Node> = null;
-    private _updateGizmoRotationToMatchAttachedMesh: boolean;
     private _snapDistance: number;
-    private _scaleRatio: number;
+    private _observables: Observer<PointerInfo>[] = [];
+
+    /** Node Caching for quick lookup */
+    private _gizmoAxisCache: Map<Mesh, GizmoAxisCache> = new Map();
 
     /** Fires an event when any of it's sub gizmos are dragged */
     public onDragStartObservable = new Observable();
@@ -89,12 +93,24 @@ export class PositionGizmo extends Gizmo {
             }
         });
     }
+
+    /**
+     * True when the mouse pointer is hovering a gizmo mesh
+     */
+    public get isHovered() {
+        var hovered = false;
+        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+            hovered = hovered || gizmo.isHovered;
+        });
+        return hovered;
+    }
+
     /**
      * Creates a PositionGizmo
      * @param gizmoLayer The utility layer the gizmo will be added to
       @param thickness display gizmo axis thickness
      */
-    constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, thickness: number = 1) {
+    constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, thickness: number = 1, gizmoManager?: GizmoManager) {
         super(gizmoLayer);
         this.xGizmo = new AxisDragGizmo(new Vector3(1, 0, 0), Color3.Red().scale(0.5), gizmoLayer, this, thickness);
         this.yGizmo = new AxisDragGizmo(new Vector3(0, 1, 0), Color3.Green().scale(0.5), gizmoLayer, this, thickness);
@@ -114,6 +130,13 @@ export class PositionGizmo extends Gizmo {
         });
 
         this.attachedMesh = null;
+
+        if (gizmoManager) {
+            gizmoManager.addToAxisCache(this._gizmoAxisCache);
+        } else {
+            // Only subscribe to pointer event if gizmoManager isnt
+            Gizmo.GizmoAxisPointerObserver(gizmoLayer, this._gizmoAxisCache);
+        }
     }
 
     /**
@@ -183,6 +206,15 @@ export class PositionGizmo extends Gizmo {
     }
 
     /**
+     * Builds Gizmo Axis Cache to enable features such as hover state preservation and graying out other axis during manipulation
+     * @param mesh Axis gizmo mesh
+     * @param cache Gizmo axis definition used for reactive gizmo UI
+     */
+    public addToAxisCache(mesh: Mesh, cache: GizmoAxisCache) {
+        this._gizmoAxisCache.set(mesh, cache);
+    }
+
+    /**
      * Disposes of the gizmo
      */
     public dispose() {
@@ -190,6 +222,9 @@ export class PositionGizmo extends Gizmo {
             if (gizmo) {
                 gizmo.dispose();
             }
+        });
+        this._observables.forEach((obs) => {
+            this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(obs);
         });
         this.onDragStartObservable.clear();
         this.onDragEndObservable.clear();

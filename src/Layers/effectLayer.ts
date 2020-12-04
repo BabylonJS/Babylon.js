@@ -125,6 +125,12 @@ export abstract class EffectLayer {
     }
 
     /**
+     * Specifies if the bounding boxes should be rendered normally or if they should undergo the effect of the layer
+     */
+    @serialize()
+    public disableBoundingBoxesFromEffectLayer = false;
+
+    /**
      * An event triggered when the effect layer has been disposed.
      */
     public onDisposeObservable = new Observable<EffectLayer>();
@@ -374,6 +380,19 @@ export abstract class EffectLayer {
         this._mainTexture.onClearObservable.add((engine: Engine) => {
             engine.clear(this.neutralColor, true, true, true);
         });
+
+        // Prevent package size in es6 (getBoundingBoxRenderer might not be present)
+        if (this._scene.getBoundingBoxRenderer) {
+            const boundingBoxRendererEnabled = this._scene.getBoundingBoxRenderer().enabled;
+
+            this._mainTexture.onBeforeBindObservable.add(() => {
+                this._scene.getBoundingBoxRenderer().enabled = !this.disableBoundingBoxesFromEffectLayer && boundingBoxRendererEnabled;
+            });
+
+            this._mainTexture.onAfterUnbindObservable.add(() => {
+                this._scene.getBoundingBoxRenderer().enabled = boundingBoxRendererEnabled;
+            });
+        }
     }
 
     /**
@@ -709,6 +728,8 @@ export abstract class EffectLayer {
             renderingMesh._bind(subMesh, this._effectLayerMapGenerationEffect, Material.TriangleFillMode);
 
             this._effectLayerMapGenerationEffect.setMatrix("viewProjection", scene.getTransformMatrix());
+
+            this._effectLayerMapGenerationEffect.setMatrix("world", effectiveMesh.getWorldMatrix());
 
             this._effectLayerMapGenerationEffect.setFloat4("glowColor",
                 this._emissiveTextureAndColor.color.r,

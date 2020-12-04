@@ -1,8 +1,6 @@
 import * as React from "react";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
-
+const downArrow = require("../../imgs/downArrow.svg");
 
 interface ILineContainerComponentProps {
     title: string;
@@ -36,7 +34,7 @@ export class LineContainerComponent extends React.Component<ILineContainerCompon
                     {this.props.title}
                 </div>
                 <div className={className}>
-                    <FontAwesomeIcon icon={faChevronDown} />
+                    <img className="img" title={this.props.title} src={downArrow}/>
                 </div>
             </div>
         );

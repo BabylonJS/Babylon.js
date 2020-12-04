@@ -11,6 +11,8 @@ import { DeepCopier } from "../Misc/deepCopier";
 import { TransformNode } from './transformNode';
 import { Light } from '../Lights/light';
 import { VertexBuffer } from './buffer';
+import { BoundingInfo } from '../Culling/boundingInfo';
+import { Tools } from '../Misc/tools';
 
 Mesh._instancedMeshFactory = (name: string, mesh: Mesh): InstancedMesh => {
     let instance = new InstancedMesh(name, mesh);
@@ -53,8 +55,8 @@ export class InstancedMesh extends AbstractMesh {
             this.rotationQuaternion = source.rotationQuaternion.clone();
         }
 
-        this.animations = Array.from(source.animations);
-        for (var range of source.getAnimationRanges()) {
+        this.animations = Tools.Slice(source.animations);
+        for (let range of source.getAnimationRanges()) {
             if (range != null) {
                 this.createAnimationRange(range.name, range.from, range.to);
             }
@@ -407,6 +409,19 @@ export class InstancedMesh extends AbstractMesh {
     /** @hidden */
     public _generatePointsArray(): boolean {
         return this._sourceMesh._generatePointsArray();
+    }
+
+    /** @hidden */
+    public _updateBoundingInfo(): AbstractMesh {
+        const effectiveMesh = this as AbstractMesh;
+        if (this._boundingInfo) {
+            this._boundingInfo.update(effectiveMesh.worldMatrixFromCache);
+        }
+        else {
+            this._boundingInfo = new BoundingInfo(this.absolutePosition, this.absolutePosition, effectiveMesh.worldMatrixFromCache);
+        }
+        this._updateSubMeshesBoundingInfo(effectiveMesh.worldMatrixFromCache);
+        return this;
     }
 
     /**

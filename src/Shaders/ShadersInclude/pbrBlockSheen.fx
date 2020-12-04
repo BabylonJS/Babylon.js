@@ -25,6 +25,9 @@
         const in vec4 vSheenColor,
     #ifdef SHEEN_ROUGHNESS
         const in float vSheenRoughness,
+        #if defined(SHEEN_TEXTURE_ROUGHNESS) && !defined(SHEEN_TEXTURE_ROUGHNESS_IDENTICAL) && !defined(SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE)
+            const in vec4 sheenMapRoughnessData,
+        #endif
     #endif
         const in float roughness,
     #ifdef SHEEN_TEXTURE
@@ -62,6 +65,9 @@
                 const in sampler2D reflectionSamplerHigh,
             #endif
         #endif
+        #ifdef REALTIME_FILTERING
+            const in vec2 vReflectionFilteringInfo,
+        #endif
         #if !defined(REFLECTIONMAP_SKYBOX) && defined(RADIANCEOCCLUSION)
             const in float seo,
         #endif
@@ -97,8 +103,16 @@
             
             #ifdef SHEEN_ROUGHNESS
                 float sheenRoughness = vSheenRoughness;
-                #ifdef SHEEN_TEXTURE
-                    sheenRoughness *= sheenMapData.a;
+                #ifdef SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE
+                    #if defined(SHEEN_TEXTURE)
+                        sheenRoughness *= sheenMapData.a;
+                    #endif
+                #elif defined(SHEEN_TEXTURE_ROUGHNESS)
+                    #ifdef SHEEN_TEXTURE_ROUGHNESS_IDENTICAL
+                        sheenRoughness *= sheenMapData.a;
+                    #else
+                        sheenRoughness *= sheenMapRoughnessData.a;
+                    #endif
                 #endif
             #else
                 float sheenRoughness = roughness;
@@ -155,6 +169,9 @@
             #ifndef LODBASEDMICROSFURACE
                 reflectionSamplerLow,
                 reflectionSamplerHigh,
+            #endif
+            #ifdef REALTIME_FILTERING
+                vReflectionFilteringInfo,
             #endif
                 environmentSheenRadiance
             );

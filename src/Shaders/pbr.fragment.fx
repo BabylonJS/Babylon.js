@@ -12,9 +12,9 @@
 #extension GL_EXT_frag_depth : enable
 #endif
 
-precision highp float;
-
 #include<prePassDeclaration>[SCENE_MRT_COUNT]
+
+precision highp float;
 
 // Forces linear space for image processing
 #ifndef FROMLINEARSPACE
@@ -23,6 +23,7 @@ precision highp float;
 
 // Declaration
 #include<__decl__pbrFragment>
+
 #include<pbrFragmentExtraDeclaration>
 #include<__decl__lightFragment>[0..maxSimultaneousLights]
 #include<pbrFragmentSamplersDeclaration>
@@ -143,6 +144,7 @@ void main(void) {
 
 #if defined(REFLECTIVITY)
     vec4 surfaceMetallicOrReflectivityColorMap = texture2D(reflectivitySampler, vReflectivityUV + uvOffset);
+    vec4 baseReflectivity = surfaceMetallicOrReflectivityColorMap;
     #ifndef METALLICWORKFLOW
         surfaceMetallicOrReflectivityColorMap = toLinearSpace(surfaceMetallicOrReflectivityColorMap);
         surfaceMetallicOrReflectivityColorMap.rgb *= vReflectivityInfos.y;
@@ -272,6 +274,9 @@ void main(void) {
             reflectionSamplerLow,
             reflectionSamplerHigh,
         #endif
+        #ifdef REALTIME_FILTERING
+            vReflectionFilteringInfo,
+        #endif
             reflectionOut
         );
     #endif
@@ -286,11 +291,17 @@ void main(void) {
         #ifdef SHEEN_TEXTURE
             vec4 sheenMapData = toLinearSpace(texture2D(sheenSampler, vSheenUV + uvOffset)) * vSheenInfos.y;
         #endif
+        #if defined(SHEEN_ROUGHNESS) && defined(SHEEN_TEXTURE_ROUGHNESS) && !defined(SHEEN_TEXTURE_ROUGHNESS_IDENTICAL) && !defined(SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE)
+            vec4 sheenMapRoughnessData = texture2D(sheenRoughnessSampler, vSheenRoughnessUV + uvOffset) * vSheenInfos.w;
+        #endif
 
         sheenBlock(
             vSheenColor,
         #ifdef SHEEN_ROUGHNESS
             vSheenRoughness,
+            #if defined(SHEEN_TEXTURE_ROUGHNESS) && !defined(SHEEN_TEXTURE_ROUGHNESS_IDENTICAL) && !defined(SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE)
+                sheenMapRoughnessData,
+            #endif
         #endif
             roughness,
         #ifdef SHEEN_TEXTURE
@@ -318,6 +329,9 @@ void main(void) {
                 reflectionSamplerLow,
                 reflectionSamplerHigh,
             #endif
+            #ifdef REALTIME_FILTERING
+                vReflectionFilteringInfo,
+            #endif
             #if !defined(REFLECTIONMAP_SKYBOX) && defined(RADIANCEOCCLUSION)
                 seo,
             #endif
@@ -341,6 +355,10 @@ void main(void) {
             vec2 clearCoatMapData = texture2D(clearCoatSampler, vClearCoatUV + uvOffset).rg * vClearCoatInfos.y;
         #endif
 
+        #if defined(CLEARCOAT_TEXTURE_ROUGHNESS) && !defined(CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL) && !defined(CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE)
+            vec4 clearCoatMapRoughnessData = texture2D(clearCoatRoughnessSampler, vClearCoatRoughnessUV + uvOffset) * vClearCoatInfos.w;
+        #endif
+
         #if defined(CLEARCOAT_TINT) && defined(CLEARCOAT_TINT_TEXTURE)
             vec4 clearCoatTintMapData = toLinearSpace(texture2D(clearCoatTintSampler, vClearCoatTintUV + uvOffset));
         #endif
@@ -354,6 +372,9 @@ void main(void) {
             geometricNormalW,
             viewDirectionW,
             vClearCoatParams,
+            #if defined(CLEARCOAT_TEXTURE_ROUGHNESS) && !defined(CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL) && !defined(CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE)
+                clearCoatMapRoughnessData,
+            #endif
             specularEnvironmentR0,
         #ifdef CLEARCOAT_TEXTURE
             clearCoatMapData,
@@ -392,11 +413,17 @@ void main(void) {
                 reflectionSamplerLow,
                 reflectionSamplerHigh,
             #endif
+            #ifdef REALTIME_FILTERING
+                vReflectionFilteringInfo,
+            #endif
         #endif
         #if defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
             #ifdef RADIANCEOCCLUSION
                 ambientMonochrome,
             #endif
+        #endif
+        #if defined(CLEARCOAT_BUMP) || defined(TWOSIDEDLIGHTING)
+            gl_FrontFacing ? 1. : -1.,
         #endif
             clearcoatOut
         );
@@ -431,6 +458,10 @@ void main(void) {
                     #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
                         reflectionOut.irradianceVector,
                     #endif
+                    #if defined(REALTIME_FILTERING)
+                        reflectionSampler,
+                        vReflectionFilteringInfo,
+                    #endif
                 #endif
                 #ifdef USEIRRADIANCEMAP
                     irradianceSampler,
@@ -464,6 +495,9 @@ void main(void) {
             #endif
             #ifdef ANISOTROPIC
                 anisotropicOut,
+            #endif
+            #ifdef REALTIME_FILTERING
+                vRefractionFilteringInfo,
             #endif
         #endif
         #ifdef SS_TRANSLUCENCY
@@ -502,28 +536,61 @@ void main(void) {
     #define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
 
 #ifdef PREPASS
-    vec3 irradiance = finalDiffuse;
-    #ifndef UNLIT
-        #ifdef REFLECTION
-            irradiance += finalIrradiance;
+    #ifdef PREPASS_POSITION
+    gl_FragData[PREPASS_POSITION_INDEX] = vec4(vPositionW, 1.0);
+    #endif
+
+    #ifdef PREPASS_VELOCITY
+    vec2 a = (vCurrentPosition.xy / vCurrentPosition.w) * 0.5 + 0.5;
+    vec2 b = (vPreviousPosition.xy / vPreviousPosition.w) * 0.5 + 0.5;
+
+    vec2 velocity = abs(a - b);
+    velocity = vec2(pow(velocity.x, 1.0 / 3.0), pow(velocity.y, 1.0 / 3.0)) * sign(a - b) * 0.5 + 0.5;
+
+    gl_FragData[PREPASS_VELOCITY_INDEX] = vec4(velocity, 0.0, 1.0);
+    #endif
+
+    #ifdef PREPASS_IRRADIANCE
+        vec3 irradiance = finalDiffuse;
+        #ifndef UNLIT
+            #ifdef REFLECTION
+                irradiance += finalIrradiance;
+            #endif
+        #endif
+
+        vec3 sqAlbedo = sqrt(surfaceAlbedo); // for pre and post scatter
+        #ifdef SS_SCATTERING
+            gl_FragData[0] = vec4(finalColor.rgb - irradiance, finalColor.a); // Split irradiance from final color
+            irradiance /= sqAlbedo;
+        #else
+            gl_FragData[0] = finalColor; // No split lighting
+            float scatteringDiffusionProfile = 255.;
+        #endif
+
+        gl_FragData[PREPASS_IRRADIANCE_INDEX] = vec4(irradiance, scatteringDiffusionProfile / 255.); // Irradiance + SS diffusion profile
+    #else
+        gl_FragData[0] = vec4(finalColor.rgb, finalColor.a);
+    #endif
+
+    #ifdef PREPASS_DEPTHNORMAL
+        gl_FragData[PREPASS_DEPTHNORMAL_INDEX] = vec4(vViewPos.z, (view * vec4(normalW, 0.0)).rgb); // Linear depth + normal
+    #endif
+
+    #ifdef PREPASS_ALBEDO
+        gl_FragData[PREPASS_ALBEDO_INDEX] = vec4(sqAlbedo, 1.0); // albedo, for pre and post scatter
+    #endif
+
+    #ifdef PREPASS_REFLECTIVITY
+        #if defined(REFLECTIVITY)
+            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(baseReflectivity.rgb, 1.0);
+        #else
+            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(0.0, 0.0, 0.0, 1.0);
         #endif
     #endif
-
-    vec3 sqAlbedo = sqrt(surfaceAlbedo); // for pre and post scatter
-
-    // Irradiance is diffuse * surfaceAlbedo
-    #ifdef SS_SCATTERING
-    gl_FragData[0] = vec4(finalColor.rgb - irradiance, finalColor.a); // Lit without irradiance
-    irradiance /= sqAlbedo;
-    gl_FragData[1] = vec4(tagLightingForSSS(irradiance), scatteringDiffusionProfile / 255.); // Irradiance + SS diffusion profile
-    #else
-    gl_FragData[0] = vec4(finalColor.rgb, finalColor.a); // Lit without irradiance
-    gl_FragData[1] = vec4(0.0, 0.0, 0.0, 1.0); // Irradiance
-    #endif
-    gl_FragData[2] = vec4(vViewPos.z, (view * vec4(normalW, 0.0)).rgb); // Linear depth + normal
-    gl_FragData[3] = vec4(sqAlbedo, 1.0); // albedo, for pre and post scatter
 #endif
 
+#if !defined(PREPASS) || defined(WEBGL2) 
     gl_FragColor = finalColor;
+#endif
     #include<pbrDebug>
 }

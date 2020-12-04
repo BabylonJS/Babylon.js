@@ -1,8 +1,7 @@
 import { Observable } from "../Misc/observable";
-import { Nullable, IndicesArray, DataArray } from "../types";
+import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { InternalTexture } from "../Materials/Textures/internalTexture";
-import { IAudioEngine } from "../Audio/audioEngine";
 import { IOfflineProvider } from "../Offline/IOfflineProvider";
 import { ILoadingScreen } from "../Loading/loadingScreen";
 import { DomManagement } from "../Misc/domManagement";
@@ -23,6 +22,8 @@ import { Logger } from '../Misc/logger';
 
 import "./Extensions/engine.alpha";
 import "./Extensions/engine.readTexture";
+import "./Extensions/engine.dynamicBuffer";
+import { IAudioEngine } from '../Audio/Interfaces/IAudioEngine';
 
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
@@ -194,7 +195,7 @@ export class Engine extends ThinEngine {
     /** FLOAT_32_UNSIGNED_INT_24_8_REV */
     public static readonly TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV = Constants.TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV;
 
-    /** nearest is mag = nearest and min = nearest and mip = linear */
+    /** nearest is mag = nearest and min = nearest and mip = none */
     public static readonly TEXTURE_NEAREST_SAMPLINGMODE = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
     /** Bilinear is mag = linear and min = linear and mip = nearest */
     public static readonly TEXTURE_BILINEAR_SAMPLINGMODE = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
@@ -421,9 +422,9 @@ export class Engine extends ThinEngine {
     private _rescalePostProcess: PostProcess;
 
     // Deterministic lockstepMaxSteps
-    private _deterministicLockstep: boolean = false;
-    private _lockstepMaxSteps: number = 4;
-    private _timeStep: number = 1 / 60;
+    protected _deterministicLockstep: boolean = false;
+    protected _lockstepMaxSteps: number = 4;
+    protected _timeStep: number = 1 / 60;
 
     protected get _supportsHardwareTextureRescaling() {
         return !!Engine._RescalePostProcessFactory;
@@ -483,58 +484,24 @@ export class Engine extends ThinEngine {
     constructor(canvasOrContext: Nullable<HTMLCanvasElement | WebGLRenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio: boolean = false) {
         super(canvasOrContext, antialias, options, adaptToDeviceRatio);
 
+        Engine.Instances.push(this);
+
         if (!canvasOrContext) {
             return;
         }
 
         options = this._creationOptions;
 
-        Engine.Instances.push(this);
-
         if ((<any>canvasOrContext).getContext) {
             let canvas = <HTMLCanvasElement>canvasOrContext;
 
-            this._onCanvasFocus = () => {
-                this.onCanvasFocusObservable.notifyObservers(this);
-            };
-
-            this._onCanvasBlur = () => {
-                this.onCanvasBlurObservable.notifyObservers(this);
-            };
-
-            canvas.addEventListener("focus", this._onCanvasFocus);
-            canvas.addEventListener("blur", this._onCanvasBlur);
-
-            this._onBlur = () => {
-                if (this.disablePerformanceMonitorInBackground) {
-                    this._performanceMonitor.disable();
-                }
-                this._windowIsBackground = true;
-            };
-
-            this._onFocus = () => {
-                if (this.disablePerformanceMonitorInBackground) {
-                    this._performanceMonitor.enable();
-                }
-                this._windowIsBackground = false;
-            };
-
-            this._onCanvasPointerOut = (ev) => {
-                this.onCanvasPointerOutObservable.notifyObservers(ev);
-            };
-
-            canvas.addEventListener("pointerout", this._onCanvasPointerOut);
+            this._sharedInit(canvas, !!options.doNotHandleTouchAction, options.audioEngine!);
 
             if (DomManagement.IsWindowObjectExist()) {
-                let hostWindow = this.getHostWindow()!;
-                hostWindow.addEventListener("blur", this._onBlur);
-                hostWindow.addEventListener("focus", this._onFocus);
-
-                let anyDoc = document as any;
+                const anyDoc = document as any;
 
                 // Fullscreen
                 this._onFullscreenChange = () => {
-
                     if (anyDoc.fullscreen !== undefined) {
                         this.isFullscreen = anyDoc.fullscreen;
                     } else if (anyDoc.mozFullScreen !== undefined) {
@@ -580,10 +547,6 @@ export class Engine extends ThinEngine {
 
             this.enableOfflineSupport = Engine.OfflineProviderFactory !== undefined;
 
-            if (!options.doNotHandleTouchAction) {
-                this._disableTouchAction();
-            }
-
             this._deterministicLockstep = !!options.deterministicLockstep;
             this._lockstepMaxSteps = options.lockstepMaxSteps || 0;
             this._timeStep = options.timeStep || 1 / 60;
@@ -594,6 +557,64 @@ export class Engine extends ThinEngine {
         this._prepareVRComponent();
         if (options.autoEnableWebVR) {
             this.initWebVR();
+        }
+    }
+
+    /**
+     * Shared initialization across engines types.
+     * @param canvas The canvas associated with this instance of the engine.
+     * @param doNotHandleTouchAction Defines that engine should ignore modifying touch action attribute and style
+     * @param audioEngine Defines if an audio engine should be created by default
+     */
+    protected _sharedInit(canvas: HTMLCanvasElement, doNotHandleTouchAction: boolean, audioEngine: boolean) {
+        super._sharedInit(canvas, doNotHandleTouchAction, audioEngine);
+
+        this._onCanvasFocus = () => {
+            this.onCanvasFocusObservable.notifyObservers(this);
+        };
+
+        this._onCanvasBlur = () => {
+            this.onCanvasBlurObservable.notifyObservers(this);
+        };
+
+        canvas.addEventListener("focus", this._onCanvasFocus);
+        canvas.addEventListener("blur", this._onCanvasBlur);
+
+        this._onBlur = () => {
+            if (this.disablePerformanceMonitorInBackground) {
+                this._performanceMonitor.disable();
+            }
+            this._windowIsBackground = true;
+        };
+
+        this._onFocus = () => {
+            if (this.disablePerformanceMonitorInBackground) {
+                this._performanceMonitor.enable();
+            }
+            this._windowIsBackground = false;
+        };
+
+        this._onCanvasPointerOut = (ev) => {
+            this.onCanvasPointerOutObservable.notifyObservers(ev);
+        };
+
+        if (DomManagement.IsWindowObjectExist()) {
+            const hostWindow = this.getHostWindow();
+            if (hostWindow) {
+                hostWindow.addEventListener("blur", this._onBlur);
+                hostWindow.addEventListener("focus", this._onFocus);
+            }
+        }
+
+        canvas.addEventListener("pointerout", this._onCanvasPointerOut);
+
+        if (!doNotHandleTouchAction) {
+            this._disableTouchAction();
+        }
+
+        // Create Audio Engine if needed.
+        if (!Engine.audioEngine && audioEngine && Engine.AudioEngineFactory) {
+            Engine.audioEngine = Engine.AudioEngineFactory(this.getRenderingCanvas());
         }
     }
 
@@ -725,6 +746,14 @@ export class Engine extends ThinEngine {
      */
     public getZOffset(): number {
         return this._depthCullingState.zOffset;
+    }
+
+    /**
+     * Gets a boolean indicating if depth testing is enabled
+     * @returns the current state
+     */
+    public getDepthBuffer(): boolean {
+        return this._depthCullingState.depthTest;
     }
 
     /**
@@ -1131,8 +1160,9 @@ export class Engine extends ThinEngine {
      * @param channel The texture channel
      * @param uniform The uniform to set
      * @param texture The render target texture containing the depth stencil texture to apply
+     * @param name The texture name
      */
-    public setDepthStencilTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<RenderTargetTexture>): void {
+    public setDepthStencilTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<RenderTargetTexture>, name?: string): void {
         if (channel === undefined) {
             return;
         }
@@ -1142,10 +1172,10 @@ export class Engine extends ThinEngine {
         }
 
         if (!texture || !texture.depthStencilTexture) {
-            this._setTexture(channel, null);
+            this._setTexture(channel, null, undefined, undefined, name);
         }
         else {
-            this._setTexture(channel, texture, false, true);
+            this._setTexture(channel, texture, false, true, name);
         }
     }
 
@@ -1153,18 +1183,20 @@ export class Engine extends ThinEngine {
      * Sets a texture to the webGL context from a postprocess
      * @param channel defines the channel to use
      * @param postProcess defines the source postprocess
+     * @param name name of the channel
      */
-    public setTextureFromPostProcess(channel: number, postProcess: Nullable<PostProcess>): void {
-        this._bindTexture(channel, postProcess ? postProcess._textures.data[postProcess._currentRenderTextureInd] : null);
+    public setTextureFromPostProcess(channel: number, postProcess: Nullable<PostProcess>, name: string): void {
+        this._bindTexture(channel, postProcess ? postProcess._textures.data[postProcess._currentRenderTextureInd] : null, name);
     }
 
     /**
      * Binds the output of the passed in post process to the texture channel specified
      * @param channel The channel the texture should be bound to
      * @param postProcess The post process which's output should be bound
+     * @param name name of the channel
      */
-    public setTextureFromPostProcessOutput(channel: number, postProcess: Nullable<PostProcess>): void {
-        this._bindTexture(channel, postProcess ? postProcess._outputTexture : null);
+    public setTextureFromPostProcessOutput(channel: number, postProcess: Nullable<PostProcess>, name: string): void {
+        this._bindTexture(channel, postProcess ? postProcess._outputTexture : null, name);
     }
 
     protected _rebuildBuffers(): void {
@@ -1290,7 +1322,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Enf the current frame
+     * End the current frame
      */
     public endFrame(): void {
         super.endFrame();
@@ -1299,27 +1331,32 @@ export class Engine extends ThinEngine {
         this.onEndFrameObservable.notifyObservers(this);
     }
 
-    public resize(): void {
+    /**
+     * Resize the view according to the canvas' size
+     * @param forceSetSize true to force setting the sizes of the underlying canvas
+     */
+    public resize(forceSetSize = false): void {
         // We're not resizing the size of the canvas while in VR mode & presenting
         if (this.isVRPresenting()) {
             return;
         }
 
-        super.resize();
+        super.resize(forceSetSize);
     }
 
     /**
      * Force a specific size of the canvas
      * @param width defines the new canvas' width
      * @param height defines the new canvas' height
+     * @param forceSetSize true to force setting the sizes of the underlying canvas
      * @returns true if the size was changed
      */
-    public setSize(width: number, height: number): boolean {
+    public setSize(width: number, height: number, forceSetSize = false): boolean {
         if (!this._renderingCanvas) {
             return false;
         }
 
-        if (!super.setSize(width, height)) {
+        if (!super.setSize(width, height, forceSetSize)) {
             return false;
         }
 
@@ -1340,45 +1377,6 @@ export class Engine extends ThinEngine {
         }
 
         return true;
-    }
-
-    /**
-     * Updates a dynamic vertex buffer.
-     * @param vertexBuffer the vertex buffer to update
-     * @param data the data used to update the vertex buffer
-     * @param byteOffset the byte offset of the data
-     * @param byteLength the byte length of the data
-     */
-    public updateDynamicVertexBuffer(vertexBuffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void {
-        this.bindArrayBuffer(vertexBuffer);
-
-        if (byteOffset === undefined) {
-            byteOffset = 0;
-        }
-
-        const dataLength = (data as number[]).length || (data as ArrayBuffer).byteLength;
-
-        if (byteLength === undefined || byteLength >= dataLength && byteOffset === 0) {
-            if (data instanceof Array) {
-                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, byteOffset, new Float32Array(data));
-            } else {
-                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, byteOffset, <ArrayBuffer>data);
-            }
-        } else {
-            if (data instanceof Array) {
-                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(data).subarray(byteOffset, byteOffset + byteLength));
-            } else {
-                if (data instanceof ArrayBuffer) {
-                    data = new Uint8Array(data, byteOffset, byteLength);
-                } else {
-                    data = new Uint8Array(data.buffer, data.byteOffset + byteOffset, byteLength);
-                }
-
-                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, <ArrayBuffer>data);
-            }
-        }
-
-        this._resetVertexBufferBinding();
     }
 
     public _deletePipelineContext(pipelineContext: IPipelineContext): void {
@@ -1563,29 +1561,6 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Update a dynamic index buffer
-     * @param indexBuffer defines the target index buffer
-     * @param indices defines the data to update
-     * @param offset defines the offset in the target index buffer where update should start
-     */
-    public updateDynamicIndexBuffer(indexBuffer: DataBuffer, indices: IndicesArray, offset: number = 0): void {
-        // Force cache update
-        this._currentBoundBuffer[this._gl.ELEMENT_ARRAY_BUFFER] = null;
-        this.bindIndexBuffer(indexBuffer);
-        var arrayBuffer;
-
-        if (indices instanceof Uint16Array || indices instanceof Uint32Array) {
-            arrayBuffer = indices;
-        } else {
-            arrayBuffer = indexBuffer.is32Bits ? new Uint32Array(indices) : new Uint16Array(indices);
-        }
-
-        this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, arrayBuffer, this._gl.DYNAMIC_DRAW);
-
-        this._resetIndexBufferBinding();
-    }
-
-    /**
      * Updates the sample count of a render target texture
      * @see https://doc.babylonjs.com/features/webgl2#multisample-render-targets
      * @param texture defines the texture to update
@@ -1729,7 +1704,7 @@ export class Engine extends ThinEngine {
         this._gl.deleteBuffer(buffer);
     }
 
-    private _clientWaitAsync(sync: WebGLSync, flags = 0, interval_ms = 10) {
+    private _clientWaitAsync(sync: WebGLSync, flags = 0, interval_ms = 10): Promise<void> {
         let gl = <WebGL2RenderingContext>(this._gl as any);
         return new Promise((resolve, reject) => {
             let check = () => {

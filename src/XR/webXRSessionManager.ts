@@ -109,8 +109,9 @@ export class WebXRSessionManager implements IDisposable {
      */
     public exitXRAsync() {
         if (this.session && !this._sessionEnded) {
+            this._sessionEnded = true;
             return this.session.end().catch((e) => {
-                Logger.Warn("could not end XR session. It has ended already.");
+                Logger.Warn("Could not end XR session.");
             });
         }
         return Promise.resolve();
@@ -136,7 +137,7 @@ export class WebXRSessionManager implements IDisposable {
         if (this._xrNavigator.xr.native) {
             return this._xrNavigator.xr.getWebXRRenderTarget(engine);
         } else {
-            options = options || {};
+            options = options || WebXRManagedOutputCanvasOptions.GetDefaults(engine);
             options.canvasElement = engine.getRenderingCanvas() || undefined;
             return new WebXRManagedOutputCanvas(this, options);
         }
@@ -243,7 +244,7 @@ export class WebXRSessionManager implements IDisposable {
         }
 
         // Stop window's animation frame and trigger sessions animation frame
-        if (window.cancelAnimationFrame) {
+        if (typeof window !== "undefined" && window.cancelAnimationFrame) {
             window.cancelAnimationFrame(engine._frameHandler);
         }
         engine._renderLoop();
@@ -258,8 +259,8 @@ export class WebXRSessionManager implements IDisposable {
         return this.session
             .requestReferenceSpace(referenceSpaceType)
             .then(
-                (referenceSpace: XRReferenceSpace) => {
-                    return referenceSpace;
+                (referenceSpace) => {
+                    return referenceSpace as XRReferenceSpace;
                 },
                 (rejectionReason) => {
                     Logger.Error("XR.requestReferenceSpace failed for the following reason: ");
@@ -267,21 +268,21 @@ export class WebXRSessionManager implements IDisposable {
                     Logger.Log('Defaulting to universally-supported "viewer" reference space type.');
 
                     return this.session.requestReferenceSpace("viewer").then(
-                        (referenceSpace: XRReferenceSpace) => {
+                        (referenceSpace) => {
                             const heightCompensation = new XRRigidTransform({ x: 0, y: -this.defaultHeightCompensation, z: 0 });
-                            return referenceSpace.getOffsetReferenceSpace(heightCompensation);
+                            return (referenceSpace as XRReferenceSpace).getOffsetReferenceSpace(heightCompensation);
                         },
                         (rejectionReason) => {
                             Logger.Error(rejectionReason);
-                            throw "XR initialization failed: required \"viewer\" reference space type not supported.";
+                            throw 'XR initialization failed: required "viewer" reference space type not supported.';
                         }
                     );
                 }
             )
             .then((referenceSpace) => {
                 // create viewer reference space before setting the first reference space
-                return this.session.requestReferenceSpace("viewer").then((viewerReferenceSpace: XRReferenceSpace) => {
-                    this.viewerReferenceSpace = viewerReferenceSpace;
+                return this.session.requestReferenceSpace("viewer").then((viewerReferenceSpace) => {
+                    this.viewerReferenceSpace = viewerReferenceSpace as XRReferenceSpace;
                     return referenceSpace;
                 });
             })
@@ -329,6 +330,13 @@ export class WebXRSessionManager implements IDisposable {
                     return Promise.resolve(false);
                 });
         }
+    }
+
+    /**
+     * Returns true if Babylon.js is using the BabylonNative backend, otherwise false
+     */
+    public get isNative(): boolean {
+        return this._xrNavigator.xr.native ?? false;
     }
 
     private _createRenderTargetTexture(width: number, height: number, framebuffer: Nullable<WebGLFramebuffer> = null) {

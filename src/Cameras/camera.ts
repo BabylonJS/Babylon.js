@@ -119,12 +119,20 @@ export class Camera extends Node {
         this._position = newPosition;
     }
 
+    @serializeAsVector3("upVector")
+    protected _upVector = Vector3.Up();
+
     /**
      * The vector the camera should consider as up.
      * (default is Vector3(0, 1, 0) aka Vector3.Up())
      */
-    @serializeAsVector3()
-    public upVector = Vector3.Up();
+    public set upVector(vec: Vector3) {
+        this._upVector = vec;
+    }
+
+    public get upVector() {
+        return this._upVector;
+    }
 
     /**
      * Define the current limit on the left side for an orthographic camera
@@ -515,17 +523,38 @@ export class Camera extends Node {
 
     /**
      * Attach the input controls to a specific dom element to get the input from.
-     * @param element Defines the element the controls should be listened from
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
+    public attachControl(noPreventDefault?: boolean): void;
+    /**
+     * Attach the input controls to a specific dom element to get the input from.
+     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+     * BACK COMPAT SIGNATURE ONLY.
+     */
+    public attachControl(ignored: any, noPreventDefault?: boolean): void;
+    /**
+     * Attach the input controls to a specific dom element to get the input from.
+     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+     */
+    public attachControl(ignored?: any, noPreventDefault?: boolean): void {
     }
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param element Defines the element to stop listening the inputs from
      */
-    public detachControl(element: HTMLElement): void {
+    public detachControl(): void;
+    /**
+     * Detach the current controls from the specified dom element.
+     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     */
+    public detachControl(ignored: any): void;
+    /**
+     * Detach the current controls from the specified dom element.
+     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     */
+    public detachControl(ignored?: any): void {
     }
 
     /**
@@ -617,6 +646,12 @@ export class Camera extends Node {
             this._postProcesses.splice(insertAt, 0, postProcess);
         }
         this._cascadePostProcessesToRigCams(); // also ensures framebuffer invalidated
+
+        // Update prePass
+        if (this._scene.prePassRenderer) {
+            this._scene.prePassRenderer.markAsDirty();
+        }
+
         return this._postProcesses.indexOf(postProcess);
     }
 
@@ -630,6 +665,12 @@ export class Camera extends Node {
         if (idx !== -1) {
             this._postProcesses[idx] = null;
         }
+
+        // Update prePass
+        if (this._scene.prePassRenderer) {
+            this._scene.prePassRenderer.markAsDirty();
+        }
+
         this._cascadePostProcessesToRigCams(); // also ensures framebuffer invalidated
     }
 
@@ -1260,6 +1301,10 @@ export class Camera extends Node {
             camera.inputs.parse(parsedCamera);
 
             camera._setupInputs();
+        }
+
+        if (parsedCamera.upVector) {
+            camera.upVector = Vector3.FromArray(parsedCamera.upVector); // need to force the upVector
         }
 
         if ((<any>camera).setPosition) { // need to force position

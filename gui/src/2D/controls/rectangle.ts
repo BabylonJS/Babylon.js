@@ -1,6 +1,7 @@
 import { Container } from "./container";
 import { Measure } from "../measure";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { serialize } from 'babylonjs/Misc/decorators';
 
 /** Class used to create rectangle container */
 export class Rectangle extends Container {
@@ -8,6 +9,7 @@ export class Rectangle extends Container {
     private _cornerRadius = 0;
 
     /** Gets or sets border thickness */
+    @serialize()
     public get thickness(): number {
         return this._thickness;
     }
@@ -22,6 +24,7 @@ export class Rectangle extends Container {
     }
 
     /** Gets or sets the corner radius angle */
+    @serialize()
     public get cornerRadius(): number {
         return this._cornerRadius;
     }

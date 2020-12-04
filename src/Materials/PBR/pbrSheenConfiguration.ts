@@ -8,6 +8,7 @@ import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Nullable } from "../../types";
 import { IAnimatable } from '../../Animations/animatable.interface';
 import { EffectFallbacks } from '../effectFallbacks';
+import { SubMesh } from '../../Meshes/subMesh';
 
 /**
  * @hidden
@@ -15,10 +16,14 @@ import { EffectFallbacks } from '../effectFallbacks';
 export interface IMaterialSheenDefines {
     SHEEN: boolean;
     SHEEN_TEXTURE: boolean;
+    SHEEN_TEXTURE_ROUGHNESS: boolean;
     SHEEN_TEXTUREDIRECTUV: number;
+    SHEEN_TEXTURE_ROUGHNESSDIRECTUV: number;
     SHEEN_LINKWITHALBEDO: boolean;
     SHEEN_ROUGHNESS: boolean;
     SHEEN_ALBEDOSCALING: boolean;
+    SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE: boolean;
+    SHEEN_TEXTURE_ROUGHNESS_IDENTICAL: boolean;
 
     /** @hidden */
     _areTexturesDirty: boolean;
@@ -61,11 +66,21 @@ export class PBRSheenConfiguration {
     /**
      * Stores the sheen tint values in a texture.
      * rgb is tint
-     * a is a intensity or roughness if roughness has been defined
+     * a is a intensity or roughness if the roughness property has been defined and useRoughnessFromTexture is true (in that case, textureRoughness won't be used)
+     * If the roughness property has been defined and useRoughnessFromTexture is false then the alpha channel is not used to modulate roughness
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public texture: Nullable<BaseTexture> = null;
+
+    private _useRoughnessFromMainTexture = true;
+    /**
+     * Indicates that the alpha channel of the texture property will be used for roughness.
+     * Has no effect if the roughness (and texture!) property is not defined
+     */
+    @serialize()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public useRoughnessFromMainTexture = true;
 
     private _roughness: Nullable<number> = null;
     /**
@@ -76,6 +91,15 @@ export class PBRSheenConfiguration {
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public roughness: Nullable<number> = null;
+
+    private _textureRoughness: Nullable<BaseTexture> = null;
+    /**
+     * Stores the sheen roughness in a texture.
+     * alpha channel is the roughness. This texture won't be used if the texture property is not empty and useRoughnessFromTexture is true
+     */
+    @serializeAsTexture()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public textureRoughness: Nullable<BaseTexture> = null;
 
     private _albedoScaling = false;
     /**
@@ -117,6 +141,12 @@ export class PBRSheenConfiguration {
                         return false;
                     }
                 }
+
+                if (this._textureRoughness && MaterialFlags.SheenTextureEnabled) {
+                    if (!this._textureRoughness.isReadyOrNotBlocking()) {
+                        return false;
+                    }
+                }
             }
         }
 
@@ -134,6 +164,8 @@ export class PBRSheenConfiguration {
             defines.SHEEN_LINKWITHALBEDO = this._linkSheenWithAlbedo;
             defines.SHEEN_ROUGHNESS = this._roughness !== null;
             defines.SHEEN_ALBEDOSCALING = this._albedoScaling;
+            defines.SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE = this._useRoughnessFromMainTexture;
+            defines.SHEEN_TEXTURE_ROUGHNESS_IDENTICAL = this._texture !== null && this._texture._texture === this._textureRoughness?._texture && this._texture.checkTransformsAreIdentical(this._textureRoughness);
 
             if (defines._areTexturesDirty) {
                 if (scene.texturesEnabled) {
@@ -142,15 +174,24 @@ export class PBRSheenConfiguration {
                     } else {
                         defines.SHEEN_TEXTURE = false;
                     }
+
+                    if (this._textureRoughness && MaterialFlags.SheenTextureEnabled) {
+                        MaterialHelper.PrepareDefinesForMergedUV(this._textureRoughness, defines, "SHEEN_TEXTURE_ROUGHNESS");
+                    } else {
+                        defines.SHEEN_TEXTURE_ROUGHNESS = false;
+                    }
                 }
             }
         }
         else {
             defines.SHEEN = false;
             defines.SHEEN_TEXTURE = false;
+            defines.SHEEN_TEXTURE_ROUGHNESS = false;
             defines.SHEEN_LINKWITHALBEDO = false;
             defines.SHEEN_ROUGHNESS = false;
             defines.SHEEN_ALBEDOSCALING = false;
+            defines.SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE = false;
+            defines.SHEEN_TEXTURE_ROUGHNESS_IDENTICAL = false;
         }
     }
 
@@ -159,12 +200,25 @@ export class PBRSheenConfiguration {
      * @param uniformBuffer defines the Uniform buffer to fill in.
      * @param scene defines the scene the material belongs to.
      * @param isFrozen defines wether the material is frozen or not.
+     * @param subMesh the submesh to bind data for
      */
-    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, isFrozen: boolean): void {
+    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, isFrozen: boolean, subMesh?: SubMesh): void {
+        const defines = subMesh!._materialDefines as unknown as IMaterialSheenDefines;
+
+        const identicalTextures = defines.SHEEN_TEXTURE_ROUGHNESS_IDENTICAL;
+
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
-            if (this._texture && MaterialFlags.SheenTextureEnabled) {
-                uniformBuffer.updateFloat2("vSheenInfos", this._texture.coordinatesIndex, this._texture.level);
-                MaterialHelper.BindTextureMatrix(this._texture, uniformBuffer, "sheen");
+            if (identicalTextures && MaterialFlags.SheenTextureEnabled) {
+                uniformBuffer.updateFloat4("vSheenInfos", this._texture!.coordinatesIndex, this._texture!.level, -1, -1);
+                MaterialHelper.BindTextureMatrix(this._texture!, uniformBuffer, "sheen");
+            } else  if ((this._texture || this._textureRoughness) && MaterialFlags.SheenTextureEnabled) {
+                uniformBuffer.updateFloat4("vSheenInfos", this._texture?.coordinatesIndex ?? 0, this._texture?.level ?? 0, this._textureRoughness?.coordinatesIndex ?? 0, this._textureRoughness?.level ?? 0);
+                if (this._texture) {
+                    MaterialHelper.BindTextureMatrix(this._texture, uniformBuffer, "sheen");
+                }
+                if (this._textureRoughness && !identicalTextures && !defines.SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE) {
+                    MaterialHelper.BindTextureMatrix(this._textureRoughness, uniformBuffer, "sheenRoughness");
+                }
             }
 
             // Sheen
@@ -184,6 +238,10 @@ export class PBRSheenConfiguration {
             if (this._texture && MaterialFlags.SheenTextureEnabled) {
                 uniformBuffer.setTexture("sheenSampler", this._texture);
             }
+
+            if (this._textureRoughness && !identicalTextures && !defines.SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE && MaterialFlags.SheenTextureEnabled) {
+                uniformBuffer.setTexture("sheenRoughnessSampler", this._textureRoughness);
+            }
         }
     }
 
@@ -194,6 +252,10 @@ export class PBRSheenConfiguration {
      */
     public hasTexture(texture: BaseTexture): boolean {
         if (this._texture === texture) {
+            return true;
+        }
+
+        if (this._textureRoughness === texture) {
             return true;
         }
 
@@ -208,6 +270,10 @@ export class PBRSheenConfiguration {
         if (this._texture) {
             activeTextures.push(this._texture);
         }
+
+        if (this._textureRoughness) {
+            activeTextures.push(this._textureRoughness);
+        }
     }
 
     /**
@@ -218,6 +284,10 @@ export class PBRSheenConfiguration {
         if (this._texture && this._texture.animations && this._texture.animations.length > 0) {
             animatables.push(this._texture);
         }
+
+        if (this._textureRoughness && this._textureRoughness.animations && this._textureRoughness.animations.length > 0) {
+            animatables.push(this._textureRoughness);
+        }
     }
 
     /**
@@ -226,9 +296,8 @@ export class PBRSheenConfiguration {
      */
     public dispose(forceDisposeTextures?: boolean): void {
         if (forceDisposeTextures) {
-            if (this._texture) {
-                this._texture.dispose();
-            }
+            this._texture?.dispose();
+            this._textureRoughness?.dispose();
         }
     }
 
@@ -259,7 +328,7 @@ export class PBRSheenConfiguration {
      * @param uniforms defines the current uniform list.
      */
     public static AddUniforms(uniforms: string[]): void {
-        uniforms.push("vSheenColor", "vSheenRoughness", "vSheenInfos", "sheenMatrix");
+        uniforms.push("vSheenColor", "vSheenRoughness", "vSheenInfos", "sheenMatrix", "sheenRoughnessMatrix");
     }
 
     /**
@@ -269,8 +338,9 @@ export class PBRSheenConfiguration {
     public static PrepareUniformBuffer(uniformBuffer: UniformBuffer): void {
         uniformBuffer.addUniform("vSheenColor", 4);
         uniformBuffer.addUniform("vSheenRoughness", 1);
-        uniformBuffer.addUniform("vSheenInfos", 2);
+        uniformBuffer.addUniform("vSheenInfos", 4);
         uniformBuffer.addUniform("sheenMatrix", 16);
+        uniformBuffer.addUniform("sheenRoughnessMatrix", 16);
     }
 
     /**
@@ -279,6 +349,7 @@ export class PBRSheenConfiguration {
      */
     public static AddSamplers(samplers: string[]): void {
         samplers.push("sheenSampler");
+        samplers.push("sheenRoughnessSampler");
     }
 
     /**

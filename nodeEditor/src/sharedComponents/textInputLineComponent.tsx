@@ -9,6 +9,7 @@ interface ITextInputLineComponentProps {
     target?: any;
     propertyName?: string;
     value?: string;
+    multilines?: boolean;
     onChange?: (value: string) => void;
     validator?: (value: string) => boolean;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
@@ -20,7 +21,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
     constructor(props: ITextInputLineComponentProps) {
         super(props);
 
-        this.state = { value: this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!] || "" }
+        this.state = { value: this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!] || "" };
     }
 
     shouldComponentUpdate(nextProps: ITextInputLineComponentProps, nextState: { value: string }) {
@@ -60,8 +61,8 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
         this._localChange = true;
         const store = this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!];
 
-        if(this.props.validator && raisePropertyChanged) {
-            if(this.props.validator(value) == false) {
+        if (this.props.validator && raisePropertyChanged) {
+            if (this.props.validator(value) == false) {
                 value = store;
             }
         }
@@ -79,23 +80,39 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
 
     render() {
         return (
-            <div className="textInputLine">
-                <div className="label">
+            <div className={this.props.multilines ? "textInputArea" : "textInputLine"}>
+                <div className="label" title={this.props.label}>
                     {this.props.label}
                 </div>
                 <div className="value">
-                    <input value={this.state.value} 
-                        onFocus={() => this.props.globalState.blockKeyboardEvents = true}
-                        onChange={evt => this.updateValue(evt.target.value, false)}
-                        onKeyDown={evt => {
-                            if (evt.keyCode !== 13) {
-                                return;
-                            }
-                            this.updateValue(this.state.value, true);
-                        }} onBlur={evt => {
-                            this.updateValue(evt.target.value, true)
-                            this.props.globalState.blockKeyboardEvents = false;
-                        }}/>
+                    {this.props.multilines && <>
+                        <textarea value={this.state.value}
+                            onFocus={() => this.props.globalState.blockKeyboardEvents = true}
+                            onChange={(evt) => this.updateValue(evt.target.value, false)}
+                            onKeyDown={(evt) => {
+                                if (evt.keyCode !== 13) {
+                                    return;
+                                }
+                                this.updateValue(this.state.value, true);
+                            }} onBlur={(evt) => {
+                                this.updateValue(evt.target.value, true);
+                                this.props.globalState.blockKeyboardEvents = false;
+                            }}/>
+                    </>}
+                    {!this.props.multilines && <>
+                        <input value={this.state.value}
+                            onFocus={() => this.props.globalState.blockKeyboardEvents = true}
+                            onChange={(evt) => this.updateValue(evt.target.value, false)}
+                            onKeyDown={(evt) => {
+                                if (evt.keyCode !== 13) {
+                                    return;
+                                }
+                                this.updateValue(this.state.value, true);
+                            }} onBlur={(evt) => {
+                                this.updateValue(evt.target.value, true);
+                                this.props.globalState.blockKeyboardEvents = false;
+                            }}/>
+                        </>}
                 </div>
             </div>
         );

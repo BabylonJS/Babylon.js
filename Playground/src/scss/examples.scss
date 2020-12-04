@@ -10,10 +10,15 @@
     opacity: 0;
     transition: all 0.2s ease;
     height: calc(100% - 90px);
+    z-index: 10;
 
     &.visible {
         transform: translateX(0);
         opacity: 1;
+    }
+
+    &.removed {
+        display: none;
     }
 
     width: 380px;

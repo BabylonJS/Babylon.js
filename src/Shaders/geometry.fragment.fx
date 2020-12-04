@@ -34,7 +34,7 @@ uniform vec3 vBumpInfos;
 uniform vec2 vTangentSpaceParams;
 #endif
 
-#ifdef REFLECTIVITY
+#if defined(REFLECTIVITY) && (defined(HAS_SPECULAR) || defined(HAS_REFLECTIVITY))
 varying vec2 vReflectivityUV;
 uniform sampler2D reflectivitySampler;
 #endif
@@ -53,15 +53,22 @@ void main() {
 		discard;
     #endif
 
-    gl_FragData[0] = vec4(vViewPos.z / vViewPos.w, 0.0, 0.0, 1.0);
-    //color0 = vec4(vViewPos.z / vViewPos.w, 0.0, 0.0, 1.0);
-
+    vec3 normalOutput;
     #ifdef BUMP
     vec3 normalW = normalize(vNormalW);
     #include<bumpFragment>
-    gl_FragData[1] = vec4(normalize(vec3(vWorldView * vec4(normalW, 0.0))), 1.0);
+    normalOutput = normalize(vec3(vWorldView * vec4(normalW, 0.0)));
     #else
-    gl_FragData[1] = vec4(normalize(vNormalV), 1.0);
+    normalOutput = normalize(vNormalV);
+    #endif
+
+    #ifdef PREPASS
+        #ifdef PREPASS_DEPTHNORMAL
+        gl_FragData[DEPTHNORMAL_INDEX] = vec4(vViewPos.z / vViewPos.w, normalOutput);
+        #endif
+    #else
+    gl_FragData[0] = vec4(vViewPos.z / vViewPos.w, 0.0, 0.0, 1.0);
+    gl_FragData[1] = vec4(normalOutput, 1.0);
     #endif
 
     #ifdef POSITION

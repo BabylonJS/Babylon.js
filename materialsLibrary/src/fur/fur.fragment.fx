@@ -1,7 +1,7 @@
 ﻿precision highp float;
 
 // Constants
-uniform vec3 vEyePosition;
+uniform vec4 vEyePosition;
 uniform vec4 vDiffuseColor;
 
 // Input
@@ -54,7 +54,7 @@ void main(void) {
 	// Clip plane
 	#include<clipPlaneFragment>
 	
-	vec3 viewDirectionW = normalize(vEyePosition - vPositionW);
+	vec3 viewDirectionW = normalize(vEyePosition.xyz - vPositionW);
 
 	// Base color
 	vec4 baseColor = furColor;
@@ -130,4 +130,7 @@ void main(void) {
 #include<fogFragment>
 
 	gl_FragColor = color;
+
+#include<imageProcessingCompatibility>
+
 }

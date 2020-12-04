@@ -157,6 +157,7 @@ node_modules
 # for VSCode
 .vs
 .tempChromeProfileForDebug
+.tempChromeCanaryProfileForDebug
 .temp
 *.js.map
 *.js.fx
@@ -165,6 +166,7 @@ node_modules
 !dist/**/*.js.map
 !lib.d.ts
 !src/LibDeclarations/*.d.ts
+!Playground/libs/*.d.ts
 *.fragment.ts
 *.vertex.ts
 **/ShadersInclude/**/*.ts
@@ -179,6 +181,9 @@ localDev/src/*
 /localDev/src/index.js
 package-lock.json
 dist/preview release/package/
+
+# local dev WebGPU
+localDevWebGPU/src/*
 
 # viewer dist files
 /Viewer/dist/viewer.js
@@ -200,4 +205,10 @@ gui/dist/
 # Local Netlify folder
 .netlify
 Playground/dist/
+Playground/temp/
 Sandbox/public/dist/
+ktx2Decoder/dist/
+
+# Symlinks
+inspector/src/sharedUiComponents/**/*
+nodeEditor/src/sharedUiComponents/**/*

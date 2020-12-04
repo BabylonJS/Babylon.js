@@ -697,7 +697,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         if (!engine) {
             return false;
         }
-        return engine.webGLVersion != 1;
+        return engine._features.supportCSM;
     }
 
     /** @hidden */
@@ -715,12 +715,12 @@ export class CascadedShadowGenerator extends ShadowGenerator {
      * @param usefulFloatFirst By default the generator will try to use half float textures but if you need precision (for self shadowing for instance), you can use this option to enforce full float texture.
      */
     constructor(mapSize: number, light: DirectionalLight, usefulFloatFirst?: boolean) {
-        super(mapSize, light, usefulFloatFirst);
-
         if (!CascadedShadowGenerator.IsSupported) {
-            Logger.Error("CascadedShadowMap needs WebGL 2 support.");
+            Logger.Error("CascadedShadowMap is not supported by the current engine.");
             return;
         }
+
+        super(mapSize, light, usefulFloatFirst);
 
         this.usePercentageCloserFiltering = true;
     }
@@ -797,17 +797,21 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             }
         }
 
+        let engine = this._scene.getEngine();
+
+        this._shadowMap.onBeforeBindObservable.clear();
+        this._shadowMap.onBeforeRenderObservable.clear();
+
         this._shadowMap.onBeforeRenderObservable.add((layer: number) => {
             this._currentLayer = layer;
-            if (this._scene.getSceneUniformBuffer().useUbo) {
-                const sceneUBO = this._scene.getSceneUniformBuffer();
-                sceneUBO.updateMatrix("viewProjection", this.getCascadeTransformMatrix(layer)!);
-                sceneUBO.updateMatrix("view", this.getCascadeViewMatrix(layer)!);
-                sceneUBO.update();
+            if (this._filter === ShadowGenerator.FILTER_PCF) {
+                engine.setColorWrite(false);
             }
+            this._scene.setTransformMatrix(this.getCascadeViewMatrix(layer)!, this.getCascadeProjectionMatrix(layer)!);
         });
 
         this._shadowMap.onBeforeBindObservable.add(() => {
+            engine._debugPushGroup(`cascaded shadow map generation for ${this._nameForCustomEffect}`, 1);
             if (this._breaksAreDirty) {
                 this._splitFrustum();
             }
@@ -825,6 +829,8 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         effect.setMatrix(matriceNames?.projection ?? "projection", this.getCascadeProjectionMatrix(this._currentLayer)!);
 
         const world = mesh.getWorldMatrix();
+
+        effect.setMatrix(matriceNames?.world ?? "world", world);
 
         world.multiplyToRef(this.getCascadeTransformMatrix(this._currentLayer)!, tmpMatrix);
 
