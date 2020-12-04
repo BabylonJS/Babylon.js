@@ -209,12 +209,6 @@ export class ProceduralTexture extends Texture {
 
     /** @hidden */
     public _rebuild(): void {
-        let vb = this._vertexBuffers[VertexBuffer.PositionKind];
-
-        if (vb) {
-            vb._rebuild();
-        }
-
         this._createIndexBuffer();
 
         if (this.refreshRate === RenderTargetTexture.REFRESHRATE_RENDER_ONCE) {

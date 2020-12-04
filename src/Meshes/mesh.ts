@@ -10,9 +10,8 @@ import { Quaternion, Matrix, Vector3, Vector2, Vector4 } from "../Maths/math.vec
 import { Color3, Color4 } from '../Maths/math.color';
 import { Engine } from "../Engines/engine";
 import { Node } from "../node";
-import { VertexBuffer } from "./buffer";
+import { VertexBuffer, Buffer } from "./buffer";
 import { VertexData, IGetSetVerticesData } from "./mesh.vertexData";
-import { VertexBufferBuffer } from "./buffer";
 import { Geometry } from "./geometry";
 import { AbstractMesh } from "./abstractMesh";
 import { SubMesh } from "./subMesh";
@@ -69,7 +68,7 @@ class _InstanceDataStorage {
     public visibleInstances: any = {};
     public batchCache = new _InstancesBatch();
     public instancesBufferSize = 32 * 16 * 4; // let's start with a maximum of 32 instances
-    public instancesBuffer: Nullable<VertexBufferBuffer>;
+    public instancesBuffer: Nullable<Buffer>;
     public instancesData: Float32Array;
     public overridenInstanceCount: number;
     public isFrozen: boolean;
@@ -95,7 +94,7 @@ export class _InstancesBatch {
  **/
 class _ThinInstanceDataStorage {
     public instancesCount: number = 0;
-    public matrixBuffer: Nullable<VertexBufferBuffer> = null;
+    public matrixBuffer: Nullable<Buffer> = null;
     public matrixBufferSize = 32 * 16; // let's start with a maximum of 32 thin instances
     public matrixData: Nullable<Float32Array>;
     public boundingVectors: Array<Vector3> = [];
@@ -1684,7 +1683,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 instancesBuffer.dispose();
             }
 
-            instancesBuffer = new VertexBufferBuffer(engine, instanceStorage.instancesData, true, 16, false, true);
+            instancesBuffer = new Buffer(engine, instanceStorage.instancesData, true, 16, false, true);
             instanceStorage.instancesBuffer = instancesBuffer;
 
             this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world0", 0, 4));

@@ -14,7 +14,7 @@ import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { VertexBufferBuffer, VertexBuffer } from "babylonjs/Meshes/buffer";
+import { Buffer, VertexBuffer } from "babylonjs/Meshes/buffer";
 import { Geometry } from "babylonjs/Meshes/geometry";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { InstancedMesh } from "babylonjs/Meshes/instancedMesh";
@@ -1647,13 +1647,13 @@ export class GLTFLoader implements IGLTFLoader {
         return accessor._data as Promise<IndicesArray>;
     }
 
-    private _loadVertexBufferViewAsync(bufferView: IBufferView, kind: string): Promise<VertexBufferBuffer> {
+    private _loadVertexBufferViewAsync(bufferView: IBufferView, kind: string): Promise<Buffer> {
         if (bufferView._babylonBuffer) {
             return bufferView._babylonBuffer;
         }
 
         bufferView._babylonBuffer = this.loadBufferViewAsync(`/bufferViews/${bufferView.index}`, bufferView).then((data) => {
-            return new VertexBufferBuffer(this._babylonScene.getEngine(), data, false);
+            return new Buffer(this._babylonScene.getEngine(), data, false);
         });
 
         return bufferView._babylonBuffer;

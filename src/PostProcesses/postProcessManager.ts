@@ -60,12 +60,6 @@ export class PostProcessManager {
      * @hidden
      */
     public _rebuild(): void {
-        let vb = this._vertexBuffers[VertexBuffer.PositionKind];
-
-        if (!vb) {
-            return;
-        }
-        vb._rebuild();
         this._buildIndexBuffer();
     }
 

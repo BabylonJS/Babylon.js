@@ -198,12 +198,6 @@ export class Layer {
 
     /** @hidden */
     public _rebuild(): void {
-        let vb = this._vertexBuffers[VertexBuffer.PositionKind];
-
-        if (vb) {
-            vb._rebuild();
-        }
-
         this._createIndexBuffer();
     }
 

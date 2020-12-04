@@ -817,12 +817,6 @@ export abstract class EffectLayer {
      * @hidden Internal use only.
      */
     public _rebuild(): void {
-        let vb = this._vertexBuffers[VertexBuffer.PositionKind];
-
-        if (vb) {
-            vb._rebuild();
-        }
-
         this._generateIndexBuffer();
     }
 

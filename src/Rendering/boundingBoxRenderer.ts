@@ -223,10 +223,6 @@ export class BoundingBoxRenderer implements ISceneComponent {
      * context lost for instance.
      */
     public rebuild(): void {
-        let vb = this._vertexBuffers[VertexBuffer.PositionKind];
-        if (vb) {
-            vb._rebuild();
-        }
         this._createIndexBuffer();
     }
 
