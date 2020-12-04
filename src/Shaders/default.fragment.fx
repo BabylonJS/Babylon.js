@@ -497,8 +497,12 @@ color.rgb = max(color.rgb, 0.);
         gl_FragData[PREPASS_IRRADIANCE_INDEX] = vec4(0.0, 0.0, 0.0, 1.0); //  We can't split irradiance on std material
     #endif
 
-    #ifdef PREPASS_DEPTHNORMAL
-    	gl_FragData[PREPASS_DEPTHNORMAL_INDEX] = vec4(vViewPos.z, (view * vec4(normalW, 0.0)).rgb); // Linear depth + normal
+    #ifdef PREPASS_DEPTH
+        gl_FragData[PREPASS_DEPTH_INDEX] = vec4(vViewPos.z, 0.0, 0.0, 1.0); // Linear depth
+    #endif
+
+    #ifdef PREPASS_NORMAL
+        gl_FragData[PREPASS_NORMAL_INDEX] = vec4((view * vec4(normalW, 0.0)).rgb, 1.0); // Normal
     #endif
 
     #ifdef PREPASS_ALBEDO

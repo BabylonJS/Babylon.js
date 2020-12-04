@@ -63,8 +63,12 @@ void main() {
     #endif
 
     #ifdef PREPASS
-        #ifdef PREPASS_DEPTHNORMAL
-        gl_FragData[DEPTHNORMAL_INDEX] = vec4(vViewPos.z / vViewPos.w, normalOutput);
+        #ifdef PREPASS_DEPTH
+        gl_FragData[DEPTH_INDEX] = vec4(vViewPos.z / vViewPos.w, 0.0, 0.0, 1.0);
+        #endif
+
+        #ifdef PREPASS_NORMAL
+        gl_FragData[NORMAL_INDEX] = vec4(normalOutput, 1.0);
         #endif
     #else
     gl_FragData[0] = vec4(vViewPos.z / vViewPos.w, 0.0, 0.0, 1.0);

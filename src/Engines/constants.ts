@@ -515,13 +515,18 @@ export class Constants {
      */
     public static readonly PREPASS_COLOR_TEXTURE_TYPE = 4;
     /**
-     * Constant used to retrieve depth + normal index in the textures array in the prepass
-     * using the getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE)
+     * Constant used to retrieve depth index in the textures array in the prepass
+     * using the getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)
      */
-    public static readonly PREPASS_DEPTHNORMAL_TEXTURE_TYPE = 5;
+    public static readonly PREPASS_DEPTH_TEXTURE_TYPE = 5;
+    /**
+     * Constant used to retrieve normal index in the textures array in the prepass
+     * using the getIndex(Constants.PREPASS_NORMAL_TEXTURE_TYPE)
+     */
+    public static readonly PREPASS_NORMAL_TEXTURE_TYPE = 6;
     /**
      * Constant used to retrieve albedo index in the textures array in the prepass
      * using the getIndex(Constants.PREPASS_ALBEDO_TEXTURE_TYPE)
      */
-    public static readonly PREPASS_ALBEDO_TEXTURE_TYPE = 6;
+    public static readonly PREPASS_ALBEDO_TEXTURE_TYPE = 7;
 }

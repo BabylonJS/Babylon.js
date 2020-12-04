@@ -35,25 +35,30 @@ interface ISavedTransformationMatrix {
  */
 export class GeometryBufferRenderer {
     /**
-     * Constant used to retrieve the depth + normal texture index in the G-Buffer textures array
-     * using getIndex(GeometryBufferRenderer.DEPTHNORMAL_TEXTURE_INDEX)
+     * Constant used to retrieve the depth texture index in the G-Buffer textures array
+     * using getIndex(GeometryBufferRenderer.DEPTH_TEXTURE_INDEX)
      */
-    public static readonly DEPTHNORMAL_TEXTURE_TYPE = 0;
+    public static readonly DEPTH_TEXTURE_TYPE = 0;
+    /**
+     * Constant used to retrieve the normal texture index in the G-Buffer textures array
+     * using getIndex(GeometryBufferRenderer.NORMAL_TEXTURE_INDEX)
+     */
+    public static readonly NORMAL_TEXTURE_TYPE = 1;
     /**
      * Constant used to retrieve the position texture index in the G-Buffer textures array
      * using getIndex(GeometryBufferRenderer.POSITION_TEXTURE_INDEX)
      */
-    public static readonly POSITION_TEXTURE_TYPE = 1;
+    public static readonly POSITION_TEXTURE_TYPE = 2;
     /**
      * Constant used to retrieve the velocity texture index in the G-Buffer textures array
      * using getIndex(GeometryBufferRenderer.VELOCITY_TEXTURE_INDEX)
      */
-    public static readonly VELOCITY_TEXTURE_TYPE = 2;
+    public static readonly VELOCITY_TEXTURE_TYPE = 3;
     /**
      * Constant used to retrieve the reflectivity texture index in the G-Buffer textures array
      * using the getIndex(GeometryBufferRenderer.REFLECTIVITY_TEXTURE_TYPE)
      */
-    public static readonly REFLECTIVITY_TEXTURE_TYPE = 3;
+    public static readonly REFLECTIVITY_TEXTURE_TYPE = 4;
 
     /**
      * Dictionary used to store the previous transformation matrices of each rendered mesh
@@ -87,7 +92,8 @@ export class GeometryBufferRenderer {
     private _positionIndex: number = -1;
     private _velocityIndex: number = -1;
     private _reflectivityIndex: number = -1;
-    private _depthNormalIndex: number = -1;
+    private _depthIndex: number = -1;
+    private _normalIndex: number = -1;
 
     private _linkedWithPrePass: boolean = false;
     private _prePassRenderer: PrePassRenderer;
@@ -150,8 +156,10 @@ export class GeometryBufferRenderer {
         } else if (geometryBufferType === GeometryBufferRenderer.REFLECTIVITY_TEXTURE_TYPE) {
             this._reflectivityIndex = index;
             this._enableReflectivity = true;
-        } else if (geometryBufferType === GeometryBufferRenderer.DEPTHNORMAL_TEXTURE_TYPE) {
-            this._depthNormalIndex = index;
+        } else if (geometryBufferType === GeometryBufferRenderer.DEPTH_TEXTURE_TYPE) {
+            this._depthIndex = index;
+        } else if (geometryBufferType === GeometryBufferRenderer.NORMAL_TEXTURE_TYPE) {
+            this._normalIndex = index;
         }
     }
 
@@ -326,7 +334,7 @@ export class GeometryBufferRenderer {
         // Alpha test
         if (material) {
             let needUv = false;
-            if (material.needAlphaTesting()) {
+            if (material.needAlphaTesting() && material.getAlphaTestTexture()) {
                 defines.push("#define ALPHATEST");
                 needUv = true;
             }
@@ -363,9 +371,13 @@ export class GeometryBufferRenderer {
         // PrePass
         if (this._linkedWithPrePass) {
             defines.push("#define PREPASS");
-            if (this._depthNormalIndex !== -1) {
-                defines.push("#define DEPTHNORMAL_INDEX " + this._depthNormalIndex);
-                defines.push("#define PREPASS_DEPTHNORMAL");
+            if (this._depthIndex !== -1) {
+                defines.push("#define DEPTH_INDEX " + this._depthIndex);
+                defines.push("#define PREPASS_DEPTH");
+            }
+            if (this._normalIndex !== -1) {
+                defines.push("#define NORMAL_INDEX " + this._normalIndex);
+                defines.push("#define PREPASS_NORMAL");
             }
         }
 

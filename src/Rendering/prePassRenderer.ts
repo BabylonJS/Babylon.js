@@ -48,7 +48,7 @@ export class PrePassRenderer {
     public mrtCount: number = 0;
 
     private _mrtFormats: number[] = [];
-    private _mrtLayout: number[];
+    private _mrtLayout: number[] = [];
     private _textureIndices: number[] = [];
 
     private _multiRenderAttachments: number[];
@@ -86,7 +86,11 @@ export class PrePassRenderer {
             format: Constants.TEXTURETYPE_HALF_FLOAT,
         },
         {
-            type: Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE,
+            type: Constants.PREPASS_DEPTH_TEXTURE_TYPE,
+            format: Constants.TEXTURETYPE_HALF_FLOAT,
+        },
+        {
+            type: Constants.PREPASS_NORMAL_TEXTURE_TYPE,
             format: Constants.TEXTURETYPE_HALF_FLOAT,
         },
         {
@@ -133,30 +137,23 @@ export class PrePassRenderer {
     }
 
     private _geometryBuffer: Nullable<GeometryBufferRenderer>;
-    private _useGeometryBufferFallback = true;
 
     /**
-     * Uses the geometry buffer renderer as a fallback for non prepass capable effects
+     * Prevents the PrePassRenderer from using the GeometryBufferRenderer as a fallback
      */
-    public get useGeometryBufferFallback() : boolean {
-        return this._useGeometryBufferFallback;
-    }
+    public doNotUseGeometryRendererFallback = false;
 
-    public set useGeometryBufferFallback(value: boolean) {
-        this._useGeometryBufferFallback = value;
-
-        if (value) {
+    private _refreshGeometryBufferRendererLink() {
+        if (!this.doNotUseGeometryRendererFallback) {
             this._geometryBuffer = this._scene.enableGeometryBufferRenderer();
 
             if (!this._geometryBuffer) {
                 // Not supported
-                this._useGeometryBufferFallback = false;
+                this.doNotUseGeometryRendererFallback = true;
                 return;
             }
 
-            this._geometryBuffer.renderList = [];
             this._geometryBuffer._linkPrePassRenderer(this);
-            this._updateGeometryBufferLayout();
         } else {
             if (this._geometryBuffer) {
                 this._geometryBuffer._unlinkPrePassRenderer();
@@ -276,6 +273,8 @@ export class PrePassRenderer {
     }
 
     private _updateGeometryBufferLayout() {
+        this._refreshGeometryBufferRendererLink();
+
         if (this._geometryBuffer) {
             this._geometryBuffer._resetLayout();
 
@@ -289,8 +288,12 @@ export class PrePassRenderer {
 
             const matches = [
                 {
-                    prePassConstant: Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE,
-                    geometryBufferConstant: GeometryBufferRenderer.DEPTHNORMAL_TEXTURE_TYPE,
+                    prePassConstant: Constants.PREPASS_DEPTH_TEXTURE_TYPE,
+                    geometryBufferConstant: GeometryBufferRenderer.DEPTH_TEXTURE_TYPE,
+                },
+                {
+                    prePassConstant: Constants.PREPASS_NORMAL_TEXTURE_TYPE,
+                    geometryBufferConstant: GeometryBufferRenderer.NORMAL_TEXTURE_TYPE,
                 },
                 {
                     prePassConstant: Constants.PREPASS_POSITION_TEXTURE_TYPE,
@@ -354,7 +357,7 @@ export class PrePassRenderer {
         }
 
         if (this._geometryBuffer) {
-            this._geometryBuffer.renderList!.length = 0;
+            this._geometryBuffer.renderList = [];
         }
 
         this._setupOutputForThisPass(this._currentTarget, camera);
@@ -465,8 +468,6 @@ export class PrePassRenderer {
             }
         }
 
-        this._updateGeometryBufferLayout();
-
         for (let i = 0; i < this.renderTargets.length; i++) {
             if (this.mrtCount !== previousMrtCount) {
                 this.renderTargets[i].updateCount(this.mrtCount, { types: this._mrtFormats });
@@ -496,6 +497,7 @@ export class PrePassRenderer {
 
         this._reinitializeAttachments();
         this._setState(true);
+        this._updateGeometryBufferLayout();
     }
 
     private _disable() {

@@ -343,9 +343,14 @@ export class MaterialHelper {
             index: "PREPASS_ALBEDO_INDEX",
         },
         {
-            type: Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE,
-            define: "PREPASS_DEPTHNORMAL",
-            index: "PREPASS_DEPTHNORMAL_INDEX",
+            type: Constants.PREPASS_DEPTH_TEXTURE_TYPE,
+            define: "PREPASS_DEPTH",
+            index: "PREPASS_DEPTH_INDEX",
+        },
+        {
+            type: Constants.PREPASS_NORMAL_TEXTURE_TYPE,
+            define: "PREPASS_NORMAL",
+            index: "PREPASS_NORMAL_INDEX",
         }];
 
         if (scene.prePassRenderer && scene.prePassRenderer.enabled && canRenderToMRT) {
