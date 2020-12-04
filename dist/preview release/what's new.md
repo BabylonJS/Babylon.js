@@ -9,6 +9,7 @@
 - Added static CenterToRef for vectors 2/3/4  ([aWeirdo](https://github.com/aWeirdo))
 - Added ability to view images (ktx2, png, jpg) to the sandbox. ([bghgary](https://github.com/bghgary))
 - Added support for infinite perspective cameras ([Deltakosh](https://github.com/deltakosh))
+- Added ability to enable/disable ArcRotateCamera zoom on multiTouch event ([NicolasBuecher](https://github.com/NicolasBuecher))
 
 ### Loaders
 
@@ -60,6 +61,7 @@
 - Fix ssao2RenderingPipeline for orthographic cameras ([Kesshi](https://github.com/Kesshi))
 - Fix mipmaps creation in the KTX2 decoder for non square textures ([Popov72](https://github.com/Popov72))
 - Fix detail map not working in WebGL1 ([Popov72](https://github.com/Popov72))
+- Fix ArcRotateCamera behaviour when panning is disabled on multiTouch event ([NicolasBuecher](https://github.com/NicolasBuecher))
 
 ## Breaking changes
 
