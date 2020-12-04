@@ -19,6 +19,7 @@
 ### Navigation
 
 - Added support for thin instances in navigation mesh creation ([CedricGuillemet](https://github.com/CedricGuillemet))
+- Added recast.d.ts definition file for recast.js ([CedricGuillemet](https://github.com/CedricGuillemet))
 
 ### Materials
 
