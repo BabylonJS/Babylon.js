@@ -3,6 +3,7 @@ import { GlobalState } from '../globalState';
 import { CommandButtonComponent } from './commandButtonComponent';
 import { CommandDropdownComponent } from './commandDropdownComponent';
 import { Utilities } from '../tools/utilities';
+import { WebGPUEngine } from "babylonjs";
 
 require("../scss/commandBar.scss");
 
@@ -16,6 +17,10 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
   
     public constructor(props: ICommandBarComponentProps) {
         super(props);
+
+        this.props.globalState.onLanguageChangedObservable.add(() => {
+            this.forceUpdate();
+        });
     }    
 
     onPlay() {
@@ -48,12 +53,12 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
 
     public render() {
         let activeVersion = Utilities.ReadStringFromStore("version", "Latest");
+        let activeEngineVersion = Utilities.ReadStringFromStore("engineVersion", "WebGL2");
 
         var versionOptions = Object.keys(Versions).map(key => {
             return {
                 label: key,
                 storeKey: "version",
-                defaultValue: "Latest",
                 isActive: activeVersion === key,
                 onClick: () => {
                     Utilities.StoreStringToStore("version", key);
@@ -61,6 +66,39 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                 }
             }
         });
+
+        var engineOptions = [
+            {
+                label: "WebGL2",
+                storeKey: "engineVersion",
+                isActive: activeEngineVersion === "WebGL2",
+                onClick: () => {
+                    Utilities.StoreStringToStore("engineVersion", "WebGL2");
+                    window.location.reload();
+                }
+            },
+            {
+                label: "WebGL",
+                storeKey: "engineVersion",
+                isActive: activeEngineVersion === "WebGL",
+                onClick: () => {
+                    Utilities.StoreStringToStore("engineVersion", "WebGL");
+                    window.location.reload();
+                }
+            }
+        ];
+
+        if (WebGPUEngine.IsSupported) {
+            engineOptions.splice(0,0, {
+                label: "WebGPU",
+                storeKey: "engineVersion",
+                isActive: activeEngineVersion === "WebGPU",
+                onClick: () => {
+                    Utilities.StoreStringToStore("engineVersion", "WebGPU");
+                    window.location.reload();
+                }
+            });
+        }
 
         return (
             <div className={"commands " + (this.props.globalState.language === "JS" ? "background-js" : "background-ts")}>
@@ -153,7 +191,8 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                 ]}/>
                 </div>
                 <div className="commands-right">
-                    <CommandDropdownComponent globalState={this.props.globalState} icon="version" tooltip="Versions" toRight={true} items={versionOptions} />                    
+                    <CommandDropdownComponent globalState={this.props.globalState} defaultValue={activeEngineVersion} tooltip="Engine" toRight={true} items={engineOptions} />                    
+                    <CommandDropdownComponent globalState={this.props.globalState} defaultValue={activeVersion} tooltip="Versions" toRight={true} items={versionOptions} />                    
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Examples" icon="examples" onClick={()=> this.onExamples()} isActive={false}/>
                 </div>
             </div>
