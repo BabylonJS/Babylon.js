@@ -87,7 +87,6 @@ export class PrePassRenderer {
 
     private _multiRenderAttachments: number[];
     private _defaultAttachments: number[];
-    private _clearAttachments: number[];
 
     private _postProcesses: PostProcess[] = [];
 
@@ -131,7 +130,7 @@ export class PrePassRenderer {
     }
 
     private _geometryBuffer: Nullable<GeometryBufferRenderer>;
-    private _useGeometryBufferFallback = true;
+    private _useGeometryBufferFallback = false;
     /**
      * Uses the geometry buffer renderer as a fallback for non prepass capable effects
      */
@@ -164,6 +163,13 @@ export class PrePassRenderer {
     }
 
     /**
+     * Set to true to disable gamma transform in PrePass.
+     * Can be useful in case you already proceed to gamma transform on a material level
+     * and your post processes don't need to be in linear color space.
+     */
+    public disableGammaTransform = false;
+
+    /**
      * Instanciates a prepass renderer
      * @param scene The scene
      */
@@ -190,7 +196,6 @@ export class PrePassRenderer {
         }
 
         this._multiRenderAttachments = this._engine.buildTextureLayout(multiRenderLayout);
-        this._clearAttachments = this._engine.buildTextureLayout(clearLayout);
         this._defaultAttachments = this._engine.buildTextureLayout(defaultLayout);
     }
 
@@ -213,7 +218,7 @@ export class PrePassRenderer {
      * Indicates if rendering a prepass is supported
      */
     public get isSupported() {
-        return this._engine.webGLVersion > 1 || this._scene.getEngine().getCaps().drawBuffersExtension;
+        return this._scene.getEngine().getCaps().drawBuffersExtension;
     }
 
     /**
@@ -239,6 +244,15 @@ export class PrePassRenderer {
     }
 
     /**
+     * Restores attachments for single texture draw.
+     */
+    public restoreAttachments() {
+        if (this.enabled && this._defaultAttachments) {
+            this._engine.bindAttachments(this._defaultAttachments);
+        }
+    }
+
+    /**
      * @hidden
      */
     public _beforeCameraDraw() {
@@ -259,7 +273,7 @@ export class PrePassRenderer {
     public _afterCameraDraw() {
         if (this._enabled) {
             const firstCameraPP = this._scene.activeCamera && this._scene.activeCamera._getFirstPostProcess();
-            if (firstCameraPP) {
+            if (firstCameraPP && this._postProcesses.length) {
                 this._scene.postProcessManager._prepareFrame();
             }
             this._scene.postProcessManager.directRender(this._postProcesses, firstCameraPP ? firstCameraPP.inputTexture : null);
@@ -297,15 +311,14 @@ export class PrePassRenderer {
         if (this._enabled) {
             this._bindFrameBuffer();
 
-            // Regular clear color with the scene clear color of the 1st attachment
-            this._engine.clear(this._scene.clearColor,
-                this._scene.autoClear || this._scene.forceWireframe || this._scene.forcePointsCloud,
+            this._engine.clearAttachments(
+                this._multiRenderAttachments,
+                this._scene.autoClear || this._scene.forceWireframe || this._scene.forcePointsCloud ? this._scene.clearColor : null,
+                this._clearColor,
                 this._scene.autoClearDepthAndStencil,
-                this._scene.autoClearDepthAndStencil);
+                this._scene.autoClearDepthAndStencil,
+            );
 
-            // Clearing other attachment with 0 on all other attachments
-            this._engine.bindAttachments(this._clearAttachments);
-            this._engine.clear(this._clearColor, true, false, false);
             this._engine.bindAttachments(this._defaultAttachments);
         }
     }
@@ -425,7 +438,19 @@ export class PrePassRenderer {
             this._createCompositionEffect();
         }
 
-        this._postProcesses.push(this.imageProcessingPostProcess);
+        let isIPPAlreadyPresent = false;
+        if (this._scene.activeCamera?._postProcesses) {
+            for (let i = 0; i < this._scene.activeCamera._postProcesses.length; i++) {
+                if (this._scene.activeCamera._postProcesses[i]?.getClassName() === "ImageProcessingPostProcess") {
+                    isIPPAlreadyPresent = true;
+                }
+            }
+
+        }
+
+        if (!isIPPAlreadyPresent && !this.disableGammaTransform) {
+            this._postProcesses.push(this.imageProcessingPostProcess);
+        }
         this._bindPostProcessChain();
         this._setState(true);
     }
@@ -464,7 +489,14 @@ export class PrePassRenderer {
     }
 
     private _bindPostProcessChain() {
-        this._postProcesses[0].inputTexture = this.prePassRT.getInternalTexture()!;
+        if (this._postProcesses.length) {
+            this._postProcesses[0].inputTexture = this.prePassRT.getInternalTexture()!;
+        } else {
+            const pp = this._scene.activeCamera?._getFirstPostProcess();
+            if (pp) {
+                pp.inputTexture = this.prePassRT.getInternalTexture()!;
+            }
+        }
     }
 
     /**

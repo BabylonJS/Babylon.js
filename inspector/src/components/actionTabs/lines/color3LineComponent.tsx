@@ -140,12 +140,12 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
 
         return (
             <div className="color3Line">
-                <div className="firstLine">
+                <div className="firstLine" title={this.props.label}>
                     <div className="label">
                         {this.props.label}
                     </div>
                     <div className="color3">
-                        <ColorPickerLineComponent value={this.state.color} disableAlpha={true} onColorChanged={color => {
+                        <ColorPickerLineComponent value={this.state.color} onColorChanged={color => {
                             this.onChange(color);
                         }} />                             
                     </div>

@@ -41,10 +41,10 @@ export class PropertiesBar extends React.PureComponent<IPropertiesBarProps,IProp
 
     private _faces = [
         require('./assets/posX.svg'),
-        require('./assets/posY.svg'),
-        require('./assets/posZ.svg'),
         require('./assets/negX.svg'),
+        require('./assets/posY.svg'),
         require('./assets/negY.svg'),
+        require('./assets/posZ.svg'),
         require('./assets/negZ.svg')
     ]
 
@@ -84,7 +84,7 @@ export class PropertiesBar extends React.PureComponent<IPropertiesBarProps,IProp
         const {mipLevel, setMipLevel, pixelData, resizeTexture, texture, face, setFace, saveTexture, resetTexture, uploadTexture} = this.props;
         const maxLevels = Math.floor(Math.log2(Math.max(texture.getSize().width, texture.getSize().height)));
         const engine = texture.getScene()!.getEngine();
-        const mipsEnabled = (!texture.noMipmap && (engine.webGLVersion == 2 || engine._gl.getExtension('EXT_shader_texture_lod')));
+        const mipsEnabled = (!texture.noMipmap && engine.getCaps().textureLOD);
         return <div id='properties'>
                 <div className='tab' id='logo-tab'>
                     <img className='icon' src={this._babylonLogo}/>

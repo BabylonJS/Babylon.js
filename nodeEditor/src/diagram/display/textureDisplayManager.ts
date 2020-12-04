@@ -24,7 +24,7 @@ export class TextureDisplayManager implements IDisplayManager {
     }
 
     public getBackgroundColor(block: NodeMaterialBlock): string {
-        return "#323232";
+        return block.getClassName() === "RefractionBlock" || block.getClassName() === "ReflectionBlock" ? "#6174FA" : "#323232";
     }
 
     public updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void {

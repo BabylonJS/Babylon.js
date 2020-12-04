@@ -140,7 +140,27 @@ export class NullEngine extends Engine {
             instancedArrays: false,
             canUseTimestampForTimerQuery: false,
             maxMSAASamples: 1,
-            blendMinMax: false
+            blendMinMax: false,
+            canUseGLInstanceID: false,
+        };
+
+        this._features = {
+            forceBitmapOverHTMLImageElement: false,
+            supportRenderAndCopyToLodForFloatTextures: false,
+            supportDepthStencilTexture: false,
+            supportShadowSamplers: false,
+            uniformBufferHardCheckMatrix: false,
+            allowTexturePrefiltering: false,
+            trackUbosInFrame: false,
+            supportCSM: false,
+            basisNeedsPOT: false,
+            support3DTextures: false,
+            needTypeSuffixInShaderConstants: false,
+            supportMSAA: false,
+            supportSSAO2: false,
+            supportExtendedTextureFormats: false,
+            supportSwitchCaseInShader: false,
+            _collectUbosUpdatedInFrame: false,
         };
 
         Logger.Log(`Babylon.js v${Engine.Version} - Null engine`);
@@ -578,7 +598,7 @@ export class NullEngine extends Engine {
     }
 
     /** @hidden */
-    public _createTexture(): WebGLTexture {
+    protected _createTexture(): WebGLTexture {
         return {};
     }
 

@@ -16,34 +16,13 @@ import { Scene } from "babylonjs/scene";
 
 import { Container } from "./controls/container";
 import { Control } from "./controls/control";
+import { IFocusableControl } from './controls/focusableControl';
 import { Style } from "./style";
 import { Measure } from "./measure";
 import { Constants } from 'babylonjs/Engines/constants';
 import { Viewport } from 'babylonjs/Maths/math.viewport';
 import { Color3 } from 'babylonjs/Maths/math.color';
-/**
-* Interface used to define a control that can receive focus
-*/
-export interface IFocusableControl {
-    /**
-     * Function called when the control receives the focus
-     */
-    onFocus(): void;
-    /**
-     * Function called when the control loses the focus
-     */
-    onBlur(): void;
-    /**
-     * Function called to let the control handle keyboard events
-     * @param evt defines the current keyboard event
-     */
-    processKeyboard(evt: KeyboardEvent): void;
-    /**
-    * Function called to get the list of controls that should not steal the focus from this control
-    * @returns an array of controls
-    */
-    keepsFocusWith(): Nullable<Control[]>;
-}
+
 /**
 * Class used to create texture to support 2D GUI elements
 * @see https://doc.babylonjs.com/how_to/gui
@@ -134,6 +113,10 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     * Gets or sets a boolean defining if alpha is stored as premultiplied
     */
     public premulAlpha = false;
+    /**
+     * Gets or sets a boolean indicating that the canvas must be reverted on Y when updating the texture
+     */
+    public applyYInversionOnUpdate = true;
     /**
     * Gets or sets a number used to scale rendering size (2 means that the texture will be twice bigger).
     * Useful when you want more antialiasing
@@ -549,6 +532,22 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         projectedPosition.scaleInPlace(this.renderScale);
         return new Vector2(projectedPosition.x, projectedPosition.y);
     }
+    /**
+    * Get screen coordinates for a vector3
+    * @param position defines the position to project
+    * @param worldMatrix defines the world matrix to use
+    * @returns the projected position with Z
+    */
+    public getProjectedPositionWithZ(position: Vector3, worldMatrix: Matrix): Vector3 {
+        var scene = this.getScene();
+        if (!scene) {
+            return Vector3.Zero();
+        }
+        var globalViewport = this._getGlobalViewport(scene);
+        var projectedPosition = Vector3.Project(position, worldMatrix, scene.getTransformMatrix(), globalViewport);
+        projectedPosition.scaleInPlace(this.renderScale);
+        return new Vector3(projectedPosition.x, projectedPosition.y, projectedPosition.z);
+    }
     private _checkUpdate(camera: Camera): void {
         if (this._layerToDispose) {
             if ((camera.layerMask & this._layerToDispose.layerMask) === 0) {
@@ -589,7 +588,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         }
         this._isDirty = false;
         this._render();
-        this.update(true, this.premulAlpha);
+        this.update(this.applyYInversionOnUpdate, this.premulAlpha);
     }
 
     private _clearMeasure = new Measure(0, 0, 0, 0);
@@ -807,7 +806,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 var uv = pi.pickInfo.getTextureCoordinates();
                 if (uv) {
                     let size = this.getSize();
-                    this._doPicking(uv.x * size.width, (1.0 - uv.y) * size.height, pi, pi.type, pointerId, pi.event.button);
+                    this._doPicking(uv.x * size.width, (this.applyYInversionOnUpdate ? (1.0 - uv.y) : uv.y) * size.height, pi, pi.type, pointerId, pi.event.button);
                 }
             } else if (pi.type === PointerEventTypes.POINTERUP) {
                 if (this._lastControlDown[pointerId]) {
@@ -892,6 +891,29 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             this._lastControlDown = {};
         });
     }
+
+    /**
+     * Serializes the entire GUI system
+     * @returns an object with the JSON serialized data
+     */
+    public serializeContent(): any {
+        let serializationObject = {
+            root: {}
+        };
+
+        this._rootContainer.serialize(serializationObject.root);
+
+        return serializationObject;
+    }
+
+    /**
+     * Recreate the content of the ADT from a JSON object
+     * @param serializedObject define the JSON serialized object to restore from
+     */
+    public parseContent(serializedObject: any) {
+        this._rootContainer = Control.Parse(serializedObject.root, this) as Container;
+    }
+
     // Statics
     /**
      * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh)
@@ -918,6 +940,21 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             material.opacityTexture = result;
         }
         mesh.material = material;
+        result.attachToMesh(mesh, supportPointerMove);
+        return result;
+    }
+
+    /**
+     * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh) BUT do not create a new material for the mesh. You will be responsible for connecting the texture
+     * @param mesh defines the mesh which will receive the texture
+     * @param width defines the texture width (1024 by default)
+     * @param height defines the texture height (1024 by default)
+     * @param supportPointerMove defines a boolean indicating if the texture must capture move events (true by default)
+     * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
+     * @returns a new AdvancedDynamicTexture
+     */
+    public static CreateForMeshTexture(mesh: AbstractMesh, width = 1024, height = 1024, supportPointerMove = true, invertY?: boolean): AdvancedDynamicTexture {
+        var result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, Texture.TRILINEAR_SAMPLINGMODE, invertY);
         result.attachToMesh(mesh, supportPointerMove);
         return result;
     }

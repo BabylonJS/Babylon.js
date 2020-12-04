@@ -11,7 +11,7 @@ import { IKHRMaterialsSheen } from 'babylonjs-gltf2interface';
 const NAME = "KHR_materials_sheen";
 
 /**
- * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1688)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_sheen/README.md)
  * [Playground Sample](https://www.babylonjs-playground.com/frame.html#BNIZX6#4)
  * !!! Experimental Extension Subject to Changes !!!
  */

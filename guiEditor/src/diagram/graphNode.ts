@@ -5,7 +5,7 @@ import { WorkbenchComponent, FramePortData } from './workbench';
 import { PropertyGuiLedger } from './propertyLedger';
 import * as React from 'react';
 import { GenericPropertyComponent } from './properties/genericNodePropertyComponent';
-import { IDisplayManager } from './display/displayManager';
+
 export class GUINode {
     private _visual: HTMLDivElement;
     private _header: HTMLDivElement;
@@ -18,15 +18,15 @@ export class GUINode {
     private _y = 0;
     private _gridAlignedX = 0;
     private _gridAlignedY = 0;    
-    private _mouseStartPointX: Nullable<number> = null;
-    private _mouseStartPointY: Nullable<number> = null    
+    //private _mouseStartPointX: Nullable<number> = null;
+    //private _mouseStartPointY: Nullable<number> = null    
     private _globalState: GlobalState;
     private _onSelectionChangedObserver: Nullable<Observer<Nullable<GUINode | FramePortData>>>;  
     private _onSelectionBoxMovedObserver: Nullable<Observer<ClientRect | DOMRect>>;   
     private _onUpdateRequiredObserver: Nullable<Observer<void>>;  
     private _ownerCanvas: WorkbenchComponent; 
     private _isSelected: boolean;
-    private _displayManager: Nullable<IDisplayManager> = null;
+    //private _displayManager: Nullable<IDisplayManager> = null;
     private _isVisible = true;
     private _enclosingFrameId = -1;
 
@@ -129,7 +129,7 @@ export class GUINode {
         }
     }
 
-    public constructor(globalState: GlobalState, public guiNode: BABYLON.GUI.Container | BABYLON.GUI.Control) {
+    public constructor(globalState: GlobalState, public guiNode: BABYLON.GUI.Control) {
         this._globalState = globalState;
 
         guiNode.onPointerUpObservable.add(evt => {
@@ -137,7 +137,9 @@ export class GUINode {
             this.clicked = false;
         });
 
-        guiNode.onPointerDownObservable.add( evt => {this.clicked = true; this._onDown(evt);}
+        guiNode.onPointerDownObservable.add( evt => {this.clicked = true; 
+            //this._onDown(evt);
+        }
         );
 
         //guiNode?.onPointerMoveObservable.add( evt => {this._onMove(evt);} );
@@ -169,7 +171,7 @@ export class GUINode {
 
     }
 
-    private _onDown(evt: BABYLON.GUI.Vector2WithInfo) {
+    //private _onDown(evt: BABYLON.GUI.Vector2WithInfo) {
         // Check if this is coming from the port
         /*if (evt.srcElement && (evt.srcElement as HTMLElement).nodeName === "IMG") {
             return;
@@ -188,30 +190,30 @@ export class GUINode {
             selectedNode.cleanAccumulation();
         }*/
 
-        this._mouseStartPointX = evt.x;
-        this._mouseStartPointY = evt.y;        
+        //this._mouseStartPointX = evt.x;
+        //this._mouseStartPointY = evt.y;        
         
         //this._visual.setPointerCapture(evt.buttonIndex);
-    }
+    //}
 
     public cleanAccumulation(useCeil = false) {
         this.x = this._ownerCanvas.getGridPosition(this.x, useCeil);
         this.y = this._ownerCanvas.getGridPosition(this.y, useCeil);
     }
 
-    private _onUp(evt: BABYLON.Vector2) {
+    /*private _onUp(evt: BABYLON.Vector2) {
         //evt.stopPropagation();
 
        //for (var selectedNode of this._ownerCanvas.selectedNodes) {
         //this.cleanAccumulation();
         //}
 
-        this.clicked = false;
+        //this.clicked = false;
         
-        this._mouseStartPointX = null;
-        this._mouseStartPointY = null;
+        //this._mouseStartPointX = null;
+        //this._mouseStartPointY = null;
         //this._visual.releasePointerCapture(evt.pointerId);
-    }
+    }*/
     public clicked: boolean;
     public _onMove(evt: BABYLON.Vector2, startPos: BABYLON.Vector2) {
        
@@ -225,8 +227,8 @@ export class GUINode {
         this.y += newY;
         //}
 
-        this._mouseStartPointX = evt.x;
-        this._mouseStartPointY = evt.y;   
+        //this._mouseStartPointX = evt.x;
+        //this._mouseStartPointY = evt.y;   
 
         return true;
         //evt.stopPropagation();

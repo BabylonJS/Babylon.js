@@ -2,18 +2,36 @@ import * as React from "react";
 import { Vector2 } from "babylonjs/Maths/math.vector";
 
 interface IAnchorSvgPointProps {
+    // Keyframe point
     control: Vector2;
+    // Anchor point
     anchor: Vector2;
+    // Is currently active
     active: boolean;
+    // Type of control point (left/right)
     type: string;
+    // keyframe index
     index: string;
+    // Is selected
     selected: boolean;
+    // Event to set selected
     selectControlPoint: (id: string) => void;
+    // How many frames are currently in the canvas
     framesInCanvasView: { from: number; to: number };
 }
 
 /**
  * Renders the control point to a keyframe.
+ * Each keyframe has left and right control points to control de tangent of the curve
+ * This controls the inTangent and outTangent values for the keyframe in the animation.
+ * @property {Vector2} control is the control point to control de curve tangent
+ * @property {Vector2} anchor represents the Keyframe point which acts origin point.
+ * @property {boolen} active tells the component if the control point is currently active
+ * @property {string} type (left/right) if the control will be the left or right control point
+ * @property {boolean} selected if the control point is currently selected. If selected we can move the control point and will become active
+ * @property {(id: string) => void;} selectControlPoint sends the id of the control point to the parent component to tell if it is selected
+ * @property {{ from: number; to: number }} framesInCanvasView controls from/to which keyframe should the control point can expand and control de curve
+ * The frames in canvas tells us how many frames are currently visible in the canvas and therefore control the width of the line between the control and anchor point
  */
 export class AnchorSvgPoint extends React.Component<IAnchorSvgPointProps, { visiblePoint: Vector2 }> {
     constructor(props: IAnchorSvgPointProps) {
@@ -31,6 +49,11 @@ export class AnchorSvgPoint extends React.Component<IAnchorSvgPointProps, { visi
         this.props.selectControlPoint(this.props.type);
     };
 
+    /**
+     * Controls where should we render the visible point (representing the control point)
+     * The visible control point differs from the control point for UX reasons. The control point
+     * expands beyond the visible canvas.
+     */
     setVisiblePoint() {
         const quarterDistance = (this.props.framesInCanvasView.to - this.props.framesInCanvasView.from) / 10;
         const distanceOnFlat = Math.abs(this.props.anchor.x - this.props.control.x);

@@ -1,3 +1,38 @@
+declare module "babylonjs-gui/2D/controls/focusableControl" {
+    import { Nullable } from "babylonjs/types";
+    import { Control } from "babylonjs-gui/2D/controls/control";
+    /**
+    * Interface used to define a control that can receive focus
+    */
+    export interface IFocusableControl {
+        /**
+         * Function called when the control receives the focus
+         */
+        onFocus(): void;
+        /**
+         * Function called when the control loses the focus
+         */
+        onBlur(): void;
+        /**
+         * Function called to let the control handle keyboard events
+         * @param evt defines the current keyboard event
+         */
+        processKeyboard(evt: KeyboardEvent): void;
+        /**
+        * Function called to get the list of controls that should not steal the focus from this control
+        * @returns an array of controls
+        */
+        keepsFocusWith(): Nullable<Control[]>;
+        /**
+        * Function to focus the control programmatically
+        */
+        focus(): void;
+        /**
+        * Function to unfocus the control programmatically
+        */
+        blur(): void;
+    }
+}
 declare module "babylonjs-gui/2D/valueAndUnit" {
     import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
     /**
@@ -326,31 +361,9 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
     import { Scene } from "babylonjs/scene";
     import { Container } from "babylonjs-gui/2D/controls/container";
     import { Control } from "babylonjs-gui/2D/controls/control";
+    import { IFocusableControl } from "babylonjs-gui/2D/controls/focusableControl";
     import { Style } from "babylonjs-gui/2D/style";
     import { Viewport } from 'babylonjs/Maths/math.viewport';
-    /**
-    * Interface used to define a control that can receive focus
-    */
-    export interface IFocusableControl {
-        /**
-         * Function called when the control receives the focus
-         */
-        onFocus(): void;
-        /**
-         * Function called when the control loses the focus
-         */
-        onBlur(): void;
-        /**
-         * Function called to let the control handle keyboard events
-         * @param evt defines the current keyboard event
-         */
-        processKeyboard(evt: KeyboardEvent): void;
-        /**
-        * Function called to get the list of controls that should not steal the focus from this control
-        * @returns an array of controls
-        */
-        keepsFocusWith(): Nullable<Control[]>;
-    }
     /**
     * Class used to create texture to support 2D GUI elements
     * @see https://doc.babylonjs.com/how_to/gui
@@ -440,6 +453,10 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
         * Gets or sets a boolean defining if alpha is stored as premultiplied
         */
         premulAlpha: boolean;
+        /**
+         * Gets or sets a boolean indicating that the canvas must be reverted on Y when updating the texture
+         */
+        applyYInversionOnUpdate: boolean;
         /**
         * Gets or sets a number used to scale rendering size (2 means that the texture will be twice bigger).
         * Useful when you want more antialiasing
@@ -589,6 +606,13 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
         * @returns the projected position
         */
         getProjectedPosition(position: Vector3, worldMatrix: Matrix): Vector2;
+        /**
+        * Get screen coordinates for a vector3
+        * @param position defines the position to project
+        * @param worldMatrix defines the world matrix to use
+        * @returns the projected position with Z
+        */
+        getProjectedPositionWithZ(position: Vector3, worldMatrix: Matrix): Vector3;
         private _checkUpdate;
         private _clearMeasure;
         private _render;
@@ -634,6 +658,16 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
         private _attachToOnPointerOut;
         private _attachToOnBlur;
         /**
+         * Serializes the entire GUI system
+         * @returns an object with the JSON serialized data
+         */
+        serializeContent(): any;
+        /**
+         * Recreate the content of the ADT from a JSON object
+         * @param serializedObject define the JSON serialized object to restore from
+         */
+        parseContent(serializedObject: any): void;
+        /**
          * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh)
          * @param mesh defines the mesh which will receive the texture
          * @param width defines the texture width (1024 by default)
@@ -644,6 +678,16 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
          * @returns a new AdvancedDynamicTexture
          */
         static CreateForMesh(mesh: AbstractMesh, width?: number, height?: number, supportPointerMove?: boolean, onlyAlphaTesting?: boolean, invertY?: boolean): AdvancedDynamicTexture;
+        /**
+         * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh) BUT do not create a new material for the mesh. You will be responsible for connecting the texture
+         * @param mesh defines the mesh which will receive the texture
+         * @param width defines the texture width (1024 by default)
+         * @param height defines the texture height (1024 by default)
+         * @param supportPointerMove defines a boolean indicating if the texture must capture move events (true by default)
+         * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
+         * @returns a new AdvancedDynamicTexture
+         */
+        static CreateForMeshTexture(mesh: AbstractMesh, width?: number, height?: number, supportPointerMove?: boolean, invertY?: boolean): AdvancedDynamicTexture;
         /**
         * Creates a new AdvancedDynamicTexture in fullscreen mode.
         * In this mode the texture will rely on a layer for its rendering.
@@ -1104,13 +1148,13 @@ declare module "babylonjs-gui/2D/controls/control" {
         get centerX(): number;
         /** Gets the center coordinate on Y axis */
         get centerY(): number;
-        /** Gets or sets if control is Enabled*/
+        /** Gets or sets if control is Enabled */
         get isEnabled(): boolean;
         set isEnabled(value: boolean);
-        /** Gets or sets background color of control if it's disabled*/
+        /** Gets or sets background color of control if it's disabled */
         get disabledColor(): string;
         set disabledColor(value: string);
-        /** Gets or sets front color of control if it's disabled*/
+        /** Gets or sets front color of control if it's disabled */
         get disabledColorItem(): string;
         set disabledColorItem(value: string);
         /**
@@ -1181,6 +1225,24 @@ declare module "babylonjs-gui/2D/controls/control" {
          * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
          */
         linkWithMesh(mesh: Nullable<TransformNode>): void;
+        /**
+        * Shorthand funtion to set the top, right, bottom, and left padding values on the control.
+        * @param { string | number} paddingTop - The value of the top padding.
+        * @param { string | number} paddingRight - The value of the right padding. If omitted, top is used.
+        * @param { string | number} paddingBottom - The value of the bottom padding. If omitted, top is used.
+        * @param { string | number} paddingLeft - The value of the left padding. If omitted, right is used.
+        * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+        */
+        setPadding(paddingTop: string | number, paddingRight?: string | number, paddingBottom?: string | number, paddingLeft?: string | number): void;
+        /**
+         * Shorthand funtion to set the top, right, bottom, and left padding values in pixels on the control.
+         * @param { number} paddingTop - The value in pixels of the top padding.
+         * @param { number} paddingRight - The value in pixels of the right padding. If omitted, top is used.
+         * @param { number} paddingBottom - The value in pixels of the bottom padding. If omitted, top is used.
+         * @param { number} paddingLeft - The value in pixels of the left padding. If omitted, right is used.
+         * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+         */
+        setPaddingInPixels(paddingTop: number, paddingRight?: number, paddingBottom?: number, paddingLeft?: number): void;
         /** @hidden */
         _moveToProjectedPosition(projectedPosition: Vector3): void;
         /** @hidden */
@@ -1259,6 +1321,13 @@ declare module "babylonjs-gui/2D/controls/control" {
         /** @hidden */
         _processObservables(type: number, x: number, y: number, pi: PointerInfoBase, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         private _prepareFont;
+        /**
+         * Serializes the current control
+         * @param serializationObject defined the JSON serialized object
+         */
+        serialize(serializationObject: any): void;
+        /** @hidden */
+        _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
         /** Releases associated resources */
         dispose(): void;
         private static _HORIZONTAL_ALIGNMENT_LEFT;
@@ -1286,6 +1355,13 @@ declare module "babylonjs-gui/2D/controls/control" {
             height: number;
             descent: number;
         };
+        /**
+         * Creates a Control from parsed data
+         * @param serializedObject defines parsed data
+         * @param host defines the hosting AdvancedDynamicTexture
+         * @returns a new Control
+         */
+        static Parse(serializedObject: any, host: AdvancedDynamicTexture): Control;
         /**
          * Creates a stack panel that can be used to render headers
          * @param control defines the control to associate with the header
@@ -1414,8 +1490,15 @@ declare module "babylonjs-gui/2D/controls/container" {
         _processPicking(x: number, y: number, pi: PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        /**
+        * Serializes the current control
+        * @param serializationObject defined the JSON serialized object
+        */
+        serialize(serializationObject: any): void;
         /** Releases associated resources */
         dispose(): void;
+        /** @hidden */
+        _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
     }
 }
 declare module "babylonjs-gui/2D/controls/rectangle" {
@@ -1732,6 +1815,10 @@ declare module "babylonjs-gui/2D/controls/image" {
         private _onImageLoaded;
         private _extractNinePatchSliceDataFromImage;
         /**
+         * Gets the image source url
+         */
+        get source(): Nullable<string>;
+        /**
          * Gets or sets image source url
          */
         set source(value: Nullable<string>);
@@ -1891,6 +1978,7 @@ declare module "babylonjs-gui/2D/controls/button" {
 declare module "babylonjs-gui/2D/controls/stackPanel" {
     import { Container } from "babylonjs-gui/2D/controls/container";
     import { Measure } from "babylonjs-gui/2D/measure";
+    import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
     /**
      * Class used to create a 2D stack panel container
      */
@@ -1929,6 +2017,13 @@ declare module "babylonjs-gui/2D/controls/stackPanel" {
         protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _postMeasure(): void;
+        /**
+         * Serializes the current control
+         * @param serializationObject defined the JSON serialized object
+         */
+        serialize(serializationObject: any): void;
+        /** @hidden */
+        _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
     }
 }
 declare module "babylonjs-gui/2D/controls/checkbox" {
@@ -2081,21 +2176,37 @@ declare module "babylonjs-gui/2D/controls/virtualKeyboard" {
         static CreateDefaultLayout(name?: string): VirtualKeyboard;
     }
 }
+declare module "babylonjs-gui/2D/controls/textWrapper" {
+    /** @hidden */
+    export class TextWrapper {
+        private _text;
+        private _characters;
+        get text(): string;
+        set text(txt: string);
+        get length(): number;
+        removePart(idxStart: number, idxEnd: number, insertTxt?: string): void;
+        charAt(idx: number): string;
+        substr(from: number, length?: number): string;
+        substring(from: number, to?: number): string;
+        isWord(index: number): boolean;
+    }
+}
 declare module "babylonjs-gui/2D/controls/inputText" {
     import { Nullable } from "babylonjs/types";
     import { Observable } from "babylonjs/Misc/observable";
     import { Vector2 } from "babylonjs/Maths/math.vector";
     import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
     import { Control } from "babylonjs-gui/2D/controls/control";
-    import { IFocusableControl } from "babylonjs-gui/2D/advancedDynamicTexture";
+    import { IFocusableControl } from "babylonjs-gui/2D/controls/focusableControl";
     import { VirtualKeyboard } from "babylonjs-gui/2D/controls/virtualKeyboard";
     import { Measure } from "babylonjs-gui/2D/measure";
+    import { TextWrapper } from "babylonjs-gui/2D/controls/textWrapper";
     /**
      * Class used to create input text control
      */
     export class InputText extends Control implements IFocusableControl {
         name?: string | undefined;
-        private _text;
+        private _textWrapper;
         private _placeholderText;
         private _background;
         private _focusedBackground;
@@ -2205,6 +2316,7 @@ declare module "babylonjs-gui/2D/controls/inputText" {
         /** Gets or sets the text displayed in the control */
         get text(): string;
         set text(value: string);
+        private _textHasChanged;
         /** Gets or sets control width */
         get width(): string | number;
         set width(value: string | number);
@@ -2218,6 +2330,14 @@ declare module "babylonjs-gui/2D/controls/inputText" {
         onBlur(): void;
         /** @hidden */
         onFocus(): void;
+        /**
+         * Function to focus an inputText programmatically
+         */
+        focus(): void;
+        /**
+         * Function to unfocus an inputText programmatically
+         */
+        blur(): void;
         protected _getTypeName(): string;
         /**
          * Function called to get the list of controls that should not steal the focus from this control
@@ -2247,7 +2367,7 @@ declare module "babylonjs-gui/2D/controls/inputText" {
         _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean;
         _onPointerMove(target: Control, coordinates: Vector2, pointerId: number, pi: PointerInfoBase): void;
         _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
-        protected _beforeRenderText(text: string): string;
+        protected _beforeRenderText(textWrapper: TextWrapper): TextWrapper;
         dispose(): void;
     }
 }
@@ -2489,13 +2609,66 @@ declare module "babylonjs-gui/2D/controls/ellipse" {
         protected _clipForChildren(context: CanvasRenderingContext2D): void;
     }
 }
+declare module "babylonjs-gui/2D/controls/focusableButton" {
+    import { Nullable } from "babylonjs/types";
+    import { Vector2 } from "babylonjs/Maths/math.vector";
+    import { Button } from "babylonjs-gui/2D/controls/button";
+    import { Control } from "babylonjs-gui/2D/controls/control";
+    import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
+    import { IFocusableControl } from "babylonjs-gui/2D/controls/focusableControl";
+    import { Observable } from 'babylonjs/Misc/observable';
+    /**
+     * Class used to create a focusable button that can easily handle keyboard events
+     */
+    export class FocusableButton extends Button implements IFocusableControl {
+        name?: string | undefined;
+        /** Highlight color when button is focused */
+        focusedColor: Nullable<string>;
+        private _isFocused;
+        private _unfocusedColor;
+        /** Observable raised when the control gets the focus */
+        onFocusObservable: Observable<Button>;
+        /** Observable raised when the control loses the focus */
+        onBlurObservable: Observable<Button>;
+        /** Observable raised when a key event was processed */
+        onKeyboardEventProcessedObservable: Observable<KeyboardEvent>;
+        constructor(name?: string | undefined);
+        /** @hidden */
+        onBlur(): void;
+        /** @hidden */
+        onFocus(): void;
+        /**
+         * Function called to get the list of controls that should not steal the focus from this control
+         * @returns an array of controls
+         */
+        keepsFocusWith(): Nullable<Control[]>;
+        /**
+         * Function to focus a button programmatically
+         */
+        focus(): void;
+        /**
+         * Function to unfocus a button programmatically
+         */
+        blur(): void;
+        /**
+         * Handles the keyboard event
+         * @param evt Defines the KeyboardEvent
+         */
+        processKeyboard(evt: KeyboardEvent): void;
+        /** @hidden */
+        _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean;
+        /** @hidden */
+        displose(): void;
+    }
+}
 declare module "babylonjs-gui/2D/controls/inputPassword" {
     import { InputText } from "babylonjs-gui/2D/controls/inputText";
+    import { TextWrapper } from "babylonjs-gui/2D/controls/textWrapper";
     /**
      * Class used to create a password control
      */
     export class InputPassword extends InputText {
-        protected _beforeRenderText(text: string): string;
+        protected _beforeRenderText(textWrapper: TextWrapper): TextWrapper;
     }
 }
 declare module "babylonjs-gui/2D/controls/line" {
@@ -2567,7 +2740,7 @@ declare module "babylonjs-gui/2D/controls/line" {
 }
 declare module "babylonjs-gui/2D/multiLinePoint" {
     import { Nullable } from "babylonjs/types";
-    import { Vector2 } from "babylonjs/Maths/math.vector";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
     import { MultiLine } from "babylonjs-gui/2D/controls/multiLine";
     import { Control } from "babylonjs-gui/2D/controls/control";
@@ -2584,7 +2757,7 @@ declare module "babylonjs-gui/2D/multiLinePoint" {
         private _controlObserver;
         private _meshObserver;
         /** @hidden */
-        _point: Vector2;
+        _point: Vector3;
         /**
          * Creates a new MultiLinePoint
          * @param multiLine defines the source MultiLine object
@@ -2605,10 +2778,10 @@ declare module "babylonjs-gui/2D/multiLinePoint" {
         /** Resets links */
         resetLinks(): void;
         /**
-         * Gets a translation vector
+         * Gets a translation vector with Z component
          * @returns the translation vector
          */
-        translate(): Vector2;
+        translate(): Vector3;
         private _translatePoint;
         /** Release associated resources */
         dispose(): void;
@@ -3390,6 +3563,103 @@ declare module "babylonjs-gui/2D/controls/scrollViewers/scrollViewer" {
         dispose(): void;
     }
 }
+declare module "babylonjs-gui/2D/controls/toggleButton" {
+    import { Nullable } from "babylonjs/types";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { Vector2 } from "babylonjs/Maths/math.vector";
+    import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
+    import { Control } from "babylonjs-gui/2D/controls/control";
+    import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
+    import { Image } from "babylonjs-gui/2D/controls/image";
+    import { PointerInfoBase } from "babylonjs/Events/pointerEvents";
+    /**
+     * Class used to create toggle buttons
+     */
+    export class ToggleButton extends Rectangle {
+        name?: string | undefined;
+        /**
+         * Function called to generate the toActive animation
+         */
+        toActiveAnimation: () => void;
+        /**
+         * Function called to generate the toInactive animation
+         */
+        toInactiveAnimation: () => void;
+        /**
+         * Function called to generate a pointer enter animation when the toggle button is active.
+         */
+        pointerEnterActiveAnimation: () => void;
+        /**
+         * Function called to generate a pointer out animation when the toggle button is active.
+         */
+        pointerOutActiveAnimation: () => void;
+        /**
+         * Function called to generate a pointer down animation when the toggle button is active.
+         */
+        pointerDownActiveAnimation: () => void;
+        /**
+         * Function called to generate a pointer up animation when the toggle button is active.
+         */
+        pointerUpActiveAnimation: () => void;
+        /**
+         * Function called to generate a pointer enter animation when the toggle button is inactive.
+         */
+        pointerEnterInactiveAnimation: () => void;
+        /**
+         * Function called to generate a pointer out animation when the toggle button is inactive.
+         */
+        pointerOutInactiveAnimation: () => void;
+        /**
+         * Function called to generate a pointer down animation when the toggle button is inactive.
+         */
+        pointerDownInactiveAnimation: () => void;
+        /**
+         * Function called to generate a pointer up animation when the toggle button is inactive.
+         */
+        pointerUpInactiveAnimation: () => void;
+        /** Observable raised when isActive is changed */
+        onIsActiveChangedObservable: Observable<boolean>;
+        /**
+         * Gets or sets a boolean indicating that the toggle button will let internal controls handle picking instead of doing it directly using its bounding info
+         */
+        delegatePickingToChildren: boolean;
+        private _image;
+        /**
+         * Returns the ToggleButton's image control if it exists
+         */
+        get image(): Nullable<Image>;
+        private _textBlock;
+        /**
+         * Returns the ToggleButton's child TextBlock control if it exists
+         */
+        get textBlock(): Nullable<TextBlock>;
+        private _group;
+        /** Gets or sets group name this toggle button belongs to */
+        get group(): string;
+        set group(value: string);
+        private _isActive;
+        /** Gets or sets a boolean indicating if the toogle button is active or not */
+        get isActive(): boolean;
+        set isActive(value: boolean);
+        /**
+         * Creates a new ToggleButton
+         * @param name defines the control name
+         * @param group defines the toggle group this toggle belongs to
+         */
+        constructor(name?: string | undefined, group?: string);
+        protected _getTypeName(): string;
+        /** @hidden */
+        _processPicking(x: number, y: number, pi: PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
+        /** @hidden */
+        _onPointerEnter(target: Control, pi: PointerInfoBase): boolean;
+        /** @hidden */
+        _onPointerOut(target: Control, pi: PointerInfoBase, force?: boolean): void;
+        /** @hidden */
+        _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean;
+        /** @hidden */
+        _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi: PointerInfoBase): void;
+    }
+}
 declare module "babylonjs-gui/2D/controls/displayGrid" {
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { Nullable } from 'babylonjs/types';
@@ -3501,6 +3771,7 @@ declare module "babylonjs-gui/2D/controls/index" {
     export * from "babylonjs-gui/2D/controls/container";
     export * from "babylonjs-gui/2D/controls/control";
     export * from "babylonjs-gui/2D/controls/ellipse";
+    export * from "babylonjs-gui/2D/controls/focusableButton";
     export * from "babylonjs-gui/2D/controls/grid";
     export * from "babylonjs-gui/2D/controls/image";
     export * from "babylonjs-gui/2D/controls/inputText";
@@ -3512,6 +3783,8 @@ declare module "babylonjs-gui/2D/controls/index" {
     export * from "babylonjs-gui/2D/controls/selector";
     export * from "babylonjs-gui/2D/controls/scrollViewers/scrollViewer";
     export * from "babylonjs-gui/2D/controls/textBlock";
+    export * from "babylonjs-gui/2D/controls/textWrapper";
+    export * from "babylonjs-gui/2D/controls/toggleButton";
     export * from "babylonjs-gui/2D/controls/virtualKeyboard";
     export * from "babylonjs-gui/2D/controls/rectangle";
     export * from "babylonjs-gui/2D/controls/displayGrid";
@@ -4436,6 +4709,39 @@ declare module "babylonjs-gui" {
 }
 declare module BABYLON.GUI {
     /**
+    * Interface used to define a control that can receive focus
+    */
+    export interface IFocusableControl {
+        /**
+         * Function called when the control receives the focus
+         */
+        onFocus(): void;
+        /**
+         * Function called when the control loses the focus
+         */
+        onBlur(): void;
+        /**
+         * Function called to let the control handle keyboard events
+         * @param evt defines the current keyboard event
+         */
+        processKeyboard(evt: KeyboardEvent): void;
+        /**
+        * Function called to get the list of controls that should not steal the focus from this control
+        * @returns an array of controls
+        */
+        keepsFocusWith(): BABYLON.Nullable<Control[]>;
+        /**
+        * Function to focus the control programmatically
+        */
+        focus(): void;
+        /**
+        * Function to unfocus the control programmatically
+        */
+        blur(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
      * Class used to specific a value and its associated unit
      */
     export class ValueAndUnit {
@@ -4745,29 +5051,6 @@ declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
     /**
-    * Interface used to define a control that can receive focus
-    */
-    export interface IFocusableControl {
-        /**
-         * Function called when the control receives the focus
-         */
-        onFocus(): void;
-        /**
-         * Function called when the control loses the focus
-         */
-        onBlur(): void;
-        /**
-         * Function called to let the control handle keyboard events
-         * @param evt defines the current keyboard event
-         */
-        processKeyboard(evt: KeyboardEvent): void;
-        /**
-        * Function called to get the list of controls that should not steal the focus from this control
-        * @returns an array of controls
-        */
-        keepsFocusWith(): BABYLON.Nullable<Control[]>;
-    }
-    /**
     * Class used to create texture to support 2D GUI elements
     * @see https://doc.babylonjs.com/how_to/gui
     */
@@ -4856,6 +5139,10 @@ declare module BABYLON.GUI {
         * Gets or sets a boolean defining if alpha is stored as premultiplied
         */
         premulAlpha: boolean;
+        /**
+         * Gets or sets a boolean indicating that the canvas must be reverted on Y when updating the texture
+         */
+        applyYInversionOnUpdate: boolean;
         /**
         * Gets or sets a number used to scale rendering size (2 means that the texture will be twice bigger).
         * Useful when you want more antialiasing
@@ -5005,6 +5292,13 @@ declare module BABYLON.GUI {
         * @returns the projected position
         */
         getProjectedPosition(position: BABYLON.Vector3, worldMatrix: BABYLON.Matrix): BABYLON.Vector2;
+        /**
+        * Get screen coordinates for a vector3
+        * @param position defines the position to project
+        * @param worldMatrix defines the world matrix to use
+        * @returns the projected position with Z
+        */
+        getProjectedPositionWithZ(position: BABYLON.Vector3, worldMatrix: BABYLON.Matrix): BABYLON.Vector3;
         private _checkUpdate;
         private _clearMeasure;
         private _render;
@@ -5050,6 +5344,16 @@ declare module BABYLON.GUI {
         private _attachToOnPointerOut;
         private _attachToOnBlur;
         /**
+         * Serializes the entire GUI system
+         * @returns an object with the JSON serialized data
+         */
+        serializeContent(): any;
+        /**
+         * Recreate the content of the ADT from a JSON object
+         * @param serializedObject define the JSON serialized object to restore from
+         */
+        parseContent(serializedObject: any): void;
+        /**
          * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh)
          * @param mesh defines the mesh which will receive the texture
          * @param width defines the texture width (1024 by default)
@@ -5060,6 +5364,16 @@ declare module BABYLON.GUI {
          * @returns a new AdvancedDynamicTexture
          */
         static CreateForMesh(mesh: BABYLON.AbstractMesh, width?: number, height?: number, supportPointerMove?: boolean, onlyAlphaTesting?: boolean, invertY?: boolean): AdvancedDynamicTexture;
+        /**
+         * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh) BUT do not create a new material for the mesh. You will be responsible for connecting the texture
+         * @param mesh defines the mesh which will receive the texture
+         * @param width defines the texture width (1024 by default)
+         * @param height defines the texture height (1024 by default)
+         * @param supportPointerMove defines a boolean indicating if the texture must capture move events (true by default)
+         * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
+         * @returns a new AdvancedDynamicTexture
+         */
+        static CreateForMeshTexture(mesh: BABYLON.AbstractMesh, width?: number, height?: number, supportPointerMove?: boolean, invertY?: boolean): AdvancedDynamicTexture;
         /**
         * Creates a new AdvancedDynamicTexture in fullscreen mode.
         * In this mode the texture will rely on a layer for its rendering.
@@ -5508,13 +5822,13 @@ declare module BABYLON.GUI {
         get centerX(): number;
         /** Gets the center coordinate on Y axis */
         get centerY(): number;
-        /** Gets or sets if control is Enabled*/
+        /** Gets or sets if control is Enabled */
         get isEnabled(): boolean;
         set isEnabled(value: boolean);
-        /** Gets or sets background color of control if it's disabled*/
+        /** Gets or sets background color of control if it's disabled */
         get disabledColor(): string;
         set disabledColor(value: string);
-        /** Gets or sets front color of control if it's disabled*/
+        /** Gets or sets front color of control if it's disabled */
         get disabledColorItem(): string;
         set disabledColorItem(value: string);
         /**
@@ -5585,6 +5899,24 @@ declare module BABYLON.GUI {
          * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
          */
         linkWithMesh(mesh: BABYLON.Nullable<BABYLON.TransformNode>): void;
+        /**
+        * Shorthand funtion to set the top, right, bottom, and left padding values on the control.
+        * @param { string | number} paddingTop - The value of the top padding.
+        * @param { string | number} paddingRight - The value of the right padding. If omitted, top is used.
+        * @param { string | number} paddingBottom - The value of the bottom padding. If omitted, top is used.
+        * @param { string | number} paddingLeft - The value of the left padding. If omitted, right is used.
+        * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+        */
+        setPadding(paddingTop: string | number, paddingRight?: string | number, paddingBottom?: string | number, paddingLeft?: string | number): void;
+        /**
+         * Shorthand funtion to set the top, right, bottom, and left padding values in pixels on the control.
+         * @param { number} paddingTop - The value in pixels of the top padding.
+         * @param { number} paddingRight - The value in pixels of the right padding. If omitted, top is used.
+         * @param { number} paddingBottom - The value in pixels of the bottom padding. If omitted, top is used.
+         * @param { number} paddingLeft - The value in pixels of the left padding. If omitted, right is used.
+         * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+         */
+        setPaddingInPixels(paddingTop: number, paddingRight?: number, paddingBottom?: number, paddingLeft?: number): void;
         /** @hidden */
         _moveToProjectedPosition(projectedPosition: BABYLON.Vector3): void;
         /** @hidden */
@@ -5663,6 +5995,13 @@ declare module BABYLON.GUI {
         /** @hidden */
         _processObservables(type: number, x: number, y: number, pi: BABYLON.PointerInfoBase, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         private _prepareFont;
+        /**
+         * Serializes the current control
+         * @param serializationObject defined the JSON serialized object
+         */
+        serialize(serializationObject: any): void;
+        /** @hidden */
+        _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
         /** Releases associated resources */
         dispose(): void;
         private static _HORIZONTAL_ALIGNMENT_LEFT;
@@ -5690,6 +6029,13 @@ declare module BABYLON.GUI {
             height: number;
             descent: number;
         };
+        /**
+         * Creates a Control from parsed data
+         * @param serializedObject defines parsed data
+         * @param host defines the hosting AdvancedDynamicTexture
+         * @returns a new Control
+         */
+        static Parse(serializedObject: any, host: AdvancedDynamicTexture): Control;
         /**
          * Creates a stack panel that can be used to render headers
          * @param control defines the control to associate with the header
@@ -5813,8 +6159,15 @@ declare module BABYLON.GUI {
         _processPicking(x: number, y: number, pi: BABYLON.PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        /**
+        * Serializes the current control
+        * @param serializationObject defined the JSON serialized object
+        */
+        serialize(serializationObject: any): void;
         /** Releases associated resources */
         dispose(): void;
+        /** @hidden */
+        _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
     }
 }
 declare module BABYLON.GUI {
@@ -6121,6 +6474,10 @@ declare module BABYLON.GUI {
         private _onImageLoaded;
         private _extractNinePatchSliceDataFromImage;
         /**
+         * Gets the image source url
+         */
+        get source(): BABYLON.Nullable<string>;
+        /**
          * Gets or sets image source url
          */
         set source(value: BABYLON.Nullable<string>);
@@ -6309,6 +6666,13 @@ declare module BABYLON.GUI {
         protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _postMeasure(): void;
+        /**
+         * Serializes the current control
+         * @param serializationObject defined the JSON serialized object
+         */
+        serialize(serializationObject: any): void;
+        /** @hidden */
+        _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
     }
 }
 declare module BABYLON.GUI {
@@ -6451,12 +6815,27 @@ declare module BABYLON.GUI {
     }
 }
 declare module BABYLON.GUI {
+    /** @hidden */
+    export class TextWrapper {
+        private _text;
+        private _characters;
+        get text(): string;
+        set text(txt: string);
+        get length(): number;
+        removePart(idxStart: number, idxEnd: number, insertTxt?: string): void;
+        charAt(idx: number): string;
+        substr(from: number, length?: number): string;
+        substring(from: number, to?: number): string;
+        isWord(index: number): boolean;
+    }
+}
+declare module BABYLON.GUI {
     /**
      * Class used to create input text control
      */
     export class InputText extends Control implements IFocusableControl {
         name?: string | undefined;
-        private _text;
+        private _textWrapper;
         private _placeholderText;
         private _background;
         private _focusedBackground;
@@ -6566,6 +6945,7 @@ declare module BABYLON.GUI {
         /** Gets or sets the text displayed in the control */
         get text(): string;
         set text(value: string);
+        private _textHasChanged;
         /** Gets or sets control width */
         get width(): string | number;
         set width(value: string | number);
@@ -6579,6 +6959,14 @@ declare module BABYLON.GUI {
         onBlur(): void;
         /** @hidden */
         onFocus(): void;
+        /**
+         * Function to focus an inputText programmatically
+         */
+        focus(): void;
+        /**
+         * Function to unfocus an inputText programmatically
+         */
+        blur(): void;
         protected _getTypeName(): string;
         /**
          * Function called to get the list of controls that should not steal the focus from this control
@@ -6608,7 +6996,7 @@ declare module BABYLON.GUI {
         _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
         _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number, pi: BABYLON.PointerInfoBase): void;
         _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
-        protected _beforeRenderText(text: string): string;
+        protected _beforeRenderText(textWrapper: TextWrapper): TextWrapper;
         dispose(): void;
     }
 }
@@ -6838,10 +7226,55 @@ declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
     /**
+     * Class used to create a focusable button that can easily handle keyboard events
+     */
+    export class FocusableButton extends Button implements IFocusableControl {
+        name?: string | undefined;
+        /** Highlight color when button is focused */
+        focusedColor: BABYLON.Nullable<string>;
+        private _isFocused;
+        private _unfocusedColor;
+        /** BABYLON.Observable raised when the control gets the focus */
+        onFocusObservable: BABYLON.Observable<Button>;
+        /** BABYLON.Observable raised when the control loses the focus */
+        onBlurObservable: BABYLON.Observable<Button>;
+        /** BABYLON.Observable raised when a key event was processed */
+        onKeyboardEventProcessedObservable: BABYLON.Observable<KeyboardEvent>;
+        constructor(name?: string | undefined);
+        /** @hidden */
+        onBlur(): void;
+        /** @hidden */
+        onFocus(): void;
+        /**
+         * Function called to get the list of controls that should not steal the focus from this control
+         * @returns an array of controls
+         */
+        keepsFocusWith(): BABYLON.Nullable<Control[]>;
+        /**
+         * Function to focus a button programmatically
+         */
+        focus(): void;
+        /**
+         * Function to unfocus a button programmatically
+         */
+        blur(): void;
+        /**
+         * Handles the keyboard event
+         * @param evt Defines the KeyboardEvent
+         */
+        processKeyboard(evt: KeyboardEvent): void;
+        /** @hidden */
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
+        /** @hidden */
+        displose(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
      * Class used to create a password control
      */
     export class InputPassword extends InputText {
-        protected _beforeRenderText(text: string): string;
+        protected _beforeRenderText(textWrapper: TextWrapper): TextWrapper;
     }
 }
 declare module BABYLON.GUI {
@@ -6921,7 +7354,7 @@ declare module BABYLON.GUI {
         private _controlObserver;
         private _meshObserver;
         /** @hidden */
-        _point: BABYLON.Vector2;
+        _point: BABYLON.Vector3;
         /**
          * Creates a new MultiLinePoint
          * @param multiLine defines the source MultiLine object
@@ -6942,10 +7375,10 @@ declare module BABYLON.GUI {
         /** Resets links */
         resetLinks(): void;
         /**
-         * Gets a translation vector
+         * Gets a translation vector with Z component
          * @returns the translation vector
          */
-        translate(): BABYLON.Vector2;
+        translate(): BABYLON.Vector3;
         private _translatePoint;
         /** Release associated resources */
         dispose(): void;
@@ -7685,6 +8118,95 @@ declare module BABYLON.GUI {
         _renderHighlightSpecific(context: CanvasRenderingContext2D): void;
         /** Releases associated resources */
         dispose(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to create toggle buttons
+     */
+    export class ToggleButton extends Rectangle {
+        name?: string | undefined;
+        /**
+         * Function called to generate the toActive animation
+         */
+        toActiveAnimation: () => void;
+        /**
+         * Function called to generate the toInactive animation
+         */
+        toInactiveAnimation: () => void;
+        /**
+         * Function called to generate a pointer enter animation when the toggle button is active.
+         */
+        pointerEnterActiveAnimation: () => void;
+        /**
+         * Function called to generate a pointer out animation when the toggle button is active.
+         */
+        pointerOutActiveAnimation: () => void;
+        /**
+         * Function called to generate a pointer down animation when the toggle button is active.
+         */
+        pointerDownActiveAnimation: () => void;
+        /**
+         * Function called to generate a pointer up animation when the toggle button is active.
+         */
+        pointerUpActiveAnimation: () => void;
+        /**
+         * Function called to generate a pointer enter animation when the toggle button is inactive.
+         */
+        pointerEnterInactiveAnimation: () => void;
+        /**
+         * Function called to generate a pointer out animation when the toggle button is inactive.
+         */
+        pointerOutInactiveAnimation: () => void;
+        /**
+         * Function called to generate a pointer down animation when the toggle button is inactive.
+         */
+        pointerDownInactiveAnimation: () => void;
+        /**
+         * Function called to generate a pointer up animation when the toggle button is inactive.
+         */
+        pointerUpInactiveAnimation: () => void;
+        /** BABYLON.Observable raised when isActive is changed */
+        onIsActiveChangedObservable: BABYLON.Observable<boolean>;
+        /**
+         * Gets or sets a boolean indicating that the toggle button will let internal controls handle picking instead of doing it directly using its bounding info
+         */
+        delegatePickingToChildren: boolean;
+        private _image;
+        /**
+         * Returns the ToggleButton's image control if it exists
+         */
+        get image(): BABYLON.Nullable<Image>;
+        private _textBlock;
+        /**
+         * Returns the ToggleButton's child TextBlock control if it exists
+         */
+        get textBlock(): BABYLON.Nullable<TextBlock>;
+        private _group;
+        /** Gets or sets group name this toggle button belongs to */
+        get group(): string;
+        set group(value: string);
+        private _isActive;
+        /** Gets or sets a boolean indicating if the toogle button is active or not */
+        get isActive(): boolean;
+        set isActive(value: boolean);
+        /**
+         * Creates a new ToggleButton
+         * @param name defines the control name
+         * @param group defines the toggle group this toggle belongs to
+         */
+        constructor(name?: string | undefined, group?: string);
+        protected _getTypeName(): string;
+        /** @hidden */
+        _processPicking(x: number, y: number, pi: BABYLON.PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
+        /** @hidden */
+        _onPointerEnter(target: Control, pi: BABYLON.PointerInfoBase): boolean;
+        /** @hidden */
+        _onPointerOut(target: Control, pi: BABYLON.PointerInfoBase, force?: boolean): void;
+        /** @hidden */
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
+        /** @hidden */
+        _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi: BABYLON.PointerInfoBase): void;
     }
 }
 declare module BABYLON.GUI {

@@ -297,8 +297,8 @@ declare module BABYLON.GLTF2.Exporter {
          */
         private _convertSpecGlossFactorsToMetallicRoughnessAsync;
         /**
-         * Converts a Babylon PBR Metallic Roughness Material to a glTF Material
-         * @param babylonPBRMaterial BJS PBR Metallic Roughness Material
+         * Converts a Babylon PBR Base Material to a glTF Material
+         * @param babylonPBRMaterial BJS PBR Base Material
          * @param mimeType mime type to use for the textures
          * @param images array of glTF image interfaces
          * @param textures array of glTF texture interfaces
@@ -306,7 +306,7 @@ declare module BABYLON.GLTF2.Exporter {
          * @param imageData map of image file name to data
          * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
          */
-        _convertPBRMaterialAsync(babylonPBRMaterial: PBRMaterial, mimeType: ImageMimeType, hasTextureCoords: boolean): Promise<IMaterial>;
+        _convertPBRMaterialAsync(babylonPBRMaterial: PBRBaseMaterial, mimeType: ImageMimeType, hasTextureCoords: boolean): Promise<IMaterial>;
         private setMetallicRoughnessPbrMaterial;
         private getPixelsFromTexture;
         /**
@@ -646,10 +646,6 @@ declare module BABYLON.GLTF2.Exporter {
          * @returns A boolean indicating whether the extension has been un-registered
          */
         static UnregisterExtension(name: string): boolean;
-        /**
-         * Lazy load a local engine
-         */
-        _getLocalEngine(): Engine;
         private reorderIndicesBasedOnPrimitiveMode;
         /**
          * Reorders the vertex attribute data based on the primitive mode.  This is necessary when indices are not available and the winding order is
@@ -1250,8 +1246,9 @@ declare module BABYLON {
         * @param fileName changes the downloads fileName.
         * @param binary changes the STL to a binary type.
         * @param isLittleEndian toggle for binary type exporter.
+        * @param doNotBakeTransform toggle if meshes transforms should be baked or not.
         * @returns the STL as UTF8 string
         */
-        static CreateSTL(meshes: Mesh[], download?: boolean, fileName?: string, binary?: boolean, isLittleEndian?: boolean): any;
+        static CreateSTL(meshes: Mesh[], download?: boolean, fileName?: string, binary?: boolean, isLittleEndian?: boolean, doNotBakeTransform?: boolean): any;
     }
 }

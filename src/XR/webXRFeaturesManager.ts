@@ -53,6 +53,11 @@ export interface IWebXRFeature extends IDisposable {
      * A list of (Babylon WebXR) features this feature depends on
      */
     dependsOn?: string[];
+
+    /**
+     * If this feature requires to extend the XRSessionInit object, this function will return the partial XR session init object
+     */
+    getXRSessionInitExtension?: () => Promise<Partial<XRSessionInit>>;
 }
 
 /**
@@ -71,6 +76,10 @@ export class WebXRFeatureName {
      * The name of the hit test feature
      */
     public static readonly HIT_TEST = "xr-hit-test";
+    /**
+     * The name of the mesh detection feature
+     */
+    public static readonly MESH_DETECTION = "xr-mesh-detection";
     /**
      * physics impostors for xr controllers feature
      */
@@ -95,6 +104,10 @@ export class WebXRFeatureName {
      * The name of the hand tracking feature.
      */
     public static readonly HAND_TRACKING = "xr-hand-tracking";
+    /**
+     * The name of the image tracking feature
+     */
+    public static readonly IMAGE_TRACKING = "xr-image-tracking";
 }
 
 /**
@@ -380,16 +393,16 @@ export class WebXRFeaturesManager implements IDisposable {
     }
 
     /**
-     * This function will exten the session creation configuration object with enabled features.
+     * This function will extend the session creation configuration object with enabled features.
      * If, for example, the anchors feature is enabled, it will be automatically added to the optional or required features list,
      * according to the defined "required" variable, provided during enableFeature call
      * @param xrSessionInit the xr Session init object to extend
      *
      * @returns an extended XRSessionInit object
      */
-    public extendXRSessionInitObject(xrSessionInit: XRSessionInit): XRSessionInit {
+    public async _extendXRSessionInitObject(xrSessionInit: XRSessionInit): Promise<XRSessionInit> {
         const enabledFeatures = this.getEnabledFeatures();
-        enabledFeatures.forEach((featureName) => {
+        for (const featureName of enabledFeatures) {
             const feature = this._features[featureName];
             const nativeName = feature.featureImplementation.xrNativeFeatureName;
             if (nativeName) {
@@ -405,7 +418,14 @@ export class WebXRFeaturesManager implements IDisposable {
                     }
                 }
             }
-        });
+            if (feature.featureImplementation.getXRSessionInitExtension) {
+                const extended = await feature.featureImplementation.getXRSessionInitExtension();
+                xrSessionInit = {
+                    ...xrSessionInit,
+                    ...extended,
+                };
+            }
+        }
         return xrSessionInit;
     }
 }

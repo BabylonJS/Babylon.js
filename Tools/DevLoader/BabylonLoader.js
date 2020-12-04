@@ -40,6 +40,8 @@ var BABYLONDEVTOOLS;
         var min;
         var babylonJSPath;
 
+        var coreOnly;
+
         var localDevES6FolderName;
         var localDevUMDFolderName;
 
@@ -57,6 +59,7 @@ var BABYLONDEVTOOLS;
                 workerMode = true;
             }
             babylonJSPath = '';
+            coreOnly = false;
         }
 
         Loader.prototype.debugShortcut = function(engine) {
@@ -234,7 +237,14 @@ var BABYLONDEVTOOLS;
                 if (!useDist && module.isCore) {
                     this.loadCoreDev();
                 }
-                else {
+                else if (!coreOnly || module.isCore) {
+                    this.loadLibrary(moduleName, module.libraries[i], module);
+                }
+                // Allow also loaders in CORE.
+                else if (coreOnly && (moduleName === "loaders" ||
+                    moduleName === "inspector" ||
+                    moduleName === "nodeEditor" ||
+                    moduleName === "materialsLibrary")) {
                     this.loadLibrary(moduleName, module.libraries[i], module);
                 }
             }
@@ -280,6 +290,11 @@ var BABYLONDEVTOOLS;
             for (var i = 0; i < settings.apps.length; i++) {
                 this.loadApp(settings.apps[i], settings[settings.apps[i]]);
             }
+        }
+
+        Loader.prototype.loadCoreOnly = function() {
+            coreOnly = true;
+            return this;
         }
 
         Loader.prototype.load = function(newCallback) {

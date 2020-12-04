@@ -2,7 +2,6 @@ import * as React from 'react';
 import { GlobalState } from '../../globalState';
 import { Color3 } from 'babylonjs/Maths/math.color';
 import { GradientBlockColorStep } from 'babylonjs/Materials/Node/Blocks/gradientBlock';
-import { ColorPickerLineComponent } from '../../sharedComponents/colorPickerComponent';
 import { FloatLineComponent } from '../../sharedComponents/floatLineComponent';
 
 const deleteButton = require('../../../imgs/delete.svg');
@@ -52,13 +51,6 @@ export class GradientStepComponent extends React.Component<IGradientStepComponen
             <div className="gradient-step">
                 <div className="step">
                     {`#${this.props.lineIndex}`}
-                </div>
-                <div className="color">
-                    <ColorPickerLineComponent value={step.color} disableAlpha={true} globalState={this.props.globalState} 
-                            onColorChanged={color => {
-                                    this.updateColor(color);
-                            }} 
-                    />  
                 </div>
                 <div className="step-value">
                     <FloatLineComponent globalState={this.props.globalState} smallUI={true} label="" target={step} propertyName="step"

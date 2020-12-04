@@ -3,18 +3,17 @@ import { GlobalState } from './globalState';
 import { Texture } from 'babylonjs/Materials/Textures/texture';
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
-import { Nullable } from 'babylonjs/types';
-import { GraphFrame } from './diagram/graphFrame';
+
 
 export class SerializationTools {
 
-    public static UpdateLocations(material: NodeMaterial, globalState: GlobalState, frame?: Nullable<GraphFrame>) {
+    public static UpdateLocations(material: NodeMaterial, globalState: GlobalState) {
         material.editorData = {
             locations: []
         };
 
         // Store node locations
-        const blocks: NodeMaterialBlock[] = frame ? frame.nodes.map(n => n.block) : material.attachedBlocks;
+        const blocks: NodeMaterialBlock[] =material.attachedBlocks;
 
         for (var block of blocks) {
             let node = globalState.onGetNodeFromBlock(block);
@@ -26,16 +25,15 @@ export class SerializationTools {
             });
         }
 
-        globalState.storeEditorData(material.editorData, frame);
+        globalState.storeEditorData(material.editorData);
     }
 
-    public static Serialize(material: NodeMaterial, globalState: GlobalState, frame?: Nullable<GraphFrame>) {
+    public static Serialize(material: NodeMaterial, globalState: GlobalState) {
         let bufferSerializationState = Texture.SerializeBuffers;
         Texture.SerializeBuffers = DataStorage.ReadBoolean("EmbedTextures", true);
 
-        this.UpdateLocations(material, globalState, frame);
 
-        const selectedBlocks = frame ? frame.nodes.map(n => n.block) : undefined;
+        const selectedBlocks = undefined;
 
         let serializationObject = material.serialize(selectedBlocks);
 

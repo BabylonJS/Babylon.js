@@ -74,7 +74,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
     render() {
         return (
             <div className="textInputLine">
-                <div className="label">
+                <div className="label" title={this.props.label}>
                     {this.props.label}
                 </div>
                 <div className="value">

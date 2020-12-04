@@ -1,7 +1,7 @@
 /// <reference types="react" />
 declare module NODEEDITOR {
     export class BlockTools {
-        static GetBlockFromString(data: string, scene: BABYLON.Scene, nodeMaterial: BABYLON.NodeMaterial): BABYLON.DesaturateBlock | BABYLON.RefractBlock | BABYLON.ReflectBlock | BABYLON.DerivativeBlock | BABYLON.Rotate2dBlock | BABYLON.NormalBlendBlock | BABYLON.WorleyNoise3DBlock | BABYLON.SimplexPerlin3DBlock | BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.DiscardBlock | BABYLON.ImageProcessingBlock | BABYLON.ColorMergerBlock | BABYLON.VectorMergerBlock | BABYLON.ColorSplitterBlock | BABYLON.VectorSplitterBlock | BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.ScaleBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.PowBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | BABYLON.TrigonometryBlock | BABYLON.RemapBlock | BABYLON.NormalizeBlock | BABYLON.FresnelBlock | BABYLON.LerpBlock | BABYLON.NLerpBlock | BABYLON.DivideBlock | BABYLON.SubtractBlock | BABYLON.ModBlock | BABYLON.StepBlock | BABYLON.SmoothStepBlock | BABYLON.OneMinusBlock | BABYLON.ReciprocalBlock | BABYLON.ViewDirectionBlock | BABYLON.LightInformationBlock | BABYLON.MaxBlock | BABYLON.MinBlock | BABYLON.LengthBlock | BABYLON.DistanceBlock | BABYLON.NegateBlock | BABYLON.PerturbNormalBlock | BABYLON.RandomNumberBlock | BABYLON.ReplaceColorBlock | BABYLON.PosterizeBlock | BABYLON.ArcTan2Block | BABYLON.GradientBlock | BABYLON.FrontFacingBlock | BABYLON.WaveBlock | BABYLON.InputBlock | BABYLON.PBRMetallicRoughnessBlock | BABYLON.SheenBlock | BABYLON.AmbientOcclusionBlock | BABYLON.ReflectivityBlock | BABYLON.AnisotropyBlock | BABYLON.ReflectionBlock | BABYLON.ClearCoatBlock | BABYLON.RefractionBlock | BABYLON.SubSurfaceBlock | BABYLON.CurrentScreenBlock | BABYLON.ParticleTextureBlock | BABYLON.ParticleRampGradientBlock | BABYLON.ParticleBlendMultiplyBlock | BABYLON.FragCoordBlock | BABYLON.ScreenSizeBlock | null;
+        static GetBlockFromString(data: string, scene: BABYLON.Scene, nodeMaterial: BABYLON.NodeMaterial): BABYLON.DesaturateBlock | BABYLON.RefractBlock | BABYLON.ReflectBlock | BABYLON.DerivativeBlock | BABYLON.Rotate2dBlock | BABYLON.NormalBlendBlock | BABYLON.WorleyNoise3DBlock | BABYLON.SimplexPerlin3DBlock | BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.DiscardBlock | BABYLON.ImageProcessingBlock | BABYLON.ColorMergerBlock | BABYLON.VectorMergerBlock | BABYLON.ColorSplitterBlock | BABYLON.VectorSplitterBlock | BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.ScaleBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.PowBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | BABYLON.TrigonometryBlock | BABYLON.RemapBlock | BABYLON.NormalizeBlock | BABYLON.FresnelBlock | BABYLON.LerpBlock | BABYLON.NLerpBlock | BABYLON.DivideBlock | BABYLON.SubtractBlock | BABYLON.ModBlock | BABYLON.StepBlock | BABYLON.SmoothStepBlock | BABYLON.OneMinusBlock | BABYLON.ReciprocalBlock | BABYLON.ViewDirectionBlock | BABYLON.LightInformationBlock | BABYLON.MaxBlock | BABYLON.MinBlock | BABYLON.LengthBlock | BABYLON.DistanceBlock | BABYLON.NegateBlock | BABYLON.PerturbNormalBlock | BABYLON.RandomNumberBlock | BABYLON.ReplaceColorBlock | BABYLON.PosterizeBlock | BABYLON.ArcTan2Block | BABYLON.GradientBlock | BABYLON.FrontFacingBlock | BABYLON.WaveBlock | BABYLON.InputBlock | BABYLON.PBRMetallicRoughnessBlock | BABYLON.SheenBlock | BABYLON.AnisotropyBlock | BABYLON.ReflectionBlock | BABYLON.ClearCoatBlock | BABYLON.RefractionBlock | BABYLON.SubSurfaceBlock | BABYLON.CurrentScreenBlock | BABYLON.ParticleTextureBlock | BABYLON.ParticleRampGradientBlock | BABYLON.ParticleBlendMultiplyBlock | BABYLON.FragCoordBlock | BABYLON.ScreenSizeBlock | null;
         static GetColorFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): string;
         static GetConnectionNodeTypeFromString(type: string): BABYLON.NodeMaterialBlockConnectionPointTypes.Float | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector2 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Matrix | BABYLON.NodeMaterialBlockConnectionPointTypes.AutoDetect;
         static GetStringFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
@@ -262,7 +262,7 @@ declare module NODEEDITOR {
         private _expandBottom;
         dispose(): void;
         private serializePortData;
-        serialize(): IFrameData;
+        serialize(saveCollapsedState: boolean): IFrameData;
         export(): void;
         static Parse(serializationData: IFrameData, canvas: GraphCanvasComponent, map?: {
             [key: number]: number;
@@ -324,6 +324,7 @@ declare module NODEEDITOR {
 declare module NODEEDITOR {
     export interface IGraphCanvasComponentProps {
         globalState: GlobalState;
+        onEmitNewBlock: (block: BABYLON.NodeMaterialBlock) => GraphNode;
     }
     export type FramePortData = {
         frame: GraphFrame;
@@ -552,20 +553,83 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export interface IColorComponentEntryProps {
+        value: number;
+        label: string;
+        max?: number;
+        min?: number;
+        onChange: (value: number) => void;
+    }
+    export class ColorComponentEntry extends React.Component<IColorComponentEntryProps> {
+        constructor(props: IColorComponentEntryProps);
+        updateValue(valueString: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export interface IHexColorProps {
+        value: string;
+        expectedLength: number;
+        onChange: (value: string) => void;
+    }
+    export class HexColor extends React.Component<IHexColorProps, {
+        hex: string;
+    }> {
+        constructor(props: IHexColorProps);
+        shouldComponentUpdate(nextProps: IHexColorProps, nextState: {
+            hex: string;
+        }): boolean;
+        updateHexValue(valueString: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    /**
+     * Interface used to specify creation options for color picker
+     */
+    export interface IColorPickerProps {
+        color: BABYLON.Color3 | BABYLON.Color4;
+        debugMode?: boolean;
+        onColorChanged?: (color: BABYLON.Color3 | BABYLON.Color4) => void;
+    }
+    /**
+     * Interface used to specify creation options for color picker
+     */
+    export interface IColorPickerState {
+        color: BABYLON.Color3;
+        alpha: number;
+    }
+    /**
+     * Class used to create a color picker
+     */
+    export class ColorPicker extends React.Component<IColorPickerProps, IColorPickerState> {
+        private _saturationRef;
+        private _hueRef;
+        private _isSaturationPointerDown;
+        private _isHuePointerDown;
+        constructor(props: IColorPickerProps);
+        onSaturationPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
+        onSaturationPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
+        onSaturationPointerMove(evt: React.PointerEvent<HTMLDivElement>): void;
+        onHuePointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
+        onHuePointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
+        onHuePointerMove(evt: React.PointerEvent<HTMLDivElement>): void;
+        private _evaluateSaturation;
+        private _evaluateHue;
+        componentDidUpdate(): void;
+        raiseOnColorChanged(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
     export interface IColorPickerComponentProps {
         value: BABYLON.Color4 | BABYLON.Color3;
         onColorChanged: (newOne: string) => void;
         globalState: GlobalState;
-        disableAlpha?: boolean;
     }
     interface IColorPickerComponentState {
         pickerEnabled: boolean;
-        color: {
-            r: number;
-            g: number;
-            b: number;
-            a?: number;
-        };
+        color: BABYLON.Color3 | BABYLON.Color4;
         hex: string;
     }
     export class ColorPickerLineComponent extends React.Component<IColorPickerComponentProps, IColorPickerComponentState> {
@@ -1009,6 +1073,7 @@ declare module NODEEDITOR {
     export class TexturePropertyTabComponent extends React.Component<IPropertyComponentProps, {
         isEmbedded: boolean;
         loadAsCubeTexture: boolean;
+        textureIsPrefiltered: boolean;
     }> {
         get textureBlock(): AnyTexture;
         constructor(props: IPropertyComponentProps);
@@ -1125,7 +1190,7 @@ declare module NODEEDITOR {
         componentDidMount(): void;
         componentDidUpdate(): void;
         updatePreview(): void;
-        static UpdatePreview(previewCanvas: HTMLCanvasElement, texture: BABYLON.BaseTexture, width: number, options: ITextureLineComponentState, onReady?: () => void, globalState?: any): void;
+        static UpdatePreview(previewCanvas: HTMLCanvasElement, texture: BABYLON.BaseTexture, width: number, options: ITextureLineComponentState, onReady?: () => void, globalState?: any): Promise<void>;
         render(): JSX.Element;
     }
 }
@@ -1142,6 +1207,15 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     export class DiscardDisplayManager implements IDisplayManager {
+        getHeaderClass(block: BABYLON.NodeMaterialBlock): string;
+        shouldDisplayPortLabels(block: BABYLON.NodeMaterialBlock): boolean;
+        getHeaderText(block: BABYLON.NodeMaterialBlock): string;
+        getBackgroundColor(block: BABYLON.NodeMaterialBlock): string;
+        updatePreviewContent(block: BABYLON.NodeMaterialBlock, contentArea: HTMLDivElement): void;
+    }
+}
+declare module NODEEDITOR {
+    export class PBRDisplayManager implements IDisplayManager {
         getHeaderClass(block: BABYLON.NodeMaterialBlock): string;
         shouldDisplayPortLabels(block: BABYLON.NodeMaterialBlock): boolean;
         getHeaderText(block: BABYLON.NodeMaterialBlock): string;
@@ -1335,6 +1409,18 @@ declare module NODEEDITOR {
         filterContent(filter: string): void;
         loadCustomFrame(file: File): void;
         removeItem(value: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IInputsPropertyTabComponentProps {
+        globalState: GlobalState;
+        inputs: BABYLON.InputBlock[];
+    }
+    export class InputsPropertyTabComponent extends React.Component<IInputsPropertyTabComponentProps> {
+        constructor(props: IInputsPropertyTabComponentProps);
+        processInputBlockUpdate(ib: BABYLON.InputBlock): void;
+        renderInputBlock(block: BABYLON.InputBlock): JSX.Element | null;
         render(): JSX.Element;
     }
 }

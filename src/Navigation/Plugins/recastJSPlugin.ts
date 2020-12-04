@@ -3,7 +3,7 @@ import { Logger } from "../../Misc/logger";
 import { VertexData } from "../../Meshes/mesh.vertexData";
 import { Mesh } from "../../Meshes/mesh";
 import { Scene } from "../../scene";
-import { Vector3 } from '../../Maths/math';
+import { Epsilon, Vector3, Matrix } from '../../Maths/math';
 import { TransformNode } from "../../Meshes/transformNode";
 import { Observer } from "../../Misc/observable";
 import { Nullable } from "../../types";
@@ -30,6 +30,9 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      */
     public navMesh: any;
 
+    private _maximumSubStepCount: number = 10;
+    private _timeStep: number = 1 / 60;
+
     /**
      * Initializes the recastJS plugin
      * @param recastInjection can be used to inject your own recast reference
@@ -45,6 +48,45 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
             Logger.Error("RecastJS is not available. Please make sure you included the js file.");
             return;
         }
+        this.setTimeStep();
+    }
+
+    /**
+     * Set the time step of the navigation tick update.
+     * Default is 1/60.
+     * A value of 0 will disable fixed time update
+     * @param newTimeStep the new timestep to apply to this world.
+     */
+    setTimeStep(newTimeStep: number = 1 / 60): void {
+        this._timeStep = newTimeStep;
+    }
+
+    /**
+     * Get the time step of the navigation tick update.
+     * @returns the current time step
+     */
+    getTimeStep(): number {
+        return this._timeStep;
+    }
+
+    /**
+     * If delta time in navigation tick update is greater than the time step
+     * a number of sub iterations are done. If more iterations are need to reach deltatime
+     * they will be discarded.
+     * A value of 0 will set to no maximum and update will use as many substeps as needed
+     * @param newStepCount the maximum number of iterations
+     */
+    setMaximumSubStepCount(newStepCount: number = 10): void {
+        this._maximumSubStepCount = newStepCount;
+    }
+
+    /**
+     * Get the maximum number of iterations per navigation tick update
+     * @returns the maximum number of iterations
+     */
+    getMaximumSubStepCount(): number
+    {
+        return this._maximumSubStepCount;
     }
 
     /**
@@ -92,21 +134,37 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
                     continue;
                 }
 
-                const wm = mesh.computeWorldMatrix(true);
+                var worldMatrices = [];
+                const worldMatrix = mesh.computeWorldMatrix(true);
 
-                for (tri = 0; tri < meshIndices.length; tri++) {
-                    indices.push(meshIndices[tri] + offset);
+                if (mesh.hasThinInstances) {
+                    let thinMatrices = (mesh as Mesh).thinInstanceGetWorldMatrices();
+                    for (let instanceIndex = 0; instanceIndex < thinMatrices.length; instanceIndex++) {
+                        const tmpMatrix = new Matrix();
+                        let thinMatrix = thinMatrices[instanceIndex];
+                        thinMatrix.multiplyToRef(worldMatrix, tmpMatrix);
+                        worldMatrices.push(tmpMatrix);
+                    }
+                } else {
+                    worldMatrices.push(worldMatrix);
                 }
 
-                var transformed = Vector3.Zero();
-                var position = Vector3.Zero();
-                for (pt = 0; pt < meshPositions.length; pt += 3) {
-                    Vector3.FromArrayToRef(meshPositions, pt, position);
-                    Vector3.TransformCoordinatesToRef(position, wm, transformed);
-                    positions.push(transformed.x, transformed.y, transformed.z);
-                }
+                for (let matrixIndex = 0; matrixIndex < worldMatrices.length; matrixIndex ++) {
+                    const wm = worldMatrices[matrixIndex];
+                    for (tri = 0; tri < meshIndices.length; tri++) {
+                        indices.push(meshIndices[tri] + offset);
+                    }
 
-                offset += meshPositions.length / 3;
+                    var transformed = Vector3.Zero();
+                    var position = Vector3.Zero();
+                    for (pt = 0; pt < meshPositions.length; pt += 3) {
+                        Vector3.FromArrayToRef(meshPositions, pt, position);
+                        Vector3.TransformCoordinatesToRef(position, wm, transformed);
+                        positions.push(transformed.x, transformed.y, transformed.z);
+                    }
+
+                    offset += meshPositions.length / 3;
+                }
             }
         }
 
@@ -577,11 +635,27 @@ export class RecastJSCrowd implements ICrowd {
      */
     update(deltaTime: number): void {
         // update crowd
-        this.recastCrowd.update(deltaTime);
+        var timeStep = this.bjsRECASTPlugin.getTimeStep();
+        var maxStepCount = this.bjsRECASTPlugin.getMaximumSubStepCount();
+        if (timeStep <= Epsilon) {
+            this.recastCrowd.update(deltaTime);
+        } else {
+            var iterationCount = Math.floor(deltaTime / timeStep);
+            if (maxStepCount && iterationCount > maxStepCount) {
+                iterationCount = maxStepCount;
+            }
+            if (iterationCount < 1) {
+                iterationCount = 1;
+            }
+
+            var step = deltaTime / iterationCount;
+            for (let i = 0; i < iterationCount; i++) {
+                this.recastCrowd.update(step);
+            }
+        }
 
         // update transforms
-        for (let index = 0; index < this.agents.length; index++)
-        {
+        for (let index = 0; index < this.agents.length; index++) {
             this.transforms[index].position = this.getAgentPosition(this.agents[index]);
         }
     }

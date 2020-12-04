@@ -22,7 +22,7 @@ export interface INodeEditorOptions {
 /**
  * Class used to create a node editor
  */
-export class NodeEditor {
+export class GuiEditor {
     private static _CurrentState: GlobalState;
 
     /**

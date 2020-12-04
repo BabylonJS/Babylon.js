@@ -5,7 +5,6 @@ import { IPropertyComponentProps } from './propertyComponentProps';
 import { GeneralPropertyTabComponent } from './genericNodePropertyComponent';
 import { TextLineComponent } from '../../sharedComponents/textLineComponent';
 import { NumericInputComponent } from '../../sharedComponents/numericInputComponent';
-import { ColorPickerLineComponent } from '../../sharedComponents/colorPickerComponent';
 import { Color4 } from 'babylonjs';
 
 export class SliderPropertyTabComponent extends React.Component<IPropertyComponentProps> {
@@ -53,11 +52,6 @@ export class SliderPropertyTabComponent extends React.Component<IPropertyCompone
                 }}>
                 </NumericInputComponent>
                 <TextLineComponent label="Color" value={this.slider.background} />
-                <ColorPickerLineComponent value={this.getColorString()} globalState={this.props.globalState} 
-                onColorChanged={evt => {
-                        this.slider.background = evt;  
-                }}>
-                </ColorPickerLineComponent>
                 </LineContainerComponent>            
             </>
         );

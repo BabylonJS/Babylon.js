@@ -21,6 +21,7 @@ import { IEdgesRenderer } from "../Rendering/edgesRenderer";
 import { SolidParticle } from "../Particles/solidParticle";
 import { Constants } from "../Engines/constants";
 import { AbstractActionManager } from '../Actions/abstractActionManager';
+import { UniformBuffer } from "../Materials/uniformBuffer";
 import { _MeshCollisionData } from '../Collisions/meshCollisionData';
 import { _DevTools } from '../Misc/devTools';
 import { RawTexture } from '../Materials/Textures/rawTexture';
@@ -36,6 +37,7 @@ declare type Ray = import("../Culling/ray").Ray;
 declare type Collider = import("../Collisions/collider").Collider;
 declare type TrianglePickingPredicate = import("../Culling/ray").TrianglePickingPredicate;
 declare type RenderingGroup = import("../Rendering/renderingGroup").RenderingGroup;
+declare type IEdgesRendererOptions = import("../Rendering/edgesRenderer").IEdgesRendererOptions;
 
 /** @hidden */
 class _FacetDataStorage {
@@ -87,6 +89,7 @@ class _InternalAbstractMeshDataInfo {
     public _onlyForInstancesIntermediate = false;
     public _actAsRegularMesh = false;
     public _currentLOD: Nullable<AbstractMesh> = null;
+    public _currentLODIsUpToDate: boolean = false;
 }
 
 /**
@@ -696,6 +699,12 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      */
     public onRebuildObservable = new Observable<AbstractMesh>();
 
+    /**
+     * The current mesh unifom buffer.
+     * @hidden Internal use only.
+     */
+    public _uniformBuffer: UniformBuffer;
+
     // Constructor
 
     /**
@@ -709,6 +718,37 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         this.getScene().addMesh(this);
 
         this._resyncLightSources();
+
+        // Mesh Uniform Buffer.
+        this._uniformBuffer = new UniformBuffer(this.getScene().getEngine(), undefined, undefined, name);
+        this._buildUniformLayout();
+    }
+
+    protected _buildUniformLayout(): void {
+        this._uniformBuffer.addUniform("world", 16);
+        this._uniformBuffer.addUniform("visibility", 1);
+        this._uniformBuffer.create();
+    }
+
+    /**
+     * Transfer the mesh values to its UBO.
+     * @param world The world matrix associated with the mesh
+     */
+    public transferToEffect(world: Matrix): void {
+        const ubo = this._uniformBuffer;
+
+        ubo.updateMatrix("world", world);
+        ubo.updateFloat("visibility", this._internalAbstractMeshDataInfo._visibility);
+
+        ubo.update();
+    }
+
+    /**
+     * Gets the mesh uniform buffer.
+     * @return the uniform buffer of the mesh.
+     */
+    public getMeshUniformBuffer(): UniformBuffer {
+        return this._uniformBuffer;
     }
 
     /**
@@ -2227,10 +2267,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * This mode makes the mesh edges visible
      * @param epsilon defines the maximal distance between two angles to detect a face
      * @param checkVerticesInsteadOfIndices indicates that we should check vertex list directly instead of faces
+     * @param options options to the edge renderer
      * @returns the currentAbstractMesh
      * @see https://www.babylonjs-playground.com/#19O9TU#0
      */
-    enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): AbstractMesh {
+    enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean, options?: IEdgesRendererOptions): AbstractMesh {
         throw _DevTools.WarnImport("EdgesRenderer");
     }
 

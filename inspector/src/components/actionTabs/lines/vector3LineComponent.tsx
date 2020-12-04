@@ -106,7 +106,7 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
         return (
             <div className="vector3Line">
                 <div className="firstLine">
-                    <div className="label">
+                    <div className="label" title={this.props.label}>
                         {this.props.label}
                     </div>
                     <div className="vector">
@@ -134,9 +134,9 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
                 {
                     this.state.isExpanded && this.props.useEuler && !this.props.noSlider &&
                     <div className="secondLine">
-                        <SliderLineComponent label="x" minimum={0} maximum={360} step={0.1} directValue={Tools.ToDegrees(this.state.value.x)} onChange={value => this.updateStateX(Tools.ToRadians(value))} />
-                        <SliderLineComponent label="y" minimum={0} maximum={360} step={0.1} directValue={Tools.ToDegrees(this.state.value.y)} onChange={value => this.updateStateY(Tools.ToRadians(value))} />
-                        <SliderLineComponent label="z" minimum={0} maximum={360} step={0.1} directValue={Tools.ToDegrees(this.state.value.z)} onChange={value => this.updateStateZ(Tools.ToRadians(value))} />
+                        <SliderLineComponent  margin={true} label="x" minimum={0} maximum={360} step={0.1} directValue={Tools.ToDegrees(this.state.value.x)} onChange={value => this.updateStateX(Tools.ToRadians(value))} />
+                        <SliderLineComponent  margin={true} label="y" minimum={0} maximum={360} step={0.1} directValue={Tools.ToDegrees(this.state.value.y)} onChange={value => this.updateStateY(Tools.ToRadians(value))} />
+                        <SliderLineComponent  margin={true} label="z" minimum={0} maximum={360} step={0.1} directValue={Tools.ToDegrees(this.state.value.z)} onChange={value => this.updateStateZ(Tools.ToRadians(value))} />
                     </div>
                 }
                 {

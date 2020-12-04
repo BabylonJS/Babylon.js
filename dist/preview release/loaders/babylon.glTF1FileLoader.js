@@ -3751,7 +3751,7 @@ var GLTFValidation = /** @class */ (function () {
                 };
                 worker.addEventListener("error", onError);
                 worker.addEventListener("message", onMessage);
-                worker.postMessage({ id: "init", url: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__["Tools"].GetAbsoluteUrl(_this.Configuration.url) });
+                worker.postMessage({ id: "init", url: _this.Configuration.url });
                 worker.postMessage({ id: "validate", data: data, rootUrl: rootUrl, fileName: fileName });
             });
         }
