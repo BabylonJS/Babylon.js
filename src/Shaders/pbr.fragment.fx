@@ -23,6 +23,7 @@ precision highp float;
 
 // Declaration
 #include<__decl__pbrFragment>
+
 #include<pbrFragmentExtraDeclaration>
 #include<__decl__lightFragment>[0..maxSimultaneousLights]
 #include<pbrFragmentSamplersDeclaration>
@@ -273,6 +274,9 @@ void main(void) {
             reflectionSamplerLow,
             reflectionSamplerHigh,
         #endif
+        #ifdef REALTIME_FILTERING
+            vReflectionFilteringInfo,
+        #endif
             reflectionOut
         );
     #endif
@@ -324,6 +328,9 @@ void main(void) {
             #ifndef LODBASEDMICROSFURACE
                 reflectionSamplerLow,
                 reflectionSamplerHigh,
+            #endif
+            #ifdef REALTIME_FILTERING
+                vReflectionFilteringInfo,
             #endif
             #if !defined(REFLECTIONMAP_SKYBOX) && defined(RADIANCEOCCLUSION)
                 seo,
@@ -406,11 +413,17 @@ void main(void) {
                 reflectionSamplerLow,
                 reflectionSamplerHigh,
             #endif
+            #ifdef REALTIME_FILTERING
+                vReflectionFilteringInfo,
+            #endif
         #endif
         #if defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
             #ifdef RADIANCEOCCLUSION
                 ambientMonochrome,
             #endif
+        #endif
+        #if defined(CLEARCOAT_BUMP) || defined(TWOSIDEDLIGHTING)
+            gl_FrontFacing ? 1. : -1.,
         #endif
             clearcoatOut
         );
@@ -445,6 +458,10 @@ void main(void) {
                     #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
                         reflectionOut.irradianceVector,
                     #endif
+                    #if defined(REALTIME_FILTERING)
+                        reflectionSampler,
+                        vReflectionFilteringInfo,
+                    #endif
                 #endif
                 #ifdef USEIRRADIANCEMAP
                     irradianceSampler,
@@ -478,6 +495,9 @@ void main(void) {
             #endif
             #ifdef ANISOTROPIC
                 anisotropicOut,
+            #endif
+            #ifdef REALTIME_FILTERING
+                vRefractionFilteringInfo,
             #endif
         #endif
         #ifdef SS_TRANSLUCENCY
@@ -539,13 +559,15 @@ void main(void) {
         #endif
 
         vec3 sqAlbedo = sqrt(surfaceAlbedo); // for pre and post scatter
-        gl_FragData[0] = vec4(finalColor.rgb - irradiance, finalColor.a); // Split irradiance from final color
-        irradiance /= sqAlbedo;
-        
-        #ifndef SS_SCATTERING
+        #ifdef SS_SCATTERING
+            gl_FragData[0] = vec4(finalColor.rgb - irradiance, finalColor.a); // Split irradiance from final color
+            irradiance /= sqAlbedo;
+        #else
+            gl_FragData[0] = finalColor; // No split lighting
             float scatteringDiffusionProfile = 255.;
         #endif
-        gl_FragData[PREPASS_IRRADIANCE_INDEX] = vec4(tagLightingForSSS(irradiance), scatteringDiffusionProfile / 255.); // Irradiance + SS diffusion profile
+
+        gl_FragData[PREPASS_IRRADIANCE_INDEX] = vec4(irradiance, scatteringDiffusionProfile / 255.); // Irradiance + SS diffusion profile
     #else
         gl_FragData[0] = vec4(finalColor.rgb, finalColor.a);
     #endif

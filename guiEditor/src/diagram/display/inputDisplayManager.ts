@@ -6,7 +6,6 @@ import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/
 import { AnimatedInputBlockTypes } from 'babylonjs/Materials/Node/Blocks/Input/animatedInputBlockTypes';
 import { Vector2, Vector3, Vector4 } from 'babylonjs/Maths/math.vector';
 import { Color3 } from 'babylonjs/Maths/math.color';
-import { BlockTools } from '../../blockTools';
 import { StringTools } from '../../stringTools';
 
 const inputNameToAttributeValue: { [name: string] : string } = {
@@ -68,7 +67,6 @@ export class InputDisplayManager implements IDisplayManager {
                 }
             }
             default:
-                color = BlockTools.GetColorFromConnectionNodeType(inputBlock.type);
                 break;
         }
 

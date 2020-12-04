@@ -77,6 +77,7 @@ export class ProceduralTexture extends Texture {
 
     @serialize()
     private _size: RenderTargetTextureSize;
+    private _textureType: number;
     private _currentRefreshId = -1;
     private _frameId = -1;
     private _refreshRate = 1;
@@ -98,10 +99,10 @@ export class ProceduralTexture extends Texture {
     private _fallbackTextureUsed = false;
     private _fullEngine: Engine;
 
-    private _cachedDefines = "";
+    private _cachedDefines: Nullable<string> = null;
 
     private _contentUpdateId = -1;
-    private _contentData: Nullable<ArrayBufferView>;
+    private _contentData: Nullable<Promise<ArrayBufferView>>;
 
     /**
      * Instantiates a new procedural texture.
@@ -133,6 +134,7 @@ export class ProceduralTexture extends Texture {
         this.name = name;
         this.isRenderTarget = true;
         this._size = size;
+        this._textureType = textureType;
         this._generateMipMaps = generateMipMaps;
 
         this.setFragment(fragment);
@@ -169,15 +171,22 @@ export class ProceduralTexture extends Texture {
 
     /**
      * Gets texture content (Use this function wisely as reading from a texture can be slow)
-     * @returns an ArrayBufferView (Uint8Array or Float32Array)
+     * @returns an ArrayBufferView promise (Uint8Array or Float32Array)
      */
-    public getContent(): Nullable<ArrayBufferView> {
+    public getContent(): Nullable<Promise<ArrayBufferView>> {
         if (this._contentData && this._frameId === this._contentUpdateId) {
             return this._contentData;
         }
 
-        this._contentData = this.readPixels(0, 0, this._contentData);
-        this._contentUpdateId = this._frameId;
+        if (this._contentData) {
+            this._contentData.then((buffer) => {
+                this._contentData = this.readPixels(0, 0, buffer);
+                this._contentUpdateId = this._frameId;
+            });
+        } else {
+            this._contentData = this.readPixels(0, 0);
+            this._contentUpdateId = this._frameId;
+        }
 
         return this._contentData;
     }
@@ -260,25 +269,28 @@ export class ProceduralTexture extends Texture {
             shaders = { vertex: "procedural", fragment: this._fragment };
         }
 
-        this._cachedDefines = defines;
+        if (this._cachedDefines !== defines) {
+            this._cachedDefines = defines;
 
-        this._effect = engine.createEffect(shaders,
-            [VertexBuffer.PositionKind],
-            this._uniforms,
-            this._samplers,
-            defines, undefined, undefined, () => {
-                this.releaseInternalTexture();
+            this._effect = engine.createEffect(shaders,
+                [VertexBuffer.PositionKind],
+                this._uniforms,
+                this._samplers,
+                defines, undefined, undefined, () => {
+                    this.releaseInternalTexture();
 
-                if (this._fallbackTexture) {
-                    this._texture = this._fallbackTexture._texture;
+                    if (this._fallbackTexture) {
+                        this._texture = this._fallbackTexture._texture;
 
-                    if (this._texture) {
-                        this._texture.incrementReferences();
+                        if (this._texture) {
+                            this._texture.incrementReferences();
+                        }
                     }
-                }
 
-                this._fallbackTextureUsed = true;
-            });
+                    this._fallbackTextureUsed = true;
+                }
+            );
+        }
 
         return this._effect.isReady();
     }
@@ -361,7 +373,7 @@ export class ProceduralTexture extends Texture {
         }
 
         this.releaseInternalTexture();
-        this._texture = this._fullEngine.createRenderTargetTexture(size, generateMipMaps);
+        this._texture = this._fullEngine.createRenderTargetTexture(size, { generateMipMaps, generateDepthBuffer: false, generateStencilBuffer: false, type: this._textureType });
 
         // Update properties
         this._size = size;
@@ -563,6 +575,8 @@ export class ProceduralTexture extends Texture {
             return;
         }
 
+        engine._debugPushGroup(`procedural texture generation for ${this.name}`, 1);
+
         if (this.isCube) {
             for (var face = 0; face < 6; face++) {
                 engine.bindFramebuffer(this._texture, face, undefined, undefined, true);
@@ -579,11 +593,6 @@ export class ProceduralTexture extends Texture {
 
                 // Draw order
                 engine.drawElementsType(Material.TriangleFillMode, 0, 6);
-
-                // Mipmaps
-                if (face === 5) {
-                    engine.generateMipMapsForCubemap(this._texture);
-                }
             }
         } else {
             engine.bindFramebuffer(this._texture, 0, undefined, undefined, true);
@@ -602,6 +611,13 @@ export class ProceduralTexture extends Texture {
 
         // Unbind
         engine.unBindFramebuffer(this._texture, this.isCube);
+
+        // Mipmaps
+        if (this.isCube) {
+            engine.generateMipMapsForCubemap(this._texture);
+        }
+
+        engine._debugPopGroup(1);
 
         if (this.onGenerated) {
             this.onGenerated();

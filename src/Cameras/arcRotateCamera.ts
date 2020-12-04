@@ -500,8 +500,7 @@ export class ArcRotateCamera extends TargetCamera {
      * Defines the allowed panning axis.
      */
     public panningAxis: Vector3 = new Vector3(1, 1, 0);
-    protected _localDirection: Vector3;
-    protected _transformedDirection: Vector3;
+    protected _transformedDirection: Vector3 = new Vector3();
 
     // Behaviors
     private _bouncingBehavior: Nullable<BouncingBehavior>;
@@ -801,12 +800,16 @@ export class ArcRotateCamera extends TargetCamera {
      */
     public attachControl(ignored: any, noPreventDefault?: boolean, useCtrlForPanning: boolean | number = true, panningMouseButton: number = 2): void {
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
+        this._useCtrlForPanning = useCtrlForPanning as boolean;
+        this._panningMouseButton = panningMouseButton;
+        // backwards compatibility
         if (typeof arguments[0] === "boolean") {
-            this._useCtrlForPanning = arguments[1];
-            this._panningMouseButton = arguments[2];
-        } else {
-            this._useCtrlForPanning = useCtrlForPanning as boolean;
-            this._panningMouseButton = panningMouseButton;
+            if (arguments.length > 1) {
+                this._useCtrlForPanning = arguments[1];
+            }
+            if (arguments.length > 2) {
+                this._panningMouseButton = arguments[2];
+            }
         }
 
         this.inputs.attachElement(noPreventDefault);
@@ -821,10 +824,19 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     /**
-     * Detach the current controls from the camera.
-     * The camera will stop reacting to inputs.
+     * Detach the current controls from the specified dom element.
      */
-    public detachControl(): void {
+    public detachControl(): void;
+    /**
+     * Detach the current controls from the specified dom element.
+     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     */
+    public detachControl(ignored: any): void;
+    /**
+     * Detach the current controls from the specified dom element.
+     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     */
+    public detachControl(ignored?: any): void {
         this.inputs.detachElement();
 
         if (this._reset) {
@@ -873,19 +885,20 @@ export class ArcRotateCamera extends TargetCamera {
 
         // Panning inertia
         if (this.inertialPanningX !== 0 || this.inertialPanningY !== 0) {
-            if (!this._localDirection) {
-                this._localDirection = Vector3.Zero();
-                this._transformedDirection = Vector3.Zero();
-            }
-
-            this._localDirection.copyFromFloats(this.inertialPanningX, this.inertialPanningY, this.inertialPanningY);
-            this._localDirection.multiplyInPlace(this.panningAxis);
             this._viewMatrix.invertToRef(this._cameraTransformMatrix);
-            Vector3.TransformNormalToRef(this._localDirection, this._cameraTransformMatrix, this._transformedDirection);
-            //Eliminate y if map panning is enabled (panningAxis == 1,0,1)
-            if (!this.panningAxis.y) {
-                this._transformedDirection.y = 0;
-            }
+            this._transformedDirection.set(this._cameraTransformMatrix.m[0], this._cameraTransformMatrix.m[1], this._cameraTransformMatrix.m[2]);
+
+            // panning on X Axis
+            this._transformedDirection.x *= this.panningAxis.x * this.inertialPanningX;
+            this._transformedDirection.y *= this.panningAxis.x * this.inertialPanningX;
+            this._transformedDirection.z *= this.panningAxis.x * this.inertialPanningX;
+
+            // panning on Y axis
+            this._transformedDirection.y += this.panningAxis.y * this.inertialPanningY;
+
+            // panning on Z axis
+            this._transformedDirection.x -= Math.cos(this.alpha) * this.panningAxis.z * this.inertialPanningY;
+            this._transformedDirection.z -= Math.sin(this.alpha) * this.panningAxis.z * this.inertialPanningY;
 
             if (!this._targetHost) {
                 if (this.panningDistanceLimit) {
@@ -972,6 +985,7 @@ export class ArcRotateCamera extends TargetCamera {
         }
 
         // Alpha
+        const previousAlpha = this.alpha;
         if (this._computationVector.x === 0 && this._computationVector.z === 0) {
             this.alpha = Math.PI / 2; // avoid division by zero when looking along up axis, and set to acos(0)
         } else {
@@ -981,6 +995,11 @@ export class ArcRotateCamera extends TargetCamera {
         if (this._computationVector.z < 0) {
             this.alpha = 2 * Math.PI - this.alpha;
         }
+
+        // Calculate the number of revolutions between the new and old alpha values.
+        const alphaCorrectionTurns = Math.round((previousAlpha - this.alpha) / (2.0 * Math.PI));
+        // Adjust alpha so that its numerical representation is the closest one to the old value.
+        this.alpha += alphaCorrectionTurns * 2.0 * Math.PI;
 
         // Beta
         this.beta = Math.acos(this._computationVector.y / this.radius);

@@ -19,6 +19,7 @@ import { MaterialDefines } from "./materialDefines";
 import { Color3 } from '../Maths/math.color';
 import { EffectFallbacks } from './effectFallbacks';
 import { ThinMaterialHelper } from './thinMaterialHelper';
+import { TmpVectors, Vector4 } from '../Maths/math.vector';
 
 /**
  * "Static Class" containing the most commonly used helper while dealing with material for rendering purpose.
@@ -34,18 +35,28 @@ export class MaterialHelper {
      * @param effect The effect to be bound
      * @param scene The scene the eyes position is used from
      * @param variableName name of the shader variable that will hold the eye position
+     * @param isVector3 true to indicates that variableName is a Vector3 and not a Vector4
+     * @return the computed eye position
      */
-    public static BindEyePosition(effect: Effect, scene: Scene, variableName = "vEyePosition"): void {
-        if (scene._forcedViewPosition) {
-            effect.setVector3(variableName, scene._forcedViewPosition);
-            return;
+    public static BindEyePosition(effect: Nullable<Effect>, scene: Scene, variableName = "vEyePosition", isVector3 = false): Vector4 {
+        const eyePosition =
+            scene._forcedViewPosition ? scene._forcedViewPosition :
+            scene._mirroredCameraPosition ? scene._mirroredCameraPosition :
+            scene.activeCamera!.globalPosition ?? (scene.activeCamera as WebVRFreeCamera).devicePosition;
+
+        const invertNormal = (scene.useRightHandedSystem === (scene._mirroredCameraPosition != null));
+
+        TmpVectors.Vector4[0].set(eyePosition.x, eyePosition.y, eyePosition.z, invertNormal ? -1 : 1);
+
+        if (effect) {
+            if (isVector3) {
+                effect.setFloat3(variableName, TmpVectors.Vector4[0].x, TmpVectors.Vector4[0].y, TmpVectors.Vector4[0].z);
+            } else {
+                effect.setVector4(variableName, TmpVectors.Vector4[0]);
+            }
         }
-        var globalPosition = scene.activeCamera!.globalPosition;
-        if (!globalPosition) {
-            // Use WebVRFreecamera's device position as global position is not it's actual position in babylon space
-            globalPosition = (scene.activeCamera! as WebVRFreeCamera).devicePosition;
-        }
-        effect.setVector3(variableName, scene._mirroredCameraPosition ? scene._mirroredCameraPosition : globalPosition);
+
+        return TmpVectors.Vector4[0];
     }
 
     /**
@@ -558,8 +569,17 @@ export class MaterialHelper {
      * @param samplersList The sampler list
      * @param projectedLightTexture defines if projected texture must be used
      * @param uniformBuffersList defines an optional list of uniform buffers
+     * @param updateOnlyBuffersList True to only update the uniformBuffersList array
      */
-    public static PrepareUniformsAndSamplersForLight(lightIndex: number, uniformsList: string[], samplersList: string[], projectedLightTexture?: any, uniformBuffersList: Nullable<string[]> = null) {
+    public static PrepareUniformsAndSamplersForLight(lightIndex: number, uniformsList: string[], samplersList: string[], projectedLightTexture?: any, uniformBuffersList: Nullable<string[]> = null, updateOnlyBuffersList = false) {
+        if (uniformBuffersList) {
+            uniformBuffersList.push("Light" + lightIndex);
+        }
+
+        if (updateOnlyBuffersList) {
+            return;
+        }
+
         uniformsList.push(
             "vLightData" + lightIndex,
             "vLightDiffuse" + lightIndex,
@@ -571,10 +591,6 @@ export class MaterialHelper {
             "shadowsInfo" + lightIndex,
             "depthValues" + lightIndex,
         );
-
-        if (uniformBuffersList) {
-            uniformBuffersList.push("Light" + lightIndex);
-        }
 
         samplersList.push("shadowSampler" + lightIndex);
         samplersList.push("depthSampler" + lightIndex);

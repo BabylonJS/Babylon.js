@@ -16,7 +16,9 @@ import { _TypeStore } from '../../../../Misc/typeStore';
 import { Scene } from '../../../../scene';
 
 import "../../../../Shaders/ShadersInclude/lightFragmentDeclaration";
+import "../../../../Shaders/ShadersInclude/lightVxFragmentDeclaration";
 import "../../../../Shaders/ShadersInclude/lightUboDeclaration";
+import "../../../../Shaders/ShadersInclude/lightVxUboDeclaration";
 import "../../../../Shaders/ShadersInclude/lightFragment";
 import "../../../../Shaders/ShadersInclude/helperFunctions";
 import "../../../../Shaders/ShadersInclude/lightsFragmentFunctions";
@@ -185,7 +187,8 @@ export class LightBlock extends NodeMaterialBlock {
             if (!defines["LIGHT" + lightIndex]) {
                 break;
             }
-            MaterialHelper.PrepareUniformsAndSamplersForLight(lightIndex, state.uniforms, state.samplers, defines["PROJECTEDLIGHTTEXTURE" + lightIndex], uniformBuffers);
+            const onlyUpdateBuffersList = state.uniforms.indexOf("vLightData" + lightIndex) >= 0;
+            MaterialHelper.PrepareUniformsAndSamplersForLight(lightIndex, state.uniforms, state.samplers, defines["PROJECTEDLIGHTTEXTURE" + lightIndex], uniformBuffers, onlyUpdateBuffersList);
         }
     }
 
@@ -209,7 +212,7 @@ export class LightBlock extends NodeMaterialBlock {
 
         // Declaration
         if (!this.light) { // Emit for all lights
-            state._emitFunctionFromInclude(state.supportUniformBuffers ? "lightUboDeclaration" : "lightFragmentDeclaration", comments, {
+            state._emitFunctionFromInclude(state.supportUniformBuffers ? "lightVxUboDeclaration" : "lightVxFragmentDeclaration", comments, {
                 repeatKey: "maxSimultaneousLights"
             });
             this._lightId = 0;
@@ -220,7 +223,7 @@ export class LightBlock extends NodeMaterialBlock {
             this._lightId = (state.counters["lightCounter"] !== undefined ? state.counters["lightCounter"] : -1) + 1;
             state.counters["lightCounter"] = this._lightId;
 
-            state._emitFunctionFromInclude(state.supportUniformBuffers ? "lightUboDeclaration" : "lightFragmentDeclaration", comments, {
+            state._emitFunctionFromInclude(state.supportUniformBuffers ? "lightVxUboDeclaration" : "lightVxFragmentDeclaration", comments, {
                 replaceStrings: [{ search: /{X}/g, replace: this._lightId.toString() }]
             }, this._lightId.toString());
         }

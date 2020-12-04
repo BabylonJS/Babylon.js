@@ -33,7 +33,6 @@ export class GlobalState {
         MSFT_minecraftMesh: { enabled: true },
         MSFT_sRGBFactors: { enabled: true },
         MSFT_audio_emitter: { enabled: true },
-        KHR_xmp: { enabled: true },
         KHR_draco_mesh_compression: { enabled: true },
         KHR_mesh_quantization: { enabled: true },
         KHR_materials_pbrSpecularGlossiness: { enabled: true },
@@ -44,6 +43,7 @@ export class GlobalState {
         KHR_materials_unlit: { enabled: true },
         KHR_materials_variants: { enabled: true },
         KHR_materials_transmission: { enabled: true },
+        KHR_materials_translucency: { enabled: true },
         KHR_lights_punctual: { enabled: true },
         KHR_texture_basisu: { enabled: true },
         KHR_texture_transform: { enabled: true },
@@ -132,11 +132,6 @@ export class GlobalState {
             this.glTFLoaderExtensions[extension.name] = extension;
         });
 
-        if (this.validationResults) {
-            this.validationResults = null;
-            this.onValidationResultsUpdatedObservable.notifyObservers(null);
-        }
-
         loader.onValidatedObservable.add((results: IGLTFValidationResults) => {
             this.validationResults = results;
             this.onValidationResultsUpdatedObservable.notifyObservers(results);
@@ -146,6 +141,13 @@ export class GlobalState {
                 this.onTabChangedObservable.notifyObservers(3);
             }
         });
+    }
+
+    public resetGLTFValidationResults() {
+        if (this.validationResults) {
+            this.validationResults = null;
+            this.onValidationResultsUpdatedObservable.notifyObservers(null);
+        }
     }
 
     // Light gizmos

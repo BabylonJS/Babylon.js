@@ -4,7 +4,7 @@ import { Color3, Color4 } from "babylonjs/Maths/math.color";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
 import { NumericInputComponent } from "./numericInputComponent";
 import { GlobalState } from '../globalState';
-import { ColorPickerLineComponent } from './colorPickerComponent';
+
 
 const copyIcon: string = require("./copy.svg");
 const plusIcon: string = require("./plus.svg");
@@ -146,11 +146,6 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
                 <div className="firstLine">
                     <div className="label">
                         {this.props.label}
-                    </div>
-                    <div className="color3">
-                        <ColorPickerLineComponent value={this.state.color} disableAlpha={true} globalState={this.props.globalState} onColorChanged={color => {
-                                this.onChange(color);
-                            }} />  
                     </div>
                     <div className="copy hoverIcon" onClick={() => this.copyToClipboard()} title="Copy to clipboard">
                         <img src={copyIcon} alt=""/>

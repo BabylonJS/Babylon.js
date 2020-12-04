@@ -381,15 +381,18 @@ export abstract class EffectLayer {
             engine.clear(this.neutralColor, true, true, true);
         });
 
-        const boundingBoxRendererEnabled = this._scene.getBoundingBoxRenderer().enabled;
+        // Prevent package size in es6 (getBoundingBoxRenderer might not be present)
+        if (this._scene.getBoundingBoxRenderer) {
+            const boundingBoxRendererEnabled = this._scene.getBoundingBoxRenderer().enabled;
 
-        this._mainTexture.onBeforeBindObservable.add(() => {
-            this._scene.getBoundingBoxRenderer().enabled = !this.disableBoundingBoxesFromEffectLayer && boundingBoxRendererEnabled;
-        });
+            this._mainTexture.onBeforeBindObservable.add(() => {
+                this._scene.getBoundingBoxRenderer().enabled = !this.disableBoundingBoxesFromEffectLayer && boundingBoxRendererEnabled;
+            });
 
-        this._mainTexture.onAfterUnbindObservable.add(() => {
-            this._scene.getBoundingBoxRenderer().enabled = boundingBoxRendererEnabled;
-        });
+            this._mainTexture.onAfterUnbindObservable.add(() => {
+                this._scene.getBoundingBoxRenderer().enabled = boundingBoxRendererEnabled;
+            });
+        }
     }
 
     /**

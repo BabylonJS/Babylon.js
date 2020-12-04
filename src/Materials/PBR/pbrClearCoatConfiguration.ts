@@ -43,8 +43,9 @@ export class PBRClearCoatConfiguration {
     /**
      * This defaults to 1.5 corresponding to a 0.04 f0 or a 4% reflectance at normal incidence
      * The default fits with a polyurethane material.
+     * @hidden
      */
-    private static readonly _DefaultIndexOfRefraction = 1.5;
+    public static readonly _DefaultIndexOfRefraction = 1.5;
 
     private _isEnabled = false;
     /**

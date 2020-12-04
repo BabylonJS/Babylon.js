@@ -118,10 +118,10 @@ export class ReflectionProbe {
                     this._add.copyFromFloats(0, this._invertYAxis ? -1 : 1, 0);
                     break;
                 case 4:
-                    this._add.copyFromFloats(0, 0, 1);
+                    this._add.copyFromFloats(0, 0, scene.useRightHandedSystem ? -1 : 1);
                     break;
                 case 5:
-                    this._add.copyFromFloats(0, 0, -1);
+                    this._add.copyFromFloats(0, 0, scene.useRightHandedSystem ? 1 : -1);
                     break;
 
             }
@@ -132,19 +132,34 @@ export class ReflectionProbe {
 
             this.position.addToRef(this._add, this._target);
 
-            Matrix.LookAtLHToRef(this.position, this._target, Vector3.Up(), this._viewMatrix);
+            if (scene.useRightHandedSystem) {
+                Matrix.LookAtRHToRef(this.position, this._target, Vector3.Up(), this._viewMatrix);
 
-            if (scene.activeCamera) {
-                this._projectionMatrix = Matrix.PerspectiveFovLH(Math.PI / 2, 1, scene.activeCamera.minZ, scene.activeCamera.maxZ);
-                scene.setTransformMatrix(this._viewMatrix, this._projectionMatrix);
+                if (scene.activeCamera) {
+                    this._projectionMatrix = Matrix.PerspectiveFovRH(Math.PI / 2, 1, scene.activeCamera.minZ, scene.activeCamera.maxZ);
+                    scene.setTransformMatrix(this._viewMatrix, this._projectionMatrix);
+                }
+            }
+            else  {
+                Matrix.LookAtLHToRef(this.position, this._target, Vector3.Up(), this._viewMatrix);
+
+                if (scene.activeCamera) {
+                    this._projectionMatrix = Matrix.PerspectiveFovLH(Math.PI / 2, 1, scene.activeCamera.minZ, scene.activeCamera.maxZ);
+                    scene.setTransformMatrix(this._viewMatrix, this._projectionMatrix);
+                }
             }
 
             scene._forcedViewPosition = this.position;
         });
 
+        this._renderTargetTexture.onBeforeBindObservable.add(() => {
+            scene.getEngine()._debugPushGroup(`reflection probe generation for ${name}`, 1);
+        });
+
         this._renderTargetTexture.onAfterUnbindObservable.add(() => {
             scene._forcedViewPosition = null;
             scene.updateTransformMatrix(true);
+            scene.getEngine()._debugPopGroup(1);
         });
     }
 

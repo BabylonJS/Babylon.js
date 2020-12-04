@@ -63,7 +63,7 @@ var showEditor = function() {
     editorDisplayed = true;
     var hostElement = document.getElementById("host-element");
 
-    BABYLON.NodeEditor.Show({
+    BABYLON.GuiEditor.Show({
         nodeMaterial: nodeMaterial, 
         hostElement: hostElement,
         customLoadObservable: customLoadObservable,

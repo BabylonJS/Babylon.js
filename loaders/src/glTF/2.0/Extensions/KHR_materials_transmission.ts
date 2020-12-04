@@ -37,7 +37,7 @@ class TransmissionHelper {
      */
     private static _getDefaultOptions(): ITransmissionHelperOptions {
         return {
-            renderSize: 512
+            renderSize: 1024
         };
     }
 
@@ -211,6 +211,7 @@ class TransmissionHelper {
         this._opaqueRenderTarget.gammaSpace = true;
         this._opaqueRenderTarget.lodGenerationScale = 1;
         this._opaqueRenderTarget.lodGenerationOffset = -4;
+        this._opaqueRenderTarget.samples = 4;
 
         if (opaqueRTIndex >= 0) {
             this._scene.customRenderTargets.splice(opaqueRTIndex, 0, this._opaqueRenderTarget);
@@ -250,8 +251,7 @@ class TransmissionHelper {
 const NAME = "KHR_materials_transmission";
 
 /**
- * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1698)
- * !!! Experimental Extension Subject to Changes !!!
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_transmission/README.md)
  */
 export class KHR_materials_transmission implements IGLTFLoaderExtension {
     /**
@@ -276,7 +276,7 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
         if (this.enabled) {
-            (loader as any)._parent.transparencyAsCoverage = true;
+            loader.parent.transparencyAsCoverage = true;
         }
     }
 
@@ -328,7 +328,7 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
             return this._loader.loadTextureInfoAsync(`${context}/transmissionTexture`, extension.transmissionTexture, undefined)
                 .then((texture: BaseTexture) => {
                     pbrMaterial.subSurface.thicknessTexture = texture;
-                    pbrMaterial.subSurface.useMaskFromThicknessTexture = true;
+                    pbrMaterial.subSurface.useMaskFromThicknessTextureGltf = true;
                 });
         } else {
             return Promise.resolve();

@@ -53,6 +53,10 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
      */
     public onDragStartObservable = new Observable<{}>();
     /**
+     * Fires each time a drag happens
+     */
+    public onDragObservable = new Observable<void>();
+    /**
      *  Fires each time a drag ends (eg. mouse release after drag)
      */
     public onDragEndObservable = new Observable<{}>();
@@ -94,7 +98,7 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
         this._ownerNode = ownerNode;
         this._scene = this._ownerNode.getScene();
         if (!SixDofDragBehavior._virtualScene) {
-            SixDofDragBehavior._virtualScene = new Scene(this._scene.getEngine());
+            SixDofDragBehavior._virtualScene = new Scene(this._scene.getEngine(), {virtual: true});
             SixDofDragBehavior._virtualScene.detachControl();
             this._scene.getEngine().scenes.pop();
         }
@@ -239,6 +243,8 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
                     }
                 }
                 PivotTools._RestorePivotPoint(pickedMesh);
+
+                this.onDragObservable.notifyObservers();
             }
         });
     }
@@ -263,6 +269,7 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
             this._virtualDragMesh.dispose();
         }
         this.onDragEndObservable.clear();
+        this.onDragObservable.clear();
         this.onDragStartObservable.clear();
     }
 }

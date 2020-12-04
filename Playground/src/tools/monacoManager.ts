@@ -121,6 +121,8 @@ export class MonacoManager {
     private _setNewContent() {
         this._createEditor();
 
+        this.globalState.currentSnippetToken = "";
+
         if (this.globalState.language === "JS") {
             this._editor?.setValue(`// You have to create a function called createScene. This function must return a BABYLON.Scene object
 // You can reference the following variables: engine, canvas
@@ -232,6 +234,11 @@ class Playground {
             "https://preview.babylonjs.com/serializers/babylonjs.serializers.d.ts",
             "https://preview.babylonjs.com/inspector/babylon.inspector.d.ts",
         ];
+
+        // Check for Unity Toolkit
+        if (location.href.indexOf("UnityToolkit") !== -1 || Utilities.ReadBoolFromStore("unity-toolkit", false)) {
+            declarations.push("https://playground.babylonjs.com/libs/babylon.manager.d.ts");
+        }
 
         let libContent = "";
         const responses = await Promise.all(declarations.map((declaration) => fetch(declaration)));

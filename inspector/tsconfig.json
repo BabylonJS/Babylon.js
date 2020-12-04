@@ -1,6 +1,7 @@
 {
     "extends": "../tsconfigRules",
     "compilerOptions": {
+        "preserveSymlinks": false,
         "jsx": "react",
         "baseUrl": "./src/",
         "rootDir": "./src/",

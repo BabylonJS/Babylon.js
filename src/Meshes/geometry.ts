@@ -208,7 +208,7 @@ export class Geometry implements IGetSetVerticesData {
 
         // Index buffer
         if (this._meshes.length !== 0 && this._indices) {
-            this._indexBuffer = this._engine.createIndexBuffer(this._indices);
+            this._indexBuffer = this._engine.createIndexBuffer(this._indices, this._updatable);
         }
 
         // Vertex buffers
@@ -236,6 +236,10 @@ export class Geometry implements IGetSetVerticesData {
      * @param stride defines the stride to use (0 by default). This value is deduced from the kind value if not specified
      */
     public setVerticesData(kind: string, data: FloatArray, updatable: boolean = false, stride?: number): void {
+        if (updatable && Array.isArray(data)) {
+            // to avoid converting to Float32Array at each draw call in engine.updateDynamicVertexBuffer, we make the conversion a single time here
+            data = new Float32Array(data);
+        }
         var buffer = new VertexBuffer(this._engine, data, kind, updatable, this._meshes.length === 0, stride);
         this.setVerticesBuffer(buffer);
     }
@@ -436,7 +440,7 @@ export class Geometry implements IGetSetVerticesData {
             } else if (data instanceof ArrayBuffer) {
                 return new Float32Array(data, vertexBuffer.byteOffset, count);
             } else {
-                const offset = data.byteOffset + vertexBuffer.byteOffset;
+                let offset = data.byteOffset + vertexBuffer.byteOffset;
                 if (forceCopy || (copyWhenShared && this._meshes.length !== 1)) {
                     let result = new Float32Array(count);
                     let source = new Float32Array(data.buffer, offset, count);
@@ -445,6 +449,14 @@ export class Geometry implements IGetSetVerticesData {
 
                     return result;
                 }
+
+                // Portect against bad data
+                let remainder = offset % 4;
+
+                if (remainder) {
+                    offset = Math.max(0, offset - remainder);
+                }
+
                 return new Float32Array(data.buffer, offset, count);
             }
         }
@@ -740,7 +752,7 @@ export class Geometry implements IGetSetVerticesData {
 
         // indexBuffer
         if (numOfMeshes === 1 && this._indices && this._indices.length > 0) {
-            this._indexBuffer = this._engine.createIndexBuffer(this._indices);
+            this._indexBuffer = this._engine.createIndexBuffer(this._indices, this._updatable);
         }
         if (this._indexBuffer) {
             this._indexBuffer.references = numOfMeshes;

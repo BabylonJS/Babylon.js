@@ -12,18 +12,36 @@ import { EnvironmentTools } from "../tools/environmentTools";
 import { Tools } from "babylonjs/Misc/tools";
 import { FilesInput } from "babylonjs/Misc/filesInput";
 import { Animation } from "babylonjs/Animations/animation";
+import { PBRBaseMaterial, PBRMaterial, StringTools, Texture } from "babylonjs";
+import { Mesh } from "babylonjs/Meshes/mesh";
 
 require("../scss/renderingZone.scss");
+
+function isTextureAsset(name: string): boolean {
+    var queryStringIndex = name.indexOf("?");
+    if (queryStringIndex !== -1) {
+        name = name.substring(0, queryStringIndex);
+    }
+
+    return (
+        StringTools.EndsWith(name, ".ktx") ||
+        StringTools.EndsWith(name, ".ktx2") ||
+        StringTools.EndsWith(name, ".png") ||
+        StringTools.EndsWith(name, ".jpg") ||
+        StringTools.EndsWith(name, ".jpeg")
+    );
+}
 
 interface IRenderingZoneProps {
     globalState: GlobalState;
     assetUrl?: string;
+    autoRotate?: boolean;
     cameraPosition?: Vector3;
     expanded: boolean;
 }
 
 export class RenderingZone extends React.Component<IRenderingZoneProps> {
-    private _currentPluginName: string;
+    private _currentPluginName?: string;
     private _engine: Engine;
     private _scene: Scene;
     private _canvas: HTMLCanvasElement;
@@ -72,16 +90,41 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             }
         );
 
-        filesInput.onProcessFileCallback = (file, name, extension) => {
+        filesInput.onProcessFileCallback = (file, name, extension, setSceneFileToLoad) => {
             if (filesInput.filesToLoad && filesInput.filesToLoad.length === 1 && extension) {
-                if (extension.toLowerCase() === "dds" || extension.toLowerCase() === "env" || extension.toLowerCase() === "hdr") {
-                    FilesInput.FilesToLoad[name] = file;
-                    EnvironmentTools.SkyboxPath = "file:" + (file as any).correctName;
-                    return false;
+                switch (extension.toLowerCase()) {
+                    case "dds":
+                    case "env":
+                    case "hdr": {
+                        FilesInput.FilesToLoad[name] = file;
+                        EnvironmentTools.SkyboxPath = "file:" + (file as any).correctName;
+                        return false;
+                    }
+                    default: {
+                        if (isTextureAsset(name)) {
+                            setSceneFileToLoad(file);
+                        }
+
+                        break;
+                    }
                 }
             }
+
             return true;
         };
+
+        filesInput.loadAsync = (sceneFile, onProgress) => {
+            const filesToLoad = filesInput.filesToLoad;
+            if (filesToLoad.length === 1) {
+                const fileName = (filesToLoad[0] as any).correctName;
+                if (isTextureAsset(fileName)) {
+                    return Promise.resolve(this.loadTextureAsset(`file:${fileName}`));
+                }
+            }
+
+            return SceneLoader.LoadAsync("file:", sceneFile, this._engine, onProgress);
+        };
+
         filesInput.monitorElementForDragNDrop(this._canvas);
 
         this.props.globalState.filesInput = filesInput;
@@ -107,29 +150,33 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
 
             camera = this._scene.activeCamera! as ArcRotateCamera;
 
+            if (this._currentPluginName === "gltf") {
+                // glTF assets use a +Z forward convention while the default camera faces +Z. Rotate the camera to look at the front of the asset.
+                camera.alpha += Math.PI;
+            }
+
+            // Enable camera's behaviors
+            camera.useFramingBehavior = true;
+
+            var framingBehavior = camera.getBehaviorByName("Framing") as FramingBehavior;
+            framingBehavior.framingTime = 0;
+            framingBehavior.elevationReturnTime = -1;
+
+            if (this._scene.meshes.length) {
+                camera.lowerRadiusLimit = null;
+
+                var worldExtends = this._scene.getWorldExtends(function (mesh) {
+                    return mesh.isVisible && mesh.isEnabled();
+                });
+                framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
+            }
+
+            if (this.props.autoRotate) {
+                camera.useAutoRotationBehavior = true;
+            }
+
             if (this.props.cameraPosition) {
                 camera.setPosition(this.props.cameraPosition);
-            } else {
-                if (this._currentPluginName === "gltf") {
-                    // glTF assets use a +Z forward convention while the default camera faces +Z. Rotate the camera to look at the front of the asset.
-                    camera.alpha += Math.PI;
-                }
-
-                // Enable camera's behaviors
-                camera.useFramingBehavior = true;
-
-                var framingBehavior = camera.getBehaviorByName("Framing") as FramingBehavior;
-                framingBehavior.framingTime = 0;
-                framingBehavior.elevationReturnTime = -1;
-
-                if (this._scene.meshes.length) {
-                    camera.lowerRadiusLimit = null;
-
-                    var worldExtends = this._scene.getWorldExtends(function (mesh) {
-                        return mesh.isVisible && mesh.isEnabled();
-                    });
-                    framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
-                }
             }
 
             camera.pinchPrecision = 200 / camera.radius;
@@ -176,8 +223,8 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             }
         } else {
             var pbrPresent = false;
-            for (var i = 0; i < this._scene.materials.length; i++) {
-                if (this._scene.materials[i].transparencyMode !== undefined) {
+            for (const material of this._scene.materials) {
+                if (material instanceof PBRBaseMaterial) {
                     pbrPresent = true;
                     break;
                 }
@@ -207,13 +254,52 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         if (this.props.globalState.isDebugLayerEnabled) {
             this.props.globalState.showDebugLayer();
         }
+
+        delete this._currentPluginName;
+    }
+
+    loadTextureAsset(url: string): Scene {
+        const scene = new Scene(this._engine);
+        const plane = Mesh.CreatePlane("plane", 1, scene);
+
+        const texture = new Texture(url, scene, undefined, undefined, Texture.NEAREST_LINEAR, () => {
+            const size = texture.getBaseSize();
+            if (size.width > size.height) {
+                plane.scaling.y = size.height / size.width;
+            } else {
+                plane.scaling.x = size.width / size.height;
+            }
+
+            texture.gammaSpace = true;
+            texture.hasAlpha = true;
+            texture.wrapU = Texture.CLAMP_ADDRESSMODE;
+            texture.wrapV = Texture.CLAMP_ADDRESSMODE;
+
+            scene.debugLayer.show();
+            scene.debugLayer.select(texture, "PREVIEW");
+        }, (message, exception) => {
+            this.props.globalState.onError.notifyObservers({ scene: scene, message: message || exception.message || "Failed to load texture" });
+        });
+
+        const material = new PBRMaterial("unlit", scene);
+        material.unlit = true;
+        material.albedoTexture = texture;
+        material.alphaMode = PBRMaterial.PBRMATERIAL_ALPHABLEND;
+        plane.material = material;
+
+        return scene;
     }
 
     loadAssetFromUrl() {
-        let assetUrl = this.props.assetUrl!;
-        let rootUrl = Tools.GetFolderPath(assetUrl);
-        let fileName = Tools.GetFilename(assetUrl);
-        SceneLoader.LoadAsync(rootUrl, fileName, this._engine)
+        const assetUrl = this.props.assetUrl!;
+        const rootUrl = Tools.GetFolderPath(assetUrl);
+        const fileName = Tools.GetFilename(assetUrl);
+
+        const promise = isTextureAsset(assetUrl)
+            ? Promise.resolve(this.loadTextureAsset(assetUrl))
+            : SceneLoader.LoadAsync(rootUrl, fileName, this._engine);
+
+        promise
             .then((scene) => {
                 if (this._scene) {
                     this._scene.dispose();
@@ -231,7 +317,6 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             })
             .catch((reason) => {
                 this.props.globalState.onError.notifyObservers({ message: reason.message });
-                //TODO sceneError({ name: fileName }, null, reason.message || reason);
             });
     }
 

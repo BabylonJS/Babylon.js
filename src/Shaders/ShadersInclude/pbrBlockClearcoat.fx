@@ -86,11 +86,17 @@ struct clearcoatOutParams
                 const in sampler2D reflectionSamplerHigh,
             #endif
         #endif
+        #ifdef REALTIME_FILTERING
+            const in vec2 vReflectionFilteringInfo,
+        #endif
     #endif
     #if defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
         #ifdef RADIANCEOCCLUSION
             const in float ambientMonochrome,
         #endif
+    #endif
+    #if defined(CLEARCOAT_BUMP) || defined(TWOSIDEDLIGHTING)
+        const in float frontFacingMultiplier,
     #endif
         out clearcoatOutParams outParams
     )
@@ -162,7 +168,9 @@ struct clearcoatOutParams
             #if defined(TANGENT) && defined(NORMAL)
                 mat3 TBNClearCoat = vTBN;
             #else
-                mat3 TBNClearCoat = cotangent_frame(clearCoatNormalW * clearCoatNormalScale, vPositionW, vClearCoatBumpUV, vClearCoatTangentSpaceParams);
+                // flip the uv for the backface
+                vec2 TBNClearCoatUV = vClearCoatBumpUV * frontFacingMultiplier;
+                mat3 TBNClearCoat = cotangent_frame(clearCoatNormalW * clearCoatNormalScale, vPositionW, TBNClearCoatUV, vClearCoatTangentSpaceParams);
             #endif
 
             #if DEBUGMODE > 0
@@ -182,7 +190,7 @@ struct clearcoatOutParams
         #endif
 
         #if defined(TWOSIDEDLIGHTING) && defined(NORMAL)
-            clearCoatNormalW = gl_FrontFacing ? clearCoatNormalW : -clearCoatNormalW;
+            clearCoatNormalW = clearCoatNormalW * frontFacingMultiplier;
         #endif
 
         outParams.clearCoatNormalW = clearCoatNormalW;
@@ -254,6 +262,9 @@ struct clearcoatOutParams
             #ifndef LODBASEDMICROSFURACE
                 reflectionSamplerLow,
                 reflectionSamplerHigh,
+            #endif
+            #ifdef REALTIME_FILTERING
+                vReflectionFilteringInfo,
             #endif
                 environmentClearCoatRadiance
             );

@@ -6,8 +6,7 @@ import { GeneralPropertyTabComponent } from './genericNodePropertyComponent';
 import { TextLineComponent } from '../../sharedComponents/textLineComponent';
 import { TextInputLineComponent } from '../../sharedComponents/textInputLineComponent';
 import { NumericInputComponent } from '../../sharedComponents/numericInputComponent';
-import { Color3, Color4 } from 'babylonjs';
-import { ColorPickerLineComponent } from '../../sharedComponents/colorPickerComponent';
+import { Color4 } from 'babylonjs';
 
 export class ButtonPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
@@ -25,7 +24,7 @@ export class ButtonPropertyTabComponent extends React.Component<IPropertyCompone
     render() {
         return (
             <>                
-                <GeneralPropertyTabComponent globalState={this.props.globalState} block={this.props.block}/>
+                <GeneralPropertyTabComponent globalState={this.props.globalState} guiBlock={this.props.guiBlock}/>
                 <LineContainerComponent title="PROPERTIES"> 
                 <TextInputLineComponent globalState={this.props.globalState} label="Button Text" value={this.button.textBlock?.text}
                 onChange={evt =>{
@@ -44,11 +43,6 @@ export class ButtonPropertyTabComponent extends React.Component<IPropertyCompone
                 }}>
                 </NumericInputComponent>  
                 <TextLineComponent label="Background Color" value={this.button.background} />
-                <ColorPickerLineComponent value={this.getColorString()} globalState={this.props.globalState} 
-                onColorChanged={evt => {
-                        this.button.background = evt; 
-                }}>
-                </ColorPickerLineComponent>
                 </LineContainerComponent>            
             </>
         );

@@ -156,7 +156,7 @@ export class GraphFrame {
 
         for (var i = 0; i < this._exposedInPorts.length; ) { // Input
             var port = this._exposedInPorts[i];
-            if(port.node === null || port.node.enclosingFrameId != this.id) {
+            if(!port || port.node === null || port.node.enclosingFrameId != this.id) {
                 if(this.removePortFromExposedWithNode(port, this._exposedInPorts)) {
                     continue;
                 }
@@ -194,7 +194,9 @@ export class GraphFrame {
         let index = exposedPorts.findIndex(nodePort => nodePort === port);
         if(index >= 0) {
             exposedPorts.splice(index,1)
-            port.exposedPortPosition = -1;
+            if (port) {
+                port.exposedPortPosition = -1;
+            }
             return true;
         }
         return false;
@@ -1413,7 +1415,7 @@ export class GraphFrame {
         }
     }
 
-    public serialize(): IFrameData {
+    public serialize(saveCollapsedState: boolean): IFrameData {
         this.serializePortData(this._exposedInPorts);
         this.serializePortData(this._exposedOutPorts);
         return {
@@ -1423,7 +1425,7 @@ export class GraphFrame {
             height: this._height,
             color: this._color.asArray(),
             name: this.name,
-            isCollapsed: true, //keeping closed to make reimporting cleaner
+            isCollapsed: saveCollapsedState ? this.isCollapsed: true, //keeping closed for stand along exporting.
             blocks: this.nodes.map(n => n.block.uniqueId),
             comments: this._comments
         }

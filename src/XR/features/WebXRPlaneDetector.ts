@@ -15,12 +15,15 @@ export interface IWebXRPlaneDetectorOptions {
      * The node to use to transform the local results to world coordinates
      */
     worldParentNode?: TransformNode;
-
     /**
      * If set to true a reference of the created planes will be kept until the next session starts
      * If not defined, planes will be removed from the array when the feature is detached or the session ended.
      */
     doNotRemovePlanesOnSessionEnded?: boolean;
+    /**
+     * Preferred detector configuration, not all preferred options will be supported by all platforms.
+     */
+    preferredDetectorOptions?: XRGeometryDetectorOptions;
 }
 
 /**
@@ -160,7 +163,7 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
             toRemove.forEach((index) => {
                 const plane = this._detectedPlanes.splice(index - idxTracker, 1)[0];
                 this.onPlaneRemovedObservable.notifyObservers(plane);
-                idxTracker--;
+                idxTracker++;
             });
             // now check for new ones
             detectedPlanes.forEach((xrPlane) => {
@@ -176,7 +179,7 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
                 } else {
                     // updated?
                     if (xrPlane.lastChangedTime === this._xrSessionManager.currentTimestamp) {
-                        let index = this.findIndexInPlaneArray(xrPlane);
+                        let index = this._findIndexInPlaneArray(xrPlane);
                         const plane = this._detectedPlanes[index];
                         this._updatePlaneWithXRPlane(xrPlane, plane, frame);
                         this.onPlaneUpdatedObservable.notifyObservers(plane);
@@ -194,6 +197,14 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
                 this._detectedPlanes.length = 0;
             }
         };
+
+        // Only supported by BabylonNative
+        if (!!this._xrSessionManager.isNative &&
+            !!this._options.preferredDetectorOptions &&
+            !!this._xrSessionManager.session.trySetPreferredPlaneDetectorOptions) {
+            this._xrSessionManager.session.trySetPreferredPlaneDetectorOptions(this._options.preferredDetectorOptions);
+        }
+
         if (!this._xrSessionManager.session.updateWorldTrackingState) {
             // check if this was enabled by a flag
             const alreadyEnabled = (this._xrSessionManager.session as any).worldTrackingState?.planeDetectionState?.enabled;
@@ -225,6 +236,7 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
                 mat.multiplyToRef(this._options.worldParentNode.getWorldMatrix(), mat);
             }
         }
+
         return <IWebXRPlane>plane;
     }
 
@@ -232,7 +244,7 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
      * avoiding using Array.find for global support.
      * @param xrPlane the plane to find in the array
      */
-    private findIndexInPlaneArray(xrPlane: XRPlane) {
+    private _findIndexInPlaneArray(xrPlane: XRPlane) {
         for (let i = 0; i < this._detectedPlanes.length; ++i) {
             if (this._detectedPlanes[i].xrPlane === xrPlane) {
                 return i;

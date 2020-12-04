@@ -159,6 +159,8 @@ export class InstancesBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
+        const engine = state.sharedData.scene.getEngine();
+
         // Register for defines
         state.sharedData.blocksWithDefines.push(this);
 
@@ -175,7 +177,11 @@ export class InstancesBlock extends NodeMaterialBlock {
         state.compilationString += `#ifdef THIN_INSTANCES\r\n`;
         state.compilationString += `${output.associatedVariableName} = ${this.world.associatedVariableName} * ${output.associatedVariableName};\r\n`;
         state.compilationString += `#endif\r\n`;
-        state.compilationString += this._declareOutput(instanceID, state) + ` = float(gl_InstanceID);\r\n`;
+        if (engine._caps.canUseGLInstanceID) {
+            state.compilationString += this._declareOutput(instanceID, state) + ` = 0.0;\r\n`;
+        } else {
+            state.compilationString += this._declareOutput(instanceID, state) + ` = float(gl_InstanceID);\r\n`;
+        }
         state.compilationString += `#else\r\n`;
         state.compilationString += this._declareOutput(output, state) + ` = ${this.world.associatedVariableName};\r\n`;
         state.compilationString += this._declareOutput(instanceID, state) + ` = 0.0;\r\n`;

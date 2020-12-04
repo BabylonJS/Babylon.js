@@ -44,6 +44,7 @@ interface XRLayer extends EventTarget {}
 interface XRSessionInit {
     optionalFeatures?: string[];
     requiredFeatures?: string[];
+    trackedImages?: XRTrackedImageInit[];
 }
 
 interface XRSessionEvent extends Event {
@@ -124,6 +125,10 @@ interface XRPose {
     readonly emulatedPosition: boolean;
 }
 
+interface XRWorldInformation {
+    detectedPlanes?: XRPlaneSet;
+}
+
 interface XRFrame {
     readonly session: XRSession;
     getPose(space: XRSpace, baseSpace: XRSpace): XRPose | undefined;
@@ -135,12 +140,12 @@ interface XRFrame {
     // Anchors
     trackedAnchors?: XRAnchorSet;
     createAnchor?(pose: XRRigidTransform, space: XRSpace): Promise<XRAnchor>;
-    // Planes
-    worldInformation?: {
-        detectedPlanes?: XRPlaneSet;
-    };
+    // World geometries
+    worldInformation?: XRWorldInformation;
     // Hand tracking
     getJointPose?(joint: XRJointSpace, baseSpace: XRSpace): XRJointPose;
+    // Image tracking
+    getImageTrackingResults?(): Array<XRImageTrackingResult>;
 }
 
 interface XRInputSourceEvent extends Event {
@@ -212,6 +217,9 @@ interface XRSession {
 
     // legacy plane detection
     updateWorldTrackingState?(options: { planeDetectionState?: { enabled: boolean } }): void;
+
+    // image tracking
+    getTrackedImageScores?(): XRImageTrackingScore[];
 }
 
 interface XRViewerPose extends XRPose {
@@ -342,4 +350,19 @@ interface XRHand extends Iterable<XRJointSpace> {
     readonly LITTLE_PHALANX_INTERMEDIATE: number;
     readonly LITTLE_PHALANX_DISTAL: number;
     readonly LITTLE_PHALANX_TIP: number;
+}
+
+type XRImageTrackingState = "tracked" | "emulated";
+type XRImageTrackingScore = "untrackable" | "trackable";
+
+interface XRTrackedImageInit {
+    image: ImageBitmap;
+    widthInMeters: number;
+}
+
+interface XRImageTrackingResult {
+    readonly imageSpace: XRSpace;
+    readonly index: number;
+    readonly trackingState: XRImageTrackingState;
+    readonly measuredWidthInMeters: number;
 }

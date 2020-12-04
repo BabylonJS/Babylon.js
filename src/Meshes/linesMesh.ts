@@ -79,7 +79,7 @@ export class LinesMesh extends Mesh {
 
         var defines: string[] = [];
         var options = {
-            attributes: [VertexBuffer.PositionKind, "world0", "world1", "world2", "world3"],
+            attributes: [VertexBuffer.PositionKind],
             uniforms: ["vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "world", "viewProjection"],
             needAlphaBlending: true,
             defines: defines
@@ -167,6 +167,10 @@ export class LinesMesh extends Mesh {
      */
     public get checkCollisions(): boolean {
         return false;
+    }
+
+    public set checkCollisions(value: boolean) {
+        // Just ignore it
     }
 
     /** @hidden */

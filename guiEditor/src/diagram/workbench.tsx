@@ -7,11 +7,7 @@ import { Nullable } from 'babylonjs/types';
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { IEditorData} from '../nodeLocationInfo';
 
-import { Button } from 'babylonjs-gui/2D/controls/button';
-import { Engine } from 'babylonjs/Engines/engine';
-import { Scene } from 'babylonjs/scene';
-import { Container, Rectangle } from 'babylonjs-gui';
-
+import 'babylonjs-gui/2D/';
 
 require("./graphCanvas.scss");
 
@@ -42,8 +38,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _guiNodes: GUINode[] = [];
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null
-    private _dropPointX = 0;
-    private _dropPointY = 0;
+    //private _dropPointX = 0;
+    //private _dropPointY = 0;
     private _selectionStartX = 0;
     private _selectionStartY = 0;
     private _x = 0;
@@ -238,7 +234,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._oldY = -1;
     }
 
-    findNodeFromGuiElement(guiElement: BABYLON.GUI.Container | BABYLON.GUI.Control) {
+    findNodeFromGuiElement(guiElement: BABYLON.GUI.Control) {
        return this._guiNodes.filter(n => n.guiNode === guiElement)[0];
     }
 
@@ -251,7 +247,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._svgCanvas.innerHTML = "";
     }
 
-    appendBlock(guiElement: BABYLON.GUI.Container | BABYLON.GUI.Control) {
+    appendBlock(guiElement: BABYLON.GUI.Control) {
         var newGuiNode = new GUINode(this.props.globalState, guiElement);
         newGuiNode.appendVisual(this._graphCanvas, this);
         this._guiNodes.push(newGuiNode);

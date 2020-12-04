@@ -21,12 +21,12 @@ import { InstancedMesh } from "babylonjs/Meshes/instancedMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { MorphTarget } from "babylonjs/Morph/morphTarget";
 import { MorphTargetManager } from "babylonjs/Morph/morphTargetManager";
-import { ISceneLoaderProgressEvent } from "babylonjs/Loading/sceneLoader";
+import { ISceneLoaderAsyncResult, ISceneLoaderProgressEvent } from "babylonjs/Loading/sceneLoader";
 import { Scene } from "babylonjs/scene";
 import { IProperty, AccessorType, CameraType, AnimationChannelTargetPath, AnimationSamplerInterpolation, AccessorComponentType, MaterialAlphaMode, TextureMinFilter, TextureWrapMode, TextureMagFilter, MeshPrimitiveMode } from "babylonjs-gltf2interface";
 import { _IAnimationSamplerData, IGLTF, ISampler, INode, IScene, IMesh, IAccessor, ISkin, ICamera, IAnimation, IAnimationChannel, IAnimationSampler, IBuffer, IBufferView, IMaterialPbrMetallicRoughness, IMaterial, ITextureInfo, ITexture, IImage, IMeshPrimitive, IArrayItem as IArrItem, _ISamplerData } from "./glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "./glTFLoaderExtension";
-import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData, GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode, IImportMeshAsyncOutput } from "../glTFFileLoader";
+import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData, GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode } from "../glTFFileLoader";
 import { IAnimationKey, AnimationKeyInterpolation } from 'babylonjs/Animations/animationKey';
 import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 import { IDataBuffer } from 'babylonjs/Misc/dataReader';
@@ -35,6 +35,7 @@ import { Logger } from 'babylonjs/Misc/logger';
 import { Light } from 'babylonjs/Lights/light';
 import { TmpVectors } from 'babylonjs/Maths/math.vector';
 import { BoundingInfo } from 'babylonjs/Culling/boundingInfo';
+import { StringTools } from 'babylonjs/Misc/stringTools';
 
 interface TypedArrayLike extends ArrayBufferView {
     readonly length: number;
@@ -224,11 +225,9 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     /** @hidden */
-    public importMeshAsync(meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<IImportMeshAsyncOutput> {
+    public importMeshAsync(meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName = ""): Promise<ISceneLoaderAsyncResult> {
         return Promise.resolve().then(() => {
             this._babylonScene = scene;
-            this._rootUrl = rootUrl;
-            this._fileName = fileName || "scene";
             this._forAssetContainer = forAssetContainer;
             this._loadData(data);
 
@@ -255,7 +254,7 @@ export class GLTFLoader implements IGLTFLoader {
                 });
             }
 
-            return this._loadAsync(nodes, () => {
+            return this._loadAsync(rootUrl, fileName, nodes, () => {
                 return {
                     meshes: this._getMeshes(),
                     particleSystems: [],
@@ -270,19 +269,19 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     /** @hidden */
-    public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<void> {
+    public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName = ""): Promise<void> {
         return Promise.resolve().then(() => {
             this._babylonScene = scene;
-            this._rootUrl = rootUrl;
-            this._fileName = fileName || "scene";
             this._loadData(data);
-            return this._loadAsync(null, () => undefined);
+            return this._loadAsync(rootUrl, fileName, null, () => undefined);
         });
     }
 
-    private _loadAsync<T>(nodes: Nullable<Array<number>>, resultFunc: () => T): Promise<T> {
+    private _loadAsync<T>(rootUrl: string, fileName: string, nodes: Nullable<Array<number>>, resultFunc: () => T): Promise<T> {
         return Promise.resolve().then(() => {
-            this._uniqueRootUrl = (this._rootUrl.indexOf("file:") === -1 && this._fileName) ? this._rootUrl : `${this._rootUrl}${Date.now()}/`;
+            this._rootUrl = rootUrl;
+            this._uniqueRootUrl = (!StringTools.StartsWith(rootUrl, "file:") && fileName) ? rootUrl : `${rootUrl}${Date.now()}/`;
+            this._fileName = fileName;
 
             this._loadExtensions();
             this._checkExtensions();
@@ -1244,11 +1243,16 @@ export class GLTFLoader implements IGLTFLoader {
             return Promise.resolve();
         }
 
-        const promises = new Array<Promise<any>>();
+        const promises = new Array<Promise<void>>();
 
         for (let index = 0; index < animations.length; index++) {
             const animation = animations[index];
-            promises.push(this.loadAnimationAsync(`/animations/${animation.index}`, animation));
+            promises.push(this.loadAnimationAsync(`/animations/${animation.index}`, animation).then((animationGroup) => {
+                // Delete the animation group if it ended up not having any animations in it.
+                if (animationGroup.targetedAnimations.length === 0) {
+                    animationGroup.dispose();
+                }
+            }));
         }
 
         return Promise.all(promises).then(() => { });
@@ -1480,7 +1484,15 @@ export class GLTFLoader implements IGLTFLoader {
         return sampler._data;
     }
 
-    private _loadBufferAsync(context: string, buffer: IBuffer, byteOffset: number, byteLength: number): Promise<ArrayBufferView> {
+    /**
+     * Loads a glTF buffer.
+     * @param context The context when loading the asset
+     * @param buffer The glTF buffer property
+     * @param byteOffset The byte offset to use
+     * @param byteLength The byte length to use
+     * @returns A promise that resolves with the loaded data when the load is complete
+     */
+    public loadBufferAsync(context: string, buffer: IBuffer, byteOffset: number, byteLength: number): Promise<ArrayBufferView> {
         const extensionPromise = this._extensionsLoadBufferAsync(context, buffer, byteOffset, byteLength);
         if (extensionPromise) {
             return extensionPromise;
@@ -1526,7 +1538,7 @@ export class GLTFLoader implements IGLTFLoader {
         }
 
         const buffer = ArrayItem.Get(`${context}/buffer`, this._gltf.buffers, bufferView.buffer);
-        bufferView._data = this._loadBufferAsync(`/buffers/${buffer.index}`, buffer, (bufferView.byteOffset || 0), bufferView.byteLength);
+        bufferView._data = this.loadBufferAsync(`/buffers/${buffer.index}`, buffer, (bufferView.byteOffset || 0), bufferView.byteLength);
 
         return bufferView._data;
     }
@@ -1676,7 +1688,7 @@ export class GLTFLoader implements IGLTFLoader {
             accessor._babylonVertexBuffer = this._loadVertexBufferViewAsync(bufferView, kind).then((babylonBuffer) => {
                 const size = GLTFLoader._GetNumComponents(context, accessor.type);
                 return new VertexBuffer(this._babylonScene.getEngine(), babylonBuffer, kind, false, false, bufferView.byteStride,
-                    false, accessor.byteOffset, size, accessor.componentType, accessor.normalized, true);
+                    false, accessor.byteOffset, size, accessor.componentType, accessor.normalized, true, 1, true);
             });
         }
 
@@ -2073,17 +2085,17 @@ export class GLTFLoader implements IGLTFLoader {
 
         if (Tools.IsBase64(uri)) {
             const data = new Uint8Array(Tools.DecodeBase64(uri));
-            this.log(`Decoded ${uri.substr(0, 64)}... (${data.length} bytes)`);
+            this.log(`${context}: Decoded ${uri.substr(0, 64)}... (${data.length} bytes)`);
             return Promise.resolve(data);
         }
 
-        this.log(`Loading ${uri}`);
+        this.log(`${context}: Loading ${uri}`);
 
         return this._parent.preprocessUrlAsync(this._rootUrl + uri).then((url) => {
             return new Promise((resolve, reject) => {
                 this._parent._loadFile(url, this._babylonScene, (data) => {
                     if (!this._disposed) {
-                        this.log(`Loaded ${uri} (${(data as ArrayBuffer).byteLength} bytes)`);
+                        this.log(`${context}: Loaded ${uri} (${(data as ArrayBuffer).byteLength} bytes)`);
                         resolve(new Uint8Array(data as ArrayBuffer));
                     }
                 }, true, (request) => {

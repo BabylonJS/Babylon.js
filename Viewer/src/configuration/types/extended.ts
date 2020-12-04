@@ -3,7 +3,7 @@ import { Tools } from 'babylonjs/Misc/tools';
 
 /**
  * The viewer's "extended" configuration.
- * This configuration defines specific obejcts and parameters that we think make any model look good.
+ * This configuration defines specific objects and parameters that we think make any model look good.
  */
 export let extendedConfiguration: ViewerConfiguration = {
     version: "3.2.0",

@@ -14,38 +14,59 @@ import { LockObject } from "../lockObject";
 import { GlobalState } from "../../../../globalState";
 
 interface IEditorControlsProps {
+    // if the entity has a targeted animation
     isTargetedAnimation: boolean;
+    // Entity if it is animatable or targeted animation type
     entity: IAnimatable | TargetedAnimation;
+    // The current selected animation
     selected: Animation | null;
+    // The global lock object
     lockObject: LockObject;
+    // The observable
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    // Event to send the message to the notification bar
     setNotificationMessage: (message: string) => void;
+    // Event to send the selected animation and the coordinate (x, y, z) axis to render a curve
     selectAnimation: (selected: Animation, axis?: SelectedCoordinate) => void;
+    // Event to set the frames per second of the animation
     setFps: (fps: number) => void;
+    // Event to set if the animation loops
     setIsLooping: () => void;
+    // The global state
     globalState: GlobalState;
+    // The snippet server address
     snippetServer: string;
+    // Event to deselect an animation
     deselectAnimation: () => void;
+    // The frames per second
     fps: number;
+}
+
+interface IEditorControlsState {
+    // If the add animation tab is currently visible in the editor
+    isAnimationTabOpen: boolean;
+    // If the edit animation tab is currently visible in the editor
+    isEditTabOpen: boolean;
+    // If the load animations tab is currently visible in the editor
+    isLoadTabOpen: boolean;
+    // If the save animations tab is currently visible in the editor
+    isSaveTabOpen: boolean;
+    // If the loop toggle is active or not.
+    isLoopActive: boolean;
+    // How many animations we have in the tree
+    animationsCount: number;
+    // Frames per second of the selected animation
+    framesPerSecond: number;
+    // The snippet ID the user needs to input to save/load (needs to switch tab)
+    snippetId: string;
+    // The currently selected animation
+    selected: Animation | undefined;
 }
 
 /**
  * Renders the Curve Editor controls to create, save, remove, load and edit animations
  */
-export class EditorControls extends React.Component<
-    IEditorControlsProps,
-    {
-        isAnimationTabOpen: boolean;
-        isEditTabOpen: boolean;
-        isLoadTabOpen: boolean;
-        isSaveTabOpen: boolean;
-        isLoopActive: boolean;
-        animationsCount: number;
-        framesPerSecond: number;
-        snippetId: string;
-        selected: Animation | undefined;
-    }
-> {
+export class EditorControls extends React.Component<IEditorControlsProps, IEditorControlsState> {
     constructor(props: IEditorControlsProps) {
         super(props);
         let count = this.props.isTargetedAnimation ? 1 : (this.props.entity as IAnimatable).animations?.length ?? 0;
@@ -62,12 +83,20 @@ export class EditorControls extends React.Component<
         };
     }
 
+    /**
+     * Makes sure the frames per second receive the updated prop
+     * @param prevProps previous properties
+     */
     componentDidUpdate(prevProps: IEditorControlsProps) {
         if (this.props.fps !== prevProps.fps) {
             this.setState({ framesPerSecond: this.props.fps });
         }
     }
 
+    /**
+     * Add the nimation, recounts the list and opens the correct tab
+     * @param animation The recently empty created animation
+     */
     onAnimationAdded = (animation: Animation) => {
         this.setState({
             animationsCount: this.recountAnimations(),
@@ -77,6 +106,9 @@ export class EditorControls extends React.Component<
         this.props.selectAnimation(animation, undefined);
     };
 
+    /**
+     * Set state when the animations list has finished updated
+     */
     finishedUpdate = () => {
         this.setState({
             isEditTabOpen: true,
@@ -85,10 +117,14 @@ export class EditorControls extends React.Component<
         });
     };
 
+    // Recount animations
     recountAnimations() {
         return (this.props.entity as IAnimatable).animations?.length ?? 0;
     }
 
+    /**
+     * Toggles loop
+     */
     changeLoopBehavior = () => {
         this.setState({
             isLoopActive: !this.state.isLoopActive,
@@ -96,6 +132,9 @@ export class EditorControls extends React.Component<
         this.props.setIsLooping();
     };
 
+    /**
+     * This avoids using lambda functions in JSX
+     */
     handleFirstTab = () => {
         this.handleTabs(0);
     };
@@ -109,6 +148,7 @@ export class EditorControls extends React.Component<
         this.handleTabs(3);
     };
 
+    // Opens/Closes the tabs
     handleTabs(tab: number) {
         let state = {
             isAnimationTabOpen: true,
@@ -155,6 +195,7 @@ export class EditorControls extends React.Component<
         this.setState(state);
     }
 
+    // Set state of FPS and sends the fps to parent
     handleChangeFps = (fps: number) => {
         this.props.setFps(fps);
         this.setState({ framesPerSecond: fps });
@@ -197,6 +238,10 @@ export class EditorControls extends React.Component<
         }
     };
 
+    /**
+     * The currently selected animation to edit it
+     * @param selected Selected animation
+     */
     editAnimation = (selected: Animation) => {
         this.setState({
             selected: selected,
@@ -207,11 +252,12 @@ export class EditorControls extends React.Component<
         });
     };
 
+    // Set state of the snippet id
     setSnippetId = (id: string) => {
         this.setState({ snippetId: id });
     };
 
-     /**
+    /**
      * Marks animation tab closed and hides the tab
      */
     onCloseAddAnimation = () => {
@@ -227,26 +273,30 @@ export class EditorControls extends React.Component<
                             active={this.state.isAnimationTabOpen}
                             tooltip="Add Animation"
                             icon="medium add-animation"
-                            onClick={this.handleFirstTab}></IconButtonLineComponent>
+                            onClick={this.handleFirstTab}
+                        ></IconButtonLineComponent>
                     )}
                     <IconButtonLineComponent
                         active={this.state.isLoadTabOpen}
                         tooltip="Load Animation"
                         icon="medium load"
-                        onClick={this.handleSecondTab}></IconButtonLineComponent>
+                        onClick={this.handleSecondTab}
+                    ></IconButtonLineComponent>
                     {this.state.animationsCount === 0 ? null : (
                         <IconButtonLineComponent
                             active={this.state.isSaveTabOpen}
                             tooltip="Save Animation"
                             icon="medium save"
-                            onClick={this.handleThirdTab}></IconButtonLineComponent>
+                            onClick={this.handleThirdTab}
+                        ></IconButtonLineComponent>
                     )}
                     {this.state.animationsCount === 0 ? null : (
                         <IconButtonLineComponent
                             active={this.state.isEditTabOpen}
                             tooltip="Edit Animations"
                             icon="medium animation-edit"
-                            onClick={this.handleFourthTab}></IconButtonLineComponent>
+                            onClick={this.handleFourthTab}
+                        ></IconButtonLineComponent>
                     )}
                     {this.state.isEditTabOpen ? (
                         <div className="input-fps">
@@ -263,7 +313,8 @@ export class EditorControls extends React.Component<
                         <IconButtonLineComponent
                             tooltip="Loop/Unloop"
                             icon={`medium ${this.state.isLoopActive ? "loop-active last" : "loop-inactive last"}`}
-                            onClick={this.changeLoopBehavior}></IconButtonLineComponent>
+                            onClick={this.changeLoopBehavior}
+                        ></IconButtonLineComponent>
                     ) : null}
                 </div>
                 {this.props.isTargetedAnimation ? null : (

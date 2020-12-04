@@ -1,6 +1,7 @@
 //UI
 var gui = new dat.GUI();
 var options = {
+    engine: "webgl2",
 	material: "standard",
 	mesh: "sphere",
 	hemisphericLight: true,

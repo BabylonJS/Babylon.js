@@ -2,8 +2,6 @@
 import * as React from "react";
 import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
 import { IPropertyComponentProps } from './propertyComponentProps';
-import { TextInputLineComponent } from '../../sharedComponents/textInputLineComponent';
-import { TextLineComponent } from '../../sharedComponents/textLineComponent';
 import { CheckBoxLineComponent } from '../../sharedComponents/checkBoxLineComponent';
 import { FloatLineComponent } from '../../sharedComponents/floatLineComponent';
 import { SliderLineComponent } from '../../sharedComponents/sliderLineComponent';

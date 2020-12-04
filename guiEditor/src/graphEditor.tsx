@@ -19,7 +19,6 @@ import * as ReactDOM from 'react-dom';
 import { IInspectorOptions } from "babylonjs/Debug/debugLayer";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
-
 require("./main.scss");
 
 interface IGraphEditorProps {
@@ -50,8 +49,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     private _blocks = new Array<BABYLON.GUI.Container | BABYLON.GUI.Control>();
 
     private _previewManager: PreviewManager;
-    private _mouseLocationX = 0;
-    private _mouseLocationY = 0;
+    //private _mouseLocationX = 0;
+    //private _mouseLocationY = 0;
     private _onWidgetKeyUpPointer: any;
 
     private _previewHost: Nullable<HTMLElement>;
@@ -61,7 +60,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
      * Creates a node and recursivly creates its parent nodes from it's input
      * @param nodeMaterialBlock 
      */
-    public createNodeFromObject(block: BABYLON.GUI.Container | BABYLON.GUI.Control, recursion = true) {
+    public createNodeFromObject(block: BABYLON.GUI.Control, recursion = true) {
         if (this._blocks.indexOf(block) !== -1) {        
             return this._graphCanvas.nodes.filter(n => n.guiNode === block)[0];
         }
@@ -85,7 +84,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     componentDidMount() {
         if (this.props.globalState.hostDocument) {
             this._graphCanvas = (this.refs["graphCanvas"] as WorkbenchComponent);
-            this._previewManager = new PreviewManager(this.props.globalState.hostDocument.getElementById("preview-canvas") as HTMLCanvasElement, this.props.globalState);
+           // this._previewManager = new PreviewManager(this.props.globalState.hostDocument.getElementById("preview-canvas") as HTMLCanvasElement, this.props.globalState);
         }
 
         if (navigator.userAgent.indexOf("Mobile") !== -1) {
@@ -186,9 +185,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 }
 
             } else if (evt.key === "v") { // Paste
-                const rootElement = this.props.globalState.hostDocument!.querySelector(".diagram-container") as HTMLDivElement;
-                const zoomLevel = this._graphCanvas.zoom;
-                let currentY = (this._mouseLocationY - rootElement.offsetTop - this._graphCanvas.y - 20) / zoomLevel;
+                //const rootElement = this.props.globalState.hostDocument!.querySelector(".diagram-container") as HTMLDivElement;
+                //const zoomLevel = this._graphCanvas.zoom;
+                //let currentY = (this._mouseLocationY - rootElement.offsetTop - this._graphCanvas.y - 20) / zoomLevel;
 
             }
 
@@ -197,7 +196,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
     pasteSelection(copiedNodes: GUINode[], currentX: number, currentY: number, selectNew = false) {
 
-        let originalNode: Nullable<GUINode> = null;
+        //let originalNode: Nullable<GUINode> = null;
 
         let newNodes:GUINode[] = [];
 
@@ -223,7 +222,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
             //let newNode = this.createNodeFromObject(clone, false);
 
-            let x = 0;
+            /*let x = 0;
             let y = 0;
             if (originalNode) {
                 x = currentX + node.x - originalNode.x;
@@ -232,7 +231,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 originalNode = node;
                 x = currentX;
                 y = currentY;
-            }
+            }*/
 
             /*newNode.x = x;
             newNode.y = y;
@@ -610,8 +609,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                         gridTemplateColumns: this.buildColumnLayout()
                     }}
                     onMouseMove={evt => {                
-                        this._mouseLocationX = evt.pageX;
-                        this._mouseLocationY = evt.pageY;
+                       // this._mouseLocationX = evt.pageX;
+                       // this._mouseLocationY = evt.pageY;
                     }}
                     onMouseDown={(evt) => {
                         if ((evt.target as HTMLElement).nodeName === "INPUT") {

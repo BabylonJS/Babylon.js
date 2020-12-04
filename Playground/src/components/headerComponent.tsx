@@ -21,12 +21,24 @@ export class HeaderComponent extends React.Component<IHeaderComponentProps> {
         this._refVersionNumber = React.createRef();
 
         this.props.globalState.onLanguageChangedObservable.add(() => {
-            this.forceUpdate();
+            this.updateDescription();
+        });
+
+        this.props.globalState.onRunExecutedObservable.add(() => {
+            this.updateDescription();
         });
     }
 
-    componentDidMount() {
+    updateDescription() {
         this._refVersionNumber.current!.innerHTML = Engine.Version;
+
+        if (Engine.LastCreatedEngine && Engine.LastCreatedEngine.name) {
+            this._refVersionNumber.current!.innerHTML += ` (${Engine.LastCreatedEngine.name}${Engine.LastCreatedEngine.version > 1 ? Engine.LastCreatedEngine.version : ""})`;
+        }
+    }
+
+    componentDidMount() {
+        this.updateDescription();
     }
     
     public render() {
