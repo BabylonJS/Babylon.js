@@ -568,23 +568,25 @@ void main(void) {
         gl_FragData[0] = vec4(finalColor.rgb, finalColor.a);
     #endif
 
+    float writeGeometryInfo = finalColor.a > 0.4 ? 1.0 : 0.0;
+    
     #ifdef PREPASS_DEPTH
-        gl_FragData[PREPASS_DEPTH_INDEX] = vec4(vViewPos.z, 0.0, 0.0, 1.0); // Linear depth
+        gl_FragData[PREPASS_DEPTH_INDEX] = vec4(vViewPos.z, 0.0, 0.0, writeGeometryInfo); // Linear depth
     #endif
 
     #ifdef PREPASS_NORMAL
-        gl_FragData[PREPASS_NORMAL_INDEX] = vec4((view * vec4(normalW, 0.0)).rgb, 1.0); // Normal
+        gl_FragData[PREPASS_NORMAL_INDEX] = vec4((view * vec4(normalW, 0.0)).rgb, writeGeometryInfo); // Normal
     #endif
 
     #ifdef PREPASS_ALBEDO
-        gl_FragData[PREPASS_ALBEDO_INDEX] = vec4(sqAlbedo, 1.0); // albedo, for pre and post scatter
+        gl_FragData[PREPASS_ALBEDO_INDEX] = vec4(sqAlbedo, writeGeometryInfo); // albedo, for pre and post scatter
     #endif
 
     #ifdef PREPASS_REFLECTIVITY
         #if defined(REFLECTIVITY)
-            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(baseReflectivity.rgb, 1.0);
+            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(baseReflectivity.rgb, writeGeometryInfo);
         #else
-            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(0.0, 0.0, 0.0, 1.0);
+            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(0.0, 0.0, 0.0, writeGeometryInfo);
         #endif
     #endif
 #endif
