@@ -3,8 +3,7 @@ import { GlobalState } from '../globalState';
 import { CommandButtonComponent } from './commandButtonComponent';
 import { CommandDropdownComponent } from './commandDropdownComponent';
 import { Utilities } from '../tools/utilities';
-import { Engine, WebGPUEngine } from "babylonjs";
-import { version } from "chai";
+import { WebGPUEngine } from "babylonjs";
 
 require("../scss/commandBar.scss");
 
