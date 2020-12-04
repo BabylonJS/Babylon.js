@@ -308,7 +308,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     <div id="header">
                         <img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
                         <div id="title">
-                            NODE MATERIAL EDITOR
+                            GUI EDITOR
                         </div>
                     </div>
                     {this.state.currentNode?.renderProperties()}
@@ -330,7 +330,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 <div id="header">
                     <img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
                     <div id="title">
-                        NODE MATERIAL EDITOR
+                        GUI EDITOR
                     </div>
                 </div>
                 <div>
