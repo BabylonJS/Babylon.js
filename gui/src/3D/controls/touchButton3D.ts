@@ -29,32 +29,51 @@ export enum ButtonState {
  */
 export class TouchButton3D extends Button3D {
     /** @hidden */
-    protected _buttonState: ButtonState;
-    protected _collisionMesh: Mesh;
-    protected _collidableFrontDirection: Vector3;
-    protected _pointOnFrontFace: Vector3;
+    private _buttonState: ButtonState;
+    private _collisionMesh: Mesh;
+    private _collidableFrontDirection: Vector3;
     private _lastTouchPoint: Vector3;
+
+    private _collidableInitialized = false;
 
     private _offsetToFront = 0;
     private _offsetToBack = 0;
     private _hoverOffset = 0;
-    private _buttonDepth = 0;
 
-    protected _drawDebugData = false;
+    private _drawDebugData = false;
 
     /**
      * Creates a new button
      * @param collisionMesh mesh to track collisions with
      * @param name defines the control name
      */
-    constructor(collisionMesh: Mesh, name?: string) {
+    constructor(name?: string, collisionMesh?: Mesh) {
         super(name);
 
         this._buttonState = ButtonState.None;
+
+        if (collisionMesh) {
+            this.collisionMesh = collisionMesh;
+        }
+    }
+
+    public set collidableFrontDirection(frontDir: Vector3) {
+        this._collidableFrontDirection = frontDir.normalize();
+
+        this._updateDistances();
+    }
+
+    public set collisionMesh(collisionMesh: Mesh) {
+        if (this._collisionMesh) {
+            this._collisionMesh.dispose();
+        }
+
         this._collisionMesh = collisionMesh;
         this._collidableFrontDirection = collisionMesh.forward;
 
         this._updateDistances();
+
+        this._collidableInitialized = true;
     }
 
     /*
@@ -123,7 +142,6 @@ export class TouchButton3D extends Button3D {
      * Sets the following values:
      *    _offsetToFront
      *    _offsetToBack
-     *    _buttonDepth
      *
      * Requires population of:
      *    _collisionMesh
@@ -148,8 +166,9 @@ export class TouchButton3D extends Button3D {
                                                              collisionMeshPos);
         }
 
-        this._buttonDepth = this._offsetToFront - this._offsetToBack;
-        this._hoverOffset = this._buttonDepth + this._offsetToFront;
+        // For now, set the hover height equal to the thickness of the button
+        const buttonThickness = this._offsetToFront - this._offsetToBack;
+        this._hoverOffset = buttonThickness + this._offsetToFront;
     }
 
     // Returns the distance in front of the center of the button
@@ -167,19 +186,16 @@ export class TouchButton3D extends Button3D {
         return abc - d;
     }
 
-    public set collidableFrontDirection(frontDir: Vector3) {
-        this._collidableFrontDirection = frontDir.normalize();
-
-        //this._updatePointOnFrontFace(true);
-        this._updateDistances();
-    }
-
     protected _getTypeName(): string {
         return "TouchButton3D";
     }
 
-    protected _enableCollisions(scene: Scene) {
+    protected _enableCollisions(scene: Scene, collisionMesh?: Mesh) {
         var _this = this;
+
+        if (collisionMesh) {
+            this.collisionMesh = collisionMesh;
+        }
 
         const dummyPointerId = 0;
         const buttonIndex = 0; // Left click
@@ -193,118 +209,119 @@ export class TouchButton3D extends Button3D {
         //       since mesh might not be aligned properly... Make that a requirement?
                 
         const func_new = function () {
-            const indexTipMeshes = scene.getMeshesByTags("indexTip");
+            if (_this._collidableInitialized) {
+                const indexTipMeshes = scene.getMeshesByTags("indexTip");
 
-            var debugLineMesh: LinesMesh;
+                var debugLineMesh: LinesMesh;
 
-            indexTipMeshes.forEach(function (indexMesh: Mesh) {
-                const collidablePosition = indexMesh.getAbsolutePosition();
-                const inRange = _this._isPrimedForInteraction(collidablePosition);
+                indexTipMeshes.forEach(function (indexMesh: Mesh) {
+                    const collidablePosition = indexMesh.getAbsolutePosition();
+                    const inRange = _this._isPrimedForInteraction(collidablePosition);
 
-                var debugButtonPoint = _this._collisionMesh.getAbsolutePosition();
-                var debugColour = Color3.Red();
+                    var debugButtonPoint = _this._collisionMesh.getAbsolutePosition();
+                    var debugColour = Color3.Red();
 
-                if (inRange) {
-                    const pointOnButton = _this._getPointOnButton(collidablePosition);
-                    const heightFromCenter = _this._getHeightFromButtonCenter(collidablePosition);
+                    if (inRange) {
+                        const pointOnButton = _this._getPointOnButton(collidablePosition);
+                        const heightFromCenter = _this._getHeightFromButtonCenter(collidablePosition);
 
-                    _this._lastTouchPoint = pointOnButton;
-                    debugButtonPoint = pointOnButton;
+                        _this._lastTouchPoint = pointOnButton;
+                        debugButtonPoint = pointOnButton;
 
-                    const isGreater = function (height: number, compareHeight: number) {
-                        const flickerDelta = 0.01;
-                        return height >= (compareHeight + flickerDelta);
-                    };
+                        const isGreater = function (height: number, compareHeight: number) {
+                            const flickerDelta = 0.01;
+                            return height >= (compareHeight + flickerDelta);
+                        };
 
-                    const isLower = function (height: number, compareHeight: number) {
-                        const flickerDelta = 0.01;
-                        return height <= (compareHeight - flickerDelta);
-                    };
+                        const isLower = function (height: number, compareHeight: number) {
+                            const flickerDelta = 0.01;
+                            return height <= (compareHeight - flickerDelta);
+                        };
 
-                    // Update button state and fire events
-                    switch(_this._buttonState) {
-                        case ButtonState.None:
-                            if (isGreater(heightFromCenter, _this._offsetToBack) &&
-                                isLower(heightFromCenter, _this._hoverOffset)) {
-                                console.log("Now hovering");
-                                _this._buttonState = ButtonState.Hover;
-                                _this._onPointerEnter(_this);
-                            }
+                        // Update button state and fire events
+                        switch(_this._buttonState) {
+                            case ButtonState.None:
+                                if (isGreater(heightFromCenter, _this._offsetToBack) &&
+                                    isLower(heightFromCenter, _this._hoverOffset)) {
+                                    console.log("Now hovering");
+                                    _this._buttonState = ButtonState.Hover;
+                                    _this._onPointerEnter(_this);
+                                }
 
-                            break;
-                        case ButtonState.Hover:
-                            debugColour = Color3.Yellow();
-                            if (isGreater(heightFromCenter, _this._hoverOffset)) {
-                                console.log("Out of range");
+                                break;
+                            case ButtonState.Hover:
+                                debugColour = Color3.Yellow();
+                                if (isGreater(heightFromCenter, _this._hoverOffset)) {
+                                    console.log("Out of range");
+                                    _this._buttonState = ButtonState.None;
+                                    _this._onPointerOut(_this);
+                                }
+                                else if (isLower(heightFromCenter, _this._offsetToFront)) {
+                                    console.log("now pressing");
+                                    _this._buttonState = ButtonState.Press;
+                                    _this._onPointerDown(_this, pointOnButton, dummyPointerId, buttonIndex);
+                                }
+                                else {
+                                    _this._onPointerMove(_this, pointOnButton);
+                                }
+
+                                break;
+                            case ButtonState.Press:
+                                debugColour = Color3.Green();
+                                if (isGreater(heightFromCenter, _this._offsetToFront)) {
+                                    console.log("no longer pressing");
+                                    _this._buttonState = ButtonState.Hover;
+                                    _this._onPointerUp(_this, pointOnButton, dummyPointerId, buttonIndex, false);
+                                }
+                                else if (isLower(heightFromCenter, _this._offsetToBack)) {
+                                    console.log("Exiting out the back");
+                                    _this._buttonState = ButtonState.None;
+                                    _this._onPointerUp(_this, pointOnButton, dummyPointerId, buttonIndex, false);
+                                    _this._onPointerOut(_this);
+                                }
+                                else {
+                                    _this._onPointerMove(_this, pointOnButton);
+                                }
+
+                                break;
+                        }
+                    }
+                    else {
+                        // Safely return to ButtonState.None
+                        switch(_this._buttonState) {
+                            case ButtonState.Hover:
                                 _this._buttonState = ButtonState.None;
                                 _this._onPointerOut(_this);
-                            }
-                            else if (isLower(heightFromCenter, _this._offsetToFront)) {
-                                console.log("now pressing");
-                                _this._buttonState = ButtonState.Press;
-                                _this._onPointerDown(_this, pointOnButton, dummyPointerId, buttonIndex);
-                            }
-                            else {
-                                _this._onPointerMove(_this, pointOnButton);
-                            }
-
-                            break;
-                        case ButtonState.Press:
-                            debugColour = Color3.Green();
-                            if (isGreater(heightFromCenter, _this._offsetToFront)) {
-                                console.log("no longer pressing");
+                                break;
+                            case ButtonState.Press:
                                 _this._buttonState = ButtonState.Hover;
-                                _this._onPointerUp(_this, pointOnButton, dummyPointerId, buttonIndex, false);
-                            }
-                            else if (isLower(heightFromCenter, _this._offsetToBack)) {
-                                console.log("Exiting out the back");
-                                _this._buttonState = ButtonState.None;
-                                _this._onPointerUp(_this, pointOnButton, dummyPointerId, buttonIndex, false);
-                                _this._onPointerOut(_this);
-                            }
-                            else {
-                                _this._onPointerMove(_this, pointOnButton);
-                            }
-
-                            break;
+                                _this._onPointerUp(_this, _this._lastTouchPoint, dummyPointerId, buttonIndex, false);
+                                break;
+                        }
                     }
-                }
-                else {
-                    // Safely return to ButtonState.None
-                    switch(_this._buttonState) {
-                        case ButtonState.Hover:
-                            _this._buttonState = ButtonState.None;
-                            _this._onPointerOut(_this);
-                            break;
-                        case ButtonState.Press:
-                            _this._buttonState = ButtonState.Hover;
-                            _this._onPointerUp(_this, _this._lastTouchPoint, dummyPointerId, buttonIndex, false);
-                            break;
-                    }
-                }
 
-                
-                if (_this._drawDebugData) {
-                    // Debug line mesh
-                    if (debugLineMesh) {
-                        // remove the previous line before drawing the new one
-                        // Commented out as it causes memory crashes
-                   //     debugLineMesh.dispose();
+                    
+                    if (_this._drawDebugData) {
+                        // Debug line mesh
+                        if (debugLineMesh) {
+                            // remove the previous line before drawing the new one
+                            // Commented out as it causes memory crashes
+                       //     debugLineMesh.dispose();
+                        }
+                        
+                        // Draw a line from the button front to the button to the hand
+                        debugLineMesh = Mesh.CreateLines("debug_line", [
+                            debugButtonPoint,
+                            indexMesh.getAbsolutePosition()
+                        ], scene);
+                        debugLineMesh.color = debugColour;
+                    }
+                    else if (debugLineMesh) {
+                        debugLineMesh.dispose();
                     }
                     
-                    // Draw a line from the button front to the button to the hand
-                    debugLineMesh = Mesh.CreateLines("debug_line", [
-                  //      _this._collisionMesh.getAbsolutePosition().add(_this._collidableFrontDirection).scale(scale),
-                        debugButtonPoint,
-                        indexMesh.getAbsolutePosition()
-                    ], scene);
-                    debugLineMesh.color = debugColour;
-                }
-                else if (debugLineMesh) {
-                    debugLineMesh.dispose();
-                }
-                
-            });
+                });
+            }
         };
         
         scene.registerBeforeRender(func_new);

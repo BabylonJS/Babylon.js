@@ -19,7 +19,7 @@ export class TouchMeshButton3D extends TouchButton3D {
      * @param name defines the control name
      */
     constructor(mesh: Mesh, collisionMesh: Mesh, name?: string) {
-        super(collisionMesh, name);
+        super(name, collisionMesh);
         this._currentMesh = mesh;
 
         /**

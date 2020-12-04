@@ -198,7 +198,7 @@ export class TouchHolographicButton extends TouchButton3D {
      * @param name defines the control name
      */
     constructor(collisionMesh: Mesh, name?: string, shareMaterials = true) {
-        super(collisionMesh, name);
+        super(name, collisionMesh);
 
         this._shareMaterials = shareMaterials;
 
