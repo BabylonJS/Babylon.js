@@ -5,7 +5,7 @@ layout(location = 0) out highp vec4 glFragData[{X}];
 highp vec4 gl_FragColor;
 #endif
 
-#ifdef PREPASS_DEPTHNORMAL
+#ifdef PREPASS_DEPTH
     varying highp vec3 vViewPos;
 #endif
 #ifdef PREPASS_VELOCITY

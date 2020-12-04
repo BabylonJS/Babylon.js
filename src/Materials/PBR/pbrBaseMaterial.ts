@@ -169,8 +169,10 @@ export class PBRMaterialDefines extends MaterialDefines
     public PREPASS_IRRADIANCE_INDEX = -1;
     public PREPASS_ALBEDO = false;
     public PREPASS_ALBEDO_INDEX = -1;
-    public PREPASS_DEPTHNORMAL = false;
-    public PREPASS_DEPTHNORMAL_INDEX = -1;
+    public PREPASS_DEPTH = false;
+    public PREPASS_DEPTH_INDEX = -1;
+    public PREPASS_NORMAL = false;
+    public PREPASS_NORMAL_INDEX = -1;
     public PREPASS_POSITION = false;
     public PREPASS_POSITION_INDEX = -1;
     public PREPASS_VELOCITY = false;

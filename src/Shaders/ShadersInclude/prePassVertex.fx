@@ -1,4 +1,4 @@
-#ifdef PREPASS_DEPTHNORMAL
+#ifdef PREPASS_DEPTH
     vViewPos = (view * worldPos).rgb;
 #endif
 

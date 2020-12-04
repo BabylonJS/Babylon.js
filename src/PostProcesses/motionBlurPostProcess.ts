@@ -213,7 +213,7 @@ export class MotionBlurPostProcess extends PostProcess {
             this._previousViewProjection = Matrix.Identity();
 
             if (this._prePassRenderer && this._prePassEffectConfiguration) {
-                this._prePassEffectConfiguration.texturesRequired[0] = Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE;
+                this._prePassEffectConfiguration.texturesRequired[0] = Constants.PREPASS_DEPTH_TEXTURE_TYPE;
             }
 
             this.onApply = (effect: Effect) => this._onApplyScreenBased(effect);
@@ -256,10 +256,10 @@ export class MotionBlurPostProcess extends PostProcess {
         effect.setFloat("motionStrength", this.motionStrength);
 
         if (this._geometryBufferRenderer) {
-            const depthIndex = this._geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.DEPTHNORMAL_TEXTURE_TYPE);
+            const depthIndex = this._geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.DEPTH_TEXTURE_TYPE);
             effect.setTexture("depthSampler", this._geometryBufferRenderer.getGBuffer().textures[depthIndex]);
         } else if (this._prePassRenderer) {
-            const depthIndex = this._prePassRenderer.getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE);
+            const depthIndex = this._prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
             effect.setTexture("depthSampler", this._prePassRenderer.getRenderTarget().textures[depthIndex]);
         }
     }

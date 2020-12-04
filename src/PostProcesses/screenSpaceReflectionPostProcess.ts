@@ -123,7 +123,7 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
                 // Samplers
                 const positionIndex = prePassRenderer.getIndex(Constants.PREPASS_POSITION_TEXTURE_TYPE);
                 const roughnessIndex = prePassRenderer.getIndex(Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE);
-                const normalIndex = prePassRenderer.getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE);
+                const normalIndex = prePassRenderer.getIndex(Constants.PREPASS_NORMAL_TEXTURE_TYPE);
 
                 effect.setTexture("normalSampler", prePassRenderer.getRenderTarget().textures[normalIndex]);
                 effect.setTexture("positionSampler", prePassRenderer.getRenderTarget().textures[positionIndex]);
@@ -221,9 +221,6 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
         const defines: string[] = [];
         if (this._geometryBufferRenderer || this._prePassRenderer) {
             defines.push("#define SSR_SUPPORTED");
-            if (this._prePassRenderer) {
-                defines.push("#define PREPASS_LAYOUT");
-            }
         }
         if (this._enableSmoothReflections) {
             defines.push("#define ENABLE_SMOOTH_REFLECTIONS");
