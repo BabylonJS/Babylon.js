@@ -13,7 +13,6 @@ import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorer
 import { EmbedHostComponent } from "./components/embedHost/embedHostComponent";
 import { PropertyChangedEvent } from "./components/propertyChangedEvent";
 import { GlobalState } from "./components/globalState";
-import { GLTFFileLoader } from "babylonjs-loaders/glTF/index";
 
 interface IInternalInspectorOptions extends IInspectorOptions {
     popup: boolean;
@@ -27,7 +26,7 @@ export class Inspector {
     private static _SceneExplorerHost: Nullable<HTMLElement>;
     private static _ActionTabsHost: Nullable<HTMLElement>;
     private static _EmbedHost: Nullable<HTMLElement>;
-    private static _NewCanvasContainer: HTMLElement;
+    private static _NewCanvasContainer: Nullable<HTMLElement>;
 
     private static _SceneExplorerWindow: Window;
     private static _ActionTabsWindow: Window;
@@ -54,6 +53,7 @@ export class Inspector {
     private static _CopyStyles(sourceDoc: HTMLDocument, targetDoc: HTMLDocument) {
         for (var index = 0; index < sourceDoc.styleSheets.length; index++) {
             var styleSheet: any = sourceDoc.styleSheets[index];
+            
             try {
                 if (styleSheet.cssRules) {
                     // for <style> elements
@@ -74,7 +74,7 @@ export class Inspector {
                     targetDoc.head!.appendChild(newLinkEl);
                 }
             } catch (e) {
-                console.log(e);
+                
             }
         }
     }
@@ -335,7 +335,9 @@ export class Inspector {
     public static EarlyAttachToLoader() {
         if (!this._GlobalState.onPluginActivatedObserver) {
             this._GlobalState.onPluginActivatedObserver = SceneLoader.OnPluginActivatedObservable.add((rawLoader) => {
-                const loader = rawLoader as GLTFFileLoader;
+                this._GlobalState.resetGLTFValidationResults();
+
+                const loader = rawLoader as import("babylonjs-loaders/glTF/index").GLTFFileLoader;
                 if (loader.name === "gltf") {
                     this._GlobalState.prepareGLTFPlugin(loader);
                 }
@@ -382,7 +384,10 @@ export class Inspector {
             if (options.popup) {
                 this._CreateEmbedHost(scene, options, this._CreatePopup("INSPECTOR", "_EmbedHostWindow"), Inspector.OnSelectionChangeObservable);
             } else {
-                let parentControl = (options.globalRoot ? options.globalRoot : rootElement!.parentElement) as HTMLElement;
+                if (!rootElement) {
+                    return;
+                }
+                let parentControl = (options.globalRoot ? options.globalRoot : rootElement.parentElement) as HTMLElement;
 
                 if (!options.overlay && !this._NewCanvasContainer) {
                     this._CreateCanvasContainer(parentControl);
@@ -468,6 +473,9 @@ export class Inspector {
     }
 
     private static _DestroyCanvasContainer() {
+        if (!this._NewCanvasContainer) {
+            return;
+        }
         const parentControl = this._NewCanvasContainer.parentElement!;
 
         while (this._NewCanvasContainer.childElementCount > 0) {
@@ -478,7 +486,7 @@ export class Inspector {
 
         parentControl.removeChild(this._NewCanvasContainer);
         parentControl.style.display = this._NewCanvasContainer.style.display;
-        delete this._NewCanvasContainer;
+        this._NewCanvasContainer = null;
     }
 
     private static _Cleanup() {
@@ -490,6 +498,11 @@ export class Inspector {
         this._GlobalState.lightGizmos.forEach((g) => {
             if (g.light) {
                 this._GlobalState.enableLightGizmo(g.light, false);
+            }
+        });
+        this._GlobalState.cameraGizmos.forEach((g) => {
+            if (g.camera) {
+                this._GlobalState.enableCameraGizmo(g.camera, false);
             }
         });
         if (this._Scene && this._Scene.reservedDataStore && this._Scene.reservedDataStore.gizmoManager) {

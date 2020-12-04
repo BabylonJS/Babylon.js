@@ -5,6 +5,8 @@ import { FreeCamera } from "../Cameras/freeCamera";
 import { TargetCamera } from "../Cameras/targetCamera";
 import { WebXRSessionManager } from "./webXRSessionManager";
 import { Viewport } from "../Maths/math.viewport";
+import { Observable } from "../Misc/observable";
+import { WebXRTrackingState } from "./webXRTypes";
 
 /**
  * WebXR Camera which holds the views for the xrSession
@@ -16,7 +18,23 @@ export class WebXRCamera extends FreeCamera {
     private _referencedPosition: Vector3 = new Vector3();
     private _xrInvPositionCache: Vector3 = new Vector3();
     private _xrInvQuaternionCache = Quaternion.Identity();
+    private _trackingState: WebXRTrackingState = WebXRTrackingState.NOT_TRACKING;
 
+    /**
+     * Observable raised before camera teleportation
+     */
+    public onBeforeCameraTeleport = new Observable<Vector3>();
+
+    /**
+     *  Observable raised after camera teleportation
+     */
+    public onAfterCameraTeleport = new Observable<Vector3>();
+
+    /**
+     * Notifies when the camera's tracking state has changed.
+     * Notice - will also be triggered when tracking has started (at the beginning of the session)
+     */
+    public onTrackingStateChanged = new Observable<WebXRTrackingState>();
     /**
      * Should position compensation execute on first frame.
      * This is used when copying the position from a native (non XR) camera
@@ -38,6 +56,8 @@ export class WebXRCamera extends FreeCamera {
         this.cameraRigMode = Camera.RIG_MODE_CUSTOM;
         this.updateUpVectorFromRotation = true;
         this._updateNumberOfRigCameras(1);
+        // freeze projection matrix, which will be copied later
+        this.freezeProjectionMatrix();
 
         this._xrSessionManager.onXRSessionInit.add(() => {
             this._referencedPosition.copyFromFloats(0, 0, 0);
@@ -59,6 +79,20 @@ export class WebXRCamera extends FreeCamera {
             undefined,
             true
         );
+    }
+
+    /**
+     * Get the current XR tracking state of the camera
+     */
+    public get trackingState(): WebXRTrackingState {
+        return this._trackingState;
+    }
+
+    private _setTrackingState(newState: WebXRTrackingState) {
+        if (this._trackingState !== newState) {
+            this._trackingState = newState;
+            this.onTrackingStateChanged.notifyObservers(newState);
+        }
     }
 
     /**
@@ -120,8 +154,13 @@ export class WebXRCamera extends FreeCamera {
         const pose = this._xrSessionManager.currentFrame && this._xrSessionManager.currentFrame.getViewerPose(this._xrSessionManager.referenceSpace);
 
         if (!pose) {
+            this._setTrackingState(WebXRTrackingState.NOT_TRACKING);
             return;
         }
+
+        // Set the tracking state. if it didn't change it is a no-op
+        const trackingState = pose.emulatedPosition ? WebXRTrackingState.TRACKING_LOST : WebXRTrackingState.TRACKING;
+        this._setTrackingState(trackingState);
 
         if (pose.transform) {
             const pos = pose.transform.position;
@@ -156,7 +195,7 @@ export class WebXRCamera extends FreeCamera {
             this._updateNumberOfRigCameras(pose.views.length);
         }
 
-        pose.views.forEach((view: any, i: number) => {
+        pose.views.forEach((view: XRView, i: number) => {
             const currentRig = <TargetCamera>this.rigCameras[i];
             // update right and left, where applicable
             if (!currentRig.isLeftCamera && !currentRig.isRightCamera) {
@@ -183,6 +222,11 @@ export class WebXRCamera extends FreeCamera {
 
             if (!this._scene.useRightHandedSystem) {
                 currentRig._projectionMatrix.toggleProjectionMatrixHandInPlace();
+            }
+
+            // first camera?
+            if (i === 0) {
+                this._projectionMatrix.copyFrom(currentRig._projectionMatrix);
             }
 
             // Update viewport

@@ -36,7 +36,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     private _scene: Scene;
 
     /**
-     * The three properties below are set by the main PBR block prior to calling methods of this class.
+     * The properties below are set by the main PBR block prior to calling methods of this class.
      * This is to avoid having to add them as inputs here whereas they are already inputs of the main block, so already known.
      * It's less burden on the user side in the editor part.
     */
@@ -47,6 +47,8 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     public worldNormalConnectionPoint: NodeMaterialConnectionPoint;
     /** @hidden */
     public cameraPositionConnectionPoint: NodeMaterialConnectionPoint;
+    /** @hidden */
+    public viewConnectionPoint: NodeMaterialConnectionPoint;
 
     /**
      * Defines if the material uses spherical harmonics vs spherical polynomials for the
@@ -72,7 +74,6 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
 
         this.registerInput("position", NodeMaterialBlockConnectionPointTypes.Vector3, false, NodeMaterialBlockTargets.Vertex);
         this.registerInput("world", NodeMaterialBlockConnectionPointTypes.Matrix, false, NodeMaterialBlockTargets.Vertex);
-        this.registerInput("view", NodeMaterialBlockConnectionPointTypes.Matrix, false, NodeMaterialBlockTargets.Fragment);
         this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
 
         this.registerOutput("reflection", NodeMaterialBlockConnectionPointTypes.Object, NodeMaterialBlockTargets.Fragment,
@@ -126,14 +127,14 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
      * Gets the view input component
      */
     public get view(): NodeMaterialConnectionPoint {
-        return this._inputs[2];
+        return this.viewConnectionPoint;
     }
 
     /**
      * Gets the color input component
      */
     public get color(): NodeMaterialConnectionPoint {
-        return this._inputs[3];
+        return this._inputs[2];
     }
 
     /**
@@ -402,6 +403,9 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
                     ${this._2DSamplerName},
                 #endif
             #endif
+            #ifdef REALTIME_FILTERING
+                ${this._vReflectionFilteringInfoName},
+            #endif
                 reflectionOut
             );
         #endif\r\n`;
@@ -423,6 +427,9 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     protected _dumpPropertiesCode() {
         let codeString: string = super._dumpPropertiesCode();
 
+        if (this.texture) {
+            codeString += `${this._codeVariableName}.texture.gammaSpace = ${this.texture.gammaSpace};\r\n`;
+        }
         codeString += `${this._codeVariableName}.useSphericalHarmonics = ${this.useSphericalHarmonics};\r\n`;
         codeString += `${this._codeVariableName}.forceIrradianceInFragment = ${this.forceIrradianceInFragment};\r\n`;
 
@@ -434,6 +441,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
 
         serializationObject.useSphericalHarmonics = this.useSphericalHarmonics;
         serializationObject.forceIrradianceInFragment = this.forceIrradianceInFragment;
+        serializationObject.gammaSpace = this.texture?.gammaSpace ?? true;
 
         return serializationObject;
     }
@@ -443,6 +451,9 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
 
         this.useSphericalHarmonics = serializationObject.useSphericalHarmonics;
         this.forceIrradianceInFragment = serializationObject.forceIrradianceInFragment;
+        if (this.texture) {
+            this.texture.gammaSpace = serializationObject.gammaSpace;
+        }
     }
 }
 

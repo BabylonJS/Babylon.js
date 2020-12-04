@@ -25,6 +25,7 @@ import { SSAO2RenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/P
 import { StandardMaterial } from 'babylonjs/Materials/standardMaterial';
 import { PBRMaterial } from 'babylonjs/Materials/PBR/pbrMaterial';
 import { SpriteManager } from 'babylonjs/Sprites/spriteManager';
+import { TargetCamera } from 'babylonjs/Cameras/targetCamera';
 
 require("./sceneExplorer.scss");
 
@@ -67,7 +68,6 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
     private _onNewSceneObserver: Nullable<Observer<Scene>>;
     private sceneExplorerRef: React.RefObject<Resizable>;
 
-
     private _once = true;
     private _hooked = false;
 
@@ -85,14 +85,14 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             this.setState({
                 scene
             });
-        })
+        });
     }
 
     processMutation() {
         if (this.props.globalState.blockMutationUpdates) {
             return;
         }
-        
+
         setTimeout(() => this.forceUpdate());
     }
 
@@ -105,7 +105,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
 
         this._onSelectionRenamedObserver = this.props.globalState.onSelectionRenamedObservable.add(() => {
             this.forceUpdate();
-        })
+        });
     }
 
     componentWillUnmount() {
@@ -121,7 +121,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             EngineStore.LastCreatedEngine!.onNewSceneAddedObservable.remove(this._onNewSceneAddedObserver);
         }
 
-        if(this._onNewSceneObserver){
+        if (this._onNewSceneObserver) {
             this.props.globalState.onNewSceneObservable.remove(this._onNewSceneObserver);
         }
 
@@ -270,31 +270,31 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         let pipelineContextMenus: { label: string, action: () => void }[] = [];
 
         if (scene.activeCamera) {
-            if (!pipelines.some(p => p.getClassName() === "DefaultRenderingPipeline")) {
+            if (!pipelines.some((p) => p.getClassName() === "DefaultRenderingPipeline")) {
                 pipelineContextMenus.push({
                     label: "Add new Default Rendering Pipeline",
                     action: () => {
-                        let newPipeline = new DefaultRenderingPipeline("Default rendering pipeline", true, scene, [scene.activeCamera!]);
+                        let newPipeline = new DefaultRenderingPipeline("Default rendering pipeline", true, scene, scene.cameras);
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(newPipeline);
                     }
                 });
             }
 
-            if (!pipelines.some(p => p.getClassName() === "SSAORenderingPipeline")) {
+            if (!pipelines.some((p) => p.getClassName() === "SSAORenderingPipeline")) {
                 pipelineContextMenus.push({
                     label: "Add new SSAO Rendering Pipeline",
                     action: () => {
-                        let newPipeline = new SSAORenderingPipeline("SSAO rendering pipeline", scene, 1, [scene.activeCamera!]);
+                        let newPipeline = new SSAORenderingPipeline("SSAO rendering pipeline", scene, 1, scene.cameras);
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(newPipeline);
                     }
                 });
             }
 
-            if (scene.getEngine().webGLVersion > 1 && !pipelines.some(p => p.getClassName() === "SSAORenderingPipeline")) {
+            if (scene.getEngine().getCaps().drawBuffersExtension && !pipelines.some((p) => p.getClassName() === "SSAORenderingPipeline")) {
                 pipelineContextMenus.push({
                     label: "Add new SSAO2 Rendering Pipeline",
                     action: () => {
-                        let newPipeline = new SSAO2RenderingPipeline("SSAO2 rendering pipeline", scene, 1, [scene.activeCamera!]);
+                        let newPipeline = new SSAO2RenderingPipeline("SSAO2 rendering pipeline", scene, 1, scene.cameras);
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(newPipeline);
                     }
                 });
@@ -320,30 +320,47 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             label: "Add new free camera",
             action: () => {
                 let newFreeCamera = new FreeCamera("free camera", scene.activeCamera ? scene.activeCamera.globalPosition : new Vector3(0, 0, -5), scene);
+
+                if (scene.activeCamera) {
+                    newFreeCamera.minZ = scene.activeCamera.minZ;
+                    newFreeCamera.maxZ = scene.activeCamera.maxZ;
+                    if ((scene.activeCamera as any).getTarget) {
+                        newFreeCamera.setTarget((scene.activeCamera as TargetCamera).getTarget());
+                    }
+                }
+
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newFreeCamera);
             }
         });
+
+        const getUniqueName = (name: string) : string => {
+            let idSubscript = 1;
+            while (scene.getMaterialByID(name)) {
+                name = name + " " + idSubscript++;
+            }
+            return name;
+        };
 
         // Materials
         let materialsContextMenus: { label: string, action: () => void }[] = [];
         materialsContextMenus.push({
             label: "Add new standard material",
             action: () => {
-                let newStdMaterial = new StandardMaterial("Standard material", scene);
+                let newStdMaterial = new StandardMaterial(getUniqueName("Standard material"), scene);
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newStdMaterial);
             }
-        });        
+        });
         materialsContextMenus.push({
             label: "Add new PBR material",
             action: () => {
-                let newPBRMaterial = new PBRMaterial("PBR material", scene);
+                let newPBRMaterial = new PBRMaterial(getUniqueName("PBR material"), scene);
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newPBRMaterial);
             }
-        });        
+        });
         materialsContextMenus.push({
             label: "Add new node material",
             action: () => {
-                let newNodeMaterial = new NodeMaterial("node material", scene);
+                let newNodeMaterial = new NodeMaterial(getUniqueName("node material"), scene);
                 newNodeMaterial.setToDefault();
                 newNodeMaterial.build();
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newNodeMaterial);
@@ -366,7 +383,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 let newSpriteManager = new SpriteManager("Default sprite manager", "//playground.babylonjs.com/textures/player.png", 500, 64, scene);
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newSpriteManager);
             }
-        });            
+        });
 
         // Particle systems
         let particleSystemsContextMenus: { label: string, action: () => void }[] = [];
@@ -393,7 +410,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         }
 
         return (
-            <div id="tree" onContextMenu={e => e.preventDefault()}>
+            <div id="tree" onContextMenu={(e) => e.preventDefault()}>
                 <SceneExplorerFilterComponent onFilter={(filter) => this.filterContent(filter)} />
                 <SceneTreeItemComponent globalState={this.props.globalState}
                     extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} scene={scene} onRefresh={() => this.forceUpdate()} onSelectionChangedObservable={this.props.globalState.onSelectionChangedObservable} />
@@ -404,7 +421,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                     scene.skeletons.length > 0 &&
                     <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.skeletons} label="Skeletons" offset={1} filter={this.state.filter} />
                 }
-                <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={materials} 
+                <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={materials}
                     contextMenuItems={materialsContextMenus}
                     label="Materials" offset={1} filter={this.state.filter} />
                 <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={textures} label="Textures" offset={1} filter={this.state.filter} />
@@ -415,11 +432,11 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups}
                     contextMenuItems={pipelineContextMenus}
                     selectedEntity={this.state.selectedEntity} items={pipelines} label="Rendering pipelines" offset={1} filter={this.state.filter} />
-                <TreeItemComponent globalState={this.props.globalState} 
-                    contextMenuItems={particleSystemsContextMenus} 
+                <TreeItemComponent globalState={this.props.globalState}
+                    contextMenuItems={particleSystemsContextMenus}
                     extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.particleSystems} label="Particle systems" offset={1} filter={this.state.filter} />
-                <TreeItemComponent globalState={this.props.globalState} 
-                    contextMenuItems={spriteManagersContextMenus} 
+                <TreeItemComponent globalState={this.props.globalState}
+                    contextMenuItems={spriteManagersContextMenus}
                     forceSubitems={true}
                     extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.spriteManagers} label="Sprite managers" offset={1} filter={this.state.filter} />
                 {
@@ -429,6 +446,10 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 {
                     scene.animationGroups.length > 0 &&
                     <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.animationGroups} label="Animation groups" offset={1} filter={this.state.filter} />
+                }                
+                {
+                    scene.mainSoundTrack && scene.mainSoundTrack.soundCollection.length > 0 &&
+                    <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.mainSoundTrack.soundCollection} label="Sounds" offset={1} filter={this.state.filter} />
                 }
             </div>
         );

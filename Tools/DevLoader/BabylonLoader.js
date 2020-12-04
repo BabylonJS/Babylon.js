@@ -40,6 +40,8 @@ var BABYLONDEVTOOLS;
         var min;
         var babylonJSPath;
 
+        var coreOnly;
+
         var localDevES6FolderName;
         var localDevUMDFolderName;
 
@@ -57,6 +59,7 @@ var BABYLONDEVTOOLS;
                 workerMode = true;
             }
             babylonJSPath = '';
+            coreOnly = false;
         }
 
         Loader.prototype.debugShortcut = function(engine) {
@@ -221,7 +224,7 @@ var BABYLONDEVTOOLS;
         }
 
         Loader.prototype.loadCoreDev = function() {
-            if (typeof document === "undefined" || isIE) {                
+            if (typeof document === "undefined" || isIE) {
                 this.loadScript(babylonJSPath + "/dist/preview release/babylon.max.js");
                 return;
             }
@@ -234,7 +237,14 @@ var BABYLONDEVTOOLS;
                 if (!useDist && module.isCore) {
                     this.loadCoreDev();
                 }
-                else {
+                else if (!coreOnly || module.isCore) {
+                    this.loadLibrary(moduleName, module.libraries[i], module);
+                }
+                // Allow also loaders in CORE.
+                else if (coreOnly && (moduleName === "loaders" ||
+                    moduleName === "inspector" ||
+                    moduleName === "nodeEditor" ||
+                    moduleName === "materialsLibrary")) {
                     this.loadLibrary(moduleName, module.libraries[i], module);
                 }
             }
@@ -244,7 +254,14 @@ var BABYLONDEVTOOLS;
             if (!window || !window.location || window.location.pathname.toLowerCase().indexOf(appName.toLowerCase()) === -1) {
                 return;
             }
-            this.loadScript(app.distFile);
+
+            if (!useDist && app.tempFileName) {
+                var tempDirectory = '/.temp/' + localDevUMDFolderName + appName + "/";
+                this.loadScript(tempDirectory + app.tempFileName);
+            }
+            else {
+                this.loadScript(app.distFile);
+            }
         }
 
         Loader.prototype.processDependency = function(settings, dependency, filesToLoad) {
@@ -275,6 +292,11 @@ var BABYLONDEVTOOLS;
             }
         }
 
+        Loader.prototype.loadCoreOnly = function() {
+            coreOnly = true;
+            return this;
+        }
+
         Loader.prototype.load = function(newCallback) {
             var self = this;
             if (newCallback) {
@@ -286,6 +308,7 @@ var BABYLONDEVTOOLS;
                     localDevUMDFolderName = data.build.localDevUMDFolderName;
 
                     self.loadBJSScripts(data);
+
                     if (dependencies) {
                         self.loadScripts(dependencies);
                     }

@@ -175,6 +175,8 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
                 { search: /vBumpInfos.y/g, replace: replaceForBumpInfos},
                 { search: /vTangentSpaceParams/g, replace: this._tangentSpaceParameterName},
                 { search: /vPositionW/g, replace: worldPosition.associatedVariableName + ".xyz"},
+                { search: /varying vec2 vBumpUV;/g, replace: ""},
+                { search: /uniform sampler2D bumpSampler;[\s\S]*?\}/g, replace: ""},
             ]
         });
 

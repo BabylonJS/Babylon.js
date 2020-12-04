@@ -15,7 +15,6 @@
 // Constants
 #define RECIPROCAL_PI2 0.15915494
 
-uniform vec3 vEyePosition;
 uniform vec3 vAmbientColor;
 
 // Input
@@ -35,10 +34,6 @@ varying vec4 vColor;
 
 #ifdef MAINUV2
 	varying vec2 vMainUV2;
-#endif
-
-#ifdef PREPASS
-	varying vec3 vViewPos;
 #endif
 
 // Helper functions
@@ -175,7 +170,7 @@ void main(void) {
 
 
 
-	vec3 viewDirectionW = normalize(vEyePosition - vPositionW);
+	vec3 viewDirectionW = normalize(vEyePosition.xyz - vPositionW);
 
 	// Base color
 	vec4 baseColor = vec4(1., 1., 1., 1.);
@@ -481,11 +476,44 @@ color.rgb = max(color.rgb, 0.);
 
 #define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
 #ifdef PREPASS
-    gl_FragData[0] = color; // Lit without irradiance
-    gl_FragData[1] = vec4(0.0, 0.0, 0.0, 1.0); // Irradiance
-    gl_FragData[2] = vec4(vViewPos.z, (view * vec4(normalW, 0.0)).rgb); // Linear depth + normal
-    gl_FragData[3] = vec4(0.0, 0.0, 0.0, 1.0); // albedo, for pre and post scatter
+    gl_FragData[0] = color; // We can't split irradiance on std material
+    
+    #ifdef PREPASS_POSITION
+    gl_FragData[PREPASS_POSITION_INDEX] = vec4(vPositionW, 1.0);
+    #endif
+
+    #ifdef PREPASS_VELOCITY
+    vec2 a = (vCurrentPosition.xy / vCurrentPosition.w) * 0.5 + 0.5;
+    vec2 b = (vPreviousPosition.xy / vPreviousPosition.w) * 0.5 + 0.5;
+
+    vec2 velocity = abs(a - b);
+    velocity = vec2(pow(velocity.x, 1.0 / 3.0), pow(velocity.y, 1.0 / 3.0)) * sign(a - b) * 0.5 + 0.5;
+
+    gl_FragData[PREPASS_VELOCITY_INDEX] = vec4(velocity, 0.0, 1.0);
+    #endif
+
+    #ifdef PREPASS_IRRADIANCE
+        gl_FragData[PREPASS_IRRADIANCE_INDEX] = vec4(0.0, 0.0, 0.0, 1.0); //  We can't split irradiance on std material
+    #endif
+
+    #ifdef PREPASS_DEPTHNORMAL
+    	gl_FragData[PREPASS_DEPTHNORMAL_INDEX] = vec4(vViewPos.z, (view * vec4(normalW, 0.0)).rgb); // Linear depth + normal
+    #endif
+
+    #ifdef PREPASS_ALBEDO
+        gl_FragData[PREPASS_ALBEDO_INDEX] = vec4(0.0, 0.0, 0.0, 1.0); // We can't split albedo on std material
+    #endif
+    #ifdef PREPASS_REFLECTIVITY
+        #if defined(SPECULAR)
+            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = specularMapColor;
+        #else
+            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(0.0, 0.0, 0.0, 1.0);
+        #endif
+    #endif
 #endif
+
+#if !defined(PREPASS) || defined(WEBGL2) 
 	gl_FragColor = color;
+#endif
 
 }

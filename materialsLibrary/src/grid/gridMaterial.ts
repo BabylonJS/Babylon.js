@@ -25,6 +25,7 @@ class GridMaterialDefines extends MaterialDefines {
     public UV2 = false;
     public INSTANCES = false;
     public THIN_INSTANCES = false;
+    public IMAGEPROCESSINGPOSTPROCESS = false;
 
     constructor() {
         super();
@@ -176,6 +177,8 @@ export class GridMaterial extends PushMaterial {
             if (defines.UV2) {
                 attribs.push(VertexBuffer.UV2Kind);
             }
+
+            defines.IMAGEPROCESSINGPOSTPROCESS = scene.imageProcessingConfiguration.applyByPostProcess;
 
             MaterialHelper.PrepareAttributesForInstances(attribs, defines);
 

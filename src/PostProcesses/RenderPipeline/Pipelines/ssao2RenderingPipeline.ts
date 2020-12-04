@@ -12,14 +12,14 @@ import { PassPostProcess } from "../../../PostProcesses/passPostProcess";
 import { Scene } from "../../../scene";
 import { _TypeStore } from '../../../Misc/typeStore';
 import { EngineStore } from '../../../Engines/engineStore';
+import { SSAO2Configuration } from "../../../Rendering/ssao2Configuration";
+import { PrePassRenderer } from "../../../Rendering/prePassRenderer";
 import { Constants } from "../../../Engines/constants";
 
 import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
 
 import "../../../Shaders/ssao2.fragment";
 import "../../../Shaders/ssaoCombine.fragment";
-
-declare type PrePassRenderer = import("../../../Rendering/prePassRenderer").PrePassRenderer;
 
 /**
  * Render pipeline to produce ssao effect
@@ -78,7 +78,12 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     */
     public set samples(n: number) {
         this._samples = n;
-        this._ssaoPostProcess.updateEffect(this._getDefinesForSSAO());
+        if (this._prePassRenderer) {
+            this._prePassRenderer.samples = n;
+        }
+        else {
+            this._ssaoPostProcess.updateEffect(this._getDefinesForSSAO());
+        }
         this._sampleSphere = this._generateHemisphere();
     }
     public get samples(): number {
@@ -162,7 +167,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         if (!engine) {
             return false;
         }
-        return engine.webGLVersion >= 2;
+        return engine._features.supportSSAO2;
     }
 
     private _scene: Scene;
@@ -190,7 +195,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
      * @param cameras The array of cameras that the rendering pipeline will be attached to
      * @param forceGeometryBuffer Set to true if you want to use the legacy geometry buffer renderer
      */
-    constructor(name: string, scene: Scene, ratio: any, cameras?: Camera[], forceGeometryBuffer = false) {
+    constructor(name: string, scene: Scene, ratio: any, cameras?: Camera[], forceGeometryBuffer = true) {
         super(scene.getEngine(), name);
 
         this._scene = scene;
@@ -198,7 +203,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         this._forceGeometryBuffer = forceGeometryBuffer;
 
         if (!this.isSupported) {
-            Logger.Error("SSAO 2 needs WebGL 2 support.");
+            Logger.Error("The current engine does not support SSAO 2.");
             return;
         }
 
@@ -210,7 +215,6 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             scene.enableGeometryBufferRenderer();
         } else {
             this._prePassRenderer = <PrePassRenderer>scene.enablePrePassRenderer();
-            this._prePassRenderer.markAsDirty();
         }
 
         this._createRandomTexture();
@@ -233,7 +237,6 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         if (cameras) {
             scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(name, cameras);
         }
-
     }
 
     // Public Methods
@@ -293,7 +296,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             if (this._forceGeometryBuffer) {
                 effect.setTexture("depthNormalSampler", this._scene.enableGeometryBufferRenderer()!.getGBuffer().textures[0]);
             } else {
-                effect.setTexture("depthNormalSampler", this._prePassRenderer.prePassRT.textures[Constants.PREPASS_DEPTHNORMAL_INDEX]);
+                effect.setTexture("depthNormalSampler", this._prePassRenderer.prePassRT.textures[this._prePassRenderer.getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE)]);
             }
             effect.setArray("samplerOffsets", this._samplerOffsets);
         };
@@ -311,7 +314,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             if (this._forceGeometryBuffer) {
                 effect.setTexture("depthNormalSampler", this._scene.enableGeometryBufferRenderer()!.getGBuffer().textures[0]);
             } else {
-                effect.setTexture("depthNormalSampler", this._prePassRenderer.prePassRT.textures[Constants.PREPASS_DEPTHNORMAL_INDEX]);
+                effect.setTexture("depthNormalSampler", this._prePassRenderer.prePassRT.textures[this._prePassRenderer.getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE)]);
             }
             effect.setArray("samplerOffsets", this._samplerOffsets);
 
@@ -382,6 +385,16 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         return defines;
     }
 
+    private static readonly ORTHO_DEPTH_PROJECTION = [
+        1, 0, 0,
+        0, 1, 0,
+        0, 0, 1];
+
+    private static readonly PERSPECTIVE_DEPTH_PROJECTION = [
+        0, 0, 0,
+        0, 0, 0,
+        1, 1, 1];
+
     private _createSSAOPostProcess(ratio: number): void {
         this._sampleSphere = this._generateHemisphere();
 
@@ -398,7 +411,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             [
                 "sampleSphere", "samplesFactor", "randTextureTiles", "totalStrength", "radius",
                 "base", "range", "projection", "near", "far", "texelSize",
-                "xViewport", "yViewport", "maxZ", "minZAspect"
+                "xViewport", "yViewport", "maxZ", "minZAspect", "depthProjection"
             ],
             samplers,
             ratio, null, Texture.BILINEAR_SAMPLINGMODE,
@@ -421,15 +434,28 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             effect.setFloat("base", this.base);
             effect.setFloat("near", this._scene.activeCamera.minZ);
             effect.setFloat("far", this._scene.activeCamera.maxZ);
-            effect.setFloat("xViewport", Math.tan(this._scene.activeCamera.fov / 2) * this._scene.getEngine().getAspectRatio(this._scene.activeCamera, true));
-            effect.setFloat("yViewport", Math.tan(this._scene.activeCamera.fov / 2));
+            if (this._scene.activeCamera.mode === Camera.PERSPECTIVE_CAMERA) {
+                effect.setMatrix3x3("depthProjection", SSAO2RenderingPipeline.PERSPECTIVE_DEPTH_PROJECTION);
+                effect.setFloat("xViewport", Math.tan(this._scene.activeCamera.fov / 2) * this._scene.getEngine().getAspectRatio(this._scene.activeCamera, true));
+                effect.setFloat("yViewport", Math.tan(this._scene.activeCamera.fov / 2));
+            } else {
+                const halfWidth = this._scene.getEngine().getRenderWidth() / 2.0;
+                const halfHeight = this._scene.getEngine().getRenderHeight() / 2.0;
+                const orthoLeft = this._scene.activeCamera.orthoLeft ?? -halfWidth;
+                const orthoRight = this._scene.activeCamera.orthoRight ?? halfWidth;
+                const orthoBottom = this._scene.activeCamera.orthoBottom ?? -halfHeight;
+                const orthoTop = this._scene.activeCamera.orthoTop ?? halfHeight;
+                effect.setMatrix3x3("depthProjection", SSAO2RenderingPipeline.ORTHO_DEPTH_PROJECTION);
+                effect.setFloat("xViewport", (orthoRight - orthoLeft) * 0.5);
+                effect.setFloat("yViewport", (orthoTop - orthoBottom) * 0.5);
+            }
             effect.setMatrix("projection", this._scene.getProjectionMatrix());
 
             if (this._forceGeometryBuffer) {
                 effect.setTexture("depthSampler", this._scene.enableGeometryBufferRenderer()!.getGBuffer().textures[0]);
                 effect.setTexture("normalSampler", this._scene.enableGeometryBufferRenderer()!.getGBuffer().textures[1]);
             } else {
-                effect.setTexture("depthNormalSampler", this._prePassRenderer.prePassRT.textures[Constants.PREPASS_DEPTHNORMAL_INDEX]);
+                effect.setTexture("depthNormalSampler", this._prePassRenderer.prePassRT.textures[this._prePassRenderer.getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE)]);
             }
             effect.setTexture("randomSampler", this._randomTexture);
         };
@@ -444,9 +470,13 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         this._ssaoCombinePostProcess.onApply = (effect: Effect) => {
             let viewport = this._scene.activeCamera!.viewport;
             effect.setVector4("viewport", TmpVectors.Vector4[0].copyFromFloats(viewport.x, viewport.y, viewport.width, viewport.height));
-            effect.setTextureFromPostProcess("originalColor", this._originalColorPostProcess);
+            effect.setTextureFromPostProcessOutput("originalColor", this._originalColorPostProcess);
         };
         this._ssaoCombinePostProcess.samples = this.textureSamples;
+
+        if (!this._forceGeometryBuffer) {
+            this._ssaoCombinePostProcess._prePassEffectConfiguration = new SSAO2Configuration();
+        }
     }
 
     private _createRandomTexture(): void {
@@ -504,16 +534,6 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
      */
     public static Parse(source: any, scene: Scene, rootUrl: string): SSAO2RenderingPipeline {
         return SerializationHelper.Parse(() => new SSAO2RenderingPipeline(source._name, scene, source._ratio), source, scene, rootUrl);
-    }
-
-    /**
-     * Sets the required values to the prepass renderer.
-     * @param prePassRenderer defines the prepass renderer to setup
-     * @returns true if the pre pass is needed.
-     */
-    public setPrePassRenderer(prePassRenderer: PrePassRenderer): boolean {
-        prePassRenderer.materialsShouldRenderGeometry = prePassRenderer.materialsShouldRenderGeometry || true;
-        return true;
     }
 }
 

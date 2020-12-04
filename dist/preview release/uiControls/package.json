@@ -1,0 +1,35 @@
+{
+    "author": {
+        "name": "David CATUHE"
+    },
+    "name": "babylonjs-ui-controls",
+    "description": "The Babylon.js UI controls are a set of react controls used by other editors / tools",
+    "version": "5.0.0-alpha.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/BabylonJS/Babylon.js.git"
+    },
+    "main": "babylon.uiControls.min.js",
+    "files": [
+        "babylon.uiControls.js",
+        "babylon.uiControls.js.map",
+        "babylon.uiControls.min.js",
+        "babylon.uiControls.module.d.ts",
+        "readme.md",
+        "package.json"
+    ],
+    "typings": "babylon.uiControls.module.d.ts",
+    "keywords": [
+        "3D",
+        "javascript",
+        "html5",
+        "webgl"
+    ],
+    "license": "Apache-2.0",
+    "dependencies": {
+        "babylonjs": "5.0.0-alpha.0"
+    },
+    "engines": {
+        "node": "*"
+    }
+}

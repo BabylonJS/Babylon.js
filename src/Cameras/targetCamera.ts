@@ -247,6 +247,8 @@ export class TargetCamera extends Camera {
             this.position.z += Epsilon;
         }
 
+        this._referencePoint.normalize().scaleInPlace(this._initialFocalDistance);
+
         Matrix.LookAtLHToRef(this.position, target, this._defaultUp, this._camMatrix);
         this._camMatrix.invert();
 
@@ -277,6 +279,17 @@ export class TargetCamera extends Camera {
         if (this.rotationQuaternion) {
             Quaternion.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this.rotationQuaternion);
         }
+    }
+
+    /**
+     * Defines the target point of the camera.
+     * The camera looks towards it form the radius distance.
+     */
+    public get target(): Vector3 {
+        return this.getTarget();
+    }
+    public set target(value: Vector3) {
+        this.setTarget(value);
     }
 
     /**

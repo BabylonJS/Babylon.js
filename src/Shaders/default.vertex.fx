@@ -25,11 +25,14 @@ attribute vec4 color;
 #include<bonesDeclaration>
 
 // Uniforms
-#include<instancesDeclaration>
-
-#ifdef PREPASS
-varying vec3 vViewPos;
+// #include<instancesDeclaration>
+#ifdef INSTANCES
+	attribute vec4 world0;
+	attribute vec4 world1;
+	attribute vec4 world2;
+	attribute vec4 world3;
 #endif
+#include<prePassVertexDeclaration>
 
 #ifdef MAINUV1
 	varying vec2 vMainUV1;
@@ -86,7 +89,7 @@ varying vec4 vColor;
 #include<clipPlaneVertexDeclaration>
 
 #include<fogVertexDeclaration>
-#include<__decl__lightFragment>[0..maxSimultaneousLights]
+#include<__decl__lightVxFragment>[0..maxSimultaneousLights]
 
 #include<morphTargetsVertexGlobalDeclaration>
 #include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]
@@ -128,6 +131,13 @@ void main(void) {
 #define CUSTOM_VERTEX_UPDATE_NORMAL
 
 #include<instancesVertex>
+
+#if defined(PREPASS) && defined(PREPASS_VELOCITY) && !defined(BONES_VELOCITY_ENABLED)
+    // Compute velocity before bones computation
+    vCurrentPosition = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
+    vPreviousPosition = previousViewProjection * previousWorld * vec4(positionUpdated, 1.0);
+#endif
+
 #include<bonesVertex>
 
 	vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
@@ -160,9 +170,8 @@ void main(void) {
 #endif	
 
 	vPositionW = vec3(worldPos);
-	#ifdef PREPASS
-	    vViewPos = (view * worldPos).rgb;
-	#endif
+	
+#include<prePassVertex>
 
 #if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
 	vDirectionW = normalize(vec3(finalWorld * vec4(positionUpdated, 0.0)));

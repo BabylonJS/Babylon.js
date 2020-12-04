@@ -275,7 +275,7 @@ export class SerializationHelper {
             var propertyType = propertyDescriptor.type;
             var sourceProperty = (<any>entity)[property];
 
-            if (sourceProperty !== undefined && sourceProperty !== null) {
+            if (sourceProperty !== undefined && sourceProperty !== null && property !== "uniqueId") {
                 switch (propertyType) {
                     case 0:     // Value
                         serializationObject[targetPropertyName] = sourceProperty;
@@ -350,7 +350,7 @@ export class SerializationHelper {
             var sourceProperty = source[propertyDescriptor.sourceName || property];
             var propertyType = propertyDescriptor.type;
 
-            if (sourceProperty !== undefined && sourceProperty !== null) {
+            if (sourceProperty !== undefined && sourceProperty !== null && property !== "uniqueId") {
                 var dest = <any>destination;
                 switch (propertyType) {
                     case 0:     // Value

@@ -1,9 +1,7 @@
 import { Nullable } from "../types";
-import { Vector2, Vector3 } from "../Maths/math.vector";
+import { Vector2, Vector3, Matrix } from "../Maths/math.vector";
 import { Color3, Color4 } from '../Maths/math.color';
-import { AbstractMesh } from "../Meshes/abstractMesh";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
-import { Texture } from "../Materials/Textures/texture";
 import { BoxParticleEmitter, IParticleEmitterType, PointParticleEmitter, HemisphericParticleEmitter, SphereParticleEmitter, SphereDirectedParticleEmitter, CylinderParticleEmitter, ConeParticleEmitter } from "../Particles/EmitterTypes/index";
 import { Scene } from "../scene";
 import { ColorGradient, FactorGradient, Color3Gradient } from "../Misc/gradients";
@@ -11,6 +9,7 @@ import { Effect } from "../Materials/effect";
 import { Observable } from "../Misc/observable";
 
 declare type Animation = import("../Animations/animation").Animation;
+declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 
 /**
  * Interface representing a particle system in Babylon.js.
@@ -60,7 +59,7 @@ export interface IParticleSystem {
     /**
      * The texture used to render each particle. (this can be a spritesheet)
      */
-    particleTexture: Nullable<Texture>;
+    particleTexture: Nullable<BaseTexture>;
 
     /**
      * Blend mode use to render the particle, it can be either ParticleSystem.BLENDMODE_ONEONE, ParticleSystem.BLENDMODE_STANDARD or ParticleSystem.BLENDMODE_ADD.
@@ -252,6 +251,9 @@ export interface IParticleSystem {
     /** Snippet ID if the particle system was created from the snippet server */
     snippetId: string;
 
+    /** Gets or sets a matrix to use to compute projection */
+    defaultProjectionMatrix: Matrix;
+
     /**
      * Gets the maximum number of particles active at the same time.
      * @returns The max number of active particles.
@@ -288,6 +290,10 @@ export interface IParticleSystem {
     * An event triggered when the system is disposed
     */
     onDisposeObservable: Observable<IParticleSystem>;
+    /**
+    * An event triggered when the system is stopped
+    */
+   onStoppedObservable: Observable<IParticleSystem>;
     /**
      * Clones the particle system.
      * @param name The name of the cloned object
@@ -691,5 +697,5 @@ export interface IParticleSystem {
      * Get hosting scene
      * @returns the scene
      */
-    getScene(): Scene;
+    getScene(): Nullable<Scene>;
 }

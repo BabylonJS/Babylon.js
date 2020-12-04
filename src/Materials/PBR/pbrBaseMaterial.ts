@@ -4,7 +4,6 @@ import { Logger } from "../../Misc/logger";
 import { SmartArray } from "../../Misc/smartArray";
 import { BRDFTextureTools } from "../../Misc/brdfTextureTools";
 import { Nullable } from "../../types";
-import { Camera } from "../../Cameras/camera";
 import { Scene } from "../../scene";
 import { Matrix, Vector4 } from "../../Maths/math.vector";
 import { VertexBuffer } from "../../Meshes/buffer";
@@ -16,6 +15,7 @@ import { IMaterialAnisotropicDefines, PBRAnisotropicConfiguration } from "./pbrA
 import { IMaterialBRDFDefines, PBRBRDFConfiguration } from "./pbrBRDFConfiguration";
 import { IMaterialSheenDefines, PBRSheenConfiguration } from "./pbrSheenConfiguration";
 import { IMaterialSubSurfaceDefines, PBRSubSurfaceConfiguration } from "./pbrSubSurfaceConfiguration";
+import { PrePassConfiguration } from "../prePassConfiguration";
 import { Color3, TmpColors } from '../../Maths/math.color';
 import { Scalar } from "../../Maths/math.scalar";
 
@@ -164,11 +164,24 @@ export class PBRMaterialDefines extends MaterialDefines
     public THIN_INSTANCES = false;
 
     public PREPASS = false;
+    public PREPASS_IRRADIANCE = false;
+    public PREPASS_IRRADIANCE_INDEX = -1;
+    public PREPASS_ALBEDO = false;
+    public PREPASS_ALBEDO_INDEX = -1;
+    public PREPASS_DEPTHNORMAL = false;
+    public PREPASS_DEPTHNORMAL_INDEX = -1;
+    public PREPASS_POSITION = false;
+    public PREPASS_POSITION_INDEX = -1;
+    public PREPASS_VELOCITY = false;
+    public PREPASS_VELOCITY_INDEX = -1;
+    public PREPASS_REFLECTIVITY = false;
+    public PREPASS_REFLECTIVITY_INDEX = -1;
     public SCENE_MRT_COUNT = 0;
 
     public NUM_BONE_INFLUENCERS = 0;
     public BonesPerMesh = 0;
     public BONETEXTURE = false;
+    public BONES_VELOCITY_ENABLED = false;
 
     public NONUNIFORMSCALING = false;
 
@@ -215,9 +228,14 @@ export class PBRMaterialDefines extends MaterialDefines
     public CLEARCOAT = false;
     public CLEARCOAT_DEFAULTIOR = false;
     public CLEARCOAT_TEXTURE = false;
+    public CLEARCOAT_TEXTURE_ROUGHNESS = false;
     public CLEARCOAT_TEXTUREDIRECTUV = 0;
+    public CLEARCOAT_TEXTURE_ROUGHNESSDIRECTUV = 0;
+    public CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE = false;
+    public CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL = false;
     public CLEARCOAT_BUMP = false;
     public CLEARCOAT_BUMPDIRECTUV = 0;
+    public CLEARCOAT_REMAP_F0 = true;
     public CLEARCOAT_TINT = false;
     public CLEARCOAT_TINT_TEXTURE = false;
     public CLEARCOAT_TINT_TEXTUREDIRECTUV = 0;
@@ -232,10 +250,14 @@ export class PBRMaterialDefines extends MaterialDefines
 
     public SHEEN = false;
     public SHEEN_TEXTURE = false;
+    public SHEEN_TEXTURE_ROUGHNESS = false;
     public SHEEN_TEXTUREDIRECTUV = 0;
+    public SHEEN_TEXTURE_ROUGHNESSDIRECTUV = 0;
     public SHEEN_LINKWITHALBEDO = false;
     public SHEEN_ROUGHNESS = false;
     public SHEEN_ALBEDOSCALING = false;
+    public SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE = false;
+    public SHEEN_TEXTURE_ROUGHNESS_IDENTICAL = false;
 
     public SUBSURFACE = false;
 
@@ -256,6 +278,7 @@ export class PBRMaterialDefines extends MaterialDefines
     public SS_ALBEDOFORREFRACTIONTINT = false;
 
     public SS_MASK_FROM_THICKNESS_TEXTURE = false;
+    public SS_MASK_FROM_THICKNESS_TEXTURE_GLTF = false;
 
     public UNLIT = false;
 
@@ -811,6 +834,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     public readonly subSurface: PBRSubSurfaceConfiguration;
 
     /**
+     * Defines additionnal PrePass parameters for the material.
+     */
+    public readonly prePassConfiguration: PrePassConfiguration;
+
+    /**
      * Defines the detail map parameters for the material.
      */
     public readonly detailMap = new DetailMapConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
@@ -843,6 +871,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         this._environmentBRDFTexture = BRDFTextureTools.GetEnvironmentBRDFTexture(scene);
         this.subSurface = new PBRSubSurfaceConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this), this._markScenePrePassDirty.bind(this), scene);
+        this.prePassConfiguration = new PrePassConfiguration();
     }
 
     /**
@@ -910,7 +939,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             return false;
         }
 
-        return this._albedoTexture != null && this._albedoTexture.hasAlpha && (this._transparencyMode == null || this._transparencyMode === PBRBaseMaterial.PBRMATERIAL_ALPHATEST);
+        return this._hasAlphaChannel() && (this._transparencyMode == null || this._transparencyMode === PBRBaseMaterial.PBRMATERIAL_ALPHATEST);
     }
 
     /**
@@ -918,6 +947,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      */
     protected _shouldUseAlphaFromAlbedoTexture(): boolean {
         return this._albedoTexture != null && this._albedoTexture.hasAlpha && this._useAlphaFromAlbedoTexture && this._transparencyMode !== PBRBaseMaterial.PBRMATERIAL_OPAQUE;
+    }
+
+    /**
+     * Specifies whether or not there is a usable alpha channel for transparency.
+     */
+    protected _hasAlphaChannel(): boolean {
+        return (this._albedoTexture != null && this._albedoTexture.hasAlpha) || this._opacityTexture != null;
     }
 
     /**
@@ -1258,7 +1294,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             "reflectionSampler", "reflectionSamplerLow", "reflectionSamplerHigh", "irradianceSampler",
             "microSurfaceSampler", "environmentBrdfSampler", "boneSampler", "metallicReflectanceSampler"];
 
-        var uniformBuffers = ["Material", "Scene"];
+        var uniformBuffers = ["Material", "Scene", "Mesh"];
 
         DetailMapConfiguration.AddUniforms(uniforms);
         DetailMapConfiguration.AddSamplers(samplers);
@@ -1274,6 +1310,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         PBRSheenConfiguration.AddUniforms(uniforms);
         PBRSheenConfiguration.AddSamplers(samplers);
+
+        PrePassConfiguration.AddUniforms(uniforms);
+        PrePassConfiguration.AddSamplers(uniforms);
 
         if (ImageProcessingConfiguration) {
             ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
@@ -1365,7 +1404,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                     if (this.realTimeFiltering && this.realTimeFilteringQuality > 0) {
                         defines.NUM_SAMPLES = "" + this.realTimeFilteringQuality;
-                        if (engine.webGLVersion > 1) {
+                        if (engine._features.needTypeSuffixInShaderConstants) {
                             defines.NUM_SAMPLES = defines.NUM_SAMPLES + "u";
                         }
 
@@ -1529,7 +1568,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                 if (this._environmentBRDFTexture && MaterialFlags.ReflectionTextureEnabled) {
                     defines.ENVIRONMENTBRDF = true;
-                    // Not actual true RGBD, only the B chanel is encoded as RGBD for sheen.
                     defines.ENVIRONMENTBRDF_RGBD = this._environmentBRDFTexture.isRGBD;
                 } else {
                     defines.ENVIRONMENTBRDF = false;
@@ -1677,7 +1715,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         ubo.addUniform("pointSize", 1);
         ubo.addUniform("vReflectivityColor", 4);
         ubo.addUniform("vEmissiveColor", 3);
-        ubo.addUniform("visibility", 1);
+        ubo.addUniform("vAmbientColor", 3);
+
+        ubo.addUniform("vDebugMode", 2);
+
         ubo.addUniform("vMetallicReflectanceFactors", 4);
         ubo.addUniform("vMetallicReflectanceInfos", 2);
         ubo.addUniform("metallicReflectanceMatrix", 16);
@@ -1687,6 +1728,26 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         PBRSheenConfiguration.PrepareUniformBuffer(ubo);
         PBRSubSurfaceConfiguration.PrepareUniformBuffer(ubo);
         DetailMapConfiguration.PrepareUniformBuffer(ubo);
+
+        ubo.addUniform("vSphericalL00", 3);
+        ubo.addUniform("vSphericalL1_1", 3);
+        ubo.addUniform("vSphericalL10", 3);
+        ubo.addUniform("vSphericalL11", 3);
+        ubo.addUniform("vSphericalL2_2", 3);
+        ubo.addUniform("vSphericalL2_1", 3);
+        ubo.addUniform("vSphericalL20", 3);
+        ubo.addUniform("vSphericalL21", 3);
+        ubo.addUniform("vSphericalL22", 3);
+
+        ubo.addUniform("vSphericalX", 3);
+        ubo.addUniform("vSphericalY", 3);
+        ubo.addUniform("vSphericalZ", 3);
+        ubo.addUniform("vSphericalXX_ZZ", 3);
+        ubo.addUniform("vSphericalYY_ZZ", 3);
+        ubo.addUniform("vSphericalZZ", 3);
+        ubo.addUniform("vSphericalXY", 3);
+        ubo.addUniform("vSphericalYZ", 3);
+        ubo.addUniform("vSphericalZX", 3);
 
         ubo.create();
     }
@@ -1736,10 +1797,12 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         this._activeEffect = effect;
 
-        // Matrices
-        if (!defines.INSTANCES || defines.THIN_INSTANCES) {
-            this.bindOnlyWorldMatrix(world);
-        }
+        // Matrices Mesh.
+        mesh.getMeshUniformBuffer().bindToEffect(effect, "Mesh");
+        mesh.transferToEffect(world);
+
+        // PrePass
+        this.prePassConfiguration.bindForSubMesh(this._activeEffect, scene, mesh, world, this.isFrozen);
 
         // Normal Matrix
         if (defines.OBJECTSPACE_NORMALMAP) {
@@ -1750,7 +1813,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         let mustRebind = this._mustRebind(scene, effect, mesh.visibility);
 
         // Bones
-        MaterialHelper.BindBonesParameters(mesh, this._activeEffect);
+        MaterialHelper.BindBonesParameters(mesh, this._activeEffect, this.prePassConfiguration);
 
         let reflectionTexture: Nullable<BaseTexture> = null;
         let ubo = this._uniformBuffer;
@@ -1801,30 +1864,30 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                             if (defines.USESPHERICALFROMREFLECTIONMAP && polynomials) {
                                 if (defines.SPHERICAL_HARMONICS) {
                                     const preScaledHarmonics = polynomials.preScaledHarmonics;
-                                    this._activeEffect.setVector3("vSphericalL00", preScaledHarmonics.l00);
-                                    this._activeEffect.setVector3("vSphericalL1_1", preScaledHarmonics.l1_1);
-                                    this._activeEffect.setVector3("vSphericalL10", preScaledHarmonics.l10);
-                                    this._activeEffect.setVector3("vSphericalL11", preScaledHarmonics.l11);
-                                    this._activeEffect.setVector3("vSphericalL2_2", preScaledHarmonics.l2_2);
-                                    this._activeEffect.setVector3("vSphericalL2_1", preScaledHarmonics.l2_1);
-                                    this._activeEffect.setVector3("vSphericalL20", preScaledHarmonics.l20);
-                                    this._activeEffect.setVector3("vSphericalL21", preScaledHarmonics.l21);
-                                    this._activeEffect.setVector3("vSphericalL22", preScaledHarmonics.l22);
+                                    ubo.updateVector3("vSphericalL00", preScaledHarmonics.l00);
+                                    ubo.updateVector3("vSphericalL1_1", preScaledHarmonics.l1_1);
+                                    ubo.updateVector3("vSphericalL10", preScaledHarmonics.l10);
+                                    ubo.updateVector3("vSphericalL11", preScaledHarmonics.l11);
+                                    ubo.updateVector3("vSphericalL2_2", preScaledHarmonics.l2_2);
+                                    ubo.updateVector3("vSphericalL2_1", preScaledHarmonics.l2_1);
+                                    ubo.updateVector3("vSphericalL20", preScaledHarmonics.l20);
+                                    ubo.updateVector3("vSphericalL21", preScaledHarmonics.l21);
+                                    ubo.updateVector3("vSphericalL22", preScaledHarmonics.l22);
                                 }
                                 else {
-                                    this._activeEffect.setFloat3("vSphericalX", polynomials.x.x, polynomials.x.y, polynomials.x.z);
-                                    this._activeEffect.setFloat3("vSphericalY", polynomials.y.x, polynomials.y.y, polynomials.y.z);
-                                    this._activeEffect.setFloat3("vSphericalZ", polynomials.z.x, polynomials.z.y, polynomials.z.z);
-                                    this._activeEffect.setFloat3("vSphericalXX_ZZ", polynomials.xx.x - polynomials.zz.x,
+                                    ubo.updateFloat3("vSphericalX", polynomials.x.x, polynomials.x.y, polynomials.x.z);
+                                    ubo.updateFloat3("vSphericalY", polynomials.y.x, polynomials.y.y, polynomials.y.z);
+                                    ubo.updateFloat3("vSphericalZ", polynomials.z.x, polynomials.z.y, polynomials.z.z);
+                                    ubo.updateFloat3("vSphericalXX_ZZ", polynomials.xx.x - polynomials.zz.x,
                                         polynomials.xx.y - polynomials.zz.y,
                                         polynomials.xx.z - polynomials.zz.z);
-                                    this._activeEffect.setFloat3("vSphericalYY_ZZ", polynomials.yy.x - polynomials.zz.x,
+                                    ubo.updateFloat3("vSphericalYY_ZZ", polynomials.yy.x - polynomials.zz.x,
                                         polynomials.yy.y - polynomials.zz.y,
                                         polynomials.yy.z - polynomials.zz.z);
-                                    this._activeEffect.setFloat3("vSphericalZZ", polynomials.zz.x, polynomials.zz.y, polynomials.zz.z);
-                                    this._activeEffect.setFloat3("vSphericalXY", polynomials.xy.x, polynomials.xy.y, polynomials.xy.z);
-                                    this._activeEffect.setFloat3("vSphericalYZ", polynomials.yz.x, polynomials.yz.y, polynomials.yz.z);
-                                    this._activeEffect.setFloat3("vSphericalZX", polynomials.zx.x, polynomials.zx.y, polynomials.zx.z);
+                                    ubo.updateFloat3("vSphericalZZ", polynomials.zz.x, polynomials.zz.y, polynomials.zz.z);
+                                    ubo.updateFloat3("vSphericalXY", polynomials.xy.x, polynomials.xy.y, polynomials.xy.z);
+                                    ubo.updateFloat3("vSphericalYZ", polynomials.yz.x, polynomials.yz.y, polynomials.yz.z);
+                                    ubo.updateFloat3("vSphericalZX", polynomials.zx.x, polynomials.zx.y, polynomials.zx.z);
                                 }
                             }
                         }
@@ -1923,10 +1986,14 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 this._lightingInfos.w = this._specularIntensity;
 
                 ubo.updateVector4("vLightingIntensity", this._lightingInfos);
-            }
 
-            // Visibility
-            ubo.updateFloat("visibility", mesh.visibility);
+                // Colors
+                scene.ambientColor.multiplyToRef(this._ambientColor, this._globalAmbientColor);
+
+                ubo.updateColor3("vAmbientColor", this._globalAmbientColor);
+
+                ubo.updateFloat2("vDebugMode", this.debugLimit, this.debugFactor);
+            }
 
             // Textures
             if (scene.texturesEnabled) {
@@ -1993,26 +2060,14 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
             this.detailMap.bindForSubMesh(ubo, scene, this.isFrozen);
             this.subSurface.bindForSubMesh(ubo, scene, engine, this.isFrozen, defines.LODBASEDMICROSFURACE, this.realTimeFiltering);
-            this.clearCoat.bindForSubMesh(ubo, scene, engine, this._disableBumpMap, this.isFrozen, this._invertNormalMapX, this._invertNormalMapY);
+            this.clearCoat.bindForSubMesh(ubo, scene, engine, this._disableBumpMap, this.isFrozen, this._invertNormalMapX, this._invertNormalMapY, subMesh);
             this.anisotropy.bindForSubMesh(ubo, scene, this.isFrozen);
-            this.sheen.bindForSubMesh(ubo, scene, this.isFrozen);
+            this.sheen.bindForSubMesh(ubo, scene, this.isFrozen, subMesh);
 
             // Clip plane
             MaterialHelper.BindClipPlane(this._activeEffect, scene);
 
-            // Colors
-            scene.ambientColor.multiplyToRef(this._ambientColor, this._globalAmbientColor);
-
-            var eyePosition = scene._forcedViewPosition ? scene._forcedViewPosition : (scene._mirroredCameraPosition ? scene._mirroredCameraPosition : (<Camera>scene.activeCamera).globalPosition);
-            var invertNormal = (scene.useRightHandedSystem === (scene._mirroredCameraPosition != null));
-            effect.setFloat4("vEyePosition",
-                eyePosition.x,
-                eyePosition.y,
-                eyePosition.z,
-                invertNormal ? -1 : 1);
-            effect.setColor3("vAmbientColor", this._globalAmbientColor);
-
-            effect.setFloat2("vDebugMode", this.debugLimit, this.debugFactor);
+            this.bindEyePosition(effect);
         }
 
         if (mustRebind || !this.isFrozen) {
@@ -2041,9 +2096,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             MaterialHelper.BindLogDepth(defines, this._activeEffect, scene);
         }
 
-        ubo.update();
-
         this._afterBind(mesh, this._activeEffect);
+
+        ubo.update();
     }
 
     /**
@@ -2232,11 +2287,15 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      */
     public setPrePassRenderer(prePassRenderer: PrePassRenderer): boolean {
         if (this.subSurface.isScatteringEnabled) {
-            prePassRenderer.subSurfaceConfiguration.enabled = true;
-            prePassRenderer.materialsShouldRenderIrradiance = true;
+            let subSurfaceConfiguration = this.getScene().enableSubSurfaceForPrePass();
+            if (subSurfaceConfiguration) {
+                subSurfaceConfiguration.enabled = true;
+            }
+
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     /**

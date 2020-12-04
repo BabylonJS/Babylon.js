@@ -280,7 +280,7 @@ export class AnimationGroup implements IDisposable {
                 let newKey: IAnimationKey = {
                     frame: endFrame,
                     value: endKey.value,
-                    inTangent: endKey.outTangent,
+                    inTangent: endKey.inTangent,
                     outTangent: endKey.outTangent,
                     interpolation: endKey.interpolation
                 };
@@ -427,6 +427,9 @@ export class AnimationGroup implements IDisposable {
      */
     public reset(): AnimationGroup {
         if (!this._isStarted) {
+            this.play();
+            this.goToFrame(0);
+            this.stop();
             return this;
         }
 

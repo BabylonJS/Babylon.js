@@ -29,7 +29,7 @@ export class Vector2 {
      * @returns a string with the Vector2 coordinates
      */
     public toString(): string {
-        return "{X: " + this.x + " Y:" + this.y + "}";
+        return "{X: " + this.x + " Y: " + this.y + "}";
     }
 
     /**
@@ -651,9 +651,18 @@ export class Vector2 {
      * @returns a new Vector2
      */
     public static Center(value1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>): Vector2 {
-        var center = value1.add(value2);
-        center.scaleInPlace(0.5);
-        return center;
+        return Vector2.CenterToRef(value1, value2, Vector2.Zero());
+    }
+
+    /**
+     * Gets the center of the vectors "value1" and "value2" and stores the result in the vector "ref"
+     * @param value1 defines first vector
+     * @param value2 defines second vector
+     * @param ref defines third vector
+     * @returns ref
+     */
+    public static CenterToRef(value1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, ref: DeepImmutable<Vector2>): Vector2 {
+        return ref.copyFromFloats((value1.x + value2.x) / 2, (value1.y + value2.y) / 2);
     }
 
     /**
@@ -1837,6 +1846,21 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public static Project(vector: DeepImmutable<Vector3>, world: DeepImmutable<Matrix>, transform: DeepImmutable<Matrix>, viewport: DeepImmutable<Viewport>): Vector3 {
+        const result = new Vector3();
+        Vector3.ProjectToRef(vector, world, transform, viewport, result);
+        return result;
+    }
+
+    /**
+     * Project a Vector3 onto screen space to reference
+     * @param vector defines the Vector3 to project
+     * @param world defines the world matrix to use
+     * @param transform defines the transform (view x projection) matrix to use
+     * @param viewport defines the screen viewport to use
+     * @param result the vector in which the screen space will be stored
+     * @returns the new Vector3
+     */
+    public static ProjectToRef(vector: DeepImmutable<Vector3>, world: DeepImmutable<Matrix>, transform: DeepImmutable<Matrix>, viewport: DeepImmutable<Viewport>, result: DeepImmutable<Vector3>): Vector3 {
         var cw = viewport.width;
         var ch = viewport.height;
         var cx = viewport.x;
@@ -1854,7 +1878,8 @@ export class Vector3 {
         world.multiplyToRef(transform, matrix);
         matrix.multiplyToRef(viewportMatrix, matrix);
 
-        return Vector3.TransformCoordinates(vector, matrix);
+        Vector3.TransformCoordinatesToRef(vector, matrix, result);
+        return result;
     }
 
     /** @hidden */
@@ -1998,9 +2023,18 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public static Center(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>): Vector3 {
-        var center = value1.add(value2);
-        center.scaleInPlace(0.5);
-        return center;
+        return Vector3.CenterToRef(value1, value2, Vector3.Zero());
+    }
+
+    /**
+     * Gets the center of the vectors "value1" and "value2" and stores the result in the vector "ref"
+     * @param value1 defines first vector
+     * @param value2 defines second vector
+     * @param ref defines third vector
+     * @returns ref
+     */
+    public static CenterToRef(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, ref: DeepImmutable<Vector3>): Vector3 {
+        return ref.copyFromFloats((value1._x + value2._x) / 2, (value1._y + value2._y) / 2, (value1._z + value2._z) / 2);
     }
 
     /**
@@ -2688,9 +2722,18 @@ export class Vector4 {
      * @return the center between the two vectors
      */
     public static Center(value1: DeepImmutable<Vector4>, value2: DeepImmutable<Vector4>): Vector4 {
-        var center = value1.add(value2);
-        center.scaleInPlace(0.5);
-        return center;
+        return Vector4.CenterToRef(value1, value2, Vector4.Zero());
+    }
+
+    /**
+     * Gets the center of the vectors "value1" and "value2" and stores the result in the vector "ref"
+     * @param value1 defines first vector
+     * @param value2 defines second vector
+     * @param ref defines third vector
+     * @returns ref
+     */
+    public static CenterToRef(value1: DeepImmutable<Vector4>, value2: DeepImmutable<Vector4>, ref: DeepImmutable<Vector4>): Vector4 {
+        return ref.copyFromFloats((value1.x + value2.x) / 2, (value1.y + value2.y) / 2, (value1.z + value2.z) / 2, (value1.w + value2.w) / 2);
     }
 
     /**
@@ -3113,7 +3156,7 @@ export class Quaternion {
 
     /**
      * Returns a new Vector3 set with the Euler angles translated from the current quaternion
-     * @param order is a reserved parameter and is ignore for now
+     * @param order is a reserved parameter and is ignored for now
      * @returns a new Vector3 containing the Euler angles
      */
     public toEulerAngles(order = "YZX"): Vector3 {
@@ -3125,7 +3168,6 @@ export class Quaternion {
     /**
      * Sets the given vector3 "result" with the Euler angles translated from the current quaternion
      * @param result defines the vector which will be filled with the Euler angles
-     * @param order is a reserved parameter and is ignore for now
      * @returns the current unchanged quaternion
      */
     public toEulerAnglesToRef(result: Vector3): Quaternion {
@@ -5244,8 +5286,8 @@ export class Matrix {
         let t = 1.0 / (Math.tan(fov * 0.5));
         let a = isVerticalFovFixed ? (t / aspect) : t;
         let b = isVerticalFovFixed ? t : (t * aspect);
-        let c = (f + n) / (f - n);
-        let d = -2.0 * f * n / (f - n);
+        let c = f !== 0 ? (f + n) / (f - n) : 1;
+        let d = f !== 0 ? -2.0 * f * n / (f - n) : -2 * n;
 
         Matrix.FromValuesToRef(
             a, 0.0, 0.0, 0.0,
@@ -5315,8 +5357,8 @@ export class Matrix {
         let t = 1.0 / (Math.tan(fov * 0.5));
         let a = isVerticalFovFixed ? (t / aspect) : t;
         let b = isVerticalFovFixed ? t : (t * aspect);
-        let c = -(f + n) / (f - n);
-        let d = -2 * f * n / (f - n);
+        let c = f !== 0 ? -(f + n) / (f - n) : -1;
+        let d = f !== 0 ? -2 * f * n / (f - n) : -2 * n;
 
         Matrix.FromValuesToRef(
             a, 0.0, 0.0, 0.0,

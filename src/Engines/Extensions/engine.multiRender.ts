@@ -1,5 +1,6 @@
 import { InternalTexture, InternalTextureSource } from '../../Materials/Textures/internalTexture';
 import { IMultiRenderTargetOptions } from '../../Materials/Textures/multiRenderTarget';
+import { IColor4Like } from "../../Maths/math.like";
 import { Logger } from '../../Misc/logger';
 import { Nullable } from '../../types';
 import { Constants } from '../constants';
@@ -39,13 +40,76 @@ declare module "../../Engines/thinEngine" {
          * @param attachments gl attachments
          */
         bindAttachments(attachments: number[]) : void;
+
+        /**
+         * Creates a layout object to draw/clear on specific textures in a MRT
+         * @param textureStatus textureStatus[i] indicates if the i-th is active
+         * @returns A layout to be fed to the engine, calling `bindAttachments`.
+         */
+        buildTextureLayout(textureStatus: boolean[]) : number[];
+
+        /**
+         * Restores the webgl state to only draw on the main color attachment
+         */
+        restoreSingleAttachment() : void;
+
+        /**
+         * Clears a list of attachments
+         * @param attachments list of the attachments
+         * @param colorMain clear color for the main attachment (the first one)
+         * @param colorOthers clear color for the other attachments
+         * @param clearDepth true to clear the depth buffer. Used only for the first attachment
+         * @param clearStencil true to clear the stencil buffer. Used only for the first attachment
+         */
+        clearAttachments(attachments: number[], colorMain: Nullable<IColor4Like>, colorOthers: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean): void;
     }
 }
+
+ThinEngine.prototype.restoreSingleAttachment = function(): void {
+    const gl = this._gl;
+
+    this.bindAttachments([gl.BACK]);
+};
+
+ThinEngine.prototype.buildTextureLayout = function(textureStatus: boolean[]): number[] {
+    const gl = this._gl;
+
+    const result = [];
+
+    for (let i = 0; i < textureStatus.length; i++) {
+        if (textureStatus[i]) {
+            result.push((<any>gl)["COLOR_ATTACHMENT" + i]);
+        } else {
+            result.push(gl.NONE);
+        }
+    }
+
+    return result;
+};
 
 ThinEngine.prototype.bindAttachments = function(attachments: number[]): void {
     const gl = this._gl;
 
     gl.drawBuffers(attachments);
+};
+
+ThinEngine.prototype.clearAttachments = function(attachments: number[], colorMain: Nullable<IColor4Like>, colorOthers: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean): void {
+    if (attachments.length === 0) {
+        return;
+    }
+
+    const gl = this._gl;
+
+    gl.drawBuffers([attachments[0]]);
+    this.clear(colorMain, colorMain !== null, clearDepth, clearStencil);
+
+    const saveVal = attachments[0];
+    attachments[0] = gl.NONE;
+
+    gl.drawBuffers(attachments);
+    this.clear(colorOthers, colorOthers !== null, false, false);
+
+    attachments[0] = saveVal;
 };
 
 ThinEngine.prototype.unBindMultiColorAttachmentFramebuffer = function(textures: InternalTexture[], disableGenerateMipMaps: boolean = false, onBeforeUnbind?: () => void): void {
@@ -171,7 +235,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function(size: any, options: I
         attachments.push(attachment);
 
         gl.activeTexture((<any>gl)["TEXTURE" + i]);
-        gl.bindTexture(gl.TEXTURE_2D, texture._webGLTexture);
+        gl.bindTexture(gl.TEXTURE_2D, texture._hardwareTexture!.underlyingResource);
 
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
@@ -180,7 +244,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function(size: any, options: I
 
         gl.texImage2D(gl.TEXTURE_2D, 0, this._getRGBABufferInternalSizedFormat(type), width, height, 0, gl.RGBA, this._getWebGLTextureType(type), null);
 
-        gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, attachment, gl.TEXTURE_2D, texture._webGLTexture, 0);
+        gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, attachment, gl.TEXTURE_2D, texture._hardwareTexture!.underlyingResource, 0);
 
         if (generateMipMaps) {
             this._gl.generateMipmap(this._gl.TEXTURE_2D);
@@ -213,7 +277,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function(size: any, options: I
         var depthTexture = new InternalTexture(this, InternalTextureSource.MultiRenderTarget);
 
         gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, depthTexture._webGLTexture);
+        gl.bindTexture(gl.TEXTURE_2D, depthTexture._hardwareTexture!.underlyingResource);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -234,7 +298,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function(size: any, options: I
             gl.FRAMEBUFFER,
             gl.DEPTH_ATTACHMENT,
             gl.TEXTURE_2D,
-            depthTexture._webGLTexture,
+            depthTexture._hardwareTexture!.underlyingResource,
             0
         );
 

@@ -98,7 +98,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
 /*!***********************************************************!*\
-  !*** D:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
   \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -147,7 +147,7 @@ PERFORMANCE OF THIS SOFTWARE.
 var extendStatics = function(d, b) {
     extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
     return extendStatics(d, b);
 };
 
@@ -241,8 +241,8 @@ var __createBinding = Object.create ? (function(o, m, k, k2) {
     o[k2] = m[k];
 });
 
-function __exportStar(m, exports) {
-    for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
+function __exportStar(m, o) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(o, p)) __createBinding(o, m, p);
 }
 
 function __values(o) {
@@ -332,7 +332,7 @@ var __setModuleDefault = Object.create ? (function(o, v) {
 function __importStar(mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
     __setModuleDefault(result, mod);
     return result;
 }
@@ -546,8 +546,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _controls_container__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./controls/container */ "./2D/controls/container.ts");
-/* harmony import */ var _style__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./style */ "./2D/style.ts");
-/* harmony import */ var _measure__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./measure */ "./2D/measure.ts");
+/* harmony import */ var _controls_control__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./controls/control */ "./2D/controls/control.ts");
+/* harmony import */ var _style__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./style */ "./2D/style.ts");
+/* harmony import */ var _measure__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./measure */ "./2D/measure.ts");
+
 
 
 
@@ -579,13 +581,14 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
    * @param scene defines the hosting scene
    * @param generateMipMaps defines a boolean indicating if mipmaps must be generated (false by default)
    * @param samplingMode defines the texture sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
+   * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
    */
-    function AdvancedDynamicTexture(name, width, height, scene, generateMipMaps, samplingMode) {
+    function AdvancedDynamicTexture(name, width, height, scene, generateMipMaps, samplingMode, invertY) {
         if (width === void 0) { width = 0; }
         if (height === void 0) { height = 0; }
         if (generateMipMaps === void 0) { generateMipMaps = false; }
         if (samplingMode === void 0) { samplingMode = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_SAMPLINGMODE; }
-        var _this = _super.call(this, name, { width: width, height: height }, scene, generateMipMaps, samplingMode, babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Constants"].TEXTUREFORMAT_RGBA) || this;
+        var _this = _super.call(this, name, { width: width, height: height }, scene, generateMipMaps, samplingMode, babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Constants"].TEXTUREFORMAT_RGBA, invertY) || this;
         _this._isDirty = false;
         /** @hidden */
         _this._rootContainer = new _controls_container__WEBPACK_IMPORTED_MODULE_2__["Container"]("root");
@@ -644,10 +647,14 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         * Gets or sets a boolean defining if alpha is stored as premultiplied
         */
         _this.premulAlpha = false;
+        /**
+         * Gets or sets a boolean indicating that the canvas must be reverted on Y when updating the texture
+         */
+        _this.applyYInversionOnUpdate = true;
         _this._useInvalidateRectOptimization = true;
         // Invalidated rectangle which is the combination of all invalidated controls after they have been rotated into absolute position
         _this._invalidatedRectangle = null;
-        _this._clearMeasure = new _measure__WEBPACK_IMPORTED_MODULE_4__["Measure"](0, 0, 0, 0);
+        _this._clearMeasure = new _measure__WEBPACK_IMPORTED_MODULE_5__["Measure"](0, 0, 0, 0);
         /** @hidden */
         _this.onClipboardCopy = function (rawEvt) {
             var evt = rawEvt;
@@ -992,7 +999,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
             return;
         }
         if (!this._invalidatedRectangle) {
-            this._invalidatedRectangle = new _measure__WEBPACK_IMPORTED_MODULE_4__["Measure"](invalidMinX, invalidMinY, invalidMaxX - invalidMinX + 1, invalidMaxY - invalidMinY + 1);
+            this._invalidatedRectangle = new _measure__WEBPACK_IMPORTED_MODULE_5__["Measure"](invalidMinX, invalidMinY, invalidMaxX - invalidMinX + 1, invalidMaxY - invalidMinY + 1);
         }
         else {
             // Compute intersection
@@ -1016,7 +1023,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
     * @see https://doc.babylonjs.com/how_to/gui#styles
     */
     AdvancedDynamicTexture.prototype.createStyle = function () {
-        return new _style__WEBPACK_IMPORTED_MODULE_3__["Style"](this);
+        return new _style__WEBPACK_IMPORTED_MODULE_4__["Style"](this);
     };
     /**
     * Adds a new control to the root container
@@ -1060,6 +1067,9 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         }
         if (this._canvasPointerOutObserver) {
             scene.getEngine().onCanvasPointerOutObservable.remove(this._canvasPointerOutObserver);
+        }
+        if (this._canvasBlurObserver) {
+            scene.getEngine().onCanvasBlurObservable.remove(this._canvasBlurObserver);
         }
         if (this._layerToDispose) {
             this._layerToDispose.texture = null;
@@ -1125,6 +1135,22 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         projectedPosition.scaleInPlace(this.renderScale);
         return new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector2"](projectedPosition.x, projectedPosition.y);
     };
+    /**
+    * Get screen coordinates for a vector3
+    * @param position defines the position to project
+    * @param worldMatrix defines the world matrix to use
+    * @returns the projected position with Z
+    */
+    AdvancedDynamicTexture.prototype.getProjectedPositionWithZ = function (position, worldMatrix) {
+        var scene = this.getScene();
+        if (!scene) {
+            return babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero();
+        }
+        var globalViewport = this._getGlobalViewport(scene);
+        var projectedPosition = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Project(position, worldMatrix, scene.getTransformMatrix(), globalViewport);
+        projectedPosition.scaleInPlace(this.renderScale);
+        return new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector3"](projectedPosition.x, projectedPosition.y, projectedPosition.z);
+    };
     AdvancedDynamicTexture.prototype._checkUpdate = function (camera) {
         if (this._layerToDispose) {
             if ((camera.layerMask & this._layerToDispose.layerMask) === 0) {
@@ -1170,7 +1196,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         }
         this._isDirty = false;
         this._render();
-        this.update(true, this.premulAlpha);
+        this.update(this.applyYInversionOnUpdate, this.premulAlpha);
     };
     AdvancedDynamicTexture.prototype._render = function () {
         var textureSize = this.getSize();
@@ -1181,7 +1207,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         context.strokeStyle = "white";
         // Layout
         this.onBeginLayoutObservable.notifyObservers(this);
-        var measure = new _measure__WEBPACK_IMPORTED_MODULE_4__["Measure"](0, 0, renderWidth, renderHeight);
+        var measure = new _measure__WEBPACK_IMPORTED_MODULE_5__["Measure"](0, 0, renderWidth, renderHeight);
         this._numLayoutCalls = 0;
         this._rootContainer._layout(measure, context);
         this.onEndLayoutObservable.notifyObservers(this);
@@ -1219,7 +1245,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         this._lastControlDown[pointerId] = control;
         this.onControlPickedObservable.notifyObservers(control);
     };
-    AdvancedDynamicTexture.prototype._doPicking = function (x, y, type, pointerId, buttonIndex, deltaX, deltaY) {
+    AdvancedDynamicTexture.prototype._doPicking = function (x, y, pi, type, pointerId, buttonIndex, deltaX, deltaY) {
         var scene = this.getScene();
         if (!scene) {
             return;
@@ -1233,15 +1259,15 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
             y = y * (textureSize.height / (engine.getRenderHeight() * viewport.height));
         }
         if (this._capturingControl[pointerId]) {
-            this._capturingControl[pointerId]._processObservables(type, x, y, pointerId, buttonIndex);
+            this._capturingControl[pointerId]._processObservables(type, x, y, pi, pointerId, buttonIndex);
             return;
         }
         this._cursorChanged = false;
-        if (!this._rootContainer._processPicking(x, y, type, pointerId, buttonIndex, deltaX, deltaY)) {
+        if (!this._rootContainer._processPicking(x, y, pi, type, pointerId, buttonIndex, deltaX, deltaY)) {
             this._changeCursor("");
             if (type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERMOVE) {
                 if (this._lastControlOver[pointerId]) {
-                    this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId]);
+                    this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId], pi);
                     delete this._lastControlOver[pointerId];
                 }
             }
@@ -1308,13 +1334,14 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
             _this._shouldBlockPointer = false;
             // Do picking modifies _shouldBlockPointer
             var pointerId = pi.event.pointerId || _this._defaultMousePointerId;
-            _this._doPicking(x, y, pi.type, pointerId, pi.event.button, pi.event.deltaX, pi.event.deltaY);
+            _this._doPicking(x, y, pi, pi.type, pointerId, pi.event.button, pi.event.deltaX, pi.event.deltaY);
             // Avoid overwriting a true skipOnPointerObservable to false
             if (_this._shouldBlockPointer) {
                 pi.skipOnPointerObservable = _this._shouldBlockPointer;
             }
         });
         this._attachToOnPointerOut(scene);
+        this._attachToOnBlur(scene);
     };
     /**
     * Register the clipboard Events onto the canvas
@@ -1355,7 +1382,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
                 var uv = pi.pickInfo.getTextureCoordinates();
                 if (uv) {
                     var size = _this.getSize();
-                    _this._doPicking(uv.x * size.width, (1.0 - uv.y) * size.height, pi.type, pointerId, pi.event.button);
+                    _this._doPicking(uv.x * size.width, (_this.applyYInversionOnUpdate ? (1.0 - uv.y) : uv.y) * size.height, pi, pi.type, pointerId, pi.event.button);
                 }
             }
             else if (pi.type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERUP) {
@@ -1388,13 +1415,14 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
             }
             else if (pi.type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERMOVE) {
                 if (_this._lastControlOver[pointerId]) {
-                    _this._lastControlOver[pointerId]._onPointerOut(_this._lastControlOver[pointerId], true);
+                    _this._lastControlOver[pointerId]._onPointerOut(_this._lastControlOver[pointerId], pi, true);
                 }
                 delete _this._lastControlOver[pointerId];
             }
         });
         mesh.enablePointerMoveEvents = supportPointerMove;
         this._attachToOnPointerOut(scene);
+        this._attachToOnBlur(scene);
     };
     /**
     * Move the focus to a specific control
@@ -1425,7 +1453,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         var _this = this;
         this._canvasPointerOutObserver = scene.getEngine().onCanvasPointerOutObservable.add(function (pointerEvent) {
             if (_this._lastControlOver[pointerEvent.pointerId]) {
-                _this._lastControlOver[pointerEvent.pointerId]._onPointerOut(_this._lastControlOver[pointerEvent.pointerId]);
+                _this._lastControlOver[pointerEvent.pointerId]._onPointerOut(_this._lastControlOver[pointerEvent.pointerId], null);
             }
             delete _this._lastControlOver[pointerEvent.pointerId];
             if (_this._lastControlDown[pointerEvent.pointerId] && _this._lastControlDown[pointerEvent.pointerId] !== _this._capturingControl[pointerEvent.pointerId]) {
@@ -1433,6 +1461,34 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
                 delete _this._lastControlDown[pointerEvent.pointerId];
             }
         });
+    };
+    AdvancedDynamicTexture.prototype._attachToOnBlur = function (scene) {
+        var _this = this;
+        this._canvasBlurObserver = scene.getEngine().onCanvasBlurObservable.add(function (pointerEvent) {
+            Object.entries(_this._lastControlDown).forEach(function (_a) {
+                var key = _a[0], value = _a[1];
+                value._onCanvasBlur();
+            });
+            _this._lastControlDown = {};
+        });
+    };
+    /**
+     * Serializes the entire GUI system
+     * @returns an object with the JSON serialized data
+     */
+    AdvancedDynamicTexture.prototype.serializeContent = function () {
+        var serializationObject = {
+            root: {}
+        };
+        this._rootContainer.serialize(serializationObject.root);
+        return serializationObject;
+    };
+    /**
+     * Recreate the content of the ADT from a JSON object
+     * @param serializedObject define the JSON serialized object to restore from
+     */
+    AdvancedDynamicTexture.prototype.parseContent = function (serializedObject) {
+        this._rootContainer = _controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].Parse(serializedObject.root, this);
     };
     // Statics
     /**
@@ -1442,14 +1498,15 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
      * @param height defines the texture height (1024 by default)
      * @param supportPointerMove defines a boolean indicating if the texture must capture move events (true by default)
      * @param onlyAlphaTesting defines a boolean indicating that alpha blending will not be used (only alpha testing) (false by default)
+     * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
      * @returns a new AdvancedDynamicTexture
      */
-    AdvancedDynamicTexture.CreateForMesh = function (mesh, width, height, supportPointerMove, onlyAlphaTesting) {
+    AdvancedDynamicTexture.CreateForMesh = function (mesh, width, height, supportPointerMove, onlyAlphaTesting, invertY) {
         if (width === void 0) { width = 1024; }
         if (height === void 0) { height = 1024; }
         if (supportPointerMove === void 0) { supportPointerMove = true; }
         if (onlyAlphaTesting === void 0) { onlyAlphaTesting = false; }
-        var result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Texture"].TRILINEAR_SAMPLINGMODE);
+        var result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Texture"].TRILINEAR_SAMPLINGMODE, invertY);
         var material = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["StandardMaterial"]("AdvancedDynamicTextureMaterial", mesh.getScene());
         material.backFaceCulling = false;
         material.diffuseColor = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Color3"].Black();
@@ -1464,6 +1521,23 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
             material.opacityTexture = result;
         }
         mesh.material = material;
+        result.attachToMesh(mesh, supportPointerMove);
+        return result;
+    };
+    /**
+     * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh) BUT do not create a new material for the mesh. You will be responsible for connecting the texture
+     * @param mesh defines the mesh which will receive the texture
+     * @param width defines the texture width (1024 by default)
+     * @param height defines the texture height (1024 by default)
+     * @param supportPointerMove defines a boolean indicating if the texture must capture move events (true by default)
+     * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
+     * @returns a new AdvancedDynamicTexture
+     */
+    AdvancedDynamicTexture.CreateForMeshTexture = function (mesh, width, height, supportPointerMove, invertY) {
+        if (width === void 0) { width = 1024; }
+        if (height === void 0) { height = 1024; }
+        if (supportPointerMove === void 0) { supportPointerMove = true; }
+        var result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Texture"].TRILINEAR_SAMPLINGMODE, invertY);
         result.attachToMesh(mesh, supportPointerMove);
         return result;
     };
@@ -1586,7 +1660,7 @@ var Button = /** @class */ (function (_super) {
     };
     // While being a container, the button behaves like a control.
     /** @hidden */
-    Button.prototype._processPicking = function (x, y, type, pointerId, buttonIndex, deltaX, deltaY) {
+    Button.prototype._processPicking = function (x, y, pi, type, pointerId, buttonIndex, deltaX, deltaY) {
         if (!this._isEnabled || !this.isHitTestVisible || !this.isVisible || this.notRenderable) {
             return false;
         }
@@ -1606,12 +1680,12 @@ var Button = /** @class */ (function (_super) {
                 return false;
             }
         }
-        this._processObservables(type, x, y, pointerId, buttonIndex, deltaX, deltaY);
+        this._processObservables(type, x, y, pi, pointerId, buttonIndex, deltaX, deltaY);
         return true;
     };
     /** @hidden */
-    Button.prototype._onPointerEnter = function (target) {
-        if (!_super.prototype._onPointerEnter.call(this, target)) {
+    Button.prototype._onPointerEnter = function (target, pi) {
+        if (!_super.prototype._onPointerEnter.call(this, target, pi)) {
             return false;
         }
         if (this.pointerEnterAnimation) {
@@ -1620,16 +1694,16 @@ var Button = /** @class */ (function (_super) {
         return true;
     };
     /** @hidden */
-    Button.prototype._onPointerOut = function (target, force) {
+    Button.prototype._onPointerOut = function (target, pi, force) {
         if (force === void 0) { force = false; }
         if (this.pointerOutAnimation) {
             this.pointerOutAnimation();
         }
-        _super.prototype._onPointerOut.call(this, target, force);
+        _super.prototype._onPointerOut.call(this, target, pi, force);
     };
     /** @hidden */
-    Button.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
-        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex)) {
+    Button.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
+        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
         }
         if (this.pointerDownAnimation) {
@@ -1638,11 +1712,11 @@ var Button = /** @class */ (function (_super) {
         return true;
     };
     /** @hidden */
-    Button.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick) {
+    Button.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick, pi) {
         if (this.pointerUpAnimation) {
             this.pointerUpAnimation();
         }
-        _super.prototype._onPointerUp.call(this, target, coordinates, pointerId, buttonIndex, notifyClick);
+        _super.prototype._onPointerUp.call(this, target, coordinates, pointerId, buttonIndex, notifyClick, pi);
     };
     // Statics
     /**
@@ -1653,7 +1727,7 @@ var Button = /** @class */ (function (_super) {
      * @returns a new Button
      */
     Button.CreateImageButton = function (name, text, imageUrl) {
-        var result = new Button(name);
+        var result = new this(name);
         // Adding text
         var textBlock = new _textBlock__WEBPACK_IMPORTED_MODULE_3__["TextBlock"](name + "_button", text);
         textBlock.textWrapping = true;
@@ -1678,7 +1752,7 @@ var Button = /** @class */ (function (_super) {
      * @returns a new Button
      */
     Button.CreateImageOnlyButton = function (name, imageUrl) {
-        var result = new Button(name);
+        var result = new this(name);
         // Adding image
         var iconImage = new _image__WEBPACK_IMPORTED_MODULE_4__["Image"](name + "_icon", imageUrl);
         iconImage.stretch = _image__WEBPACK_IMPORTED_MODULE_4__["Image"].STRETCH_FILL;
@@ -1695,7 +1769,7 @@ var Button = /** @class */ (function (_super) {
      * @returns a new Button
      */
     Button.CreateSimpleButton = function (name, text) {
-        var result = new Button(name);
+        var result = new this(name);
         // Adding text
         var textBlock = new _textBlock__WEBPACK_IMPORTED_MODULE_3__["TextBlock"](name + "_button", text);
         textBlock.textWrapping = true;
@@ -1713,7 +1787,7 @@ var Button = /** @class */ (function (_super) {
      * @returns a new Button
      */
     Button.CreateImageWithCenterTextButton = function (name, text, imageUrl) {
-        var result = new Button(name);
+        var result = new this(name);
         // Adding image
         var iconImage = new _image__WEBPACK_IMPORTED_MODULE_4__["Image"](name + "_icon", imageUrl);
         iconImage.stretch = _image__WEBPACK_IMPORTED_MODULE_4__["Image"].STRETCH_FILL;
@@ -1752,6 +1826,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
 /* harmony import */ var _stackPanel__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./stackPanel */ "./2D/controls/stackPanel.ts");
 /* harmony import */ var _textBlock__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./textBlock */ "./2D/controls/textBlock.ts");
+
 
 
 
@@ -1878,8 +1953,8 @@ var Checkbox = /** @class */ (function (_super) {
     };
     // Events
     /** @hidden */
-    Checkbox.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
-        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex)) {
+    Checkbox.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
+        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
         }
         this.isChecked = !this.isChecked;
@@ -1911,6 +1986,18 @@ var Checkbox = /** @class */ (function (_super) {
         panel.addControl(header);
         return panel;
     };
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Checkbox.prototype, "thickness", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Checkbox.prototype, "checkSizeRatio", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Checkbox.prototype, "background", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Checkbox.prototype, "isChecked", null);
     return Checkbox;
 }(_control__WEBPACK_IMPORTED_MODULE_2__["Control"]));
 
@@ -1938,6 +2025,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _button__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./button */ "./2D/controls/button.ts");
 /* harmony import */ var _grid__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./grid */ "./2D/controls/grid.ts");
 /* harmony import */ var _controls_textBlock__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../controls/textBlock */ "./2D/controls/textBlock.ts");
+
 
 
 
@@ -2252,8 +2340,8 @@ var ColorPicker = /** @class */ (function (_super) {
         }
         return false;
     };
-    ColorPicker.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
-        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex)) {
+    ColorPicker.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
+        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
         }
         this._pointerIsDown = true;
@@ -2274,7 +2362,7 @@ var ColorPicker = /** @class */ (function (_super) {
         this._lastPointerDownID = pointerId;
         return true;
     };
-    ColorPicker.prototype._onPointerMove = function (target, coordinates, pointerId) {
+    ColorPicker.prototype._onPointerMove = function (target, coordinates, pointerId, pi) {
         // Only listen to pointer move events coming from the last pointer to click on the element (To support dual vr controller interaction)
         if (pointerId != this._lastPointerDownID) {
             return;
@@ -2286,12 +2374,16 @@ var ColorPicker = /** @class */ (function (_super) {
         if (this._pointerIsDown) {
             this._updateValueFromPointer(x, y);
         }
-        _super.prototype._onPointerMove.call(this, target, coordinates, pointerId);
+        _super.prototype._onPointerMove.call(this, target, coordinates, pointerId, pi);
     };
-    ColorPicker.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick) {
+    ColorPicker.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick, pi) {
         this._pointerIsDown = false;
         delete this._host._capturingControl[pointerId];
-        _super.prototype._onPointerUp.call(this, target, coordinates, pointerId, buttonIndex, notifyClick);
+        _super.prototype._onPointerUp.call(this, target, coordinates, pointerId, buttonIndex, notifyClick, pi);
+    };
+    ColorPicker.prototype._onCanvasBlur = function () {
+        this._forcePointerUp();
+        _super.prototype._onCanvasBlur.call(this);
     };
     /**
      * This function expands the color picker by creating a color picker dialog with manual
@@ -3300,6 +3392,18 @@ var ColorPicker = /** @class */ (function (_super) {
         });
     };
     ColorPicker._Epsilon = 0.000001;
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], ColorPicker.prototype, "value", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], ColorPicker.prototype, "width", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], ColorPicker.prototype, "height", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], ColorPicker.prototype, "size", null);
     return ColorPicker;
 }(_control__WEBPACK_IMPORTED_MODULE_2__["Control"]));
 
@@ -3323,6 +3427,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Misc_logger__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_logger__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
 /* harmony import */ var _measure__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../measure */ "./2D/measure.ts");
+
 
 
 
@@ -3621,12 +3726,14 @@ var Container = /** @class */ (function (_super) {
                     }
                 }
                 if (this.adaptWidthToChildren && computedWidth >= 0) {
+                    computedWidth += this.paddingLeftInPixels + this.paddingRightInPixels;
                     if (this.width !== computedWidth + "px") {
                         this.width = computedWidth + "px";
                         this._rebuildLayout = true;
                     }
                 }
                 if (this.adaptHeightToChildren && computedHeight >= 0) {
+                    computedHeight += this.paddingTopInPixels + this.paddingBottomInPixels;
                     if (this.height !== computedHeight + "px") {
                         this.height = computedHeight + "px";
                         this._rebuildLayout = true;
@@ -3682,7 +3789,7 @@ var Container = /** @class */ (function (_super) {
         }
     };
     /** @hidden */
-    Container.prototype._processPicking = function (x, y, type, pointerId, buttonIndex, deltaX, deltaY) {
+    Container.prototype._processPicking = function (x, y, pi, type, pointerId, buttonIndex, deltaX, deltaY) {
         if (!this._isEnabled || !this.isVisible || this.notRenderable) {
             return false;
         }
@@ -3692,7 +3799,7 @@ var Container = /** @class */ (function (_super) {
         // Checking backwards to pick closest first
         for (var index = this._children.length - 1; index >= 0; index--) {
             var child = this._children[index];
-            if (child._processPicking(x, y, type, pointerId, buttonIndex, deltaX, deltaY)) {
+            if (child._processPicking(x, y, pi, type, pointerId, buttonIndex, deltaX, deltaY)) {
                 if (child.hoverCursor) {
                     this._host._changeCursor(child.hoverCursor);
                 }
@@ -3702,12 +3809,29 @@ var Container = /** @class */ (function (_super) {
         if (!this.isHitTestVisible) {
             return false;
         }
-        return this._processObservables(type, x, y, pointerId, buttonIndex, deltaX, deltaY);
+        return this._processObservables(type, x, y, pi, pointerId, buttonIndex, deltaX, deltaY);
     };
     /** @hidden */
     Container.prototype._additionalProcessing = function (parentMeasure, context) {
         _super.prototype._additionalProcessing.call(this, parentMeasure, context);
         this._measureForChildren.copyFrom(this._currentMeasure);
+    };
+    /**
+    * Serializes the current control
+    * @param serializationObject defined the JSON serialized object
+    */
+    Container.prototype.serialize = function (serializationObject) {
+        _super.prototype.serialize.call(this, serializationObject);
+        if (!this.children.length) {
+            return;
+        }
+        serializationObject.children = [];
+        for (var _i = 0, _a = this.children; _i < _a.length; _i++) {
+            var child = _a[_i];
+            var childSerializationObject = {};
+            child.serialize(childSerializationObject);
+            serializationObject.children.push(childSerializationObject);
+        }
     };
     /** Releases associated resources */
     Container.prototype.dispose = function () {
@@ -3716,6 +3840,30 @@ var Container = /** @class */ (function (_super) {
             this.children[index].dispose();
         }
     };
+    /** @hidden */
+    Container.prototype._parseFromContent = function (serializedObject, host) {
+        _super.prototype._parseFromContent.call(this, serializedObject, host);
+        this._link(host);
+        if (!serializedObject.children) {
+            return;
+        }
+        for (var _i = 0, _a = serializedObject.children; _i < _a.length; _i++) {
+            var childData = _a[_i];
+            this.addControl(_control__WEBPACK_IMPORTED_MODULE_2__["Control"].Parse(childData, host));
+        }
+    };
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_logger__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Container.prototype, "maxLayoutCycle", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_logger__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Container.prototype, "adaptHeightToChildren", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_logger__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Container.prototype, "adaptWidthToChildren", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_logger__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Container.prototype, "background", null);
     return Container;
 }(_control__WEBPACK_IMPORTED_MODULE_2__["Control"]));
 
@@ -3734,11 +3882,14 @@ babylonjs_Misc_logger__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Control", function() { return Control; });
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/perfCounter");
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _valueAndUnit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../valueAndUnit */ "./2D/valueAndUnit.ts");
-/* harmony import */ var _measure__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../measure */ "./2D/measure.ts");
-/* harmony import */ var _math2D__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../math2D */ "./2D/math2D.ts");
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/perfCounter");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../valueAndUnit */ "./2D/valueAndUnit.ts");
+/* harmony import */ var _measure__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../measure */ "./2D/measure.ts");
+/* harmony import */ var _math2D__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../math2D */ "./2D/math2D.ts");
+
+
 
 
 
@@ -3766,15 +3917,15 @@ var Control = /** @class */ (function () {
         this._alphaSet = false;
         this._zIndex = 0;
         /** @hidden */
-        this._currentMeasure = _measure__WEBPACK_IMPORTED_MODULE_2__["Measure"].Empty();
+        this._currentMeasure = _measure__WEBPACK_IMPORTED_MODULE_3__["Measure"].Empty();
         this._fontFamily = "Arial";
         this._fontStyle = "";
         this._fontWeight = "";
-        this._fontSize = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_1__["ValueAndUnit"](18, _valueAndUnit__WEBPACK_IMPORTED_MODULE_1__["ValueAndUnit"].UNITMODE_PIXEL, false);
+        this._fontSize = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"](18, _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"].UNITMODE_PIXEL, false);
         /** @hidden */
-        this._width = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_1__["ValueAndUnit"](1, _valueAndUnit__WEBPACK_IMPORTED_MODULE_1__["ValueAndUnit"].UNITMODE_PERCENTAGE, false);
+        this._width = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"](1, _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"].UNITMODE_PERCENTAGE, false);
         /** @hidden */
-        this._height = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_1__["ValueAndUnit"](1, _valueAndUnit__WEBPACK_IMPORTED_MODULE_1__["ValueAndUnit"].UNITMODE_PERCENTAGE, false);
+        this._height = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"](1, _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"].UNITMODE_PERCENTAGE, false);
         this._color = "";
         this._style = null;
         /** @hidden */
@@ -3786,35 +3937,35 @@ var Control = /** @class */ (function () {
         /** @hidden */
         this._wasDirty = false;
         /** @hidden */
-        this._tempParentMeasure = _measure__WEBPACK_IMPORTED_MODULE_2__["Measure"].Empty();
+        this._tempParentMeasure = _measure__WEBPACK_IMPORTED_MODULE_3__["Measure"].Empty();
         /** @hidden */
-        this._prevCurrentMeasureTransformedIntoGlobalSpace = _measure__WEBPACK_IMPORTED_MODULE_2__["Measure"].Empty();
+        this._prevCurrentMeasureTransformedIntoGlobalSpace = _measure__WEBPACK_IMPORTED_MODULE_3__["Measure"].Empty();
         /** @hidden */
-        this._cachedParentMeasure = _measure__WEBPACK_IMPORTED_MODULE_2__["Measure"].Empty();
-        this._paddingLeft = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_1__["ValueAndUnit"](0);
-        this._paddingRight = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_1__["ValueAndUnit"](0);
-        this._paddingTop = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_1__["ValueAndUnit"](0);
-        this._paddingBottom = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_1__["ValueAndUnit"](0);
+        this._cachedParentMeasure = _measure__WEBPACK_IMPORTED_MODULE_3__["Measure"].Empty();
+        this._paddingLeft = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"](0);
+        this._paddingRight = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"](0);
+        this._paddingTop = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"](0);
+        this._paddingBottom = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"](0);
         /** @hidden */
-        this._left = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_1__["ValueAndUnit"](0);
+        this._left = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"](0);
         /** @hidden */
-        this._top = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_1__["ValueAndUnit"](0);
+        this._top = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"](0);
         this._scaleX = 1.0;
         this._scaleY = 1.0;
         this._rotation = 0;
         this._transformCenterX = 0.5;
         this._transformCenterY = 0.5;
         /** @hidden */
-        this._transformMatrix = _math2D__WEBPACK_IMPORTED_MODULE_3__["Matrix2D"].Identity();
+        this._transformMatrix = _math2D__WEBPACK_IMPORTED_MODULE_4__["Matrix2D"].Identity();
         /** @hidden */
-        this._invertTransformMatrix = _math2D__WEBPACK_IMPORTED_MODULE_3__["Matrix2D"].Identity();
+        this._invertTransformMatrix = _math2D__WEBPACK_IMPORTED_MODULE_4__["Matrix2D"].Identity();
         /** @hidden */
-        this._transformedPosition = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Vector2"].Zero();
+        this._transformedPosition = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector2"].Zero();
         this._isMatrixDirty = true;
         this._isVisible = true;
         this._isHighlighted = false;
         this._fontSet = false;
-        this._dummyVector2 = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Vector2"].Zero();
+        this._dummyVector2 = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector2"].Zero();
         this._downCount = 0;
         this._enterCount = -1;
         this._doNotRender = false;
@@ -3861,54 +4012,62 @@ var Control = /** @class */ (function () {
         /** Gets or sets the cursor to use when the control is hovered */
         this.hoverCursor = "";
         /** @hidden */
-        this._linkOffsetX = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_1__["ValueAndUnit"](0);
+        this._linkOffsetX = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"](0);
         /** @hidden */
-        this._linkOffsetY = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_1__["ValueAndUnit"](0);
+        this._linkOffsetY = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"](0);
         /**
         * An event triggered when pointer wheel is scrolled
         */
-        this.onWheelObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onWheelObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
         /**
         * An event triggered when the pointer move over the control.
         */
-        this.onPointerMoveObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onPointerMoveObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
         /**
         * An event triggered when the pointer move out of the control.
         */
-        this.onPointerOutObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onPointerOutObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
         /**
         * An event triggered when the pointer taps the control
         */
-        this.onPointerDownObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onPointerDownObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
         /**
         * An event triggered when pointer up
         */
-        this.onPointerUpObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onPointerUpObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
         /**
         * An event triggered when a control is clicked on
         */
-        this.onPointerClickObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onPointerClickObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
         /**
         * An event triggered when pointer enters the control
         */
-        this.onPointerEnterObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onPointerEnterObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
         /**
         * An event triggered when the control is marked as dirty
         */
-        this.onDirtyObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onDirtyObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
         /**
          * An event triggered before drawing the control
          */
-        this.onBeforeDrawObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onBeforeDrawObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
         /**
          * An event triggered after the control was drawn
          */
-        this.onAfterDrawObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onAfterDrawObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
         /**
         * An event triggered when the control has been disposed
         */
-        this.onDisposeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this._tmpMeasureA = new _measure__WEBPACK_IMPORTED_MODULE_2__["Measure"](0, 0, 0, 0);
+        this.onDisposeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        /**
+         * Gets or sets a fixed ratio for this control.
+         * When different from 0, the ratio is used to compute the "second" dimension.
+         * The first dimension used in the computation is the last one set (by setting width / widthInPixels or height / heightInPixels), and the
+         * second dimension is computed as first dimension * fixedRatio
+         */
+        this.fixedRatio = 0;
+        this._fixedRatioMasterIsWidth = true;
+        this._tmpMeasureA = new _measure__WEBPACK_IMPORTED_MODULE_3__["Measure"](0, 0, 0, 0);
     }
     Object.defineProperty(Control.prototype, "shadowOffsetX", {
         /** Gets or sets a value indicating the offset to apply on X axis to render the shadow */
@@ -4175,6 +4334,7 @@ var Control = /** @class */ (function () {
             return this._width.toString(this._host);
         },
         set: function (value) {
+            this._fixedRatioMasterIsWidth = true;
             if (this._width.toString(this._host) === value) {
                 return;
             }
@@ -4197,6 +4357,7 @@ var Control = /** @class */ (function () {
             if (isNaN(value)) {
                 return;
             }
+            this._fixedRatioMasterIsWidth = true;
             this.width = value + "px";
         },
         enumerable: false,
@@ -4211,6 +4372,7 @@ var Control = /** @class */ (function () {
             return this._height.toString(this._host);
         },
         set: function (value) {
+            this._fixedRatioMasterIsWidth = false;
             if (this._height.toString(this._host) === value) {
                 return;
             }
@@ -4233,6 +4395,7 @@ var Control = /** @class */ (function () {
             if (isNaN(value)) {
                 return;
             }
+            this._fixedRatioMasterIsWidth = false;
             this.height = value + "px";
         },
         enumerable: false,
@@ -4717,7 +4880,7 @@ var Control = /** @class */ (function () {
         configurable: true
     });
     Object.defineProperty(Control.prototype, "isEnabled", {
-        /** Gets or sets if control is Enabled*/
+        /** Gets or sets if control is Enabled */
         get: function () {
             return this._isEnabled;
         },
@@ -4732,7 +4895,7 @@ var Control = /** @class */ (function () {
         configurable: true
     });
     Object.defineProperty(Control.prototype, "disabledColor", {
-        /** Gets or sets background color of control if it's disabled*/
+        /** Gets or sets background color of control if it's disabled */
         get: function () {
             return this._disabledColor;
         },
@@ -4747,7 +4910,7 @@ var Control = /** @class */ (function () {
         configurable: true
     });
     Object.defineProperty(Control.prototype, "disabledColorItem", {
-        /** Gets or sets front color of control if it's disabled*/
+        /** Gets or sets front color of control if it's disabled */
         get: function () {
             return this._disabledColorItem;
         },
@@ -4804,7 +4967,7 @@ var Control = /** @class */ (function () {
      * @returns the new coordinates in local space
      */
     Control.prototype.getLocalCoordinates = function (globalCoordinates) {
-        var result = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Vector2"].Zero();
+        var result = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector2"].Zero();
         this.getLocalCoordinatesToRef(globalCoordinates, result);
         return result;
     };
@@ -4825,7 +4988,7 @@ var Control = /** @class */ (function () {
      * @returns the new coordinates in parent local space
      */
     Control.prototype.getParentLocalCoordinates = function (globalCoordinates) {
-        var result = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Vector2"].Zero();
+        var result = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector2"].Zero();
         result.x = globalCoordinates.x - this._cachedParentMeasure.left;
         result.y = globalCoordinates.y - this._cachedParentMeasure.top;
         return result;
@@ -4837,13 +5000,13 @@ var Control = /** @class */ (function () {
      */
     Control.prototype.moveToVector3 = function (position, scene) {
         if (!this._host || this.parent !== this._host._rootContainer) {
-            babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Tools"].Error("Cannot move a control to a vector3 if the control is not at root level");
+            babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("Cannot move a control to a vector3 if the control is not at root level");
             return;
         }
         this.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
         this.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
         var globalViewport = this._host._getGlobalViewport(scene);
-        var projectedPosition = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Project(position, babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Matrix"].Identity(), scene.getTransformMatrix(), globalViewport);
+        var projectedPosition = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Project(position, babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Matrix"].Identity(), scene.getTransformMatrix(), globalViewport);
         this._moveToProjectedPosition(projectedPosition);
         if (projectedPosition.z < 0 || projectedPosition.z > 1) {
             this.notRenderable = true;
@@ -4880,7 +5043,7 @@ var Control = /** @class */ (function () {
     Control.prototype.linkWithMesh = function (mesh) {
         if (!this._host || this.parent && this.parent !== this._host._rootContainer) {
             if (mesh) {
-                babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Tools"].Error("Cannot link a control to a mesh if the control is not at root level");
+                babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("Cannot link a control to a mesh if the control is not at root level");
             }
             return;
         }
@@ -4899,6 +5062,42 @@ var Control = /** @class */ (function () {
         this.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
         this._linkedMesh = mesh;
         this._host._linkedControls.push(this);
+    };
+    /**
+    * Shorthand funtion to set the top, right, bottom, and left padding values on the control.
+    * @param { string | number} paddingTop - The value of the top padding.
+    * @param { string | number} paddingRight - The value of the right padding. If omitted, top is used.
+    * @param { string | number} paddingBottom - The value of the bottom padding. If omitted, top is used.
+    * @param { string | number} paddingLeft - The value of the left padding. If omitted, right is used.
+    * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+    */
+    Control.prototype.setPadding = function (paddingTop, paddingRight, paddingBottom, paddingLeft) {
+        var top = paddingTop;
+        var right = paddingRight !== null && paddingRight !== void 0 ? paddingRight : top;
+        var bottom = paddingBottom !== null && paddingBottom !== void 0 ? paddingBottom : top;
+        var left = paddingLeft !== null && paddingLeft !== void 0 ? paddingLeft : right;
+        this.paddingTop = top;
+        this.paddingRight = right;
+        this.paddingBottom = bottom;
+        this.paddingLeft = left;
+    };
+    /**
+     * Shorthand funtion to set the top, right, bottom, and left padding values in pixels on the control.
+     * @param { number} paddingTop - The value in pixels of the top padding.
+     * @param { number} paddingRight - The value in pixels of the right padding. If omitted, top is used.
+     * @param { number} paddingBottom - The value in pixels of the bottom padding. If omitted, top is used.
+     * @param { number} paddingLeft - The value in pixels of the left padding. If omitted, right is used.
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     */
+    Control.prototype.setPaddingInPixels = function (paddingTop, paddingRight, paddingBottom, paddingLeft) {
+        var top = paddingTop;
+        var right = paddingRight !== null && paddingRight !== void 0 ? paddingRight : top;
+        var bottom = paddingBottom !== null && paddingBottom !== void 0 ? paddingBottom : top;
+        var left = paddingLeft !== null && paddingLeft !== void 0 ? paddingLeft : right;
+        this.paddingTopInPixels = top;
+        this.paddingRightInPixels = right;
+        this.paddingBottomInPixels = bottom;
+        this.paddingLeftInPixels = left;
     };
     /** @hidden */
     Control.prototype._moveToProjectedPosition = function (projectedPosition) {
@@ -4965,7 +5164,7 @@ var Control = /** @class */ (function () {
             this._currentMeasure.transformToRef(this._transformMatrix, this._tmpMeasureA);
             // get the boudning box of the current measure and last frames measure in global space and invalidate it
             // the previous measure is used to properly clear a control that is scaled down
-            _measure__WEBPACK_IMPORTED_MODULE_2__["Measure"].CombineToRef(this._tmpMeasureA, this._prevCurrentMeasureTransformedIntoGlobalSpace, this._tmpMeasureA);
+            _measure__WEBPACK_IMPORTED_MODULE_3__["Measure"].CombineToRef(this._tmpMeasureA, this._prevCurrentMeasureTransformedIntoGlobalSpace, this._tmpMeasureA);
             if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                 // Expand rect based on shadows
                 var shadowOffsetX = this.shadowOffsetX;
@@ -5031,7 +5230,7 @@ var Control = /** @class */ (function () {
             this._cachedOffsetY = offsetY;
             this._isMatrixDirty = false;
             this._flagDescendantsAsMatrixDirty();
-            _math2D__WEBPACK_IMPORTED_MODULE_3__["Matrix2D"].ComposeToRef(-offsetX, -offsetY, this._rotation, this._scaleX, this._scaleY, this.parent ? this.parent._transformMatrix : null, this._transformMatrix);
+            _math2D__WEBPACK_IMPORTED_MODULE_4__["Matrix2D"].ComposeToRef(-offsetX, -offsetY, this._rotation, this._scaleX, this._scaleY, this.parent ? this.parent._transformMatrix : null, this._transformMatrix);
             this._transformMatrix.invertToRef(this._invertTransformMatrix);
         }
     };
@@ -5079,7 +5278,7 @@ var Control = /** @class */ (function () {
         }
         if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
             this.host._numLayoutCalls++;
-            this._currentMeasure.transformToRef(this._transformMatrix, this._prevCurrentMeasureTransformedIntoGlobalSpace);
+            this._currentMeasure.addAndTransformToRef(this._transformMatrix, -this.paddingLeftInPixels | 0, -this.paddingTopInPixels | 0, this.paddingRightInPixels | 0, this.paddingBottomInPixels | 0, this._prevCurrentMeasureTransformedIntoGlobalSpace);
             context.save();
             this._applyStates(context);
             var rebuildCount = 0;
@@ -5089,7 +5288,7 @@ var Control = /** @class */ (function () {
                 rebuildCount++;
             } while (this._rebuildLayout && rebuildCount < 3);
             if (rebuildCount >= 3) {
-                babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Logger"].Error("Layout cycle detected in GUI (Control name=" + this.name + ", uniqueId=" + this.uniqueId + ")");
+                babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Logger"].Error("Layout cycle detected in GUI (Control name=" + this.name + ", uniqueId=" + this.uniqueId + ")");
             }
             context.restore();
             this.invalidateRect();
@@ -5154,6 +5353,14 @@ var Control = /** @class */ (function () {
         }
         else {
             this._currentMeasure.height *= this._height.getValue(this._host);
+        }
+        if (this.fixedRatio !== 0) {
+            if (this._fixedRatioMasterIsWidth) {
+                this._currentMeasure.height = this._currentMeasure.width * this.fixedRatio;
+            }
+            else {
+                this._currentMeasure.width = this._currentMeasure.height * this.fixedRatio;
+            }
         }
     };
     /** @hidden */
@@ -5249,7 +5456,7 @@ var Control = /** @class */ (function () {
             // Rotate the invalidated rect into the control's space
             invalidatedRectangle.transformToRef(this._invertTransformMatrix, this._tmpMeasureA);
             // Get the intersection of the rect in context space and the current context
-            var intersection = new _measure__WEBPACK_IMPORTED_MODULE_2__["Measure"](0, 0, 0, 0);
+            var intersection = new _measure__WEBPACK_IMPORTED_MODULE_3__["Measure"](0, 0, 0, 0);
             intersection.left = Math.max(this._tmpMeasureA.left, this._currentMeasure.left);
             intersection.top = Math.max(this._tmpMeasureA.top, this._currentMeasure.top);
             intersection.width = Math.min(this._tmpMeasureA.left + this._tmpMeasureA.width, this._currentMeasure.left + this._currentMeasure.width) - intersection.left;
@@ -5339,7 +5546,7 @@ var Control = /** @class */ (function () {
         return true;
     };
     /** @hidden */
-    Control.prototype._processPicking = function (x, y, type, pointerId, buttonIndex, deltaX, deltaY) {
+    Control.prototype._processPicking = function (x, y, pi, type, pointerId, buttonIndex, deltaX, deltaY) {
         if (!this._isEnabled) {
             return false;
         }
@@ -5349,18 +5556,18 @@ var Control = /** @class */ (function () {
         if (!this.contains(x, y)) {
             return false;
         }
-        this._processObservables(type, x, y, pointerId, buttonIndex, deltaX, deltaY);
+        this._processObservables(type, x, y, pi, pointerId, buttonIndex, deltaX, deltaY);
         return true;
     };
     /** @hidden */
-    Control.prototype._onPointerMove = function (target, coordinates, pointerId) {
-        var canNotify = this.onPointerMoveObservable.notifyObservers(coordinates, -1, target, this);
+    Control.prototype._onPointerMove = function (target, coordinates, pointerId, pi) {
+        var canNotify = this.onPointerMoveObservable.notifyObservers(coordinates, -1, target, this, pi);
         if (canNotify && this.parent != null) {
-            this.parent._onPointerMove(target, coordinates, pointerId);
+            this.parent._onPointerMove(target, coordinates, pointerId, pi);
         }
     };
     /** @hidden */
-    Control.prototype._onPointerEnter = function (target) {
+    Control.prototype._onPointerEnter = function (target, pi) {
         if (!this._isEnabled) {
             return false;
         }
@@ -5371,14 +5578,14 @@ var Control = /** @class */ (function () {
             this._enterCount = 0;
         }
         this._enterCount++;
-        var canNotify = this.onPointerEnterObservable.notifyObservers(this, -1, target, this);
+        var canNotify = this.onPointerEnterObservable.notifyObservers(this, -1, target, this, pi);
         if (canNotify && this.parent != null) {
-            this.parent._onPointerEnter(target);
+            this.parent._onPointerEnter(target, pi);
         }
         return true;
     };
     /** @hidden */
-    Control.prototype._onPointerOut = function (target, force) {
+    Control.prototype._onPointerOut = function (target, pi, force) {
         if (force === void 0) { force = false; }
         if (!force && (!this._isEnabled || target === this)) {
             return;
@@ -5386,30 +5593,30 @@ var Control = /** @class */ (function () {
         this._enterCount = 0;
         var canNotify = true;
         if (!target.isAscendant(this)) {
-            canNotify = this.onPointerOutObservable.notifyObservers(this, -1, target, this);
+            canNotify = this.onPointerOutObservable.notifyObservers(this, -1, target, this, pi);
         }
         if (canNotify && this.parent != null) {
-            this.parent._onPointerOut(target, force);
+            this.parent._onPointerOut(target, pi, force);
         }
     };
     /** @hidden */
-    Control.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
+    Control.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
         // Prevent pointerout to lose control context.
         // Event redundancy is checked inside the function.
-        this._onPointerEnter(this);
+        this._onPointerEnter(this, pi);
         if (this._downCount !== 0) {
             return false;
         }
         this._downCount++;
         this._downPointerIds[pointerId] = true;
-        var canNotify = this.onPointerDownObservable.notifyObservers(new _math2D__WEBPACK_IMPORTED_MODULE_3__["Vector2WithInfo"](coordinates, buttonIndex), -1, target, this);
+        var canNotify = this.onPointerDownObservable.notifyObservers(new _math2D__WEBPACK_IMPORTED_MODULE_4__["Vector2WithInfo"](coordinates, buttonIndex), -1, target, this, pi);
         if (canNotify && this.parent != null) {
-            this.parent._onPointerDown(target, coordinates, pointerId, buttonIndex);
+            this.parent._onPointerDown(target, coordinates, pointerId, buttonIndex, pi);
         }
         return true;
     };
     /** @hidden */
-    Control.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick) {
+    Control.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick, pi) {
         if (!this._isEnabled) {
             return;
         }
@@ -5417,22 +5624,22 @@ var Control = /** @class */ (function () {
         delete this._downPointerIds[pointerId];
         var canNotifyClick = notifyClick;
         if (notifyClick && (this._enterCount > 0 || this._enterCount === -1)) {
-            canNotifyClick = this.onPointerClickObservable.notifyObservers(new _math2D__WEBPACK_IMPORTED_MODULE_3__["Vector2WithInfo"](coordinates, buttonIndex), -1, target, this);
+            canNotifyClick = this.onPointerClickObservable.notifyObservers(new _math2D__WEBPACK_IMPORTED_MODULE_4__["Vector2WithInfo"](coordinates, buttonIndex), -1, target, this, pi);
         }
-        var canNotify = this.onPointerUpObservable.notifyObservers(new _math2D__WEBPACK_IMPORTED_MODULE_3__["Vector2WithInfo"](coordinates, buttonIndex), -1, target, this);
+        var canNotify = this.onPointerUpObservable.notifyObservers(new _math2D__WEBPACK_IMPORTED_MODULE_4__["Vector2WithInfo"](coordinates, buttonIndex), -1, target, this, pi);
         if (canNotify && this.parent != null) {
-            this.parent._onPointerUp(target, coordinates, pointerId, buttonIndex, canNotifyClick);
+            this.parent._onPointerUp(target, coordinates, pointerId, buttonIndex, canNotifyClick, pi);
         }
     };
     /** @hidden */
     Control.prototype._forcePointerUp = function (pointerId) {
         if (pointerId === void 0) { pointerId = null; }
         if (pointerId !== null) {
-            this._onPointerUp(this, babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Vector2"].Zero(), pointerId, 0, true);
+            this._onPointerUp(this, babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector2"].Zero(), pointerId, 0, true);
         }
         else {
             for (var key in this._downPointerIds) {
-                this._onPointerUp(this, babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Vector2"].Zero(), +key, 0, true);
+                this._onPointerUp(this, babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector2"].Zero(), +key, 0, true);
             }
         }
     };
@@ -5441,43 +5648,45 @@ var Control = /** @class */ (function () {
         if (!this._isEnabled) {
             return;
         }
-        var canNotify = this.onWheelObservable.notifyObservers(new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Vector2"](deltaX, deltaY));
+        var canNotify = this.onWheelObservable.notifyObservers(new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector2"](deltaX, deltaY));
         if (canNotify && this.parent != null) {
             this.parent._onWheelScroll(deltaX, deltaY);
         }
     };
     /** @hidden */
-    Control.prototype._processObservables = function (type, x, y, pointerId, buttonIndex, deltaX, deltaY) {
+    Control.prototype._onCanvasBlur = function () { };
+    /** @hidden */
+    Control.prototype._processObservables = function (type, x, y, pi, pointerId, buttonIndex, deltaX, deltaY) {
         if (!this._isEnabled) {
             return false;
         }
         this._dummyVector2.copyFromFloats(x, y);
-        if (type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERMOVE) {
-            this._onPointerMove(this, this._dummyVector2, pointerId);
+        if (type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERMOVE) {
+            this._onPointerMove(this, this._dummyVector2, pointerId, pi);
             var previousControlOver = this._host._lastControlOver[pointerId];
             if (previousControlOver && previousControlOver !== this) {
-                previousControlOver._onPointerOut(this);
+                previousControlOver._onPointerOut(this, pi);
             }
             if (previousControlOver !== this) {
-                this._onPointerEnter(this);
+                this._onPointerEnter(this, pi);
             }
             this._host._lastControlOver[pointerId] = this;
             return true;
         }
-        if (type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERDOWN) {
-            this._onPointerDown(this, this._dummyVector2, pointerId, buttonIndex);
+        if (type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERDOWN) {
+            this._onPointerDown(this, this._dummyVector2, pointerId, buttonIndex, pi);
             this._host._registerLastControlDown(this, pointerId);
             this._host._lastPickedControl = this;
             return true;
         }
-        if (type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERUP) {
+        if (type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERUP) {
             if (this._host._lastControlDown[pointerId]) {
-                this._host._lastControlDown[pointerId]._onPointerUp(this, this._dummyVector2, pointerId, buttonIndex, true);
+                this._host._lastControlDown[pointerId]._onPointerUp(this, this._dummyVector2, pointerId, buttonIndex, true, pi);
             }
             delete this._host._lastControlDown[pointerId];
             return true;
         }
-        if (type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERWHEEL) {
+        if (type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERWHEEL) {
             if (this._host._lastControlOver[pointerId]) {
                 this._host._lastControlOver[pointerId]._onWheelScroll(deltaX, deltaY);
                 return true;
@@ -5496,6 +5705,36 @@ var Control = /** @class */ (function () {
             this._font = this._fontStyle + " " + this._fontWeight + " " + this.fontSizeInPixels + "px " + this._fontFamily;
         }
         this._fontOffset = Control._GetFontOffset(this._font);
+    };
+    /**
+     * Serializes the current control
+     * @param serializationObject defined the JSON serialized object
+     */
+    Control.prototype.serialize = function (serializationObject) {
+        babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this, serializationObject);
+        serializationObject.name = this.name;
+        serializationObject.className = this.getClassName();
+        if (this._font) {
+            serializationObject.fontFamily = this.fontFamily;
+            serializationObject.fontSize = this.fontSize;
+            serializationObject.fontWeight = this.fontWeight;
+            serializationObject.fontStyle = this.fontStyle;
+        }
+    };
+    /** @hidden */
+    Control.prototype._parseFromContent = function (serializedObject, host) {
+        if (serializedObject.fontFamily) {
+            this.fontFamily = serializedObject.fontFamily;
+        }
+        if (serializedObject.fontSize) {
+            this.fontSize = serializedObject.fontSize;
+        }
+        if (serializedObject.fontWeight) {
+            this.fontWeight = serializedObject.fontWeight;
+        }
+        if (serializedObject.fontStyle) {
+            this.fontStyle = serializedObject.fontStyle;
+        }
     };
     /** Releases associated resources */
     Control.prototype.dispose = function () {
@@ -5589,6 +5828,7 @@ var Control = /** @class */ (function () {
         block.style.height = "0px";
         block.style.verticalAlign = "bottom";
         var div = document.createElement("div");
+        div.style.whiteSpace = "nowrap";
         div.appendChild(text);
         div.appendChild(block);
         document.body.appendChild(div);
@@ -5606,6 +5846,19 @@ var Control = /** @class */ (function () {
         Control._FontHeightSizes[font] = result;
         return result;
     };
+    /**
+     * Creates a Control from parsed data
+     * @param serializedObject defines parsed data
+     * @param host defines the hosting AdvancedDynamicTexture
+     * @returns a new Control
+     */
+    Control.Parse = function (serializedObject, host) {
+        var controlType = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Tools"].Instantiate("BABYLON.GUI." + serializedObject.className);
+        var control = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Parse(function () { return new controlType(); }, serializedObject, null);
+        control.name = serializedObject.name;
+        control._parseFromContent(serializedObject, host);
+        return control;
+    };
     /** @hidden */
     Control.drawEllipse = function (x, y, width, height, context) {
         context.translate(x, y);
@@ -5620,7 +5873,7 @@ var Control = /** @class */ (function () {
      * Gets or sets a boolean indicating if alpha must be an inherited value (false by default)
      */
     Control.AllowAlphaInheritance = false;
-    Control._ClipMeasure = new _measure__WEBPACK_IMPORTED_MODULE_2__["Measure"](0, 0, 0, 0);
+    Control._ClipMeasure = new _measure__WEBPACK_IMPORTED_MODULE_3__["Measure"](0, 0, 0, 0);
     // Statics
     Control._HORIZONTAL_ALIGNMENT_LEFT = 0;
     Control._HORIZONTAL_ALIGNMENT_RIGHT = 1;
@@ -5640,10 +5893,130 @@ var Control = /** @class */ (function () {
      * @hidden
      */
     Control.AddHeader = function () { };
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "metadata", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "isHitTestVisible", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "isPointerBlocker", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "isFocusInvisible", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "clipChildren", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "clipContent", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "useBitmapCache", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "shadowOffsetX", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "shadowOffsetY", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "shadowBlur", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "shadowColor", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "hoverCursor", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "fontOffset", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "alpha", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "scaleX", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "scaleY", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "rotation", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "transformCenterY", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "transformCenterX", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "horizontalAlignment", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "verticalAlignment", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "fixedRatio", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "width", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "height", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "style", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "color", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "zIndex", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "notRenderable", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "isVisible", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "paddingLeft", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "paddingRight", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "paddingTop", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "paddingBottom", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "left", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "top", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "linkOffsetX", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "linkOffsetY", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "isEnabled", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "disabledColor", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "disabledColorItem", null);
     return Control;
 }());
 
-babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["_TypeStore"].RegisteredTypes["BABYLON.GUI.Control"] = Control;
+babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.GUI.Control"] = Control;
 
 
 /***/ }),
@@ -5662,6 +6035,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
 /* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__);
+
 
 
 
@@ -5872,6 +6246,36 @@ var DisplayGrid = /** @class */ (function (_super) {
     DisplayGrid.prototype._getTypeName = function () {
         return "DisplayGrid";
     };
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__["serialize"])()
+    ], DisplayGrid.prototype, "displayMinorLines", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__["serialize"])()
+    ], DisplayGrid.prototype, "displayMajorLines", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__["serialize"])()
+    ], DisplayGrid.prototype, "background", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__["serialize"])()
+    ], DisplayGrid.prototype, "cellWidth", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__["serialize"])()
+    ], DisplayGrid.prototype, "cellHeight", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__["serialize"])()
+    ], DisplayGrid.prototype, "minorLineTickness", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__["serialize"])()
+    ], DisplayGrid.prototype, "minorLineColor", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__["serialize"])()
+    ], DisplayGrid.prototype, "majorLineTickness", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__["serialize"])()
+    ], DisplayGrid.prototype, "majorLineColor", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__["serialize"])()
+    ], DisplayGrid.prototype, "majorLineFrequency", null);
     return DisplayGrid;
 }(_control__WEBPACK_IMPORTED_MODULE_1__["Control"]));
 
@@ -5895,6 +6299,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
 /* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_3__);
+
 
 
 
@@ -5968,10 +6373,120 @@ var Ellipse = /** @class */ (function (_super) {
         _control__WEBPACK_IMPORTED_MODULE_2__["Control"].drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, this._currentMeasure.width / 2, this._currentMeasure.height / 2, context);
         context.clip();
     };
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_3__["serialize"])()
+    ], Ellipse.prototype, "thickness", null);
     return Ellipse;
 }(_container__WEBPACK_IMPORTED_MODULE_1__["Container"]));
 
 babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_3__["_TypeStore"].RegisteredTypes["BABYLON.GUI.Ellipse"] = Ellipse;
+
+
+/***/ }),
+
+/***/ "./2D/controls/focusableButton.ts":
+/*!****************************************!*\
+  !*** ./2D/controls/focusableButton.ts ***!
+  \****************************************/
+/*! exports provided: FocusableButton */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FocusableButton", function() { return FocusableButton; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var _button__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./button */ "./2D/controls/button.ts");
+/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Misc/perfCounter");
+/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__);
+
+
+
+
+/**
+ * Class used to create a focusable button that can easily handle keyboard events
+ */
+var FocusableButton = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(FocusableButton, _super);
+    function FocusableButton(name) {
+        var _this = _super.call(this, name) || this;
+        _this.name = name;
+        /** Highlight color when button is focused */
+        _this.focusedColor = null;
+        _this._isFocused = false;
+        _this._unfocusedColor = null;
+        /** Observable raised when the control gets the focus */
+        _this.onFocusObservable = new babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__["Observable"]();
+        /** Observable raised when the control loses the focus */
+        _this.onBlurObservable = new babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__["Observable"]();
+        /** Observable raised when a key event was processed */
+        _this.onKeyboardEventProcessedObservable = new babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__["Observable"]();
+        _this._unfocusedColor = _this.color;
+        return _this;
+    }
+    /** @hidden */
+    FocusableButton.prototype.onBlur = function () {
+        if (this._isFocused) {
+            this._isFocused = false;
+            if (this.focusedColor && this._unfocusedColor != null) {
+                // Set color back to saved unfocused color
+                this.color = this._unfocusedColor;
+            }
+            this.onBlurObservable.notifyObservers(this);
+        }
+    };
+    /** @hidden */
+    FocusableButton.prototype.onFocus = function () {
+        this._isFocused = true;
+        if (this.focusedColor) {
+            // Save the unfocused color
+            this._unfocusedColor = this.color;
+            this.color = this.focusedColor;
+        }
+        this.onFocusObservable.notifyObservers(this);
+    };
+    /**
+     * Function called to get the list of controls that should not steal the focus from this control
+     * @returns an array of controls
+     */
+    FocusableButton.prototype.keepsFocusWith = function () {
+        return null;
+    };
+    /**
+     * Function to focus a button programmatically
+     */
+    FocusableButton.prototype.focus = function () {
+        this._host.moveFocusToControl(this);
+    };
+    /**
+     * Function to unfocus a button programmatically
+     */
+    FocusableButton.prototype.blur = function () {
+        this._host.focusedControl = null;
+    };
+    /**
+     * Handles the keyboard event
+     * @param evt Defines the KeyboardEvent
+     */
+    FocusableButton.prototype.processKeyboard = function (evt) {
+        this.onKeyboardEventProcessedObservable.notifyObservers(evt, -1, this);
+    };
+    /** @hidden */
+    FocusableButton.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
+        // Clicking on button should focus
+        this.focus();
+        return _super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi);
+    };
+    /** @hidden */
+    FocusableButton.prototype.displose = function () {
+        _super.prototype.dispose.call(this);
+        this.onBlurObservable.clear();
+        this.onFocusObservable.clear();
+        this.onKeyboardEventProcessedObservable.clear();
+    };
+    return FocusableButton;
+}(_button__WEBPACK_IMPORTED_MODULE_1__["Button"]));
+
+babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__["_TypeStore"].RegisteredTypes["BABYLON.GUI.FocusableButton"] = FocusableButton;
 
 
 /***/ }),
@@ -6456,6 +6971,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 /**
  * Class used to create 2D images
  */
@@ -6484,6 +7000,7 @@ var Image = /** @class */ (function (_super) {
         _this._cellHeight = 0;
         _this._cellId = -1;
         _this._populateNinePatchSlicesFromImage = false;
+        _this._imageDataCache = { data: null, key: "" };
         /**
          * Observable notified when the content is loaded
          */
@@ -6731,14 +7248,14 @@ var Image = /** @class */ (function (_super) {
     /** @hidden */
     Image.prototype._rotate90 = function (n, preserveProperties) {
         if (preserveProperties === void 0) { preserveProperties = false; }
-        var canvas = document.createElement('canvas');
-        var context = canvas.getContext('2d');
+        var canvas = document.createElement("canvas");
+        var context = canvas.getContext("2d");
         var width = this._domImage.width;
         var height = this._domImage.height;
         canvas.width = height;
         canvas.height = width;
         context.translate(canvas.width / 2, canvas.height / 2);
-        context.rotate(n * Math.PI / 2);
+        context.rotate((n * Math.PI) / 2);
         context.drawImage(this._domImage, 0, 0, width, height, -width / 2, -height / 2, width, height);
         var dataUrl = canvas.toDataURL("image/jpg");
         var rotatedImage = new Image(this.name + "rotated", dataUrl);
@@ -6750,6 +7267,7 @@ var Image = /** @class */ (function (_super) {
             rotatedImage._cellHeight = n % 1 ? this._cellWidth : this._cellHeight;
         }
         this._handleRotationForSVGImage(this, rotatedImage, n);
+        this._imageDataCache.data = null;
         return rotatedImage;
     };
     Image.prototype._handleRotationForSVGImage = function (srcImage, dstImage, n) {
@@ -6806,6 +7324,7 @@ var Image = /** @class */ (function (_super) {
             var _this = this;
             this._domImage = value;
             this._loaded = false;
+            this._imageDataCache.data = null;
             if (this._domImage.width) {
                 this._onImageLoaded();
             }
@@ -6819,6 +7338,7 @@ var Image = /** @class */ (function (_super) {
         configurable: true
     });
     Image.prototype._onImageLoaded = function () {
+        this._imageDataCache.data = null;
         this._imageWidth = this._domImage.width;
         this._imageHeight = this._domImage.height;
         this._loaded = true;
@@ -6833,10 +7353,10 @@ var Image = /** @class */ (function (_super) {
     };
     Image.prototype._extractNinePatchSliceDataFromImage = function () {
         if (!this._workingCanvas) {
-            this._workingCanvas = document.createElement('canvas');
+            this._workingCanvas = document.createElement("canvas");
         }
         var canvas = this._workingCanvas;
-        var context = canvas.getContext('2d');
+        var context = canvas.getContext("2d");
         var width = this._domImage.width;
         var height = this._domImage.height;
         canvas.width = width;
@@ -6874,6 +7394,12 @@ var Image = /** @class */ (function (_super) {
     };
     Object.defineProperty(Image.prototype, "source", {
         /**
+         * Gets the image source url
+         */
+        get: function () {
+            return this._source;
+        },
+        /**
          * Gets or sets image source url
          */
         set: function (value) {
@@ -6883,6 +7409,7 @@ var Image = /** @class */ (function (_super) {
             }
             this._loaded = false;
             this._source = value;
+            this._imageDataCache.data = null;
             if (value) {
                 value = this._svgCheck(value);
             }
@@ -6903,10 +7430,10 @@ var Image = /** @class */ (function (_super) {
      */
     Image.prototype._svgCheck = function (value) {
         var _this = this;
-        if (window.SVGSVGElement && (value.search(/.svg#/gi) !== -1) && (value.indexOf("#") === value.lastIndexOf("#"))) {
+        if (window.SVGSVGElement && value.search(/.svg#/gi) !== -1 && value.indexOf("#") === value.lastIndexOf("#")) {
             this._isSVG = true;
-            var svgsrc = value.split('#')[0];
-            var elemid = value.split('#')[1];
+            var svgsrc = value.split("#")[0];
+            var elemid = value.split("#")[1];
             // check if object alr exist in document
             var svgExist = document.body.querySelector('object[data="' + svgsrc + '"]');
             if (svgExist) {
@@ -6979,8 +7506,8 @@ var Image = /** @class */ (function (_super) {
                 // compute source coordinates and dimensions
                 this.sourceLeft = ((elem_matrix_a * elem_bbox.x + elem_matrix_e) * docwidth) / vb_width;
                 this.sourceTop = ((elem_matrix_d * elem_bbox.y + elem_matrix_f) * docheight) / vb_height;
-                this.sourceWidth = (elem_bbox.width * elem_matrix_a) * (docwidth / vb_width);
-                this.sourceHeight = (elem_bbox.height * elem_matrix_d) * (docheight / vb_height);
+                this.sourceWidth = elem_bbox.width * elem_matrix_a * (docwidth / vb_width);
+                this.sourceHeight = elem_bbox.height * elem_matrix_d * (docheight / vb_height);
                 this._svgAttributesComputationCompleted = true;
                 this.onSVGAttributesComputedObservable.notifyObservers(this);
             }
@@ -7053,14 +7580,19 @@ var Image = /** @class */ (function (_super) {
         if (!this._detectPointerOnOpaqueOnly || !this._workingCanvas) {
             return true;
         }
-        var canvas = this._workingCanvas;
-        var context = canvas.getContext("2d");
         var width = this._currentMeasure.width | 0;
         var height = this._currentMeasure.height | 0;
-        var imageData = context.getImageData(0, 0, width, height).data;
+        var key = width + "_" + height;
+        var imageData = this._imageDataCache.data;
+        if (!imageData || this._imageDataCache.key !== key) {
+            var canvas = this._workingCanvas;
+            var context_1 = canvas.getContext("2d");
+            this._imageDataCache.data = imageData = context_1.getImageData(0, 0, width, height).data;
+            this._imageDataCache.key = key;
+        }
         x = (x - this._currentMeasure.left) | 0;
         y = (y - this._currentMeasure.top) | 0;
-        var pickedPixel = imageData[(x + y * this._currentMeasure.width) * 4 + 3];
+        var pickedPixel = imageData[(x + y * width) * 4 + 3];
         return pickedPixel > 0;
     };
     Image.prototype._getTypeName = function () {
@@ -7089,7 +7621,8 @@ var Image = /** @class */ (function (_super) {
                     if (this._autoScale) {
                         this.synchronizeSizeWithContent();
                     }
-                    if (this.parent && this.parent.parent) { // Will update root size if root is not the top root
+                    if (this.parent && this.parent.parent) {
+                        // Will update root size if root is not the top root
                         this.parent.adaptWidthToChildren = true;
                         this.parent.adaptHeightToChildren = true;
                     }
@@ -7103,7 +7636,7 @@ var Image = /** @class */ (function (_super) {
             return;
         }
         if (!this._workingCanvas) {
-            this._workingCanvas = document.createElement('canvas');
+            this._workingCanvas = document.createElement("canvas");
         }
         var canvas = this._workingCanvas;
         var width = this._currentMeasure.width;
@@ -7226,6 +7759,45 @@ var Image = /** @class */ (function (_super) {
     Image.STRETCH_EXTEND = 3;
     /** NINE_PATCH */
     Image.STRETCH_NINE_PATCH = 4;
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Image.prototype, "populateNinePatchSlicesFromImage", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Image.prototype, "detectPointerOnOpaqueOnly", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Image.prototype, "sliceLeft", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Image.prototype, "sliceRight", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Image.prototype, "sliceTop", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Image.prototype, "sliceBottom", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Image.prototype, "sourceLeft", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Image.prototype, "sourceTop", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Image.prototype, "sourceWidth", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Image.prototype, "sourceHeight", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Image.prototype, "autoScale", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Image.prototype, "stretch", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Image.prototype, "source", null);
     return Image;
 }(_control__WEBPACK_IMPORTED_MODULE_2__["Control"]));
 
@@ -7238,7 +7810,7 @@ babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredT
 /*!******************************!*\
   !*** ./2D/controls/index.ts ***!
   \******************************/
-/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name */
+/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, FocusableButton, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, TextWrapper, ToggleButton, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -7261,77 +7833,89 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _ellipse__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./ellipse */ "./2D/controls/ellipse.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Ellipse", function() { return _ellipse__WEBPACK_IMPORTED_MODULE_5__["Ellipse"]; });
 
-/* harmony import */ var _grid__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./grid */ "./2D/controls/grid.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Grid", function() { return _grid__WEBPACK_IMPORTED_MODULE_6__["Grid"]; });
+/* harmony import */ var _focusableButton__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./focusableButton */ "./2D/controls/focusableButton.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FocusableButton", function() { return _focusableButton__WEBPACK_IMPORTED_MODULE_6__["FocusableButton"]; });
 
-/* harmony import */ var _image__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./image */ "./2D/controls/image.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Image", function() { return _image__WEBPACK_IMPORTED_MODULE_7__["Image"]; });
+/* harmony import */ var _grid__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./grid */ "./2D/controls/grid.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Grid", function() { return _grid__WEBPACK_IMPORTED_MODULE_7__["Grid"]; });
 
-/* harmony import */ var _inputText__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./inputText */ "./2D/controls/inputText.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "InputText", function() { return _inputText__WEBPACK_IMPORTED_MODULE_8__["InputText"]; });
+/* harmony import */ var _image__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./image */ "./2D/controls/image.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Image", function() { return _image__WEBPACK_IMPORTED_MODULE_8__["Image"]; });
 
-/* harmony import */ var _inputPassword__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./inputPassword */ "./2D/controls/inputPassword.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "InputPassword", function() { return _inputPassword__WEBPACK_IMPORTED_MODULE_9__["InputPassword"]; });
+/* harmony import */ var _inputText__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./inputText */ "./2D/controls/inputText.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "InputText", function() { return _inputText__WEBPACK_IMPORTED_MODULE_9__["InputText"]; });
 
-/* harmony import */ var _line__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./line */ "./2D/controls/line.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Line", function() { return _line__WEBPACK_IMPORTED_MODULE_10__["Line"]; });
+/* harmony import */ var _inputPassword__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./inputPassword */ "./2D/controls/inputPassword.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "InputPassword", function() { return _inputPassword__WEBPACK_IMPORTED_MODULE_10__["InputPassword"]; });
 
-/* harmony import */ var _multiLine__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./multiLine */ "./2D/controls/multiLine.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MultiLine", function() { return _multiLine__WEBPACK_IMPORTED_MODULE_11__["MultiLine"]; });
+/* harmony import */ var _line__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./line */ "./2D/controls/line.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Line", function() { return _line__WEBPACK_IMPORTED_MODULE_11__["Line"]; });
 
-/* harmony import */ var _radioButton__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./radioButton */ "./2D/controls/radioButton.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "RadioButton", function() { return _radioButton__WEBPACK_IMPORTED_MODULE_12__["RadioButton"]; });
+/* harmony import */ var _multiLine__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./multiLine */ "./2D/controls/multiLine.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MultiLine", function() { return _multiLine__WEBPACK_IMPORTED_MODULE_12__["MultiLine"]; });
 
-/* harmony import */ var _stackPanel__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./stackPanel */ "./2D/controls/stackPanel.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "StackPanel", function() { return _stackPanel__WEBPACK_IMPORTED_MODULE_13__["StackPanel"]; });
+/* harmony import */ var _radioButton__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./radioButton */ "./2D/controls/radioButton.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "RadioButton", function() { return _radioButton__WEBPACK_IMPORTED_MODULE_13__["RadioButton"]; });
 
-/* harmony import */ var _selector__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./selector */ "./2D/controls/selector.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SelectorGroup", function() { return _selector__WEBPACK_IMPORTED_MODULE_14__["SelectorGroup"]; });
+/* harmony import */ var _stackPanel__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./stackPanel */ "./2D/controls/stackPanel.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "StackPanel", function() { return _stackPanel__WEBPACK_IMPORTED_MODULE_14__["StackPanel"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CheckboxGroup", function() { return _selector__WEBPACK_IMPORTED_MODULE_14__["CheckboxGroup"]; });
+/* harmony import */ var _selector__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./selector */ "./2D/controls/selector.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SelectorGroup", function() { return _selector__WEBPACK_IMPORTED_MODULE_15__["SelectorGroup"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "RadioGroup", function() { return _selector__WEBPACK_IMPORTED_MODULE_14__["RadioGroup"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CheckboxGroup", function() { return _selector__WEBPACK_IMPORTED_MODULE_15__["CheckboxGroup"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SliderGroup", function() { return _selector__WEBPACK_IMPORTED_MODULE_14__["SliderGroup"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "RadioGroup", function() { return _selector__WEBPACK_IMPORTED_MODULE_15__["RadioGroup"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SelectionPanel", function() { return _selector__WEBPACK_IMPORTED_MODULE_14__["SelectionPanel"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SliderGroup", function() { return _selector__WEBPACK_IMPORTED_MODULE_15__["SliderGroup"]; });
 
-/* harmony import */ var _scrollViewers_scrollViewer__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./scrollViewers/scrollViewer */ "./2D/controls/scrollViewers/scrollViewer.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ScrollViewer", function() { return _scrollViewers_scrollViewer__WEBPACK_IMPORTED_MODULE_15__["ScrollViewer"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SelectionPanel", function() { return _selector__WEBPACK_IMPORTED_MODULE_15__["SelectionPanel"]; });
 
-/* harmony import */ var _textBlock__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./textBlock */ "./2D/controls/textBlock.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TextWrapping", function() { return _textBlock__WEBPACK_IMPORTED_MODULE_16__["TextWrapping"]; });
+/* harmony import */ var _scrollViewers_scrollViewer__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./scrollViewers/scrollViewer */ "./2D/controls/scrollViewers/scrollViewer.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ScrollViewer", function() { return _scrollViewers_scrollViewer__WEBPACK_IMPORTED_MODULE_16__["ScrollViewer"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TextBlock", function() { return _textBlock__WEBPACK_IMPORTED_MODULE_16__["TextBlock"]; });
+/* harmony import */ var _textBlock__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./textBlock */ "./2D/controls/textBlock.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TextWrapping", function() { return _textBlock__WEBPACK_IMPORTED_MODULE_17__["TextWrapping"]; });
 
-/* harmony import */ var _virtualKeyboard__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./virtualKeyboard */ "./2D/controls/virtualKeyboard.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KeyPropertySet", function() { return _virtualKeyboard__WEBPACK_IMPORTED_MODULE_17__["KeyPropertySet"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TextBlock", function() { return _textBlock__WEBPACK_IMPORTED_MODULE_17__["TextBlock"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "VirtualKeyboard", function() { return _virtualKeyboard__WEBPACK_IMPORTED_MODULE_17__["VirtualKeyboard"]; });
+/* harmony import */ var _textWrapper__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./textWrapper */ "./2D/controls/textWrapper.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TextWrapper", function() { return _textWrapper__WEBPACK_IMPORTED_MODULE_18__["TextWrapper"]; });
 
-/* harmony import */ var _rectangle__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./rectangle */ "./2D/controls/rectangle.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Rectangle", function() { return _rectangle__WEBPACK_IMPORTED_MODULE_18__["Rectangle"]; });
+/* harmony import */ var _toggleButton__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./toggleButton */ "./2D/controls/toggleButton.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ToggleButton", function() { return _toggleButton__WEBPACK_IMPORTED_MODULE_19__["ToggleButton"]; });
 
-/* harmony import */ var _displayGrid__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./displayGrid */ "./2D/controls/displayGrid.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "DisplayGrid", function() { return _displayGrid__WEBPACK_IMPORTED_MODULE_19__["DisplayGrid"]; });
+/* harmony import */ var _virtualKeyboard__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./virtualKeyboard */ "./2D/controls/virtualKeyboard.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KeyPropertySet", function() { return _virtualKeyboard__WEBPACK_IMPORTED_MODULE_20__["KeyPropertySet"]; });
 
-/* harmony import */ var _sliders_baseSlider__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./sliders/baseSlider */ "./2D/controls/sliders/baseSlider.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "BaseSlider", function() { return _sliders_baseSlider__WEBPACK_IMPORTED_MODULE_20__["BaseSlider"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "VirtualKeyboard", function() { return _virtualKeyboard__WEBPACK_IMPORTED_MODULE_20__["VirtualKeyboard"]; });
 
-/* harmony import */ var _sliders_slider__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./sliders/slider */ "./2D/controls/sliders/slider.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Slider", function() { return _sliders_slider__WEBPACK_IMPORTED_MODULE_21__["Slider"]; });
+/* harmony import */ var _rectangle__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./rectangle */ "./2D/controls/rectangle.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Rectangle", function() { return _rectangle__WEBPACK_IMPORTED_MODULE_21__["Rectangle"]; });
 
-/* harmony import */ var _sliders_imageBasedSlider__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ./sliders/imageBasedSlider */ "./2D/controls/sliders/imageBasedSlider.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ImageBasedSlider", function() { return _sliders_imageBasedSlider__WEBPACK_IMPORTED_MODULE_22__["ImageBasedSlider"]; });
+/* harmony import */ var _displayGrid__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ./displayGrid */ "./2D/controls/displayGrid.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "DisplayGrid", function() { return _displayGrid__WEBPACK_IMPORTED_MODULE_22__["DisplayGrid"]; });
 
-/* harmony import */ var _sliders_scrollBar__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ./sliders/scrollBar */ "./2D/controls/sliders/scrollBar.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ScrollBar", function() { return _sliders_scrollBar__WEBPACK_IMPORTED_MODULE_23__["ScrollBar"]; });
+/* harmony import */ var _sliders_baseSlider__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ./sliders/baseSlider */ "./2D/controls/sliders/baseSlider.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "BaseSlider", function() { return _sliders_baseSlider__WEBPACK_IMPORTED_MODULE_23__["BaseSlider"]; });
 
-/* harmony import */ var _sliders_imageScrollBar__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./sliders/imageScrollBar */ "./2D/controls/sliders/imageScrollBar.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ImageScrollBar", function() { return _sliders_imageScrollBar__WEBPACK_IMPORTED_MODULE_24__["ImageScrollBar"]; });
+/* harmony import */ var _sliders_slider__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./sliders/slider */ "./2D/controls/sliders/slider.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Slider", function() { return _sliders_slider__WEBPACK_IMPORTED_MODULE_24__["Slider"]; });
 
-/* harmony import */ var _statics__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ./statics */ "./2D/controls/statics.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "name", function() { return _statics__WEBPACK_IMPORTED_MODULE_25__["name"]; });
+/* harmony import */ var _sliders_imageBasedSlider__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ./sliders/imageBasedSlider */ "./2D/controls/sliders/imageBasedSlider.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ImageBasedSlider", function() { return _sliders_imageBasedSlider__WEBPACK_IMPORTED_MODULE_25__["ImageBasedSlider"]; });
+
+/* harmony import */ var _sliders_scrollBar__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! ./sliders/scrollBar */ "./2D/controls/sliders/scrollBar.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ScrollBar", function() { return _sliders_scrollBar__WEBPACK_IMPORTED_MODULE_26__["ScrollBar"]; });
+
+/* harmony import */ var _sliders_imageScrollBar__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ./sliders/imageScrollBar */ "./2D/controls/sliders/imageScrollBar.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ImageScrollBar", function() { return _sliders_imageScrollBar__WEBPACK_IMPORTED_MODULE_27__["ImageScrollBar"]; });
+
+/* harmony import */ var _statics__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! ./statics */ "./2D/controls/statics.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "name", function() { return _statics__WEBPACK_IMPORTED_MODULE_28__["name"]; });
+
+
+
 
 
 
@@ -7377,6 +7961,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _inputText__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./inputText */ "./2D/controls/inputText.ts");
 /* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _textWrapper__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./textWrapper */ "./2D/controls/textWrapper.ts");
+
 
 
 
@@ -7388,12 +7974,14 @@ var InputPassword = /** @class */ (function (_super) {
     function InputPassword() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    InputPassword.prototype._beforeRenderText = function (text) {
+    InputPassword.prototype._beforeRenderText = function (textWrapper) {
+        var pwdTextWrapper = new _textWrapper__WEBPACK_IMPORTED_MODULE_3__["TextWrapper"]();
         var txt = "";
-        for (var i = 0; i < text.length; i++) {
+        for (var i = 0; i < textWrapper.length; i++) {
             txt += "\u2022";
         }
-        return txt;
+        pwdTextWrapper.text = txt;
+        return pwdTextWrapper;
     };
     return InputPassword;
 }(_inputText__WEBPACK_IMPORTED_MODULE_1__["InputText"]));
@@ -7418,6 +8006,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
 /* harmony import */ var _valueAndUnit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../valueAndUnit */ "./2D/valueAndUnit.ts");
+/* harmony import */ var _textWrapper__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./textWrapper */ "./2D/controls/textWrapper.ts");
+
+
 
 
 
@@ -7439,7 +8030,6 @@ var InputText = /** @class */ (function (_super) {
         if (text === void 0) { text = ""; }
         var _this = _super.call(this, name) || this;
         _this.name = name;
-        _this._text = "";
         _this._placeholderText = "";
         _this._background = "#222222";
         _this._focusedBackground = "#000000";
@@ -7739,20 +8329,26 @@ var InputText = /** @class */ (function (_super) {
     Object.defineProperty(InputText.prototype, "text", {
         /** Gets or sets the text displayed in the control */
         get: function () {
-            return this._text;
+            return this._textWrapper.text;
         },
         set: function (value) {
             var valueAsString = value.toString(); // Forcing convertion
-            if (this._text === valueAsString) {
+            if (!this._textWrapper) {
+                this._textWrapper = new _textWrapper__WEBPACK_IMPORTED_MODULE_4__["TextWrapper"]();
+            }
+            if (this._textWrapper.text === valueAsString) {
                 return;
             }
-            this._text = valueAsString;
-            this._markAsDirty();
-            this.onTextChangedObservable.notifyObservers(this);
+            this._textWrapper.text = valueAsString;
+            this._textHasChanged();
         },
         enumerable: false,
         configurable: true
     });
+    InputText.prototype._textHasChanged = function () {
+        this._markAsDirty();
+        this.onTextChangedObservable.notifyObservers(this);
+    };
     Object.defineProperty(InputText.prototype, "width", {
         /** Gets or sets control width */
         get: function () {
@@ -7842,6 +8438,18 @@ var InputText = /** @class */ (function (_super) {
             this._selectAllText();
         }
     };
+    /**
+     * Function to focus an inputText programmatically
+     */
+    InputText.prototype.focus = function () {
+        this._host.moveFocusToControl(this);
+    };
+    /**
+     * Function to unfocus an inputText programmatically
+     */
+    InputText.prototype.blur = function () {
+        this._host.focusedControl = null;
+    };
     InputText.prototype._getTypeName = function () {
         return "InputText";
     };
@@ -7878,12 +8486,13 @@ var InputText = /** @class */ (function (_super) {
                 }
                 break;
             case 8: // BACKSPACE
-                if (this._text && this._text.length > 0) {
+                if (this._textWrapper.text && this._textWrapper.length > 0) {
                     //delete the highlighted text
                     if (this._isTextHighlightOn) {
-                        this.text = this._text.slice(0, this._startHighlightIndex) + this._text.slice(this._endHighlightIndex);
+                        this._textWrapper.removePart(this._startHighlightIndex, this._endHighlightIndex);
+                        this._textHasChanged();
                         this._isTextHighlightOn = false;
-                        this._cursorOffset = this.text.length - this._startHighlightIndex;
+                        this._cursorOffset = this._textWrapper.length - this._startHighlightIndex;
                         this._blinkIsEven = false;
                         if (evt) {
                             evt.preventDefault();
@@ -7892,12 +8501,13 @@ var InputText = /** @class */ (function (_super) {
                     }
                     //delete single character
                     if (this._cursorOffset === 0) {
-                        this.text = this._text.substr(0, this._text.length - 1);
+                        this.text = this._textWrapper.substr(0, this._textWrapper.length - 1);
                     }
                     else {
-                        var deletePosition = this._text.length - this._cursorOffset;
+                        var deletePosition = this._textWrapper.length - this._cursorOffset;
                         if (deletePosition > 0) {
-                            this.text = this._text.slice(0, deletePosition - 1) + this._text.slice(deletePosition);
+                            this._textWrapper.removePart(deletePosition - 1, deletePosition);
+                            this._textHasChanged();
                         }
                     }
                 }
@@ -7907,21 +8517,19 @@ var InputText = /** @class */ (function (_super) {
                 return;
             case 46: // DELETE
                 if (this._isTextHighlightOn) {
-                    this.text = this._text.slice(0, this._startHighlightIndex) + this._text.slice(this._endHighlightIndex);
-                    var decrementor = (this._endHighlightIndex - this._startHighlightIndex);
-                    while (decrementor > 0 && this._cursorOffset > 0) {
-                        this._cursorOffset--;
-                    }
+                    this._textWrapper.removePart(this._startHighlightIndex, this._endHighlightIndex);
+                    this._textHasChanged();
                     this._isTextHighlightOn = false;
-                    this._cursorOffset = this.text.length - this._startHighlightIndex;
+                    this._cursorOffset = this._textWrapper.length - this._startHighlightIndex;
                     if (evt) {
                         evt.preventDefault();
                     }
                     return;
                 }
-                if (this._text && this._text.length > 0 && this._cursorOffset > 0) {
-                    var deletePosition = this._text.length - this._cursorOffset;
-                    this.text = this._text.slice(0, deletePosition) + this._text.slice(deletePosition + 1);
+                if (this._textWrapper.text && this._textWrapper.length > 0 && this._cursorOffset > 0) {
+                    var deletePosition = this._textWrapper.length - this._cursorOffset;
+                    this._textWrapper.removePart(deletePosition, deletePosition + 1);
+                    this._textHasChanged();
                     this._cursorOffset--;
                 }
                 if (evt) {
@@ -7939,15 +8547,15 @@ var InputText = /** @class */ (function (_super) {
                 this._markAsDirty();
                 return;
             case 36: // HOME
-                this._cursorOffset = this._text.length;
+                this._cursorOffset = this._textWrapper.length;
                 this._blinkIsEven = false;
                 this._isTextHighlightOn = false;
                 this._markAsDirty();
                 return;
             case 37: // LEFT
                 this._cursorOffset++;
-                if (this._cursorOffset > this._text.length) {
-                    this._cursorOffset = this._text.length;
+                if (this._cursorOffset > this._textWrapper.length) {
+                    this._cursorOffset = this._textWrapper.length;
                 }
                 if (evt && evt.shiftKey) {
                     // update the cursor
@@ -7955,16 +8563,16 @@ var InputText = /** @class */ (function (_super) {
                     // shift + ctrl/cmd + <-
                     if (evt.ctrlKey || evt.metaKey) {
                         if (!this._isTextHighlightOn) {
-                            if (this._text.length === this._cursorOffset) {
+                            if (this._textWrapper.length === this._cursorOffset) {
                                 return;
                             }
                             else {
-                                this._endHighlightIndex = this._text.length - this._cursorOffset + 1;
+                                this._endHighlightIndex = this._textWrapper.length - this._cursorOffset + 1;
                             }
                         }
                         this._startHighlightIndex = 0;
-                        this._cursorIndex = this._text.length - this._endHighlightIndex;
-                        this._cursorOffset = this._text.length;
+                        this._cursorIndex = this._textWrapper.length - this._endHighlightIndex;
+                        this._cursorOffset = this._textWrapper.length;
                         this._isTextHighlightOn = true;
                         this._markAsDirty();
                         return;
@@ -7972,21 +8580,21 @@ var InputText = /** @class */ (function (_super) {
                     //store the starting point
                     if (!this._isTextHighlightOn) {
                         this._isTextHighlightOn = true;
-                        this._cursorIndex = (this._cursorOffset >= this._text.length) ? this._text.length : this._cursorOffset - 1;
+                        this._cursorIndex = (this._cursorOffset >= this._textWrapper.length) ? this._textWrapper.length : this._cursorOffset - 1;
                     }
                     //if text is already highlighted
                     else if (this._cursorIndex === -1) {
-                        this._cursorIndex = this._text.length - this._endHighlightIndex;
-                        this._cursorOffset = (this._startHighlightIndex === 0) ? this._text.length : this._text.length - this._startHighlightIndex + 1;
+                        this._cursorIndex = this._textWrapper.length - this._endHighlightIndex;
+                        this._cursorOffset = (this._startHighlightIndex === 0) ? this._textWrapper.length : this._textWrapper.length - this._startHighlightIndex + 1;
                     }
                     //set the highlight indexes
                     if (this._cursorIndex < this._cursorOffset) {
-                        this._endHighlightIndex = this._text.length - this._cursorIndex;
-                        this._startHighlightIndex = this._text.length - this._cursorOffset;
+                        this._endHighlightIndex = this._textWrapper.length - this._cursorIndex;
+                        this._startHighlightIndex = this._textWrapper.length - this._cursorOffset;
                     }
                     else if (this._cursorIndex > this._cursorOffset) {
-                        this._endHighlightIndex = this._text.length - this._cursorOffset;
-                        this._startHighlightIndex = this._text.length - this._cursorIndex;
+                        this._endHighlightIndex = this._textWrapper.length - this._cursorOffset;
+                        this._startHighlightIndex = this._textWrapper.length - this._cursorIndex;
                     }
                     else {
                         this._isTextHighlightOn = false;
@@ -7995,11 +8603,11 @@ var InputText = /** @class */ (function (_super) {
                     return;
                 }
                 if (this._isTextHighlightOn) {
-                    this._cursorOffset = this._text.length - this._startHighlightIndex;
+                    this._cursorOffset = this._textWrapper.length - this._startHighlightIndex;
                     this._isTextHighlightOn = false;
                 }
                 if (evt && (evt.ctrlKey || evt.metaKey)) {
-                    this._cursorOffset = this.text.length;
+                    this._cursorOffset = this._textWrapper.length;
                     evt.preventDefault();
                 }
                 this._blinkIsEven = false;
@@ -8022,12 +8630,12 @@ var InputText = /** @class */ (function (_super) {
                                 return;
                             }
                             else {
-                                this._startHighlightIndex = this._text.length - this._cursorOffset - 1;
+                                this._startHighlightIndex = this._textWrapper.length - this._cursorOffset - 1;
                             }
                         }
-                        this._endHighlightIndex = this._text.length;
+                        this._endHighlightIndex = this._textWrapper.length;
                         this._isTextHighlightOn = true;
-                        this._cursorIndex = this._text.length - this._startHighlightIndex;
+                        this._cursorIndex = this._textWrapper.length - this._startHighlightIndex;
                         this._cursorOffset = 0;
                         this._markAsDirty();
                         return;
@@ -8038,17 +8646,17 @@ var InputText = /** @class */ (function (_super) {
                     }
                     //if text is already highlighted
                     else if (this._cursorIndex === -1) {
-                        this._cursorIndex = this._text.length - this._startHighlightIndex;
-                        this._cursorOffset = (this._text.length === this._endHighlightIndex) ? 0 : this._text.length - this._endHighlightIndex - 1;
+                        this._cursorIndex = this._textWrapper.length - this._startHighlightIndex;
+                        this._cursorOffset = (this._textWrapper.length === this._endHighlightIndex) ? 0 : this._textWrapper.length - this._endHighlightIndex - 1;
                     }
                     //set the highlight indexes
                     if (this._cursorIndex < this._cursorOffset) {
-                        this._endHighlightIndex = this._text.length - this._cursorIndex;
-                        this._startHighlightIndex = this._text.length - this._cursorOffset;
+                        this._endHighlightIndex = this._textWrapper.length - this._cursorIndex;
+                        this._startHighlightIndex = this._textWrapper.length - this._cursorOffset;
                     }
                     else if (this._cursorIndex > this._cursorOffset) {
-                        this._endHighlightIndex = this._text.length - this._cursorOffset;
-                        this._startHighlightIndex = this._text.length - this._cursorIndex;
+                        this._endHighlightIndex = this._textWrapper.length - this._cursorOffset;
+                        this._startHighlightIndex = this._textWrapper.length - this._cursorIndex;
                     }
                     else {
                         this._isTextHighlightOn = false;
@@ -8057,7 +8665,7 @@ var InputText = /** @class */ (function (_super) {
                     return;
                 }
                 if (this._isTextHighlightOn) {
-                    this._cursorOffset = this._text.length - this._endHighlightIndex;
+                    this._cursorOffset = this._textWrapper.length - this._endHighlightIndex;
                     this._isTextHighlightOn = false;
                 }
                 //ctr + ->
@@ -8092,8 +8700,9 @@ var InputText = /** @class */ (function (_super) {
             key = this._currentKey;
             if (this._addKey) {
                 if (this._isTextHighlightOn) {
-                    this.text = this._text.slice(0, this._startHighlightIndex) + key + this._text.slice(this._endHighlightIndex);
-                    this._cursorOffset = this.text.length - (this._startHighlightIndex + 1);
+                    this._textWrapper.removePart(this._startHighlightIndex, this._endHighlightIndex, key);
+                    this._textHasChanged();
+                    this._cursorOffset = this._textWrapper.length - (this._startHighlightIndex + 1);
                     this._isTextHighlightOn = false;
                     this._blinkIsEven = false;
                     this._markAsDirty();
@@ -8102,8 +8711,9 @@ var InputText = /** @class */ (function (_super) {
                     this.text += key;
                 }
                 else {
-                    var insertPosition = this._text.length - this._cursorOffset;
-                    this.text = this._text.slice(0, insertPosition) + key + this._text.slice(insertPosition);
+                    var insertPosition = this._textWrapper.length - this._cursorOffset;
+                    this._textWrapper.removePart(insertPosition, insertPosition, key);
+                    this._textHasChanged();
                 }
             }
         }
@@ -8117,12 +8727,12 @@ var InputText = /** @class */ (function (_super) {
         }
         else {
             if (this._cursorIndex < this._cursorOffset) {
-                this._endHighlightIndex = this._text.length - this._cursorIndex;
-                this._startHighlightIndex = this._text.length - this._cursorOffset;
+                this._endHighlightIndex = this._textWrapper.length - this._cursorIndex;
+                this._startHighlightIndex = this._textWrapper.length - this._cursorOffset;
             }
             else if (this._cursorIndex > this._cursorOffset) {
-                this._endHighlightIndex = this._text.length - this._cursorOffset;
-                this._startHighlightIndex = this._text.length - this._cursorIndex;
+                this._endHighlightIndex = this._textWrapper.length - this._cursorOffset;
+                this._startHighlightIndex = this._textWrapper.length - this._cursorIndex;
             }
             else {
                 this._isTextHighlightOn = false;
@@ -8136,14 +8746,14 @@ var InputText = /** @class */ (function (_super) {
     /** @hidden */
     InputText.prototype._processDblClick = function (evt) {
         //pre-find the start and end index of the word under cursor, speeds up the rendering
-        this._startHighlightIndex = this._text.length - this._cursorOffset;
+        this._startHighlightIndex = this._textWrapper.length - this._cursorOffset;
         this._endHighlightIndex = this._startHighlightIndex;
-        var rWord = /\w+/g, moveLeft, moveRight;
+        var moveLeft, moveRight;
         do {
-            moveRight = this._endHighlightIndex < this._text.length && (this._text[this._endHighlightIndex].search(rWord) !== -1) ? ++this._endHighlightIndex : 0;
-            moveLeft = this._startHighlightIndex > 0 && (this._text[this._startHighlightIndex - 1].search(rWord) !== -1) ? --this._startHighlightIndex : 0;
+            moveRight = this._endHighlightIndex < this._textWrapper.length && this._textWrapper.isWord(this._endHighlightIndex) ? ++this._endHighlightIndex : 0;
+            moveLeft = this._startHighlightIndex > 0 && this._textWrapper.isWord(this._startHighlightIndex - 1) ? --this._startHighlightIndex : 0;
         } while (moveLeft || moveRight);
-        this._cursorOffset = this.text.length - this._startHighlightIndex;
+        this._cursorOffset = this._textWrapper.length - this._startHighlightIndex;
         this.onTextHighlightObservable.notifyObservers(this);
         this._isTextHighlightOn = true;
         this._clickedCoordinate = null;
@@ -8156,8 +8766,8 @@ var InputText = /** @class */ (function (_super) {
         this._blinkIsEven = true;
         this._isTextHighlightOn = true;
         this._startHighlightIndex = 0;
-        this._endHighlightIndex = this._text.length;
-        this._cursorOffset = this._text.length;
+        this._endHighlightIndex = this._textWrapper.length;
+        this._cursorOffset = this._textWrapper.length;
         this._cursorIndex = -1;
         this._markAsDirty();
     };
@@ -8185,9 +8795,10 @@ var InputText = /** @class */ (function (_super) {
         if (!this._highlightedText) {
             return;
         }
-        this.text = this._text.slice(0, this._startHighlightIndex) + this._text.slice(this._endHighlightIndex);
+        this._textWrapper.removePart(this._startHighlightIndex, this._endHighlightIndex);
+        this._textHasChanged();
         this._isTextHighlightOn = false;
-        this._cursorOffset = this.text.length - this._startHighlightIndex;
+        this._cursorOffset = this._textWrapper.length - this._startHighlightIndex;
         //when write permission to clipbaord data is denied
         try {
             ev.clipboardData && ev.clipboardData.setData("text/plain", this._highlightedText);
@@ -8206,8 +8817,9 @@ var InputText = /** @class */ (function (_super) {
             //get the cached data; returns blank string by default
             data = this._host.clipboardData;
         }
-        var insertPosition = this._text.length - this._cursorOffset;
-        this.text = this._text.slice(0, insertPosition) + data + this._text.slice(insertPosition);
+        var insertPosition = this._textWrapper.length - this._cursorOffset;
+        this._textWrapper.removePart(insertPosition, insertPosition, data);
+        this._textHasChanged();
     };
     InputText.prototype._draw = function (context, invalidatedRectangle) {
         var _this = this;
@@ -8243,14 +8855,15 @@ var InputText = /** @class */ (function (_super) {
         if (this.color) {
             context.fillStyle = this.color;
         }
-        var text = this._beforeRenderText(this._text);
-        if (!this._isFocused && !this._text && this._placeholderText) {
-            text = this._placeholderText;
+        var text = this._beforeRenderText(this._textWrapper);
+        if (!this._isFocused && !this._textWrapper.text && this._placeholderText) {
+            text = new _textWrapper__WEBPACK_IMPORTED_MODULE_4__["TextWrapper"]();
+            text.text = this._placeholderText;
             if (this._placeholderColor) {
                 context.fillStyle = this._placeholderColor;
             }
         }
-        this._textWidth = context.measureText(text).width;
+        this._textWidth = context.measureText(text.text).width;
         var marginWidth = this._margin.getValueInPixel(this._host, this._tempParentMeasure.width) * 2;
         if (this._autoStretchWidth) {
             this.width = Math.min(this._maxWidth.getValueInPixel(this._host, this._tempParentMeasure.width), this._textWidth + marginWidth) + "px";
@@ -8270,7 +8883,7 @@ var InputText = /** @class */ (function (_super) {
         else {
             this._scrollLeft = clipTextLeft;
         }
-        context.fillText(text, this._scrollLeft, this._currentMeasure.top + rootY);
+        context.fillText(text.text, this._scrollLeft, this._currentMeasure.top + rootY);
         // Cursor
         if (this._isFocused) {
             // Need to move cursor
@@ -8296,7 +8909,7 @@ var InputText = /** @class */ (function (_super) {
             }
             // Render cursor
             if (!this._blinkIsEven) {
-                var cursorOffsetText = this.text.substr(this._text.length - this._cursorOffset);
+                var cursorOffsetText = text.substr(text.length - this._cursorOffset);
                 var cursorOffsetWidth = context.measureText(cursorOffsetText).width;
                 var cursorLeft = this._scrollLeft + this._textWidth - cursorOffsetWidth;
                 if (cursorLeft < clipTextLeft) {
@@ -8321,16 +8934,16 @@ var InputText = /** @class */ (function (_super) {
             //show the highlighted text
             if (this._isTextHighlightOn) {
                 clearTimeout(this._blinkTimeout);
-                var highlightCursorOffsetWidth = context.measureText(this.text.substring(this._startHighlightIndex)).width;
+                var highlightCursorOffsetWidth = context.measureText(text.substring(this._startHighlightIndex)).width;
                 var highlightCursorLeft = this._scrollLeft + this._textWidth - highlightCursorOffsetWidth;
-                this._highlightedText = this.text.substring(this._startHighlightIndex, this._endHighlightIndex);
-                var width = context.measureText(this.text.substring(this._startHighlightIndex, this._endHighlightIndex)).width;
+                this._highlightedText = text.substring(this._startHighlightIndex, this._endHighlightIndex);
+                var width = context.measureText(text.substring(this._startHighlightIndex, this._endHighlightIndex)).width;
                 if (highlightCursorLeft < clipTextLeft) {
                     width = width - (clipTextLeft - highlightCursorLeft);
                     if (!width) {
                         // when using left arrow on text.length > availableWidth;
                         // assigns the width of the first letter after clipTextLeft
-                        width = context.measureText(this.text.charAt(this.text.length - this._cursorOffset)).width;
+                        width = context.measureText(text.charAt(text.length - this._cursorOffset)).width;
                     }
                     highlightCursorLeft = clipTextLeft;
                 }
@@ -8359,8 +8972,8 @@ var InputText = /** @class */ (function (_super) {
         }
         context.restore();
     };
-    InputText.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
-        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex)) {
+    InputText.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
+        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
         }
         this._clickedCoordinate = coordinates.x;
@@ -8381,21 +8994,21 @@ var InputText = /** @class */ (function (_super) {
         this._host.focusedControl = this;
         return true;
     };
-    InputText.prototype._onPointerMove = function (target, coordinates, pointerId) {
+    InputText.prototype._onPointerMove = function (target, coordinates, pointerId, pi) {
         if (this._host.focusedControl === this && this._isPointerDown) {
             this._clickedCoordinate = coordinates.x;
             this._markAsDirty();
             this._updateValueFromCursorIndex(this._cursorOffset);
         }
-        _super.prototype._onPointerMove.call(this, target, coordinates, pointerId);
+        _super.prototype._onPointerMove.call(this, target, coordinates, pointerId, pi);
     };
     InputText.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick) {
         this._isPointerDown = false;
         delete this._host._capturingControl[pointerId];
         _super.prototype._onPointerUp.call(this, target, coordinates, pointerId, buttonIndex, notifyClick);
     };
-    InputText.prototype._beforeRenderText = function (text) {
-        return text;
+    InputText.prototype._beforeRenderText = function (textWrapper) {
+        return textWrapper;
     };
     InputText.prototype.dispose = function () {
         _super.prototype.dispose.call(this);
@@ -8408,6 +9021,57 @@ var InputText = /** @class */ (function (_super) {
         this.onTextHighlightObservable.clear();
         this.onKeyboardEventProcessedObservable.clear();
     };
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], InputText.prototype, "promptMessage", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], InputText.prototype, "disableMobilePrompt", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], InputText.prototype, "maxWidth", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], InputText.prototype, "highligherOpacity", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], InputText.prototype, "onFocusSelectAll", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], InputText.prototype, "textHighlightColor", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], InputText.prototype, "margin", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], InputText.prototype, "autoStretchWidth", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], InputText.prototype, "thickness", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], InputText.prototype, "focusedBackground", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], InputText.prototype, "focusedColor", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], InputText.prototype, "background", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], InputText.prototype, "placeholderColor", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], InputText.prototype, "placeholderText", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], InputText.prototype, "deadKey", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], InputText.prototype, "text", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], InputText.prototype, "width", null);
     return InputText;
 }(_control__WEBPACK_IMPORTED_MODULE_2__["Control"]));
 
@@ -8431,6 +9095,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
 /* harmony import */ var _valueAndUnit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../valueAndUnit */ "./2D/valueAndUnit.ts");
+
 
 
 
@@ -8679,6 +9344,24 @@ var Line = /** @class */ (function (_super) {
             this._y1.ignoreAdaptiveScaling = true;
         }
     };
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Line.prototype, "dash", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Line.prototype, "x1", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Line.prototype, "y1", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Line.prototype, "x2", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Line.prototype, "y2", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Line.prototype, "lineWidth", null);
     return Line;
 }(_control__WEBPACK_IMPORTED_MODULE_2__["Control"]));
 
@@ -8702,6 +9385,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Meshes_abstractMesh__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Meshes_abstractMesh__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
 /* harmony import */ var _multiLinePoint__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../multiLinePoint */ "./2D/multiLinePoint.ts");
+
 
 
 
@@ -8879,6 +9563,7 @@ var MultiLine = /** @class */ (function (_super) {
         context.setLineDash(this._dash);
         context.beginPath();
         var first = true; //first index is not necessarily 0
+        var previousPoint;
         this._points.forEach(function (point) {
             if (!point) {
                 return;
@@ -8888,8 +9573,14 @@ var MultiLine = /** @class */ (function (_super) {
                 first = false;
             }
             else {
-                context.lineTo(point._point.x, point._point.y);
+                if (point._point.z < 1 && previousPoint.z < 1) {
+                    context.lineTo(point._point.x, point._point.y);
+                }
+                else {
+                    context.moveTo(point._point.x, point._point.y);
+                }
             }
+            previousPoint = point._point;
         });
         context.stroke();
         context.restore();
@@ -8949,6 +9640,9 @@ var MultiLine = /** @class */ (function (_super) {
         this.reset();
         _super.prototype.dispose.call(this);
     };
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Meshes_abstractMesh__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], MultiLine.prototype, "dash", null);
     return MultiLine;
 }(_control__WEBPACK_IMPORTED_MODULE_2__["Control"]));
 
@@ -8973,6 +9667,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
 /* harmony import */ var _stackPanel__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./stackPanel */ "./2D/controls/stackPanel.ts");
 /* harmony import */ var _textBlock__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./textBlock */ "./2D/controls/textBlock.ts");
+
 
 
 
@@ -9117,8 +9812,8 @@ var RadioButton = /** @class */ (function (_super) {
         context.restore();
     };
     // Events
-    RadioButton.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
-        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex)) {
+    RadioButton.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
+        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
         }
         if (!this.isChecked) {
@@ -9155,6 +9850,21 @@ var RadioButton = /** @class */ (function (_super) {
         panel.addControl(header);
         return panel;
     };
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], RadioButton.prototype, "thickness", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], RadioButton.prototype, "group", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], RadioButton.prototype, "checkSizeRatio", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], RadioButton.prototype, "background", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], RadioButton.prototype, "isChecked", null);
     return RadioButton;
 }(_control__WEBPACK_IMPORTED_MODULE_2__["Control"]));
 
@@ -9177,6 +9887,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _container__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./container */ "./2D/controls/container.ts");
 /* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__);
+
 
 
 
@@ -9300,6 +10011,12 @@ var Rectangle = /** @class */ (function (_super) {
             context.clip();
         }
     };
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__["serialize"])()
+    ], Rectangle.prototype, "thickness", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__["serialize"])()
+    ], Rectangle.prototype, "cornerRadius", null);
     return Rectangle;
 }(_container__WEBPACK_IMPORTED_MODULE_1__["Container"]));
 
@@ -10265,8 +10982,8 @@ var _ScrollViewerWindow = /** @class */ (function (_super) {
             if (child.verticalAlignment === _control__WEBPACK_IMPORTED_MODULE_4__["Control"].VERTICAL_ALIGNMENT_CENTER) {
                 child._offsetTop(this._currentMeasure.top - child._currentMeasure.top);
             }
-            maxWidth = Math.max(maxWidth, child._currentMeasure.left - this._currentMeasure.left + child._currentMeasure.width);
-            maxHeight = Math.max(maxHeight, child._currentMeasure.top - this._currentMeasure.top + child._currentMeasure.height);
+            maxWidth = Math.max(maxWidth, child._currentMeasure.left - this._currentMeasure.left + child._currentMeasure.width + child.paddingRightInPixels);
+            maxHeight = Math.max(maxHeight, child._currentMeasure.top - this._currentMeasure.top + child._currentMeasure.height + child.paddingBottomInPixels);
         }
         if (this._currentMeasure.width !== maxWidth) {
             this._width.updateInPlace(maxWidth, _valueAndUnit__WEBPACK_IMPORTED_MODULE_3__["ValueAndUnit"].UNITMODE_PIXEL);
@@ -10643,6 +11360,14 @@ var SelectionPanel = /** @class */ (function (_super) {
     SelectionPanel.prototype._getTypeName = function () {
         return "SelectionPanel";
     };
+    Object.defineProperty(SelectionPanel.prototype, "panel", {
+        /** Gets the (stack) panel of the SelectionPanel  */
+        get: function () {
+            return this._panel;
+        },
+        enumerable: false,
+        configurable: true
+    });
     Object.defineProperty(SelectionPanel.prototype, "headerColor", {
         /** Gets or sets the headerColor */
         get: function () {
@@ -10956,6 +11681,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 /**
  * Class used to create slider controls
  */
@@ -11233,8 +11959,8 @@ var BaseSlider = /** @class */ (function (_super) {
         var mult = (1 / this._step) | 0;
         this.value = this._step ? ((value * mult) | 0) / mult : value;
     };
-    BaseSlider.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
-        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex)) {
+    BaseSlider.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
+        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
         }
         this._pointerIsDown = true;
@@ -11243,7 +11969,7 @@ var BaseSlider = /** @class */ (function (_super) {
         this._lastPointerDownID = pointerId;
         return true;
     };
-    BaseSlider.prototype._onPointerMove = function (target, coordinates, pointerId) {
+    BaseSlider.prototype._onPointerMove = function (target, coordinates, pointerId, pi) {
         // Only listen to pointer move events coming from the last pointer to click on the element (To support dual vr controller interaction)
         if (pointerId != this._lastPointerDownID) {
             return;
@@ -11251,13 +11977,44 @@ var BaseSlider = /** @class */ (function (_super) {
         if (this._pointerIsDown) {
             this._updateValueFromPointer(coordinates.x, coordinates.y);
         }
-        _super.prototype._onPointerMove.call(this, target, coordinates, pointerId);
+        _super.prototype._onPointerMove.call(this, target, coordinates, pointerId, pi);
     };
     BaseSlider.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick) {
         this._pointerIsDown = false;
         delete this._host._capturingControl[pointerId];
         _super.prototype._onPointerUp.call(this, target, coordinates, pointerId, buttonIndex, notifyClick);
     };
+    BaseSlider.prototype._onCanvasBlur = function () {
+        this._forcePointerUp();
+        _super.prototype._onCanvasBlur.call(this);
+    };
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], BaseSlider.prototype, "displayThumb", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], BaseSlider.prototype, "step", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], BaseSlider.prototype, "barOffset", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], BaseSlider.prototype, "thumbWidth", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], BaseSlider.prototype, "minimum", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], BaseSlider.prototype, "maximum", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], BaseSlider.prototype, "value", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], BaseSlider.prototype, "isVertical", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], BaseSlider.prototype, "isThumbClamped", null);
     return BaseSlider;
 }(_control__WEBPACK_IMPORTED_MODULE_2__["Control"]));
 
@@ -11280,6 +12037,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _measure__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../measure */ "./2D/measure.ts");
 /* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_3__);
+
 
 
 
@@ -11436,6 +12194,9 @@ var ImageBasedSlider = /** @class */ (function (_super) {
         }
         context.restore();
     };
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_3__["serialize"])()
+    ], ImageBasedSlider.prototype, "displayThumb", null);
     return ImageBasedSlider;
 }(_baseSlider__WEBPACK_IMPORTED_MODULE_1__["BaseSlider"]));
 
@@ -11457,6 +12218,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var _baseSlider__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./baseSlider */ "./2D/controls/sliders/baseSlider.ts");
 /* harmony import */ var _measure__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../measure */ "./2D/measure.ts");
+/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Misc/decorators */ "babylonjs/Misc/perfCounter");
+/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_3__);
+
 
 
 
@@ -11702,10 +12466,13 @@ var ImageScrollBar = /** @class */ (function (_super) {
         this._originX = x;
         this._originY = y;
     };
-    ImageScrollBar.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
+    ImageScrollBar.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
         this._first = true;
-        return _super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex);
+        return _super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi);
     };
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_3__["serialize"])()
+    ], ImageScrollBar.prototype, "num90RotationInVerticalMode", void 0);
     return ImageScrollBar;
 }(_baseSlider__WEBPACK_IMPORTED_MODULE_1__["BaseSlider"]));
 
@@ -11726,6 +12493,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var _baseSlider__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./baseSlider */ "./2D/controls/sliders/baseSlider.ts");
 /* harmony import */ var _measure__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../measure */ "./2D/measure.ts");
+/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Misc/decorators */ "babylonjs/Misc/perfCounter");
+/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_3__);
+
 
 
 
@@ -11848,10 +12618,16 @@ var ScrollBar = /** @class */ (function (_super) {
         this._originX = x;
         this._originY = y;
     };
-    ScrollBar.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
+    ScrollBar.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
         this._first = true;
-        return _super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex);
+        return _super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi);
     };
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_3__["serialize"])()
+    ], ScrollBar.prototype, "borderColor", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_3__["serialize"])()
+    ], ScrollBar.prototype, "background", null);
     return ScrollBar;
 }(_baseSlider__WEBPACK_IMPORTED_MODULE_1__["BaseSlider"]));
 
@@ -11876,6 +12652,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 /**
  * Class used to create slider controls
  */
@@ -11890,6 +12667,7 @@ var Slider = /** @class */ (function (_super) {
         _this.name = name;
         _this._background = "black";
         _this._borderColor = "white";
+        _this._thumbColor = "";
         _this._isThumbCircle = false;
         _this._displayValueBar = true;
         return _this;
@@ -11934,6 +12712,21 @@ var Slider = /** @class */ (function (_super) {
                 return;
             }
             this._background = value;
+            this._markAsDirty();
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Slider.prototype, "thumbColor", {
+        /** Gets or sets thumb's color */
+        get: function () {
+            return this._thumbColor;
+        },
+        set: function (value) {
+            if (this._thumbColor === value) {
+                return;
+            }
+            this._thumbColor = value;
             this._markAsDirty();
         },
         enumerable: false,
@@ -12060,6 +12853,7 @@ var Slider = /** @class */ (function (_super) {
             }
         }
         // Thumb
+        context.fillStyle = this._thumbColor || this.color;
         if (this.displayThumb) {
             if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                 context.shadowColor = this.shadowColor;
@@ -12107,6 +12901,21 @@ var Slider = /** @class */ (function (_super) {
         }
         context.restore();
     };
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__["serialize"])()
+    ], Slider.prototype, "displayValueBar", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__["serialize"])()
+    ], Slider.prototype, "borderColor", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__["serialize"])()
+    ], Slider.prototype, "background", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__["serialize"])()
+    ], Slider.prototype, "thumbColor", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__["serialize"])()
+    ], Slider.prototype, "isThumbCircle", null);
     return Slider;
 }(_baseSlider__WEBPACK_IMPORTED_MODULE_1__["BaseSlider"]));
 
@@ -12130,6 +12939,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _container__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./container */ "./2D/controls/container.ts");
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
+
 
 
 
@@ -12283,6 +13093,8 @@ var StackPanel = /** @class */ (function (_super) {
                 }
             }
         }
+        stackWidth += this.paddingLeftInPixels + this.paddingRightInPixels;
+        stackHeight += this.paddingTopInPixels + this.paddingBottomInPixels;
         this._doNotTrackManualChanges = true;
         // Let stack panel width or height default to stackHeight and stackWidth if dimensions are not specified.
         // User can now define their own height and width for stack panel.
@@ -12310,6 +13122,33 @@ var StackPanel = /** @class */ (function (_super) {
         }
         _super.prototype._postMeasure.call(this);
     };
+    /**
+     * Serializes the current control
+     * @param serializationObject defined the JSON serialized object
+     */
+    StackPanel.prototype.serialize = function (serializationObject) {
+        _super.prototype.serialize.call(this, serializationObject);
+        serializationObject.manualWidth = this._manualWidth;
+        serializationObject.manualHeight = this._manualHeight;
+    };
+    /** @hidden */
+    StackPanel.prototype._parseFromContent = function (serializedObject, host) {
+        this._manualWidth = serializedObject.manualWidth;
+        this._manualHeight = serializedObject.manualHeight;
+        _super.prototype._parseFromContent.call(this, serializedObject, host);
+    };
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], StackPanel.prototype, "ignoreLayoutWarnings", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], StackPanel.prototype, "isVertical", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], StackPanel.prototype, "width", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], StackPanel.prototype, "height", null);
     return StackPanel;
 }(_container__WEBPACK_IMPORTED_MODULE_2__["Container"]));
 
@@ -12403,6 +13242,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 /**
  * Enum that determines the text-wrapping mode to use.
  */
@@ -12447,13 +13287,15 @@ var TextBlock = /** @class */ (function (_super) {
         _this._lineSpacing = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"](0);
         _this._outlineWidth = 0;
         _this._outlineColor = "white";
+        _this._underline = false;
+        _this._lineThrough = false;
         /**
-        * An event triggered after the text is changed
-        */
+         * An event triggered after the text is changed
+         */
         _this.onTextChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
         /**
-        * An event triggered after the text was broken up into lines
-        */
+         * An event triggered after the text was broken up into lines
+         */
         _this.onLinesReadyObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
         _this.text = text;
         return _this;
@@ -12611,6 +13453,46 @@ var TextBlock = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(TextBlock.prototype, "underline", {
+        /**
+         * Gets or sets a boolean indicating that text must have underline
+         */
+        get: function () {
+            return this._underline;
+        },
+        /**
+         * Gets or sets a boolean indicating that text must have underline
+         */
+        set: function (value) {
+            if (this._underline === value) {
+                return;
+            }
+            this._underline = value;
+            this._markAsDirty();
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(TextBlock.prototype, "lineThrough", {
+        /**
+         * Gets or sets an boolean indicating that text must be crossed out
+         */
+        get: function () {
+            return this._lineThrough;
+        },
+        /**
+         * Gets or sets an boolean indicating that text must be crossed out
+         */
+        set: function (value) {
+            if (this._lineThrough === value) {
+                return;
+            }
+            this._lineThrough = value;
+            this._markAsDirty();
+        },
+        enumerable: false,
+        configurable: true
+    });
     Object.defineProperty(TextBlock.prototype, "outlineColor", {
         /**
          * Gets or sets outlineColor of the text to display
@@ -12651,20 +13533,20 @@ var TextBlock = /** @class */ (function (_super) {
         }
         if (this._resizeToFit) {
             if (this._textWrapping === TextWrapping.Clip) {
-                var newWidth = this.paddingLeftInPixels + this.paddingRightInPixels + maxLineWidth;
+                var newWidth = (this.paddingLeftInPixels + this.paddingRightInPixels + maxLineWidth) | 0;
                 if (newWidth !== this._width.internalValue) {
                     this._width.updateInPlace(newWidth, _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"].UNITMODE_PIXEL);
                     this._rebuildLayout = true;
                 }
             }
-            var newHeight = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * this._lines.length;
+            var newHeight = (this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * this._lines.length) | 0;
             if (this._lines.length > 0 && this._lineSpacing.internalValue !== 0) {
                 var lineSpacing = 0;
                 if (this._lineSpacing.isPixel) {
                     lineSpacing = this._lineSpacing.getValue(this._host);
                 }
                 else {
-                    lineSpacing = (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height));
+                    lineSpacing = this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
                 }
                 newHeight += (this._lines.length - 1) * lineSpacing;
             }
@@ -12698,6 +13580,22 @@ var TextBlock = /** @class */ (function (_super) {
             context.strokeText(text, this._currentMeasure.left + x, y);
         }
         context.fillText(text, this._currentMeasure.left + x, y);
+        if (this._underline) {
+            context.beginPath();
+            context.lineWidth = Math.round(this.fontSizeInPixels * 0.05);
+            context.moveTo(this._currentMeasure.left + x, y + 3);
+            context.lineTo(this._currentMeasure.left + x + textWidth, y + 3);
+            context.stroke();
+            context.closePath();
+        }
+        if (this._lineThrough) {
+            context.beginPath();
+            context.lineWidth = Math.round(this.fontSizeInPixels * 0.05);
+            context.moveTo(this._currentMeasure.left + x, y - this.fontSizeInPixels / 3);
+            context.lineTo(this._currentMeasure.left + x + textWidth, y - this.fontSizeInPixels / 3);
+            context.stroke();
+            context.closePath();
+        }
     };
     /** @hidden */
     TextBlock.prototype._draw = function (context, invalidatedRectangle) {
@@ -12712,6 +13610,8 @@ var TextBlock = /** @class */ (function (_super) {
         if (this.outlineWidth) {
             context.lineWidth = this.outlineWidth;
             context.strokeStyle = this.outlineColor;
+            context.lineJoin = 'miter';
+            context.miterLimit = 2;
         }
     };
     TextBlock.prototype._breakLines = function (refWidth, context) {
@@ -12738,25 +13638,38 @@ var TextBlock = /** @class */ (function (_super) {
         return lines;
     };
     TextBlock.prototype._parseLine = function (line, context) {
-        if (line === void 0) { line = ''; }
+        if (line === void 0) { line = ""; }
         return { text: line, width: context.measureText(line).width };
     };
     TextBlock.prototype._parseLineEllipsis = function (line, width, context) {
-        if (line === void 0) { line = ''; }
+        if (line === void 0) { line = ""; }
         var lineWidth = context.measureText(line).width;
         if (lineWidth > width) {
-            line += '…';
+            line += "…";
         }
-        while (line.length > 2 && lineWidth > width) {
-            line = line.slice(0, -2) + '…';
-            lineWidth = context.measureText(line).width;
+        // unicode support. split('') does not work with unicode!
+        // make sure Array.from is available
+        var characters = Array.from && Array.from(line);
+        if (!characters) {
+            // no array.from, use the old method
+            while (line.length > 2 && lineWidth > width) {
+                line = line.slice(0, -2) + "…";
+                lineWidth = context.measureText(line).width;
+            }
+        }
+        else {
+            while (characters.length && lineWidth > width) {
+                characters.pop();
+                line = characters.join("") + "...";
+                lineWidth = context.measureText(line).width;
+            }
         }
         return { text: line, width: lineWidth };
     };
     TextBlock.prototype._parseLineWordWrap = function (line, width, context) {
-        if (line === void 0) { line = ''; }
+        if (line === void 0) { line = ""; }
         var lines = [];
-        var words = this.wordSplittingFunction ? this.wordSplittingFunction(line) : line.split(' ');
+        var words = this.wordSplittingFunction ? this.wordSplittingFunction(line) : line.split(" ");
         var lineWidth = 0;
         for (var n = 0; n < words.length; n++) {
             var testLine = n > 0 ? line + " " + words[n] : words[0];
@@ -12797,7 +13710,7 @@ var TextBlock = /** @class */ (function (_super) {
                     rootY += this._lineSpacing.getValue(this._host);
                 }
                 else {
-                    rootY = rootY + (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height));
+                    rootY = rootY + this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
                 }
             }
             this._drawText(line.text, line.width, rootY, context);
@@ -12810,7 +13723,7 @@ var TextBlock = /** @class */ (function (_super) {
      */
     TextBlock.prototype.computeExpectedHeight = function () {
         if (this.text && this.widthInPixels) {
-            var context_1 = document.createElement('canvas').getContext('2d');
+            var context_1 = document.createElement("canvas").getContext("2d");
             if (context_1) {
                 this._applyStates(context_1);
                 if (!this._fontOffset) {
@@ -12824,7 +13737,7 @@ var TextBlock = /** @class */ (function (_super) {
                         lineSpacing = this._lineSpacing.getValue(this._host);
                     }
                     else {
-                        lineSpacing = (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height));
+                        lineSpacing = this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
                     }
                     newHeight += (lines.length - 1) * lineSpacing;
                 }
@@ -12837,10 +13750,417 @@ var TextBlock = /** @class */ (function (_super) {
         _super.prototype.dispose.call(this);
         this.onTextChangedObservable.clear();
     };
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], TextBlock.prototype, "resizeToFit", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], TextBlock.prototype, "textWrapping", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], TextBlock.prototype, "text", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], TextBlock.prototype, "textHorizontalAlignment", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], TextBlock.prototype, "textVerticalAlignment", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], TextBlock.prototype, "lineSpacing", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], TextBlock.prototype, "outlineWidth", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], TextBlock.prototype, "underline", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], TextBlock.prototype, "lineThrough", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], TextBlock.prototype, "outlineColor", null);
     return TextBlock;
 }(_control__WEBPACK_IMPORTED_MODULE_3__["Control"]));
 
 babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.GUI.TextBlock"] = TextBlock;
+
+
+/***/ }),
+
+/***/ "./2D/controls/textWrapper.ts":
+/*!************************************!*\
+  !*** ./2D/controls/textWrapper.ts ***!
+  \************************************/
+/*! exports provided: TextWrapper */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TextWrapper", function() { return TextWrapper; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+
+/** @hidden */
+var TextWrapper = /** @class */ (function () {
+    function TextWrapper() {
+    }
+    Object.defineProperty(TextWrapper.prototype, "text", {
+        get: function () {
+            return this._characters ? this._characters.join("") : this._text;
+        },
+        set: function (txt) {
+            this._text = txt;
+            this._characters = Array.from && Array.from(txt);
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(TextWrapper.prototype, "length", {
+        get: function () {
+            return this._characters ? this._characters.length : this._text.length;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    TextWrapper.prototype.removePart = function (idxStart, idxEnd, insertTxt) {
+        var _a;
+        this._text = this._text.slice(0, idxStart) + (insertTxt ? insertTxt : "") + this._text.slice(idxEnd);
+        if (this._characters) {
+            var newCharacters = insertTxt ? Array.from(insertTxt) : [];
+            (_a = this._characters).splice.apply(_a, Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArrays"])([idxStart, idxEnd - idxStart], newCharacters));
+        }
+    };
+    TextWrapper.prototype.charAt = function (idx) {
+        return this._characters ? this._characters[idx] : this._text.charAt(idx);
+    };
+    TextWrapper.prototype.substr = function (from, length) {
+        if (this._characters) {
+            if (isNaN(from)) {
+                from = 0;
+            }
+            else if (from >= 0) {
+                from = Math.min(from, this._characters.length);
+            }
+            else {
+                from = this._characters.length + Math.max(from, -this._characters.length);
+            }
+            if (length === undefined) {
+                length = this._characters.length - from;
+            }
+            else if (isNaN(length)) {
+                length = 0;
+            }
+            else if (length < 0) {
+                length = 0;
+            }
+            var temp = [];
+            while (--length >= 0) {
+                temp[length] = this._characters[from + length];
+            }
+            return temp.join("");
+        }
+        return this._text.substr(from, length);
+    };
+    TextWrapper.prototype.substring = function (from, to) {
+        if (this._characters) {
+            if (isNaN(from)) {
+                from = 0;
+            }
+            else if (from > this._characters.length) {
+                from = this._characters.length;
+            }
+            else if (from < 0) {
+                from = 0;
+            }
+            if (to === undefined) {
+                to = this._characters.length;
+            }
+            else if (isNaN(to)) {
+                to = 0;
+            }
+            else if (to > this._characters.length) {
+                to = this._characters.length;
+            }
+            else if (to < 0) {
+                to = 0;
+            }
+            var temp = [];
+            var idx = 0;
+            while (from < to) {
+                temp[idx++] = this._characters[from++];
+            }
+            return temp.join("");
+        }
+        return this._text.substring(from, to);
+    };
+    TextWrapper.prototype.isWord = function (index) {
+        var rWord = /\w/g;
+        return this._characters ? this._characters[index].search(rWord) !== -1 : this._text.search(rWord) !== -1;
+    };
+    return TextWrapper;
+}());
+
+
+
+/***/ }),
+
+/***/ "./2D/controls/toggleButton.ts":
+/*!*************************************!*\
+  !*** ./2D/controls/toggleButton.ts ***!
+  \*************************************/
+/*! exports provided: ToggleButton */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ToggleButton", function() { return ToggleButton; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/perfCounter");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _rectangle__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./rectangle */ "./2D/controls/rectangle.ts");
+
+
+
+
+/**
+ * Class used to create toggle buttons
+ */
+var ToggleButton = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ToggleButton, _super);
+    /**
+     * Creates a new ToggleButton
+     * @param name defines the control name
+     * @param group defines the toggle group this toggle belongs to
+     */
+    function ToggleButton(name, group) {
+        var _this = _super.call(this, name) || this;
+        _this.name = name;
+        /** Observable raised when isActive is changed */
+        _this.onIsActiveChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        /**
+         * Gets or sets a boolean indicating that the toggle button will let internal controls handle picking instead of doing it directly using its bounding info
+         */
+        _this.delegatePickingToChildren = false;
+        _this._isActive = false;
+        _this.group = group !== null && group !== void 0 ? group : "";
+        _this.thickness = 0;
+        _this.isPointerBlocker = true;
+        var alphaStore = null;
+        _this.toActiveAnimation = function () {
+            _this.thickness = 1;
+        };
+        _this.toInactiveAnimation = function () {
+            _this.thickness = 0;
+        };
+        _this.pointerEnterActiveAnimation = function () {
+            alphaStore = _this.alpha;
+            _this.alpha -= 0.1;
+        };
+        _this.pointerOutActiveAnimation = function () {
+            if (alphaStore !== null) {
+                _this.alpha = alphaStore;
+            }
+        };
+        _this.pointerDownActiveAnimation = function () {
+            _this.scaleX -= 0.05;
+            _this.scaleY -= 0.05;
+        };
+        _this.pointerUpActiveAnimation = function () {
+            _this.scaleX += 0.05;
+            _this.scaleY += 0.05;
+        };
+        _this.pointerEnterInactiveAnimation = function () {
+            alphaStore = _this.alpha;
+            _this.alpha -= 0.1;
+        };
+        _this.pointerOutInactiveAnimation = function () {
+            if (alphaStore !== null) {
+                _this.alpha = alphaStore;
+            }
+        };
+        _this.pointerDownInactiveAnimation = function () {
+            _this.scaleX -= 0.05;
+            _this.scaleY -= 0.05;
+        };
+        _this.pointerUpInactiveAnimation = function () {
+            _this.scaleX += 0.05;
+            _this.scaleY += 0.05;
+        };
+        return _this;
+    }
+    Object.defineProperty(ToggleButton.prototype, "image", {
+        /**
+         * Returns the ToggleButton's image control if it exists
+         */
+        get: function () {
+            return this._image;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(ToggleButton.prototype, "textBlock", {
+        /**
+         * Returns the ToggleButton's child TextBlock control if it exists
+         */
+        get: function () {
+            return this._textBlock;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(ToggleButton.prototype, "group", {
+        /** Gets or sets group name this toggle button belongs to */
+        get: function () {
+            return this._group;
+        },
+        set: function (value) {
+            if (this._group === value) {
+                return;
+            }
+            this._group = value;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(ToggleButton.prototype, "isActive", {
+        /** Gets or sets a boolean indicating if the toogle button is active or not */
+        get: function () {
+            return this._isActive;
+        },
+        set: function (value) {
+            var _this = this;
+            var _a, _b;
+            // Function modeled after radioButton.ts
+            if (this._isActive === value) {
+                return;
+            }
+            this._isActive = value;
+            // Update the visual state based on the new value
+            if (this._isActive) {
+                (_a = this.toActiveAnimation) === null || _a === void 0 ? void 0 : _a.call(this);
+            }
+            else {
+                (_b = this.toInactiveAnimation) === null || _b === void 0 ? void 0 : _b.call(this);
+            }
+            this._markAsDirty();
+            this.onIsActiveChangedObservable.notifyObservers(value);
+            if (this._isActive && this._host && this._group) {
+                // A toggle button in a group can only have 1 active element at a given time.
+                // If this toggle button has a group, set other toggle buttons in the group to inactive.
+                this._host.executeOnAllControls(function (control) {
+                    // Check for control type ToggleButton
+                    if (control.typeName === "ToggleButton") {
+                        // Don't do anything to this toggle button
+                        if (control === _this) {
+                            return;
+                        }
+                        var childToggle = control;
+                        // If toggle button is in same group, set isActive to false
+                        if (childToggle.group === _this.group) {
+                            childToggle.isActive = false;
+                        }
+                    }
+                });
+            }
+        },
+        enumerable: false,
+        configurable: true
+    });
+    ToggleButton.prototype._getTypeName = function () {
+        return "ToggleButton";
+    };
+    // While being a container, the toggle button behaves like a control.
+    /** @hidden */
+    ToggleButton.prototype._processPicking = function (x, y, pi, type, pointerId, buttonIndex, deltaX, deltaY) {
+        if (!this._isEnabled || !this.isHitTestVisible || !this.isVisible || this.notRenderable) {
+            return false;
+        }
+        if (!_super.prototype.contains.call(this, x, y)) {
+            return false;
+        }
+        if (this.delegatePickingToChildren) {
+            var contains = false;
+            for (var index = this._children.length - 1; index >= 0; index--) {
+                var child = this._children[index];
+                if (child.isEnabled && child.isHitTestVisible && child.isVisible && !child.notRenderable && child.contains(x, y)) {
+                    contains = true;
+                    break;
+                }
+            }
+            if (!contains) {
+                return false;
+            }
+        }
+        this._processObservables(type, x, y, pi, pointerId, buttonIndex, deltaX, deltaY);
+        return true;
+    };
+    /** @hidden */
+    ToggleButton.prototype._onPointerEnter = function (target, pi) {
+        if (!_super.prototype._onPointerEnter.call(this, target, pi)) {
+            return false;
+        }
+        if (this._isActive) {
+            if (this.pointerEnterActiveAnimation) {
+                this.pointerEnterActiveAnimation();
+            }
+        }
+        else {
+            if (this.pointerEnterInactiveAnimation) {
+                this.pointerEnterInactiveAnimation();
+            }
+        }
+        return true;
+    };
+    /** @hidden */
+    ToggleButton.prototype._onPointerOut = function (target, pi, force) {
+        if (force === void 0) { force = false; }
+        if (this._isActive) {
+            if (this.pointerOutActiveAnimation) {
+                this.pointerOutActiveAnimation();
+            }
+        }
+        else {
+            if (this.pointerOutInactiveAnimation) {
+                this.pointerOutInactiveAnimation();
+            }
+        }
+        _super.prototype._onPointerOut.call(this, target, pi, force);
+    };
+    /** @hidden */
+    ToggleButton.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
+        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi)) {
+            return false;
+        }
+        if (this._isActive) {
+            if (this.pointerDownActiveAnimation) {
+                this.pointerDownActiveAnimation();
+            }
+        }
+        else {
+            if (this.pointerDownInactiveAnimation) {
+                this.pointerDownInactiveAnimation();
+            }
+        }
+        return true;
+    };
+    /** @hidden */
+    ToggleButton.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick, pi) {
+        if (this._isActive) {
+            if (this.pointerUpActiveAnimation) {
+                this.pointerUpActiveAnimation();
+            }
+        }
+        else {
+            if (this.pointerUpInactiveAnimation) {
+                this.pointerUpInactiveAnimation();
+            }
+        }
+        _super.prototype._onPointerUp.call(this, target, coordinates, pointerId, buttonIndex, notifyClick, pi);
+    };
+    return ToggleButton;
+}(_rectangle__WEBPACK_IMPORTED_MODULE_2__["Rectangle"]));
+
+babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.GUI.ToggleButton"] = ToggleButton;
 
 
 /***/ }),
@@ -13125,7 +14445,7 @@ babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredT
 /*!*********************!*\
   !*** ./2D/index.ts ***!
   \*********************/
-/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader */
+/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, FocusableButton, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, TextWrapper, ToggleButton, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -13142,6 +14462,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Control", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["Control"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Ellipse", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["Ellipse"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FocusableButton", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["FocusableButton"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Grid", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["Grid"]; });
 
@@ -13174,6 +14496,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TextWrapping", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["TextWrapping"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TextBlock", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["TextBlock"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TextWrapper", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["TextWrapper"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ToggleButton", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["ToggleButton"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KeyPropertySet", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["KeyPropertySet"]; });
 
@@ -13555,13 +14881,21 @@ var Measure = /** @class */ (function () {
     /**
      * Computes the axis aligned bounding box of the measure after it is modified by a given transform
      * @param transform the matrix to transform the measure before computing the AABB
+     * @param addX number to add to left
+     * @param addY number to add to top
+     * @param addWidth number to add to width
+     * @param addHeight number to add to height
      * @param result the resulting AABB
      */
-    Measure.prototype.transformToRef = function (transform, result) {
-        tmpRect[0].copyFromFloats(this.left, this.top);
-        tmpRect[1].copyFromFloats(this.left + this.width, this.top);
-        tmpRect[2].copyFromFloats(this.left + this.width, this.top + this.height);
-        tmpRect[3].copyFromFloats(this.left, this.top + this.height);
+    Measure.prototype.addAndTransformToRef = function (transform, addX, addY, addWidth, addHeight, result) {
+        var left = this.left + addX;
+        var top = this.top + addY;
+        var width = this.width + addWidth;
+        var height = this.height + addHeight;
+        tmpRect[0].copyFromFloats(left, top);
+        tmpRect[1].copyFromFloats(left + width, top);
+        tmpRect[2].copyFromFloats(left + width, top + height);
+        tmpRect[3].copyFromFloats(left, top + height);
         tmpV1.copyFromFloats(Number.MAX_VALUE, Number.MAX_VALUE);
         tmpV2.copyFromFloats(0, 0);
         for (var i = 0; i < 4; i++) {
@@ -13577,10 +14911,18 @@ var Measure = /** @class */ (function () {
         result.height = tmpV2.y - tmpV1.y;
     };
     /**
-     * Check equality between this measure and another one
-     * @param other defines the other measures
-     * @returns true if both measures are equals
+     * Computes the axis aligned bounding box of the measure after it is modified by a given transform
+     * @param transform the matrix to transform the measure before computing the AABB
+     * @param result the resulting AABB
      */
+    Measure.prototype.transformToRef = function (transform, result) {
+        this.addAndTransformToRef(transform, 0, 0, 0, 0, result);
+    };
+    /**
+ * Check equality between this measure and another one
+ * @param other defines the other measures
+ * @returns true if both measures are equals
+ */
     Measure.prototype.isEqualsTo = function (other) {
         if (this.left !== other.left) {
             return false;
@@ -13625,6 +14967,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _valueAndUnit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./valueAndUnit */ "./2D/valueAndUnit.ts");
 
 
+
 /**
  * Class used to store a point for a MultiLine object.
  * The point can be pure 2D coordinates, a mesh or a control
@@ -13638,7 +14981,7 @@ var MultiLinePoint = /** @class */ (function () {
         this._multiLine = multiLine;
         this._x = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_1__["ValueAndUnit"](0);
         this._y = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_1__["ValueAndUnit"](0);
-        this._point = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Vector2"](0, 0);
+        this._point = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Vector3"](0, 0, 0);
     }
     Object.defineProperty(MultiLinePoint.prototype, "x", {
         /** Gets or sets x coordinate */
@@ -13721,7 +15064,7 @@ var MultiLinePoint = /** @class */ (function () {
         this.mesh = null;
     };
     /**
-     * Gets a translation vector
+     * Gets a translation vector with Z component
      * @returns the translation vector
      */
     MultiLinePoint.prototype.translate = function () {
@@ -13730,16 +15073,16 @@ var MultiLinePoint = /** @class */ (function () {
     };
     MultiLinePoint.prototype._translatePoint = function () {
         if (this._mesh != null) {
-            return this._multiLine._host.getProjectedPosition(this._mesh.getBoundingInfo().boundingSphere.center, this._mesh.getWorldMatrix());
+            return this._multiLine._host.getProjectedPositionWithZ(this._mesh.getBoundingInfo().boundingSphere.center, this._mesh.getWorldMatrix());
         }
         else if (this._control != null) {
-            return new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Vector2"](this._control.centerX, this._control.centerY);
+            return new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Vector3"](this._control.centerX, this._control.centerY, 1. - babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Epsilon"]);
         }
         else {
             var host = this._multiLine._host;
             var xValue = this._x.getValueInPixel(host, Number(host._canvas.width));
             var yValue = this._y.getValueInPixel(host, Number(host._canvas.height));
-            return new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Vector2"](xValue, yValue);
+            return new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Vector3"](xValue, yValue, 1. - babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Epsilon"]);
         }
     };
     /** Release associated resources */
@@ -16657,10 +18000,6 @@ var FluentMaterial = /** @class */ (function (_super) {
          */
         _this.innerGlowColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](1.0, 1.0, 1.0);
         /**
-         * Gets or sets alpha value (default is 1.0)
-         */
-        _this.alpha = 1.0;
-        /**
          * Gets or sets the albedo color (Default is Color3(0.3, 0.35, 0.4))
          */
         _this.albedoColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.3, 0.35, 0.4);
@@ -16855,9 +18194,6 @@ var FluentMaterial = /** @class */ (function (_super) {
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsColor3"])()
     ], FluentMaterial.prototype, "innerGlowColor", void 0);
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
-        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
-    ], FluentMaterial.prototype, "alpha", void 0);
-    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsColor3"])()
     ], FluentMaterial.prototype, "albedoColor", void 0);
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
@@ -17007,7 +18343,7 @@ var Vector3WithInfo = /** @class */ (function (_super) {
 /*!******************!*\
   !*** ./index.ts ***!
   \******************/
-/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, SpherePanel, StackPanel3D, VolumeBasedPanel, FluentMaterialDefines, FluentMaterial, GUI3DManager, Vector3WithInfo */
+/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, FocusableButton, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, TextWrapper, ToggleButton, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, SpherePanel, StackPanel3D, VolumeBasedPanel, FluentMaterialDefines, FluentMaterial, GUI3DManager, Vector3WithInfo */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -17024,6 +18360,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Control", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["Control"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Ellipse", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["Ellipse"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FocusableButton", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["FocusableButton"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Grid", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["Grid"]; });
 
@@ -17056,6 +18394,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TextWrapping", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["TextWrapping"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TextBlock", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["TextBlock"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TextWrapper", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["TextWrapper"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ToggleButton", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["ToggleButton"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KeyPropertySet", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["KeyPropertySet"]; });
 
@@ -17138,7 +18480,7 @@ __webpack_require__.r(__webpack_exports__);
 /*!**************************!*\
   !*** ./legacy/legacy.ts ***!
   \**************************/
-/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, SpherePanel, StackPanel3D, VolumeBasedPanel, FluentMaterialDefines, FluentMaterial, GUI3DManager, Vector3WithInfo */
+/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, FocusableButton, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, TextWrapper, ToggleButton, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, SpherePanel, StackPanel3D, VolumeBasedPanel, FluentMaterialDefines, FluentMaterial, GUI3DManager, Vector3WithInfo */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -17155,6 +18497,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Control", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["Control"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Ellipse", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["Ellipse"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FocusableButton", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["FocusableButton"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Grid", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["Grid"]; });
 
@@ -17187,6 +18531,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TextWrapping", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["TextWrapping"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TextBlock", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["TextBlock"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TextWrapper", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["TextWrapper"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ToggleButton", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["ToggleButton"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KeyPropertySet", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["KeyPropertySet"]; });
 

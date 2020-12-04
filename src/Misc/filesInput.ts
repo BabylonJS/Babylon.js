@@ -19,7 +19,12 @@ export class FilesInput {
     /**
      * Callback called when a file is processed
      */
-    public onProcessFileCallback: (file: File, name: string, extension: string) => boolean = () => { return true; };
+    public onProcessFileCallback: (file: File, name: string, extension: string, setSceneFileToLoad: (sceneFile: File) => void) => boolean = () => { return true; };
+
+    /**
+     * Function used when loading the scene file
+     */
+    public loadAsync: (sceneFile: File, onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void>) => Promise<Scene> = (sceneFile, onProgress) => SceneLoader.LoadAsync("file", sceneFile, this._engine, onProgress);
 
     private _engine: Engine;
     private _currentScene: Nullable<Scene>;
@@ -157,7 +162,7 @@ export class FilesInput {
                 }
             }
 
-            if (--remaining.count) {
+            if (--remaining.count === 0) {
                 callback();
             }
         });
@@ -168,7 +173,7 @@ export class FilesInput {
             var name = files[i].correctName.toLowerCase();
             var extension = name.split('.').pop();
 
-            if (!this.onProcessFileCallback(files[i], name, extension)) {
+            if (!this.onProcessFileCallback(files[i], name, extension, (sceneFile) => this._sceneFileToLoad = sceneFile)) {
                 continue;
             }
 
@@ -278,11 +283,8 @@ export class FilesInput {
 
             SceneLoader.ShowLoadingScreen = false;
             this._engine.displayLoadingUI();
-            SceneLoader.LoadAsync("file:", this._sceneFileToLoad, this._engine, (progress) => {
-                if (this._progressCallback) {
-                    this._progressCallback(progress);
-                }
-            }).then((scene) => {
+
+            this.loadAsync(this._sceneFileToLoad, this._progressCallback).then((scene) => {
                 if (this._currentScene) {
                     this._currentScene.dispose();
                 }

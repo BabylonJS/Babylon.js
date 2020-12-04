@@ -4,7 +4,6 @@ import { IAnimatable } from '../Animations/animatable.interface';
 import { SmartArray } from "../Misc/smartArray";
 import { Observer, Observable } from "../Misc/observable";
 import { Nullable } from "../types";
-import { Scene } from "../scene";
 import { Matrix } from "../Maths/math.vector";
 import { EngineStore } from "../Engines/engineStore";
 import { SubMesh } from "../Meshes/subMesh";
@@ -20,11 +19,13 @@ import { Logger } from "../Misc/logger";
 import { IInspectable } from '../Misc/iInspectable';
 import { Plane } from '../Maths/math.plane';
 import { ShadowDepthWrapper } from './shadowDepthWrapper';
+import { MaterialHelper } from './materialHelper';
 
 declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
 declare type Mesh = import("../Meshes/mesh").Mesh;
 declare type Animation = import("../Animations/animation").Animation;
 declare type InstancedMesh = import('../Meshes/instancedMesh').InstancedMesh;
+declare type Scene = import("../scene").Scene;
 
 declare var BABYLON: any;
 
@@ -128,6 +129,11 @@ export class Material implements IAnimatable {
      * The dirty misc flag value
      */
     public static readonly MiscDirtyFlag = Constants.MATERIAL_MiscDirtyFlag;
+
+    /**
+     * The dirty prepass flag value
+     */
+    public static readonly PrePassDirtyFlag = Constants.MATERIAL_PrePassDirtyFlag;
 
     /**
      * The all dirty flag value
@@ -615,6 +621,7 @@ export class Material implements IAnimatable {
      * Stores a reference to the scene
      */
     private _scene: Scene;
+    private _needToBindSceneUbo: boolean;
 
     /**
      * Stores the fill mode state
@@ -655,9 +662,9 @@ export class Material implements IAnimatable {
      */
     constructor(name: string, scene: Scene, doNotAdd?: boolean) {
         this.name = name;
-        this.id = name || Tools.RandomId();
-
         this._scene = scene || EngineStore.LastCreatedScene;
+
+        this.id = name || Tools.RandomId();
         this.uniqueId = this._scene.getUniqueId();
 
         if (this._scene.useRightHandedSystem) {
@@ -666,7 +673,7 @@ export class Material implements IAnimatable {
             this.sideOrientation = Material.CounterClockWiseSideOrientation;
         }
 
-        this._uniformBuffer = new UniformBuffer(this._scene.getEngine());
+        this._uniformBuffer = new UniformBuffer(this._scene.getEngine(), undefined, undefined, name);
         this._useUBO = this.getScene().getEngine().supportsUniformBuffers;
 
         if (!doNotAdd) {
@@ -921,6 +928,25 @@ export class Material implements IAnimatable {
     }
 
     /**
+     * Update the scene ubo before it can be used in rendering processing
+     * @param scene the scene to retrieve the ubo from
+     * @returns the scene UniformBuffer
+     */
+    public finalizeSceneUbo(scene: Scene): UniformBuffer {
+        const ubo = scene.getSceneUniformBuffer();
+        const eyePosition = MaterialHelper.BindEyePosition(null, scene);
+        ubo.updateFloat4("vEyePosition",
+            eyePosition.x,
+            eyePosition.y,
+            eyePosition.z,
+            eyePosition.w);
+
+        ubo.update();
+
+        return ubo;
+    }
+
+    /**
      * Binds the scene's uniform buffer to the effect.
      * @param effect defines the effect to bind to the scene uniform buffer
      * @param sceneUbo defines the uniform buffer storing scene data
@@ -937,19 +963,33 @@ export class Material implements IAnimatable {
         if (!this._useUBO) {
             effect.setMatrix("view", this.getScene().getViewMatrix());
         } else {
-            this.bindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
+            this._needToBindSceneUbo = true;
         }
     }
 
     /**
-     * Binds the view projection matrix to the effect
-     * @param effect defines the effect to bind the view projection matrix to
+     * Binds the view projection and projection matrices to the effect
+     * @param effect defines the effect to bind the view projection and projection matrices to
      */
     public bindViewProjection(effect: Effect): void {
         if (!this._useUBO) {
             effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
+            effect.setMatrix("projection", this.getScene().getProjectionMatrix());
         } else {
-            this.bindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
+            this._needToBindSceneUbo = true;
+        }
+    }
+
+    /**
+     * Binds the view matrix to the effect
+     * @param effect defines the effect to bind the view matrix to
+     * @param variableName name of the shader variable that will hold the eye position
+     */
+    public bindEyePosition(effect: Effect, variableName?: string): void {
+        if (!this._useUBO) {
+            MaterialHelper.BindEyePosition(effect, this._scene, variableName);
+        } else {
+            this._needToBindSceneUbo = true;
         }
     }
 
@@ -957,8 +997,15 @@ export class Material implements IAnimatable {
      * Processes to execute after binding the material to a mesh
      * @param mesh defines the rendered mesh
      */
-    protected _afterBind(mesh?: Mesh): void {
+    protected _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null): void {
         this._scene._cachedMaterial = this;
+        if (this._needToBindSceneUbo) {
+            if (effect) {
+                this._needToBindSceneUbo = false;
+                this.finalizeSceneUbo(this.getScene());
+                this.bindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
+            }
+        }
         if (mesh) {
             this._scene._cachedVisibility = mesh.visibility;
         } else {
@@ -1156,6 +1203,7 @@ export class Material implements IAnimatable {
     private static readonly _TextureDirtyCallBack = (defines: MaterialDefines) => defines.markAsTexturesDirty();
     private static readonly _FresnelDirtyCallBack = (defines: MaterialDefines) => defines.markAsFresnelDirty();
     private static readonly _MiscDirtyCallBack = (defines: MaterialDefines) => defines.markAsMiscDirty();
+    private static readonly _PrePassDirtyCallBack = (defines: MaterialDefines) => defines.markAsPrePassDirty();
     private static readonly _LightsDirtyCallBack = (defines: MaterialDefines) => defines.markAsLightDirty();
     private static readonly _AttributeDirtyCallBack = (defines: MaterialDefines) => defines.markAsAttributesDirty();
 
@@ -1205,6 +1253,10 @@ export class Material implements IAnimatable {
 
         if (flag & Material.MiscDirtyFlag) {
             Material._DirtyCallbackArray.push(Material._MiscDirtyCallBack);
+        }
+
+        if (flag & Material.PrePassDirtyFlag) {
+            Material._DirtyCallbackArray.push(Material._PrePassDirtyCallBack);
         }
 
         if (Material._DirtyCallbackArray.length) {
@@ -1309,6 +1361,13 @@ export class Material implements IAnimatable {
      * Indicates that misc needs to be re-calculated for all submeshes
      */
     protected _markAllSubMeshesAsMiscDirty() {
+        this._markAllSubMeshesAsDirty(Material._MiscDirtyCallBack);
+    }
+
+    /**
+     * Indicates that prepass needs to be re-calculated for all submeshes
+     */
+    protected _markAllSubMeshesAsPrePassDirty() {
         this._markAllSubMeshesAsDirty(Material._MiscDirtyCallBack);
     }
 

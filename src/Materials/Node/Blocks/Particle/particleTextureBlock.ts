@@ -46,7 +46,7 @@ export class ParticleTextureBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Fragment);
 
-        this._isUnique = true;
+        this._isUnique = false;
 
         this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.Vector2, false, NodeMaterialBlockTargets.VertexAndFragment);
 
@@ -200,7 +200,7 @@ export class ParticleTextureBlock extends NodeMaterialBlock {
 
         serializationObject.convertToGammaSpace = this.convertToGammaSpace;
         serializationObject.convertToLinearSpace = this.convertToLinearSpace;
-        if (this.texture) {
+        if (this.texture && !this.texture.isRenderTarget) {
             serializationObject.texture = this.texture.serialize();
         }
 

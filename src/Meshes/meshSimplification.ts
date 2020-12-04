@@ -138,7 +138,9 @@ export class SimplificationQueue {
             task.settings.forEach((setting) => {
                 var simplifier = this.getSimplifier(task);
                 simplifier.simplify(setting, (newMesh) => {
-                    task.mesh.addLODLevel(setting.distance, newMesh);
+                    if (setting.distance !== undefined) {
+                        task.mesh.addLODLevel(setting.distance, newMesh);
+                    }
                     newMesh.isVisible = true;
                     //check if it is the last
                     if (setting.quality === task.settings[task.settings.length - 1].quality && task.successCallback) {
@@ -154,7 +156,9 @@ export class SimplificationQueue {
 
             var runDecimation = (setting: ISimplificationSettings, callback: () => void) => {
                 simplifier.simplify(setting, (newMesh) => {
-                    task.mesh.addLODLevel(setting.distance, newMesh);
+                    if (setting.distance !== undefined) {
+                        task.mesh.addLODLevel(setting.distance, newMesh);
+                    }
                     newMesh.isVisible = true;
                     //run the next quality level
                     callback();
@@ -469,7 +473,7 @@ export class QuadraticErrorSimplification implements ISimplifier {
         var findInVertices = (positionToSearch: Vector3) => {
             if (optimizeMesh) {
                 for (var ii = 0; ii < this.vertices.length; ++ii) {
-                    if (this.vertices[ii].position.equals(positionToSearch)) {
+                    if (this.vertices[ii].position.equalsWithEpsilon(positionToSearch, 0.0001)) {
                         return this.vertices[ii];
                     }
                 }
@@ -578,21 +582,20 @@ export class QuadraticErrorSimplification implements ISimplifier {
             vertex.id = vertexCount;
             if (vertex.triangleCount) {
                 vertex.originalOffsets.forEach((originalOffset) => {
-                    if (!normalData) {
-                        return;
-                    }
 
                     newPositionData.push(vertex.position.x);
                     newPositionData.push(vertex.position.y);
                     newPositionData.push(vertex.position.z);
-                    newNormalData.push(normalData[originalOffset * 3]);
-                    newNormalData.push(normalData[(originalOffset * 3) + 1]);
-                    newNormalData.push(normalData[(originalOffset * 3) + 2]);
+
+                    if (normalData && normalData.length) {
+                        newNormalData.push(normalData[originalOffset * 3]);
+                        newNormalData.push(normalData[(originalOffset * 3) + 1]);
+                        newNormalData.push(normalData[(originalOffset * 3) + 2]);
+                    }
                     if (uvs && uvs.length) {
                         newUVsData.push(uvs[(originalOffset * 2)]);
                         newUVsData.push(uvs[(originalOffset * 2) + 1]);
                     }
-
                     if (colorsData && colorsData.length) {
                         newColorsData.push(colorsData[(originalOffset * 4)]);
                         newColorsData.push(colorsData[(originalOffset * 4) + 1]);
@@ -626,7 +629,9 @@ export class QuadraticErrorSimplification implements ISimplifier {
 
         this._reconstructedMesh.setIndices(newIndicesArray);
         this._reconstructedMesh.setVerticesData(VertexBuffer.PositionKind, newPositionData);
-        this._reconstructedMesh.setVerticesData(VertexBuffer.NormalKind, newNormalData);
+        if (newNormalData.length > 0) {
+            this._reconstructedMesh.setVerticesData(VertexBuffer.NormalKind, newNormalData);
+        }
         if (newUVsData.length > 0) {
             this._reconstructedMesh.setVerticesData(VertexBuffer.UVKind, newUVsData);
         }

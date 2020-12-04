@@ -36,6 +36,9 @@ struct clearcoatOutParams
         const in vec3 geometricNormalW,
         const in vec3 viewDirectionW,
         const in vec2 vClearCoatParams,
+    #if defined(CLEARCOAT_TEXTURE_ROUGHNESS) && !defined(CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL) && !defined(CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE)
+        const in vec4 clearCoatMapRoughnessData,
+    #endif
         const in vec3 specularEnvironmentR0,
     #ifdef CLEARCOAT_TEXTURE
         const in vec2 clearCoatMapData,
@@ -83,11 +86,17 @@ struct clearcoatOutParams
                 const in sampler2D reflectionSamplerHigh,
             #endif
         #endif
+        #ifdef REALTIME_FILTERING
+            const in vec2 vReflectionFilteringInfo,
+        #endif
     #endif
     #if defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
         #ifdef RADIANCEOCCLUSION
             const in float ambientMonochrome,
         #endif
+    #endif
+    #if defined(CLEARCOAT_BUMP) || defined(TWOSIDEDLIGHTING)
+        const in float frontFacingMultiplier,
     #endif
         out clearcoatOutParams outParams
     )
@@ -98,9 +107,20 @@ struct clearcoatOutParams
 
         #ifdef CLEARCOAT_TEXTURE
             clearCoatIntensity *= clearCoatMapData.x;
-            clearCoatRoughness *= clearCoatMapData.y;
+            #ifdef CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE
+                clearCoatRoughness *= clearCoatMapData.y;
+            #endif
             #if DEBUGMODE > 0
                 outParams.clearCoatMapData = clearCoatMapData;
+            #endif
+        #endif
+
+
+        #if defined(CLEARCOAT_TEXTURE_ROUGHNESS) && !defined(CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE)
+            #ifdef CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL
+                clearCoatRoughness *= clearCoatMapData.y;
+            #else
+                clearCoatRoughness *= clearCoatMapRoughnessData.y;
             #endif
         #endif
 
@@ -128,7 +148,11 @@ struct clearcoatOutParams
         // clearCoatRoughness = mix(0.089, 0.6, clearCoatRoughness);
 
         // Remap F0 to account for the change of interface within the material.
-        vec3 specularEnvironmentR0Updated = getR0RemappedForClearCoat(specularEnvironmentR0);
+        #ifdef CLEARCOAT_REMAP_F0
+            vec3 specularEnvironmentR0Updated = getR0RemappedForClearCoat(specularEnvironmentR0);
+        #else
+            vec3 specularEnvironmentR0Updated = specularEnvironmentR0;
+        #endif
         outParams.specularEnvironmentR0 = mix(specularEnvironmentR0, specularEnvironmentR0Updated, clearCoatIntensity);
 
         // Needs to use the geometric normal before bump for this.
@@ -144,7 +168,9 @@ struct clearcoatOutParams
             #if defined(TANGENT) && defined(NORMAL)
                 mat3 TBNClearCoat = vTBN;
             #else
-                mat3 TBNClearCoat = cotangent_frame(clearCoatNormalW * clearCoatNormalScale, vPositionW, vClearCoatBumpUV, vClearCoatTangentSpaceParams);
+                // flip the uv for the backface
+                vec2 TBNClearCoatUV = vClearCoatBumpUV * frontFacingMultiplier;
+                mat3 TBNClearCoat = cotangent_frame(clearCoatNormalW * clearCoatNormalScale, vPositionW, TBNClearCoatUV, vClearCoatTangentSpaceParams);
             #endif
 
             #if DEBUGMODE > 0
@@ -164,7 +190,7 @@ struct clearcoatOutParams
         #endif
 
         #if defined(TWOSIDEDLIGHTING) && defined(NORMAL)
-            clearCoatNormalW = gl_FrontFacing ? clearCoatNormalW : -clearCoatNormalW;
+            clearCoatNormalW = clearCoatNormalW * frontFacingMultiplier;
         #endif
 
         outParams.clearCoatNormalW = clearCoatNormalW;
@@ -236,6 +262,9 @@ struct clearcoatOutParams
             #ifndef LODBASEDMICROSFURACE
                 reflectionSamplerLow,
                 reflectionSamplerHigh,
+            #endif
+            #ifdef REALTIME_FILTERING
+                vReflectionFilteringInfo,
             #endif
                 environmentClearCoatRadiance
             );

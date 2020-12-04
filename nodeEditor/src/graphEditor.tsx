@@ -202,6 +202,26 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 }
 
                 if (this._graphCanvas.selectedFrame) {
+                    var frame = this._graphCanvas.selectedFrame;
+                    
+                    if(frame.isCollapsed) {
+                        while(frame.nodes.length > 0) {
+                            let targetBlock = frame.nodes[0].block;
+                            this.props.globalState.nodeMaterial!.removeBlock(targetBlock);
+                            let blockIndex = this._blocks.indexOf(targetBlock);
+        
+                            if (blockIndex > -1) {
+                                this._blocks.splice(blockIndex, 1);
+                            }
+                            frame.nodes[0].dispose();            
+                        }
+                        frame.isCollapsed = false;
+                    }
+                    else {
+                        frame.nodes.forEach(node => {
+                            node.enclosingFrameId = -1;
+                        });
+                    }
                     this._graphCanvas.selectedFrame.dispose();
                 }
 
@@ -544,10 +564,35 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     emitNewBlock(event: React.DragEvent<HTMLDivElement>) {
         var data = event.dataTransfer.getData("babylonjs-material-node") as string;
         let newNode: GraphNode;
+        
+        if(data.indexOf("Custom") > -1) {
+            let storageData = localStorage.getItem(data);
+            if(storageData) {   
+                let frameData = JSON.parse(storageData);
+
+                //edit position before loading.
+                let newX = (event.clientX - event.currentTarget.offsetLeft - this._graphCanvas.x - this.NodeWidth) / this._graphCanvas.zoom;
+                let newY = (event.clientY - event.currentTarget.offsetTop - this._graphCanvas.y - 20) / this._graphCanvas.zoom;;
+                let oldX = frameData.editorData.frames[0].x;
+                let oldY = frameData.editorData.frames[0].y;
+                frameData.editorData.frames[0].x = newX;
+                frameData.editorData.frames[0].y = newY;
+                for (var location of frameData.editorData.locations) {
+                    location.x +=  newX - oldX;
+                    location.y +=  newY - oldY;       
+                }
+
+                SerializationTools.AddFrameToMaterial(frameData, this.props.globalState, this.props.globalState.nodeMaterial); 
+                this._graphCanvas.frames[this._graphCanvas.frames.length -1].cleanAccumulation();
+                this.forceUpdate();
+                return;
+            }
+        }
 
         if (data.indexOf("Block") === -1) {
             newNode = this.addValueNode(data);
-        } else {
+        } 
+        else {
             let block = BlockTools.GetBlockFromString(data, this.props.globalState.nodeMaterial.getScene(), this.props.globalState.nodeMaterial)!;   
             
             if (block.isUnique) {
@@ -824,7 +869,12 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                             event.preventDefault();
                         }}
                     >                        
-                        <GraphCanvasComponent ref={"graphCanvas"} globalState={this.props.globalState}/>
+                        <GraphCanvasComponent ref={"graphCanvas"} 
+                            globalState={this.props.globalState}
+                            onEmitNewBlock={ block => {
+                                return this.createNodeFromObject(block);
+                            }
+                            }/>
                     </div>
 
                     <div id="rightGrab"

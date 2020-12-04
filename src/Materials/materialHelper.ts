@@ -8,6 +8,8 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { VertexBuffer } from "../Meshes/buffer";
 import { Light } from "../Lights/light";
+import { Constants } from "../Engines/constants";
+import { PrePassConfiguration } from "../Materials/prePassConfiguration";
 
 import { UniformBuffer } from "./uniformBuffer";
 import { Effect, IEffectCreationOptions } from "./effect";
@@ -16,10 +18,11 @@ import { WebVRFreeCamera } from '../Cameras/VR/webVRCamera';
 import { MaterialDefines } from "./materialDefines";
 import { Color3 } from '../Maths/math.color';
 import { EffectFallbacks } from './effectFallbacks';
+import { ThinMaterialHelper } from './thinMaterialHelper';
+import { TmpVectors, Vector4 } from '../Maths/math.vector';
 
 /**
- * "Static Class" containing the most commonly used helper while dealing with material for
- * rendering purpose.
+ * "Static Class" containing the most commonly used helper while dealing with material for rendering purpose.
  *
  * It contains the basic tools to help defining defines, binding uniform for the common part of the materials.
  *
@@ -32,18 +35,28 @@ export class MaterialHelper {
      * @param effect The effect to be bound
      * @param scene The scene the eyes position is used from
      * @param variableName name of the shader variable that will hold the eye position
+     * @param isVector3 true to indicates that variableName is a Vector3 and not a Vector4
+     * @return the computed eye position
      */
-    public static BindEyePosition(effect: Effect, scene: Scene, variableName = "vEyePosition"): void {
-        if (scene._forcedViewPosition) {
-            effect.setVector3(variableName, scene._forcedViewPosition);
-            return;
+    public static BindEyePosition(effect: Nullable<Effect>, scene: Scene, variableName = "vEyePosition", isVector3 = false): Vector4 {
+        const eyePosition =
+            scene._forcedViewPosition ? scene._forcedViewPosition :
+            scene._mirroredCameraPosition ? scene._mirroredCameraPosition :
+            scene.activeCamera!.globalPosition ?? (scene.activeCamera as WebVRFreeCamera).devicePosition;
+
+        const invertNormal = (scene.useRightHandedSystem === (scene._mirroredCameraPosition != null));
+
+        TmpVectors.Vector4[0].set(eyePosition.x, eyePosition.y, eyePosition.z, invertNormal ? -1 : 1);
+
+        if (effect) {
+            if (isVector3) {
+                effect.setFloat3(variableName, TmpVectors.Vector4[0].x, TmpVectors.Vector4[0].y, TmpVectors.Vector4[0].z);
+            } else {
+                effect.setVector4(variableName, TmpVectors.Vector4[0]);
+            }
         }
-        var globalPosition = scene.activeCamera!.globalPosition;
-        if (!globalPosition) {
-            // Use WebVRFreecamera's device position as global position is not it's actual position in babylon space
-            globalPosition = (scene.activeCamera! as WebVRFreeCamera).devicePosition;
-        }
-        effect.setVector3(variableName, scene._mirroredCameraPosition ? scene._mirroredCameraPosition : globalPosition);
+
+        return TmpVectors.Vector4[0];
     }
 
     /**
@@ -202,6 +215,12 @@ export class MaterialHelper {
             } else {
                 defines["BonesPerMesh"] = (mesh.skeleton.bones.length + 1);
                 defines["BONETEXTURE"] = materialSupportsBoneTexture ? false : undefined;
+
+                const prePassRenderer = mesh.getScene().prePassRenderer;
+                if (prePassRenderer && prePassRenderer.enabled) {
+                    const nonExcluded = prePassRenderer.excludedSkinnedMesh.indexOf(mesh) === -1;
+                    defines["BONES_VELOCITY_ENABLED"] = nonExcluded;
+                }
             }
         } else {
             defines["NUM_BONE_INFLUENCERS"] = 0;
@@ -302,13 +321,63 @@ export class MaterialHelper {
      * @param canRenderToMRT Indicates if this material renders to several textures in the prepass
      */
     public static PrepareDefinesForPrePass(scene: Scene, defines: any, canRenderToMRT: boolean) {
-        var previousPrePass = defines.PREPASS;
+        const previousPrePass = defines.PREPASS;
 
-        if (scene.prePassRenderer && canRenderToMRT) {
+        if (!defines._arePrePassDirty) {
+            return;
+        }
+
+        const texturesList = [
+        {
+            type: Constants.PREPASS_POSITION_TEXTURE_TYPE,
+            define: "PREPASS_POSITION",
+            index: "PREPASS_POSITION_INDEX",
+        },
+        {
+            type: Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
+            define: "PREPASS_VELOCITY",
+            index: "PREPASS_VELOCITY_INDEX",
+        },
+        {
+            type: Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE,
+            define: "PREPASS_REFLECTIVITY",
+            index: "PREPASS_REFLECTIVITY_INDEX",
+        },
+        {
+            type: Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
+            define: "PREPASS_IRRADIANCE",
+            index: "PREPASS_IRRADIANCE_INDEX",
+        },
+        {
+            type: Constants.PREPASS_ALBEDO_TEXTURE_TYPE,
+            define: "PREPASS_ALBEDO",
+            index: "PREPASS_ALBEDO_INDEX",
+        },
+        {
+            type: Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE,
+            define: "PREPASS_DEPTHNORMAL",
+            index: "PREPASS_DEPTHNORMAL_INDEX",
+        }];
+
+        if (scene.prePassRenderer && scene.prePassRenderer.enabled && canRenderToMRT) {
             defines.PREPASS = true;
             defines.SCENE_MRT_COUNT = scene.prePassRenderer.mrtCount;
+
+            for (let i = 0; i < texturesList.length; i++) {
+                const index = scene.prePassRenderer.getIndex(texturesList[i].type);
+                if (index !== -1) {
+                    defines[texturesList[i].define] = true;
+                    defines[texturesList[i].index] = index;
+                } else {
+                    defines[texturesList[i].define] = false;
+                }
+            }
+
         } else {
             defines.PREPASS = false;
+            for (let i = 0; i < texturesList.length; i++) {
+                defines[texturesList[i].define] = false;
+            }
         }
 
         if (defines.PREPASS != previousPrePass) {
@@ -383,6 +452,7 @@ export class MaterialHelper {
         defines["SHADOWPCSS" + lightIndex] = false;
         defines["SHADOWPOISSON" + lightIndex] = false;
         defines["SHADOWESM" + lightIndex] = false;
+        defines["SHADOWCLOSEESM" + lightIndex] = false;
         defines["SHADOWCUBE" + lightIndex] = false;
         defines["SHADOWLOWQUALITY" + lightIndex] = false;
         defines["SHADOWMEDIUMQUALITY" + lightIndex] = false;
@@ -467,6 +537,7 @@ export class MaterialHelper {
                 defines["SHADOWPCSS" + index] = false;
                 defines["SHADOWPOISSON" + index] = false;
                 defines["SHADOWESM" + index] = false;
+                defines["SHADOWCLOSEESM" + index] = false;
                 defines["SHADOWCUBE" + index] = false;
                 defines["SHADOWLOWQUALITY" + index] = false;
                 defines["SHADOWMEDIUMQUALITY" + index] = false;
@@ -498,8 +569,17 @@ export class MaterialHelper {
      * @param samplersList The sampler list
      * @param projectedLightTexture defines if projected texture must be used
      * @param uniformBuffersList defines an optional list of uniform buffers
+     * @param updateOnlyBuffersList True to only update the uniformBuffersList array
      */
-    public static PrepareUniformsAndSamplersForLight(lightIndex: number, uniformsList: string[], samplersList: string[], projectedLightTexture?: any, uniformBuffersList: Nullable<string[]> = null) {
+    public static PrepareUniformsAndSamplersForLight(lightIndex: number, uniformsList: string[], samplersList: string[], projectedLightTexture?: any, uniformBuffersList: Nullable<string[]> = null, updateOnlyBuffersList = false) {
+        if (uniformBuffersList) {
+            uniformBuffersList.push("Light" + lightIndex);
+        }
+
+        if (updateOnlyBuffersList) {
+            return;
+        }
+
         uniformsList.push(
             "vLightData" + lightIndex,
             "vLightDiffuse" + lightIndex,
@@ -511,10 +591,6 @@ export class MaterialHelper {
             "shadowsInfo" + lightIndex,
             "depthValues" + lightIndex,
         );
-
-        if (uniformBuffersList) {
-            uniformBuffersList.push("Light" + lightIndex);
-        }
 
         samplersList.push("shadowSampler" + lightIndex);
         samplersList.push("depthSampler" + lightIndex);
@@ -612,6 +688,10 @@ export class MaterialHelper {
 
                 if (defines["SHADOWESM" + lightIndex]) {
                     fallbacks.addFallback(rank, "SHADOWESM" + lightIndex);
+                }
+
+                if (defines["SHADOWCLOSEESM" + lightIndex]) {
+                    fallbacks.addFallback(rank, "SHADOWCLOSEESM" + lightIndex);
                 }
             }
         }
@@ -777,8 +857,9 @@ export class MaterialHelper {
      * Binds the bones information from the mesh to the effect.
      * @param mesh The mesh we are binding the information to render
      * @param effect The effect we are binding the data to
+     * @param prePassConfiguration Configuration for the prepass, in case prepass is activated
      */
-    public static BindBonesParameters(mesh?: AbstractMesh, effect?: Effect): void {
+    public static BindBonesParameters(mesh?: AbstractMesh, effect?: Effect, prePassConfiguration?: PrePassConfiguration): void {
         if (!effect || !mesh) {
             return;
         }
@@ -798,9 +879,23 @@ export class MaterialHelper {
 
                 if (matrices) {
                     effect.setMatrices("mBones", matrices);
+                    if (prePassConfiguration && mesh.getScene().prePassRenderer && mesh.getScene().prePassRenderer!.getIndex(Constants.PREPASS_VELOCITY_TEXTURE_TYPE)) {
+                        if (prePassConfiguration.previousBones[mesh.uniqueId]) {
+                            effect.setMatrices("mPreviousBones", prePassConfiguration.previousBones[mesh.uniqueId]);
+                        }
+
+                        MaterialHelper._CopyBonesTransformationMatrices(matrices, prePassConfiguration.previousBones[mesh.uniqueId]);
+                    }
                 }
             }
         }
+    }
+
+    // Copies the bones transformation matrices into the target array and returns the target's reference
+    private static _CopyBonesTransformationMatrices(source: Float32Array, target: Float32Array): Float32Array {
+        target.set(source);
+
+        return target;
     }
 
     /**
@@ -835,29 +930,6 @@ export class MaterialHelper {
      * @param effect The effect we are binding the data to
      */
     public static BindClipPlane(effect: Effect, scene: Scene): void {
-        if (scene.clipPlane) {
-            let clipPlane = scene.clipPlane;
-            effect.setFloat4("vClipPlane", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
-        }
-        if (scene.clipPlane2) {
-            let clipPlane = scene.clipPlane2;
-            effect.setFloat4("vClipPlane2", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
-        }
-        if (scene.clipPlane3) {
-            let clipPlane = scene.clipPlane3;
-            effect.setFloat4("vClipPlane3", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
-        }
-        if (scene.clipPlane4) {
-            let clipPlane = scene.clipPlane4;
-            effect.setFloat4("vClipPlane4", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
-        }
-        if (scene.clipPlane5) {
-            let clipPlane = scene.clipPlane5;
-            effect.setFloat4("vClipPlane5", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
-        }
-        if (scene.clipPlane6) {
-            let clipPlane = scene.clipPlane6;
-            effect.setFloat4("vClipPlane6", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
-        }
+        ThinMaterialHelper.BindClipPlane(effect, scene);
     }
 }

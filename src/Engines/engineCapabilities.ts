@@ -36,6 +36,8 @@ export interface EngineCapabilities {
     etc2: any; //WEBGL_compressed_texture_etc;
     /** Defines if astc texture compression is supported */
     astc: any; //WEBGL_compressed_texture_astc;
+    /** Defines if bptc texture compression is supported */
+    bptc: any; //EXT_texture_compression_bptc;
     /** Defines if float textures are supported */
     textureFloat: boolean;
     /** Defines if vertex array objects are supported */
@@ -86,4 +88,6 @@ export interface EngineCapabilities {
     maxMSAASamples: number;
     /** Defines if the blend min max extension is supported */
     blendMinMax: boolean;
+    /** In some iOS + WebGL1, gl_InstanceID (and gl_InstanceIDEXT) is undefined even if instancedArrays is true. So don't use gl_InstanceID in those cases */
+    canUseGLInstanceID: boolean;
 }

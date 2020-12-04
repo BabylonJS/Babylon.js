@@ -110,7 +110,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                         );
                     } else {
                         components.push(
-                            <SliderLineComponent label={displayName} target={this.props.block} propertyName={propertyName} step={Math.abs((options.max as number) - (options.min as number)) / 100.0} minimum={Math.min(options.min as number, options.max as number)} maximum={options.max as number} onChange={() => this.forceRebuild(options.notifiers)}/>
+                            <SliderLineComponent label={displayName} target={this.props.block} globalState={this.props.globalState} propertyName={propertyName} step={Math.abs((options.max as number) - (options.min as number)) / 100.0} minimum={Math.min(options.min as number, options.max as number)} maximum={options.max as number} onChange={() => this.forceRebuild(options.notifiers)}/>
                         );
                     }
                     break;

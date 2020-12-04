@@ -28,6 +28,7 @@ export class GlobalState {
     public mobileDefaultMode = EditionMode.RenderingOnly;
 
     public runtimeMode = RuntimeMode.Editor;
+    public inspectorIsOpened = false;
 
     public currentSnippetTitle = "";
     public currentSnippetDescription = "";
@@ -37,6 +38,7 @@ export class GlobalState {
     public zipCode = "";
 
     public onRunRequiredObservable = new Observable<void>();
+    public onRunExecutedObservable = new Observable<void>();
     public onSavedObservable = new Observable<void>();
     public onNewRequiredObservable = new Observable<void>();
     public onClearRequiredObservable = new Observable<void>();
@@ -49,7 +51,7 @@ export class GlobalState {
     public onMetadataUpdatedObservable = new Observable<void>();
     public onMetadataWindowHiddenObservable = new Observable<boolean>();
     public onDownloadRequiredObservable = new Observable<void>();
-    public onInspectorRequiredObservable = new Observable<void>();
+    public onInspectorRequiredObservable = new Observable<boolean>();
     public onFormatCodeRequiredObservable = new Observable<void>();
     public onFullcreenRequiredObservable = new Observable<void>();
     public onEditorFullcreenRequiredObservable = new Observable<void>();
@@ -61,6 +63,7 @@ export class GlobalState {
     public onNavigateRequiredObservable = new Observable<{lineNumber: number, column: number}>();
     public onExamplesDisplayChangedObservable = new Observable<void>();
     public onQRCodeRequiredObservable = new Observable<boolean>();
+    public OnNewDropdownButtonClicked = new Observable<any>();
 
     public loadingCodeInProgress = false;
     public onCodeLoaded = new Observable<string>();

@@ -239,6 +239,14 @@ export class ShaderCodeInliner {
         return index;
     }
 
+    private _isIdentifierChar(c: string): boolean {
+        const v = c.charCodeAt(0);
+        return (v >= 48 && v <= 57) || // 0-9
+            (v >= 65 && v <= 90) || // A-Z
+            (v >= 97 && v <= 122) || // a-z
+            (v == 95); // _
+    }
+
     private _removeComments(block: string): string {
         let currPos = 0,
             waitForChar = '',
@@ -315,6 +323,12 @@ export class ShaderCodeInliner {
                     break;
                 }
 
+                // Make sure "name" is not part of a bigger string
+                if (functionCallIndex === 0 || this._isIdentifierChar(this._sourceCode.charAt(functionCallIndex - 1))) {
+                    startIndex = functionCallIndex + name.length;
+                    continue;
+                }
+
                 // Find the opening parenthesis
                 const callParamsStartIndex = this._skipWhitespaces(this._sourceCode, functionCallIndex + name.length);
                 if (callParamsStartIndex === this._sourceCode.length || this._sourceCode.charAt(callParamsStartIndex) !== '(') {
@@ -334,7 +348,41 @@ export class ShaderCodeInliner {
                 const callParams = this._sourceCode.substring(callParamsStartIndex + 1, callParamsEndIndex);
 
                 // process the parameter call: extract each names
-                const params = this._removeComments(callParams).split(",");
+
+                // this function split the parameter list used in the function call at ',' boundaries by taking care of potential parenthesis like in:
+                //      myfunc(a, vec2(1., 0.), 4.)
+                const splitParameterCall = (s: string) => {
+                    const parameters = [];
+                    let curIdx = 0, startParamIdx = 0;
+                    while (curIdx < s.length) {
+                        if (s.charAt(curIdx) === '(') {
+                            const idx2 = this._extractBetweenMarkers('(', ')', s, curIdx);
+                            if (idx2 < 0) {
+                                return null;
+                            }
+                            curIdx = idx2;
+                        } else if (s.charAt(curIdx) === ',') {
+                            parameters.push(s.substring(startParamIdx, curIdx));
+                            startParamIdx = curIdx + 1;
+                        }
+                        curIdx++;
+                    }
+                    if (startParamIdx < curIdx) {
+                        parameters.push(s.substring(startParamIdx, curIdx));
+                    }
+                    return parameters;
+                };
+
+                const params = splitParameterCall(this._removeComments(callParams));
+
+                if (params === null) {
+                    if (this.debug) {
+                        console.warn(`Invalid function call: can't extract the parameters of the function call. Function '${name}' (type=${type}). callParamsStartIndex=${callParamsStartIndex}, callParams=` + callParams);
+                    }
+                    startIndex = functionCallIndex + name.length;
+                    continue;
+                }
+
                 const paramNames = [];
 
                 for (let p = 0; p < params.length; ++p) {
@@ -410,12 +458,19 @@ export class ShaderCodeInliner {
     }
 
     private _replaceNames(code: string, sources: string[], destinations: string[]): string {
-
         for (let i = 0; i < sources.length; ++i) {
             const source = new RegExp(this._escapeRegExp(sources[i]), 'g'),
+                  sourceLen = sources[i].length,
                   destination = destinations[i];
 
-            code = code.replace(source, destination);
+            code = code.replace(source, (match, ...args) => {
+                const offset: number = args[0];
+                // Make sure "source" is not part of a bigger identifier (for eg, if source=view and we matched it with viewDirection)
+                if (this._isIdentifierChar(code.charAt(offset - 1)) || this._isIdentifierChar(code.charAt(offset + sourceLen))) {
+                    return sources[i];
+                }
+                return destination;
+            });
         }
 
         return code;

@@ -93,7 +93,21 @@ export class KHR_materials_sheen implements IGLTFExporterExtensionV2 {
                     let textureIndex = this._getTextureIndex(babylonMaterial.sheen.texture);
 
                     if (textureIndex > -1) {
-                        sheenInfo.sheenTexture = this._textureInfos[textureIndex] ;
+                        sheenInfo.sheenColorTexture = this._textureInfos[textureIndex];
+                    }
+                }
+
+                if (babylonMaterial.sheen.textureRoughness && !babylonMaterial.sheen.useRoughnessFromMainTexture) {
+                    let textureIndex = this._getTextureIndex(babylonMaterial.sheen.textureRoughness);
+
+                    if (textureIndex > -1) {
+                        sheenInfo.sheenRoughnessTexture = this._textureInfos[textureIndex];
+                    }
+                } else if (babylonMaterial.sheen.texture && babylonMaterial.sheen.useRoughnessFromMainTexture) {
+                    let textureIndex = this._getTextureIndex(babylonMaterial.sheen.texture);
+
+                    if (textureIndex > -1) {
+                        sheenInfo.sheenRoughnessTexture = this._textureInfos[textureIndex];
                     }
                 }
 

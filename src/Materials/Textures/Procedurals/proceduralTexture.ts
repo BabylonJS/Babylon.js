@@ -18,6 +18,11 @@ import "../../../Engines/Extensions/engine.renderTarget";
 import "../../../Engines/Extensions/engine.renderTargetCube";
 import "../../../Shaders/procedural.vertex";
 import { DataBuffer } from '../../../Meshes/dataBuffer';
+import { _TypeStore } from '../../../Misc/typeStore';
+import { NodeMaterial } from '../../Node/nodeMaterial';
+import { RenderTargetTextureSize } from '../../../Engines/Extensions/engine.renderTarget';
+import { EngineStore } from '../../../Engines/engineStore';
+import { Constants } from '../../../Engines/constants';
 
 /**
  * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes calmpler' images.
@@ -47,6 +52,16 @@ export class ProceduralTexture extends Texture {
      */
     public onGeneratedObservable = new Observable<ProceduralTexture>();
 
+    /**
+     * Event raised before the texture is generated
+     */
+    public onBeforeGenerationObservable = new Observable<ProceduralTexture>();
+
+    /**
+     * Gets or sets the node material used to create this texture (null if the texture was manually created)
+     */
+    public nodeMaterialSource: Nullable<NodeMaterial> = null;
+
     /** @hidden */
     @serialize()
     public _generateMipMaps: boolean;
@@ -61,7 +76,8 @@ export class ProceduralTexture extends Texture {
     protected _fallbackTexture: Nullable<Texture>;
 
     @serialize()
-    private _size: number;
+    private _size: RenderTargetTextureSize;
+    private _textureType: number;
     private _currentRefreshId = -1;
     private _frameId = -1;
     private _refreshRate = 1;
@@ -83,10 +99,10 @@ export class ProceduralTexture extends Texture {
     private _fallbackTextureUsed = false;
     private _fullEngine: Engine;
 
-    private _cachedDefines = "";
+    private _cachedDefines: Nullable<string> = null;
 
     private _contentUpdateId = -1;
-    private _contentData: Nullable<ArrayBufferView>;
+    private _contentData: Nullable<Promise<ArrayBufferView>>;
 
     /**
      * Instantiates a new procedural texture.
@@ -100,11 +116,12 @@ export class ProceduralTexture extends Texture {
      * @param fallbackTexture Define a fallback texture in case there were issues to create the custom texture
      * @param generateMipMaps Define if the texture should creates mip maps or not
      * @param isCube Define if the texture is a cube texture or not (this will render each faces of the cube)
+     * @param textureType The FBO internal texture type
      */
-    constructor(name: string, size: any, fragment: any, scene: Nullable<Scene>, fallbackTexture: Nullable<Texture> = null, generateMipMaps = true, public isCube = false) {
+    constructor(name: string, size: RenderTargetTextureSize, fragment: any, scene: Nullable<Scene>, fallbackTexture: Nullable<Texture> = null, generateMipMaps = true, isCube = false, textureType = Constants.TEXTURETYPE_UNSIGNED_INT) {
         super(null, scene, !generateMipMaps);
 
-        scene = this.getScene()!;
+        scene = this.getScene() || EngineStore.LastCreatedScene!;
         let component = scene._getComponent(SceneComponentConstants.NAME_PROCEDURALTEXTURE);
         if (!component) {
             component = new ProceduralTextureSceneComponent(scene);
@@ -117,6 +134,7 @@ export class ProceduralTexture extends Texture {
         this.name = name;
         this.isRenderTarget = true;
         this._size = size;
+        this._textureType = textureType;
         this._generateMipMaps = generateMipMaps;
 
         this.setFragment(fragment);
@@ -124,11 +142,11 @@ export class ProceduralTexture extends Texture {
         this._fallbackTexture = fallbackTexture;
 
         if (isCube) {
-            this._texture = this._fullEngine.createRenderTargetCubeTexture(size, { generateMipMaps: generateMipMaps, generateDepthBuffer: false, generateStencilBuffer: false });
+            this._texture = this._fullEngine.createRenderTargetCubeTexture(size as number, { generateMipMaps: generateMipMaps, generateDepthBuffer: false, generateStencilBuffer: false, type: textureType });
             this.setFloat("face", 0);
         }
         else {
-            this._texture = this._fullEngine.createRenderTargetTexture(size, { generateMipMaps: generateMipMaps, generateDepthBuffer: false, generateStencilBuffer: false });
+            this._texture = this._fullEngine.createRenderTargetTexture(size, { generateMipMaps: generateMipMaps, generateDepthBuffer: false, generateStencilBuffer: false, type: textureType });
         }
 
         // VBO
@@ -153,15 +171,22 @@ export class ProceduralTexture extends Texture {
 
     /**
      * Gets texture content (Use this function wisely as reading from a texture can be slow)
-     * @returns an ArrayBufferView (Uint8Array or Float32Array)
+     * @returns an ArrayBufferView promise (Uint8Array or Float32Array)
      */
-    public getContent(): Nullable<ArrayBufferView> {
+    public getContent(): Nullable<Promise<ArrayBufferView>> {
         if (this._contentData && this._frameId === this._contentUpdateId) {
             return this._contentData;
         }
 
-        this._contentData = this.readPixels(0, 0, this._contentData);
-        this._contentUpdateId = this._frameId;
+        if (this._contentData) {
+            this._contentData.then((buffer) => {
+                this._contentData = this.readPixels(0, 0, buffer);
+                this._contentUpdateId = this._frameId;
+            });
+        } else {
+            this._contentData = this.readPixels(0, 0);
+            this._contentUpdateId = this._frameId;
+        }
 
         return this._contentData;
     }
@@ -220,6 +245,10 @@ export class ProceduralTexture extends Texture {
         var engine = this._fullEngine;
         var shaders;
 
+        if (this.nodeMaterialSource) {
+            return this._effect.isReady();
+        }
+
         if (!this._fragment) {
             return false;
         }
@@ -240,25 +269,28 @@ export class ProceduralTexture extends Texture {
             shaders = { vertex: "procedural", fragment: this._fragment };
         }
 
-        this._cachedDefines = defines;
+        if (this._cachedDefines !== defines) {
+            this._cachedDefines = defines;
 
-        this._effect = engine.createEffect(shaders,
-            [VertexBuffer.PositionKind],
-            this._uniforms,
-            this._samplers,
-            defines, undefined, undefined, () => {
-                this.releaseInternalTexture();
+            this._effect = engine.createEffect(shaders,
+                [VertexBuffer.PositionKind],
+                this._uniforms,
+                this._samplers,
+                defines, undefined, undefined, () => {
+                    this.releaseInternalTexture();
 
-                if (this._fallbackTexture) {
-                    this._texture = this._fallbackTexture._texture;
+                    if (this._fallbackTexture) {
+                        this._texture = this._fallbackTexture._texture;
 
-                    if (this._texture) {
-                        this._texture.incrementReferences();
+                        if (this._texture) {
+                            this._texture.incrementReferences();
+                        }
                     }
-                }
 
-                this._fallbackTextureUsed = true;
-            });
+                    this._fallbackTextureUsed = true;
+                }
+            );
+        }
 
         return this._effect.isReady();
     }
@@ -324,9 +356,9 @@ export class ProceduralTexture extends Texture {
 
     /**
      * Get the size the texture is rendering at.
-     * @returns the size (texture is always squared)
+     * @returns the size (on cube texture it is always squared)
      */
-    public getRenderSize(): number {
+    public getRenderSize(): RenderTargetTextureSize {
         return this._size;
     }
 
@@ -341,7 +373,7 @@ export class ProceduralTexture extends Texture {
         }
 
         this.releaseInternalTexture();
-        this._texture = this._fullEngine.createRenderTargetTexture(size, generateMipMaps);
+        this._texture = this._fullEngine.createRenderTargetTexture(size, { generateMipMaps, generateDepthBuffer: false, generateStencilBuffer: false, type: this._textureType });
 
         // Update properties
         this._size = size;
@@ -488,57 +520,62 @@ export class ProceduralTexture extends Texture {
 
         // Render
         engine.enableEffect(this._effect);
+        this.onBeforeGenerationObservable.notifyObservers(this);
         engine.setState(false);
 
-        // Texture
-        for (var name in this._textures) {
-            this._effect.setTexture(name, this._textures[name]);
-        }
+        if (!this.nodeMaterialSource) {
+            // Texture
+            for (var name in this._textures) {
+                this._effect.setTexture(name, this._textures[name]);
+            }
 
-        // Float
-        for (name in this._ints) {
-            this._effect.setInt(name, this._ints[name]);
-        }
+            // Float
+            for (name in this._ints) {
+                this._effect.setInt(name, this._ints[name]);
+            }
 
-        // Float
-        for (name in this._floats) {
-            this._effect.setFloat(name, this._floats[name]);
-        }
+            // Float
+            for (name in this._floats) {
+                this._effect.setFloat(name, this._floats[name]);
+            }
 
-        // Floats
-        for (name in this._floatsArrays) {
-            this._effect.setArray(name, this._floatsArrays[name]);
-        }
+            // Floats
+            for (name in this._floatsArrays) {
+                this._effect.setArray(name, this._floatsArrays[name]);
+            }
 
-        // Color3
-        for (name in this._colors3) {
-            this._effect.setColor3(name, this._colors3[name]);
-        }
+            // Color3
+            for (name in this._colors3) {
+                this._effect.setColor3(name, this._colors3[name]);
+            }
 
-        // Color4
-        for (name in this._colors4) {
-            var color = this._colors4[name];
-            this._effect.setFloat4(name, color.r, color.g, color.b, color.a);
-        }
+            // Color4
+            for (name in this._colors4) {
+                var color = this._colors4[name];
+                this._effect.setFloat4(name, color.r, color.g, color.b, color.a);
+            }
 
-        // Vector2
-        for (name in this._vectors2) {
-            this._effect.setVector2(name, this._vectors2[name]);
-        }
+            // Vector2
+            for (name in this._vectors2) {
+                this._effect.setVector2(name, this._vectors2[name]);
+            }
 
-        // Vector3
-        for (name in this._vectors3) {
-            this._effect.setVector3(name, this._vectors3[name]);
-        }
+            // Vector3
+            for (name in this._vectors3) {
+                this._effect.setVector3(name, this._vectors3[name]);
+            }
 
-        // Matrix
-        for (name in this._matrices) {
-            this._effect.setMatrix(name, this._matrices[name]);
+            // Matrix
+            for (name in this._matrices) {
+                this._effect.setMatrix(name, this._matrices[name]);
+            }
         }
 
         if (!this._texture) {
             return;
         }
+
+        engine._debugPushGroup(`procedural texture generation for ${this.name}`, 1);
 
         if (this.isCube) {
             for (var face = 0; face < 6; face++) {
@@ -556,11 +593,6 @@ export class ProceduralTexture extends Texture {
 
                 // Draw order
                 engine.drawElementsType(Material.TriangleFillMode, 0, 6);
-
-                // Mipmaps
-                if (face === 5) {
-                    engine.generateMipMapsForCubemap(this._texture);
-                }
             }
         } else {
             engine.bindFramebuffer(this._texture, 0, undefined, undefined, true);
@@ -579,6 +611,13 @@ export class ProceduralTexture extends Texture {
 
         // Unbind
         engine.unBindFramebuffer(this._texture, this.isCube);
+
+        // Mipmaps
+        if (this.isCube) {
+            engine.generateMipMapsForCubemap(this._texture);
+        }
+
+        engine._debugPopGroup(1);
 
         if (this.onGenerated) {
             this.onGenerated();
@@ -631,6 +670,11 @@ export class ProceduralTexture extends Texture {
             this._indexBuffer = null;
         }
 
+        this.onGeneratedObservable.clear();
+        this.onBeforeGenerationObservable.clear();
+
         super.dispose();
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.ProceduralTexture"] = ProceduralTexture;
