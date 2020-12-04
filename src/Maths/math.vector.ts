@@ -5286,8 +5286,8 @@ export class Matrix {
         let t = 1.0 / (Math.tan(fov * 0.5));
         let a = isVerticalFovFixed ? (t / aspect) : t;
         let b = isVerticalFovFixed ? t : (t * aspect);
-        let c = (f + n) / (f - n);
-        let d = -2.0 * f * n / (f - n);
+        let c = f !== 0 ? (f + n) / (f - n) : 1;
+        let d = f !== 0 ? -2.0 * f * n / (f - n) : -2 * n;
 
         Matrix.FromValuesToRef(
             a, 0.0, 0.0, 0.0,
@@ -5357,8 +5357,8 @@ export class Matrix {
         let t = 1.0 / (Math.tan(fov * 0.5));
         let a = isVerticalFovFixed ? (t / aspect) : t;
         let b = isVerticalFovFixed ? t : (t * aspect);
-        let c = -(f + n) / (f - n);
-        let d = -2 * f * n / (f - n);
+        let c = f !== 0 ? -(f + n) / (f - n) : -1;
+        let d = f !== 0 ? -2 * f * n / (f - n) : -2 * n;
 
         Matrix.FromValuesToRef(
             a, 0.0, 0.0, 0.0,

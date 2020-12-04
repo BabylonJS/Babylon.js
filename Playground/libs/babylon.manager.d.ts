@@ -152,6 +152,8 @@ declare module BABYLON {
         static LoadTextFile(url: string, onSuccess: (data: string) => void, onProgress?: (data: any) => void, onError?: (request?: WebRequest, exception?: any) => void): BABYLON.IFileRequest;
         /** Load a text based file */
         static LoadTextFileAsync(url: string): Promise<string>;
+        /** Post data to server */
+        static PostDataToServer(url: string, data: string | Document | Blob | ArrayBufferView | ArrayBuffer | FormData | URLSearchParams | ReadableStream<Uint8Array>, contentType?: string, onComplete?: (status: int) => void): XMLHttpRequest;
         /** Shows the default page scene loader. */
         static ShowDefaultLoader(show: boolean): void;
         /** Update the default page scene loader status. */

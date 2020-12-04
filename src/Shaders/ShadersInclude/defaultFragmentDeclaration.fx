@@ -90,3 +90,7 @@ uniform vec2 vReflectionInfos;
     #endif
 
 #endif
+
+#ifdef DETAIL
+uniform vec4 vDetailInfos;
+#endif
