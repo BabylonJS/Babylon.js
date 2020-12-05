@@ -99,6 +99,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
         this._name = "unnamed";
         this.shaderProcessingContext = shaderProcessingContext;
         this.leftOverUniformsByName = {};
+        this.engine = engine;
     }
 
     public _handlesSpectorRebuildCallback(onCompiled: (program: any) => void): void {
