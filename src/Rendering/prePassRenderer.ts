@@ -539,6 +539,7 @@ export class PrePassRenderer {
 
         this._needsCompositionForThisPass = !this._hasImageProcessing(this._postProcessesSourceForThisPass) &&
             !this.disableGammaTransform &&
+            // prePassRenderTarget._beforeCompositionPostProcesses.length > 0 && // TODO : remove the need for composition by including it in the SSS post process
             !secondaryCamera;
 
         const firstCameraPP = this._getFirstPostProcess(this._postProcessesSourceForThisPass);
