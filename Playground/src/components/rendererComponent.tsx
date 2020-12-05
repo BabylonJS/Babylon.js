@@ -95,7 +95,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
         const displayInspector = this._scene?.debugLayer.isVisible();
 
-        let useWebGPU = location.href.indexOf("webgpu") !== -1 && WebGPUEngine.IsSupported;
+        let useWebGPU = location.href.indexOf("webgpu") !== -1 && !!navigator.gpu;
         let forceWebGL1 = false;
         const configuredEngine = Utilities.ReadStringFromStore("engineVersion", "WebGL2");
 
@@ -125,7 +125,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
             if (useWebGPU) {
                 globalObject.createDefaultEngine = async function() { 
-                    var engine = new BABYLON.WebGPUEngine(canvas);
+                    var engine = new WebGPUEngine(canvas);
                     await engine.initAsync();
                     return engine;
                 }                
