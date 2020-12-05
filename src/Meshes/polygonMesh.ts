@@ -7,6 +7,7 @@ import { VertexData } from "../Meshes/mesh.vertexData";
 import { Engine } from "../Engines/engine";
 import { Nullable } from "../types";
 import { Path2 } from '../Maths/math.path';
+import { Epsilon } from '../Maths/math.constants';
 
 declare var earcut: any;
 /**
@@ -201,7 +202,7 @@ export class PolygonMeshBuilder {
     }
 
     /**
-     * Adds a whole within the polygon
+     * Adds a hole within the polygon
      * @param hole Array of points defining the hole
      * @returns this
      */
@@ -223,10 +224,10 @@ export class PolygonMeshBuilder {
      * @param depth The depth of the mesh created
      * @returns the created mesh
      */
-    build(updatable: boolean = false, depth: number = 0): Mesh {
+    build(updatable: boolean = false, depth: number = 0, smoothingThreshold: number = 2): Mesh {
         var result = new Mesh(this._name, this._scene);
 
-        var vertexData = this.buildVertexData(depth);
+        var vertexData = this.buildVertexData(depth, smoothingThreshold);
 
         result.setVerticesData(VertexBuffer.PositionKind, <number[]>vertexData.positions, updatable);
         result.setVerticesData(VertexBuffer.NormalKind, <number[]>vertexData.normals, updatable);
@@ -241,7 +242,7 @@ export class PolygonMeshBuilder {
      * @param depth The depth of the mesh created
      * @returns the created VertexData
      */
-    buildVertexData(depth: number = 0): VertexData {
+    buildVertexData(depth: number = 0, smoothingThreshold: number = 2): VertexData {
         var result = new VertexData();
 
         var normals = new Array<number>();
@@ -284,10 +285,10 @@ export class PolygonMeshBuilder {
             }
 
             //Add the sides
-            this.addSide(positions, normals, uvs, indices, bounds, this._outlinepoints, depth, false);
+            this.addSide(positions, normals, uvs, indices, bounds, this._outlinepoints, depth, false, smoothingThreshold);
 
             this._holes.forEach((hole) => {
-                this.addSide(positions, normals, uvs, indices, bounds, hole, depth, true);
+                this.addSide(positions, normals, uvs, indices, bounds, hole, depth, true, smoothingThreshold);
             });
         }
 
@@ -310,43 +311,79 @@ export class PolygonMeshBuilder {
      * @param depth depth of the polygon
      * @param flip flip of the polygon
      */
-    private addSide(positions: any[], normals: any[], uvs: any[], indices: any[], bounds: any, points: PolygonPoints, depth: number, flip: boolean) {
+    private addSide(positions: any[], normals: any[], uvs: any[], indices: any[], bounds: any, points: PolygonPoints, depth: number, flip: boolean, smoothingThreshold: number) {
         var StartIndex: number = positions.length / 3;
         var ulength: number = 0;
         for (var i: number = 0; i < points.elements.length; i++) {
             var p: IndexedVector2 = points.elements[i];
-            var p1: IndexedVector2;
-            if ((i + 1) > points.elements.length - 1) {
-                p1 = points.elements[0];
-            }
-            else {
-                p1 = points.elements[i + 1];
-            }
+            var p1: IndexedVector2 = points.elements[(i + 1)%points.elements.length];
 
             positions.push(p.x, 0, p.y);
             positions.push(p.x, -depth, p.y);
             positions.push(p1.x, 0, p1.y);
             positions.push(p1.x, -depth, p1.y);
 
-            var v1 = new Vector3(p.x, 0, p.y);
-            var v2 = new Vector3(p1.x, 0, p1.y);
-            var v3 = v2.subtract(v1);
-            var v4 = new Vector3(0, 1, 0);
-            var vn = Vector3.Cross(v3, v4);
-            vn = vn.normalize();
+            let vc = new Vector3(-(p1.y-p.y), 0, p1.x-p.x);
+            const vc_len = vc.length();
+            vc = vc.normalizeFromLength(vc_len);
+
+            
+            const p0: IndexedVector2 = points.elements[(i + points.elements.length - 1)%points.elements.length];
+            const p2: IndexedVector2 = points.elements[(i + 2)%points.elements.length];
+            let vp = new Vector3(-( p.y-p0.y), 0,  p.x-p0.x);
+            const vp_len = vp.length();
+            vp = vp.normalizeFromLength(vp_len);
+            let vn = new Vector3(-(p2.y-p1.y), 0, p2.x-p1.x);
+            const vn_len = vn.length();
+            vn = vn.normalizeFromLength(vn_len);
+            
+            if(!flip) {
+                vp = vp.scale(-1);
+                vn = vn.scale(-1);
+                vc = vc.scale(-1);
+            }
+            
+            const dotp = Vector3.Dot(vp, vc);
+            if(dotp > smoothingThreshold) {
+                if( dotp < Epsilon-1) {
+                    vp = (new Vector3(p.x, 0, p.y)).subtract(new Vector3(p1.x, 0, p1.y)).normalize();
+                }
+                else {
+                    // cheap average
+                    vp = vp.add(vc).normalize();
+                }
+            }
+            else {
+                vp = vc;
+            }
+
+            const dotn = Vector3.Dot(vn, vc)
+            if(dotn > smoothingThreshold) {
+                if( dotn < Epsilon-1) {
+                    // back to back
+                    vn = (new Vector3(p1.x, 0, p1.y)).subtract(new Vector3(p.x, 0, p.y)).normalize();
+                }
+                else {
+                    // cheap average
+                    vn = vn.add(vc).normalize();
+                }
+            }
+            else {
+                vn = vc;
+            }
 
             uvs.push(ulength / bounds.width, 0);
             uvs.push(ulength / bounds.width, 1);
-            ulength += v3.length();
+            ulength += vc_len;
             uvs.push((ulength / bounds.width), 0);
             uvs.push((ulength / bounds.width), 1);
 
-            if (!flip) {
-                normals.push(-vn.x, - vn.y, -vn.z);
-                normals.push(-vn.x, -vn.y, -vn.z);
-                normals.push(-vn.x, -vn.y, -vn.z);
-                normals.push(-vn.x, -vn.y, -vn.z);
+            normals.push(vp.x, vp.y, vp.z);
+            normals.push(vp.x, vp.y, vp.z);
+            normals.push(vn.x, vn.y, vn.z);
+            normals.push(vn.x, vn.y, vn.z);
 
+            if (!flip) {
                 indices.push(StartIndex);
                 indices.push(StartIndex + 1);
                 indices.push(StartIndex + 2);
@@ -356,10 +393,6 @@ export class PolygonMeshBuilder {
                 indices.push(StartIndex + 2);
             }
             else {
-                normals.push(vn.x, vn.y, vn.z);
-                normals.push(vn.x, vn.y, vn.z);
-                normals.push(vn.x, vn.y, vn.z);
-                normals.push(vn.x, vn.y, vn.z);
 
                 indices.push(StartIndex);
                 indices.push(StartIndex + 2);
