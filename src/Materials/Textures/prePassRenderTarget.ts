@@ -30,10 +30,6 @@ export class PrePassRenderTarget extends MultiRenderTarget {
     }
 
     public set samples(n: number) {
-        if (!this.imageProcessingPostProcess) {
-            this._createCompositionEffect();
-        }
-
         this._samples = n;
     }
 
@@ -55,18 +51,9 @@ export class PrePassRenderTarget extends MultiRenderTarget {
         super(name, size, count, scene, options);
 
         this.renderTargetTexture = renderTargetTexture;
-        // TODO : poser dans prepassrenderer ?
-        // this._resetLayout();
-        // this._reinitializeAttachments();
     }
 
     public _createCompositionEffect() {
-        // TODO : GBR
-        // if (this._useGeometryBufferFallback && !this._geometryBuffer) {
-        //     // Initializes the link with geometry buffer
-        //     this.useGeometryBufferFallback = true;
-        // }
-
         const applyByPostProcess = this._scene.imageProcessingConfiguration?.applyByPostProcess;
         this.imageProcessingPostProcess = new ImageProcessingPostProcess("prePassComposition", 1, null, undefined, this._engine);
         this.imageProcessingPostProcess.imageProcessingConfiguration.applyByPostProcess = applyByPostProcess;
@@ -93,7 +80,7 @@ export class PrePassRenderTarget extends MultiRenderTarget {
         if (width !== requiredWidth || height !== requiredHeight) {
             this.resize({ width: requiredWidth, height: requiredHeight });
 
-            // TODO : geometry buffer
+            // TODO : geometry buffer ?
             // this._updateGeometryBufferLayout();
         }
     }
