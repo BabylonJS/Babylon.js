@@ -142,7 +142,7 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
                         <RenderingComponent globalState={this._globalState} />
                     </div>
                 </div>
-                {window.innerWidth < 1024 && <HamburgerMenuComponent globalState={this._globalState} />}
+                {window.innerWidth < 1080 && <HamburgerMenuComponent globalState={this._globalState} />}
                 <ExamplesComponent globalState={this._globalState} />
                 <FooterComponent globalState={this._globalState} />
                 <QRCodeComponent globalState={this._globalState} />
