@@ -3,7 +3,6 @@ import { GlobalState } from '../globalState';
 import { CommandButtonComponent } from './commandButtonComponent';
 import { CommandDropdownComponent } from './commandDropdownComponent';
 import { Utilities } from '../tools/utilities';
-import { WebGPUEngine } from "babylonjs";
 
 require("../scss/commandBar.scss");
 
