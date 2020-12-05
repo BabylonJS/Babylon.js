@@ -1815,6 +1815,10 @@ declare module "babylonjs-gui/2D/controls/image" {
         private _onImageLoaded;
         private _extractNinePatchSliceDataFromImage;
         /**
+         * Gets the image source url
+         */
+        get source(): Nullable<string>;
+        /**
          * Gets or sets image source url
          */
         set source(value: Nullable<string>);
@@ -6469,6 +6473,10 @@ declare module BABYLON.GUI {
         get domImage(): HTMLImageElement;
         private _onImageLoaded;
         private _extractNinePatchSliceDataFromImage;
+        /**
+         * Gets the image source url
+         */
+        get source(): BABYLON.Nullable<string>;
         /**
          * Gets or sets image source url
          */

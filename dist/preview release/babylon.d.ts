@@ -39884,6 +39884,10 @@ declare module BABYLON {
          * Will prevent the system from falling back to software implementation if a hardware device cannot be created
          */
         failIfMajorPerformanceCaveat?: boolean;
+        /**
+         * Defines whether to adapt to the device's viewport characteristics (default: false)
+         */
+        adaptToDeviceRatio?: boolean;
     }
     /**
      * The base engine class (root of all engines)
@@ -44760,6 +44764,10 @@ declare module BABYLON {
          * Defines wether we should generate debug markers in the gpu command lists (can be seen with PIX for eg)
          */
         enableGPUDebugMarkers?: boolean;
+        /**
+         * Options to load the associated Glslang library
+         */
+        glslangOptions?: GlslangOptions;
     }
     /**
      * The web GPU engine class provides support for WebGPU version of babylon.js.
@@ -44849,6 +44857,13 @@ declare module BABYLON {
          * Returns the version of the engine
          */
         get version(): number;
+        /**
+         * Create a new instance of the gpu engine asynchronously
+         * @param canvas Defines the canvas to use to display the result
+         * @param options Defines the options passed to the engine to create the GPU context dependencies
+         * @returns a promise that resolves with the created engine
+         */
+        static CreateAsync(canvas: HTMLCanvasElement, options?: WebGPUEngineOptions): Promise<WebGPUEngine>;
         /**
          * Create a new instance of the gpu engine.
          * @param canvas Defines the canvas to use to display the result
@@ -49048,6 +49063,10 @@ declare module BABYLON {
          */
         useNaturalPinchZoom: boolean;
         /**
+         * Defines whether zoom (2 fingers pinch) is enabled through multitouch
+         */
+        pinchZoom: boolean;
+        /**
          * Defines the pointer panning sensibility or how fast is the camera moving.
          */
         panningSensibility: number;
@@ -49067,6 +49086,14 @@ declare module BABYLON {
         private _isPanClick;
         private _twoFingerActivityCount;
         private _isPinching;
+        /**
+         * Move camera from multi touch panning positions.
+         */
+        private _computeMultiTouchPanning;
+        /**
+         * Move camera from pinch zoom distances.
+         */
+        private _computePinchZoom;
         /**
          * Called on pointer POINTERMOVE event if only a single touch is active.
          */
@@ -59937,6 +59964,20 @@ declare module BABYLON {
         private _getNativeTextureFormat;
         private _getNativeAlphaMode;
         private _getNativeAttribType;
+    }
+}
+declare module BABYLON {
+    /**
+     * Helper class to create the best engine depending on the current hardware
+     */
+    export class EngineFactory {
+        /**
+         * Creates an engine based on the capabilities of the underlying hardware
+         * @param canvas Defines the canvas to use to display the result
+         * @param options Defines the options passed to the engine to create the context dependencies
+         * @returns a promise that resolves with the created engine
+         */
+        static CreateAsync(canvas: HTMLCanvasElement, options: any): Promise<ThinEngine>;
     }
 }
 declare module BABYLON {

@@ -63,6 +63,7 @@ export class GlobalState {
     public onNavigateRequiredObservable = new Observable<{lineNumber: number, column: number}>();
     public onExamplesDisplayChangedObservable = new Observable<void>();
     public onQRCodeRequiredObservable = new Observable<boolean>();
+    public OnNewDropdownButtonClicked = new Observable<any>();
 
     public loadingCodeInProgress = false;
     public onCodeLoaded = new Observable<string>();
