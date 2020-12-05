@@ -317,72 +317,70 @@ export class PolygonMeshBuilder {
         var StartIndex: number = positions.length / 3;
         var ulength: number = 0;
         for (var i: number = 0; i < points.elements.length; i++) {
-            var p: IndexedVector2 = points.elements[i];
-            var p1: IndexedVector2 = points.elements[(i + 1) % points.elements.length];
+            const p: IndexedVector2 = points.elements[i];
+            const p1: IndexedVector2 = points.elements[(i + 1) % points.elements.length];
 
             positions.push(p.x, 0, p.y);
             positions.push(p.x, -depth, p.y);
             positions.push(p1.x, 0, p1.y);
             positions.push(p1.x, -depth, p1.y);
 
-            let vc = new Vector3(-(p1.y - p.y), 0, p1.x - p.x);
-            const vc_len = vc.length();
-            vc = vc.normalizeFromLength(vc_len);
-
             const p0: IndexedVector2 = points.elements[(i + points.elements.length - 1) % points.elements.length];
             const p2: IndexedVector2 = points.elements[(i + 2) % points.elements.length];
+
+            let vc = new Vector3(-(p1.y - p.y), 0, p1.x - p.x);
             let vp = new Vector3(-(p.y - p0.y), 0,  p.x - p0.x);
-            const vp_len = vp.length();
-            vp = vp.normalizeFromLength(vp_len);
             let vn = new Vector3(-(p2.y - p1.y), 0, p2.x - p1.x);
-            const vn_len = vn.length();
-            vn = vn.normalizeFromLength(vn_len);
 
             if (!flip) {
+                vc = vc.scale(-1);
                 vp = vp.scale(-1);
                 vn = vn.scale(-1);
-                vc = vc.scale(-1);
             }
 
-            const dotp = Vector3.Dot(vp, vc);
+            let vc_norm = vc.normalizeToNew();
+            let vp_norm = vp.normalizeToNew();
+            let vn_norm = vn.normalizeToNew();
+
+            const dotp = Vector3.Dot(vp_norm, vc_norm);
             if (dotp > smoothingThreshold) {
                 if (dotp < Epsilon - 1) {
-                    vp = (new Vector3(p.x, 0, p.y)).subtract(new Vector3(p1.x, 0, p1.y)).normalize();
+                    vp_norm = (new Vector3(p.x, 0, p.y)).subtract(new Vector3(p1.x, 0, p1.y)).normalize();
                 }
                 else {
-                    // cheap average
-                    vp = vp.add(vc).normalize();
+                    // cheap average weighed by side length
+                    vp_norm = vp.add(vc).normalize();
                 }
             }
             else {
-                vp = vc;
+                vp_norm = vc_norm;
             }
 
             const dotn = Vector3.Dot(vn, vc);
             if (dotn > smoothingThreshold) {
                 if (dotn < Epsilon - 1) {
                     // back to back
-                    vn = (new Vector3(p1.x, 0, p1.y)).subtract(new Vector3(p.x, 0, p.y)).normalize();
+                    vn_norm = (new Vector3(p1.x, 0, p1.y)).subtract(new Vector3(p.x, 0, p.y)).normalize();
                 }
                 else {
-                    // cheap average
-                    vn = vn.add(vc).normalize();
+                    // cheap average weighed by side length
+                    vn_norm = vn.add(vc).normalize();
                 }
             }
             else {
-                vn = vc;
+                vn_norm = vc_norm;
             }
 
             uvs.push(ulength / bounds.width, 0);
             uvs.push(ulength / bounds.width, 1);
-            ulength += vc_len;
+            ulength += vc.length();
             uvs.push((ulength / bounds.width), 0);
             uvs.push((ulength / bounds.width), 1);
 
-            normals.push(vp.x, vp.y, vp.z);
-            normals.push(vp.x, vp.y, vp.z);
-            normals.push(vn.x, vn.y, vn.z);
-            normals.push(vn.x, vn.y, vn.z);
+            normals.push(vp_norm.x, vp_norm.y, vp_norm.z);
+            normals.push(vp_norm.x, vp_norm.y, vp_norm.z);
+            normals.push(vn_norm.x, vn_norm.y, vn_norm.z);
+            normals.push(vn_norm.x, vn_norm.y, vn_norm.z);
 
             if (!flip) {
                 indices.push(StartIndex);
