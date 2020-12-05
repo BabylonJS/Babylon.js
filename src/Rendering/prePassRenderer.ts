@@ -489,10 +489,6 @@ export class PrePassRenderer {
                     }
                 }
             }
-
-            if (!this.renderTargets[i].imageProcessingPostProcess) {
-                this.renderTargets[i]._createCompositionEffect();
-            }
         }
 
         this._reinitializeAttachments();
@@ -539,12 +535,17 @@ export class PrePassRenderer {
 
         this._needsCompositionForThisPass = !this._hasImageProcessing(this._postProcessesSourceForThisPass) &&
             !this.disableGammaTransform &&
-            // prePassRenderTarget._beforeCompositionPostProcesses.length > 0 && // TODO : remove the need for composition by including it in the SSS post process
+            prePassRenderTarget._beforeCompositionPostProcesses.length > 0 && // TODO : this test should be cleaner and precisely target SSS
             !secondaryCamera;
 
         const firstCameraPP = this._getFirstPostProcess(this._postProcessesSourceForThisPass);
         const firstPrePassPP = prePassRenderTarget._beforeCompositionPostProcesses && prePassRenderTarget._beforeCompositionPostProcesses[0];
         let firstPP = null;
+
+        // Create composition effect if needed
+        if (this._needsCompositionForThisPass && !prePassRenderTarget.imageProcessingPostProcess) {
+            prePassRenderTarget._createCompositionEffect();
+        }
 
         // Setting the prePassRenderTarget as input texture of the first PP
         if (firstPrePassPP) {

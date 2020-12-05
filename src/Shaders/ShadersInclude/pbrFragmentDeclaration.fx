@@ -151,7 +151,7 @@ uniform mat4 view;
 #endif
 
 #ifdef PREPASS
-    #ifdef PREPASS_IRRADIANCE
+    #ifdef SS_SCATTERING
         uniform float scatteringDiffusionProfile;
     #endif
 #endif
