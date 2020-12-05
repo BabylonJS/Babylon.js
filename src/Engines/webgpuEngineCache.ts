@@ -2,7 +2,7 @@ import { Logger } from "../Misc/logger";
 import { Nullable, DataArray, IndicesArray, FloatArray, Immutable } from "../types";
 import { Color4 } from "../Maths/math";
 import { Engine } from "../Engines/engine";
-import { InstancingAttributeInfo } from "../Engines/instancingAttributeInfo";
+import { InstancingAttributeInfo } from "./instancingAttributeInfo";
 import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { IEffectCreationOptions, Effect } from "../Materials/effect";
@@ -35,9 +35,8 @@ import { WebGPURenderPassWrapper } from './WebGPU/webgpuRenderPassWrapper';
 import { IMultiRenderTargetOptions } from '../Materials/Textures/multiRenderTarget';
 import { WebGPUCacheSampler } from "./WebGPU/webgpuCacheSampler";
 import { WebGPUShaderManager } from "./WebGPU/webgpuShaderManager";
-
-import "../Shaders/clearQuad.vertex";
-import "../Shaders/clearQuad.fragment";
+import { WebGPUCacheRenderPipeline } from "./WebGPU/webgpuCacheRenderPipeline";
+import { GlslangOptions, WebGPUEngineOptions } from "./webgpuEngine";
 
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
@@ -50,98 +49,9 @@ function assert(condition: any, msg?: string): asserts condition {
 }
 
 /**
- * Options to load the associated Glslang library
- */
-export interface GlslangOptions {
-    /**
-     * Defines an existing instance of Glslang (usefull in modules who do not access the global instance).
-     */
-    glslang?: any;
-    /**
-     * Defines the URL of the glslang JS File.
-     */
-    jsPath?: string;
-    /**
-     * Defines the URL of the glslang WASM File.
-     */
-    wasmPath?: string;
-}
-
-/**
- * Options to create the WebGPU engine
- */
-export interface WebGPUEngineOptions extends GPURequestAdapterOptions {
-
-    /**
-     * If delta time between frames should be constant
-     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
-     */
-    deterministicLockstep?: boolean;
-
-    /**
-     * Maximum about of steps between frames (Default: 4)
-     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
-     */
-    lockstepMaxSteps?: number;
-
-    /**
-     * Defines the seconds between each deterministic lock step
-     */
-    timeStep?: number;
-
-    /**
-     * Defines that engine should ignore modifying touch action attribute and style
-     * If not handle, you might need to set it up on your side for expected touch devices behavior.
-     */
-    doNotHandleTouchAction?: boolean;
-
-    /**
-     * Defines if webaudio should be initialized as well
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
-     */
-    audioEngine?: boolean;
-
-    /**
-     * Defines the category of adapter to use.
-     * Is it the discrete or integrated device.
-     */
-    powerPreference?: GPUPowerPreference;
-
-    /**
-     * Defines the device descriptor used to create a device.
-     */
-    deviceDescriptor?: GPUDeviceDescriptor;
-
-    /**
-     * Defines the requested Swap Chain Format.
-     */
-    swapChainFormat?: GPUTextureFormat;
-
-    /**
-     * Defines wether MSAA is enabled on the canvas.
-     */
-    antialiasing?: boolean;
-
-    /**
-     * Defines wether the stencil buffer should be enabled.
-     */
-    stencil?: boolean;
-
-    /**
-     * Defines wether we should generate debug markers in the gpu command lists (can be seen with PIX for eg)
-     */
-    enableGPUDebugMarkers?: boolean;
-
-    /**
-     * Options to load the associated Glslang library
-     */
-    glslangOptions?: GlslangOptions;
-}
-
-/**
  * The web GPU engine class provides support for WebGPU version of babylon.js.
  */
-export class WebGPUEngine extends Engine {
+export class WebGPUEngineCache extends Engine {
     // Default glslang options.
     private static readonly _glslangDefaultOptions: GlslangOptions = {
         jsPath: "https://preview.babylonjs.com/glslang/glslang.js",
@@ -173,6 +83,8 @@ export class WebGPUEngine extends Engine {
     private _bufferManager: WebGPUBufferManager;
     private _shaderManager: WebGPUShaderManager;
     private _cacheSampler: WebGPUCacheSampler;
+    private _cacheRenderPipeline: WebGPUCacheRenderPipeline;
+    private _cacheRenderPipelineClear: WebGPUCacheRenderPipeline;
     private _emptyVertexBuffer: VertexBuffer;
     private _lastCachedWrapU: number;
     private _lastCachedWrapV: number;
@@ -269,7 +181,7 @@ export class WebGPUEngine extends Engine {
      * Returns a string describing the current engine
      */
     public get description(): string {
-        let description = this.name + this.version;
+        let description = this.name + this.version + " (cache)";
 
         return description;
     }
@@ -287,8 +199,8 @@ export class WebGPUEngine extends Engine {
      * @param options Defines the options passed to the engine to create the GPU context dependencies
      * @returns a promise that resolves with the created engine
      */
-    public static CreateAsync(canvas: HTMLCanvasElement, options: WebGPUEngineOptions = {}): Promise<WebGPUEngine> {
-        const engine = new WebGPUEngine(canvas, options);
+    public static CreateAsync(canvas: HTMLCanvasElement, options: WebGPUEngineOptions = {}): Promise<WebGPUEngineCache> {
+        const engine = new WebGPUEngineCache(canvas, options);
 
         return new Promise((resolve) => {
             engine.initAsync(options.glslangOptions).then(() => resolve(engine));
@@ -309,7 +221,7 @@ export class WebGPUEngine extends Engine {
         options.stencil = options.stencil ?? true;
         options.enableGPUDebugMarkers = options.enableGPUDebugMarkers ?? false;
 
-        Logger.Log(`Babylon.js v${Engine.Version} - WebGPU engine`);
+        Logger.Log(`Babylon.js v${Engine.Version} - ${this.description} engine`);
         if (!navigator.gpu) {
             Logger.Error("WebGPU is not supported by your browser.");
             return;
@@ -416,9 +328,12 @@ export class WebGPUEngine extends Engine {
                 this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
                 this._renderTargetEncoder = this._device.createCommandEncoder(this._renderTargetEncoderDescriptor);
 
-                this._textureHelper.setCommandEncoder(this._uploadEncoder);
-
                 this._emptyVertexBuffer = new VertexBuffer(this, [0], "", false, false, 1, false, 0, 1);
+
+                this._cacheRenderPipeline = new WebGPUCacheRenderPipeline(this._device, this._emptyVertexBuffer);
+                this._cacheRenderPipelineClear = new WebGPUCacheRenderPipeline(this._device, this._emptyVertexBuffer);
+
+                this._textureHelper.setCommandEncoder(this._uploadEncoder);
 
                 this._initializeLimits();
                 this._initializeContextAndSwapChain();
@@ -434,7 +349,7 @@ export class WebGPUEngine extends Engine {
     private _initGlslang(glslangOptions?: GlslangOptions): Promise<any> {
         glslangOptions = glslangOptions || { };
         glslangOptions = {
-            ...WebGPUEngine._glslangDefaultOptions,
+            ...WebGPUEngineCache._glslangDefaultOptions,
             ...glslangOptions
         };
 
@@ -672,20 +587,25 @@ export class WebGPUEngine extends Engine {
         this._forceEnableEffect = true;
         this._currentIndexBuffer = null;
         this._currentVertexBuffers = null;
+        this._cacheRenderPipeline.setBuffers(null, null);
 
         if (bruteForce) {
             this._currentProgram = null;
 
             this._stencilState.reset();
+            this._cacheRenderPipeline.resetStencilState();
 
             this._depthCullingState.reset();
             this._depthCullingState.depthFunc = Constants.LEQUAL;
+            this._cacheRenderPipeline.resetDepthCullingState();
 
             this._alphaState.reset();
             this._alphaMode = Constants.ALPHA_ADD;
             this._alphaEquation = Constants.ALPHA_DISABLE;
+            this._cacheRenderPipeline.setAlphaBlendFactors(this._alphaState._blendFunctionParameters, this._alphaState._blendEquationParameters);
+            this._cacheRenderPipeline.setAlphaBlendEnabled(false);
 
-            this.__colorWrite = true;
+            this.setColorWrite(true);
         }
 
         this._cachedVertexBuffers = null;
@@ -699,6 +619,7 @@ export class WebGPUEngine extends Engine {
      */
     public setColorWrite(enable: boolean): void {
         this.__colorWrite = enable;
+        this._cacheRenderPipeline.setWriteMask(enable ? 0xF : 0);
     }
 
     /**
@@ -1029,6 +950,7 @@ export class WebGPUEngine extends Engine {
     public bindBuffers(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, indexBuffer: Nullable<DataBuffer>, effect: Effect): void {
         this._currentIndexBuffer = indexBuffer;
         this._currentVertexBuffers = vertexBuffers;
+        this._cacheRenderPipeline.setBuffers(vertexBuffers, indexBuffer);
     }
 
     /** @hidden */
@@ -1185,7 +1107,7 @@ export class WebGPUEngine extends Engine {
      * @returns the new pipeline
      */
     public createPipelineContext(shaderProcessingContext: Nullable<ShaderProcessingContext>): IPipelineContext {
-        return new WebGPUPipelineContext(shaderProcessingContext! as WebGPUShaderProcessingContext, this);
+        return new WebGPUPipelineContext(shaderProcessingContext! as WebGPUShaderProcessingContext, this as any);
     }
 
     /** @hidden */
@@ -2664,6 +2586,7 @@ export class WebGPUEngine extends Engine {
         this._counters.numPipelineDescriptorCreation = 0;
         this._counters.numBindGroupsCreation = 0;
         this._counters.numVertexInputCacheCreation = 0;
+        this._cacheRenderPipeline.endFrame();
 
         this._pendingDebugCommands.length = 0;
 
@@ -2765,6 +2688,7 @@ export class WebGPUEngine extends Engine {
                 }
             }
             this._mrtAttachments = internalTexture._attachments;
+            this._cacheRenderPipeline.setMRTAttachments(this._mrtAttachments, internalTexture._textureArray);
         } else {
             // single render target
             const gpuMSAATexture = gpuWrapper.msaaTexture;
@@ -3113,6 +3037,7 @@ export class WebGPUEngine extends Engine {
         this._currentRenderTarget = null;
 
         this._mrtAttachments = [];
+        this._cacheRenderPipeline.setMRTAttachments(this._mrtAttachments, []);
         this._currentRenderPass = this._mainRenderPassWrapper.renderPass;
         this._setDepthTextureFormat(this._mainRenderPassWrapper);
         this._setColorFormat(this._mainRenderPassWrapper);
@@ -3145,6 +3070,8 @@ export class WebGPUEngine extends Engine {
 
         this._currentRenderTarget = null;
 
+        this._mrtAttachments = [];
+        this._cacheRenderPipeline.setMRTAttachments(this._mrtAttachments, []);
         this._currentRenderPass = this._mainRenderPassWrapper.renderPass;
         this._setDepthTextureFormat(this._mainRenderPassWrapper);
         this._setColorFormat(this._mainRenderPassWrapper);
@@ -3175,6 +3102,7 @@ export class WebGPUEngine extends Engine {
     //------------------------------------------------------------------------------
 
     public setZOffset(value: number): void {
+        this._cacheRenderPipeline.setDepthBiasSlopeScale(value);
         if (value !== this._depthCullingState.zOffset) {
             this._depthCullingState.zOffset = value;
         }
@@ -3182,6 +3110,7 @@ export class WebGPUEngine extends Engine {
 
     private _setColorFormat(wrapper: WebGPURenderPassWrapper): void {
         const format = wrapper.colorAttachmentGPUTextures[0].format;
+        this._cacheRenderPipeline.setColorFormat(format);
         if (this._colorFormat === format) {
             return;
         }
@@ -3189,6 +3118,7 @@ export class WebGPUEngine extends Engine {
     }
 
     private _setDepthTextureFormat(wrapper: WebGPURenderPassWrapper): void {
+        this._cacheRenderPipeline.setDepthStencilFormat(wrapper.depthTextureFormat);
         if (this._depthTextureFormat === wrapper.depthTextureFormat) {
             return;
         }
@@ -3196,30 +3126,35 @@ export class WebGPUEngine extends Engine {
     }
 
     public setDepthBuffer(enable: boolean): void {
+        this._cacheRenderPipeline.setDepthTestEnabled(enable);
         if (this._depthCullingState.depthTest !== enable) {
             this._depthCullingState.depthTest = enable;
         }
     }
 
     public setDepthWrite(enable: boolean): void {
+        this._cacheRenderPipeline.setDepthWriteEnabled(enable);
         if (this._depthCullingState.depthMask !== enable) {
             this._depthCullingState.depthMask = enable;
         }
     }
 
     public setStencilBuffer(enable: boolean): void {
+        this._cacheRenderPipeline.setStencilEnabled(enable);
         if (this._stencilState.stencilTest !== enable) {
             this._stencilState.stencilTest = enable;
         }
     }
 
     public setStencilMask(mask: number): void {
+        this._cacheRenderPipeline.setStencilWriteMask(mask);
         if (this._stencilState.stencilMask !== mask) {
             this._stencilState.stencilMask = mask;
         }
     }
 
     public setStencilFunction(stencilFunc: number) {
+        this._cacheRenderPipeline.setStencilCompare(stencilFunc);
         if (this._stencilState.stencilFunc !== stencilFunc) {
             this._stencilState.stencilFunc = stencilFunc;
         }
@@ -3232,24 +3167,28 @@ export class WebGPUEngine extends Engine {
     }
 
     public setStencilFunctionMask(mask: number) {
+        this._cacheRenderPipeline.setStencilReadMask(mask);
         if (this._stencilState.stencilFuncMask !== mask) {
             this._stencilState.stencilFuncMask = mask;
         }
     }
 
     public setStencilOperationFail(operation: number): void {
+        this._cacheRenderPipeline.setStencilFailOp(operation);
         if (this._stencilState.stencilOpStencilFail !== operation) {
             this._stencilState.stencilOpStencilFail = operation;
         }
     }
 
     public setStencilOperationDepthFail(operation: number): void {
+        this._cacheRenderPipeline.setStencilDepthFailOp(operation);
         if (this._stencilState.stencilOpDepthFail !== operation) {
             this._stencilState.stencilOpDepthFail = operation;
         }
     }
 
     public setStencilOperationPass(operation: number): void {
+        this._cacheRenderPipeline.setStencilPassOp(operation);
         if (this._stencilState.stencilOpStencilDepthPass !== operation) {
             this._stencilState.stencilOpStencilDepthPass = operation;
         }
@@ -3264,30 +3203,35 @@ export class WebGPUEngine extends Engine {
     }
 
     public setDepthFunction(depthFunc: number) {
+        this._cacheRenderPipeline.setDepthCompare(depthFunc);
         if (this._depthCullingState.depthFunc !== depthFunc) {
             this._depthCullingState.depthFunc = depthFunc;
         }
     }
 
     public setDepthFunctionToGreater(): void {
+        this._cacheRenderPipeline.setDepthCompare(Constants.GREATER);
         if (this._depthCullingState.depthFunc !== Constants.GREATER) {
             this._depthCullingState.depthFunc = Constants.GREATER;
         }
     }
 
     public setDepthFunctionToGreaterOrEqual(): void {
+        this._cacheRenderPipeline.setDepthCompare(Constants.GEQUAL);
         if (this._depthCullingState.depthFunc !== Constants.GEQUAL) {
             this._depthCullingState.depthFunc = Constants.GEQUAL;
         }
     }
 
     public setDepthFunctionToLess(): void {
+        this._cacheRenderPipeline.setDepthCompare(Constants.LESS);
         if (this._depthCullingState.depthFunc !== Constants.LESS) {
             this._depthCullingState.depthFunc = Constants.LESS;
         }
     }
 
     public setDepthFunctionToLessOrEqual(): void {
+        this._cacheRenderPipeline.setDepthCompare(Constants.LEQUAL);
         if (this._depthCullingState.depthFunc !== Constants.LEQUAL) {
             this._depthCullingState.depthFunc = Constants.LEQUAL;
         }
@@ -3405,6 +3349,9 @@ export class WebGPUEngine extends Engine {
         if (this._depthCullingState.frontFace !== frontFace || force) {
             this._depthCullingState.frontFace = frontFace;
         }
+
+        this._cacheRenderPipeline.setState(culling, frontFace, cullFace);
+        this._cacheRenderPipeline.setDepthBiasSlopeScale(zOffset);
     }
 
     private _getFrontFace(): GPUFrontFace {
@@ -3514,8 +3461,11 @@ export class WebGPUEngine extends Engine {
         }
         if (!noDepthWriteChange) {
             this.setDepthWrite(mode === Engine.ALPHA_DISABLE);
+            this._cacheRenderPipeline.setDepthWriteEnabled(mode === Engine.ALPHA_DISABLE);
         }
         this._alphaMode = mode;
+        this._cacheRenderPipeline.setAlphaBlendEnabled(this._alphaState.alphaBlend);
+        this._cacheRenderPipeline.setAlphaBlendFactors(this._alphaState._blendFunctionParameters, this._alphaState._blendEquationParameters);
     }
 
     /**
@@ -3523,31 +3473,9 @@ export class WebGPUEngine extends Engine {
      * @param equation defines the equation to use (one of the Engine.ALPHA_EQUATION_XXX)
      */
     public setAlphaEquation(equation: number): void {
-        if (this._alphaEquation === equation) {
-            return;
-        }
+        super.setAlphaEquation(equation);
 
-        switch (equation) {
-            case Constants.ALPHA_EQUATION_ADD:
-                this._alphaState.setAlphaEquationParameters(this._gl.FUNC_ADD, this._gl.FUNC_ADD);
-                break;
-            case Constants.ALPHA_EQUATION_SUBSTRACT:
-                this._alphaState.setAlphaEquationParameters(this._gl.FUNC_SUBTRACT, this._gl.FUNC_SUBTRACT);
-                break;
-            case Constants.ALPHA_EQUATION_REVERSE_SUBTRACT:
-                this._alphaState.setAlphaEquationParameters(this._gl.FUNC_REVERSE_SUBTRACT, this._gl.FUNC_REVERSE_SUBTRACT);
-                break;
-            case Constants.ALPHA_EQUATION_MAX:
-                this._alphaState.setAlphaEquationParameters(this._gl.MAX, this._gl.MAX);
-                break;
-            case Constants.ALPHA_EQUATION_MIN:
-                this._alphaState.setAlphaEquationParameters(this._gl.MIN, this._gl.MIN);
-                break;
-            case Constants.ALPHA_EQUATION_DARKEN:
-                this._alphaState.setAlphaEquationParameters(this._gl.MIN, this._gl.FUNC_ADD);
-                break;
-        }
-        this._alphaEquation = equation;
+        this._cacheRenderPipeline.setAlphaBlendFactors(this._alphaState._blendFunctionParameters, this._alphaState._blendEquationParameters);
     }
 
     private _getAphaBlendOperation(operation: Nullable<number>): GPUBlendOperation {
@@ -4072,9 +4000,10 @@ export class WebGPUEngine extends Engine {
     private _setRenderPipeline(fillMode: number): void {
         const renderPass = this._bundleEncoder || this._getCurrentRenderPass();
 
-        const topology = this._getTopology(fillMode);
+        //const topology = this._getTopology(fillMode);
 
-        const pipeline = this._getRenderPipeline(topology);
+        //const pipeline = this._getRenderPipeline(topology);
+        const pipeline = this._cacheRenderPipeline.getRenderPipeline(fillMode, this._currentEffect!, this._currentRenderTarget ? this._currentRenderTarget.samples : this._mainPassSampleCount);
         renderPass.setPipeline(pipeline);
 
         const vertexInputs = this._getVertexInputsToRender();
