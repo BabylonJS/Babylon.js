@@ -88,7 +88,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             }
         ];
 
-        if (WebGPUEngine.IsSupported) {
+        if (!!navigator.gpu) {
             engineOptions.splice(0,0, {
                 label: "WebGPU",
                 storeKey: "engineVersion",
