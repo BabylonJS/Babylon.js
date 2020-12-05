@@ -425,7 +425,7 @@ export class ShaderCodeInliner {
                     this._sourceCode = partBefore + type + " " + retParamName + ";\n" + funcBody + "\n" + partBetween + retParamName + partAfter;
 
                     if (this.debug) {
-                        console.log(`Replace function call by code. Function '${name}' (type=${type}). injectDeclarationIndex=${injectDeclarationIndex}`);
+                        console.log(`Replace function call by code. Function '${name}' (type=${type}). injectDeclarationIndex=${injectDeclarationIndex}, call parameters=${paramNames}`);
                     }
                 } else {
                     // simple case where the return value of the function is "void"
@@ -434,7 +434,7 @@ export class ShaderCodeInliner {
                     startIndex += funcBody.length - (callParamsEndIndex + 1 - functionCallIndex);
 
                     if (this.debug) {
-                        console.log(`Replace function call by code. Function '${name}' (type=${type}). functionCallIndex=${functionCallIndex}`);
+                        console.log(`Replace function call by code. Function '${name}' (type=${type}). functionCallIndex=${functionCallIndex}, call parameters=${paramNames}`);
                     }
                 }
 
