@@ -8,7 +8,7 @@ import { NodeMaterial } from '../nodeMaterial';
 import { InputBlock } from './Input/inputBlock';
 
 /**
- * Creates a mat4 to rotate a Vector by.
+ * Creates a mat4 to rotate a Vector by a set axis.
  */
 export class Rotate3dBlock extends NodeMaterialBlock {
 
@@ -66,11 +66,6 @@ export class Rotate3dBlock extends NodeMaterialBlock {
             angleInput.value = 0;
             angleInput.output.connectTo(this.angle);
         }
-        // if (!this.axis.isConnected) {
-        //     let axisInput = new InputBlock("axis");
-        //     axisInput.value = Vector3.Up();
-        //     axisInput.output.connectTo(this.angle);
-        // }
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
