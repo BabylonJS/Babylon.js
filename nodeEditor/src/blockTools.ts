@@ -78,6 +78,8 @@ import { ParticleBlendMultiplyBlock } from 'babylonjs/Materials/Node/Blocks/Part
 import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
 import { FragCoordBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fragCoordBlock';
 import { ScreenSizeBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/screenSizeBlock';
+import { ZeroOneBlock } from 'babylonjs/Materials/Node/Blocks/zeroOneBlock';
+import { ZeroOneInverseBlock } from 'babylonjs/Materials/Node/Blocks/zeroOneInverseBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
@@ -503,6 +505,10 @@ export class BlockTools {
                 return new FragCoordBlock("FragCoord");
             case "ScreenSizeBlock":
                 return new ScreenSizeBlock("ScreenSize");
+            case "ZeroOneBlock":
+                return new ZeroOneBlock("ZeroOne");
+            case "ZeroOneInverseBlock":
+                return new ZeroOneInverseBlock("ZeroOneInverse");
         }
 
         return null;
