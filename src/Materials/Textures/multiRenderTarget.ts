@@ -202,9 +202,6 @@ export class MultiRenderTarget extends RenderTargetTexture {
             texture._texture = this._internalTextures[i];
         }
 
-        // Keeps references to frame buffer and stencil/depth buffer
-        this._texture = this._internalTextures[0];
-
         if (this.samples !== 1) {
             this._getEngine()!.updateMultipleRenderTargetTextureSampleCount(this._internalTextures, this.samples);
         }
@@ -212,6 +209,9 @@ export class MultiRenderTarget extends RenderTargetTexture {
 
     private _createInternalTextures(): void {
         this._internalTextures = this._getEngine()!.createMultipleRenderTarget(this._size, this._multiRenderTargetOptions);
+
+        // Keeps references to frame buffer and stencil/depth buffer
+        this._texture = this._internalTextures[0];
     }
 
     private _createTextures(): void {
@@ -221,9 +221,6 @@ export class MultiRenderTarget extends RenderTargetTexture {
             texture._texture = this._internalTextures[i];
             this._textures.push(texture);
         }
-
-        // Keeps references to frame buffer and stencil/depth buffer
-        this._texture = this._internalTextures[0];
     }
 
     /**
@@ -235,6 +232,9 @@ export class MultiRenderTarget extends RenderTargetTexture {
         if (texture._texture) {
             this._textures[index] = texture;
             this._internalTextures[index] = texture._texture;
+            if (index === 0) {
+                this._texture = this._internalTextures[index];
+            }
         }
     }
 

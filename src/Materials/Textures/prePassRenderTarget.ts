@@ -36,6 +36,9 @@ export class PrePassRenderTarget extends MultiRenderTarget {
     public _engine: Engine;
     public _scene: Scene;
 
+    public _outputPostProcess: Nullable<PostProcess>;
+    public _internalTextureDirty = false;
+
     /**
       * Is this render target enabled for prepass rendering
       */
@@ -63,16 +66,8 @@ export class PrePassRenderTarget extends MultiRenderTarget {
      * Checks that the size of this RT is still adapted to the desired render size.
      */
     public _checkSize() {
-        var requiredWidth;
-        var requiredHeight;
-
-        if (this.renderTargetTexture) {
-        	requiredWidth = this.renderTargetTexture.getRenderWidth();
-        	requiredHeight = this.renderTargetTexture.getRenderHeight();
-        } else {
-        	requiredWidth = this._engine.getRenderWidth(true);
-        	requiredHeight = this._engine.getRenderHeight(true);
-        }
+        var	requiredWidth = this._engine.getRenderWidth(true);
+        var	requiredHeight = this._engine.getRenderHeight(true);
         
         var width = this.getRenderWidth();
         var height = this.getRenderHeight();
@@ -80,9 +75,20 @@ export class PrePassRenderTarget extends MultiRenderTarget {
         if (width !== requiredWidth || height !== requiredHeight) {
             this.resize({ width: requiredWidth, height: requiredHeight });
 
-            // TODO : geometry buffer ?
-            // this._updateGeometryBufferLayout();
+            this._internalTextureDirty = true;
         }
+    }
+
+
+    /**
+     * Changes the number of render targets in this MRT
+     * Be careful as it will recreate all the data in the new texture.
+     * @param count new texture count
+     * @param options Specifies texture types and sampling modes for new textures
+     */
+    public updateCount(count: number, options?: IMultiRenderTargetOptions) {
+        super.updateCount(count, options);
+        this._internalTextureDirty = true;
     }
 
     /**
