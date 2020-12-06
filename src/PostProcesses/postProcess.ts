@@ -182,6 +182,7 @@ export class PostProcess {
     private _fragmentUrl: string;
     private _vertexUrl: string;
     private _parameters: string[];
+    protected _postProcessDefines: Nullable<string>;
     private _scaleRatio = new Vector2(1, 1);
     protected _indexParameters: any;
     private _shareOutputWithPostProcess: Nullable<PostProcess>;
@@ -455,6 +456,7 @@ export class PostProcess {
      */
     public updateEffect(defines: Nullable<string> = null, uniforms: Nullable<string[]> = null, samplers: Nullable<string[]> = null, indexParameters?: any,
         onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, vertexUrl?: string, fragmentUrl?: string) {
+        this._postProcessDefines = defines;
         this._effect = this._engine.createEffect({ vertex: vertexUrl ?? this._vertexUrl, fragment: fragmentUrl ?? this._fragmentUrl },
             ["position"],
             uniforms || this._parameters,
@@ -752,13 +754,47 @@ export class PostProcess {
      */
     public serialize(): any {
         var serializationObject = SerializationHelper.Serialize(this);
+        var camera = this.getCamera() || this._scene && this._scene.activeCamera;
         serializationObject.customType = "BABYLON." + this.getClassName();
-        serializationObject.cameraId = this.getCamera().id;
+        serializationObject.cameraId = camera ? camera.id : null;
         serializationObject.reusable = this._reusable;
-        serializationObject.options = this._options;
         serializationObject.textureType = this._textureType;
+        serializationObject.fragmentUrl = this._fragmentUrl;
+        serializationObject.parameters = this._parameters;
+        serializationObject.samplers = this._samplers;
+        serializationObject.options = this._options;
+        serializationObject.defines = this._postProcessDefines;
+        serializationObject.textureFormat = this._textureFormat;
+        serializationObject.vertexUrl = this._vertexUrl;
+        serializationObject.indexParameters = this._indexParameters;
 
         return serializationObject;
+    }
+
+    /**
+     * Clones this post process
+     * @returns a new post process similar to this one
+     */
+    public clone(): Nullable<PostProcess> {
+        const serializationObject = this.serialize();
+        serializationObject._engine = this._engine;
+        serializationObject.cameraId = null;
+
+        const result = PostProcess.Parse(serializationObject, this._scene, "");
+
+        if (!result) {
+            return null;
+        }
+
+        result.onActivateObservable = this.onActivateObservable.clone();
+        result.onSizeChangedObservable = this.onSizeChangedObservable.clone();
+        result.onApplyObservable = this.onApplyObservable.clone();
+        result.onBeforeRenderObservable = this.onBeforeRenderObservable.clone();
+        result.onAfterRenderObservable = this.onAfterRenderObservable.clone();
+
+        result._prePassEffectConfiguration = this._prePassEffectConfiguration;
+
+        return result;
     }
 
     /**
@@ -775,13 +811,31 @@ export class PostProcess {
             return null;
         }
 
-        var camera = scene.getCameraByID(parsedPostProcess.cameraId);
-
-        if (!camera) {
-            return null;
-        }
-
+        var camera = scene ? scene.getCameraByID(parsedPostProcess.cameraId) : null;
         return postProcessType._Parse(parsedPostProcess, camera, scene, rootUrl);
+    }
+
+    /** @hidden */
+    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) : Nullable<PostProcess> {
+        return SerializationHelper.Parse(() => {
+            return new PostProcess(
+                parsedPostProcess.name,
+                parsedPostProcess.fragmentUrl, 
+                parsedPostProcess.parameters,
+                parsedPostProcess.samplers,
+                parsedPostProcess.options,
+                targetCamera,
+                parsedPostProcess.renderTargetSamplingMode,
+                parsedPostProcess._engine, 
+                parsedPostProcess.reusable,
+                parsedPostProcess.defines,
+                parsedPostProcess.textureType,
+                parsedPostProcess.vertexUrl,
+                parsedPostProcess.indexParameters,
+                false,
+                parsedPostProcess.textureFormat
+                );
+        }, parsedPostProcess, scene, rootUrl);
     }
 }
 

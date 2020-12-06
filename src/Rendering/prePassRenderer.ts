@@ -335,7 +335,7 @@ export class PrePassRenderer {
      * @hidden
      */
     public _beforeDraw(camera?: Camera, faceIndex?: number, layer?: number) {
-        const previousEnabled = this._enabled && this._currentTarget.enabled;
+        // const previousEnabled = this._enabled && this._currentTarget.enabled;
 
         if (this._isDirty) {
             this._update();
@@ -343,7 +343,7 @@ export class PrePassRenderer {
 
         const texture = this._currentTarget.renderTargetTexture;
 
-        if (previousEnabled && (!this._enabled || !this._currentTarget.enabled)) {
+        if (!this._enabled || !this._currentTarget.enabled) {
             // Prepass disabled, we render only on 1 color attachment
             if (texture) {
                 // this._engine.restoreSingleAttachment();
@@ -386,7 +386,6 @@ export class PrePassRenderer {
 
         // Activates and renders the chain
         if (postProcessChain.length) {
-            // Do not mess with stencil
             this._scene.postProcessManager._prepareFrame(this._currentTarget.getInternalTexture()!, postProcessChain);
             this._scene.postProcessManager.directRender(postProcessChain, outputTexture, false, faceIndex);
         }
@@ -434,10 +433,6 @@ export class PrePassRenderer {
 
     private _setRenderTargetState(prePassRenderTarget: PrePassRenderTarget, enabled: boolean) {
         prePassRenderTarget.enabled = enabled;
-
-        if (prePassRenderTarget.imageProcessingPostProcess) {
-            prePassRenderTarget.imageProcessingPostProcess.imageProcessingConfiguration.applyByPostProcess = enabled;
-        }  
     }
 
     /**
@@ -533,9 +528,10 @@ export class PrePassRenderer {
         this._postProcessesSourceForThisPass = this._getPostProcessesSource(prePassRenderTarget, camera);
         this._postProcessesSourceForThisPass = (this._postProcessesSourceForThisPass.filter((pp) => { return pp != null; }));
 
-        this._needsCompositionForThisPass = !this._hasImageProcessing(this._postProcessesSourceForThisPass) &&
+        const cameraHasImageProcessing = this._hasImageProcessing(this._postProcessesSourceForThisPass);
+        this._needsCompositionForThisPass = !cameraHasImageProcessing &&
             !this.disableGammaTransform &&
-            prePassRenderTarget._beforeCompositionPostProcesses.length > 0 && // TODO : this test should be cleaner and precisely target SSS
+            this._needsImageProcessing() &&
             !secondaryCamera;
 
         const firstCameraPP = this._getFirstPostProcess(this._postProcessesSourceForThisPass);
@@ -543,28 +539,55 @@ export class PrePassRenderer {
         let firstPP = null;
 
         // Create composition effect if needed
-        if (this._needsCompositionForThisPass && !prePassRenderTarget.imageProcessingPostProcess) {
-            prePassRenderTarget._createCompositionEffect();
+        if (this._needsCompositionForThisPass) {
+            if (!prePassRenderTarget.imageProcessingPostProcess) {
+                prePassRenderTarget._createCompositionEffect();
+            }
+            prePassRenderTarget.imageProcessingPostProcess.imageProcessingConfiguration.applyByPostProcess = true;
+        } else if (this._scene.imageProcessingConfiguration && !cameraHasImageProcessing) {
+            // in case image processing was applied before and no longer needed for this pass
+            this._scene.imageProcessingConfiguration.applyByPostProcess = false;
         }
 
         // Setting the prePassRenderTarget as input texture of the first PP
         if (firstPrePassPP) {
-            firstPrePassPP.inputTexture = prePassRenderTarget.getInternalTexture()!;
-            prePassRenderTarget.imageProcessingPostProcess.restoreDefaultInputTexture();
             firstPP = firstPrePassPP;
         } else if (this._needsCompositionForThisPass) {
-            prePassRenderTarget.imageProcessingPostProcess.inputTexture = prePassRenderTarget.getInternalTexture()!;
             firstPP = prePassRenderTarget.imageProcessingPostProcess;
         } else if (firstCameraPP) {
-            firstCameraPP.inputTexture = prePassRenderTarget.getInternalTexture()!;
             firstPP = firstCameraPP;
         }
 
-        if (firstPP) {
-            firstPP.autoClear = false;
+        this._bindFrameBuffer(prePassRenderTarget);
+        this._linkInternalTexture(prePassRenderTarget, firstPP);
+    }
+
+    private _linkInternalTexture(prePassRenderTarget: PrePassRenderTarget, postProcess: Nullable<PostProcess>) {
+        if (prePassRenderTarget._internalTextureDirty || prePassRenderTarget._outputPostProcess !== postProcess) {
+            this._updateGeometryBufferLayout();
+            if (postProcess) {
+                postProcess.autoClear = false;
+                postProcess.inputTexture = prePassRenderTarget.getInternalTexture()!;
+            }
+
+            // Restore previous texture that was forced to the prepass texture
+            if (prePassRenderTarget._outputPostProcess && prePassRenderTarget._outputPostProcess !== postProcess) {
+                prePassRenderTarget._outputPostProcess.restoreDefaultInputTexture();
+            }
+
+            prePassRenderTarget._outputPostProcess = postProcess;
+            prePassRenderTarget._internalTextureDirty = false;
+        }
+    }
+
+    private _needsImageProcessing(): boolean {
+        for (let i = 0; i < this._effectConfigurations.length; i++) {
+            if (this._effectConfigurations[i].enabled && this._effectConfigurations[i].needsImageProcessing) {
+                return true;
+            }
         }
 
-        this._bindFrameBuffer(prePassRenderTarget);
+        return false;
     }
 
     private _hasImageProcessing(postProcesses: Nullable<PostProcess>[]): boolean {

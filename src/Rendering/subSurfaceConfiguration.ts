@@ -53,6 +53,11 @@ export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
     public enabled = false;
 
     /**
+     * Does the output of this prepass need to go through imageprocessing
+     */
+    public needsImageProcessing = true;
+
+    /**
      * Name of the configuration
      */
     public name = SceneComponentConstants.NAME_SUBSURFACE;
