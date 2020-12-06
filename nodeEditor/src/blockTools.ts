@@ -59,6 +59,7 @@ import { WorleyNoise3DBlock } from 'babylonjs/Materials/Node/Blocks/worleyNoise3
 import { SimplexPerlin3DBlock } from 'babylonjs/Materials/Node/Blocks/simplexPerlin3DBlock';
 import { NormalBlendBlock } from 'babylonjs/Materials/Node/Blocks/normalBlendBlock';
 import { Rotate2dBlock } from 'babylonjs/Materials/Node/Blocks/rotate2dBlock';
+import { Rotate3dBlock } from 'babylonjs/Materials/Node/Blocks/rotate3dBlock';
 import { DerivativeBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/derivativeBlock';
 import { RefractBlock } from 'babylonjs/Materials/Node/Blocks/refractBlock';
 import { ReflectBlock } from 'babylonjs/Materials/Node/Blocks/reflectBlock';
@@ -91,6 +92,8 @@ export class BlockTools {
                 return new DerivativeBlock("Derivative");
             case "Rotate2dBlock":
                 return new Rotate2dBlock("Rotate2d");
+            case "Rotate3dBlock":
+                return new Rotate3dBlock("Rotate3d");
             case "NormalBlendBlock":
                 return new NormalBlendBlock("NormalBlend");
             case "WorleyNoise3DBlock":
