@@ -95,7 +95,19 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
         const displayInspector = this._scene?.debugLayer.isVisible();
 
-        const useWebGPU = location.href.indexOf("webgpu") !== -1 && WebGPUEngine.IsSupported;
+        let useWebGPU = location.href.indexOf("webgpu") !== -1 && !!navigator.gpu;
+        let forceWebGL1 = false;
+        const configuredEngine = Utilities.ReadStringFromStore("engineVersion", "WebGL2");
+
+        switch (configuredEngine) {
+            case "WebGPU":
+                useWebGPU = true;
+                break;
+            case "WebGL":
+                forceWebGL1 = true;
+                break;
+        }
+        
 
         if (this._engine) {
             try {
@@ -113,13 +125,14 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
             if (useWebGPU) {
                 globalObject.createDefaultEngine = async function() { 
-                    var engine = new BABYLON.WebGPUEngine(canvas);
+                    var engine = new WebGPUEngine(canvas);
                     await engine.initAsync();
                     return engine;
                 }                
             } else {
                 globalObject.createDefaultEngine = function () {
                     return new Engine(canvas, true, {
+                        disableWebGL2Support: forceWebGL1,
                         preserveDrawingBuffer: true,
                         stencil: true,
                     });
@@ -127,7 +140,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             }
 
             let zipVariables = "var engine = null;\r\nvar scene = null;\r\nvar sceneToRender = null;\r\n";
-            let defaultEngineZip = "var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true }); }";
+            let defaultEngineZip = `var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true,  disableWebGL2Support: ${forceWebGL1}}); }`;
 
             if (useWebGPU) {
                 defaultEngineZip = `var createDefaultEngine = async function() { 

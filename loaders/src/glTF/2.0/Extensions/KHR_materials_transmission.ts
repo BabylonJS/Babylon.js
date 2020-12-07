@@ -211,6 +211,7 @@ class TransmissionHelper {
         this._opaqueRenderTarget.gammaSpace = true;
         this._opaqueRenderTarget.lodGenerationScale = 1;
         this._opaqueRenderTarget.lodGenerationOffset = -4;
+        this._opaqueRenderTarget.samples = 4;
 
         if (opaqueRTIndex >= 0) {
             this._scene.customRenderTargets.splice(opaqueRTIndex, 0, this._opaqueRenderTarget);

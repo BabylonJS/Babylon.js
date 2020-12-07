@@ -152,6 +152,8 @@ declare module BABYLON {
         static LoadTextFile(url: string, onSuccess: (data: string) => void, onProgress?: (data: any) => void, onError?: (request?: WebRequest, exception?: any) => void): BABYLON.IFileRequest;
         /** Load a text based file */
         static LoadTextFileAsync(url: string): Promise<string>;
+        /** Post data to server */
+        static PostDataToServer(url: string, data: string | Document | Blob | ArrayBufferView | ArrayBuffer | FormData | URLSearchParams | ReadableStream<Uint8Array>, contentType?: string, onComplete?: (status: int) => void): XMLHttpRequest;
         /** Shows the default page scene loader. */
         static ShowDefaultLoader(show: boolean): void;
         /** Update the default page scene loader status. */
@@ -194,6 +196,8 @@ declare module BABYLON {
         static RegisterClickAction(scene: BABYLON.Scene, mesh: BABYLON.AbstractMesh, func: () => void): BABYLON.IAction;
         /** Unregisters an on pick trigger click action */
         static UnregisterClickAction(mesh: BABYLON.AbstractMesh, action: BABYLON.IAction): boolean;
+        /** Starts a targeted float animation for tweening.  */
+        static StartTweenAnimation(scene: BABYLON.Scene, name: string, targetObject: any, targetProperty: string, startValue: number, endValue: number, speedRatio?: number, frameRate?: number, loopMode?: number, easingFunction?: BABYLON.EasingFunction, onAnimationComplete?: () => void): BABYLON.Animatable;
         /** Get first material with name. (Uses starts with text searching) */
         static GetMaterialWithName(scene: BABYLON.Scene, name: string): BABYLON.Material;
         /** Get all materials with name. (Uses starts with text searching) */
@@ -207,7 +211,7 @@ declare module BABYLON {
         /** Creates an instance of the specified mesh asset into the scene. (Mesh Instance) */
         static CreateInstancedMesh(container: BABYLON.AssetContainer, meshName: string, instanceName: string): BABYLON.InstancedMesh;
         /** Registers a script componment with the scene manager. */
-        static RegisterScriptComponent(instance: BABYLON.ScriptComponent, klass: string, validate?: boolean): void;
+        static RegisterScriptComponent(instance: BABYLON.ScriptComponent, alias: string, validate?: boolean): void;
         /** Destroys a script component instance. */
         static DestroyScriptComponent(instance: BABYLON.ScriptComponent): void;
         /** Finds a script component on the transform with the specfied class name. */
@@ -1461,6 +1465,10 @@ declare module BABYLON {
         static SampleAnimationQuaternion(animation: BABYLON.Animation, frame: number): BABYLON.Quaternion;
         /** Set the passed matrix "result" as the sampled key frame value for the specfied animation track. */
         static SampleAnimationMatrix(animation: BABYLON.Animation, frame: number): BABYLON.Matrix;
+        /** Creates a targeted float animation for tweening.  */
+        static CreateFloatAnimation(name: string, targetProperty: string, startValue: number, endValue: number, frameRate?: number, loopMode?: number): BABYLON.Animation;
+        /** Gets the last key frame index value. */
+        static GetLastKeyFrameIndex(animation: BABYLON.Animation): number;
         /** Private internal frame interpolation helper */
         private static InterpolateAnimation;
         /** Initialize default shader material properties */
@@ -1931,6 +1939,7 @@ declare module BABYLON {
         animationFirstRun: boolean;
         animationEndFrame: boolean;
         animationLoopFrame: boolean;
+        animationLoopEvents: any;
         animationStateMachine: BABYLON.MachineState;
     }
     interface IAnimationCurve {

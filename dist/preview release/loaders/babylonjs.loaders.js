@@ -5306,7 +5306,7 @@ var TransmissionHelper = /** @class */ (function () {
      */
     TransmissionHelper._getDefaultOptions = function () {
         return {
-            renderSize: 512
+            renderSize: 1024
         };
     };
     /**
@@ -5429,6 +5429,7 @@ var TransmissionHelper = /** @class */ (function () {
         this._opaqueRenderTarget.gammaSpace = true;
         this._opaqueRenderTarget.lodGenerationScale = 1;
         this._opaqueRenderTarget.lodGenerationOffset = -4;
+        this._opaqueRenderTarget.samples = 4;
         if (opaqueRTIndex >= 0) {
             this._scene.customRenderTargets.splice(opaqueRTIndex, 0, this._opaqueRenderTarget);
         }
@@ -7844,7 +7845,12 @@ var GLTFLoader = /** @class */ (function () {
         var promises = new Array();
         for (var index = 0; index < animations.length; index++) {
             var animation = animations[index];
-            promises.push(this.loadAnimationAsync("/animations/" + animation.index, animation));
+            promises.push(this.loadAnimationAsync("/animations/" + animation.index, animation).then(function (animationGroup) {
+                // Delete the animation group if it ended up not having any animations in it.
+                if (animationGroup.targetedAnimations.length === 0) {
+                    animationGroup.dispose();
+                }
+            }));
         }
         return Promise.all(promises).then(function () { });
     };
