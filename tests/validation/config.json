@@ -973,6 +973,30 @@
             "renderCount": 10,
             "playgroundId": "#MSAHKR#13",
             "referenceImage": "shadowsinstancesright.png"
+        },
+        {
+            "title": "Prepass SSAO + instances",
+            "renderCount": 10,
+            "playgroundId": "#YB006J#349",
+            "referenceImage": "prepass-ssao-instances.png"
+        },
+        {
+            "title": "Prepass SSAO + instanced bones",
+            "renderCount": 10,
+            "playgroundId": "#0K8EYN#194",
+            "referenceImage": "prepass-ssao-instanced-bones.png"
+        },
+        {
+            "title": "Prepass SSAO + particles",
+            "renderCount": 30,
+            "playgroundId": "#65MUMZ#40",
+            "referenceImage": "prepass-ssao-particles.png"
+        },
+        {
+            "title": "Prepass SSAO + depth of field",
+            "renderCount": 10,
+            "playgroundId": "#DX6AV#88",
+            "referenceImage": "prepass-ssao-dof.png"
         }
     ]
 }
