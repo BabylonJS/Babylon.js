@@ -57679,7 +57679,7 @@ var InputDisplayManager = /** @class */ (function () {
                         value = babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_0__["AnimatedInputBlockTypes"][inputBlock.animationType];
                     }
                     else {
-                        value = inputBlock.value.toFixed(2);
+                        value = inputBlock.value.toFixed(4);
                     }
                     break;
                 case babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector2:
@@ -64414,10 +64414,10 @@ var FloatLineComponent = /** @class */ (function (_super) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
         var currentValue = _this.props.target[_this.props.propertyName];
-        _this.state = { value: currentValue ? (_this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(_this.props.digits || 2)) : "0" };
+        _this.state = { value: currentValue ? (_this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(_this.props.digits || 4)) : "0" };
         _this._store = currentValue;
         var rexp = "(.*\\.";
-        var numDigits = _this.props.digits || 2;
+        var numDigits = _this.props.digits || 4;
         while (numDigits--) {
             rexp += ".";
         }
@@ -64431,7 +64431,7 @@ var FloatLineComponent = /** @class */ (function (_super) {
             return true;
         }
         var newValue = nextProps.target[nextProps.propertyName];
-        var newValueString = newValue ? this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this.props.digits || 2) : "0";
+        var newValueString = newValue ? this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this.props.digits || 4) : "0";
         if (newValueString !== nextState.value) {
             nextState.value = newValueString;
             return true;

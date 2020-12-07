@@ -8,6 +8,7 @@
 
 - Added static CenterToRef for vectors 2/3/4  ([aWeirdo](https://github.com/aWeirdo))
 - Added ability to view images (ktx2, png, jpg) to the sandbox. ([bghgary](https://github.com/bghgary))
+- Added optional smoothed normals for extruded procedural polygons. ([snagy](https://github.com/snagy))
 - Added support for infinite perspective cameras ([Deltakosh](https://github.com/deltakosh))
 - Added ability to enable/disable ArcRotateCamera zoom on multiTouch event ([NicolasBuecher](https://github.com/NicolasBuecher))
 
@@ -29,10 +30,12 @@
 
 ### Inspector
 
+- Increased float precision to 4([msDestiny14](https://github.com/msDestiny14))
 - Added support for sounds in the inspector ([Deltakosh](https://github.com/deltakosh))
 
 ### NME
 
+- Increased float precision to 4([msDestiny14](https://github.com/msDestiny14))
 - Added ability to make input node's properties visible in the properties of a custom frame ([msDestiny14](https://github.com/msDestiny14))
 
 ### GUI
@@ -62,6 +65,7 @@
 - Fix mipmaps creation in the KTX2 decoder for non square textures ([Popov72](https://github.com/Popov72))
 - Fix detail map not working in WebGL1 ([Popov72](https://github.com/Popov72))
 - Fix ArcRotateCamera behaviour when panning is disabled on multiTouch event ([NicolasBuecher](https://github.com/NicolasBuecher))
+- Fix vertically interlaced stereoscopic rendering (`RIG_MODE_STEREOSCOPIC_INTERLACED`) not working (follow-up [#7425](https://github.com/BabylonJS/Babylon.js/issues/7425), [#8000](https://github.com/BabylonJS/Babylon.js/issues/8000)) ([foxxyz](https://github.com/foxxyz))
 
 ## Breaking changes
 
