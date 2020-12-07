@@ -66,7 +66,7 @@ export class PrePassRenderTarget extends MultiRenderTarget {
     public _checkSize() {
         var	requiredWidth = this._engine.getRenderWidth(true);
         var	requiredHeight = this._engine.getRenderHeight(true);
-        
+
         var width = this.getRenderWidth();
         var height = this.getRenderHeight();
 
@@ -76,7 +76,6 @@ export class PrePassRenderTarget extends MultiRenderTarget {
             this._internalTextureDirty = true;
         }
     }
-
 
     /**
      * Changes the number of render targets in this MRT
@@ -102,7 +101,7 @@ export class PrePassRenderTarget extends MultiRenderTarget {
     public dispose() {
         super.dispose();
 
-        if (this._scene.prePassRenderer) {
+        if (this._scene && this._scene.prePassRenderer) {
             const index = this._scene.prePassRenderer.renderTargets.indexOf(this);
 
             if (index !== -1) {
