@@ -6159,7 +6159,7 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Class used to hold a RBG color
+     * Class used to hold a RGB color
      */
     export class Color3 {
         /**
