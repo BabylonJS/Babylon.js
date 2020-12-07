@@ -141,7 +141,7 @@ export class PrePassRenderer {
     /**
      * Prevents the PrePassRenderer from using the GeometryBufferRenderer as a fallback
      */
-    public doNotUseGeometryRendererFallback = false;
+    public doNotUseGeometryRendererFallback = true;
 
     private _refreshGeometryBufferRendererLink() {
         if (!this.doNotUseGeometryRendererFallback) {
