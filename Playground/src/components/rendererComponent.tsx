@@ -251,7 +251,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
                 let createEngineZip = createEngineFunction === "createEngine" ? zipVariables : zipVariables + defaultEngineZip;
 
-                this.props.globalState.zipCode = createEngineZip + ";\r\n" + code + ";\r\n" + sceneToRenderCode;
+                this.props.globalState.zipCode = createEngineZip + ";\r\n" + code + ";\r\ninitFunction().then(() => {" + sceneToRenderCode;
             }
 
             if (globalObject.scene.then) {

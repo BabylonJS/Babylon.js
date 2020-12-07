@@ -5,7 +5,7 @@ import { ArrayTools } from '../Misc/arrayTools';
 import { _TypeStore } from '../Misc/typeStore';
 
 /**
- * Class used to hold a RBG color
+ * Class used to hold a RGB color
  */
 export class Color3 {
 
