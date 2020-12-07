@@ -63,6 +63,7 @@
 - Fix mipmaps creation in the KTX2 decoder for non square textures ([Popov72](https://github.com/Popov72))
 - Fix detail map not working in WebGL1 ([Popov72](https://github.com/Popov72))
 - Fix ArcRotateCamera behaviour when panning is disabled on multiTouch event ([NicolasBuecher](https://github.com/NicolasBuecher))
+- Fix vertically interlaced stereoscopic rendering (`RIG_MODE_STEREOSCOPIC_INTERLACED`) not working (follow-up [#7425](https://github.com/BabylonJS/Babylon.js/issues/7425), [#8000](https://github.com/BabylonJS/Babylon.js/issues/8000)) ([foxxyz](https://github.com/foxxyz))
 
 ## Breaking changes
 
