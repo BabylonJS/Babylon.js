@@ -30,10 +30,12 @@
 
 ### Inspector
 
+- Increased float precision to 4([msDestiny14](https://github.com/msDestiny14))
 - Added support for sounds in the inspector ([Deltakosh](https://github.com/deltakosh))
 
 ### NME
 
+- Increased float precision to 4([msDestiny14](https://github.com/msDestiny14))
 - Added ability to make input node's properties visible in the properties of a custom frame ([msDestiny14](https://github.com/msDestiny14))
 
 ### GUI
