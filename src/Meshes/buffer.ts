@@ -127,12 +127,12 @@ export class Buffer {
      * Gets current buffer's data
      * @returns a DataArray or null
      */
-    public getData(): Nullable<DataArray> {
+    public getData(): Nullable<DataArray | IndicesArray> {
         return this._data;
     }
 
     /** Set current buffer's data */
-    public setData(data: IndicesArray | DataArray | null): void {
+    public setData(data: Nullable<IndicesArray | DataArray>): void {
         this._data = data; // TODO: Doesn't actually update anything, part of CPU setup
     }
 
@@ -182,23 +182,6 @@ export class Buffer {
         return new VertexBuffer(this._engine, this, kind, this._updatable, true, byteStride, instanced === undefined ? this._instanced : instanced, byteOffset, size, undefined, undefined, true, this._divisor || divisor);
     }
 
-    /*
-    public updateDirectly(data: DataArray, offset: number, vertexCount?: number, useBytes: boolean = false): void {
-        if (this._buffer && this._updatable) { // update buffer
-            this._engine.updateDynamicVertexBuffer(this._buffer, data, useBytes ? offset : offset * Float32Array.BYTES_PER_ELEMENT, (vertexCount ? vertexCount * this.byteStride : undefined));
-            this._data = null;
-        }
-    }
-    public updateDirectly(data: IndicesArray, offset: number, useBytes: boolean = false): void {
-        this._buffer.updateDirectly(data, offset, useBytes)
-        if (this._buffer && this._buffer.isUpdatable()) { // update buffer
-            this
-            this._engine.updateDynamicIndexBuffer(this._buffer, data, offset); // TODO: Multiply offset by 2 or 4 depending on size of index?
-            this._data = null;
-        }
-    }
-    */
-
     /**
      * Update content of the buffer
      * @param indices new indices to use
@@ -208,12 +191,32 @@ export class Buffer {
      * @returns true if size changed
      */
     public update(data: DataArray | IndicesArray, offset?: number, gpuMemoryOnly = false, useBytes?: boolean): boolean {
-        const sizeChanged = this._data === null || data.length !== (this._data as IndicesArray).length; // Doesn't work since DataArray now
+        if (data === null) {
+            // TODO: Maybe this should mean clear? But to what size?
+            return false
+        }
 
-        if (!this._updatable || !gpuMemoryOnly) {
-            if (data instanceof IndicesArray) {
-            } else {
-                this.setData(data.slice());
+        let sizeChanged = false
+        let correctedOffset = offset
+
+        if (this._bufferType === BufferType.VertexBuffer) {
+            sizeChanged = false
+            if (useBytes && correctedOffset) {
+                correctedOffset *= Float32Array.BYTES_PER_ELEMENT
+            }
+            const newData = data as DataArray;
+
+            if (!gpuMemoryOnly) {
+                this._data = newData; // Correct? Why note slice?
+            }
+
+        } else {
+            const oldData = this._data as Nullable<IndicesArray>;
+            const newData = data as IndicesArray;
+            sizeChanged = oldData === null || oldData.length !== newData.length; // Doesn't work since DataArray now
+
+            if (!gpuMemoryOnly) {
+                this._data = newData.slice(); // Why slice?
             }
         }
 
@@ -226,9 +229,9 @@ export class Buffer {
                 if (offset === undefined) {
                     offset = 0;
                 }
-                this._engine.updateDynamicVertexBuffer(this._buffer, data, useBytes ? offset : offset * Float32Array.BYTES_PER_ELEMENT);
+                this._engine.updateDynamicVertexBuffer(this._buffer, data as DataArray, correctedOffset);
             } else  {
-                this._engine.updateDynamicIndexBuffer(this._buffer, data, offset);
+                this._engine.updateDynamicIndexBuffer(this._buffer, data as IndicesArray, offset);
             }
         }
         return sizeChanged;
@@ -241,7 +244,7 @@ export class Buffer {
      * @param vertexCount the vertex count (optional)
      * @param useBytes set to true if the offset is in bytes
      */
-    public updateDirectly(data: DataArray, offset: number, count?: number, useBytes: boolean = false): void {
+    public updateDirectly(data: DataArray, offset: number, vertexCount?: number, useBytes: boolean = false): void {
         if (!this._buffer) {
             return;
         }
@@ -253,7 +256,7 @@ export class Buffer {
                 this._engine.updateDynamicVertexBuffer(this._buffer, data, useBytes ? offset : offset * Float32Array.BYTES_PER_ELEMENT, (vertexCount ? vertexCount * this.byteStride : undefined));
             } else {
                 // TODO: We could use offset here but I am not sure if we know if we have 16/32/(8?) indices
-                this._engine.updateDynamicIndexBuffer(this._buffer, data);
+                this._engine.updateDynamicIndexBuffer(this._buffer, data as IndicesArray);
             }
             this._data = null;
         }
@@ -324,7 +327,7 @@ abstract class BufferUser {
         return this._buffer.getBuffer();
     }
     /** Get the CPU-data used for this index buffer */
-    public get data(): DataBuffer | IndicesArray | null {
+    public get data(): Nullable<DataArray | IndicesArray> {
         return this._buffer.getData() as IndicesArray;
     }
 
@@ -343,7 +346,7 @@ abstract class BufferUser {
 
 
     /** Set the CPU-data used for this index buffer */
-    public set data(new_data: IndicesArray | DataBuffer | null) {
+    public set data(new_data: Nullable<DataArray | IndicesArray>) {
         this._buffer.setData(new_data);
     }
 
