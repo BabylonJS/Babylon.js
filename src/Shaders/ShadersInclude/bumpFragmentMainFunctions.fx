@@ -24,9 +24,6 @@
 	// Thanks to http://www.thetenthplanet.de/archives/1180
 	mat3 cotangent_frame(vec3 normal, vec3 p, vec2 uv, vec2 tangentSpaceParams)
 	{
-		// flip the uv for the backface
-		uv = gl_FrontFacing ? uv : -uv;
-
 		// get edge vectors of the pixel triangle
 		vec3 dp1 = dFdx(p);
 		vec3 dp2 = dFdy(p);

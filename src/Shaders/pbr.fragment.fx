@@ -422,6 +422,9 @@ void main(void) {
                 ambientMonochrome,
             #endif
         #endif
+        #if defined(CLEARCOAT_BUMP) || defined(TWOSIDEDLIGHTING)
+            (gl_FrontFacing ? 1. : -1.),
+        #endif
             clearcoatOut
         );
     #else
