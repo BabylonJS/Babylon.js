@@ -643,6 +643,7 @@ export class PrePassRenderer {
     private _update() {
         this._disable();
         let enablePrePass = false;
+        this._scene.imageProcessingConfiguration.applyByPostProcess = false;
 
         for (let i = 0; i < this._scene.materials.length; i++) {
             if (this._scene.materials[i].setPrePassRenderer(this)) {
@@ -683,6 +684,10 @@ export class PrePassRenderer {
                         this._setRenderTargetState(this.renderTargets[i], true);
                         enablePrePass = true;
                     }
+                }
+
+                if (this._hasImageProcessing(postProcesses)) {
+                    this._scene.imageProcessingConfiguration.applyByPostProcess = true;
                 }
             }
         }

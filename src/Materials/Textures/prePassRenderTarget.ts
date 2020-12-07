@@ -57,9 +57,7 @@ export class PrePassRenderTarget extends MultiRenderTarget {
     }
 
     public _createCompositionEffect() {
-        const applyByPostProcess = this._scene.imageProcessingConfiguration?.applyByPostProcess;
         this.imageProcessingPostProcess = new ImageProcessingPostProcess("prePassComposition", 1, null, undefined, this._engine);
-        this.imageProcessingPostProcess.imageProcessingConfiguration.applyByPostProcess = applyByPostProcess;
     }
 
     /**
