@@ -52601,6 +52601,60 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** @hidden */
+    export var stereoscopicInterlacePixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * StereoscopicInterlacePostProcessI used to render stereo views from a rigged camera with support for alternate line interlacing
+     */
+    export class StereoscopicInterlacePostProcessI extends PostProcess {
+        private _stepSize;
+        private _passedProcess;
+        /**
+         * Gets a string identifying the name of the class
+         * @returns "StereoscopicInterlacePostProcessI" string
+         */
+        getClassName(): string;
+        /**
+         * Initializes a StereoscopicInterlacePostProcessI
+         * @param name The name of the effect.
+         * @param rigCameras The rig cameras to be appled to the post process
+         * @param isStereoscopicHoriz If the rendered results are horizontal or vertical
+         * @param isStereoscopicInterlaced If the rendered results are alternate line interlaced
+         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
+         * @param engine The engine which the post process will be applied. (default: current engine)
+         * @param reusable If the post process can be reused on the same frame. (default: false)
+         */
+        constructor(name: string, rigCameras: Camera[], isStereoscopicHoriz: boolean, isStereoscopicInterlaced: boolean, samplingMode?: number, engine?: Engine, reusable?: boolean);
+    }
+    /**
+     * StereoscopicInterlacePostProcess used to render stereo views from a rigged camera
+     */
+    export class StereoscopicInterlacePostProcess extends PostProcess {
+        private _stepSize;
+        private _passedProcess;
+        /**
+         * Gets a string identifying the name of the class
+         * @returns "StereoscopicInterlacePostProcess" string
+         */
+        getClassName(): string;
+        /**
+         * Initializes a StereoscopicInterlacePostProcess
+         * @param name The name of the effect.
+         * @param rigCameras The rig cameras to be appled to the post process
+         * @param isStereoscopicHoriz If the rendered results are horizontal or verticle
+         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
+         * @param engine The engine which the post process will be applied. (default: current engine)
+         * @param reusable If the post process can be reused on the same frame. (default: false)
+         */
+        constructor(name: string, rigCameras: Camera[], isStereoscopicHoriz: boolean, samplingMode?: number, engine?: Engine, reusable?: boolean);
+    }
+}
+declare module BABYLON {
     /**
      * Camera used to simulate stereoscopic rendering (based on ArcRotateCamera)
      * @see https://doc.babylonjs.com/features/cameras
@@ -69548,7 +69602,7 @@ declare module BABYLON {
          */
         constructor(name: string, contours: Path2 | Vector2[] | any, scene?: Scene, earcutInjection?: any);
         /**
-         * Adds a whole within the polygon
+         * Adds a hole within the polygon
          * @param hole Array of points defining the hole
          * @returns this
          */
@@ -69557,15 +69611,17 @@ declare module BABYLON {
          * Creates the polygon
          * @param updatable If the mesh should be updatable
          * @param depth The depth of the mesh created
+         * @param smoothingThreshold Dot product threshold for smoothed normals
          * @returns the created mesh
          */
-        build(updatable?: boolean, depth?: number): Mesh;
+        build(updatable?: boolean, depth?: number, smoothingThreshold?: number): Mesh;
         /**
          * Creates the polygon
          * @param depth The depth of the mesh created
+         * @param smoothingThreshold Dot product threshold for smoothed normals
          * @returns the created VertexData
          */
-        buildVertexData(depth?: number): VertexData;
+        buildVertexData(depth?: number, smoothingThreshold?: number): VertexData;
         /**
          * Adds a side to the polygon
          * @param positions points that make the polygon
@@ -69603,6 +69659,7 @@ declare module BABYLON {
             shape: Vector3[];
             holes?: Vector3[][];
             depth?: number;
+            smoothingThreshold?: number;
             faceUV?: Vector4[];
             faceColors?: Color4[];
             updatable?: boolean;
@@ -75652,60 +75709,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
-    export var stereoscopicInterlacePixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /**
-     * StereoscopicInterlacePostProcessI used to render stereo views from a rigged camera with support for alternate line interlacing
-     */
-    export class StereoscopicInterlacePostProcessI extends PostProcess {
-        private _stepSize;
-        private _passedProcess;
-        /**
-         * Gets a string identifying the name of the class
-         * @returns "StereoscopicInterlacePostProcessI" string
-         */
-        getClassName(): string;
-        /**
-         * Initializes a StereoscopicInterlacePostProcessI
-         * @param name The name of the effect.
-         * @param rigCameras The rig cameras to be appled to the post process
-         * @param isStereoscopicHoriz If the rendered results are horizontal or vertical
-         * @param isStereoscopicInterlaced If the rendered results are alternate line interlaced
-         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
-         * @param engine The engine which the post process will be applied. (default: current engine)
-         * @param reusable If the post process can be reused on the same frame. (default: false)
-         */
-        constructor(name: string, rigCameras: Camera[], isStereoscopicHoriz: boolean, isStereoscopicInterlaced: boolean, samplingMode?: number, engine?: Engine, reusable?: boolean);
-    }
-    /**
-     * StereoscopicInterlacePostProcess used to render stereo views from a rigged camera
-     */
-    export class StereoscopicInterlacePostProcess extends PostProcess {
-        private _stepSize;
-        private _passedProcess;
-        /**
-         * Gets a string identifying the name of the class
-         * @returns "StereoscopicInterlacePostProcess" string
-         */
-        getClassName(): string;
-        /**
-         * Initializes a StereoscopicInterlacePostProcess
-         * @param name The name of the effect.
-         * @param rigCameras The rig cameras to be appled to the post process
-         * @param isStereoscopicHoriz If the rendered results are horizontal or verticle
-         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
-         * @param engine The engine which the post process will be applied. (default: current engine)
-         * @param reusable If the post process can be reused on the same frame. (default: false)
-         */
-        constructor(name: string, rigCameras: Camera[], isStereoscopicHoriz: boolean, samplingMode?: number, engine?: Engine, reusable?: boolean);
-    }
-}
-declare module BABYLON {
-    /** @hidden */
     export var tonemapPixelShader: {
         name: string;
         shader: string;
@@ -78349,8 +78352,9 @@ declare module BABYLON {
          * src parameter of an <img> to display it
          * @param mimeType defines the MIME type of the screenshot image (default: image/png).
          * Check your browser for supported MIME types
+         * @param forceDownload force the system to download the image even if a successCallback is provided
          */
-        static CreateScreenshot(engine: Engine, camera: Camera, size: IScreenshotSize | number, successCallback?: (data: string) => void, mimeType?: string): void;
+        static CreateScreenshot(engine: Engine, camera: Camera, size: IScreenshotSize | number, successCallback?: (data: string) => void, mimeType?: string, forceDownload?: boolean): void;
         /**
          * Captures a screenshot of the current rendering
          * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
@@ -78367,6 +78371,19 @@ declare module BABYLON {
          * to the src parameter of an <img> to display it
          */
         static CreateScreenshotAsync(engine: Engine, camera: Camera, size: any, mimeType?: string): Promise<string>;
+        /**
+         * Captures a screenshot of the current rendering for a specific size. This will render the entire canvas but will generate a blink (due to canvas resize)
+         * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
+         * @param engine defines the rendering engine
+         * @param camera defines the source camera
+         * @param width defines the expected width
+         * @param height defines the expected height
+         * @param mimeType defines the MIME type of the screenshot image (default: image/png).
+         * Check your browser for supported MIME types
+         * @returns screenshot as a string of base64-encoded characters. This string can be assigned
+         * to the src parameter of an <img> to display it
+         */
+        static CreateScreenshotWithResizeAsync(engine: Engine, camera: Camera, width: number, height: number, mimeType?: string): Promise<void>;
         /**
          * Generates an image screenshot from the specified camera.
          * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
