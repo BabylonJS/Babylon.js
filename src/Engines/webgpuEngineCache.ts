@@ -11,7 +11,7 @@ import { _TimeToken } from "../Instrumentation/timeToken";
 import { Constants } from "./constants";
 import * as WebGPUConstants from './WebGPU/webgpuConstants';
 import { VertexBuffer } from "../Meshes/buffer";
-import { WebGPUPipelineContext, IWebGPUPipelineContextVertexInputsCache, IWebGPURenderPipelineStageDescriptor } from './WebGPU/webgpuPipelineContext';
+import { WebGPUPipelineContext, IWebGPURenderPipelineStageDescriptor } from './WebGPU/webgpuPipelineContext';
 import { IPipelineContext } from './IPipelineContext';
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { WebGPUDataBuffer } from '../Meshes/WebGPU/webgpuDataBuffer';
@@ -90,13 +90,9 @@ export class WebGPUEngineCache extends Engine {
     private _lastCachedWrapR: number;
     private _mrtAttachments: number[];
     private _counters: {
-        numPipelineDescriptorCreation: number;
         numBindGroupsCreation: number;
-        numVertexInputCacheCreation: number;
     } = {
-        numPipelineDescriptorCreation: 0,
         numBindGroupsCreation: 0,
-        numVertexInputCacheCreation: 0,
     };
 
     // Some of the internal state might change during the render pass.
@@ -1708,8 +1704,7 @@ export class WebGPUEngineCache extends Engine {
 
             if (webgpuPipelineContext.textures[name]) {
                 if (webgpuPipelineContext.textures[name]!.texture !== internalTexture) {
-                    // TODO WEBGPU when the bindGroups has a caching mechanism set up, clear this cache
-                    //webgpuPipelineContext.bindGroups = null as any; // the bind groups need to be rebuilt (at least the bind group owning this texture, but it's easier to just have them all rebuilt)
+                    webgpuPipelineContext.bindGroupsCache = {}; // the bind groups need to be rebuilt (at least the bind group owning this texture, but it's easier to just have them all rebuilt)
                 }
                 webgpuPipelineContext.textures[name]!.texture = internalTexture!;
             }
@@ -1763,8 +1758,7 @@ export class WebGPUEngineCache extends Engine {
             const webgpuPipelineContext = this._currentEffect._pipelineContext as WebGPUPipelineContext;
             if (!texture) {
                 if (webgpuPipelineContext.textures[name] && webgpuPipelineContext.textures[name]!.texture) {
-                    // TODO WEBGPU when the bindGroups has a caching mechanism set up, clear this cache
-                    //webgpuPipelineContext.bindGroups = null as any; // the bind groups need to be rebuilt (at least the bind group owning this texture, but it's easier to just have them all rebuilt)
+                    webgpuPipelineContext.bindGroupsCache = {}; // the bind groups need to be rebuilt (at least the bind group owning this texture, but it's easier to just have them all rebuilt)
                 }
                 webgpuPipelineContext.textures[name] = null;
                 return false;
@@ -2589,8 +2583,7 @@ export class WebGPUEngineCache extends Engine {
         if (this.dbgVerboseLogsForFirstFrames) {
             if ((this as any)._count === undefined) { (this as any)._count = 0; }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                console.log("frame #" + (this as any)._count + " - counters - numPipelineDescriptorCreation=", this._counters.numPipelineDescriptorCreation, ", numBindGroupsCreation=", this._counters.numBindGroupsCreation,
-                    ", numVertexInputCacheCreation=", this._counters.numVertexInputCacheCreation);
+                console.log("frame #" + (this as any)._count + " - counters - numBindGroupsCreation=", this._counters.numBindGroupsCreation);
             }
         }
 
@@ -2611,9 +2604,7 @@ export class WebGPUEngineCache extends Engine {
             UniformBuffer._updatedUbosInFrame = {};
         }
 
-        this._counters.numPipelineDescriptorCreation = 0;
         this._counters.numBindGroupsCreation = 0;
-        this._counters.numVertexInputCacheCreation = 0;
         this._cacheRenderPipeline.endFrame();
 
         this._pendingDebugCommands.length = 0;
@@ -3362,63 +3353,32 @@ export class WebGPUEngineCache extends Engine {
         this._cacheRenderPipeline.setAlphaBlendFactors(this._alphaState._blendFunctionParameters, this._alphaState._blendEquationParameters);
     }
 
-    private _getVertexInputsToRender(): IWebGPUPipelineContextVertexInputsCache {
-        const effect = this._currentEffect!;
-
-        this._counters.numVertexInputCacheCreation++;
-
-        let vertexInputs: IWebGPUPipelineContextVertexInputsCache = {
-            indexBuffer: null,
-            indexOffset: 0,
-
-            vertexStartSlot: 0,
-            vertexBuffers: [],
-            vertexOffsets: [],
-        };
-
-        if (this._currentIndexBuffer) {
-            // TODO WEBGPU. Check if cache would be worth it.
-            vertexInputs.indexBuffer = this._currentIndexBuffer.underlyingResource;
-            vertexInputs.indexOffset = 0;
-        }
-        else {
-            vertexInputs.indexBuffer = null;
-        }
-
-        const attributes = effect.getAttributesNames();
-        for (var index = 0; index < attributes.length; index++) {
-            const order = effect.getAttributeLocation(index);
-
-            if (order >= 0) {
-                let vertexBuffer = this._currentVertexBuffers![attributes[index]];
-                if (!vertexBuffer) {
-                    // In WebGL it's valid to not bind a vertex buffer to an attribute, but it's not valid in WebGPU
-                    // So we must bind a dummy buffer when we are not given one for a specific attribute
-                    vertexBuffer = this._emptyVertexBuffer;
-                }
-
-                var buffer = vertexBuffer.getBuffer();
-                if (buffer) {
-                    vertexInputs.vertexBuffers.push(buffer.underlyingResource);
-                    vertexInputs.vertexOffsets.push(vertexBuffer.byteOffset);
-                }
-            }
-        }
-
-        // TODO WEBGPU. Optimize buffer reusability and types as more are now allowed.
-        return vertexInputs;
-    }
-
     private _getBindGroupsToRender(): GPUBindGroup[] {
         const webgpuPipelineContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
-        let bindGroups: GPUBindGroup[] = [];
-
-        this._counters.numBindGroupsCreation++;
 
         if (webgpuPipelineContext.uniformBuffer) {
             this.bindUniformBufferBase(webgpuPipelineContext.uniformBuffer.getBuffer()!, 0, "LeftOver");
             webgpuPipelineContext.uniformBuffer.update();
         }
+
+        let bufferKey = "";
+        for (let i = 0; i < webgpuPipelineContext.shaderProcessingContext.uniformBufferNames.length; ++i) {
+            const bufferName = webgpuPipelineContext.shaderProcessingContext.uniformBufferNames[i];
+            const dataBuffer = this._uniformsBuffers[bufferName];
+            if (dataBuffer) {
+                bufferKey += dataBuffer.uniqueId + "_";
+            }
+        }
+
+        let bindGroups: GPUBindGroup[] = webgpuPipelineContext.bindGroupsCache[bufferKey];
+        if (bindGroups) {
+            return bindGroups;
+        }
+
+        bindGroups = [];
+
+        webgpuPipelineContext.bindGroupsCache[bufferKey] = bindGroups;
+        this._counters.numBindGroupsCreation++;
 
         const bindGroupLayouts = webgpuPipelineContext.bindGroupLayouts;
 
@@ -3506,19 +3466,31 @@ export class WebGPUEngineCache extends Engine {
         return bindGroups;
     }
 
-    private _bindVertexInputs(vertexInputs: IWebGPUPipelineContextVertexInputsCache): void {
+    private _bindVertexInputs(): void {
         const renderPass = this._bundleEncoder || this._getCurrentRenderPass();
 
-        if (vertexInputs.indexBuffer) {
-            // TODO WEBGPU. Check if cache would be worth it.
-            renderPass.setIndexBuffer(vertexInputs.indexBuffer, this._currentIndexBuffer!.is32Bits ? WebGPUConstants.IndexFormat.Uint32 : WebGPUConstants.IndexFormat.Uint16, vertexInputs.indexOffset);
+        if (this._currentIndexBuffer) {
+            renderPass.setIndexBuffer(this._currentIndexBuffer.underlyingResource, this._currentIndexBuffer!.is32Bits ? WebGPUConstants.IndexFormat.Uint32 : WebGPUConstants.IndexFormat.Uint16, 0);
         }
 
-        // TODO WEBGPU. Optimize buffer reusability and types as more are now allowed.
-        for (let i = 0; i < vertexInputs.vertexBuffers.length; i++) {
-            const buf = vertexInputs.vertexBuffers[i];
-            if (buf) {
-                renderPass.setVertexBuffer(vertexInputs.vertexStartSlot + i, buf, vertexInputs.vertexOffsets[i]);
+        const effect = this._currentEffect!;
+        const attributes = effect.getAttributesNames();
+        let bufferIdx = 0;
+        for (var index = 0; index < attributes.length; index++) {
+            const order = effect.getAttributeLocation(index);
+
+            if (order >= 0) {
+                let vertexBuffer = this._currentVertexBuffers![attributes[index]];
+                if (!vertexBuffer) {
+                    // In WebGL it's valid to not bind a vertex buffer to an attribute, but it's not valid in WebGPU
+                    // So we must bind a dummy buffer when we are not given one for a specific attribute
+                    vertexBuffer = this._emptyVertexBuffer;
+                }
+
+                const buffer = vertexBuffer.getBuffer();
+                if (buffer) {
+                    renderPass.setVertexBuffer(bufferIdx++, buffer.underlyingResource, vertexBuffer.byteOffset);
+                }
             }
         }
     }
@@ -3557,8 +3529,7 @@ export class WebGPUEngineCache extends Engine {
         const pipeline = this._cacheRenderPipeline.getRenderPipeline(fillMode, this._currentEffect!, this._currentRenderTarget ? this._currentRenderTarget.samples : this._mainPassSampleCount);
         renderPass.setPipeline(pipeline);
 
-        const vertexInputs = this._getVertexInputsToRender();
-        this._bindVertexInputs(vertexInputs);
+        this._bindVertexInputs();
 
         const bindGroups = this._getBindGroupsToRender();
         this._setRenderBindGroups(bindGroups);
