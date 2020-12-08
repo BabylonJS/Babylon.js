@@ -11,6 +11,7 @@
 - Added optional smoothed normals for extruded procedural polygons. ([snagy](https://github.com/snagy))
 - Added support for infinite perspective cameras ([Deltakosh](https://github.com/deltakosh))
 - Added ability to enable/disable ArcRotateCamera zoom on multiTouch event ([NicolasBuecher](https://github.com/NicolasBuecher))
+- Moving button to shared uI folder.([msDestiny14](https://github.com/msDestiny14))
 
 ### Loaders
 
