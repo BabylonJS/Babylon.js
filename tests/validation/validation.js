@@ -456,13 +456,13 @@ function init(_engineName) {
     canvas = document.createElement("canvas");
     canvas.className = "renderCanvas";
     document.body.appendChild(canvas);
-    if (engineName === "webgpu") {
+    if (engineName === "webgpu" || engineName === "webgpucache") {
         const glslangOptions = { 
             jsPath: "../../dist/preview%20release/glslang/glslang.js",
             wasmPath: "../../dist/preview%20release/glslang/glslang.wasm"
         };
 
-        engine = new BABYLON.WebGPUEngine(canvas, {
+        const options = {
             deviceDescriptor: {
                 extensions: [
                     "texture-compression-bc",
@@ -474,7 +474,9 @@ function init(_engineName) {
                 ]
             },
             antialiasing: false,
-        });
+        };
+
+        engine = engineName === "webgpucache" ? new BABYLON.WebGPUEngineCache(canvas, options) : new BABYLON.WebGPUEngine(canvas, options);
         engine.enableOfflineSupport = false;
         return new Promise((resolve) => {
             engine.initAsync(glslangOptions).then(() => resolve());
