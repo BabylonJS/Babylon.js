@@ -14,7 +14,7 @@ import { Vector3LineComponent } from '../../../lines/vector3LineComponent';
 import { Color4LineComponent } from '../../../lines/color4LineComponent';
 import { FloatLineComponent } from '../../../lines/floatLineComponent';
 import { SliderLineComponent } from '../../../lines/sliderLineComponent';
-import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
+import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
 import { TextureHelper } from '../../../../../textureHelper';
 import { Nullable } from 'babylonjs/types';
 

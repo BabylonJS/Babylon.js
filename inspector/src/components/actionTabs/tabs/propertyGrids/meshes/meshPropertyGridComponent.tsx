@@ -26,7 +26,7 @@ import { Color3LineComponent } from "../../../lines/color3LineComponent";
 import { MorphTarget } from "babylonjs/Morph/morphTarget";
 import { OptionsLineComponent, ListLineOption } from "../../../lines/optionsLineComponent";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { ButtonLineComponent } from "../../../lines/buttonLineComponent";
+import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/buttonLineComponent";
 import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
 import { AnimationGridComponent } from "../animations/animationPropertyGridComponent";
 import { RenderingManager } from "babylonjs/Rendering/renderingManager";
