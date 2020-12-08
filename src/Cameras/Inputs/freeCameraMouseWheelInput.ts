@@ -334,60 +334,60 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      * mouse-wheel axis.
      */
     private _updateCamera(): void {
-        const moveRelative = this._moveRelative;
-        const rotateRelative = this._rotateRelative;
-        const moveScene = this._moveScene;
-
-        let updateCameraProperty = function(/* Mouse-wheel delta. */
-                                            value: number,
-                                            /* Camera property to be changed. */
-                                            cameraProperty: Nullable<_CameraProperty>,
-                                            /* Axis of Camera property to be changed. */
-                                            coordinate: Nullable<Coordinate>): void {
-                if (value === 0) {
-                    // Mouse wheel has not moved.
-                    return;
-                }
-                if (cameraProperty === null || coordinate === null) {
-                    // Mouse wheel axis not configured.
-                    return;
-                }
-
-                let action = null;
-                switch (cameraProperty) {
-                    case _CameraProperty.MoveRelative:
-                        action = moveRelative;
-                        break;
-                    case _CameraProperty.RotateRelative:
-                        action = rotateRelative;
-                        break;
-                    case _CameraProperty.MoveScene:
-                        action = moveScene;
-                        break;
-                }
-
-                switch (coordinate) {
-                    case Coordinate.X:
-                        action.set(value, 0, 0);
-                        break;
-                    case Coordinate.Y:
-                        action.set(0, value, 0);
-                        break;
-                    case Coordinate.Z:
-                        action.set(0, 0, value);
-                        break;
-                }
-            };
-
         // Do the camera updates for each of the 3 touch-wheel axis.
-        updateCameraProperty(
+        this._updateCameraProperty(
             this._wheelDeltaX, this._wheelXAction, this._wheelXActionCoordinate);
-        updateCameraProperty(
+        this._updateCameraProperty(
             this._wheelDeltaY, this._wheelYAction, this._wheelYActionCoordinate);
-        updateCameraProperty(
+        this._updateCameraProperty(
             this._wheelDeltaZ, this._wheelZAction, this._wheelZActionCoordinate);
     }
 
+    /**
+     * Update one property of the camera.
+     */
+    private _updateCameraProperty(
+        /* Mouse-wheel delta. */
+        value: number,
+        /* Camera property to be changed. */
+        cameraProperty: Nullable<_CameraProperty>,
+        /* Axis of Camera property to be changed. */
+        coordinate: Nullable<Coordinate>
+    ): void {
+        if (value === 0) {
+            // Mouse wheel has not moved.
+            return;
+        }
+        if (cameraProperty === null || coordinate === null) {
+            // Mouse wheel axis not configured.
+            return;
+        }
+
+        let action = null;
+        switch (cameraProperty) {
+            case _CameraProperty.MoveRelative:
+                action = this._moveRelative;
+                break;
+            case _CameraProperty.RotateRelative:
+                action = this._rotateRelative;
+                break;
+            case _CameraProperty.MoveScene:
+                action = this._moveScene;
+                break;
+        }
+
+        switch (coordinate) {
+            case Coordinate.X:
+                action.set(value, 0, 0);
+                break;
+            case Coordinate.Y:
+                action.set(0, value, 0);
+                break;
+            case Coordinate.Z:
+                action.set(0, 0, value);
+                break;
+        }
+    };
 }
 
 (<any>CameraInputTypes)["FreeCameraMouseWheelInput"] = FreeCameraMouseWheelInput;
