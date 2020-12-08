@@ -341,6 +341,7 @@ export class ThinEngine {
      * Observable signaled when a context restored event is raised
      */
     public onContextRestoredObservable = new Observable<ThinEngine>();
+    public onContextRestoreBuffersObservable = new Observable<ThinEngine>();
     private _onContextLost: (evt: Event) => void;
     private _onContextRestored: (evt: Event) => void;
     protected _contextWasLost = false;
@@ -675,6 +676,7 @@ export class ThinEngine {
                         // Cache
                         this.wipeCaches(true);
                         Logger.Warn("WebGL context successfully restored.");
+                        this.onContextRestoreBuffersObservable.notifyObservers(this);
                         this.onContextRestoredObservable.notifyObservers(this);
                         this._contextWasLost = false;
                     }, 0);

@@ -3,8 +3,6 @@ import { ThinEngine } from "../Engines/thinEngine";
 import { DataBuffer } from './dataBuffer';
 import { Observer } from '../Misc/observable';
 
-// TODO: Make sure we create if internal buffer creation has been postponed
-// TODO: Make sure we test lost context. Perhaps we need a new signal that fires before onContextRestoredObservable since that is also used by users of babylon and they might assume that buffers has their IDs already
 // TODO: I have two console.warn('...'). How do babylon do error reporting?
 // TODO: Make sure we get reference count of geometries right in Geometry.applyToMesh. Before it set references=numberOfMeshes but that is gone with. Can we instead ref count the geometry? I think that makes more sense.
 
@@ -115,7 +113,7 @@ export class Buffer {
         }
 
         if (this._buffer && this._restoreContextObserver === null) {
-            this._restoreContextObserver = this._engine.onContextRestoredObservable.add(this._rebuild);
+            this._restoreContextObserver = this._engine.onContextRestoreBuffersObservable.add(this._rebuild);
         }
     }
 
@@ -164,7 +162,7 @@ export class Buffer {
     // Methods
 
     /** @hidden */
-    public _rebuild(): void {
+    private _rebuild(): void {
         this._buffer = null;
         this.create(this._data);
     }
@@ -199,7 +197,7 @@ export class Buffer {
     public update(data: BufferDataValues, offset?: number, gpuMemoryOnly = false, useBytes?: boolean): boolean {
         if (data === null) {
             // TODO: Maybe this should mean clear? But to what size?
-            return false
+            return false;
         }
 
         let sizeChanged = false
@@ -212,33 +210,41 @@ export class Buffer {
             }
             const newData = data as DataArray;
 
+            // TODO: Set setSizeChanged?
+
             if (!gpuMemoryOnly) {
-                this._data = newData; // Correct? Why note slice?
+                this._data = newData; // Why not slice? What about offset?
             }
 
         } else {
             const oldData = this._data as Nullable<IndicesArray>;
             const newData = data as IndicesArray;
-            sizeChanged = oldData === null || oldData.length !== newData.length; // Doesn't work since DataArray now
+            sizeChanged = oldData === null || oldData.length !== newData.length;
 
             if (!gpuMemoryOnly) {
-                this._data = newData.slice(); // Why slice?
+                this._data = newData.slice(); // Why slice? What about offset?
             }
         }
 
-        if (!this._updatable) {
-            this.recreate(data, this._updatable);
-            // TODO: Should we return true or false here?
-            return true;
-        } else if (this._buffer) {
-            if (this.bufferType == BufferType.VertexBuffer) {
-                if (offset === undefined) {
-                    offset = 0;
-                }
-                this._engine.updateDynamicVertexBuffer(this._buffer, data as DataArray, correctedOffset);
-            } else  {
-                this._engine.updateDynamicIndexBuffer(this._buffer, data as IndicesArray, offset);
+        if (!this._buffer || !this._updatable) {
+            if (gpuMemoryOnly) {
+                return false;
             }
+            if (this._buffer) {
+                this.recreate(data, false); // What about offset?
+            } else {
+                this.create(data); // What about offset?
+            }
+            return true;
+        }
+
+        if (this.bufferType == BufferType.VertexBuffer) {
+            if (offset === undefined) {
+                offset = 0;
+            }
+            this._engine.updateDynamicVertexBuffer(this._buffer, data as DataArray, correctedOffset);
+        } else  {
+            this._engine.updateDynamicIndexBuffer(this._buffer, data as IndicesArray, offset);
         }
         return sizeChanged;
     }
@@ -254,8 +260,6 @@ export class Buffer {
         if (!this._buffer) {
             return;
         }
-        this.update(data, offset, true, useBytes)
-        this._data = null
 
         if (this._updatable) { // update buffer
             if (this.bufferType === BufferType.VertexBuffer) {
@@ -292,7 +296,7 @@ export class Buffer {
      */
     public dispose(dispose_buffer: boolean = true): void {
         if (this._restoreContextObserver) {
-            this._engine.onContextRestoredObservable.remove(this._restoreContextObserver);
+            this._engine.onContextRestoreBuffersObservable.remove(this._restoreContextObserver);
             this._restoreContextObserver = null;
         }
         if (!this._buffer) {
