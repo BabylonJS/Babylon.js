@@ -387,7 +387,7 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
                 action.set(0, 0, value);
                 break;
         }
-    };
+    }
 }
 
 (<any>CameraInputTypes)["FreeCameraMouseWheelInput"] = FreeCameraMouseWheelInput;
