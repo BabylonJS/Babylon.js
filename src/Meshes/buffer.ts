@@ -3,13 +3,16 @@ import { ThinEngine } from "../Engines/thinEngine";
 import { DataBuffer } from './dataBuffer';
 import { Observer } from '../Misc/observable';
 
-// TODO: Try to retain old Buffer constructor
-// QUESTION: We have instanced and divisor on both VertexBuffer and Buffer... I guess different VertexBuffers could have different divisors as long as they are not views into the same buffer and used at the same time... but what do we want?
+// TODO: Make sure we create if internal buffer creation has been postponed
+// TODO: Make sure we test lost context. Perhaps we need a new signal that fires before onContextRestoredObservable since that is also used by users of babylon and they might assume that buffers has their IDs already
+// TODO: I have two console.warn('...'). How do babylon do error reporting?
 
 export enum BufferType {
     VertexBuffer = 1,
     IndexBuffer = 2
 }
+
+type BufferDataValues = DataArray|IndicesArray;
 
 /**
  * Class used to store data that will be store in GPU memory
@@ -19,14 +22,16 @@ export class Buffer {
     protected _engine: ThinEngine;
     protected _buffer: Nullable<DataBuffer>;
     /** @hidden */
-    public _data: Nullable<DataArray>;
+    public _data: Nullable<BufferDataValues>;
     protected _updatable: boolean;
     protected _bufferReferenceCount: number = 0;
     protected _restoreContextObserver: Nullable<Observer<ThinEngine>> = null;
 
     private _instanced: boolean;
     private _divisor: number;
-    private _bufferType: BufferType
+    /** @hidden */
+
+    public readonly bufferType: BufferType;
 
     /**
      * Gets the byte stride.
@@ -39,20 +44,20 @@ export class Buffer {
      * @param data the data to use for this buffer
      * @param updatable whether the data is updatable
      * @param stride the stride (optional)
-     * @param postponeInternalCreation whether to postpone creating the internal WebGL buffer (optional)
+     * @param postponeInternalCreation whether to postpone creating the internal WebGL buffer (false by default)
      * @param instanced whether the buffer is instanced (optional)
      * @param useBytes set to true if the stride in in bytes (optional)
-     * @param divisor sets an optional divisor for instances (1 by default)
+     * @param divisor sets an optional divisor for instances (optional)
      * @param bufferType the type of the buffer (VertexBuffer or IndexBuffer) (default VertexBuffer)
      */
-    constructor(engine: any, data: DataArray, updatable: boolean, stride = 0, postponeInternalCreation = false, instanced?: boolean, divisior?: number, useBytes = false, bufferType: BufferType = BufferType.VertexBuffer) {
+    constructor(engine: any, data: BufferDataValues, updatable: boolean, stride = 0, postponeInternalCreation = false, instanced = false, useBytes = false, divisor?: number, bufferType: BufferType = BufferType.VertexBuffer) {
         if (engine.getScene) { // old versions of VertexBuffer accepted 'mesh' instead of 'engine'
             this._engine = engine.getScene().getEngine();
         }
         else {
             this._engine = engine;
         }
-        this._bufferType = bufferType
+        this.bufferType = bufferType
         this._updatable = updatable;
 
         this._data = data;
@@ -65,10 +70,10 @@ export class Buffer {
             instanced = false;
         }
         this._instanced = instanced;
-        if (divisior === undefined) {
+        if (divisor === undefined) {
             this._divisor = instanced ? 1 : 0;
         } else {
-            this._divisor = divisior;
+            this._divisor = divisor;
         }
     }
 
@@ -76,7 +81,7 @@ export class Buffer {
      * Store data into the buffer. If the buffer was already used it will be either recreated or updated depending on isUpdatable property
      * @param data defines the data to store
      */
-    public create(data: Nullable<DataArray> = null): void {
+    public create(data: Nullable<BufferDataValues> = null): void {
         if (!data && this._buffer) {
             return; // nothing to do
         }
@@ -90,7 +95,7 @@ export class Buffer {
         // TODO: Is this always desireable?
         this._data = data;
 
-        if (this._bufferType === BufferType.VertexBuffer) {
+        if (this.bufferType === BufferType.VertexBuffer) {
             if (!this._buffer) { // create buffer
                 if (this._updatable) {
                     this._buffer = this._engine.createDynamicVertexBuffer(data);
@@ -127,13 +132,13 @@ export class Buffer {
      * Gets current buffer's data
      * @returns a DataArray or null
      */
-    public getData(): Nullable<DataArray | IndicesArray> {
+    public getData(): Nullable<BufferDataValues> {
         return this._data;
     }
 
     /** Set current buffer's data */
-    public setData(data: Nullable<IndicesArray | DataArray>): void {
-        this._data = data; // TODO: Doesn't actually update anything, part of CPU setup
+    public setData(data: Nullable<BufferDataValues>): void {
+        this._data = data;
     }
 
     /**
@@ -190,7 +195,7 @@ export class Buffer {
      * @param useBytes set to true if the offset is in bytes (optional)
      * @returns true if size changed
      */
-    public update(data: DataArray | IndicesArray, offset?: number, gpuMemoryOnly = false, useBytes?: boolean): boolean {
+    public update(data: BufferDataValues, offset?: number, gpuMemoryOnly = false, useBytes?: boolean): boolean {
         if (data === null) {
             // TODO: Maybe this should mean clear? But to what size?
             return false
@@ -199,7 +204,7 @@ export class Buffer {
         let sizeChanged = false
         let correctedOffset = offset
 
-        if (this._bufferType === BufferType.VertexBuffer) {
+        if (this.bufferType === BufferType.VertexBuffer) {
             sizeChanged = false
             if (useBytes && correctedOffset) {
                 correctedOffset *= Float32Array.BYTES_PER_ELEMENT
@@ -225,7 +230,7 @@ export class Buffer {
             // TODO: Should we return true or false here?
             return true;
         } else if (this._buffer) {
-            if (this._bufferType == BufferType.VertexBuffer) {
+            if (this.bufferType == BufferType.VertexBuffer) {
                 if (offset === undefined) {
                     offset = 0;
                 }
@@ -244,7 +249,7 @@ export class Buffer {
      * @param vertexCount the vertex count (optional)
      * @param useBytes set to true if the offset is in bytes
      */
-    public updateDirectly(data: DataArray, offset: number, vertexCount?: number, useBytes: boolean = false): void {
+    public updateDirectly(data: BufferDataValues, offset: number, vertexCount?: number, useBytes: boolean = false): void {
         if (!this._buffer) {
             return;
         }
@@ -252,17 +257,17 @@ export class Buffer {
         this._data = null
 
         if (this._updatable) { // update buffer
-            if (this._bufferType === BufferType.VertexBuffer) {
+            if (this.bufferType === BufferType.VertexBuffer) {
                 this._engine.updateDynamicVertexBuffer(this._buffer, data, useBytes ? offset : offset * Float32Array.BYTES_PER_ELEMENT, (vertexCount ? vertexCount * this.byteStride : undefined));
             } else {
-                // TODO: We could use offset here but I am not sure if we know if we have 16/32/(8?) indices
+                // TODO: Should we use offset here?
                 this._engine.updateDynamicIndexBuffer(this._buffer, data as IndicesArray);
             }
             this._data = null;
         }
     }
 
-    public recreate(data: DataArray | IndicesArray, updatable: boolean) {
+    public recreate(data: BufferDataValues, updatable: boolean) {
         if (this._buffer) {
             this._engine._releaseBuffer(this._buffer);
             this._buffer = null;
@@ -326,15 +331,6 @@ abstract class BufferUser {
     public get buffer(): Nullable<DataBuffer> {
         return this._buffer.getBuffer();
     }
-    /** Get the CPU-data used for this index buffer */
-    public get data(): Nullable<DataArray | IndicesArray> {
-        return this._buffer.getData() as IndicesArray;
-    }
-
-    /** Get the CPU-data used for this index buffer */
-    public getData(): DataBuffer | IndicesArray {
-        return this._buffer.getData() as IndicesArray;
-    }
 
     /**
      * Gets underlying native buffer
@@ -344,18 +340,12 @@ abstract class BufferUser {
         return this._buffer.getBuffer();
     }
 
-
-    /** Set the CPU-data used for this index buffer */
-    public set data(new_data: Nullable<DataArray | IndicesArray>) {
-        this._buffer.setData(new_data);
-    }
-
     /**
      * Create the GPU memory for the Buffer. Will have no effect if it was already created and no data is send in.
      * @param data new buffer data (optional)
      */
-    public create(data?: DataArray) {
-        this._buffer.create();
+    public create(data?: BufferDataValues) {
+        this._buffer.create(data);
     }
 
     /**
@@ -363,8 +353,8 @@ abstract class BufferUser {
      * @param indices new index data
      * @param updatable specifies if the new buffer should be updatable
      */
-    public recreate(indices: IndicesArray, updatable: boolean = false): void {
-        this._buffer.recreate(indices, updatable)
+    public recreate(data: BufferDataValues, updatable: boolean = false): void {
+        this._buffer.recreate(data, updatable)
     }
 
     /**
@@ -374,7 +364,7 @@ abstract class BufferUser {
      * @param gpuMemoryOnly specifies if the CPU memory should be updated
      * @returns true if size changed
      */
-    public update(data: IndicesArray | DataArray, offset?: number, gpuMemoryOnly = false): boolean {
+    public update(data: BufferDataValues, offset?: number, gpuMemoryOnly = false): boolean {
         return this._buffer.update(data, offset, gpuMemoryOnly)
     }
 
@@ -385,8 +375,8 @@ abstract class BufferUser {
      * @param vertexCount the vertex count (optional)
      * @param useBytes set to true if the offset is in bytes
      */
-    public updateDirectly(data: IndicesArray | DataArray, offset: number, vertexCount?: number, useBytes?: boolean): void {
-        this._buffer.updateDirectly(data, offset, vertexCount, useBytes)
+    public updateDirectly(data: BufferDataValues, offset: number, useBytes?: boolean): void {
+        this._buffer.updateDirectly(data, offset, undefined, useBytes)
     }
 
     /**
@@ -408,8 +398,11 @@ export class IndexBuffer extends BufferUser {
      * @param postponeInternalCreation whether to postpone creating the internal WebGL buffer (optional)
      * @param takeBufferOwnership defines if the buffer should be released when the vertex buffer is disposed
      */
-    constructor (engine: ThinEngine, data: IndicesArray | Buffer, updatable = false, postponeInternalCreation = false, takeBufferOwnership: boolean = false) {
+    constructor (engine: ThinEngine, data: IndicesArray|Buffer, updatable = false, postponeInternalCreation = false, takeBufferOwnership: boolean = false) {
         if (data instanceof Buffer) {
+            if (data.bufferType !== BufferType.IndexBuffer) {
+                console.warn('Creating IndexBuffer from a Buffer that was created as a VertexBuffer');
+            }
             super(data, takeBufferOwnership, true)
         } else {
             super(new Buffer(engine, data, updatable, undefined, postponeInternalCreation, false, undefined, undefined, BufferType.IndexBuffer), true, false)
@@ -418,6 +411,21 @@ export class IndexBuffer extends BufferUser {
 
     public clone(): IndexBuffer {
         return new IndexBuffer(this._buffer.getEngine(), this._buffer, this._buffer.isUpdatable(), true, this._ownsBuffer) // ownsBuffer here?
+    }
+
+    /** Get the CPU-data used for this index buffer */
+    public get data(): Nullable<IndicesArray> {
+        return this._buffer.getData() as Nullable<IndicesArray>;
+    }
+
+    /** Get the CPU-data used for this index buffer */
+    public getData(): Nullable<IndicesArray> {
+        return this._buffer.getData() as Nullable<IndicesArray>;
+    }
+
+    /** Set the CPU-data used for this index buffer */
+    public set data(new_data: Nullable<IndicesArray>) {
+        this._buffer.setData(new_data);
     }
 }
 
@@ -520,20 +528,22 @@ export class VertexBuffer extends BufferUser {
      * @param divisor defines the instance divisor to use (1 by default)
      * @param takeBufferOwnership defines if the buffer should be released when the vertex buffer is disposed
      */
-    constructor(engine: any, data: DataArray | Buffer, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number,
+    constructor(engine: any, data: DataArray|Buffer, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number,
         instanced?: boolean, offset?: number, size?: number, type?: number, normalized = false, useBytes = false, divisor = 1, takeBufferOwnership = false) {
 
-
         if (data instanceof Buffer) {
+            if (data.bufferType !== BufferType.VertexBuffer) {
+                console.warn('Creating IndexBuffer from a Buffer that was created as a VertexBuffer');
+            }
             super(data, takeBufferOwnership, true)
         } else {
-            super(new Buffer(engine, data, updatable, stride, postponeInternalCreation, instanced, divisor, useBytes, BufferType.VertexBuffer), takeBufferOwnership, false)
+            super(new Buffer(engine, data, updatable, stride, postponeInternalCreation, instanced, useBytes, divisor, BufferType.VertexBuffer), takeBufferOwnership, false)
         }
 
         this._kind = kind;
 
         if (type == undefined) {
-            const data = this.data;
+            // const data = this.data;
             this.type = VertexBuffer.FLOAT;
             if (data instanceof Int8Array) { this.type = VertexBuffer.BYTE; }
             else if (data instanceof Uint8Array) { this.type = VertexBuffer.UNSIGNED_BYTE; }
@@ -625,6 +635,21 @@ export class VertexBuffer extends BufferUser {
      */
     public getInstanceDivisor(): number {
         return this.instanceDivisor;
+    }
+
+    /** Get the CPU-data used for this index buffer */
+    public get data(): Nullable<DataArray> {
+        return this._buffer.getData() as Nullable<DataArray>;
+    }
+
+    /** Get the CPU-data used for this index buffer */
+    public getData(): Nullable<DataArray> {
+        return this._buffer.getData() as Nullable<DataArray>;
+    }
+
+    /** Set the CPU-data used for this index buffer */
+    public set data(new_data: Nullable<DataArray>) {
+        this._buffer.setData(new_data);
     }
 
     // Methods

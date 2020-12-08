@@ -583,7 +583,11 @@ export class Geometry implements IGetSetVerticesData {
         if (!this.isReady() || !this._indexBuffer) {
             return 0;
         }
-        return this._indexBuffer.data.length;
+        const data = this._indexBuffer.data as Nullable<IndicesArray>
+        if (data !== null) {
+            return data.length;
+        }
+        return 0;
     }
 
     /**
@@ -596,7 +600,10 @@ export class Geometry implements IGetSetVerticesData {
         if (!this.isReady() || !this._indexBuffer) {
             return null;
         }
-        var orig = this._indexBuffer.data;
+        var orig = this._indexBuffer.data as Nullable<IndicesArray>;
+        if (orig === null) {
+            return null;
+        }
         if (!forceCopy && (!copyWhenShared || this._meshes.length === 1)) {
             return orig;
         } else {
