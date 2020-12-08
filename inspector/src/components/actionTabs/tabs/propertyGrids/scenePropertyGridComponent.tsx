@@ -23,7 +23,7 @@ import { SliderLineComponent } from "../../lines/sliderLineComponent";
 import { OptionsLineComponent } from "../../lines/optionsLineComponent";
 import { LockObject } from "./lockObject";
 import { GlobalState } from '../../../globalState';
-import { ButtonLineComponent } from '../../lines/buttonLineComponent';
+import { ButtonLineComponent } from '../../../../sharedUiComponents/lines/buttonLineComponent';
 import { AnimationGridComponent } from './animations/animationPropertyGridComponent';
 
 interface IScenePropertyGridComponentProps {

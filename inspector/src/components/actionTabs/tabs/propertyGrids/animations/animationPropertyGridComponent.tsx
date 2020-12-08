@@ -4,7 +4,7 @@ import { Observable, Observer } from "babylonjs/Misc/observable";
 import { Scene } from "babylonjs/scene";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { ButtonLineComponent } from "../../../lines/buttonLineComponent";
+import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/buttonLineComponent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { LockObject } from "../lockObject";
