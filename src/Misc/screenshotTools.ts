@@ -30,8 +30,9 @@ export class ScreenshotTools {
      * src parameter of an <img> to display it
      * @param mimeType defines the MIME type of the screenshot image (default: image/png).
      * Check your browser for supported MIME types
+     * @param forceDownload force the system to download the image even if a successCallback is provided
      */
-    public static CreateScreenshot(engine: Engine, camera: Camera, size: IScreenshotSize | number, successCallback?: (data: string) => void, mimeType: string = "image/png"): void {
+    public static CreateScreenshot(engine: Engine, camera: Camera, size: IScreenshotSize | number, successCallback?: (data: string) => void, mimeType: string = "image/png", forceDownload = false): void {
         const { height, width } = ScreenshotTools._getScreenshotSize(engine, camera, size);
 
         if (!(height && width)) {
@@ -65,7 +66,14 @@ export class ScreenshotTools {
                 renderContext.drawImage(renderingCanvas, offsetX, offsetY, newWidth, newHeight);
             }
 
-            Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
+            if (forceDownload) {
+                Tools.EncodeScreenshotCanvasData(undefined, mimeType);
+                if (successCallback) {
+                    successCallback("");
+                }
+            } else {
+                Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
+            }
         });
     }
 
@@ -93,6 +101,26 @@ export class ScreenshotTools {
                     reject(new Error("Data is undefined"));
                 }
             }, mimeType);
+        });
+    }
+
+    /**
+     * Captures a screenshot of the current rendering for a specific size. This will render the entire canvas but will generate a blink (due to canvas resize)
+     * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
+     * @param engine defines the rendering engine
+     * @param camera defines the source camera
+     * @param width defines the expected width
+     * @param height defines the expected height
+     * @param mimeType defines the MIME type of the screenshot image (default: image/png).
+     * Check your browser for supported MIME types
+     * @returns screenshot as a string of base64-encoded characters. This string can be assigned
+     * to the src parameter of an <img> to display it
+     */
+    public static CreateScreenshotWithResizeAsync(engine: Engine, camera: Camera, width: number, height: number, mimeType: string = "image/png"): Promise<void> {
+        return new Promise((resolve, reject) => {
+            ScreenshotTools.CreateScreenshot(engine, camera, { width: width, height: height }, () => {
+                resolve();
+            }, mimeType, true);
         });
     }
 

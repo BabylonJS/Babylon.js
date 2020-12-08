@@ -423,7 +423,7 @@ void main(void) {
             #endif
         #endif
         #if defined(CLEARCOAT_BUMP) || defined(TWOSIDEDLIGHTING)
-            gl_FrontFacing ? 1. : -1.,
+            (gl_FrontFacing ? 1. : -1.),
         #endif
             clearcoatOut
         );

@@ -22,6 +22,7 @@ export class HeaderComponent extends React.Component<IHeaderComponentProps> {
 
         this.props.globalState.onLanguageChangedObservable.add(() => {
             this.updateDescription();
+            this.forceUpdate();
         });
 
         this.props.globalState.onRunExecutedObservable.add(() => {

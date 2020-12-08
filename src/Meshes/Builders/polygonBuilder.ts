@@ -154,11 +154,12 @@ export class PolygonBuilder {
      * @param earcutInjection can be used to inject your own earcut reference
      * @returns the polygon mesh
      */
-    public static CreatePolygon(name: string, options: { shape: Vector3[], holes?: Vector3[][], depth?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, wrap?: boolean}, scene: Nullable<Scene> = null, earcutInjection = earcut): Mesh {
+    public static CreatePolygon(name: string, options: { shape: Vector3[], holes?: Vector3[][], depth?: number, smoothingThreshold?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, wrap?: boolean}, scene: Nullable<Scene> = null, earcutInjection = earcut): Mesh {
         options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
         var shape = options.shape;
         var holes = options.holes || [];
         var depth = options.depth || 0;
+        var smoothingThreshold = options.smoothingThreshold || 2;
         var contours: Array<Vector2> = [];
         var hole: Array<Vector2> = [];
 
@@ -178,7 +179,7 @@ export class PolygonBuilder {
             }
             polygonTriangulation.addHole(hole);
         }
-        var polygon = polygonTriangulation.build(options.updatable, depth);
+        var polygon = polygonTriangulation.build(options.updatable, depth, smoothingThreshold);
         polygon._originalBuilderSideOrientation = options.sideOrientation;
         var vertexData = VertexData.CreatePolygon(polygon, options.sideOrientation, options.faceUV, options.faceColors, options.frontUVs, options.backUVs, options.wrap);
         vertexData.applyToMesh(polygon, options.updatable);
