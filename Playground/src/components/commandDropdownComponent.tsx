@@ -1,11 +1,13 @@
+import { Engine } from "babylonjs/Engines/engine";
 import * as React from "react";
 import { GlobalState } from '../globalState';
 import { Utilities } from '../tools/utilities';
 
 interface ICommandDropdownComponentProps {
     globalState: GlobalState;
-    icon: string; 
+    icon?: string; 
     tooltip: string;
+    defaultValue?: string;
     items: {
         label: string, 
         onClick?: () => void, 
@@ -15,30 +17,62 @@ interface ICommandDropdownComponentProps {
         defaultValue?: boolean | string;
         subItems?: string[];
     }[];
-    toRight?: boolean
+    toRight?: boolean;    
 }
 
-export class CommandDropdownComponent extends React.Component<ICommandDropdownComponentProps, {isExpanded: boolean}> {    
+export class CommandDropdownComponent extends React.Component<ICommandDropdownComponentProps, {isExpanded: boolean, activeState: string}> {    
   
     public constructor(props: ICommandDropdownComponentProps) {
         super(props);
 
-        this.state = {isExpanded: false}
+        this.state = {isExpanded: false, activeState: Utilities.ReadStringFromStore(this.props.tooltip, this.props.defaultValue!)};
+
+        this.props.globalState.OnNewDropdownButtonClicked.add((source) => {
+            if (source === this) {
+                return;
+            }
+
+            this.setState({isExpanded: false});
+        });
     }    
 
     public render() {
+        var engineVersionSub = Engine.Version.indexOf("-");
+        var engineVersion = Engine.Version;
+
+        if (engineVersionSub ! -1) {
+            engineVersion = engineVersion.substr(0, engineVersionSub);
+        }
+
         return (
             <>
                 {
                     this.state.isExpanded &&
-                    <div className="command-dropdown-blocker" onClick={() => this.setState({isExpanded: false})}>
+                    <div className="command-dropdown-blocker" onClick={() => {
+                        this.setState({isExpanded: false});
+                    }}>
                     </div>
                 }
                 <div className="command-dropdown-root">
-                    <div className={"command-dropdown" + (this.state.isExpanded ? " activated" : "")} title={this.props.tooltip} onClick={() => this.setState({isExpanded: !this.state.isExpanded})}>
-                        <div className="command-dropdown-icon">
-                            <img src={"imgs/" + this.props.icon + ".svg"}/>
-                        </div>
+                    <div className={"command-dropdown" + (this.state.isExpanded ? " activated" : "")} title={this.props.tooltip} 
+                        onClick={() => {
+                            this.props.globalState.OnNewDropdownButtonClicked.notifyObservers(this);
+                            this.setState({isExpanded: !this.state.isExpanded});
+                        }}>
+                        {
+                            this.props.icon &&
+                            <div className="command-dropdown-icon">
+                                <img src={"imgs/" + this.props.icon + ".svg"}/>
+                            </div>
+                        }
+                        {
+                            !this.props.icon &&
+                            <div className="command-dropdown-active">
+                                {
+                                    this.state.activeState === "Latest" ? engineVersion : this.state.activeState
+                                }
+                            </div>
+                        }
                     </div>
                     {
                             this.state.isExpanded &&
@@ -56,7 +90,8 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                                 }
                                                 if (!m.subItems) {
                                                     m.onClick();
-                                                    this.setState({isExpanded: false});
+                                                    Utilities.StoreStringToStore(this.props.tooltip, m.label);
+                                                    this.setState({isExpanded: false, activeState: m.label});
                                                 }
                                             }} title={m.label}>
                                                 <div className="command-dropdown-label-text">
