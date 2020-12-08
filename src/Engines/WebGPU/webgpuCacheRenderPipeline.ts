@@ -14,14 +14,15 @@ enum StatePosition {
     DepthBias = 2,
     DepthBiasClamp = 3,
     DepthBiasSlopeScale = 4,
-    MRTAttachments = 5,
-    ColorStates = 6,
-    DepthStencilState = 7,
-    StencilReadMask = 8,
-    StencilWriteMask = 9,
-    VertexState = 10,
+    MRTAttachments1 = 5,
+    MRTAttachments2 = 6,
+    ColorStates = 7,
+    DepthStencilState = 8,
+    StencilReadMask = 9,
+    StencilWriteMask = 10,
+    VertexState = 11,
 
-    NumStates = 11
+    NumStates = 12
 }
 
 const textureFormatToIndex: { [name: string]: number } = {
@@ -122,6 +123,8 @@ export class WebGPUCacheRenderPipeline {
     public static NumCacheMiss = 0;
     public static NumPipelineCreationLastFrame = 0;
 
+    public disabled: boolean;
+
     private static _Cache: { [hash: string]: GPURenderPipeline } = {};
     private static _NumPipelineCreationCurrentFrame = 0;
 
@@ -130,6 +133,7 @@ export class WebGPUCacheRenderPipeline {
     private _isDirty: boolean;
     private _currentRenderPipeline: GPURenderPipeline;
     private _emptyVertexBuffer: VertexBuffer;
+    //private _numFrames: number;
 
     private _shaderId: number;
     private _alphaToCoverageEnabled: boolean;
@@ -143,7 +147,8 @@ export class WebGPUCacheRenderPipeline {
     private _depthBiasSlopeScale: number;
     private _colorFormat: number;
     private _webgpuColorFormat: GPUTextureFormat;
-    private _mrtAttachments: number;
+    private _mrtAttachments1: number;
+    private _mrtAttachments2: number;
     private _mrtFormats: GPUTextureFormat[];
     private _alphaBlendEnabled: boolean;
     private _alphaBlendFuncParams: Array<Nullable<number>>;
@@ -173,28 +178,41 @@ export class WebGPUCacheRenderPipeline {
         this._states.length = StatePosition.NumStates;
         this._emptyVertexBuffer = emptyVertexBuffer;
         this._mrtFormats = [];
+        this.disabled = false;
+        //this._numFrames = 0;
         this.reset();
     }
 
     public reset(): void {
         this._isDirty = true;
         this.setAlphaToCoverage(false);
-        this.resetDepthCullingState(); //
+        this.resetDepthCullingState();
         this.setClampDepth(false);
         this.setDepthBias(0);
         this.setDepthBiasClamp(0);
-        this.setColorFormat(WebGPUConstants.TextureFormat.BGRA8Unorm); //
-        this.setMRTAttachments([], []); //
-        this.setAlphaBlendEnabled(false); //
-        this.setAlphaBlendFactors([null, null, null, null], [null, null]); //
-        this.setWriteMask(0xF); //
-        this.setDepthStencilFormat(WebGPUConstants.TextureFormat.Depth24PlusStencil8); //
-        this.setStencilEnabled(false); //
-        this.resetStencilState(); //
-        this.setBuffers(null, null); //
+        this.setColorFormat(WebGPUConstants.TextureFormat.BGRA8Unorm);
+        this.setMRTAttachments([], []);
+        this.setAlphaBlendEnabled(false);
+        this.setAlphaBlendFactors([null, null, null, null], [null, null]);
+        this.setWriteMask(0xF);
+        this.setDepthStencilFormat(WebGPUConstants.TextureFormat.Depth24PlusStencil8);
+        this.setStencilEnabled(false);
+        this.resetStencilState();
+        this.setBuffers(null, null);
     }
 
     public getRenderPipeline(fillMode: number, effect: Effect, sampleCount: number): GPURenderPipeline {
+        if (this.disabled) {
+            const topology = WebGPUCacheRenderPipeline._GetTopology(fillMode);
+
+            this._currentRenderPipeline = this._createRenderPipeline(effect, topology, sampleCount);
+
+            WebGPUCacheRenderPipeline.NumCacheMiss++;
+            WebGPUCacheRenderPipeline._NumPipelineCreationCurrentFrame++;
+
+            return this._currentRenderPipeline;
+        }
+
         this._setShaderStage(effect.uniqueId);
         this._setRasterizationState(fillMode, sampleCount);
         this._setColorStates();
@@ -227,18 +245,13 @@ export class WebGPUCacheRenderPipeline {
     }
 
     public endFrame(): void {
+        //this._numFrames++;
         WebGPUCacheRenderPipeline.NumPipelineCreationLastFrame = WebGPUCacheRenderPipeline._NumPipelineCreationCurrentFrame;
         WebGPUCacheRenderPipeline._NumPipelineCreationCurrentFrame = 0;
     }
 
     public setAlphaToCoverage(enabled: boolean): void {
         this._alphaToCoverageEnabled = enabled;
-    }
-
-    public setState(cullEnabled: boolean, frontFace: number, cullFace: number): void {
-        this._cullEnabled = cullEnabled;
-        this._frontFace = frontFace;
-        this._cullFace = cullFace;
     }
 
     public setFrontFace(frontFace: number): void {
@@ -258,13 +271,17 @@ export class WebGPUCacheRenderPipeline {
     }
 
     public resetDepthCullingState(): void {
-        this._depthWriteEnabled = true;
-        this._depthTestEnabled = true;
-        this._depthCompare = Constants.LEQUAL - 0x0200;
-        this._cullFace = 1;
-        this._cullEnabled = false;
-        this._frontFace = 2;
-        this.setDepthBiasSlopeScale(0);
+        this.setDepthCullingState(false, 2, 1, 0, true, true, Constants.ALWAYS);
+    }
+
+    public setDepthCullingState(cullEnabled: boolean, frontFace: number, cullFace: number, zOffset: number, depthTestEnabled: boolean, depthWriteEnabled: boolean, depthCompare: Nullable<number>): void {
+        this._depthWriteEnabled = depthWriteEnabled;
+        this._depthTestEnabled = depthTestEnabled;
+        this._depthCompare = (depthCompare ?? Constants.ALWAYS) - 0x0200;
+        this._cullFace = cullFace;
+        this._cullEnabled = cullEnabled;
+        this._frontFace = frontFace;
+        this.setDepthBiasSlopeScale(zOffset);
     }
 
     public setDepthBias(depthBias: number): void {
@@ -298,28 +315,34 @@ export class WebGPUCacheRenderPipeline {
 
     public setMRTAttachments(attachments: number[], textureArray: InternalTexture[]): void {
         if (attachments.length > 10) {
-            // If we want more than 10 attachments we need to change this method but 10 seems plenty and it allows to use some bit shifting for faster operations
+            // If we want more than 10 attachments we need to change this method but 10 seems plenty
             // Note we can do better without changing this method if only dealing with texture formats that can be used as output attachments
             // It could allow to use 5 bits (or even less) to code a texture format. For the time being, we use 6 bits as we need 58 different values (2^6=64)
-            // so we can encode 10 texture formats in 64 bits
+            // so we can encode 5 texture formats in 32 bits
             throw "Can't handle more than 10 attachments for a MRT in cache render pipeline!";
         }
-        let bits = 0, mask = 0;
+        let bits: number[] = [0, 0], indexBits = 0, mask = 0;
         this._mrtFormats.length = attachments.length;
         for (let i = 0; i < attachments.length; ++i) {
             const index = attachments[i];
             const texture = textureArray[index - 1];
             const gpuWrapper = texture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
-            const gpuTexture = gpuWrapper?.underlyingResource as Nullable<WebGPUHardwareTexture>;
 
-            this._mrtFormats[i] = gpuTexture?.format ?? WebGPUConstants.TextureFormat.BGRA8Unorm;
+            this._mrtFormats[i] = gpuWrapper?.format ?? this._webgpuColorFormat;
 
-            bits += textureFormatToIndex[this._mrtFormats[i]] << mask;
+            bits[indexBits] += textureFormatToIndex[this._mrtFormats[i]] << mask;
             mask += 6;
+
+            if (mask >= 32) {
+                mask = 0;
+                indexBits++;
+            }
         }
-        if (this._mrtAttachments !== bits) {
-            this._mrtAttachments = bits;
-            this._states[StatePosition.MRTAttachments] = bits.toString();
+        if (this._mrtAttachments1 !== bits[0] || this._mrtAttachments2 !== bits[1]) {
+            this._mrtAttachments1 = bits[0];
+            this._mrtAttachments2 = bits[1];
+            this._states[StatePosition.MRTAttachments1] = bits[0].toString();
+            this._states[StatePosition.MRTAttachments2] = bits[1].toString();
             this._isDirty = true;
         }
     }
@@ -351,7 +374,7 @@ export class WebGPUCacheRenderPipeline {
     }
 
     public setDepthCompare(func: Nullable<number>): void {
-        this._depthCompare = (func ?? Constants.LEQUAL) - 0x0200;
+        this._depthCompare = (func ?? Constants.ALWAYS) - 0x0200;
     }
 
     public setStencilEnabled(enabled: boolean): void {
@@ -359,7 +382,7 @@ export class WebGPUCacheRenderPipeline {
     }
 
     public setStencilCompare(func: Nullable<number>): void {
-        this._stencilFrontCompare = (func ?? Constants.LEQUAL) - 0x0200;
+        this._stencilFrontCompare = (func ?? Constants.ALWAYS) - 0x0200;
     }
 
     public setStencilDepthFailOp(op: Nullable<number>): void {
@@ -391,12 +414,17 @@ export class WebGPUCacheRenderPipeline {
     }
 
     public resetStencilState(): void {
-        this._stencilFrontCompare = Constants.ALWAYS - 0x0200;
-        this._stencilFrontDepthFailOp = stencilOpToIndex[Constants.KEEP];
-        this._stencilFrontPassOp = stencilOpToIndex[Constants.REPLACE];
-        this._stencilFrontFailOp = stencilOpToIndex[Constants.KEEP];
-        this.setStencilReadMask(0xFF);
-        this.setStencilWriteMask(0xFF);
+        this.setStencilState(false, Constants.ALWAYS, Constants.KEEP, Constants.REPLACE, Constants.KEEP, 0xFF, 0xFF);
+    }
+
+    public setStencilState(stencilEnabled: boolean, compare: Nullable<number>, depthFailOp: Nullable<number>, passOp: Nullable<number>, failOp: Nullable<number>, readMask: number, writeMask: number): void {
+        this._stencilEnabled = stencilEnabled;
+        this._stencilFrontCompare = (compare ?? Constants.ALWAYS) - 0x0200;
+        this._stencilFrontDepthFailOp = depthFailOp === null ? 1 /* KEEP */ : stencilOpToIndex[depthFailOp];
+        this._stencilFrontPassOp = passOp === null ? 2 /* REPLACE */ : stencilOpToIndex[passOp];
+        this._stencilFrontFailOp = failOp === null ? 1 /* KEEP */ : stencilOpToIndex[failOp];
+        this.setStencilReadMask(readMask);
+        this.setStencilWriteMask(writeMask);
     }
 
     public setBuffers(vertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }>, indexBuffer: Nullable<DataBuffer>): void {
@@ -694,7 +722,7 @@ export class WebGPUCacheRenderPipeline {
 
     private _setDepthStencilState(): void {
         let stencilState = !this._stencilEnabled ?
-            0 /* NEVER */ + (1 /* KEEP */ << 3) + (1 /* KEEP */ << 6) + (1 /* KEEP */ << 9) :
+            7 /* ALWAYS */ + (1 /* KEEP */ << 3) + (1 /* KEEP */ << 6) + (1 /* KEEP */ << 9) :
             this._stencilFrontCompare + (this._stencilFrontDepthFailOp << 3) + (this._stencilFrontPassOp << 6) + (this._stencilFrontFailOp << 9);
 
         const depthStencilState =
@@ -870,7 +898,7 @@ export class WebGPUCacheRenderPipeline {
         const alphaBlend = this._getAphaBlendState();
         const colorBlend = this._getColorBlendState();
 
-        if (this._mrtAttachments > 0) {
+        if (this._mrtAttachments1 > 0) {
             for (let i = 0; i < this._mrtFormats.length; ++i) {
                 colorStates.push({
                     format: this._mrtFormats[i],
@@ -895,6 +923,10 @@ export class WebGPUCacheRenderPipeline {
             passOp: WebGPUCacheRenderPipeline._GetStencilOpFunction(this._stencilFrontPassOp)
         };
 
+        /*if (this._numFrames < 10) {
+            console.log(colorStates);
+        }*/
+
         return this._device.createRenderPipeline({
             layout: pipelineLayout,
             ...webgpuPipelineContext.stages!,
@@ -911,7 +943,7 @@ export class WebGPUCacheRenderPipeline {
             sampleCount,
             depthStencilState: this._webgpuDepthStencilFormat === undefined ? undefined : {
                 depthWriteEnabled: this._depthWriteEnabled,
-                depthCompare: WebGPUCacheRenderPipeline._GetCompareFunction(this._depthCompare),
+                depthCompare: this._depthTestEnabled ? WebGPUCacheRenderPipeline._GetCompareFunction(this._depthCompare) : WebGPUConstants.CompareFunction.Always,
                 format: this._webgpuDepthStencilFormat,
                 stencilFront: stencilFrontBack,
                 stencilBack: stencilFrontBack,
