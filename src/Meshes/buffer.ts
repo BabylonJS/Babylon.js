@@ -6,6 +6,7 @@ import { Observer } from '../Misc/observable';
 // TODO: Make sure we create if internal buffer creation has been postponed
 // TODO: Make sure we test lost context. Perhaps we need a new signal that fires before onContextRestoredObservable since that is also used by users of babylon and they might assume that buffers has their IDs already
 // TODO: I have two console.warn('...'). How do babylon do error reporting?
+// TODO: Make sure we get reference count of geometries right in Geometry.applyToMesh. Before it set references=numberOfMeshes but that is gone with. Can we instead ref count the geometry? I think that makes more sense.
 
 export enum BufferType {
     VertexBuffer = 1,
