@@ -455,7 +455,7 @@
             "playgroundId": "#DS8AA7#18",
             "replace": "__folder__, Animation_Skin, __page__, 0",
             "referenceImage": "gltfAnimationSkin0.png",
-            "excludedEngines": ["webgpu"]
+            "excludedEngines": ["webgpu","webgpucache"]
         },
         {
             "title": "GLTF Animation Skin (1)",
@@ -463,14 +463,14 @@
             "playgroundId": "#DS8AA7#18",
             "replace": "__folder__, Animation_Skin, __page__, 1",
             "referenceImage": "gltfAnimationSkin1.png",
-            "excludedEngines": ["webgpu"]
+            "excludedEngines": ["webgpu","webgpucache"]
         },
         {
             "title": "GLTF Animation Skin Type",
             "playgroundId": "#DS8AA7#18",
             "replace": "__folder__, Animation_SkinType, __page__, 0",
             "referenceImage": "gltfAnimationSkinType.png",
-            "excludedEngines": ["webgpu"]
+            "excludedEngines": ["webgpu","webgpucache"]
         },
         {
             "title": "GLTF Buffer Interleaved",
@@ -549,14 +549,14 @@
             "playgroundId": "#DS8AA7#18",
             "replace": "__folder__, Mesh_PrimitiveMode, __page__, 0",
             "referenceImage": "gltfMeshPrimitiveMode0.png",
-            "excludedEngines": ["webgpu"]
+            "excludedEngines": ["webgpu","webgpucache"]
         },
         {
             "title": "GLTF Mesh Primitive Mode (1)",
             "playgroundId": "#DS8AA7#18",
             "replace": "__folder__, Mesh_PrimitiveMode, __page__, 1",
             "referenceImage": "gltfMeshPrimitiveMode1.png",
-            "excludedEngines": ["webgpu"]
+            "excludedEngines": ["webgpu","webgpucache"]
         },
         {
             "title": "GLTF Mesh Primitive Vertex Color",
@@ -985,7 +985,7 @@
             "playgroundId": "#PIZ1GK#173",
             "referenceImage": "geometrybufferrenderer.png",
             "renderCount": 10,
-            "excludedEngines": ["webgl1", "webgpu"],
+            "excludedEngines": ["webgl1", "webgpu","webgpucache"],
             "excludeFromAutomaticTesting": true
         },
         {
