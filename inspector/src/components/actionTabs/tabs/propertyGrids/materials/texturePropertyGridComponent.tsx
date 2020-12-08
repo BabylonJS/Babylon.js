@@ -23,7 +23,7 @@ import { GlobalState } from "../../../../../components/globalState";
 import { AdvancedDynamicTextureInstrumentation } from "babylonjs-gui/2D/adtInstrumentation";
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
-import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
+import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
 import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
 import { AnimationGridComponent } from '../animations/animationPropertyGridComponent';
 

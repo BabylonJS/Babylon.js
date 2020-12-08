@@ -2,7 +2,7 @@ import * as React from "react";
 import { GlobalState } from '../../../../globalState';
 import { IValueGradient, FactorGradient, ColorGradient, Color3Gradient } from 'babylonjs/Misc/gradients';
 import { LockObject } from '../lockObject';
-import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
+import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
 import { FactorGradientStepGridComponent } from './factorGradientStepGridComponent';
 import { Nullable } from 'babylonjs/types';
 import { ColorGradientStepGridComponent } from './colorGradientStepGridComponent';
