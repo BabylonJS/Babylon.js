@@ -293,7 +293,7 @@ export class WebGPUEngine extends Engine {
      * Returns a string describing the current engine
      */
     public get description(): string {
-        let description = this.name + this.version + " (cache)";
+        let description = this.name + this.version;
 
         return description;
     }
@@ -457,6 +457,9 @@ export class WebGPUEngine extends Engine {
             .catch((e: any) => {
                 Logger.Error("Can not create WebGPU Device and/or context.");
                 Logger.Error(e);
+                if (console.trace) {
+                    console.trace();
+                }
             });
     }
 
@@ -540,7 +543,7 @@ export class WebGPUEngine extends Engine {
             supportRenderAndCopyToLodForFloatTextures: true,
             supportDepthStencilTexture: true,
             supportShadowSamplers: true,
-            uniformBufferHardCheckMatrix: false,
+            uniformBufferHardCheckMatrix: true,
             allowTexturePrefiltering: true,
             trackUbosInFrame: true,
             supportCSM: true,
