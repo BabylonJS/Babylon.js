@@ -494,7 +494,7 @@ export class PostProcess {
             if (this._textureCache[i].width === textureSize.width && 
                 this._textureCache[i].height === textureSize.height &&
                 this._textureCache[i]._postProcessChannel === channel) {
-                // return this._textureCache[i];
+                return this._textureCache[i];
             }
         }
 
