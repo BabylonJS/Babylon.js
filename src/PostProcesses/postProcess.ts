@@ -194,7 +194,8 @@ export class PostProcess {
     protected _indexParameters: any;
     private _shareOutputWithPostProcess: Nullable<PostProcess>;
     private _texelSize = Vector2.Zero();
-    private _forcedOutputTexture: Nullable<InternalTexture>;
+    /** @hidden */
+    public _forcedOutputTexture: Nullable<InternalTexture>;
 
     /**
     * Prepass configuration in case this post process needs a texture from prepass
