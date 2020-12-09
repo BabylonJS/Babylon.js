@@ -223,13 +223,6 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
                     mesh.positions[i + 2] = -1 * xrMesh.positions[i + 2];
                 }
 
-                mesh.indices = new Uint32Array(xrMesh.indices.length);
-                for (let i = 0; i < xrMesh.indices.length; i += 3) {
-                    mesh.indices[i] = xrMesh.indices[i];
-                    mesh.indices[i + 1] = xrMesh.indices[i + 2];
-                    mesh.indices[i + 2] = xrMesh.indices[i + 1];
-                }
-
                 if (!!xrMesh.normals) {
                     mesh.normals = new Float32Array(xrMesh.normals.length);
                     for (let i = 0; i < xrMesh.normals.length; i += 3) {
@@ -238,11 +231,21 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
                         mesh.normals[i + 2] = -1 * xrMesh.normals[i + 2];
                     }
                 }
-            }
-            else {
+            } else {
                 mesh.positions = xrMesh.positions;
-                mesh.indices = xrMesh.indices;
                 mesh.normals = xrMesh.normals;
+            }
+
+            if (xrMesh.isClockwiseWindingOrder) {
+                // Babylon.js expects counter clockwise winding order for meshes
+                mesh.indices = new Uint32Array(xrMesh.indices.length);
+                for (let i = 0; i < xrMesh.indices.length; i += 3) {
+                    mesh.indices[i] = xrMesh.indices[i];
+                    mesh.indices[i + 1] = xrMesh.indices[i + 2];
+                    mesh.indices[i + 2] = xrMesh.indices[i + 1];
+                }
+            } else {
+                mesh.indices = xrMesh.indices;
             }
 
             // matrix

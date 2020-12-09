@@ -30,6 +30,7 @@ interface XRMesh {
     meshSpace: XRSpace;
     positions: Float32Array;
     indices: Uint32Array;
+    isClockwiseWindingOrder: boolean;
     normals?: Float32Array;
     lastChangedTime: number;
     parentSceneObject?: XRSceneObject;
