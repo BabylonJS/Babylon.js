@@ -5,6 +5,7 @@ import { Vector2 } from "../Maths/math.vector";
 import { Camera } from "../Cameras/camera";
 import { Effect } from "../Materials/effect";
 import { Constants } from "../Engines/constants";
+import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
 import "../Shaders/postprocess.vertex";
 import { IInspectable } from '../Misc/iInspectable';
 import { Engine } from '../Engines/engine';
@@ -165,6 +166,7 @@ export class PostProcess {
 
     private _options: number | PostProcessOptions;
     private _reusable = false;
+    private _renderId = 0;
     private _textureType: number;
     private _textureFormat: number;
     /**
@@ -172,6 +174,11 @@ export class PostProcess {
     * @hidden
     */
     public _textures = new SmartArray<InternalTexture>(2);
+    /**
+    * Smart array of input and output textures for the post process.
+    * @hidden
+    */
+    private _textureCache: InternalTexture[] = [];
     /**
     * The index in _textures that corresponds to the output texture.
     * @hidden
@@ -482,6 +489,74 @@ export class PostProcess {
         this.width = -1;
     }
 
+    private _createRenderTargetTexture(textureSize: { width: number, height: number }, textureOptions: RenderTargetCreationOptions, channel = 0) {
+        for (let i = 0; i < this._textureCache.length; i++) {
+            if (this._textureCache[i].width === textureSize.width && 
+                this._textureCache[i].height === textureSize.height &&
+                this._textureCache[i]._postProcessChannel === channel) {
+                // return this._textureCache[i];
+            }
+        }
+
+        const tex = this._engine.createRenderTargetTexture(textureSize, textureOptions);
+        tex._postProcessChannel = channel;
+        this._textureCache.push(tex);
+        console.log("Texture create. Cache length : " + this._textureCache.length);
+
+        return tex;
+    }
+
+
+    private _flushTextureCache() {
+        const currentRenderId = this._renderId;
+
+        for (let i = this._textureCache.length - 1; i >= 0; i--) {
+            if (currentRenderId - this._textureCache[i]._lastUsedRenderId > 100) {
+                let currentlyUsed = false;
+                for (var j = 0; j < this._textures.length; j++) {
+                    if (this._textures.data[j] === this._textureCache[i]) {
+                        currentlyUsed = true;
+                    }
+                }
+
+                if (!currentlyUsed) {
+                    this._engine._releaseTexture(this._textureCache[i]);
+                    this._textureCache.splice(i, 1);
+                    console.log("Texture flushed. Cache length : " + this._textureCache.length);
+                }
+            }
+        }
+    }
+
+    private _resize(width: number, height: number, camera: Camera, needMipMaps: boolean, forceDepthStencil?: boolean) {
+        if (this._textures.length > 0) {
+            this._textures.reset();
+        }
+
+        this.width = width;
+        this.height = height;
+
+        let textureSize = { width: this.width, height: this.height };
+        let textureOptions = {
+            generateMipMaps: needMipMaps,
+            generateDepthBuffer: forceDepthStencil || camera._postProcesses.indexOf(this) === 0,
+            generateStencilBuffer: (forceDepthStencil || camera._postProcesses.indexOf(this) === 0) && this._engine.isStencilEnable,
+            samplingMode: this.renderTargetSamplingMode,
+            type: this._textureType,
+            format: this._textureFormat
+        };
+
+        this._textures.push(this._createRenderTargetTexture(textureSize, textureOptions, 0));
+
+        if (this._reusable) {
+            this._textures.push(this._createRenderTargetTexture(textureSize, textureOptions, 1));
+        }
+
+        this._texelSize.copyFromFloats(1.0 / this.width, 1.0 / this.height);
+
+        this.onSizeChangedObservable.notifyObservers(this);
+    }
+
     /**
      * Activates the post process by intializing the textures to be used when executed. Notifies onActivateObservable.
      * When this post process is used in a pipeline, this is call will bind the input texture of this post process to the output of the previous.
@@ -536,34 +611,7 @@ export class PostProcess {
             }
 
             if (this.width !== desiredWidth || this.height !== desiredHeight) {
-                if (this._textures.length > 0) {
-                    for (var i = 0; i < this._textures.length; i++) {
-                        this._engine._releaseTexture(this._textures.data[i]);
-                    }
-                    this._textures.reset();
-                }
-                this.width = desiredWidth;
-                this.height = desiredHeight;
-
-                let textureSize = { width: this.width, height: this.height };
-                let textureOptions = {
-                    generateMipMaps: needMipMaps,
-                    generateDepthBuffer: forceDepthStencil || camera._postProcesses.indexOf(this) === 0,
-                    generateStencilBuffer: (forceDepthStencil || camera._postProcesses.indexOf(this) === 0) && this._engine.isStencilEnable,
-                    samplingMode: this.renderTargetSamplingMode,
-                    type: this._textureType,
-                    format: this._textureFormat
-                };
-
-                this._textures.push(this._engine.createRenderTargetTexture(textureSize, textureOptions));
-
-                if (this._reusable) {
-                    this._textures.push(this._engine.createRenderTargetTexture(textureSize, textureOptions));
-                }
-
-                this._texelSize.copyFromFloats(1.0 / this.width, 1.0 / this.height);
-
-                this.onSizeChangedObservable.notifyObservers(this);
+                this._resize(desiredWidth, desiredHeight, camera, needMipMaps, forceDepthStencil);
             }
 
             this._textures.forEach((texture) => {
@@ -571,6 +619,9 @@ export class PostProcess {
                     this._engine.updateRenderTargetTextureSampleCount(texture, this.samples);
                 }
             });
+
+            this._flushTextureCache();
+            this._renderId++;
         }
 
         var target: InternalTexture;
@@ -584,6 +635,7 @@ export class PostProcess {
             this.height = this._forcedOutputTexture.height;
         } else {
             target = this.inputTexture;
+            target._lastUsedRenderId = this._renderId;
         }
 
         // Bind the input of this post process to be used as the output of the previous post process.
@@ -686,9 +738,20 @@ export class PostProcess {
         if (this._textures.length > 0) {
             for (var i = 0; i < this._textures.length; i++) {
                 this._engine._releaseTexture(this._textures.data[i]);
+
+                const cacheIndex = this._textureCache.indexOf(this._textures.data[i]);
+                if (cacheIndex !== -1) {
+                    this._textureCache.splice(cacheIndex, 1);
+                }
             }
         }
+
         this._textures.dispose();
+
+        for (let i = this._textureCache.length - 1; i >= 0; i--) {
+            this._engine._releaseTexture(this._textureCache[i]);
+            this._textureCache.splice(i, 1);
+        }
     }
 
     /**
