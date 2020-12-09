@@ -501,28 +501,6 @@ export class RenderTargetTexture extends Texture {
         }
     }
 
-    public cloneCameraPostProcesses(camera?: Camera): void {
-        const scene = this.getScene();
-        const sourceCamera = camera || scene && scene.activeCamera;
-
-        if (!sourceCamera) {
-            return;
-        }
-        
-        this.clearPostProcesses(true);
-
-        for (let i = 0; i < sourceCamera._postProcesses.length; i++) {
-            const postProcess = sourceCamera._postProcesses[i]?.clone();
-            if (postProcess) {
-                this.addPostProcess(postProcess);
-            }
-        }
-
-        if (scene?._prePassRenderer) {
-            scene._prePassRenderer.markAsDirty();
-        }
-    }
-
     /** @hidden */
     public _shouldRender(): boolean {
         if (this._currentRefreshId === -1) { // At least render once
