@@ -166,6 +166,8 @@ export class MirrorTexture extends RenderTargetTexture {
             engine._debugPopGroup(1);
         });
 
+        let saveClipPlane: Nullable<Plane>;
+
         this.onBeforeRenderObservable.add(() => {
             Matrix.ReflectionToRef(this.mirrorPlane, this._mirrorMatrix);
             this._savedViewMatrix = scene.getViewMatrix();
@@ -174,6 +176,7 @@ export class MirrorTexture extends RenderTargetTexture {
 
             scene.setTransformMatrix(this._transformMatrix, scene.getProjectionMatrix());
 
+            saveClipPlane = scene.clipPlane;
             scene.clipPlane = this.mirrorPlane;
 
             scene.getEngine().cullBackFaces = false;
@@ -186,7 +189,7 @@ export class MirrorTexture extends RenderTargetTexture {
             scene.getEngine().cullBackFaces = true;
             scene._mirroredCameraPosition = null;
 
-            scene.clipPlane = null;
+            scene.clipPlane = saveClipPlane;
         });
     }
 
