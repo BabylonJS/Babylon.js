@@ -7809,7 +7809,7 @@ var GLTFLoader = /** @class */ (function () {
                 }
                 babylonCamera.fov = perspective.yfov;
                 babylonCamera.minZ = perspective.znear;
-                babylonCamera.maxZ = perspective.zfar || Number.MAX_VALUE;
+                babylonCamera.maxZ = perspective.zfar || 0;
                 break;
             }
             case "orthographic" /* ORTHOGRAPHIC */: {

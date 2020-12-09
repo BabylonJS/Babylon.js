@@ -1680,4 +1680,14 @@ declare module NODEEDITOR {
          */
         static Show(options: INodeEditorOptions): void;
     }
+}
+declare module NODEEDITOR {
+    export interface IButtonLineComponentProps {
+        label: string;
+        onClick: () => void;
+    }
+    export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
+        constructor(props: IButtonLineComponentProps);
+        render(): JSX.Element;
+    }
 }
