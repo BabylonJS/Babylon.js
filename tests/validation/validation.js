@@ -456,7 +456,7 @@ function init(_engineName) {
     canvas = document.createElement("canvas");
     canvas.className = "renderCanvas";
     document.body.appendChild(canvas);
-    if (engineName === "webgpu" || engineName === "webgpucache") {
+    if (engineName === "webgpu") {
         const glslangOptions = { 
             jsPath: "../../dist/preview%20release/glslang/glslang.js",
             wasmPath: "../../dist/preview%20release/glslang/glslang.wasm"
@@ -476,7 +476,7 @@ function init(_engineName) {
             antialiasing: false,
         };
 
-        engine = engineName === "webgpucache" ? new BABYLON.WebGPUEngineCache(canvas, options) : new BABYLON.WebGPUEngine(canvas, options);
+        engine = new BABYLON.WebGPUEngine(canvas, options);
         engine.enableOfflineSupport = false;
         return new Promise((resolve) => {
             engine.initAsync(glslangOptions).then(() => resolve());
