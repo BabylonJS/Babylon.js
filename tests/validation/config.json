@@ -973,6 +973,132 @@
             "renderCount": 10,
             "playgroundId": "#MSAHKR#13",
             "referenceImage": "shadowsinstancesright.png"
+        },
+        {
+            "title": "Prepass SSAO + instances",
+            "renderCount": 10,
+            "playgroundId": "#YB006J#349",
+            "referenceImage": "prepass-ssao-instances.png"
+        },
+        {
+            "title": "Prepass SSAO + instanced bones",
+            "renderCount": 10,
+            "playgroundId": "#0K8EYN#194",
+            "referenceImage": "prepass-ssao-instanced-bones.png"
+        },
+        {
+            "title": "Prepass SSAO + particles",
+            "renderCount": 30,
+            "playgroundId": "#65MUMZ#40",
+            "referenceImage": "prepass-ssao-particles.png"
+        },
+        {
+            "title": "Prepass SSAO + depth of field",
+            "renderCount": 10,
+            "playgroundId": "#DX6AV#88",
+            "referenceImage": "prepass-ssao-dof.png"
+        },
+        {
+            "title": "Prepass + mirror, without postprocess",
+            "renderCount": 10,
+            "playgroundId": "#PIZ1GK#212",
+            "referenceImage": "prepass-mirror-without-pp.png"
+        },
+        {
+            "title": "Prepass + mirror, with postprocesses",
+            "renderCount": 10,
+            "playgroundId": "#PIZ1GK#213",
+            "referenceImage": "prepass-mirror-with-pp.png"
+        },
+        {
+            "title": "Prepass SSAO + sprites",
+            "renderCount": 10,
+            "playgroundId": "#9RI8CG#187",
+            "referenceImage": "prepass-ssao-sprites.png"
+        },
+        {
+            "title": "Prepass SSAO + glow layer",
+            "renderCount": 10,
+            "playgroundId": "#LRFB2D#114",
+            "referenceImage": "prepass-ssao-glow-layer.png"
+        },
+        {
+            "title": "Prepass SSAO + bounding box renderer",
+            "renderCount": 10,
+            "playgroundId": "#4F33I3#35",
+            "referenceImage": "prepass-ssao-bbr.png"
+        },
+        {
+            "title": "Prepass SSAO + line edges renderer",
+            "renderCount": 10,
+            "playgroundId": "#T90MQ4#3",
+            "referenceImage": "prepass-ssao-line-edges.png"
+        },
+        {
+            "title": "Prepass SSAO + B&W post process",
+            "renderCount": 10,
+            "playgroundId": "#N55Q2M#8",
+            "referenceImage": "prepass-ssao-b-and-w.png"
+        },
+        {
+            "title": "Prepass SSAO + clip planes",
+            "renderCount": 10,
+            "playgroundId": "#Y6W087#71",
+            "referenceImage": "prepass-ssao-clip-planes.png"
+        },
+        {
+            "title": "Prepass SSAO + GUI",
+            "renderCount": 10,
+            "playgroundId": "#LLVZ90#4",
+            "referenceImage": "prepass-ssao-gui.png"
+        },
+        {
+            "title": "Prepass SSAO + LOD",
+            "renderCount": 10,
+            "playgroundId": "#FFMFW5#29",
+            "referenceImage": "prepass-ssao-lod.png"
+        },
+        {
+            "title": "Prepass SSAO + shadow only",
+            "renderCount": 10,
+            "playgroundId": "#1KF7V1#55",
+            "referenceImage": "prepass-ssao-shadow-only.png"
+        },
+        {
+            "title": "Prepass SSAO + highlight layer",
+            "renderCount": 10,
+            "playgroundId": "#1KUJ0A#416",
+            "referenceImage": "prepass-ssao-highlight-layer.png"
+        },
+        {
+            "title": "Prepass SSAO + point light",
+            "renderCount": 10,
+            "playgroundId": "#XDNVAY#5",
+            "referenceImage": "prepass-ssao-point-light.png"
+        },
+        {
+            "title": "Prepass SSAO + on/off post-process",
+            "renderCount": 10,
+            "playgroundId": "#1VI6WV#20",
+            "referenceImage": "prepass-ssao-on-off-pp.png"
+        },
+        {
+            "title": "Prepass SSAO + thin instances",
+            "renderCount": 10,
+            "playgroundId": "#V1JE4Z#25",
+            "referenceImage": "prepass-ssao-thin-instances.png"
+        },
+        {
+            "title": "Prepass SSAO + depth renderer",
+            "renderCount": 10,
+            "playgroundId": "#3HPMAA#1",
+            "referenceImage": "prepass-ssao-depth-renderer.png"
+        },
+        {
+            "title": "Prepass SSAO + visibility",
+            "renderCount": 10,
+            "playgroundId": "#PXC9CF#4",
+            "referenceImage": "prepass-ssao-visibility.png"
         }
     ]
 }
