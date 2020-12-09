@@ -3,8 +3,10 @@ import { ThinEngine } from "../Engines/thinEngine";
 import { DataBuffer } from './dataBuffer';
 import { Observer } from '../Misc/observable';
 
-// TODO: I have two console.warn('...'). How do babylon do error reporting?
-// TODO: Make sure we get reference count of geometries right in Geometry.applyToMesh. Before it set references=numberOfMeshes but that is gone with. Can we instead ref count the geometry? I think that makes more sense.
+// TODO: Is the reference count happening of the DataBuffer meaningful anymore?
+// TODO: When a VB is updated through Geometry A it can invalidate VAO. That needs to happen on Geometry B that uses the vertexbuffer too.
+//       I think we need to make it so that each VB has a list of geometries (or a signal) (just like a geometry has meshes) so they can tell when they are modified
+//       This also solve the issue with the position-VB changing and all the geometry getting updates bounds
 
 export enum BufferType {
     VertexBuffer = 1,
@@ -80,34 +82,36 @@ export class Buffer {
      * Store data into the buffer. If the buffer was already used it will be either recreated or updated depending on isUpdatable property
      * @param data defines the data to store
      */
-    public create(data: Nullable<BufferDataValues> = null): void {
-        if (!data && this._buffer) {
-            return; // nothing to do
-        }
-
-        data = data || this._data;
-
+    public create(data: Nullable<BufferDataValues> = null, new_updatable?: boolean): void {
         if (!data) {
             return;
         }
 
-        // TODO: Is this always desireable?
+        const updatable = this._updatable;
+        new_updatable = new_updatable || updatable;
+
+        // Do we need to forget our current buffer? Either because not updatable or that we want an buffer that is not updatable
+        if (this._buffer && (!updatable || (updatable !== new_updatable))) {
+            this._engine._releaseBuffer(this._buffer);
+            this._buffer = null;
+        }
+
         this._data = data;
 
         if (this.bufferType === BufferType.VertexBuffer) {
-            if (!this._buffer) { // create buffer
-                if (this._updatable) {
+            if (!this._buffer) {
+                if (updatable) {
                     this._buffer = this._engine.createDynamicVertexBuffer(data);
                 } else {
                     this._buffer = this._engine.createVertexBuffer(data);
                 }
-            } else if (this._updatable) { // update buffer
+            } else if (updatable) {
                 this._engine.updateDynamicVertexBuffer(this._buffer, data);
             }
         } else {
-            if (!this._buffer) { // create buffer
-                this._buffer = this._engine.createIndexBuffer(data as IndicesArray, this._updatable);
-            } else if (this._updatable) { // update buffer
+            if (!this._buffer) {
+                this._buffer = this._engine.createIndexBuffer(data as IndicesArray, updatable);
+            } else if (updatable) {
                 this._engine.updateDynamicIndexBuffer(this._buffer, data as IndicesArray);
             }
         }
@@ -196,7 +200,6 @@ export class Buffer {
      */
     public update(data: BufferDataValues, offset?: number, gpuMemoryOnly = false, useBytes?: boolean): boolean {
         if (data === null) {
-            // TODO: Maybe this should mean clear? But to what size?
             return false;
         }
 
@@ -204,6 +207,7 @@ export class Buffer {
         let correctedOffset = offset
 
         if (this.bufferType === BufferType.VertexBuffer) {
+            offset = offset || 0;
             sizeChanged = false
             if (useBytes && correctedOffset) {
                 correctedOffset *= Float32Array.BYTES_PER_ELEMENT
@@ -213,7 +217,7 @@ export class Buffer {
             // TODO: Set setSizeChanged?
 
             if (!gpuMemoryOnly) {
-                this._data = newData; // Why not slice? What about offset?
+                this._data = newData; // TODO: Why not slice? What about offset?
             }
 
         } else {
@@ -222,7 +226,7 @@ export class Buffer {
             sizeChanged = oldData === null || oldData.length !== newData.length;
 
             if (!gpuMemoryOnly) {
-                this._data = newData.slice(); // Why slice? What about offset?
+                this._data = newData.slice(); // TODO: Why slice? What about offset?
             }
         }
 
@@ -230,18 +234,11 @@ export class Buffer {
             if (gpuMemoryOnly) {
                 return false;
             }
-            if (this._buffer) {
-                this.recreate(data, false); // What about offset?
-            } else {
-                this.create(data); // What about offset?
-            }
-            return true;
+            this.create(data);
+            return sizeChanged;
         }
 
         if (this.bufferType == BufferType.VertexBuffer) {
-            if (offset === undefined) {
-                offset = 0;
-            }
             this._engine.updateDynamicVertexBuffer(this._buffer, data as DataArray, correctedOffset);
         } else  {
             this._engine.updateDynamicIndexBuffer(this._buffer, data as IndicesArray, offset);
@@ -273,13 +270,7 @@ export class Buffer {
     }
 
     public recreate(data: BufferDataValues, updatable: boolean) {
-        if (this._buffer) {
-            this._engine._releaseBuffer(this._buffer);
-            this._buffer = null;
-        }
-        this._data = data;
-        this._updatable = updatable;
-        this.create();
+        this.create(data, updatable);
     }
 
     /** @hidden */
@@ -292,20 +283,24 @@ export class Buffer {
     }
 
     /**
-     * Release all resources
+     * Release all resources if this was the last user of this buffer
      */
     public dispose(dispose_buffer: boolean = true): void {
+        if (!dispose_buffer) {
+            return;
+        }
+        this._bufferReferenceCount--;
+        if (this._bufferReferenceCount > 0) {
+            return;
+        }
         if (this._restoreContextObserver) {
             this._engine.onContextRestoreBuffersObservable.remove(this._restoreContextObserver);
             this._restoreContextObserver = null;
         }
-        if (!this._buffer) {
-            return;
-        }
-        if (dispose_buffer) {
+        if (this._buffer) {
             this._engine._releaseBuffer(this._buffer);
+            this._buffer = null;
         }
-        this._buffer = null;
     }
 }
 
