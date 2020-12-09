@@ -639,7 +639,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/cus
         render(): JSX.Element | null;
     }
 }
-declare module "babylonjs-inspector/components/actionTabs/lines/buttonLineComponent" {
+declare module "babylonjs-inspector/sharedUiComponents/lines/buttonLineComponent" {
     import * as React from "react";
     export interface IButtonLineComponentProps {
         label: string;

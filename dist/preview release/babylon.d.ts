@@ -24888,6 +24888,10 @@ declare module BABYLON {
          * mouse-wheel axis.
          */
         private _updateCamera;
+        /**
+         * Update one property of the camera.
+         */
+        private _updateCameraProperty;
     }
 }
 declare module BABYLON {
@@ -33144,6 +33148,11 @@ declare module BABYLON {
          * Use this property to change the original side orientation defined at construction time
          */
         overrideMaterialSideOrientation: Nullable<number>;
+        /**
+         * Gets or sets a boolean indicating whether to render ignoring the active camera's max z setting. (false by default)
+         * Note this will reduce performance when set to true.
+         */
+        ignoreCameraMaxZ: boolean;
         /**
          * Gets the source mesh (the one used to clone this one from)
          */
@@ -54424,7 +54433,7 @@ declare module BABYLON {
          * @param pluginExtension the extension used to determine the plugin
          * @returns The loaded asset container
          */
-        static LoadAssetContainerAsync(rootUrl: string, sceneFilename?: string, scene?: Nullable<Scene>, onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<AssetContainer>;
+        static LoadAssetContainerAsync(rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<AssetContainer>;
         /**
          * Import animations from a file into a scene
          * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)

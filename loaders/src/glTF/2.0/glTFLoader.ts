@@ -1204,7 +1204,7 @@ export class GLTFLoader implements IGLTFLoader {
 
                 babylonCamera.fov = perspective.yfov;
                 babylonCamera.minZ = perspective.znear;
-                babylonCamera.maxZ = perspective.zfar || Number.MAX_VALUE;
+                babylonCamera.maxZ = perspective.zfar || 0;
                 break;
             }
             case CameraType.ORTHOGRAPHIC: {

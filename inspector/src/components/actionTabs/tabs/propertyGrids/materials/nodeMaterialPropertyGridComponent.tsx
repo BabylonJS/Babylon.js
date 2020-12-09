@@ -8,7 +8,7 @@ import { LineContainerComponent } from "../../../lineContainerComponent";
 import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGridComponent";
 import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';
-import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
+import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
 import { CheckBoxLineComponent } from '../../../lines/checkBoxLineComponent';
 import { FloatLineComponent } from '../../../lines/floatLineComponent';
 import { Color3LineComponent } from '../../../lines/color3LineComponent';
