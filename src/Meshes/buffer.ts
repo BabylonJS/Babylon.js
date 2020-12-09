@@ -7,6 +7,7 @@ import { Observer } from '../Misc/observable';
 // TODO: When a VB is updated through Geometry A it can invalidate VAO. That needs to happen on Geometry B that uses the vertexbuffer too.
 //       I think we need to make it so that each VB has a list of geometries (or a signal) (just like a geometry has meshes) so they can tell when they are modified
 //       This also solve the issue with the position-VB changing and all the geometry getting updates bounds
+// TODO: Maybe now it would be better for thinEngine to have a list of all buffers (when it cares about lostContext) that it can call rebuild on. No need for generic signal anymore. Array<Buffer> might take less memory.
 
 export enum BufferType {
     VertexBuffer = 1,
