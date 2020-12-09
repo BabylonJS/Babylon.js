@@ -14,7 +14,7 @@ import { OptionsLineComponent } from '../../../lines/optionsLineComponent';
 import { ImageProcessingConfiguration } from 'babylonjs/Materials/imageProcessingConfiguration';
 import { Color3LineComponent } from '../../../lines/color3LineComponent';
 import { GlobalState } from '../../../../globalState';
-import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
+import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
 
 interface IDefaultRenderingPipelinePropertyGridComponentProps {
     globalState: GlobalState;

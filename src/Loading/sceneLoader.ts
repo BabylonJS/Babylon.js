@@ -1056,7 +1056,7 @@ export class SceneLoader {
      * @param pluginExtension the extension used to determine the plugin
      * @returns The loaded asset container
      */
-    public static LoadAssetContainerAsync(rootUrl: string, sceneFilename: string = "", scene: Nullable<Scene> = EngineStore.LastCreatedScene, onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null, pluginExtension: Nullable<string> = null): Promise<AssetContainer> {
+    public static LoadAssetContainerAsync(rootUrl: string, sceneFilename: string | File = "", scene: Nullable<Scene> = EngineStore.LastCreatedScene, onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null, pluginExtension: Nullable<string> = null): Promise<AssetContainer> {
         return new Promise((resolve, reject) => {
             SceneLoader.LoadAssetContainer(rootUrl, sceneFilename, scene, (assetContainer) => {
                 resolve(assetContainer);

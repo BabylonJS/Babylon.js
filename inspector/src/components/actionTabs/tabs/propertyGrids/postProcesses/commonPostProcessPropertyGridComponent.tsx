@@ -11,7 +11,7 @@ import { PostProcess } from 'babylonjs/PostProcesses/postProcess';
 import { Color3LineComponent } from '../../../lines/color3LineComponent';
 import { SliderLineComponent } from '../../../lines/sliderLineComponent';
 import { GlobalState } from '../../../../globalState';
-import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
+import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
 import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
 
 interface ICommonPostProcessPropertyGridComponentProps {
