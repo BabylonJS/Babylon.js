@@ -11,18 +11,18 @@ import { WebGPUPipelineContext } from "./webgpuPipelineContext";
 enum StatePosition {
     ShaderStage = 0,
     RasterizationState = 1,
-    DepthBias = 2,
-    DepthBiasClamp = 3,
-    DepthBiasSlopeScale = 4,
-    MRTAttachments1 = 5,
-    MRTAttachments2 = 6,
-    ColorStates = 7,
-    DepthStencilState = 8,
-    StencilReadMask = 9,
-    StencilWriteMask = 10,
-    VertexState = 11,
+    //DepthBias = 2, // not used, so remove it to improve perf
+    //DepthBiasClamp = 3, // not used, so remove it to improve perf
+    DepthBiasSlopeScale = 2,
+    MRTAttachments1 = 3,
+    MRTAttachments2 = 4,
+    ColorStates = 5,
+    DepthStencilState = 6,
+    StencilReadMask = 7,
+    StencilWriteMask = 8,
+    VertexState = 9, // vertex state will consume positions 9, 10, ... depending on the number of vertex inputs
 
-    NumStates = 12
+    NumStates = 10
 }
 
 const textureFormatToIndex: { [name: string]: number } = {
@@ -133,7 +133,6 @@ export class WebGPUCacheRenderPipeline {
     private _isDirty: boolean;
     private _currentRenderPipeline: GPURenderPipeline;
     private _emptyVertexBuffer: VertexBuffer;
-    //private _numFrames: number;
 
     private _shaderId: number;
     private _alphaToCoverageEnabled: boolean;
@@ -170,7 +169,6 @@ export class WebGPUCacheRenderPipeline {
     private _depthStencilState: number;
     private _vertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }>;
     private _indexBuffer: Nullable<DataBuffer>;
-    private _vertexState: string;
 
     constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer) {
         this._device = device;
@@ -179,7 +177,6 @@ export class WebGPUCacheRenderPipeline {
         this._emptyVertexBuffer = emptyVertexBuffer;
         this._mrtFormats = [];
         this.disabled = false;
-        //this._numFrames = 0;
         this.reset();
     }
 
@@ -188,8 +185,8 @@ export class WebGPUCacheRenderPipeline {
         this.setAlphaToCoverage(false);
         this.resetDepthCullingState();
         this.setClampDepth(false);
-        this.setDepthBias(0);
-        this.setDepthBiasClamp(0);
+        //this.setDepthBias(0);
+        //this.setDepthBiasClamp(0);
         this.setColorFormat(WebGPUConstants.TextureFormat.BGRA8Unorm);
         this.setMRTAttachments([], []);
         this.setAlphaBlendEnabled(false);
@@ -245,7 +242,6 @@ export class WebGPUCacheRenderPipeline {
     }
 
     public endFrame(): void {
-        //this._numFrames++;
         WebGPUCacheRenderPipeline.NumPipelineCreationLastFrame = WebGPUCacheRenderPipeline._NumPipelineCreationCurrentFrame;
         WebGPUCacheRenderPipeline._NumPipelineCreationCurrentFrame = 0;
     }
@@ -284,7 +280,7 @@ export class WebGPUCacheRenderPipeline {
         this.setDepthBiasSlopeScale(zOffset);
     }
 
-    public setDepthBias(depthBias: number): void {
+    /*public setDepthBias(depthBias: number): void {
         if (this._depthBias !== depthBias) {
             this._depthBias = depthBias;
             this._states[StatePosition.DepthBias] = depthBias.toString();
@@ -298,7 +294,7 @@ export class WebGPUCacheRenderPipeline {
             this._states[StatePosition.DepthBiasClamp] = depthBiasClamp.toString();
             this._isDirty = true;
         }
-    }
+    }*/
 
     public setDepthBiasSlopeScale(depthBiasSlopeScale: number): void {
         if (this._depthBiasSlopeScale !== depthBiasSlopeScale) {
@@ -739,7 +735,8 @@ export class WebGPUCacheRenderPipeline {
     }
 
     private _setVertexState(effect: Effect): void {
-        let vertexState = "";
+        const currStateLen = this._states.length;
+        let newNumStates = StatePosition.VertexState;
 
         const attributes = effect.getAttributesNames();
         for (var index = 0; index < attributes.length; index++) {
@@ -760,22 +757,20 @@ export class WebGPUCacheRenderPipeline {
                 const stride = vertexBuffer.byteStride;
 
                 const vid =
-                    (type << 0) +
+                    ((type << 0) +
                     (normalized << 3) +
                     (size << 4) +
                     (stepMode << 6) +
                     (location << 7) +
-                    (stride << 12);
+                    (stride << 12)).toString();
 
-                vertexState += vid + "_";
+                this._isDirty = this._isDirty || this._states[newNumStates] !== vid;
+                this._states[newNumStates++] = vid;
             }
         }
 
-        if (vertexState !== this._vertexState) {
-            this._vertexState = vertexState;
-            this._states[StatePosition.VertexState] = this._vertexState;
-            this._isDirty = true;
-        }
+        this._states.length = newNumStates;
+        this._isDirty = this._isDirty || newNumStates !== currStateLen;
     }
 
     private _createPipelineLayout(webgpuPipelineContext: WebGPUPipelineContext): GPUPipelineLayout {
@@ -922,10 +917,6 @@ export class WebGPUCacheRenderPipeline {
             failOp: WebGPUCacheRenderPipeline._GetStencilOpFunction(this._stencilFrontFailOp),
             passOp: WebGPUCacheRenderPipeline._GetStencilOpFunction(this._stencilFrontPassOp)
         };
-
-        /*if (this._numFrames < 10) {
-            console.log(colorStates);
-        }*/
 
         return this._device.createRenderPipeline({
             layout: pipelineLayout,
