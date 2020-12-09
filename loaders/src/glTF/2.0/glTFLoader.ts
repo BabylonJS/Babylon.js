@@ -4,7 +4,7 @@ import { Quaternion, Vector3, Matrix } from "babylonjs/Maths/math.vector";
 import { Color3 } from 'babylonjs/Maths/math.color';
 import { Tools } from "babylonjs/Misc/tools";
 import { Camera } from "babylonjs/Cameras/camera";
-import { TargetCamera } from "babylonjs/Cameras/targetCamera";
+import { FreeCamera } from "babylonjs/Cameras/freeCamera";
 import { AnimationGroup } from "babylonjs/Animations/animationGroup";
 import { Animation } from "babylonjs/Animations/animation";
 import { Bone } from "babylonjs/Bones/bone";
@@ -1189,7 +1189,7 @@ export class GLTFLoader implements IGLTFLoader {
         this.logOpen(`${context} ${camera.name || ""}`);
 
         this._babylonScene._blockEntityCollection = this._forAssetContainer;
-        const babylonCamera = new TargetCamera(camera.name || `camera${camera.index}`, Vector3.Zero(), this._babylonScene, false);
+        const babylonCamera = new FreeCamera(camera.name || `camera${camera.index}`, Vector3.Zero(), this._babylonScene, false);
         this._babylonScene._blockEntityCollection = false;
         babylonCamera.ignoreParentScaling = true;
 
