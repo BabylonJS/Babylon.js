@@ -136,8 +136,8 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
                 return;
             }
 
-            const viewMatrix = camera.getViewMatrix();
-            const projectionMatrix = camera.getProjectionMatrix();
+            const viewMatrix = camera.getViewMatrix(true);
+            const projectionMatrix = camera.getProjectionMatrix(true);
 
             effect.setMatrix("projection", projectionMatrix);
             effect.setMatrix("view", viewMatrix);
