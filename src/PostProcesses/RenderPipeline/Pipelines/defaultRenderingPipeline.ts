@@ -501,7 +501,6 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
             postProcess.autoClear = false;
         } else {
             postProcess.autoClear = true;
-            this._scene.autoClear = false;
             this._hasCleared = true;
         }
 
@@ -525,7 +524,6 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
         if (!this._buildAllowed) {
             return;
         }
-        this._scene.autoClear = true;
 
         var engine = this._scene.getEngine();
 
@@ -630,11 +628,6 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
             this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(this._name, this._cameras);
         }
 
-        // In multicamera mode, the scene needs to autoclear in between cameras.
-        if (this._scene.activeCameras && this._scene.activeCameras.length > 1) {
-            this._scene.autoClear = true;
-        }
-
         if (!this._enableMSAAOnFirstPostProcess(this.samples) && this.samples > 1) {
             Logger.Warn("MSAA failed to enable, MSAA is only supported in browsers that support webGL >= 2.0");
         }
@@ -724,7 +717,7 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
         this.onBuildObservable.clear();
         this._disposePostProcesses(true);
         this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._cameras);
-        this._scene.autoClear = true;
+
         if (this._resizeObserver) {
             this._scene.getEngine().onResizeObservable.remove(this._resizeObserver);
             this._resizeObserver = null;
