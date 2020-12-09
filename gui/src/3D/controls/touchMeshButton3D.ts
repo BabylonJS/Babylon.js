@@ -18,8 +18,16 @@ export class TouchMeshButton3D extends TouchButton3D {
      * @param collisionMesh mesh to track collisions with
      * @param name defines the control name
      */
-    constructor(mesh: Mesh, collisionMesh: Mesh, name?: string) {
-        super(name, collisionMesh);
+    constructor(mesh: Mesh, options: {collisionMesh: Mesh, useDynamicMesh?: boolean}, name?: string) {
+        if (options.useDynamicMesh) {
+            super(name, options.collisionMesh);
+        }
+        else {
+            var newCollisionMesh = options.collisionMesh.clone();
+            newCollisionMesh.isVisible = false;
+            super(name, newCollisionMesh);
+        }
+
         this._currentMesh = mesh;
 
         /**
