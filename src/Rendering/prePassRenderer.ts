@@ -141,7 +141,7 @@ export class PrePassRenderer {
     /**
      * Prevents the PrePassRenderer from using the GeometryBufferRenderer as a fallback
      */
-    public doNotUseGeometryRendererFallback = false;
+    public doNotUseGeometryRendererFallback = true;
 
     private _refreshGeometryBufferRendererLink() {
         if (!this.doNotUseGeometryRendererFallback) {
@@ -563,19 +563,20 @@ export class PrePassRenderer {
     }
 
     private _linkInternalTexture(prePassRenderTarget: PrePassRenderTarget, postProcess: Nullable<PostProcess>) {
-        if (prePassRenderTarget._internalTextureDirty || prePassRenderTarget._outputPostProcess !== postProcess) {
-            this._updateGeometryBufferLayout();
-            if (postProcess) {
-                postProcess.autoClear = false;
-                postProcess.inputTexture = prePassRenderTarget.getInternalTexture()!;
-            }
+        if (postProcess) {
+            postProcess.autoClear = false;
+            postProcess.inputTexture = prePassRenderTarget.getInternalTexture()!;
+        }
 
-            // Restore previous texture that was forced to the prepass texture
-            if (prePassRenderTarget._outputPostProcess && prePassRenderTarget._outputPostProcess !== postProcess) {
+        if (prePassRenderTarget._outputPostProcess !== postProcess) {
+            if (prePassRenderTarget._outputPostProcess) {
                 prePassRenderTarget._outputPostProcess.restoreDefaultInputTexture();
             }
-
             prePassRenderTarget._outputPostProcess = postProcess;
+        }
+
+        if (prePassRenderTarget._internalTextureDirty) {
+            this._updateGeometryBufferLayout();
             prePassRenderTarget._internalTextureDirty = false;
         }
     }
