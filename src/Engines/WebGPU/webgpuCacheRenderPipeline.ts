@@ -221,6 +221,8 @@ export class WebGPUCacheRenderPipeline {
             return this._currentRenderPipeline;
         }
 
+        this._isDirty = false;
+
         let hash = this._states.join();
         let pipeline = WebGPUCacheRenderPipeline._Cache[hash];
 
