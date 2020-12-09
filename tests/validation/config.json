@@ -1099,6 +1099,18 @@
             "renderCount": 10,
             "playgroundId": "#PXC9CF#4",
             "referenceImage": "prepass-ssao-visibility.png"
+        },
+        {
+            "title": "Prepass SSAO + default pipeline",
+            "renderCount": 10,
+            "playgroundId": "#NAW8EA#7",
+            "referenceImage": "prepass-ssao-default-pipeline.png"
+        },
+        {
+            "title": "Prepass MBlur + Lens",
+            "renderCount": 10,
+            "playgroundId": "#ZEB7H6#23",
+            "referenceImage": "prepass-mb-lens.png"
         }
     ]
 }
