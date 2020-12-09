@@ -328,21 +328,24 @@ export class GeometryBufferRenderer {
             let needUv = false;
             if (material.needAlphaTesting() && material.getAlphaTestTexture()) {
                 defines.push("#define ALPHATEST");
+                defines.push(`#define ALPHATEST_UV${material.getAlphaTestTexture().coordinatesIndex + 1}`);
                 needUv = true;
             }
 
             if (material.bumpTexture && StandardMaterial.BumpTextureEnabled) {
                 defines.push("#define BUMP");
-                defines.push("#define BUMPDIRECTUV 0");
+                defines.push(`#define BUMP_UV${material.bumpTexture.coordinatesIndex + 1}`);
                 needUv = true;
             }
 
             if (this._enableReflectivity) {
                 if (material instanceof StandardMaterial && material.specularTexture) {
                     defines.push("#define HAS_SPECULAR");
+                    defines.push(`#define REFLECTIVITY_UV${material.specularTexture.coordinatesIndex + 1}`);
                     needUv = true;
                 } else if (material instanceof PBRMaterial && material.reflectivityTexture) {
                     defines.push("#define HAS_REFLECTIVITY");
+                    defines.push(`#define REFLECTIVITY_UV${material.reflectivityTexture.coordinatesIndex + 1}`);
                     needUv = true;
                 }
             }
