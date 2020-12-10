@@ -2337,6 +2337,37 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/KHR_texture_transform" {
         loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>>;
     }
 }
+declare module "babylonjs-loaders/glTF/2.0/Extensions/KHR_xmp_json_ld" {
+    import { IGLTFLoaderExtension } from "babylonjs-loaders/glTF/2.0/glTFLoaderExtension";
+    import { GLTFLoader } from "babylonjs-loaders/glTF/2.0/glTFLoader";
+    /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1893)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_xmp_json_ld implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /**
+         * Defines a number that determines the order the extensions are applied.
+         */
+        order: number;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /**
+         * Called after the loader state changes to LOADING.
+         */
+        onLoading(): void;
+    }
+}
 declare module "babylonjs-loaders/glTF/2.0/Extensions/MSFT_audio_emitter" {
     import { Nullable } from "babylonjs/types";
     import { AnimationGroup } from "babylonjs/Animations/animationGroup";
@@ -2539,6 +2570,7 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/index" {
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_mesh_quantization";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_texture_basisu";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_texture_transform";
+    export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_xmp_json_ld";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/MSFT_audio_emitter";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/MSFT_lod";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/MSFT_minecraftMesh";
@@ -5075,6 +5107,35 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         dispose(): void;
         /** @hidden */
         loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>>;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1893)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_xmp_json_ld implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /**
+         * Defines a number that determines the order the extensions are applied.
+         */
+        order: number;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /**
+         * Called after the loader state changes to LOADING.
+         */
+        onLoading(): void;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {

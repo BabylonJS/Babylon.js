@@ -88829,6 +88829,35 @@ declare module BABYLON.GLTF2.Loader.Extensions {
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
     /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1893)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_xmp_json_ld implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /**
+         * Defines a number that determines the order the extensions are applied.
+         */
+        order: number;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /**
+         * Called after the loader state changes to LOADING.
+         */
+        onLoading(): void;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
      * [Specification](https://github.com/najadojo/glTF/tree/MSFT_audio_emitter/extensions/2.0/Vendor/MSFT_audio_emitter)
      */
     export class MSFT_audio_emitter implements IGLTFLoaderExtension {
@@ -91685,22 +91714,19 @@ declare module BABYLON.GLTF2 {
     }
 
     /**
-     * Interfaces from the KHR_xmp extension
+     * Interfaces from the KHR_xmp_json_ld extension
      * !!! Experimental Extension Subject to Changes !!!
      */
 
     /** @hidden */
-    interface IKHRXmp_Data {
-        [key: string]: unknown;
+    interface IKHRXmpJsonLd_Gltf {
+        packets: Array<{
+            [key: string]: unknown;
+        }>;
     }
 
     /** @hidden */
-    interface IKHRXmp_Gltf {
-        packets: IKHRXmp_Data[];
-    }
-
-    /** @hidden */
-    interface IKHRXmp_Node {
+    interface IKHRXmpJsonLd_Node {
         packet: number;
     }
 

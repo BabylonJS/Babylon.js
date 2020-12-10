@@ -48761,6 +48761,76 @@ var FreeCameraPropertyGridComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./components/actionTabs/tabs/propertyGrids/commonPropertyGridComponent.tsx":
+/*!**********************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/commonPropertyGridComponent.tsx ***!
+  \**********************************************************************************/
+/*! exports provided: CommonPropertyGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CommonPropertyGridComponent", function() { return CommonPropertyGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
+/* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
+/* harmony import */ var _lines_indentedTextLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../lines/indentedTextLineComponent */ "./components/actionTabs/lines/indentedTextLineComponent.tsx");
+
+
+
+
+
+var CommonPropertyGridComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CommonPropertyGridComponent, _super);
+    function CommonPropertyGridComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    CommonPropertyGridComponent.prototype.renderLevel = function (jsonObject) {
+        var components = [];
+        for (var data in jsonObject) {
+            var value = jsonObject[data];
+            var type = Object.prototype.toString.call(value);
+            switch (type) {
+                case '[object String]':
+                    components.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { key: data, label: data, ignoreValue: true }));
+                    components.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_indentedTextLineComponent__WEBPACK_IMPORTED_MODULE_4__["IndentedTextLineComponent"], { key: data + value, value: value }));
+                    break;
+                case '[object Array]':
+                    components.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { key: data, label: data, ignoreValue: true }));
+                    for (var _i = 0, value_1 = value; _i < value_1.length; _i++) {
+                        var entry = value_1[_i];
+                        components.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_indentedTextLineComponent__WEBPACK_IMPORTED_MODULE_4__["IndentedTextLineComponent"], { key: data + entry, value: entry }));
+                    }
+                    break;
+                case '[object Object]':
+                    components.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { key: data, label: data, ignoreValue: true }));
+                    for (var entryKey in value) {
+                        components.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { key: data + entry, label: entryKey, value: value[entryKey], additionalClass: "reduced-opacity" }));
+                    }
+                    break;
+            }
+        }
+        return components;
+    };
+    CommonPropertyGridComponent.prototype.render = function () {
+        if (!this.props.host.metadata) {
+            return null;
+        }
+        if (!this.props.host.metadata.xmp) {
+            return null;
+        }
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "XMP METADATA" }, this.renderLevel(this.props.host.metadata.xmp))));
+    };
+    return CommonPropertyGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
 /***/ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx":
 /*!**********************************************************************************!*\
   !*** ./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx ***!
@@ -50703,19 +50773,12 @@ var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
     PBRMaterialPropertyGridComponent.prototype.switchAmbientMode = function (state) {
         this.props.material.debugMode = state ? 21 : 0;
     };
-    PBRMaterialPropertyGridComponent.prototype.switchMetallicMode = function (state) {
-        this.props.material.debugMode = state ? 62 : 0;
-    };
-    PBRMaterialPropertyGridComponent.prototype.switchRoughnessMode = function (state) {
-        this.props.material.debugMode = state ? 63 : 0;
-    };
     PBRMaterialPropertyGridComponent.prototype.renderTextures = function (onDebugSelectionChangeObservable) {
         var _this = this;
         var material = this.props.material;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "CHANNELS" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Albedo", texture: material.albedoTexture, propertyName: "albedoTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { customDebugAction: function (state) { return _this.switchMetallicMode(state); }, label: "Metallic", texture: material.metallicTexture, propertyName: "metallicTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { customDebugAction: function (state) { return _this.switchRoughnessMode(state); }, label: "Roughness", texture: material.metallicTexture, propertyName: "metallicTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Metallic Roughness", texture: material.metallicTexture, propertyName: "metallicTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Reflection", texture: material.reflectionTexture, propertyName: "reflectionTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Refraction", texture: material.refractionTexture, propertyName: "refractionTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Reflectivity", texture: material.reflectivityTexture, propertyName: "reflectivityTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
@@ -53425,8 +53488,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./components/actionTabs/lines/textInputLineComponent.tsx");
 /* harmony import */ var _animations_animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../animations/animationPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/animations/animationPropertyGridComponent.tsx");
-/* harmony import */ var _variantsPropertyGridComponent__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ../variantsPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/variantsPropertyGridComponent.tsx");
-/* harmony import */ var _lines_hexLineComponent__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ../../../lines/hexLineComponent */ "./components/actionTabs/lines/hexLineComponent.tsx");
+/* harmony import */ var _commonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ../commonPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/commonPropertyGridComponent.tsx");
+/* harmony import */ var _variantsPropertyGridComponent__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ../variantsPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/variantsPropertyGridComponent.tsx");
+/* harmony import */ var _lines_hexLineComponent__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ../../../lines/hexLineComponent */ "./components/actionTabs/lines/hexLineComponent.tsx");
+
 
 
 
@@ -53774,7 +53839,8 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
                         mesh.dispose();
                         _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                     } })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_variantsPropertyGridComponent__WEBPACK_IMPORTED_MODULE_16__["VariantsPropertyGridComponent"], { host: mesh, lockObject: this.props.lockObject, globalState: this.props.globalState }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_16__["CommonPropertyGridComponent"], { host: mesh, lockObject: this.props.lockObject, globalState: this.props.globalState }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_variantsPropertyGridComponent__WEBPACK_IMPORTED_MODULE_17__["VariantsPropertyGridComponent"], { host: mesh, lockObject: this.props.lockObject, globalState: this.props.globalState }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "TRANSFORMS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_6__["Vector3LineComponent"], { label: "Position", target: mesh, propertyName: "position", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 !mesh.rotationQuaternion && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_6__["Vector3LineComponent"], { label: "Rotation", useEuler: this.props.globalState.onlyUseEulers, target: mesh, propertyName: "rotation", step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -53789,7 +53855,7 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
                 scene.fogMode !== babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Scene"].FOGMODE_NONE && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Apply fog", target: mesh, propertyName: "applyFog", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 !mesh.parent && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Infinite distance", target: mesh, propertyName: "infiniteDistance", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Rendering group ID", decimalCount: 0, target: mesh, propertyName: "renderingGroupId", minimum: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["RenderingManager"].MIN_RENDERINGGROUPS, maximum: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["RenderingManager"].MAX_RENDERINGGROUPS - 1, step: 1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_hexLineComponent__WEBPACK_IMPORTED_MODULE_17__["HexLineComponent"], { isInteger: true, lockObject: this.props.lockObject, label: "Layer mask", target: mesh, propertyName: "layerMask", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_hexLineComponent__WEBPACK_IMPORTED_MODULE_18__["HexLineComponent"], { isInteger: true, lockObject: this.props.lockObject, label: "Layer mask", target: mesh, propertyName: "layerMask", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             mesh.morphTargetManager != null && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "MORPH TARGETS", closed: true }, morphTargets.map(function (mt, i) {
                 return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { key: i, label: mt.name, target: mt, propertyName: "influence", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: _this.props.onPropertyChangedObservable });
             }))),
@@ -54067,7 +54133,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./components/actionTabs/lines/textInputLineComponent.tsx");
 /* harmony import */ var _animations_animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../animations/animationPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/animations/animationPropertyGridComponent.tsx");
-/* harmony import */ var _variantsPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../variantsPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/variantsPropertyGridComponent.tsx");
+/* harmony import */ var _commonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../commonPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/commonPropertyGridComponent.tsx");
+/* harmony import */ var _variantsPropertyGridComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../variantsPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/variantsPropertyGridComponent.tsx");
+
 
 
 
@@ -54102,7 +54170,8 @@ var TransformNodePropertyGridComponent = /** @class */ (function (_super) {
                         transformNode.dispose();
                         _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                     } })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_variantsPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__["VariantsPropertyGridComponent"], { host: transformNode, lockObject: this.props.lockObject, globalState: this.props.globalState }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__["CommonPropertyGridComponent"], { host: transformNode, lockObject: this.props.lockObject, globalState: this.props.globalState }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_variantsPropertyGridComponent__WEBPACK_IMPORTED_MODULE_12__["VariantsPropertyGridComponent"], { host: transformNode, lockObject: this.props.lockObject, globalState: this.props.globalState }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "TRANSFORMATIONS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Vector3LineComponent"], { label: "Position", target: transformNode, propertyName: "position", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 !transformNode.rotationQuaternion &&
@@ -56670,13 +56739,10 @@ var GLTFComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Validate", target: loaderState, propertyName: "validate" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_messageLineComponent__WEBPACK_IMPORTED_MODULE_6__["MessageLineComponent"], { text: "You need to reload your file to see these changes" })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "GLTF EXTENSIONS", closed: true },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "MSFT_lod", isSelected: function () { return extensionStates["MSFT_lod"].enabled; }, onSelect: function (value) { return (extensionStates["MSFT_lod"].enabled = value); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { label: "Maximum LODs", target: extensionStates["MSFT_lod"], propertyName: "maxLODsToLoad", additionalClass: "gltf-extension-property", isInteger: true }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "MSFT_minecraftMesh", isSelected: function () { return extensionStates["MSFT_minecraftMesh"].enabled; }, onSelect: function (value) { return (extensionStates["MSFT_minecraftMesh"].enabled = value); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "MSFT_sRGBFactors", isSelected: function () { return extensionStates["MSFT_sRGBFactors"].enabled; }, onSelect: function (value) { return (extensionStates["MSFT_sRGBFactors"].enabled = value); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "MSFT_audio_emitter", isSelected: function () { return extensionStates["MSFT_audio_emitter"].enabled; }, onSelect: function (value) { return (extensionStates["MSFT_audio_emitter"].enabled = value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "EXT_lights_image_based", isSelected: function () { return extensionStates["EXT_lights_image_based"].enabled; }, onSelect: function (value) { return (extensionStates["EXT_lights_image_based"].enabled = value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "EXT_mesh_gpu_instancing", isSelected: function () { return extensionStates["EXT_mesh_gpu_instancing"].enabled; }, onSelect: function (value) { return (extensionStates["EXT_mesh_gpu_instancing"].enabled = value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "EXT_texture_webp", isSelected: function () { return extensionStates["EXT_texture_webp"].enabled; }, onSelect: function (value) { return (extensionStates["EXT_texture_webp"].enabled = value); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_draco_mesh_compression", isSelected: function () { return extensionStates["KHR_draco_mesh_compression"].enabled; }, onSelect: function (value) { return (extensionStates["KHR_draco_mesh_compression"].enabled = value); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_mesh_quantization", isSelected: function () { return extensionStates["KHR_mesh_quantization"].enabled; }, onSelect: function (value) { return (extensionStates["KHR_mesh_quantization"].enabled = value); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_materials_pbrSpecularGloss...", isSelected: function () { return extensionStates["KHR_materials_pbrSpecularGlossiness"].enabled; }, onSelect: function (value) { return (extensionStates["KHR_materials_pbrSpecularGlossiness"].enabled = value); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_materials_clearcoat", isSelected: function () { return extensionStates["KHR_materials_clearcoat"].enabled; }, onSelect: function (value) { return (extensionStates["KHR_materials_clearcoat"].enabled = value); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_materials_ior", isSelected: function () { return extensionStates["KHR_materials_ior"].enabled; }, onSelect: function (value) { return (extensionStates["KHR_materials_ior"].enabled = value); } }),
@@ -56686,12 +56752,16 @@ var GLTFComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_materials_variants", isSelected: function () { return extensionStates["KHR_materials_variants"].enabled; }, onSelect: function (value) { return (extensionStates["KHR_materials_variants"].enabled = value); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_materials_transmission", isSelected: function () { return extensionStates["KHR_materials_transmission"].enabled; }, onSelect: function (value) { return (extensionStates["KHR_materials_transmission"].enabled = value); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_materials_translucency", isSelected: function () { return extensionStates["KHR_materials_translucency"].enabled; }, onSelect: function (value) { return (extensionStates["KHR_materials_translucency"].enabled = value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_mesh_quantization", isSelected: function () { return extensionStates["KHR_mesh_quantization"].enabled; }, onSelect: function (value) { return (extensionStates["KHR_mesh_quantization"].enabled = value); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_lights_punctual", isSelected: function () { return extensionStates["KHR_lights_punctual"].enabled; }, onSelect: function (value) { return (extensionStates["KHR_lights_punctual"].enabled = value); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_texture_basisu", isSelected: function () { return extensionStates["KHR_texture_basisu"].enabled; }, onSelect: function (value) { return (extensionStates["KHR_texture_basisu"].enabled = value); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_texture_transform", isSelected: function () { return extensionStates["KHR_texture_transform"].enabled; }, onSelect: function (value) { return (extensionStates["KHR_texture_transform"].enabled = value); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "EXT_lights_image_based", isSelected: function () { return extensionStates["EXT_lights_image_based"].enabled; }, onSelect: function (value) { return (extensionStates["EXT_lights_image_based"].enabled = value); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "EXT_mesh_gpu_instancing", isSelected: function () { return extensionStates["EXT_mesh_gpu_instancing"].enabled; }, onSelect: function (value) { return (extensionStates["EXT_mesh_gpu_instancing"].enabled = value); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "EXT_texture_webp", isSelected: function () { return extensionStates["EXT_texture_webp"].enabled; }, onSelect: function (value) { return (extensionStates["EXT_texture_webp"].enabled = value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_xmp_json_ld", isSelected: function () { return extensionStates["KHR_xmp_json_ld"].enabled; }, onSelect: function (value) { return (extensionStates["KHR_xmp_json_ld"].enabled = value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "MSFT_lod", isSelected: function () { return extensionStates["MSFT_lod"].enabled; }, onSelect: function (value) { return (extensionStates["MSFT_lod"].enabled = value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { label: "Maximum LODs", target: extensionStates["MSFT_lod"], propertyName: "maxLODsToLoad", additionalClass: "gltf-extension-property", isInteger: true }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "MSFT_minecraftMesh", isSelected: function () { return extensionStates["MSFT_minecraftMesh"].enabled; }, onSelect: function (value) { return (extensionStates["MSFT_minecraftMesh"].enabled = value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "MSFT_sRGBFactors", isSelected: function () { return extensionStates["MSFT_sRGBFactors"].enabled; }, onSelect: function (value) { return (extensionStates["MSFT_sRGBFactors"].enabled = value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "MSFT_audio_emitter", isSelected: function () { return extensionStates["MSFT_audio_emitter"].enabled; }, onSelect: function (value) { return (extensionStates["MSFT_audio_emitter"].enabled = value); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_messageLineComponent__WEBPACK_IMPORTED_MODULE_6__["MessageLineComponent"], { text: "You need to reload your file to see these changes" })),
             loaderState["validate"] && this.props.globalState.validationResults && this.renderValidation()));
     };
@@ -57236,6 +57306,7 @@ var GlobalState = /** @class */ (function () {
             MSFT_minecraftMesh: { enabled: true },
             MSFT_sRGBFactors: { enabled: true },
             MSFT_audio_emitter: { enabled: true },
+            KHR_xmp_json_ld: { enabled: true },
             KHR_draco_mesh_compression: { enabled: true },
             KHR_mesh_quantization: { enabled: true },
             KHR_materials_pbrSpecularGlossiness: { enabled: true },
