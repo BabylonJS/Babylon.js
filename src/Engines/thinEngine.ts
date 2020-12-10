@@ -23,7 +23,7 @@ import { WebGL2ShaderProcessor } from './WebGL/webGL2ShaderProcessors';
 import { WebGLDataBuffer } from '../Meshes/WebGL/webGLDataBuffer';
 import { IPipelineContext } from './IPipelineContext';
 import { WebGLPipelineContext } from './WebGL/webGLPipelineContext';
-import { VertexBuffer } from '../Meshes/buffer';
+import { VertexBuffer, Buffer } from '../Meshes/buffer';
 import { InstancingAttributeInfo } from './instancingAttributeInfo';
 import { ThinTexture } from '../Materials/Textures/thinTexture';
 import { IOfflineProvider } from '../Offline/IOfflineProvider';
@@ -341,7 +341,7 @@ export class ThinEngine {
      * Observable signaled when a context restored event is raised
      */
     public onContextRestoredObservable = new Observable<ThinEngine>();
-    public onContextRestoreBuffersObservable = new Observable<ThinEngine>();
+    private _onContextRestoreBuffers: Nullable<Array<Buffer>> = null;
     private _onContextLost: (evt: Event) => void;
     private _onContextRestored: (evt: Event) => void;
     protected _contextWasLost = false;
@@ -673,10 +673,12 @@ export class ThinEngine {
                         this._rebuildInternalTextures();
                         // Rebuild buffers
                         this._rebuildBuffers();
+                        this._onContextRestoreBuffers?.forEach((b) => {
+                            b._restoreAfterContextLost();
+                        })
                         // Cache
                         this.wipeCaches(true);
                         Logger.Warn("WebGL context successfully restored.");
-                        this.onContextRestoreBuffersObservable.notifyObservers(this);
                         this.onContextRestoredObservable.notifyObservers(this);
                         this._contextWasLost = false;
                     }, 0);
@@ -4722,5 +4724,30 @@ export class ThinEngine {
         }
 
         return document;
+    }
+
+    /** Make the engine aware of a Vertex/Index Buffer that needs to be restored if the context is lost */
+    public registerBuffer(buffer: Buffer) {
+        if (this._doNotHandleContextLost) {
+            return;
+        }
+        if (this._onContextRestoreBuffers === null) {
+            this._onContextRestoreBuffers = new Array<Buffer>();
+        }
+        buffer._contextRestoreIndex = this._onContextRestoreBuffers.length;
+        this._onContextRestoreBuffers.push(buffer);
+    }
+
+    /** Remove a Vertex/Index Buffer from the engine */
+    public unregisterBuffer(buffer: Buffer) {
+        if (this._onContextRestoreBuffers === null) {
+            return;
+        }
+        var index = buffer._contextRestoreIndex;
+        if (index === -1) {
+            return;
+        }
+        this._onContextRestoreBuffers[index] = this._onContextRestoreBuffers[this._onContextRestoreBuffers.length - 1];
+        this._onContextRestoreBuffers.pop();
     }
 }

@@ -1,13 +1,11 @@
 import { Nullable, DataArray, IndicesArray } from "../types";
 import { ThinEngine } from "../Engines/thinEngine";
 import { DataBuffer } from './dataBuffer';
-import { Observer } from '../Misc/observable';
 
 // TODO: Is the reference count happening of the DataBuffer meaningful anymore?
 // TODO: When a VB is updated through Geometry A it can invalidate VAO. That needs to happen on Geometry B that uses the vertexbuffer too.
 //       I think we need to make it so that each VB has a list of geometries (or a signal) (just like a geometry has meshes) so they can tell when they are modified
 //       This also solve the issue with the position-VB changing and all the geometry getting updates bounds
-// TODO: Maybe now it would be better for thinEngine to have a list of all buffers (when it cares about lostContext) that it can call rebuild on. No need for generic signal anymore. Array<Buffer> might take less memory.
 
 export enum BufferType {
     VertexBuffer = 1,
@@ -27,12 +25,14 @@ export class Buffer {
     public _data: Nullable<BufferDataValues>;
     protected _updatable: boolean;
     protected _bufferReferenceCount: number = 0;
-    protected _restoreContextObserver: Nullable<Observer<ThinEngine>> = null;
+
+    /** @hidden */
+    public _contextRestoreIndex: number = -1;
 
     private _instanced: boolean;
     private _divisor: number;
-    /** @hidden */
 
+    /** @hidden */
     public readonly bufferType: BufferType;
 
     /**
@@ -84,6 +84,12 @@ export class Buffer {
      * @param data defines the data to store
      */
     public create(data: Nullable<BufferDataValues> = null, new_updatable?: boolean): void {
+        if (!data && this._buffer) {
+            return; // nothing to do
+        }
+
+        data = data || this._data;
+
         if (!data) {
             return;
         }
@@ -109,7 +115,7 @@ export class Buffer {
             } else if (updatable) {
                 this._engine.updateDynamicVertexBuffer(this._buffer, data);
             }
-        } else {
+        } else if (this.bufferType === BufferType.IndexBuffer) {
             if (!this._buffer) {
                 this._buffer = this._engine.createIndexBuffer(data as IndicesArray, updatable);
             } else if (updatable) {
@@ -117,8 +123,8 @@ export class Buffer {
             }
         }
 
-        if (this._buffer && this._restoreContextObserver === null) {
-            this._restoreContextObserver = this._engine.onContextRestoreBuffersObservable.add(this._rebuild);
+        if (this._contextRestoreIndex === -1) {
+            this._engine.registerBuffer(this);
         }
     }
 
@@ -167,7 +173,7 @@ export class Buffer {
     // Methods
 
     /** @hidden */
-    private _rebuild(): void {
+    public _restoreAfterContextLost(): void {
         this._buffer = null;
         this.create(this._data);
     }
@@ -200,7 +206,7 @@ export class Buffer {
      * @returns true if size changed
      */
     public update(data: BufferDataValues, offset?: number, gpuMemoryOnly = false, useBytes?: boolean): boolean {
-        if (data === null) {
+        if (!data) {
             return false;
         }
 
@@ -221,7 +227,7 @@ export class Buffer {
                 this._data = newData; // TODO: Why not slice? What about offset?
             }
 
-        } else {
+        } else if (this.bufferType === BufferType.IndexBuffer) {
             const oldData = this._data as Nullable<IndicesArray>;
             const newData = data as IndicesArray;
             sizeChanged = oldData === null || oldData.length !== newData.length;
@@ -241,7 +247,7 @@ export class Buffer {
 
         if (this.bufferType == BufferType.VertexBuffer) {
             this._engine.updateDynamicVertexBuffer(this._buffer, data as DataArray, correctedOffset);
-        } else  {
+        } else if (this.bufferType === BufferType.IndexBuffer) {
             this._engine.updateDynamicIndexBuffer(this._buffer, data as IndicesArray, offset);
         }
         return sizeChanged;
@@ -262,7 +268,7 @@ export class Buffer {
         if (this._updatable) { // update buffer
             if (this.bufferType === BufferType.VertexBuffer) {
                 this._engine.updateDynamicVertexBuffer(this._buffer, data, useBytes ? offset : offset * Float32Array.BYTES_PER_ELEMENT, (vertexCount ? vertexCount * this.byteStride : undefined));
-            } else {
+            } else if (this.bufferType === BufferType.IndexBuffer) {
                 // TODO: Should we use offset here?
                 this._engine.updateDynamicIndexBuffer(this._buffer, data as IndicesArray);
             }
@@ -294,13 +300,12 @@ export class Buffer {
         if (this._bufferReferenceCount > 0) {
             return;
         }
-        if (this._restoreContextObserver) {
-            this._engine.onContextRestoreBuffersObservable.remove(this._restoreContextObserver);
-            this._restoreContextObserver = null;
-        }
         if (this._buffer) {
             this._engine._releaseBuffer(this._buffer);
             this._buffer = null;
+        }
+        if (this._contextRestoreIndex !== -1) {
+            this._engine.unregisterBuffer(this);
         }
     }
 }
