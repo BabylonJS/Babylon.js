@@ -71,6 +71,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
     public textures: { [name: string]: Nullable<IWebGPUPipelineContextTextureCache> } = { };
 
     public bindGroupLayouts: GPUBindGroupLayout[];
+    public bindGroupsCache: { [key: string]: GPUBindGroup[] };
 
     /**
      * Stores the uniform buffer
@@ -99,6 +100,8 @@ export class WebGPUPipelineContext implements IPipelineContext {
         this._name = "unnamed";
         this.shaderProcessingContext = shaderProcessingContext;
         this.leftOverUniformsByName = {};
+        this.engine = engine;
+        this.bindGroupsCache = {};
     }
 
     public _handlesSpectorRebuildCallback(onCompiled: (program: any) => void): void {

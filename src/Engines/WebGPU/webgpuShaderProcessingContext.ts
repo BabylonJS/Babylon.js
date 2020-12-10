@@ -56,6 +56,7 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
 
     public orderedAttributes: string[];
     public orderedUBOsAndSamplers: WebGPUBindingDescription[][];
+    public uniformBufferNames: string[];
 
     private _attributeNextLocation: number;
     private _varyingNextLocation: number;
@@ -73,6 +74,7 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
 
         this.orderedAttributes = [];
         this.orderedUBOsAndSamplers = [];
+        this.uniformBufferNames = [];
 
         this.leftOverUniforms = [];
     }
