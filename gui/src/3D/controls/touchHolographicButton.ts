@@ -28,7 +28,7 @@ export class TouchHolographicButton extends TouchButton3D {
     private _frontPlate: Mesh;
     private _text: string;
     private _imageUrl: string;
-    private _shareMaterials = false;
+    private _shareMaterials = true;
     private _frontMaterial: FluentMaterial;
     private _backMaterial: FluentMaterial;
     private _plateMaterial: StandardMaterial;
@@ -194,12 +194,10 @@ export class TouchHolographicButton extends TouchButton3D {
 
     /**
      * Creates a new button
-     * @param collisionMesh mesh to track collisions with
      * @param name defines the control name
      */
-    constructor(collisionMesh: Mesh, name?: string, shareMaterials = true) {
-        super(name, collisionMesh);
-
+    constructor(name?: string, shareMaterials = true) {
+        super(name);
         this._shareMaterials = shareMaterials;
 
         // Default animations
@@ -254,7 +252,9 @@ export class TouchHolographicButton extends TouchButton3D {
 
     // Mesh association
     protected _createNode(scene: Scene): TransformNode {
+        this.collisionMesh = BoxBuilder.CreateBox(this.name + "CollisionMesh", { size: 1}, scene);
         this._enableCollisions(scene);
+
         this._backPlate = BoxBuilder.CreateBox(this.name + "BackMesh", {
             width: 1.0,
             height: 1.0,
@@ -264,7 +264,7 @@ export class TouchHolographicButton extends TouchButton3D {
         this._frontPlate = BoxBuilder.CreateBox(this.name + "FrontMesh", {
             width: 1.0,
             height: 1.0,
-            depth: 0.3
+            depth: 0.4
         }, scene);
 
         this._frontPlate.parent = this._backPlate;
@@ -288,7 +288,7 @@ export class TouchHolographicButton extends TouchButton3D {
     private _createBackMaterial(mesh: Mesh) {
         this._backMaterial = new FluentMaterial(this.name + "Back Material", mesh.getScene());
         this._backMaterial.renderHoverLight = true;
-        this._backMaterial.albedoColor = new Color3(0, 0, 0.4);
+        this._backMaterial.albedoColor = new Color3(0.1, 0.1, 0.4);
         this._pickedPointObserver = this._host.onPickedPointChangedObservable.add((pickedPoint) => {
             if (pickedPoint) {
                 this._backMaterial.hoverPosition = pickedPoint;
@@ -314,19 +314,19 @@ export class TouchHolographicButton extends TouchButton3D {
     protected _affectMaterial(mesh: Mesh) {
         // Back
         if (this._shareMaterials) {
-            if (!this._host._sharedMaterials["backFluentMaterial"]) {
+            if (!this._host._touchSharedMaterials["backFluentMaterial"]) {
                 this._createBackMaterial(mesh);
-                this._host._sharedMaterials["backFluentMaterial"] = this._backMaterial;
+                this._host._touchSharedMaterials["backFluentMaterial"] = this._backMaterial;
             } else {
-                this._backMaterial = this._host._sharedMaterials["backFluentMaterial"] as FluentMaterial;
+                this._backMaterial = this._host._touchSharedMaterials["backFluentMaterial"] as FluentMaterial;
             }
 
             // Front
-            if (!this._host._sharedMaterials["frontFluentMaterial"]) {
+            if (!this._host._touchSharedMaterials["frontFluentMaterial"]) {
                 this._createFrontMaterial(mesh);
-                this._host._sharedMaterials["frontFluentMaterial"] = this._frontMaterial;
+                this._host._touchSharedMaterials["frontFluentMaterial"] = this._frontMaterial;
             } else {
-                this._frontMaterial = this._host._sharedMaterials["frontFluentMaterial"] as FluentMaterial;
+                this._frontMaterial = this._host._touchSharedMaterials["frontFluentMaterial"] as FluentMaterial;
             }
         } else {
             this._createBackMaterial(mesh);
