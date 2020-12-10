@@ -1453,6 +1453,7 @@ declare module BABYLON {
      * Class used to store gfx data (like WebGLBuffer)
      */
     export class DataBuffer {
+        private static _Counter;
         /**
          * Gets or sets the number of objects referencing this buffer
          */
@@ -1467,6 +1468,14 @@ declare module BABYLON {
          * Gets the underlying buffer
          */
         get underlyingResource(): any;
+        /**
+         * Gets the unique id of this buffer
+         */
+        readonly uniqueId: number;
+        /**
+         * Constructs the buffer
+         */
+        constructor();
     }
 }
 declare module BABYLON {
@@ -7010,6 +7019,7 @@ declare module BABYLON {
          * Specialized buffer used to store vertex data
          */
     export class VertexBuffer {
+        private static _Counter;
         /** @hidden */
         _buffer: Buffer;
         private _kind;
@@ -7066,6 +7076,10 @@ declare module BABYLON {
          * Gets the data type of each component in the array.
          */
         readonly type: number;
+        /**
+         * Gets the unique id of this vertex buffer
+         */
+        readonly uniqueId: number;
         /**
          * Constructor
          * @param engine the engine
@@ -44229,6 +44243,7 @@ declare module BABYLON {
         }[];
         orderedAttributes: string[];
         orderedUBOsAndSamplers: WebGPUBindingDescription[][];
+        uniformBufferNames: string[];
         private _attributeNextLocation;
         private _varyingNextLocation;
         constructor();
@@ -44286,6 +44301,9 @@ declare module BABYLON {
             [name: string]: Nullable<IWebGPUPipelineContextTextureCache>;
         };
         bindGroupLayouts: GPUBindGroupLayout[];
+        bindGroupsCache: {
+            [key: string]: GPUBindGroup[];
+        };
         /**
          * Stores the uniform buffer
          */
@@ -44670,6 +44688,7 @@ declare module BABYLON {
     export class WebGPUCacheSampler {
         private _samplers;
         private _device;
+        disabled: boolean;
         constructor(device: GPUDevice);
         private static _GetSamplerHashCode;
         private static _GetSamplerFilterDescriptor;
@@ -44686,6 +44705,107 @@ declare module BABYLON {
         private _device;
         constructor(device: GPUDevice);
         getCompiledShaders(name: string): IWebGPURenderPipelineStageDescriptor;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class WebGPUCacheRenderPipeline {
+        static NumCacheHitWithoutHash: number;
+        static NumCacheHitWithHash: number;
+        static NumCacheMiss: number;
+        static NumPipelineCreationLastFrame: number;
+        disabled: boolean;
+        private static _Cache;
+        private static _NumPipelineCreationCurrentFrame;
+        private _device;
+        private _states;
+        private _isDirty;
+        private _currentRenderPipeline;
+        private _emptyVertexBuffer;
+        private _shaderId;
+        private _alphaToCoverageEnabled;
+        private _frontFace;
+        private _cullEnabled;
+        private _cullFace;
+        private _clampDepth;
+        private _rasterizationState;
+        private _depthBias;
+        private _depthBiasClamp;
+        private _depthBiasSlopeScale;
+        private _colorFormat;
+        private _webgpuColorFormat;
+        private _mrtAttachments1;
+        private _mrtAttachments2;
+        private _mrtFormats;
+        private _alphaBlendEnabled;
+        private _alphaBlendFuncParams;
+        private _alphaBlendEqParams;
+        private _writeMask;
+        private _colorStates;
+        private _depthStencilFormat;
+        private _webgpuDepthStencilFormat;
+        private _depthTestEnabled;
+        private _depthWriteEnabled;
+        private _depthCompare;
+        private _stencilEnabled;
+        private _stencilFrontCompare;
+        private _stencilFrontDepthFailOp;
+        private _stencilFrontPassOp;
+        private _stencilFrontFailOp;
+        private _stencilReadMask;
+        private _stencilWriteMask;
+        private _depthStencilState;
+        private _vertexBuffers;
+        private _indexBuffer;
+        constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer);
+        reset(): void;
+        getRenderPipeline(fillMode: number, effect: Effect, sampleCount: number): GPURenderPipeline;
+        endFrame(): void;
+        setAlphaToCoverage(enabled: boolean): void;
+        setFrontFace(frontFace: number): void;
+        setCullEnabled(enabled: boolean): void;
+        setCullFace(cullFace: number): void;
+        setClampDepth(clampDepth: boolean): void;
+        resetDepthCullingState(): void;
+        setDepthCullingState(cullEnabled: boolean, frontFace: number, cullFace: number, zOffset: number, depthTestEnabled: boolean, depthWriteEnabled: boolean, depthCompare: Nullable<number>): void;
+        setDepthBiasSlopeScale(depthBiasSlopeScale: number): void;
+        setColorFormat(format: GPUTextureFormat): void;
+        setMRTAttachments(attachments: number[], textureArray: InternalTexture[]): void;
+        setAlphaBlendEnabled(enabled: boolean): void;
+        setAlphaBlendFactors(factors: Array<Nullable<number>>, operations: Array<Nullable<number>>): void;
+        setWriteMask(mask: number): void;
+        setDepthStencilFormat(format: GPUTextureFormat | undefined): void;
+        setDepthTestEnabled(enabled: boolean): void;
+        setDepthWriteEnabled(enabled: boolean): void;
+        setDepthCompare(func: Nullable<number>): void;
+        setStencilEnabled(enabled: boolean): void;
+        setStencilCompare(func: Nullable<number>): void;
+        setStencilDepthFailOp(op: Nullable<number>): void;
+        setStencilPassOp(op: Nullable<number>): void;
+        setStencilFailOp(op: Nullable<number>): void;
+        setStencilReadMask(mask: number): void;
+        setStencilWriteMask(mask: number): void;
+        resetStencilState(): void;
+        setStencilState(stencilEnabled: boolean, compare: Nullable<number>, depthFailOp: Nullable<number>, passOp: Nullable<number>, failOp: Nullable<number>, readMask: number, writeMask: number): void;
+        setBuffers(vertexBuffers: Nullable<{
+            [key: string]: Nullable<VertexBuffer>;
+        }>, indexBuffer: Nullable<DataBuffer>): void;
+        private static _GetTopology;
+        private static _GetAphaBlendOperation;
+        private static _GetAphaBlendFactor;
+        private static _GetCompareFunction;
+        private static _GetStencilOpFunction;
+        private static _GetVertexInputDescriptorFormat;
+        private _getAphaBlendState;
+        private _getColorBlendState;
+        private _setShaderStage;
+        private _setRasterizationState;
+        private _setColorStates;
+        private _setDepthStencilState;
+        private _setVertexState;
+        private _createPipelineLayout;
+        private _getVertexInputDescriptor;
+        private _createRenderPipeline;
     }
 }
 declare module BABYLON {
@@ -44805,6 +44925,7 @@ declare module BABYLON {
         private _bufferManager;
         private _shaderManager;
         private _cacheSampler;
+        private _cacheRenderPipeline;
         private _emptyVertexBuffer;
         private _lastCachedWrapU;
         private _lastCachedWrapV;
@@ -44841,6 +44962,16 @@ declare module BABYLON {
         dbgVerboseLogsNumFrames: number;
         /** @hidden */
         dbgShowWarningsNotImplemented: boolean;
+        /**
+         * Sets this to true to disable the cache for the samplers. You should do it only for testing purpose!
+         */
+        get disableCacheSamplers(): boolean;
+        set disableCacheSamplers(disable: boolean);
+        /**
+         * Sets this to true to disable the cache for the render pipelines. You should do it only for testing purpose!
+         */
+        get disableCacheRenderPipelines(): boolean;
+        set disableCacheRenderPipelines(disable: boolean);
         /**
          * Gets a boolean indicating if the engine can be instanciated (ie. if a WebGPU context can be found)
          * @returns true if the engine can be created
@@ -45381,7 +45512,6 @@ declare module BABYLON {
         private _startRenderTargetRenderPass;
         private _endRenderTargetRenderPass;
         private _getCurrentRenderPass;
-        private _currentRenderPassIsMRT;
         private _startMainRenderPass;
         private _endMainRenderPass;
         /**
@@ -45448,10 +45578,6 @@ declare module BABYLON {
         setDepthFunctionToGreaterOrEqual(): void;
         setDepthFunctionToLess(): void;
         setDepthFunctionToLessOrEqual(): void;
-        private _indexFormatInRenderPass;
-        private _getTopology;
-        private _getOpFunction;
-        private _getDepthStencilStateDescriptor;
         /**
          * Set various states to the context
          * @param culling defines backface culling state
@@ -45460,10 +45586,6 @@ declare module BABYLON {
          * @param reverseSide defines if culling must be reversed (CCW instead of CW and CW instead of CCW)
          */
         setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean): void;
-        private _getFrontFace;
-        private _getCullMode;
-        private _getRasterizationStateDescriptor;
-        private _getWriteMask;
         /**
          * Sets the current alpha mode
          * @param mode defines the mode to use (one of the Engine.ALPHA_XXX)
@@ -45471,17 +45593,11 @@ declare module BABYLON {
          * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
          */
         setAlphaMode(mode: number, noDepthWriteChange?: boolean): void;
-        private _getAphaBlendOperation;
-        private _getAphaBlendFactor;
-        private _getAphaBlendState;
-        private _getColorBlendState;
-        private _getColorStateDescriptors;
-        private _getStages;
-        private _getVertexInputDescriptorFormat;
-        private _getVertexInputDescriptor;
-        private _getPipelineLayout;
-        private _getRenderPipeline;
-        private _getVertexInputsToRender;
+        /**
+         * Sets the current alpha equation
+         * @param equation defines the equation to use (one of the Engine.ALPHA_EQUATION_XXX)
+         */
+        setAlphaEquation(equation: number): void;
         private _getBindGroupsToRender;
         private _bindVertexInputs;
         private _setRenderBindGroups;

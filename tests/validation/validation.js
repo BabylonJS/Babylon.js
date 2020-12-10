@@ -462,7 +462,7 @@ function init(_engineName) {
             wasmPath: "../../dist/preview%20release/glslang/glslang.wasm"
         };
 
-        engine = new BABYLON.WebGPUEngine(canvas, {
+        const options = {
             deviceDescriptor: {
                 extensions: [
                     "texture-compression-bc",
@@ -474,7 +474,9 @@ function init(_engineName) {
                 ]
             },
             antialiasing: false,
-        });
+        };
+
+        engine = new BABYLON.WebGPUEngine(canvas, options);
         engine.enableOfflineSupport = false;
         return new Promise((resolve) => {
             engine.initAsync(glslangOptions).then(() => resolve());
