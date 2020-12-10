@@ -1162,22 +1162,19 @@ declare module BABYLON.GLTF2 {
     }
 
     /**
-     * Interfaces from the KHR_xmp extension
+     * Interfaces from the KHR_xmp_json_ld extension
      * !!! Experimental Extension Subject to Changes !!!
      */
 
     /** @hidden */
-    interface IKHRXmp_Data {
-        [key: string]: unknown;
+    interface IKHRXmpJsonLd_Gltf {
+        packets: Array<{
+            [key: string]: unknown;
+        }>;
     }
 
     /** @hidden */
-    interface IKHRXmp_Gltf {
-        packets: IKHRXmp_Data[];
-    }
-
-    /** @hidden */
-    interface IKHRXmp_Node {
+    interface IKHRXmpJsonLd_Node {
         packet: number;
     }
 
