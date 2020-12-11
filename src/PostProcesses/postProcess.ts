@@ -733,6 +733,7 @@ export class PostProcess {
 
     private _disposeTextures() {
         if (this._shareOutputWithPostProcess || this._forcedOutputTexture) {
+            this._disposeTextureCache();
             return;
         }
 
@@ -747,8 +748,11 @@ export class PostProcess {
             }
         }
 
+        this._disposeTextureCache();
         this._textures.dispose();
+    }
 
+    private _disposeTextureCache() {
         for (let i = this._textureCache.length - 1; i >= 0; i--) {
             this._engine._releaseTexture(this._textureCache[i]);
             this._textureCache.splice(i, 1);

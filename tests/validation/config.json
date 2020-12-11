@@ -1062,7 +1062,7 @@
         },
         {
             "title": "Prepass SSAO + glow layer",
-            "renderCount": 10,
+            "renderCount": 30,
             "playgroundId": "#LRFB2D#114",
             "referenceImage": "prepass-ssao-glow-layer.png"
         },
