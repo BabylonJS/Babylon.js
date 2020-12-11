@@ -1,6 +1,6 @@
 import * as React from "react";
 import { PaneComponent, IPaneComponentProps } from "../paneComponent";
-import { TextLineComponent } from "../lines/textLineComponent";
+import { TextLineComponent } from "../../../sharedUiComponents/lines/textLineComponent";
 import { LineContainerComponent } from "../lineContainerComponent";
 
 import { Nullable } from "babylonjs/types";

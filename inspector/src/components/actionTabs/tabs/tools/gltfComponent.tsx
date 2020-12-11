@@ -7,7 +7,7 @@ import { FloatLineComponent } from "../../lines/floatLineComponent";
 import { OptionsLineComponent } from "../../lines/optionsLineComponent";
 import { MessageLineComponent } from "../../../../sharedUiComponents/lines/messageLineComponent";
 import { faCheck, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
-import { TextLineComponent } from "../../lines/textLineComponent";
+import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
 import { GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode } from "babylonjs-loaders/glTF/index";
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
