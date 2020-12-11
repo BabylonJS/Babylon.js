@@ -22,6 +22,7 @@ import { Engine } from "../../Engines/engine";
 import { Tools } from "../../Misc/tools";
 import { Axis } from "../../Maths/math.axis";
 import { TransformNode } from "../../Meshes/transformNode";
+import { Tags } from "../../Misc/tags";
 
 declare const XRHand: XRHand;
 
@@ -89,6 +90,10 @@ export interface IWebXRHandTrackingOptions {
             right: string[];
             left: string[];
         };
+        /**
+         * The scene that contains the 3D UI elements. Passing this in turns on near interactions with the index finger tip
+         */
+        sceneForNearInteraction?: Scene;
     };
 }
 
@@ -101,7 +106,7 @@ export const enum HandPart {
      */
     WRIST = "wrist",
     /**
-     * HandPart - The THumb
+     * HandPart - The thumb
      */
     THUMB = "thumb",
     /**
@@ -161,6 +166,7 @@ export class WebXRHand implements IDisposable {
      * @param _handMesh an optional hand mesh. if not provided, ours will be used
      * @param _rigMapping an optional rig mapping for the hand mesh. if not provided, ours will be used
      * @param disableDefaultHandMesh should the default mesh creation be disabled
+     * @param _nearInteractionMesh does a near interaction mesh exist for collision checking
      */
     constructor(
         /** the controller to which the hand correlates */
@@ -169,7 +175,8 @@ export class WebXRHand implements IDisposable {
         public readonly trackedMeshes: AbstractMesh[],
         private _handMesh?: AbstractMesh,
         private _rigMapping?: string[],
-        disableDefaultHandMesh?: boolean
+        disableDefaultHandMesh?: boolean,
+        private _nearInteractionMesh?: Nullable<AbstractMesh>
     ) {
         this.handPartsDefinition = this.generateHandPartsDefinition(xrController.inputSource.hand!);
         this._scene = trackedMeshes[0].getScene();
@@ -262,6 +269,12 @@ export class WebXRHand implements IDisposable {
                 }
             }
         });
+        // Update the invisible fingertip collidable
+        if (this._nearInteractionMesh) {
+            const indexTipIdx = this.handPartsDefinition[HandPart.INDEX][4];
+            const indexTipPose = this.trackedMeshes[indexTipIdx].position;
+            this._nearInteractionMesh.position.set(indexTipPose.x, indexTipPose.y, indexTipPose.z);
+        }
     }
 
     /**
@@ -534,10 +547,17 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
             trackedMeshes.push(newInstance);
         }
 
+        let touchMesh: Nullable<AbstractMesh> = null;
+        if (this.options.jointMeshes?.sceneForNearInteraction) {
+            touchMesh = SphereBuilder.CreateSphere(`${xrController.uniqueId}-handJoint-indexCollidable`, {}, this.options.jointMeshes.sceneForNearInteraction);
+            touchMesh.isVisible = false;
+            Tags.AddTagsTo(touchMesh, "touchEnabled");
+        }
+
         const handedness = xrController.inputSource.handedness === "right" ? "right" : "left";
         const handMesh = this.options.jointMeshes?.handMeshes && this.options.jointMeshes?.handMeshes[handedness];
         const rigMapping = this.options.jointMeshes?.rigMapping && this.options.jointMeshes?.rigMapping[handedness];
-        const webxrHand = new WebXRHand(xrController, trackedMeshes, handMesh, rigMapping, this.options.jointMeshes?.disableDefaultHandMesh);
+        const webxrHand = new WebXRHand(xrController, trackedMeshes, handMesh, rigMapping, this.options.jointMeshes?.disableDefaultHandMesh, touchMesh);
 
         // get two new meshes
         this._hands[xrController.uniqueId] = {
