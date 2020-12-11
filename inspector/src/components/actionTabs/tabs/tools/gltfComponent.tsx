@@ -5,7 +5,7 @@ import { CheckBoxLineComponent } from "../../lines/checkBoxLineComponent";
 import { GlobalState } from "../../../globalState";
 import { FloatLineComponent } from "../../lines/floatLineComponent";
 import { OptionsLineComponent } from "../../lines/optionsLineComponent";
-import { MessageLineComponent } from "../../lines/messageLineComponent";
+import { MessageLineComponent } from "../../../../sharedUiComponents/lines/messageLineComponent";
 import { faCheck, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 import { TextLineComponent } from "../../lines/textLineComponent";
 import { GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode } from "babylonjs-loaders/glTF/index";
