@@ -26,7 +26,7 @@ import { IScreenshotSize } from 'babylonjs/Misc/interfaces/screenshotSize';
 import { NumericInputComponent } from '../../../sharedUiComponents/lines/numericInputComponent';
 import { CheckBoxLineComponent } from '../lines/checkBoxLineComponent';
 import { TextLineComponent } from '../../../sharedUiComponents/lines/textLineComponent';
-import { FileMultipleButtonLineComponent } from '../lines/fileMultipleButtonLineComponent';
+import { FileMultipleButtonLineComponent } from '../../../sharedUiComponents/lines/fileMultipleButtonLineComponent';
 import { OptionsLineComponent } from '../lines/optionsLineComponent';
 import { MessageLineComponent } from '../../../sharedUiComponents/lines/messageLineComponent';
 import { FileButtonLineComponent } from '../../../sharedUiComponents/lines/fileButtonLineComponent';
