@@ -17,7 +17,7 @@ import { TextureLinkLineComponent } from '../../../lines/textureLinkLineComponen
 import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
 import { Sprite } from 'babylonjs/Sprites/sprite';
 import { Tools } from 'babylonjs/Misc/tools';
-import { FileButtonLineComponent } from '../../../lines/fileButtonLineComponent';
+import { FileButtonLineComponent } from '../../../../../sharedUiComponents/lines/fileButtonLineComponent';
 import { Constants } from 'babylonjs/Engines/constants';
 import { OptionsLineComponent } from '../../../lines/optionsLineComponent';
 

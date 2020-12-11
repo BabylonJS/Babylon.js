@@ -15,7 +15,7 @@ import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
 import { TextureLineComponent } from "../../../lines/textureLineComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
-import { FileButtonLineComponent } from "../../../lines/fileButtonLineComponent";
+import { FileButtonLineComponent } from "../../../../../sharedUiComponents/lines/fileButtonLineComponent";
 import { LockObject } from "../lockObject";
 import { ValueLineComponent } from "../../../lines/valueLineComponent";
 import { GlobalState } from "../../../../../components/globalState";
