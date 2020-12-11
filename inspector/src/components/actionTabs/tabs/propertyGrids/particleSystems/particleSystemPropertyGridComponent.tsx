@@ -10,7 +10,7 @@ import { GlobalState } from '../../../../globalState';
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
 import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
 import { FloatLineComponent } from '../../../lines/floatLineComponent';
-import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
+import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
 import { TextureLinkLineComponent } from '../../../lines/textureLinkLineComponent';
 import { OptionsLineComponent } from '../../../lines/optionsLineComponent';
 import { ParticleSystem } from 'babylonjs/Particles/particleSystem';

@@ -22,12 +22,19 @@ import { Measure } from "./measure";
 import { Constants } from 'babylonjs/Engines/constants';
 import { Viewport } from 'babylonjs/Maths/math.viewport';
 import { Color3 } from 'babylonjs/Maths/math.color';
+import { WebRequest } from "babylonjs/Misc/webRequest";
 
 /**
 * Class used to create texture to support 2D GUI elements
 * @see https://doc.babylonjs.com/how_to/gui
 */
 export class AdvancedDynamicTexture extends DynamicTexture {
+    /** Define the Uurl to load snippets */
+    public static SnippetUrl = "https://snippet.babylonjs.com";
+
+    /** Snippet ID if the content was created from the snippet server */
+    public snippetId: string;
+
     private _isDirty = false;
     private _renderObserver: Nullable<Observer<Camera>>;
     private _resizeObserver: Nullable<Observer<Engine>>;
@@ -911,6 +918,39 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      */
     public parseContent(serializedObject: any) {
         this._rootContainer = Control.Parse(serializedObject.root, this) as Container;
+    }
+
+    /**
+     * Recreate the content of the ADT from a snippet saved by the GUI editor
+     * @param snippetId defines the snippet to load
+     * @returns a promise that will resolve on success
+     */
+    public parseFromSnippetAsync(snippetId: string): Promise<void> {
+        if (snippetId === "_BLANK") {
+            return Promise.resolve();
+        }
+
+        return new Promise((resolve, reject) => {
+            var request = new WebRequest();
+            request.addEventListener("readystatechange", () => {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        var snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
+                        let serializationObject = JSON.parse(snippet.gui);
+
+                        this.parseContent(serializationObject);
+                        this.snippetId = snippetId;
+
+                        resolve();
+                    } else {
+                        reject("Unable to load the snippet " + snippetId);
+                    }
+                }
+            });
+
+            request.open("GET", AdvancedDynamicTexture.SnippetUrl + "/" + snippetId.replace(/#/g, "/"));
+            request.send();
+        });
     }
 
     // Statics
