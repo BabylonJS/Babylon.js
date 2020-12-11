@@ -6,7 +6,7 @@ import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { Material } from "babylonjs/Materials/material";
 import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 
-import { TextLineComponent } from "./textLineComponent";
+import { TextLineComponent } from "./../../../sharedUiComponents/lines/textLineComponent";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWrench, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { Texture } from 'babylonjs/Materials/Textures/texture';

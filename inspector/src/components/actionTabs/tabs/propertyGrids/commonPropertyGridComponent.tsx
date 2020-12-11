@@ -6,7 +6,7 @@ import { PropertyChangedEvent } from "../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../lineContainerComponent";
 import { LockObject } from "./lockObject";
 import { GlobalState } from "../../../globalState";
-import { TextLineComponent } from '../../lines/textLineComponent';
+import { TextLineComponent } from '../../../../sharedUiComponents/lines/textLineComponent';
 import { IndentedTextLineComponent } from '../../../../sharedUiComponents/lines/indentedTextLineComponent';
 
 interface ICommonPropertyGridComponentProps {
