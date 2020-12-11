@@ -3455,6 +3455,7 @@ export class WebGPUEngine extends Engine {
             webgpuPipelineContext.uniformBuffer.update();
         }
 
+        // TODO WEBGPU try to optimize this loop / lookup in bindGroupsCache
         let bufferKey = "";
         for (let i = 0; i < webgpuPipelineContext.shaderProcessingContext.uniformBufferNames.length; ++i) {
             const bufferName = webgpuPipelineContext.shaderProcessingContext.uniformBufferNames[i];
@@ -3567,24 +3568,19 @@ export class WebGPUEngine extends Engine {
             renderPass.setIndexBuffer(this._currentIndexBuffer.underlyingResource, this._currentIndexBuffer!.is32Bits ? WebGPUConstants.IndexFormat.Uint32 : WebGPUConstants.IndexFormat.Uint16, 0);
         }
 
-        const effect = this._currentEffect!;
-        const attributes = effect.getAttributesNames();
-        let bufferIdx = 0;
+        const webgpuPipelineContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
+        const attributes = webgpuPipelineContext.shaderProcessingContext.attributeNamesFromEffect;
         for (var index = 0; index < attributes.length; index++) {
-            const order = effect.getAttributeLocation(index);
+            let vertexBuffer = this._currentVertexBuffers![attributes[index]];
+            if (!vertexBuffer) {
+                // In WebGL it's valid to not bind a vertex buffer to an attribute, but it's not valid in WebGPU
+                // So we must bind a dummy buffer when we are not given one for a specific attribute
+                vertexBuffer = this._emptyVertexBuffer;
+            }
 
-            if (order >= 0) {
-                let vertexBuffer = this._currentVertexBuffers![attributes[index]];
-                if (!vertexBuffer) {
-                    // In WebGL it's valid to not bind a vertex buffer to an attribute, but it's not valid in WebGPU
-                    // So we must bind a dummy buffer when we are not given one for a specific attribute
-                    vertexBuffer = this._emptyVertexBuffer;
-                }
-
-                const buffer = vertexBuffer.getBuffer();
-                if (buffer) {
-                    renderPass.setVertexBuffer(bufferIdx++, buffer.underlyingResource, vertexBuffer.byteOffset);
-                }
+            const buffer = vertexBuffer.getBuffer();
+            if (buffer) {
+                renderPass.setVertexBuffer(index, buffer.underlyingResource, vertexBuffer.byteOffset);
             }
         }
     }
