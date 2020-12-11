@@ -4,7 +4,7 @@ import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../../../../components/propertyChangedEvent";
 import { Animation } from "babylonjs/Animations/animation";
-import { IconButtonLineComponent } from "../../../lines/iconButtonLineComponent";
+import { IconButtonLineComponent } from "../../../../../sharedUiComponents/lines/iconButtonLineComponent";
 import { Nullable } from "babylonjs/types";
 
 interface IAnimationListTreeProps {

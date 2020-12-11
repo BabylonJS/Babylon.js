@@ -30,7 +30,7 @@ import { FileMultipleButtonLineComponent } from '../lines/fileMultipleButtonLine
 import { OptionsLineComponent } from '../lines/optionsLineComponent';
 import { MessageLineComponent } from '../../../sharedUiComponents/lines/messageLineComponent';
 import { FileButtonLineComponent } from '../../../sharedUiComponents/lines/fileButtonLineComponent';
-import { IndentedTextLineComponent } from '../lines/indentedTextLineComponent';
+import { IndentedTextLineComponent } from '../../../sharedUiComponents/lines/indentedTextLineComponent';
 
 const GIF = require('gif.js.optimized')
 
