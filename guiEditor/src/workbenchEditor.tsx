@@ -37,8 +37,8 @@ interface IInternalPreviewAreaOptions extends IInspectorOptions {
     embedHostWidth?: string;
 }
 
-export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditorState> {
-    private _graphCanvas: WorkbenchComponent;
+export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEditorState> {
+    private _workbenchCanvas: WorkbenchComponent;
 
     private _startX: number;
     private _moveInProgress: boolean;
@@ -62,13 +62,13 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
      */
     public createNodeFromObject(block: BABYLON.GUI.Control, recursion = true) {
         if (this._blocks.indexOf(block) !== -1) {        
-            return this._graphCanvas.nodes.filter(n => n.guiNode === block)[0];
+            return this._workbenchCanvas.nodes.filter(n => n.guiNode === block)[0];
         }
 
         this._blocks.push(block);
 
         // Graph
-        const node = null;// this._graphCanvas.appendBlock(block);
+        const node = null;// this._workbenchCanvas.appendBlock(block);
 
 
         return node;
@@ -83,7 +83,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
     componentDidMount() {
         if (this.props.globalState.hostDocument) {
-            this._graphCanvas = (this.refs["graphCanvas"] as WorkbenchComponent);
+            this._workbenchCanvas = (this.refs["graphCanvas"] as WorkbenchComponent);
            // this._previewManager = new PreviewManager(this.props.globalState.hostDocument.getElementById("preview-canvas") as HTMLCanvasElement, this.props.globalState);
         }
 
@@ -143,12 +143,12 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         });
 
         /*this.props.globalState.onGetNodeFromBlock = (block) => {
-             return this._graphCanvas.findNodeFromBlock(block);
+             return this._workbenchCanvas.findNodeFromBlock(block);
         }*/
 
         this.props.globalState.hostDocument!.addEventListener("keydown", evt => {
             if ((evt.keyCode === 46 || evt.keyCode === 8) && !this.props.globalState.blockKeyboardEvents) { // Delete                
-                let selectedItems = this._graphCanvas.selectedGuiNodes;
+                let selectedItems = this._workbenchCanvas.selectedGuiNodes;
 
                 for (var selectedItem of selectedItems) {
                     selectedItem.dispose();
@@ -173,7 +173,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
             if (evt.key === "c") { // Copy
               
-                let selectedItems = this._graphCanvas.selectedNodes;
+                let selectedItems = this._workbenchCanvas.selectedNodes;
                 if (!selectedItems.length) {
                     return;
                 }
@@ -186,8 +186,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
             } else if (evt.key === "v") { // Paste
                 //const rootElement = this.props.globalState.hostDocument!.querySelector(".diagram-container") as HTMLDivElement;
-                //const zoomLevel = this._graphCanvas.zoom;
-                //let currentY = (this._mouseLocationY - rootElement.offsetTop - this._graphCanvas.y - 20) / zoomLevel;
+                //const zoomLevel = this._workbenchCanvas.zoom;
+                //let currentY = (this._mouseLocationY - rootElement.offsetTop - this._workbenchCanvas.y - 20) / zoomLevel;
 
             }
 
@@ -248,7 +248,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     }
 
     zoomToFit() {
-        this._graphCanvas.zoomToFit();
+        this._workbenchCanvas.zoomToFit();
     }
 
     buildMaterial() {
@@ -272,7 +272,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
     build() {        
         let editorData = this.props.globalState.nodeMaterial.editorData;        
-        this._graphCanvas._isLoading = true; // Will help loading large graphes
+        this._workbenchCanvas._isLoading = true; // Will help loading large graphes
 
         if (editorData instanceof Array) {
             editorData = {
@@ -282,7 +282,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         // setup the diagram model
         this._blocks = [];
-        this._graphCanvas.reset();
+        this._workbenchCanvas.reset();
 
         // Load graph of nodes from the material
         if (this.props.globalState.nodeMaterial) {
@@ -317,15 +317,15 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
     reOrganize(editorData: Nullable<IEditorData> = null, isImportingAFrame = false) {
         this.showWaitScreen();
-        this._graphCanvas._isLoading = true; // Will help loading large graphes
+        this._workbenchCanvas._isLoading = true; // Will help loading large graphes
 
         setTimeout(() => {
             if (!editorData || !editorData.locations) {
-                this._graphCanvas.distributeGraph();
+                this._workbenchCanvas.distributeGraph();
             } else {
                 // Locations
                 for (var location of editorData.locations) {
-                    for (var node of this._graphCanvas.nodes) {
+                    for (var node of this._workbenchCanvas.nodes) {
                         if (node.guiNode && node.guiNode.uniqueId === location.blockId) {
                             node.x = location.x;
                             node.y = location.y;
@@ -336,12 +336,12 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 }
                 
                 if (!isImportingAFrame){
-                    this._graphCanvas.processEditorData(editorData);
+                    this._workbenchCanvas.processEditorData(editorData);
                 }
             }
 
-            this._graphCanvas._isLoading = false;
-            for (var node of this._graphCanvas.nodes) {
+            this._workbenchCanvas._isLoading = false;
+            for (var node of this._workbenchCanvas.nodes) {
             }
             this.hideWaitScreen();
         });
@@ -393,10 +393,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         //guiElement.background = "#138016FF";
 
-        let newGuiNode = this._graphCanvas.appendBlock(guiElement);
+        let newGuiNode = this._workbenchCanvas.appendBlock(guiElement);
         
-        /*let x = event.clientX;// - event.currentTarget.offsetLeft - this._graphCanvas.x;
-        let y = event.clientY;// - event.currentTarget.offsetTop - this._graphCanvas.y - 20; 
+        /*let x = event.clientX;// - event.currentTarget.offsetLeft - this._workbenchCanvas.x;
+        let y = event.clientY;// - event.currentTarget.offsetTop - this._workbenchCanvas.y - 20; 
 
         newGuiNode.x += (x - newGuiNode.x);
         newGuiNode.y += y - newGuiNode.y;
