@@ -144,6 +144,18 @@ export class WebGPUPipelineContext implements IPipelineContext {
 
         // Build the uniform layout for the left over uniforms.
         this.buildUniformLayout();
+
+        let attributeNamesFromEffect: string[] = [];
+        let attributeLocationsFromEffect: number[] = [];
+        for (index = 0; index < attributesNames.length; index++) {
+            const location = attributes[index];
+            if (location >= 0) {
+                attributeNamesFromEffect.push(attributesNames[index]);
+                attributeLocationsFromEffect.push(location);
+            }
+        }
+        this.shaderProcessingContext.attributeNamesFromEffect = attributeNamesFromEffect;
+        this.shaderProcessingContext.attributeLocationsFromEffect = attributeLocationsFromEffect;
     }
 
     /** @hidden */

@@ -740,35 +740,34 @@ export class WebGPUCacheRenderPipeline {
         const currStateLen = this._states.length;
         let newNumStates = StatePosition.VertexState;
 
-        const attributes = effect.getAttributesNames();
+        const webgpuPipelineContext = effect._pipelineContext as WebGPUPipelineContext;
+        const attributes = webgpuPipelineContext.shaderProcessingContext.attributeNamesFromEffect;
+        const locations = webgpuPipelineContext.shaderProcessingContext.attributeLocationsFromEffect;
         for (var index = 0; index < attributes.length; index++) {
-            const location = effect.getAttributeLocation(index);
-
-            if (location >= 0) {
-                let  vertexBuffer = this._vertexBuffers![attributes[index]];
-                if (!vertexBuffer) {
-                    // In WebGL it's valid to not bind a vertex buffer to an attribute, but it's not valid in WebGPU
-                    // So we must bind a dummy buffer when we are not given one for a specific attribute
-                    vertexBuffer = this._emptyVertexBuffer;
-                }
-
-                const type = vertexBuffer.type - 5120;
-                const normalized = vertexBuffer.normalized ? 1 : 0;
-                const size = vertexBuffer.getSize();
-                const stepMode = vertexBuffer.getIsInstanced() ? 1 : 0;
-                const stride = vertexBuffer.byteStride;
-
-                const vid =
-                    ((type << 0) +
-                    (normalized << 3) +
-                    (size << 4) +
-                    (stepMode << 6) +
-                    (location << 7) +
-                    (stride << 12)).toString();
-
-                this._isDirty = this._isDirty || this._states[newNumStates] !== vid;
-                this._states[newNumStates++] = vid;
+            const location = locations[index];
+            let  vertexBuffer = this._vertexBuffers![attributes[index]];
+            if (!vertexBuffer) {
+                // In WebGL it's valid to not bind a vertex buffer to an attribute, but it's not valid in WebGPU
+                // So we must bind a dummy buffer when we are not given one for a specific attribute
+                vertexBuffer = this._emptyVertexBuffer;
             }
+
+            const type = vertexBuffer.type - 5120;
+            const normalized = vertexBuffer.normalized ? 1 : 0;
+            const size = vertexBuffer.getSize();
+            const stepMode = vertexBuffer.getIsInstanced() ? 1 : 0;
+            const stride = vertexBuffer.byteStride;
+
+            const vid =
+                ((type << 0) +
+                (normalized << 3) +
+                (size << 4) +
+                (stepMode << 6) +
+                (location << 7) +
+                (stride << 12)).toString();
+
+            this._isDirty = this._isDirty || this._states[newNumStates] !== vid;
+            this._states[newNumStates++] = vid;
         }
 
         this._states.length = newNumStates;
@@ -846,33 +845,32 @@ export class WebGPUCacheRenderPipeline {
 
     private _getVertexInputDescriptor(effect: Effect, topology: GPUPrimitiveTopology): GPUVertexStateDescriptor {
         const descriptors: GPUVertexBufferLayoutDescriptor[] = [];
-        const attributes = effect.getAttributesNames();
+        const webgpuPipelineContext = effect._pipelineContext as WebGPUPipelineContext;
+        const attributes = webgpuPipelineContext.shaderProcessingContext.attributeNamesFromEffect;
+        const locations = webgpuPipelineContext.shaderProcessingContext.attributeLocationsFromEffect;
         for (var index = 0; index < attributes.length; index++) {
-            const location = effect.getAttributeLocation(index);
-
-            if (location >= 0) {
-                let  vertexBuffer = this._vertexBuffers![attributes[index]];
-                if (!vertexBuffer) {
-                    // In WebGL it's valid to not bind a vertex buffer to an attribute, but it's not valid in WebGPU
-                    // So we must bind a dummy buffer when we are not given one for a specific attribute
-                    vertexBuffer = this._emptyVertexBuffer;
-                }
-
-                const attributeDescriptor: GPUVertexAttributeDescriptor = {
-                    shaderLocation: location,
-                    offset: 0, // not available in WebGL
-                    format: WebGPUCacheRenderPipeline._GetVertexInputDescriptorFormat(vertexBuffer),
-                };
-
-                // TODO WEBGPU. Factorize the one with the same underlying buffer.
-                const vertexBufferDescriptor: GPUVertexBufferLayoutDescriptor = {
-                    arrayStride: vertexBuffer.byteStride,
-                    stepMode: vertexBuffer.getIsInstanced() ? WebGPUConstants.InputStepMode.Instance : WebGPUConstants.InputStepMode.Vertex,
-                    attributes: [attributeDescriptor]
-                };
-
-               descriptors.push(vertexBufferDescriptor);
+            const location = locations[index];
+            let  vertexBuffer = this._vertexBuffers![attributes[index]];
+            if (!vertexBuffer) {
+                // In WebGL it's valid to not bind a vertex buffer to an attribute, but it's not valid in WebGPU
+                // So we must bind a dummy buffer when we are not given one for a specific attribute
+                vertexBuffer = this._emptyVertexBuffer;
             }
+
+            const attributeDescriptor: GPUVertexAttributeDescriptor = {
+                shaderLocation: location,
+                offset: 0, // not available in WebGL
+                format: WebGPUCacheRenderPipeline._GetVertexInputDescriptorFormat(vertexBuffer),
+            };
+
+            // TODO WEBGPU. Factorize the one with the same underlying buffer.
+            const vertexBufferDescriptor: GPUVertexBufferLayoutDescriptor = {
+                arrayStride: vertexBuffer.byteStride,
+                stepMode: vertexBuffer.getIsInstanced() ? WebGPUConstants.InputStepMode.Instance : WebGPUConstants.InputStepMode.Vertex,
+                attributes: [attributeDescriptor]
+            };
+
+            descriptors.push(vertexBufferDescriptor);
         }
 
         const inputStateDescriptor: GPUVertexStateDescriptor = {
