@@ -3,7 +3,7 @@ import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../../../../components/propertyChangedEvent";
 import { Animation } from "babylonjs/Animations/animation";
 import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/buttonLineComponent";
-import { FileButtonLineComponent } from "../../../lines/fileButtonLineComponent";
+import { FileButtonLineComponent } from "../../../../../sharedUiComponents/lines/fileButtonLineComponent";
 import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
 import { LockObject } from "../lockObject";
 import { Tools } from "babylonjs/Misc/tools";
