@@ -9,7 +9,7 @@ import { SceneInstrumentation } from "babylonjs/Instrumentation/sceneInstrumenta
 import { Engine } from "babylonjs/Engines/engine";
 
 import { ValueLineComponent } from "../lines/valueLineComponent";
-import { BooleanLineComponent } from "../../../sharedUiComponents/lines/BooleanLineComponent";
+import { BooleanLineComponent } from "../../../sharedUiComponents/lines/booleanLineComponent";
 
 export class StatisticsTabComponent extends PaneComponent {
     private _sceneInstrumentation: Nullable<SceneInstrumentation>;
