@@ -800,7 +800,8 @@ export class NativeEngine extends Engine {
             instancedArrays: false,
             canUseTimestampForTimerQuery: false,
             blendMinMax: false,
-            maxMSAASamples: 1
+            maxMSAASamples: 1,
+            canUseGLInstanceID: true,
         };
 
         this._features = {
@@ -1634,14 +1635,15 @@ export class NativeEngine extends Engine {
             throw new Error("Loading textures from IInternalTextureLoader not yet implemented.");
         } else {
             const onload = (data: ArrayBufferView) => {
-                const webGLTexture = texture._hardwareTexture?.underlyingResource;
-                if (!webGLTexture) {
+                if (!texture._hardwareTexture) {
                     if (scene) {
                         scene._removePendingData(texture);
                     }
 
                     return;
                 }
+
+                const webGLTexture = texture._hardwareTexture.underlyingResource;
 
                 this._native.loadTexture(webGLTexture, data, !noMipmap, invertY, () => {
                     texture.baseWidth = this._native.getTextureWidth(webGLTexture);
@@ -1903,9 +1905,9 @@ export class NativeEngine extends Engine {
     }
 
     public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
-        if (texture._hardwareTexture?.underlyingResource ?? false) {
+        if (texture._hardwareTexture) {
             var filter = this._getNativeSamplingMode(samplingMode);
-            this._native.setTextureSampling(texture._hardwareTexture?.underlyingResource, filter);
+            this._native.setTextureSampling(texture._hardwareTexture.underlyingResource, filter);
         }
         texture.samplingMode = samplingMode;
     }
@@ -2013,18 +2015,18 @@ export class NativeEngine extends Engine {
         this._activeChannel = channel;
 
         if (!internalTexture ||
-            !internalTexture._hardwareTexture?.underlyingResource) {
+            !internalTexture._hardwareTexture) {
             return false;
         }
 
         this._native.setTextureWrapMode(
-            internalTexture._hardwareTexture?.underlyingResource,
+            internalTexture._hardwareTexture.underlyingResource,
             this._getAddressMode(texture.wrapU),
             this._getAddressMode(texture.wrapV),
             this._getAddressMode(texture.wrapR));
         this._updateAnisotropicLevel(texture);
 
-        this._native.setTexture(uniform, internalTexture._hardwareTexture?.underlyingResource);
+        this._native.setTexture(uniform, internalTexture._hardwareTexture.underlyingResource);
 
         return true;
     }
@@ -2035,12 +2037,12 @@ export class NativeEngine extends Engine {
         var internalTexture = texture.getInternalTexture();
         var value = texture.anisotropicFilteringLevel;
 
-        if (!internalTexture || !internalTexture._hardwareTexture?.underlyingResource) {
+        if (!internalTexture || !internalTexture._hardwareTexture) {
             return;
         }
 
         if (internalTexture._cachedAnisotropicFilteringLevel !== value) {
-            this._native.setTextureAnisotropicLevel(internalTexture._hardwareTexture?.underlyingResource, value);
+            this._native.setTextureAnisotropicLevel(internalTexture._hardwareTexture.underlyingResource, value);
             internalTexture._cachedAnisotropicFilteringLevel = value;
         }
     }

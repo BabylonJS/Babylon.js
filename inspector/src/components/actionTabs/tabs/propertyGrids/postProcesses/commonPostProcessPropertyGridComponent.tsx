@@ -5,13 +5,13 @@ import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
-import { TextLineComponent } from "../../../lines/textLineComponent";
+import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
 import { LockObject } from "../lockObject";
 import { PostProcess } from 'babylonjs/PostProcesses/postProcess';
 import { Color3LineComponent } from '../../../lines/color3LineComponent';
 import { SliderLineComponent } from '../../../lines/sliderLineComponent';
 import { GlobalState } from '../../../../globalState';
-import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
+import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
 import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
 
 interface ICommonPostProcessPropertyGridComponentProps {

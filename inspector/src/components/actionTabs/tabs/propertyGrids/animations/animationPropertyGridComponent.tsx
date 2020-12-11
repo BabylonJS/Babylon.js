@@ -4,7 +4,7 @@ import { Observable, Observer } from "babylonjs/Misc/observable";
 import { Scene } from "babylonjs/scene";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { ButtonLineComponent } from "../../../lines/buttonLineComponent";
+import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/buttonLineComponent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { LockObject } from "../lockObject";
@@ -16,7 +16,7 @@ import { AnimationRange } from "babylonjs/Animations/animationRange";
 import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
 import { Nullable } from "babylonjs/types";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
-import { TextLineComponent } from "../../../lines/textLineComponent";
+import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
 import { IAnimatable } from "babylonjs/Animations/animatable.interface";
 // import { AnimationCurveEditorComponent } from "../animations/animationCurveEditorComponent";
 // import { PopupComponent } from "../../../../popupComponent";

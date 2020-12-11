@@ -360,7 +360,7 @@ export class TextureCanvasManager {
             this._target._texture?.updateSize(this._size.width, this._size.height);
             if (this._editing3D) {
                 const bufferView = await this._3DEngine.readPixels(0, 0, this._size.width, this._size.height);
-                this._imageData = new Uint8Array(bufferView.buffer);
+                this._imageData = new Uint8Array(bufferView.buffer, 0, bufferView.byteLength);
             } else {
                 this._imageData = this._2DCanvas.getContext('2d')!.getImageData(0, 0, this._size.width, this._size.height).data;
             }

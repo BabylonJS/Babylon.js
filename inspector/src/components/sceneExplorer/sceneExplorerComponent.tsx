@@ -333,26 +333,34 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             }
         });
 
+        const getUniqueName = (name: string) : string => {
+            let idSubscript = 1;
+            while (scene.getMaterialByID(name)) {
+                name = name + " " + idSubscript++;
+            }
+            return name;
+        };
+
         // Materials
         let materialsContextMenus: { label: string, action: () => void }[] = [];
         materialsContextMenus.push({
             label: "Add new standard material",
             action: () => {
-                let newStdMaterial = new StandardMaterial("Standard material", scene);
+                let newStdMaterial = new StandardMaterial(getUniqueName("Standard material"), scene);
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newStdMaterial);
             }
         });
         materialsContextMenus.push({
             label: "Add new PBR material",
             action: () => {
-                let newPBRMaterial = new PBRMaterial("PBR material", scene);
+                let newPBRMaterial = new PBRMaterial(getUniqueName("PBR material"), scene);
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newPBRMaterial);
             }
         });
         materialsContextMenus.push({
             label: "Add new node material",
             action: () => {
-                let newNodeMaterial = new NodeMaterial("node material", scene);
+                let newNodeMaterial = new NodeMaterial(getUniqueName("node material"), scene);
                 newNodeMaterial.setToDefault();
                 newNodeMaterial.build();
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newNodeMaterial);

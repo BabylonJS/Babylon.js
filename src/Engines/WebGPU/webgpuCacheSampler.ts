@@ -54,8 +54,11 @@ export class WebGPUCacheSampler {
     private _samplers: { [hash: number]: GPUSampler } = {};
     private _device: GPUDevice;
 
+    public disabled: boolean;
+
     constructor(device: GPUDevice) {
         this._device = device;
+        this.disabled = false;
     }
 
     private static _GetSamplerHashCode(texture: InternalTexture): number {
@@ -232,6 +235,10 @@ export class WebGPUCacheSampler {
     }
 
     public getSampler(internalTexture: InternalTexture, bypassCache = false): GPUSampler {
+        if (this.disabled) {
+            return this._device.createSampler(WebGPUCacheSampler._GetSamplerDescriptor(internalTexture));
+        }
+
         const hash = bypassCache ? 0 : WebGPUCacheSampler._GetSamplerHashCode(internalTexture);
 
         let sampler = bypassCache ? undefined : this._samplers[hash];

@@ -441,6 +441,20 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
             fragmentCode = ubo + fragmentCode;
         }
 
+        // collect all the buffer names for faster processing later in _getBindGroupsToRender
+        for (let i = 0; i < webgpuProcessingContext.orderedUBOsAndSamplers.length; i++) {
+            const setDefinition = webgpuProcessingContext.orderedUBOsAndSamplers[i];
+            if (setDefinition === undefined) {
+                continue;
+            }
+            for (let j = 0; j < setDefinition.length; j++) {
+                const bindingDefinition = webgpuProcessingContext.orderedUBOsAndSamplers[i][j];
+                if (bindingDefinition && !bindingDefinition.isSampler && !bindingDefinition.isTexture) {
+                    webgpuProcessingContext.uniformBufferNames.push(bindingDefinition.name);
+                }
+            }
+        }
+
         this._preProcessors = null as any;
 
         return { vertexCode, fragmentCode };

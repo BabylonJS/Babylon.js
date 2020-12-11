@@ -10,10 +10,36 @@ declare module BABYLON {
         static get Copyright(): string;
         /** Pauses the main page render loop */
         static PauseRenderLoop: boolean;
-        /** Register handler that is triggered when engine has loaded a scene */
-        static OnLoadCompleteObservable: Observable<Engine>;
-        /** Register handler that is triggered when engine has been resized */
+        /** Register handler that is triggered when the fonts have been loaded (engine.html) */
+        static OnFontsReadyObservable: Observable<Engine>;
+        /** Register handler that is triggered when then engine has been resized (engine.html) */
         static OnEngineResizeObservable: Observable<Engine>;
+        /** Register handler that is triggered when the scene has been loaded (engine.html) */
+        static OnLoadCompleteObservable: Observable<Engine>;
+        /** Registers an handler for window state show scene loader function (engine.html) */
+        static RegisterOnShowSceneLoader(func: (show: boolean) => void): void;
+        /** Registers an handler for window socket disconnect event (engine.html) */
+        static RegisterOnUpdateSceneLoader(func: (status: string, details: string, state: number) => void): void;
+        /** Registers an handler for window state show scene loader function (engine.html) */
+        static RegisterOnTickSceneLoader(func: (percent: number) => void): void;
+        /** Loads a babylon scene file using the page loader window hooks (engine.html) */
+        static LoadSceneFile(sceneFile: string, queryString?: string): void;
+        /** Shows the top page scene loader (engine.html) */
+        static ShowParentLoader(show: boolean): void;
+        /** Get the system render quality setting. */
+        static GetRenderQuality(): BABYLON.RenderQuality;
+        /** Set the system render quality setting. */
+        static SetRenderQuality(quality: BABYLON.RenderQuality): void;
+        /** Get an item from top window local storage. */
+        static GetLocalStorageItem(key: string): string;
+        /** Set an item to top window local storage. */
+        static SetLocalStorageItem(key: string, value: string): void;
+        /** Store data object in the window state cache */
+        static SetWindowState(name: string, data: any): void;
+        /** Retrieve data object from the window state cache */
+        static GetWindowState<T>(name: string): T;
+        /** Post a safe message to top or local window */
+        static PostWindowMessage(message: any, targetOrigin: string, transfer?: Transferable[]): void;
         private static SceneParsingEnabled;
         /** Enable scene loader parsing plugin */
         static EnableSceneParsing(enabled: boolean): void;
@@ -24,6 +50,8 @@ declare module BABYLON {
         static GetFullscreenUI(scene: BABYLON.Scene): BABYLON.GUI.AdvancedDynamicTexture;
         /** Get the scene default ambient skybox mesh */
         static GetAmbientSkybox(scene: BABYLON.Scene): BABYLON.AbstractMesh;
+        /** Get the scene default intenisty factor */
+        static GetIntensityFactor(): number;
         /** Are scene manager debugging services available. */
         static IsDebugMode(): boolean;
         /** Send log data directly to the console. */
@@ -72,10 +100,10 @@ declare module BABYLON {
         static IsIE11(): boolean;
         /** Is mobile web platform agent. */
         static IsMobile(): boolean;
-        /** Are playstation platform services available. */
+        /** Are playstation services available. */
         static IsPlaystation(): boolean;
-        /** Are xbox one platform services available. */
-        static IsXboxOne(): boolean;
+        /** Are xbox console services available. */
+        static IsXboxConsole(): boolean;
         /** Are xbox live platform services available. */
         static IsXboxLive(): boolean;
         /** Get the current time in seconds */
@@ -116,6 +144,10 @@ declare module BABYLON {
         static GetRootUrl(scene: BABYLON.Scene): string;
         /** Sets the root url the last scene properties was loaded from */
         static SetRootUrl(scene: BABYLON.Scene, url: string): void;
+        /** Get the file name the last scene properties was loaded from */
+        static GetSceneFile(scene: BABYLON.Scene): string;
+        /** Sets the file name the last scene properties was loaded from */
+        static SetSceneFile(scene: BABYLON.Scene, fileName: string): void;
         /** Get the right hand loader flag the last scene properties was loaded from */
         static GetRightHanded(scene: BABYLON.Scene): boolean;
         /** Sets the right hand loader flag the last scene properties was loaded from */
@@ -126,34 +158,18 @@ declare module BABYLON {
         static ShowPageErrorMessage(message: string, title?: string, timeout?: number): void;
         /** Quit the Windows Runtime host application. */
         static QuitWindowsApplication(): void;
-        /** Get the system render quality setting. */
-        static GetRenderQuality(): BABYLON.RenderQuality;
-        /** Set the system render quality setting. */
-        static SetRenderQuality(quality: BABYLON.RenderQuality): void;
-        /** Store data object in the window state cache */
-        static SetWindowState(name: string, data: any): void;
-        /** Retrieve data object from the window state cache */
-        static GetWindowState<T>(name: string): T;
-        /** Post a safe message to top or local window */
-        static PostWindowMessage(message: any, targetOrigin: string, transfer?: Transferable[]): void;
         /** Loads a file as text (IFileRequest) */
         static LoadTextFile(url: string, onSuccess: (data: string) => void, onProgress?: (data: any) => void, onError?: (request?: WebRequest, exception?: any) => void): BABYLON.IFileRequest;
         /** Load a text based file */
         static LoadTextFileAsync(url: string): Promise<string>;
-        /** Loads a babylon scene file using the page loader window hooks */
-        static LoadSceneFile(sceneFile: string, queryString?: string): void;
-        /** Shows the top page scene loader. */
-        static ShowParentLoader(show: boolean): void;
+        /** Post data to server (XmlHttpRequest) */
+        static PostDataToServer(url: string, data: string | Document | Blob | ArrayBufferView | ArrayBuffer | FormData | URLSearchParams | ReadableStream<Uint8Array>, contentType?: string, onSuccess?: (status: int) => void, onFailure?: (reason: any) => void): XMLHttpRequest;
+        /** Post data to server asynchronously */
+        static PostDataToServerAsync(url: string, data: string | Document | Blob | ArrayBufferView | ArrayBuffer | FormData | URLSearchParams | ReadableStream<Uint8Array>, contentType?: string): Promise<number>;
         /** Shows the default page scene loader. */
         static ShowDefaultLoader(show: boolean): void;
         /** Update the default page scene loader status. */
         static UpdateLoaderStatus(status: string, details: string, state: number): void;
-        /** Registers an handler for window state show scene loader function */
-        static RegisterOnShowSceneLoader(func: (show: boolean) => void): void;
-        /** Registers an handler for window socket disconnect event */
-        static RegisterOnUpdateSceneLoader(func: (status: string, details: string, state: number) => void): void;
-        /** Registers an handler for window state show scene loader function */
-        static RegisterOnTickSceneLoader(func: (percent: number) => void): void;
         /** Gets all the created engine instances */
         static GetEngineInstances(): BABYLON.Engine[];
         /** Get the last create engine instance */
@@ -192,6 +208,8 @@ declare module BABYLON {
         static RegisterClickAction(scene: BABYLON.Scene, mesh: BABYLON.AbstractMesh, func: () => void): BABYLON.IAction;
         /** Unregisters an on pick trigger click action */
         static UnregisterClickAction(mesh: BABYLON.AbstractMesh, action: BABYLON.IAction): boolean;
+        /** Starts a targeted float animation for tweening.  */
+        static StartTweenAnimation(scene: BABYLON.Scene, name: string, targetObject: any, targetProperty: string, startValue: number, endValue: number, speedRatio?: number, frameRate?: number, loopMode?: number, easingFunction?: BABYLON.EasingFunction, onAnimationComplete?: () => void): BABYLON.Animatable;
         /** Get first material with name. (Uses starts with text searching) */
         static GetMaterialWithName(scene: BABYLON.Scene, name: string): BABYLON.Material;
         /** Get all materials with name. (Uses starts with text searching) */
@@ -205,7 +223,7 @@ declare module BABYLON {
         /** Creates an instance of the specified mesh asset into the scene. (Mesh Instance) */
         static CreateInstancedMesh(container: BABYLON.AssetContainer, meshName: string, instanceName: string): BABYLON.InstancedMesh;
         /** Registers a script componment with the scene manager. */
-        static RegisterScriptComponent(instance: BABYLON.ScriptComponent, validate?: boolean): void;
+        static RegisterScriptComponent(instance: BABYLON.ScriptComponent, alias: string, validate?: boolean): void;
         /** Destroys a script component instance. */
         static DestroyScriptComponent(instance: BABYLON.ScriptComponent): void;
         /** Finds a script component on the transform with the specfied class name. */
@@ -308,7 +326,9 @@ declare module BABYLON {
         /** Save the recast navigation mesh binary data. (Navigation Helper) */
         static SaveNavigationMesh(): Uint8Array;
         /** Computes a recast navigation path. (Navigation Helper) */
-        static ComputeNavigationPath(start: BABYLON.Vector3, end: BABYLON.Vector3): BABYLON.Vector3[];
+        static ComputeNavigationPath(start: BABYLON.Vector3, end: BABYLON.Vector3, closetPoint?: boolean): BABYLON.Vector3[];
+        /** Animate movement along a navigation path. (Navigation Helper) */
+        static MoveAlongNavigationPath(scene: BABYLON.Scene, agent: BABYLON.TransformNode, path: BABYLON.Vector3[], speed?: number, easing?: BABYLON.EasingFunction, callback?: () => void): BABYLON.Animation;
         /** Global gamepad manager */
         static GamepadManager: BABYLON.GamepadManager;
         /** Global gamepad connect event handler */
@@ -588,40 +608,6 @@ declare module BABYLON {
     }
 }
 
-declare module BABYLON {
-    /**
-     * Babylon windows platform pro class
-     * @class WindowsPlatform - All rights reserved (c) 2020 Mackey Kinard
-     */
-    class WindowsPlatform {
-        /** Is xbox live user signed in if platform services enabled. */
-        static IsXboxLiveUserSignedIn(systemUser?: Windows.System.User, player?: BABYLON.PlayerNumber): boolean;
-        /** Validated sign in xbox live user if platform services available. */
-        static XboxLiveUserSignIn(player?: BABYLON.PlayerNumber, oncomplete?: (result: Microsoft.Xbox.Services.System.SignInResult) => void, onerror?: (error: any) => void, onprogress?: (progress: any) => void): void;
-        /** Silent sign in xbox live user if platform services available. */
-        static XboxLiveUserSilentSignIn(player?: BABYLON.PlayerNumber, oncomplete?: (result: Microsoft.Xbox.Services.System.SignInResult) => void, onerror?: (error: any) => void, onprogress?: (progress: any) => void): Windows.Foundation.Projections.Promise<void>;
-        /** Dialog sign in xbox live user if platform services available. */
-        static XboxLiveUserDialogSignIn(player?: BABYLON.PlayerNumber, oncomplete?: (result: Microsoft.Xbox.Services.System.SignInResult) => void, onerror?: (error: any) => void, onprogress?: (progress: any) => void): Windows.Foundation.Projections.Promise<void>;
-        /** Loads a xbox live user profile if platform services available. */
-        static LoadXboxLiveUserProfile(player?: BABYLON.PlayerNumber, oncomplete?: (result: Microsoft.Xbox.Services.Social.XboxUserProfile) => void, onerror?: (error: any) => void, onprogress?: (progress: any) => void): Windows.Foundation.Projections.Promise<void>;
-        /** Get xbox live user if platform services available. */
-        static GetXboxLiveUser(player?: BABYLON.PlayerNumber): Microsoft.Xbox.Services.System.XboxLiveUser;
-        /** Get xbox live user if platform services available. */
-        static GetXboxLiveSystemUser(systemUser: Windows.System.User, player?: BABYLON.PlayerNumber): Microsoft.Xbox.Services.System.XboxLiveUser;
-        /** Get xbox live user context if platform services available. */
-        static GetXboxLiveUserContext(player?: BABYLON.PlayerNumber): Microsoft.Xbox.Services.XboxLiveContext;
-        /** Resets xbox live user context if platform services available. */
-        static ResetXboxLiveUserContext(player?: BABYLON.PlayerNumber): void;
-        /** Get xbox live context property if platform services available. */
-        static GetXboxLiveContextProperty(name: any): any;
-        /** Get xbox live context property if platform services available. */
-        static SetXboxLiveContextProperty(name: any, property: any): void;
-        /** Resets xbox live property context bag if platform services available. */
-        static ResetXboxLivePropertyContexts(): void;
-        /** Sets the Xbox User Sign Out Complete Handler */
-        static SetXboxLiveSignOutHandler(handler?: (result: Microsoft.Xbox.Services.System.SignOutCompletedEventArgs) => void): void;
-    }
-}
 /**
  * RequestAnimationFrame() Original Shim By: Paul Irish (Internal use only)
  * http://paulirish.com/2011/requestanimationframe-for-smart-animating/
@@ -643,8 +629,8 @@ declare module BABYLON {
         private _awoken;
         private _started;
         private _scene;
-        private _classname;
         private _transform;
+        private _registeredClassname;
         /** Gets the current scene object */
         get scene(): BABYLON.Scene;
         /** Gets the transform node entity */
@@ -654,7 +640,7 @@ declare module BABYLON {
         protected setProperty(name: string, propertyValue: any): void;
         /** Gets the script component property bag value */
         protected getProperty<T>(name: string, defaultValue?: T): T;
-        /** Gets the script component class name */
+        /** Gets the registered script component class name */
         getClassName(): string;
         /** Get the current time in seconds */
         getTime(): number;
@@ -1375,6 +1361,7 @@ declare module BABYLON {
         static HasOwnProperty(object: any, property: string): boolean;
         static GetFilenameFromUrl(url: string): string;
         static GetUrlParameter(key: string): string;
+        static CreateFontFace(scene: BABYLON.Scene, family: string, asset: BABYLON.IUnityFontAsset, descriptors?: FontFaceDescriptors, oncomplete?: (fontFace: FontFace) => void): FontFace;
         static CreateFontFaceElement(scene: BABYLON.Scene, family: string, asset: BABYLON.IUnityFontAsset, options?: string): HTMLStyleElement;
         /** TODO */
         static PrintToScreen(text: string, color?: string): void;
@@ -1490,6 +1477,10 @@ declare module BABYLON {
         static SampleAnimationQuaternion(animation: BABYLON.Animation, frame: number): BABYLON.Quaternion;
         /** Set the passed matrix "result" as the sampled key frame value for the specfied animation track. */
         static SampleAnimationMatrix(animation: BABYLON.Animation, frame: number): BABYLON.Matrix;
+        /** Creates a targeted float animation for tweening.  */
+        static CreateFloatAnimation(name: string, targetProperty: string, startValue: number, endValue: number, frameRate?: number, loopMode?: number): BABYLON.Animation;
+        /** Gets the last key frame index value. */
+        static GetLastKeyFrameIndex(animation: BABYLON.Animation): number;
         /** Private internal frame interpolation helper */
         private static InterpolateAnimation;
         /** Initialize default shader material properties */
@@ -1544,6 +1535,8 @@ declare module BABYLON {
         static CalculateCameraDistance(farClipPlane: number, lodPercent: number, clipPlaneScale?: number): number;
         /** TODO */
         static InstantiateClass(className: string): any;
+        /** TODO */
+        static GetSimpleClassName(obj: any): string;
         /** TODO */
         static DisposeEntity(entity: BABYLON.AbstractMesh): void;
         /** TODO */
@@ -1958,6 +1951,7 @@ declare module BABYLON {
         animationFirstRun: boolean;
         animationEndFrame: boolean;
         animationLoopFrame: boolean;
+        animationLoopEvents: any;
         animationStateMachine: BABYLON.MachineState;
     }
     interface IAnimationCurve {
@@ -2314,7 +2308,7 @@ declare module BABYLON {
         protected m_agentQuaternion: BABYLON.Quaternion;
         protected m_agentDestination: BABYLON.Vector3;
         protected awake(): void;
-        protected late(): void;
+        protected update(): void;
         protected destroy(): void;
         /** Register handler that is triggered before the navigation update */
         onPreUpdateObservable: Observable<TransformNode>;
@@ -2477,22 +2471,20 @@ declare module BABYLON {
      */
     class RealtimeReflection extends BABYLON.ScriptComponent {
         private static SKYBOX_FLAG;
-        private abstractMesh;
         private renderList;
         private probeList;
         private refreshMode;
         private cullingMask;
         private clearFlags;
         private probeid;
+        private useProbeList;
+        private includeChildren;
         private resolution;
-        private materialIndex;
         private boxPos;
         private boxSize;
         private boxProjection;
-        private reflectionProbe;
         getProbeList(): BABYLON.AbstractMesh[];
         getRenderList(): BABYLON.AbstractMesh[];
-        gerReflectionProbe(): BABYLON.ReflectionProbe;
         protected awake(): void;
         protected start(): void;
         protected destroy(): void;
@@ -2694,6 +2686,7 @@ declare module BABYLON {
         protected m_abstractMesh: BABYLON.AbstractMesh;
         protected m_videoTexture: BABYLON.VideoTexture;
         protected m_videoMaterial: BABYLON.StandardMaterial;
+        protected m_diffuseIntensity: number;
         protected awake(): void;
         protected destroy(): void;
         protected awakeWebVideoPlayer(): void;

@@ -112,7 +112,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
 
             //Reading datas from WebGL
             const bufferView = await engine.readPixels(0, 0, width, height);
-            const data = new Uint8Array(bufferView.buffer);
+            const data = new Uint8Array(bufferView.buffer, 0, bufferView.byteLength);
 
             if (!texture.isCube) {
                 if (!options.displayRed || !options.displayGreen || !options.displayBlue) {

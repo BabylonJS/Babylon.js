@@ -11,11 +11,11 @@ import { Scene } from "babylonjs/scene";
 
 import { PropertyChangedEvent } from "../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../lineContainerComponent";
-import { RadioButtonLineComponent } from "../../lines/radioLineComponent";
+import { RadioButtonLineComponent } from "../../../../sharedUiComponents/lines/radioLineComponent";
 import { Color3LineComponent } from "../../lines/color3LineComponent";
 import { CheckBoxLineComponent } from "../../lines/checkBoxLineComponent";
 import { FogPropertyGridComponent } from "./fogPropertyGridComponent";
-import { FileButtonLineComponent } from "../../lines/fileButtonLineComponent";
+import { FileButtonLineComponent } from "../../../../sharedUiComponents/lines/fileButtonLineComponent";
 import { TextureLinkLineComponent } from "../../lines/textureLinkLineComponent";
 import { Vector3LineComponent } from "../../lines/vector3LineComponent";
 import { FloatLineComponent } from "../../lines/floatLineComponent";
@@ -23,7 +23,7 @@ import { SliderLineComponent } from "../../lines/sliderLineComponent";
 import { OptionsLineComponent } from "../../lines/optionsLineComponent";
 import { LockObject } from "./lockObject";
 import { GlobalState } from '../../../globalState';
-import { ButtonLineComponent } from '../../lines/buttonLineComponent';
+import { ButtonLineComponent } from '../../../../sharedUiComponents/lines/buttonLineComponent';
 import { AnimationGridComponent } from './animations/animationPropertyGridComponent';
 
 interface IScenePropertyGridComponentProps {
