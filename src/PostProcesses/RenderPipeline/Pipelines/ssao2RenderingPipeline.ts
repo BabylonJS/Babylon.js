@@ -78,12 +78,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     */
     public set samples(n: number) {
         this._samples = n;
-        if (this._prePassRenderer) {
-            this._prePassRenderer.samples = n;
-        }
-        else {
-            this._ssaoPostProcess.updateEffect(this._getDefinesForSSAO());
-        }
+        this._ssaoPostProcess.updateEffect(this._getDefinesForSSAO());
         this._sampleSphere = this._generateHemisphere();
     }
     public get samples(): number {
@@ -98,11 +93,12 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     public set textureSamples(n: number) {
         this._textureSamples = n;
 
-        this._originalColorPostProcess.samples = n;
-        this._blurHPostProcess.samples = n;
-        this._blurVPostProcess.samples = n;
-        this._ssaoPostProcess.samples = n;
-        this._ssaoCombinePostProcess.samples = n;
+        if (this._prePassRenderer) {
+            this._prePassRenderer.samples = n;
+        }
+        else {
+            this._originalColorPostProcess.samples = n;
+        }
     }
     public get textureSamples(): number {
         return this._textureSamples;
