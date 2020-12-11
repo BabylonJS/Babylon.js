@@ -134,6 +134,11 @@
             "title": "create environment texture",
             "playgroundId": "#L4RXKN#4",
             "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "particle system matrix like",
+            "renderCount": 100,
+            "playgroundId": "#WL44T7"
         }
     ]
 }

@@ -8,7 +8,7 @@ import { LockObject } from "../lockObject";
 import { CommonPostProcessPropertyGridComponent } from './commonPostProcessPropertyGridComponent';
 import { GlobalState } from '../../../../globalState';
 import { LineContainerComponent } from '../../../lineContainerComponent';
-import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
+import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
 
 interface IPostProcessPropertyGridComponentProps {
     globalState: GlobalState;
