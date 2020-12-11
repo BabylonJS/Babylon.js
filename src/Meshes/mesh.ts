@@ -391,6 +391,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public overrideMaterialSideOrientation: Nullable<number> = null;
 
     /**
+     * Gets or sets a boolean indicating whether to render ignoring the active camera's max z setting. (false by default)
+     * Note this will reduce performance when set to true.
+     */
+    public ignoreCameraMaxZ = false;
+
+    /**
      * Gets the source mesh (the one used to clone this one from)
      */
     public get source(): Nullable<Mesh> {
@@ -1829,6 +1835,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return this;
         }
 
+        let oldCameraMaxZ = 0;
+        if (this.ignoreCameraMaxZ && scene.activeCamera && !scene._isInIntermediateRendering()) {
+            oldCameraMaxZ = scene.activeCamera.maxZ;
+            scene.activeCamera.maxZ = 0;
+            scene.updateTransformMatrix(true);
+        }
+
         if (this._internalMeshDataInfo._onBeforeRenderObservable) {
             this._internalMeshDataInfo._onBeforeRenderObservable.notifyObservers(this);
         }
@@ -1913,7 +1926,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         var world = effectiveMesh.getWorldMatrix();
-
         if (this._effectiveMaterial._storeEffectOnSubMeshes) {
             this._effectiveMaterial.bindForSubMesh(world, this, subMesh);
         } else {
@@ -1939,6 +1951,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (this._internalMeshDataInfo._onAfterRenderObservable) {
             this._internalMeshDataInfo._onAfterRenderObservable.notifyObservers(this);
         }
+
+        if (this.ignoreCameraMaxZ && scene.activeCamera && !scene._isInIntermediateRendering()) {
+            scene.activeCamera.maxZ = oldCameraMaxZ;
+            scene.updateTransformMatrix(true);
+        }
+
         return this;
     }
 
@@ -3061,7 +3079,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Geometry
         serializationObject.isUnIndexed = this.isUnIndexed;
         var geometry = this._geometry;
-        if (geometry) {
+        if (geometry && this.subMeshes) {
             var geometryId = geometry.id;
             serializationObject.geometryId = geometryId;
 

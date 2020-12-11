@@ -72,7 +72,7 @@ export class DepthRenderer {
         var engine = scene.getEngine();
 
         // Render target
-        var format = (this.isPacked || engine.webGLVersion === 1) ? Constants.TEXTUREFORMAT_RGBA : Constants.TEXTUREFORMAT_R;
+        var format = (this.isPacked || !engine._features.supportExtendedTextureFormats) ? Constants.TEXTUREFORMAT_RGBA : Constants.TEXTUREFORMAT_R;
         this._depthMap = new RenderTargetTexture("depthMap", { width: engine.getRenderWidth(), height: engine.getRenderHeight() }, this._scene, false, true, type,
             false, undefined, undefined, undefined, undefined,
             format);
@@ -92,6 +92,14 @@ export class DepthRenderer {
             engine.clear(this._clearColor, true, true, true);
         });
 
+        this._depthMap.onBeforeBindObservable.add(() => {
+            engine._debugPushGroup("depth renderer", 1);
+        });
+
+        this._depthMap.onAfterUnbindObservable.add(() => {
+            engine._debugPopGroup(1);
+        });
+
         // Custom render function
         var renderSubMesh = (subMesh: SubMesh): void => {
             var renderingMesh = subMesh.getRenderingMesh();
@@ -102,7 +110,7 @@ export class DepthRenderer {
 
             effectiveMesh._internalAbstractMeshDataInfo._isActiveIntermediate = false;
 
-            if (!material || subMesh.verticesCount === 0 || subMesh._renderId === scene.getRenderId()) {
+            if (!material || effectiveMesh.infiniteDistance || material.disableDepthWrite || subMesh.verticesCount === 0 || subMesh._renderId === scene.getRenderId()) {
                 return;
             }
 

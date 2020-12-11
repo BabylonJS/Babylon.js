@@ -64,6 +64,17 @@ export class PrePassRenderer {
         return this._textureIndices[type];
     }
 
+    /**
+     * How many samples are used for MSAA of the scene render target
+     */
+    public get samples() {
+        return this.defaultRT.samples;
+    }
+
+    public set samples(n: number) {
+        // this.defaultRT.samples = n;
+    }
+
     private static _textureFormats = [
         {
             type: Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,

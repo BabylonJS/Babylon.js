@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../../../../components/propertyChangedEvent";
-import { ButtonLineComponent } from "../../../lines/buttonLineComponent";
+import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/buttonLineComponent";
 import { Tools } from "babylonjs/Misc/tools";
 import { Animation } from "babylonjs/Animations/animation";
 import { LockObject } from "../lockObject";
@@ -9,11 +9,17 @@ import { Nullable } from "babylonjs/types";
 import { GlobalState } from "../../../../globalState";
 
 interface ISaveSnippetProps {
+    // Animation to save
     animations: Nullable<Animation[]>;
+    // Observable
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    // Global lock object
     lockObject: LockObject;
+    // Global state
     globalState: GlobalState;
+    // Snippet server address
     snippetServer: string;
+    // Snippert id to save the snippet
     snippetId: string;
 }
 
@@ -45,6 +51,10 @@ export class SaveSnippet extends React.Component<ISaveSnippetProps, { selectedAn
         this.state = { selectedAnimations: animList ?? [] };
     }
 
+    /**
+     * Set the selected animations to save
+     * @param e Input event
+     */
     handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         e.preventDefault();
 
@@ -60,6 +70,9 @@ export class SaveSnippet extends React.Component<ISaveSnippetProps, { selectedAn
         this.setState({ selectedAnimations: updated });
     };
 
+    /**
+     * Stringify the selected animation
+     */
     stringifySelectedAnimations() {
         const content: string[] = [];
         this.state.selectedAnimations.forEach((animation) => {
@@ -73,11 +86,17 @@ export class SaveSnippet extends React.Component<ISaveSnippetProps, { selectedAn
         return JSON.stringify(content);
     }
 
+    /**
+     * Save the selected animations to a local file
+     */
     saveToFile = () => {
         const content = this.stringifySelectedAnimations();
         Tools.Download(new Blob([content]), "animations.json");
     };
 
+    /**
+     * Save the selected animations if a snippet ID is set
+     */
     saveToSnippet = () => {
         if (this.props.snippetId !== "") {
             let serverId = this.props.snippetId;
@@ -161,7 +180,9 @@ export class SaveSnippet extends React.Component<ISaveSnippetProps, { selectedAn
                     </ul>
                 </div>
                 <div className="save-buttons">
-                    {this.props.snippetId && <ButtonLineComponent label="Save to snippet server" onClick={this.saveToSnippet} />}
+                    {this.props.snippetId && (
+                        <ButtonLineComponent label="Save to snippet server" onClick={this.saveToSnippet} />
+                    )}
                     <ButtonLineComponent label="Save" onClick={this.saveToFile} />
                 </div>
                 <div className="save-server">

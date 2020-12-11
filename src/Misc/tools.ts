@@ -603,28 +603,29 @@ export class Tools {
      * @param successCallback defines the callback triggered once the data are available
      * @param mimeType defines the mime type of the result
      * @param fileName defines the filename to download. If present, the result will automatically be downloaded
+     * @return a void promise
      */
-    public static DumpFramebuffer(width: number, height: number, engine: Engine, successCallback?: (data: string) => void, mimeType: string = "image/png", fileName?: string): void {
+    public static async DumpFramebuffer(width: number, height: number, engine: Engine, successCallback?: (data: string) => void, mimeType: string = "image/png", fileName?: string) {
         // Read the contents of the framebuffer
-        var numberOfChannelsByLine = width * 4;
-        var halfHeight = height / 2;
+        let bufferView = await engine.readPixels(0, 0, width, height);
 
-        //Reading datas from WebGL
-        var data = engine.readPixels(0, 0, width, height);
+        const data = new Uint8Array(bufferView.buffer);
 
-        //To flip image on Y axis.
-        for (var i = 0; i < halfHeight; i++) {
-            for (var j = 0; j < numberOfChannelsByLine; j++) {
-                var currentCell = j + i * numberOfChannelsByLine;
-                var targetLine = height - i - 1;
-                var targetCell = j + targetLine * numberOfChannelsByLine;
+        Tools.DumpData(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true);
+    }
 
-                var temp = data[currentCell];
-                data[currentCell] = data[targetCell];
-                data[targetCell] = temp;
-            }
-        }
-
+    /**
+     * Dumps an array buffer
+     * @param width defines the rendering width
+     * @param height defines the rendering height
+     * @param data the data array
+     * @param successCallback defines the callback triggered once the data are available
+     * @param mimeType defines the mime type of the result
+     * @param fileName defines the filename to download. If present, the result will automatically be downloaded
+     * @param invertY true to invert the picture in the Y dimension
+     * @param toArrayBuffer true to convert the data to an ArrayBuffer (encoded as `mimeType`) instead of a base64 string
+     */
+    public static DumpData(width: number, height: number, data: ArrayBufferView, successCallback?: (data: string | ArrayBuffer) => void, mimeType: string = "image/png", fileName?: string, invertY = false, toArrayBuffer = false) {
         // Create a 2D canvas to store the result
         if (!Tools._ScreenshotCanvas) {
             Tools._ScreenshotCanvas = document.createElement("canvas");
@@ -634,14 +635,75 @@ export class Tools {
         var context = Tools._ScreenshotCanvas.getContext("2d");
 
         if (context) {
+            // Convert if data are float32
+            if (data instanceof Float32Array) {
+                const data2 = new Uint8Array(data.length);
+                let n = data.length;
+                while (n--) {
+                    let v = data[n];
+                    data2[n] = v < 0 ? 0 : v > 1 ? 1 : Math.round(v * 255);
+                }
+                data = data2;
+            }
+
             // Copy the pixels to a 2D canvas
             var imageData = context.createImageData(width, height);
             var castData = <any>imageData.data;
             castData.set(data);
             context.putImageData(imageData, 0, 0);
 
-            Tools.EncodeScreenshotCanvasData(successCallback, mimeType, fileName);
+            let canvas = Tools._ScreenshotCanvas;
+
+            if (invertY) {
+                var canvas2 = document.createElement('canvas');
+                canvas2.width = width;
+                canvas2.height = height;
+
+                var ctx2 = canvas2.getContext('2d');
+                if (!ctx2) {
+                    return;
+                }
+
+                ctx2.translate(0, height);
+                ctx2.scale(1, -1);
+                ctx2.drawImage(Tools._ScreenshotCanvas, 0, 0);
+
+                canvas = canvas2;
+            }
+
+            if (toArrayBuffer) {
+                Tools.ToBlob(canvas, (blob) => {
+                    let fileReader = new FileReader();
+                    fileReader.onload = (event: any) => {
+                        let arrayBuffer = event.target!.result as ArrayBuffer;
+                        if (successCallback) {
+                            successCallback(arrayBuffer);
+                        }
+                    };
+                    fileReader.readAsArrayBuffer(blob!);
+                });
+            } else {
+                Tools.EncodeScreenshotCanvasData(successCallback, mimeType, fileName, canvas);
+            }
         }
+    }
+
+    /**
+     * Dumps an array buffer
+     * @param width defines the rendering width
+     * @param height defines the rendering height
+     * @param data the data array
+     * @param successCallback defines the callback triggered once the data are available
+     * @param mimeType defines the mime type of the result
+     * @param fileName defines the filename to download. If present, the result will automatically be downloaded
+     * @param invertY true to invert the picture in the Y dimension
+     * @param toArrayBuffer true to convert the data to an ArrayBuffer (encoded as `mimeType`) instead of a base64 string
+     * @return a promise that resolve to the final data
+     */
+    public static DumpDataAsync(width: number, height: number, data: ArrayBufferView, mimeType: string = "image/png", fileName?: string, invertY = false, toArrayBuffer = false): Promise<string | ArrayBuffer> {
+        return new Promise((resolve) => {
+            Tools.DumpData(width, height, data, (result) => resolve(result), mimeType, fileName, invertY, toArrayBuffer);
+        });
     }
 
     /**
@@ -678,41 +740,38 @@ export class Tools {
      * @param successCallback defines the callback triggered once the data are available
      * @param mimeType defines the mime type of the result
      * @param fileName defines he filename to download. If present, the result will automatically be downloaded
+     * @param canvas canvas to get the data from. If not provided, use the default screenshot canvas
      */
-    static EncodeScreenshotCanvasData(successCallback?: (data: string) => void, mimeType: string = "image/png", fileName?: string): void {
+    static EncodeScreenshotCanvasData(successCallback?: (data: string) => void, mimeType: string = "image/png", fileName?: string, canvas?: HTMLCanvasElement): void {
         if (successCallback) {
-            var base64Image = Tools._ScreenshotCanvas.toDataURL(mimeType);
+            var base64Image = (canvas ?? Tools._ScreenshotCanvas).toDataURL(mimeType);
             successCallback(base64Image);
-        } else {
-            this.ToBlob(
-                Tools._ScreenshotCanvas,
-                function (blob) {
-                    //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
-                    if ("download" in document.createElement("a")) {
-                        if (!fileName) {
-                            var date = new Date();
-                            var stringDate = (date.getFullYear() + "-" + (date.getMonth() + 1)).slice(2) + "-" + date.getDate() + "_" + date.getHours() + "-" + ("0" + date.getMinutes()).slice(-2);
-                            fileName = "screenshot_" + stringDate + ".png";
-                        }
-                        Tools.Download(blob!, fileName);
-                    } else {
-                        var url = URL.createObjectURL(blob);
-
-                        var newWindow = window.open("");
-                        if (!newWindow) {
-                            return;
-                        }
-                        var img = newWindow.document.createElement("img");
-                        img.onload = function () {
-                            // no longer need to read the blob so it's revoked
-                            URL.revokeObjectURL(url);
-                        };
-                        img.src = url;
-                        newWindow.document.body.appendChild(img);
+        }
+        else {
+            this.ToBlob(canvas ?? Tools._ScreenshotCanvas, function(blob) {
+                //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
+                if (("download" in document.createElement("a"))) {
+                    if (!fileName) {
+                        var date = new Date();
+                        var stringDate = (date.getFullYear() + "-" + (date.getMonth() + 1)).slice(2) + "-" + date.getDate() + "_" + date.getHours() + "-" + ('0' + date.getMinutes()).slice(-2);
+                        fileName = "screenshot_" + stringDate + ".png";
                     }
-                },
-                mimeType
-            );
+                    Tools.Download(blob!, fileName);
+                }
+                else {
+                    var url = URL.createObjectURL(blob);
+
+                    var newWindow = window.open("");
+                    if (!newWindow) { return; }
+                    var img = newWindow.document.createElement("img");
+                    img.onload = function() {
+                        // no longer need to read the blob so it's revoked
+                        URL.revokeObjectURL(url);
+                    };
+                    img.src = url;
+                    newWindow.document.body.appendChild(img);
+                }
+            }, mimeType);
         }
     }
 

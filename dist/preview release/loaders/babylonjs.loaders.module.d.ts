@@ -1385,7 +1385,7 @@ declare module "babylonjs-loaders/glTF/2.0/glTFLoader" {
     import { ISceneLoaderAsyncResult, ISceneLoaderProgressEvent } from "babylonjs/Loading/sceneLoader";
     import { Scene } from "babylonjs/scene";
     import { IProperty } from "babylonjs-gltf2interface";
-    import { IGLTF, ISampler, INode, IScene, IMesh, IAccessor, ICamera, IAnimation, IAnimationChannel, IBufferView, IMaterial, ITextureInfo, ITexture, IImage, IMeshPrimitive, IArrayItem as IArrItem } from "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces";
+    import { IGLTF, ISampler, INode, IScene, IMesh, IAccessor, ICamera, IAnimation, IAnimationChannel, IBuffer, IBufferView, IMaterial, ITextureInfo, ITexture, IImage, IMeshPrimitive, IArrayItem as IArrItem } from "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces";
     import { IGLTFLoaderExtension } from "babylonjs-loaders/glTF/2.0/glTFLoaderExtension";
     import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData } from "babylonjs-loaders/glTF/glTFFileLoader";
     import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
@@ -1562,7 +1562,15 @@ declare module "babylonjs-loaders/glTF/2.0/glTFLoader" {
          */
         _loadAnimationChannelAsync(context: string, animationContext: string, animation: IAnimation, channel: IAnimationChannel, babylonAnimationGroup: AnimationGroup, animationTargetOverride?: Nullable<IAnimatable>): Promise<void>;
         private _loadAnimationSamplerAsync;
-        private _loadBufferAsync;
+        /**
+         * Loads a glTF buffer.
+         * @param context The context when loading the asset
+         * @param buffer The glTF buffer property
+         * @param byteOffset The byte offset to use
+         * @param byteLength The byte length to use
+         * @returns A promise that resolves with the loaded data when the load is complete
+         */
+        loadBufferAsync(context: string, buffer: IBuffer, byteOffset: number, byteLength: number): Promise<ArrayBufferView>;
         /**
          * Loads a glTF buffer view.
          * @param context The context when loading the asset
@@ -1814,11 +1822,11 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/EXT_meshopt_compression" {
          */
         enabled: boolean;
         /**
-         * Path to decoder module; defaults to https://preview.babylonjs.com/meshopt_decoder.module.js
+         * Path to decoder module; defaults to https://preview.babylonjs.com/meshopt_decoder.js
          */
         static DecoderPath: string;
         private _loader;
-        private _decoder;
+        private _decoderPromise?;
         /** @hidden */
         constructor(loader: GLTFLoader);
         /** @hidden */
@@ -2329,6 +2337,37 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/KHR_texture_transform" {
         loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>>;
     }
 }
+declare module "babylonjs-loaders/glTF/2.0/Extensions/KHR_xmp_json_ld" {
+    import { IGLTFLoaderExtension } from "babylonjs-loaders/glTF/2.0/glTFLoaderExtension";
+    import { GLTFLoader } from "babylonjs-loaders/glTF/2.0/glTFLoader";
+    /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1893)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_xmp_json_ld implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /**
+         * Defines a number that determines the order the extensions are applied.
+         */
+        order: number;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /**
+         * Called after the loader state changes to LOADING.
+         */
+        onLoading(): void;
+    }
+}
 declare module "babylonjs-loaders/glTF/2.0/Extensions/MSFT_audio_emitter" {
     import { Nullable } from "babylonjs/types";
     import { AnimationGroup } from "babylonjs/Animations/animationGroup";
@@ -2531,6 +2570,7 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/index" {
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_mesh_quantization";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_texture_basisu";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_texture_transform";
+    export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_xmp_json_ld";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/MSFT_audio_emitter";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/MSFT_lod";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/MSFT_minecraftMesh";
@@ -4385,7 +4425,15 @@ declare module BABYLON.GLTF2 {
          */
         _loadAnimationChannelAsync(context: string, animationContext: string, animation: IAnimation, channel: IAnimationChannel, babylonAnimationGroup: AnimationGroup, animationTargetOverride?: Nullable<IAnimatable>): Promise<void>;
         private _loadAnimationSamplerAsync;
-        private _loadBufferAsync;
+        /**
+         * Loads a glTF buffer.
+         * @param context The context when loading the asset
+         * @param buffer The glTF buffer property
+         * @param byteOffset The byte offset to use
+         * @param byteLength The byte length to use
+         * @returns A promise that resolves with the loaded data when the load is complete
+         */
+        loadBufferAsync(context: string, buffer: IBuffer, byteOffset: number, byteLength: number): Promise<ArrayBufferView>;
         /**
          * Loads a glTF buffer view.
          * @param context The context when loading the asset
@@ -4621,11 +4669,11 @@ declare module BABYLON.GLTF2.Loader.Extensions {
          */
         enabled: boolean;
         /**
-         * Path to decoder module; defaults to https://preview.babylonjs.com/meshopt_decoder.module.js
+         * Path to decoder module; defaults to https://preview.babylonjs.com/meshopt_decoder.js
          */
         static DecoderPath: string;
         private _loader;
-        private _decoder;
+        private _decoderPromise?;
         /** @hidden */
         constructor(loader: GLTFLoader);
         /** @hidden */
@@ -5059,6 +5107,35 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         dispose(): void;
         /** @hidden */
         loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>>;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1893)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_xmp_json_ld implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /**
+         * Defines a number that determines the order the extensions are applied.
+         */
+        order: number;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /**
+         * Called after the loader state changes to LOADING.
+         */
+        onLoading(): void;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {

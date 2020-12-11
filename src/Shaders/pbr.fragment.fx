@@ -23,6 +23,7 @@ precision highp float;
 
 // Declaration
 #include<__decl__pbrFragment>
+
 #include<pbrFragmentExtraDeclaration>
 #include<__decl__lightFragment>[0..maxSimultaneousLights]
 #include<pbrFragmentSamplersDeclaration>
@@ -420,6 +421,9 @@ void main(void) {
             #ifdef RADIANCEOCCLUSION
                 ambientMonochrome,
             #endif
+        #endif
+        #if defined(CLEARCOAT_BUMP) || defined(TWOSIDEDLIGHTING)
+            (gl_FrontFacing ? 1. : -1.),
         #endif
             clearcoatOut
         );

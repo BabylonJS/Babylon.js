@@ -34,7 +34,7 @@ uniform vec3 vBumpInfos;
 uniform vec2 vTangentSpaceParams;
 #endif
 
-#ifdef REFLECTIVITY
+#if defined(REFLECTIVITY) && (defined(HAS_SPECULAR) || defined(HAS_REFLECTIVITY))
 varying vec2 vReflectivityUV;
 uniform sampler2D reflectivitySampler;
 #endif

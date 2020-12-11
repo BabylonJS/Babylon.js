@@ -1190,7 +1190,7 @@ declare module NODEEDITOR {
         componentDidMount(): void;
         componentDidUpdate(): void;
         updatePreview(): void;
-        static UpdatePreview(previewCanvas: HTMLCanvasElement, texture: BABYLON.BaseTexture, width: number, options: ITextureLineComponentState, onReady?: () => void, globalState?: any): void;
+        static UpdatePreview(previewCanvas: HTMLCanvasElement, texture: BABYLON.BaseTexture, width: number, options: ITextureLineComponentState, onReady?: () => void, globalState?: any): Promise<void>;
         render(): JSX.Element;
     }
 }
@@ -1409,6 +1409,18 @@ declare module NODEEDITOR {
         filterContent(filter: string): void;
         loadCustomFrame(file: File): void;
         removeItem(value: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IInputsPropertyTabComponentProps {
+        globalState: GlobalState;
+        inputs: BABYLON.InputBlock[];
+    }
+    export class InputsPropertyTabComponent extends React.Component<IInputsPropertyTabComponentProps> {
+        constructor(props: IInputsPropertyTabComponentProps);
+        processInputBlockUpdate(ib: BABYLON.InputBlock): void;
+        renderInputBlock(block: BABYLON.InputBlock): JSX.Element | null;
         render(): JSX.Element;
     }
 }
@@ -1667,5 +1679,15 @@ declare module NODEEDITOR {
          * @param options defines the options to use to configure the node editor
          */
         static Show(options: INodeEditorOptions): void;
+    }
+}
+declare module NODEEDITOR {
+    export interface IButtonLineComponentProps {
+        label: string;
+        onClick: () => void;
+    }
+    export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
+        constructor(props: IButtonLineComponentProps);
+        render(): JSX.Element;
     }
 }

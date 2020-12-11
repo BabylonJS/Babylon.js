@@ -136,7 +136,7 @@ export class DepthCullingState {
         this._isDepthFuncDirty = false;
         this._isCullFaceDirty = false;
         this._isCullDirty = false;
-        this._isZOffsetDirty = false;
+        this._isZOffsetDirty = true;
         this._isFrontFaceDirty = false;
     }
 

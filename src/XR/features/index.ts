@@ -9,3 +9,5 @@ export * from "./WebXRControllerPhysics";
 export * from "./WebXRHitTest";
 export * from "./WebXRFeaturePointSystem";
 export * from "./WebXRHandTracking";
+export * from "./WebXRMeshDetector";
+export * from "./WebXRImageTracking";

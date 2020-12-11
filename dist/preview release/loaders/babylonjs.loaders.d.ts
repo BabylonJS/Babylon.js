@@ -1477,7 +1477,15 @@ declare module BABYLON.GLTF2 {
          */
         _loadAnimationChannelAsync(context: string, animationContext: string, animation: IAnimation, channel: IAnimationChannel, babylonAnimationGroup: AnimationGroup, animationTargetOverride?: Nullable<IAnimatable>): Promise<void>;
         private _loadAnimationSamplerAsync;
-        private _loadBufferAsync;
+        /**
+         * Loads a glTF buffer.
+         * @param context The context when loading the asset
+         * @param buffer The glTF buffer property
+         * @param byteOffset The byte offset to use
+         * @param byteLength The byte length to use
+         * @returns A promise that resolves with the loaded data when the load is complete
+         */
+        loadBufferAsync(context: string, buffer: IBuffer, byteOffset: number, byteLength: number): Promise<ArrayBufferView>;
         /**
          * Loads a glTF buffer view.
          * @param context The context when loading the asset
@@ -1713,11 +1721,11 @@ declare module BABYLON.GLTF2.Loader.Extensions {
          */
         enabled: boolean;
         /**
-         * Path to decoder module; defaults to https://preview.babylonjs.com/meshopt_decoder.module.js
+         * Path to decoder module; defaults to https://preview.babylonjs.com/meshopt_decoder.js
          */
         static DecoderPath: string;
         private _loader;
-        private _decoder;
+        private _decoderPromise?;
         /** @hidden */
         constructor(loader: GLTFLoader);
         /** @hidden */
@@ -2151,6 +2159,35 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         dispose(): void;
         /** @hidden */
         loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>>;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1893)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_xmp_json_ld implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /**
+         * Defines a number that determines the order the extensions are applied.
+         */
+        order: number;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /**
+         * Called after the loader state changes to LOADING.
+         */
+        onLoading(): void;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {

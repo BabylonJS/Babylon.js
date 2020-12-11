@@ -1,7 +1,7 @@
 import * as React from "react";
 import { PaneComponent, IPaneComponentProps } from "../paneComponent";
 import { LineContainerComponent } from "../lineContainerComponent";
-import { ButtonLineComponent } from "../lines/buttonLineComponent";
+import { ButtonLineComponent } from "../../../sharedUiComponents/lines/buttonLineComponent";
 import { Node } from "babylonjs/node";
 import { Nullable } from "babylonjs/types";
 import { VideoRecorder } from "babylonjs/Misc/videoRecorder";

@@ -30,6 +30,14 @@ export class NormalMapProceduralTexture extends ProceduralTexture {
         this.updateShaderUniforms();
     }
 
+    public isReady(): boolean {
+        if (!this._baseTexture || !this._baseTexture.isReady()) {
+            return false;
+        }
+
+        return super.isReady();
+    }
+
     @serializeAsTexture()
     public get baseTexture(): Texture {
         return this._baseTexture;

@@ -34,6 +34,7 @@ declare module BABYLON.GLTF2 {
          */
         FLOAT = 5126,
     }
+
     /**
      * Specifies if the attirbute is a scalar, vector, or matrix
      */
@@ -67,6 +68,7 @@ declare module BABYLON.GLTF2 {
          */
         MAT4 = "MAT4",
     }
+
     /**
      * The name of the node's TRS property to modify, or the weights of the Morph Targets it instantiates
      */
@@ -88,6 +90,7 @@ declare module BABYLON.GLTF2 {
          */
         WEIGHTS = "weights",
     }
+
     /**
      * Interpolation algorithm
      */
@@ -105,6 +108,7 @@ declare module BABYLON.GLTF2 {
          */
         CUBICSPLINE = "CUBICSPLINE",
     }
+
     /**
      * A camera's projection.  A node can reference a camera to apply a transform to place the camera in the scene
      */
@@ -118,6 +122,7 @@ declare module BABYLON.GLTF2 {
          */
         ORTHOGRAPHIC = "orthographic",
     }
+
     /**
      * The mime-type of the image
      */
@@ -131,6 +136,7 @@ declare module BABYLON.GLTF2 {
          */
         PNG = "image/png",
     }
+
     /**
      * The alpha rendering mode of the material
      */
@@ -148,6 +154,7 @@ declare module BABYLON.GLTF2 {
          */
         BLEND = "BLEND",
     }
+
     /**
      * The type of the primitives to render
      */
@@ -181,6 +188,7 @@ declare module BABYLON.GLTF2 {
          */
         TRIANGLE_FAN = 6,
     }
+
     /**
      * Magnification filter.  Valid values correspond to WebGL enums: 9728 (NEAREST) and 9729 (LINEAR)
      */
@@ -194,6 +202,7 @@ declare module BABYLON.GLTF2 {
          */
         LINEAR = 9729,
     }
+
     /**
      * Minification filter.  All valid values correspond to WebGL enums
      */
@@ -223,6 +232,7 @@ declare module BABYLON.GLTF2 {
          */
         LINEAR_MIPMAP_LINEAR = 9987,
     }
+
     /**
      * S (U) wrapping mode.  All valid values correspond to WebGL enums
      */
@@ -240,6 +250,7 @@ declare module BABYLON.GLTF2 {
          */
         REPEAT = 10497,
     }
+
     /**
      * glTF Property
      */
@@ -255,6 +266,7 @@ declare module BABYLON.GLTF2 {
          */
         extras?: any;
     }
+
     /**
      * glTF Child of Root Property
      */
@@ -264,6 +276,7 @@ declare module BABYLON.GLTF2 {
          */
         name?: string;
     }
+
     /**
      * Indices of those attributes that deviate from their initialization value
      */
@@ -281,6 +294,7 @@ declare module BABYLON.GLTF2 {
          */
         componentType: AccessorComponentType;
     }
+
     /**
      * Array of size accessor.sparse.count times number of components storing the displaced accessor attributes pointed by accessor.sparse.indices
      */
@@ -294,6 +308,7 @@ declare module BABYLON.GLTF2 {
          */
         byteOffset?: number;
     }
+
     /**
      * Sparse storage of attributes that deviate from their initialization value
      */
@@ -311,6 +326,7 @@ declare module BABYLON.GLTF2 {
          */
         values: IAccessorSparseValues;
     }
+
     /**
      * A typed view into a bufferView.  A bufferView contains raw binary data.  An accessor provides a typed view into a bufferView or a subset of a bufferView similar to how WebGL's vertexAttribPointer() defines an attribute in a buffer
      */
@@ -352,6 +368,7 @@ declare module BABYLON.GLTF2 {
          */
         sparse?: IAccessorSparse;
     }
+
     /**
      * Targets an animation's sampler at a node's property
      */
@@ -365,6 +382,7 @@ declare module BABYLON.GLTF2 {
          */
         target: IAnimationChannelTarget;
     }
+
     /**
      * The index of the node and TRS property that an animation channel targets
      */
@@ -378,6 +396,7 @@ declare module BABYLON.GLTF2 {
          */
         path: AnimationChannelTargetPath;
     }
+
     /**
      * Combines input and output accessors with an interpolation algorithm to define a keyframe graph (but not its target)
      */
@@ -395,6 +414,7 @@ declare module BABYLON.GLTF2 {
          */
         output: number;
     }
+
     /**
      * A keyframe animation
      */
@@ -408,6 +428,7 @@ declare module BABYLON.GLTF2 {
          */
         samplers: IAnimationSampler[];
     }
+
     /**
      * Metadata about the glTF asset
      */
@@ -429,6 +450,7 @@ declare module BABYLON.GLTF2 {
          */
         minVersion?: string;
     }
+
     /**
      * A buffer points to binary geometry, animation, or skins
      */
@@ -442,6 +464,7 @@ declare module BABYLON.GLTF2 {
          */
         byteLength: number;
     }
+
     /**
      * A view into a buffer generally representing a subset of the buffer
      */
@@ -463,6 +486,7 @@ declare module BABYLON.GLTF2 {
          */
         byteStride?: number;
     }
+
     /**
      * An orthographic camera containing properties to create an orthographic projection matrix
      */
@@ -484,6 +508,7 @@ declare module BABYLON.GLTF2 {
          */
         znear: number;
     }
+
     /**
      * A perspective camera containing properties to create a perspective projection matrix
      */
@@ -505,6 +530,7 @@ declare module BABYLON.GLTF2 {
          */
         znear: number;
     }
+
     /**
      * A camera's projection.  A node can reference a camera to apply a transform to place the camera in the scene
      */
@@ -522,6 +548,7 @@ declare module BABYLON.GLTF2 {
          */
         type: CameraType;
     }
+
     /**
      * Image data used to create a texture. Image can be referenced by URI or bufferView index. mimeType is required in the latter case
      */
@@ -539,6 +566,7 @@ declare module BABYLON.GLTF2 {
          */
         bufferView?: number;
     }
+
     /**
      * Material Normal Texture Info
      */
@@ -548,6 +576,7 @@ declare module BABYLON.GLTF2 {
          */
         scale?: number;
     }
+
     /**
      * Material Occlusion Texture Info
      */
@@ -557,6 +586,7 @@ declare module BABYLON.GLTF2 {
          */
         strength?: number;
     }
+
     /**
      * A set of parameter values that are used to define the metallic-roughness material model from Physically-Based Rendering (PBR) methodology
      */
@@ -582,6 +612,7 @@ declare module BABYLON.GLTF2 {
          */
         metallicRoughnessTexture?: ITextureInfo;
     }
+
     /**
      * The material appearance of a primitive
      */
@@ -619,6 +650,7 @@ declare module BABYLON.GLTF2 {
          */
         doubleSided?: boolean;
     }
+
     /**
      * Geometry to be rendered with the given material
      */
@@ -648,6 +680,7 @@ declare module BABYLON.GLTF2 {
             [name: string]: number;
         }[];
     }
+
     /**
      * A set of primitives to be rendered.  A node can contain one mesh.  A node's transform places the mesh in the scene
      */
@@ -661,6 +694,7 @@ declare module BABYLON.GLTF2 {
          */
         weights?: number[];
     }
+
     /**
      * A node in the node hierarchy
      */
@@ -702,6 +736,7 @@ declare module BABYLON.GLTF2 {
          */
         weights?: number[];
     }
+
     /**
      * Texture sampler properties for filtering and wrapping modes
      */
@@ -723,6 +758,7 @@ declare module BABYLON.GLTF2 {
          */
         wrapT?: TextureWrapMode;
     }
+
     /**
      * The root nodes of a scene
      */
@@ -732,6 +768,7 @@ declare module BABYLON.GLTF2 {
          */
         nodes: number[];
     }
+
     /**
      * Joints and matrices defining a skin
      */
@@ -749,6 +786,7 @@ declare module BABYLON.GLTF2 {
          */
         joints: number[];
     }
+
     /**
      * A texture and its sampler
      */
@@ -762,6 +800,7 @@ declare module BABYLON.GLTF2 {
          */
         source: number;
     }
+
     /**
      * Reference to a texture
      */
@@ -775,6 +814,7 @@ declare module BABYLON.GLTF2 {
          */
         texCoord?: number;
     }
+
     /**
      * The root object for a glTF asset
      */
@@ -1122,22 +1162,19 @@ declare module BABYLON.GLTF2 {
     }
 
     /**
-     * Interfaces from the KHR_xmp extension
+     * Interfaces from the KHR_xmp_json_ld extension
      * !!! Experimental Extension Subject to Changes !!!
      */
 
     /** @hidden */
-    interface IKHRXmp_Data {
-        [key: string]: unknown;
+    interface IKHRXmpJsonLd_Gltf {
+        packets: Array<{
+            [key: string]: unknown;
+        }>;
     }
 
     /** @hidden */
-    interface IKHRXmp_Gltf {
-        packets: IKHRXmp_Data[];
-    }
-
-    /** @hidden */
-    interface IKHRXmp_Node {
+    interface IKHRXmpJsonLd_Node {
         packet: number;
     }
 
@@ -1213,6 +1250,18 @@ declare module BABYLON.GLTF2 {
         ids: number[];
     }
 
+    /**
+     * Interfaces from the EXT_meshopt_compression extension
+     */
 
-
+    /** @hidden */
+    interface IEXTMeshoptCompression {
+        buffer: number;
+        byteOffset?: number;
+        byteLength: number;
+        byteStride: number;
+        count: number;
+        mode: "ATTRIBUTES" | "TRIANGLES" | "INDICES";
+        filter?: "NONE" | "OCTAHEDRAL" | "QUATERNION" | "EXPONENTIAL";
+    }
 }

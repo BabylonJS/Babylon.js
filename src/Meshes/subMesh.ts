@@ -19,6 +19,12 @@ declare type Mesh = import("./mesh").Mesh;
 declare type Ray = import("../Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("../Culling/ray").TrianglePickingPredicate;
 
+/** @hidden */
+export interface ICustomEffect {
+    effect: Effect;
+    defines: string;
+}
+
 /**
  * Defines a subdivision inside a mesh
  */
@@ -29,6 +35,8 @@ export class SubMesh implements ICullable {
     public _materialEffect: Nullable<Effect> = null;
     /** @hidden */
     public _effectOverride: Nullable<Effect> = null;
+
+    private _customEffects: { [name: string]: Nullable<ICustomEffect> };
 
     /**
      * Gets material defines used by the effect associated to the sub mesh
@@ -42,6 +50,24 @@ export class SubMesh implements ICullable {
      */
     public set materialDefines(defines: Nullable<MaterialDefines>) {
         this._materialDefines = defines;
+    }
+
+    /** @hidden */
+    public _getCustomEffect(name: string, createIfNotExisting = true): Nullable<ICustomEffect> {
+        if (!this._customEffects) {
+            this._customEffects = {};
+        }
+
+        let customEffect = this._customEffects[name];
+        if (!customEffect && createIfNotExisting) {
+            this._customEffects[name] = customEffect = { effect: undefined as any, defines: undefined as any };
+        }
+        return customEffect;
+    }
+
+    /** @hidden */
+    public _removeCustomEffect(name: string) {
+        delete this._customEffects[name];
     }
 
     /**

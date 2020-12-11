@@ -3,13 +3,21 @@ import { IAnimationKey } from "babylonjs/Animations/animationKey";
 import { IconButtonLineComponent } from "../../../lines/iconButtonLineComponent";
 
 interface IControlsProps {
+    // Keyframes to choose start or end of animation playback
     keyframes: IAnimationKey[] | null;
+    // The currently selected animation keyframe
     selected: IAnimationKey | null;
+    // The current frame number
     currentFrame: number;
+    // Event to change the current frame
     onCurrentFrameChange: (frame: number) => void;
+    // Event to communicate canvas repposition
     repositionCanvas: (keyframe: IAnimationKey) => void;
+    // Event to play, pause or play backwards the animation
     playPause: (direction: number) => void;
+    // If the animation is playing
     isPlaying: boolean;
+    // The reference to the scrollable dom object to set its position
     scrollable: React.RefObject<HTMLDivElement>;
 }
 
@@ -42,6 +50,9 @@ export class Controls extends React.Component<IControlsProps, { selected: IAnima
         }
     };
 
+    /**
+     * Set animation to initial keyframe
+     */
     moveToAnimationStart = () => {
         const startKeyframe = this.props.keyframes && this.props.keyframes[0];
         if (startKeyframe !== null) {
@@ -51,6 +62,9 @@ export class Controls extends React.Component<IControlsProps, { selected: IAnima
         }
     };
 
+    /**
+     * Set animation to the last keyframe
+     */
     moveToAnimationEnd = () => {
         const endKeyframe = this.props.keyframes && this.props.keyframes[this.props.keyframes.length - 1];
         if (endKeyframe !== null) {
@@ -60,6 +74,7 @@ export class Controls extends React.Component<IControlsProps, { selected: IAnima
         }
     };
 
+    /** Move to next keyframe */
     nextKeyframe = () => {
         if (this.props.keyframes !== null) {
             let first = this.props.keyframes.find((kf) => kf.frame > this.props.currentFrame);
@@ -71,6 +86,7 @@ export class Controls extends React.Component<IControlsProps, { selected: IAnima
         }
     };
 
+    /** Move to previous keyframe */
     previousKeyframe = () => {
         if (this.props.keyframes !== null) {
             let keyframes = [...this.props.keyframes];

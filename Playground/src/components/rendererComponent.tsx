@@ -5,6 +5,7 @@ import { Nullable } from "babylonjs/types";
 import { Scene } from "babylonjs/scene";
 import { Utilities } from "../tools/utilities";
 import { DownloadManager } from "../tools/downloadManager";
+import { WebGPUEngine } from "babylonjs";
 
 require("../scss/rendering.scss");
 
@@ -77,13 +78,13 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         });
     }
 
-    private async _loadScriptAsync(url: string) {
+    private async _loadScriptAsync(url: string): Promise<void> {
         return new Promise((resolve, reject) => {
             let script = document.createElement('script');
             script.src = url;
             script.onload = () => {
                 resolve();
-            }
+            };
             document.head.appendChild(script);
         });
     }
@@ -94,6 +95,19 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
         const displayInspector = this._scene?.debugLayer.isVisible();
 
+        let useWebGPU = location.href.indexOf("webgpu") !== -1 && !!navigator.gpu;
+        let forceWebGL1 = false;
+        const configuredEngine = Utilities.ReadStringFromStore("engineVersion", "WebGL2");
+
+        switch (configuredEngine) {
+            case "WebGPU":
+                useWebGPU = true;
+                break;
+            case "WebGL":
+                forceWebGL1 = true;
+                break;
+        }
+        
 
         if (this._engine) {
             try {
@@ -109,15 +123,33 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             let canvas = this._canvasRef.current!;
             globalObject.canvas = canvas;
 
-            globalObject.createDefaultEngine = function () {
-                return new Engine(canvas, true, {
-                    preserveDrawingBuffer: true,
-                    stencil: true,
-                });
-            };
+            if (useWebGPU) {
+                globalObject.createDefaultEngine = async function() { 
+                    var engine = new WebGPUEngine(canvas);
+                    await engine.initAsync();
+                    return engine;
+                }                
+            } else {
+                globalObject.createDefaultEngine = function () {
+                    return new Engine(canvas, true, {
+                        disableWebGL2Support: forceWebGL1,
+                        preserveDrawingBuffer: true,
+                        stencil: true,
+                    });
+                };
+            }
 
             let zipVariables = "var engine = null;\r\nvar scene = null;\r\nvar sceneToRender = null;\r\n";
-            let defaultEngineZip = "var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true }); }";
+            let defaultEngineZip = `var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true,  disableWebGL2Support: ${forceWebGL1}}); }`;
+
+            if (useWebGPU) {
+                defaultEngineZip = `var createDefaultEngine = async function() { 
+                    var engine = new BABYLON.WebGPUEngine(canvas);
+                    await engine.initAsync();
+                    return engine;
+                }`;
+            }
+
             let code = await this.props.globalState.getCompiledCode();
 
             if (!code) {
@@ -156,26 +188,25 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             }
 
             if (!createSceneFunction) {
-                this._engine = globalObject.createDefaultEngine() as Engine;
-                this._scene = new Scene(this._engine);
-
-                globalObject.engine = this._engine;
-                globalObject.scene = this._scene;
-
-                let runScript: any = null;
-                Utilities.FastEval("runScript = function(scene, canvas) {" + code + "}");
-                runScript(this._scene, canvas);
-
-                this.props.globalState.zipCode = zipVariables + defaultEngineZip + "var engine = createDefaultEngine();" + ";\r\nvar scene = new BABYLON.Scene(engine);\r\n\r\n" + code;
+                this.props.globalState.onErrorObservable.notifyObservers({
+                    message: "You must provide a function named createScene.",
+                });
+                return;
             } else {
                 code += `
-    var engine;
-    try {
-    engine = ${createEngineFunction}();
-    } catch(e) {
-    console.log("the available createEngine function failed. Creating the default engine instead");
-    engine = createDefaultEngine();
-    }`;
+                var engine;
+                var scene;
+                initFunction = async function() {               
+                    var asyncEngineCreation = async function() {
+                        try {
+                        return ${createEngineFunction}();
+                        } catch(e) {
+                        console.log("the available createEngine function failed. Creating the default engine instead");
+                        return createDefaultEngine();
+                        }
+                    }
+
+                    engine = await asyncEngineCreation();`;
                 code += "\r\nif (!engine) throw 'engine should not be null.';";
 
                 if (this.props.globalState.language === "JS") {
@@ -186,8 +217,12 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                     code += "\n" + "scene = " + createSceneFunction + "();";
                 }
 
+                code += `}`;
+
                 // Execute the code
                 Utilities.FastEval(code);
+
+                await globalObject.initFunction();
 
                 this._engine = globalObject.engine;
 
@@ -216,7 +251,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
                 let createEngineZip = createEngineFunction === "createEngine" ? zipVariables : zipVariables + defaultEngineZip;
 
-                this.props.globalState.zipCode = createEngineZip + ";\r\n" + code + ";\r\n" + sceneToRenderCode;
+                this.props.globalState.zipCode = createEngineZip + ";\r\n" + code + ";\r\ninitFunction().then(() => {" + sceneToRenderCode;
             }
 
             if (globalObject.scene.then) {
@@ -274,7 +309,9 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                     }
                 });
             } else {
-                this._engine.scenes[0].executeWhenReady(function () {});
+                this._engine.scenes[0].executeWhenReady(() => {
+                    this.props.globalState.onRunExecutedObservable.notifyObservers();
+                });
             }
         } catch (err) {
             this.props.globalState.onErrorObservable.notifyObservers(err);

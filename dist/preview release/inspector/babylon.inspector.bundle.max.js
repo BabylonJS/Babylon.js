@@ -11212,24 +11212,6 @@ module.exports = exports;
 
 /***/ }),
 
-/***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/controls/colorPicker/colorPicker.scss":
-/*!***************************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/controls/colorPicker/colorPicker.scss ***!
-  \***************************************************************************************************************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-// Imports
-var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
-exports = ___CSS_LOADER_API_IMPORT___(false);
-// Module
-exports.push([module.i, ".color-picker-container {\n  width: 320px;\n  height: 300px;\n  background-color: white;\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 50% 50px 60px 40px 1fr;\n  font-family: \"acumin-pro-condensed\";\n  font-weight: normal;\n  font-size: 14px; }\n  .color-picker-container .color-picker-saturation {\n    grid-row: 1;\n    grid-column: 1;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 100%;\n    position: relative;\n    cursor: pointer; }\n    .color-picker-container .color-picker-saturation .color-picker-saturation-white {\n      grid-row: 1;\n      grid-column: 1;\n      background: -webkit-linear-gradient(to right, #fff, rgba(255, 255, 255, 0));\n      background: linear-gradient(to right, #fff, rgba(255, 255, 255, 0)); }\n    .color-picker-container .color-picker-saturation .color-picker-saturation-black {\n      grid-row: 1;\n      grid-column: 1;\n      background: -webkit-linear-gradient(to top, #000, rgba(0, 0, 0, 0));\n      background: linear-gradient(to top, #000, rgba(0, 0, 0, 0)); }\n    .color-picker-container .color-picker-saturation .color-picker-saturation-cursor {\n      pointer-events: none;\n      width: 4px;\n      height: 4px;\n      box-shadow: 0 0 0 1.5px #fff, inset 0 0 1px 1px rgba(0, 0, 0, 0.3), 0 0 1px 2px rgba(0, 0, 0, 0.4);\n      border-radius: 50%;\n      transform: translate(-2px, -2px);\n      position: absolute; }\n  .color-picker-container .color-picker-hue {\n    grid-row: 2;\n    grid-column: 1;\n    display: grid;\n    margin: 10px;\n    grid-template-columns: 24% 76%;\n    grid-template-rows: 100%; }\n    .color-picker-container .color-picker-hue .color-picker-hue-color {\n      grid-row: 1;\n      grid-column: 1;\n      align-self: center;\n      justify-self: center;\n      width: 30px;\n      height: 30px;\n      border-radius: 15px;\n      border: 1px solid black; }\n    .color-picker-container .color-picker-hue .color-picker-hue-slider {\n      grid-row: 1;\n      grid-column: 2;\n      align-self: center;\n      height: 16px;\n      position: relative;\n      cursor: pointer;\n      background: linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);\n      background: -webkit-linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%); }\n      .color-picker-container .color-picker-hue .color-picker-hue-slider .color-picker-hue-cursor {\n        pointer-events: none;\n        width: 8px;\n        height: 18px;\n        transform: translate(-4px, -2px);\n        background-color: #f8f8f8;\n        box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.37);\n        position: absolute; }\n  .color-picker-container .color-picker-component {\n    display: grid;\n    margin: 5px;\n    grid-template-columns: 100%;\n    grid-template-rows: 50% 50%; }\n    .color-picker-container .color-picker-component .color-picker-component-value {\n      justify-self: center;\n      align-self: center;\n      grid-row: 1;\n      grid-column: 1;\n      margin-bottom: 4px; }\n      .color-picker-container .color-picker-component .color-picker-component-value input {\n        width: 50px; }\n    .color-picker-container .color-picker-component .color-picker-component-label {\n      justify-self: center;\n      align-self: center;\n      grid-row: 2;\n      grid-column: 1;\n      color: black; }\n  .color-picker-container .color-picker-rgb {\n    grid-row: 3;\n    grid-column: 1;\n    display: grid;\n    margin: 10px;\n    grid-template-columns: 20% 6.66% 20% 6.66% 20% 6.66% 20%;\n    grid-template-rows: 100%; }\n  .color-picker-container .red {\n    grid-row: 1;\n    grid-column: 1; }\n  .color-picker-container .green {\n    grid-row: 1;\n    grid-column: 3; }\n  .color-picker-container .blue {\n    grid-row: 1;\n    grid-column: 5; }\n  .color-picker-container .alpha {\n    grid-row: 1;\n    grid-column: 7; }\n    .color-picker-container .alpha.grayed {\n      opacity: 0.5; }\n  .color-picker-container .color-picker-hex {\n    grid-row: 4;\n    grid-column: 1;\n    display: grid;\n    grid-template-columns: 20% 80%;\n    grid-template-rows: 100%; }\n    .color-picker-container .color-picker-hex .color-picker-hex-label {\n      justify-self: center;\n      align-self: center;\n      grid-row: 1;\n      grid-column: 1;\n      margin-left: 10px;\n      color: black; }\n    .color-picker-container .color-picker-hex .color-picker-hex-value {\n      justify-self: left;\n      align-self: center;\n      grid-row: 1;\n      grid-column: 2;\n      margin-left: 10px;\n      margin-right: 10px; }\n      .color-picker-container .color-picker-hex .color-picker-hex-value input {\n        width: 70px; }\n", ""]);
-// Exports
-module.exports = exports;
-
-
-/***/ }),
-
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/embedHost/embedHost.scss":
 /*!**************************************************************************************************************************************************************!*\
   !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/embedHost/embedHost.scss ***!
@@ -11260,6 +11242,24 @@ var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../node_modul
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
 exports.push([module.i, "#scene-explorer-host {\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  bottom: 0px; }\n  #scene-explorer-host:focus {\n    outline: none; }\n\n#__resizable_base__ {\n  display: none; }\n\n.context-menu {\n  background: #222222; }\n  .context-menu .react-contextmenu-item {\n    padding: 10px;\n    cursor: pointer; }\n    .context-menu .react-contextmenu-item:hover {\n      background: #555555; }\n\n.react-contextmenu.context-menu.react-contextmenu--visible {\n  z-index: 99;\n  transform: scale(1); }\n\n#sceneExplorer {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 14px \"Arial\"; }\n  #sceneExplorer:focus {\n    outline: none; }\n  #sceneExplorer #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #sceneExplorer #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #sceneExplorer #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #sceneExplorer #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #sceneExplorer #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #sceneExplorer #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #sceneExplorer #tree {\n    grid-row: 2;\n    overflow-x: hidden;\n    overflow-y: auto; }\n  #sceneExplorer .filter {\n    display: flex;\n    align-items: stretch; }\n    #sceneExplorer .filter input {\n      width: 100%;\n      margin: 10px 40px 5px 40px;\n      display: block;\n      border: none;\n      padding: 0;\n      border-bottom: solid 1px #337ab7;\n      background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n      background-position: -1000px 0;\n      background-size: 1000px 100%;\n      background-repeat: no-repeat;\n      color: white; }\n    #sceneExplorer .filter input::placeholder {\n      color: lightgray; }\n    #sceneExplorer .filter input:focus {\n      box-shadow: none;\n      outline: none;\n      background-position: 0 0; }\n  #sceneExplorer .groupContainer {\n    margin-left: 0px;\n    color: white;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    align-self: center;\n    display: grid;\n    align-items: center; }\n    #sceneExplorer .groupContainer:hover {\n      background: #444444; }\n    #sceneExplorer .groupContainer .expandableHeader {\n      display: grid;\n      grid-template-columns: 1fr 20px; }\n      #sceneExplorer .groupContainer .expandableHeader .text {\n        grid-column: 1;\n        display: grid;\n        grid-template-columns: 20px 1fr; }\n        #sceneExplorer .groupContainer .expandableHeader .text .arrow {\n          grid-column: 1;\n          margin-left: 0px;\n          color: white;\n          cursor: pointer;\n          display: inline-block;\n          margin-right: 6px;\n          opacity: 0.5; }\n        #sceneExplorer .groupContainer .expandableHeader .text .text-value {\n          grid-column: 2;\n          display: flex;\n          align-items: center; }\n      #sceneExplorer .groupContainer .expandableHeader .expandAll {\n        opacity: 0.5;\n        grid-column: 2;\n        margin-right: 10px; }\n  #sceneExplorer .icon {\n    display: grid;\n    align-items: center;\n    justify-items: center;\n    cursor: pointer; }\n  #sceneExplorer .itemContainer {\n    margin-left: 0px;\n    color: white;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    display: grid;\n    grid-template-columns: 20px 1fr; }\n    #sceneExplorer .itemContainer:hover {\n      background: #444444; }\n    #sceneExplorer .itemContainer.selected {\n      background: #bbbbbb;\n      color: black; }\n    #sceneExplorer .itemContainer .isNotActive {\n      opacity: 0.3; }\n    #sceneExplorer .itemContainer .arrow {\n      grid-column: 1;\n      color: white;\n      opacity: 0.6; }\n    #sceneExplorer .itemContainer .popup {\n      width: 200px;\n      visibility: hidden;\n      background-color: #444444;\n      color: #fff;\n      border: 1px solid rgba(255, 255, 255, 0.5);\n      position: absolute;\n      z-index: 1;\n      margin-left: -180px;\n      box-sizing: border-box; }\n      #sceneExplorer .itemContainer .popup.show {\n        visibility: visible; }\n      #sceneExplorer .itemContainer .popup:focus {\n        outline: none; }\n      #sceneExplorer .itemContainer .popup .popupMenu {\n        padding: 6px 5px 5px 10px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        height: 18px; }\n        #sceneExplorer .itemContainer .popup .popupMenu:hover {\n          background: white;\n          color: #333333; }\n    #sceneExplorer .itemContainer .sceneNode {\n      grid-column: 2;\n      margin-left: -10px;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px 20px 20px 10px 20px 20px auto 5px;\n      align-items: center;\n      cursor: pointer; }\n      #sceneExplorer .itemContainer .sceneNode .sceneTitle {\n        grid-column: 1;\n        margin-right: 5px;\n        display: flex;\n        align-items: center;\n        height: 24px; }\n      #sceneExplorer .itemContainer .sceneNode .translation {\n        grid-column: 2;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .translation.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .rotation {\n        grid-column: 3;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .rotation.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .scaling {\n        grid-column: 4;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .scaling.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .bounding {\n        grid-column: 5;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .bounding.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .separator {\n        grid-column: 6;\n        margin-left: 5px;\n        width: 5px;\n        display: flex;\n        align-items: center;\n        height: 18px;\n        border-left: solid 1px #337ab7; }\n      #sceneExplorer .itemContainer .sceneNode .pickingMode {\n        grid-column: 7;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .pickingMode.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .refresh {\n        grid-column: 8; }\n      #sceneExplorer .itemContainer .sceneNode .extensions {\n        width: 20px;\n        grid-column: 9; }\n    #sceneExplorer .itemContainer .targetedAnimationTools {\n      grid-column: 2;\n      width: 100%;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center;\n      min-width: 0; }\n      #sceneExplorer .itemContainer .targetedAnimationTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .animationGroupTools {\n      grid-column: 2;\n      width: 100%;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center;\n      min-width: 0; }\n      #sceneExplorer .itemContainer .animationGroupTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .soundTools {\n      grid-column: 2;\n      width: 100%;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center;\n      min-width: 0; }\n      #sceneExplorer .itemContainer .soundTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .meshTools {\n      grid-column: 2;\n      width: 100%;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center;\n      min-width: 0; }\n      #sceneExplorer .itemContainer .meshTools .bounding-box {\n        grid-column: 2;\n        opacity: 0.5; }\n        #sceneExplorer .itemContainer .meshTools .bounding-box.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .meshTools .visibility {\n        grid-column: 3; }\n      #sceneExplorer .itemContainer .meshTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #sceneExplorer .itemContainer .cameraTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .cameraTools .activeCamera {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .cameraTools .enableGizmo {\n        grid-column: 3; }\n      #sceneExplorer .itemContainer .cameraTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #sceneExplorer .itemContainer .lightTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .lightTools .enableLight {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .lightTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .spriteTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .spriteTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .spriteManagerTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .spriteManagerTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .materialTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .materialTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .materialTools .icon {\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n    #sceneExplorer .itemContainer .particleSystemTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .particleSystemTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .postProcessTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .postProcessTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .renderingPipelineTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .renderingPipelineTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .textureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .textureTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .adtextureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .adtextureTools .pickingMode {\n        grid-column: 2;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .adtextureTools .pickingMode.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .adtextureTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .controlTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .controlTools .highlight {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .controlTools .visibility {\n        grid-column: 3; }\n      #sceneExplorer .itemContainer .controlTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #sceneExplorer .itemContainer .transformNodeTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .transformNodeTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .skeletonTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .skeletonTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .title {\n      grid-column: 1;\n      background: transparent;\n      white-space: nowrap;\n      overflow: hidden;\n      min-width: 0;\n      margin-right: 5px;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 25px 1fr;\n      height: 24px;\n      cursor: pointer; }\n      #sceneExplorer .itemContainer .title .titleIcon {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center; }\n      #sceneExplorer .itemContainer .title .titleText {\n        grid-column: 2;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        overflow: hidden; }\n", ""]);
+// Exports
+module.exports = exports;
+
+
+/***/ }),
+
+/***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss":
+/*!**************************************************************************************************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss ***!
+  \**************************************************************************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+// Imports
+var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
+exports = ___CSS_LOADER_API_IMPORT___(false);
+// Module
+exports.push([module.i, ".color-picker-container {\n  width: 320px;\n  height: 300px;\n  background-color: white;\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 50% 50px 60px 40px 1fr;\n  font-family: \"acumin-pro-condensed\";\n  font-weight: normal;\n  font-size: 14px; }\n  .color-picker-container .color-picker-saturation {\n    grid-row: 1;\n    grid-column: 1;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 100%;\n    position: relative;\n    cursor: pointer; }\n    .color-picker-container .color-picker-saturation .color-picker-saturation-white {\n      grid-row: 1;\n      grid-column: 1;\n      background: -webkit-linear-gradient(to right, #fff, rgba(255, 255, 255, 0));\n      background: linear-gradient(to right, #fff, rgba(255, 255, 255, 0)); }\n    .color-picker-container .color-picker-saturation .color-picker-saturation-black {\n      grid-row: 1;\n      grid-column: 1;\n      background: -webkit-linear-gradient(to top, #000, rgba(0, 0, 0, 0));\n      background: linear-gradient(to top, #000, rgba(0, 0, 0, 0)); }\n    .color-picker-container .color-picker-saturation .color-picker-saturation-cursor {\n      pointer-events: none;\n      width: 4px;\n      height: 4px;\n      box-shadow: 0 0 0 1.5px #fff, inset 0 0 1px 1px rgba(0, 0, 0, 0.3), 0 0 1px 2px rgba(0, 0, 0, 0.4);\n      border-radius: 50%;\n      transform: translate(-2px, -2px);\n      position: absolute; }\n  .color-picker-container .color-picker-hue {\n    grid-row: 2;\n    grid-column: 1;\n    display: grid;\n    margin: 10px;\n    grid-template-columns: 24% 76%;\n    grid-template-rows: 100%; }\n    .color-picker-container .color-picker-hue .color-picker-hue-color {\n      grid-row: 1;\n      grid-column: 1;\n      align-self: center;\n      justify-self: center;\n      width: 30px;\n      height: 30px;\n      border-radius: 15px;\n      border: 1px solid black; }\n    .color-picker-container .color-picker-hue .color-picker-hue-slider {\n      grid-row: 1;\n      grid-column: 2;\n      align-self: center;\n      height: 16px;\n      position: relative;\n      cursor: pointer;\n      background: linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);\n      background: -webkit-linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%); }\n      .color-picker-container .color-picker-hue .color-picker-hue-slider .color-picker-hue-cursor {\n        pointer-events: none;\n        width: 8px;\n        height: 18px;\n        transform: translate(-4px, -2px);\n        background-color: #f8f8f8;\n        box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.37);\n        position: absolute; }\n  .color-picker-container .color-picker-component {\n    display: grid;\n    margin: 5px;\n    grid-template-columns: 100%;\n    grid-template-rows: 50% 50%; }\n    .color-picker-container .color-picker-component .color-picker-component-value {\n      justify-self: center;\n      align-self: center;\n      grid-row: 1;\n      grid-column: 1;\n      margin-bottom: 4px; }\n      .color-picker-container .color-picker-component .color-picker-component-value input {\n        width: 50px; }\n    .color-picker-container .color-picker-component .color-picker-component-label {\n      justify-self: center;\n      align-self: center;\n      grid-row: 2;\n      grid-column: 1;\n      color: black; }\n  .color-picker-container .color-picker-rgb {\n    grid-row: 3;\n    grid-column: 1;\n    display: grid;\n    margin: 10px;\n    grid-template-columns: 20% 6.66% 20% 6.66% 20% 6.66% 20%;\n    grid-template-rows: 100%; }\n  .color-picker-container .red {\n    grid-row: 1;\n    grid-column: 1; }\n  .color-picker-container .green {\n    grid-row: 1;\n    grid-column: 3; }\n  .color-picker-container .blue {\n    grid-row: 1;\n    grid-column: 5; }\n  .color-picker-container .alpha {\n    grid-row: 1;\n    grid-column: 7; }\n    .color-picker-container .alpha.grayed {\n      opacity: 0.5; }\n  .color-picker-container .color-picker-hex {\n    grid-row: 4;\n    grid-column: 1;\n    display: grid;\n    grid-template-columns: 20% 80%;\n    grid-template-rows: 100%; }\n    .color-picker-container .color-picker-hex .color-picker-hex-label {\n      justify-self: center;\n      align-self: center;\n      grid-row: 1;\n      grid-column: 1;\n      margin-left: 10px;\n      color: black; }\n    .color-picker-container .color-picker-hex .color-picker-hex-value {\n      justify-self: left;\n      align-self: center;\n      grid-row: 1;\n      grid-column: 2;\n      margin-left: 10px;\n      margin-right: 10px; }\n      .color-picker-container .color-picker-hex .color-picker-hex-value input {\n        width: 70px; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -45122,38 +45122,6 @@ var BooleanLineComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
-/***/ "./components/actionTabs/lines/buttonLineComponent.tsx":
-/*!*************************************************************!*\
-  !*** ./components/actionTabs/lines/buttonLineComponent.tsx ***!
-  \*************************************************************/
-/*! exports provided: ButtonLineComponent */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ButtonLineComponent", function() { return ButtonLineComponent; });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-
-
-var ButtonLineComponent = /** @class */ (function (_super) {
-    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ButtonLineComponent, _super);
-    function ButtonLineComponent(props) {
-        return _super.call(this, props) || this;
-    }
-    ButtonLineComponent.prototype.render = function () {
-        var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "buttonLine" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { onClick: function () { return _this.props.onClick(); } }, this.props.label)));
-    };
-    return ButtonLineComponent;
-}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
-
-
-
-/***/ }),
-
 /***/ "./components/actionTabs/lines/checkBoxLineComponent.tsx":
 /*!***************************************************************!*\
   !*** ./components/actionTabs/lines/checkBoxLineComponent.tsx ***!
@@ -45559,7 +45527,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _controls_colorPicker_colorPicker__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../controls/colorPicker/colorPicker */ "./components/controls/colorPicker/colorPicker.tsx");
+/* harmony import */ var _sharedUiComponents_colorPicker_colorPicker__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../sharedUiComponents/colorPicker/colorPicker */ "./sharedUiComponents/colorPicker/colorPicker.tsx");
 
 
 
@@ -45619,7 +45587,7 @@ var ColorPickerLineComponent = /** @class */ (function (_super) {
                             _this.setState({ pickerEnabled: false });
                         } },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-float", ref: this._floatRef },
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_colorPicker_colorPicker__WEBPACK_IMPORTED_MODULE_2__["ColorPicker"], { color: color, onColorChanged: function (color) {
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_colorPicker_colorPicker__WEBPACK_IMPORTED_MODULE_2__["ColorPicker"], { color: color, onColorChanged: function (color) {
                                     var hex = color.toHexString();
                                     _this.setState({ hex: hex, color: color });
                                     _this.props.onColorChanged(hex);
@@ -45779,7 +45747,7 @@ var FloatLineComponent = /** @class */ (function (_super) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
         var currentValue = _this.props.target[_this.props.propertyName];
-        _this.state = { value: currentValue ? (_this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(_this.props.digits || 3)) : "0" };
+        _this.state = { value: currentValue ? (_this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(_this.props.digits || 4)) : "0" };
         _this._store = currentValue;
         return _this;
     }
@@ -45792,7 +45760,7 @@ var FloatLineComponent = /** @class */ (function (_super) {
             return true;
         }
         var newValue = nextProps.target[nextProps.propertyName];
-        var newValueString = newValue ? this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this.props.digits || 3) : "0";
+        var newValueString = newValue ? this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this.props.digits || 4) : "0";
         if (newValueString !== nextState.value) {
             nextState.value = newValueString;
             return true;
@@ -46717,7 +46685,7 @@ var SliderLineComponent = /** @class */ (function (_super) {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "sliderLine" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.margin ? "label withMargins" : "label", title: this.props.label }, this.props.label),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { smallUI: true, label: "", target: this.state, digits: this.props.decimalCount === undefined ? 3 : this.props.decimalCount, propertyName: "value", min: this.props.minimum, max: this.props.maximum, onEnter: function () {
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { smallUI: true, label: "", target: this.state, digits: this.props.decimalCount === undefined ? 4 : this.props.decimalCount, propertyName: "value", min: this.props.minimum, max: this.props.maximum, onEnter: function () {
                     var changed = _this.prepareDataToRead(_this.state.value);
                     _this.onChange(changed);
                 }, onChange: function (evt) { var changed = _this.prepareDataToRead(_this.state.value); _this.onChange(changed); } }),
@@ -46873,7 +46841,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
 /* harmony import */ var _textureHelper__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../textureHelper */ "./textureHelper.ts");
 
 
@@ -46951,7 +46919,7 @@ var TextureLineComponent = /** @class */ (function (_super) {
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.channels === TextureLineComponent.TextureChannelStates.ALL ? "all command selected" : "all command", onClick: function () { return _this.setState({ channels: TextureLineComponent.TextureChannelStates.ALL }); } }, "ALL")),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { ref: this.canvasRef, className: "preview" })),
             texture.isRenderTarget &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Refresh", onClick: function () {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Refresh", onClick: function () {
                         _this.updatePreview();
                     } })));
     };
@@ -47662,7 +47630,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/gradientBlock */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _gradientStepComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./gradientStepComponent */ "./components/actionTabs/tabs/gradientStepComponent.tsx");
-/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
 
 
 
@@ -47709,7 +47677,7 @@ var GradientPropertyTabComponent = /** @class */ (function (_super) {
     GradientPropertyTabComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Add new step", onClick: function () { return _this.addNewStep(); } }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Add new step", onClick: function () { return _this.addNewStep(); } }),
             this._gradientBlock.colorSteps.map(function (c, i) {
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gradientStepComponent__WEBPACK_IMPORTED_MODULE_3__["GradientStepComponent"], { globalState: _this.props.globalState, onCheckForReOrder: function () { return _this.checkForReOrder(); }, onUpdateStep: function () { return _this.forceRebuild(); }, key: "step-" + i, lineIndex: i, step: c, onCopy: function () { return _this.copyStep(c); }, onDelete: function () { return _this.deleteStep(c); } }));
             })));
@@ -48148,7 +48116,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
@@ -48252,7 +48220,7 @@ var AnimationGroupGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Class", value: animationGroup.getClassName() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Name", target: animationGroup, propertyName: "name", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "CONTROLS" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: playButtonText, onClick: function () { return _this.playOrPause(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: playButtonText, onClick: function () { return _this.playOrPause(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { label: "Speed ratio", minimum: 0, maximum: 10, step: 0.1, target: animationGroup, propertyName: "speedRatio", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { ref: this.timelineRef, label: "Current frame", minimum: animationGroup.from, maximum: animationGroup.to, step: (animationGroup.to - animationGroup.from) / 1000.0, directValue: this.state.currentFrame, onInput: function (value) { return _this.onCurrentFrameChange(value); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "INFOS" },
@@ -48281,7 +48249,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
 /* harmony import */ var babylonjs_Animations_animationPropertiesOverride__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Animations/animationPropertiesOverride */ "babylonjs/Misc/observable");
@@ -48411,7 +48379,7 @@ var AnimationGridComponent = /** @class */ (function (_super) {
         var animations = animatable.animations;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             this._ranges.length > 0 && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "ANIMATION RANGES" }, this._ranges.map(function (range, i) {
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { key: range.name + i, label: range.name, onClick: function () {
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { key: range.name + i, label: range.name, onClick: function () {
                         _this._mainAnimatable = null;
                         _this.props.scene.beginAnimation(animatable, range.from, range.to, true);
                     } }));
@@ -48424,7 +48392,7 @@ var AnimationGridComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { lockObject: this.props.lockObject, isInteger: true, label: "To", target: this._animationControl, propertyName: "to", onChange: function () { return _this.onChangeFromOrTo(); } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Loop", onSelect: function (value) { return (_this._animationControl.loop = value); }, isSelected: function () { return _this._animationControl.loop; } }),
                     this._isPlaying && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { ref: this.timelineRef, label: "Current frame", minimum: this._animationControl.from, maximum: this._animationControl.to, step: (this._animationControl.to - this._animationControl.from) / 1000.0, directValue: this.state.currentFrame, onInput: function (value) { return _this.onCurrentFrameChange(value); } })),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: this._isPlaying ? "Stop" : "Play", onClick: function () { return _this.playOrPause(); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: this._isPlaying ? "Stop" : "Play", onClick: function () { return _this.playOrPause(); } }),
                     (this._ranges.length > 0 || (this._animations && this._animations.length > 0)) && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Enable override", onSelect: function (value) {
                                 if (value) {
@@ -48460,7 +48428,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./components/actionTabs/lines/textInputLineComponent.tsx");
@@ -48522,7 +48490,7 @@ var TargetedAnimationGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Class", value: targetedAnimation.getClassName() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Name", target: targetedAnimation.animation, propertyName: "name", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 targetedAnimation.target.name && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Target", value: targetedAnimation.target.name, onLink: function () { return _this.props.globalState.onSelectionChangedObservable.notifyObservers(targetedAnimation); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Dispose", onClick: this.deleteAnimation }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Dispose", onClick: this.deleteAnimation }))));
     };
     return TargetedAnimationGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -48622,7 +48590,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
 /* harmony import */ var _lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../lines/optionsLineComponent */ "./components/actionTabs/lines/optionsLineComponent.tsx");
 /* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
-/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./components/actionTabs/lines/textInputLineComponent.tsx");
 /* harmony import */ var _animations_animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../animations/animationPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/animations/animationPropertyGridComponent.tsx");
 /* harmony import */ var _lines_hexLineComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../../lines/hexLineComponent */ "./components/actionTabs/lines/hexLineComponent.tsx");
@@ -48675,7 +48643,7 @@ var CommonCameraPropertyGridComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Right", target: camera, propertyName: "orthoRight", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 camera.mode === babylonjs_Cameras_camera__WEBPACK_IMPORTED_MODULE_2__["Camera"].ORTHOGRAPHIC_CAMERA &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Bottom", target: camera, propertyName: "orthoBottom", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_9__["ButtonLineComponent"], { label: "Dispose", onClick: function () {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_9__["ButtonLineComponent"], { label: "Dispose", onClick: function () {
                         camera.dispose();
                         _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                     } })),
@@ -48787,6 +48755,76 @@ var FreeCameraPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Vector3LineComponent"], { label: "Ellipsoid offset", target: camera, propertyName: "ellipsoidOffset", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
     };
     return FreeCameraPropertyGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/commonPropertyGridComponent.tsx":
+/*!**********************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/commonPropertyGridComponent.tsx ***!
+  \**********************************************************************************/
+/*! exports provided: CommonPropertyGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CommonPropertyGridComponent", function() { return CommonPropertyGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
+/* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
+/* harmony import */ var _lines_indentedTextLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../lines/indentedTextLineComponent */ "./components/actionTabs/lines/indentedTextLineComponent.tsx");
+
+
+
+
+
+var CommonPropertyGridComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CommonPropertyGridComponent, _super);
+    function CommonPropertyGridComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    CommonPropertyGridComponent.prototype.renderLevel = function (jsonObject) {
+        var components = [];
+        for (var data in jsonObject) {
+            var value = jsonObject[data];
+            var type = Object.prototype.toString.call(value);
+            switch (type) {
+                case '[object String]':
+                    components.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { key: data, label: data, ignoreValue: true }));
+                    components.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_indentedTextLineComponent__WEBPACK_IMPORTED_MODULE_4__["IndentedTextLineComponent"], { key: data + value, value: value }));
+                    break;
+                case '[object Array]':
+                    components.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { key: data, label: data, ignoreValue: true }));
+                    for (var _i = 0, value_1 = value; _i < value_1.length; _i++) {
+                        var entry = value_1[_i];
+                        components.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_indentedTextLineComponent__WEBPACK_IMPORTED_MODULE_4__["IndentedTextLineComponent"], { key: data + entry, value: entry }));
+                    }
+                    break;
+                case '[object Object]':
+                    components.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { key: data, label: data, ignoreValue: true }));
+                    for (var entryKey in value) {
+                        components.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { key: data + entry, label: entryKey, value: value[entryKey], additionalClass: "reduced-opacity" }));
+                    }
+                    break;
+            }
+        }
+        return components;
+    };
+    CommonPropertyGridComponent.prototype.render = function () {
+        if (!this.props.host.metadata) {
+            return null;
+        }
+        if (!this.props.host.metadata.xmp) {
+            return null;
+        }
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "XMP METADATA" }, this.renderLevel(this.props.host.metadata.xmp))));
+    };
+    return CommonPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
@@ -49818,7 +49856,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
 /* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
-/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./components/actionTabs/lines/textInputLineComponent.tsx");
 /* harmony import */ var _animations_animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../animations/animationPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/animations/animationPropertyGridComponent.tsx");
 
@@ -49846,7 +49884,7 @@ var CommonLightPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Unique ID", value: light.uniqueId.toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Class", value: light.getClassName() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Intensity", target: light, propertyName: "intensity", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_6__["ButtonLineComponent"], { label: "Dispose", onClick: function () {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_6__["ButtonLineComponent"], { label: "Dispose", onClick: function () {
                         light.dispose();
                         _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                     } })),
@@ -49879,7 +49917,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! babylonjs/Lights/Shadows/shadowGenerator */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__);
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
-/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
 
 
 
@@ -49984,10 +50022,10 @@ var CommonShadowLightPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "SHADOW GENERATOR" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__["OptionsLineComponent"], { label: "Type", options: typeGeneratorOptions, target: internals, propertyName: "generatorType" }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__["OptionsLineComponent"], { label: "Map size", options: mapSizeOptions, target: internals, propertyName: "mapSize" }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_8__["ButtonLineComponent"], { label: "Create generator", onClick: function () { return _this.createShadowGenerator(); } })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_8__["ButtonLineComponent"], { label: "Create generator", onClick: function () { return _this.createShadowGenerator(); } })),
             generator !== null &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "SHADOW GENERATOR" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_8__["ButtonLineComponent"], { label: "Dispose generator", onClick: function () { return _this.disposeShadowGenerator(); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_8__["ButtonLineComponent"], { label: "Dispose generator", onClick: function () { return _this.disposeShadowGenerator(); } }),
                     csmGenerator && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__["OptionsLineComponent"], { label: "Num cascades", options: numCascadesOptions, target: generator, propertyName: "numCascades", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Debug mode", target: generator, propertyName: "debug", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -50349,7 +50387,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
 /* harmony import */ var _lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../lines/optionsLineComponent */ "./components/actionTabs/lines/optionsLineComponent.tsx");
 /* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
-/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./components/actionTabs/lines/textInputLineComponent.tsx");
 /* harmony import */ var _animations_animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../animations/animationPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/animations/animationPropertyGridComponent.tsx");
 
@@ -50426,7 +50464,7 @@ var CommonMaterialPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Point cloud", target: material, propertyName: "pointsCloud", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Point size", target: material, propertyName: "pointSize", minimum: 0, maximum: 100, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Z-offset", target: material, propertyName: "zOffset", minimum: -10, maximum: 10, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_9__["ButtonLineComponent"], { label: "Dispose", onClick: function () {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_9__["ButtonLineComponent"], { label: "Dispose", onClick: function () {
                         material.dispose();
                         _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                     } })),
@@ -50559,7 +50597,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
 /* harmony import */ var _commonMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./commonMaterialPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/materials/commonMaterialPropertyGridComponent.tsx");
-/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
 /* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
 /* harmony import */ var _lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../lines/color3LineComponent */ "./components/actionTabs/lines/color3LineComponent.tsx");
@@ -50679,7 +50717,7 @@ var NodeMaterialPropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_4__["CommonMaterialPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, material: material, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "CONFIGURATION" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Ignore alpha", target: material, propertyName: "ignoreAlpha", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__["ButtonLineComponent"], { label: "Node Material Editor", onClick: function () { return _this.edit(); } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__["ButtonLineComponent"], { label: "Node Material Editor", onClick: function () { return _this.edit(); } })),
             this.renderInputValues(),
             this.renderTextures()));
     };
@@ -50735,19 +50773,12 @@ var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
     PBRMaterialPropertyGridComponent.prototype.switchAmbientMode = function (state) {
         this.props.material.debugMode = state ? 21 : 0;
     };
-    PBRMaterialPropertyGridComponent.prototype.switchMetallicMode = function (state) {
-        this.props.material.debugMode = state ? 62 : 0;
-    };
-    PBRMaterialPropertyGridComponent.prototype.switchRoughnessMode = function (state) {
-        this.props.material.debugMode = state ? 63 : 0;
-    };
     PBRMaterialPropertyGridComponent.prototype.renderTextures = function (onDebugSelectionChangeObservable) {
         var _this = this;
         var material = this.props.material;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "CHANNELS" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Albedo", texture: material.albedoTexture, propertyName: "albedoTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { customDebugAction: function (state) { return _this.switchMetallicMode(state); }, label: "Metallic", texture: material.metallicTexture, propertyName: "metallicTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { customDebugAction: function (state) { return _this.switchRoughnessMode(state); }, label: "Roughness", texture: material.metallicTexture, propertyName: "metallicTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Metallic Roughness", texture: material.metallicTexture, propertyName: "metallicTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Reflection", texture: material.reflectionTexture, propertyName: "reflectionTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Refraction", texture: material.refractionTexture, propertyName: "refractionTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Reflectivity", texture: material.reflectivityTexture, propertyName: "reflectivityTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
@@ -51246,7 +51277,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/controls/image");
 /* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__);
 /* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
-/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./components/actionTabs/lines/textInputLineComponent.tsx");
 /* harmony import */ var _animations_animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ../animations/animationPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/animations/animationPropertyGridComponent.tsx");
 /* harmony import */ var _popupComponent__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ../../../../popupComponent */ "./components/popupComponent.tsx");
@@ -51353,8 +51384,17 @@ var TexturePropertyGridComponent = /** @class */ (function (_super) {
         var texture = this.props.texture;
         var samplingMode = [
             { label: "Nearest", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].NEAREST_NEAREST },
-            { label: "Nearest & linear mip", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].NEAREST_LINEAR },
-            { label: "Linear", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].LINEAR_LINEAR_MIPLINEAR },
+            { label: "Linear", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].LINEAR_LINEAR },
+            { label: "Linear & linear mip", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].LINEAR_LINEAR_MIPLINEAR },
+            { label: "Linear & nearest mip", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].LINEAR_LINEAR_MIPNEAREST },
+            { label: "Nearest & linear mip", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].NEAREST_NEAREST_MIPLINEAR },
+            { label: "Nearest & nearest mip", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].NEAREST_NEAREST_MIPNEAREST },
+            { label: "Nearest/Linear", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].NEAREST_LINEAR },
+            { label: "Nearest/Linear & linear mip", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].NEAREST_LINEAR_MIPLINEAR },
+            { label: "Nearest/Linear & nearest mip", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].NEAREST_LINEAR_MIPNEAREST },
+            { label: "Linear/Nearest", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].LINEAR_NEAREST },
+            { label: "Linear/Nearest & linear mip", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].LINEAR_NEAREST_MIPLINEAR },
+            { label: "Linear/Nearest & nearest mip", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].LINEAR_NEAREST_MIPNEAREST },
         ];
         var coordinatesMode = [
             { label: "Explicit", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].EXPLICIT_MODE },
@@ -51383,7 +51423,7 @@ var TexturePropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "PREVIEW" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLineComponent"], { ref: this.textureLineRef, texture: texture, width: 256, height: 256, globalState: this.props.globalState }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_10__["FileButtonLineComponent"], { label: "Load texture from file", onClick: function (file) { return _this.updateTexture(file); }, accept: ".jpg, .png, .tga, .dds, .env" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_14__["ButtonLineComponent"], { label: "Edit", onClick: function () { return _this.openTextureEditor(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_14__["ButtonLineComponent"], { label: "Edit", onClick: function () { return _this.openTextureEditor(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_15__["TextInputLineComponent"], { label: "URL", value: textureUrl, lockObject: this.props.lockObject, onChange: function (url) {
                         texture.updateURL(url);
                         _this.forceRefresh();
@@ -51395,7 +51435,7 @@ var TexturePropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Width", value: texture.getSize().width.toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Height", value: texture.getSize().height.toString() }),
                 texture.isRenderTarget &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_14__["ButtonLineComponent"], { label: "Scale up", onClick: function () {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_14__["ButtonLineComponent"], { label: "Scale up", onClick: function () {
                             var scene = texture.getScene();
                             texture.scale(2);
                             setTimeout(function () {
@@ -51403,7 +51443,7 @@ var TexturePropertyGridComponent = /** @class */ (function (_super) {
                             });
                         } }),
                 texture.isRenderTarget &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_14__["ButtonLineComponent"], { label: "Scale down", onClick: function () {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_14__["ButtonLineComponent"], { label: "Scale down", onClick: function () {
                             var scene = texture.getScene();
                             texture.scale(0.5);
                             setTimeout(function () {
@@ -52260,7 +52300,7 @@ var PropertiesBar = /** @class */ (function (_super) {
         var _a = this.props, mipLevel = _a.mipLevel, setMipLevel = _a.setMipLevel, pixelData = _a.pixelData, resizeTexture = _a.resizeTexture, texture = _a.texture, face = _a.face, setFace = _a.setFace, saveTexture = _a.saveTexture, resetTexture = _a.resetTexture, uploadTexture = _a.uploadTexture;
         var maxLevels = Math.floor(Math.log2(Math.max(texture.getSize().width, texture.getSize().height)));
         var engine = texture.getScene().getEngine();
-        var mipsEnabled = (!texture.noMipmap && (engine.webGLVersion == 2 || engine._gl.getExtension('EXT_shader_texture_lod')));
+        var mipsEnabled = (!texture.noMipmap && engine.getCaps().textureLOD);
         return react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: 'properties' },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'tab', id: 'logo-tab' },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { className: 'icon', src: this._babylonLogo })),
@@ -52623,29 +52663,42 @@ var TextureCanvasManager = /** @class */ (function () {
         });
     };
     TextureCanvasManager.prototype.pushTexture = function () {
-        var _this = this;
         var _a;
-        if (this._canPush) {
-            this._target.update(this._originalTexture.invertY);
-            (_a = this._target._texture) === null || _a === void 0 ? void 0 : _a.updateSize(this._size.width, this._size.height);
-            if (this._editing3D) {
-                this._imageData = this._3DEngine.readPixels(0, 0, this._size.width, this._size.height);
-            }
-            else {
-                this._imageData = this._2DCanvas.getContext('2d').getImageData(0, 0, this._size.width, this._size.height).data;
-            }
-            this._canPush = false;
-            this._shouldPush = false;
-            setTimeout(function () {
-                _this._canPush = true;
-                if (_this._shouldPush) {
-                    _this.pushTexture();
+        return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function () {
+            var bufferView;
+            var _this = this;
+            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        if (!this._canPush) return [3 /*break*/, 4];
+                        this._target.update(this._originalTexture.invertY);
+                        (_a = this._target._texture) === null || _a === void 0 ? void 0 : _a.updateSize(this._size.width, this._size.height);
+                        if (!this._editing3D) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this._3DEngine.readPixels(0, 0, this._size.width, this._size.height)];
+                    case 1:
+                        bufferView = _b.sent();
+                        this._imageData = new Uint8Array(bufferView.buffer, 0, bufferView.byteLength);
+                        return [3 /*break*/, 3];
+                    case 2:
+                        this._imageData = this._2DCanvas.getContext('2d').getImageData(0, 0, this._size.width, this._size.height).data;
+                        _b.label = 3;
+                    case 3:
+                        this._canPush = false;
+                        this._shouldPush = false;
+                        setTimeout(function () {
+                            _this._canPush = true;
+                            if (_this._shouldPush) {
+                                _this.pushTexture();
+                            }
+                        }, this.PUSH_FREQUENCY);
+                        return [3 /*break*/, 5];
+                    case 4:
+                        this._shouldPush = true;
+                        _b.label = 5;
+                    case 5: return [2 /*return*/];
                 }
-            }, this.PUSH_FREQUENCY);
-        }
-        else {
-            this._shouldPush = true;
-        }
+            });
+        });
     };
     TextureCanvasManager.prototype.startPainting = function () {
         return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function () {
@@ -52686,8 +52739,9 @@ var TextureCanvasManager = /** @class */ (function () {
         }
         var editingAllChannels = true;
         this._channels.forEach(function (channel) {
-            if (!channel.editable)
+            if (!channel.editable) {
                 editingAllChannels = false;
+            }
         });
         var oldData;
         if (!editingAllChannels) {
@@ -52850,8 +52904,9 @@ var TextureCanvasManager = /** @class */ (function () {
     });
     Object.defineProperty(TextureCanvasManager.prototype, "mipLevel", {
         set: function (mipLevel) {
-            if (this._mipLevel === mipLevel)
+            if (this._mipLevel === mipLevel) {
                 return;
+            }
             this._mipLevel = mipLevel;
             this.grabOriginalTexture();
         },
@@ -52879,8 +52934,9 @@ var TextureCanvasManager = /** @class */ (function () {
         configurable: true
     });
     TextureCanvasManager.prototype.makePlane = function () {
-        if (this._plane)
+        if (this._plane) {
             this._plane.dispose();
+        }
         this._plane = babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_1__["PlaneBuilder"].CreatePlane("plane", { width: this._size.width, height: this._size.height }, this._scene);
         this._plane.enableEdgesRendering();
         this._plane.edgesWidth = 4.0;
@@ -53256,7 +53312,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _controls_colorPicker_colorPicker__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../../controls/colorPicker/colorPicker */ "./components/controls/colorPicker/colorPicker.tsx");
+/* harmony import */ var _sharedUiComponents_colorPicker_colorPicker__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../../../sharedUiComponents/colorPicker/colorPicker */ "./sharedUiComponents/colorPicker/colorPicker.tsx");
 
 
 
@@ -53295,7 +53351,7 @@ var ToolBar = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: 'active-color', style: { backgroundColor: this.props.metadata.color, opacity: this.props.metadata.alpha } }))),
             this.props.pickerOpen &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: 'color-picker', ref: this.props.pickerRef },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_colorPicker_colorPicker__WEBPACK_IMPORTED_MODULE_3__["ColorPicker"], { color: this.computeRGBAColor(), onColorChanged: function (color) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_colorPicker_colorPicker__WEBPACK_IMPORTED_MODULE_3__["ColorPicker"], { color: this.computeRGBAColor(), onColorChanged: function (color) {
                             var metadata = { color: color.toHexString(true), alpha: color.a };
                             if (metadata.color !== _this.props.metadata.color ||
                                 metadata.alpha !== _this.props.metadata.alpha) {
@@ -53429,11 +53485,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
 /* harmony import */ var _lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../lines/color3LineComponent */ "./components/actionTabs/lines/color3LineComponent.tsx");
 /* harmony import */ var _lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../../lines/optionsLineComponent */ "./components/actionTabs/lines/optionsLineComponent.tsx");
-/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./components/actionTabs/lines/textInputLineComponent.tsx");
 /* harmony import */ var _animations_animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../animations/animationPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/animations/animationPropertyGridComponent.tsx");
-/* harmony import */ var _variantsPropertyGridComponent__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ../variantsPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/variantsPropertyGridComponent.tsx");
-/* harmony import */ var _lines_hexLineComponent__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ../../../lines/hexLineComponent */ "./components/actionTabs/lines/hexLineComponent.tsx");
+/* harmony import */ var _commonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ../commonPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/commonPropertyGridComponent.tsx");
+/* harmony import */ var _variantsPropertyGridComponent__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ../variantsPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/variantsPropertyGridComponent.tsx");
+/* harmony import */ var _lines_hexLineComponent__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ../../../lines/hexLineComponent */ "./components/actionTabs/lines/hexLineComponent.tsx");
+
 
 
 
@@ -53777,11 +53835,12 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
                         _this.forceUpdate();
                     }, extractValue: function () { return (mesh.material ? sortedMaterials.indexOf(mesh.material) : -1); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
                 mesh.isAnInstance && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Source", value: mesh.sourceMesh.name, onLink: function () { return _this.onSourceMeshLink(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_13__["ButtonLineComponent"], { label: "Dispose", onClick: function () {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_13__["ButtonLineComponent"], { label: "Dispose", onClick: function () {
                         mesh.dispose();
                         _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                     } })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_variantsPropertyGridComponent__WEBPACK_IMPORTED_MODULE_16__["VariantsPropertyGridComponent"], { host: mesh, lockObject: this.props.lockObject, globalState: this.props.globalState }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_16__["CommonPropertyGridComponent"], { host: mesh, lockObject: this.props.lockObject, globalState: this.props.globalState }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_variantsPropertyGridComponent__WEBPACK_IMPORTED_MODULE_17__["VariantsPropertyGridComponent"], { host: mesh, lockObject: this.props.lockObject, globalState: this.props.globalState }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "TRANSFORMS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_6__["Vector3LineComponent"], { label: "Position", target: mesh, propertyName: "position", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 !mesh.rotationQuaternion && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_6__["Vector3LineComponent"], { label: "Rotation", useEuler: this.props.globalState.onlyUseEulers, target: mesh, propertyName: "rotation", step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -53796,7 +53855,7 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
                 scene.fogMode !== babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Scene"].FOGMODE_NONE && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Apply fog", target: mesh, propertyName: "applyFog", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 !mesh.parent && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Infinite distance", target: mesh, propertyName: "infiniteDistance", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Rendering group ID", decimalCount: 0, target: mesh, propertyName: "renderingGroupId", minimum: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["RenderingManager"].MIN_RENDERINGGROUPS, maximum: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["RenderingManager"].MAX_RENDERINGGROUPS - 1, step: 1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_hexLineComponent__WEBPACK_IMPORTED_MODULE_17__["HexLineComponent"], { isInteger: true, lockObject: this.props.lockObject, label: "Layer mask", target: mesh, propertyName: "layerMask", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_hexLineComponent__WEBPACK_IMPORTED_MODULE_18__["HexLineComponent"], { isInteger: true, lockObject: this.props.lockObject, label: "Layer mask", target: mesh, propertyName: "layerMask", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             mesh.morphTargetManager != null && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "MORPH TARGETS", closed: true }, morphTargets.map(function (mt, i) {
                 return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { key: i, label: mt.name, target: mt, propertyName: "influence", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: _this.props.onPropertyChangedObservable });
             }))),
@@ -54071,10 +54130,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
 /* harmony import */ var _lines_quaternionLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/quaternionLineComponent */ "./components/actionTabs/lines/quaternionLineComponent.tsx");
 /* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
-/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./components/actionTabs/lines/textInputLineComponent.tsx");
 /* harmony import */ var _animations_animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../animations/animationPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/animations/animationPropertyGridComponent.tsx");
-/* harmony import */ var _variantsPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../variantsPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/variantsPropertyGridComponent.tsx");
+/* harmony import */ var _commonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../commonPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/commonPropertyGridComponent.tsx");
+/* harmony import */ var _variantsPropertyGridComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../variantsPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/variantsPropertyGridComponent.tsx");
+
 
 
 
@@ -54105,11 +54166,12 @@ var TransformNodePropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "IsEnabled", isSelected: function () { return transformNode.isEnabled(); }, onSelect: function (value) { return transformNode.setEnabled(value); } }),
                 transformNode.parent &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Parent", value: transformNode.parent.name, onLink: function () { return _this.props.globalState.onSelectionChangedObservable.notifyObservers(transformNode.parent); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_8__["ButtonLineComponent"], { label: "Dispose", onClick: function () {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_8__["ButtonLineComponent"], { label: "Dispose", onClick: function () {
                         transformNode.dispose();
                         _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                     } })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_variantsPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__["VariantsPropertyGridComponent"], { host: transformNode, lockObject: this.props.lockObject, globalState: this.props.globalState }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__["CommonPropertyGridComponent"], { host: transformNode, lockObject: this.props.lockObject, globalState: this.props.globalState }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_variantsPropertyGridComponent__WEBPACK_IMPORTED_MODULE_12__["VariantsPropertyGridComponent"], { host: transformNode, lockObject: this.props.lockObject, globalState: this.props.globalState }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "TRANSFORMATIONS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Vector3LineComponent"], { label: "Position", target: transformNode, propertyName: "position", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 !transformNode.rotationQuaternion &&
@@ -54540,7 +54602,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
 /* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
-/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
 /* harmony import */ var _lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../lines/textureLinkLineComponent */ "./components/actionTabs/lines/textureLinkLineComponent.tsx");
 /* harmony import */ var _lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../lines/optionsLineComponent */ "./components/actionTabs/lines/optionsLineComponent.tsx");
 /* harmony import */ var babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! babylonjs/Particles/particleSystem */ "babylonjs/Misc/observable");
@@ -54640,7 +54702,7 @@ var ParticleSystemPropertyGridComponent = /** @class */ (function (_super) {
         var system = this.props.system;
         if (system instanceof babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["GPUParticleSystem"]) {
             var isStarted_1 = system.isStarted() && !system.isStopped();
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_6__["ButtonLineComponent"], { label: isStarted_1 ? "Stop" : "Start", onClick: function () {
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_6__["ButtonLineComponent"], { label: isStarted_1 ? "Stop" : "Start", onClick: function () {
                     if (isStarted_1) {
                         system.stop();
                         system.reset();
@@ -54654,7 +54716,7 @@ var ParticleSystemPropertyGridComponent = /** @class */ (function (_super) {
         var isStarted = system.isStarted();
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
             !system.isStopping() &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_6__["ButtonLineComponent"], { label: isStarted ? "Stop" : "Start", onClick: function () {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_6__["ButtonLineComponent"], { label: isStarted ? "Stop" : "Start", onClick: function () {
                         if (isStarted) {
                             system.stop();
                         }
@@ -54796,18 +54858,18 @@ var ParticleSystemPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_13__["SliderLineComponent"], { label: "Update speed", target: system, propertyName: "updateSpeed", minimum: 0, maximum: 0.1, decimalCount: 3, step: 0.001, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "COMMANDS" },
                 this.renderControls(),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_6__["ButtonLineComponent"], { label: "Dispose", onClick: function () {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_6__["ButtonLineComponent"], { label: "Dispose", onClick: function () {
                         _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                         system.dispose();
                     } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "FILE" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_22__["FileButtonLineComponent"], { label: "Load", onClick: function (file) { return _this.loadFromFile(file); }, accept: ".json" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_6__["ButtonLineComponent"], { label: "Save", onClick: function () { return _this.saveToFile(); } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_6__["ButtonLineComponent"], { label: "Save", onClick: function () { return _this.saveToFile(); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "SNIPPET" },
                 system.snippetId &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Snippet ID", value: system.snippetId }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_6__["ButtonLineComponent"], { label: "Load from snippet server", onClick: function () { return _this.loadFromSnippet(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_6__["ButtonLineComponent"], { label: "Save to snippet server", onClick: function () { return _this.saveToSnippet(); } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_6__["ButtonLineComponent"], { label: "Load from snippet server", onClick: function () { return _this.loadFromSnippet(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_6__["ButtonLineComponent"], { label: "Save to snippet server", onClick: function () { return _this.saveToSnippet(); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "EMITTER", closed: true },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_8__["OptionsLineComponent"], { label: "Emitter", options: emitterOptions, target: system, propertyName: "emitter", noDirectUpdate: true, onSelect: function (value) {
                         switch (value) {
@@ -55068,7 +55130,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var babylonjs_Misc_gradients__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/gradients */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_gradients__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_gradients__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
 /* harmony import */ var _factorGradientStepGridComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./factorGradientStepGridComponent */ "./components/actionTabs/tabs/propertyGrids/particleSystems/factorGradientStepGridComponent.tsx");
 /* harmony import */ var _colorGradientStepGridComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./colorGradientStepGridComponent */ "./components/actionTabs/tabs/propertyGrids/particleSystems/colorGradientStepGridComponent.tsx");
 /* harmony import */ var _lines_linkButtonComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/linkButtonComponent */ "./components/actionTabs/lines/linkButtonComponent.tsx");
@@ -55159,7 +55221,7 @@ var ValueGradientGridComponent = /** @class */ (function (_super) {
                         }
                     })),
             (!gradients || gradients.length === 0) &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_3__["ButtonLineComponent"], { label: "Use " + this.props.label, onClick: function () {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_3__["ButtonLineComponent"], { label: "Use " + this.props.label, onClick: function () {
                         _this.props.onCreateRequired();
                         _this.forceUpdate();
                     } })));
@@ -55189,7 +55251,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
 /* harmony import */ var _lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/color3LineComponent */ "./components/actionTabs/lines/color3LineComponent.tsx");
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
-/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./components/actionTabs/lines/textInputLineComponent.tsx");
 
 
@@ -55222,7 +55284,7 @@ var CommonPostProcessPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_2__["CheckBoxLineComponent"], { label: "Pixel perfect", target: postProcess, propertyName: "enablePixelPerfectMode", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_2__["CheckBoxLineComponent"], { label: "Fullscreen viewport", target: postProcess, propertyName: "forceFullscreenViewport", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Samples", target: postProcess, propertyName: "samples", minimum: 1, maximum: 8, step: 1, decimalCount: 0, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_7__["ButtonLineComponent"], { label: "Dispose", onClick: function () {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_7__["ButtonLineComponent"], { label: "Dispose", onClick: function () {
                         postProcess.dispose();
                         _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                     } }))));
@@ -55299,7 +55361,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Materials_imageProcessingConfiguration__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! babylonjs/Materials/imageProcessingConfiguration */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_imageProcessingConfiguration__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_imageProcessingConfiguration__WEBPACK_IMPORTED_MODULE_8__);
 /* harmony import */ var _lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../lines/color3LineComponent */ "./components/actionTabs/lines/color3LineComponent.tsx");
-/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
 
 
 
@@ -55372,8 +55434,8 @@ var DefaultRenderingPipelinePropertyGridComponent = /** @class */ (function (_su
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, onValueChanged: function () { return _this.forceUpdate(); }, propertyName: "imageProcessingEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 renderPipeline.imageProcessing &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: "Convert clear color to linear", onClick: function () { return renderPipeline.scene.clearColor = renderPipeline.scene.clearColor.toLinearSpace(); } }),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: "Convert clear color to gamma", onClick: function () { return renderPipeline.scene.clearColor = renderPipeline.scene.clearColor.toGammaSpace(); } }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: "Convert clear color to linear", onClick: function () { return renderPipeline.scene.clearColor = renderPipeline.scene.clearColor.toLinearSpace(); } }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: "Convert clear color to gamma", onClick: function () { return renderPipeline.scene.clearColor = renderPipeline.scene.clearColor.toGammaSpace(); } }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { minimum: 0, maximum: 4, step: 0.1, label: "Contrast", target: renderPipeline.imageProcessing, propertyName: "contrast", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { minimum: 0, maximum: 4, step: 0.1, label: "Exposure", target: renderPipeline.imageProcessing, propertyName: "exposure", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Tone mapping", target: renderPipeline.imageProcessing, propertyName: "toneMappingEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -55468,7 +55530,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _commonPostProcessPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./commonPostProcessPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/postProcesses/commonPostProcessPropertyGridComponent.tsx");
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
-/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
 
 
 
@@ -55490,7 +55552,7 @@ var PostProcessPropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonPostProcessPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonPostProcessPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, postProcess: postProcess, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             postProcess.nodeMaterialSource &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "CONFIGURATION" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Node Material Editor", onClick: function () { return _this.edit(); } }))));
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Node Material Editor", onClick: function () { return _this.edit(); } }))));
     };
     return PostProcessPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -55736,7 +55798,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
 /* harmony import */ var _lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../lines/optionsLineComponent */ "./components/actionTabs/lines/optionsLineComponent.tsx");
-/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
 /* harmony import */ var _animations_animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./animations/animationPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/animations/animationPropertyGridComponent.tsx");
 
 
@@ -55877,7 +55939,7 @@ var ScenePropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "COLLISIONS", closed: true },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_10__["Vector3LineComponent"], { label: "Gravity", target: scene, propertyName: "gravity", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "SHADOWS", closed: true },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_14__["ButtonLineComponent"], { label: "Normalize scene", onClick: function () { return _this.normalizeScene(); } }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_14__["ButtonLineComponent"], { label: "Normalize scene", onClick: function () { return _this.normalizeScene(); } }))));
     };
     return ScenePropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -55902,7 +55964,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./components/actionTabs/lines/textInputLineComponent.tsx");
-/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
 /* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
 
@@ -55928,12 +55990,12 @@ var SoundPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Status", value: sound.isPaused ? "Paused" : (sound.isPlaying ? "Playing" : "Stopped") })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "COMMANDS" },
                 sound.isPlaying &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__["ButtonLineComponent"], { label: "Pause", onClick: function () {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__["ButtonLineComponent"], { label: "Pause", onClick: function () {
                             sound.pause();
                             _this.forceUpdate();
                         } }),
                 !sound.isPlaying &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__["ButtonLineComponent"], { label: "Play", onClick: function () {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__["ButtonLineComponent"], { label: "Play", onClick: function () {
                             sound.play();
                             _this.forceUpdate();
                         } }),
@@ -55972,7 +56034,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
 /* harmony import */ var _lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../lines/textureLinkLineComponent */ "./components/actionTabs/lines/textureLinkLineComponent.tsx");
-/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
 /* harmony import */ var _lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../lines/fileButtonLineComponent */ "./components/actionTabs/lines/fileButtonLineComponent.tsx");
 /* harmony import */ var _lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../../lines/optionsLineComponent */ "./components/actionTabs/lines/optionsLineComponent.tsx");
 
@@ -56108,16 +56170,16 @@ var SpriteManagerPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Capacity", value: spriteManager.capacity.toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_9__["TextureLinkLineComponent"], { label: "Texture", texture: spriteManager.texture, onSelectionChangedObservable: this.props.onSelectionChangedObservable }),
                 spriteManager.sprites.length < spriteManager.capacity &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: "Add new sprite", onClick: function () { return _this.addNewSprite(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: "Dispose", onClick: function () { return _this.disposeManager(); } })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: "Add new sprite", onClick: function () { return _this.addNewSprite(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: "Dispose", onClick: function () { return _this.disposeManager(); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "FILE" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_11__["FileButtonLineComponent"], { label: "Load", onClick: function (file) { return _this.loadFromFile(file); }, accept: ".json" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: "Save", onClick: function () { return _this.saveToFile(); } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: "Save", onClick: function () { return _this.saveToFile(); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "SNIPPET" },
                 spriteManager.snippetId &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Snippet ID", value: spriteManager.snippetId }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: "Load from snippet server", onClick: function () { return _this.loadFromSnippet(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: "Save to snippet server", onClick: function () { return _this.saveToSnippet(); } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: "Load from snippet server", onClick: function () { return _this.loadFromSnippet(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: "Save to snippet server", onClick: function () { return _this.saveToSnippet(); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "PROPERTIES" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Pickable", target: spriteManager, propertyName: "isPickable", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Fog enabled", target: spriteManager, propertyName: "fogEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -56156,7 +56218,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_color4LineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../lines/color4LineComponent */ "./components/actionTabs/lines/color4LineComponent.tsx");
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
-/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
 /* harmony import */ var _textureHelper__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../../../textureHelper */ "./textureHelper.ts");
 
 
@@ -56274,7 +56336,7 @@ var SpritePropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Unique ID", value: sprite.uniqueId.toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Link to manager", value: manager.name, onLink: function () { return _this.onManagerLink(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Visible", target: sprite, propertyName: "isVisible", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: "Dispose", onClick: function () { return _this.disposeSprite(); } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: "Dispose", onClick: function () { return _this.disposeSprite(); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "PROPERTIES" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_6__["Vector3LineComponent"], { label: "Position", target: sprite, propertyName: "position", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Pickable", target: sprite, propertyName: "isPickable", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -56300,7 +56362,7 @@ var SpritePropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { label: "End cell", isInteger: true, lockObject: this.props.lockObject, target: sprite, propertyName: "toIndex", min: 0, max: maxCellCount, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Loop", target: sprite, propertyName: "loopAnimation", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { label: "Delay", lockObject: this.props.lockObject, target: sprite, propertyName: "delay", digits: 0, min: 0, isInteger: true, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: sprite.animationStarted ? "Stop" : "Start", onClick: function () { return _this.switchPlayStopState(); } }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: sprite.animationStarted ? "Stop" : "Start", onClick: function () { return _this.switchPlayStopState(); } }))));
     };
     return SpritePropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -56524,7 +56586,7 @@ var StatisticsTabComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "SYSTEM INFO" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Resolution", value: engine.getRenderWidth() + "x" + engine.getRenderHeight() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Hardware scaling level", value: engine.getHardwareScalingLevel().toString() }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "WebGL version", value: engine.webGLVersion.toString() }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Engine", value: engine.description }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_booleanLineComponent__WEBPACK_IMPORTED_MODULE_7__["BooleanLineComponent"], { label: "Std derivatives", value: caps.standardDerivatives }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_booleanLineComponent__WEBPACK_IMPORTED_MODULE_7__["BooleanLineComponent"], { label: "Compressed textures", value: caps.s3tc !== undefined }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_booleanLineComponent__WEBPACK_IMPORTED_MODULE_7__["BooleanLineComponent"], { label: "Hardware instances", value: caps.instancedArrays }),
@@ -56677,13 +56739,10 @@ var GLTFComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Validate", target: loaderState, propertyName: "validate" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_messageLineComponent__WEBPACK_IMPORTED_MODULE_6__["MessageLineComponent"], { text: "You need to reload your file to see these changes" })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "GLTF EXTENSIONS", closed: true },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "MSFT_lod", isSelected: function () { return extensionStates["MSFT_lod"].enabled; }, onSelect: function (value) { return (extensionStates["MSFT_lod"].enabled = value); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { label: "Maximum LODs", target: extensionStates["MSFT_lod"], propertyName: "maxLODsToLoad", additionalClass: "gltf-extension-property", isInteger: true }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "MSFT_minecraftMesh", isSelected: function () { return extensionStates["MSFT_minecraftMesh"].enabled; }, onSelect: function (value) { return (extensionStates["MSFT_minecraftMesh"].enabled = value); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "MSFT_sRGBFactors", isSelected: function () { return extensionStates["MSFT_sRGBFactors"].enabled; }, onSelect: function (value) { return (extensionStates["MSFT_sRGBFactors"].enabled = value); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "MSFT_audio_emitter", isSelected: function () { return extensionStates["MSFT_audio_emitter"].enabled; }, onSelect: function (value) { return (extensionStates["MSFT_audio_emitter"].enabled = value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "EXT_lights_image_based", isSelected: function () { return extensionStates["EXT_lights_image_based"].enabled; }, onSelect: function (value) { return (extensionStates["EXT_lights_image_based"].enabled = value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "EXT_mesh_gpu_instancing", isSelected: function () { return extensionStates["EXT_mesh_gpu_instancing"].enabled; }, onSelect: function (value) { return (extensionStates["EXT_mesh_gpu_instancing"].enabled = value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "EXT_texture_webp", isSelected: function () { return extensionStates["EXT_texture_webp"].enabled; }, onSelect: function (value) { return (extensionStates["EXT_texture_webp"].enabled = value); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_draco_mesh_compression", isSelected: function () { return extensionStates["KHR_draco_mesh_compression"].enabled; }, onSelect: function (value) { return (extensionStates["KHR_draco_mesh_compression"].enabled = value); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_mesh_quantization", isSelected: function () { return extensionStates["KHR_mesh_quantization"].enabled; }, onSelect: function (value) { return (extensionStates["KHR_mesh_quantization"].enabled = value); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_materials_pbrSpecularGloss...", isSelected: function () { return extensionStates["KHR_materials_pbrSpecularGlossiness"].enabled; }, onSelect: function (value) { return (extensionStates["KHR_materials_pbrSpecularGlossiness"].enabled = value); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_materials_clearcoat", isSelected: function () { return extensionStates["KHR_materials_clearcoat"].enabled; }, onSelect: function (value) { return (extensionStates["KHR_materials_clearcoat"].enabled = value); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_materials_ior", isSelected: function () { return extensionStates["KHR_materials_ior"].enabled; }, onSelect: function (value) { return (extensionStates["KHR_materials_ior"].enabled = value); } }),
@@ -56693,12 +56752,16 @@ var GLTFComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_materials_variants", isSelected: function () { return extensionStates["KHR_materials_variants"].enabled; }, onSelect: function (value) { return (extensionStates["KHR_materials_variants"].enabled = value); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_materials_transmission", isSelected: function () { return extensionStates["KHR_materials_transmission"].enabled; }, onSelect: function (value) { return (extensionStates["KHR_materials_transmission"].enabled = value); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_materials_translucency", isSelected: function () { return extensionStates["KHR_materials_translucency"].enabled; }, onSelect: function (value) { return (extensionStates["KHR_materials_translucency"].enabled = value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_mesh_quantization", isSelected: function () { return extensionStates["KHR_mesh_quantization"].enabled; }, onSelect: function (value) { return (extensionStates["KHR_mesh_quantization"].enabled = value); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_lights_punctual", isSelected: function () { return extensionStates["KHR_lights_punctual"].enabled; }, onSelect: function (value) { return (extensionStates["KHR_lights_punctual"].enabled = value); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_texture_basisu", isSelected: function () { return extensionStates["KHR_texture_basisu"].enabled; }, onSelect: function (value) { return (extensionStates["KHR_texture_basisu"].enabled = value); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_texture_transform", isSelected: function () { return extensionStates["KHR_texture_transform"].enabled; }, onSelect: function (value) { return (extensionStates["KHR_texture_transform"].enabled = value); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "EXT_lights_image_based", isSelected: function () { return extensionStates["EXT_lights_image_based"].enabled; }, onSelect: function (value) { return (extensionStates["EXT_lights_image_based"].enabled = value); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "EXT_mesh_gpu_instancing", isSelected: function () { return extensionStates["EXT_mesh_gpu_instancing"].enabled; }, onSelect: function (value) { return (extensionStates["EXT_mesh_gpu_instancing"].enabled = value); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "EXT_texture_webp", isSelected: function () { return extensionStates["EXT_texture_webp"].enabled; }, onSelect: function (value) { return (extensionStates["EXT_texture_webp"].enabled = value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_xmp_json_ld", isSelected: function () { return extensionStates["KHR_xmp_json_ld"].enabled; }, onSelect: function (value) { return (extensionStates["KHR_xmp_json_ld"].enabled = value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "MSFT_lod", isSelected: function () { return extensionStates["MSFT_lod"].enabled; }, onSelect: function (value) { return (extensionStates["MSFT_lod"].enabled = value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { label: "Maximum LODs", target: extensionStates["MSFT_lod"], propertyName: "maxLODsToLoad", additionalClass: "gltf-extension-property", isInteger: true }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "MSFT_minecraftMesh", isSelected: function () { return extensionStates["MSFT_minecraftMesh"].enabled; }, onSelect: function (value) { return (extensionStates["MSFT_minecraftMesh"].enabled = value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "MSFT_sRGBFactors", isSelected: function () { return extensionStates["MSFT_sRGBFactors"].enabled; }, onSelect: function (value) { return (extensionStates["MSFT_sRGBFactors"].enabled = value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "MSFT_audio_emitter", isSelected: function () { return extensionStates["MSFT_audio_emitter"].enabled; }, onSelect: function (value) { return (extensionStates["MSFT_audio_emitter"].enabled = value); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_messageLineComponent__WEBPACK_IMPORTED_MODULE_6__["MessageLineComponent"], { text: "You need to reload your file to see these changes" })),
             loaderState["validate"] && this.props.globalState.validationResults && this.renderValidation()));
     };
@@ -56724,7 +56787,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _paneComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../paneComponent */ "./components/actionTabs/paneComponent.tsx");
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
-/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
 /* harmony import */ var babylonjs_Misc_videoRecorder__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Misc/videoRecorder */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_videoRecorder__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_videoRecorder__WEBPACK_IMPORTED_MODULE_5__);
 /* harmony import */ var _tools_gltfComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./tools/gltfComponent */ "./components/actionTabs/tabs/tools/gltfComponent.tsx");
@@ -56983,10 +57046,10 @@ var ToolsTabComponent = /** @class */ (function (_super) {
         ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "CAPTURE" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Screenshot", onClick: function () { return _this.captureScreenshot(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: this.state.tag, onClick: function () { return _this.recordVideo(); } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Screenshot", onClick: function () { return _this.captureScreenshot(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: this.state.tag, onClick: function () { return _this.recordVideo(); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "CAPTURE WITH RTT" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Capture", onClick: function () { return _this.captureRender(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Capture", onClick: function () { return _this.captureRender(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector3Line" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { label: "Precision", target: this._screenShotSize, propertyName: 'precision', onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_10__["CheckBoxLineComponent"], { label: "Use Width/Height", onSelect: function (value) {
@@ -57001,18 +57064,18 @@ var ToolsTabComponent = /** @class */ (function (_super) {
                 this._crunchingGIF &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_messageLineComponent__WEBPACK_IMPORTED_MODULE_14__["MessageLineComponent"], { text: "Creating the GIF file..." }),
                 !this._crunchingGIF &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: this._gifRecorder ? "Stop" : "Record", onClick: function () { return _this.recordGIF(); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: this._gifRecorder ? "Stop" : "Record", onClick: function () { return _this.recordGIF(); } }),
                 !this._crunchingGIF && !this._gifRecorder &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { label: "Resolution", isInteger: true, target: this._gifOptions, propertyName: "width" }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { label: "Frequency (ms)", isInteger: true, target: this._gifOptions, propertyName: "frequency" }))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "REPLAY" },
                 !this.props.globalState.recorder.isRecording &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Start recording", onClick: function () { return _this.startRecording(); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Start recording", onClick: function () { return _this.startRecording(); } }),
                 this.props.globalState.recorder.isRecording &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_indentedTextLineComponent__WEBPACK_IMPORTED_MODULE_16__["IndentedTextLineComponent"], { value: "Record in progress" }),
                 this.props.globalState.recorder.isRecording &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Generate delta file", onClick: function () { return _this.exportReplay(); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Generate delta file", onClick: function () { return _this.exportReplay(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_15__["FileButtonLineComponent"], { label: "Apply delta file", onClick: function (file) { return _this.applyDelta(file); }, accept: ".json" })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "SCENE IMPORT" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_fileMultipleButtonLineComponent__WEBPACK_IMPORTED_MODULE_12__["FileMultipleButtonLineComponent"], { label: "Import animations", accept: "gltf", onClick: function (evt) { return _this.importAnimations(evt); } }),
@@ -57027,10 +57090,10 @@ var ToolsTabComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_11__["TextLineComponent"], { label: "Please wait..exporting", ignoreValue: true }),
                 !this._isExporting &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Export to GLB", onClick: function () { return _this.exportGLTF(); } }),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Export to Babylon", onClick: function () { return _this.exportBabylon(); } }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Export to GLB", onClick: function () { return _this.exportGLTF(); } }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Export to Babylon", onClick: function () { return _this.exportBabylon(); } }),
                         !scene.getEngine().premultipliedAlpha && scene.environmentTexture && scene.environmentTexture._prefiltered && scene.activeCamera &&
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Generate .env texture", onClick: function () { return _this.createEnvTexture(); } }))),
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Generate .env texture", onClick: function () { return _this.createEnvTexture(); } }))),
             BABYLON.GLTFFileLoader &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tools_gltfComponent__WEBPACK_IMPORTED_MODULE_6__["GLTFComponent"], { scene: scene, globalState: this.props.globalState })));
     };
@@ -57082,303 +57145,6 @@ var TabsComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "panes" }, this.props.children[this.props.selectedIndex])));
     };
     return TabsComponent;
-}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
-
-
-
-/***/ }),
-
-/***/ "./components/controls/colorPicker/colorComponentEntry.tsx":
-/*!*****************************************************************!*\
-  !*** ./components/controls/colorPicker/colorComponentEntry.tsx ***!
-  \*****************************************************************/
-/*! exports provided: ColorComponentEntry */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ColorComponentEntry", function() { return ColorComponentEntry; });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-
-
-var ColorComponentEntry = /** @class */ (function (_super) {
-    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ColorComponentEntry, _super);
-    function ColorComponentEntry(props) {
-        return _super.call(this, props) || this;
-    }
-    ColorComponentEntry.prototype.updateValue = function (valueString) {
-        if (/[^0-9\.\-]/g.test(valueString)) {
-            return;
-        }
-        var valueAsNumber = parseInt(valueString);
-        if (isNaN(valueAsNumber)) {
-            return;
-        }
-        if (this.props.max != undefined && (valueAsNumber > this.props.max)) {
-            valueAsNumber = this.props.max;
-        }
-        if (this.props.min != undefined && (valueAsNumber < this.props.min)) {
-            valueAsNumber = this.props.min;
-        }
-        this.props.onChange(valueAsNumber);
-    };
-    ColorComponentEntry.prototype.render = function () {
-        var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-component" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-component-value" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", step: 1, className: "numeric-input", value: this.props.value, onChange: function (evt) { return _this.updateValue(evt.target.value); } })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-component-label" }, this.props.label)));
-    };
-    return ColorComponentEntry;
-}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
-
-
-
-/***/ }),
-
-/***/ "./components/controls/colorPicker/colorPicker.scss":
-/*!**********************************************************!*\
-  !*** ./components/controls/colorPicker/colorPicker.scss ***!
-  \**********************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-var api = __webpack_require__(/*! ../../../../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js */ "../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js");
-            var content = __webpack_require__(/*! !../../../../../node_modules/css-loader/dist/cjs.js!../../../../../node_modules/sass-loader/dist/cjs.js!./colorPicker.scss */ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/controls/colorPicker/colorPicker.scss");
-
-            content = content.__esModule ? content.default : content;
-
-            if (typeof content === 'string') {
-              content = [[module.i, content, '']];
-            }
-
-var options = {};
-
-options.insert = "head";
-options.singleton = false;
-
-var update = api(content, options);
-
-
-
-module.exports = content.locals || {};
-
-/***/ }),
-
-/***/ "./components/controls/colorPicker/colorPicker.tsx":
-/*!*********************************************************!*\
-  !*** ./components/controls/colorPicker/colorPicker.tsx ***!
-  \*********************************************************/
-/*! exports provided: ColorPicker */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ColorPicker", function() { return ColorPicker; });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./colorComponentEntry */ "./components/controls/colorPicker/colorComponentEntry.tsx");
-/* harmony import */ var _hexColor__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./hexColor */ "./components/controls/colorPicker/hexColor.tsx");
-
-
-
-
-
-__webpack_require__(/*! ./colorPicker.scss */ "./components/controls/colorPicker/colorPicker.scss");
-/**
- * Class used to create a color picker
- */
-var ColorPicker = /** @class */ (function (_super) {
-    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ColorPicker, _super);
-    function ColorPicker(props) {
-        var _this = _super.call(this, props) || this;
-        if (_this.props.color instanceof babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"]) {
-            _this.state = { color: new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"](_this.props.color.r, _this.props.color.g, _this.props.color.b), alpha: _this.props.color.a };
-        }
-        else {
-            _this.state = { color: _this.props.color.clone(), alpha: 1 };
-        }
-        _this._saturationRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
-        _this._hueRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
-        return _this;
-    }
-    ColorPicker.prototype.onSaturationPointerDown = function (evt) {
-        this._evaluateSaturation(evt);
-        this._isSaturationPointerDown = true;
-        evt.currentTarget.setPointerCapture(evt.pointerId);
-    };
-    ColorPicker.prototype.onSaturationPointerUp = function (evt) {
-        this._isSaturationPointerDown = false;
-        evt.currentTarget.releasePointerCapture(evt.pointerId);
-    };
-    ColorPicker.prototype.onSaturationPointerMove = function (evt) {
-        if (!this._isSaturationPointerDown) {
-            return;
-        }
-        this._evaluateSaturation(evt);
-    };
-    ColorPicker.prototype.onHuePointerDown = function (evt) {
-        this._evaluateHue(evt);
-        this._isHuePointerDown = true;
-        evt.currentTarget.setPointerCapture(evt.pointerId);
-    };
-    ColorPicker.prototype.onHuePointerUp = function (evt) {
-        this._isHuePointerDown = false;
-        evt.currentTarget.releasePointerCapture(evt.pointerId);
-    };
-    ColorPicker.prototype.onHuePointerMove = function (evt) {
-        if (!this._isHuePointerDown) {
-            return;
-        }
-        this._evaluateHue(evt);
-    };
-    ColorPicker.prototype._evaluateSaturation = function (evt) {
-        var left = evt.nativeEvent.offsetX;
-        var top = evt.nativeEvent.offsetY;
-        var saturation = Math.min(1, Math.max(0.0001, left / this._saturationRef.current.clientWidth));
-        var value = Math.min(1, Math.max(0.0001, 1 - (top / this._saturationRef.current.clientHeight)));
-        if (this.props.debugMode) {
-            console.log("Saturation: " + saturation);
-            console.log("Value: " + value);
-        }
-        var hsv = this.state.color.toHSV();
-        babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].HSVtoRGBToRef(hsv.r, saturation, value, this.state.color);
-        this.setState({ color: this.state.color });
-    };
-    ColorPicker.prototype._evaluateHue = function (evt) {
-        var left = evt.nativeEvent.offsetX;
-        var hue = 360 * Math.min(0.9999, Math.max(0.0001, left / this._hueRef.current.clientWidth));
-        if (this.props.debugMode) {
-            console.log("Hue: " + hue);
-        }
-        var hsv = this.state.color.toHSV();
-        babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].HSVtoRGBToRef(hue, Math.max(hsv.g, 0.0001), Math.max(hsv.b, 0.0001), this.state.color);
-        this.setState({ color: this.state.color });
-    };
-    ColorPicker.prototype.componentDidUpdate = function () {
-        this.raiseOnColorChanged();
-    };
-    ColorPicker.prototype.raiseOnColorChanged = function () {
-        if (!this.props.onColorChanged) {
-            return;
-        }
-        if (this.props.color instanceof babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"]) {
-            var newColor4 = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"].FromColor3(this.state.color, this.state.alpha);
-            this.props.onColorChanged(newColor4);
-            return;
-        }
-        this.props.onColorChanged(this.state.color.clone());
-    };
-    ColorPicker.prototype.render = function () {
-        var _this = this;
-        var colorHex = this.state.color.toHexString();
-        var hsv = this.state.color.toHSV();
-        var colorRef = new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"]();
-        babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].HSVtoRGBToRef(hsv.r, 1, 1, colorRef);
-        var colorHexRef = colorRef.toHexString();
-        var hasAlpha = this.props.color instanceof babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"];
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-container" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation", onPointerMove: function (e) { return _this.onSaturationPointerMove(e); }, onPointerDown: function (e) { return _this.onSaturationPointerDown(e); }, onPointerUp: function (e) { return _this.onSaturationPointerUp(e); }, ref: this._saturationRef, style: {
-                    background: colorHexRef
-                } },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation-white" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation-black" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation-cursor", style: {
-                        top: -(hsv.b * 100) + 100 + "%",
-                        left: hsv.g * 100 + "%",
-                    } })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue-color", style: {
-                        background: colorHex
-                    } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue-slider", ref: this._hueRef, onPointerMove: function (e) { return _this.onHuePointerMove(e); }, onPointerDown: function (e) { return _this.onHuePointerDown(e); }, onPointerUp: function (e) { return _this.onHuePointerUp(e); } },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue-cursor", style: {
-                            left: (hsv.r / 360.0) * 100 + "%",
-                            border: "1px solid " + colorHexRef
-                        } }))),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-rgb" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "red" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "R", min: 0, max: 255, value: this.state.color.r * 255 | 0, onChange: function (value) {
-                            _this.state.color.r = value / 255.0;
-                            _this.forceUpdate();
-                        } })),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "green" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "G", min: 0, max: 255, value: this.state.color.g * 255 | 0, onChange: function (value) {
-                            _this.state.color.g = value / 255.0;
-                            _this.forceUpdate();
-                        } })),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "blue" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "B", min: 0, max: 255, value: this.state.color.b * 255 | 0, onChange: function (value) {
-                            _this.state.color.b = value / 255.0;
-                            _this.forceUpdate();
-                        } })),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "alpha" + (hasAlpha ? "" : " grayed") },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "A", min: 0, max: 255, value: this.state.alpha * 255 | 0, onChange: function (value) {
-                            _this.setState({ alpha: value / 255.0 });
-                            _this.forceUpdate();
-                        } }))),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hex" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hex-label" }, "Hex"),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hex-value" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_hexColor__WEBPACK_IMPORTED_MODULE_4__["HexColor"], { expectedLength: 6, value: colorHex, onChange: function (value) {
-                            _this.setState({ color: babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromHexString(value) });
-                        } })))));
-    };
-    return ColorPicker;
-}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
-
-
-
-/***/ }),
-
-/***/ "./components/controls/colorPicker/hexColor.tsx":
-/*!******************************************************!*\
-  !*** ./components/controls/colorPicker/hexColor.tsx ***!
-  \******************************************************/
-/*! exports provided: HexColor */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HexColor", function() { return HexColor; });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-
-
-var HexColor = /** @class */ (function (_super) {
-    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(HexColor, _super);
-    function HexColor(props) {
-        var _this = _super.call(this, props) || this;
-        _this.state = { hex: _this.props.value.replace("#", "") };
-        return _this;
-    }
-    HexColor.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        if (nextProps.value !== this.props.value) {
-            nextState.hex = nextProps.value.replace("#", "");
-        }
-        return true;
-    };
-    HexColor.prototype.updateHexValue = function (valueString) {
-        if (valueString != "" && /^[0-9A-Fa-f]+$/g.test(valueString) == false) {
-            return;
-        }
-        this.setState({ hex: valueString });
-        if (valueString.length !== this.props.expectedLength) {
-            return;
-        }
-        this.props.onChange("#" + valueString);
-    };
-    HexColor.prototype.render = function () {
-        var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "string", className: "hex-input", value: this.state.hex, onChange: function (evt) { return _this.updateHexValue(evt.target.value); } }));
-    };
-    return HexColor;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
@@ -57540,6 +57306,7 @@ var GlobalState = /** @class */ (function () {
             MSFT_minecraftMesh: { enabled: true },
             MSFT_sRGBFactors: { enabled: true },
             MSFT_audio_emitter: { enabled: true },
+            KHR_xmp_json_ld: { enabled: true },
             KHR_draco_mesh_compression: { enabled: true },
             KHR_mesh_quantization: { enabled: true },
             KHR_materials_pbrSpecularGlossiness: { enabled: true },
@@ -57634,10 +57401,6 @@ var GlobalState = /** @class */ (function () {
             }
             _this.glTFLoaderExtensions[extension.name] = extension;
         });
-        if (this.validationResults) {
-            this.validationResults = null;
-            this.onValidationResultsUpdatedObservable.notifyObservers(null);
-        }
         loader.onValidatedObservable.add(function (results) {
             _this.validationResults = results;
             _this.onValidationResultsUpdatedObservable.notifyObservers(results);
@@ -57646,6 +57409,12 @@ var GlobalState = /** @class */ (function () {
                 _this.onTabChangedObservable.notifyObservers(3);
             }
         });
+    };
+    GlobalState.prototype.resetGLTFValidationResults = function () {
+        if (this.validationResults) {
+            this.validationResults = null;
+            this.onValidationResultsUpdatedObservable.notifyObservers(null);
+        }
     };
     GlobalState.prototype.enableLightGizmo = function (light, enable) {
         if (enable === void 0) { enable = true; }
@@ -59547,7 +59316,7 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
                     }
                 });
             }
-            if (scene.getEngine().webGLVersion > 1 && !pipelines.some(function (p) { return p.getClassName() === "SSAORenderingPipeline"; })) {
+            if (scene.getEngine().getCaps().drawBuffersExtension && !pipelines.some(function (p) { return p.getClassName() === "SSAORenderingPipeline"; })) {
                 pipelineContextMenus.push({
                     label: "Add new SSAO2 Rendering Pipeline",
                     action: function () {
@@ -59586,26 +59355,33 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
                 _this.props.globalState.onSelectionChangedObservable.notifyObservers(newFreeCamera);
             }
         });
+        var getUniqueName = function (name) {
+            var idSubscript = 1;
+            while (scene.getMaterialByID(name)) {
+                name = name + " " + idSubscript++;
+            }
+            return name;
+        };
         // Materials
         var materialsContextMenus = [];
         materialsContextMenus.push({
             label: "Add new standard material",
             action: function () {
-                var newStdMaterial = new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["StandardMaterial"]("Standard material", scene);
+                var newStdMaterial = new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["StandardMaterial"](getUniqueName("Standard material"), scene);
                 _this.props.globalState.onSelectionChangedObservable.notifyObservers(newStdMaterial);
             }
         });
         materialsContextMenus.push({
             label: "Add new PBR material",
             action: function () {
-                var newPBRMaterial = new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["PBRMaterial"]("PBR material", scene);
+                var newPBRMaterial = new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["PBRMaterial"](getUniqueName("PBR material"), scene);
                 _this.props.globalState.onSelectionChangedObservable.notifyObservers(newPBRMaterial);
             }
         });
         materialsContextMenus.push({
             label: "Add new node material",
             action: function () {
-                var newNodeMaterial = new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["NodeMaterial"]("node material", scene);
+                var newNodeMaterial = new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["NodeMaterial"](getUniqueName("node material"), scene);
                 newNodeMaterial.setToDefault();
                 newNodeMaterial.build();
                 _this.props.globalState.onSelectionChangedObservable.notifyObservers(newNodeMaterial);
@@ -60480,6 +60256,7 @@ var Inspector = /** @class */ (function () {
         var _this = this;
         if (!this._GlobalState.onPluginActivatedObserver) {
             this._GlobalState.onPluginActivatedObserver = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_3__["SceneLoader"].OnPluginActivatedObservable.add(function (rawLoader) {
+                _this._GlobalState.resetGLTFValidationResults();
                 var loader = rawLoader;
                 if (loader.name === "gltf") {
                     _this._GlobalState.prepareGLTFPlugin(loader);
@@ -60745,6 +60522,335 @@ var lodCubePixelShader = { name: name, shader: shader };
 
 /***/ }),
 
+/***/ "./sharedUiComponents/colorPicker/colorComponentEntry.tsx":
+/*!****************************************************************!*\
+  !*** ./sharedUiComponents/colorPicker/colorComponentEntry.tsx ***!
+  \****************************************************************/
+/*! exports provided: ColorComponentEntry */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ColorComponentEntry", function() { return ColorComponentEntry; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+
+
+var ColorComponentEntry = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ColorComponentEntry, _super);
+    function ColorComponentEntry(props) {
+        return _super.call(this, props) || this;
+    }
+    ColorComponentEntry.prototype.updateValue = function (valueString) {
+        if (/[^0-9\.\-]/g.test(valueString)) {
+            return;
+        }
+        var valueAsNumber = parseInt(valueString);
+        if (isNaN(valueAsNumber)) {
+            return;
+        }
+        if (this.props.max != undefined && (valueAsNumber > this.props.max)) {
+            valueAsNumber = this.props.max;
+        }
+        if (this.props.min != undefined && (valueAsNumber < this.props.min)) {
+            valueAsNumber = this.props.min;
+        }
+        this.props.onChange(valueAsNumber);
+    };
+    ColorComponentEntry.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-component" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-component-value" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", step: 1, className: "numeric-input", value: this.props.value, onChange: function (evt) { return _this.updateValue(evt.target.value); } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-component-label" }, this.props.label)));
+    };
+    return ColorComponentEntry;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./sharedUiComponents/colorPicker/colorPicker.scss":
+/*!*********************************************************!*\
+  !*** ./sharedUiComponents/colorPicker/colorPicker.scss ***!
+  \*********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var api = __webpack_require__(/*! ../../../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js */ "../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js");
+            var content = __webpack_require__(/*! !../../../../node_modules/css-loader/dist/cjs.js!../../../../node_modules/sass-loader/dist/cjs.js!./colorPicker.scss */ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss");
+
+            content = content.__esModule ? content.default : content;
+
+            if (typeof content === 'string') {
+              content = [[module.i, content, '']];
+            }
+
+var options = {};
+
+options.insert = "head";
+options.singleton = false;
+
+var update = api(content, options);
+
+
+
+module.exports = content.locals || {};
+
+/***/ }),
+
+/***/ "./sharedUiComponents/colorPicker/colorPicker.tsx":
+/*!********************************************************!*\
+  !*** ./sharedUiComponents/colorPicker/colorPicker.tsx ***!
+  \********************************************************/
+/*! exports provided: ColorPicker */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ColorPicker", function() { return ColorPicker; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./colorComponentEntry */ "./sharedUiComponents/colorPicker/colorComponentEntry.tsx");
+/* harmony import */ var _hexColor__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./hexColor */ "./sharedUiComponents/colorPicker/hexColor.tsx");
+
+
+
+
+
+__webpack_require__(/*! ./colorPicker.scss */ "./sharedUiComponents/colorPicker/colorPicker.scss");
+/**
+ * Class used to create a color picker
+ */
+var ColorPicker = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ColorPicker, _super);
+    function ColorPicker(props) {
+        var _this = _super.call(this, props) || this;
+        if (_this.props.color instanceof babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"]) {
+            _this.state = { color: new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"](_this.props.color.r, _this.props.color.g, _this.props.color.b), alpha: _this.props.color.a };
+        }
+        else {
+            _this.state = { color: _this.props.color.clone(), alpha: 1 };
+        }
+        _this._saturationRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this._hueRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        return _this;
+    }
+    ColorPicker.prototype.onSaturationPointerDown = function (evt) {
+        this._evaluateSaturation(evt);
+        this._isSaturationPointerDown = true;
+        evt.currentTarget.setPointerCapture(evt.pointerId);
+    };
+    ColorPicker.prototype.onSaturationPointerUp = function (evt) {
+        this._isSaturationPointerDown = false;
+        evt.currentTarget.releasePointerCapture(evt.pointerId);
+    };
+    ColorPicker.prototype.onSaturationPointerMove = function (evt) {
+        if (!this._isSaturationPointerDown) {
+            return;
+        }
+        this._evaluateSaturation(evt);
+    };
+    ColorPicker.prototype.onHuePointerDown = function (evt) {
+        this._evaluateHue(evt);
+        this._isHuePointerDown = true;
+        evt.currentTarget.setPointerCapture(evt.pointerId);
+    };
+    ColorPicker.prototype.onHuePointerUp = function (evt) {
+        this._isHuePointerDown = false;
+        evt.currentTarget.releasePointerCapture(evt.pointerId);
+    };
+    ColorPicker.prototype.onHuePointerMove = function (evt) {
+        if (!this._isHuePointerDown) {
+            return;
+        }
+        this._evaluateHue(evt);
+    };
+    ColorPicker.prototype._evaluateSaturation = function (evt) {
+        var left = evt.nativeEvent.offsetX;
+        var top = evt.nativeEvent.offsetY;
+        var saturation = Math.min(1, Math.max(0.0001, left / this._saturationRef.current.clientWidth));
+        var value = Math.min(1, Math.max(0.0001, 1 - (top / this._saturationRef.current.clientHeight)));
+        if (this.props.debugMode) {
+            console.log("Saturation: " + saturation);
+            console.log("Value: " + value);
+        }
+        var hsv = this.state.color.toHSV();
+        babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].HSVtoRGBToRef(hsv.r, saturation, value, this.state.color);
+        this.setState({ color: this.state.color });
+    };
+    ColorPicker.prototype._evaluateHue = function (evt) {
+        var left = evt.nativeEvent.offsetX;
+        var hue = 360 * Math.min(0.9999, Math.max(0.0001, left / this._hueRef.current.clientWidth));
+        if (this.props.debugMode) {
+            console.log("Hue: " + hue);
+        }
+        var hsv = this.state.color.toHSV();
+        babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].HSVtoRGBToRef(hue, Math.max(hsv.g, 0.0001), Math.max(hsv.b, 0.0001), this.state.color);
+        this.setState({ color: this.state.color });
+    };
+    ColorPicker.prototype.componentDidUpdate = function () {
+        this.raiseOnColorChanged();
+    };
+    ColorPicker.prototype.raiseOnColorChanged = function () {
+        if (!this.props.onColorChanged) {
+            return;
+        }
+        if (this.props.color instanceof babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"]) {
+            var newColor4 = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"].FromColor3(this.state.color, this.state.alpha);
+            this.props.onColorChanged(newColor4);
+            return;
+        }
+        this.props.onColorChanged(this.state.color.clone());
+    };
+    ColorPicker.prototype.render = function () {
+        var _this = this;
+        var colorHex = this.state.color.toHexString();
+        var hsv = this.state.color.toHSV();
+        var colorRef = new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"]();
+        babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].HSVtoRGBToRef(hsv.r, 1, 1, colorRef);
+        var colorHexRef = colorRef.toHexString();
+        var hasAlpha = this.props.color instanceof babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"];
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-container" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation", onPointerMove: function (e) { return _this.onSaturationPointerMove(e); }, onPointerDown: function (e) { return _this.onSaturationPointerDown(e); }, onPointerUp: function (e) { return _this.onSaturationPointerUp(e); }, ref: this._saturationRef, style: {
+                    background: colorHexRef
+                } },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation-white" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation-black" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation-cursor", style: {
+                        top: -(hsv.b * 100) + 100 + "%",
+                        left: hsv.g * 100 + "%",
+                    } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue-color", style: {
+                        background: colorHex
+                    } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue-slider", ref: this._hueRef, onPointerMove: function (e) { return _this.onHuePointerMove(e); }, onPointerDown: function (e) { return _this.onHuePointerDown(e); }, onPointerUp: function (e) { return _this.onHuePointerUp(e); } },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue-cursor", style: {
+                            left: (hsv.r / 360.0) * 100 + "%",
+                            border: "1px solid " + colorHexRef
+                        } }))),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-rgb" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "red" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "R", min: 0, max: 255, value: this.state.color.r * 255 | 0, onChange: function (value) {
+                            _this.state.color.r = value / 255.0;
+                            _this.forceUpdate();
+                        } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "green" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "G", min: 0, max: 255, value: this.state.color.g * 255 | 0, onChange: function (value) {
+                            _this.state.color.g = value / 255.0;
+                            _this.forceUpdate();
+                        } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "blue" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "B", min: 0, max: 255, value: this.state.color.b * 255 | 0, onChange: function (value) {
+                            _this.state.color.b = value / 255.0;
+                            _this.forceUpdate();
+                        } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "alpha" + (hasAlpha ? "" : " grayed") },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "A", min: 0, max: 255, value: this.state.alpha * 255 | 0, onChange: function (value) {
+                            _this.setState({ alpha: value / 255.0 });
+                            _this.forceUpdate();
+                        } }))),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hex" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hex-label" }, "Hex"),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hex-value" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_hexColor__WEBPACK_IMPORTED_MODULE_4__["HexColor"], { expectedLength: 6, value: colorHex, onChange: function (value) {
+                            _this.setState({ color: babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromHexString(value) });
+                        } })))));
+    };
+    return ColorPicker;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./sharedUiComponents/colorPicker/hexColor.tsx":
+/*!*****************************************************!*\
+  !*** ./sharedUiComponents/colorPicker/hexColor.tsx ***!
+  \*****************************************************/
+/*! exports provided: HexColor */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HexColor", function() { return HexColor; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+
+
+var HexColor = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(HexColor, _super);
+    function HexColor(props) {
+        var _this = _super.call(this, props) || this;
+        _this.state = { hex: _this.props.value.replace("#", "") };
+        return _this;
+    }
+    HexColor.prototype.shouldComponentUpdate = function (nextProps, nextState) {
+        if (nextProps.value !== this.props.value) {
+            nextState.hex = nextProps.value.replace("#", "");
+        }
+        return true;
+    };
+    HexColor.prototype.updateHexValue = function (valueString) {
+        if (valueString != "" && /^[0-9A-Fa-f]+$/g.test(valueString) == false) {
+            return;
+        }
+        this.setState({ hex: valueString });
+        if (valueString.length !== this.props.expectedLength) {
+            return;
+        }
+        this.props.onChange("#" + valueString);
+    };
+    HexColor.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "string", className: "hex-input", value: this.state.hex, onChange: function (evt) { return _this.updateHexValue(evt.target.value); } }));
+    };
+    return HexColor;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./sharedUiComponents/lines/buttonLineComponent.tsx":
+/*!**********************************************************!*\
+  !*** ./sharedUiComponents/lines/buttonLineComponent.tsx ***!
+  \**********************************************************/
+/*! exports provided: ButtonLineComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ButtonLineComponent", function() { return ButtonLineComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+
+
+var ButtonLineComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ButtonLineComponent, _super);
+    function ButtonLineComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    ButtonLineComponent.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "buttonLine" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { onClick: function () { return _this.props.onClick(); } }, this.props.label)));
+    };
+    return ButtonLineComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
 /***/ "./textureHelper.ts":
 /*!**************************!*\
   !*** ./textureHelper.ts ***!
@@ -60755,10 +60861,12 @@ var lodCubePixelShader = { name: name, shader: shader };
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TextureHelper", function() { return TextureHelper; });
-/* harmony import */ var babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/PostProcesses/postProcess */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _lod__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./lod */ "./lod.ts");
-/* harmony import */ var _lodCube__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./lodCube */ "./lodCube.ts");
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/PostProcesses/postProcess */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _lod__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./lod */ "./lod.ts");
+/* harmony import */ var _lodCube__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./lodCube */ "./lodCube.ts");
+
 
 
 
@@ -60768,131 +60876,142 @@ var TextureHelper = /** @class */ (function () {
     function TextureHelper() {
     }
     TextureHelper._ProcessAsync = function (texture, width, height, face, channels, lod, globalState, resolve, reject) {
-        var _this = this;
-        var scene = texture.getScene();
-        var engine = scene.getEngine();
-        var lodPostProcess;
-        if (!texture.isCube) {
-            lodPostProcess = new babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_0__["PostProcess"]("lod", "lod", ["lod"], null, 1.0, null, babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_0__["Texture"].NEAREST_NEAREST_MIPNEAREST, engine);
-        }
-        else {
-            var faceDefines = [
-                "#define POSITIVEX",
-                "#define NEGATIVEX",
-                "#define POSITIVEY",
-                "#define NEGATIVEY",
-                "#define POSITIVEZ",
-                "#define NEGATIVEZ",
-            ];
-            lodPostProcess = new babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_0__["PostProcess"]("lodCube", "lodCube", ["lod"], null, 1.0, null, babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_0__["Texture"].NEAREST_NEAREST_MIPNEAREST, engine, false, faceDefines[face]);
-        }
-        if (!lodPostProcess.getEffect().isReady()) {
-            // Try again later
-            lodPostProcess.dispose();
-            setTimeout(function () {
-                _this._ProcessAsync(texture, width, height, face, channels, lod, globalState, resolve, reject);
-            }, 250);
-            return;
-        }
-        if (globalState) {
-            globalState.blockMutationUpdates = true;
-        }
-        var rtt = new babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_0__["RenderTargetTexture"]("temp", { width: width, height: height }, scene, false);
-        lodPostProcess.onApply = function (effect) {
-            effect.setTexture("textureSampler", texture);
-            effect.setFloat("lod", lod);
-        };
-        var internalTexture = rtt.getInternalTexture();
-        if (internalTexture) {
-            var samplingMode = internalTexture.samplingMode;
-            texture.updateSamplingMode(babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_0__["Texture"].NEAREST_NEAREST_MIPNEAREST);
-            scene.postProcessManager.directRender([lodPostProcess], internalTexture);
-            texture.updateSamplingMode(samplingMode);
-            // Read the contents of the framebuffer
-            var numberOfChannelsByLine = width * 4;
-            var halfHeight = height / 2;
-            //Reading datas from WebGL
-            var data = engine.readPixels(0, 0, width, height);
-            if (!channels.R || !channels.G || !channels.B || !channels.A) {
-                for (var i = 0; i < width * height * 4; i += 4) {
-                    // If alpha is the only channel, just display alpha across all channels
-                    if (channels.A && !channels.R && !channels.G && !channels.B) {
-                        data[i] = data[i + 3];
-                        data[i + 1] = data[i + 3];
-                        data[i + 2] = data[i + 3];
-                        data[i + 3] = 255;
-                        continue;
-                    }
-                    var r = data[i], g = data[i + 1], b = data[i + 2], a = data[i + 3];
-                    // If alpha is not visible, make everything 100% alpha
-                    if (!channels.A) {
-                        a = 255;
-                    }
-                    // If only one color channel is selected, map both colors to it. If two are selected, the unused one gets set to 0
-                    if (!channels.R) {
-                        if (channels.G && !channels.B) {
-                            r = g;
-                        }
-                        else if (channels.B && !channels.G) {
-                            r = b;
+        return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function () {
+            var scene, engine, lodPostProcess, faceDefines, rtt, rttInternalTexture, internalTexture, samplingMode, numberOfChannelsByLine, halfHeight, bufferView, data, i, r, g, b, a, i, j, currentCell, targetLine, targetCell, temp;
+            var _this = this;
+            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        scene = texture.getScene();
+                        engine = scene.getEngine();
+                        if (!texture.isCube) {
+                            lodPostProcess = new babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_1__["PostProcess"]("lod", "lod", ["lod"], null, 1.0, null, babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_NEAREST_MIPNEAREST, engine);
                         }
                         else {
-                            r = 0;
+                            faceDefines = [
+                                "#define POSITIVEX",
+                                "#define NEGATIVEX",
+                                "#define POSITIVEY",
+                                "#define NEGATIVEY",
+                                "#define POSITIVEZ",
+                                "#define NEGATIVEZ",
+                            ];
+                            lodPostProcess = new babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_1__["PostProcess"]("lodCube", "lodCube", ["lod"], null, 1.0, null, babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_NEAREST_MIPNEAREST, engine, false, faceDefines[face]);
                         }
-                    }
-                    if (!channels.G) {
-                        if (channels.R && !channels.B) {
-                            g = r;
+                        if (!lodPostProcess.getEffect().isReady()) {
+                            // Try again later
+                            lodPostProcess.dispose();
+                            setTimeout(function () {
+                                _this._ProcessAsync(texture, width, height, face, channels, lod, globalState, resolve, reject);
+                            }, 250);
+                            return [2 /*return*/];
                         }
-                        else if (channels.B && !channels.R) {
-                            g = b;
+                        if (globalState) {
+                            globalState.blockMutationUpdates = true;
                         }
-                        else {
-                            g = 0;
+                        rtt = new babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_1__["RenderTargetTexture"]("temp", { width: width, height: height }, scene, false);
+                        lodPostProcess.onApply = function (effect) {
+                            effect.setTexture("textureSampler", texture);
+                            effect.setFloat("lod", lod);
+                        };
+                        rttInternalTexture = rtt.getInternalTexture();
+                        internalTexture = texture.getInternalTexture();
+                        if (!(rttInternalTexture && internalTexture)) return [3 /*break*/, 2];
+                        samplingMode = internalTexture.samplingMode;
+                        texture.updateSamplingMode(babylonjs_PostProcesses_postProcess__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_NEAREST_MIPNEAREST);
+                        scene.postProcessManager.directRender([lodPostProcess], rttInternalTexture);
+                        texture.updateSamplingMode(samplingMode);
+                        numberOfChannelsByLine = width * 4;
+                        halfHeight = height / 2;
+                        return [4 /*yield*/, engine.readPixels(0, 0, width, height)];
+                    case 1:
+                        bufferView = _a.sent();
+                        data = new Uint8Array(bufferView.buffer, 0, bufferView.byteLength);
+                        if (!channels.R || !channels.G || !channels.B || !channels.A) {
+                            for (i = 0; i < width * height * 4; i += 4) {
+                                // If alpha is the only channel, just display alpha across all channels
+                                if (channels.A && !channels.R && !channels.G && !channels.B) {
+                                    data[i] = data[i + 3];
+                                    data[i + 1] = data[i + 3];
+                                    data[i + 2] = data[i + 3];
+                                    data[i + 3] = 255;
+                                    continue;
+                                }
+                                r = data[i], g = data[i + 1], b = data[i + 2], a = data[i + 3];
+                                // If alpha is not visible, make everything 100% alpha
+                                if (!channels.A) {
+                                    a = 255;
+                                }
+                                // If only one color channel is selected, map both colors to it. If two are selected, the unused one gets set to 0
+                                if (!channels.R) {
+                                    if (channels.G && !channels.B) {
+                                        r = g;
+                                    }
+                                    else if (channels.B && !channels.G) {
+                                        r = b;
+                                    }
+                                    else {
+                                        r = 0;
+                                    }
+                                }
+                                if (!channels.G) {
+                                    if (channels.R && !channels.B) {
+                                        g = r;
+                                    }
+                                    else if (channels.B && !channels.R) {
+                                        g = b;
+                                    }
+                                    else {
+                                        g = 0;
+                                    }
+                                }
+                                if (!channels.B) {
+                                    if (channels.R && !channels.G) {
+                                        b = r;
+                                    }
+                                    else if (channels.G && !channels.R) {
+                                        b = g;
+                                    }
+                                    else {
+                                        b = 0;
+                                    }
+                                }
+                                data[i] = r;
+                                data[i + 1] = g;
+                                data[i + 2] = b;
+                                data[i + 3] = a;
+                            }
                         }
-                    }
-                    if (!channels.B) {
-                        if (channels.R && !channels.G) {
-                            b = r;
+                        //To flip image on Y axis.
+                        if (texture.invertY || texture.isCube) {
+                            for (i = 0; i < halfHeight; i++) {
+                                for (j = 0; j < numberOfChannelsByLine; j++) {
+                                    currentCell = j + i * numberOfChannelsByLine;
+                                    targetLine = height - i - 1;
+                                    targetCell = j + targetLine * numberOfChannelsByLine;
+                                    temp = data[currentCell];
+                                    data[currentCell] = data[targetCell];
+                                    data[targetCell] = temp;
+                                }
+                            }
                         }
-                        else if (channels.G && !channels.R) {
-                            b = g;
+                        resolve(data);
+                        // Unbind
+                        engine.unBindFramebuffer(rttInternalTexture);
+                        return [3 /*break*/, 3];
+                    case 2:
+                        reject();
+                        _a.label = 3;
+                    case 3:
+                        rtt.dispose();
+                        lodPostProcess.dispose();
+                        if (globalState) {
+                            globalState.blockMutationUpdates = false;
                         }
-                        else {
-                            b = 0;
-                        }
-                    }
-                    data[i] = r;
-                    data[i + 1] = g;
-                    data[i + 2] = b;
-                    data[i + 3] = a;
+                        return [2 /*return*/];
                 }
-            }
-            //To flip image on Y axis.
-            if (texture.invertY || texture.isCube) {
-                for (var i = 0; i < halfHeight; i++) {
-                    for (var j = 0; j < numberOfChannelsByLine; j++) {
-                        var currentCell = j + i * numberOfChannelsByLine;
-                        var targetLine = height - i - 1;
-                        var targetCell = j + targetLine * numberOfChannelsByLine;
-                        var temp = data[currentCell];
-                        data[currentCell] = data[targetCell];
-                        data[targetCell] = temp;
-                    }
-                }
-            }
-            resolve(data);
-            // Unbind
-            engine.unBindFramebuffer(internalTexture);
-        }
-        else {
-            reject();
-        }
-        rtt.dispose();
-        lodPostProcess.dispose();
-        if (globalState) {
-            globalState.blockMutationUpdates = false;
-        }
+            });
+        });
     };
     TextureHelper.GetTextureDataAsync = function (texture, width, height, face, channels, globalState, lod) {
         var _this = this;

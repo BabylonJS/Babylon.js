@@ -104,6 +104,8 @@ export class Constants {
     // Stencil Actions Constants.
     /** Passed to stencilOperation to specify that stencil value must be kept */
     public static readonly KEEP = 0x1E00;
+    /** Passed to stencilOperation to specify that stencil value must be zero */
+    public static readonly ZERO = 0x0000;
     /** Passed to stencilOperation to specify that stencil value must be replaced */
     public static readonly REPLACE = 0x1E01;
     /** Passed to stencilOperation to specify that stencil value must be incremented */
@@ -150,6 +152,26 @@ export class Constants {
     public static readonly TEXTUREFORMAT_RGB_INTEGER = 10;
     /** RGBA_INTEGER */
     public static readonly TEXTUREFORMAT_RGBA_INTEGER = 11;
+    /** BGRA */
+    public static readonly TEXTUREFORMAT_BGRA = 12;
+
+    /** Depth 24 bits + Stencil 8 bits */
+    public static readonly TEXTUREFORMAT_DEPTH24_STENCIL8 = 13;
+    /** Depth 32 bits float */
+    public static readonly TEXTUREFORMAT_DEPTH32_FLOAT = 14;
+
+    /** Compressed BC7 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM = 36492;
+    /** Compressed BC6 unsigned float */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT = 36495;
+    /** Compressed BC6 signed float */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT = 36494;
+    /** Compressed BC3 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5 = 33779;
+    /** Compressed BC2 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3 = 33778;
+    /** Compressed BC1 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1 = 33777;
 
     /** UNSIGNED_BYTE */
     public static readonly TEXTURETYPE_UNSIGNED_BYTE = 0;
@@ -529,4 +551,9 @@ export class Constants {
      * using the getIndex(Constants.PREPASS_ALBEDO_TEXTURE_TYPE)
      */
     public static readonly PREPASS_ALBEDO_TEXTURE_TYPE = 7;
+
+    /**
+     * Prefixes used by the engine for custom effects
+     */
+    public static readonly CUSTOMEFFECT_PREFIX_SHADOWGENERATOR = "bjs_shadowgenerator_";
 }

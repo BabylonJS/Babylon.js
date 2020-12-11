@@ -243,6 +243,7 @@ declare module "babylonjs-procedural-textures/normalMap/normalMapProceduralTextu
         updateShaderUniforms(): void;
         render(useCameraPostProcess?: boolean): void;
         resize(size: any, generateMipMaps: any): void;
+        isReady(): boolean;
         get baseTexture(): Texture;
         set baseTexture(texture: Texture);
         /**
@@ -693,6 +694,7 @@ declare module BABYLON {
         updateShaderUniforms(): void;
         render(useCameraPostProcess?: boolean): void;
         resize(size: any, generateMipMaps: any): void;
+        isReady(): boolean;
         get baseTexture(): BABYLON.Texture;
         set baseTexture(texture: BABYLON.Texture);
         /**

@@ -13,14 +13,14 @@ export class CopyTools {
      * @param level defines the LOD level of the texture to read (in case of Mip Maps)
      * @returns The base64 encoded string or null
      */
-    public static GenerateBase64StringFromTexture(texture: BaseTexture, faceIndex = 0, level = 0): Nullable<string> {
+    public static async GenerateBase64StringFromTexture(texture: BaseTexture, faceIndex = 0, level = 0): Promise<Nullable<string>> {
 
         var internalTexture = texture.getInternalTexture();
         if (!internalTexture) {
             return null;
         }
 
-        var pixels = texture.readPixels(faceIndex, level);
+        var pixels = await texture.readPixels(faceIndex, level);
         if (!pixels) {
             return null;
         }
