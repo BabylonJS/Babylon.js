@@ -3,14 +3,14 @@ import * as ReactDOM from "react-dom";
 import { GlobalState } from './globalState';
 import { GraphEditor } from './graphEditor';
 import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial"
-import { Popup } from "../src/sharedComponents/popup"
+import { Popup } from "./sharedComponents/popup"
 import { SerializationTools } from './serializationTools';
 import { Observable } from 'babylonjs/Misc/observable';
 import { PreviewType } from './components/preview/previewType';
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
 /**
- * Interface used to specify creation options for the node editor
+ * Interface used to specify creation options for the gui editor
  */
 export interface INodeEditorOptions {
     nodeMaterial: NodeMaterial,
@@ -20,18 +20,18 @@ export interface INodeEditorOptions {
 }
 
 /**
- * Class used to create a node editor
+ * Class used to create a gui editor
  */
 export class GuiEditor {
     private static _CurrentState: GlobalState;
 
     /**
-     * Show the node editor
-     * @param options defines the options to use to configure the node editor
+     * Show the gui editor
+     * @param options defines the options to use to configure the gui editor
      */
     public static Show(options: INodeEditorOptions) {
         if (this._CurrentState) {
-            var popupWindow = (Popup as any)["node-editor"];
+            var popupWindow = (Popup as any)["gui-editor"];
             if (popupWindow) {
                 popupWindow.close();
             }
@@ -40,7 +40,7 @@ export class GuiEditor {
         let hostElement = options.hostElement;
         
         if (!hostElement) {
-            hostElement = Popup.CreatePopup("BABYLON.JS NODE EDITOR", "node-editor", 1000, 800)!;
+            hostElement = Popup.CreatePopup("BABYLON.JS NODE EDITOR", "gui-editor", 1000, 800)!;
         }
 
         let globalState = new GlobalState();
@@ -74,7 +74,7 @@ export class GuiEditor {
         this._CurrentState = globalState;
 
         // Close the popup window when the page is refreshed or scene is disposed
-        var popupWindow = (Popup as any)["node-editor"];
+        var popupWindow = (Popup as any)["gui-editor"];
         if (globalState.nodeMaterial && popupWindow) {
             globalState.nodeMaterial.getScene().onDisposeObservable.addOnce(() => {
                 if (popupWindow) {
@@ -82,7 +82,7 @@ export class GuiEditor {
                 }
             })
             window.onbeforeunload = () => {
-                var popupWindow = (Popup as any)["node-editor"];
+                var popupWindow = (Popup as any)["gui-editor"];
                 if (popupWindow) {
                     popupWindow.close();
                 }
