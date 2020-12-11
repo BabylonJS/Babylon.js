@@ -8,7 +8,7 @@ import { EngineInstrumentation } from "babylonjs/Instrumentation/engineInstrumen
 import { SceneInstrumentation } from "babylonjs/Instrumentation/sceneInstrumentation";
 import { Engine } from "babylonjs/Engines/engine";
 
-import { ValueLineComponent } from "../lines/valueLineComponent";
+import { ValueLineComponent } from "../../../sharedUiComponents/lines/valueLineComponent";
 import { BooleanLineComponent } from "../../../sharedUiComponents/lines/booleanLineComponent";
 
 export class StatisticsTabComponent extends PaneComponent {
