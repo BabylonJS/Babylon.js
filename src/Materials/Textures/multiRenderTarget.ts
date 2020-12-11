@@ -47,6 +47,10 @@ export interface IMultiRenderTargetOptions {
      * Define the default type of the buffers we are creating
      */
     defaultType?: number;
+    /**
+     * Define the default type of the buffers we are creating
+     */
+    drawOnlyOnFirstAttachmentByDefault?: boolean;
 }
 
 /**
@@ -61,6 +65,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
     private _textures: Texture[];
     private _multiRenderTargetOptions: IMultiRenderTargetOptions;
     private _count: number;
+    private _drawOnlyOnFirstAttachmentByDefault: boolean;
 
     /**
      * Get if draw buffers are currently supported by the used hardware and browser.
@@ -130,7 +135,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
         var generateMipMaps = options && options.generateMipMaps ? options.generateMipMaps : false;
         var generateDepthTexture = options && options.generateDepthTexture ? options.generateDepthTexture : false;
         var doNotChangeAspectRatio = !options || options.doNotChangeAspectRatio === undefined ? true : options.doNotChangeAspectRatio;
-
+        var drawOnlyOnFirstAttachmentByDefault = options && options.drawOnlyOnFirstAttachmentByDefault ? options.drawOnlyOnFirstAttachmentByDefault : false;
         super(name, size, scene, generateMipMaps, doNotChangeAspectRatio, 
             undefined,
             undefined,
@@ -165,6 +170,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
         };
 
         this._count = count;
+        this._drawOnlyOnFirstAttachmentByDefault = drawOnlyOnFirstAttachmentByDefault;
 
         if (count > 0) {
             this._createInternalTextures();
@@ -190,6 +196,10 @@ export class MultiRenderTarget extends RenderTargetTexture {
 
     /** @hidden */
     public _rebuild(forceFullRebuild: boolean = false): void {
+        if (this._count < 1) {
+            return;
+        }
+        
         this.releaseInternalTextures();
         this._createInternalTextures();
 
@@ -203,12 +213,12 @@ export class MultiRenderTarget extends RenderTargetTexture {
         }
 
         if (this.samples !== 1) {
-            this._getEngine()!.updateMultipleRenderTargetTextureSampleCount(this._internalTextures, this.samples);
+            this._getEngine()!.updateMultipleRenderTargetTextureSampleCount(this._internalTextures, this.samples, this._drawOnlyOnFirstAttachmentByDefault);
         }
     }
 
     private _createInternalTextures(): void {
-        this._internalTextures = this._getEngine()!.createMultipleRenderTarget(this._size, this._multiRenderTargetOptions);
+        this._internalTextures = this._getEngine()!.createMultipleRenderTarget(this._size, this._multiRenderTargetOptions, this._drawOnlyOnFirstAttachmentByDefault);
 
         // Keeps references to frame buffer and stencil/depth buffer
         this._texture = this._internalTextures[0];
@@ -250,7 +260,12 @@ export class MultiRenderTarget extends RenderTargetTexture {
             return;
         }
 
-        this._samples = this._getEngine()!.updateMultipleRenderTargetTextureSampleCount(this._internalTextures, value);
+        if (this._internalTextures) {
+            this._samples = this._getEngine()!.updateMultipleRenderTargetTextureSampleCount(this._internalTextures, value);
+        } else{
+            // In case samples are set with 0 textures created, we must save the desired samples value
+            this._samples = value;
+        }
     }
 
     /**
