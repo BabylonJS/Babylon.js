@@ -1021,7 +1021,7 @@
         {
             "title": "Prepass SSAO + instances",
             "renderCount": 10,
-            "playgroundId": "#YB006J#349",
+            "playgroundId": "#YB006J#355",
             "referenceImage": "prepass-ssao-instances.png"
         },
         {
@@ -1039,7 +1039,7 @@
         {
             "title": "Prepass SSAO + depth of field",
             "renderCount": 10,
-            "playgroundId": "#DX6AV#88",
+            "playgroundId": "#8F5HYV#14",
             "referenceImage": "prepass-ssao-dof.png"
         },
         {
@@ -1159,8 +1159,8 @@
         {
             "title": "Prepass SSAO + MSAA",
             "renderCount": 10,
-            "playgroundId": "#12MKMN#5",
-            "referenceImage": "prepass-mb-lens.png"
+            "playgroundId": "#12MKMN#7",
+            "referenceImage": "prepass-ssao-msaa.png"
         }
     ]
 }

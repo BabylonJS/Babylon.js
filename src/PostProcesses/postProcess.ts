@@ -502,7 +502,6 @@ export class PostProcess {
         const tex = this._engine.createRenderTargetTexture(textureSize, textureOptions);
         tex._postProcessChannel = channel;
         this._textureCache.push(tex);
-        console.log("Texture create. Cache length : " + this._textureCache.length);
 
         return tex;
     }
@@ -523,7 +522,6 @@ export class PostProcess {
                 if (!currentlyUsed) {
                     this._engine._releaseTexture(this._textureCache[i]);
                     this._textureCache.splice(i, 1);
-                    console.log("Texture flushed. Cache length : " + this._textureCache.length);
                 }
             }
         }

@@ -68,11 +68,11 @@ export class PrePassRenderer {
      * How many samples are used for MSAA of the scene render target
      */
     public get samples() {
-        return 1;//this.defaultRT.samples;
+        return this.defaultRT.samples;
     }
 
     public set samples(n: number) {
-        // this.defaultRT.samples = n;
+        this.defaultRT.samples = n;
     }
 
     private static _textureFormats = [
@@ -217,10 +217,14 @@ export class PrePassRenderer {
 
     public _createRenderTarget(name: string, renderTargetTexture: Nullable<RenderTargetTexture>) : PrePassRenderTarget {
         const rt = new PrePassRenderTarget(name, renderTargetTexture, { width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() }, 0, this._scene,
-            { generateMipMaps: false, generateStencilBuffer: true, defaultType: Constants.TEXTURETYPE_UNSIGNED_INT, types: [] });
-        rt.samples = 1;
+            { generateMipMaps: false, generateStencilBuffer: true, defaultType: Constants.TEXTURETYPE_UNSIGNED_INT, types: [], drawOnlyOnFirstAttachmentByDefault: true });
 
         this.renderTargets.push(rt);
+
+        // Necessary because the engine assumes we want to draw on all 
+        // attachments by default
+        // this._drawOnlyOnDefaultAttachments(rt);
+
         return rt;
     }
 
@@ -337,7 +341,7 @@ export class PrePassRenderer {
      * Restores attachments for single texture draw.
      */
     public restoreAttachments() {
-        if (this.enabled && this._defaultAttachments) {
+        if (this.enabled && this._currentTarget.enabled && this._defaultAttachments) {
             this._engine.bindAttachments(this._defaultAttachments);
         }
     }
@@ -438,6 +442,18 @@ export class PrePassRenderer {
         }
     }
 
+    private _drawOnlyOnDefaultAttachments(prePassRenderTarget: PrePassRenderTarget) {
+        const internalTexture = prePassRenderTarget.getInternalTexture();
+
+        if (!internalTexture) {
+            return;
+        }
+
+        this._engine._bindUnboundFramebuffer(internalTexture._framebuffer);
+        this._engine.bindAttachments(this._defaultAttachments);
+        this._engine._bindUnboundFramebuffer(internalTexture._framebuffer);
+    }
+
     private _setState(enabled: boolean) {
         this._enabled = enabled;
     }
@@ -477,6 +493,7 @@ export class PrePassRenderer {
         for (let i = 0; i < this.renderTargets.length; i++) {
             if (this.mrtCount !== previousMrtCount) {
                 this.renderTargets[i].updateCount(this.mrtCount, { types: this._mrtFormats });
+                // this._drawOnlyOnDefaultAttachments(this.renderTargets[i]);
             }
 
             this.renderTargets[i]._resetPostProcessChain();
@@ -549,15 +566,12 @@ export class PrePassRenderer {
         const firstPrePassPP = prePassRenderTarget._beforeCompositionPostProcesses && prePassRenderTarget._beforeCompositionPostProcesses[0];
         let firstPP = null;
 
+        // Setting the scene-wide post process configuration
+        this._scene.imageProcessingConfiguration.applyByPostProcess = this._needsCompositionForThisPass || cameraHasImageProcessing;
+
         // Create composition effect if needed
-        if (this._needsCompositionForThisPass) {
-            if (!prePassRenderTarget.imageProcessingPostProcess) {
-                prePassRenderTarget._createCompositionEffect();
-            }
-            prePassRenderTarget.imageProcessingPostProcess.imageProcessingConfiguration.applyByPostProcess = true;
-        } else if (this._scene.imageProcessingConfiguration && !cameraHasImageProcessing) {
-            // in case image processing was applied before and no longer needed for this pass
-            this._scene.imageProcessingConfiguration.applyByPostProcess = false;
+        if (this._needsCompositionForThisPass && !prePassRenderTarget.imageProcessingPostProcess) {
+            prePassRenderTarget._createCompositionEffect();
         }
 
         // Setting the prePassRenderTarget as input texture of the first PP
