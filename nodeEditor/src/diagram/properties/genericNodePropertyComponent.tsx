@@ -11,7 +11,7 @@ import { Vector2LineComponent } from '../../sharedComponents/vector2LineComponen
 import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { PropertyTypeForEdition, IPropertyDescriptionForEdition, IEditablePropertyListOption } from 'babylonjs/Materials/Node/nodeMaterialDecorator';
-import { NodeMaterialBlockTargets } from "babylonjs";
+import { NodeMaterialBlockTargets } from "babylonjs/Materials/Node/Enums/nodeMaterialBlockTargets";
 
 export class GenericPropertyComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
