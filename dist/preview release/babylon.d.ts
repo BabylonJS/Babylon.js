@@ -1453,6 +1453,7 @@ declare module BABYLON {
      * Class used to store gfx data (like WebGLBuffer)
      */
     export class DataBuffer {
+        private static _Counter;
         /**
          * Gets or sets the number of objects referencing this buffer
          */
@@ -1467,6 +1468,14 @@ declare module BABYLON {
          * Gets the underlying buffer
          */
         get underlyingResource(): any;
+        /**
+         * Gets the unique id of this buffer
+         */
+        readonly uniqueId: number;
+        /**
+         * Constructs the buffer
+         */
+        constructor();
     }
 }
 declare module BABYLON {
@@ -6159,7 +6168,7 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Class used to hold a RBG color
+     * Class used to hold a RGB color
      */
     export class Color3 {
         /**
@@ -7010,6 +7019,7 @@ declare module BABYLON {
          * Specialized buffer used to store vertex data
          */
     export class VertexBuffer {
+        private static _Counter;
         /** @hidden */
         _buffer: Buffer;
         private _kind;
@@ -7066,6 +7076,10 @@ declare module BABYLON {
          * Gets the data type of each component in the array.
          */
         readonly type: number;
+        /**
+         * Gets the unique id of this vertex buffer
+         */
+        readonly uniqueId: number;
         /**
          * Constructor
          * @param engine the engine
@@ -24888,6 +24902,10 @@ declare module BABYLON {
          * mouse-wheel axis.
          */
         private _updateCamera;
+        /**
+         * Update one property of the camera.
+         */
+        private _updateCameraProperty;
     }
 }
 declare module BABYLON {
@@ -33144,6 +33162,11 @@ declare module BABYLON {
          * Use this property to change the original side orientation defined at construction time
          */
         overrideMaterialSideOrientation: Nullable<number>;
+        /**
+         * Gets or sets a boolean indicating whether to render ignoring the active camera's max z setting. (false by default)
+         * Note this will reduce performance when set to true.
+         */
+        ignoreCameraMaxZ: boolean;
         /**
          * Gets the source mesh (the one used to clone this one from)
          */
@@ -44220,6 +44243,7 @@ declare module BABYLON {
         }[];
         orderedAttributes: string[];
         orderedUBOsAndSamplers: WebGPUBindingDescription[][];
+        uniformBufferNames: string[];
         private _attributeNextLocation;
         private _varyingNextLocation;
         constructor();
@@ -44277,6 +44301,9 @@ declare module BABYLON {
             [name: string]: Nullable<IWebGPUPipelineContextTextureCache>;
         };
         bindGroupLayouts: GPUBindGroupLayout[];
+        bindGroupsCache: {
+            [key: string]: GPUBindGroup[];
+        };
         /**
          * Stores the uniform buffer
          */
@@ -44661,6 +44688,7 @@ declare module BABYLON {
     export class WebGPUCacheSampler {
         private _samplers;
         private _device;
+        disabled: boolean;
         constructor(device: GPUDevice);
         private static _GetSamplerHashCode;
         private static _GetSamplerFilterDescriptor;
@@ -44677,6 +44705,107 @@ declare module BABYLON {
         private _device;
         constructor(device: GPUDevice);
         getCompiledShaders(name: string): IWebGPURenderPipelineStageDescriptor;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class WebGPUCacheRenderPipeline {
+        static NumCacheHitWithoutHash: number;
+        static NumCacheHitWithHash: number;
+        static NumCacheMiss: number;
+        static NumPipelineCreationLastFrame: number;
+        disabled: boolean;
+        private static _Cache;
+        private static _NumPipelineCreationCurrentFrame;
+        private _device;
+        private _states;
+        private _isDirty;
+        private _currentRenderPipeline;
+        private _emptyVertexBuffer;
+        private _shaderId;
+        private _alphaToCoverageEnabled;
+        private _frontFace;
+        private _cullEnabled;
+        private _cullFace;
+        private _clampDepth;
+        private _rasterizationState;
+        private _depthBias;
+        private _depthBiasClamp;
+        private _depthBiasSlopeScale;
+        private _colorFormat;
+        private _webgpuColorFormat;
+        private _mrtAttachments1;
+        private _mrtAttachments2;
+        private _mrtFormats;
+        private _alphaBlendEnabled;
+        private _alphaBlendFuncParams;
+        private _alphaBlendEqParams;
+        private _writeMask;
+        private _colorStates;
+        private _depthStencilFormat;
+        private _webgpuDepthStencilFormat;
+        private _depthTestEnabled;
+        private _depthWriteEnabled;
+        private _depthCompare;
+        private _stencilEnabled;
+        private _stencilFrontCompare;
+        private _stencilFrontDepthFailOp;
+        private _stencilFrontPassOp;
+        private _stencilFrontFailOp;
+        private _stencilReadMask;
+        private _stencilWriteMask;
+        private _depthStencilState;
+        private _vertexBuffers;
+        private _indexBuffer;
+        constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer);
+        reset(): void;
+        getRenderPipeline(fillMode: number, effect: Effect, sampleCount: number): GPURenderPipeline;
+        endFrame(): void;
+        setAlphaToCoverage(enabled: boolean): void;
+        setFrontFace(frontFace: number): void;
+        setCullEnabled(enabled: boolean): void;
+        setCullFace(cullFace: number): void;
+        setClampDepth(clampDepth: boolean): void;
+        resetDepthCullingState(): void;
+        setDepthCullingState(cullEnabled: boolean, frontFace: number, cullFace: number, zOffset: number, depthTestEnabled: boolean, depthWriteEnabled: boolean, depthCompare: Nullable<number>): void;
+        setDepthBiasSlopeScale(depthBiasSlopeScale: number): void;
+        setColorFormat(format: GPUTextureFormat): void;
+        setMRTAttachments(attachments: number[], textureArray: InternalTexture[]): void;
+        setAlphaBlendEnabled(enabled: boolean): void;
+        setAlphaBlendFactors(factors: Array<Nullable<number>>, operations: Array<Nullable<number>>): void;
+        setWriteMask(mask: number): void;
+        setDepthStencilFormat(format: GPUTextureFormat | undefined): void;
+        setDepthTestEnabled(enabled: boolean): void;
+        setDepthWriteEnabled(enabled: boolean): void;
+        setDepthCompare(func: Nullable<number>): void;
+        setStencilEnabled(enabled: boolean): void;
+        setStencilCompare(func: Nullable<number>): void;
+        setStencilDepthFailOp(op: Nullable<number>): void;
+        setStencilPassOp(op: Nullable<number>): void;
+        setStencilFailOp(op: Nullable<number>): void;
+        setStencilReadMask(mask: number): void;
+        setStencilWriteMask(mask: number): void;
+        resetStencilState(): void;
+        setStencilState(stencilEnabled: boolean, compare: Nullable<number>, depthFailOp: Nullable<number>, passOp: Nullable<number>, failOp: Nullable<number>, readMask: number, writeMask: number): void;
+        setBuffers(vertexBuffers: Nullable<{
+            [key: string]: Nullable<VertexBuffer>;
+        }>, indexBuffer: Nullable<DataBuffer>): void;
+        private static _GetTopology;
+        private static _GetAphaBlendOperation;
+        private static _GetAphaBlendFactor;
+        private static _GetCompareFunction;
+        private static _GetStencilOpFunction;
+        private static _GetVertexInputDescriptorFormat;
+        private _getAphaBlendState;
+        private _getColorBlendState;
+        private _setShaderStage;
+        private _setRasterizationState;
+        private _setColorStates;
+        private _setDepthStencilState;
+        private _setVertexState;
+        private _createPipelineLayout;
+        private _getVertexInputDescriptor;
+        private _createRenderPipeline;
     }
 }
 declare module BABYLON {
@@ -44796,6 +44925,7 @@ declare module BABYLON {
         private _bufferManager;
         private _shaderManager;
         private _cacheSampler;
+        private _cacheRenderPipeline;
         private _emptyVertexBuffer;
         private _lastCachedWrapU;
         private _lastCachedWrapV;
@@ -44832,6 +44962,16 @@ declare module BABYLON {
         dbgVerboseLogsNumFrames: number;
         /** @hidden */
         dbgShowWarningsNotImplemented: boolean;
+        /**
+         * Sets this to true to disable the cache for the samplers. You should do it only for testing purpose!
+         */
+        get disableCacheSamplers(): boolean;
+        set disableCacheSamplers(disable: boolean);
+        /**
+         * Sets this to true to disable the cache for the render pipelines. You should do it only for testing purpose!
+         */
+        get disableCacheRenderPipelines(): boolean;
+        set disableCacheRenderPipelines(disable: boolean);
         /**
          * Gets a boolean indicating if the engine can be instanciated (ie. if a WebGPU context can be found)
          * @returns true if the engine can be created
@@ -45372,7 +45512,6 @@ declare module BABYLON {
         private _startRenderTargetRenderPass;
         private _endRenderTargetRenderPass;
         private _getCurrentRenderPass;
-        private _currentRenderPassIsMRT;
         private _startMainRenderPass;
         private _endMainRenderPass;
         /**
@@ -45439,10 +45578,6 @@ declare module BABYLON {
         setDepthFunctionToGreaterOrEqual(): void;
         setDepthFunctionToLess(): void;
         setDepthFunctionToLessOrEqual(): void;
-        private _indexFormatInRenderPass;
-        private _getTopology;
-        private _getOpFunction;
-        private _getDepthStencilStateDescriptor;
         /**
          * Set various states to the context
          * @param culling defines backface culling state
@@ -45451,10 +45586,6 @@ declare module BABYLON {
          * @param reverseSide defines if culling must be reversed (CCW instead of CW and CW instead of CCW)
          */
         setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean): void;
-        private _getFrontFace;
-        private _getCullMode;
-        private _getRasterizationStateDescriptor;
-        private _getWriteMask;
         /**
          * Sets the current alpha mode
          * @param mode defines the mode to use (one of the Engine.ALPHA_XXX)
@@ -45462,17 +45593,11 @@ declare module BABYLON {
          * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
          */
         setAlphaMode(mode: number, noDepthWriteChange?: boolean): void;
-        private _getAphaBlendOperation;
-        private _getAphaBlendFactor;
-        private _getAphaBlendState;
-        private _getColorBlendState;
-        private _getColorStateDescriptors;
-        private _getStages;
-        private _getVertexInputDescriptorFormat;
-        private _getVertexInputDescriptor;
-        private _getPipelineLayout;
-        private _getRenderPipeline;
-        private _getVertexInputsToRender;
+        /**
+         * Sets the current alpha equation
+         * @param equation defines the equation to use (one of the Engine.ALPHA_EQUATION_XXX)
+         */
+        setAlphaEquation(equation: number): void;
         private _getBindGroupsToRender;
         private _bindVertexInputs;
         private _setRenderBindGroups;
@@ -49063,6 +49188,10 @@ declare module BABYLON {
          */
         useNaturalPinchZoom: boolean;
         /**
+         * Defines whether zoom (2 fingers pinch) is enabled through multitouch
+         */
+        pinchZoom: boolean;
+        /**
          * Defines the pointer panning sensibility or how fast is the camera moving.
          */
         panningSensibility: number;
@@ -49082,6 +49211,14 @@ declare module BABYLON {
         private _isPanClick;
         private _twoFingerActivityCount;
         private _isPinching;
+        /**
+         * Move camera from multi touch panning positions.
+         */
+        private _computeMultiTouchPanning;
+        /**
+         * Move camera from pinch zoom distances.
+         */
+        private _computePinchZoom;
         /**
          * Called on pointer POINTERMOVE event if only a single touch is active.
          */
@@ -52589,6 +52726,60 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** @hidden */
+    export var stereoscopicInterlacePixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * StereoscopicInterlacePostProcessI used to render stereo views from a rigged camera with support for alternate line interlacing
+     */
+    export class StereoscopicInterlacePostProcessI extends PostProcess {
+        private _stepSize;
+        private _passedProcess;
+        /**
+         * Gets a string identifying the name of the class
+         * @returns "StereoscopicInterlacePostProcessI" string
+         */
+        getClassName(): string;
+        /**
+         * Initializes a StereoscopicInterlacePostProcessI
+         * @param name The name of the effect.
+         * @param rigCameras The rig cameras to be appled to the post process
+         * @param isStereoscopicHoriz If the rendered results are horizontal or vertical
+         * @param isStereoscopicInterlaced If the rendered results are alternate line interlaced
+         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
+         * @param engine The engine which the post process will be applied. (default: current engine)
+         * @param reusable If the post process can be reused on the same frame. (default: false)
+         */
+        constructor(name: string, rigCameras: Camera[], isStereoscopicHoriz: boolean, isStereoscopicInterlaced: boolean, samplingMode?: number, engine?: Engine, reusable?: boolean);
+    }
+    /**
+     * StereoscopicInterlacePostProcess used to render stereo views from a rigged camera
+     */
+    export class StereoscopicInterlacePostProcess extends PostProcess {
+        private _stepSize;
+        private _passedProcess;
+        /**
+         * Gets a string identifying the name of the class
+         * @returns "StereoscopicInterlacePostProcess" string
+         */
+        getClassName(): string;
+        /**
+         * Initializes a StereoscopicInterlacePostProcess
+         * @param name The name of the effect.
+         * @param rigCameras The rig cameras to be appled to the post process
+         * @param isStereoscopicHoriz If the rendered results are horizontal or verticle
+         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
+         * @param engine The engine which the post process will be applied. (default: current engine)
+         * @param reusable If the post process can be reused on the same frame. (default: false)
+         */
+        constructor(name: string, rigCameras: Camera[], isStereoscopicHoriz: boolean, samplingMode?: number, engine?: Engine, reusable?: boolean);
+    }
+}
+declare module BABYLON {
     /**
      * Camera used to simulate stereoscopic rendering (based on ArcRotateCamera)
      * @see https://doc.babylonjs.com/features/cameras
@@ -54358,7 +54549,7 @@ declare module BABYLON {
          * @param pluginExtension the extension used to determine the plugin
          * @returns The loaded asset container
          */
-        static LoadAssetContainerAsync(rootUrl: string, sceneFilename?: string, scene?: Nullable<Scene>, onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<AssetContainer>;
+        static LoadAssetContainerAsync(rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<AssetContainer>;
         /**
          * Import animations from a file into a scene
          * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
@@ -69536,7 +69727,7 @@ declare module BABYLON {
          */
         constructor(name: string, contours: Path2 | Vector2[] | any, scene?: Scene, earcutInjection?: any);
         /**
-         * Adds a whole within the polygon
+         * Adds a hole within the polygon
          * @param hole Array of points defining the hole
          * @returns this
          */
@@ -69545,15 +69736,17 @@ declare module BABYLON {
          * Creates the polygon
          * @param updatable If the mesh should be updatable
          * @param depth The depth of the mesh created
+         * @param smoothingThreshold Dot product threshold for smoothed normals
          * @returns the created mesh
          */
-        build(updatable?: boolean, depth?: number): Mesh;
+        build(updatable?: boolean, depth?: number, smoothingThreshold?: number): Mesh;
         /**
          * Creates the polygon
          * @param depth The depth of the mesh created
+         * @param smoothingThreshold Dot product threshold for smoothed normals
          * @returns the created VertexData
          */
-        buildVertexData(depth?: number): VertexData;
+        buildVertexData(depth?: number, smoothingThreshold?: number): VertexData;
         /**
          * Adds a side to the polygon
          * @param positions points that make the polygon
@@ -69591,6 +69784,7 @@ declare module BABYLON {
             shape: Vector3[];
             holes?: Vector3[][];
             depth?: number;
+            smoothingThreshold?: number;
             faceUV?: Vector4[];
             faceColors?: Color4[];
             updatable?: boolean;
@@ -75640,60 +75834,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
-    export var stereoscopicInterlacePixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /**
-     * StereoscopicInterlacePostProcessI used to render stereo views from a rigged camera with support for alternate line interlacing
-     */
-    export class StereoscopicInterlacePostProcessI extends PostProcess {
-        private _stepSize;
-        private _passedProcess;
-        /**
-         * Gets a string identifying the name of the class
-         * @returns "StereoscopicInterlacePostProcessI" string
-         */
-        getClassName(): string;
-        /**
-         * Initializes a StereoscopicInterlacePostProcessI
-         * @param name The name of the effect.
-         * @param rigCameras The rig cameras to be appled to the post process
-         * @param isStereoscopicHoriz If the rendered results are horizontal or vertical
-         * @param isStereoscopicInterlaced If the rendered results are alternate line interlaced
-         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
-         * @param engine The engine which the post process will be applied. (default: current engine)
-         * @param reusable If the post process can be reused on the same frame. (default: false)
-         */
-        constructor(name: string, rigCameras: Camera[], isStereoscopicHoriz: boolean, isStereoscopicInterlaced: boolean, samplingMode?: number, engine?: Engine, reusable?: boolean);
-    }
-    /**
-     * StereoscopicInterlacePostProcess used to render stereo views from a rigged camera
-     */
-    export class StereoscopicInterlacePostProcess extends PostProcess {
-        private _stepSize;
-        private _passedProcess;
-        /**
-         * Gets a string identifying the name of the class
-         * @returns "StereoscopicInterlacePostProcess" string
-         */
-        getClassName(): string;
-        /**
-         * Initializes a StereoscopicInterlacePostProcess
-         * @param name The name of the effect.
-         * @param rigCameras The rig cameras to be appled to the post process
-         * @param isStereoscopicHoriz If the rendered results are horizontal or verticle
-         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
-         * @param engine The engine which the post process will be applied. (default: current engine)
-         * @param reusable If the post process can be reused on the same frame. (default: false)
-         */
-        constructor(name: string, rigCameras: Camera[], isStereoscopicHoriz: boolean, samplingMode?: number, engine?: Engine, reusable?: boolean);
-    }
-}
-declare module BABYLON {
-    /** @hidden */
     export var tonemapPixelShader: {
         name: string;
         shader: string;
@@ -78337,8 +78477,9 @@ declare module BABYLON {
          * src parameter of an <img> to display it
          * @param mimeType defines the MIME type of the screenshot image (default: image/png).
          * Check your browser for supported MIME types
+         * @param forceDownload force the system to download the image even if a successCallback is provided
          */
-        static CreateScreenshot(engine: Engine, camera: Camera, size: IScreenshotSize | number, successCallback?: (data: string) => void, mimeType?: string): void;
+        static CreateScreenshot(engine: Engine, camera: Camera, size: IScreenshotSize | number, successCallback?: (data: string) => void, mimeType?: string, forceDownload?: boolean): void;
         /**
          * Captures a screenshot of the current rendering
          * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
@@ -78355,6 +78496,19 @@ declare module BABYLON {
          * to the src parameter of an <img> to display it
          */
         static CreateScreenshotAsync(engine: Engine, camera: Camera, size: any, mimeType?: string): Promise<string>;
+        /**
+         * Captures a screenshot of the current rendering for a specific size. This will render the entire canvas but will generate a blink (due to canvas resize)
+         * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
+         * @param engine defines the rendering engine
+         * @param camera defines the source camera
+         * @param width defines the expected width
+         * @param height defines the expected height
+         * @param mimeType defines the MIME type of the screenshot image (default: image/png).
+         * Check your browser for supported MIME types
+         * @returns screenshot as a string of base64-encoded characters. This string can be assigned
+         * to the src parameter of an <img> to display it
+         */
+        static CreateScreenshotWithResizeAsync(engine: Engine, camera: Camera, width: number, height: number, mimeType?: string): Promise<void>;
         /**
          * Generates an image screenshot from the specified camera.
          * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png

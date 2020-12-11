@@ -32,7 +32,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         super(props);
 
         let currentValue = this.props.target[this.props.propertyName];
-        this.state = { value: currentValue ? (this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(this.props.digits || 3)) : "0" };
+        this.state = { value: currentValue ? (this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(this.props.digits || 4)) : "0" };
         this._store = currentValue;
     }
 
@@ -47,7 +47,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         }
 
         const newValue = nextProps.target[nextProps.propertyName];
-        const newValueString = newValue ? this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this.props.digits || 3) : "0";
+        const newValueString = newValue ? this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this.props.digits || 4) : "0";
 
         if (newValueString !== nextState.value) {
             nextState.value = newValueString;

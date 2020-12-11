@@ -6,9 +6,9 @@ import { AnimationGroup } from "babylonjs/Animations/animationGroup";
 import { Scene } from "babylonjs/scene";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { ButtonLineComponent } from "../../../lines/buttonLineComponent";
+import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/buttonLineComponent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
-import { TextLineComponent } from "../../../lines/textLineComponent";
+import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { LockObject } from "../lockObject";
 import { GlobalState } from "../../../../globalState";

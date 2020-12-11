@@ -1,6 +1,6 @@
 import * as React from "react";
 import { IAnimationKey } from "babylonjs/Animations/animationKey";
-import { IconButtonLineComponent } from "../../../lines/iconButtonLineComponent";
+import { IconButtonLineComponent } from "../../../../../sharedUiComponents/lines/iconButtonLineComponent";
 
 interface IControlsProps {
     // Keyframes to choose start or end of animation playback

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ButtonLineComponent } from "../../../lines/buttonLineComponent";
+import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/buttonLineComponent";
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../../../../components/propertyChangedEvent";
 import { Animation } from "babylonjs/Animations/animation";

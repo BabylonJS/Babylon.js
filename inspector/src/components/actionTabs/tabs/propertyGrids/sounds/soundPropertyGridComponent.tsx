@@ -4,13 +4,13 @@ import { Observable } from "babylonjs/Misc/observable";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
-import { TextLineComponent } from "../../../lines/textLineComponent";
+import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
 import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';
 import { Sound } from 'babylonjs/Audio/sound';
 import { IExplorerExtensibilityGroup } from 'babylonjs/Debug/debugLayer';
 import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
-import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
+import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
 import { SliderLineComponent } from '../../../lines/sliderLineComponent';
 import { CheckBoxLineComponent } from '../../../lines/checkBoxLineComponent';
 

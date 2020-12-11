@@ -168,9 +168,9 @@ Scene.prototype.createDefaultSkybox = function(environmentTexture?: BaseTexture,
     }
 
     // Skybox
-    var hdrSkybox = Mesh.CreateBox("hdrSkyBox", scale, this);
+    const hdrSkybox = Mesh.CreateBox("hdrSkyBox", scale, this);
     if (pbr) {
-        let hdrSkyboxMaterial = new PBRMaterial("skyBox", this);
+        const hdrSkyboxMaterial = new PBRMaterial("skyBox", this);
         hdrSkyboxMaterial.backFaceCulling = false;
         hdrSkyboxMaterial.reflectionTexture = environmentTexture.clone();
         if (hdrSkyboxMaterial.reflectionTexture) {
@@ -179,21 +179,21 @@ Scene.prototype.createDefaultSkybox = function(environmentTexture?: BaseTexture,
         hdrSkyboxMaterial.microSurface = 1.0 - blur;
         hdrSkyboxMaterial.disableLighting = true;
         hdrSkyboxMaterial.twoSidedLighting = true;
-        hdrSkybox.infiniteDistance = true;
         hdrSkybox.material = hdrSkyboxMaterial;
     }
     else {
-        let skyboxMaterial = new StandardMaterial("skyBox", this);
+        const skyboxMaterial = new StandardMaterial("skyBox", this);
         skyboxMaterial.backFaceCulling = false;
         skyboxMaterial.reflectionTexture = environmentTexture.clone();
         if (skyboxMaterial.reflectionTexture) {
             skyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
         }
         skyboxMaterial.disableLighting = true;
-        hdrSkybox.infiniteDistance = true;
         hdrSkybox.material = skyboxMaterial;
     }
     hdrSkybox.isPickable = false;
+    hdrSkybox.infiniteDistance = true;
+    hdrSkybox.ignoreCameraMaxZ = true;
     return hdrSkybox;
 };
 

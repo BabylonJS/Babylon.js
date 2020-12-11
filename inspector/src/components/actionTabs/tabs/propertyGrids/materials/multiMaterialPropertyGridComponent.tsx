@@ -7,7 +7,7 @@ import { LineContainerComponent } from "../../../lineContainerComponent";
 import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGridComponent";
 import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';
-import { TextLineComponent } from '../../../lines/textLineComponent';
+import { TextLineComponent } from '../../../../../sharedUiComponents/lines/textLineComponent';
 import { Material } from 'babylonjs/Materials/material';
 import { MultiMaterial } from 'babylonjs/Materials/multiMaterial';
 
