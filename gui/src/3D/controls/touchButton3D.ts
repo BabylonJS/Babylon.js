@@ -4,13 +4,11 @@ import { DeepImmutableObject } from "babylonjs/types";
 import { Vector3 } from "babylonjs/Maths/math.vector";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { LinesMesh } from "babylonjs/Meshes/linesMesh";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { Scene } from "babylonjs/scene";
 import { Ray } from "babylonjs/Culling/ray";
 
 import { Button3D } from "./button3D";
-import { Color3 } from 'babylonjs/Maths/math.color';
 
 /**
  * Enum for Button States
@@ -39,8 +37,6 @@ export class TouchButton3D extends Button3D {
     private _offsetToFront = 0;
     private _offsetToBack = 0;
     private _hoverOffset = 0;
-
-    private _drawDebugData = false;
 
     private _activeInteractions = new Map<number, ButtonState>();
     private _previousHeight = new Map<number, number>();
@@ -190,6 +186,61 @@ export class TouchButton3D extends Button3D {
         return abc - d;
     }
 
+    private _updateButtonState(id: number, newState: ButtonState, pointOnButton: Vector3) {
+        const dummyPointerId = 0;
+        const buttonIndex = 0; // Left click
+        const buttonStateForId = this._activeInteractions.get(id) || ButtonState.None;
+
+        // Take into account all inputs interacting with the button to avoid state flickering
+        let previousPushDepth = 0;
+        this._activeInteractions.forEach(function(value, key) {
+            previousPushDepth = Math.max(previousPushDepth, value);
+        });
+
+        if (buttonStateForId != newState) {
+            if (newState == ButtonState.None) {
+                this._activeInteractions.delete(id);
+            }
+            else {
+                this._activeInteractions.set(id, newState);
+            }
+        }
+
+        let newPushDepth = 0;
+        this._activeInteractions.forEach(function(value, key) {
+            newPushDepth = Math.max(newPushDepth, value);
+        });
+
+        if (newPushDepth == ButtonState.Press) {
+            if (previousPushDepth == ButtonState.Hover) {
+                this._onPointerDown(this, pointOnButton, dummyPointerId, buttonIndex);
+            }
+            else if (previousPushDepth == ButtonState.Press) {
+                this._onPointerMove(this, pointOnButton);
+            }
+        }
+        else if (newPushDepth == ButtonState.Hover) {
+            if (previousPushDepth == ButtonState.None) {
+                this._onPointerEnter(this);
+            }
+            else if (previousPushDepth == ButtonState.Press) {
+                this._onPointerUp(this, pointOnButton, dummyPointerId, buttonIndex, false);
+            }
+            else {
+                this._onPointerMove(this, pointOnButton);
+            }
+        }
+        else if (newPushDepth == ButtonState.None) {
+            if (previousPushDepth == ButtonState.Hover) {
+                this._onPointerOut(this);
+            }
+            else if (previousPushDepth == ButtonState.Press) {
+                this._onPointerUp(this, pointOnButton, dummyPointerId, buttonIndex, false);
+                this._onPointerOut(this);
+            }
+        }
+    }
+
     protected _getTypeName(): string {
         return "TouchButton3D";
     }
@@ -201,129 +252,64 @@ export class TouchButton3D extends Button3D {
             this.collisionMesh = collisionMesh;
         }
 
-        const dummyPointerId = 0;
-        const buttonIndex = 0; // Left click
-
         // TODO?: Set distances appropriately:
         // Hover depth based on distance from front face of mesh, not center
-        // (Done) Touch Depth based on actual collision with button
-        // HitTestDistance based on distance from front face of button
-        // For the hover/hitTest, compute point-plane distance, using button front for plane
-        //    -> Right now only have front direction. Can't rely on mesh for getting front face
-        //       since mesh might not be aligned properly... Make that a requirement?
+        // (DONE)  Touch Depth based on actual collision with button
+        // (DONE?) HitTestDistance based on distance from front face of button
+        // (DONE)  For the hover/hitTest, compute point-plane distance, using button front for plane
+        //           -> Right now only have front direction. Can't rely on mesh for getting front face
+        //              since mesh might not be aligned properly... Make that a requirement?
 
 
-        const func_new = function () {
+        const onBeforeRender = function () {
             if (_this._collidableInitialized) {
-                const indexTipMeshes = scene.getMeshesByTags("touchEnabled");
+                const touchMeshes = scene.getMeshesByTags("touchEnabled");
 
-                var debugLineMesh: LinesMesh;
-
-                indexTipMeshes.forEach(function (indexMesh: Mesh) {
-                    const collidablePosition = indexMesh.getAbsolutePosition();
+                touchMeshes.forEach(function (mesh: Mesh) {
+                    const collidablePosition = mesh.getAbsolutePosition();
                     const inRange = _this._isPrimedForInteraction(collidablePosition);
 
-                    const uniqueId = indexMesh.uniqueId;
-
-                    var debugButtonPoint = _this._collisionMesh.getAbsolutePosition();
-                    var debugColour = Color3.Red();
-
-                    const updateButtonState = function (id: number, newState: ButtonState, pointOnButton: Vector3) {
-                        const buttonStateForId = _this._activeInteractions.get(id) || ButtonState.None;
-
-                        // Take into account all inputs interacting with the button to avoid state flickering
-                        let previousPushDepth = 0;
-                        _this._activeInteractions.forEach(function(value, key) {
-                            previousPushDepth = Math.max(previousPushDepth, value);
-                        });
-
-                        if (buttonStateForId != newState) {
-                            if (newState == ButtonState.None) {
-                                _this._activeInteractions.delete(id);
-                            }
-                            else {
-                                _this._activeInteractions.set(id, newState);
-                            }
-                        }
-
-                        let newPushDepth = 0;
-                        _this._activeInteractions.forEach(function(value, key) {
-                            newPushDepth = Math.max(newPushDepth, value);
-                        });
-
-                        if (newPushDepth == ButtonState.Press) {
-                            if (previousPushDepth == ButtonState.Hover) {
-                                _this._onPointerDown(_this, pointOnButton, dummyPointerId, buttonIndex);
-                            }
-                            else if (previousPushDepth == ButtonState.Press) {
-                                _this._onPointerMove(_this, pointOnButton);
-                            }
-                        }
-                        else if (newPushDepth == ButtonState.Hover) {
-                            if (previousPushDepth == ButtonState.None) {
-                                _this._onPointerEnter(_this);
-                            }
-                            else if (previousPushDepth == ButtonState.Press) {
-                                _this._onPointerUp(_this, pointOnButton, dummyPointerId, buttonIndex, false);
-                            }
-                            else {
-                                _this._onPointerMove(_this, pointOnButton);
-                            }
-                        }
-                        else if (newPushDepth == ButtonState.None) {
-                            if (previousPushDepth == ButtonState.Hover) {
-                                _this._onPointerOut(_this);
-                            }
-                            else if (previousPushDepth == ButtonState.Press) {
-                                _this._onPointerUp(_this, pointOnButton, dummyPointerId, buttonIndex, false);
-                                _this._onPointerOut(_this);
-                            }
-                        }
-                    }
+                    const uniqueId = mesh.uniqueId;
 
                     if (inRange) {
                         const pointOnButton = _this._getPointOnButton(collidablePosition);
                         const heightFromCenter = _this._getHeightFromButtonCenter(collidablePosition);
+                        const flickerDelta = 0.003;
 
                         _this._lastTouchPoint = pointOnButton;
-                        debugButtonPoint = pointOnButton;
 
-                        const isGreater = function (height: number, compareHeight: number) {
-                            const flickerDelta = 0.003;
-                            return height >= (compareHeight + flickerDelta);
+                        const isGreater = function (compareHeight: number) {
+                            return heightFromCenter >= (compareHeight + flickerDelta);
                         };
 
-                        const isLower = function (height: number, compareHeight: number) {
-                            const flickerDelta = 0.003;
-                            return height <= (compareHeight - flickerDelta);
+                        const isLower = function (compareHeight: number) {
+                            return heightFromCenter <= (compareHeight - flickerDelta);
                         };
 
                         // Update button state and fire events
                         switch(_this._activeInteractions.get(uniqueId) || ButtonState.None) {
                             case ButtonState.None:
-                                if (isGreater(heightFromCenter, _this._offsetToFront) &&
-                                    isLower(heightFromCenter, _this._hoverOffset)) {
-                                    updateButtonState(uniqueId, ButtonState.Hover, pointOnButton);
+                                if (isGreater(_this._offsetToFront) &&
+                                    isLower(_this._hoverOffset)) {
+                                    _this._updateButtonState(uniqueId, ButtonState.Hover, pointOnButton);
                                 }
 
                                 break;
                             case ButtonState.Hover:
-                                debugColour = Color3.Yellow();
-                                if (isGreater(heightFromCenter, _this._hoverOffset)) {
-                                    updateButtonState(uniqueId, ButtonState.None, pointOnButton);
+                                if (isGreater(_this._hoverOffset)) {
+                                    _this._updateButtonState(uniqueId, ButtonState.None, pointOnButton);
                                 }
-                                else if (isLower(heightFromCenter, _this._offsetToFront)) {
-                                    updateButtonState(uniqueId, ButtonState.Press, pointOnButton);
+                                else if (isLower(_this._offsetToFront)) {
+                                    _this._updateButtonState(uniqueId, ButtonState.Press, pointOnButton);
                                 }
 
                                 break;
                             case ButtonState.Press:
-                                debugColour = Color3.Green();
-                                if (isGreater(heightFromCenter, _this._offsetToFront)) {
-                                    updateButtonState(uniqueId, ButtonState.Hover, pointOnButton);
+                                if (isGreater(_this._offsetToFront)) {
+                                    _this._updateButtonState(uniqueId, ButtonState.Hover, pointOnButton);
                                 }
-                                else if (isLower(heightFromCenter, _this._offsetToBack)) {
-                                    updateButtonState(uniqueId, ButtonState.None, pointOnButton);
+                                else if (isLower(_this._offsetToBack)) {
+                                    _this._updateButtonState(uniqueId, ButtonState.None, pointOnButton);
                                 }
 
                                 break;
@@ -332,36 +318,14 @@ export class TouchButton3D extends Button3D {
                         _this._previousHeight.set(uniqueId, heightFromCenter);
                     }
                     else {
-                        updateButtonState(uniqueId, ButtonState.None, _this._lastTouchPoint);
+                        _this._updateButtonState(uniqueId, ButtonState.None, _this._lastTouchPoint);
                         _this._previousHeight.delete(uniqueId);
                     }
-
-
-                    
-                    if (_this._drawDebugData) {
-                        // Debug line mesh
-                        if (debugLineMesh) {
-                            // remove the previous line before drawing the new one
-                            // Commented out as it causes memory crashes
-                       //     debugLineMesh.dispose();
-                        }
-                        
-                        // Draw a line from the button front to the button to the hand
-                        debugLineMesh = Mesh.CreateLines("debug_line", [
-                            debugButtonPoint,
-                            indexMesh.getAbsolutePosition()
-                        ], scene);
-                        debugLineMesh.color = debugColour;
-                    }
-                    else if (debugLineMesh) {
-                        debugLineMesh.dispose();
-                    }
-                    
                 });
             }
         };
         
-        scene.registerBeforeRender(func_new);
+        scene.registerBeforeRender(onBeforeRender);
     }
 
     // Mesh association
