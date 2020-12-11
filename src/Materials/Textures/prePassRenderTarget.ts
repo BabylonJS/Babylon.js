@@ -22,17 +22,6 @@ export class PrePassRenderTarget extends MultiRenderTarget {
      */
     public imageProcessingPostProcess: ImageProcessingPostProcess;
 
-    /**
-     * How many samples are used for MSAA of the scene render target
-     */
-    public get samples() {
-        return this._samples;
-    }
-
-    public set samples(n: number) {
-        this._samples = n;
-    }
-
     public _engine: Engine;
     public _scene: Scene;
 
@@ -76,6 +65,18 @@ export class PrePassRenderTarget extends MultiRenderTarget {
             this._internalTextureDirty = true;
         }
     }
+
+    /**
+     * How many samples are used for this RT
+     */
+    public get samples() {
+        return this._samples;
+    }
+
+    public set samples(n: number) {
+        this._samples = n;
+    }
+
 
     /**
      * Changes the number of render targets in this MRT

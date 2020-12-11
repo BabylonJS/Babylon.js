@@ -15,7 +15,6 @@
 // Constants
 #define RECIPROCAL_PI2 0.15915494
 
-uniform vec3 vEyePosition;
 uniform vec3 vAmbientColor;
 
 // Input
@@ -171,7 +170,7 @@ void main(void) {
 
 
 
-	vec3 viewDirectionW = normalize(vEyePosition - vPositionW);
+	vec3 viewDirectionW = normalize(vEyePosition.xyz - vPositionW);
 
 	// Base color
 	vec4 baseColor = vec4(1., 1., 1., 1.);

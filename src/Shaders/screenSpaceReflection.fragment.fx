@@ -2,9 +2,11 @@
 // http://imanolfotia.com/blog/update/2017/03/11/ScreenSpaceReflections.html
 
 uniform sampler2D textureSampler;
+#ifdef SSR_SUPPORTED
+uniform sampler2D reflectivitySampler;
 uniform sampler2D normalSampler;
 uniform sampler2D positionSampler;
-uniform sampler2D reflectivitySampler;
+#endif
 
 uniform mat4 view;
 uniform mat4 projection;
@@ -17,6 +19,8 @@ uniform float reflectionSpecularFalloffExponent;
 
 // Varyings
 varying vec2 vUV;
+
+#ifdef SSR_SUPPORTED
 
 // Structs
 struct ReflectionInfo {
@@ -121,6 +125,7 @@ vec3 hash(vec3 a)
     a += dot(a, a.yxz + 19.19);
     return fract((a.xxy + a.yxx) * a.zyx);
 }
+#endif
 
 void main()
 {

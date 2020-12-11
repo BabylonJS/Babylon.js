@@ -78,7 +78,12 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     */
     public set samples(n: number) {
         this._samples = n;
-        this._ssaoPostProcess.updateEffect(this._getDefinesForSSAO());
+        if (this._prePassRenderer) {
+            this._prePassRenderer.samples = n;
+        }
+        else {
+            this._ssaoPostProcess.updateEffect(this._getDefinesForSSAO());
+        }
         this._sampleSphere = this._generateHemisphere();
     }
     public get samples(): number {
@@ -162,7 +167,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         if (!engine) {
             return false;
         }
-        return engine.webGLVersion >= 2;
+        return engine._features.supportSSAO2;
     }
 
     private _scene: Scene;
@@ -198,7 +203,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         this._forceGeometryBuffer = forceGeometryBuffer;
 
         if (!this.isSupported) {
-            Logger.Error("SSAO 2 needs WebGL 2 support.");
+            Logger.Error("The current engine does not support SSAO 2.");
             return;
         }
 
@@ -376,6 +381,16 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         return defines;
     }
 
+    private static readonly ORTHO_DEPTH_PROJECTION = [
+        1, 0, 0,
+        0, 1, 0,
+        0, 0, 1];
+
+    private static readonly PERSPECTIVE_DEPTH_PROJECTION = [
+        0, 0, 0,
+        0, 0, 0,
+        1, 1, 1];
+
     private _createSSAOPostProcess(ratio: number): void {
         this._sampleSphere = this._generateHemisphere();
 
@@ -386,7 +401,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             [
                 "sampleSphere", "samplesFactor", "randTextureTiles", "totalStrength", "radius",
                 "base", "range", "projection", "near", "far", "texelSize",
-                "xViewport", "yViewport", "maxZ", "minZAspect"
+                "xViewport", "yViewport", "maxZ", "minZAspect", "depthProjection"
             ],
             samplers,
             ratio, null, Texture.BILINEAR_SAMPLINGMODE,
@@ -409,8 +424,21 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             effect.setFloat("base", this.base);
             effect.setFloat("near", this._scene.activeCamera.minZ);
             effect.setFloat("far", this._scene.activeCamera.maxZ);
-            effect.setFloat("xViewport", Math.tan(this._scene.activeCamera.fov / 2) * this._scene.getEngine().getAspectRatio(this._scene.activeCamera, true));
-            effect.setFloat("yViewport", Math.tan(this._scene.activeCamera.fov / 2));
+            if (this._scene.activeCamera.mode === Camera.PERSPECTIVE_CAMERA) {
+                effect.setMatrix3x3("depthProjection", SSAO2RenderingPipeline.PERSPECTIVE_DEPTH_PROJECTION);
+                effect.setFloat("xViewport", Math.tan(this._scene.activeCamera.fov / 2) * this._scene.getEngine().getAspectRatio(this._scene.activeCamera, true));
+                effect.setFloat("yViewport", Math.tan(this._scene.activeCamera.fov / 2));
+            } else {
+                const halfWidth = this._scene.getEngine().getRenderWidth() / 2.0;
+                const halfHeight = this._scene.getEngine().getRenderHeight() / 2.0;
+                const orthoLeft = this._scene.activeCamera.orthoLeft ?? -halfWidth;
+                const orthoRight = this._scene.activeCamera.orthoRight ?? halfWidth;
+                const orthoBottom = this._scene.activeCamera.orthoBottom ?? -halfHeight;
+                const orthoTop = this._scene.activeCamera.orthoTop ?? halfHeight;
+                effect.setMatrix3x3("depthProjection", SSAO2RenderingPipeline.ORTHO_DEPTH_PROJECTION);
+                effect.setFloat("xViewport", (orthoRight - orthoLeft) * 0.5);
+                effect.setFloat("yViewport", (orthoTop - orthoBottom) * 0.5);
+            }
             effect.setMatrix("projection", this._scene.getProjectionMatrix());
 
             if (this._forceGeometryBuffer) {

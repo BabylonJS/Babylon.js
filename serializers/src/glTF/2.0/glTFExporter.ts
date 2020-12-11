@@ -28,7 +28,6 @@ import { IExportOptions } from "./glTFSerializer";
 import { _GLTFUtilities } from "./glTFUtilities";
 import { GLTFData } from "./glTFData";
 import { _GLTFAnimation } from "./glTFAnimation";
-import { Viewport } from 'babylonjs/Maths/math.viewport';
 import { Epsilon } from 'babylonjs/Maths/math.constants';
 
 /**
@@ -353,22 +352,6 @@ export class _Exporter {
         }
 
         return true;
-    }
-
-    /**
-     * Lazy load a local engine
-     */
-    public _getLocalEngine(): Engine {
-        if (!this._localEngine) {
-            const localCanvas = document.createElement('canvas');
-            localCanvas.id = "WriteCanvas";
-            localCanvas.width = 2048;
-            localCanvas.height = 2048;
-            this._localEngine = new Engine(localCanvas, true, { premultipliedAlpha: Tools.IsSafari(), preserveDrawingBuffer: true });
-            this._localEngine.setViewport(new Viewport(0, 0, 1, 1));
-        }
-
-        return this._localEngine;
     }
 
     private reorderIndicesBasedOnPrimitiveMode(submesh: SubMesh, primitiveMode: number, babylonIndices: IndicesArray, byteOffset: number, binaryWriter: _BinaryWriter) {

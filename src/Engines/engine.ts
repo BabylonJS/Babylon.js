@@ -195,7 +195,7 @@ export class Engine extends ThinEngine {
     /** FLOAT_32_UNSIGNED_INT_24_8_REV */
     public static readonly TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV = Constants.TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV;
 
-    /** nearest is mag = nearest and min = nearest and mip = linear */
+    /** nearest is mag = nearest and min = nearest and mip = none */
     public static readonly TEXTURE_NEAREST_SAMPLINGMODE = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
     /** Bilinear is mag = linear and min = linear and mip = nearest */
     public static readonly TEXTURE_BILINEAR_SAMPLINGMODE = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
@@ -422,9 +422,9 @@ export class Engine extends ThinEngine {
     private _rescalePostProcess: PostProcess;
 
     // Deterministic lockstepMaxSteps
-    private _deterministicLockstep: boolean = false;
-    private _lockstepMaxSteps: number = 4;
-    private _timeStep: number = 1 / 60;
+    protected _deterministicLockstep: boolean = false;
+    protected _lockstepMaxSteps: number = 4;
+    protected _timeStep: number = 1 / 60;
 
     protected get _supportsHardwareTextureRescaling() {
         return !!Engine._RescalePostProcessFactory;
@@ -495,47 +495,13 @@ export class Engine extends ThinEngine {
         if ((<any>canvasOrContext).getContext) {
             let canvas = <HTMLCanvasElement>canvasOrContext;
 
-            this._onCanvasFocus = () => {
-                this.onCanvasFocusObservable.notifyObservers(this);
-            };
-
-            this._onCanvasBlur = () => {
-                this.onCanvasBlurObservable.notifyObservers(this);
-            };
-
-            canvas.addEventListener("focus", this._onCanvasFocus);
-            canvas.addEventListener("blur", this._onCanvasBlur);
-
-            this._onBlur = () => {
-                if (this.disablePerformanceMonitorInBackground) {
-                    this._performanceMonitor.disable();
-                }
-                this._windowIsBackground = true;
-            };
-
-            this._onFocus = () => {
-                if (this.disablePerformanceMonitorInBackground) {
-                    this._performanceMonitor.enable();
-                }
-                this._windowIsBackground = false;
-            };
-
-            this._onCanvasPointerOut = (ev) => {
-                this.onCanvasPointerOutObservable.notifyObservers(ev);
-            };
-
-            canvas.addEventListener("pointerout", this._onCanvasPointerOut);
+            this._sharedInit(canvas, !!options.doNotHandleTouchAction, options.audioEngine!);
 
             if (DomManagement.IsWindowObjectExist()) {
-                let hostWindow = this.getHostWindow()!;
-                hostWindow.addEventListener("blur", this._onBlur);
-                hostWindow.addEventListener("focus", this._onFocus);
-
-                let anyDoc = document as any;
+                const anyDoc = document as any;
 
                 // Fullscreen
                 this._onFullscreenChange = () => {
-
                     if (anyDoc.fullscreen !== undefined) {
                         this.isFullscreen = anyDoc.fullscreen;
                     } else if (anyDoc.mozFullScreen !== undefined) {
@@ -581,10 +547,6 @@ export class Engine extends ThinEngine {
 
             this.enableOfflineSupport = Engine.OfflineProviderFactory !== undefined;
 
-            if (!options.doNotHandleTouchAction) {
-                this._disableTouchAction();
-            }
-
             this._deterministicLockstep = !!options.deterministicLockstep;
             this._lockstepMaxSteps = options.lockstepMaxSteps || 0;
             this._timeStep = options.timeStep || 1 / 60;
@@ -595,6 +557,64 @@ export class Engine extends ThinEngine {
         this._prepareVRComponent();
         if (options.autoEnableWebVR) {
             this.initWebVR();
+        }
+    }
+
+    /**
+     * Shared initialization across engines types.
+     * @param canvas The canvas associated with this instance of the engine.
+     * @param doNotHandleTouchAction Defines that engine should ignore modifying touch action attribute and style
+     * @param audioEngine Defines if an audio engine should be created by default
+     */
+    protected _sharedInit(canvas: HTMLCanvasElement, doNotHandleTouchAction: boolean, audioEngine: boolean) {
+        super._sharedInit(canvas, doNotHandleTouchAction, audioEngine);
+
+        this._onCanvasFocus = () => {
+            this.onCanvasFocusObservable.notifyObservers(this);
+        };
+
+        this._onCanvasBlur = () => {
+            this.onCanvasBlurObservable.notifyObservers(this);
+        };
+
+        canvas.addEventListener("focus", this._onCanvasFocus);
+        canvas.addEventListener("blur", this._onCanvasBlur);
+
+        this._onBlur = () => {
+            if (this.disablePerformanceMonitorInBackground) {
+                this._performanceMonitor.disable();
+            }
+            this._windowIsBackground = true;
+        };
+
+        this._onFocus = () => {
+            if (this.disablePerformanceMonitorInBackground) {
+                this._performanceMonitor.enable();
+            }
+            this._windowIsBackground = false;
+        };
+
+        this._onCanvasPointerOut = (ev) => {
+            this.onCanvasPointerOutObservable.notifyObservers(ev);
+        };
+
+        if (DomManagement.IsWindowObjectExist()) {
+            const hostWindow = this.getHostWindow();
+            if (hostWindow) {
+                hostWindow.addEventListener("blur", this._onBlur);
+                hostWindow.addEventListener("focus", this._onFocus);
+            }
+        }
+
+        canvas.addEventListener("pointerout", this._onCanvasPointerOut);
+
+        if (!doNotHandleTouchAction) {
+            this._disableTouchAction();
+        }
+
+        // Create Audio Engine if needed.
+        if (!Engine.audioEngine && audioEngine && Engine.AudioEngineFactory) {
+            Engine.audioEngine = Engine.AudioEngineFactory(this.getRenderingCanvas());
         }
     }
 
@@ -726,6 +746,14 @@ export class Engine extends ThinEngine {
      */
     public getZOffset(): number {
         return this._depthCullingState.zOffset;
+    }
+
+    /**
+     * Gets a boolean indicating if depth testing is enabled
+     * @returns the current state
+     */
+    public getDepthBuffer(): boolean {
+        return this._depthCullingState.depthTest;
     }
 
     /**
@@ -1132,8 +1160,9 @@ export class Engine extends ThinEngine {
      * @param channel The texture channel
      * @param uniform The uniform to set
      * @param texture The render target texture containing the depth stencil texture to apply
+     * @param name The texture name
      */
-    public setDepthStencilTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<RenderTargetTexture>): void {
+    public setDepthStencilTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<RenderTargetTexture>, name?: string): void {
         if (channel === undefined) {
             return;
         }
@@ -1143,10 +1172,10 @@ export class Engine extends ThinEngine {
         }
 
         if (!texture || !texture.depthStencilTexture) {
-            this._setTexture(channel, null);
+            this._setTexture(channel, null, undefined, undefined, name);
         }
         else {
-            this._setTexture(channel, texture, false, true);
+            this._setTexture(channel, texture, false, true, name);
         }
     }
 
@@ -1154,8 +1183,9 @@ export class Engine extends ThinEngine {
      * Sets a texture to the webGL context from a postprocess
      * @param channel defines the channel to use
      * @param postProcess defines the source postprocess
+     * @param name name of the channel
      */
-    public setTextureFromPostProcess(channel: number, postProcess: Nullable<PostProcess>): void {
+    public setTextureFromPostProcess(channel: number, postProcess: Nullable<PostProcess>, name: string): void {
         let postProcessInput = null;
         if (postProcess) {
             if (postProcess._textures.data[postProcess._currentRenderTextureInd]) {
@@ -1165,16 +1195,17 @@ export class Engine extends ThinEngine {
             }
         }
         
-        this._bindTexture(channel, postProcessInput);
+        this._bindTexture(channel, postProcessInput, name);
     }
 
     /**
      * Binds the output of the passed in post process to the texture channel specified
      * @param channel The channel the texture should be bound to
      * @param postProcess The post process which's output should be bound
+     * @param name name of the channel
      */
-    public setTextureFromPostProcessOutput(channel: number, postProcess: Nullable<PostProcess>): void {
-        this._bindTexture(channel, postProcess ? postProcess._outputTexture : null);
+    public setTextureFromPostProcessOutput(channel: number, postProcess: Nullable<PostProcess>, name: string): void {
+        this._bindTexture(channel, postProcess ? postProcess._outputTexture : null, name);
     }
 
     protected _rebuildBuffers(): void {
@@ -1300,7 +1331,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Enf the current frame
+     * End the current frame
      */
     public endFrame(): void {
         super.endFrame();
@@ -1309,27 +1340,32 @@ export class Engine extends ThinEngine {
         this.onEndFrameObservable.notifyObservers(this);
     }
 
-    public resize(): void {
+    /**
+     * Resize the view according to the canvas' size
+     * @param forceSetSize true to force setting the sizes of the underlying canvas
+     */
+    public resize(forceSetSize = false): void {
         // We're not resizing the size of the canvas while in VR mode & presenting
         if (this.isVRPresenting()) {
             return;
         }
 
-        super.resize();
+        super.resize(forceSetSize);
     }
 
     /**
      * Force a specific size of the canvas
      * @param width defines the new canvas' width
      * @param height defines the new canvas' height
+     * @param forceSetSize true to force setting the sizes of the underlying canvas
      * @returns true if the size was changed
      */
-    public setSize(width: number, height: number): boolean {
+    public setSize(width: number, height: number, forceSetSize = false): boolean {
         if (!this._renderingCanvas) {
             return false;
         }
 
-        if (!super.setSize(width, height)) {
+        if (!super.setSize(width, height, forceSetSize)) {
             return false;
         }
 
@@ -1677,7 +1713,7 @@ export class Engine extends ThinEngine {
         this._gl.deleteBuffer(buffer);
     }
 
-    private _clientWaitAsync(sync: WebGLSync, flags = 0, interval_ms = 10) {
+    private _clientWaitAsync(sync: WebGLSync, flags = 0, interval_ms = 10): Promise<void> {
         let gl = <WebGL2RenderingContext>(this._gl as any);
         return new Promise((resolve, reject) => {
             let check = () => {

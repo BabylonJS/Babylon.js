@@ -19,6 +19,7 @@ import { RequestFileError, ReadFileError } from '../Misc/fileTools';
 import { TransformNode } from '../Meshes/transformNode';
 import { Geometry } from '../Meshes/geometry';
 import { Light } from '../Lights/light';
+import { StringTools } from '../Misc/stringTools';
 
 /**
  * Type used for the success callback of ImportMesh
@@ -461,8 +462,8 @@ export class SceneLoader {
     }
 
     private static _LoadData(fileInfo: IFileInfo, scene: Scene, onSuccess: (plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync, data: any, responseURL?: string) => void, onProgress: ((event: ISceneLoaderProgressEvent) => void) | undefined, onError: (message: string, exception?: any) => void, onDispose: () => void, pluginExtension: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
-        const directLoad = SceneLoader._GetDirectLoad(fileInfo.name);
-        const registeredPlugin = pluginExtension ? SceneLoader._GetPluginForExtension(pluginExtension) : (directLoad ? SceneLoader._GetPluginForDirectLoad(fileInfo.name) : SceneLoader._GetPluginForFilename(fileInfo.name));
+        const directLoad = SceneLoader._GetDirectLoad(fileInfo.url);
+        const registeredPlugin = pluginExtension ? SceneLoader._GetPluginForExtension(pluginExtension) : (directLoad ? SceneLoader._GetPluginForDirectLoad(fileInfo.url) : SceneLoader._GetPluginForFilename(fileInfo.url));
 
         let plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync;
         if ((registeredPlugin.plugin as ISceneLoaderPluginFactory).createPlugin !== undefined) {
@@ -542,9 +543,20 @@ export class SceneLoader {
                 : scene._requestFile(fileInfo.url, successCallback, onProgress, true, useArrayBuffer, errorCallback);
         };
 
-        const file = fileInfo.file || FilesInputStore.FilesToLoad[fileInfo.name.toLowerCase()];
+        if (StringTools.StartsWith(fileInfo.url, "file:")) {
+            // Loading file from disk via input file or drag'n'drop
+            if (fileInfo.file) {
+                const errorCallback = (error: ReadFileError) => {
+                    onError(error.message, error);
+                };
 
-        if (fileInfo.rootUrl.indexOf("file:") === -1 || (fileInfo.rootUrl.indexOf("file:") !== -1 && !file)) {
+                request = plugin.readFile
+                    ? plugin.readFile(scene, fileInfo.file, dataCallback, onProgress, useArrayBuffer, errorCallback)
+                    : scene._readFile(fileInfo.file, dataCallback, onProgress, useArrayBuffer, errorCallback);
+            } else {
+                onError("Unable to find file named " + fileInfo.name);
+            }
+        } else {
             const engine = scene.getEngine();
             let canUseOfflineSupport = engine.enableOfflineSupport;
             if (canUseOfflineSupport) {
@@ -568,20 +580,7 @@ export class SceneLoader {
                 manifestChecked();
             }
         }
-        // Loading file from disk via input file or drag'n'drop
-        else {
-            if (file) {
-                const errorCallback = (error: ReadFileError) => {
-                    onError(error.message, error);
-                };
 
-                request = plugin.readFile
-                    ? plugin.readFile(scene, file, dataCallback, onProgress, useArrayBuffer, errorCallback)
-                    : scene._readFile(file, dataCallback, onProgress, useArrayBuffer, errorCallback);
-            } else {
-                onError("Unable to find file named " + fileInfo.name);
-            }
-        }
         return plugin;
     }
 
@@ -601,6 +600,10 @@ export class SceneLoader {
             name = sceneFile.name;
             file = sceneFile;
         }
+        else if (typeof sceneFilename === "string" && Tools.IsBase64(sceneFilename)) {
+            url = rootUrl + sceneFilename;
+            name = "";
+        }
         else {
             const filename = sceneFilename as string;
             if (filename.substr(0, 1) === "/") {
@@ -610,6 +613,10 @@ export class SceneLoader {
 
             url = rootUrl + filename;
             name = filename;
+        }
+
+        if (!file && name && StringTools.StartsWith(url, "file:")) {
+            file = FilesInputStore.FilesToLoad[name.toLowerCase()] || null;
         }
 
         return {
@@ -1049,7 +1056,7 @@ export class SceneLoader {
      * @param pluginExtension the extension used to determine the plugin
      * @returns The loaded asset container
      */
-    public static LoadAssetContainerAsync(rootUrl: string, sceneFilename: string = "", scene: Nullable<Scene> = EngineStore.LastCreatedScene, onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null, pluginExtension: Nullable<string> = null): Promise<AssetContainer> {
+    public static LoadAssetContainerAsync(rootUrl: string, sceneFilename: string | File = "", scene: Nullable<Scene> = EngineStore.LastCreatedScene, onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null, pluginExtension: Nullable<string> = null): Promise<AssetContainer> {
         return new Promise((resolve, reject) => {
             SceneLoader.LoadAssetContainer(rootUrl, sceneFilename, scene, (assetContainer) => {
                 resolve(assetContainer);

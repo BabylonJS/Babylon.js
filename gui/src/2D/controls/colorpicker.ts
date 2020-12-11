@@ -12,6 +12,7 @@ import { TextBlock } from "../controls/textBlock";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { Color3 } from 'babylonjs/Maths/math.color';
 import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
+import { serialize } from 'babylonjs/Misc/decorators';
 
 /** Class used to create color pickers */
 export class ColorPicker extends Control {
@@ -40,6 +41,7 @@ export class ColorPicker extends Control {
     public onValueChangedObservable = new Observable<Color3>();
 
     /** Gets or sets the color of the color picker */
+    @serialize()
     public get value(): Color3 {
         return this._value;
     }
@@ -90,6 +92,7 @@ export class ColorPicker extends Control {
      * Gets or sets control width
      * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
+    @serialize()
     public get width(): string | number {
         return this._width.toString(this._host);
     }
@@ -109,6 +112,7 @@ export class ColorPicker extends Control {
      * Gets or sets control height
      * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
+    @serialize()
     public get height(): string | number {
         return this._height.toString(this._host);
     }
@@ -126,6 +130,7 @@ export class ColorPicker extends Control {
     }
 
     /** Gets or sets control size */
+    @serialize()
     public get size(): string | number {
         return this.width;
     }

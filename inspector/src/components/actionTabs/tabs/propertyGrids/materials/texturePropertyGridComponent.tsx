@@ -23,7 +23,7 @@ import { GlobalState } from "../../../../../components/globalState";
 import { AdvancedDynamicTextureInstrumentation } from "babylonjs-gui/2D/adtInstrumentation";
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
-import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
+import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
 import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
 import { AnimationGridComponent } from '../animations/animationPropertyGridComponent';
 
@@ -141,9 +141,22 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
         const texture = this.props.texture;
 
         var samplingMode = [
-            { label: "Nearest", value: Texture.NEAREST_NEAREST },
-            { label: "Nearest & linear mip", value: Texture.NEAREST_LINEAR },
-            { label: "Linear", value: Texture.LINEAR_LINEAR_MIPLINEAR },
+            { label: "Nearest", value: Texture.NEAREST_NEAREST }, // 1
+            { label: "Linear", value: Texture.LINEAR_LINEAR }, // 2
+
+            { label: "Linear & linear mip", value: Texture.LINEAR_LINEAR_MIPLINEAR }, // 3
+            { label: "Linear & nearest mip", value: Texture.LINEAR_LINEAR_MIPNEAREST }, // 11
+
+            { label: "Nearest & linear mip", value: Texture.NEAREST_NEAREST_MIPLINEAR }, // 8
+            { label: "Nearest & nearest mip", value: Texture.NEAREST_NEAREST_MIPNEAREST }, // 4
+
+            { label: "Nearest/Linear", value: Texture.NEAREST_LINEAR }, // 7
+            { label: "Nearest/Linear & linear mip", value: Texture.NEAREST_LINEAR_MIPLINEAR }, // 6
+            { label: "Nearest/Linear & nearest mip", value: Texture.NEAREST_LINEAR_MIPNEAREST }, // 5
+
+            { label: "Linear/Nearest", value: Texture.LINEAR_NEAREST }, // 12
+            { label: "Linear/Nearest & linear mip", value: Texture.LINEAR_NEAREST_MIPLINEAR }, // 10
+            { label: "Linear/Nearest & nearest mip", value: Texture.LINEAR_NEAREST_MIPNEAREST }, // 9
         ];
 
         var coordinatesMode = [

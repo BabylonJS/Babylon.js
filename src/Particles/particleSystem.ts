@@ -309,15 +309,17 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         // Default emitter type
         this.particleEmitterType = new BoxParticleEmitter();
+        let noiseTextureData: Nullable<Uint8Array> = null;
 
         // Update
         this.updateFunction = (particles: Particle[]): void => {
             let noiseTextureSize: Nullable<ISize> = null;
-            let noiseTextureData: Nullable<Uint8Array> = null;
 
             if (this.noiseTexture) { // We need to get texture data back to CPU
                 noiseTextureSize = this.noiseTexture.getSize();
-                noiseTextureData = <Nullable<Uint8Array>>(this.noiseTexture.getContent());
+                this.noiseTexture.getContent()?.then((data) => {
+                    noiseTextureData = data as Uint8Array;
+                });
             }
 
             for (var index = 0; index < particles.length; index++) {
@@ -1051,7 +1053,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         var offsets: VertexBuffer;
         if (this._useInstancing) {
-            var spriteData = new Float32Array([0, 0, 1, 0, 1, 1, 0, 1]);
+            var spriteData = new Float32Array([0, 0, 1, 0, 0, 1, 1, 1]);
             this._spriteBuffer = new Buffer(engine, spriteData, false, 2);
             offsets = this._spriteBuffer.createVertexBuffer("offset", 0, 2);
         } else {
@@ -1987,7 +1989,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         }
 
         if (this._useInstancing) {
-            engine.drawArraysType(Constants.MATERIAL_TriangleFanDrawMode, 0, 4, this._particles.length);
+            engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, this._particles.length);
         } else {
             engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, this._particles.length * 6);
         }

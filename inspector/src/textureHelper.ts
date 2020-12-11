@@ -8,7 +8,6 @@ import { Nullable } from 'babylonjs/types';
 import "./lod";
 import "./lodCube";
 
-
 export interface TextureChannelsToDisplay {
     R: boolean;
     G: boolean;
@@ -18,7 +17,7 @@ export interface TextureChannelsToDisplay {
 
 export class TextureHelper {
 
-    private static _ProcessAsync(texture: BaseTexture, width: number, height: number, face: number, channels: TextureChannelsToDisplay, lod: number, globalState: Nullable<GlobalState>, resolve: (result: Uint8Array) => void, reject: () => void) {
+    private static async _ProcessAsync(texture: BaseTexture, width: number, height: number, face: number, channels: TextureChannelsToDisplay, lod: number, globalState: Nullable<GlobalState>, resolve: (result: Uint8Array) => void, reject: () => void) {
         var scene = texture.getScene()!;
         var engine = scene.getEngine();
 
@@ -37,8 +36,6 @@ export class TextureHelper {
             ];
             lodPostProcess = new PostProcess("lodCube", "lodCube", ["lod"], null, 1.0, null, Texture.NEAREST_NEAREST_MIPNEAREST, engine, false, faceDefines[face]);
         }
-
-        
 
         if (!lodPostProcess.getEffect().isReady()) {
             // Try again later
@@ -65,12 +62,13 @@ export class TextureHelper {
             effect.setFloat("lod", lod);
         };
 
-        let internalTexture = rtt.getInternalTexture();
+        const rttInternalTexture = rtt.getInternalTexture();
+        const internalTexture = texture.getInternalTexture();
 
-        if (internalTexture) {
+        if (rttInternalTexture && internalTexture) {
             const samplingMode = internalTexture.samplingMode;
             texture.updateSamplingMode(Texture.NEAREST_NEAREST_MIPNEAREST);
-            scene.postProcessManager.directRender([lodPostProcess], internalTexture);
+            scene.postProcessManager.directRender([lodPostProcess], rttInternalTexture);
             texture.updateSamplingMode(samplingMode);
 
             // Read the contents of the framebuffer
@@ -78,19 +76,20 @@ export class TextureHelper {
             var halfHeight = height / 2;
 
             //Reading datas from WebGL
-            var data = engine.readPixels(0, 0, width, height);
+            const bufferView = await engine.readPixels(0, 0, width, height);
+            const data = new Uint8Array(bufferView.buffer, 0, bufferView.byteLength);
 
             if (!channels.R || !channels.G || !channels.B || !channels.A) {
                 for (var i = 0; i < width * height * 4; i += 4) {
                     // If alpha is the only channel, just display alpha across all channels
                     if (channels.A && !channels.R && !channels.G && !channels.B) {
-                        data[i] = data[i+3];
-                        data[i+1] = data[i+3];
-                        data[i+2] = data[i+3];
-                        data[i+3] = 255;
+                        data[i] = data[i + 3];
+                        data[i + 1] = data[i + 3];
+                        data[i + 2] = data[i + 3];
+                        data[i + 3] = 255;
                         continue;
                     }
-                    let r = data[i], g = data[i+1], b = data[i+2], a = data[i+3];
+                    let r = data[i], g = data[i + 1], b = data[i + 2], a = data[i + 3];
                     // If alpha is not visible, make everything 100% alpha
                     if (!channels.A) {
                         a = 255;
@@ -144,18 +143,18 @@ export class TextureHelper {
                     }
                 }
             }
-            
+
             resolve(data);
 
             // Unbind
-            engine.unBindFramebuffer(internalTexture);
+            engine.unBindFramebuffer(rttInternalTexture);
         } else {
             reject();
         }
 
         rtt.dispose();
         lodPostProcess.dispose();
-        
+
         if (globalState) {
             globalState.blockMutationUpdates = false;
         }
@@ -168,7 +167,7 @@ export class TextureHelper {
                     this._ProcessAsync(texture, width, height, face, channels, lod, globalState || null, resolve, reject);
                 });
                 return;
-            }        
+            }
 
             this._ProcessAsync(texture, width, height, face, channels, lod, globalState || null, resolve, reject);
         });

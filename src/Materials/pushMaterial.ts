@@ -75,7 +75,7 @@ export class PushMaterial extends Material {
     }
 
     protected _afterBind(mesh: Mesh, effect: Nullable<Effect> = null): void {
-        super._afterBind(mesh);
+        super._afterBind(mesh, effect);
         this.getScene()._cachedEffect = effect;
     }
 

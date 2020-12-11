@@ -470,7 +470,7 @@ export class PointsCloudSystem implements IDisposable {
 
         var clone = <Mesh>mesh.clone();
         clone.setEnabled(false);
-        this._promises.push(new Promise((resolve) => {
+        this._promises.push(new Promise((resolve: (_: void) => void) => {
             BaseTexture.WhenAllReady(textureList, () => {
                 let n = pointsGroup._textureNb;
                 if (n < 0) {
@@ -479,12 +479,23 @@ export class PointsCloudSystem implements IDisposable {
                 if (n > textureList.length - 1) {
                     n =  textureList.length - 1;
                 }
-                pointsGroup._groupImageData = textureList[n].readPixels();
-                pointsGroup._groupImgWidth = textureList[n].getSize().width;
-                pointsGroup._groupImgHeight = textureList[n].getSize().height;
-                this._setPointsColorOrUV(clone, pointsGroup, isVolume, true, true);
-                clone.dispose();
-                return resolve();
+                const finalize = () => {
+                    pointsGroup._groupImgWidth = textureList[n].getSize().width;
+                    pointsGroup._groupImgHeight = textureList[n].getSize().height;
+                    this._setPointsColorOrUV(clone, pointsGroup, isVolume, true, true);
+                    clone.dispose();
+                    resolve();
+                };
+                pointsGroup._groupImageData = null;
+                const dataPromise = textureList[n].readPixels();
+                if (!dataPromise) {
+                    finalize();
+                } else {
+                    dataPromise.then((data) => {
+                        pointsGroup._groupImageData = data;
+                        finalize();
+                    });
+                }
             });
         }));
     }

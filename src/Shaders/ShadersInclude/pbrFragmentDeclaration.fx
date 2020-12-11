@@ -1,3 +1,5 @@
+uniform vec4 vEyePosition;
+
 uniform vec3 vReflectionColor;
 uniform vec4 vAlbedoColor;
 
@@ -9,6 +11,8 @@ uniform vec4 vMetallicReflectanceFactors;
 uniform vec3 vEmissiveColor;
 
 uniform float visibility;
+
+uniform vec3 vAmbientColor;
 
 // Samplers
 #ifdef ALBEDO
@@ -153,5 +157,37 @@ uniform mat4 view;
 #ifdef PREPASS
     #ifdef SS_SCATTERING
         uniform float scatteringDiffusionProfile;
+    #endif
+#endif
+
+#if DEBUGMODE > 0
+    uniform vec2 vDebugMode;
+#endif
+
+#ifdef DETAIL
+    uniform vec4 vDetailInfos;
+#endif
+
+#ifdef USESPHERICALFROMREFLECTIONMAP
+    #ifdef SPHERICAL_HARMONICS
+        uniform vec3 vSphericalL00;
+        uniform vec3 vSphericalL1_1;
+        uniform vec3 vSphericalL10;
+        uniform vec3 vSphericalL11;
+        uniform vec3 vSphericalL2_2;
+        uniform vec3 vSphericalL2_1;
+        uniform vec3 vSphericalL20;
+        uniform vec3 vSphericalL21;
+        uniform vec3 vSphericalL22;
+    #else
+        uniform vec3 vSphericalX;
+        uniform vec3 vSphericalY;
+        uniform vec3 vSphericalZ;
+        uniform vec3 vSphericalXX_ZZ;
+        uniform vec3 vSphericalYY_ZZ;
+        uniform vec3 vSphericalZZ;
+        uniform vec3 vSphericalXY;
+        uniform vec3 vSphericalYZ;
+        uniform vec3 vSphericalZX;
     #endif
 #endif

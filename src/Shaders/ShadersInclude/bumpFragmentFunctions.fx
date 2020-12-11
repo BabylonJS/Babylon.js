@@ -1,4 +1,4 @@
-﻿#if defined(BUMP)
+#if defined(BUMP)
 	#if BUMPDIRECTUV == 1
 		#define vBumpUV vMainUV1
 	#elif BUMPDIRECTUV == 2

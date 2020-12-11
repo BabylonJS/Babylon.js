@@ -376,6 +376,7 @@ export class BoundingBoxGizmo extends Gizmo {
         if (value) {
             // Reset anchor mesh to match attached mesh's scale
             // This is needed to avoid invalid box/sphere position on first drag
+            this._anchorMesh.scaling.setAll(1);
             PivotTools._RemoveAndStorePivotPoint(value);
             var originalParent = value.parent;
             this._anchorMesh.addChild(value);
