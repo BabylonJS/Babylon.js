@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { GlobalState } from './globalState';
-import { GraphEditor } from './graphEditor';
+import { WorkbenchEditor } from './workbenchEditor';
 import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial"
 import { Popup } from "./sharedComponents/popup"
 import { SerializationTools } from './serializationTools';
@@ -51,7 +51,7 @@ export class GuiEditor {
         globalState.customSave = options.customSave;
         globalState.hostWindow =  hostElement.ownerDocument!.defaultView!;
 
-        const graphEditor = React.createElement(GraphEditor, {
+        const graphEditor = React.createElement(WorkbenchEditor, {
             globalState: globalState
         });
 
