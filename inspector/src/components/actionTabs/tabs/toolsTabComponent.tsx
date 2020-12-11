@@ -23,14 +23,14 @@ import { GLTFComponent } from "./tools/gltfComponent";
 import { GLTFData, GLTF2Export } from "babylonjs-serializers/glTF/2.0/index";
 import { FloatLineComponent } from '../lines/floatLineComponent';
 import { IScreenshotSize } from 'babylonjs/Misc/interfaces/screenshotSize';
-import { NumericInputComponent } from '../lines/numericInputComponent';
+import { NumericInputComponent } from '../../../sharedUiComponents/lines/numericInputComponent';
 import { CheckBoxLineComponent } from '../lines/checkBoxLineComponent';
-import { TextLineComponent } from '../lines/textLineComponent';
+import { TextLineComponent } from '../../../sharedUiComponents/lines/textLineComponent';
 import { FileMultipleButtonLineComponent } from '../lines/fileMultipleButtonLineComponent';
 import { OptionsLineComponent } from '../lines/optionsLineComponent';
-import { MessageLineComponent } from '../lines/messageLineComponent';
-import { FileButtonLineComponent } from '../lines/fileButtonLineComponent';
-import { IndentedTextLineComponent } from '../lines/indentedTextLineComponent';
+import { MessageLineComponent } from '../../../sharedUiComponents/lines/messageLineComponent';
+import { FileButtonLineComponent } from '../../../sharedUiComponents/lines/fileButtonLineComponent';
+import { IndentedTextLineComponent } from '../../../sharedUiComponents/lines/indentedTextLineComponent';
 
 const GIF = require('gif.js.optimized')
 
