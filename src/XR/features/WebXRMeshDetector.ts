@@ -55,8 +55,8 @@ export interface IWebXRVertexData {
      */
     positions?: Float32Array;
     /**
-     * An array of indices in babylon space. right/left hand system is taken into account.
-     * Indices will only be calculated if convertCoordinateSystems is set to true in the IWebXRMeshDetectorOptions.
+     * An array of indices in babylon space. Indices have a counterclockwise winding order.
+     * Indices will only be populated if convertCoordinateSystems is set to true in the IWebXRMeshDetectorOptions.
      */
     indices?: Uint32Array;
     /**
@@ -236,17 +236,8 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
                 mesh.normals = xrMesh.normals;
             }
 
-            if (xrMesh.isClockwiseWindingOrder) {
-                // Babylon.js expects counter clockwise winding order for meshes
-                mesh.indices = new Uint32Array(xrMesh.indices.length);
-                for (let i = 0; i < xrMesh.indices.length; i += 3) {
-                    mesh.indices[i] = xrMesh.indices[i];
-                    mesh.indices[i + 1] = xrMesh.indices[i + 2];
-                    mesh.indices[i + 2] = xrMesh.indices[i + 1];
-                }
-            } else {
-                mesh.indices = xrMesh.indices;
-            }
+            // WebXR should provide indices in a counterclockwise winding order regardless of coordinate system handedness
+            mesh.indices = xrMesh.indices;
 
             // matrix
             const pose = xrFrame.getPose(xrMesh.meshSpace, this._xrSessionManager.referenceSpace);
