@@ -140,7 +140,8 @@ export class NullEngine extends Engine {
             instancedArrays: false,
             canUseTimestampForTimerQuery: false,
             maxMSAASamples: 1,
-            blendMinMax: false
+            blendMinMax: false,
+            canUseGLInstanceID: false,
         };
 
         this._features = {

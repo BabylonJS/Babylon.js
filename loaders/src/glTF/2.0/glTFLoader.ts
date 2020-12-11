@@ -1204,7 +1204,7 @@ export class GLTFLoader implements IGLTFLoader {
 
                 babylonCamera.fov = perspective.yfov;
                 babylonCamera.minZ = perspective.znear;
-                babylonCamera.maxZ = perspective.zfar || Number.MAX_VALUE;
+                babylonCamera.maxZ = perspective.zfar || 0;
                 break;
             }
             case CameraType.ORTHOGRAPHIC: {
@@ -1243,11 +1243,16 @@ export class GLTFLoader implements IGLTFLoader {
             return Promise.resolve();
         }
 
-        const promises = new Array<Promise<any>>();
+        const promises = new Array<Promise<void>>();
 
         for (let index = 0; index < animations.length; index++) {
             const animation = animations[index];
-            promises.push(this.loadAnimationAsync(`/animations/${animation.index}`, animation));
+            promises.push(this.loadAnimationAsync(`/animations/${animation.index}`, animation).then((animationGroup) => {
+                // Delete the animation group if it ended up not having any animations in it.
+                if (animationGroup.targetedAnimations.length === 0) {
+                    animationGroup.dispose();
+                }
+            }));
         }
 
         return Promise.all(promises).then(() => { });

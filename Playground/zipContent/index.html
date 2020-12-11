@@ -42,12 +42,12 @@
     <script>
         var canvas = document.getElementById("renderCanvas");
 
-####INJECT####
-
-        engine.runRenderLoop(function () {
-            if (sceneToRender && sceneToRender.activeCamera) {
-                sceneToRender.render();
-            }
+####INJECT####        
+            engine.runRenderLoop(function () {
+                if (sceneToRender && sceneToRender.activeCamera) {
+                    sceneToRender.render();
+                }
+            });
         });
 
         // Resize

@@ -8,6 +8,7 @@ import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { Nullable } from 'babylonjs/types';
 import { Measure } from '../measure';
 import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
+import { serialize } from 'babylonjs/Misc/decorators';
 
 /**
  * Class used to represent a 2D checkbox
@@ -19,6 +20,7 @@ export class Checkbox extends Control {
     private _thickness = 1;
 
     /** Gets or sets border thickness  */
+    @serialize()
     public get thickness(): number {
         return this._thickness;
     }
@@ -38,6 +40,7 @@ export class Checkbox extends Control {
     public onIsCheckedChangedObservable = new Observable<boolean>();
 
     /** Gets or sets a value indicating the ratio between overall size and check size */
+    @serialize()
     public get checkSizeRatio(): number {
         return this._checkSizeRatio;
     }
@@ -54,6 +57,7 @@ export class Checkbox extends Control {
     }
 
     /** Gets or sets background color */
+    @serialize()
     public get background(): string {
         return this._background;
     }
@@ -68,6 +72,7 @@ export class Checkbox extends Control {
     }
 
     /** Gets or sets a boolean indicating if the checkbox is checked or not */
+    @serialize()
     public get isChecked(): boolean {
         return this._isChecked;
     }

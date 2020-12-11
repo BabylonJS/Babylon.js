@@ -632,6 +632,12 @@
             "excludeFromAutomaticTesting": true
         },
         {
+            "title": "GLTF Alpha Blend",
+            "playgroundId": "#SYQW69#579",
+            "referenceImage": "glTFAlphaBlend.png",
+            "renderCount": 1
+        },
+        {
             "title": "GLTF Serializer with Negative World Matrix",
             "playgroundId": "#KX53VK#35",
             "referenceImage": "glTFSerializerNegativeWorldMatrix.png",
@@ -953,7 +959,8 @@
         },
         {
             "title": "KTX2 decoder test",
-            "playgroundId": "#EIJH8L#26",
+            "playgroundId": "#EIJH8L#27",
+            "renderCount": 5,
             "referenceImage": "ktx2decoder.png",
             "excludeFromAutomaticTesting": true
         },

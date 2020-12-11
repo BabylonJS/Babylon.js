@@ -136,6 +136,11 @@ export interface EngineOptions extends WebGLContextAttributes {
      * Will prevent the system from falling back to software implementation if a hardware device cannot be created
      */
     failIfMajorPerformanceCaveat?: boolean;
+
+    /**
+     * Defines whether to adapt to the device's viewport characteristics (default: false)
+     */
+    adaptToDeviceRatio?: boolean;
 }
 
 /**
@@ -162,14 +167,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-alpha.1";
+        return "babylonjs@5.0.0-alpha.3";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-alpha.1";
+        return "5.0.0-alpha.3";
     }
 
     /**
@@ -549,7 +554,7 @@ export class ThinEngine {
      * @param options defines further options to be sent to the getContext() function
      * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
      */
-    constructor(canvasOrContext: Nullable<HTMLCanvasElement | OffscreenCanvas | WebGLRenderingContext | WebGL2RenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio: boolean = false) {
+    constructor(canvasOrContext: Nullable<HTMLCanvasElement | OffscreenCanvas | WebGLRenderingContext | WebGL2RenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio?: boolean) {
 
         let canvas: Nullable<HTMLCanvasElement> = null;
 
@@ -561,11 +566,13 @@ export class ThinEngine {
             return;
         }
 
+        adaptToDeviceRatio = adaptToDeviceRatio ?? options.adaptToDeviceRatio ?? false;
+
         if ((canvasOrContext as any).getContext) {
             canvas = <HTMLCanvasElement>canvasOrContext;
             this._renderingCanvas = canvas;
 
-            if (antialias != null) {
+            if (antialias !== undefined) {
                 options.antialias = antialias;
             }
 
@@ -912,7 +919,8 @@ export class ThinEngine {
             blendMinMax: false,
             multiview: this._gl.getExtension('OVR_multiview2'),
             oculusMultiview: this._gl.getExtension('OCULUS_multiview'),
-            depthTextureExtension: false
+            depthTextureExtension: false,
+            canUseGLInstanceID: !(this._badOS && this._webGLVersion <= 1),
         };
 
         // Infos
@@ -1451,23 +1459,23 @@ export class ThinEngine {
 
         const gl = this._gl;
         if (texture.is2DArray) {
-            gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, texture._hardwareTexture!.underlyingResource, lodLevel, layer);
+            gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, texture._hardwareTexture?.underlyingResource, lodLevel, layer);
         }
         else if (texture.isCube) {
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture._hardwareTexture!.underlyingResource, lodLevel);
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture._hardwareTexture?.underlyingResource, lodLevel);
         }
 
         const depthStencilTexture = texture._depthStencilTexture;
         if (depthStencilTexture) {
             const attachment = (depthStencilTexture._generateStencilBuffer) ? gl.DEPTH_STENCIL_ATTACHMENT : gl.DEPTH_ATTACHMENT;
             if (texture.is2DArray) {
-                gl.framebufferTextureLayer(gl.FRAMEBUFFER, attachment, depthStencilTexture._hardwareTexture!.underlyingResource, lodLevel, layer);
+                gl.framebufferTextureLayer(gl.FRAMEBUFFER, attachment, depthStencilTexture._hardwareTexture?.underlyingResource, lodLevel, layer);
             }
             else if (texture.isCube) {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, depthStencilTexture._hardwareTexture!.underlyingResource, lodLevel);
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, depthStencilTexture._hardwareTexture?.underlyingResource, lodLevel);
             }
             else {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, gl.TEXTURE_2D, depthStencilTexture._hardwareTexture!.underlyingResource, lodLevel);
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, gl.TEXTURE_2D, depthStencilTexture._hardwareTexture?.underlyingResource, lodLevel);
             }
         }
 
@@ -3595,7 +3603,7 @@ export class ThinEngine {
             return;
         }
 
-        if (!texture._hardwareTexture!.underlyingResource) {
+        if (!texture._hardwareTexture) {
             //  this.resetTextureCache();
             if (scene) {
                 scene._removePendingData(texture);
@@ -3779,7 +3787,7 @@ export class ThinEngine {
             if (texture && texture.isMultiview) {
                 this._gl.bindTexture(target, texture ? texture._colorTextureArray : null);
             } else {
-                this._gl.bindTexture(target, texture ? texture._hardwareTexture!.underlyingResource : null);
+                this._gl.bindTexture(target, texture?._hardwareTexture?.underlyingResource ?? null);
             }
 
             this._boundTexturesCache[this._activeChannel] = texture;

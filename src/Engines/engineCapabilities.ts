@@ -88,4 +88,6 @@ export interface EngineCapabilities {
     maxMSAASamples: number;
     /** Defines if the blend min max extension is supported */
     blendMinMax: boolean;
+    /** In some iOS + WebGL1, gl_InstanceID (and gl_InstanceIDEXT) is undefined even if instancedArrays is true. So don't use gl_InstanceID in those cases */
+    canUseGLInstanceID: boolean;
 }

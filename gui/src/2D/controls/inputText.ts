@@ -11,6 +11,7 @@ import { VirtualKeyboard } from "./virtualKeyboard";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { Measure } from '../measure';
 import { TextWrapper } from './textWrapper';
+import { serialize } from 'babylonjs/Misc/decorators';
 
 /**
  * Class used to create input text control
@@ -52,8 +53,10 @@ export class InputText extends Control implements IFocusableControl {
     public _connectedVirtualKeyboard: Nullable<VirtualKeyboard>;
 
     /** Gets or sets a string representing the message displayed on mobile when the control gets the focus */
+    @serialize()
     public promptMessage = "Please enter text:";
     /** Force disable prompt on mobile device */
+    @serialize()
     public disableMobilePrompt = false;
 
     /** Observable raised when the text changes */
@@ -76,6 +79,7 @@ export class InputText extends Control implements IFocusableControl {
     public onKeyboardEventProcessedObservable = new Observable<KeyboardEvent>();
 
     /** Gets or sets the maximum width allowed by the control */
+    @serialize()
     public get maxWidth(): string | number {
         return this._maxWidth.toString(this._host);
     }
@@ -96,6 +100,7 @@ export class InputText extends Control implements IFocusableControl {
     }
 
     /** Gets or sets the text highlighter transparency; default: 0.4 */
+    @serialize()
     public get highligherOpacity(): number {
         return this._highligherOpacity;
     }
@@ -108,6 +113,7 @@ export class InputText extends Control implements IFocusableControl {
         this._markAsDirty();
     }
     /** Gets or sets a boolean indicating whether to select complete text by default on input focus */
+    @serialize()
     public get onFocusSelectAll(): boolean {
         return this._onFocusSelectAll;
     }
@@ -122,6 +128,7 @@ export class InputText extends Control implements IFocusableControl {
     }
 
     /** Gets or sets the text hightlight color */
+    @serialize()
     public get textHighlightColor(): string {
         return this._textHighlightColor;
     }
@@ -135,6 +142,7 @@ export class InputText extends Control implements IFocusableControl {
     }
 
     /** Gets or sets control margin */
+    @serialize()
     public get margin(): string {
         return this._margin.toString(this._host);
     }
@@ -155,6 +163,7 @@ export class InputText extends Control implements IFocusableControl {
     }
 
     /** Gets or sets a boolean indicating if the control can auto stretch its width to adapt to the text */
+    @serialize()
     public get autoStretchWidth(): boolean {
         return this._autoStretchWidth;
     }
@@ -169,6 +178,7 @@ export class InputText extends Control implements IFocusableControl {
     }
 
     /** Gets or sets border thickness */
+    @serialize()
     public get thickness(): number {
         return this._thickness;
     }
@@ -183,6 +193,7 @@ export class InputText extends Control implements IFocusableControl {
     }
 
     /** Gets or sets the background color when focused */
+    @serialize()
     public get focusedBackground(): string {
         return this._focusedBackground;
     }
@@ -197,6 +208,7 @@ export class InputText extends Control implements IFocusableControl {
     }
 
     /** Gets or sets the background color when focused */
+    @serialize()
     public get focusedColor(): string {
         return this._focusedColor;
     }
@@ -211,6 +223,7 @@ export class InputText extends Control implements IFocusableControl {
     }
 
     /** Gets or sets the background color */
+    @serialize()
     public get background(): string {
         return this._background;
     }
@@ -225,6 +238,7 @@ export class InputText extends Control implements IFocusableControl {
     }
 
     /** Gets or sets the placeholder color */
+    @serialize()
     public get placeholderColor(): string {
         return this._placeholderColor;
     }
@@ -239,6 +253,7 @@ export class InputText extends Control implements IFocusableControl {
     }
 
     /** Gets or sets the text displayed when the control is empty */
+    @serialize()
     public get placeholderText(): string {
         return this._placeholderText;
     }
@@ -252,6 +267,7 @@ export class InputText extends Control implements IFocusableControl {
     }
 
     /** Gets or sets the dead key flag */
+    @serialize()
     public get deadKey(): boolean {
         return this._deadKey;
     }
@@ -291,6 +307,7 @@ export class InputText extends Control implements IFocusableControl {
     }
 
     /** Gets or sets the text displayed in the control */
+    @serialize()
     public get text(): string {
         return this._textWrapper.text;
     }
@@ -315,6 +332,7 @@ export class InputText extends Control implements IFocusableControl {
     }
 
     /** Gets or sets control width */
+    @serialize()
     public get width(): string | number {
         return this._width.toString(this._host);
     }

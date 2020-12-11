@@ -1453,6 +1453,7 @@ declare module BABYLON {
      * Class used to store gfx data (like WebGLBuffer)
      */
     export class DataBuffer {
+        private static _Counter;
         /**
          * Gets or sets the number of objects referencing this buffer
          */
@@ -1467,6 +1468,14 @@ declare module BABYLON {
          * Gets the underlying buffer
          */
         get underlyingResource(): any;
+        /**
+         * Gets the unique id of this buffer
+         */
+        readonly uniqueId: number;
+        /**
+         * Constructs the buffer
+         */
+        constructor();
     }
 }
 declare module BABYLON {
@@ -6159,7 +6168,7 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Class used to hold a RBG color
+     * Class used to hold a RGB color
      */
     export class Color3 {
         /**
@@ -7010,6 +7019,7 @@ declare module BABYLON {
          * Specialized buffer used to store vertex data
          */
     export class VertexBuffer {
+        private static _Counter;
         /** @hidden */
         _buffer: Buffer;
         private _kind;
@@ -7066,6 +7076,10 @@ declare module BABYLON {
          * Gets the data type of each component in the array.
          */
         readonly type: number;
+        /**
+         * Gets the unique id of this vertex buffer
+         */
+        readonly uniqueId: number;
         /**
          * Constructor
          * @param engine the engine
@@ -7743,8 +7757,8 @@ declare module BABYLON {
         /**
          * Define if the texture is having a usable alpha value (can be use for transparency or glossiness for instance).
          */
-        get hasAlpha(): boolean;
         set hasAlpha(value: boolean);
+        get hasAlpha(): boolean;
         /**
          * Defines if the alpha value should be determined via the rgb values.
          * If true the luminance of the pixel might be used to find the corresponding alpha value.
@@ -18219,6 +18233,15 @@ declare module BABYLON {
              * Restores the webgl state to only draw on the main color attachment
              */
             restoreSingleAttachment(): void;
+            /**
+             * Clears a list of attachments
+             * @param attachments list of the attachments
+             * @param colorMain clear color for the main attachment (the first one)
+             * @param colorOthers clear color for the other attachments
+             * @param clearDepth true to clear the depth buffer. Used only for the first attachment
+             * @param clearStencil true to clear the stencil buffer. Used only for the first attachment
+             */
+            clearAttachments(attachments: number[], colorMain: Nullable<IColor4Like>, colorOthers: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean): void;
         }
 }
 declare module BABYLON {
@@ -22923,7 +22946,6 @@ declare module BABYLON {
         prePassRT: MultiRenderTarget;
         private _multiRenderAttachments;
         private _defaultAttachments;
-        private _clearAttachments;
         private _postProcesses;
         private readonly _clearColor;
         /**
@@ -24880,6 +24902,10 @@ declare module BABYLON {
          * mouse-wheel axis.
          */
         private _updateCamera;
+        /**
+         * Update one property of the camera.
+         */
+        private _updateCameraProperty;
     }
 }
 declare module BABYLON {
@@ -33137,6 +33163,11 @@ declare module BABYLON {
          */
         overrideMaterialSideOrientation: Nullable<number>;
         /**
+         * Gets or sets a boolean indicating whether to render ignoring the active camera's max z setting. (false by default)
+         * Note this will reduce performance when set to true.
+         */
+        ignoreCameraMaxZ: boolean;
+        /**
          * Gets the source mesh (the one used to clone this one from)
          */
         get source(): Nullable<Mesh>;
@@ -39409,6 +39440,8 @@ declare module BABYLON {
         maxMSAASamples: number;
         /** Defines if the blend min max extension is supported */
         blendMinMax: boolean;
+        /** In some iOS + WebGL1, gl_InstanceID (and gl_InstanceIDEXT) is undefined even if instancedArrays is true. So don't use gl_InstanceID in those cases */
+        canUseGLInstanceID: boolean;
     }
 }
 declare module BABYLON {
@@ -39874,6 +39907,10 @@ declare module BABYLON {
          * Will prevent the system from falling back to software implementation if a hardware device cannot be created
          */
         failIfMajorPerformanceCaveat?: boolean;
+        /**
+         * Defines whether to adapt to the device's viewport characteristics (default: false)
+         */
+        adaptToDeviceRatio?: boolean;
     }
     /**
      * The base engine class (root of all engines)
@@ -41298,8 +41335,6 @@ declare module BABYLON {
         _references: number;
         /** @hidden */
         _gammaSpace: Nullable<boolean>;
-        /** @hidden */
-        _hasAlpha: Nullable<boolean>;
         private _engine;
         private _uniqueId;
         private static _Counter;
@@ -44208,6 +44243,7 @@ declare module BABYLON {
         }[];
         orderedAttributes: string[];
         orderedUBOsAndSamplers: WebGPUBindingDescription[][];
+        uniformBufferNames: string[];
         private _attributeNextLocation;
         private _varyingNextLocation;
         constructor();
@@ -44265,6 +44301,9 @@ declare module BABYLON {
             [name: string]: Nullable<IWebGPUPipelineContextTextureCache>;
         };
         bindGroupLayouts: GPUBindGroupLayout[];
+        bindGroupsCache: {
+            [key: string]: GPUBindGroup[];
+        };
         /**
          * Stores the uniform buffer
          */
@@ -44649,6 +44688,7 @@ declare module BABYLON {
     export class WebGPUCacheSampler {
         private _samplers;
         private _device;
+        disabled: boolean;
         constructor(device: GPUDevice);
         private static _GetSamplerHashCode;
         private static _GetSamplerFilterDescriptor;
@@ -44665,6 +44705,107 @@ declare module BABYLON {
         private _device;
         constructor(device: GPUDevice);
         getCompiledShaders(name: string): IWebGPURenderPipelineStageDescriptor;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class WebGPUCacheRenderPipeline {
+        static NumCacheHitWithoutHash: number;
+        static NumCacheHitWithHash: number;
+        static NumCacheMiss: number;
+        static NumPipelineCreationLastFrame: number;
+        disabled: boolean;
+        private static _Cache;
+        private static _NumPipelineCreationCurrentFrame;
+        private _device;
+        private _states;
+        private _isDirty;
+        private _currentRenderPipeline;
+        private _emptyVertexBuffer;
+        private _shaderId;
+        private _alphaToCoverageEnabled;
+        private _frontFace;
+        private _cullEnabled;
+        private _cullFace;
+        private _clampDepth;
+        private _rasterizationState;
+        private _depthBias;
+        private _depthBiasClamp;
+        private _depthBiasSlopeScale;
+        private _colorFormat;
+        private _webgpuColorFormat;
+        private _mrtAttachments1;
+        private _mrtAttachments2;
+        private _mrtFormats;
+        private _alphaBlendEnabled;
+        private _alphaBlendFuncParams;
+        private _alphaBlendEqParams;
+        private _writeMask;
+        private _colorStates;
+        private _depthStencilFormat;
+        private _webgpuDepthStencilFormat;
+        private _depthTestEnabled;
+        private _depthWriteEnabled;
+        private _depthCompare;
+        private _stencilEnabled;
+        private _stencilFrontCompare;
+        private _stencilFrontDepthFailOp;
+        private _stencilFrontPassOp;
+        private _stencilFrontFailOp;
+        private _stencilReadMask;
+        private _stencilWriteMask;
+        private _depthStencilState;
+        private _vertexBuffers;
+        private _indexBuffer;
+        constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer);
+        reset(): void;
+        getRenderPipeline(fillMode: number, effect: Effect, sampleCount: number): GPURenderPipeline;
+        endFrame(): void;
+        setAlphaToCoverage(enabled: boolean): void;
+        setFrontFace(frontFace: number): void;
+        setCullEnabled(enabled: boolean): void;
+        setCullFace(cullFace: number): void;
+        setClampDepth(clampDepth: boolean): void;
+        resetDepthCullingState(): void;
+        setDepthCullingState(cullEnabled: boolean, frontFace: number, cullFace: number, zOffset: number, depthTestEnabled: boolean, depthWriteEnabled: boolean, depthCompare: Nullable<number>): void;
+        setDepthBiasSlopeScale(depthBiasSlopeScale: number): void;
+        setColorFormat(format: GPUTextureFormat): void;
+        setMRTAttachments(attachments: number[], textureArray: InternalTexture[]): void;
+        setAlphaBlendEnabled(enabled: boolean): void;
+        setAlphaBlendFactors(factors: Array<Nullable<number>>, operations: Array<Nullable<number>>): void;
+        setWriteMask(mask: number): void;
+        setDepthStencilFormat(format: GPUTextureFormat | undefined): void;
+        setDepthTestEnabled(enabled: boolean): void;
+        setDepthWriteEnabled(enabled: boolean): void;
+        setDepthCompare(func: Nullable<number>): void;
+        setStencilEnabled(enabled: boolean): void;
+        setStencilCompare(func: Nullable<number>): void;
+        setStencilDepthFailOp(op: Nullable<number>): void;
+        setStencilPassOp(op: Nullable<number>): void;
+        setStencilFailOp(op: Nullable<number>): void;
+        setStencilReadMask(mask: number): void;
+        setStencilWriteMask(mask: number): void;
+        resetStencilState(): void;
+        setStencilState(stencilEnabled: boolean, compare: Nullable<number>, depthFailOp: Nullable<number>, passOp: Nullable<number>, failOp: Nullable<number>, readMask: number, writeMask: number): void;
+        setBuffers(vertexBuffers: Nullable<{
+            [key: string]: Nullable<VertexBuffer>;
+        }>, indexBuffer: Nullable<DataBuffer>): void;
+        private static _GetTopology;
+        private static _GetAphaBlendOperation;
+        private static _GetAphaBlendFactor;
+        private static _GetCompareFunction;
+        private static _GetStencilOpFunction;
+        private static _GetVertexInputDescriptorFormat;
+        private _getAphaBlendState;
+        private _getColorBlendState;
+        private _setShaderStage;
+        private _setRasterizationState;
+        private _setColorStates;
+        private _setDepthStencilState;
+        private _setVertexState;
+        private _createPipelineLayout;
+        private _getVertexInputDescriptor;
+        private _createRenderPipeline;
     }
 }
 declare module BABYLON {
@@ -44752,6 +44893,10 @@ declare module BABYLON {
          * Defines wether we should generate debug markers in the gpu command lists (can be seen with PIX for eg)
          */
         enableGPUDebugMarkers?: boolean;
+        /**
+         * Options to load the associated Glslang library
+         */
+        glslangOptions?: GlslangOptions;
     }
     /**
      * The web GPU engine class provides support for WebGPU version of babylon.js.
@@ -44780,6 +44925,7 @@ declare module BABYLON {
         private _bufferManager;
         private _shaderManager;
         private _cacheSampler;
+        private _cacheRenderPipeline;
         private _emptyVertexBuffer;
         private _lastCachedWrapU;
         private _lastCachedWrapV;
@@ -44817,6 +44963,21 @@ declare module BABYLON {
         /** @hidden */
         dbgShowWarningsNotImplemented: boolean;
         /**
+         * Sets this to true to disable the cache for the samplers. You should do it only for testing purpose!
+         */
+        get disableCacheSamplers(): boolean;
+        set disableCacheSamplers(disable: boolean);
+        /**
+         * Sets this to true to disable the cache for the render pipelines. You should do it only for testing purpose!
+         */
+        get disableCacheRenderPipelines(): boolean;
+        set disableCacheRenderPipelines(disable: boolean);
+        /**
+         * Gets a boolean indicating if the engine can be instanciated (ie. if a WebGPU context can be found)
+         * @returns true if the engine can be created
+         */
+        static get IsSupported(): boolean;
+        /**
          * Gets a boolean indicating that the engine supports uniform buffers
          */
         get supportsUniformBuffers(): boolean;
@@ -44836,6 +44997,13 @@ declare module BABYLON {
          * Returns the version of the engine
          */
         get version(): number;
+        /**
+         * Create a new instance of the gpu engine asynchronously
+         * @param canvas Defines the canvas to use to display the result
+         * @param options Defines the options passed to the engine to create the GPU context dependencies
+         * @returns a promise that resolves with the created engine
+         */
+        static CreateAsync(canvas: HTMLCanvasElement, options?: WebGPUEngineOptions): Promise<WebGPUEngine>;
         /**
          * Create a new instance of the gpu engine.
          * @param canvas Defines the canvas to use to display the result
@@ -44908,6 +45076,15 @@ declare module BABYLON {
          * @param stencil defines if the stencil buffer must be cleared
          */
         clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil?: boolean): void;
+        /**
+         * Clears a list of attachments
+         * @param attachments list of the attachments
+         * @param colorMain clear color for the main attachment (the first one)
+         * @param colorOthers clear color for the other attachments
+         * @param clearDepth true to clear the depth buffer. Used only for the first attachment
+         * @param clearStencil true to clear the stencil buffer. Used only for the first attachment
+         */
+        clearAttachments(attachments: number[], colorMain: Nullable<IColor4Like>, colorOthers: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean): void;
         /**
          * Creates a vertex buffer
          * @param data the data for the vertex buffer
@@ -45335,7 +45512,6 @@ declare module BABYLON {
         private _startRenderTargetRenderPass;
         private _endRenderTargetRenderPass;
         private _getCurrentRenderPass;
-        private _currentRenderPassIsMRT;
         private _startMainRenderPass;
         private _endMainRenderPass;
         /**
@@ -45402,10 +45578,6 @@ declare module BABYLON {
         setDepthFunctionToGreaterOrEqual(): void;
         setDepthFunctionToLess(): void;
         setDepthFunctionToLessOrEqual(): void;
-        private _indexFormatInRenderPass;
-        private _getTopology;
-        private _getOpFunction;
-        private _getDepthStencilStateDescriptor;
         /**
          * Set various states to the context
          * @param culling defines backface culling state
@@ -45414,10 +45586,6 @@ declare module BABYLON {
          * @param reverseSide defines if culling must be reversed (CCW instead of CW and CW instead of CCW)
          */
         setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean): void;
-        private _getFrontFace;
-        private _getCullMode;
-        private _getRasterizationStateDescriptor;
-        private _getWriteMask;
         /**
          * Sets the current alpha mode
          * @param mode defines the mode to use (one of the Engine.ALPHA_XXX)
@@ -45425,17 +45593,11 @@ declare module BABYLON {
          * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
          */
         setAlphaMode(mode: number, noDepthWriteChange?: boolean): void;
-        private _getAphaBlendOperation;
-        private _getAphaBlendFactor;
-        private _getAphaBlendState;
-        private _getColorBlendState;
-        private _getColorStateDescriptors;
-        private _getStages;
-        private _getVertexInputDescriptorFormat;
-        private _getVertexInputDescriptor;
-        private _getPipelineLayout;
-        private _getRenderPipeline;
-        private _getVertexInputsToRender;
+        /**
+         * Sets the current alpha equation
+         * @param equation defines the equation to use (one of the Engine.ALPHA_EQUATION_XXX)
+         */
+        setAlphaEquation(equation: number): void;
         private _getBindGroupsToRender;
         private _bindVertexInputs;
         private _setRenderBindGroups;
@@ -49026,6 +49188,10 @@ declare module BABYLON {
          */
         useNaturalPinchZoom: boolean;
         /**
+         * Defines whether zoom (2 fingers pinch) is enabled through multitouch
+         */
+        pinchZoom: boolean;
+        /**
          * Defines the pointer panning sensibility or how fast is the camera moving.
          */
         panningSensibility: number;
@@ -49045,6 +49211,14 @@ declare module BABYLON {
         private _isPanClick;
         private _twoFingerActivityCount;
         private _isPinching;
+        /**
+         * Move camera from multi touch panning positions.
+         */
+        private _computeMultiTouchPanning;
+        /**
+         * Move camera from pinch zoom distances.
+         */
+        private _computePinchZoom;
         /**
          * Called on pointer POINTERMOVE event if only a single touch is active.
          */
@@ -52552,6 +52726,60 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** @hidden */
+    export var stereoscopicInterlacePixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * StereoscopicInterlacePostProcessI used to render stereo views from a rigged camera with support for alternate line interlacing
+     */
+    export class StereoscopicInterlacePostProcessI extends PostProcess {
+        private _stepSize;
+        private _passedProcess;
+        /**
+         * Gets a string identifying the name of the class
+         * @returns "StereoscopicInterlacePostProcessI" string
+         */
+        getClassName(): string;
+        /**
+         * Initializes a StereoscopicInterlacePostProcessI
+         * @param name The name of the effect.
+         * @param rigCameras The rig cameras to be appled to the post process
+         * @param isStereoscopicHoriz If the rendered results are horizontal or vertical
+         * @param isStereoscopicInterlaced If the rendered results are alternate line interlaced
+         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
+         * @param engine The engine which the post process will be applied. (default: current engine)
+         * @param reusable If the post process can be reused on the same frame. (default: false)
+         */
+        constructor(name: string, rigCameras: Camera[], isStereoscopicHoriz: boolean, isStereoscopicInterlaced: boolean, samplingMode?: number, engine?: Engine, reusable?: boolean);
+    }
+    /**
+     * StereoscopicInterlacePostProcess used to render stereo views from a rigged camera
+     */
+    export class StereoscopicInterlacePostProcess extends PostProcess {
+        private _stepSize;
+        private _passedProcess;
+        /**
+         * Gets a string identifying the name of the class
+         * @returns "StereoscopicInterlacePostProcess" string
+         */
+        getClassName(): string;
+        /**
+         * Initializes a StereoscopicInterlacePostProcess
+         * @param name The name of the effect.
+         * @param rigCameras The rig cameras to be appled to the post process
+         * @param isStereoscopicHoriz If the rendered results are horizontal or verticle
+         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
+         * @param engine The engine which the post process will be applied. (default: current engine)
+         * @param reusable If the post process can be reused on the same frame. (default: false)
+         */
+        constructor(name: string, rigCameras: Camera[], isStereoscopicHoriz: boolean, samplingMode?: number, engine?: Engine, reusable?: boolean);
+    }
+}
+declare module BABYLON {
     /**
      * Camera used to simulate stereoscopic rendering (based on ArcRotateCamera)
      * @see https://doc.babylonjs.com/features/cameras
@@ -53500,6 +53728,10 @@ declare module BABYLON {
          * A list of (Babylon WebXR) features this feature depends on
          */
         dependsOn?: string[];
+        /**
+         * If this feature requires to extend the XRSessionInit object, this function will return the partial XR session init object
+         */
+        getXRSessionInitExtension?: () => Promise<Partial<XRSessionInit>>;
     }
     /**
      * A list of the currently available features without referencing them
@@ -53545,6 +53777,10 @@ declare module BABYLON {
          * The name of the hand tracking feature.
          */
         static readonly HAND_TRACKING: string;
+        /**
+         * The name of the image tracking feature
+         */
+        static readonly IMAGE_TRACKING: string;
     }
     /**
      * Defining the constructor of a feature. Used to register the modules.
@@ -53660,14 +53896,14 @@ declare module BABYLON {
          */
         getEnabledFeatures(): string[];
         /**
-         * This function will exten the session creation configuration object with enabled features.
+         * This function will extend the session creation configuration object with enabled features.
          * If, for example, the anchors feature is enabled, it will be automatically added to the optional or required features list,
          * according to the defined "required" variable, provided during enableFeature call
          * @param xrSessionInit the xr Session init object to extend
          *
          * @returns an extended XRSessionInit object
          */
-        extendXRSessionInitObject(xrSessionInit: XRSessionInit): XRSessionInit;
+        _extendXRSessionInitObject(xrSessionInit: XRSessionInit): Promise<XRSessionInit>;
     }
 }
 declare module BABYLON {
@@ -54313,7 +54549,7 @@ declare module BABYLON {
          * @param pluginExtension the extension used to determine the plugin
          * @returns The loaded asset container
          */
-        static LoadAssetContainerAsync(rootUrl: string, sceneFilename?: string, scene?: Nullable<Scene>, onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<AssetContainer>;
+        static LoadAssetContainerAsync(rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<AssetContainer>;
         /**
          * Import animations from a file into a scene
          * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
@@ -59907,6 +60143,20 @@ declare module BABYLON {
         private _getNativeTextureFormat;
         private _getNativeAlphaMode;
         private _getNativeAttribType;
+    }
+}
+declare module BABYLON {
+    /**
+     * Helper class to create the best engine depending on the current hardware
+     */
+    export class EngineFactory {
+        /**
+         * Creates an engine based on the capabilities of the underlying hardware
+         * @param canvas Defines the canvas to use to display the result
+         * @param options Defines the options passed to the engine to create the context dependencies
+         * @returns a promise that resolves with the created engine
+         */
+        static CreateAsync(canvas: HTMLCanvasElement, options: any): Promise<ThinEngine>;
     }
 }
 declare module BABYLON {
@@ -69477,7 +69727,7 @@ declare module BABYLON {
          */
         constructor(name: string, contours: Path2 | Vector2[] | any, scene?: Scene, earcutInjection?: any);
         /**
-         * Adds a whole within the polygon
+         * Adds a hole within the polygon
          * @param hole Array of points defining the hole
          * @returns this
          */
@@ -69486,15 +69736,17 @@ declare module BABYLON {
          * Creates the polygon
          * @param updatable If the mesh should be updatable
          * @param depth The depth of the mesh created
+         * @param smoothingThreshold Dot product threshold for smoothed normals
          * @returns the created mesh
          */
-        build(updatable?: boolean, depth?: number): Mesh;
+        build(updatable?: boolean, depth?: number, smoothingThreshold?: number): Mesh;
         /**
          * Creates the polygon
          * @param depth The depth of the mesh created
+         * @param smoothingThreshold Dot product threshold for smoothed normals
          * @returns the created VertexData
          */
-        buildVertexData(depth?: number): VertexData;
+        buildVertexData(depth?: number, smoothingThreshold?: number): VertexData;
         /**
          * Adds a side to the polygon
          * @param positions points that make the polygon
@@ -69532,6 +69784,7 @@ declare module BABYLON {
             shape: Vector3[];
             holes?: Vector3[][];
             depth?: number;
+            smoothingThreshold?: number;
             faceUV?: Vector4[];
             faceColors?: Color4[];
             updatable?: boolean;
@@ -74978,6 +75231,8 @@ declare module BABYLON {
         private _hemisphereSample_uniform;
         private _generateHemisphere;
         private _getDefinesForSSAO;
+        private static readonly ORTHO_DEPTH_PROJECTION;
+        private static readonly PERSPECTIVE_DEPTH_PROJECTION;
         private _createSSAOPostProcess;
         private _createSSAOCombinePostProcess;
         private _createRandomTexture;
@@ -75575,60 +75830,6 @@ declare module BABYLON {
          * Luminance steps
          */
         static LuminanceSteps: number;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export var stereoscopicInterlacePixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /**
-     * StereoscopicInterlacePostProcessI used to render stereo views from a rigged camera with support for alternate line interlacing
-     */
-    export class StereoscopicInterlacePostProcessI extends PostProcess {
-        private _stepSize;
-        private _passedProcess;
-        /**
-         * Gets a string identifying the name of the class
-         * @returns "StereoscopicInterlacePostProcessI" string
-         */
-        getClassName(): string;
-        /**
-         * Initializes a StereoscopicInterlacePostProcessI
-         * @param name The name of the effect.
-         * @param rigCameras The rig cameras to be appled to the post process
-         * @param isStereoscopicHoriz If the rendered results are horizontal or vertical
-         * @param isStereoscopicInterlaced If the rendered results are alternate line interlaced
-         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
-         * @param engine The engine which the post process will be applied. (default: current engine)
-         * @param reusable If the post process can be reused on the same frame. (default: false)
-         */
-        constructor(name: string, rigCameras: Camera[], isStereoscopicHoriz: boolean, isStereoscopicInterlaced: boolean, samplingMode?: number, engine?: Engine, reusable?: boolean);
-    }
-    /**
-     * StereoscopicInterlacePostProcess used to render stereo views from a rigged camera
-     */
-    export class StereoscopicInterlacePostProcess extends PostProcess {
-        private _stepSize;
-        private _passedProcess;
-        /**
-         * Gets a string identifying the name of the class
-         * @returns "StereoscopicInterlacePostProcess" string
-         */
-        getClassName(): string;
-        /**
-         * Initializes a StereoscopicInterlacePostProcess
-         * @param name The name of the effect.
-         * @param rigCameras The rig cameras to be appled to the post process
-         * @param isStereoscopicHoriz If the rendered results are horizontal or verticle
-         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
-         * @param engine The engine which the post process will be applied. (default: current engine)
-         * @param reusable If the post process can be reused on the same frame. (default: false)
-         */
-        constructor(name: string, rigCameras: Camera[], isStereoscopicHoriz: boolean, samplingMode?: number, engine?: Engine, reusable?: boolean);
     }
 }
 declare module BABYLON {
@@ -78276,8 +78477,9 @@ declare module BABYLON {
          * src parameter of an <img> to display it
          * @param mimeType defines the MIME type of the screenshot image (default: image/png).
          * Check your browser for supported MIME types
+         * @param forceDownload force the system to download the image even if a successCallback is provided
          */
-        static CreateScreenshot(engine: Engine, camera: Camera, size: IScreenshotSize | number, successCallback?: (data: string) => void, mimeType?: string): void;
+        static CreateScreenshot(engine: Engine, camera: Camera, size: IScreenshotSize | number, successCallback?: (data: string) => void, mimeType?: string, forceDownload?: boolean): void;
         /**
          * Captures a screenshot of the current rendering
          * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
@@ -78294,6 +78496,19 @@ declare module BABYLON {
          * to the src parameter of an <img> to display it
          */
         static CreateScreenshotAsync(engine: Engine, camera: Camera, size: any, mimeType?: string): Promise<string>;
+        /**
+         * Captures a screenshot of the current rendering for a specific size. This will render the entire canvas but will generate a blink (due to canvas resize)
+         * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
+         * @param engine defines the rendering engine
+         * @param camera defines the source camera
+         * @param width defines the expected width
+         * @param height defines the expected height
+         * @param mimeType defines the MIME type of the screenshot image (default: image/png).
+         * Check your browser for supported MIME types
+         * @returns screenshot as a string of base64-encoded characters. This string can be assigned
+         * to the src parameter of an <img> to display it
+         */
+        static CreateScreenshotWithResizeAsync(engine: Engine, camera: Camera, width: number, height: number, mimeType?: string): Promise<void>;
         /**
          * Generates an image screenshot from the specified camera.
          * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
@@ -79761,6 +79976,141 @@ declare module BABYLON {
         protected _onXRFrame(frame: XRFrame): void;
         private _init;
         private _updateVertexDataWithXRMesh;
+    }
+}
+declare module BABYLON {
+    /**
+     * Options interface for the background remover plugin
+     */
+    export interface IWebXRImageTrackingOptions {
+        /**
+         * A required array with images to track
+         */
+        images: {
+            /**
+             * The source of the image. can be a URL or an image bitmap
+             */
+            src: string | ImageBitmap;
+            /**
+             * The estimated width in the real world (in meters)
+             */
+            estimatedRealWorldWidth: number;
+        }[];
+    }
+    /**
+     * An object representing an image tracked by the system
+     */
+    export interface IWebXRTrackedImage {
+        /**
+         * The ID of this image (which is the same as the position in the array that was used to initialize the feature)
+         */
+        id: number;
+        /**
+         * Is the transformation provided emulated. If it is, the system "guesses" its real position. Otherwise it can be considered as exact position.
+         */
+        emulated?: boolean;
+        /**
+         * Just in case it is needed - the image bitmap that is being tracked
+         */
+        originalBitmap: ImageBitmap;
+        /**
+         * The native XR result image tracking result, untouched
+         */
+        xrTrackingResult?: XRImageTrackingResult;
+        /**
+         * Width in real world (meters)
+         */
+        realWorldWidth?: number;
+        /**
+         * A transformation matrix of this current image in the current reference space.
+         */
+        transformationMatrix: Matrix;
+        /**
+         * The width/height ratio of this image. can be used to calculate the size of the detected object/image
+         */
+        ratio?: number;
+    }
+    /**
+     * Image tracking for immersive AR sessions.
+     * Providing a list of images and their estimated widths will enable tracking those images in the real world.
+     */
+    export class WebXRImageTracking extends WebXRAbstractFeature {
+        /**
+         * read-only options to be used in this module
+         */
+        readonly options: IWebXRImageTrackingOptions;
+        /**
+         * The module's name
+         */
+        static readonly Name: string;
+        /**
+         * The (Babylon) version of this module.
+         * This is an integer representing the implementation version.
+         * This number does not correspond to the WebXR specs version
+         */
+        static readonly Version: number;
+        /**
+         * This will be triggered if the underlying system deems an image untrackable.
+         * The index is the index of the image from the array used to initialize the feature.
+         */
+        onUntrackableImageFoundObservable: Observable<number>;
+        /**
+         * An image was deemed trackable, and the system will start tracking it.
+         */
+        onTrackableImageFoundObservable: Observable<IWebXRTrackedImage>;
+        /**
+         * The image was found and its state was updated.
+         */
+        onTrackedImageUpdatedObservable: Observable<IWebXRTrackedImage>;
+        private _trackedImages;
+        private _originalTrackingRequest;
+        /**
+         * constructs the image tracking feature
+         * @param _xrSessionManager the session manager for this module
+         * @param options read-only options to be used in this module
+         */
+        constructor(_xrSessionManager: WebXRSessionManager, 
+        /**
+         * read-only options to be used in this module
+         */
+        options: IWebXRImageTrackingOptions);
+        /**
+         * attach this feature
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        attach(): boolean;
+        /**
+         * detach this feature.
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        detach(): boolean;
+        /**
+         * Check if the needed objects are defined.
+         * This does not mean that the feature is enabled, but that the objects needed are well defined.
+         */
+        isCompatible(): boolean;
+        /**
+         * Get a tracked image by its ID.
+         *
+         * @param id the id of the image to load (position in the init array)
+         * @returns a trackable image, if exists in this location
+         */
+        getTrackedImageById(id: number): Nullable<IWebXRTrackedImage>;
+        /**
+         * Dispose this feature and all of the resources attached
+         */
+        dispose(): void;
+        /**
+         * Extends the session init object if needed
+         * @returns augmentation object fo the xr session init object.
+         */
+        getXRSessionInitExtension(): Promise<Partial<XRSessionInit>>;
+        protected _onXRFrame(_xrFrame: XRFrame): void;
+        private _init;
     }
 }
 declare module BABYLON {
@@ -81520,6 +81870,7 @@ interface XRLayer extends EventTarget {}
 interface XRSessionInit {
     optionalFeatures?: string[];
     requiredFeatures?: string[];
+    trackedImages?: XRTrackedImageInit[];
 }
 
 interface XRSessionEvent extends Event {
@@ -81619,6 +81970,8 @@ interface XRFrame {
     worldInformation?: XRWorldInformation;
     // Hand tracking
     getJointPose?(joint: XRJointSpace, baseSpace: XRSpace): XRJointPose;
+    // Image tracking
+    getImageTrackingResults?(): Array<XRImageTrackingResult>;
 }
 
 interface XRInputSourceEvent extends Event {
@@ -81690,6 +82043,9 @@ interface XRSession {
 
     // legacy plane detection
     updateWorldTrackingState?(options: { planeDetectionState?: { enabled: boolean } }): void;
+
+    // image tracking
+    getTrackedImageScores?(): XRImageTrackingScore[];
 }
 
 interface XRViewerPose extends XRPose {
@@ -81820,6 +82176,21 @@ interface XRHand extends Iterable<XRJointSpace> {
     readonly LITTLE_PHALANX_INTERMEDIATE: number;
     readonly LITTLE_PHALANX_DISTAL: number;
     readonly LITTLE_PHALANX_TIP: number;
+}
+
+type XRImageTrackingState = "tracked" | "emulated";
+type XRImageTrackingScore = "untrackable" | "trackable";
+
+interface XRTrackedImageInit {
+    image: ImageBitmap;
+    widthInMeters: number;
+}
+
+interface XRImageTrackingResult {
+    readonly imageSpace: XRSpace;
+    readonly index: number;
+    readonly trackingState: XRImageTrackingState;
+    readonly measuredWidthInMeters: number;
 }
 
 // This file contains native only extensions for WebXR. These APIs are not supported in the browser yet.
@@ -82257,6 +82628,10 @@ declare module BABYLON.GUI {
     * @see https://doc.babylonjs.com/how_to/gui
     */
     export class AdvancedDynamicTexture extends BABYLON.DynamicTexture {
+        /** Define the Uurl to load snippets */
+        static SnippetUrl: string;
+        /** Snippet ID if the content was created from the snippet server */
+        snippetId: string;
         private _isDirty;
         private _renderObserver;
         private _resizeObserver;
@@ -82545,6 +82920,22 @@ declare module BABYLON.GUI {
         private _manageFocus;
         private _attachToOnPointerOut;
         private _attachToOnBlur;
+        /**
+         * Serializes the entire GUI system
+         * @returns an object with the JSON serialized data
+         */
+        serializeContent(): any;
+        /**
+         * Recreate the content of the ADT from a JSON object
+         * @param serializedObject define the JSON serialized object to restore from
+         */
+        parseContent(serializedObject: any): void;
+        /**
+         * Recreate the content of the ADT from a snippet saved by the GUI editor
+         * @param snippetId defines the snippet to load
+         * @returns a promise that will resolve on success
+         */
+        parseFromSnippetAsync(snippetId: string): Promise<void>;
         /**
          * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh)
          * @param mesh defines the mesh which will receive the texture
@@ -83014,13 +83405,13 @@ declare module BABYLON.GUI {
         get centerX(): number;
         /** Gets the center coordinate on Y axis */
         get centerY(): number;
-        /** Gets or sets if control is Enabled*/
+        /** Gets or sets if control is Enabled */
         get isEnabled(): boolean;
         set isEnabled(value: boolean);
-        /** Gets or sets background color of control if it's disabled*/
+        /** Gets or sets background color of control if it's disabled */
         get disabledColor(): string;
         set disabledColor(value: string);
-        /** Gets or sets front color of control if it's disabled*/
+        /** Gets or sets front color of control if it's disabled */
         get disabledColorItem(): string;
         set disabledColorItem(value: string);
         /**
@@ -83091,6 +83482,24 @@ declare module BABYLON.GUI {
          * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
          */
         linkWithMesh(mesh: BABYLON.Nullable<BABYLON.TransformNode>): void;
+        /**
+        * Shorthand funtion to set the top, right, bottom, and left padding values on the control.
+        * @param { string | number} paddingTop - The value of the top padding.
+        * @param { string | number} paddingRight - The value of the right padding. If omitted, top is used.
+        * @param { string | number} paddingBottom - The value of the bottom padding. If omitted, top is used.
+        * @param { string | number} paddingLeft - The value of the left padding. If omitted, right is used.
+        * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+        */
+        setPadding(paddingTop: string | number, paddingRight?: string | number, paddingBottom?: string | number, paddingLeft?: string | number): void;
+        /**
+         * Shorthand funtion to set the top, right, bottom, and left padding values in pixels on the control.
+         * @param { number} paddingTop - The value in pixels of the top padding.
+         * @param { number} paddingRight - The value in pixels of the right padding. If omitted, top is used.
+         * @param { number} paddingBottom - The value in pixels of the bottom padding. If omitted, top is used.
+         * @param { number} paddingLeft - The value in pixels of the left padding. If omitted, right is used.
+         * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+         */
+        setPaddingInPixels(paddingTop: number, paddingRight?: number, paddingBottom?: number, paddingLeft?: number): void;
         /** @hidden */
         _moveToProjectedPosition(projectedPosition: BABYLON.Vector3): void;
         /** @hidden */
@@ -83169,6 +83578,13 @@ declare module BABYLON.GUI {
         /** @hidden */
         _processObservables(type: number, x: number, y: number, pi: BABYLON.PointerInfoBase, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         private _prepareFont;
+        /**
+         * Serializes the current control
+         * @param serializationObject defined the JSON serialized object
+         */
+        serialize(serializationObject: any): void;
+        /** @hidden */
+        _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
         /** Releases associated resources */
         dispose(): void;
         private static _HORIZONTAL_ALIGNMENT_LEFT;
@@ -83196,6 +83612,13 @@ declare module BABYLON.GUI {
             height: number;
             descent: number;
         };
+        /**
+         * Creates a Control from parsed data
+         * @param serializedObject defines parsed data
+         * @param host defines the hosting AdvancedDynamicTexture
+         * @returns a new Control
+         */
+        static Parse(serializedObject: any, host: AdvancedDynamicTexture): Control;
         /**
          * Creates a stack panel that can be used to render headers
          * @param control defines the control to associate with the header
@@ -83319,8 +83742,15 @@ declare module BABYLON.GUI {
         _processPicking(x: number, y: number, pi: BABYLON.PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        /**
+        * Serializes the current control
+        * @param serializationObject defined the JSON serialized object
+        */
+        serialize(serializationObject: any): void;
         /** Releases associated resources */
         dispose(): void;
+        /** @hidden */
+        _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
     }
 }
 declare module BABYLON.GUI {
@@ -83627,6 +84057,10 @@ declare module BABYLON.GUI {
         private _onImageLoaded;
         private _extractNinePatchSliceDataFromImage;
         /**
+         * Gets the image source url
+         */
+        get source(): BABYLON.Nullable<string>;
+        /**
          * Gets or sets image source url
          */
         set source(value: BABYLON.Nullable<string>);
@@ -83815,6 +84249,13 @@ declare module BABYLON.GUI {
         protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _postMeasure(): void;
+        /**
+         * Serializes the current control
+         * @param serializationObject defined the JSON serialized object
+         */
+        serialize(serializationObject: any): void;
+        /** @hidden */
+        _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
     }
 }
 declare module BABYLON.GUI {
@@ -85260,6 +85701,95 @@ declare module BABYLON.GUI {
         _renderHighlightSpecific(context: CanvasRenderingContext2D): void;
         /** Releases associated resources */
         dispose(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to create toggle buttons
+     */
+    export class ToggleButton extends Rectangle {
+        name?: string | undefined;
+        /**
+         * Function called to generate the toActive animation
+         */
+        toActiveAnimation: () => void;
+        /**
+         * Function called to generate the toInactive animation
+         */
+        toInactiveAnimation: () => void;
+        /**
+         * Function called to generate a pointer enter animation when the toggle button is active.
+         */
+        pointerEnterActiveAnimation: () => void;
+        /**
+         * Function called to generate a pointer out animation when the toggle button is active.
+         */
+        pointerOutActiveAnimation: () => void;
+        /**
+         * Function called to generate a pointer down animation when the toggle button is active.
+         */
+        pointerDownActiveAnimation: () => void;
+        /**
+         * Function called to generate a pointer up animation when the toggle button is active.
+         */
+        pointerUpActiveAnimation: () => void;
+        /**
+         * Function called to generate a pointer enter animation when the toggle button is inactive.
+         */
+        pointerEnterInactiveAnimation: () => void;
+        /**
+         * Function called to generate a pointer out animation when the toggle button is inactive.
+         */
+        pointerOutInactiveAnimation: () => void;
+        /**
+         * Function called to generate a pointer down animation when the toggle button is inactive.
+         */
+        pointerDownInactiveAnimation: () => void;
+        /**
+         * Function called to generate a pointer up animation when the toggle button is inactive.
+         */
+        pointerUpInactiveAnimation: () => void;
+        /** BABYLON.Observable raised when isActive is changed */
+        onIsActiveChangedObservable: BABYLON.Observable<boolean>;
+        /**
+         * Gets or sets a boolean indicating that the toggle button will let internal controls handle picking instead of doing it directly using its bounding info
+         */
+        delegatePickingToChildren: boolean;
+        private _image;
+        /**
+         * Returns the ToggleButton's image control if it exists
+         */
+        get image(): BABYLON.Nullable<Image>;
+        private _textBlock;
+        /**
+         * Returns the ToggleButton's child TextBlock control if it exists
+         */
+        get textBlock(): BABYLON.Nullable<TextBlock>;
+        private _group;
+        /** Gets or sets group name this toggle button belongs to */
+        get group(): string;
+        set group(value: string);
+        private _isActive;
+        /** Gets or sets a boolean indicating if the toogle button is active or not */
+        get isActive(): boolean;
+        set isActive(value: boolean);
+        /**
+         * Creates a new ToggleButton
+         * @param name defines the control name
+         * @param group defines the toggle group this toggle belongs to
+         */
+        constructor(name?: string | undefined, group?: string);
+        protected _getTypeName(): string;
+        /** @hidden */
+        _processPicking(x: number, y: number, pi: BABYLON.PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
+        /** @hidden */
+        _onPointerEnter(target: Control, pi: BABYLON.PointerInfoBase): boolean;
+        /** @hidden */
+        _onPointerOut(target: Control, pi: BABYLON.PointerInfoBase, force?: boolean): void;
+        /** @hidden */
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
+        /** @hidden */
+        _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi: BABYLON.PointerInfoBase): void;
     }
 }
 declare module BABYLON.GUI {
@@ -88309,6 +88839,35 @@ declare module BABYLON.GLTF2.Loader.Extensions {
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
     /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1893)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_xmp_json_ld implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /**
+         * Defines a number that determines the order the extensions are applied.
+         */
+        order: number;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /**
+         * Called after the loader state changes to LOADING.
+         */
+        onLoading(): void;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
      * [Specification](https://github.com/najadojo/glTF/tree/MSFT_audio_emitter/extensions/2.0/Vendor/MSFT_audio_emitter)
      */
     export class MSFT_audio_emitter implements IGLTFLoaderExtension {
@@ -91165,22 +91724,19 @@ declare module BABYLON.GLTF2 {
     }
 
     /**
-     * Interfaces from the KHR_xmp extension
+     * Interfaces from the KHR_xmp_json_ld extension
      * !!! Experimental Extension Subject to Changes !!!
      */
 
     /** @hidden */
-    interface IKHRXmp_Data {
-        [key: string]: unknown;
+    interface IKHRXmpJsonLd_Gltf {
+        packets: Array<{
+            [key: string]: unknown;
+        }>;
     }
 
     /** @hidden */
-    interface IKHRXmp_Gltf {
-        packets: IKHRXmp_Data[];
-    }
-
-    /** @hidden */
-    interface IKHRXmp_Node {
+    interface IKHRXmpJsonLd_Node {
         packet: number;
     }
 
