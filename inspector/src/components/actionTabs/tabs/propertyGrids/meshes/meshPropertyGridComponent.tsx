@@ -26,10 +26,11 @@ import { Color3LineComponent } from "../../../lines/color3LineComponent";
 import { MorphTarget } from "babylonjs/Morph/morphTarget";
 import { OptionsLineComponent, ListLineOption } from "../../../lines/optionsLineComponent";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { ButtonLineComponent } from "../../../lines/buttonLineComponent";
+import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/buttonLineComponent";
 import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
 import { AnimationGridComponent } from "../animations/animationPropertyGridComponent";
 import { RenderingManager } from "babylonjs/Rendering/renderingManager";
+import { CommonPropertyGridComponent } from "../commonPropertyGridComponent";
 import { VariantsPropertyGridComponent } from "../variantsPropertyGridComponent";
 import { HexLineComponent } from "../../../lines/hexLineComponent";
 import { SkeletonViewer } from "babylonjs/Debug/skeletonViewer";
@@ -434,6 +435,7 @@ export class MeshPropertyGridComponent extends React.Component<
                         }}
                     />
                 </LineContainerComponent>
+                <CommonPropertyGridComponent host={mesh} lockObject={this.props.lockObject} globalState={this.props.globalState} />
                 <VariantsPropertyGridComponent host={mesh} lockObject={this.props.lockObject} globalState={this.props.globalState} />
                 <LineContainerComponent globalState={this.props.globalState} title="TRANSFORMS">
                     <Vector3LineComponent label="Position" target={mesh} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

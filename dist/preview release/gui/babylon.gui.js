@@ -567,6 +567,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 /**
 * Class used to create texture to support 2D GUI elements
 * @see https://doc.babylonjs.com/how_to/gui
@@ -1490,6 +1491,36 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
     AdvancedDynamicTexture.prototype.parseContent = function (serializedObject) {
         this._rootContainer = _controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].Parse(serializedObject.root, this);
     };
+    /**
+     * Recreate the content of the ADT from a snippet saved by the GUI editor
+     * @param snippetId defines the snippet to load
+     * @returns a promise that will resolve on success
+     */
+    AdvancedDynamicTexture.prototype.parseFromSnippetAsync = function (snippetId) {
+        var _this = this;
+        if (snippetId === "_BLANK") {
+            return Promise.resolve();
+        }
+        return new Promise(function (resolve, reject) {
+            var request = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["WebRequest"]();
+            request.addEventListener("readystatechange", function () {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        var snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
+                        var serializationObject = JSON.parse(snippet.gui);
+                        _this.parseContent(serializationObject);
+                        _this.snippetId = snippetId;
+                        resolve();
+                    }
+                    else {
+                        reject("Unable to load the snippet " + snippetId);
+                    }
+                }
+            });
+            request.open("GET", AdvancedDynamicTexture.SnippetUrl + "/" + snippetId.replace(/#/g, "/"));
+            request.send();
+        });
+    };
     // Statics
     /**
      * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh)
@@ -1567,6 +1598,8 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         result.attach();
         return result;
     };
+    /** Define the Uurl to load snippets */
+    AdvancedDynamicTexture.SnippetUrl = "https://snippet.babylonjs.com";
     return AdvancedDynamicTexture;
 }(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["DynamicTexture"]));
 

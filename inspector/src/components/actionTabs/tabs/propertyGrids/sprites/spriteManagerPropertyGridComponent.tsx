@@ -14,7 +14,7 @@ import { FloatLineComponent } from '../../../lines/floatLineComponent';
 import { SliderLineComponent } from '../../../lines/sliderLineComponent';
 import { RenderingManager } from 'babylonjs/Rendering/renderingManager';
 import { TextureLinkLineComponent } from '../../../lines/textureLinkLineComponent';
-import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
+import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
 import { Sprite } from 'babylonjs/Sprites/sprite';
 import { Tools } from 'babylonjs/Misc/tools';
 import { FileButtonLineComponent } from '../../../lines/fileButtonLineComponent';

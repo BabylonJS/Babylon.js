@@ -346,6 +346,10 @@ declare module BABYLON.GUI {
     * @see https://doc.babylonjs.com/how_to/gui
     */
     export class AdvancedDynamicTexture extends BABYLON.DynamicTexture {
+        /** Define the Uurl to load snippets */
+        static SnippetUrl: string;
+        /** Snippet ID if the content was created from the snippet server */
+        snippetId: string;
         private _isDirty;
         private _renderObserver;
         private _resizeObserver;
@@ -644,6 +648,12 @@ declare module BABYLON.GUI {
          * @param serializedObject define the JSON serialized object to restore from
          */
         parseContent(serializedObject: any): void;
+        /**
+         * Recreate the content of the ADT from a snippet saved by the GUI editor
+         * @param snippetId defines the snippet to load
+         * @returns a promise that will resolve on success
+         */
+        parseFromSnippetAsync(snippetId: string): Promise<void>;
         /**
          * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh)
          * @param mesh defines the mesh which will receive the texture

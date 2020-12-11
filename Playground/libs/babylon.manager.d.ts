@@ -30,6 +30,10 @@ declare module BABYLON {
         static GetRenderQuality(): BABYLON.RenderQuality;
         /** Set the system render quality setting. */
         static SetRenderQuality(quality: BABYLON.RenderQuality): void;
+        /** Get an item from top window local storage. */
+        static GetLocalStorageItem(key: string): string;
+        /** Set an item to top window local storage. */
+        static SetLocalStorageItem(key: string, value: string): void;
         /** Store data object in the window state cache */
         static SetWindowState(name: string, data: any): void;
         /** Retrieve data object from the window state cache */
@@ -46,6 +50,8 @@ declare module BABYLON {
         static GetFullscreenUI(scene: BABYLON.Scene): BABYLON.GUI.AdvancedDynamicTexture;
         /** Get the scene default ambient skybox mesh */
         static GetAmbientSkybox(scene: BABYLON.Scene): BABYLON.AbstractMesh;
+        /** Get the scene default intenisty factor */
+        static GetIntensityFactor(): number;
         /** Are scene manager debugging services available. */
         static IsDebugMode(): boolean;
         /** Send log data directly to the console. */
@@ -138,6 +144,10 @@ declare module BABYLON {
         static GetRootUrl(scene: BABYLON.Scene): string;
         /** Sets the root url the last scene properties was loaded from */
         static SetRootUrl(scene: BABYLON.Scene, url: string): void;
+        /** Get the file name the last scene properties was loaded from */
+        static GetSceneFile(scene: BABYLON.Scene): string;
+        /** Sets the file name the last scene properties was loaded from */
+        static SetSceneFile(scene: BABYLON.Scene, fileName: string): void;
         /** Get the right hand loader flag the last scene properties was loaded from */
         static GetRightHanded(scene: BABYLON.Scene): boolean;
         /** Sets the right hand loader flag the last scene properties was loaded from */
@@ -152,8 +162,10 @@ declare module BABYLON {
         static LoadTextFile(url: string, onSuccess: (data: string) => void, onProgress?: (data: any) => void, onError?: (request?: WebRequest, exception?: any) => void): BABYLON.IFileRequest;
         /** Load a text based file */
         static LoadTextFileAsync(url: string): Promise<string>;
-        /** Post data to server */
-        static PostDataToServer(url: string, data: string | Document | Blob | ArrayBufferView | ArrayBuffer | FormData | URLSearchParams | ReadableStream<Uint8Array>, contentType?: string, onComplete?: (status: int) => void): XMLHttpRequest;
+        /** Post data to server (XmlHttpRequest) */
+        static PostDataToServer(url: string, data: string | Document | Blob | ArrayBufferView | ArrayBuffer | FormData | URLSearchParams | ReadableStream<Uint8Array>, contentType?: string, onSuccess?: (status: int) => void, onFailure?: (reason: any) => void): XMLHttpRequest;
+        /** Post data to server asynchronously */
+        static PostDataToServerAsync(url: string, data: string | Document | Blob | ArrayBufferView | ArrayBuffer | FormData | URLSearchParams | ReadableStream<Uint8Array>, contentType?: string): Promise<number>;
         /** Shows the default page scene loader. */
         static ShowDefaultLoader(show: boolean): void;
         /** Update the default page scene loader status. */
@@ -2459,22 +2471,20 @@ declare module BABYLON {
      */
     class RealtimeReflection extends BABYLON.ScriptComponent {
         private static SKYBOX_FLAG;
-        private abstractMesh;
         private renderList;
         private probeList;
         private refreshMode;
         private cullingMask;
         private clearFlags;
         private probeid;
+        private useProbeList;
+        private includeChildren;
         private resolution;
-        private materialIndex;
         private boxPos;
         private boxSize;
         private boxProjection;
-        private reflectionProbe;
         getProbeList(): BABYLON.AbstractMesh[];
         getRenderList(): BABYLON.AbstractMesh[];
-        gerReflectionProbe(): BABYLON.ReflectionProbe;
         protected awake(): void;
         protected start(): void;
         protected destroy(): void;
@@ -2676,6 +2686,7 @@ declare module BABYLON {
         protected m_abstractMesh: BABYLON.AbstractMesh;
         protected m_videoTexture: BABYLON.VideoTexture;
         protected m_videoMaterial: BABYLON.StandardMaterial;
+        protected m_diffuseIntensity: number;
         protected awake(): void;
         protected destroy(): void;
         protected awakeWebVideoPlayer(): void;
