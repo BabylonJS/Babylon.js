@@ -68,7 +68,7 @@ export class PrePassRenderer {
      * How many samples are used for MSAA of the scene render target
      */
     public get samples() {
-        return this.defaultRT.samples;
+        return 1;//this.defaultRT.samples;
     }
 
     public set samples(n: number) {
