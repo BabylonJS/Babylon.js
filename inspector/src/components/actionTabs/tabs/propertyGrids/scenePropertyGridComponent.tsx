@@ -15,7 +15,7 @@ import { RadioButtonLineComponent } from "../../lines/radioLineComponent";
 import { Color3LineComponent } from "../../lines/color3LineComponent";
 import { CheckBoxLineComponent } from "../../lines/checkBoxLineComponent";
 import { FogPropertyGridComponent } from "./fogPropertyGridComponent";
-import { FileButtonLineComponent } from "../../lines/fileButtonLineComponent";
+import { FileButtonLineComponent } from "../../../../sharedUiComponents/lines/fileButtonLineComponent";
 import { TextureLinkLineComponent } from "../../lines/textureLinkLineComponent";
 import { Vector3LineComponent } from "../../lines/vector3LineComponent";
 import { FloatLineComponent } from "../../lines/floatLineComponent";

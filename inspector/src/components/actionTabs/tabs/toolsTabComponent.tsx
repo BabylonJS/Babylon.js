@@ -29,7 +29,7 @@ import { TextLineComponent } from '../lines/textLineComponent';
 import { FileMultipleButtonLineComponent } from '../lines/fileMultipleButtonLineComponent';
 import { OptionsLineComponent } from '../lines/optionsLineComponent';
 import { MessageLineComponent } from '../lines/messageLineComponent';
-import { FileButtonLineComponent } from '../lines/fileButtonLineComponent';
+import { FileButtonLineComponent } from '../../../sharedUiComponents/lines/fileButtonLineComponent';
 import { IndentedTextLineComponent } from '../lines/indentedTextLineComponent';
 
 const GIF = require('gif.js.optimized')
