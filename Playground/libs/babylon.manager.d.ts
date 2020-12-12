@@ -34,6 +34,10 @@ declare module BABYLON {
         static GetLocalStorageItem(key: string): string;
         /** Set an item to top window local storage. */
         static SetLocalStorageItem(key: string, value: string): void;
+        /** Get an item from top window session storage. */
+        static GetSessionStorageItem(key: string): string;
+        /** Set an item to top window session storage. */
+        static SetSessionStorageItem(key: string, value: string): void;
         /** Store data object in the window state cache */
         static SetWindowState(name: string, data: any): void;
         /** Retrieve data object from the window state cache */
