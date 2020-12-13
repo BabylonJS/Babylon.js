@@ -9,7 +9,7 @@ import { BaseTranslation } from '../Translations/BaseTranslation';
  * Manage the mouse wheel inputs to control a free camera.
  * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
  */
-export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
+export class FreeCameraMouseWheelInputDemo extends BaseCameraMouseWheelInput {
 
     /**
      * Defines the camera the input is attached to.
@@ -21,7 +21,7 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      * @returns the class name
      */
     public getClassName(): string {
-        return 'FreeCameraMouseWheelInput';
+        return 'FreeCameraMouseWheelInputDemo';
     }
 
     public attachControl(noPreventDefault?: boolean): void {
@@ -70,4 +70,4 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
     public wheelZAction: Nullable<BaseTranslation> = null;
 }
 
-(<any>CameraInputTypes)['FreeCameraMouseWheelInput'] = FreeCameraMouseWheelInput;
+(<any>CameraInputTypes)['FreeCameraMouseWheelInputDemo'] = FreeCameraMouseWheelInputDemo;
