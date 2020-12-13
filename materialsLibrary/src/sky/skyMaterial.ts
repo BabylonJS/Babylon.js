@@ -1,6 +1,6 @@
 import { Nullable } from "babylonjs/types";
 import { serializeAsVector3, serialize, SerializationHelper } from "babylonjs/Misc/decorators";
-import { Vector3, Matrix } from "babylonjs/Maths/math.vector";
+import { Vector3, Matrix, Quaternion } from "babylonjs/Maths/math.vector";
 import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { MaterialDefines } from "babylonjs/Materials/materialDefines";
@@ -113,6 +113,12 @@ export class SkyMaterial extends PushMaterial {
     @serialize()
     public cameraOffset: Vector3 = Vector3.Zero();
 
+    /**
+     * Defines the vector the skyMaterial should consider as up. (default is Vector3(0, 1, 0) as returned by Vector3.Up())
+     */
+    @serialize()
+    public up: Vector3 = Vector3.Up();
+
     // Private members
     private _cameraPosition: Vector3 = Vector3.Zero();
 
@@ -212,7 +218,7 @@ export class SkyMaterial extends PushMaterial {
                 ["world", "viewProjection", "view",
                     "vFogInfos", "vFogColor", "pointSize", "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6",
                     "luminance", "turbidity", "rayleigh", "mieCoefficient", "mieDirectionalG", "sunPosition",
-                    "cameraPosition", "cameraOffset"
+                    "cameraPosition", "cameraOffset", "up"
                 ],
                 [],
                 join, fallbacks, this.onCompiled, this.onError), defines);
@@ -282,6 +288,8 @@ export class SkyMaterial extends PushMaterial {
 
         this._activeEffect.setVector3("cameraOffset", this.cameraOffset);
 
+        this._activeEffect.setVector3("up", this.up);
+
         if (this.luminance > 0) {
             this._activeEffect.setFloat("luminance", this.luminance);
         }
@@ -298,6 +306,12 @@ export class SkyMaterial extends PushMaterial {
             this.sunPosition.x = this.distance * Math.cos(phi);
             this.sunPosition.y = this.distance * Math.sin(phi) * Math.sin(theta);
             this.sunPosition.z = this.distance * Math.sin(phi) * Math.cos(theta);
+
+            var crossProduct = Vector3.Cross(Vector3.Up(), this.up);
+            var dotProduct = Vector3.Dot(Vector3.Up(), this.up);
+            var quaternion = new Quaternion(crossProduct.x, crossProduct.y, crossProduct.z, 1.0 + dotProduct);
+            quaternion.normalize();
+            this.sunPosition.rotateByQuaternionToRef(quaternion, this.sunPosition);
         }
 
         this._activeEffect.setVector3("sunPosition", this.sunPosition);
