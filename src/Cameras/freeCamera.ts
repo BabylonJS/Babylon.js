@@ -9,6 +9,8 @@ import { FreeCameraInputsManager } from "./freeCameraInputsManager";
 import { FreeCameraMouseInput } from "../Cameras/Inputs/freeCameraMouseInput";
 import { FreeCameraKeyboardMoveInput } from "../Cameras/Inputs/freeCameraKeyboardMoveInput";
 import { Tools } from '../Misc/tools';
+import { Coordinate } from "../Maths/math.axis";
+import { FreeCameraMoveRelative, FreeCameraRotateRelative, FreeCameraMoveScene } from "./Translations/freeCameraTranslations";
 
 declare type Collider = import("../Collisions/collider").Collider;
 
@@ -219,6 +221,17 @@ export class FreeCamera extends TargetCamera {
         super(name, position, scene, setActiveOnSceneIfNoneActive);
         this.inputs = new FreeCameraInputsManager(this);
         this.inputs.addKeyboard().addMouse();
+
+        // Populate default translations.
+        this.addTranslation(new FreeCameraMoveRelative(Coordinate.X, this));
+        this.addTranslation(new FreeCameraMoveRelative(Coordinate.Y, this));
+        this.addTranslation(new FreeCameraMoveRelative(Coordinate.Z, this));
+        this.addTranslation(new FreeCameraRotateRelative(Coordinate.X, this));
+        this.addTranslation(new FreeCameraRotateRelative(Coordinate.Y, this));
+        this.addTranslation(new FreeCameraRotateRelative(Coordinate.Z, this));
+        this.addTranslation(new FreeCameraMoveScene(Coordinate.X, this));
+        this.addTranslation(new FreeCameraMoveScene(Coordinate.Y, this));
+        this.addTranslation(new FreeCameraMoveScene(Coordinate.Z, this));
     }
 
     /**

@@ -16,6 +16,7 @@ import { _DevTools } from '../Misc/devTools';
 import { Viewport } from '../Maths/math.viewport';
 import { Frustum } from '../Maths/math.frustum';
 import { Plane } from '../Maths/math.plane';
+import { BaseTranslation } from './Translations/BaseTranslation';
 
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
@@ -1342,5 +1343,32 @@ export class Camera extends Node {
         }
 
         return camera;
+    }
+
+    /**
+     * A collection of translations.
+     * ie: handlers for affecting the camera in some way.
+     */
+    // TODO(mrdunk): This collection is indexed by string.
+    // That's a bit nasty.
+    // But we want this to work for user defined translations so an Enum won't work.
+    // Need to give this some thought.
+    public translations: Map<string, BaseTranslation> = new Map();
+
+    public addTranslation(translation: BaseTranslation): BaseTranslation {
+        if(this.translations.has(translation.name)) {
+            // Return the existing instance, not the new instance.
+            return <BaseTranslation>(this.translations.get(translation.name));
+        }
+
+        this.translations.set(translation.name, translation);
+        return translation;
+    }
+
+    public getTranslation(translation: string): Nullable<BaseTranslation> {
+        if(this.translations.has(translation)) {
+            return <BaseTranslation>(this.translations.get(translation));
+        }
+        return null;
     }
 }

@@ -5,6 +5,7 @@ export * from "./targetCamera";
 export * from "./freeCamera";
 export * from "./freeCameraInputsManager";
 export * from "./touchCamera";
+export * from "./Translations/index";
 export * from "./arcRotateCamera";
 export * from "./arcRotateCameraInputsManager";
 export * from "./deviceOrientationCamera";
