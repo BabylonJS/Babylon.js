@@ -308,7 +308,7 @@ export class SkyMaterial extends PushMaterial {
             this.sunPosition.y = this.distance * Math.sin(phi) * Math.sin(theta);
             this.sunPosition.z = this.distance * Math.sin(phi) * Math.cos(theta);
 
-            Quaternion.FromUnitVectorsToRef(Vector3.Up(), this.up, this._skyOrientation);
+            Quaternion.FromUnitVectorsToRef(Vector3.UpReadOnly, this.up, this._skyOrientation);
             this.sunPosition.rotateByQuaternionToRef(this._skyOrientation, this.sunPosition);
         }
 
