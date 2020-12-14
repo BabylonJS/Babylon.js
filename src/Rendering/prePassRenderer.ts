@@ -648,10 +648,6 @@ export class PrePassRenderer {
                 enablePrePass = true;
 
                 this._setRenderTargetState(this.defaultRT, true);
-                // TODO : desactivate sss for render targets
-                // for (let j = 0; j < this.renderTargets.length; j++) {
-                //     this._setRenderTargetState(this.renderTargets[j], true);
-                // }
             }
         }
 
@@ -659,7 +655,6 @@ export class PrePassRenderer {
 
         for (let i = 0; i < this.renderTargets.length; i++) {
             if (this.renderTargets[i].renderTargetTexture) {
-                if (this.renderTargets[i])
                 postProcesses = this._getPostProcessesSource(this.renderTargets[i]);
             } else {
                 const camera = this._scene.activeCamera;

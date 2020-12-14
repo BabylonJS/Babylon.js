@@ -136,7 +136,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
         var generateDepthTexture = options && options.generateDepthTexture ? options.generateDepthTexture : false;
         var doNotChangeAspectRatio = !options || options.doNotChangeAspectRatio === undefined ? true : options.doNotChangeAspectRatio;
         var drawOnlyOnFirstAttachmentByDefault = options && options.drawOnlyOnFirstAttachmentByDefault ? options.drawOnlyOnFirstAttachmentByDefault : false;
-        super(name, size, scene, generateMipMaps, doNotChangeAspectRatio, 
+        super(name, size, scene, generateMipMaps, doNotChangeAspectRatio,
             undefined,
             undefined,
             undefined,
@@ -199,7 +199,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
         if (this._count < 1) {
             return;
         }
-        
+
         this.releaseInternalTextures();
         this._createInternalTextures();
 

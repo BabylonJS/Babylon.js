@@ -492,7 +492,7 @@ export class PostProcess {
 
     private _createRenderTargetTexture(textureSize: { width: number, height: number }, textureOptions: RenderTargetCreationOptions, channel = 0) {
         for (let i = 0; i < this._textureCache.length; i++) {
-            if (this._textureCache[i].width === textureSize.width && 
+            if (this._textureCache[i].width === textureSize.width &&
                 this._textureCache[i].height === textureSize.height &&
                 this._textureCache[i]._postProcessChannel === channel) {
                 return this._textureCache[i];
@@ -505,7 +505,6 @@ export class PostProcess {
 
         return tex;
     }
-
 
     private _flushTextureCache() {
         const currentRenderId = this._renderId;
@@ -888,13 +887,13 @@ export class PostProcess {
         return SerializationHelper.Parse(() => {
             return new PostProcess(
                 parsedPostProcess.name,
-                parsedPostProcess.fragmentUrl, 
+                parsedPostProcess.fragmentUrl,
                 parsedPostProcess.parameters,
                 parsedPostProcess.samplers,
                 parsedPostProcess.options,
                 targetCamera,
                 parsedPostProcess.renderTargetSamplingMode,
-                parsedPostProcess._engine, 
+                parsedPostProcess._engine,
                 parsedPostProcess.reusable,
                 parsedPostProcess.defines,
                 parsedPostProcess.textureType,
