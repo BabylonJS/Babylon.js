@@ -307,11 +307,8 @@ export class SkyMaterial extends PushMaterial {
             this.sunPosition.y = this.distance * Math.sin(phi) * Math.sin(theta);
             this.sunPosition.z = this.distance * Math.sin(phi) * Math.cos(theta);
 
-            var crossProduct = Vector3.Cross(Vector3.Up(), this.up);
-            var dotProduct = Vector3.Dot(Vector3.Up(), this.up);
-            var quaternion = new Quaternion(crossProduct.x, crossProduct.y, crossProduct.z, 1.0 + dotProduct);
-            quaternion.normalize();
-            this.sunPosition.rotateByQuaternionToRef(quaternion, this.sunPosition);
+            const rotation = Quaternion.FromUnitVectors(Vector3.Up(), this.up);
+            this.sunPosition.rotateByQuaternionToRef(rotation, this.sunPosition);
         }
 
         this._activeEffect.setVector3("sunPosition", this.sunPosition);
