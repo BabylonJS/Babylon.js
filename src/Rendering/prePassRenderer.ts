@@ -356,18 +356,7 @@ export class PrePassRenderer {
             this._update();
         }
 
-        const texture = this._currentTarget.renderTargetTexture;
-
         if (!this._enabled || !this._currentTarget.enabled) {
-            // Prepass disabled, we render only on 1 color attachment
-            if (texture) {
-                // this._engine.restoreSingleAttachment();
-                // texture._prepareFrame(this._scene, faceIndex, layer, texture.useCameraPostProcesses);
-            } else {
-                // this._engine.restoreDefaultFramebuffer();
-                // this._engine.restoreSingleAttachment();
-            }
-
             return;
         }
 

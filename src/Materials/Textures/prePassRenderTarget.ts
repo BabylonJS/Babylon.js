@@ -45,6 +45,9 @@ export class PrePassRenderTarget extends MultiRenderTarget {
         this.renderTargetTexture = renderTargetTexture;
     }
 
+    /**
+     * Creates a composition effect for this RT
+     */
     public _createCompositionEffect() {
         this.imageProcessingPostProcess = new ImageProcessingPostProcess("prePassComposition", 1, null, undefined, this._engine);
         this.imageProcessingPostProcess._updateParameters();

@@ -262,7 +262,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
 
         if (this._internalTextures) {
             this._samples = this._getEngine()!.updateMultipleRenderTargetTextureSampleCount(this._internalTextures, value);
-        } else{
+        } else {
             // In case samples are set with 0 textures created, we must save the desired samples value
             this._samples = value;
         }
