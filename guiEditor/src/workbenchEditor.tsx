@@ -14,7 +14,7 @@ import { PreviewMeshControlComponent } from './components/preview/previewMeshCon
 import { PreviewAreaComponent } from './components/preview/previewAreaComponent';
 import { SerializationTools } from './serializationTools';
 import { WorkbenchComponent } from './diagram/workbench';
-import { GUINode } from './diagram/graphNode';
+import { GUINode } from './diagram/guiNode';
 import * as ReactDOM from 'react-dom';
 import { IInspectorOptions } from "babylonjs/Debug/debugLayer";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
@@ -49,8 +49,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     private _blocks = new Array<BABYLON.GUI.Container | BABYLON.GUI.Control>();
 
     private _previewManager: PreviewManager;
-    //private _mouseLocationX = 0;
-    //private _mouseLocationY = 0;
     private _onWidgetKeyUpPointer: any;
 
     private _previewHost: Nullable<HTMLElement>;
@@ -58,7 +56,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
 
     /**
      * Creates a node and recursivly creates its parent nodes from it's input
-     * @param nodeMaterialBlock 
+     * @param block 
      */
     public createNodeFromObject(block: BABYLON.GUI.Control, recursion = true) {
         if (this._blocks.indexOf(block) !== -1) {        
@@ -72,13 +70,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
 
 
         return node;
-    }
-    
-    addValueNode(type: string) {
-        //let nodeType: NodeMaterialBlockConnectionPointTypes = BlockTools.GetConnectionNodeTypeFromString(type);
-
-        //let newInputBlock = new InputBlock(type, undefined, nodeType);
-        //return this.createNodeFromObject(newInputBlock);
     }
 
     componentDidMount() {
@@ -142,9 +133,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
             this.reOrganize();
         });
 
-        /*this.props.globalState.onGetNodeFromBlock = (block) => {
-             return this._workbenchCanvas.findNodeFromBlock(block);
-        }*/
+
 
         this.props.globalState.hostDocument!.addEventListener("keydown", evt => {
             if ((evt.keyCode === 46 || evt.keyCode === 8) && !this.props.globalState.blockKeyboardEvents) { // Delete                
@@ -173,7 +162,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
 
             if (evt.key === "c") { // Copy
               
-                let selectedItems = this._workbenchCanvas.selectedNodes;
+                let selectedItems = this._workbenchCanvas.selectedGuiNodes;
                 if (!selectedItems.length) {
                     return;
                 }
@@ -447,7 +436,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         const popUpWindow = this.createPopupWindow("PREVIEW AREA", "_PreviewHostWindow");
         if (popUpWindow) {
             popUpWindow.addEventListener('beforeunload',  this.handleClosingPopUp);
-            const parentControl = popUpWindow.document.getElementById('node-editor-graph-root');
+            const parentControl = popUpWindow.document.getElementById('gui-editor-workbench-root');
             this.createPreviewMeshControlHost(options, parentControl);
             this.createPreviewHost(options, parentControl);
             if (parentControl) {
@@ -604,7 +593,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     render() {
         return (
             <Portal globalState={this.props.globalState}>
-                <div id="node-editor-graph-root" style={
+                <div id="gui-editor-workbench-root" style={
                     {
                         gridTemplateColumns: this.buildColumnLayout()
                     }}
@@ -628,7 +617,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                         onPointerMove={evt => this.resizeColumns(evt)}
                     ></div>
 
-                    {/* The node graph diagram */}
+                    {/* The gui workbench diagram */}
                     <div className="diagram-container"
                         onDrop={event => {
                             this.emitNewBlock(event);

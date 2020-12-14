@@ -2,7 +2,6 @@ import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
 import { GlobalState } from './globalState';
 import { Texture } from 'babylonjs/Materials/Textures/texture';
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
-import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
 
 
 export class SerializationTools {
@@ -11,19 +10,7 @@ export class SerializationTools {
         material.editorData = {
             locations: []
         };
-
-        // Store node locations
-        const blocks: NodeMaterialBlock[] =material.attachedBlocks;
-
-        for (var block of blocks) {
-            let node = globalState.onGetNodeFromBlock(block);
-
-            material.editorData.locations.push({
-                blockId: block.uniqueId,
-                x: node ? node.x : 0,
-                y: node ? node.y : 0
-            });
-        }
+        
 
         globalState.storeEditorData(material.editorData);
     }
