@@ -55,7 +55,7 @@ declare module "../../Engines/thinEngine" {
          * when the frame buffer associated is the canvas frame buffer
          */
         restoreSingleAttachment() : void;
-        
+
         /**
          * Restores the webgl state to only draw on the main color attachment
          * when the frame buffer associated is not the canvas frame buffer
@@ -79,7 +79,6 @@ ThinEngine.prototype.restoreSingleAttachment = function(): void {
 
     this.bindAttachments([gl.BACK]);
 };
-
 
 ThinEngine.prototype.restoreSingleAttachmentForRenderTarget = function(): void {
     const gl = this._gl;

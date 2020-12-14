@@ -1194,7 +1194,7 @@ export class Engine extends ThinEngine {
                 postProcessInput = postProcess._forcedOutputTexture;
             }
         }
-        
+
         this._bindTexture(channel, postProcessInput, name);
     }
 

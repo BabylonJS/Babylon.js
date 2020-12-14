@@ -859,7 +859,7 @@ export class RenderTargetTexture extends Texture {
             this.onAfterRenderObservable.notifyObservers(faceIndex);
         });
     }
-    
+
     /**
      * @hidden
      */
