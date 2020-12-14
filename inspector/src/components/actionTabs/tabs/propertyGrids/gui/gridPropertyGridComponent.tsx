@@ -5,7 +5,7 @@ import { CommonControlPropertyGridComponent } from "./commonControlPropertyGridC
 import { LockObject } from "../lockObject";
 import { Grid } from "babylonjs-gui/2D/controls/grid";
 import { LineContainerComponent } from "../../../lineContainerComponent";
-import { TextLineComponent } from "../../../lines/textLineComponent";
+import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
 import { GlobalState } from '../../../../globalState';
 
 interface IGridPropertyGridComponentProps {

@@ -66155,6 +66155,40 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Implementation of the HDR Texture Loader.
+     * @hidden
+     */
+    export class _HDRTextureLoader implements IInternalTextureLoader {
+        /**
+         * Defines wether the loader supports cascade loading the different faces.
+         */
+        readonly supportCascades: boolean;
+        /**
+         * This returns if the loader support the current file information.
+         * @param extension defines the file extension of the file being loaded
+         * @returns true if the loader can load the specified file
+         */
+        canLoad(extension: string): boolean;
+        /**
+         * Uploads the cube texture data to the WebGL texture. It has already been bound.
+         * @param data contains the texture data
+         * @param texture defines the BabylonJS internal texture
+         * @param createPolynomials will be true if polynomials have been requested
+         * @param onLoad defines the callback to trigger once the texture is ready
+         * @param onError defines the callback to trigger in case of error
+         */
+        loadCubeData(data: ArrayBufferView | ArrayBufferView[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
+        /**
+         * Uploads the 2D texture data to the WebGL texture. It has already been bound once in the callback.
+         * @param data contains the texture data
+         * @param texture defines the BabylonJS internal texture
+         * @param callback defines the method to call once ready to upload
+         */
+        loadData(data: ArrayBufferView, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Info about the .basis files
      */
     class BasisFileInfo {
@@ -79925,8 +79959,8 @@ declare module BABYLON {
          */
         positions?: Float32Array;
         /**
-         * An array of indices in babylon space. right/left hand system is taken into account.
-         * Indices will only be calculated if convertCoordinateSystems is set to true in the IWebXRMeshDetectorOptions.
+         * An array of indices in babylon space. Indices have a counterclockwise winding order.
+         * Indices will only be populated if convertCoordinateSystems is set to true in the IWebXRMeshDetectorOptions.
          */
         indices?: Uint32Array;
         /**
