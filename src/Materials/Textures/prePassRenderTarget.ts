@@ -15,7 +15,9 @@ import { Nullable } from "../../types";
  * It is more likely that you need a regular `MultiRenderTarget`
  */
 export class PrePassRenderTarget extends MultiRenderTarget {
-
+    /**
+     * @hidden
+     */
     public _beforeCompositionPostProcesses: PostProcess[] = [];
     /**
      * Image processing post process for composition
@@ -25,7 +27,14 @@ export class PrePassRenderTarget extends MultiRenderTarget {
     public _engine: Engine;
     public _scene: Scene;
 
+    /**
+     * @hidden
+     */
     public _outputPostProcess: Nullable<PostProcess>;
+
+    /**
+     * @hidden
+     */
     public _internalTextureDirty = false;
 
     /**

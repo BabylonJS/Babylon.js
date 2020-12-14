@@ -123,7 +123,7 @@ export class PrePassRenderer {
     private _effectConfigurations: PrePassEffectConfiguration[] = [];
 
     /**
-     * Returns the prepass render target for the rendering pass.
+     * @return the prepass render target for the rendering pass.
      * If we are currently rendering a render target, it returns the PrePassRenderTarget
      * associated with that render target. Otherwise, it returns the scene default PrePassRenderTarget
      */
@@ -131,6 +131,11 @@ export class PrePassRenderer {
         return this._currentTarget;
     }
 
+    /**
+     * @hidden
+     * Managed by the scene component
+     * @param prePassRenderTarget 
+     */
     public _setRenderTarget(prePassRenderTarget: Nullable<PrePassRenderTarget>): void {
         if (prePassRenderTarget) {
             this._currentTarget = prePassRenderTarget;
@@ -215,6 +220,14 @@ export class PrePassRenderer {
         this._setRenderTarget(null);
     }
 
+    /**
+     * Creates a new PrePassRenderTarget
+     * This should be the only way to instanciate a `PrePassRenderTarget`
+     * @param name Name of the `PrePassRenderTarget`
+     * @param renderTargetTexture RenderTarget the `PrePassRenderTarget` will be attached to.
+     * Can be `null` if the created `PrePassRenderTarget` is attached to the scene (default framebuffer).
+     * @hidden
+     */
     public _createRenderTarget(name: string, renderTargetTexture: Nullable<RenderTargetTexture>) : PrePassRenderTarget {
         const rt = new PrePassRenderTarget(name, renderTargetTexture, { width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() }, 0, this._scene,
             { generateMipMaps: false, generateStencilBuffer: true, defaultType: Constants.TEXTURETYPE_UNSIGNED_INT, types: [], drawOnlyOnFirstAttachmentByDefault: true });
