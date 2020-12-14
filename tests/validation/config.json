@@ -1026,13 +1026,13 @@
         },
         {
             "title": "Prepass SSAO + instanced bones",
-            "renderCount": 10,
+            "renderCount": 50,
             "playgroundId": "#0K8EYN#194",
             "referenceImage": "prepass-ssao-instanced-bones.png"
         },
         {
             "title": "Prepass SSAO + particles",
-            "renderCount": 30,
+            "renderCount": 50,
             "playgroundId": "#65MUMZ#40",
             "referenceImage": "prepass-ssao-particles.png"
         },
