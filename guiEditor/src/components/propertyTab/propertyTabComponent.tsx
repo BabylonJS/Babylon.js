@@ -10,7 +10,7 @@ import { Tools } from 'babylonjs/Misc/tools';
 import { SerializationTools } from '../../serializationTools';
 import { CheckBoxLineComponent } from '../../sharedComponents/checkBoxLineComponent';
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
-import { GUINode } from '../../diagram/graphNode';
+import { GUINode } from '../../diagram/guiNode';
 import { SliderLineComponent } from '../../sharedComponents/sliderLineComponent';
 
 import { TextLineComponent } from '../../sharedComponents/textLineComponent';

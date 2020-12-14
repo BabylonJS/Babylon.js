@@ -1,6 +1,6 @@
 import * as React from "react";
 import { GlobalState } from '../globalState';
-import { GUINode } from './graphNode';
+import { GUINode } from './guiNode';
 import * as dagre from 'dagre';
 import { Nullable } from 'babylonjs/types';
 
@@ -38,14 +38,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _guiNodes: GUINode[] = [];
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null
-    //private _dropPointX = 0;
-    //private _dropPointY = 0;
     private _selectionStartX = 0;
     private _selectionStartY = 0;
     private _x = 0;
     private _y = 0;
     private _zoom = 1;
-    private _selectedNodes: GUINode[] = [];
     private _selectedGuiNodes: GUINode[] = [];
     private _gridSize = 20;
     private _selectionBox: Nullable<HTMLDivElement> = null;    
@@ -57,7 +54,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     public _frameIsMoving = false;
     public _isLoading = false;
-
+    public isOverGUINode = false;
     
 
     public get gridSize() {
@@ -112,10 +109,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.updateTransform();
     }
 
-    public get selectedNodes() {
-        return this._selectedNodes;
-    }
-
     public get selectedGuiNodes() {
         return this._selectedGuiNodes;
     }
@@ -145,25 +138,25 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         props.globalState.onSelectionChangedObservable.add(selection => {  
             if (!selection) {
+                
                 this.selectedGuiNodes.forEach(element => {
                     element.isSelected = false;
                 }); 
-                this._selectedNodes = [];
                 this._selectedGuiNodes = [];
-            } else {
+            } 
+            else {
                 if (selection instanceof GUINode){
                     if (this._ctrlKeyIsPressed) {
-                        if (this._selectedNodes.indexOf(selection) === -1) {
-                            this._selectedNodes.push(selection);
+                        if (this._selectedGuiNodes.indexOf(selection) === -1) {
                             this._selectedGuiNodes.push(selection);
                         }
-                    } else {                    
-                        this._selectedNodes = [selection];
+                    } 
+                    else {                    
                         this._selectedGuiNodes = [selection];
                     }
                 
-                } else {
-                    this._selectedNodes = [];
+                } 
+                else {
                     this._selectedGuiNodes = [];
                 }
             }
@@ -297,8 +290,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 }
                 return;
             }
-
-            
         });        
     }
 
@@ -375,7 +366,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             var x = this._mouseStartPointX;
             var y = this._mouseStartPointY;
             let selected = false;
-            this._guiNodes.forEach(element => {
+            this.selectedGuiNodes.forEach(element => {
                 selected = element._onMove(new BABYLON.Vector2(evt.clientX, evt.clientY), 
                 new BABYLON.Vector2( x, y)) || selected;
             });
@@ -394,7 +385,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._rootContainer.setPointerCapture(evt.pointerId);
 
         // Selection?
-        if (evt.currentTarget === this._hostCanvas && evt.ctrlKey) {
+        /*if (evt.currentTarget === this._hostCanvas && evt.ctrlKey) {
             this._selectionBox = this.props.globalState.hostDocument.createElement("div");
             this._selectionBox.classList.add("selection-box");
             this._selectionContainer.appendChild(this._selectionBox);
@@ -407,9 +398,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this._selectionBox.style.width = "0px";
             this._selectionBox.style.height = "0px";
             return;
+        }*/
+        console.log('workbench click');
+        if(!this.isOverGUINode) {
+            console.log('unclicked');
+            this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         }
-
-        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+        
         this._mouseStartPointX = evt.clientX;
         this._mouseStartPointY = evt.clientY;        
     }
@@ -516,11 +511,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         camera.setTarget(BABYLON.Vector3.Zero());
         
         // This attaches the camera to the canvas
-        camera.attachControl(true);
+        //camera.attachControl(true);
         
         // GUI
         this.globalState.guiTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-        
+        scene.getEngine().onCanvasPointerOutObservable.clear();
         // Watch for browser/canvas resize events
         window.addEventListener("resize", function () {
         engine.resize();

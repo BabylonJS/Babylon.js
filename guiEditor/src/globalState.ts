@@ -6,7 +6,7 @@ import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
 import { PreviewType } from './components/preview/previewType';
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { Color4 } from 'babylonjs/Maths/math.color';
-import { GUINode } from './diagram/graphNode';
+import { GUINode } from './diagram/guiNode';
 import { Vector2 } from 'babylonjs/Maths/math.vector';
 import { FramePortData, WorkbenchComponent } from './diagram/workbench';
 import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
