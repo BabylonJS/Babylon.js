@@ -134,7 +134,7 @@ export class PrePassRenderer {
     /**
      * @hidden
      * Managed by the scene component
-     * @param prePassRenderTarget 
+     * @param prePassRenderTarget
      */
     public _setRenderTarget(prePassRenderTarget: Nullable<PrePassRenderTarget>): void {
         if (prePassRenderTarget) {
