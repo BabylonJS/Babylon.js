@@ -2,18 +2,13 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { GlobalState } from './globalState';
 import { WorkbenchEditor } from './workbenchEditor';
-import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial"
-import { Popup } from "./sharedComponents/popup"
+import { Popup } from "./sharedComponents/popup";
 import { SerializationTools } from './serializationTools';
 import { Observable } from 'babylonjs/Misc/observable';
-import { PreviewType } from './components/preview/previewType';
-import { DataStorage } from 'babylonjs/Misc/dataStorage';
-import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
 /**
  * Interface used to specify creation options for the gui editor
  */
 export interface INodeEditorOptions {
-    nodeMaterial: NodeMaterial,
     hostElement?: HTMLElement,
     customSave?: {label: string, action: (data: string) => Promise<void>};
     customLoadObservable?: Observable<any>
@@ -44,8 +39,6 @@ export class GuiEditor {
         }
 
         let globalState = new GlobalState();
-        globalState.nodeMaterial = options.nodeMaterial;
-        globalState.mode = options.nodeMaterial.mode;
         globalState.hostElement = hostElement;
         globalState.hostDocument = hostElement.ownerDocument!;
         globalState.customSave = options.customSave;
@@ -65,7 +58,6 @@ export class GuiEditor {
         if (options.customLoadObservable) {
             options.customLoadObservable.add(data => {
                 SerializationTools.Deserialize(data, globalState);
-                globalState.mode = options.nodeMaterial.mode;
                 globalState.onResetRequiredObservable.notifyObservers();
                 globalState.onBuiltObservable.notifyObservers();
             })
@@ -75,12 +67,7 @@ export class GuiEditor {
 
         // Close the popup window when the page is refreshed or scene is disposed
         var popupWindow = (Popup as any)["gui-editor"];
-        if (globalState.nodeMaterial && popupWindow) {
-            globalState.nodeMaterial.getScene().onDisposeObservable.addOnce(() => {
-                if (popupWindow) {
-                    popupWindow.close();
-                }
-            })
+        if (popupWindow) {
             window.onbeforeunload = () => {
                 var popupWindow = (Popup as any)["gui-editor"];
                 if (popupWindow) {
@@ -90,9 +77,6 @@ export class GuiEditor {
             };
         }
         window.addEventListener('beforeunload', () => {
-            if(DataStorage.ReadNumber("PreviewType", PreviewType.Box) === PreviewType.Custom){
-                DataStorage.WriteNumber("PreviewType", globalState.mode === NodeMaterialModes.Material ? PreviewType.Box : PreviewType.Bubbles);
-            }
         });
     }
 }

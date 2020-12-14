@@ -1,4 +1,3 @@
-import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial";
 import { Nullable } from "babylonjs/types";
 import { Observable } from 'babylonjs/Misc/observable';
 import { LogEntry } from './components/log/logComponent';
@@ -9,10 +8,9 @@ import { Color4 } from 'babylonjs/Maths/math.color';
 import { GUINode } from './diagram/guiNode';
 import { Vector2 } from 'babylonjs/Maths/math.vector';
 import { FramePortData, WorkbenchComponent } from './diagram/workbench';
-import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
+
 
 export class GlobalState {
-    nodeMaterial: NodeMaterial;
     guiTexture: BABYLON.GUI.AdvancedDynamicTexture;
     hostElement: HTMLElement;
     hostDocument: HTMLDocument;
@@ -54,19 +52,6 @@ export class GlobalState {
     controlCamera: boolean;
     workbench: WorkbenchComponent;
     storeEditorData: (serializationObject: any, frame?: Nullable<null>) => void;
-    _mode: NodeMaterialModes;
-
-    /** Gets the mode */
-    public get mode(): NodeMaterialModes {
-        return this._mode;
-    }
-
-    /** Sets the mode */
-    public set mode(m: NodeMaterialModes) {
-        DataStorage.WriteNumber("Mode", m);
-        this._mode = m;
-        this.onPreviewCommandActivated.notifyObservers(true);
-    }
 
     customSave?: {label: string, action: (data: string) => Promise<void>};
 
@@ -78,7 +63,6 @@ export class GlobalState {
         this.directionalLight0 = DataStorage.ReadBoolean("DirectionalLight0", false);
         this.directionalLight1 = DataStorage.ReadBoolean("DirectionalLight1", false);
         this.controlCamera = DataStorage.ReadBoolean("ControlCamera", true);
-        this._mode = DataStorage.ReadNumber("Mode", NodeMaterialModes.Material);
 
         let r = DataStorage.ReadNumber("BackgroundColorR", 0.12549019607843137);
         let g = DataStorage.ReadNumber("BackgroundColorG", 0.09803921568627451);

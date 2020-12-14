@@ -4,7 +4,6 @@ import { GlobalState } from '../../globalState';
 import { Nullable } from 'babylonjs/types';
 import { ButtonLineComponent } from '../../sharedComponents/buttonLineComponent';
 import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
-import { StringTools } from '../../stringTools';
 import { FileButtonLineComponent } from '../../sharedComponents/fileButtonLineComponent';
 import { Tools } from 'babylonjs/Misc/tools';
 import { SerializationTools } from '../../serializationTools';
@@ -25,11 +24,7 @@ import { Vector2LineComponent } from '../../sharedComponents/vector2LineComponen
 import { Vector3LineComponent } from '../../sharedComponents/vector3LineComponent';
 import { Vector4LineComponent } from '../../sharedComponents/vector4LineComponent';
 import { Observer } from 'babylonjs/Misc/observable';
-import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
-import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
-import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
-import { PreviewType } from '../preview/previewType';
-import { TextInputLineComponent } from '../../sharedComponents/textInputLineComponent';
+
 require("./propertyTab.scss");
 
 interface IPropertyTabComponentProps {
@@ -42,14 +37,11 @@ interface IPropertyTabComponentState {
 
 export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
     private _onBuiltObserver: Nullable<Observer<void>>;
-    private _modeSelect: React.RefObject<OptionsLineComponent>;
 
     constructor(props: IPropertyTabComponentProps) {
         super(props);
 
         this.state = { currentNode: null};
-
-        this._modeSelect = React.createRef();
     }
 
     componentDidMount() {
@@ -143,9 +135,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             let decoder = new TextDecoder("utf-8");
             SerializationTools.Deserialize(JSON.parse(decoder.decode(data)), this.props.globalState);
 
-            if (!this.changeMode(this.props.globalState.nodeMaterial!.mode, true, false)) {
-                this.props.globalState.onResetRequiredObservable.notifyObservers();
-            }
+
             this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         }, undefined, true);
     }
@@ -153,28 +143,28 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     loadFrame(file: File) {
         Tools.ReadFile(file, (data) => {
             // get Frame Data from file
-            let decoder = new TextDecoder("utf-8");
-            const frameData = JSON.parse(decoder.decode(data));
-            SerializationTools.AddFrameToMaterial(frameData, this.props.globalState, this.props.globalState.nodeMaterial);
+            //let decoder = new TextDecoder("utf-8");
+           // const frameData = JSON.parse(decoder.decode(data));
+           // SerializationTools.AddFrameToMaterial(frameData, this.props.globalState, this.props.globalState.nodeMaterial);
         }, undefined, true);
     }
 
     save() {
-        let json = SerializationTools.Serialize(this.props.globalState.nodeMaterial, this.props.globalState);
-        StringTools.DownloadAsFile(this.props.globalState.hostDocument, json, "nodeMaterial.json");
+        //let json = SerializationTools.Serialize(this.props.globalState.nodeMaterial, this.props.globalState);
+        //StringTools.DownloadAsFile(this.props.globalState.hostDocument, json, "nodeMaterial.json");
     }
 
     customSave() {
-        this.props.globalState.onLogRequiredObservable.notifyObservers({message: "Saving your material to Babylon.js snippet server...", isError: false});
+        /*this.props.globalState.onLogRequiredObservable.notifyObservers({message: "Saving your material to Babylon.js snippet server...", isError: false});
         this.props.globalState.customSave!.action(SerializationTools.Serialize(this.props.globalState.nodeMaterial, this.props.globalState)).then(() => {
             this.props.globalState.onLogRequiredObservable.notifyObservers({message: "Material saved successfully", isError: false});
         }).catch((err) => {
             this.props.globalState.onLogRequiredObservable.notifyObservers({message: err, isError: true});
-        });
+        });*/
     }
 
     saveToSnippetServer() {
-        const material = this.props.globalState.nodeMaterial;
+        /*const material = this.props.globalState.nodeMaterial;
         const xmlHttp = new XMLHttpRequest();
 
         let json = SerializationTools.Serialize(material, this.props.globalState);
@@ -224,11 +214,11 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             tags: ""
         };
 
-        xmlHttp.send(JSON.stringify(dataToSend));
+        xmlHttp.send(JSON.stringify(dataToSend));*/
     }
 
     loadFromSnippet() {
-        const material = this.props.globalState.nodeMaterial;
+        /*const material = this.props.globalState.nodeMaterial;
         const scene = material.getScene();
 
         let snippedID = window.prompt("Please enter the snippet ID to use");
@@ -246,60 +236,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             }
         }).catch((err) => {
             this.props.globalState.hostDocument.defaultView!.alert("Unable to load your node material: " + err);
-        });
+        });*/
     }
 
-    changeMode(value: any, force = false, loadDefault = true): boolean {
-        if (this.props.globalState.mode === value) {
-            return false;
-        }
-
-        if (!force && !this.props.globalState.hostDocument.defaultView!.confirm('Are your sure? You will lose your current changes (if any) if they are not saved!')) {
-            this._modeSelect.current?.setValue(this.props.globalState.mode);
-            return false;
-        }
-
-        if (force) {
-            this._modeSelect.current?.setValue(value);
-        }
-
-        if (loadDefault) {
-            switch (value) {
-                case NodeMaterialModes.Material:
-                    this.props.globalState.nodeMaterial!.setToDefault();
-                    break;
-                case NodeMaterialModes.PostProcess:
-                    this.props.globalState.nodeMaterial!.setToDefaultPostProcess();
-                    break;
-                case NodeMaterialModes.Particle:
-                    this.props.globalState.nodeMaterial!.setToDefaultParticle();
-                    break;
-                case NodeMaterialModes.ProceduralTexture:
-                    this.props.globalState.nodeMaterial!.setToDefaultProceduralTexture();
-                    break;
-            }
-        }
-
-        switch (value) {
-            case NodeMaterialModes.Material:
-                this.props.globalState.previewType = PreviewType.Sphere;
-                break;
-            case NodeMaterialModes.Particle:
-                this.props.globalState.previewType = PreviewType.Bubbles;
-                break;
-        }
-
-        this.props.globalState.listOfCustomPreviewFiles = [];
-        (this.props.globalState.previewFile as any) = undefined;
-
-        DataStorage.WriteNumber("PreviewType", this.props.globalState.previewType);
-
-        this.props.globalState.mode = value as NodeMaterialModes;
-
-        this.props.globalState.onResetRequiredObservable.notifyObservers();
-
-        return true;
-    }
 
     render() {
         if (this.state.currentNode) {
@@ -318,13 +257,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
         let gridSize = DataStorage.ReadNumber("GridSize", 20);
 
-        const modeList = [
-            { label: "Material", value: NodeMaterialModes.Material },
-            { label: "Post Process", value: NodeMaterialModes.PostProcess },
-            { label: "Particle", value: NodeMaterialModes.Particle },
-            { label: "Procedural", value: NodeMaterialModes.ProceduralTexture },
-        ];
-
         return (
             <div id="propertyTab">
                 <div id="header">
@@ -335,25 +267,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 </div>
                 <div>
                     <LineContainerComponent title="GENERAL">
-                        <OptionsLineComponent ref={this._modeSelect} label="Mode" target={this} getSelection={(target) => this.props.globalState.mode} options={modeList} onSelect={(value) => this.changeMode(value)} />
                         <TextLineComponent label="Version" value={Engine.Version}/>
                         <TextLineComponent label="Help" value="doc.babylonjs.com" underline={true} onLink={() => window.open('https://doc.babylonjs.com/how_to/node_material', '_blank')}/>
-                        <TextInputLineComponent label="Comment" multilines={true} value={this.props.globalState.nodeMaterial!.comment} target={this.props.globalState.nodeMaterial} propertyName="comment" globalState={this.props.globalState}/>
                         <ButtonLineComponent label="Reset to default" onClick={() => {
-                            switch (this.props.globalState.mode) {
-                                case NodeMaterialModes.Material:
-                                    this.props.globalState.nodeMaterial!.setToDefault();
-                                    break;
-                                case NodeMaterialModes.PostProcess:
-                                    this.props.globalState.nodeMaterial!.setToDefaultPostProcess();
-                                    break;
-                                case NodeMaterialModes.Particle:
-                                    this.props.globalState.nodeMaterial!.setToDefaultParticle();
-                                    break;
-                                case NodeMaterialModes.ProceduralTexture:
-                                    this.props.globalState.nodeMaterial!.setToDefaultProceduralTexture();
-                                    break;
-                            }
                             this.props.globalState.onResetRequiredObservable.notifyObservers();
                         }} />
                     </LineContainerComponent>
@@ -394,12 +310,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <ButtonLineComponent label="Save" onClick={() => {
                             this.save();
                         }} />
-                        <ButtonLineComponent label="Generate code" onClick={() => {
-                            StringTools.DownloadAsFile(this.props.globalState.hostDocument, this.props.globalState.nodeMaterial!.generateCode(), "code.txt");
-                        }} />
-                        <ButtonLineComponent label="Export shaders" onClick={() => {
-                            StringTools.DownloadAsFile(this.props.globalState.hostDocument, this.props.globalState.nodeMaterial!.compiledShaders, "shaders.txt");
-                        }} />
                         {
                             this.props.globalState.customSave &&
                             <ButtonLineComponent label={this.props.globalState.customSave!.label} onClick={() => {
@@ -411,26 +321,12 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     {
                         !this.props.globalState.customSave &&
                         <LineContainerComponent title="SNIPPET">
-                            {
-                                this.props.globalState.nodeMaterial!.snippetId &&
-                                <TextLineComponent label="Snippet ID" value={this.props.globalState.nodeMaterial!.snippetId} />
-                            }
                             <ButtonLineComponent label="Load from snippet server" onClick={() => this.loadFromSnippet()} />
                             <ButtonLineComponent label="Save to snippet server" onClick={() => {
                                 this.saveToSnippetServer();
                             }} />
                         </LineContainerComponent>
                     }
-                    <LineContainerComponent title="INPUTS">
-                    {
-                        this.props.globalState.nodeMaterial.getInputBlocks().map((ib) => {
-                            if (!ib.isUniform || ib.isSystemValue || !ib.name) {
-                                return null;
-                            }
-                            return this.renderInputBlock(ib);
-                        })
-                    }
-                    </LineContainerComponent>
                 </div>
             </div>
         );

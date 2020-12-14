@@ -7,14 +7,9 @@ import { CheckboxPropertyTabComponent } from './properties/checkboxGuiPropertyCo
 import { ShapePropertyTabComponent } from './properties/shapeGuiPropertyComponent';
 import { LinePropertyTabComponent } from './properties/lineGuiPropertyComponent';
 
-export class PropertyLedger {
-    public static RegisteredControls: {[key: string] : ComponentClass<IPropertyComponentProps>} = {};
-}
-
 export class PropertyGuiLedger {
     public static RegisteredControls: {[key: string] : ComponentClass<IPropertyComponentProps>} = {};
 }
-
 
 PropertyGuiLedger.RegisteredControls["Button"] = ButtonPropertyTabComponent;
 PropertyGuiLedger.RegisteredControls["Slider"] = SliderPropertyTabComponent;

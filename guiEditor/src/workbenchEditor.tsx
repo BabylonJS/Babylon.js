@@ -8,14 +8,10 @@ import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { Nullable } from 'babylonjs/types';
 import { MessageDialogComponent } from './sharedComponents/messageDialog';
 import { BlockTools } from './blockTools';
-import { PreviewManager } from './components/preview/previewManager';
 import { IEditorData } from './nodeLocationInfo';
-import { PreviewMeshControlComponent } from './components/preview/previewMeshControlComponent';
-import { PreviewAreaComponent } from './components/preview/previewAreaComponent';
-import { SerializationTools } from './serializationTools';
+
 import { WorkbenchComponent } from './diagram/workbench';
 import { GUINode } from './diagram/guiNode';
-import * as ReactDOM from 'react-dom';
 import { IInspectorOptions } from "babylonjs/Debug/debugLayer";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
@@ -48,7 +44,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
 
     private _blocks = new Array<BABYLON.GUI.Container | BABYLON.GUI.Control>();
 
-    private _previewManager: PreviewManager;
     private _onWidgetKeyUpPointer: any;
 
     private _previewHost: Nullable<HTMLElement>;
@@ -82,7 +77,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
             ((this.props.globalState.hostDocument || document).querySelector(".blocker") as HTMLElement).style.visibility = "visible";
         }
 
-        this.build();
+
     }
 
     componentWillUnmount() {
@@ -90,9 +85,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
             this.props.globalState.hostDocument!.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
         }
 
-        if (this._previewManager) {
-            this._previewManager.dispose();
-        }
     }
 
     constructor(props: IGraphEditorProps) {
@@ -103,16 +95,11 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         };
 
         this.props.globalState.onRebuildRequiredObservable.add(() => {
-            if (this.props.globalState.nodeMaterial) {
-                this.buildMaterial();
-            }
+
         });
 
         this.props.globalState.onResetRequiredObservable.add(() => {
-            this.build();
-            if (this.props.globalState.nodeMaterial) {
-                this.buildMaterial();
-            }
+
         });
 
         this.props.globalState.onImportFrameObservable.add((source: any) => {
@@ -241,60 +228,11 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     }
 
     buildMaterial() {
-        if (!this.props.globalState.nodeMaterial) {
-            return;
-        }
 
-        try {
-            this.props.globalState.nodeMaterial.options.emitComments = true;
-            this.props.globalState.nodeMaterial.build(true);
-            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Node material build successful", false));
-        }
-        catch (err) {
-            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));
-        }
-
-        SerializationTools.UpdateLocations(this.props.globalState.nodeMaterial, this.props.globalState);
-
+        this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Node material build successful", false));
         this.props.globalState.onBuiltObservable.notifyObservers();
     }
 
-    build() {        
-        let editorData = this.props.globalState.nodeMaterial.editorData;        
-        this._workbenchCanvas._isLoading = true; // Will help loading large graphes
-
-        if (editorData instanceof Array) {
-            editorData = {
-                locations: editorData
-            }
-        }
-
-        // setup the diagram model
-        this._blocks = [];
-        this._workbenchCanvas.reset();
-
-        // Load graph of nodes from the material
-        if (this.props.globalState.nodeMaterial) {
-            this.loadGraph()
-        }
-
-        this.reOrganize(editorData);
-    }
-
-    loadGraph() {
-        var material = this.props.globalState.nodeMaterial;
-        material._vertexOutputNodes.forEach((n: any) => {
-            this.createNodeFromObject(n, true);
-        });
-        material._fragmentOutputNodes.forEach((n: any) => {
-            this.createNodeFromObject(n, true);
-        });
-
-        material.attachedBlocks.forEach((n: any) => {
-            this.createNodeFromObject(n, true);
-        });
-          
-    }
 
     showWaitScreen() {
         this.props.globalState.hostDocument.querySelector(".wait-screen")?.classList.remove("hidden");
@@ -406,7 +344,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     }
 
     handleClosingPopUp = () => {
-        this._previewManager.dispose();
+       
         this._popUpWindow.close();
         this.setState({
             showPreviewPopUp: false
@@ -415,7 +353,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     }
 
     initiatePreviewArea = (canvas: HTMLCanvasElement = this.props.globalState.hostDocument.getElementById("preview-canvas") as HTMLCanvasElement) => {
-        this._previewManager =  new PreviewManager(canvas, this.props.globalState);
+        //this._previewManager =  new PreviewManager(canvas, this.props.globalState);
     }
 
     createPopUp = () => {
@@ -533,11 +471,11 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
             host.style.width = options.embedHostWidth || "auto";
 
             parentControl.appendChild(host);
-            const PreviewMeshControlComponentHost = React.createElement(PreviewMeshControlComponent, {
+            /*const PreviewMeshControlComponentHost = React.createElement(PreviewMeshControlComponent, {
                 globalState: this.props.globalState,
                 togglePreviewAreaComponent: this.handlePopUp
             });
-            ReactDOM.render(PreviewMeshControlComponentHost, host);
+            ReactDOM.render(PreviewMeshControlComponentHost, host);*/
         }
     }
 
@@ -561,13 +499,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
             }
         }
 
-        if (this._previewHost) {
-            const PreviewAreaComponentHost = React.createElement(PreviewAreaComponent, {
-                globalState: this.props.globalState,
-                width: 200
-            });
-            ReactDOM.render(PreviewAreaComponentHost, this._previewHost);
-        }
     }
 
     fixPopUpStyles = (document: Document) => {
