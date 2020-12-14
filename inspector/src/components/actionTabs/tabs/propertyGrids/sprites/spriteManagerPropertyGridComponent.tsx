@@ -8,7 +8,7 @@ import { LineContainerComponent } from '../../../lineContainerComponent';
 import { GlobalState } from '../../../../globalState';
 import { SpriteManager } from 'babylonjs/Sprites/spriteManager';
 import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
-import { TextLineComponent } from '../../../lines/textLineComponent';
+import { TextLineComponent } from '../../../../../sharedUiComponents/lines/textLineComponent';
 import { CheckBoxLineComponent } from '../../../lines/checkBoxLineComponent';
 import { FloatLineComponent } from '../../../lines/floatLineComponent';
 import { SliderLineComponent } from '../../../lines/sliderLineComponent';
@@ -17,7 +17,7 @@ import { TextureLinkLineComponent } from '../../../lines/textureLinkLineComponen
 import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
 import { Sprite } from 'babylonjs/Sprites/sprite';
 import { Tools } from 'babylonjs/Misc/tools';
-import { FileButtonLineComponent } from '../../../lines/fileButtonLineComponent';
+import { FileButtonLineComponent } from '../../../../../sharedUiComponents/lines/fileButtonLineComponent';
 import { Constants } from 'babylonjs/Engines/constants';
 import { OptionsLineComponent } from '../../../lines/optionsLineComponent';
 

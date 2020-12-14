@@ -12,7 +12,7 @@ import { Scene } from "babylonjs/scene";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
-import { TextLineComponent } from "../../../lines/textLineComponent";
+import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
 import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
 import { Vector3LineComponent } from "../../../lines/vector3LineComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
@@ -30,6 +30,7 @@ import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/but
 import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
 import { AnimationGridComponent } from "../animations/animationPropertyGridComponent";
 import { RenderingManager } from "babylonjs/Rendering/renderingManager";
+import { CommonPropertyGridComponent } from "../commonPropertyGridComponent";
 import { VariantsPropertyGridComponent } from "../variantsPropertyGridComponent";
 import { HexLineComponent } from "../../../lines/hexLineComponent";
 import { SkeletonViewer } from "babylonjs/Debug/skeletonViewer";
@@ -434,6 +435,7 @@ export class MeshPropertyGridComponent extends React.Component<
                         }}
                     />
                 </LineContainerComponent>
+                <CommonPropertyGridComponent host={mesh} lockObject={this.props.lockObject} globalState={this.props.globalState} />
                 <VariantsPropertyGridComponent host={mesh} lockObject={this.props.lockObject} globalState={this.props.globalState} />
                 <LineContainerComponent globalState={this.props.globalState} title="TRANSFORMS">
                     <Vector3LineComponent label="Position" target={mesh} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

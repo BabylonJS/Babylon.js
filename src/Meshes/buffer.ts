@@ -200,6 +200,9 @@ export class Buffer {
      * Specialized buffer used to store vertex data
      */
 export class VertexBuffer {
+
+    private static _Counter = 0;
+
     /** @hidden */
     public _buffer: Buffer;
     private _kind: string;
@@ -280,6 +283,11 @@ export class VertexBuffer {
     public readonly type: number;
 
     /**
+     * Gets the unique id of this vertex buffer
+     */
+    public readonly uniqueId: number;
+
+    /**
      * Constructor
      * @param engine the engine
      * @param data the data to use for this vertex buffer
@@ -310,6 +318,7 @@ export class VertexBuffer {
             this._ownsBuffer = true;
         }
 
+        this.uniqueId = VertexBuffer._Counter++;
         this._kind = kind;
 
         if (type == undefined) {

@@ -2,7 +2,7 @@ import * as React from "react";
 import { Vector4 } from "babylonjs/Maths/math.vector";
 import { Observable } from "babylonjs/Misc/observable";
 
-import { NumericInputComponent } from "./numericInputComponent";
+import { NumericInputComponent } from "./../../../sharedUiComponents/lines/numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { PropertyChangedEvent } from "../../propertyChangedEvent";

@@ -1453,6 +1453,7 @@ declare module BABYLON {
      * Class used to store gfx data (like WebGLBuffer)
      */
     export class DataBuffer {
+        private static _Counter;
         /**
          * Gets or sets the number of objects referencing this buffer
          */
@@ -1467,6 +1468,14 @@ declare module BABYLON {
          * Gets the underlying buffer
          */
         get underlyingResource(): any;
+        /**
+         * Gets the unique id of this buffer
+         */
+        readonly uniqueId: number;
+        /**
+         * Constructs the buffer
+         */
+        constructor();
     }
 }
 declare module BABYLON {
@@ -7010,6 +7019,7 @@ declare module BABYLON {
          * Specialized buffer used to store vertex data
          */
     export class VertexBuffer {
+        private static _Counter;
         /** @hidden */
         _buffer: Buffer;
         private _kind;
@@ -7066,6 +7076,10 @@ declare module BABYLON {
          * Gets the data type of each component in the array.
          */
         readonly type: number;
+        /**
+         * Gets the unique id of this vertex buffer
+         */
+        readonly uniqueId: number;
         /**
          * Constructor
          * @param engine the engine
@@ -44229,6 +44243,7 @@ declare module BABYLON {
         }[];
         orderedAttributes: string[];
         orderedUBOsAndSamplers: WebGPUBindingDescription[][];
+        uniformBufferNames: string[];
         private _attributeNextLocation;
         private _varyingNextLocation;
         constructor();
@@ -44286,6 +44301,9 @@ declare module BABYLON {
             [name: string]: Nullable<IWebGPUPipelineContextTextureCache>;
         };
         bindGroupLayouts: GPUBindGroupLayout[];
+        bindGroupsCache: {
+            [key: string]: GPUBindGroup[];
+        };
         /**
          * Stores the uniform buffer
          */
@@ -44670,6 +44688,7 @@ declare module BABYLON {
     export class WebGPUCacheSampler {
         private _samplers;
         private _device;
+        disabled: boolean;
         constructor(device: GPUDevice);
         private static _GetSamplerHashCode;
         private static _GetSamplerFilterDescriptor;
@@ -44686,6 +44705,107 @@ declare module BABYLON {
         private _device;
         constructor(device: GPUDevice);
         getCompiledShaders(name: string): IWebGPURenderPipelineStageDescriptor;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class WebGPUCacheRenderPipeline {
+        static NumCacheHitWithoutHash: number;
+        static NumCacheHitWithHash: number;
+        static NumCacheMiss: number;
+        static NumPipelineCreationLastFrame: number;
+        disabled: boolean;
+        private static _Cache;
+        private static _NumPipelineCreationCurrentFrame;
+        private _device;
+        private _states;
+        private _isDirty;
+        private _currentRenderPipeline;
+        private _emptyVertexBuffer;
+        private _shaderId;
+        private _alphaToCoverageEnabled;
+        private _frontFace;
+        private _cullEnabled;
+        private _cullFace;
+        private _clampDepth;
+        private _rasterizationState;
+        private _depthBias;
+        private _depthBiasClamp;
+        private _depthBiasSlopeScale;
+        private _colorFormat;
+        private _webgpuColorFormat;
+        private _mrtAttachments1;
+        private _mrtAttachments2;
+        private _mrtFormats;
+        private _alphaBlendEnabled;
+        private _alphaBlendFuncParams;
+        private _alphaBlendEqParams;
+        private _writeMask;
+        private _colorStates;
+        private _depthStencilFormat;
+        private _webgpuDepthStencilFormat;
+        private _depthTestEnabled;
+        private _depthWriteEnabled;
+        private _depthCompare;
+        private _stencilEnabled;
+        private _stencilFrontCompare;
+        private _stencilFrontDepthFailOp;
+        private _stencilFrontPassOp;
+        private _stencilFrontFailOp;
+        private _stencilReadMask;
+        private _stencilWriteMask;
+        private _depthStencilState;
+        private _vertexBuffers;
+        private _indexBuffer;
+        constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer);
+        reset(): void;
+        getRenderPipeline(fillMode: number, effect: Effect, sampleCount: number): GPURenderPipeline;
+        endFrame(): void;
+        setAlphaToCoverage(enabled: boolean): void;
+        setFrontFace(frontFace: number): void;
+        setCullEnabled(enabled: boolean): void;
+        setCullFace(cullFace: number): void;
+        setClampDepth(clampDepth: boolean): void;
+        resetDepthCullingState(): void;
+        setDepthCullingState(cullEnabled: boolean, frontFace: number, cullFace: number, zOffset: number, depthTestEnabled: boolean, depthWriteEnabled: boolean, depthCompare: Nullable<number>): void;
+        setDepthBiasSlopeScale(depthBiasSlopeScale: number): void;
+        setColorFormat(format: GPUTextureFormat): void;
+        setMRTAttachments(attachments: number[], textureArray: InternalTexture[]): void;
+        setAlphaBlendEnabled(enabled: boolean): void;
+        setAlphaBlendFactors(factors: Array<Nullable<number>>, operations: Array<Nullable<number>>): void;
+        setWriteMask(mask: number): void;
+        setDepthStencilFormat(format: GPUTextureFormat | undefined): void;
+        setDepthTestEnabled(enabled: boolean): void;
+        setDepthWriteEnabled(enabled: boolean): void;
+        setDepthCompare(func: Nullable<number>): void;
+        setStencilEnabled(enabled: boolean): void;
+        setStencilCompare(func: Nullable<number>): void;
+        setStencilDepthFailOp(op: Nullable<number>): void;
+        setStencilPassOp(op: Nullable<number>): void;
+        setStencilFailOp(op: Nullable<number>): void;
+        setStencilReadMask(mask: number): void;
+        setStencilWriteMask(mask: number): void;
+        resetStencilState(): void;
+        setStencilState(stencilEnabled: boolean, compare: Nullable<number>, depthFailOp: Nullable<number>, passOp: Nullable<number>, failOp: Nullable<number>, readMask: number, writeMask: number): void;
+        setBuffers(vertexBuffers: Nullable<{
+            [key: string]: Nullable<VertexBuffer>;
+        }>, indexBuffer: Nullable<DataBuffer>): void;
+        private static _GetTopology;
+        private static _GetAphaBlendOperation;
+        private static _GetAphaBlendFactor;
+        private static _GetCompareFunction;
+        private static _GetStencilOpFunction;
+        private static _GetVertexInputDescriptorFormat;
+        private _getAphaBlendState;
+        private _getColorBlendState;
+        private _setShaderStage;
+        private _setRasterizationState;
+        private _setColorStates;
+        private _setDepthStencilState;
+        private _setVertexState;
+        private _createPipelineLayout;
+        private _getVertexInputDescriptor;
+        private _createRenderPipeline;
     }
 }
 declare module BABYLON {
@@ -44805,6 +44925,7 @@ declare module BABYLON {
         private _bufferManager;
         private _shaderManager;
         private _cacheSampler;
+        private _cacheRenderPipeline;
         private _emptyVertexBuffer;
         private _lastCachedWrapU;
         private _lastCachedWrapV;
@@ -44841,6 +44962,16 @@ declare module BABYLON {
         dbgVerboseLogsNumFrames: number;
         /** @hidden */
         dbgShowWarningsNotImplemented: boolean;
+        /**
+         * Sets this to true to disable the cache for the samplers. You should do it only for testing purpose!
+         */
+        get disableCacheSamplers(): boolean;
+        set disableCacheSamplers(disable: boolean);
+        /**
+         * Sets this to true to disable the cache for the render pipelines. You should do it only for testing purpose!
+         */
+        get disableCacheRenderPipelines(): boolean;
+        set disableCacheRenderPipelines(disable: boolean);
         /**
          * Gets a boolean indicating if the engine can be instanciated (ie. if a WebGPU context can be found)
          * @returns true if the engine can be created
@@ -45381,7 +45512,6 @@ declare module BABYLON {
         private _startRenderTargetRenderPass;
         private _endRenderTargetRenderPass;
         private _getCurrentRenderPass;
-        private _currentRenderPassIsMRT;
         private _startMainRenderPass;
         private _endMainRenderPass;
         /**
@@ -45448,10 +45578,6 @@ declare module BABYLON {
         setDepthFunctionToGreaterOrEqual(): void;
         setDepthFunctionToLess(): void;
         setDepthFunctionToLessOrEqual(): void;
-        private _indexFormatInRenderPass;
-        private _getTopology;
-        private _getOpFunction;
-        private _getDepthStencilStateDescriptor;
         /**
          * Set various states to the context
          * @param culling defines backface culling state
@@ -45460,10 +45586,6 @@ declare module BABYLON {
          * @param reverseSide defines if culling must be reversed (CCW instead of CW and CW instead of CCW)
          */
         setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean): void;
-        private _getFrontFace;
-        private _getCullMode;
-        private _getRasterizationStateDescriptor;
-        private _getWriteMask;
         /**
          * Sets the current alpha mode
          * @param mode defines the mode to use (one of the Engine.ALPHA_XXX)
@@ -45471,17 +45593,11 @@ declare module BABYLON {
          * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
          */
         setAlphaMode(mode: number, noDepthWriteChange?: boolean): void;
-        private _getAphaBlendOperation;
-        private _getAphaBlendFactor;
-        private _getAphaBlendState;
-        private _getColorBlendState;
-        private _getColorStateDescriptors;
-        private _getStages;
-        private _getVertexInputDescriptorFormat;
-        private _getVertexInputDescriptor;
-        private _getPipelineLayout;
-        private _getRenderPipeline;
-        private _getVertexInputsToRender;
+        /**
+         * Sets the current alpha equation
+         * @param equation defines the equation to use (one of the Engine.ALPHA_EQUATION_XXX)
+         */
+        setAlphaEquation(equation: number): void;
         private _getBindGroupsToRender;
         private _bindVertexInputs;
         private _setRenderBindGroups;
@@ -66039,6 +66155,40 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Implementation of the HDR Texture Loader.
+     * @hidden
+     */
+    export class _HDRTextureLoader implements IInternalTextureLoader {
+        /**
+         * Defines wether the loader supports cascade loading the different faces.
+         */
+        readonly supportCascades: boolean;
+        /**
+         * This returns if the loader support the current file information.
+         * @param extension defines the file extension of the file being loaded
+         * @returns true if the loader can load the specified file
+         */
+        canLoad(extension: string): boolean;
+        /**
+         * Uploads the cube texture data to the WebGL texture. It has already been bound.
+         * @param data contains the texture data
+         * @param texture defines the BabylonJS internal texture
+         * @param createPolynomials will be true if polynomials have been requested
+         * @param onLoad defines the callback to trigger once the texture is ready
+         * @param onError defines the callback to trigger in case of error
+         */
+        loadCubeData(data: ArrayBufferView | ArrayBufferView[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
+        /**
+         * Uploads the 2D texture data to the WebGL texture. It has already been bound once in the callback.
+         * @param data contains the texture data
+         * @param texture defines the BabylonJS internal texture
+         * @param callback defines the method to call once ready to upload
+         */
+        loadData(data: ArrayBufferView, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Info about the .basis files
      */
     class BasisFileInfo {
@@ -79809,8 +79959,8 @@ declare module BABYLON {
          */
         positions?: Float32Array;
         /**
-         * An array of indices in babylon space. right/left hand system is taken into account.
-         * Indices will only be calculated if convertCoordinateSystems is set to true in the IWebXRMeshDetectorOptions.
+         * An array of indices in babylon space. Indices have a counterclockwise winding order.
+         * Indices will only be populated if convertCoordinateSystems is set to true in the IWebXRMeshDetectorOptions.
          */
         indices?: Uint32Array;
         /**
@@ -82512,6 +82662,10 @@ declare module BABYLON.GUI {
     * @see https://doc.babylonjs.com/how_to/gui
     */
     export class AdvancedDynamicTexture extends BABYLON.DynamicTexture {
+        /** Define the Uurl to load snippets */
+        static SnippetUrl: string;
+        /** Snippet ID if the content was created from the snippet server */
+        snippetId: string;
         private _isDirty;
         private _renderObserver;
         private _resizeObserver;
@@ -82810,6 +82964,12 @@ declare module BABYLON.GUI {
          * @param serializedObject define the JSON serialized object to restore from
          */
         parseContent(serializedObject: any): void;
+        /**
+         * Recreate the content of the ADT from a snippet saved by the GUI editor
+         * @param snippetId defines the snippet to load
+         * @returns a promise that will resolve on success
+         */
+        parseFromSnippetAsync(snippetId: string): Promise<void>;
         /**
          * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh)
          * @param mesh defines the mesh which will receive the texture
@@ -88713,6 +88873,35 @@ declare module BABYLON.GLTF2.Loader.Extensions {
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
     /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1893)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_xmp_json_ld implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /**
+         * Defines a number that determines the order the extensions are applied.
+         */
+        order: number;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /**
+         * Called after the loader state changes to LOADING.
+         */
+        onLoading(): void;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
      * [Specification](https://github.com/najadojo/glTF/tree/MSFT_audio_emitter/extensions/2.0/Vendor/MSFT_audio_emitter)
      */
     export class MSFT_audio_emitter implements IGLTFLoaderExtension {
@@ -91569,22 +91758,19 @@ declare module BABYLON.GLTF2 {
     }
 
     /**
-     * Interfaces from the KHR_xmp extension
+     * Interfaces from the KHR_xmp_json_ld extension
      * !!! Experimental Extension Subject to Changes !!!
      */
 
     /** @hidden */
-    interface IKHRXmp_Data {
-        [key: string]: unknown;
+    interface IKHRXmpJsonLd_Gltf {
+        packets: Array<{
+            [key: string]: unknown;
+        }>;
     }
 
     /** @hidden */
-    interface IKHRXmp_Gltf {
-        packets: IKHRXmp_Data[];
-    }
-
-    /** @hidden */
-    interface IKHRXmp_Node {
+    interface IKHRXmpJsonLd_Node {
         packet: number;
     }
 
