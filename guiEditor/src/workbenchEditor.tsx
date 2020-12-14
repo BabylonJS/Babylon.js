@@ -63,6 +63,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         // Graph
         const node = null;// this._workbenchCanvas.appendBlock(block);
 
+
         return node;
     }
 
@@ -75,13 +76,17 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         if (navigator.userAgent.indexOf("Mobile") !== -1) {
             ((this.props.globalState.hostDocument || document).querySelector(".blocker") as HTMLElement).style.visibility = "visible";
         }
+
+
     }
 
     componentWillUnmount() {
         if (this.props.globalState.hostDocument) {
             this.props.globalState.hostDocument!.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
         }
+
     }
+
     constructor(props: IGraphEditorProps) {
         super(props);
 
@@ -114,6 +119,8 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         this.props.globalState.onReOrganizedRequiredObservable.add(() => {
             this.reOrganize();
         });
+
+
 
         this.props.globalState.hostDocument!.addEventListener("keydown", evt => {
             if ((evt.keyCode === 46 || evt.keyCode === 8) && !this.props.globalState.blockKeyboardEvents) { // Delete                
@@ -256,7 +263,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                 }
                 
                 if (!isImportingAFrame){
-                    this._workbenchCanvas.processEditorData(editorData);
+                 //   this._workbenchCanvas.processEditorData(editorData);
                 }
             }
 
@@ -456,7 +463,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
 
     createPreviewMeshControlHost = (options: IInternalPreviewAreaOptions, parentControl: Nullable<HTMLElement>) => {
         // Prepare the preview control host
-        if (parentControl) {
+       /* if (parentControl) {
 
             const host = parentControl.ownerDocument!.createElement("div");
 
@@ -464,12 +471,12 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
             host.style.width = options.embedHostWidth || "auto";
 
             parentControl.appendChild(host);
-            /*const PreviewMeshControlComponentHost = React.createElement(PreviewMeshControlComponent, {
+            const PreviewMeshControlComponentHost = React.createElement(PreviewMeshControlComponent, {
                 globalState: this.props.globalState,
                 togglePreviewAreaComponent: this.handlePopUp
             });
-            ReactDOM.render(PreviewMeshControlComponentHost, host);*/
-        }
+            ReactDOM.render(PreviewMeshControlComponentHost, host);
+        }*/
     }
 
     createPreviewHost = (options: IInternalPreviewAreaOptions, parentControl: Nullable<HTMLElement>) => {
@@ -492,6 +499,13 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
             }
         }
 
+        /*if (this._previewHost) {
+            const PreviewAreaComponentHost = React.createElement(PreviewAreaComponent, {
+                globalState: this.props.globalState,
+                width: 200
+            });
+            ReactDOM.render(PreviewAreaComponentHost, this._previewHost);
+        }*/
     }
 
     fixPopUpStyles = (document: Document) => {

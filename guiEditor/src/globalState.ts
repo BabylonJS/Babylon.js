@@ -8,7 +8,6 @@ import { GUINode } from './diagram/guiNode';
 import { Vector2 } from 'babylonjs/Maths/math.vector';
 import { FramePortData, WorkbenchComponent } from './diagram/workbench';
 
-
 export class GlobalState {
     guiTexture: BABYLON.GUI.AdvancedDynamicTexture;
     hostElement: HTMLElement;

@@ -5,7 +5,6 @@ import * as dagre from 'dagre';
 import { Nullable } from 'babylonjs/types';
 
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
-import { IEditorData} from '../nodeLocationInfo';
 
 import 'babylonjs-gui/2D/';
 
@@ -485,11 +484,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.y = 0;
     }
 
-    processEditorData(editorData: IEditorData) {
-        this.x = editorData.x || 0;
-        this.y = editorData.y || 0;
-        this.zoom = editorData.zoom || 1;
-    }
 
     public createGUICanvas()
     {
