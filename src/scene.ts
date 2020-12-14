@@ -3682,7 +3682,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(force));
     }
 
-    public _bindFrameBuffer() {
+    private _bindFrameBuffer() {
         if (this.activeCamera && this.activeCamera._multiviewTexture) {
             this.activeCamera._multiviewTexture._bindFrameBuffer();
         } else if (this.activeCamera && this.activeCamera.outputRenderTarget) {
