@@ -859,7 +859,10 @@ export class RenderTargetTexture extends Texture {
             this.onAfterRenderObservable.notifyObservers(faceIndex);
         });
     }
-
+    
+    /**
+     * @hidden
+     */
     public _prepareFrame(scene: Scene, faceIndex?: number, layer?: number, useCameraPostProcess?: boolean) {
         if (this._postProcessManager) {
             if (!this._prePass) {
