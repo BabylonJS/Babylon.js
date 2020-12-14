@@ -72,6 +72,7 @@
 - Fix accessibility of BaseCameraMouseWheelInput and BaseCameraPointersInput. They appear in documentation but were not available for include. ([mrdunk](https://github.com/mrdunk))
 - Fix function creation inside regularly called freeCameraMouseWheelInput method leading to excessive GC load. ([mrdunk](https://github.com/mrdunk))
 - Fix clip plane not reset to the rigth value when using mirrors ([Popov72](https://github.com/Popov72))
+- Fix lens flares not working in right handed system ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
