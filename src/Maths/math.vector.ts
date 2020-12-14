@@ -3458,19 +3458,18 @@ export class Quaternion {
      * @param vecTo defines the direction vector to which to rotate
      * @returns the new quaternion
      */
-    public static FromUnitVectors(vecFrom: DeepImmutable<Vector3>, vecTo: DeepImmutable<Vector3>): Quaternion {
-        let result: Quaternion;
+    public static FromUnitVectorsToRef(vecFrom: DeepImmutable<Vector3>, vecTo: DeepImmutable<Vector3>, result: Quaternion): Quaternion {
         const r = Vector3.Dot(vecFrom, vecTo) + 1;
 
         if (r < Epsilon) {
             if (Math.abs(vecFrom.x) > Math.abs(vecFrom.z)) {
-                result = new Quaternion(-vecFrom.y, vecFrom.x, 0, 0);
+                result.set(-vecFrom.y, vecFrom.x, 0, 0);
             } else {
-                result = new Quaternion(0, - vecFrom.z, vecFrom.y, 0);
+                result.set(0, - vecFrom.z, vecFrom.y, 0);
             }
         } else {
             const crossProduct = Vector3.Cross(vecFrom, vecTo);
-            result = new Quaternion(
+            result.set(
                 crossProduct.x,
                 crossProduct.y,
                 crossProduct.z,

@@ -116,11 +116,12 @@ export class SkyMaterial extends PushMaterial {
     /**
      * Defines the vector the skyMaterial should consider as up. (default is Vector3(0, 1, 0) as returned by Vector3.Up())
      */
-    @serialize()
+    @serializeAsVector3()
     public up: Vector3 = Vector3.Up();
 
     // Private members
     private _cameraPosition: Vector3 = Vector3.Zero();
+    private _skyOrientation: Quaternion = new Quaternion();
 
     /**
      * Instantiates a new sky material.
@@ -307,8 +308,8 @@ export class SkyMaterial extends PushMaterial {
             this.sunPosition.y = this.distance * Math.sin(phi) * Math.sin(theta);
             this.sunPosition.z = this.distance * Math.sin(phi) * Math.cos(theta);
 
-            const rotation = Quaternion.FromUnitVectors(Vector3.Up(), this.up);
-            this.sunPosition.rotateByQuaternionToRef(rotation, this.sunPosition);
+            Quaternion.FromUnitVectorsToRef(Vector3.Up(), this.up, this._skyOrientation);
+            this.sunPosition.rotateByQuaternionToRef(this._skyOrientation, this.sunPosition);
         }
 
         this._activeEffect.setVector3("sunPosition", this.sunPosition);
