@@ -112,7 +112,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabsComponent" {
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-inspector/components/actionTabs/lines/textLineComponent" {
+declare module "babylonjs-inspector/sharedUiComponents/lines/textLineComponent" {
     import * as React from "react";
     interface ITextLineComponentProps {
         label?: string;
@@ -151,7 +151,7 @@ declare module "babylonjs-inspector/components/actionTabs/lineContainerComponent
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-inspector/components/actionTabs/lines/valueLineComponent" {
+declare module "babylonjs-inspector/sharedUiComponents/lines/valueLineComponent" {
     import * as React from "react";
     interface IValueLineComponentProps {
         label: string;
@@ -165,7 +165,7 @@ declare module "babylonjs-inspector/components/actionTabs/lines/valueLineCompone
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-inspector/components/actionTabs/lines/booleanLineComponent" {
+declare module "babylonjs-inspector/sharedUiComponents/lines/booleanLineComponent" {
     import * as React from "react";
     export interface IBooleanLineComponentProps {
         label: string;
@@ -360,7 +360,7 @@ declare module "babylonjs-inspector/components/actionTabs/lines/optionsLineCompo
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-inspector/components/actionTabs/lines/numericInputComponent" {
+declare module "babylonjs-inspector/sharedUiComponents/lines/numericInputComponent" {
     import * as React from "react";
     interface INumericInputComponentProps {
         label: string;
@@ -720,7 +720,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-inspector/components/actionTabs/lines/fileButtonLineComponent" {
+declare module "babylonjs-inspector/sharedUiComponents/lines/fileButtonLineComponent" {
     import * as React from "react";
     interface IFileButtonLineComponentProps {
         label: string;
@@ -1349,7 +1349,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-inspector/components/actionTabs/lines/radioLineComponent" {
+declare module "babylonjs-inspector/sharedUiComponents/lines/radioLineComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
     interface IRadioButtonLineComponentProps {
@@ -1587,7 +1587,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/cam
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-inspector/components/actionTabs/lines/indentedTextLineComponent" {
+declare module "babylonjs-inspector/sharedUiComponents/lines/indentedTextLineComponent" {
     import * as React from "react";
     interface IIndentedTextLineComponentProps {
         value?: string;
@@ -2690,7 +2690,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/par
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-inspector/components/actionTabs/lines/linkButtonComponent" {
+declare module "babylonjs-inspector/sharedUiComponents/lines/linkButtonComponent" {
     import * as React from "react";
     interface ILinkButtonComponentProps {
         label: string;
@@ -2919,7 +2919,7 @@ declare module "babylonjs-inspector/components/headerComponent" {
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-inspector/components/actionTabs/lines/messageLineComponent" {
+declare module "babylonjs-inspector/sharedUiComponents/lines/messageLineComponent" {
     import * as React from "react";
     interface IMessageLineComponentProps {
         text: string;
@@ -2948,7 +2948,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/tools/gltfCompone
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-inspector/components/actionTabs/lines/fileMultipleButtonLineComponent" {
+declare module "babylonjs-inspector/sharedUiComponents/lines/fileMultipleButtonLineComponent" {
     import * as React from "react";
     interface IFileMultipleButtonLineComponentProps {
         label: string;
@@ -3610,19 +3610,6 @@ declare module "babylonjs-inspector/inspector" {
 declare module "babylonjs-inspector/index" {
     export * from "babylonjs-inspector/inspector";
 }
-declare module "babylonjs-inspector/components/actionTabs/lines/iconButtonLineComponent" {
-    import * as React from 'react';
-    export interface IIconButtonLineComponentProps {
-        icon: string;
-        onClick: () => void;
-        tooltip: string;
-        active?: boolean;
-    }
-    export class IconButtonLineComponent extends React.Component<IIconButtonLineComponentProps> {
-        constructor(props: IIconButtonLineComponentProps);
-        render(): JSX.Element;
-    }
-}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/addAnimation" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
@@ -3903,6 +3890,19 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
          * Is the control point active or not
          */
         isNotControlPointActive(): boolean;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/sharedUiComponents/lines/iconButtonLineComponent" {
+    import * as React from 'react';
+    export interface IIconButtonLineComponentProps {
+        icon: string;
+        onClick: () => void;
+        tooltip: string;
+        active?: boolean;
+    }
+    export class IconButtonLineComponent extends React.Component<IIconButtonLineComponentProps> {
+        constructor(props: IIconButtonLineComponentProps);
         render(): JSX.Element;
     }
 }
@@ -8087,18 +8087,6 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
-    export interface IIconButtonLineComponentProps {
-        icon: string;
-        onClick: () => void;
-        tooltip: string;
-        active?: boolean;
-    }
-    export class IconButtonLineComponent extends React.Component<IIconButtonLineComponentProps> {
-        constructor(props: IIconButtonLineComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
     interface IAddAnimationProps {
         isOpen: boolean;
         close: () => void;
@@ -8366,6 +8354,18 @@ declare module INSPECTOR {
          * Is the control point active or not
          */
         isNotControlPointActive(): boolean;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    export interface IIconButtonLineComponentProps {
+        icon: string;
+        onClick: () => void;
+        tooltip: string;
+        active?: boolean;
+    }
+    export class IconButtonLineComponent extends React.Component<IIconButtonLineComponentProps> {
+        constructor(props: IIconButtonLineComponentProps);
         render(): JSX.Element;
     }
 }
