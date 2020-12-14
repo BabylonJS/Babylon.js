@@ -221,10 +221,6 @@ export class PrePassRenderer {
 
         this.renderTargets.push(rt);
 
-        // Necessary because the engine assumes we want to draw on all 
-        // attachments by default
-        // this._drawOnlyOnDefaultAttachments(rt);
-
         return rt;
     }
 
@@ -431,18 +427,6 @@ export class PrePassRenderer {
         }
     }
 
-    private _drawOnlyOnDefaultAttachments(prePassRenderTarget: PrePassRenderTarget) {
-        const internalTexture = prePassRenderTarget.getInternalTexture();
-
-        if (!internalTexture) {
-            return;
-        }
-
-        this._engine._bindUnboundFramebuffer(internalTexture._framebuffer);
-        this._engine.bindAttachments(this._defaultAttachments);
-        this._engine._bindUnboundFramebuffer(internalTexture._framebuffer);
-    }
-
     private _setState(enabled: boolean) {
         this._enabled = enabled;
     }
@@ -482,7 +466,6 @@ export class PrePassRenderer {
         for (let i = 0; i < this.renderTargets.length; i++) {
             if (this.mrtCount !== previousMrtCount) {
                 this.renderTargets[i].updateCount(this.mrtCount, { types: this._mrtFormats });
-                // this._drawOnlyOnDefaultAttachments(this.renderTargets[i]);
             }
 
             this.renderTargets[i]._resetPostProcessChain();
