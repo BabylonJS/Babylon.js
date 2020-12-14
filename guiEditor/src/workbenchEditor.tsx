@@ -63,7 +63,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         // Graph
         const node = null;// this._workbenchCanvas.appendBlock(block);
 
-
         return node;
     }
 
@@ -76,17 +75,13 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         if (navigator.userAgent.indexOf("Mobile") !== -1) {
             ((this.props.globalState.hostDocument || document).querySelector(".blocker") as HTMLElement).style.visibility = "visible";
         }
-
-
     }
 
     componentWillUnmount() {
         if (this.props.globalState.hostDocument) {
             this.props.globalState.hostDocument!.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
         }
-
     }
-
     constructor(props: IGraphEditorProps) {
         super(props);
 
@@ -119,8 +114,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         this.props.globalState.onReOrganizedRequiredObservable.add(() => {
             this.reOrganize();
         });
-
-
 
         this.props.globalState.hostDocument!.addEventListener("keydown", evt => {
             if ((evt.keyCode === 46 || evt.keyCode === 8) && !this.props.globalState.blockKeyboardEvents) { // Delete                
