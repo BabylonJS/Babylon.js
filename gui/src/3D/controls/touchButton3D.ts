@@ -49,8 +49,6 @@ export class TouchButton3D extends Button3D {
     constructor(name?: string, collisionMesh?: Mesh) {
         super(name);
 
-       // this._buttonState = ButtonState.None;
-
         if (collisionMesh) {
             this.collisionMesh = collisionMesh;
         }
@@ -68,9 +66,9 @@ export class TouchButton3D extends Button3D {
         }
 
         this._collisionMesh = collisionMesh;
-        this._collidableFrontDirection = collisionMesh.forward;
+        this._collisionMesh.metadata = this;
 
-        this._updateDistances();
+        this.collidableFrontDirection = collisionMesh.forward;
 
         this._collidableInitialized = true;
     }
