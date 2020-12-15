@@ -101,13 +101,15 @@ export class PrePassRenderTarget extends MultiRenderTarget {
      * Diposes this render target
      */
     public dispose() {
+        var scene = this._scene;
+
         super.dispose();
 
-        if (this._scene && this._scene.prePassRenderer) {
-            const index = this._scene.prePassRenderer.renderTargets.indexOf(this);
+        if (scene && scene.prePassRenderer) {
+            const index = scene.prePassRenderer.renderTargets.indexOf(this);
 
             if (index !== -1) {
-                this._scene.prePassRenderer.renderTargets.splice(index, 1);
+                scene.prePassRenderer.renderTargets.splice(index, 1);
             }
         }
 

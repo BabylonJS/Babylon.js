@@ -187,14 +187,15 @@ export class PrePassRendererSceneComponent implements ISceneComponent {
      * context lost for instance.
      */
     public rebuild(): void {
-        // Nothing to do for this component
+        this.scene.disablePrePassRenderer();
+        this.scene.enablePrePassRenderer();
     }
 
     /**
      * Disposes the component and the associated ressources
      */
     public dispose(): void {
-        // Nothing to do for this component
+        this.scene.disablePrePassRenderer();
     }
 
 }
