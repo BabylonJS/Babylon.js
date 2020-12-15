@@ -343,7 +343,7 @@ export class GLTFLoader implements IGLTFLoader {
                 return resultFunc();
             });
 
-            resultPromise.then(() => {
+            return resultPromise.then((result) => {
                 this._parent._endPerformanceCounter(loadingToReadyCounterName);
 
                 Tools.SetImmediate(() => {
@@ -365,9 +365,9 @@ export class GLTFLoader implements IGLTFLoader {
                         });
                     }
                 });
-            });
 
-            return resultPromise;
+                return result;
+            });
         }).catch((error) => {
             if (!this._disposed) {
                 this._parent.onErrorObservable.notifyObservers(error);
