@@ -1117,8 +1117,8 @@
         {
             "title": "Prepass SSAO + point light",
             "renderCount": 10,
-            "playgroundId": "#XDNVAY#5",
-            "referenceImage": "prepass-ssao-point-light.png"
+            "playgroundId": "#XDNVAY#6",
+                "referenceImage": "prepass-ssao-point-light.png"
         },
         {
             "title": "Prepass SSAO + on/off post-process",

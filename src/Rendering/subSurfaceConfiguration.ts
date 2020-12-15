@@ -157,7 +157,9 @@ export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
      */
     public dispose() {
         this.clearAllDiffusionProfiles();
-        this.postProcess.dispose();
+        if (this.postProcess) {
+            this.postProcess.dispose();
+        }
     }
 
     /**
