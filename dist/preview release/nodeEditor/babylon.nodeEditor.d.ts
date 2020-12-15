@@ -1586,6 +1586,12 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export class Popup {
+        static CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): HTMLDivElement | null;
+        static _CopyStyles(sourceDoc: HTMLDocument, targetDoc: HTMLDocument): void;
+    }
+}
+declare module NODEEDITOR {
     interface IGraphEditorProps {
         globalState: GlobalState;
     }
@@ -1643,17 +1649,10 @@ declare module NODEEDITOR {
         initiatePreviewArea: (canvas?: HTMLCanvasElement) => void;
         createPopUp: () => void;
         createPopupWindow: (title: string, windowVariableName: string, width?: number, height?: number) => Window | null;
-        copyStyles: (sourceDoc: HTMLDocument, targetDoc: HTMLDocument) => void;
         createPreviewMeshControlHost: (options: IInternalPreviewAreaOptions, parentControl: BABYLON.Nullable<HTMLElement>) => void;
         createPreviewHost: (options: IInternalPreviewAreaOptions, parentControl: BABYLON.Nullable<HTMLElement>) => void;
         fixPopUpStyles: (document: Document) => void;
         render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
-    export class Popup {
-        static CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): HTMLDivElement | null;
-        private static _CopyStyles;
     }
 }
 declare module NODEEDITOR {

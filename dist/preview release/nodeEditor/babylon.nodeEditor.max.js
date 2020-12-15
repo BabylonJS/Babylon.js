@@ -62794,6 +62794,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _diagram_graphFrame__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./diagram/graphFrame */ "./diagram/graphFrame.ts");
 /* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! react-dom */ "../../node_modules/react-dom/index.js");
 /* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_15___default = /*#__PURE__*/__webpack_require__.n(react_dom__WEBPACK_IMPORTED_MODULE_15__);
+/* harmony import */ var _sharedComponents_popup__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./sharedComponents/popup */ "./sharedComponents/popup.ts");
+
 
 
 
@@ -62898,37 +62900,10 @@ var GraphEditor = /** @class */ (function (_super) {
             parentControl.id = 'node-editor-graph-root';
             parentControl.className = 'right-panel';
             popupWindow.document.body.appendChild(parentControl);
-            _this.copyStyles(_this.props.globalState.hostWindow.document, parentDocument);
+            _sharedComponents_popup__WEBPACK_IMPORTED_MODULE_16__["Popup"]._CopyStyles(_this.props.globalState.hostWindow.document, parentDocument);
             _this[windowVariableName] = popupWindow;
             _this._popUpWindow = popupWindow;
             return popupWindow;
-        };
-        _this.copyStyles = function (sourceDoc, targetDoc) {
-            var styleContainer = [];
-            for (var index = 0; index < sourceDoc.styleSheets.length; index++) {
-                var styleSheet = sourceDoc.styleSheets[index];
-                try {
-                    if (styleSheet.href) { // for <link> elements loading CSS from a URL
-                        var newLinkEl = sourceDoc.createElement('link');
-                        newLinkEl.rel = 'stylesheet';
-                        newLinkEl.href = styleSheet.href;
-                        targetDoc.head.appendChild(newLinkEl);
-                        styleContainer.push(newLinkEl);
-                    }
-                    else if (styleSheet.cssRules) { // for <style> elements
-                        var newStyleEl = sourceDoc.createElement('style');
-                        for (var _i = 0, _a = styleSheet.cssRules; _i < _a.length; _i++) {
-                            var cssRule = _a[_i];
-                            newStyleEl.appendChild(sourceDoc.createTextNode(cssRule.cssText));
-                        }
-                        targetDoc.head.appendChild(newStyleEl);
-                        styleContainer.push(newStyleEl);
-                    }
-                }
-                catch (e) {
-                    console.log(e);
-                }
-            }
         };
         _this.createPreviewMeshControlHost = function (options, parentControl) {
             // Prepare the preview control host
@@ -65072,7 +65047,6 @@ var Popup = /** @class */ (function () {
                 }
             }
             catch (e) {
-                console.log(e);
             }
         }
     };
