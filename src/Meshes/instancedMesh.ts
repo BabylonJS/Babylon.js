@@ -493,7 +493,7 @@ declare module "./mesh" {
         /**
          * Invalidate VertexArrayObjects belonging to the mesh (but not to the Geometry of the mesh).
          */
-        invalidateInstanceVertexArrayObject(): void;
+        _invalidateInstanceVertexArrayObject(): void;
 
         /**
          * true to use the edge renderer for all instances of this mesh
@@ -524,11 +524,6 @@ declare module "./abstractMesh" {
 Mesh.prototype.edgesShareWithInstances = false;
 
 Mesh.prototype.registerInstancedBuffer = function(kind: string, stride: number): void {
-    if (this.geometry?._vertexBuffers[kind] !== undefined) {
-        console.error('Mesh.registerInstancedBuffer; ignored', kind, ' since geometry already specifies it!');
-        return;
-    }
-
     // Creates the instancedBuffer field if not present
     if (!this.instancedBuffers) {
         this.instancedBuffers = {};
@@ -558,7 +553,7 @@ Mesh.prototype.registerInstancedBuffer = function(kind: string, stride: number):
         instance.instancedBuffers[kind] = null;
     }
 
-    this.invalidateInstanceVertexArrayObject();
+    this._invalidateInstanceVertexArrayObject();
 };
 
 Mesh.prototype._processInstancedBuffers = function(visibleInstances: InstancedMesh[], renderSelf: boolean) {
@@ -617,14 +612,14 @@ Mesh.prototype._processInstancedBuffers = function(visibleInstances: InstancedMe
         // Update vertex buffer
         if (!this._userInstancedBuffersStorage.vertexBuffers[kind]) {
             this._userInstancedBuffersStorage.vertexBuffers[kind] = new VertexBuffer(this.getEngine(), this._userInstancedBuffersStorage.data[kind], kind, true, false, stride, true);
-            this.invalidateInstanceVertexArrayObject();
+            this._invalidateInstanceVertexArrayObject();
         } else {
             this._userInstancedBuffersStorage.vertexBuffers[kind]!.updateDirectly(data, 0);
         }
     }
 };
 
-Mesh.prototype.invalidateInstanceVertexArrayObject = function() {
+Mesh.prototype._invalidateInstanceVertexArrayObject = function() {
     if (!this._userInstancedBuffersStorage || this._userInstancedBuffersStorage.vertexArrayObjects === undefined) {
         return;
     }
@@ -652,7 +647,7 @@ Mesh.prototype._disposeInstanceSpecificData = function() {
         }
     }
 
-    this.invalidateInstanceVertexArrayObject();
+    this._invalidateInstanceVertexArrayObject();
 
     this.instancedBuffers = {};
 };
