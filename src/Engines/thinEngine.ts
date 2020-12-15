@@ -1766,7 +1766,7 @@ export class ThinEngine {
         }
     }
 
-    private _bindVertexBuffersAttributes(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, effect: Effect, extraVertexBuffers?: { [kind: string]: Nullable<VertexBuffer>}): void {
+    private _bindVertexBuffersAttributes(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, effect: Effect, overrideVertexBuffers?: { [kind: string]: Nullable<VertexBuffer>}): void {
         var attributes = effect.getAttributesNames();
 
         if (!this._vaoRecordInProgress) {
@@ -1782,8 +1782,8 @@ export class ThinEngine {
                 var ai = attributes[index];
                 var vertexBuffer: Nullable<VertexBuffer> = null;
 
-                if (extraVertexBuffers) {
-                    vertexBuffer = extraVertexBuffers[ai];
+                if (overrideVertexBuffers) {
+                    vertexBuffer = overrideVertexBuffers[ai];
                 }
 
                 if (!vertexBuffer) {
@@ -1821,9 +1821,10 @@ export class ThinEngine {
      * @param vertexBuffers defines the list of vertex buffers to store
      * @param indexBuffer defines the index buffer to store
      * @param effect defines the effect to store
+     * @param overrideVertexBuffers defines optional list of avertex buffers that overrides the entries in vertexBuffers
      * @returns the new vertex array object
      */
-    public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<DataBuffer>, effect: Effect, extraVertexBuffers?: { [kind: string]: Nullable<VertexBuffer>}): WebGLVertexArrayObject {
+    public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<DataBuffer>, effect: Effect, overrideVertexBuffers?: { [kind: string]: Nullable<VertexBuffer>}): WebGLVertexArrayObject {
         var vao = this._gl.createVertexArray();
 
         this._vaoRecordInProgress = true;
@@ -1831,7 +1832,7 @@ export class ThinEngine {
         this._gl.bindVertexArray(vao);
 
         this._mustWipeVertexAttributes = true;
-        this._bindVertexBuffersAttributes(vertexBuffers, effect, extraVertexBuffers);
+        this._bindVertexBuffersAttributes(vertexBuffers, effect, overrideVertexBuffers);
 
         this.bindIndexBuffer(indexBuffer);
 
@@ -1913,13 +1914,14 @@ export class ThinEngine {
      * @param vertexBuffers defines the list of vertex buffers to bind
      * @param indexBuffer defines the index buffer to bind
      * @param effect defines the effect associated with the vertex buffers
+     * @param overrideVertexBuffers defines optional list of avertex buffers that overrides the entries in vertexBuffers
      */
-    public bindBuffers(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, indexBuffer: Nullable<DataBuffer>, effect: Effect, extraVertexBuffers?: {[kind: string]: Nullable<VertexBuffer>}): void {
+    public bindBuffers(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, indexBuffer: Nullable<DataBuffer>, effect: Effect, overrideVertexBuffers?: {[kind: string]: Nullable<VertexBuffer>}): void {
         if (this._cachedVertexBuffers !== vertexBuffers || this._cachedEffectForVertexBuffers !== effect) {
             this._cachedVertexBuffers = vertexBuffers;
             this._cachedEffectForVertexBuffers = effect;
 
-            this._bindVertexBuffersAttributes(vertexBuffers, effect, extraVertexBuffers);
+            this._bindVertexBuffersAttributes(vertexBuffers, effect, overrideVertexBuffers);
         }
 
         this._bindIndexBufferWithCache(indexBuffer);

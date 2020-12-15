@@ -371,7 +371,7 @@ export class Geometry implements IGetSetVerticesData {
     }
 
     /** @hidden */
-    public _bind(effect: Nullable<Effect>, indexToBind?: Nullable<DataBuffer>, extraVertexBuffers?: { [kind:string]: Nullable<VertexBuffer>}, overrideVAO?: {[key: string]: WebGLVertexArrayObject}): void {
+    public _bind(effect: Nullable<Effect>, indexToBind?: Nullable<DataBuffer>, overrideVertexBuffers?: { [kind:string]: Nullable<VertexBuffer>}, overrideVertexArrayObjects?: {[key: string]: WebGLVertexArrayObject}): void {
         if (!effect) {
             return;
         }
@@ -385,18 +385,16 @@ export class Geometry implements IGetSetVerticesData {
             return;
         }
 
-        // TODO: It could be the case that all vertex bufferas are in extraVertexBuffers but lets ignore that for now
-
-        if (indexToBind != this._indexBuffer || (!this._vertexArrayObjects && !overrideVAO)) {
-            this._engine.bindBuffers(vbs, indexToBind, effect, extraVertexBuffers);
+        if (indexToBind != this._indexBuffer || (!this._vertexArrayObjects && !overrideVertexArrayObjects)) {
+            this._engine.bindBuffers(vbs, indexToBind, effect, overrideVertexBuffers);
             return;
         }
 
-        var vaos = overrideVAO ? overrideVAO : this._vertexArrayObjects;
+        var vaos = overrideVertexArrayObjects ? overrideVertexArrayObjects : this._vertexArrayObjects;
 
         // Using VAO
         if (!vaos[effect.key]) {
-            vaos[effect.key] = this._engine.recordVertexArrayObject(vbs, indexToBind, effect, extraVertexBuffers);
+            vaos[effect.key] = this._engine.recordVertexArrayObject(vbs, indexToBind, effect, overrideVertexBuffers);
         }
 
         this._engine.bindVertexArrayObject(vaos[effect.key], indexToBind);
