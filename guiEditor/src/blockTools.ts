@@ -39,6 +39,7 @@ export class BlockTools {
         element.width = "150px"
         element.height = "40px";
         element.color = "#FFFFFFFF";
+        element.isPointerBlocker = true;
         return element;
     }
 }
