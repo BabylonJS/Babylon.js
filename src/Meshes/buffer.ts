@@ -260,6 +260,7 @@ export class VertexBuffer {
         } else {
             this._instanced = true;
         }
+        this._computeHashCode();
     }
 
     /**
@@ -286,6 +287,12 @@ export class VertexBuffer {
      * Gets the unique id of this vertex buffer
      */
     public readonly uniqueId: number;
+
+    /**
+     * Gets a hash code representing the format (type, normalized, size, isntanced, stride) of this buffer
+     * All buffers with the same format will have the same hash code
+     */
+    public readonly hashCode: number;
 
     /**
      * Constructor
@@ -352,6 +359,19 @@ export class VertexBuffer {
 
         this._instanced = instanced !== undefined ? instanced : false;
         this._instanceDivisor = instanced ? divisor : 0;
+
+        this._computeHashCode();
+    }
+
+    private _computeHashCode(): void {
+        // note: cast to any because the property is declared readonly
+        (this.hashCode as any) =
+            (((this.type - 5120) << 0) +
+            ((this.normalized ? 1 : 0) << 3) +
+            (this._size << 4) +
+            ((this._instanced ? 1 : 0) << 6) +
+            /* keep 5 bits free */
+            (this.byteStride << 12));
     }
 
     /** @hidden */
