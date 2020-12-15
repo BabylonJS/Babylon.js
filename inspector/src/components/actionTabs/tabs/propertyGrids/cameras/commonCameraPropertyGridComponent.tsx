@@ -5,7 +5,7 @@ import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
-import { TextLineComponent } from "../../../lines/textLineComponent";
+import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
 import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
 import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';

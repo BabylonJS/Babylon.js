@@ -7,7 +7,7 @@ import { FactorGradientStepGridComponent } from './factorGradientStepGridCompone
 import { Nullable } from 'babylonjs/types';
 import { ColorGradientStepGridComponent } from './colorGradientStepGridComponent';
 import { Color4, Color3 } from 'babylonjs/Maths/math.color';
-import { LinkButtonComponent } from '../../../lines/linkButtonComponent';
+import { LinkButtonComponent } from '../../../../../sharedUiComponents/lines/linkButtonComponent';
 import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 

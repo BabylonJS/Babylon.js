@@ -7,7 +7,7 @@ import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
 import { Vector3LineComponent } from "../../../lines/vector3LineComponent";
-import { TextLineComponent } from "../../../lines/textLineComponent";
+import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
 import { QuaternionLineComponent } from "../../../lines/quaternionLineComponent";
 import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';

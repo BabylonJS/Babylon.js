@@ -140,30 +140,30 @@ void main(void)
 
 	#ifdef NEED_UV
 		#ifdef UV1
-			#ifdef ALPHATEST
+			#if defined(ALPHATEST) && defined(ALPHATEST_UV1)
 			vUV = vec2(diffuseMatrix * vec4(uvUpdated, 1.0, 0.0));
 			#else
 			vUV = uv;
 			#endif
 
-			#ifdef BUMP
+			#ifdef BUMP_UV1
 			vBumpUV = vec2(bumpMatrix * vec4(uvUpdated, 1.0, 0.0));
 			#endif
-			#ifdef REFLECTIVITY
+			#ifdef REFLECTIVITY_UV1
 			vReflectivityUV = vec2(reflectivityMatrix * vec4(uvUpdated, 1.0, 0.0));
 			#endif
 		#endif
 		#ifdef UV2
-			#ifdef ALPHATEST
+			#if defined(ALPHATEST) && defined(ALPHATEST_UV2)
 			vUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));
 			#else
 			vUV = uv2;
 			#endif
 
-			#ifdef BUMP
+			#ifdef BUMP_UV2
 			vBumpUV = vec2(bumpMatrix * vec4(uv2, 1.0, 0.0));
 			#endif
-			#ifdef REFLECTIVITY
+			#ifdef REFLECTIVITY_UV2
 			vReflectivityUV = vec2(reflectivityMatrix * vec4(uv2, 1.0, 0.0));
 			#endif
 		#endif
