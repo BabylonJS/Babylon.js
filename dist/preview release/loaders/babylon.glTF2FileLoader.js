@@ -3390,7 +3390,7 @@ var GLTFLoader = /** @class */ (function () {
                 _this._startAnimations();
                 return resultFunc();
             });
-            resultPromise.then(function () {
+            return resultPromise.then(function (result) {
                 _this._parent._endPerformanceCounter(loadingToReadyCounterName);
                 babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Tools"].SetImmediate(function () {
                     if (!_this._disposed) {
@@ -3407,8 +3407,8 @@ var GLTFLoader = /** @class */ (function () {
                         });
                     }
                 });
+                return result;
             });
-            return resultPromise;
         }).catch(function (error) {
             if (!_this._disposed) {
                 _this._parent.onErrorObservable.notifyObservers(error);
