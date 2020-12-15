@@ -73,6 +73,7 @@
 - Fix function creation inside regularly called freeCameraMouseWheelInput method leading to excessive GC load. ([mrdunk](https://github.com/mrdunk))
 - Fix clip plane not reset to the rigth value when using mirrors ([Popov72](https://github.com/Popov72))
 - Fix lens flares not working in right handed system ([Popov72](https://github.com/Popov72))
+- Fix canvas not resized correctly in a multi-canvas scenario ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
