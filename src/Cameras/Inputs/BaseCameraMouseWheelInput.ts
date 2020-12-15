@@ -18,6 +18,21 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
     public abstract camera: Camera;
 
     /**
+     * Whether keyboard modifier keys are pressed at time of last mouseWheel
+     * event.
+     */
+    protected _altKey: boolean;
+    protected _ctrlKey: boolean;
+    protected _metaKey: boolean;
+    protected _shiftKey: boolean;
+
+    /**
+     * Which mouse buttons were pressed at time of last mouse event.
+     * https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/buttons
+     */
+    protected _buttonsPressed: number;
+
+    /**
      * How fast is the camera moves in relation to X axis mouseWheel events.
      * Use negative value to reverse direction.
      */
@@ -54,6 +69,12 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
      */
     public attachControl(noPreventDefault?: boolean): void {
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
+        
+        this._altKey = false;
+        this._ctrlKey = false;
+        this._metaKey = false;
+        this._shiftKey = false;
+        this._buttonsPressed = 0;
 
         this._wheel = (pointer) => {
             // sanity check - this should be a PointerWheel event.
@@ -62,6 +83,12 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
             }
 
             const event = <MouseWheelEvent>pointer.event;
+            
+            this._altKey = event.altKey;
+            this._ctrlKey = event.ctrlKey;
+            this._metaKey = event.metaKey;
+            this._shiftKey = event.shiftKey;
+            this._buttonsPressed = event.buttons;
 
             const platformScale = event.deltaMode === WheelEvent.DOM_DELTA_LINE ? this._ffMultiplier : 1;
 
@@ -114,6 +141,12 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
         if (this.onChangedObservable) {
             this.onChangedObservable.clear();
         }
+
+        this._altKey = false;
+        this._ctrlKey = false;
+        this._metaKey = false;
+        this._shiftKey = false;
+        this._buttonsPressed = 0;
     }
 
     /**
