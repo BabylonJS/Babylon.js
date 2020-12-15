@@ -1688,7 +1688,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     vertexBuffers: {},
                     strides: {},
                     sizes: {},
-                    vertexArrayObjects: {}
+                    vertexArrayObjects: (this.getEngine().getCaps().vertexArrayObject) ? {} : undefined
                 };
             }
 
@@ -1791,6 +1791,19 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             // Dispose instance buffer to be recreated in _renderWithInstances when rendered
             this._instanceDataStorage.instancesBuffer.dispose();
             this._instanceDataStorage.instancesBuffer = null;
+        }
+        if (this._userInstancedBuffersStorage) {
+            for (var kind in this._userInstancedBuffersStorage.vertexBuffers) {
+                var buffer = this._userInstancedBuffersStorage.vertexBuffers[kind];
+                if (buffer) {
+                    // Dispose instance buffer to be recreated in _renderWithInstances when rendered
+                    buffer.dispose();
+                    this._userInstancedBuffersStorage.vertexBuffers[kind] = null;
+                }
+            }
+            if (this._userInstancedBuffersStorage.vertexArrayObjects) {
+                this._userInstancedBuffersStorage.vertexArrayObjects = {}
+            }
         }
         super._rebuild();
     }
