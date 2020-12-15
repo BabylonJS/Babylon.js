@@ -540,7 +540,8 @@ export class PrePassRenderer {
         const secondaryCamera = camera && this._scene.activeCameras && !!this._scene.activeCameras.length && this._scene.activeCameras.indexOf(camera) !== 0;
         this._postProcessesSourceForThisPass = this._getPostProcessesSource(prePassRenderTarget, camera);
         this._postProcessesSourceForThisPass = (this._postProcessesSourceForThisPass.filter((pp) => { return pp != null; }));
-
+        this._scene.autoClear = true;
+        
         const cameraHasImageProcessing = this._hasImageProcessing(this._postProcessesSourceForThisPass);
         this._needsCompositionForThisPass = !cameraHasImageProcessing &&
             !this.disableGammaTransform &&
