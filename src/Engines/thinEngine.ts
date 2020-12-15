@@ -1766,7 +1766,7 @@ export class ThinEngine {
         }
     }
 
-    private _bindVertexBuffersAttributes(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, effect: Effect): void {
+    private _bindVertexBuffersAttributes(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, effect: Effect, extraVertexBuffers?: { [kind: string]: Nullable<VertexBuffer>}): void {
         var attributes = effect.getAttributesNames();
 
         if (!this._vaoRecordInProgress) {
@@ -1779,7 +1779,12 @@ export class ThinEngine {
             var order = effect.getAttributeLocation(index);
 
             if (order >= 0) {
-                var vertexBuffer = vertexBuffers[attributes[index]];
+                var ai = attributes[index];
+                var vertexBuffer = vertexBuffers[ai];
+
+                if (!vertexBuffer && extraVertexBuffers) {
+                    vertexBuffer = extraVertexBuffers[ai];
+                }
 
                 if (!vertexBuffer) {
                     continue;
@@ -1814,7 +1819,7 @@ export class ThinEngine {
      * @param effect defines the effect to store
      * @returns the new vertex array object
      */
-    public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<DataBuffer>, effect: Effect): WebGLVertexArrayObject {
+    public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<DataBuffer>, effect: Effect, extraVertexBuffers?: { [kind: string]: Nullable<VertexBuffer>}): WebGLVertexArrayObject {
         var vao = this._gl.createVertexArray();
 
         this._vaoRecordInProgress = true;
@@ -1822,7 +1827,7 @@ export class ThinEngine {
         this._gl.bindVertexArray(vao);
 
         this._mustWipeVertexAttributes = true;
-        this._bindVertexBuffersAttributes(vertexBuffers, effect);
+        this._bindVertexBuffersAttributes(vertexBuffers, effect, extraVertexBuffers);
 
         this.bindIndexBuffer(indexBuffer);
 
@@ -1905,12 +1910,12 @@ export class ThinEngine {
      * @param indexBuffer defines the index buffer to bind
      * @param effect defines the effect associated with the vertex buffers
      */
-    public bindBuffers(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, indexBuffer: Nullable<DataBuffer>, effect: Effect): void {
+    public bindBuffers(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, indexBuffer: Nullable<DataBuffer>, effect: Effect, extraVertexBuffers?: {[kind: string]: Nullable<VertexBuffer>}): void {
         if (this._cachedVertexBuffers !== vertexBuffers || this._cachedEffectForVertexBuffers !== effect) {
             this._cachedVertexBuffers = vertexBuffers;
             this._cachedEffectForVertexBuffers = effect;
 
-            this._bindVertexBuffersAttributes(vertexBuffers, effect);
+            this._bindVertexBuffersAttributes(vertexBuffers, effect, extraVertexBuffers);
         }
 
         this._bindIndexBufferWithCache(indexBuffer);

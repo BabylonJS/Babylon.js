@@ -14,6 +14,9 @@
 - Moving button to shared uI folder.([msDestiny14](https://github.com/msDestiny14))
 - Moving additional components to shared UI folder.([msDestiny14](https://github.com/msDestiny14))
 
+### Engine
+- Moved all sourceMesh data from Geometry to Mesh such that one Geometry can be used by many source meshes without making the geometry unique. ([AndersLindqvist](https://github.com/breakin)
+
 ### Loaders
 
 - Added support for EXT_meshopt_compression for glTF loader. ([zeux](https://github.com/zeux))
