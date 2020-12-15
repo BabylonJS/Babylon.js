@@ -10,22 +10,22 @@ export class StencilState {
     /** Passed to stencilOperation to specify that stencil value must be replaced */
     public static readonly REPLACE = Constants.REPLACE;
 
-    private _isStencilTestDirty = false;
-    private _isStencilMaskDirty = false;
-    private _isStencilFuncDirty = false;
-    private _isStencilOpDirty = false;
+    protected _isStencilTestDirty = false;
+    protected _isStencilMaskDirty = false;
+    protected _isStencilFuncDirty = false;
+    protected _isStencilOpDirty = false;
 
-    private _stencilTest: boolean;
+    protected _stencilTest: boolean;
 
-    private _stencilMask: number;
+    protected _stencilMask: number;
 
-    private _stencilFunc: number;
-    private _stencilFuncRef: number;
-    private _stencilFuncMask: number;
+    protected _stencilFunc: number;
+    protected _stencilFuncRef: number;
+    protected _stencilFuncMask: number;
 
-    private _stencilOpStencilFail: number;
-    private _stencilOpDepthFail: number;
-    private _stencilOpStencilDepthPass: number;
+    protected _stencilOpStencilFail: number;
+    protected _stencilOpDepthFail: number;
+    protected _stencilOpStencilDepthPass: number;
 
     public get isDirty(): boolean {
         return this._isStencilTestDirty || this._isStencilMaskDirty || this._isStencilFuncDirty || this._isStencilOpDirty;
@@ -135,8 +135,10 @@ export class StencilState {
         this._isStencilTestDirty = true;
     }
 
-    public constructor() {
-        this.reset();
+    public constructor(reset = true) {
+        if (reset) {
+            this.reset();
+        }
     }
 
     public reset() {

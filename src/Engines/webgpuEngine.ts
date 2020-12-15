@@ -36,6 +36,9 @@ import { IMultiRenderTargetOptions } from '../Materials/Textures/multiRenderTarg
 import { WebGPUCacheSampler } from "./WebGPU/webgpuCacheSampler";
 import { WebGPUShaderManager } from "./WebGPU/webgpuShaderManager";
 import { WebGPUCacheRenderPipeline } from "./WebGPU/webgpuCacheRenderPipeline";
+import { WebGPUCacheRenderPipelineTree } from "./WebGPU/webgpuCacheRenderPipelineTree";
+import { WebGPUStencilState } from "./WebGPU/webgpuStencilState";
+import { WebGPUDepthCullingState } from "./WebGPU/webgpuDepthCullingState";
 
 import "../Shaders/clearQuad.vertex";
 import "../Shaders/clearQuad.fragment";
@@ -368,10 +371,6 @@ export class WebGPUEngine extends Engine {
         this._mainPassSampleCount = options.antialiasing ? this._defaultSampleCount : 1;
         this._isStencilEnable = options.stencil;
 
-        this._depthCullingState.depthTest = true;
-        this._depthCullingState.depthFunc = Constants.LEQUAL;
-        this._depthCullingState.depthMask = true;
-
         this._sharedInit(canvas, !!options.doNotHandleTouchAction, options.audioEngine);
 
         // TODO. WEBGPU. Use real way to do it.
@@ -442,10 +441,14 @@ export class WebGPUEngine extends Engine {
 
                 this._emptyVertexBuffer = new VertexBuffer(this, [0], "", false, false, 1, false, 0, 1);
 
-                this._cacheRenderPipeline = new WebGPUCacheRenderPipeline(this._device, this._emptyVertexBuffer);
+                this._cacheRenderPipeline = new WebGPUCacheRenderPipelineTree(this._device, this._emptyVertexBuffer);
 
-                this._cacheRenderPipeline.setDepthCompare(this._depthCullingState.depthFunc);
-                //this._cacheRenderPipeline.disabled = true;
+                this._depthCullingState = new WebGPUDepthCullingState(this._cacheRenderPipeline);
+                this._stencilState = new WebGPUStencilState(this._cacheRenderPipeline);
+
+                this._depthCullingState.depthTest = true;
+                this._depthCullingState.depthFunc = Constants.LEQUAL;
+                this._depthCullingState.depthMask = true;
 
                 this._textureHelper.setCommandEncoder(this._uploadEncoder);
 
@@ -710,12 +713,9 @@ export class WebGPUEngine extends Engine {
             this._currentProgram = null;
 
             this._stencilState.reset();
-            this._cacheRenderPipeline.resetStencilState();
 
             this._depthCullingState.reset();
             this._depthCullingState.depthFunc = Constants.LEQUAL;
-            this._cacheRenderPipeline.resetDepthCullingState();
-            this._cacheRenderPipeline.setDepthCompare(Constants.LEQUAL);
 
             this._alphaState.reset();
             this._alphaMode = Constants.ALPHA_ADD;
@@ -3210,12 +3210,6 @@ export class WebGPUEngine extends Engine {
     //                              Render
     //------------------------------------------------------------------------------
 
-    public setZOffset(value: number): void {
-        if (value !== this._depthCullingState.zOffset) {
-            this._depthCullingState.zOffset = value;
-        }
-    }
-
     private _setColorFormat(wrapper: WebGPURenderPassWrapper): void {
         const format = wrapper.colorAttachmentGPUTextures[0].format;
         this._cacheRenderPipeline.setColorFormat(format);
@@ -3233,102 +3227,12 @@ export class WebGPUEngine extends Engine {
         this._depthTextureFormat = wrapper.depthTextureFormat;
     }
 
-    public setDepthBuffer(enable: boolean): void {
-        if (this._depthCullingState.depthTest !== enable) {
-            this._depthCullingState.depthTest = enable;
-        }
-    }
-
-    public setDepthWrite(enable: boolean): void {
-        if (this._depthCullingState.depthMask !== enable) {
-            this._depthCullingState.depthMask = enable;
-        }
-    }
-
-    public setStencilBuffer(enable: boolean): void {
-        if (this._stencilState.stencilTest !== enable) {
-            this._stencilState.stencilTest = enable;
-        }
-    }
-
-    public setStencilMask(mask: number): void {
-        if (this._stencilState.stencilMask !== mask) {
-            this._stencilState.stencilMask = mask;
-        }
-    }
-
-    public setStencilFunction(stencilFunc: number) {
-        if (this._stencilState.stencilFunc !== stencilFunc) {
-            this._stencilState.stencilFunc = stencilFunc;
-        }
-    }
-
-    public setStencilFunctionReference(reference: number) {
-        if (this._stencilState.stencilFuncRef !== reference) {
-            this._stencilState.stencilFuncRef = reference;
-        }
-    }
-
-    public setStencilFunctionMask(mask: number) {
-        if (this._stencilState.stencilFuncMask !== mask) {
-            this._stencilState.stencilFuncMask = mask;
-        }
-    }
-
-    public setStencilOperationFail(operation: number): void {
-        if (this._stencilState.stencilOpStencilFail !== operation) {
-            this._stencilState.stencilOpStencilFail = operation;
-        }
-    }
-
-    public setStencilOperationDepthFail(operation: number): void {
-        if (this._stencilState.stencilOpDepthFail !== operation) {
-            this._stencilState.stencilOpDepthFail = operation;
-        }
-    }
-
-    public setStencilOperationPass(operation: number): void {
-        if (this._stencilState.stencilOpStencilDepthPass !== operation) {
-            this._stencilState.stencilOpStencilDepthPass = operation;
-        }
-    }
-
     public setDitheringState(value: boolean): void {
         // Does not exist in WebGPU
     }
 
     public setRasterizerState(value: boolean): void {
         // Does not exist in WebGPU
-    }
-
-    public setDepthFunction(depthFunc: number) {
-        if (this._depthCullingState.depthFunc !== depthFunc) {
-            this._depthCullingState.depthFunc = depthFunc;
-        }
-    }
-
-    public setDepthFunctionToGreater(): void {
-        if (this._depthCullingState.depthFunc !== Constants.GREATER) {
-            this._depthCullingState.depthFunc = Constants.GREATER;
-        }
-    }
-
-    public setDepthFunctionToGreaterOrEqual(): void {
-        if (this._depthCullingState.depthFunc !== Constants.GEQUAL) {
-            this._depthCullingState.depthFunc = Constants.GEQUAL;
-        }
-    }
-
-    public setDepthFunctionToLess(): void {
-        if (this._depthCullingState.depthFunc !== Constants.LESS) {
-            this._depthCullingState.depthFunc = Constants.LESS;
-        }
-    }
-
-    public setDepthFunctionToLessOrEqual(): void {
-        if (this._depthCullingState.depthFunc !== Constants.LEQUAL) {
-            this._depthCullingState.depthFunc = Constants.LEQUAL;
-        }
     }
 
     /**
@@ -3595,26 +3499,6 @@ export class WebGPUEngine extends Engine {
 
     private _setRenderPipeline(fillMode: number): void {
         const renderPass = this._bundleEncoder || this._getCurrentRenderPass();
-
-        this._cacheRenderPipeline.setDepthCullingState(
-            !!this._depthCullingState.cull,
-            this._depthCullingState.frontFace ?? 2,
-            this._depthCullingState.cullFace ?? 1,
-            this._depthCullingState.zOffset,
-            this._depthCullingState.depthTest,
-            this._depthCullingState.depthMask,
-            this._depthCullingState.depthFunc
-        );
-
-        this._cacheRenderPipeline.setStencilState(
-            this._stencilState.stencilTest,
-            this._stencilState.stencilFunc,
-            this._stencilState.stencilOpDepthFail,
-            this._stencilState.stencilOpStencilDepthPass,
-            this._stencilState.stencilOpStencilFail,
-            this._stencilState.stencilFuncMask,
-            this._stencilState.stencilMask
-        );
 
         const pipeline = this._cacheRenderPipeline.getRenderPipeline(fillMode, this._currentEffect!, this._currentRenderTarget ? this._currentRenderTarget.samples : this._mainPassSampleCount);
         renderPass.setPipeline(pipeline);
