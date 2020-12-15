@@ -216,6 +216,13 @@ export class Geometry implements IGetSetVerticesData {
             let vertexBuffer = <VertexBuffer>this._vertexBuffers[key];
             vertexBuffer._rebuild();
         }
+
+        // Invalidate MESH VAO
+        const meshes = this.meshes
+        const numMeshes = meshes.length
+        for (let i = 0; i < numMeshes; i++) {
+            meshes[i].invalidateVAO(true);
+        }
     }
 
     /**
@@ -267,6 +274,8 @@ export class Geometry implements IGetSetVerticesData {
         }
 
         this._vertexBuffers[kind] = buffer;
+        var meshes = this._meshes;
+        var numOfMeshes = meshes.length;
 
         if (kind === VertexBuffer.PositionKind) {
             var data = <FloatArray>buffer.getData();
@@ -281,9 +290,6 @@ export class Geometry implements IGetSetVerticesData {
             this._updateExtend(data);
             this._resetPointsArrayCache();
 
-            var meshes = this._meshes;
-            var numOfMeshes = meshes.length;
-
             for (var index = 0; index < numOfMeshes; index++) {
                 var mesh = meshes[index];
                 mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
@@ -293,6 +299,11 @@ export class Geometry implements IGetSetVerticesData {
         }
 
         this.notifyUpdate(kind);
+
+        var meshes = this._meshes;
+        for (var index = 0; index < numOfMeshes; index++) {
+            meshes[index].invalidateVAO(false);
+        }
 
         if (this._vertexArrayObjects) {
             this._disposeVertexArrayObjects();
@@ -367,7 +378,7 @@ export class Geometry implements IGetSetVerticesData {
     }
 
     /** @hidden */
-    public _bind(effect: Nullable<Effect>, indexToBind?: Nullable<DataBuffer>): void {
+    public _bind(effect: Nullable<Effect>, indexToBind?: Nullable<DataBuffer>, extraVertexBuffers?: { [kind:string]: Nullable<VertexBuffer>}, overrideVAO?: {[key: string]: WebGLVertexArrayObject}): void {
         if (!effect) {
             return;
         }
@@ -381,17 +392,21 @@ export class Geometry implements IGetSetVerticesData {
             return;
         }
 
-        if (indexToBind != this._indexBuffer || !this._vertexArrayObjects) {
-            this._engine.bindBuffers(vbs, indexToBind, effect);
+        // TODO: It could be the case that all vertex bufferas are in extraVertexBuffers but lets ignore that for now
+
+        if (indexToBind != this._indexBuffer || (!this._vertexArrayObjects && !overrideVAO)) {
+            this._engine.bindBuffers(vbs, indexToBind, effect, extraVertexBuffers);
             return;
         }
 
+        var vaos = overrideVAO ? overrideVAO : this._vertexArrayObjects;
+
         // Using VAO
-        if (!this._vertexArrayObjects[effect.key]) {
-            this._vertexArrayObjects[effect.key] = this._engine.recordVertexArrayObject(vbs, indexToBind, effect);
+        if (!vaos[effect.key]) {
+            vaos[effect.key] = this._engine.recordVertexArrayObject(vbs, indexToBind, effect, extraVertexBuffers);
         }
 
-        this._engine.bindVertexArrayObject(this._vertexArrayObjects[effect.key], indexToBind);
+        this._engine.bindVertexArrayObject(vaos[effect.key], indexToBind);
     }
 
     /**
@@ -697,6 +712,7 @@ export class Geometry implements IGetSetVerticesData {
 
         // must be done before setting vertexBuffers because of mesh._createGlobalSubMesh()
         mesh._geometry = this;
+        mesh.invalidateVAO(false);
 
         this._scene.pushGeometry(this);
 
@@ -915,6 +931,8 @@ export class Geometry implements IGetSetVerticesData {
             }
             this._vertexArrayObjects = {};
         }
+
+        // TODO: Do the meshes too?
     }
 
     /**
