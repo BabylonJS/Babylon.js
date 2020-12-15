@@ -23,6 +23,7 @@ import { GraphFrame } from './diagram/graphFrame';
 import * as ReactDOM from 'react-dom';
 import { IInspectorOptions } from "babylonjs/Debug/debugLayer";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { Popup } from "./sharedComponents/popup";
 
 
 require("./main.scss");
@@ -728,42 +729,13 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         popupWindow.document.body.appendChild(parentControl);
 
-        this.copyStyles(this.props.globalState.hostWindow.document, parentDocument);
+        Popup._CopyStyles(this.props.globalState.hostWindow.document, parentDocument);
 
         (this as any)[windowVariableName] = popupWindow;
 
         this._popUpWindow = popupWindow;
 
         return popupWindow;
-    }
-
-    copyStyles = (sourceDoc: HTMLDocument, targetDoc: HTMLDocument) => {
-        const styleContainer = [];
-        for (var index = 0; index < sourceDoc.styleSheets.length; index++) {
-            var styleSheet: any = sourceDoc.styleSheets[index];
-            try {
-                if (styleSheet.href) { // for <link> elements loading CSS from a URL
-                    const newLinkEl = sourceDoc.createElement('link');
-
-                    newLinkEl.rel = 'stylesheet';
-                    newLinkEl.href = styleSheet.href;
-                    targetDoc.head!.appendChild(newLinkEl);
-                    styleContainer.push(newLinkEl);
-                }
-                else if (styleSheet.cssRules) { // for <style> elements
-                    const newStyleEl = sourceDoc.createElement('style');
-
-                    for (var cssRule of styleSheet.cssRules) {
-                        newStyleEl.appendChild(sourceDoc.createTextNode(cssRule.cssText));
-                    }
-
-                    targetDoc.head!.appendChild(newStyleEl);
-                    styleContainer.push(newStyleEl);
-                } 
-            } catch (e) {
-                console.log(e);
-            }
-        }
     }
 
     createPreviewMeshControlHost = (options: IInternalPreviewAreaOptions, parentControl: Nullable<HTMLElement>) => {
