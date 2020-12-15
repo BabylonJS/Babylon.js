@@ -1780,10 +1780,14 @@ export class ThinEngine {
 
             if (order >= 0) {
                 var ai = attributes[index];
-                var vertexBuffer = vertexBuffers[ai];
+                var vertexBuffer: Nullable<VertexBuffer> = null;
 
-                if (!vertexBuffer && extraVertexBuffers) {
+                if (extraVertexBuffers) {
                     vertexBuffer = extraVertexBuffers[ai];
+                }
+
+                if (!vertexBuffer) {
+                    vertexBuffer = vertexBuffers[ai];
                 }
 
                 if (!vertexBuffer) {

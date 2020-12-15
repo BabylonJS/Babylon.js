@@ -490,7 +490,7 @@ declare module "./mesh" {
          */
         registerInstancedBuffer(kind: string, stride: number): void;
 
-        invalidateVAO(lostContext: boolean): void;
+        invalidateInstanceVertexArrayObject(): void;
 
         /**
          * true to use the edge renderer for all instances of this mesh
@@ -503,7 +503,7 @@ declare module "./mesh" {
             sizes: {[key: string]: number},
             vertexBuffers: {[key: string]: Nullable<VertexBuffer>},
             strides: {[key: string]: number},
-            vertexArrayObjects: {[key: string]: WebGLVertexArrayObject}
+            vertexArrayObjects?: {[key: string]: WebGLVertexArrayObject}
         };
     }
 }
@@ -539,7 +539,7 @@ Mesh.prototype.registerInstancedBuffer = function(kind: string, stride: number):
             vertexBuffers: {},
             strides: {},
             sizes: {},
-            vertexArrayObjects: {}
+            vertexArrayObjects: (this.getEngine().getCaps().vertexArrayObject) ? {} : undefined
         };
     }
 
@@ -555,7 +555,7 @@ Mesh.prototype.registerInstancedBuffer = function(kind: string, stride: number):
         instance.instancedBuffers[kind] = null;
     }
 
-    this.invalidateVAO(false);
+    this.invalidateInstanceVertexArrayObject();
 };
 
 Mesh.prototype._processInstancedBuffers = function(visibleInstances: InstancedMesh[], renderSelf: boolean) {
@@ -614,26 +614,23 @@ Mesh.prototype._processInstancedBuffers = function(visibleInstances: InstancedMe
         // Update vertex buffer
         if (!this._userInstancedBuffersStorage.vertexBuffers[kind]) {
             this._userInstancedBuffersStorage.vertexBuffers[kind] = new VertexBuffer(this.getEngine(), this._userInstancedBuffersStorage.data[kind], kind, true, false, stride, true);
-            this.invalidateVAO(false);
+            this.invalidateInstanceVertexArrayObject();
         } else {
             this._userInstancedBuffersStorage.vertexBuffers[kind]!.updateDirectly(data, 0);
         }
     }
 };
 
-Mesh.prototype.invalidateVAO = function(lostContext: boolean) {
-    if (!this._userInstancedBuffersStorage) {
+Mesh.prototype.invalidateInstanceVertexArrayObject = function() {
+    if (!this._userInstancedBuffersStorage || this._userInstancedBuffersStorage.vertexArrayObjects === undefined) {
         return;
     }
 
-    if (!lostContext) {
-        for (var kind in this._userInstancedBuffersStorage.vertexArrayObjects) {
-            this.getEngine().releaseVertexArrayObject(this._userInstancedBuffersStorage.vertexArrayObjects[kind]);
-        }
+    for (var kind in this._userInstancedBuffersStorage.vertexArrayObjects) {
+        this.getEngine().releaseVertexArrayObject(this._userInstancedBuffersStorage.vertexArrayObjects[kind]);
     }
 
     this._userInstancedBuffersStorage.vertexArrayObjects = {}
-    console.log('Invalidate mesh VAO')
 }
 
 Mesh.prototype._disposeInstanceSpecificData = function() {

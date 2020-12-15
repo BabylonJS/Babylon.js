@@ -216,13 +216,6 @@ export class Geometry implements IGetSetVerticesData {
             let vertexBuffer = <VertexBuffer>this._vertexBuffers[key];
             vertexBuffer._rebuild();
         }
-
-        // Invalidate MESH VAO
-        const meshes = this.meshes
-        const numMeshes = meshes.length
-        for (let i = 0; i < numMeshes; i++) {
-            meshes[i].invalidateVAO(true);
-        }
     }
 
     /**
@@ -302,7 +295,7 @@ export class Geometry implements IGetSetVerticesData {
 
         var meshes = this._meshes;
         for (var index = 0; index < numOfMeshes; index++) {
-            meshes[index].invalidateVAO(false);
+            meshes[index].invalidateInstanceVertexArrayObject(false);
         }
 
         if (this._vertexArrayObjects) {
@@ -930,9 +923,13 @@ export class Geometry implements IGetSetVerticesData {
                 this._engine.releaseVertexArrayObject(this._vertexArrayObjects[kind]);
             }
             this._vertexArrayObjects = {};
-        }
 
-        // TODO: Do the meshes too?
+            const meshes = this.meshes
+            const numMeshes = meshes.length
+            for (let i = 0; i < numMeshes; i++) {
+                meshes[i].invalidateInstanceVertexArrayObject(true);
+            }
+        }
     }
 
     /**
