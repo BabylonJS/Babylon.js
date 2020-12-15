@@ -1522,7 +1522,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // VBOs
         if (!this._userInstancedBuffersStorage) {
-            this._geometry._bind(effect, indexToBind)
+            this._geometry._bind(effect, indexToBind);
         } else {
             this._geometry._bind(effect, indexToBind, this._userInstancedBuffersStorage.vertexBuffers, this._userInstancedBuffersStorage.vertexArrayObjects);
         }
@@ -1692,10 +1692,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 };
             }
 
-            this._userInstancedBuffersStorage.vertexBuffers["world0"] = instancesBuffer.createVertexBuffer("world0", 0, 4)
-            this._userInstancedBuffersStorage.vertexBuffers["world1"] = instancesBuffer.createVertexBuffer("world0", 4, 4)
-            this._userInstancedBuffersStorage.vertexBuffers["world2"] = instancesBuffer.createVertexBuffer("world0", 8, 4)
-            this._userInstancedBuffersStorage.vertexBuffers["world3"] = instancesBuffer.createVertexBuffer("world0", 12, 4)
+            this._userInstancedBuffersStorage.vertexBuffers["world0"] = instancesBuffer.createVertexBuffer("world0", 0, 4);
+            this._userInstancedBuffersStorage.vertexBuffers["world1"] = instancesBuffer.createVertexBuffer("world0", 4, 4);
+            this._userInstancedBuffersStorage.vertexBuffers["world2"] = instancesBuffer.createVertexBuffer("world0", 8, 4);
+            this._userInstancedBuffersStorage.vertexBuffers["world3"] = instancesBuffer.createVertexBuffer("world0", 12, 4);
         } else {
             if (!this._instanceDataStorage.isFrozen) {
                 instancesBuffer!.updateDirectly(instanceStorage.instancesData, 0, instancesCount);
@@ -1802,7 +1802,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 }
             }
             if (this._userInstancedBuffersStorage.vertexArrayObjects) {
-                this._userInstancedBuffersStorage.vertexArrayObjects = {}
+                this._userInstancedBuffersStorage.vertexArrayObjects = {};
             }
         }
         super._rebuild();

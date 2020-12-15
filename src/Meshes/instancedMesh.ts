@@ -633,8 +633,8 @@ Mesh.prototype.invalidateInstanceVertexArrayObject = function() {
         this.getEngine().releaseVertexArrayObject(this._userInstancedBuffersStorage.vertexArrayObjects[kind]);
     }
 
-    this._userInstancedBuffersStorage.vertexArrayObjects = {}
-}
+    this._userInstancedBuffersStorage.vertexArrayObjects = {};
+};
 
 Mesh.prototype._disposeInstanceSpecificData = function() {
     if (this._instanceDataStorage.instancesBuffer) {
@@ -651,6 +651,8 @@ Mesh.prototype._disposeInstanceSpecificData = function() {
             this._userInstancedBuffersStorage.vertexBuffers[kind]!.dispose();
         }
     }
+
+    this.invalidateInstanceVertexArrayObject();
 
     this.instancedBuffers = {};
 };
