@@ -3468,11 +3468,11 @@ export class Quaternion {
                 result.set(0, - vecFrom.z, vecFrom.y, 0);
             }
         } else {
-            const crossProduct = Vector3.Cross(vecFrom, vecTo);
+            Vector3.CrossToRef(vecFrom, vecTo, TmpVectors.Vector3[0]);
             result.set(
-                crossProduct.x,
-                crossProduct.y,
-                crossProduct.z,
+                TmpVectors.Vector3[0].x,
+                TmpVectors.Vector3[0].y,
+                TmpVectors.Vector3[0].z,
                 r
             );
         }
