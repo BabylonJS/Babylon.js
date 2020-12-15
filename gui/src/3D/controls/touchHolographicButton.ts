@@ -252,9 +252,6 @@ export class TouchHolographicButton extends TouchButton3D {
 
     // Mesh association
     protected _createNode(scene: Scene): TransformNode {
-        this.collisionMesh = BoxBuilder.CreateBox(this.name + "CollisionMesh", { size: 1}, scene);
-        this._enableCollisions(scene);
-
         this._backPlate = BoxBuilder.CreateBox(this.name + "BackMesh", {
             width: 1.0,
             height: 1.0,
@@ -276,6 +273,9 @@ export class TouchHolographicButton extends TouchButton3D {
         this._textPlate.parent = this._backPlate;
         this._textPlate.position.z = -0.08;
         this._textPlate.isPickable = false;
+
+        this._enableCollisions(scene, this._frontPlate);
+        this.collidableFrontDirection = this._frontPlate.forward.negate(); // Mesh is facing the wrong way
 
         return this._backPlate;
     }
