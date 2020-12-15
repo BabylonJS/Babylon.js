@@ -1,6 +1,6 @@
 import * as React from "react";
 import { PaneComponent, IPaneComponentProps } from "../paneComponent";
-import { TextLineComponent } from "../lines/textLineComponent";
+import { TextLineComponent } from "../../../sharedUiComponents/lines/textLineComponent";
 import { LineContainerComponent } from "../lineContainerComponent";
 
 import { Nullable } from "babylonjs/types";
@@ -8,8 +8,8 @@ import { EngineInstrumentation } from "babylonjs/Instrumentation/engineInstrumen
 import { SceneInstrumentation } from "babylonjs/Instrumentation/sceneInstrumentation";
 import { Engine } from "babylonjs/Engines/engine";
 
-import { ValueLineComponent } from "../lines/valueLineComponent";
-import { BooleanLineComponent } from "../lines/booleanLineComponent";
+import { ValueLineComponent } from "../../../sharedUiComponents/lines/valueLineComponent";
+import { BooleanLineComponent } from "../../../sharedUiComponents/lines/booleanLineComponent";
 
 export class StatisticsTabComponent extends PaneComponent {
     private _sceneInstrumentation: Nullable<SceneInstrumentation>;

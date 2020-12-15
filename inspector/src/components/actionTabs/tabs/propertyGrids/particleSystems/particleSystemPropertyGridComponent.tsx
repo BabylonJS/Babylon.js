@@ -4,7 +4,7 @@ import { Observable } from "babylonjs/Misc/observable";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
-import { TextLineComponent } from "../../../lines/textLineComponent";
+import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
 import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
@@ -38,7 +38,7 @@ import { ValueGradientGridComponent, GradientGridMode } from './valueGradientGri
 import { Color3, Color4 } from 'babylonjs/Maths/math.color';
 import { GPUParticleSystem } from 'babylonjs/Particles/gpuParticleSystem';
 import { Tools } from 'babylonjs/Misc/tools';
-import { FileButtonLineComponent } from '../../../lines/fileButtonLineComponent';
+import { FileButtonLineComponent } from '../../../../../sharedUiComponents/lines/fileButtonLineComponent';
 import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
 import { ParticleHelper } from 'babylonjs/Particles/particleHelper';
 
