@@ -490,6 +490,9 @@ declare module "./mesh" {
          */
         registerInstancedBuffer(kind: string, stride: number): void;
 
+        /**
+         * Invalidate VertexArrayObjects belonging to the mesh (but not to the Geometry of the mesh).
+         */
         invalidateInstanceVertexArrayObject(): void;
 
         /**

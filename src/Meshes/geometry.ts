@@ -293,14 +293,14 @@ export class Geometry implements IGetSetVerticesData {
 
         this.notifyUpdate(kind);
 
-        var meshes = this._meshes;
-        for (var index = 0; index < numOfMeshes; index++) {
-            meshes[index].invalidateInstanceVertexArrayObject(false);
-        }
-
         if (this._vertexArrayObjects) {
             this._disposeVertexArrayObjects();
             this._vertexArrayObjects = {}; // Will trigger a rebuild of the VAO if supported
+
+            var meshes = this._meshes;
+            for (var index = 0; index < numOfMeshes; index++) {
+                meshes[index].invalidateInstanceVertexArrayObject();
+            }
         }
     }
 
@@ -680,6 +680,10 @@ export class Geometry implements IGetSetVerticesData {
 
         meshes.splice(index, 1);
 
+        if (this._vertexArrayObjects) {
+            mesh.invalidateInstanceVertexArrayObject();
+        }
+
         mesh._geometry = null;
 
         if (meshes.length === 0 && shouldDispose) {
@@ -701,11 +705,14 @@ export class Geometry implements IGetSetVerticesData {
             previousGeometry.releaseForMesh(mesh);
         }
 
+        if (this._vertexArrayObjects) {
+            mesh.invalidateInstanceVertexArrayObject();
+        }
+
         var meshes = this._meshes;
 
         // must be done before setting vertexBuffers because of mesh._createGlobalSubMesh()
         mesh._geometry = this;
-        mesh.invalidateVAO(false);
 
         this._scene.pushGeometry(this);
 
@@ -923,12 +930,6 @@ export class Geometry implements IGetSetVerticesData {
                 this._engine.releaseVertexArrayObject(this._vertexArrayObjects[kind]);
             }
             this._vertexArrayObjects = {};
-
-            const meshes = this.meshes
-            const numMeshes = meshes.length
-            for (let i = 0; i < numMeshes; i++) {
-                meshes[i].invalidateInstanceVertexArrayObject(true);
-            }
         }
     }
 
