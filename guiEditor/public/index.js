@@ -1,7 +1,6 @@
 var snippetUrl = "https://snippet.babylonjs.com";
 var currentSnippetToken;
 var previousHash = "";
-var nodeMaterial;
 
 var customLoadObservable = new BABYLON.Observable();
 var editorDisplayed = false;
@@ -64,7 +63,6 @@ var showEditor = function() {
     var hostElement = document.getElementById("host-element");
 
     BABYLON.GuiEditor.Show({
-        nodeMaterial: nodeMaterial, 
         hostElement: hostElement,
         customLoadObservable: customLoadObservable,
         customSave: {
@@ -114,35 +112,12 @@ var showEditor = function() {
 if (BABYLON.Engine.isSupported()) {
     var canvas = document.createElement("canvas");
     var engine = new BABYLON.Engine(canvas, false, {disableWebGL2Support: true});
-    var scene = new BABYLON.Scene(engine);    
-    var light0 = new BABYLON.HemisphericLight("light #0", new BABYLON.Vector3(0, 1, 0), scene);
-    var light1 = new BABYLON.HemisphericLight("light #1", new BABYLON.Vector3(0, 1, 0), scene);
-    var light2 = new BABYLON.HemisphericLight("light #2", new BABYLON.Vector3(0, 1, 0), scene);
-
-    nodeMaterial = new BABYLON.NodeMaterial("node");
+    var scene = new BABYLON.Scene(engine);
 
     // Set to default
     if (!location.hash) {
-        const mode = BABYLON.DataStorage.ReadNumber("Mode", BABYLON.NodeMaterialModes.Material);
-        
-        switch (mode) {
-            case BABYLON.NodeMaterialModes.Material:
-                nodeMaterial.setToDefault();
-                break;
-            case BABYLON.NodeMaterialModes.PostProcess:
-                nodeMaterial.setToDefaultPostProcess();
-                break;
-            case BABYLON.NodeMaterialModes.Particle:
-                nodeMaterial.setToDefaultParticle();
-                break;                
-            case BABYLON.NodeMaterialModes.ProceduralTexture:
-                nodeMaterial.setToDefaultProceduralTexture();
-                break;
-        }
-        nodeMaterial.build(true);
         showEditor();
     }
-
 }
 else {
     alert('Babylon.js is not supported.')

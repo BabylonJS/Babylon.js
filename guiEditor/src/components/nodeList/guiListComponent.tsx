@@ -6,24 +6,21 @@ import { DraggableLineComponent } from '../../sharedComponents/draggableLineComp
 import { Observer } from 'babylonjs/Misc/observable';
 import { Nullable } from 'babylonjs/types';
 
-//const addButton = require("../../../imgs/add.svg");
-//const deleteButton = require('../../../imgs/delete.svg');
+require("./guiList.scss");
 
-require("./nodeList.scss");
-
-interface INodeListComponentProps {
+interface IGuiListComponentProps {
     globalState: GlobalState;
 }
 
-export class NodeListComponent extends React.Component<INodeListComponentProps, {filter: string}> {
+export class GuiListComponent extends React.Component<IGuiListComponentProps, {filter: string}> {
 
     private _onResetRequiredObserver: Nullable<Observer<void>>;
 
     private static _Tooltips: {[key: string]: string} = {
-        "Buttons": "Provides a world matrix for each vertex, based on skeletal (bone/joint) animation",
+        "Button": "A simple button",
     };
 
-    constructor(props: INodeListComponentProps) {
+    constructor(props: IGuiListComponentProps) {
         super(props);
 
         this.state = { filter: "" };
@@ -57,7 +54,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             var blockList = (allBlocks as any)[key].filter((b: string) => !this.state.filter || b.toLowerCase().indexOf(this.state.filter.toLowerCase()) !== -1)
             .sort((a: string, b: string) => a.localeCompare(b))
             .map((block: any, i: number) => {
-                return <DraggableLineComponent key={block} data={block} tooltip={ NodeListComponent._Tooltips[block] || ""}/>;
+                return <DraggableLineComponent key={block} data={block} tooltip={ GuiListComponent._Tooltips[block] || ""}/>;
 
             });
         
@@ -71,7 +68,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         }
 
         return (
-            <div id="nodeList">
+            <div id="guiList">
                 <div className="panes">
                     <div className="pane">
                         <div className="filter">

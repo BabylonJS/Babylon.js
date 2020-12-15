@@ -1,1 +1,1 @@
-Node Editor
+Gui Editor

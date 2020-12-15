@@ -1,6 +1,6 @@
 import * as React from "react";
 import { GlobalState } from './globalState';
-import { NodeListComponent } from './components/nodeList/nodeListComponent';
+import { GuiListComponent } from './components/nodeList/guiListComponent';
 import { PropertyTabComponent } from './components/propertyTab/propertyTabComponent';
 import { Portal } from './portal';
 import { LogComponent, LogEntry } from './components/log/logComponent';
@@ -547,7 +547,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                     }}
                     >
                     {/* Node creation menu */}
-                    <NodeListComponent globalState={this.props.globalState} />
+                    <GuiListComponent globalState={this.props.globalState} />
 
                     <div id="leftGrab"
                         onPointerDown={evt => this.onPointerDown(evt)}
