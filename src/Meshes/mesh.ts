@@ -2435,6 +2435,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Do nothing
     }
 
+    /** @hidden */
+    public _invalidateInstanceVertexArrayObject() {
+        // Do nothing
+    }
+
     /**
      * Modifies the mesh geometry according to a displacement map.
      * A displacement map is a colored image. Each pixel color value (actually a gradient computed from red, green, blue values) will give the displacement to apply to each mesh vertex.

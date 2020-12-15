@@ -299,7 +299,7 @@ export class Geometry implements IGetSetVerticesData {
 
             var meshes = this._meshes;
             for (var index = 0; index < numOfMeshes; index++) {
-                meshes[index].invalidateInstanceVertexArrayObject();
+                meshes[index]._invalidateInstanceVertexArrayObject();
             }
         }
     }
@@ -679,7 +679,7 @@ export class Geometry implements IGetSetVerticesData {
         meshes.splice(index, 1);
 
         if (this._vertexArrayObjects) {
-            mesh.invalidateInstanceVertexArrayObject();
+            mesh._invalidateInstanceVertexArrayObject();
         }
 
         mesh._geometry = null;
@@ -704,7 +704,7 @@ export class Geometry implements IGetSetVerticesData {
         }
 
         if (this._vertexArrayObjects) {
-            mesh.invalidateInstanceVertexArrayObject();
+            mesh._invalidateInstanceVertexArrayObject();
         }
 
         var meshes = this._meshes;
