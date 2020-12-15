@@ -135,11 +135,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         super(props);
 
         props.globalState.onSelectionChangedObservable.add(selection => {  
+            console.log(selection);
+            
+            this.selectedGuiNodes.forEach(element => {
+                element.isSelected = false;
+            }); 
             if (!selection) {
-                
-                this.selectedGuiNodes.forEach(element => {
-                    element.isSelected = false;
-                }); 
                 this._selectedGuiNodes = [];
             } 
             else {
@@ -149,14 +150,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                             this._selectedGuiNodes.push(selection);
                         }
                     } 
-                    else {                    
+                    else {              
                         this._selectedGuiNodes = [selection];
                     }
                 
                 } 
-                else {
-                    this._selectedGuiNodes = [];
-                }
             }
         });
 
@@ -412,8 +410,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._mouseStartPointY = null;
         this._rootContainer.releasePointerCapture(evt.pointerId);   
         this._oldY = -1; 
-
-        
 
         if (this._selectionBox) {
            this._selectionBox.parentElement!.removeChild(this._selectionBox);

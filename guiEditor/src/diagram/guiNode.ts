@@ -92,10 +92,6 @@ export class GUINode {
     }
 
     public set isSelected(value: boolean) {
-        if (this._isSelected === value) {
-            return;            
-        }
-
         this._isSelected = value;
 
         if (value) {
@@ -145,7 +141,7 @@ export class GUINode {
     public _onMove(evt: BABYLON.Vector2, startPos: BABYLON.Vector2) {
        
         if(!this.clicked) return false;
-
+        console.log("moving");
         let newX = (evt.x - startPos.x) ;// / this._ownerCanvas.zoom;
         let newY = (evt.y - startPos.y) ;// / this._ownerCanvas.zoom;
 
