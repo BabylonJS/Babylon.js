@@ -541,7 +541,7 @@ export class PrePassRenderer {
         this._postProcessesSourceForThisPass = this._getPostProcessesSource(prePassRenderTarget, camera);
         this._postProcessesSourceForThisPass = (this._postProcessesSourceForThisPass.filter((pp) => { return pp != null; }));
         this._scene.autoClear = true;
-        
+
         const cameraHasImageProcessing = this._hasImageProcessing(this._postProcessesSourceForThisPass);
         this._needsCompositionForThisPass = !cameraHasImageProcessing &&
             !this.disableGammaTransform &&
