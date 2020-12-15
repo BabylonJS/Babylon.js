@@ -3453,10 +3453,10 @@ export class Quaternion {
     }
 
     /**
-     * Creates a rotation quaternion that rotates vector vecFrom to vector vecTo
+     * Updates a quaternion so that it rotates vector vecFrom to vector vecTo
      * @param vecFrom defines the direction vector from which to rotate
      * @param vecTo defines the direction vector to which to rotate
-     * @returns the new quaternion
+     * @returns the updated quaternion
      */
     public static FromUnitVectorsToRef(vecFrom: DeepImmutable<Vector3>, vecTo: DeepImmutable<Vector3>, result: Quaternion): Quaternion {
         const r = Vector3.Dot(vecFrom, vecTo) + 1;
