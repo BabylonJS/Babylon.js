@@ -8,6 +8,11 @@ import { DataStorage } from 'babylonjs/Misc/dataStorage';
 
 import {Control} from 'babylonjs-gui/2D/controls/control';
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
+import { Vector2, Vector3 } from "babylonjs/Maths/math.vector";
+import { Engine } from "babylonjs/Engines/engine";
+import { Scene } from "babylonjs/scene";
+import { Color4 } from "babylonjs/Maths/math.color";
+import { FreeCamera } from "babylonjs/Cameras/freeCamera";
 
 require("./graphCanvas.scss");
 
@@ -364,8 +369,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             var y = this._mouseStartPointY;
             let selected = false;
             this.selectedGuiNodes.forEach(element => {
-                selected = element._onMove(new BABYLON.Vector2(evt.clientX, evt.clientY), 
-                new BABYLON.Vector2( x, y)) || selected;
+                selected = element._onMove(new Vector2(evt.clientX, evt.clientY), 
+                new Vector2( x, y)) || selected;
             });
 
             if(!selected) {
@@ -488,17 +493,17 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         const canvas = document.getElementById("graph-canvas") as HTMLCanvasElement;
 
         // Associate a Babylon Engine to it.
-        const engine = new BABYLON.Engine(canvas);
+        const engine = new Engine(canvas);
         
         // Create our first scene.
-        var scene = new BABYLON.Scene(engine);
-        scene.clearColor = new BABYLON.Color4(0.2, 0.2, 0.3, 0.1);
+        var scene = new Scene(engine);
+        scene.clearColor = new Color4(0.2, 0.2, 0.3, 0.1);
 
         // This creates and positions a free camera (non-mesh)
-        var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
+        var camera = new FreeCamera("camera1", new Vector3(0, 5, -10), scene);
 
         // This targets the camera to scene origin
-        camera.setTarget(BABYLON.Vector3.Zero());
+        camera.setTarget(Vector3.Zero());
         
         // This attaches the camera to the canvas
         //camera.attachControl(true);
