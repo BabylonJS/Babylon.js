@@ -1,3 +1,12 @@
+import { Button } from "babylonjs-gui/2D/controls/button";
+import { Checkbox } from "babylonjs-gui/2D/controls/checkbox";
+import { ColorPicker } from "babylonjs-gui/2D/controls/colorpicker";
+import { Ellipse } from "babylonjs-gui/2D/controls/ellipse";
+import { Line } from "babylonjs-gui/2D/controls/line";
+import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
+import { Slider } from "babylonjs-gui/2D/controls/sliders/slider";
+import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
+
 export class BlockTools {
     public static GetGuiFromString(data: string) {
 
@@ -5,22 +14,22 @@ export class BlockTools {
         let element;
         switch (data) {
             case "Slider":
-                element = new BABYLON.GUI.Slider("Slider");
+                element = new Slider("Slider");
                 break;
             case "Checkbox":
-                element = new BABYLON.GUI.Checkbox("Checkbox");
+                element = new Checkbox("Checkbox");
                 break;
             case "ColorPicker":
-                element = new BABYLON.GUI.ColorPicker("ColorPicker");
+                element = new ColorPicker("ColorPicker");
                 break;
             case "Ellipse":
-                element = new BABYLON.GUI.Ellipse("Ellipse");
+                element = new Ellipse("Ellipse");
                 break;
             case "Rectangle":
-                element = new BABYLON.GUI.Rectangle("Rectangle");
+                element = new Rectangle("Rectangle");
                 break;
             case "Line":
-                element = new BABYLON.GUI.Line();
+                element = new Line();
                 element.x1 = 10;
                 element.y1 = 10;
                 element.x2 = 100;
@@ -29,11 +38,11 @@ export class BlockTools {
                 element.dash = [50, 10];
                 return element;
             case "Text":
-                element = new BABYLON.GUI.TextBlock("Textblock");
+                element = new TextBlock("Textblock");
                 element.text = "My Text";
                 return element;
             default:
-                element = BABYLON.GUI.Button.CreateSimpleButton("Button", "Click Me");
+                element = Button.CreateSimpleButton("Button", "Click Me");
                 break;
             }
         

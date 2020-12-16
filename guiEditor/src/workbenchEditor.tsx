@@ -8,11 +8,12 @@ import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { Nullable } from 'babylonjs/types';
 import { BlockTools } from './blockTools';
 import { IEditorData } from './nodeLocationInfo';
-
 import { WorkbenchComponent } from './diagram/workbench';
 import { GUINode } from './diagram/guiNode';
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { MessageDialogComponent } from "./sharedComponents/messageDialog";
+import { Control } from "babylonjs-gui/2D/controls/control";
+import { Container } from "babylonjs-gui/2D/controls/container";
 
 require("./main.scss");
 
@@ -33,7 +34,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     private _leftWidth = DataStorage.ReadNumber("LeftWidth", 200);
     private _rightWidth = DataStorage.ReadNumber("RightWidth", 300);
 
-    private _blocks = new Array<BABYLON.GUI.Container | BABYLON.GUI.Control>();
+    private _blocks = new Array<Container | Control>();
 
     private _onWidgetKeyUpPointer: any;
 
@@ -43,7 +44,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
      * Creates a node and recursivly creates its parent nodes from it's input
      * @param block 
      */
-    public createNodeFromObject(block: BABYLON.GUI.Control, recursion = true) {
+    public createNodeFromObject(block: Control, recursion = true) {
         if (this._blocks.indexOf(block) !== -1) {        
             return this._workbenchCanvas.nodes.filter(n => n.guiNode === block)[0];
         }
