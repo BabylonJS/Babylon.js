@@ -5,7 +5,6 @@ import { IPropertyComponentProps } from './propertyComponentProps';
 import { CheckBoxLineComponent } from '../../sharedComponents/checkBoxLineComponent';
 import { FloatLineComponent } from '../../sharedComponents/floatLineComponent';
 import { SliderLineComponent } from '../../sharedComponents/sliderLineComponent';
-import { Vector2LineComponent } from '../../sharedComponents/vector2LineComponent';
 import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
 import { PropertyTypeForEdition, IPropertyDescriptionForEdition, IEditablePropertyListOption } from 'babylonjs/Materials/Node/nodeMaterialDecorator';
 
@@ -95,12 +94,6 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                             <SliderLineComponent label={displayName} target={this.props.guiBlock} globalState={this.props.globalState} propertyName={propertyName} step={Math.abs((options.max as number) - (options.min as number)) / 100.0} minimum={Math.min(options.min as number, options.max as number)} maximum={options.max as number} onChange={() => this.forceRebuild(options.notifiers)}/>
                         );
                     }
-                    break;
-                }
-                case PropertyTypeForEdition.Vector2: {
-                    components.push(
-                        <Vector2LineComponent globalState={this.props.globalState} label={displayName} propertyName={propertyName} target={this.props.guiBlock} onChange={() => this.forceRebuild(options.notifiers)} />
-                    );
                     break;
                 }
                 case PropertyTypeForEdition.List: {
