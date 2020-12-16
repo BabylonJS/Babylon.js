@@ -6,6 +6,7 @@ import { PropertyGuiLedger } from './propertyLedger';
 import * as React from 'react';
 import { GenericPropertyComponent } from './properties/genericNodePropertyComponent';
 import { Control } from 'babylonjs-gui/2D/controls/control';
+import { Vector2 } from 'babylonjs/Maths/math.vector';
 
 export class GUINode {
     private _x = 0;
@@ -140,7 +141,7 @@ export class GUINode {
     }
 
     public clicked: boolean;
-    public _onMove(evt: BABYLON.Vector2, startPos: BABYLON.Vector2) {
+    public _onMove(evt: Vector2, startPos: Vector2) {
        
         if(!this.clicked) return false;
         console.log("moving");
