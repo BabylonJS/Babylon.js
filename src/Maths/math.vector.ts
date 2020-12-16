@@ -3454,6 +3454,35 @@ export class Quaternion {
     }
 
     /**
+     * Updates a quaternion so that it rotates vector vecFrom to vector vecTo
+     * @param vecFrom defines the direction vector from which to rotate
+     * @param vecTo defines the direction vector to which to rotate
+     * @param result the quaternion to store the result
+     * @returns the updated quaternion
+     */
+    public static FromUnitVectorsToRef(vecFrom: DeepImmutable<Vector3>, vecTo: DeepImmutable<Vector3>, result: Quaternion): Quaternion {
+        const r = Vector3.Dot(vecFrom, vecTo) + 1;
+
+        if (r < Epsilon) {
+            if (Math.abs(vecFrom.x) > Math.abs(vecFrom.z)) {
+                result.set(-vecFrom.y, vecFrom.x, 0, 0);
+            } else {
+                result.set(0, - vecFrom.z, vecFrom.y, 0);
+            }
+        } else {
+            Vector3.CrossToRef(vecFrom, vecTo, TmpVectors.Vector3[0]);
+            result.set(
+                TmpVectors.Vector3[0].x,
+                TmpVectors.Vector3[0].y,
+                TmpVectors.Vector3[0].z,
+                r
+            );
+        }
+
+        return result.normalize();
+    }
+
+    /**
      * Creates a new quaternion from the given Euler float angles (y, x, z)
      * @param yaw defines the rotation around Y axis
      * @param pitch defines the rotation around X axis
