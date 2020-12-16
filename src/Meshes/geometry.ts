@@ -253,6 +253,10 @@ export class Geometry implements IGetSetVerticesData {
             this._vertexBuffers[kind].dispose();
             delete this._vertexBuffers[kind];
         }
+
+        if (this._vertexArrayObjects) {
+            this._disposeVertexArrayObjects();
+        }
     }
 
     /**
@@ -267,6 +271,8 @@ export class Geometry implements IGetSetVerticesData {
         }
 
         this._vertexBuffers[kind] = buffer;
+        var meshes = this._meshes;
+        var numOfMeshes = meshes.length;
 
         if (kind === VertexBuffer.PositionKind) {
             var data = <FloatArray>buffer.getData();
@@ -281,9 +287,6 @@ export class Geometry implements IGetSetVerticesData {
             this._updateExtend(data);
             this._resetPointsArrayCache();
 
-            var meshes = this._meshes;
-            var numOfMeshes = meshes.length;
-
             for (var index = 0; index < numOfMeshes; index++) {
                 var mesh = meshes[index];
                 mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
@@ -296,7 +299,6 @@ export class Geometry implements IGetSetVerticesData {
 
         if (this._vertexArrayObjects) {
             this._disposeVertexArrayObjects();
-            this._vertexArrayObjects = {}; // Will trigger a rebuild of the VAO if supported
         }
     }
 
@@ -367,7 +369,7 @@ export class Geometry implements IGetSetVerticesData {
     }
 
     /** @hidden */
-    public _bind(effect: Nullable<Effect>, indexToBind?: Nullable<DataBuffer>): void {
+    public _bind(effect: Nullable<Effect>, indexToBind?: Nullable<DataBuffer>, overrideVertexBuffers?: { [kind: string]: Nullable<VertexBuffer>}, overrideVertexArrayObjects?: {[key: string]: WebGLVertexArrayObject}): void {
         if (!effect) {
             return;
         }
@@ -381,17 +383,19 @@ export class Geometry implements IGetSetVerticesData {
             return;
         }
 
-        if (indexToBind != this._indexBuffer || !this._vertexArrayObjects) {
-            this._engine.bindBuffers(vbs, indexToBind, effect);
+        if (indexToBind != this._indexBuffer || (!this._vertexArrayObjects && !overrideVertexArrayObjects)) {
+            this._engine.bindBuffers(vbs, indexToBind, effect, overrideVertexBuffers);
             return;
         }
 
+        var vaos = overrideVertexArrayObjects ? overrideVertexArrayObjects : this._vertexArrayObjects;
+
         // Using VAO
-        if (!this._vertexArrayObjects[effect.key]) {
-            this._vertexArrayObjects[effect.key] = this._engine.recordVertexArrayObject(vbs, indexToBind, effect);
+        if (!vaos[effect.key]) {
+            vaos[effect.key] = this._engine.recordVertexArrayObject(vbs, indexToBind, effect, overrideVertexBuffers);
         }
 
-        this._engine.bindVertexArrayObject(this._vertexArrayObjects[effect.key], indexToBind);
+        this._engine.bindVertexArrayObject(vaos[effect.key], indexToBind);
     }
 
     /**
@@ -580,8 +584,6 @@ export class Geometry implements IGetSetVerticesData {
             this._engine._releaseBuffer(this._indexBuffer);
         }
 
-        this._disposeVertexArrayObjects();
-
         this._indices = indices;
         this._indexBufferIsUpdatable = updatable;
         if (this._meshes.length !== 0 && this._indices) {
@@ -672,6 +674,10 @@ export class Geometry implements IGetSetVerticesData {
 
         meshes.splice(index, 1);
 
+        if (this._vertexArrayObjects) {
+            mesh._invalidateInstanceVertexArrayObject();
+        }
+
         mesh._geometry = null;
 
         if (meshes.length === 0 && shouldDispose) {
@@ -691,6 +697,10 @@ export class Geometry implements IGetSetVerticesData {
         var previousGeometry = mesh._geometry;
         if (previousGeometry) {
             previousGeometry.releaseForMesh(mesh);
+        }
+
+        if (this._vertexArrayObjects) {
+            mesh._invalidateInstanceVertexArrayObject();
         }
 
         var meshes = this._meshes;
@@ -913,7 +923,13 @@ export class Geometry implements IGetSetVerticesData {
             for (var kind in this._vertexArrayObjects) {
                 this._engine.releaseVertexArrayObject(this._vertexArrayObjects[kind]);
             }
-            this._vertexArrayObjects = {};
+            this._vertexArrayObjects = {}; // Will trigger a rebuild of the VAO if supported
+
+            var meshes = this._meshes;
+            var numOfMeshes = meshes.length;
+            for (var index = 0; index < numOfMeshes; index++) {
+                meshes[index]._invalidateInstanceVertexArrayObject();
+            }
         }
     }
 
