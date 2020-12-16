@@ -6,7 +6,8 @@ import { Nullable } from 'babylonjs/types';
 
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
 
-import 'babylonjs-gui/2D/';
+import {Control} from 'babylonjs-gui/2D/controls/control';
+import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
 
 require("./graphCanvas.scss");
 
@@ -223,7 +224,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._oldY = -1;
     }
 
-    findNodeFromGuiElement(guiElement: BABYLON.GUI.Control) {
+    findNodeFromGuiElement(guiElement: Control) {
        return this._guiNodes.filter(n => n.guiNode === guiElement)[0];
     }
 
@@ -236,7 +237,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._svgCanvas.innerHTML = "";
     }
 
-    appendBlock(guiElement: BABYLON.GUI.Control) {
+    appendBlock(guiElement: Control) {
         var newGuiNode = new GUINode(this.props.globalState, guiElement);
         newGuiNode.appendVisual(this._graphCanvas, this);
         this._guiNodes.push(newGuiNode);
@@ -503,7 +504,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         //camera.attachControl(true);
         
         // GUI
-        this.globalState.guiTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+        this.globalState.guiTexture = AdvancedDynamicTexture.CreateFullscreenUI("UI");
         scene.getEngine().onCanvasPointerOutObservable.clear();
         // Watch for browser/canvas resize events
         window.addEventListener("resize", function () {

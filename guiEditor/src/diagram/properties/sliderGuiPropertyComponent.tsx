@@ -5,20 +5,16 @@ import { IPropertyComponentProps } from './propertyComponentProps';
 import { GeneralPropertyTabComponent } from './genericNodePropertyComponent';
 import { TextLineComponent } from '../../sharedComponents/textLineComponent';
 import { NumericInputComponent } from '../../sharedComponents/numericInputComponent';
-import { Color4 } from 'babylonjs';
+import { Slider } from "babylonjs-gui/2D/controls/sliders/slider";
+
 
 export class SliderPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
         super(props);
-        this.slider = this.props.guiBlock as BABYLON.GUI.Slider;
+        this.slider = this.props.guiBlock as Slider;
     }
 
-    private slider : BABYLON.GUI.Slider;
-
-    getColorString()
-    {
-        return Color4.FromHexString(this.slider.background);
-    }
+    private slider : Slider;
 
     render() {
         return (

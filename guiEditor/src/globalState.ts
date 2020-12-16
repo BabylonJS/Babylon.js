@@ -7,9 +7,10 @@ import { Color4 } from 'babylonjs/Maths/math.color';
 import { GUINode } from './diagram/guiNode';
 import { Vector2 } from 'babylonjs/Maths/math.vector';
 import { FramePortData, WorkbenchComponent } from './diagram/workbench';
+import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
 
 export class GlobalState {
-    guiTexture: BABYLON.GUI.AdvancedDynamicTexture;
+    guiTexture: AdvancedDynamicTexture;
     hostElement: HTMLElement;
     hostDocument: HTMLDocument;
     hostWindow: Window;

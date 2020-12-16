@@ -5,6 +5,7 @@ import { WorkbenchComponent, FramePortData } from './workbench';
 import { PropertyGuiLedger } from './propertyLedger';
 import * as React from 'react';
 import { GenericPropertyComponent } from './properties/genericNodePropertyComponent';
+import { Control } from 'babylonjs-gui/2D/controls/control';
 
 export class GUINode {
     private _x = 0;
@@ -99,7 +100,7 @@ export class GUINode {
         }
     }
 
-    public constructor(globalState: GlobalState, public guiNode: BABYLON.GUI.Control) {
+    public constructor(globalState: GlobalState, public guiNode: Control) {
         this._globalState = globalState;
         this._ownerCanvas = this._globalState.workbench;
         
