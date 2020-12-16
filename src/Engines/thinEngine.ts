@@ -2250,7 +2250,7 @@ export class ThinEngine {
         var shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
 
         if (!shader) {
-            throw new Error("Something went wrong while compile the shader.");
+            throw new Error(`Something went wrong while creating a gl ${type} shader object. gl error=${gl.getError()}`);
         }
 
         gl.shaderSource(shader, source);
