@@ -253,6 +253,10 @@ export class Geometry implements IGetSetVerticesData {
             this._vertexBuffers[kind].dispose();
             delete this._vertexBuffers[kind];
         }
+
+        if (this._vertexArrayObjects) {
+            this._disposeVertexArrayObjects();
+        }
     }
 
     /**
@@ -295,12 +299,6 @@ export class Geometry implements IGetSetVerticesData {
 
         if (this._vertexArrayObjects) {
             this._disposeVertexArrayObjects();
-            this._vertexArrayObjects = {}; // Will trigger a rebuild of the VAO if supported
-
-            var meshes = this._meshes;
-            for (var index = 0; index < numOfMeshes; index++) {
-                meshes[index]._invalidateInstanceVertexArrayObject();
-            }
         }
     }
 
@@ -585,8 +583,6 @@ export class Geometry implements IGetSetVerticesData {
         if (this._indexBuffer) {
             this._engine._releaseBuffer(this._indexBuffer);
         }
-
-        this._disposeVertexArrayObjects();
 
         this._indices = indices;
         this._indexBufferIsUpdatable = updatable;
@@ -927,7 +923,13 @@ export class Geometry implements IGetSetVerticesData {
             for (var kind in this._vertexArrayObjects) {
                 this._engine.releaseVertexArrayObject(this._vertexArrayObjects[kind]);
             }
-            this._vertexArrayObjects = {};
+            this._vertexArrayObjects = {}; // Will trigger a rebuild of the VAO if supported
+
+            var meshes = this._meshes;
+            var numOfMeshes = meshes.length;
+            for (var index = 0; index < numOfMeshes; index++) {
+                meshes[index]._invalidateInstanceVertexArrayObject();
+            }
         }
     }
 
