@@ -1903,6 +1903,12 @@ declare module "babylonjs-node-editor/components/preview/previewAreaComponent" {
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-node-editor/sharedComponents/popup" {
+    export class Popup {
+        static CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): HTMLDivElement | null;
+        static _CopyStyles(sourceDoc: HTMLDocument, targetDoc: HTMLDocument): void;
+    }
+}
 declare module "babylonjs-node-editor/graphEditor" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
@@ -1968,17 +1974,10 @@ declare module "babylonjs-node-editor/graphEditor" {
         initiatePreviewArea: (canvas?: HTMLCanvasElement) => void;
         createPopUp: () => void;
         createPopupWindow: (title: string, windowVariableName: string, width?: number, height?: number) => Window | null;
-        copyStyles: (sourceDoc: HTMLDocument, targetDoc: HTMLDocument) => void;
         createPreviewMeshControlHost: (options: IInternalPreviewAreaOptions, parentControl: Nullable<HTMLElement>) => void;
         createPreviewHost: (options: IInternalPreviewAreaOptions, parentControl: Nullable<HTMLElement>) => void;
         fixPopUpStyles: (document: Document) => void;
         render(): JSX.Element;
-    }
-}
-declare module "babylonjs-node-editor/sharedComponents/popup" {
-    export class Popup {
-        static CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): HTMLDivElement | null;
-        private static _CopyStyles;
     }
 }
 declare module "babylonjs-node-editor/nodeEditor" {
@@ -3793,6 +3792,12 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export class Popup {
+        static CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): HTMLDivElement | null;
+        static _CopyStyles(sourceDoc: HTMLDocument, targetDoc: HTMLDocument): void;
+    }
+}
+declare module NODEEDITOR {
     interface IGraphEditorProps {
         globalState: GlobalState;
     }
@@ -3850,17 +3855,10 @@ declare module NODEEDITOR {
         initiatePreviewArea: (canvas?: HTMLCanvasElement) => void;
         createPopUp: () => void;
         createPopupWindow: (title: string, windowVariableName: string, width?: number, height?: number) => Window | null;
-        copyStyles: (sourceDoc: HTMLDocument, targetDoc: HTMLDocument) => void;
         createPreviewMeshControlHost: (options: IInternalPreviewAreaOptions, parentControl: BABYLON.Nullable<HTMLElement>) => void;
         createPreviewHost: (options: IInternalPreviewAreaOptions, parentControl: BABYLON.Nullable<HTMLElement>) => void;
         fixPopUpStyles: (document: Document) => void;
         render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
-    export class Popup {
-        static CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): HTMLDivElement | null;
-        private static _CopyStyles;
     }
 }
 declare module NODEEDITOR {
