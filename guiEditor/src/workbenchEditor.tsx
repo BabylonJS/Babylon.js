@@ -12,7 +12,6 @@ import { IEditorData } from './nodeLocationInfo';
 
 import { WorkbenchComponent } from './diagram/workbench';
 import { GUINode } from './diagram/guiNode';
-import { IInspectorOptions } from "babylonjs/Debug/debugLayer";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 require("./main.scss");
@@ -24,14 +23,6 @@ interface IGraphEditorProps {
 interface IGraphEditorState {
     showPreviewPopUp: boolean;
 };
-
-interface IInternalPreviewAreaOptions extends IInspectorOptions {
-    popup: boolean;
-    original: boolean;
-    explorerWidth?: string;
-    inspectorWidth?: string;
-    embedHostWidth?: string;
-}
 
 export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEditorState> {
     private _workbenchCanvas: WorkbenchComponent;
@@ -46,7 +37,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
 
     private _onWidgetKeyUpPointer: any;
 
-    private _previewHost: Nullable<HTMLElement>;
     private _popUpWindow: Window;
 
     /**
@@ -60,31 +50,25 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
 
         this._blocks.push(block);
 
-        // Graph
-        const node = null;// this._workbenchCanvas.appendBlock(block);
-
-
+        //TODO: Implement
+        const node = null;
         return node;
     }
 
     componentDidMount() {
         if (this.props.globalState.hostDocument) {
             this._workbenchCanvas = (this.refs["graphCanvas"] as WorkbenchComponent);
-           // this._previewManager = new PreviewManager(this.props.globalState.hostDocument.getElementById("preview-canvas") as HTMLCanvasElement, this.props.globalState);
         }
 
         if (navigator.userAgent.indexOf("Mobile") !== -1) {
             ((this.props.globalState.hostDocument || document).querySelector(".blocker") as HTMLElement).style.visibility = "visible";
         }
-
-
     }
 
     componentWillUnmount() {
         if (this.props.globalState.hostDocument) {
             this.props.globalState.hostDocument!.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
         }
-
     }
 
     constructor(props: IGraphEditorProps) {
@@ -93,24 +77,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         this.state = {
             showPreviewPopUp: false
         };
-
-        this.props.globalState.onRebuildRequiredObservable.add(() => {
-
-        });
-
-        this.props.globalState.onResetRequiredObservable.add(() => {
-
-        });
-
-        this.props.globalState.onImportFrameObservable.add((source: any) => {
-            /*const frameData = source.editorData.frames[0];
-
-            // create new graph nodes for only blocks from frame (last blocks added)
-            this.props.globalState.nodeMaterial.attachedBlocks.slice(-(frameData.blocks.length)).forEach((block: NodeMaterialBlock) => {
-                this.createNodeFromObject();
-            });
-            this.reOrganize(this.props.globalState.nodeMaterial.editorData, true);*/
-        })
 
         this.props.globalState.onZoomToFitRequiredObservable.add(() => {
             this.zoomToFit();
@@ -121,21 +87,12 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         });
 
 
-
         this.props.globalState.hostDocument!.addEventListener("keydown", evt => {
             if ((evt.keyCode === 46 || evt.keyCode === 8) && !this.props.globalState.blockKeyboardEvents) { // Delete                
                 let selectedItems = this._workbenchCanvas.selectedGuiNodes;
 
                 for (var selectedItem of selectedItems) {
-                    selectedItem.dispose();
-
-                    //let targetBlock = selectedItem.block;
-                    //this.props.globalState.nodeMaterial!.removeBlock(targetBlock);
-                    //let blockIndex = this._blocks.indexOf(targetBlock);
-
-                    //if (blockIndex > -1) {
-                    //    this._blocks.splice(blockIndex, 1);
-                    //}                                  
+                    selectedItem.dispose();                               
                 }
                
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(null);  
@@ -161,10 +118,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                 }
 
             } else if (evt.key === "v") { // Paste
-                //const rootElement = this.props.globalState.hostDocument!.querySelector(".diagram-container") as HTMLDivElement;
-                //const zoomLevel = this._workbenchCanvas.zoom;
-                //let currentY = (this._mouseLocationY - rootElement.offsetTop - this._workbenchCanvas.y - 20) / zoomLevel;
-
+                //TODO: Implement
             }
 
         }, false);
@@ -189,35 +143,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
             if (!block) {
                 continue;
             }
-
-            let clone = null;//block.clone(this.props.globalState.nodeMaterial.getScene());
-
-            if (!clone) {
-                return;
-            }
-
-            //let newNode = this.createNodeFromObject(clone, false);
-
-            /*let x = 0;
-            let y = 0;
-            if (originalNode) {
-                x = currentX + node.x - originalNode.x;
-                y = currentY + node.y - originalNode.y;
-            } else {
-                originalNode = node;
-                x = currentX;
-                y = currentY;
-            }*/
-
-            /*newNode.x = x;
-            newNode.y = y;
-            newNode.cleanAccumulation();
-
-            newNodes.push(newNode);
-
-            if (selectNew) {
-                this.props.globalState.onSelectionChangedObservable.notifyObservers(newNode);
-            }*/
         }
 
         return newNodes;
@@ -262,9 +187,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                     }
                 }
                 
-                if (!isImportingAFrame){
-                 //   this._workbenchCanvas.processEditorData(editorData);
-                }
             }
 
             this._workbenchCanvas._isLoading = false;
@@ -318,12 +240,12 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
 
         let guiElement = BlockTools.GetGuiFromString(data);
 
-        //guiElement.background = "#138016FF";
-
         let newGuiNode = this._workbenchCanvas.appendBlock(guiElement);
         
-        /*let x = event.clientX;// - event.currentTarget.offsetLeft - this._workbenchCanvas.x;
-        let y = event.clientY;// - event.currentTarget.offsetTop - this._workbenchCanvas.y - 20; 
+        //TODO: Get correct positioning
+
+        /*let x = event.clientX; // - event.currentTarget.offsetLeft - this._workbenchCanvas.x;
+        let y = event.clientY;   // - event.currentTarget.offsetTop - this._workbenchCanvas.y - 20; 
 
         newGuiNode.x += (x - newGuiNode.x);
         newGuiNode.y += y - newGuiNode.y;
@@ -339,49 +261,12 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         this.setState({
             showPreviewPopUp : true
         });
-        this.createPopUp();
         this.props.globalState.hostWindow.addEventListener('beforeunload', this.handleClosingPopUp);
     }
 
     handleClosingPopUp = () => {
        
         this._popUpWindow.close();
-        this.setState({
-            showPreviewPopUp: false
-        }, () => this.initiatePreviewArea()
-        );
-    }
-
-    initiatePreviewArea = (canvas: HTMLCanvasElement = this.props.globalState.hostDocument.getElementById("preview-canvas") as HTMLCanvasElement) => {
-        //this._previewManager =  new PreviewManager(canvas, this.props.globalState);
-    }
-
-    createPopUp = () => {
-        const userOptions = {
-            original: true,
-            popup: true,
-            overlay: false,
-            embedMode: false,
-            enableClose: true,
-            handleResize: true,
-            enablePopup: true,
-
-        };
-        const options = {
-            embedHostWidth: "100%",
-            ...userOptions
-        };
-        const popUpWindow = this.createPopupWindow("PREVIEW AREA", "_PreviewHostWindow");
-        if (popUpWindow) {
-            popUpWindow.addEventListener('beforeunload',  this.handleClosingPopUp);
-            const parentControl = popUpWindow.document.getElementById('gui-editor-workbench-root');
-            this.createPreviewMeshControlHost(options, parentControl);
-            this.createPreviewHost(options, parentControl);
-            if (parentControl) {
-                this.fixPopUpStyles(parentControl.ownerDocument!);
-                this.initiatePreviewArea(parentControl.ownerDocument!.getElementById("preview-canvas") as HTMLCanvasElement);
-            }
-        }
     }
 
     createPopupWindow = (title: string, windowVariableName: string, width = 500, height = 500): Window | null => {
@@ -459,53 +344,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                 console.log(e);
             }
         }
-    }
-
-    createPreviewMeshControlHost = (options: IInternalPreviewAreaOptions, parentControl: Nullable<HTMLElement>) => {
-        // Prepare the preview control host
-       /* if (parentControl) {
-
-            const host = parentControl.ownerDocument!.createElement("div");
-
-            host.id = "PreviewMeshControl-host";
-            host.style.width = options.embedHostWidth || "auto";
-
-            parentControl.appendChild(host);
-            const PreviewMeshControlComponentHost = React.createElement(PreviewMeshControlComponent, {
-                globalState: this.props.globalState,
-                togglePreviewAreaComponent: this.handlePopUp
-            });
-            ReactDOM.render(PreviewMeshControlComponentHost, host);
-        }*/
-    }
-
-    createPreviewHost = (options: IInternalPreviewAreaOptions, parentControl: Nullable<HTMLElement>) => {
-        // Prepare the preview host
-        if (parentControl) {
-            const host = parentControl.ownerDocument!.createElement("div");
-
-            host.id = "PreviewAreaComponent-host";
-            host.style.width = options.embedHostWidth || "auto";
-            host.style.display = "grid";
-            host.style.gridRow = '2';
-            host.style.gridTemplateRows = "auto 40px";
-
-            parentControl.appendChild(host);
-
-            this._previewHost = host;
-
-            if (!options.overlay) {
-                this._previewHost.style.position = "relative";
-            }
-        }
-
-        /*if (this._previewHost) {
-            const PreviewAreaComponentHost = React.createElement(PreviewAreaComponent, {
-                globalState: this.props.globalState,
-                width: 200
-            });
-            ReactDOM.render(PreviewAreaComponentHost, this._previewHost);
-        }*/
     }
 
     fixPopUpStyles = (document: Document) => {
