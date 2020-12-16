@@ -1431,12 +1431,13 @@ export class Vector3 {
         const v0: Vector3 = vector0.normalizeToRef(MathTmp.Vector3[1]);
         const v1: Vector3 = vector1.normalizeToRef(MathTmp.Vector3[2]);
         const dot: number = Vector3.Dot(v0, v1);
+        const angle = Math.acos(dot);
         const n = MathTmp.Vector3[3];
         Vector3.CrossToRef(v0, v1, n);
         if (Vector3.Dot(n, normal) > 0) {
-            return Math.acos(dot);
+            return isNaN(angle) ? 0 : angle;
         }
-        return -Math.acos(dot);
+        return isNaN(angle) ? -Math.PI : -Math.acos(dot);
     }
 
     /**
