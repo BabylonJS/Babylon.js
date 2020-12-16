@@ -6,13 +6,13 @@ import { Portal } from './portal';
 import { LogComponent, LogEntry } from './components/log/logComponent';
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { Nullable } from 'babylonjs/types';
-import { MessageDialogComponent } from './sharedComponents/messageDialog';
 import { BlockTools } from './blockTools';
 import { IEditorData } from './nodeLocationInfo';
 
 import { WorkbenchComponent } from './diagram/workbench';
 import { GUINode } from './diagram/guiNode';
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { MessageDialogComponent } from "./sharedComponents/messageDialog";
 
 require("./main.scss");
 

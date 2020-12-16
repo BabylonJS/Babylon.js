@@ -5,8 +5,7 @@ import { IPropertyComponentProps } from './propertyComponentProps';
 import { CheckBoxLineComponent } from '../../sharedComponents/checkBoxLineComponent';
 import { FloatLineComponent } from '../../sharedComponents/floatLineComponent';
 import { SliderLineComponent } from '../../sharedComponents/sliderLineComponent';
-import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
-import { PropertyTypeForEdition, IPropertyDescriptionForEdition, IEditablePropertyListOption } from 'babylonjs/Materials/Node/nodeMaterialDecorator';
+import { PropertyTypeForEdition, IPropertyDescriptionForEdition } from 'babylonjs/Materials/Node/nodeMaterialDecorator';
 
 export class GenericPropertyComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
@@ -94,12 +93,6 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                             <SliderLineComponent label={displayName} target={this.props.guiBlock} globalState={this.props.globalState} propertyName={propertyName} step={Math.abs((options.max as number) - (options.min as number)) / 100.0} minimum={Math.min(options.min as number, options.max as number)} maximum={options.max as number} onChange={() => this.forceRebuild(options.notifiers)}/>
                         );
                     }
-                    break;
-                }
-                case PropertyTypeForEdition.List: {
-                    components.push(
-                        <OptionsLineComponent label={displayName} options={options.options as IEditablePropertyListOption[]} target={this.props.guiBlock} propertyName={propertyName} onSelect={() => this.forceRebuild(options.notifiers)} />
-                    );
                     break;
                 }
             }
