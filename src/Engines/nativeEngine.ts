@@ -60,6 +60,7 @@ interface INativeEngine {
     readonly ADDRESS_MODE_BORDER: number;
     readonly ADDRESS_MODE_MIRROR_ONCE: number;
 
+    readonly TEXTURE_FORMAT_RGB8: number;
     readonly TEXTURE_FORMAT_RGBA8: number;
     readonly TEXTURE_FORMAT_RGBA32F: number;
 
@@ -135,6 +136,7 @@ interface INativeEngine {
     createTexture(): WebGLTexture;
     createDepthTexture(texture: WebGLTexture, width: number, height: number): WebGLTexture;
     loadTexture(texture: WebGLTexture, data: ArrayBufferView, generateMips: boolean, invertY: boolean, onSuccess: () => void, onError: () => void): void;
+    loadRawTexture(texture: WebGLTexture, data: ArrayBufferView, width: number, height: number, format: number, generateMips: boolean, invertY: boolean): void;
     loadCubeTexture(texture: WebGLTexture, data: Array<ArrayBufferView>, generateMips: boolean, onSuccess: () => void, onError: () => void): void;
     loadCubeTextureWithMips(texture: WebGLTexture, data: Array<Array<ArrayBufferView>>, onSuccess: () => void, onError: () => void): void;
     getTextureWidth(texture: WebGLTexture): number;
@@ -1535,6 +1537,44 @@ export class NativeEngine extends Engine {
         this.createTexture('data:my_image_name', true, invertY, null, Texture.BILINEAR_SAMPLINGMODE, undefined, undefined, imageData, texture, NativeEngine.TEXTUREFORMAT_RGBA, null, undefined);
     }
 
+    public createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
+        let texture = new InternalTexture(this, InternalTextureSource.Raw);
+
+        texture.generateMipMaps = generateMipMaps;
+        texture.samplingMode = samplingMode;
+        texture.invertY = invertY;
+        texture.baseWidth = width;
+        texture.baseHeight = height;
+        texture.width = texture.baseWidth;
+        texture.height = texture.baseHeight;
+        texture._compression = compression;
+        texture.type = type;
+
+        this.updateRawTexture(texture, data, format, invertY, compression, type);
+
+        if (texture._hardwareTexture) {
+            var webGLTexture = texture._hardwareTexture.underlyingResource;
+            var filter = this._getNativeSamplingMode(samplingMode);
+            this._native.setTextureSampling(webGLTexture, filter);
+        }
+
+        this._internalTexturesCache.push(texture);
+        return texture;
+    }
+
+    public updateRawTexture(texture: Nullable<InternalTexture>, bufferView: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): void {
+        if (!texture) {
+            return;
+        }
+
+        if (bufferView && texture._hardwareTexture) {
+            const webGLTexture = texture._hardwareTexture.underlyingResource;
+            this._native.loadRawTexture(webGLTexture, bufferView, texture.width, texture.height, this._getNativeTextureFormat(format, type), texture.generateMipMaps, texture.invertY);
+        }
+
+        texture.isReady = true;
+    }
+
     // TODO: Refactor to share more logic with babylon.engine.ts version.
     /**
      * Usually called from Texture.ts.
@@ -2140,7 +2180,10 @@ export class NativeEngine extends Engine {
     }
 
     private _getNativeTextureFormat(format: number, type: number): number {
-        if (format == Constants.TEXTUREFORMAT_RGBA && type == Constants.TEXTURETYPE_UNSIGNED_INT) {
+        if (format == Constants.TEXTUREFORMAT_RGB && type == Constants.TEXTURETYPE_UNSIGNED_INT) {
+            return this._native.TEXTURE_FORMAT_RGB8;
+        }
+        else if (format == Constants.TEXTUREFORMAT_RGBA && type == Constants.TEXTURETYPE_UNSIGNED_INT) {
             return this._native.TEXTURE_FORMAT_RGBA8;
         }
         else if (format == Constants.TEXTUREFORMAT_RGBA && type == Constants.TEXTURETYPE_FLOAT) {
