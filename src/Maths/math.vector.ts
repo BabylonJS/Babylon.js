@@ -3457,6 +3457,7 @@ export class Quaternion {
      * Updates a quaternion so that it rotates vector vecFrom to vector vecTo
      * @param vecFrom defines the direction vector from which to rotate
      * @param vecTo defines the direction vector to which to rotate
+     * @param result the quaternion to store the result
      * @returns the updated quaternion
      */
     public static FromUnitVectorsToRef(vecFrom: DeepImmutable<Vector3>, vecTo: DeepImmutable<Vector3>, result: Quaternion): Quaternion {
