@@ -1,7 +1,7 @@
 export class BlockTools {
     public static GetGuiFromString(data: string) {
 
-        //TODO: Add more elements and moedfty default values for certain types.
+        //TODO: Add more elements and create default values for certain types.
         let element;
         switch (data) {
             case "Slider":
