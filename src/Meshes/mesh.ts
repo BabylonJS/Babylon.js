@@ -1521,7 +1521,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // VBOs
-        this._geometry._bind(effect, indexToBind);
+        if (!this._userInstancedBuffersStorage) {
+            this._geometry._bind(effect, indexToBind);
+        } else {
+            this._geometry._bind(effect, indexToBind, this._userInstancedBuffersStorage.vertexBuffers, this._userInstancedBuffersStorage.vertexArrayObjects);
+        }
         return this;
     }
 
@@ -1678,11 +1682,20 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             instancesBuffer = new Buffer(engine, instanceStorage.instancesData, true, 16, false, true);
             instanceStorage.instancesBuffer = instancesBuffer;
+            if (!this._userInstancedBuffersStorage) {
+                this._userInstancedBuffersStorage = {
+                    data: {},
+                    vertexBuffers: {},
+                    strides: {},
+                    sizes: {},
+                    vertexArrayObjects: (this.getEngine().getCaps().vertexArrayObject) ? {} : undefined
+                };
+            }
 
-            this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world0", 0, 4));
-            this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world1", 4, 4));
-            this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world2", 8, 4));
-            this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world3", 12, 4));
+            this._userInstancedBuffersStorage.vertexBuffers["world0"] = instancesBuffer.createVertexBuffer("world0", 0, 4);
+            this._userInstancedBuffersStorage.vertexBuffers["world1"] = instancesBuffer.createVertexBuffer("world0", 4, 4);
+            this._userInstancedBuffersStorage.vertexBuffers["world2"] = instancesBuffer.createVertexBuffer("world0", 8, 4);
+            this._userInstancedBuffersStorage.vertexBuffers["world3"] = instancesBuffer.createVertexBuffer("world0", 12, 4);
         } else {
             if (!this._instanceDataStorage.isFrozen) {
                 instancesBuffer!.updateDirectly(instanceStorage.instancesData, 0, instancesCount);
@@ -1778,6 +1791,19 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             // Dispose instance buffer to be recreated in _renderWithInstances when rendered
             this._instanceDataStorage.instancesBuffer.dispose();
             this._instanceDataStorage.instancesBuffer = null;
+        }
+        if (this._userInstancedBuffersStorage) {
+            for (var kind in this._userInstancedBuffersStorage.vertexBuffers) {
+                var buffer = this._userInstancedBuffersStorage.vertexBuffers[kind];
+                if (buffer) {
+                    // Dispose instance buffer to be recreated in _renderWithInstances when rendered
+                    buffer.dispose();
+                    this._userInstancedBuffersStorage.vertexBuffers[kind] = null;
+                }
+            }
+            if (this._userInstancedBuffersStorage.vertexArrayObjects) {
+                this._userInstancedBuffersStorage.vertexArrayObjects = {};
+            }
         }
         super._rebuild();
     }
@@ -2409,6 +2435,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Do nothing
     }
 
+    /** @hidden */
+    public _invalidateInstanceVertexArrayObject() {
+        // Do nothing
+    }
+
     /**
      * Modifies the mesh geometry according to a displacement map.
      * A displacement map is a colored image. Each pixel color value (actually a gradient computed from red, green, blue values) will give the displacement to apply to each mesh vertex.
@@ -2949,18 +2980,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns a new InstancedMesh
      */
     public createInstance(name: string): InstancedMesh {
-        let geometry = this.geometry;
-
-        if (geometry && geometry.meshes.length > 1) {
-            let others = geometry.meshes.slice(0);
-            for (var other of others) {
-                if (other === this) {
-                    continue;
-                }
-                other.makeGeometryUnique();
-            }
-        }
-
         return Mesh._instancedMeshFactory(name, this);
     }
 
