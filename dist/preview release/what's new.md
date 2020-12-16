@@ -14,6 +14,9 @@
 - Moving button to shared uI folder.([msDestiny14](https://github.com/msDestiny14))
 - Moving additional components to shared UI folder.([msDestiny14](https://github.com/msDestiny14))
 
+### Engine
+- Moved all instance data from Geometry to Mesh such that the same Geometry objects can be used by many meshes with instancing. Reduces memory consumption on CPU/GPU. ([breakin](https://github.com/breakin)
+
 ### Loaders
 
 - Added support for EXT_meshopt_compression for glTF loader. ([zeux](https://github.com/zeux))
@@ -83,3 +86,4 @@
     - [Shader support differences](https://doc.babylonjs.com/advanced_topics/webGPU/webGPUBreakingChanges#shader-code-differences)
 - Use both `mesh.visibility` and `material.alpha` values to compute the global alpha value used by the soft transparent shadow rendering code. Formerly was only using `mesh.visibility` ([Popov72](https://github.com/Popov72))
 - Depth renderer: don't render mesh if `infiniteDistance = true` or if `material.disableDepthWrite = true` ([Popov72](https://github.com/Popov72))
+- Mesh.createInstance no longer make a unique Geometry for the Mesh so updating one Geometry can affect more meshes than before. Use Mesh.makeUniqueGeometry for old behaviour. ([breakin](https://github.com/breakin))
