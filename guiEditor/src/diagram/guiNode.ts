@@ -64,11 +64,11 @@ export class GUINode {
     }
 
     public get width() {
-        return 0;
+        return this.guiNode.widthInPixels;
     }
 
     public get height() {
-        return 0;
+        return this.guiNode.heightInPixels;
     }
 
     public get id() {
@@ -127,6 +127,7 @@ export class GUINode {
         }
         );
 
+        //TODO: Implement
         this._onSelectionBoxMovedObserver = this._globalState.onSelectionBoxMoved.add(rect1 => {
         });
 
@@ -142,9 +143,10 @@ export class GUINode {
        
         if(!this.clicked) return false;
         console.log("moving");
+
+        //TODO: Implement move with zoom factor.
         let newX = (evt.x - startPos.x) ;// / this._ownerCanvas.zoom;
         let newY = (evt.y - startPos.y) ;// / this._ownerCanvas.zoom;
-
 
         this.x += newX;
         this.y += newY;  
@@ -169,11 +171,8 @@ export class GUINode {
 
     public updateVisual()
     {
-        if(this.guiNode)
-        {
-            this.guiNode.leftInPixels = this.x;
-            this.guiNode.topInPixels = this.y;
-        }
+        this.guiNode.leftInPixels = this.x;
+        this.guiNode.topInPixels = this.y;
     }
 
     public appendVisual(root: HTMLDivElement, owner: WorkbenchComponent) {
@@ -197,6 +196,5 @@ export class GUINode {
         }
 
         this.guiNode.dispose();   
-
     }
 }
