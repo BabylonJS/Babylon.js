@@ -1,12 +1,12 @@
 import { Nullable } from "babylonjs/types";
-import { Observable } from 'babylonjs/Misc/observable';
-import { LogEntry } from './components/log/logComponent';
-import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
-import { DataStorage } from 'babylonjs/Misc/dataStorage';
-import { Color4 } from 'babylonjs/Maths/math.color';
-import { GUINode } from './diagram/guiNode';
-import { Vector2 } from 'babylonjs/Maths/math.vector';
-import { FramePortData, WorkbenchComponent } from './diagram/workbench';
+import { Observable } from "babylonjs/Misc/observable";
+import { LogEntry } from "./components/log/logComponent";
+import { NodeMaterialBlock } from "babylonjs/Materials/Node/nodeMaterialBlock";
+import { DataStorage } from "babylonjs/Misc/dataStorage";
+import { Color4 } from "babylonjs/Maths/math.color";
+import { GUINode } from "./diagram/guiNode";
+import { Vector2 } from "babylonjs/Maths/math.vector";
+import { FramePortData, WorkbenchComponent } from "./diagram/workbench";
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
 
 export class GlobalState {
@@ -51,7 +51,7 @@ export class GlobalState {
     workbench: WorkbenchComponent;
     storeEditorData: (serializationObject: any, frame?: Nullable<null>) => void;
 
-    customSave?: {label: string, action: (data: string) => Promise<void>};
+    customSave?: { label: string; action: (data: string) => Promise<void> };
 
     public constructor() {
         this.backFaceCulling = DataStorage.ReadBoolean("BackFaceCulling", true);

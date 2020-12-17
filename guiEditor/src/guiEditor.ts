@@ -1,17 +1,17 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { GlobalState } from './globalState';
-import { WorkbenchEditor } from './workbenchEditor';
+import { GlobalState } from "./globalState";
+import { WorkbenchEditor } from "./workbenchEditor";
 import { Popup } from "./sharedComponents/popup";
-import { SerializationTools } from './serializationTools';
-import { Observable } from 'babylonjs/Misc/observable';
+import { SerializationTools } from "./serializationTools";
+import { Observable } from "babylonjs/Misc/observable";
 /**
  * Interface used to specify creation options for the gui editor
  */
 export interface IGuiEditorOptions {
-    hostElement?: HTMLElement,
-    customSave?: {label: string, action: (data: string) => Promise<void>};
-    customLoadObservable?: Observable<any>
+    hostElement?: HTMLElement;
+    customSave?: { label: string; action: (data: string) => Promise<void> };
+    customLoadObservable?: Observable<any>;
 }
 
 /**
@@ -33,7 +33,7 @@ export class GuiEditor {
         }
 
         let hostElement = options.hostElement;
-        
+
         if (!hostElement) {
             hostElement = Popup.CreatePopup("BABYLON.JS GUI EDITOR", "gui-editor", 1000, 800)!;
         }
@@ -42,25 +42,25 @@ export class GuiEditor {
         globalState.hostElement = hostElement;
         globalState.hostDocument = hostElement.ownerDocument!;
         globalState.customSave = options.customSave;
-        globalState.hostWindow =  hostElement.ownerDocument!.defaultView!;
+        globalState.hostWindow = hostElement.ownerDocument!.defaultView!;
 
         const graphEditor = React.createElement(WorkbenchEditor, {
-            globalState: globalState
+            globalState: globalState,
         });
 
         ReactDOM.render(graphEditor, hostElement);
-        
+
         // create the middle workbench canvas
-        if(!globalState.guiTexture) {
+        if (!globalState.guiTexture) {
             globalState.workbench.createGUICanvas();
         }
 
         if (options.customLoadObservable) {
-            options.customLoadObservable.add(data => {
+            options.customLoadObservable.add((data) => {
                 SerializationTools.Deserialize(data, globalState);
                 globalState.onResetRequiredObservable.notifyObservers();
                 globalState.onBuiltObservable.notifyObservers();
-            })
+            });
         }
 
         this._CurrentState = globalState;
@@ -73,11 +73,8 @@ export class GuiEditor {
                 if (popupWindow) {
                     popupWindow.close();
                 }
-
             };
         }
-        window.addEventListener('beforeunload', () => {
-        });
+        window.addEventListener("beforeunload", () => {});
     }
 }
-
