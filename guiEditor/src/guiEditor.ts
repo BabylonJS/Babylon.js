@@ -8,7 +8,7 @@ import { Observable } from 'babylonjs/Misc/observable';
 /**
  * Interface used to specify creation options for the gui editor
  */
-export interface INodeEditorOptions {
+export interface IGuiEditorOptions {
     hostElement?: HTMLElement,
     customSave?: {label: string, action: (data: string) => Promise<void>};
     customLoadObservable?: Observable<any>
@@ -24,7 +24,7 @@ export class GuiEditor {
      * Show the gui editor
      * @param options defines the options to use to configure the gui editor
      */
-    public static Show(options: INodeEditorOptions) {
+    public static Show(options: IGuiEditorOptions) {
         if (this._CurrentState) {
             var popupWindow = (Popup as any)["gui-editor"];
             if (popupWindow) {
@@ -35,7 +35,7 @@ export class GuiEditor {
         let hostElement = options.hostElement;
         
         if (!hostElement) {
-            hostElement = Popup.CreatePopup("BABYLON.JS NODE EDITOR", "gui-editor", 1000, 800)!;
+            hostElement = Popup.CreatePopup("BABYLON.JS GUI EDITOR", "gui-editor", 1000, 800)!;
         }
 
         let globalState = new GlobalState();
