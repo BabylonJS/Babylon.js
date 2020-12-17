@@ -350,7 +350,7 @@ export class TextureBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        if (state.target === NodeMaterialBlockTargets.Vertex || this._fragmentOnly) {
+        if (state.target === NodeMaterialBlockTargets.Vertex || this._fragmentOnly || (state.target === NodeMaterialBlockTargets.Fragment && this._tempTextureRead === undefined)) {
             this._tempTextureRead = state._getFreeVariableName("tempTextureRead");
         }
 

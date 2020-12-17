@@ -196,7 +196,10 @@ export class LensFlareSystem {
             this._positionY += this.viewportBorder;
         }
 
-        if (position.z > 0) {
+        const rhs = this._scene.useRightHandedSystem;
+        const okZ = position.z > 0 && !rhs || position.z < 0 && rhs;
+
+        if (okZ) {
             if ((this._positionX > globalViewport.x) && (this._positionX < globalViewport.x + globalViewport.width)) {
                 if ((this._positionY > globalViewport.y) && (this._positionY < globalViewport.y + globalViewport.height)) {
                     return true;

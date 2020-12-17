@@ -791,8 +791,7 @@ export class SceneLoader {
                 });
             }, onProgress, (scene, message, exception) => {
                 reject(exception || new Error(message));
-            },
-                pluginExtension);
+            }, pluginExtension);
         });
     }
 

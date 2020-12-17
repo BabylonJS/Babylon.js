@@ -375,7 +375,7 @@ export class EnvironmentTextureTools {
                         // Uncompress the data to a RTT
                         rgbdPostProcess!.onApply = (effect) => {
                             effect._bindTexture("textureSampler", tempTexture);
-                            effect.setFloat2("scale", 1, 1);
+                            effect.setFloat2("scale", 1, (image instanceof ImageBitmap) ? -1 : 1);
                         };
 
                         if (!engine.scenes.length) {
