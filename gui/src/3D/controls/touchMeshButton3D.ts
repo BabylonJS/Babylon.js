@@ -23,7 +23,7 @@ export class TouchMeshButton3D extends TouchButton3D {
             super(name, options.collisionMesh);
         }
         else {
-            var newCollisionMesh = options.collisionMesh.clone();
+            let newCollisionMesh = options.collisionMesh.clone();
             newCollisionMesh.isVisible = false;
             super(name, newCollisionMesh);
         }

@@ -198,7 +198,7 @@ export class TouchHolographicButton extends TouchButton3D {
      */
     constructor(name?: string, shareMaterials = true) {
         super(name);
-        
+
         this._shareMaterials = shareMaterials;
 
         // Default animations

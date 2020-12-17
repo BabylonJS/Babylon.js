@@ -166,7 +166,7 @@ export class WebXRHand implements IDisposable {
      * @param _handMesh an optional hand mesh. if not provided, ours will be used
      * @param _rigMapping an optional rig mapping for the hand mesh. if not provided, ours will be used
      * @param disableDefaultHandMesh should the default mesh creation be disabled
-     * @param _nearInteractionMesh does a near interaction mesh exist for collision checking
+     * @param _nearInteractionMesh as optional mesh used for near interaction collision checking
      */
     constructor(
         /** the controller to which the hand correlates */
@@ -271,8 +271,7 @@ export class WebXRHand implements IDisposable {
         });
         // Update the invisible fingertip collidable
         if (this._nearInteractionMesh) {
-            const indexTipIdx = this.handPartsDefinition[HandPart.INDEX][4];
-            const indexTipPose = this.trackedMeshes[indexTipIdx].position;
+            const indexTipPose = this.trackedMeshes[hand.INDEX_PHALANX_TIP].position;
             this._nearInteractionMesh.position.set(indexTipPose.x, indexTipPose.y, indexTipPose.z);
         }
     }
@@ -291,6 +290,7 @@ export class WebXRHand implements IDisposable {
      */
     public dispose() {
         this.trackedMeshes.forEach((mesh) => mesh.dispose());
+        this._nearInteractionMesh?.dispose();
         this.onHandMeshReadyObservable.clear();
         // dispose the hand mesh, if it is the default one
         if (this._defaultHandMesh && this._handMesh) {

@@ -1,6 +1,6 @@
 // Assumptions: absolute position of button mesh is inside the mesh
 
-import { DeepImmutableObject } from "babylonjs/types";
+import { DeepImmutableObject, Nullable } from "babylonjs/types";
 import { Vector3 } from "babylonjs/Maths/math.vector";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -26,29 +26,28 @@ class TouchButton3DManager {
     private _touchButtonList = new Map<number, TouchButton3D>();
     private _buttonIndex = 1;
 
-    private _sceneRegisteredOn: Scene | null;
-    private _collisionHandlingFunction: () => void;
+    private _sceneRegisteredOn: Nullable<Scene>;
+
+    private _handleCollisions = () => {
+        if (this._sceneRegisteredOn != null) {
+            const touchMeshes = this._sceneRegisteredOn.getMeshesByTags("touchEnabled");
+
+            this._touchButtonList.forEach(function (button: TouchButton3D) {
+                touchMeshes.forEach(function (mesh: Mesh) {
+                    button._collisionCheckForStateChange(mesh);
+                });
+            });
+        }
+    }
 
     /**
      * Creates a new touchButton3DManager
      */
     constructor() {
-        let _this = this;
-        this._collisionHandlingFunction = function () {
-            if (_this._sceneRegisteredOn != null) {
-                const touchMeshes = _this._sceneRegisteredOn.getMeshesByTags("touchEnabled");
-
-                _this._touchButtonList.forEach(function (button: TouchButton3D) {
-                    touchMeshes.forEach(function (mesh: Mesh) {
-                        button.collisionCheckForStateChange(mesh);
-                    });
-                });
-            }
-        };
     }
 
     public addButton(button: TouchButton3D): number {
-        let index = this._buttonIndex++;
+        const index = this._buttonIndex++;
         this._touchButtonList.set(index, button);
         return index;
     }
@@ -63,13 +62,13 @@ class TouchButton3DManager {
                 this.disableCollisionHandling();
             }
 
-            scene.registerBeforeRender(this._collisionHandlingFunction);
+            scene.registerBeforeRender(this._handleCollisions);
             this._sceneRegisteredOn = scene;
         }
     }
 
     public disableCollisionHandling() {
-        this._sceneRegisteredOn?.unregisterBeforeRender(this._collisionHandlingFunction);
+        this._sceneRegisteredOn?.unregisterBeforeRender(this._handleCollisions);
         this._sceneRegisteredOn = null;
     }
 }
@@ -78,11 +77,10 @@ class TouchButton3DManager {
  * Class used to create a touchable button in 3D
  */
 export class TouchButton3D extends Button3D {
-    /** @hidden */
-    //private _buttonState: ButtonState;
     private _collisionMesh: Mesh;
     private _collidableFrontDirection: Vector3;
     private _lastTouchPoint: Vector3;
+    private _buttonForwardRay: Ray;
 
     private _collidableInitialized = false;
 
@@ -98,9 +96,9 @@ export class TouchButton3D extends Button3D {
     private _buttonManagerIndex = 0;
 
     /**
-     * Creates a new button
-     * @param collisionMesh mesh to track collisions with
+     * Creates a new touchable button
      * @param name defines the control name
+     * @param collisionMesh mesh to track collisions with
      */
     constructor(name?: string, collisionMesh?: Mesh) {
         super(name);
@@ -110,14 +108,24 @@ export class TouchButton3D extends Button3D {
         }
 
         this._buttonManagerIndex = TouchButton3D._buttonManager.addButton(this);
+
+        this._buttonForwardRay = new Ray(Vector3.Zero(), Vector3.Zero());
     }
 
+    /**
+     * Sets the front-facing direction of the button
+     * @param frontDir the forward direction of the button
+     */
     public set collidableFrontDirection(frontDir: Vector3) {
         this._collidableFrontDirection = frontDir.normalize();
 
         this._updateDistances();
     }
 
+    /**
+     * Sets the mesh used for testing input collision
+     * @param collisionMesh the new collision mesh for the button
+     */
     public set collisionMesh(collisionMesh: Mesh) {
         if (this._collisionMesh) {
             this._collisionMesh.dispose();
@@ -131,6 +139,10 @@ export class TouchButton3D extends Button3D {
         this._collidableInitialized = true;
     }
 
+    /**
+     * Sets the scene used on the manager to register the collision callback on
+     * @param scene the scene to use
+     */
     public set sceneForCollisions(scene: Scene) {
         TouchButton3D._buttonManager.enableCollisionHandling(scene);
     }
@@ -141,7 +153,7 @@ export class TouchButton3D extends Button3D {
      * does not have to be between the two given points.
      *
      * Based off the 3D point-line distance equation
-     * 
+     *
      * Assumes lineDirection is normalized
      */
     private _getShortestDistancePointToLine(point: Vector3, linePoint: Vector3, lineDirection: Vector3) {
@@ -153,14 +165,14 @@ export class TouchButton3D extends Button3D {
 
     /*
      * Checks to see if collidable is in a position to interact with the button
-     *   - check if collidable has a plane height within tolerance (between back/front?)
+     *   - check if collidable has a plane height off the button that is within range
      *   - check that collidable + normal ray intersect the bounding sphere
      */
     private _isPrimedForInteraction(collidable: Vector3): boolean {
         // Check if the collidable has an appropriate planar height
         const heightFromCenter = this._getHeightFromButtonCenter(collidable);
 
-        if (heightFromCenter > (this._hoverOffset) || heightFromCenter < (this._pushThroughBackOffset)) {
+        if (heightFromCenter > this._hoverOffset || heightFromCenter < this._pushThroughBackOffset) {
             return false;
         }
 
@@ -197,10 +209,12 @@ export class TouchButton3D extends Button3D {
     /*
      * Updates the distance values.
      * Should be called when the front direction changes, or the mesh size changes
-     * 
+     *
      * Sets the following values:
      *    _frontOffset
      *    _backOffset
+     *    _hoverOffset
+     *    _pushThroughBackOffset
      *
      * Requires population of:
      *    _collisionMesh
@@ -208,10 +222,13 @@ export class TouchButton3D extends Button3D {
      */
     private _updateDistances() {
         const collisionMeshPos = this._collisionMesh.getAbsolutePosition();
-        const normalRay = new Ray(collisionMeshPos, this._collidableFrontDirection);
-        const frontPickingInfo = normalRay.intersectsMesh(this._collisionMesh as DeepImmutableObject<AbstractMesh>);
-        normalRay.direction = normalRay.direction.negate();
-        const backPickingInfo = normalRay.intersectsMesh(this._collisionMesh as DeepImmutableObject<AbstractMesh>);
+
+        this._buttonForwardRay.origin = collisionMeshPos;
+        this._buttonForwardRay.direction = this._collidableFrontDirection;
+
+        const frontPickingInfo = this._buttonForwardRay.intersectsMesh(this._collisionMesh as DeepImmutableObject<AbstractMesh>);
+        this._buttonForwardRay.direction = this._buttonForwardRay.direction.negate();
+        const backPickingInfo = this._buttonForwardRay.intersectsMesh(this._collisionMesh as DeepImmutableObject<AbstractMesh>);
 
         this._frontOffset = 0;
         this._backOffset = 0;
@@ -246,6 +263,7 @@ export class TouchButton3D extends Button3D {
         return abc - d;
     }
 
+    // Updates the stored state of the button, and fire pointer events
     private _updateButtonState(id: number, newState: ButtonState, pointOnButton: Vector3) {
         const dummyPointerId = 0;
         const buttonIndex = 0; // Left click
@@ -301,11 +319,9 @@ export class TouchButton3D extends Button3D {
         }
     }
 
-    protected _getTypeName(): string {
-        return "TouchButton3D";
-    }
-
-    public collisionCheckForStateChange(mesh: Mesh) {
+    // Decides whether to change button state based on the planar depth of the input source
+    /** @hidden */
+    public _collisionCheckForStateChange(mesh: Mesh) {
         if (this._collidableInitialized) {
             const collidablePosition = mesh.getAbsolutePosition();
             const inRange = this._isPrimedForInteraction(collidablePosition);
@@ -328,7 +344,7 @@ export class TouchButton3D extends Button3D {
                 };
 
                 // Update button state and fire events
-                switch(this._activeInteractions.get(uniqueId) || ButtonState.None) {
+                switch (this._activeInteractions.get(uniqueId) || ButtonState.None) {
                     case ButtonState.None:
                         if (isGreater(this._frontOffset) &&
                             isLower(this._hoverOffset)) {
@@ -363,6 +379,10 @@ export class TouchButton3D extends Button3D {
                 this._previousHeight.delete(uniqueId);
             }
         }
+    }
+
+    protected _getTypeName(): string {
+        return "TouchButton3D";
     }
 
     // Mesh association
