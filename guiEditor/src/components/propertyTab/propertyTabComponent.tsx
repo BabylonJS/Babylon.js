@@ -2,7 +2,7 @@
 import * as React from "react";
 import { GlobalState } from '../../globalState';
 import { Nullable } from 'babylonjs/types';
-import { ButtonLineComponent } from '../../sharedComponents/buttonLineComponent';
+import { ButtonLineComponent } from '../../sharedUiComponents/lines/buttonLineComponent';
 import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
 import { FileButtonLineComponent } from '../../sharedComponents/fileButtonLineComponent';
 import { Tools } from 'babylonjs/Misc/tools';
