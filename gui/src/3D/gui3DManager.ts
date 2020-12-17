@@ -38,6 +38,8 @@ export class GUI3DManager implements IDisposable {
     // Shared resources
     /** @hidden */
     public _sharedMaterials: { [key: string]: Material } = {};
+
+    /** @hidden */
     public _touchSharedMaterials:  { [key: string]: Material } = {};
 
     /** Gets the hosting scene */
@@ -213,7 +215,6 @@ export class GUI3DManager implements IDisposable {
         }
 
         this._touchSharedMaterials = {};
-
 
         if (this._pointerOutObserver && this._utilityLayer) {
             this._utilityLayer.onPointerOutObservable.remove(this._pointerOutObserver);
