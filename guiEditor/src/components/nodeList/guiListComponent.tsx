@@ -2,7 +2,7 @@
 import * as React from "react";
 import { GlobalState } from '../../globalState';
 import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
-import { DraggableLineComponent } from '../../sharedComponents/draggableLineComponent';
+import { DraggableLineComponent } from '../../sharedUiComponents/lines/draggableLineComponent';
 import { Observer } from 'babylonjs/Misc/observable';
 import { Nullable } from 'babylonjs/types';
 
