@@ -2,7 +2,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { GlobalState } from "./globalState";
 import { WorkbenchEditor } from "./workbenchEditor";
-import { Popup } from "./sharedComponents/popup";
+import { Popup } from "./sharedUIComponents/lines/popup";
 import { SerializationTools } from "./serializationTools";
 import { Observable } from "babylonjs/Misc/observable";
 /**
