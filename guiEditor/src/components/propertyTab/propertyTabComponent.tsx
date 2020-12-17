@@ -4,17 +4,17 @@ import { GlobalState } from '../../globalState';
 import { Nullable } from 'babylonjs/types';
 import { ButtonLineComponent } from '../../sharedUiComponents/lines/buttonLineComponent';
 import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
-import { FileButtonLineComponent } from '../../sharedComponents/fileButtonLineComponent';
+import { FileButtonLineComponent } from '../../sharedUiComponents/lines/fileButtonLineComponent';
 import { Tools } from 'babylonjs/Misc/tools';
 import { SerializationTools } from '../../serializationTools';
 import { CheckBoxLineComponent } from '../../sharedComponents/checkBoxLineComponent';
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { GUINode } from '../../diagram/guiNode';
 import { SliderLineComponent } from '../../sharedComponents/sliderLineComponent';
-import { TextLineComponent } from '../../sharedComponents/textLineComponent';
 import { Engine } from 'babylonjs/Engines/engine';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { Observer } from 'babylonjs/Misc/observable';
+import { TextLineComponent } from "../../sharedUiComponents/lines/textLineComponent";
 
 require("./propertyTab.scss");
 
@@ -248,7 +248,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 this.customSave();
                             }} />
                         }
-                        <FileButtonLineComponent label="Load Frame" uploadName={'frame-upload'} onClick={(file) => this.loadFrame(file)} accept=".json" />
+                        <FileButtonLineComponent label="Load Frame" onClick={(file) => this.loadFrame(file)} accept=".json" />
                     </LineContainerComponent>
                     {
                         !this.props.globalState.customSave &&
