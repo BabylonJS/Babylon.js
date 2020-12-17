@@ -177,10 +177,6 @@ export class GUINode {
         this.guiNode.topInPixels = this.y;
     }
 
-    public appendVisual(root: HTMLDivElement, owner: WorkbenchComponent) {
-        this._ownerCanvas = owner;
-    }
-
     public dispose() {
         // notify frame observers that this node is being deleted
         this._globalState.onGraphNodeRemovalObservable.notifyObservers(this);

@@ -35,7 +35,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private readonly MaxZoom = 4;
 
     private _hostCanvas: HTMLDivElement;
-    private _graphCanvas: HTMLDivElement;
+    private _gridCanvas: HTMLDivElement;
     private _selectionContainer: HTMLDivElement;
     private _frameContainer: HTMLDivElement;
     private _svgCanvas: HTMLElement;
@@ -118,7 +118,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     public get canvasContainer() {
-        return this._graphCanvas;
+        return this._gridCanvas;
     }
 
     public get hostCanvas() {
@@ -238,13 +238,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             node.dispose();
         }
         this._guiNodes = [];
-        this._graphCanvas.innerHTML = "";
+        this._gridCanvas.innerHTML = "";
         this._svgCanvas.innerHTML = "";
     }
 
     appendBlock(guiElement: Control) {
         var newGuiNode = new GUINode(this.props.globalState, guiElement);
-        newGuiNode.appendVisual(this._graphCanvas, this);
         this._guiNodes.push(newGuiNode);
         this.globalState.guiTexture.addControl(guiElement);  
         return newGuiNode;
@@ -298,7 +297,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     componentDidMount() {
         this._hostCanvas = this.props.globalState.hostDocument.getElementById("graph-canvas") as HTMLDivElement;
         this._rootContainer = this.props.globalState.hostDocument.getElementById("graph-container") as HTMLDivElement;
-        this._graphCanvas = this.props.globalState.hostDocument.getElementById("graph-canvas-container") as HTMLDivElement;
+        this._gridCanvas = this.props.globalState.hostDocument.getElementById("graph-canvas-container") as HTMLDivElement;
         this._svgCanvas = this.props.globalState.hostDocument.getElementById("graph-svg-container") as HTMLElement;        
         this._selectionContainer = this.props.globalState.hostDocument.getElementById("selection-container") as HTMLDivElement;   
         this._frameContainer = this.props.globalState.hostDocument.getElementById("frame-container") as HTMLDivElement;        
@@ -386,6 +385,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     onDown(evt: React.PointerEvent<HTMLElement>) {
         this._rootContainer.setPointerCapture(evt.pointerId);
 
+        //TODO: Inplement group selection
         // Selection?
         /*if (evt.currentTarget === this._hostCanvas && evt.ctrlKey) {
             this._selectionBox = this.props.globalState.hostDocument.createElement("div");
