@@ -9,7 +9,6 @@ import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
 
 export class GuiNodeTools {
     public static GetGuiFromString(data: string) {
-
         //TODO: Add more elements and create default values for certain types.
         let element;
         switch (data) {
@@ -44,9 +43,9 @@ export class GuiNodeTools {
             default:
                 element = Button.CreateSimpleButton("Button", "Click Me");
                 break;
-            }
-        
-        element.width = "150px"
+        }
+
+        element.width = "150px";
         element.height = "40px";
         element.color = "#FFFFFFFF";
         element.isPointerBlocker = true;
