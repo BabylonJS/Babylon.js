@@ -13,13 +13,65 @@ import { Button3D } from "./button3D";
 /**
  * Enum for Button States
  */
-export enum ButtonState {
+enum ButtonState {
     /** None */
     None = 0,
     /** Pointer Entered */
     Hover = 1,
     /** Pointer Down */
     Press = 2
+}
+
+class TouchButton3DManager {
+    private _touchButtonList = new Map<number, TouchButton3D>();
+    private _buttonIndex = 1;
+
+    private _sceneRegisteredOn: Scene | null;
+    private _collisionHandlingFunction: () => void;
+
+    /**
+     * Creates a new touchButton3DManager
+     */
+    constructor() {
+        let _this = this;
+        this._collisionHandlingFunction = function () {
+            if (_this._sceneRegisteredOn != null) {
+                const touchMeshes = _this._sceneRegisteredOn.getMeshesByTags("touchEnabled");
+
+                _this._touchButtonList.forEach(function (button: TouchButton3D) {
+                    touchMeshes.forEach(function (mesh: Mesh) {
+                        button.collisionCheckForStateChange(mesh);
+                    });
+                });
+            }
+        };
+    }
+
+    public addButton(button: TouchButton3D): number {
+        let index = this._buttonIndex++;
+        this._touchButtonList.set(index, button);
+        return index;
+    }
+
+    public removeButton(index: number): boolean {
+        return this._touchButtonList.delete(index);
+    }
+
+    public enableCollisionHandling(scene: Scene) {
+        if (this._sceneRegisteredOn != scene) {
+            if (this._sceneRegisteredOn != null) {
+                this.disableCollisionHandling();
+            }
+
+            scene.registerBeforeRender(this._collisionHandlingFunction);
+            this._sceneRegisteredOn = scene;
+        }
+    }
+
+    public disableCollisionHandling() {
+        this._sceneRegisteredOn?.unregisterBeforeRender(this._collisionHandlingFunction);
+        this._sceneRegisteredOn = null;
+    }
 }
 
 /**
@@ -34,12 +86,16 @@ export class TouchButton3D extends Button3D {
 
     private _collidableInitialized = false;
 
-    private _offsetToFront = 0;
-    private _offsetToBack = 0;
+    private _frontOffset = 0;
+    private _backOffset = 0;
     private _hoverOffset = 0;
+    private _pushThroughBackOffset = 0;
 
     private _activeInteractions = new Map<number, ButtonState>();
     private _previousHeight = new Map<number, number>();
+
+    private static _buttonManager = new TouchButton3DManager();
+    private _buttonManagerIndex = 0;
 
     /**
      * Creates a new button
@@ -52,6 +108,8 @@ export class TouchButton3D extends Button3D {
         if (collisionMesh) {
             this.collisionMesh = collisionMesh;
         }
+
+        this._buttonManagerIndex = TouchButton3D._buttonManager.addButton(this);
     }
 
     public set collidableFrontDirection(frontDir: Vector3) {
@@ -71,6 +129,10 @@ export class TouchButton3D extends Button3D {
         this.collidableFrontDirection = collisionMesh.forward;
 
         this._collidableInitialized = true;
+    }
+
+    public set sceneForCollisions(scene: Scene) {
+        TouchButton3D._buttonManager.enableCollisionHandling(scene);
     }
 
     /*
@@ -97,9 +159,8 @@ export class TouchButton3D extends Button3D {
     private _isPrimedForInteraction(collidable: Vector3): boolean {
         // Check if the collidable has an appropriate planar height
         const heightFromCenter = this._getHeightFromButtonCenter(collidable);
-        const heightPadding = (this._offsetToFront - this._offsetToBack) / 2;
 
-        if (heightFromCenter > (this._hoverOffset + heightPadding) || heightFromCenter < (this._offsetToBack - heightPadding)) {
+        if (heightFromCenter > (this._hoverOffset) || heightFromCenter < (this._pushThroughBackOffset)) {
             return false;
         }
 
@@ -117,18 +178,18 @@ export class TouchButton3D extends Button3D {
     private _getPointOnButton(collidable: Vector3): Vector3 {
         const heightFromCenter = this._getHeightFromButtonCenter(collidable);
 
-        if (heightFromCenter <= this._offsetToFront && heightFromCenter >= this._offsetToBack) {
+        if (heightFromCenter <= this._frontOffset && heightFromCenter >= this._backOffset) {
             // The collidable is in the button, return its position
             return collidable;
         }
-        else if (heightFromCenter > this._offsetToFront) {
+        else if (heightFromCenter > this._frontOffset) {
             // The collidable is in front of the button, project it to the surface
-            const collidableDistanceToFront = (this._offsetToFront - heightFromCenter);
+            const collidableDistanceToFront = (this._frontOffset - heightFromCenter);
             return collidable.add(this._collidableFrontDirection.scale(collidableDistanceToFront));
         }
         else {
             // The collidable is behind the button, project it to its back
-            const collidableDistanceToBack = (this._offsetToBack - heightFromCenter);
+            const collidableDistanceToBack = (this._backOffset - heightFromCenter);
             return collidable.add(this._collidableFrontDirection.scale(collidableDistanceToBack));
         }
     }
@@ -138,8 +199,8 @@ export class TouchButton3D extends Button3D {
      * Should be called when the front direction changes, or the mesh size changes
      * 
      * Sets the following values:
-     *    _offsetToFront
-     *    _offsetToBack
+     *    _frontOffset
+     *    _backOffset
      *
      * Requires population of:
      *    _collisionMesh
@@ -152,21 +213,23 @@ export class TouchButton3D extends Button3D {
         normalRay.direction = normalRay.direction.negate();
         const backPickingInfo = normalRay.intersectsMesh(this._collisionMesh as DeepImmutableObject<AbstractMesh>);
 
-        this._offsetToFront = 0;
-        this._offsetToBack = 0;
+        this._frontOffset = 0;
+        this._backOffset = 0;
 
         if (frontPickingInfo.hit && backPickingInfo.hit) {
-            this._offsetToFront = this._getDistanceOffPlane(frontPickingInfo.pickedPoint!,
+            this._frontOffset = this._getDistanceOffPlane(frontPickingInfo.pickedPoint!,
                                                               this._collidableFrontDirection,
                                                               collisionMeshPos);
-            this._offsetToBack = this._getDistanceOffPlane(backPickingInfo.pickedPoint!,
+            this._backOffset = this._getDistanceOffPlane(backPickingInfo.pickedPoint!,
                                                              this._collidableFrontDirection,
                                                              collisionMeshPos);
         }
 
         // For now, set the hover height equal to the thickness of the button
-        const buttonThickness = this._offsetToFront - this._offsetToBack;
-        this._hoverOffset = buttonThickness + this._offsetToFront;
+        const buttonThickness = this._frontOffset - this._backOffset;
+
+        this._hoverOffset = this._frontOffset + (buttonThickness * 1.25);
+        this._pushThroughBackOffset = this._backOffset - (buttonThickness * 1.5);
     }
 
     // Returns the distance in front of the center of the button
@@ -176,7 +239,6 @@ export class TouchButton3D extends Button3D {
     }
 
     // Returns the distance from pointOnPlane to point along planeNormal
-    // Very cheap
     private _getDistanceOffPlane(point: Vector3, planeNormal: Vector3, pointOnPlane: Vector3) {
         const d = Vector3.Dot(pointOnPlane, planeNormal);
         const abc = Vector3.Dot(point, planeNormal);
@@ -243,94 +305,71 @@ export class TouchButton3D extends Button3D {
         return "TouchButton3D";
     }
 
-    protected _enableCollisions(scene: Scene, collisionMesh?: Mesh) {
-        var _this = this;
+    public collisionCheckForStateChange(mesh: Mesh) {
+        if (this._collidableInitialized) {
+            const collidablePosition = mesh.getAbsolutePosition();
+            const inRange = this._isPrimedForInteraction(collidablePosition);
 
-        if (collisionMesh) {
-            this.collisionMesh = collisionMesh;
-        }
+            const uniqueId = mesh.uniqueId;
 
-        // TODO?: Set distances appropriately:
-        // Hover depth based on distance from front face of mesh, not center
-        // (DONE)  Touch Depth based on actual collision with button
-        // (DONE?) HitTestDistance based on distance from front face of button
-        // (DONE)  For the hover/hitTest, compute point-plane distance, using button front for plane
-        //           -> Right now only have front direction. Can't rely on mesh for getting front face
-        //              since mesh might not be aligned properly... Make that a requirement?
+            if (inRange) {
+                const pointOnButton = this._getPointOnButton(collidablePosition);
+                const heightFromCenter = this._getHeightFromButtonCenter(collidablePosition);
+                const flickerDelta = 0.003;
 
+                this._lastTouchPoint = pointOnButton;
 
-        const onBeforeRender = function () {
-            if (_this._collidableInitialized) {
-                const touchMeshes = scene.getMeshesByTags("touchEnabled");
+                const isGreater = function (compareHeight: number) {
+                    return heightFromCenter >= (compareHeight + flickerDelta);
+                };
 
-                touchMeshes.forEach(function (mesh: Mesh) {
-                    const collidablePosition = mesh.getAbsolutePosition();
-                    const inRange = _this._isPrimedForInteraction(collidablePosition);
+                const isLower = function (compareHeight: number) {
+                    return heightFromCenter <= (compareHeight - flickerDelta);
+                };
 
-                    const uniqueId = mesh.uniqueId;
-
-                    if (inRange) {
-                        const pointOnButton = _this._getPointOnButton(collidablePosition);
-                        const heightFromCenter = _this._getHeightFromButtonCenter(collidablePosition);
-                        const flickerDelta = 0.003;
-
-                        _this._lastTouchPoint = pointOnButton;
-
-                        const isGreater = function (compareHeight: number) {
-                            return heightFromCenter >= (compareHeight + flickerDelta);
-                        };
-
-                        const isLower = function (compareHeight: number) {
-                            return heightFromCenter <= (compareHeight - flickerDelta);
-                        };
-
-                        // Update button state and fire events
-                        switch(_this._activeInteractions.get(uniqueId) || ButtonState.None) {
-                            case ButtonState.None:
-                                if (isGreater(_this._offsetToFront) &&
-                                    isLower(_this._hoverOffset)) {
-                                    _this._updateButtonState(uniqueId, ButtonState.Hover, pointOnButton);
-                                }
-
-                                break;
-                            case ButtonState.Hover:
-                                if (isGreater(_this._hoverOffset)) {
-                                    _this._updateButtonState(uniqueId, ButtonState.None, pointOnButton);
-                                }
-                                else if (isLower(_this._offsetToFront)) {
-                                    _this._updateButtonState(uniqueId, ButtonState.Press, pointOnButton);
-                                }
-
-                                break;
-                            case ButtonState.Press:
-                                if (isGreater(_this._offsetToFront)) {
-                                    _this._updateButtonState(uniqueId, ButtonState.Hover, pointOnButton);
-                                }
-                                else if (isLower(_this._offsetToBack)) {
-                                    _this._updateButtonState(uniqueId, ButtonState.None, pointOnButton);
-                                }
-
-                                break;
+                // Update button state and fire events
+                switch(this._activeInteractions.get(uniqueId) || ButtonState.None) {
+                    case ButtonState.None:
+                        if (isGreater(this._frontOffset) &&
+                            isLower(this._hoverOffset)) {
+                            this._updateButtonState(uniqueId, ButtonState.Hover, pointOnButton);
                         }
 
-                        _this._previousHeight.set(uniqueId, heightFromCenter);
-                    }
-                    else {
-                        _this._updateButtonState(uniqueId, ButtonState.None, _this._lastTouchPoint);
-                        _this._previousHeight.delete(uniqueId);
-                    }
-                });
+                        break;
+                    case ButtonState.Hover:
+                        if (isGreater(this._hoverOffset)) {
+                            this._updateButtonState(uniqueId, ButtonState.None, pointOnButton);
+                        }
+                        else if (isLower(this._frontOffset)) {
+                            this._updateButtonState(uniqueId, ButtonState.Press, pointOnButton);
+                        }
+
+                        break;
+                    case ButtonState.Press:
+                        if (isGreater(this._frontOffset)) {
+                            this._updateButtonState(uniqueId, ButtonState.Hover, pointOnButton);
+                        }
+                        else if (isLower(this._pushThroughBackOffset)) {
+                            this._updateButtonState(uniqueId, ButtonState.None, pointOnButton);
+                        }
+
+                        break;
+                }
+
+                this._previousHeight.set(uniqueId, heightFromCenter);
             }
-        };
-        
-        scene.registerBeforeRender(onBeforeRender);
+            else {
+                this._updateButtonState(uniqueId, ButtonState.None, this._lastTouchPoint);
+                this._previousHeight.delete(uniqueId);
+            }
+        }
     }
 
     // Mesh association
     protected _createNode(scene: Scene): TransformNode {
-        this._enableCollisions(scene);
-
         return super._createNode(scene);
+
+        this.sceneForCollisions = scene;
     }
 
     /**
@@ -342,5 +381,7 @@ export class TouchButton3D extends Button3D {
         if (this._collisionMesh) {
             this._collisionMesh.dispose();
         }
+
+        TouchButton3D._buttonManager.removeButton(this._buttonManagerIndex);
     }
 }
