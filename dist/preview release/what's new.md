@@ -12,7 +12,10 @@
 - Added support for infinite perspective cameras ([Deltakosh](https://github.com/deltakosh))
 - Added ability to enable/disable ArcRotateCamera zoom on multiTouch event ([NicolasBuecher](https://github.com/NicolasBuecher))
 - Moving button to shared uI folder.([msDestiny14](https://github.com/msDestiny14))
-- Moving additional components to shared uI folder.([msDestiny14](https://github.com/msDestiny14))
+- Moving additional components to shared UI folder.([msDestiny14](https://github.com/msDestiny14))
+
+### Engine
+- Moved all instance data from Geometry to Mesh such that the same Geometry objects can be used by many meshes with instancing. Reduces memory consumption on CPU/GPU. ([breakin](https://github.com/breakin)
 
 ### Loaders
 
@@ -57,6 +60,7 @@
 - A browser error preventing the emulator to render scene is now correctly dealt with ([RaananW](https://github.com/RaananW))
 - Added a way to extend the XRSessionInit Object from inside of a feature ([RaananW](https://github.com/RaananW))
 - Added image tracking feature ([RaananW](https://github.com/RaananW))
+- Pointer Events of WebXR controllers have pointerType `xr` ([RaananW](https://github.com/RaananW))
 
 ## Bugs
 
@@ -76,6 +80,9 @@
 - Fix accessibility of BaseCameraMouseWheelInput and BaseCameraPointersInput. They appear in documentation but were not available for include. ([mrdunk](https://github.com/mrdunk))
 - Fix function creation inside regularly called freeCameraMouseWheelInput method leading to excessive GC load. ([mrdunk](https://github.com/mrdunk))
 - Fix clip plane not reset to the rigth value when using mirrors ([Popov72](https://github.com/Popov72))
+- Fix lens flares not working in right handed system ([Popov72](https://github.com/Popov72))
+- Fix canvas not resized correctly in a multi-canvas scenario ([Popov72](https://github.com/Popov72))
+- Fix NaN values returned by `GetAngleBetweenVectors` when vectors are the same or directly opposite ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
@@ -84,3 +91,4 @@
     - [Shader support differences](https://doc.babylonjs.com/advanced_topics/webGPU/webGPUBreakingChanges#shader-code-differences)
 - Use both `mesh.visibility` and `material.alpha` values to compute the global alpha value used by the soft transparent shadow rendering code. Formerly was only using `mesh.visibility` ([Popov72](https://github.com/Popov72))
 - Depth renderer: don't render mesh if `infiniteDistance = true` or if `material.disableDepthWrite = true` ([Popov72](https://github.com/Popov72))
+- Mesh.createInstance no longer make a unique Geometry for the Mesh so updating one Geometry can affect more meshes than before. Use Mesh.makeUniqueGeometry for old behaviour. ([breakin](https://github.com/breakin))

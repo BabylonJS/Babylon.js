@@ -684,7 +684,12 @@ declare module BABYLON {
          * @example skyMaterial.cameraOffset.y = camera.globalPosition.y // Set horizon relative to 0 on the Y axis
          */
         cameraOffset: BABYLON.Vector3;
+        /**
+         * Defines the vector the skyMaterial should consider as up. (default is BABYLON.Vector3(0, 1, 0) as returned by BABYLON.Vector3.Up())
+         */
+        up: BABYLON.Vector3;
         private _cameraPosition;
+        private _skyOrientation;
         /**
          * Instantiates a new sky material.
          * This material allows to create dynamic and texture free

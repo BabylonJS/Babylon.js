@@ -4659,6 +4659,14 @@ declare module BABYLON {
          */
         static FromEulerVectorToRef(vec: DeepImmutable<Vector3>, result: Quaternion): Quaternion;
         /**
+         * Updates a quaternion so that it rotates vector vecFrom to vector vecTo
+         * @param vecFrom defines the direction vector from which to rotate
+         * @param vecTo defines the direction vector to which to rotate
+         * @param result the quaternion to store the result
+         * @returns the updated quaternion
+         */
+        static FromUnitVectorsToRef(vecFrom: DeepImmutable<Vector3>, vecTo: DeepImmutable<Vector3>, result: Quaternion): Quaternion;
+        /**
          * Creates a new quaternion from the given Euler float angles (y, x, z)
          * @param yaw defines the rotation around Y axis
          * @param pitch defines the rotation around X axis
@@ -28392,6 +28400,10 @@ declare module BABYLON {
              */
             registerInstancedBuffer(kind: string, stride: number): void;
             /**
+             * Invalidate VertexArrayObjects belonging to the mesh (but not to the Geometry of the mesh).
+             */
+            _invalidateInstanceVertexArrayObject(): void;
+            /**
              * true to use the edge renderer for all instances of this mesh
              */
             edgesShareWithInstances: boolean;
@@ -28408,6 +28420,9 @@ declare module BABYLON {
                 };
                 strides: {
                     [key: string]: number;
+                };
+                vertexArrayObjects?: {
+                    [key: string]: WebGLVertexArrayObject;
                 };
             };
         }
@@ -31248,7 +31263,11 @@ declare module BABYLON {
         updateVerticesData(kind: string, data: FloatArray, updateExtends?: boolean): void;
         private _updateBoundingInfo;
         /** @hidden */
-        _bind(effect: Nullable<Effect>, indexToBind?: Nullable<DataBuffer>): void;
+        _bind(effect: Nullable<Effect>, indexToBind?: Nullable<DataBuffer>, overrideVertexBuffers?: {
+            [kind: string]: Nullable<VertexBuffer>;
+        }, overrideVertexArrayObjects?: {
+            [key: string]: WebGLVertexArrayObject;
+        }): void;
         /**
          * Gets total number of vertices
          * @returns the total number of vertices
@@ -40439,11 +40458,14 @@ declare module BABYLON {
          * @param vertexBuffers defines the list of vertex buffers to store
          * @param indexBuffer defines the index buffer to store
          * @param effect defines the effect to store
+         * @param overrideVertexBuffers defines optional list of avertex buffers that overrides the entries in vertexBuffers
          * @returns the new vertex array object
          */
         recordVertexArrayObject(vertexBuffers: {
             [key: string]: VertexBuffer;
-        }, indexBuffer: Nullable<DataBuffer>, effect: Effect): WebGLVertexArrayObject;
+        }, indexBuffer: Nullable<DataBuffer>, effect: Effect, overrideVertexBuffers?: {
+            [kind: string]: Nullable<VertexBuffer>;
+        }): WebGLVertexArrayObject;
         /**
          * Bind a specific vertex array object
          * @see https://doc.babylonjs.com/features/webgl2#vertex-array-objects
@@ -40466,10 +40488,13 @@ declare module BABYLON {
          * @param vertexBuffers defines the list of vertex buffers to bind
          * @param indexBuffer defines the index buffer to bind
          * @param effect defines the effect associated with the vertex buffers
+         * @param overrideVertexBuffers defines optional list of avertex buffers that overrides the entries in vertexBuffers
          */
         bindBuffers(vertexBuffers: {
             [key: string]: Nullable<VertexBuffer>;
-        }, indexBuffer: Nullable<DataBuffer>, effect: Effect): void;
+        }, indexBuffer: Nullable<DataBuffer>, effect: Effect, overrideVertexBuffers?: {
+            [kind: string]: Nullable<VertexBuffer>;
+        }): void;
         /**
          * Unbind all instance attributes
          */
@@ -60066,6 +60091,8 @@ declare module BABYLON {
          * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
          */
         updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha?: boolean, format?: number): void;
+        createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression?: Nullable<string>, type?: number): InternalTexture;
+        updateRawTexture(texture: Nullable<InternalTexture>, bufferView: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression?: Nullable<string>, type?: number): void;
         /**
          * Usually called from Texture.ts.
          * Passed information to create a WebGLTexture
@@ -66125,6 +66152,40 @@ declare module BABYLON {
      * @hidden
      */
     export class _TGATextureLoader implements IInternalTextureLoader {
+        /**
+         * Defines wether the loader supports cascade loading the different faces.
+         */
+        readonly supportCascades: boolean;
+        /**
+         * This returns if the loader support the current file information.
+         * @param extension defines the file extension of the file being loaded
+         * @returns true if the loader can load the specified file
+         */
+        canLoad(extension: string): boolean;
+        /**
+         * Uploads the cube texture data to the WebGL texture. It has already been bound.
+         * @param data contains the texture data
+         * @param texture defines the BabylonJS internal texture
+         * @param createPolynomials will be true if polynomials have been requested
+         * @param onLoad defines the callback to trigger once the texture is ready
+         * @param onError defines the callback to trigger in case of error
+         */
+        loadCubeData(data: ArrayBufferView | ArrayBufferView[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
+        /**
+         * Uploads the 2D texture data to the WebGL texture. It has already been bound once in the callback.
+         * @param data contains the texture data
+         * @param texture defines the BabylonJS internal texture
+         * @param callback defines the method to call once ready to upload
+         */
+        loadData(data: ArrayBufferView, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Implementation of the HDR Texture Loader.
+     * @hidden
+     */
+    export class _HDRTextureLoader implements IInternalTextureLoader {
         /**
          * Defines wether the loader supports cascade loading the different faces.
          */
@@ -79925,8 +79986,8 @@ declare module BABYLON {
          */
         positions?: Float32Array;
         /**
-         * An array of indices in babylon space. right/left hand system is taken into account.
-         * Indices will only be calculated if convertCoordinateSystems is set to true in the IWebXRMeshDetectorOptions.
+         * An array of indices in babylon space. Indices have a counterclockwise winding order.
+         * Indices will only be populated if convertCoordinateSystems is set to true in the IWebXRMeshDetectorOptions.
          */
         indices?: Uint32Array;
         /**

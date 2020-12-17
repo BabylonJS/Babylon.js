@@ -1586,6 +1586,12 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export class Popup {
+        static CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): HTMLDivElement | null;
+        static _CopyStyles(sourceDoc: HTMLDocument, targetDoc: HTMLDocument): void;
+    }
+}
+declare module NODEEDITOR {
     interface IGraphEditorProps {
         globalState: GlobalState;
     }
@@ -1643,17 +1649,10 @@ declare module NODEEDITOR {
         initiatePreviewArea: (canvas?: HTMLCanvasElement) => void;
         createPopUp: () => void;
         createPopupWindow: (title: string, windowVariableName: string, width?: number, height?: number) => Window | null;
-        copyStyles: (sourceDoc: HTMLDocument, targetDoc: HTMLDocument) => void;
         createPreviewMeshControlHost: (options: IInternalPreviewAreaOptions, parentControl: BABYLON.Nullable<HTMLElement>) => void;
         createPreviewHost: (options: IInternalPreviewAreaOptions, parentControl: BABYLON.Nullable<HTMLElement>) => void;
         fixPopUpStyles: (document: Document) => void;
         render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
-    export class Popup {
-        static CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): HTMLDivElement | null;
-        private static _CopyStyles;
     }
 }
 declare module NODEEDITOR {
@@ -1682,12 +1681,177 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export interface IBooleanLineComponentProps {
+        label: string;
+        value: boolean;
+    }
+    export class BooleanLineComponent extends React.Component<IBooleanLineComponentProps> {
+        constructor(props: IBooleanLineComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
     export interface IButtonLineComponentProps {
         label: string;
         onClick: () => void;
     }
     export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
         constructor(props: IButtonLineComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IFileButtonLineComponentProps {
+        label: string;
+        onClick: (file: File) => void;
+        accept: string;
+    }
+    export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
+        private static _IDGenerator;
+        private _id;
+        private uploadInputRef;
+        constructor(props: IFileButtonLineComponentProps);
+        onChange(evt: any): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IFileMultipleButtonLineComponentProps {
+        label: string;
+        onClick: (event: any) => void;
+        accept: string;
+    }
+    export class FileMultipleButtonLineComponent extends React.Component<IFileMultipleButtonLineComponentProps> {
+        private static _IDGenerator;
+        private _id;
+        private uploadInputRef;
+        constructor(props: IFileMultipleButtonLineComponentProps);
+        onChange(evt: any): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export interface IIconButtonLineComponentProps {
+        icon: string;
+        onClick: () => void;
+        tooltip: string;
+        active?: boolean;
+    }
+    export class IconButtonLineComponent extends React.Component<IIconButtonLineComponentProps> {
+        constructor(props: IIconButtonLineComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IIndentedTextLineComponentProps {
+        value?: string;
+        color?: string;
+        underline?: boolean;
+        onLink?: () => void;
+        url?: string;
+        additionalClass?: string;
+    }
+    export class IndentedTextLineComponent extends React.Component<IIndentedTextLineComponentProps> {
+        constructor(props: IIndentedTextLineComponentProps);
+        onLink(): void;
+        renderContent(): JSX.Element;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface ILinkButtonComponentProps {
+        label: string;
+        buttonLabel: string;
+        url?: string;
+        onClick: () => void;
+        onIconClick?: () => void;
+    }
+    export class LinkButtonComponent extends React.Component<ILinkButtonComponentProps> {
+        constructor(props: ILinkButtonComponentProps);
+        onLink(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IMessageLineComponentProps {
+        text: string;
+        color?: string;
+    }
+    export class MessageLineComponent extends React.Component<IMessageLineComponentProps> {
+        constructor(props: IMessageLineComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface INumericInputComponentProps {
+        label: string;
+        value: number;
+        step?: number;
+        onChange: (value: number) => void;
+        precision?: number;
+    }
+    export class NumericInputComponent extends React.Component<INumericInputComponentProps, {
+        value: string;
+    }> {
+        static defaultProps: {
+            step: number;
+        };
+        private _localChange;
+        constructor(props: INumericInputComponentProps);
+        shouldComponentUpdate(nextProps: INumericInputComponentProps, nextState: {
+            value: string;
+        }): boolean;
+        updateValue(evt: any): void;
+        onBlur(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IRadioButtonLineComponentProps {
+        onSelectionChangedObservable: BABYLON.Observable<RadioButtonLineComponent>;
+        label: string;
+        isSelected: () => boolean;
+        onSelect: () => void;
+    }
+    export class RadioButtonLineComponent extends React.Component<IRadioButtonLineComponentProps, {
+        isSelected: boolean;
+    }> {
+        private _onSelectionChangedObserver;
+        constructor(props: IRadioButtonLineComponentProps);
+        componentDidMount(): void;
+        componentWillUnmount(): void;
+        onChange(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface ITextLineComponentProps {
+        label?: string;
+        value?: string;
+        color?: string;
+        underline?: boolean;
+        onLink?: () => void;
+        url?: string;
+        ignoreValue?: boolean;
+        additionalClass?: string;
+    }
+    export class TextLineComponent extends React.Component<ITextLineComponentProps> {
+        constructor(props: ITextLineComponentProps);
+        onLink(): void;
+        renderContent(): JSX.Element | null;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IValueLineComponentProps {
+        label: string;
+        value: number;
+        color?: string;
+        fractionDigits?: number;
+        units?: string;
+    }
+    export class ValueLineComponent extends React.Component<IValueLineComponentProps> {
+        constructor(props: IValueLineComponentProps);
         render(): JSX.Element;
     }
 }
