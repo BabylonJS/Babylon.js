@@ -6,7 +6,7 @@ import { Portal } from './portal';
 import { LogComponent, LogEntry } from './components/log/logComponent';
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { Nullable } from 'babylonjs/types';
-import { BlockTools } from './blockTools';
+import { GuiNodeTools } from './guiNodeTools';
 import { IEditorData } from './nodeLocationInfo';
 import { WorkbenchComponent } from './diagram/workbench';
 import { GUINode } from './diagram/guiNode';
@@ -237,9 +237,9 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     }
 
     emitNewBlock(event: React.DragEvent<HTMLDivElement>) {
-        var data = event.dataTransfer.getData("babylonjs-material-node") as string;
+        var data = event.dataTransfer.getData("babylonjs-gui-node") as string;
 
-        let guiElement = BlockTools.GetGuiFromString(data);
+        let guiElement = GuiNodeTools.GetGuiFromString(data);
 
         let newGuiNode = this._workbenchCanvas.appendBlock(guiElement);
         

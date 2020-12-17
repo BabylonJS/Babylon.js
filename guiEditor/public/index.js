@@ -84,7 +84,7 @@ var showEditor = function() {
                                 resolve();
                             }
                             else {
-                                reject(`Unable to save your node material. It may be too large (${(dataToSend.payload.length / 1024).toFixed(2)} KB) because of embedded textures. Please reduce texture sizes or point to a specific url instead of embedding them and try again.`);
+                                reject(`Unable to save your gui layout. It may be too large (${(dataToSend.payload.length / 1024).toFixed(2)}`);
                             }
                         }
                     }
@@ -94,7 +94,7 @@ var showEditor = function() {
         
                     var dataToSend = {
                         payload : JSON.stringify({
-                            nodeMaterial: data
+                            guiLayout: data
                         }),
                         name: "",
                         description: "",
@@ -111,7 +111,7 @@ var showEditor = function() {
 // Let's start
 if (BABYLON.Engine.isSupported()) {
     var canvas = document.createElement("canvas");
-    var engine = new BABYLON.Engine(canvas, false, {disableWebGL2Support: true});
+    var engine = new BABYLON.Engine(canvas, false);
     var scene = new BABYLON.Scene(engine);
 
     // Set to default

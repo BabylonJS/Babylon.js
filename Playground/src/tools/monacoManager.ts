@@ -228,7 +228,6 @@ class Playground {
             "https://preview.babylonjs.com/loaders/babylonjs.loaders.d.ts",
             "https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.d.ts",
             "https://preview.babylonjs.com/nodeEditor/babylon.nodeEditor.d.ts",
-            "https://preview.babylonjs.com/guiEditor/babylon.guiEditor.d.ts",
             "https://preview.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.d.ts",
             "https://preview.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.d.ts",
             "https://preview.babylonjs.com/serializers/babylonjs.serializers.d.ts",
