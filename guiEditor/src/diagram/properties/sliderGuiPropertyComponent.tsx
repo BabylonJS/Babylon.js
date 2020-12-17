@@ -3,9 +3,9 @@ import * as React from "react";
 import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
 import { IPropertyComponentProps } from './propertyComponentProps';
 import { GeneralPropertyTabComponent } from './genericNodePropertyComponent';
-import { TextLineComponent } from '../../sharedComponents/textLineComponent';
 import { NumericInputComponent } from '../../sharedComponents/numericInputComponent';
 import { Slider } from "babylonjs-gui/2D/controls/sliders/slider";
+import { TextLineComponent } from "../../sharedUiComponents/lines/textLineComponent";
 
 
 export class SliderPropertyTabComponent extends React.Component<IPropertyComponentProps> {
