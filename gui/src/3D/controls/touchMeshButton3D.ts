@@ -69,11 +69,12 @@ export class TouchMeshButton3D extends TouchButton3D {
 
     // Mesh association
     protected _createNode(scene: Scene): TransformNode {
-        this._enableCollisions(scene);
-
         this._currentMesh.getChildMeshes().forEach((mesh) => {
             mesh.metadata = this;
         });
+
+        this.sceneForCollisions = scene;
+
         return this._currentMesh;
     }
 
