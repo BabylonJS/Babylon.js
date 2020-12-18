@@ -761,11 +761,7 @@ export class ThinEngine {
         }
 
         // Shader processor
-        if (this.webGLVersion > 1) {
-            this._shaderProcessor = new WebGL2ShaderProcessor();
-        } else {
-            this._shaderProcessor = new WebGLShaderProcessor();
-        }
+        this._shaderProcessor = this._getShaderProcessor();
 
         // Detect if we are running on a faulty buggy OS.
         this._badOS = /iPad/i.test(navigator.userAgent) || /iPhone/i.test(navigator.userAgent);
@@ -812,9 +808,6 @@ export class ThinEngine {
      */
     protected _sharedInit(canvas: HTMLCanvasElement, doNotHandleTouchAction: boolean, audioEngine: boolean) {
         this._renderingCanvas = canvas;
-
-        // Shader processor
-        this._shaderProcessor = this._getShaderProcessor();
     }
 
     /**
@@ -822,10 +815,7 @@ export class ThinEngine {
      * @returns The shader processor implementation.
      */
     protected _getShaderProcessor(): Nullable<IShaderProcessor> {
-        if (this.webGLVersion > 1) {
-            return new WebGL2ShaderProcessor();
-        }
-        return null;
+        return (this.webGLVersion > 1 ? new WebGL2ShaderProcessor() : new WebGLShaderProcessor());
     }
 
     /** @hidden */
