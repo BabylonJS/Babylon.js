@@ -22,7 +22,7 @@ declare module "../../Engines/thinEngine" {
          * @see https://doc.babylonjs.com/features/webgl2#multiple-render-target
          * @param size defines the size of the texture
          * @param options defines the creation options
-         * @param noDrawBuffers if set to true, the engine won't make an initializing call of drawBuffers
+         * @param initializeBuffers if set to true, the engine will make an initializing call of drawBuffers
          * @returns the cube texture as an InternalTexture
          */
         createMultipleRenderTarget(size: any, options: IMultiRenderTargetOptions, initializeBuffers?: boolean): InternalTexture[];
@@ -32,7 +32,7 @@ declare module "../../Engines/thinEngine" {
          * @see https://doc.babylonjs.com/features/webgl2#multisample-render-targets
          * @param textures defines the textures to update
          * @param samples defines the sample count to set
-         * @param noDrawBuffers if set to true, the engine won't make an initializing call of drawBuffers
+         * @param initializeBuffers if set to true, the engine will make an initializing call of drawBuffers
          * @returns the effective sample count (could be 0 if multisample render targets are not supported)
          */
         updateMultipleRenderTargetTextureSampleCount(textures: Nullable<InternalTexture[]>, samples: number, initializeBuffers?: boolean): number;
