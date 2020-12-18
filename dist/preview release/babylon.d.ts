@@ -13576,6 +13576,8 @@ declare module BABYLON {
         _outputs: NodeMaterialConnectionPoint[];
         /** @hidden */
         _preparationId: number;
+        /** @hidden */
+        readonly _originalTargetIsNeutral: boolean;
         /**
          * Gets the name of the block
          */
