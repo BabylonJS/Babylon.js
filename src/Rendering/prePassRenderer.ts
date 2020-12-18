@@ -440,11 +440,11 @@ export class PrePassRenderer {
         }
     }
 
-    private _setState(enabled: boolean) {
+    private _setEnabled(enabled: boolean) {
         this._enabled = enabled;
     }
 
-    private _setRenderTargetState(prePassRenderTarget: PrePassRenderTarget, enabled: boolean) {
+    private _setRenderTargetEnabled(prePassRenderTarget: PrePassRenderTarget, enabled: boolean) {
         prePassRenderTarget.enabled = enabled;
     }
 
@@ -500,15 +500,15 @@ export class PrePassRenderer {
         }
 
         this._reinitializeAttachments();
-        this._setState(true);
+        this._setEnabled(true);
         this._updateGeometryBufferLayout();
     }
 
     private _disable() {
-        this._setState(false);
+        this._setEnabled(false);
 
         for (let i = 0; i < this.renderTargets.length; i++) {
-            this._setRenderTargetState(this.renderTargets[i], false);
+            this._setRenderTargetEnabled(this.renderTargets[i], false);
         }
 
         this._resetLayout();
@@ -608,6 +608,7 @@ export class PrePassRenderer {
             for (let i = 0; i < postProcesses.length; i++) {
                 if (postProcesses[i]?.getClassName() === "ImageProcessingPostProcess") {
                     isIPPAlreadyPresent = true;
+                    break;
                 }
             }
         }
@@ -661,8 +662,11 @@ export class PrePassRenderer {
             if (this._scene.materials[i].setPrePassRenderer(this)) {
                 enablePrePass = true;
 
-                this._setRenderTargetState(this.defaultRT, true);
             }
+        }
+        
+        if (enablePrePass) {
+            this._setRenderTargetEnabled(this.defaultRT, true);
         }
 
         let postProcesses;
@@ -688,7 +692,7 @@ export class PrePassRenderer {
             if (postProcesses) {
                 for (let j = 0; j < postProcesses.length; j++) {
                     if (postProcesses[j].setPrePassRenderer(this)) {
-                        this._setRenderTargetState(this.renderTargets[i], true);
+                        this._setRenderTargetEnabled(this.renderTargets[i], true);
                         enablePrePass = true;
                     }
                 }

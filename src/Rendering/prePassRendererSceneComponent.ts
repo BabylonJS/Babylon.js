@@ -187,7 +187,10 @@ export class PrePassRendererSceneComponent implements ISceneComponent {
      * context lost for instance.
      */
     public rebuild(): void {
+        // Release textures first
         this.scene.disablePrePassRenderer();
+
+        // Re-enable
         this.scene.enablePrePassRenderer();
     }
 
