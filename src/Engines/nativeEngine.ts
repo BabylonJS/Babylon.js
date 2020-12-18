@@ -50,10 +50,6 @@ interface INativeEngine {
     readonly DEPTH_TEST_NEVER: number;
     readonly DEPTH_TEST_ALWAYS: number;
 
-    readonly CLEAR_FLAG_COLOR: number;
-    readonly CLEAR_FLAG_DEPTH: number;
-    readonly CLEAR_FLAG_STENCIL: number;
-
     readonly ADDRESS_MODE_WRAP: number;
     readonly ADDRESS_MODE_MIRROR: number;
     readonly ADDRESS_MODE_CLAMP: number;
@@ -155,10 +151,7 @@ interface INativeEngine {
     drawIndexed(fillMode: number, indexStart: number, indexCount: number): void;
     draw(fillMode: number, vertexStart: number, vertexCount: number): void;
 
-    clear(flags: number): void;
-    clearColor(r: number, g: number, b: number, a: number): void;
-    clearDepth(depth: number): void;
-    clearStencil(stencil: number): void;
+    clear(color: Nullable<IColor4Like>, depth?: number, stencil?: number): void;
 
     getRenderWidth(): number;
     getRenderHeight(): number;
@@ -909,20 +902,11 @@ export class NativeEngine extends Engine {
     }
 
     public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
-        var mode = 0;
-        if (backBuffer && color) {
-            this._native.clearColor(color.r, color.g, color.b, color.a !== undefined ? color.a : 1.0);
-            mode |= this._native.CLEAR_FLAG_COLOR;
+        if (this.useReverseDepthBuffer) {
+            throw new Error("reverse depth buffer is not currently implemented");
         }
-        if (depth) {
-            this._native.clearDepth(1.0);
-            mode |= this._native.CLEAR_FLAG_DEPTH;
-        }
-        if (stencil) {
-            this._native.clearStencil(0);
-            mode |= this._native.CLEAR_FLAG_STENCIL;
-        }
-        this._native.clear(mode);
+
+        this._native.clear(backBuffer ? color : null, depth ? 1.0 : undefined, stencil ? 0 : undefined);
     }
 
     public createIndexBuffer(indices: IndicesArray, updateable?: boolean): NativeDataBuffer {
