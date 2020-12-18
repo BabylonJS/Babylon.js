@@ -144,7 +144,7 @@ export class RenderTargetTexture extends Texture {
     private _postProcesses: PostProcess[];
     private _resizeObserver: Nullable<Observer<Engine>>;
 
-    private get _prePass() {
+    private get _prePassEnabled() {
         return !!this._prePassRenderTarget && this._prePassRenderTarget.enabled;
     }
 
@@ -865,7 +865,7 @@ export class RenderTargetTexture extends Texture {
      */
     public _prepareFrame(scene: Scene, faceIndex?: number, layer?: number, useCameraPostProcess?: boolean) {
         if (this._postProcessManager) {
-            if (!this._prePass) {
+            if (!this._prePassEnabled) {
                 this._postProcessManager._prepareFrame(this._texture, this._postProcesses);
             }
         }

@@ -157,7 +157,7 @@ export class PrePassRenderer {
     /**
      * Prevents the PrePassRenderer from using the GeometryBufferRenderer as a fallback
      */
-    public doNotUseGeometryRendererFallback = true;
+    public doNotUseGeometryRendererFallback = false;
 
     private _refreshGeometryBufferRendererLink() {
         if (!this.doNotUseGeometryRendererFallback) {
@@ -230,7 +230,7 @@ export class PrePassRenderer {
      */
     public _createRenderTarget(name: string, renderTargetTexture: Nullable<RenderTargetTexture>) : PrePassRenderTarget {
         const rt = new PrePassRenderTarget(name, renderTargetTexture, { width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() }, 0, this._scene,
-            { generateMipMaps: false, generateStencilBuffer: true, defaultType: Constants.TEXTURETYPE_UNSIGNED_INT, types: [], drawOnlyOnFirstAttachmentByDefault: true });
+            { generateMipMaps: false, generateStencilBuffer: this._engine.isStencilEnable, defaultType: Constants.TEXTURETYPE_UNSIGNED_INT, types: [], drawOnlyOnFirstAttachmentByDefault: true });
 
         this.renderTargets.push(rt);
 
@@ -241,7 +241,7 @@ export class PrePassRenderer {
      * Indicates if rendering a prepass is supported
      */
     public get isSupported() {
-        return this._engine.webGLVersion > 1 || this._scene.getEngine().getCaps().drawBuffersExtension;
+        return this._scene.getEngine().getCaps().drawBuffersExtension;
     }
 
     /**

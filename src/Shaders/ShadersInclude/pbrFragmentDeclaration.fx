@@ -49,7 +49,7 @@ uniform vec2 vMicroSurfaceSamplerInfos;
 #endif
 
 // Refraction Reflection
-#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(SS_REFRACTION)
+#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(SS_REFRACTION) || defined(PREPASS)
 uniform mat4 view;
 #endif
 

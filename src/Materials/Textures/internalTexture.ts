@@ -231,10 +231,6 @@ export class InternalTexture {
     public _lodGenerationOffset: number = 0;
     /** @hidden */
     public _depthStencilTexture: Nullable<InternalTexture>;
-    /** @hidden */
-    public _lastUsedRenderId = -1;
-    /** @hidden */
-    public _postProcessChannel = -1;
 
     // Multiview
     /** @hidden */

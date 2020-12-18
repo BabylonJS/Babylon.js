@@ -25,7 +25,7 @@ declare module "../../Engines/thinEngine" {
          * @param noDrawBuffers if set to true, the engine won't make an initializing call of drawBuffers
          * @returns the cube texture as an InternalTexture
          */
-        createMultipleRenderTarget(size: any, options: IMultiRenderTargetOptions, noDrawBuffers?: boolean): InternalTexture[];
+        createMultipleRenderTarget(size: any, options: IMultiRenderTargetOptions, initializeBuffers?: boolean): InternalTexture[];
 
         /**
          * Update the sample count for a given multiple render target texture
@@ -35,7 +35,7 @@ declare module "../../Engines/thinEngine" {
          * @param noDrawBuffers if set to true, the engine won't make an initializing call of drawBuffers
          * @returns the effective sample count (could be 0 if multisample render targets are not supported)
          */
-        updateMultipleRenderTargetTextureSampleCount(textures: Nullable<InternalTexture[]>, samples: number, noDrawBuffers?: boolean): number;
+        updateMultipleRenderTargetTextureSampleCount(textures: Nullable<InternalTexture[]>, samples: number, initializeBuffers?: boolean): number;
 
         /**
          * Select a subsets of attachments to draw to.
@@ -183,7 +183,7 @@ ThinEngine.prototype.unBindMultiColorAttachmentFramebuffer = function(textures: 
     this._bindUnboundFramebuffer(null);
 };
 
-ThinEngine.prototype.createMultipleRenderTarget = function(size: any, options: IMultiRenderTargetOptions, noDrawBuffers?: boolean): InternalTexture[] {
+ThinEngine.prototype.createMultipleRenderTarget = function(size: any, options: IMultiRenderTargetOptions, initializeBuffers: boolean = true): InternalTexture[] {
     var generateMipMaps = false;
     var generateDepthBuffer = true;
     var generateStencilBuffer = false;
@@ -332,7 +332,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function(size: any, options: I
         textures.push(depthTexture);
         this._internalTexturesCache.push(depthTexture);
     }
-    if (!noDrawBuffers) {
+    if (initializeBuffers) {
         gl.drawBuffers(attachments);
     }
 
@@ -343,7 +343,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function(size: any, options: I
     return textures;
 };
 
-ThinEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function(textures: Nullable<InternalTexture[]>, samples: number, noDrawBuffers?: boolean): number {
+ThinEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function(textures: Nullable<InternalTexture[]>, samples: number, initializeBuffers: boolean = true): number {
     if (this.webGLVersion < 2 || !textures) {
         return 1;
     }
@@ -415,7 +415,7 @@ ThinEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function(tex
             gl.bindRenderbuffer(gl.RENDERBUFFER, null);
             attachments.push(attachment);
         }
-        if (!noDrawBuffers) {
+        if (initializeBuffers) {
             gl.drawBuffers(attachments);
         }
     } else {

@@ -5,7 +5,6 @@
 #endif
 
 precision highp float;
-precision highp int;
 
 #ifdef BUMP
 varying mat4 vWorldView;

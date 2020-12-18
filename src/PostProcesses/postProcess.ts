@@ -28,6 +28,8 @@ declare type PrePassEffectConfiguration = import("../Rendering/prePassEffectConf
  */
 export type PostProcessOptions = { width: number, height: number };
 
+type TextureCache = {texture: InternalTexture, postProcessChannel: number, lastUsedRenderId : number};
+
 /**
  * PostProcess can be used to apply a shader to a texture after it has been rendered
  * See https://doc.babylonjs.com/how_to/how_to_use_postprocesses
@@ -178,7 +180,7 @@ export class PostProcess {
     * Smart array of input and output textures for the post process.
     * @hidden
     */
-    private _textureCache: InternalTexture[] = [];
+    private _textureCache: TextureCache[] = [];
     /**
     * The index in _textures that corresponds to the output texture.
     * @hidden
@@ -492,16 +494,15 @@ export class PostProcess {
 
     private _createRenderTargetTexture(textureSize: { width: number, height: number }, textureOptions: RenderTargetCreationOptions, channel = 0) {
         for (let i = 0; i < this._textureCache.length; i++) {
-            if (this._textureCache[i].width === textureSize.width &&
-                this._textureCache[i].height === textureSize.height &&
-                this._textureCache[i]._postProcessChannel === channel) {
-                return this._textureCache[i];
+            if (this._textureCache[i].texture.width === textureSize.width &&
+                this._textureCache[i].texture.height === textureSize.height &&
+                this._textureCache[i].postProcessChannel === channel) {
+                return this._textureCache[i].texture;
             }
         }
 
         const tex = this._engine.createRenderTargetTexture(textureSize, textureOptions);
-        tex._postProcessChannel = channel;
-        this._textureCache.push(tex);
+        this._textureCache.push({ texture: tex, postProcessChannel: channel, lastUsedRenderId : -1 });
 
         return tex;
     }
@@ -510,16 +511,16 @@ export class PostProcess {
         const currentRenderId = this._renderId;
 
         for (let i = this._textureCache.length - 1; i >= 0; i--) {
-            if (currentRenderId - this._textureCache[i]._lastUsedRenderId > 100) {
+            if (currentRenderId - this._textureCache[i].lastUsedRenderId > 100) {
                 let currentlyUsed = false;
                 for (var j = 0; j < this._textures.length; j++) {
-                    if (this._textures.data[j] === this._textureCache[i]) {
+                    if (this._textures.data[j] === this._textureCache[i].texture) {
                         currentlyUsed = true;
                     }
                 }
 
                 if (!currentlyUsed) {
-                    this._engine._releaseTexture(this._textureCache[i]);
+                    this._engine._releaseTexture(this._textureCache[i].texture);
                     this._textureCache.splice(i, 1);
                 }
             }
@@ -633,7 +634,18 @@ export class PostProcess {
             this.height = this._forcedOutputTexture.height;
         } else {
             target = this.inputTexture;
-            target._lastUsedRenderId = this._renderId;
+
+            let cache;
+            for (let i = 0; i < this._textureCache.length; i++) {
+                if (this._textureCache[i].texture === target) {
+                    cache = this._textureCache[i];
+                    break;
+                }
+            }
+
+            if (cache) {
+                cache.lastUsedRenderId = this._renderId;
+            }
         }
 
         // Bind the input of this post process to be used as the output of the previous post process.
@@ -736,26 +748,16 @@ export class PostProcess {
             return;
         }
 
-        if (this._textures.length > 0) {
-            for (var i = 0; i < this._textures.length; i++) {
-                this._engine._releaseTexture(this._textures.data[i]);
-
-                const cacheIndex = this._textureCache.indexOf(this._textures.data[i]);
-                if (cacheIndex !== -1) {
-                    this._textureCache.splice(cacheIndex, 1);
-                }
-            }
-        }
-
         this._disposeTextureCache();
         this._textures.dispose();
     }
 
     private _disposeTextureCache() {
         for (let i = this._textureCache.length - 1; i >= 0; i--) {
-            this._engine._releaseTexture(this._textureCache[i]);
-            this._textureCache.splice(i, 1);
+            this._engine._releaseTexture(this._textureCache[i].texture);
         }
+
+        this._textureCache.length = 0;
     }
 
     /**
