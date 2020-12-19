@@ -61363,14 +61363,13 @@ var GeneralPropertyTabComponent = /** @class */ (function (_super) {
                             }
                             return true;
                         } }),
-                (this.props.block.target === babylonjs_Materials_Node_nodeMaterialDecorator__WEBPACK_IMPORTED_MODULE_10__["NodeMaterialBlockTargets"].Neutral || this.props.block._modifiedTarget) &&
+                (this.props.block._originalTargetIsNeutral) &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_9__["OptionsLineComponent"], { label: "Target", options: targetOptions, target: this.props.block, propertyName: "target", onSelect: function (value) {
-                            _this.props.block._modifiedTarget = true;
                             _this.forceUpdate();
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                             _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
                         } }),
-                (this.props.block.target !== babylonjs_Materials_Node_nodeMaterialDecorator__WEBPACK_IMPORTED_MODULE_10__["NodeMaterialBlockTargets"].Neutral && !this.props.block._modifiedTarget) &&
+                (!this.props.block._originalTargetIsNeutral) &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Type", value: babylonjs_Materials_Node_nodeMaterialDecorator__WEBPACK_IMPORTED_MODULE_10__["NodeMaterialBlockTargets"][this.props.block.target] }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Type", value: this.props.block.getClassName() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Comments", propertyName: "comments", target: this.props.block, onChange: function () { return _this.props.globalState.onUpdateRequiredObservable.notifyObservers(); } }))));
