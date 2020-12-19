@@ -103,13 +103,13 @@ export class TouchButton3D extends Button3D {
     constructor(name?: string, collisionMesh?: Mesh) {
         super(name);
 
+        this._buttonForwardRay = new Ray(Vector3.Zero(), Vector3.Zero());
+
         if (collisionMesh) {
             this.collisionMesh = collisionMesh;
         }
 
         this._buttonManagerIndex = TouchButton3D._buttonManager.addButton(this);
-
-        this._buttonForwardRay = new Ray(Vector3.Zero(), Vector3.Zero());
     }
 
     /**
