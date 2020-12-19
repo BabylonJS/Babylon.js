@@ -70,6 +70,7 @@
 - Added image tracking feature ([RaananW](https://github.com/RaananW))
 - Pointer Events of WebXR controllers have pointerType `xr` ([RaananW](https://github.com/RaananW))
 - better support for custom hand meshes ([RaananW](https://github.com/RaananW))
+- Allow disabling of the WebXRControllerPointerSelection feature as part of the WebXR Default Experience ([rgerd](https://github.com/rgerd))
 
 ### Viewer
 
