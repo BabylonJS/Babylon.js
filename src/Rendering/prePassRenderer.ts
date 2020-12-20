@@ -664,7 +664,7 @@ export class PrePassRenderer {
 
             }
         }
-        
+
         if (enablePrePass) {
             this._setRenderTargetEnabled(this.defaultRT, true);
         }

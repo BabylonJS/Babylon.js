@@ -59,6 +59,35 @@ export class MaterialHelper {
         return TmpVectors.Vector4[0];
     }
 
+
+    /**
+     * Update the scene ubo before it can be used in rendering processing
+     * @param scene the scene to retrieve the ubo from
+     * @returns the scene UniformBuffer
+     */
+    public static FinalizeSceneUbo(scene: Scene): UniformBuffer {
+        const ubo = scene.getSceneUniformBuffer();
+        const eyePosition = MaterialHelper.BindEyePosition(null, scene);
+        ubo.updateFloat4("vEyePosition",
+            eyePosition.x,
+            eyePosition.y,
+            eyePosition.z,
+            eyePosition.w);
+
+        ubo.update();
+
+        return ubo;
+    }
+
+    /**
+     * Binds the scene's uniform buffer to the effect.
+     * @param effect defines the effect to bind to the scene uniform buffer
+     * @param sceneUbo defines the uniform buffer storing scene data
+     */
+    public static BindSceneUniformBuffer(effect: Effect, sceneUbo: UniformBuffer): void {
+        sceneUbo.bindToEffect(effect, "Scene");
+    }
+
     /**
      * Helps preparing the defines values about the UVs in used in the effect.
      * UVs are shared as much as we can accross channels in the shaders.
