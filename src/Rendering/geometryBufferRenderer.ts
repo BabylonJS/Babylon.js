@@ -98,6 +98,7 @@ export class GeometryBufferRenderer {
     private _linkedWithPrePass: boolean = false;
     private _prePassRenderer: PrePassRenderer;
     private _attachments: number[];
+    private _useUbo: boolean;
 
     protected _effect: Effect;
     protected _cachedDefines: string;
@@ -307,6 +308,7 @@ export class GeometryBufferRenderer {
     constructor(scene: Scene, ratio: number = 1) {
         this._scene = scene;
         this._ratio = ratio;
+        this._useUbo = scene.getEngine().supportsUniformBuffers;
 
         GeometryBufferRenderer._SceneComponentInitialization(this._scene);
 
@@ -452,14 +454,21 @@ export class GeometryBufferRenderer {
         if (this._cachedDefines !== join) {
             this._cachedDefines = join;
             this._effect = this._scene.getEngine().createEffect("geometry",
-                attribs,
-                [
-                    "world", "mBones", "viewProjection", "diffuseMatrix", "view", "previousWorld", "previousViewProjection", "mPreviousBones",
-                    "morphTargetInfluences", "bumpMatrix", "reflectivityMatrix", "vTangentSpaceParams", "vBumpInfos"
-                ],
-                ["diffuseSampler", "bumpSampler", "reflectivitySampler"], join,
-                undefined, undefined, undefined,
-                { buffersCount: this._multiRenderTarget.textures.length - 1, maxSimultaneousMorphTargets: numMorphInfluencers });
+                { 
+                    attributes: attribs,
+                    uniformsNames: [
+                        "world", "mBones", "viewProjection", "diffuseMatrix", "view", "previousWorld", "previousViewProjection", "mPreviousBones",
+                        "morphTargetInfluences", "bumpMatrix", "reflectivityMatrix", "vTangentSpaceParams", "vBumpInfos"
+                    ],
+                    samplers: ["diffuseSampler", "bumpSampler", "reflectivitySampler"],
+                    defines: join,
+                    onCompiled: null,
+                    fallbacks: null,
+                    onError: null,
+                    uniformBuffersNames: ["Scene"],
+                    indexParameters: { buffersCount: this._multiRenderTarget.textures.length - 1, maxSimultaneousMorphTargets: numMorphInfluencers },
+                },
+                this._scene.getEngine());
         }
 
         return this._effect.isReady();
@@ -588,8 +597,13 @@ export class GeometryBufferRenderer {
                 engine.enableEffect(this._effect);
                 renderingMesh._bind(subMesh, this._effect, material.fillMode);
 
-                this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
-                this._effect.setMatrix("view", scene.getViewMatrix());
+                if (!this._useUbo) {
+                    this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
+                    this._effect.setMatrix("view", scene.getViewMatrix());
+                } else {
+                    MaterialHelper.FinalizeSceneUbo(this._scene);
+                    MaterialHelper.BindSceneUniformBuffer(this._effect, this._scene.getSceneUniformBuffer());
+                }
 
                 if (material) {
                     var sideOrientation: Nullable<number>;
@@ -694,6 +708,7 @@ export class GeometryBufferRenderer {
                 renderSubMesh(opaqueSubMeshes.data[index]);
             }
 
+            engine.setDepthWrite(false);
             for (index = 0; index < alphaTestSubMeshes.length; index++) {
                 renderSubMesh(alphaTestSubMeshes.data[index]);
             }
@@ -703,6 +718,7 @@ export class GeometryBufferRenderer {
                     renderSubMesh(transparentSubMeshes.data[index]);
                 }
             }
+            engine.setDepthWrite(true);
         };
     }
 

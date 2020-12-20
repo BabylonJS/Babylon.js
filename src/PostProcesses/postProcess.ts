@@ -516,6 +516,7 @@ export class PostProcess {
                 for (var j = 0; j < this._textures.length; j++) {
                     if (this._textures.data[j] === this._textureCache[i].texture) {
                         currentlyUsed = true;
+                        break;
                     }
                 }
 
