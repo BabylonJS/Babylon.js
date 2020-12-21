@@ -7649,6 +7649,18 @@ declare module BABYLON {
          */
         centerOn(center: DeepImmutable<Vector3>, extend: DeepImmutable<Vector3>): BoundingInfo;
         /**
+         * Grows the bounding info to include the given point.
+         * @param point The point that will be included in the current bounding info
+         * @returns the current bounding info
+         */
+        encapsulate(point: Vector3): BoundingInfo;
+        /**
+         * Grows the bounding info to encapsulate the given bounding info.
+         * @param toEncapsulate The bounding info that will be encapsulated in the current bounding info
+         * @returns the current bounding info
+         */
+        encapsulateBoundingInfo(toEncapsulate: BoundingInfo): BoundingInfo;
+        /**
          * Scale the current bounding info by applying a scale factor
          * @param factor defines the scale factor to apply
          * @returns the current bounding info
