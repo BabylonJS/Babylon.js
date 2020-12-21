@@ -59,7 +59,6 @@ export class MaterialHelper {
         return TmpVectors.Vector4[0];
     }
 
-
     /**
      * Update the scene ubo before it can be used in rendering processing
      * @param scene the scene to retrieve the ubo from
