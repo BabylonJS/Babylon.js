@@ -32,14 +32,14 @@ export class SceneRecorder {
 
     /**
      * Get the delta between current state and original state
-     * @returns a string containing the delta
+     * @returns a Promise<any> containing the delta
      */
-    public getDelta() {
+    public async getDelta(): Promise<any> {
         if (!this._trackedScene) {
             return null;
         }
 
-        let newJSON = SceneSerializer.Serialize(this._trackedScene);
+        let newJSON = await SceneSerializer.Serialize(this._trackedScene);
         let deltaJSON: any = {};
 
         for (var node in newJSON) {

@@ -111,9 +111,9 @@ export class SceneSerializer {
     /**
      * Serialize a scene into a JSON compatible object
      * @param scene defines the scene to serialize
-     * @returns a JSON compatible object
+     * @returns a JSON promise compatible object
      */
-    public static Serialize(scene: Scene): any {
+    public static Serialize(scene: Scene): Promise<any> {
         var serializationObject: any = {};
 
         SceneSerializer.ClearCache();
@@ -312,7 +312,35 @@ export class SceneSerializer {
             component.serialize(serializationObject);
         }
 
-        return serializationObject;
+        const promises: Array<Promise<any>> = [];
+
+        this._CollectPromises(serializationObject, promises);
+
+        return Promise.all(promises).then(() => serializationObject);
+    }
+
+    private static _CollectPromises(obj: any, promises: Array<Promise<any>>): void  {
+        if (Array.isArray(obj)) {
+            for (let i = 0; i < obj.length; ++i) {
+                const o = obj[i];
+                if (o instanceof Promise) {
+                    promises.push(o.then((res: any) => obj[i] = res));
+                } else if (o instanceof Object || Array.isArray(o)) {
+                    this._CollectPromises(o, promises);
+                }
+            }
+        } else if (obj instanceof Object) {
+            for (const name in obj) {
+                if (obj.hasOwnProperty(name)) {
+                    const o = obj[name];
+                    if (o instanceof Promise) {
+                        promises.push(o.then((res: any) => obj[name] = res));
+                    } else if (o instanceof Object || Array.isArray(o)) {
+                        this._CollectPromises(o, promises);
+                    }
+                }
+            }
+        }
     }
 
     /**
