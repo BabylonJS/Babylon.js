@@ -141,6 +141,31 @@ export class BoundingInfo implements ICullable {
 
         return this;
     }
+    
+    /**
+     * Grows the bounding info to include the given point.
+     * @param point The point that will be included in the current bounding info
+     * @returns the current bounding info
+     */
+    public encapsulate(point: Vector3): BoundingInfo {
+        const minimum = Vector3.Minimize(this.minimum, point);
+        const maximum = Vector3.Maximize(this.maximum, point);
+        this.reConstruct(minimum, maximum, this.boundingBox.getWorldMatrix());
+
+        return this;
+    }
+    
+    /**
+     * Grows the bounding info to encapsulate the given bounding info.
+     * @param toEncapsulate The bounding info that will be encapsulated in the current bounding info
+     * @returns the current bounding info
+     */
+    public encapsulateBoundingInfo(toEncapsulate: BoundingInfo): BoundingInfo {
+        this.encapsulate(toEncapsulate.boundingBox.centerWorld.subtract(toEncapsulate.boundingBox.extendSizeWorld));
+        this.encapsulate(toEncapsulate.boundingBox.centerWorld.add(toEncapsulate.boundingBox.extendSizeWorld));
+
+        return this;
+    }
 
     /**
      * Scale the current bounding info by applying a scale factor
