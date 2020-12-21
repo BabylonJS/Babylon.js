@@ -13,6 +13,7 @@
 - Added ability to enable/disable ArcRotateCamera zoom on multiTouch event ([NicolasBuecher](https://github.com/NicolasBuecher))
 - Moving button to shared uI folder.([msDestiny14](https://github.com/msDestiny14))
 - Moving additional components to shared UI folder.([msDestiny14](https://github.com/msDestiny14))
+- Added encapsulate and encapsulateBoundingInfo methods to BoundingInfo. ([Tolo789](https://github.com/Tolo789))
 
 ### Engine
 - Moved all instance data from Geometry to Mesh such that the same Geometry objects can be used by many meshes with instancing. Reduces memory consumption on CPU/GPU. ([breakin](https://github.com/breakin)
