@@ -454,7 +454,7 @@ export class GeometryBufferRenderer {
         if (this._cachedDefines !== join) {
             this._cachedDefines = join;
             this._effect = this._scene.getEngine().createEffect("geometry",
-                { 
+                {
                     attributes: attribs,
                     uniformsNames: [
                         "world", "mBones", "viewProjection", "diffuseMatrix", "view", "previousWorld", "previousViewProjection", "mPreviousBones",
