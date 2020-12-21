@@ -52,7 +52,7 @@ so that you can start straight away.
 We are not complicated people, but we still have some [coding guidelines](https://doc.babylonjs.com/divingDeeper/developWithBjs/approvedNamingConventions)
 Before submitting your PR, just check that everything goes well by [creating the minified version](https://doc.babylonjs.com/advanced_topics/minifiedVer)
 
-You should read the [how to contribute documentation](https://doc.babylonjs.com/divingDeeper/developWithBjs/howToStart) before working on your PR.
+You should read the [how to contribute documentation](https://doc.babylonjs.com/divingDeeper/developWithBjs/contributeToDocs) before working on your PR.
 
 To validate your PR, please follow these steps:
 
