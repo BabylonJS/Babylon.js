@@ -259,7 +259,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
             if (!this.node) {
                 return;
             }
-            this._node!.metadata = this; // Store the control on the metadata field in order to get it when picking
+            this._injectGUI3DMetadata(this._node!).control = this; // Store the control on the metadata field in order to get it when picking
             this._node!.position = this.position;
             this._node!.scaling = this.scaling;
 
@@ -270,6 +270,12 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
                 this._affectMaterial(mesh);
             }
         }
+    }
+
+    protected _injectGUI3DMetadata(node: TransformNode): any {
+        node.metadata = node.metadata ?? {};
+        node.metadata.GUI3D = node.metadata.GUI3D ?? {};
+        return node.metadata.GUI3D;
     }
 
     /**
