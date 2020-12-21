@@ -141,7 +141,7 @@ export class BoundingInfo implements ICullable {
 
         return this;
     }
-    
+
     /**
      * Grows the bounding info to include the given point.
      * @param point The point that will be included in the current bounding info
@@ -154,7 +154,7 @@ export class BoundingInfo implements ICullable {
 
         return this;
     }
-    
+
     /**
      * Grows the bounding info to encapsulate the given bounding info.
      * @param toEncapsulate The bounding info that will be encapsulated in the current bounding info
