@@ -8031,6 +8031,8 @@ declare module BABYLON {
          */
         readPixels(faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean): Nullable<Promise<ArrayBufferView>>;
         /** @hidden */
+        _readPixelsSync(faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean): Nullable<ArrayBufferView>;
+        /** @hidden */
         get _lodTextureHigh(): Nullable<BaseTexture>;
         /** @hidden */
         get _lodTextureMid(): Nullable<BaseTexture>;
@@ -11373,13 +11375,29 @@ declare module BABYLON {
      */
     export class CopyTools {
         /**
+         * Transform some pixel data to a base64 string
+         * @param pixels defines the pixel data to transform to base64
+         * @param size defines the width and height of the (texture) data
+         * @param invertY true if the data must be inverted for the Y coordinate during the conversion
+         * @returns The base64 encoded string or null
+         */
+        static GenerateBase64StringFromPixelData(pixels: ArrayBufferView, size: ISize, invertY?: boolean): Nullable<string>;
+        /**
          * Reads the pixels stored in the webgl texture and returns them as a base64 string
          * @param texture defines the texture to read pixels from
          * @param faceIndex defines the face of the texture to read (in case of cube texture)
          * @param level defines the LOD level of the texture to read (in case of Mip Maps)
          * @returns The base64 encoded string or null
          */
-        static GenerateBase64StringFromTexture(texture: BaseTexture, faceIndex?: number, level?: number): Promise<Nullable<string>>;
+        static GenerateBase64StringFromTexture(texture: BaseTexture, faceIndex?: number, level?: number): Nullable<string>;
+        /**
+         * Reads the pixels stored in the webgl texture and returns them as a base64 string
+         * @param texture defines the texture to read pixels from
+         * @param faceIndex defines the face of the texture to read (in case of cube texture)
+         * @param level defines the LOD level of the texture to read (in case of Mip Maps)
+         * @returns The base64 encoded string or null wrapped in a promise
+         */
+        static GenerateBase64StringFromTextureAsync(texture: BaseTexture, faceIndex?: number, level?: number): Promise<Nullable<string>>;
     }
 }
 declare module BABYLON {
@@ -39678,6 +39696,8 @@ declare module BABYLON {
         supportExtendedTextureFormats: boolean;
         /** Indicates that the switch/case construct is supported in shaders */
         supportSwitchCaseInShader: boolean;
+        /** Indicates that synchronous texture reading is supported */
+        supportSyncTextureRead: boolean;
         /** @hidden */
         _collectUbosUpdatedInFrame: boolean;
     }
@@ -41698,6 +41718,8 @@ declare module BABYLON {
         interface ThinEngine {
             /** @hidden */
             _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean): Promise<ArrayBufferView>;
+            /** @hidden */
+            _readTexturePixelsSync(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean): ArrayBufferView;
         }
 }
 declare module BABYLON {
@@ -45494,6 +45516,8 @@ declare module BABYLON {
         readPixels(x: number, y: number, width: number, height: number, hasAlpha?: boolean, flushRenderer?: boolean): Promise<ArrayBufferView>;
         /** @hidden */
         _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean): Promise<ArrayBufferView>;
+        /** @hidden */
+        _readTexturePixelsSync(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean): ArrayBufferView;
         /**
          * Creates a new render target texture
          * @param size defines the size of the texture
@@ -78452,10 +78476,20 @@ declare module BABYLON {
         static ClearCache(): void;
         /**
          * Serialize a scene into a JSON compatible object
+         * Note that if the current engine does not support synchronous texture reading (like WebGPU), you should use SerializeAsync instead
+         * as else you may not retrieve the proper base64 encoded texture data (when using the Texture.ForceSerializeBuffers flag)
          * @param scene defines the scene to serialize
          * @returns a JSON compatible object
          */
         static Serialize(scene: Scene): any;
+        private static _Serialize;
+        /**
+         * Serialize a scene into a JSON compatible object
+         * @param scene defines the scene to serialize
+         * @returns a JSON promise compatible object
+         */
+        static SerializeAsync(scene: Scene): Promise<any>;
+        private static _CollectPromises;
         /**
          * Serialize a mesh into a JSON compatible object
          * @param toSerialize defines the mesh to serialize
@@ -78762,7 +78796,7 @@ declare module BABYLON {
         track(scene: Scene): void;
         /**
          * Get the delta between current state and original state
-         * @returns a string containing the delta
+         * @returns a any containing the delta
          */
         getDelta(): any;
         private _compareArray;
