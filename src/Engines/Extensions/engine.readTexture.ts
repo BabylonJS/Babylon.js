@@ -63,4 +63,4 @@ ThinEngine.prototype._readTexturePixelsSync = function(texture: InternalTexture,
 
 ThinEngine.prototype._readTexturePixels = function(texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer: Nullable<ArrayBufferView> = null, flushRenderer = true): Promise<ArrayBufferView> {
     return Promise.resolve(this._readTexturePixelsSync(texture, width, height, faceIndex, level, buffer, flushRenderer));
-}
+};
