@@ -374,6 +374,8 @@ export class WebGPUEngine extends Engine {
 
         this._sharedInit(canvas, !!options.doNotHandleTouchAction, options.audioEngine);
 
+        this._shaderProcessor = this._getShaderProcessor();
+
         // TODO. WEBGPU. Use real way to do it.
         this._canvas.style.transform = "scaleY(-1)";
     }
