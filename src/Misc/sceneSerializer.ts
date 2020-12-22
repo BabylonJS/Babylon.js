@@ -6,6 +6,7 @@ import { Material } from "../Materials/material";
 import { Scene } from "../scene";
 import { Light } from "../Lights/light";
 import { SerializationHelper } from "./decorators";
+import { Texture } from "../Materials/Textures/texture";
 
 var serializedGeometries: Geometry[] = [];
 var serializeGeometry = (geometry: Geometry, serializationGeometries: any): any => {
@@ -110,11 +111,21 @@ export class SceneSerializer {
 
     /**
      * Serialize a scene into a JSON compatible object
+     * Note that if the current engine does not support synchronous texture reading (like WebGPU), you should use SerializeAsync instead
+     * as else you may not retrieve the proper base64 encoded texture data (when using the Texture.ForceSerializeBuffers flag)
      * @param scene defines the scene to serialize
-     * @returns a JSON promise compatible object
+     * @returns a JSON compatible object
      */
-    public static Serialize(scene: Scene): Promise<any> {
+    public static Serialize(scene: Scene): any {
+        return SceneSerializer._Serialize(scene);
+    }
+
+    private static _Serialize(scene: Scene, checkSyncReadSupported = true): any {
         var serializationObject: any = {};
+
+        if (checkSyncReadSupported && !scene.getEngine()._features.supportSyncTextureRead && Texture.ForceSerializeBuffers) {
+            console.warn("The serialization object may not contain the proper base64 encoded texture data! You should use the SerializeAsync method instead.");
+        }
 
         SceneSerializer.ClearCache();
 
@@ -311,6 +322,17 @@ export class SceneSerializer {
         for (let component of scene._serializableComponents) {
             component.serialize(serializationObject);
         }
+
+        return serializationObject;
+    }
+
+    /**
+     * Serialize a scene into a JSON compatible object
+     * @param scene defines the scene to serialize
+     * @returns a JSON promise compatible object
+     */
+    public static SerializeAsync(scene: Scene): Promise<any> {
+        const serializationObject = SceneSerializer._Serialize(scene, false);
 
         const promises: Array<Promise<any>> = [];
 

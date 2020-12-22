@@ -160,6 +160,7 @@ export class NullEngine extends Engine {
             supportSSAO2: false,
             supportExtendedTextureFormats: false,
             supportSwitchCaseInShader: false,
+            supportSyncTextureRead: false,
             _collectUbosUpdatedInFrame: false,
         };
 

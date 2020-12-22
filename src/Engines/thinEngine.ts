@@ -1076,6 +1076,7 @@ export class ThinEngine {
             supportSSAO2: this._webGLVersion !== 1,
             supportExtendedTextureFormats: this._webGLVersion !== 1,
             supportSwitchCaseInShader: this._webGLVersion !== 1,
+            supportSyncTextureRead: true,
             _collectUbosUpdatedInFrame: false,
         };
     }
