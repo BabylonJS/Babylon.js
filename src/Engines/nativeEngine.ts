@@ -1503,7 +1503,9 @@ export class NativeEngine extends Engine {
     }
 
     protected _deleteTexture(texture: Nullable<WebGLTexture>): void {
-        this._native.deleteTexture(texture);
+        if (texture) {
+            this._native.deleteTexture(texture);
+        }
     }
 
     /**
