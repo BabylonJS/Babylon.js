@@ -110,6 +110,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public REFLECTIONMAP_EQUIRECTANGULAR = false;
     public REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
     public REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = false;
+    public REFLECTIONMAP_OPPOSITEZ = false;
     public INVERTCUBICMAP = false;
     public LOGARITHMICDEPTH = false;
     public REFRACTION = false;
@@ -914,6 +915,7 @@ export class StandardMaterial extends PushMaterial {
                         defines.INVERTCUBICMAP = (this._reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE);
                         defines.REFLECTIONMAP_3D = this._reflectionTexture.isCube;
                         defines.RGBDREFLECTION = this._reflectionTexture.isRGBD;
+                        defines.REFLECTIONMAP_OPPOSITEZ = this.getScene().useRightHandedSystem ? !this._reflectionTexture.invertZ : this._reflectionTexture.invertZ;
 
                         switch (this._reflectionTexture.coordinatesMode) {
                             case Texture.EXPLICIT_MODE:
@@ -951,6 +953,7 @@ export class StandardMaterial extends PushMaterial {
                     }
                 } else {
                     defines.REFLECTION = false;
+                    defines.REFLECTIONMAP_OPPOSITEZ = false;
                 }
 
                 if (this._emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
