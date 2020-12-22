@@ -629,6 +629,40 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     }
 
     /** @hidden */
+    public _readPixelsSync(faceIndex = 0, level = 0, buffer: Nullable<ArrayBufferView> = null, flushRenderer = true): Nullable<ArrayBufferView> {
+        if (!this._texture) {
+            return null;
+        }
+
+        var size = this.getSize();
+        var width = size.width;
+        var height = size.height;
+
+        const engine = this._getEngine();
+        if (!engine) {
+            return null;
+        }
+
+        if (level != 0) {
+            width = width / Math.pow(2, level);
+            height = height / Math.pow(2, level);
+
+            width = Math.round(width);
+            height = Math.round(height);
+        }
+
+        try {
+            if (this._texture.isCube) {
+                return engine._readTexturePixelsSync(this._texture, width, height, faceIndex, level, buffer, flushRenderer);
+            }
+
+            return engine._readTexturePixelsSync(this._texture, width, height, -1, level, buffer, flushRenderer);
+        } catch (e) {
+            return null;
+        }
+    }
+
+    /** @hidden */
     public get _lodTextureHigh(): Nullable<BaseTexture> {
         if (this._texture) {
             return this._texture._lodTextureHigh;

@@ -556,6 +556,7 @@ export class WebGPUEngine extends Engine {
             supportSSAO2: true,
             supportExtendedTextureFormats: true,
             supportSwitchCaseInShader: true,
+            supportSyncTextureRead: false,
             _collectUbosUpdatedInFrame: true,
         };
     }
@@ -2291,6 +2292,11 @@ export class WebGPUEngine extends Engine {
         }
 
         return this._textureHelper.readPixels(gpuTextureWrapper.underlyingResource!, 0, 0, width, height, gpuTextureWrapper.format, faceIndex, level, buffer);
+    }
+
+    /** @hidden */
+    public _readTexturePixelsSync(texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer: Nullable<ArrayBufferView> = null, flushRenderer = true): ArrayBufferView {
+        throw "_readTexturePixelsSync is unsupported in WebGPU!";
     }
 
     //------------------------------------------------------------------------------
