@@ -16,6 +16,7 @@ import { TimingTools } from "./timingTools";
 import { InstantiationTools } from "./instantiationTools";
 import { GUID } from "./guid";
 import { IScreenshotSize } from "./interfaces/screenshotSize";
+import { SliceTools } from "./sliceTools";
 
 declare type Camera = import("../Cameras/camera").Camera;
 declare type Engine = import("../Engines/engine").Engine;
@@ -163,11 +164,7 @@ export class Tools {
      * @returns the new sliced array
      */
     public static Slice<T>(data: T, start?: number, end?: number): T {
-        if ((data as any).slice) {
-            return (data as any).slice(start, end);
-        }
-
-        return Array.prototype.slice.call(data, start, end);
+        return SliceTools.Slice(data, start, end);
     }
 
     /**
@@ -179,11 +176,7 @@ export class Tools {
      * @returns the new sliced array
      */
     public static SliceToArray<T, P>(data: T, start?: number, end?: number): Array<P> {
-        if (Array.isArray(data)) {
-            return (data as Array<P>).slice(start, end);
-        }
-
-        return Array.prototype.slice.call(data, start, end);
+        return SliceTools.SliceToArray(data, start, end);
     }
 
     /**
