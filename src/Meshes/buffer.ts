@@ -1,7 +1,6 @@
 import { Nullable, DataArray, FloatArray } from "../types";
 import { ThinEngine } from "../Engines/thinEngine";
 import { DataBuffer } from "./dataBuffer";
-import { Tools } from "../Misc/tools";
 
 /**
  * Class used to store data that will be store in GPU memory
@@ -212,6 +211,15 @@ export class VertexBuffer {
     private _instanced: boolean;
     private _instanceDivisor: number;
 
+    // Copied from Tools. We don't import Tools to avoid raising the size of the package too much
+    private static _Slice<T>(data: T, start?: number, end?: number): T {
+        if ((data as any).slice) {
+            return (data as any).slice(start, end);
+        }
+
+        return Array.prototype.slice.call(data, start, end);
+    }
+
     /**
      * The byte type.
      */
@@ -416,7 +424,7 @@ export class VertexBuffer {
         if (!(data instanceof Array || data instanceof Float32Array) || vertexBuffer.byteOffset !== 0 || data.length !== count) {
             if (data instanceof Array) {
                 const offset = vertexBuffer.byteOffset / 4;
-                return Tools.Slice(data, offset, offset + count);
+                return VertexBuffer._Slice(data, offset, offset + count);
             } else if (data instanceof ArrayBuffer) {
                 return new Float32Array(data, vertexBuffer.byteOffset, count);
             } else {
@@ -442,7 +450,7 @@ export class VertexBuffer {
         }
 
         if (forceCopy) {
-            return Tools.Slice(data);
+            return VertexBuffer._Slice(data);
         }
 
         return data;
