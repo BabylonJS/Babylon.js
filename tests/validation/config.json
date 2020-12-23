@@ -1017,6 +1017,11 @@
             "renderCount": 10,
             "playgroundId": "#MSAHKR#13",
             "referenceImage": "shadowsinstancesright.png"
+        },
+        {
+            "title": "Instances with color buffer",
+            "playgroundId": "#YPABS1#91",
+            "referenceImage": "instancecolors.png"
         }
     ]
 }

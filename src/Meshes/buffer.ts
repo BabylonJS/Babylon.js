@@ -1,6 +1,7 @@
-import { Nullable, DataArray } from "../types";
+import { Nullable, DataArray, FloatArray } from "../types";
 import { ThinEngine } from "../Engines/thinEngine";
-import { DataBuffer } from './dataBuffer';
+import { DataBuffer } from "./dataBuffer";
+import { SliceTools } from "../Misc/sliceTools";
 
 /**
  * Class used to store data that will be store in GPU memory
@@ -387,6 +388,62 @@ export class VertexBuffer {
      */
     public getData(): Nullable<DataArray> {
         return this._buffer.getData();
+    }
+
+    /**
+     * Gets current buffer's data as a float array. Float data is constructed if the vertex buffer data cannot be returned directly.
+     * @param totalVertices number of vertices in the buffer to take into account
+     * @param forceCopy defines a boolean indicating that the returned array must be cloned upon returning it
+     * @returns a float array containing vertex data
+     */
+    public getFloatData(totalVertices: number, forceCopy?: boolean): Nullable<FloatArray> {
+        let data = this.getData();
+        if (!data) {
+            return null;
+        }
+
+        const tightlyPackedByteStride = this.getSize() * VertexBuffer.GetTypeByteLength(this.type);
+        const count = totalVertices * this.getSize();
+
+        if (this.type !== VertexBuffer.FLOAT || this.byteStride !== tightlyPackedByteStride) {
+            const copy: number[] = [];
+            this.forEach(count, (value) => copy.push(value));
+            return copy;
+        }
+
+        if (!(data instanceof Array || data instanceof Float32Array) || this.byteOffset !== 0 || data.length !== count) {
+            if (data instanceof Array) {
+                const offset = this.byteOffset / 4;
+                return SliceTools.Slice(data, offset, offset + count);
+            } else if (data instanceof ArrayBuffer) {
+                return new Float32Array(data, this.byteOffset, count);
+            } else {
+                let offset = data.byteOffset + this.byteOffset;
+                if (forceCopy) {
+                    let result = new Float32Array(count);
+                    let source = new Float32Array(data.buffer, offset, count);
+
+                    result.set(source);
+
+                    return result;
+                }
+
+                // Portect against bad data
+                let remainder = offset % 4;
+
+                if (remainder) {
+                    offset = Math.max(0, offset - remainder);
+                }
+
+                return new Float32Array(data.buffer, offset, count);
+            }
+        }
+
+        if (forceCopy) {
+            return SliceTools.Slice(data);
+        }
+
+        return data;
     }
 
     /**
