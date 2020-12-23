@@ -397,30 +397,28 @@ export class VertexBuffer {
      * @returns a float array containing vertex data
      */
     public getFloatData(totalVertices: number, forceCopy?: boolean): Nullable<FloatArray> {
-        const vertexBuffer = this;
-
-        let data = vertexBuffer.getData();
+        let data = this.getData();
         if (!data) {
             return null;
         }
 
-        const tightlyPackedByteStride = vertexBuffer.getSize() * VertexBuffer.GetTypeByteLength(vertexBuffer.type);
-        const count = totalVertices * vertexBuffer.getSize();
+        const tightlyPackedByteStride = this.getSize() * VertexBuffer.GetTypeByteLength(this.type);
+        const count = totalVertices * this.getSize();
 
-        if (vertexBuffer.type !== VertexBuffer.FLOAT || vertexBuffer.byteStride !== tightlyPackedByteStride) {
+        if (this.type !== VertexBuffer.FLOAT || this.byteStride !== tightlyPackedByteStride) {
             const copy: number[] = [];
-            vertexBuffer.forEach(count, (value) => copy.push(value));
+            this.forEach(count, (value) => copy.push(value));
             return copy;
         }
 
-        if (!(data instanceof Array || data instanceof Float32Array) || vertexBuffer.byteOffset !== 0 || data.length !== count) {
+        if (!(data instanceof Array || data instanceof Float32Array) || this.byteOffset !== 0 || data.length !== count) {
             if (data instanceof Array) {
-                const offset = vertexBuffer.byteOffset / 4;
+                const offset = this.byteOffset / 4;
                 return SliceTools.Slice(data, offset, offset + count);
             } else if (data instanceof ArrayBuffer) {
-                return new Float32Array(data, vertexBuffer.byteOffset, count);
+                return new Float32Array(data, this.byteOffset, count);
             } else {
-                let offset = data.byteOffset + vertexBuffer.byteOffset;
+                let offset = data.byteOffset + this.byteOffset;
                 if (forceCopy) {
                     let result = new Float32Array(count);
                     let source = new Float32Array(data.buffer, offset, count);
