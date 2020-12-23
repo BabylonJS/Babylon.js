@@ -168,6 +168,7 @@ export class WebGPUCacheRenderPipeline {
     private _stencilWriteMask: number;
     private _depthStencilState: number;
     private _vertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }>;
+    private _overrideVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }>;
     private _indexBuffer: Nullable<DataBuffer>;
 
     constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer) {
@@ -195,7 +196,7 @@ export class WebGPUCacheRenderPipeline {
         this.setDepthStencilFormat(WebGPUConstants.TextureFormat.Depth24PlusStencil8);
         this.setStencilEnabled(false);
         this.resetStencilState();
-        this.setBuffers(null, null);
+        this.setBuffers(null, null, null);
     }
 
     public getRenderPipeline(fillMode: number, effect: Effect, sampleCount: number): GPURenderPipeline {
@@ -425,8 +426,9 @@ export class WebGPUCacheRenderPipeline {
         this.setStencilWriteMask(writeMask);
     }
 
-    public setBuffers(vertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }>, indexBuffer: Nullable<DataBuffer>): void {
+    public setBuffers(vertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }>, indexBuffer: Nullable<DataBuffer>, overrideVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }>): void {
         this._vertexBuffers = vertexBuffers;
+        this._overrideVertexBuffers = overrideVertexBuffers;
         this._indexBuffer = indexBuffer;
     }
 
@@ -745,7 +747,7 @@ export class WebGPUCacheRenderPipeline {
             const location = effect.getAttributeLocation(index);
 
             if (location >= 0) {
-                let  vertexBuffer = this._vertexBuffers![attributes[index]];
+                let vertexBuffer = (this._overrideVertexBuffers && this._overrideVertexBuffers[attributes[index]]) ?? this._vertexBuffers![attributes[index]];
                 if (!vertexBuffer) {
                     // In WebGL it's valid to not bind a vertex buffer to an attribute, but it's not valid in WebGPU
                     // So we must bind a dummy buffer when we are not given one for a specific attribute
@@ -851,7 +853,7 @@ export class WebGPUCacheRenderPipeline {
             const location = effect.getAttributeLocation(index);
 
             if (location >= 0) {
-                let  vertexBuffer = this._vertexBuffers![attributes[index]];
+                let vertexBuffer = (this._overrideVertexBuffers && this._overrideVertexBuffers[attributes[index]]) ?? this._vertexBuffers![attributes[index]];
                 if (!vertexBuffer) {
                     // In WebGL it's valid to not bind a vertex buffer to an attribute, but it's not valid in WebGPU
                     // So we must bind a dummy buffer when we are not given one for a specific attribute
