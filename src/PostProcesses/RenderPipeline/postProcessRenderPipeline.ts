@@ -156,7 +156,7 @@ export class PostProcessRenderPipeline {
         }
 
         for (i = 0; i < indicesToDelete.length; i++) {
-            cameras.splice(indicesToDelete[i], 1);
+            cams.splice(indicesToDelete[i], 1);
         }
 
         for (var renderEffectName in this._renderEffects) {
