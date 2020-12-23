@@ -6935,6 +6935,30 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Class used to provide helpers for slicing
+     */
+    export class SliceTools {
+        /**
+         * Provides a slice function that will work even on IE
+         * @param data defines the array to slice
+         * @param start defines the start of the data (optional)
+         * @param end defines the end of the data (optional)
+         * @returns the new sliced array
+         */
+        static Slice<T>(data: T, start?: number, end?: number): T;
+        /**
+         * Provides a slice function that will work even on IE
+         * The difference between this and Slice is that this will force-convert to array
+         * @param data defines the array to slice
+         * @param start defines the start of the data (optional)
+         * @param end defines the end of the data (optional)
+         * @returns the new sliced array
+         */
+        static SliceToArray<T, P>(data: T, start?: number, end?: number): Array<P>;
+    }
+}
+declare module BABYLON {
+    /**
      * Class used to store data that will be store in GPU memory
      */
     export class Buffer {
@@ -7123,6 +7147,13 @@ declare module BABYLON {
          * @returns a DataArray or null
          */
         getData(): Nullable<DataArray>;
+        /**
+         * Gets current buffer's data as a float array. Float data is constructed if the vertex buffer data cannot be returned directly.
+         * @param totalVertices number of vertices in the buffer to take into account
+         * @param forceCopy defines a boolean indicating that the returned array must be cloned upon returning it
+         * @returns a float array containing vertex data
+         */
+        getFloatData(totalVertices: number, forceCopy?: boolean): Nullable<FloatArray>;
         /**
          * Gets underlying native buffer
          * @returns underlying native buffer
@@ -44818,6 +44849,7 @@ declare module BABYLON {
         private _stencilWriteMask;
         private _depthStencilState;
         private _vertexBuffers;
+        private _overrideVertexBuffers;
         private _indexBuffer;
         constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer);
         reset(): void;
@@ -44851,7 +44883,9 @@ declare module BABYLON {
         setStencilState(stencilEnabled: boolean, compare: Nullable<number>, depthFailOp: Nullable<number>, passOp: Nullable<number>, failOp: Nullable<number>, readMask: number, writeMask: number): void;
         setBuffers(vertexBuffers: Nullable<{
             [key: string]: Nullable<VertexBuffer>;
-        }>, indexBuffer: Nullable<DataBuffer>): void;
+        }>, indexBuffer: Nullable<DataBuffer>, overrideVertexBuffers: Nullable<{
+            [key: string]: Nullable<VertexBuffer>;
+        }>): void;
         private static _GetTopology;
         private static _GetAphaBlendOperation;
         private static _GetAphaBlendFactor;
@@ -45008,6 +45042,7 @@ declare module BABYLON {
         private _rttRenderPassWrapper;
         private _pendingDebugCommands;
         private _currentVertexBuffers;
+        private _currentOverrideVertexBuffers;
         private _currentIndexBuffer;
         private __colorWrite;
         private _uniformsBuffers;
@@ -45190,10 +45225,13 @@ declare module BABYLON {
          * @param vertexBuffers defines the list of vertex buffers to bind
          * @param indexBuffer defines the index buffer to bind
          * @param effect defines the effect associated with the vertex buffers
+         * @param overrideVertexBuffers defines optional list of avertex buffers that overrides the entries in vertexBuffers
          */
         bindBuffers(vertexBuffers: {
             [key: string]: Nullable<VertexBuffer>;
-        }, indexBuffer: Nullable<DataBuffer>, effect: Effect): void;
+        }, indexBuffer: Nullable<DataBuffer>, effect: Effect, overrideVertexBuffers?: {
+            [kind: string]: Nullable<VertexBuffer>;
+        }): void;
         /** @hidden */
         _releaseBuffer(buffer: DataBuffer): boolean;
         createUniformBuffer(elements: FloatArray): DataBuffer;
