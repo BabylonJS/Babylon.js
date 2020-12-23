@@ -423,53 +423,7 @@ export class Geometry implements IGetSetVerticesData {
             return null;
         }
 
-        let data = vertexBuffer.getData();
-        if (!data) {
-            return null;
-        }
-
-        const tightlyPackedByteStride = vertexBuffer.getSize() * VertexBuffer.GetTypeByteLength(vertexBuffer.type);
-        const count = this._totalVertices * vertexBuffer.getSize();
-
-        if (vertexBuffer.type !== VertexBuffer.FLOAT || vertexBuffer.byteStride !== tightlyPackedByteStride) {
-            const copy: number[] = [];
-            vertexBuffer.forEach(count, (value) => copy.push(value));
-            return copy;
-        }
-
-        if (!(data instanceof Array || data instanceof Float32Array) || vertexBuffer.byteOffset !== 0 || data.length !== count) {
-            if (data instanceof Array) {
-                const offset = vertexBuffer.byteOffset / 4;
-                return Tools.Slice(data, offset, offset + count);
-            } else if (data instanceof ArrayBuffer) {
-                return new Float32Array(data, vertexBuffer.byteOffset, count);
-            } else {
-                let offset = data.byteOffset + vertexBuffer.byteOffset;
-                if (forceCopy || (copyWhenShared && this._meshes.length !== 1)) {
-                    let result = new Float32Array(count);
-                    let source = new Float32Array(data.buffer, offset, count);
-
-                    result.set(source);
-
-                    return result;
-                }
-
-                // Portect against bad data
-                let remainder = offset % 4;
-
-                if (remainder) {
-                    offset = Math.max(0, offset - remainder);
-                }
-
-                return new Float32Array(data.buffer, offset, count);
-            }
-        }
-
-        if (forceCopy || (copyWhenShared && this._meshes.length !== 1)) {
-            return Tools.Slice(data);
-        }
-
-        return data;
+        return vertexBuffer.getFloatData(this._totalVertices, forceCopy || (copyWhenShared && this._meshes.length !== 1));
     }
 
     /**
