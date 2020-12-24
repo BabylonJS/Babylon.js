@@ -320,7 +320,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         const positions = mesh.getVerticesData(VertexBuffer.PositionKind);
         const normals = mesh.getVerticesData(VertexBuffer.NormalKind);
         const mapVertices: { [key: string]: number[] } = {};
-    
+
         if (!positions || !normals) {
             return;
         }
@@ -330,7 +330,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             const y = positions[i * 3 + 1];
             const z = positions[i * 3 + 2];
             const key = x + "_" + y + "_" + z;
-    
+
             let lst = mapVertices[key];
             if (!lst) {
                 lst = [];
@@ -338,7 +338,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             }
             lst.push(i);
         }
-    
+
         const normal = new Vector3();
         for (const key in mapVertices) {
             const lst = mapVertices[key];
@@ -364,10 +364,9 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                 normals[vIdx * 3 + 2] = normal.z;
             }
         }
-    
         mesh.setVerticesData(VertexBuffer.NormalKind, normals);
-    }   
- 
+    }
+
     /**
      * Read the OBJ file and create an Array of meshes.
      * Each mesh contains all information given by the OBJ and the MTL file.
