@@ -292,6 +292,7 @@ export class Geometry implements IGetSetVerticesData {
                 mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
                 mesh._createGlobalSubMesh(false);
                 mesh.computeWorldMatrix(true);
+                mesh.synchronizeInstances();
             }
         }
 
@@ -551,6 +552,7 @@ export class Geometry implements IGetSetVerticesData {
 
         for (const mesh of this._meshes) {
             mesh._createGlobalSubMesh(true);
+            mesh.synchronizeInstances();
         }
 
         this.notifyUpdate();
