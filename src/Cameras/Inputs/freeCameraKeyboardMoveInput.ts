@@ -22,7 +22,7 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
      * Gets or Set the list of keyboard keys used to control the forward move of the camera.
      */
     @serialize()
-    public keysUp = [38];
+    public keysUp = [38, 87];
 
     /**
      * Gets or Set the list of keyboard keys used to control the upward move of the camera.
@@ -34,7 +34,7 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
      * Gets or Set the list of keyboard keys used to control the backward move of the camera.
      */
     @serialize()
-    public keysDown = [40];
+    public keysDown = [40, 83];
 
     /**
      * Gets or Set the list of keyboard keys used to control the downward move of the camera.
@@ -46,13 +46,13 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
      * Gets or Set the list of keyboard keys used to control the left strafe move of the camera.
      */
     @serialize()
-    public keysLeft = [37];
+    public keysLeft = [37, 65];
 
     /**
      * Gets or Set the list of keyboard keys used to control the right strafe move of the camera.
      */
     @serialize()
-    public keysRight = [39];
+    public keysRight = [39, 68];
 
     private _keys = new Array<number>();
     private _onCanvasBlurObserver: Nullable<Observer<Engine>>;
