@@ -128,6 +128,7 @@
 - Added upwards and downwards keyboard input to `FreeCamera` ([Pheater](https://github.com/pheater))
 - Handle scales in camera matrices ([Popov72](https://github.com/Popov72))
 - Added mouse wheel controls to FreeCamera. ([mrdunk](https://github.com/mrdunk))
+- Added WASD movement to FreeCamera. ([geonom](https://github.com/geonom))
 
 ### Debug
 - Added new view modes to the `SkeletonViewer` class. ([Pryme8](https://github.com/Pryme8))
