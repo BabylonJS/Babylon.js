@@ -1875,8 +1875,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         let oldCameraMaxZ = 0;
+        let oldCamera: Nullable<Camera> = null;
         if (this.ignoreCameraMaxZ && scene.activeCamera && !scene._isInIntermediateRendering()) {
             oldCameraMaxZ = scene.activeCamera.maxZ;
+            oldCamera = scene.activeCamera;
             scene.activeCamera.maxZ = 0;
             scene.updateTransformMatrix(true);
         }
@@ -1890,8 +1892,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         let instanceDataStorage = this._instanceDataStorage;
 
         let material = subMesh.getMaterial();
-
         if (!material) {
+            if (oldCamera) {
+                oldCamera.maxZ = oldCameraMaxZ;
+                scene.updateTransformMatrix(true);
+            }
             return this;
         }
 
@@ -1899,9 +1904,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (!instanceDataStorage.isFrozen || !this._effectiveMaterial || this._effectiveMaterial !== material) {
             if (material._storeEffectOnSubMeshes) {
                 if (!material.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
+                    if (oldCamera) {
+                        oldCamera.maxZ = oldCameraMaxZ;
+                        scene.updateTransformMatrix(true);
+                    }
                     return this;
                 }
             } else if (!material.isReady(this, hardwareInstancedRendering)) {
+                if (oldCamera) {
+                    oldCamera.maxZ = oldCameraMaxZ;
+                    scene.updateTransformMatrix(true);
+                }
                 return this;
             }
 
@@ -1925,6 +1938,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         if (!effect) {
+            if (oldCamera) {
+                oldCamera.maxZ = oldCameraMaxZ;
+                scene.updateTransformMatrix(true);
+            }
             return this;
         }
 
@@ -1991,11 +2008,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this._internalMeshDataInfo._onAfterRenderObservable.notifyObservers(this);
         }
 
-        if (this.ignoreCameraMaxZ && scene.activeCamera && !scene._isInIntermediateRendering()) {
-            scene.activeCamera.maxZ = oldCameraMaxZ;
+        if (oldCamera) {
+            oldCamera.maxZ = oldCameraMaxZ;
             scene.updateTransformMatrix(true);
         }
-
         return this;
     }
 
