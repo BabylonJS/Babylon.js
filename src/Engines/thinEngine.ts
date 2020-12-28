@@ -2249,10 +2249,13 @@ export class ThinEngine {
 
     private _compileRawShader(source: string, type: string): WebGLShader {
         var gl = this._gl;
+
+        while (gl.getError() != gl.NO_ERROR) { }
+
         var shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
 
         if (!shader) {
-            throw new Error(`Something went wrong while creating a gl ${type} shader object. gl error=${gl.getError()}`);
+            throw new Error(`Something went wrong while creating a gl ${type} shader object. gl error=${gl.getError()}, gl isContextLost=${gl.isContextLost()}, _contextWasLost=${this._contextWasLost}`);
         }
 
         gl.shaderSource(shader, source);
