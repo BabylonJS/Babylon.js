@@ -12877,6 +12877,7 @@ declare module BABYLON {
         protected _dumpPropertiesCode(): string;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -13007,6 +13008,7 @@ declare module BABYLON {
         protected _dumpPropertiesCode(): string;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -13192,6 +13194,7 @@ declare module BABYLON {
         protected _dumpPropertiesCode(): string;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -13268,6 +13271,7 @@ declare module BABYLON {
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -13341,6 +13345,7 @@ declare module BABYLON {
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -15095,6 +15100,7 @@ declare module BABYLON {
          * automatic start to happen and let you decide when to start emitting particles.
          */
         preventAutoStart: boolean;
+        protected _rootUrl: string;
         private _noiseTexture;
         /**
          * Gets or sets a texture used to add random noise to particle positions
