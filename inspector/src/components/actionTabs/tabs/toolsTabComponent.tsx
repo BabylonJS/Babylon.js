@@ -123,7 +123,6 @@ export class ToolsTabComponent extends PaneComponent {
     }
 
     recordGIFInternal() {
-        console.log("recordGIFInternal")
         const workerUrl = URL.createObjectURL(this._gifWorkerBlob);
         this._gifRecorder = new GIF({
             workers: 2,
@@ -141,12 +140,10 @@ export class ToolsTabComponent extends PaneComponent {
                 clearInterval(intervalId);
                 return;
             }
-            console.log("addFrame")
             this._gifRecorder.addFrame(engine.getRenderingCanvas(), {delay: 0, copy: true});
         }, this._gifOptions.frequency);
                         
         this._gifRecorder.on('finished', (blob: Blob) =>{
-            console.log("finished")
             this._crunchingGIF = false;
             Tools.Download(blob, "record.gif");
             
