@@ -56352,6 +56352,7 @@ var ToolsTabComponent = /** @class */ (function (_super) {
     };
     ToolsTabComponent.prototype.recordGIFInternal = function () {
         var _this = this;
+        var _a;
         var workerUrl = URL.createObjectURL(this._gifWorkerBlob);
         this._gifRecorder = new GIF({
             workers: 2,
@@ -56361,13 +56362,13 @@ var ToolsTabComponent = /** @class */ (function (_super) {
         var scene = this.props.scene;
         var engine = scene.getEngine();
         this._previousRenderingScale = engine.getHardwareScalingLevel();
-        engine.setHardwareScalingLevel(engine.getRenderWidth() / this._gifOptions.width | 0);
+        engine.setHardwareScalingLevel((_a = (engine.getRenderWidth() / this._gifOptions.width)) !== null && _a !== void 0 ? _a : 1);
         var intervalId = setInterval(function () {
             if (!_this._gifRecorder) {
                 clearInterval(intervalId);
                 return;
             }
-            _this._gifRecorder.addFrame(engine.getRenderingCanvas(), { delay: _this._gifOptions.frequency });
+            _this._gifRecorder.addFrame(engine.getRenderingCanvas(), { delay: 0, copy: true });
         }, this._gifOptions.frequency);
         this._gifRecorder.on('finished', function (blob) {
             _this._crunchingGIF = false;

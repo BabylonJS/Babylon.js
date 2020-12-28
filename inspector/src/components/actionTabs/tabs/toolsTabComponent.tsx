@@ -133,14 +133,14 @@ export class ToolsTabComponent extends PaneComponent {
         const engine = scene.getEngine();
 
         this._previousRenderingScale = engine.getHardwareScalingLevel();
-        engine.setHardwareScalingLevel(engine.getRenderWidth() / this._gifOptions.width | 0);
+        engine.setHardwareScalingLevel((engine.getRenderWidth() / this._gifOptions.width) ?? 1);
 
         let intervalId = setInterval(() => {
             if (!this._gifRecorder) {
                 clearInterval(intervalId);
                 return;
             }
-            this._gifRecorder.addFrame(engine.getRenderingCanvas(), {delay: this._gifOptions.frequency});
+            this._gifRecorder.addFrame(engine.getRenderingCanvas(), {delay: 0, copy: true});
         }, this._gifOptions.frequency);
                         
         this._gifRecorder.on('finished', (blob: Blob) =>{

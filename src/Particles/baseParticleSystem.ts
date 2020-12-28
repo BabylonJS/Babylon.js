@@ -190,6 +190,7 @@ export class BaseParticleSystem {
      */
     public preventAutoStart: boolean = false;
 
+    protected _rootUrl = "";
     private _noiseTexture: Nullable<ProceduralTexture>;
 
     /**
