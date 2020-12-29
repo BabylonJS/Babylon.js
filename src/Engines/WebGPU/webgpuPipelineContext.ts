@@ -51,6 +51,16 @@ export interface IWebGPURenderPipelineStageDescriptor {
 }
 
 /** @hidden */
+export class WebGPUBindGroupCacheNode {
+    public values: { [id: number]: WebGPUBindGroupCacheNode };
+    public bindGroups: GPUBindGroup[];
+
+    constructor() {
+        this.values = {};
+    }
+}
+
+/** @hidden */
 export class WebGPUPipelineContext implements IPipelineContext {
     public engine: WebGPUEngine;
 
@@ -71,7 +81,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
     public textures: { [name: string]: Nullable<IWebGPUPipelineContextTextureCache> } = { };
 
     public bindGroupLayouts: GPUBindGroupLayout[];
-    public bindGroupsCache: { [key: string]: GPUBindGroup[] };
+    public bindGroupsCache: WebGPUBindGroupCacheNode;
 
     /**
      * Stores the uniform buffer
@@ -101,7 +111,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
         this.shaderProcessingContext = shaderProcessingContext;
         this.leftOverUniformsByName = {};
         this.engine = engine;
-        this.bindGroupsCache = {};
+        this.bindGroupsCache = new WebGPUBindGroupCacheNode();
     }
 
     public _handlesSpectorRebuildCallback(onCompiled: (program: any) => void): void {

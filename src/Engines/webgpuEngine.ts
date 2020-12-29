@@ -11,7 +11,7 @@ import { _TimeToken } from "../Instrumentation/timeToken";
 import { Constants } from "./constants";
 import * as WebGPUConstants from './WebGPU/webgpuConstants';
 import { VertexBuffer } from "../Meshes/buffer";
-import { WebGPUPipelineContext, IWebGPURenderPipelineStageDescriptor } from './WebGPU/webgpuPipelineContext';
+import { WebGPUPipelineContext, IWebGPURenderPipelineStageDescriptor, WebGPUBindGroupCacheNode } from './WebGPU/webgpuPipelineContext';
 import { IPipelineContext } from './IPipelineContext';
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { WebGPUDataBuffer } from '../Meshes/WebGPU/webgpuDataBuffer';
@@ -1798,7 +1798,7 @@ export class WebGPUEngine extends Engine {
 
             if (webgpuPipelineContext.textures[name]) {
                 if (webgpuPipelineContext.textures[name]!.texture !== internalTexture) {
-                    webgpuPipelineContext.bindGroupsCache = {}; // the bind groups need to be rebuilt (at least the bind group owning this texture, but it's easier to just have them all rebuilt)
+                    webgpuPipelineContext.bindGroupsCache.values = {}; // the bind groups need to be rebuilt (at least the bind group owning this texture, but it's easier to just have them all rebuilt)
                 }
                 webgpuPipelineContext.textures[name]!.texture = internalTexture!;
             }
@@ -1852,7 +1852,7 @@ export class WebGPUEngine extends Engine {
             const webgpuPipelineContext = this._currentEffect._pipelineContext as WebGPUPipelineContext;
             if (!texture) {
                 if (webgpuPipelineContext.textures[name] && webgpuPipelineContext.textures[name]!.texture) {
-                    webgpuPipelineContext.bindGroupsCache = {}; // the bind groups need to be rebuilt (at least the bind group owning this texture, but it's easier to just have them all rebuilt)
+                    webgpuPipelineContext.bindGroupsCache.values = {}; // the bind groups need to be rebuilt (at least the bind group owning this texture, but it's easier to just have them all rebuilt)
                 }
                 webgpuPipelineContext.textures[name] = null;
                 return false;
@@ -3360,23 +3360,26 @@ export class WebGPUEngine extends Engine {
         }
 
         // TODO WEBGPU try to optimize this loop / lookup in bindGroupsCache
-        let bufferKey = "";
+        let node: WebGPUBindGroupCacheNode = webgpuPipelineContext.bindGroupsCache;
         for (let i = 0; i < webgpuPipelineContext.shaderProcessingContext.uniformBufferNames.length; ++i) {
             const bufferName = webgpuPipelineContext.shaderProcessingContext.uniformBufferNames[i];
-            const dataBuffer = this._uniformsBuffers[bufferName];
-            if (dataBuffer) {
-                bufferKey += dataBuffer.uniqueId + "_";
+            const uboIndex = this._uniformsBuffers[bufferName].uniqueId;
+            let nextNode = node.values[uboIndex];
+            if (!nextNode) {
+                nextNode = new WebGPUBindGroupCacheNode();
+                node.values[uboIndex] = nextNode;
             }
+            node = nextNode;
         }
 
-        let bindGroups: GPUBindGroup[] = webgpuPipelineContext.bindGroupsCache[bufferKey];
+        let bindGroups: GPUBindGroup[] = node.bindGroups;
         if (bindGroups) {
             return bindGroups;
         }
 
         bindGroups = [];
 
-        webgpuPipelineContext.bindGroupsCache[bufferKey] = bindGroups;
+        node.bindGroups = bindGroups;
         this._counters.numBindGroupsCreation++;
 
         const bindGroupLayouts = webgpuPipelineContext.bindGroupLayouts;
