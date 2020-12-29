@@ -2193,6 +2193,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         serializationObject.capacity = particleSystem.getCapacity();
 
+        serializationObject.disposeOnStop = particleSystem.disposeOnStop;
+        serializationObject.manualEmitCount = particleSystem.manualEmitCount;
+
         // Emitter
         if ((<AbstractMesh>particleSystem.emitter).position) {
             var emitterMesh = (<AbstractMesh>particleSystem.emitter);
@@ -2737,6 +2740,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         particleSystem.spriteCellHeight = parsedParticleSystem.spriteCellHeight;
         particleSystem.spriteCellChangeSpeed = parsedParticleSystem.spriteCellChangeSpeed;
         particleSystem.spriteRandomStartCell = parsedParticleSystem.spriteRandomStartCell;
+
+        particleSystem.disposeOnStop = parsedParticleSystem.disposeOnStop ?? false;
+        particleSystem.manualEmitCount = parsedParticleSystem.manualEmitCount ?? -1;
     }
 
     /**
