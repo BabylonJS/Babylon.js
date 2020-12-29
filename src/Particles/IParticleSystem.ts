@@ -244,6 +244,11 @@ export interface IParticleSystem {
     disposeOnStop: boolean;
 
     /**
+     * If you want to launch only a few particles at once, that can be done, as well.
+     */
+    manualEmitCount: number;
+
+    /**
      * Specifies if the particles are updated in emitter local space or world space
      */
     isLocal: boolean;
