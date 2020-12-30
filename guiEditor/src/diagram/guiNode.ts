@@ -7,6 +7,8 @@ import * as React from 'react';
 import { GenericPropertyComponent } from './properties/genericNodePropertyComponent';
 import { Control } from 'babylonjs-gui/2D/controls/control';
 import { Vector2 } from 'babylonjs/Maths/math.vector';
+import { Container } from 'babylonjs-gui/2D/controls/container';
+import { _ThinInstanceDataStorage } from 'babylonjs';
 
 export class GUINode {
     private _x = 0;
@@ -21,7 +23,7 @@ export class GUINode {
     private _isSelected: boolean;
     private _isVisible = true;
     private _enclosingFrameId = -1;
-
+    private _isContainer = false;
     public get isVisible() {
         return this._isVisible;
     }
@@ -104,6 +106,8 @@ export class GUINode {
     public constructor(globalState: GlobalState, public guiNode: Control) {
         this._globalState = globalState;
         this._ownerCanvas = this._globalState.workbench;
+        this.x = guiNode.leftInPixels;
+        this.y = guiNode.topInPixels;
         
         guiNode.onPointerUpObservable.add(evt => {
             this.clicked = false;
@@ -128,6 +132,8 @@ export class GUINode {
             console.log("out");
         }
         );
+
+        this._isContainer = this.isContainer();
 
         //TODO: Implement
         this._onSelectionBoxMovedObserver = this._globalState.onSelectionBoxMoved.add(rect1 => {
@@ -175,6 +181,29 @@ export class GUINode {
     {
         this.guiNode.leftInPixels = this.x;
         this.guiNode.topInPixels = this.y;
+    }
+
+    private isContainer() {
+        switch (this.guiNode.typeName) {
+            case "Button":
+            case "StackPanel":
+            case "Rectangle":
+                return true;
+            default:
+                return false;
+        }
+    }
+
+
+    public addGui(childNode: GUINode)
+    {
+        if(!this._isContainer) return;
+        
+        (this.guiNode as Container).addControl(childNode.guiNode);
+        
+        //adjust the position to be relative
+        childNode.x = this.x - childNode.x;
+        childNode.y = this.y - childNode.y;
     }
 
     public dispose() {
