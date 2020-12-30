@@ -302,6 +302,9 @@ vec4 reflectionColor = vec4(0., 0., 0., 1.);
 
 #ifdef REFLECTION
 	vec3 vReflectionUVW = computeReflectionCoords(vec4(vPositionW, 1.0), normalW);
+	#ifdef REFLECTIONMAP_OPPOSITEZ
+		vReflectionUVW.z *= -1.0;
+	#endif
 
 	#ifdef REFLECTIONMAP_3D
 		#ifdef ROUGHNESS

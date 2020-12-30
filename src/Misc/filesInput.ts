@@ -3,7 +3,7 @@ import { Scene } from "../scene";
 import { ISceneLoaderProgressEvent, SceneLoader } from "../Loading/sceneLoader";
 import { Logger } from "../Misc/logger";
 import { FilesInputStore } from "./filesInputStore";
-import { Nullable } from '../types';
+import { Nullable } from "../types";
 
 /**
  * Class used to help managing file picking and drag'n'drop
@@ -19,12 +19,14 @@ export class FilesInput {
     /**
      * Callback called when a file is processed
      */
-    public onProcessFileCallback: (file: File, name: string, extension: string, setSceneFileToLoad: (sceneFile: File) => void) => boolean = () => { return true; };
+    public onProcessFileCallback: (file: File, name: string, extension: string, setSceneFileToLoad: (sceneFile: File) => void) => boolean = () => {
+        return true;
+    };
 
     /**
      * Function used when loading the scene file
      */
-    public loadAsync: (sceneFile: File, onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void>) => Promise<Scene> = (sceneFile, onProgress) => SceneLoader.LoadAsync("file", sceneFile, this._engine, onProgress);
+    public loadAsync: (sceneFile: File, onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void>) => Promise<Scene> = (sceneFile, onProgress) => SceneLoader.LoadAsync("file:", sceneFile, this._engine, onProgress);
 
     private _engine: Engine;
     private _currentScene: Nullable<Scene>;
@@ -52,14 +54,17 @@ export class FilesInput {
      * @param onReloadCallback callback called when a reload is requested
      * @param errorCallback callback call if an error occurs
      */
-    constructor(engine: Engine, scene: Nullable<Scene>,
+    constructor(
+        engine: Engine,
+        scene: Nullable<Scene>,
         sceneLoadedCallback: Nullable<(sceneFile: File, scene: Scene) => void>,
         progressCallback: Nullable<(progress: ISceneLoaderProgressEvent) => void>,
         additionalRenderLoopLogicCallback: Nullable<() => void>,
         textureLoadingCallback: Nullable<(remaining: number) => void>,
         startingProcessingFilesCallback: Nullable<(files?: File[]) => void>,
         onReloadCallback: Nullable<(sceneFile: File) => void>,
-        errorCallback: Nullable<(sceneFile: File, scene: Nullable<Scene>, message: string) => void>) {
+        errorCallback: Nullable<(sceneFile: File, scene: Nullable<Scene>, message: string) => void>
+    ) {
         this._engine = engine;
         this._currentScene = scene;
 
@@ -84,9 +89,15 @@ export class FilesInput {
         if (elementToMonitor) {
             this._elementToMonitor = elementToMonitor;
 
-            this._dragEnterHandler = (e) => { this.drag(e); };
-            this._dragOverHandler = (e) => { this.drag(e); };
-            this._dropHandler = (e) => { this.drop(e); };
+            this._dragEnterHandler = (e) => {
+                this.drag(e);
+            };
+            this._dragOverHandler = (e) => {
+                this.drag(e);
+            };
+            this._dropHandler = (e) => {
+                this.drop(e);
+            };
 
             this._elementToMonitor.addEventListener("dragenter", this._dragEnterHandler, false);
             this._elementToMonitor.addEventListener("dragover", this._dragOverHandler, false);
@@ -156,8 +167,7 @@ export class FilesInput {
                             callback();
                         }
                     });
-                }
-                else if (entry.isDirectory) {
+                } else if (entry.isDirectory) {
                     this._traverseFolder(entry, files, remaining, callback);
                 }
             }
@@ -171,9 +181,9 @@ export class FilesInput {
     private _processFiles(files: Array<any>): void {
         for (var i = 0; i < files.length; i++) {
             var name = files[i].correctName.toLowerCase();
-            var extension = name.split('.').pop();
+            var extension = name.split(".").pop();
 
-            if (!this.onProcessFileCallback(files[i], name, extension, (sceneFile) => this._sceneFileToLoad = sceneFile)) {
+            if (!this.onProcessFileCallback(files[i], name, extension, (sceneFile) => (this._sceneFileToLoad = sceneFile))) {
                 continue;
             }
 
@@ -255,15 +265,13 @@ export class FilesInput {
                     });
                 }
             }
-
         }
     }
 
     private _processReload() {
         if (this._onReloadCallback) {
             this._onReloadCallback(this._sceneFileToLoad);
-        }
-        else {
+        } else {
             this.reload();
         }
     }
@@ -284,32 +292,33 @@ export class FilesInput {
             SceneLoader.ShowLoadingScreen = false;
             this._engine.displayLoadingUI();
 
-            this.loadAsync(this._sceneFileToLoad, this._progressCallback).then((scene) => {
-                if (this._currentScene) {
-                    this._currentScene.dispose();
-                }
+            this.loadAsync(this._sceneFileToLoad, this._progressCallback)
+                .then((scene) => {
+                    if (this._currentScene) {
+                        this._currentScene.dispose();
+                    }
 
-                this._currentScene = scene;
+                    this._currentScene = scene;
 
-                if (this._sceneLoadedCallback) {
-                    this._sceneLoadedCallback(this._sceneFileToLoad, this._currentScene);
-                }
+                    if (this._sceneLoadedCallback) {
+                        this._sceneLoadedCallback(this._sceneFileToLoad, this._currentScene);
+                    }
 
-                // Wait for textures and shaders to be ready
-                this._currentScene.executeWhenReady(() => {
-                    this._engine.hideLoadingUI();
-                    this._engine.runRenderLoop(() => {
-                        this.renderFunction();
+                    // Wait for textures and shaders to be ready
+                    this._currentScene.executeWhenReady(() => {
+                        this._engine.hideLoadingUI();
+                        this._engine.runRenderLoop(() => {
+                            this.renderFunction();
+                        });
                     });
+                })
+                .catch((error) => {
+                    this._engine.hideLoadingUI();
+                    if (this._errorCallback) {
+                        this._errorCallback(this._sceneFileToLoad, this._currentScene, error.message);
+                    }
                 });
-            }).catch((error) => {
-                this._engine.hideLoadingUI();
-                if (this._errorCallback) {
-                    this._errorCallback(this._sceneFileToLoad, this._currentScene, error.message);
-                }
-            });
-        }
-        else {
+        } else {
             Logger.Error("Please provide a valid .babylon file.");
         }
     }

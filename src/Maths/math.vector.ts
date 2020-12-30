@@ -1431,12 +1431,13 @@ export class Vector3 {
         const v0: Vector3 = vector0.normalizeToRef(MathTmp.Vector3[1]);
         const v1: Vector3 = vector1.normalizeToRef(MathTmp.Vector3[2]);
         const dot: number = Vector3.Dot(v0, v1);
+        const angle = Math.acos(dot);
         const n = MathTmp.Vector3[3];
         Vector3.CrossToRef(v0, v1, n);
         if (Vector3.Dot(n, normal) > 0) {
-            return Math.acos(dot);
+            return isNaN(angle) ? 0 : angle;
         }
-        return -Math.acos(dot);
+        return isNaN(angle) ? -Math.PI : -Math.acos(dot);
     }
 
     /**
@@ -3450,6 +3451,35 @@ export class Quaternion {
     public static FromEulerVectorToRef(vec: DeepImmutable<Vector3>, result: Quaternion): Quaternion {
         Quaternion.RotationYawPitchRollToRef(vec._y, vec._x, vec._z, result);
         return result;
+    }
+
+    /**
+     * Updates a quaternion so that it rotates vector vecFrom to vector vecTo
+     * @param vecFrom defines the direction vector from which to rotate
+     * @param vecTo defines the direction vector to which to rotate
+     * @param result the quaternion to store the result
+     * @returns the updated quaternion
+     */
+    public static FromUnitVectorsToRef(vecFrom: DeepImmutable<Vector3>, vecTo: DeepImmutable<Vector3>, result: Quaternion): Quaternion {
+        const r = Vector3.Dot(vecFrom, vecTo) + 1;
+
+        if (r < Epsilon) {
+            if (Math.abs(vecFrom.x) > Math.abs(vecFrom.z)) {
+                result.set(-vecFrom.y, vecFrom.x, 0, 0);
+            } else {
+                result.set(0, - vecFrom.z, vecFrom.y, 0);
+            }
+        } else {
+            Vector3.CrossToRef(vecFrom, vecTo, TmpVectors.Vector3[0]);
+            result.set(
+                TmpVectors.Vector3[0].x,
+                TmpVectors.Vector3[0].y,
+                TmpVectors.Vector3[0].z,
+                r
+            );
+        }
+
+        return result.normalize();
     }
 
     /**

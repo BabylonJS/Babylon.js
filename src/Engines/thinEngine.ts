@@ -167,14 +167,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-alpha.3";
+        return "babylonjs@5.0.0-alpha.5";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-alpha.3";
+        return "5.0.0-alpha.5";
     }
 
     /**
@@ -761,11 +761,7 @@ export class ThinEngine {
         }
 
         // Shader processor
-        if (this.webGLVersion > 1) {
-            this._shaderProcessor = new WebGL2ShaderProcessor();
-        } else {
-            this._shaderProcessor = new WebGLShaderProcessor();
-        }
+        this._shaderProcessor = this._getShaderProcessor();
 
         // Detect if we are running on a faulty buggy OS.
         this._badOS = /iPad/i.test(navigator.userAgent) || /iPhone/i.test(navigator.userAgent);
@@ -812,9 +808,6 @@ export class ThinEngine {
      */
     protected _sharedInit(canvas: HTMLCanvasElement, doNotHandleTouchAction: boolean, audioEngine: boolean) {
         this._renderingCanvas = canvas;
-
-        // Shader processor
-        this._shaderProcessor = this._getShaderProcessor();
     }
 
     /**
@@ -822,10 +815,7 @@ export class ThinEngine {
      * @returns The shader processor implementation.
      */
     protected _getShaderProcessor(): Nullable<IShaderProcessor> {
-        if (this.webGLVersion > 1) {
-            return new WebGL2ShaderProcessor();
-        }
-        return null;
+        return (this.webGLVersion > 1 ? new WebGL2ShaderProcessor() : new WebGLShaderProcessor());
     }
 
     /** @hidden */
@@ -1086,6 +1076,7 @@ export class ThinEngine {
             supportSSAO2: this._webGLVersion !== 1,
             supportExtendedTextureFormats: this._webGLVersion !== 1,
             supportSwitchCaseInShader: this._webGLVersion !== 1,
+            supportSyncTextureRead: true,
             _collectUbosUpdatedInFrame: false,
         };
     }
@@ -1766,7 +1757,7 @@ export class ThinEngine {
         }
     }
 
-    private _bindVertexBuffersAttributes(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, effect: Effect): void {
+    private _bindVertexBuffersAttributes(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, effect: Effect, overrideVertexBuffers?: { [kind: string]: Nullable<VertexBuffer>}): void {
         var attributes = effect.getAttributesNames();
 
         if (!this._vaoRecordInProgress) {
@@ -1779,7 +1770,16 @@ export class ThinEngine {
             var order = effect.getAttributeLocation(index);
 
             if (order >= 0) {
-                var vertexBuffer = vertexBuffers[attributes[index]];
+                var ai = attributes[index];
+                var vertexBuffer: Nullable<VertexBuffer> = null;
+
+                if (overrideVertexBuffers) {
+                    vertexBuffer = overrideVertexBuffers[ai];
+                }
+
+                if (!vertexBuffer) {
+                    vertexBuffer = vertexBuffers[ai];
+                }
 
                 if (!vertexBuffer) {
                     continue;
@@ -1812,9 +1812,10 @@ export class ThinEngine {
      * @param vertexBuffers defines the list of vertex buffers to store
      * @param indexBuffer defines the index buffer to store
      * @param effect defines the effect to store
+     * @param overrideVertexBuffers defines optional list of avertex buffers that overrides the entries in vertexBuffers
      * @returns the new vertex array object
      */
-    public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<DataBuffer>, effect: Effect): WebGLVertexArrayObject {
+    public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<DataBuffer>, effect: Effect, overrideVertexBuffers?: { [kind: string]: Nullable<VertexBuffer>}): WebGLVertexArrayObject {
         var vao = this._gl.createVertexArray();
 
         this._vaoRecordInProgress = true;
@@ -1822,7 +1823,7 @@ export class ThinEngine {
         this._gl.bindVertexArray(vao);
 
         this._mustWipeVertexAttributes = true;
-        this._bindVertexBuffersAttributes(vertexBuffers, effect);
+        this._bindVertexBuffersAttributes(vertexBuffers, effect, overrideVertexBuffers);
 
         this.bindIndexBuffer(indexBuffer);
 
@@ -1904,13 +1905,14 @@ export class ThinEngine {
      * @param vertexBuffers defines the list of vertex buffers to bind
      * @param indexBuffer defines the index buffer to bind
      * @param effect defines the effect associated with the vertex buffers
+     * @param overrideVertexBuffers defines optional list of avertex buffers that overrides the entries in vertexBuffers
      */
-    public bindBuffers(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, indexBuffer: Nullable<DataBuffer>, effect: Effect): void {
+    public bindBuffers(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, indexBuffer: Nullable<DataBuffer>, effect: Effect, overrideVertexBuffers?: {[kind: string]: Nullable<VertexBuffer>}): void {
         if (this._cachedVertexBuffers !== vertexBuffers || this._cachedEffectForVertexBuffers !== effect) {
             this._cachedVertexBuffers = vertexBuffers;
             this._cachedEffectForVertexBuffers = effect;
 
-            this._bindVertexBuffersAttributes(vertexBuffers, effect);
+            this._bindVertexBuffersAttributes(vertexBuffers, effect, overrideVertexBuffers);
         }
 
         this._bindIndexBufferWithCache(indexBuffer);
@@ -2247,10 +2249,13 @@ export class ThinEngine {
 
     private _compileRawShader(source: string, type: string): WebGLShader {
         var gl = this._gl;
+
+        while (gl.getError() != gl.NO_ERROR) { }
+
         var shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
 
         if (!shader) {
-            throw new Error("Something went wrong while compile the shader.");
+            throw new Error(`Something went wrong while creating a gl ${type} shader object. gl error=${gl.getError()}, gl isContextLost=${gl.isContextLost()}, _contextWasLost=${this._contextWasLost}`);
         }
 
         gl.shaderSource(shader, source);

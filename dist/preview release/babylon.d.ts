@@ -4659,6 +4659,14 @@ declare module BABYLON {
          */
         static FromEulerVectorToRef(vec: DeepImmutable<Vector3>, result: Quaternion): Quaternion;
         /**
+         * Updates a quaternion so that it rotates vector vecFrom to vector vecTo
+         * @param vecFrom defines the direction vector from which to rotate
+         * @param vecTo defines the direction vector to which to rotate
+         * @param result the quaternion to store the result
+         * @returns the updated quaternion
+         */
+        static FromUnitVectorsToRef(vecFrom: DeepImmutable<Vector3>, vecTo: DeepImmutable<Vector3>, result: Quaternion): Quaternion;
+        /**
          * Creates a new quaternion from the given Euler float angles (y, x, z)
          * @param yaw defines the rotation around Y axis
          * @param pitch defines the rotation around X axis
@@ -6927,6 +6935,30 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Class used to provide helpers for slicing
+     */
+    export class SliceTools {
+        /**
+         * Provides a slice function that will work even on IE
+         * @param data defines the array to slice
+         * @param start defines the start of the data (optional)
+         * @param end defines the end of the data (optional)
+         * @returns the new sliced array
+         */
+        static Slice<T>(data: T, start?: number, end?: number): T;
+        /**
+         * Provides a slice function that will work even on IE
+         * The difference between this and Slice is that this will force-convert to array
+         * @param data defines the array to slice
+         * @param start defines the start of the data (optional)
+         * @param end defines the end of the data (optional)
+         * @returns the new sliced array
+         */
+        static SliceToArray<T, P>(data: T, start?: number, end?: number): Array<P>;
+    }
+}
+declare module BABYLON {
+    /**
      * Class used to store data that will be store in GPU memory
      */
     export class Buffer {
@@ -7115,6 +7147,13 @@ declare module BABYLON {
          * @returns a DataArray or null
          */
         getData(): Nullable<DataArray>;
+        /**
+         * Gets current buffer's data as a float array. Float data is constructed if the vertex buffer data cannot be returned directly.
+         * @param totalVertices number of vertices in the buffer to take into account
+         * @param forceCopy defines a boolean indicating that the returned array must be cloned upon returning it
+         * @returns a float array containing vertex data
+         */
+        getFloatData(totalVertices: number, forceCopy?: boolean): Nullable<FloatArray>;
         /**
          * Gets underlying native buffer
          * @returns underlying native buffer
@@ -7641,6 +7680,18 @@ declare module BABYLON {
          */
         centerOn(center: DeepImmutable<Vector3>, extend: DeepImmutable<Vector3>): BoundingInfo;
         /**
+         * Grows the bounding info to include the given point.
+         * @param point The point that will be included in the current bounding info
+         * @returns the current bounding info
+         */
+        encapsulate(point: Vector3): BoundingInfo;
+        /**
+         * Grows the bounding info to encapsulate the given bounding info.
+         * @param toEncapsulate The bounding info that will be encapsulated in the current bounding info
+         * @returns the current bounding info
+         */
+        encapsulateBoundingInfo(toEncapsulate: BoundingInfo): BoundingInfo;
+        /**
          * Scale the current bounding info by applying a scale factor
          * @param factor defines the scale factor to apply
          * @returns the current bounding info
@@ -8010,6 +8061,8 @@ declare module BABYLON {
          * @returns The Array buffer promise containing the pixels data.
          */
         readPixels(faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean): Nullable<Promise<ArrayBufferView>>;
+        /** @hidden */
+        _readPixelsSync(faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean): Nullable<ArrayBufferView>;
         /** @hidden */
         get _lodTextureHigh(): Nullable<BaseTexture>;
         /** @hidden */
@@ -11353,13 +11406,29 @@ declare module BABYLON {
      */
     export class CopyTools {
         /**
+         * Transform some pixel data to a base64 string
+         * @param pixels defines the pixel data to transform to base64
+         * @param size defines the width and height of the (texture) data
+         * @param invertY true if the data must be inverted for the Y coordinate during the conversion
+         * @returns The base64 encoded string or null
+         */
+        static GenerateBase64StringFromPixelData(pixels: ArrayBufferView, size: ISize, invertY?: boolean): Nullable<string>;
+        /**
          * Reads the pixels stored in the webgl texture and returns them as a base64 string
          * @param texture defines the texture to read pixels from
          * @param faceIndex defines the face of the texture to read (in case of cube texture)
          * @param level defines the LOD level of the texture to read (in case of Mip Maps)
          * @returns The base64 encoded string or null
          */
-        static GenerateBase64StringFromTexture(texture: BaseTexture, faceIndex?: number, level?: number): Promise<Nullable<string>>;
+        static GenerateBase64StringFromTexture(texture: BaseTexture, faceIndex?: number, level?: number): Nullable<string>;
+        /**
+         * Reads the pixels stored in the webgl texture and returns them as a base64 string
+         * @param texture defines the texture to read pixels from
+         * @param faceIndex defines the face of the texture to read (in case of cube texture)
+         * @param level defines the LOD level of the texture to read (in case of Mip Maps)
+         * @returns The base64 encoded string or null wrapped in a promise
+         */
+        static GenerateBase64StringFromTextureAsync(texture: BaseTexture, faceIndex?: number, level?: number): Promise<Nullable<string>>;
     }
 }
 declare module BABYLON {
@@ -12808,6 +12877,7 @@ declare module BABYLON {
         protected _dumpPropertiesCode(): string;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -12938,6 +13008,7 @@ declare module BABYLON {
         protected _dumpPropertiesCode(): string;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -13123,6 +13194,7 @@ declare module BABYLON {
         protected _dumpPropertiesCode(): string;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -13199,6 +13271,7 @@ declare module BABYLON {
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -13272,6 +13345,7 @@ declare module BABYLON {
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -13568,6 +13642,8 @@ declare module BABYLON {
         _outputs: NodeMaterialConnectionPoint[];
         /** @hidden */
         _preparationId: number;
+        /** @hidden */
+        readonly _originalTargetIsNeutral: boolean;
         /**
          * Gets the name of the block
          */
@@ -15024,6 +15100,7 @@ declare module BABYLON {
          * automatic start to happen and let you decide when to start emitting particles.
          */
         preventAutoStart: boolean;
+        protected _rootUrl: string;
         private _noiseTexture;
         /**
          * Gets or sets a texture used to add random noise to particle positions
@@ -17227,6 +17304,10 @@ declare module BABYLON {
          */
         disposeOnStop: boolean;
         /**
+         * If you want to launch only a few particles at once, that can be done, as well.
+         */
+        manualEmitCount: number;
+        /**
          * Specifies if the particles are updated in emitter local space or world space
          */
         isLocal: boolean;
@@ -19312,6 +19393,7 @@ declare module BABYLON {
         REFLECTIONMAP_EQUIRECTANGULAR: boolean;
         REFLECTIONMAP_EQUIRECTANGULAR_FIXED: boolean;
         REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED: boolean;
+        REFLECTIONMAP_OPPOSITEZ: boolean;
         INVERTCUBICMAP: boolean;
         LOGARITHMICDEPTH: boolean;
         REFRACTION: boolean;
@@ -28392,6 +28474,10 @@ declare module BABYLON {
              */
             registerInstancedBuffer(kind: string, stride: number): void;
             /**
+             * Invalidate VertexArrayObjects belonging to the mesh (but not to the Geometry of the mesh).
+             */
+            _invalidateInstanceVertexArrayObject(): void;
+            /**
              * true to use the edge renderer for all instances of this mesh
              */
             edgesShareWithInstances: boolean;
@@ -28408,6 +28494,9 @@ declare module BABYLON {
                 };
                 strides: {
                     [key: string]: number;
+                };
+                vertexArrayObjects?: {
+                    [key: string]: WebGLVertexArrayObject;
                 };
             };
         }
@@ -31248,7 +31337,11 @@ declare module BABYLON {
         updateVerticesData(kind: string, data: FloatArray, updateExtends?: boolean): void;
         private _updateBoundingInfo;
         /** @hidden */
-        _bind(effect: Nullable<Effect>, indexToBind?: Nullable<DataBuffer>): void;
+        _bind(effect: Nullable<Effect>, indexToBind?: Nullable<DataBuffer>, overrideVertexBuffers?: {
+            [kind: string]: Nullable<VertexBuffer>;
+        }, overrideVertexArrayObjects?: {
+            [key: string]: WebGLVertexArrayObject;
+        }): void;
         /**
          * Gets total number of vertices
          * @returns the total number of vertices
@@ -39644,6 +39737,8 @@ declare module BABYLON {
         supportExtendedTextureFormats: boolean;
         /** Indicates that the switch/case construct is supported in shaders */
         supportSwitchCaseInShader: boolean;
+        /** Indicates that synchronous texture reading is supported */
+        supportSyncTextureRead: boolean;
         /** @hidden */
         _collectUbosUpdatedInFrame: boolean;
     }
@@ -40439,11 +40534,14 @@ declare module BABYLON {
          * @param vertexBuffers defines the list of vertex buffers to store
          * @param indexBuffer defines the index buffer to store
          * @param effect defines the effect to store
+         * @param overrideVertexBuffers defines optional list of avertex buffers that overrides the entries in vertexBuffers
          * @returns the new vertex array object
          */
         recordVertexArrayObject(vertexBuffers: {
             [key: string]: VertexBuffer;
-        }, indexBuffer: Nullable<DataBuffer>, effect: Effect): WebGLVertexArrayObject;
+        }, indexBuffer: Nullable<DataBuffer>, effect: Effect, overrideVertexBuffers?: {
+            [kind: string]: Nullable<VertexBuffer>;
+        }): WebGLVertexArrayObject;
         /**
          * Bind a specific vertex array object
          * @see https://doc.babylonjs.com/features/webgl2#vertex-array-objects
@@ -40466,10 +40564,13 @@ declare module BABYLON {
          * @param vertexBuffers defines the list of vertex buffers to bind
          * @param indexBuffer defines the index buffer to bind
          * @param effect defines the effect associated with the vertex buffers
+         * @param overrideVertexBuffers defines optional list of avertex buffers that overrides the entries in vertexBuffers
          */
         bindBuffers(vertexBuffers: {
             [key: string]: Nullable<VertexBuffer>;
-        }, indexBuffer: Nullable<DataBuffer>, effect: Effect): void;
+        }, indexBuffer: Nullable<DataBuffer>, effect: Effect, overrideVertexBuffers?: {
+            [kind: string]: Nullable<VertexBuffer>;
+        }): void;
         /**
          * Unbind all instance attributes
          */
@@ -41658,6 +41759,8 @@ declare module BABYLON {
         interface ThinEngine {
             /** @hidden */
             _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean): Promise<ArrayBufferView>;
+            /** @hidden */
+            _readTexturePixelsSync(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean): ArrayBufferView;
         }
 }
 declare module BABYLON {
@@ -44756,6 +44859,7 @@ declare module BABYLON {
         private _stencilWriteMask;
         private _depthStencilState;
         private _vertexBuffers;
+        private _overrideVertexBuffers;
         private _indexBuffer;
         constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer);
         reset(): void;
@@ -44789,7 +44893,9 @@ declare module BABYLON {
         setStencilState(stencilEnabled: boolean, compare: Nullable<number>, depthFailOp: Nullable<number>, passOp: Nullable<number>, failOp: Nullable<number>, readMask: number, writeMask: number): void;
         setBuffers(vertexBuffers: Nullable<{
             [key: string]: Nullable<VertexBuffer>;
-        }>, indexBuffer: Nullable<DataBuffer>): void;
+        }>, indexBuffer: Nullable<DataBuffer>, overrideVertexBuffers: Nullable<{
+            [key: string]: Nullable<VertexBuffer>;
+        }>): void;
         private static _GetTopology;
         private static _GetAphaBlendOperation;
         private static _GetAphaBlendFactor;
@@ -44946,6 +45052,7 @@ declare module BABYLON {
         private _rttRenderPassWrapper;
         private _pendingDebugCommands;
         private _currentVertexBuffers;
+        private _currentOverrideVertexBuffers;
         private _currentIndexBuffer;
         private __colorWrite;
         private _uniformsBuffers;
@@ -45128,10 +45235,13 @@ declare module BABYLON {
          * @param vertexBuffers defines the list of vertex buffers to bind
          * @param indexBuffer defines the index buffer to bind
          * @param effect defines the effect associated with the vertex buffers
+         * @param overrideVertexBuffers defines optional list of avertex buffers that overrides the entries in vertexBuffers
          */
         bindBuffers(vertexBuffers: {
             [key: string]: Nullable<VertexBuffer>;
-        }, indexBuffer: Nullable<DataBuffer>, effect: Effect): void;
+        }, indexBuffer: Nullable<DataBuffer>, effect: Effect, overrideVertexBuffers?: {
+            [kind: string]: Nullable<VertexBuffer>;
+        }): void;
         /** @hidden */
         _releaseBuffer(buffer: DataBuffer): boolean;
         createUniformBuffer(elements: FloatArray): DataBuffer;
@@ -45454,6 +45564,8 @@ declare module BABYLON {
         readPixels(x: number, y: number, width: number, height: number, hasAlpha?: boolean, flushRenderer?: boolean): Promise<ArrayBufferView>;
         /** @hidden */
         _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean): Promise<ArrayBufferView>;
+        /** @hidden */
+        _readTexturePixelsSync(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean): ArrayBufferView;
         /**
          * Creates a new render target texture
          * @param size defines the size of the texture
@@ -60066,6 +60178,8 @@ declare module BABYLON {
          * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
          */
         updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha?: boolean, format?: number): void;
+        createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression?: Nullable<string>, type?: number): InternalTexture;
+        updateRawTexture(texture: Nullable<InternalTexture>, bufferView: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression?: Nullable<string>, type?: number): void;
         /**
          * Usually called from Texture.ts.
          * Passed information to create a WebGLTexture
@@ -78410,10 +78524,20 @@ declare module BABYLON {
         static ClearCache(): void;
         /**
          * Serialize a scene into a JSON compatible object
+         * Note that if the current engine does not support synchronous texture reading (like WebGPU), you should use SerializeAsync instead
+         * as else you may not retrieve the proper base64 encoded texture data (when using the Texture.ForceSerializeBuffers flag)
          * @param scene defines the scene to serialize
          * @returns a JSON compatible object
          */
         static Serialize(scene: Scene): any;
+        private static _Serialize;
+        /**
+         * Serialize a scene into a JSON compatible object
+         * @param scene defines the scene to serialize
+         * @returns a JSON promise compatible object
+         */
+        static SerializeAsync(scene: Scene): Promise<any>;
+        private static _CollectPromises;
         /**
          * Serialize a mesh into a JSON compatible object
          * @param toSerialize defines the mesh to serialize
@@ -78720,7 +78844,7 @@ declare module BABYLON {
         track(scene: Scene): void;
         /**
          * Get the delta between current state and original state
-         * @returns a string containing the delta
+         * @returns a any containing the delta
          */
         getDelta(): any;
         private _compareArray;

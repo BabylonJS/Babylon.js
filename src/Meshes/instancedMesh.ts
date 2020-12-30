@@ -491,6 +491,11 @@ declare module "./mesh" {
         registerInstancedBuffer(kind: string, stride: number): void;
 
         /**
+         * Invalidate VertexArrayObjects belonging to the mesh (but not to the Geometry of the mesh).
+         */
+        _invalidateInstanceVertexArrayObject(): void;
+
+        /**
          * true to use the edge renderer for all instances of this mesh
          */
         edgesShareWithInstances: boolean;
@@ -500,7 +505,8 @@ declare module "./mesh" {
             data: {[key: string]: Float32Array},
             sizes: {[key: string]: number},
             vertexBuffers: {[key: string]: Nullable<VertexBuffer>},
-            strides: {[key: string]: number}
+            strides: {[key: string]: number},
+            vertexArrayObjects?: {[key: string]: WebGLVertexArrayObject}
         };
     }
 }
@@ -519,7 +525,7 @@ Mesh.prototype.edgesShareWithInstances = false;
 
 Mesh.prototype.registerInstancedBuffer = function(kind: string, stride: number): void {
     // Remove existing one
-    this.removeVerticesData(kind);
+    this._userInstancedBuffersStorage?.vertexBuffers[kind]?.dispose();
 
     // Creates the instancedBuffer field if not present
     if (!this.instancedBuffers) {
@@ -533,7 +539,8 @@ Mesh.prototype.registerInstancedBuffer = function(kind: string, stride: number):
             data: {},
             vertexBuffers: {},
             strides: {},
-            sizes: {}
+            sizes: {},
+            vertexArrayObjects: (this.getEngine().getCaps().vertexArrayObject) ? {} : undefined
         };
     }
 
@@ -544,11 +551,12 @@ Mesh.prototype.registerInstancedBuffer = function(kind: string, stride: number):
     this._userInstancedBuffersStorage.sizes[kind] = stride * 32; // Initial size
     this._userInstancedBuffersStorage.data[kind] = new Float32Array(this._userInstancedBuffersStorage.sizes[kind]);
     this._userInstancedBuffersStorage.vertexBuffers[kind] = new VertexBuffer(this.getEngine(), this._userInstancedBuffersStorage.data[kind], kind, true, false, stride, true);
-    this.setVerticesBuffer(this._userInstancedBuffersStorage.vertexBuffers[kind]!);
 
     for (var instance of this.instances) {
         instance.instancedBuffers[kind] = null;
     }
+
+    this._invalidateInstanceVertexArrayObject();
 };
 
 Mesh.prototype._processInstancedBuffers = function(visibleInstances: InstancedMesh[], renderSelf: boolean) {
@@ -607,11 +615,23 @@ Mesh.prototype._processInstancedBuffers = function(visibleInstances: InstancedMe
         // Update vertex buffer
         if (!this._userInstancedBuffersStorage.vertexBuffers[kind]) {
             this._userInstancedBuffersStorage.vertexBuffers[kind] = new VertexBuffer(this.getEngine(), this._userInstancedBuffersStorage.data[kind], kind, true, false, stride, true);
-            this.setVerticesBuffer(this._userInstancedBuffersStorage.vertexBuffers[kind]!);
+            this._invalidateInstanceVertexArrayObject();
         } else {
             this._userInstancedBuffersStorage.vertexBuffers[kind]!.updateDirectly(data, 0);
         }
     }
+};
+
+Mesh.prototype._invalidateInstanceVertexArrayObject = function() {
+    if (!this._userInstancedBuffersStorage || this._userInstancedBuffersStorage.vertexArrayObjects === undefined) {
+        return;
+    }
+
+    for (var kind in this._userInstancedBuffersStorage.vertexArrayObjects) {
+        this.getEngine().releaseVertexArrayObject(this._userInstancedBuffersStorage.vertexArrayObjects[kind]);
+    }
+
+    this._userInstancedBuffersStorage.vertexArrayObjects = {};
 };
 
 Mesh.prototype._disposeInstanceSpecificData = function() {
@@ -629,6 +649,8 @@ Mesh.prototype._disposeInstanceSpecificData = function() {
             this._userInstancedBuffersStorage.vertexBuffers[kind]!.dispose();
         }
     }
+
+    this._invalidateInstanceVertexArrayObject();
 
     this.instancedBuffers = {};
 };

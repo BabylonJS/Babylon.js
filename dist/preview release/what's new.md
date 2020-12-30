@@ -13,6 +13,10 @@
 - Added ability to enable/disable ArcRotateCamera zoom on multiTouch event ([NicolasBuecher](https://github.com/NicolasBuecher))
 - Moving button to shared uI folder.([msDestiny14](https://github.com/msDestiny14))
 - Moving additional components to shared UI folder.([msDestiny14](https://github.com/msDestiny14))
+- Added encapsulate and encapsulateBoundingInfo methods to BoundingInfo. ([Tolo789](https://github.com/Tolo789))
+
+### Engine
+- Moved all instance data from Geometry to Mesh such that the same Geometry objects can be used by many meshes with instancing. Reduces memory consumption on CPU/GPU. ([breakin](https://github.com/breakin)
 
 ### Loaders
 
@@ -21,6 +25,7 @@
 - Changed glTF loader to remove empty animation groups if there are no animation channels loaded with the given options. ([bghgary](https://github.com/bghgary))
 - Update glTF validator to `2.0.0-dev.3.3`. ([bghgary](https://github.com/bghgary))
 - Added support for KHR_xmp_json_ld for glTF loader. ([Sebavan](https://github.com/sebavan/), [bghgary](https://github.com/bghgary))
+- Added a `OptimizeNormals` option to the OBJ loader to smooth lighting ([Popov72](https://github.com/Popov72))
 
 ### Navigation
 
@@ -53,6 +58,7 @@
 - A browser error preventing the emulator to render scene is now correctly dealt with ([RaananW](https://github.com/RaananW))
 - Added a way to extend the XRSessionInit Object from inside of a feature ([RaananW](https://github.com/RaananW))
 - Added image tracking feature ([RaananW](https://github.com/RaananW))
+- Pointer Events of WebXR controllers have pointerType `xr` ([RaananW](https://github.com/RaananW))
 
 ## Bugs
 
@@ -73,6 +79,9 @@
 - Fix function creation inside regularly called freeCameraMouseWheelInput method leading to excessive GC load. ([mrdunk](https://github.com/mrdunk))
 - Fix clip plane not reset to the rigth value when using mirrors ([Popov72](https://github.com/Popov72))
 - Fix lens flares not working in right handed system ([Popov72](https://github.com/Popov72))
+- Fix canvas not resized correctly in a multi-canvas scenario ([Popov72](https://github.com/Popov72))
+- Fix NaN values returned by `GetAngleBetweenVectors` when vectors are the same or directly opposite ([Popov72](https://github.com/Popov72))
+- Fix 404 occurring on some pictures in some cases when using particle systems ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
@@ -81,3 +90,5 @@
     - [Shader support differences](https://doc.babylonjs.com/advanced_topics/webGPU/webGPUBreakingChanges#shader-code-differences)
 - Use both `mesh.visibility` and `material.alpha` values to compute the global alpha value used by the soft transparent shadow rendering code. Formerly was only using `mesh.visibility` ([Popov72](https://github.com/Popov72))
 - Depth renderer: don't render mesh if `infiniteDistance = true` or if `material.disableDepthWrite = true` ([Popov72](https://github.com/Popov72))
+- Mesh.createInstance no longer make a unique Geometry for the Mesh so updating one Geometry can affect more meshes than before. Use Mesh.makeUniqueGeometry for old behaviour. ([breakin](https://github.com/breakin))
+- Ammo.js needs to be initialized before creating the plugin with `await Ammo();` since Ammo introduced an async init in their library. ([sebavan](https://github.com/sebavan))
