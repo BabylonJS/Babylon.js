@@ -15,6 +15,9 @@ import { Engine } from 'babylonjs/Engines/engine';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { Observer } from 'babylonjs/Misc/observable';
 import { TextLineComponent } from "../../sharedUiComponents/lines/textLineComponent";
+import { StringTools } from "../../stringTools";
+import { AdvancedDynamicTexture } from "babylonjs-gui/2D/index";
+//import { SceneExplorerComponent } from "../sceneExplorer/sceneExplorerComponent";
 
 require("./propertyTab.scss");
 
@@ -72,18 +75,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         }, undefined, true);
     }
 
-    loadFrame(file: File) {
-        Tools.ReadFile(file, (data) => {
-            // get Frame Data from file
-            //let decoder = new TextDecoder("utf-8");
-           // const frameData = JSON.parse(decoder.decode(data));
-           // SerializationTools.AddFrameToMaterial(frameData, this.props.globalState, this.props.globalState.nodeMaterial);
-        }, undefined, true);
-    }
-
     save() {
-        //let json = SerializationTools.Serialize(this.props.globalState.nodeMaterial, this.props.globalState);
-        //StringTools.DownloadAsFile(this.props.globalState.hostDocument, json, "nodeMaterial.json");
+        let json = JSON.stringify(this.props.globalState.guiTexture.serializeContent());
+        StringTools.DownloadAsFile(this.props.globalState.hostDocument, json, "guiTexture.json");
     }
 
     customSave() {
@@ -96,83 +90,70 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     }
 
     saveToSnippetServer() {
-        /*const material = this.props.globalState.nodeMaterial;
-        const xmlHttp = new XMLHttpRequest();
+        var adt = this.props.globalState.guiTexture;
+        let content = JSON.stringify(adt.serializeContent());
 
-        let json = SerializationTools.Serialize(material, this.props.globalState);
-
+        var xmlHttp = new XMLHttpRequest();
         xmlHttp.onreadystatechange = () => {
             if (xmlHttp.readyState == 4) {
                 if (xmlHttp.status == 200) {
                     var snippet = JSON.parse(xmlHttp.responseText);
-                    const oldId = material.snippetId;
-                    material.snippetId = snippet.id;
+                    const oldId = adt.snippetId || "_BLANK";
+                    adt.snippetId = snippet.id;
                     if (snippet.version && snippet.version != "0") {
-                        material.snippetId += "#" + snippet.version;
+                        adt.snippetId += "#" + snippet.version;
                     }
-
                     this.forceUpdate();
                     if (navigator.clipboard) {
-                        navigator.clipboard.writeText(material.snippetId);
+                        navigator.clipboard.writeText(adt.snippetId);
                     }
 
                     let windowAsAny = window as any;
 
                     if (windowAsAny.Playground && oldId) {
                         windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
-                            regex: new RegExp(oldId, "g"),
-                            replace: material.snippetId
+                            regex: new RegExp(`parseFromSnippetAsync\\("${oldId}`, "g"),
+                            replace: `parseFromSnippetAsync("${adt.snippetId}`
                         });
                     }
 
-                    this.props.globalState.hostDocument.defaultView!.alert("NodeMaterial saved with ID: " + material.snippetId + " (please note that the id was also saved to your clipboard)");
-
+                    alert("GUI saved with ID: " + adt.snippetId + " (please note that the id was also saved to your clipboard)");
                 }
                 else {
-                    this.props.globalState.hostDocument.defaultView!.alert(`Unable to save your node material. It may be too large (${(dataToSend.payload.length / 1024).toFixed(2)} KB) because of embedded textures. Please reduce texture sizes or point to a specific url instead of embedding them and try again.`);
+                    alert("Unable to save your GUI");
                 }
             }
-        };
+        }
 
-        xmlHttp.open("POST", NodeMaterial.SnippetUrl + (material.snippetId ? "/" + material.snippetId : ""), true);
+        xmlHttp.open("POST", AdvancedDynamicTexture.SnippetUrl + (adt.snippetId ? "/" + adt.snippetId : ""), true);
         xmlHttp.setRequestHeader("Content-Type", "application/json");
 
         var dataToSend = {
             payload : JSON.stringify({
-                nodeMaterial: json
+                gui: content
             }),
             name: "",
             description: "",
             tags: ""
         };
 
-        xmlHttp.send(JSON.stringify(dataToSend));*/
+        xmlHttp.send(JSON.stringify(dataToSend));
     }
 
     loadFromSnippet() {
-        /*const material = this.props.globalState.nodeMaterial;
-        const scene = material.getScene();
 
         let snippedID = window.prompt("Please enter the snippet ID to use");
 
         if (!snippedID) {
             return;
         }
-
         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-
-        NodeMaterial.ParseFromSnippetAsync(snippedID, scene, "", material).then(() => {
-            material.build();
-            if (!this.changeMode(this.props.globalState.nodeMaterial!.mode, true, false)) {
-                this.props.globalState.onResetRequiredObservable.notifyObservers();
-            }
-        }).catch((err) => {
-            this.props.globalState.hostDocument.defaultView!.alert("Unable to load your node material: " + err);
-        });*/
+        this.props.globalState.guiTexture.parseFromSnippetAsync(snippedID);
     }
 
-
     render() {
+
+        //var myScene=this.props.globalState.guiTexture.getScene();
         if (this.state.currentNode) {
             return (
                 <div id="propertyTab">
@@ -182,6 +163,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             GUI EDITOR
                         </div>
                     </div>
+                    {//myScene && <SceneExplorerComponent globalState={this.props.globalState} scene={myScene}></SceneExplorerComponent>
+                    }
                     {this.state.currentNode?.renderProperties()}
                 </div>
             );
@@ -248,10 +231,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 this.customSave();
                             }} />
                         }
-                        <FileButtonLineComponent label="Load Frame" onClick={(file) => this.loadFrame(file)} accept=".json" />
                     </LineContainerComponent>
                     {
-                        !this.props.globalState.customSave &&
+                        
                         <LineContainerComponent title="SNIPPET">
                             <ButtonLineComponent label="Load from snippet server" onClick={() => this.loadFromSnippet()} />
                             <ButtonLineComponent label="Save to snippet server" onClick={() => {

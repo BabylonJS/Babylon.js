@@ -31,7 +31,7 @@ export class SerializationTools {
 
     public static Deserialize(serializationObject: any, globalState: GlobalState) {
         globalState.onIsLoadingChanged.notifyObservers(true);
-
+        globalState.workbench.loadFromGuiTexture(serializationObject);
     }
 
     public static AddFrameToMaterial(serializationObject: any, globalState: GlobalState, currentMaterial: NodeMaterial) {

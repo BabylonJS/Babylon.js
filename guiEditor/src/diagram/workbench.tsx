@@ -203,7 +203,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }
 		return gridSize * Math.floor(position / gridSize);
     }
-    
+
     public getGridPositionCeil(position: number) {
         let gridSize = this.gridSize;
 		if (gridSize === 0) {
@@ -211,6 +211,18 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 		}
 		return gridSize * Math.ceil(position / gridSize);
 	}
+
+    loadFromGuiTexture(serializationObject: any) {
+        this.globalState.onSelectionChangedObservable.notifyObservers(null);
+        this._guiNodes = [];
+        this.globalState.guiTexture.parseContent(serializationObject);
+        var children = this.globalState.guiTexture.getChildren();
+
+        children[0].children.forEach(guiElement => {
+            var newGuiNode = new GUINode(this.props.globalState, guiElement);
+            this._guiNodes.push(newGuiNode);
+        });
+    }
 
     updateTransform() {
         this._rootContainer.style.transform = `translate(${this._x}px, ${this._y}px) scale(${this._zoom})`;
