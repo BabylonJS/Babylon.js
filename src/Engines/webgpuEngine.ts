@@ -3359,15 +3359,14 @@ export class WebGPUEngine extends Engine {
             webgpuPipelineContext.uniformBuffer.update();
         }
 
-        // TODO WEBGPU try to optimize this loop / lookup in bindGroupsCache
         let node: WebGPUBindGroupCacheNode = webgpuPipelineContext.bindGroupsCache;
         for (let i = 0; i < webgpuPipelineContext.shaderProcessingContext.uniformBufferNames.length; ++i) {
             const bufferName = webgpuPipelineContext.shaderProcessingContext.uniformBufferNames[i];
-            const uboIndex = this._uniformsBuffers[bufferName].uniqueId;
-            let nextNode = node.values[uboIndex];
+            const uboId = this._uniformsBuffers[bufferName].uniqueId;
+            let nextNode = node.values[uboId];
             if (!nextNode) {
                 nextNode = new WebGPUBindGroupCacheNode();
-                node.values[uboIndex] = nextNode;
+                node.values[uboId] = nextNode;
             }
             node = nextNode;
         }

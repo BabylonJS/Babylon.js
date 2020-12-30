@@ -26,7 +26,9 @@ class NodeState {
 /** @hidden */
 export class WebGPUCacheRenderPipelineTree extends WebGPUCacheRenderPipeline {
 
-    private static _Cache: NodeState;
+    private static _Cache: NodeState = new NodeState();
+
+    private _nodeStack: NodeState[];
 
     public static GetNodeCounts(): { nodeCount: number, pipelineCount: number } {
         const counts = WebGPUCacheRenderPipelineTree._Cache.count();
@@ -36,67 +38,24 @@ export class WebGPUCacheRenderPipelineTree extends WebGPUCacheRenderPipeline {
 
     constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer) {
         super(device, emptyVertexBuffer);
-        WebGPUCacheRenderPipelineTree._Cache = new NodeState();
+        this._nodeStack = [];
+        this._nodeStack[0] = WebGPUCacheRenderPipelineTree._Cache;
     }
 
     protected _getRenderPipeline(param: { token: any, pipeline: Nullable<GPURenderPipeline> }): void {
-        const n0 = WebGPUCacheRenderPipelineTree._Cache;
-        let n1 = n0.values[this._states[0]];
-        if (!n1) {
-            n1 = new NodeState();
-            n0.values[this._states[0]] = n1;
-        }
-        let n2 = n1.values[this._states[1]];
-        if (!n2) {
-            n2 = new NodeState();
-            n1.values[this._states[1]] =  n2;
-        }
-        let n3 = n2.values[this._states[2]];
-        if (!n3) {
-            n3 = new NodeState();
-            n2.values[this._states[2]] = n3;
-        }
-        let n4 = n3.values[this._states[3]];
-        if (!n4) {
-            n4 = new NodeState();
-            n3.values[this._states[3]] =  n4;
-        }
-        let n5 = n4.values[this._states[4]];
-        if (!n5) {
-            n5 = new NodeState();
-            n4.values[this._states[4]] = n5;
-        }
-        let n6 = n5.values[this._states[5]];
-        if (!n6) {
-            n6 = new NodeState();
-            n5.values[this._states[5]] = n6;
-        }
-        let n7 = n6.values[this._states[6]];
-        if (!n7) {
-            n7 = new NodeState();
-            n6.values[this._states[6]] = n7;
-        }
-        let n8 = n7.values[this._states[7]];
-        if (!n8) {
-            n8 = new NodeState();
-            n7.values[this._states[7]] = n8;
-        }
-        let n9 = n8.values[this._states[8]];
-        if (!n9) {
-            n9 = new NodeState();
-            n8.values[this._states[8]] = n9;
-        }
-        for (let i = 9; i < this._states.length; ++i) {
-            let nn: NodeState | undefined = n9!.values[this._states[i]];
+        let node = this._nodeStack[this._stateDirtyLowestIndex];
+        for (let i = this._stateDirtyLowestIndex; i < this._states.length; ++i) {
+            let nn: NodeState | undefined = node!.values[this._states[i]];
             if (!nn) {
                 nn = new NodeState();
-                n9!.values[this._states[i]] = nn;
+                node!.values[this._states[i]] = nn;
             }
-            n9 = nn;
+            node = nn;
+            this._nodeStack[i + 1] = node;
         }
 
-        param.token = n9;
-        param.pipeline = n9.pipeline;
+        param.token = node;
+        param.pipeline = node.pipeline;
     }
 
     protected _setRenderPipeline(param: { token: NodeState, pipeline: Nullable<GPURenderPipeline> }): void {
