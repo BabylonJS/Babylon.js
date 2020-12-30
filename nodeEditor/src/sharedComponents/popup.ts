@@ -51,7 +51,7 @@ export class Popup {
         return parentControl;
     }
 
-    private static _CopyStyles(sourceDoc: HTMLDocument, targetDoc: HTMLDocument) {
+    public static _CopyStyles(sourceDoc: HTMLDocument, targetDoc: HTMLDocument) {
         for (var index = 0; index < sourceDoc.styleSheets.length; index++) {
             var styleSheet: any = sourceDoc.styleSheets[index];
             try {
@@ -72,7 +72,6 @@ export class Popup {
                     targetDoc.head!.appendChild(newLinkEl);
                 }
             } catch (e) {
-                console.log(e)
             }
 
         }

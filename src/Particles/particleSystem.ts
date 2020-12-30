@@ -2130,7 +2130,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         }
 
         let serialization = this.serialize();
-        var result = ParticleSystem.Parse(serialization, this._scene || this._engine, "");
+        var result = ParticleSystem.Parse(serialization, this._scene || this._engine, this._rootUrl);
         result.name = name;
         result.customShader = program;
         result._customEffect = custom;
@@ -2192,6 +2192,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         serializationObject.id = particleSystem.id;
 
         serializationObject.capacity = particleSystem.getCapacity();
+
+        serializationObject.disposeOnStop = particleSystem.disposeOnStop;
+        serializationObject.manualEmitCount = particleSystem.manualEmitCount;
 
         // Emitter
         if ((<AbstractMesh>particleSystem.emitter).position) {
@@ -2737,6 +2740,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         particleSystem.spriteCellHeight = parsedParticleSystem.spriteCellHeight;
         particleSystem.spriteCellChangeSpeed = parsedParticleSystem.spriteCellChangeSpeed;
         particleSystem.spriteRandomStartCell = parsedParticleSystem.spriteRandomStartCell;
+
+        particleSystem.disposeOnStop = parsedParticleSystem.disposeOnStop ?? false;
+        particleSystem.manualEmitCount = parsedParticleSystem.manualEmitCount ?? -1;
     }
 
     /**
@@ -2768,6 +2774,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         }
         var particleSystem = new ParticleSystem(name, parsedParticleSystem.capacity, sceneOrEngine, custom, parsedParticleSystem.isAnimationSheetEnabled);
         particleSystem.customShader = program;
+        particleSystem._rootUrl = rootUrl;
 
         if (parsedParticleSystem.id) {
             particleSystem.id = parsedParticleSystem.id;

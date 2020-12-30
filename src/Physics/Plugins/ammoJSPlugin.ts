@@ -70,7 +70,8 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      */
     public constructor(private _useDeltaForWorldStep: boolean = true, ammoInjection: any = Ammo, overlappingPairCache: any = null) {
         if (typeof ammoInjection === "function") {
-            ammoInjection(this.bjsAMMO);
+            Logger.Error("AmmoJS is not ready. Please make sure you await Ammo() before using the plugin.");
+            return;
         } else {
             this.bjsAMMO = ammoInjection;
         }

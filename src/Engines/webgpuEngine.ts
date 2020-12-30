@@ -212,6 +212,7 @@ export class WebGPUEngine extends Engine {
     // Effect is on the parent class
     // protected _currentEffect: Nullable<Effect> = null;
     private _currentVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }> = null;
+    private _currentOverrideVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }> = null;
     private _currentIndexBuffer: Nullable<DataBuffer> = null;
     private __colorWrite = true;
     private _uniformsBuffers: { [name: string]: WebGPUDataBuffer } = {};
@@ -373,6 +374,8 @@ export class WebGPUEngine extends Engine {
         this._depthCullingState.depthMask = true;
 
         this._sharedInit(canvas, !!options.doNotHandleTouchAction, options.audioEngine);
+
+        this._shaderProcessor = this._getShaderProcessor();
 
         // TODO. WEBGPU. Use real way to do it.
         this._canvas.style.transform = "scaleY(-1)";
@@ -554,6 +557,7 @@ export class WebGPUEngine extends Engine {
             supportSSAO2: true,
             supportExtendedTextureFormats: true,
             supportSwitchCaseInShader: true,
+            supportSyncTextureRead: false,
             _collectUbosUpdatedInFrame: true,
         };
     }
@@ -704,7 +708,8 @@ export class WebGPUEngine extends Engine {
         this._forceEnableEffect = true;
         this._currentIndexBuffer = null;
         this._currentVertexBuffers = null;
-        this._cacheRenderPipeline.setBuffers(null, null);
+        this._currentOverrideVertexBuffers = null;
+        this._cacheRenderPipeline.setBuffers(null, null, null);
 
         if (bruteForce) {
             this._currentProgram = null;
@@ -1064,11 +1069,13 @@ export class WebGPUEngine extends Engine {
      * @param vertexBuffers defines the list of vertex buffers to bind
      * @param indexBuffer defines the index buffer to bind
      * @param effect defines the effect associated with the vertex buffers
+     * @param overrideVertexBuffers defines optional list of avertex buffers that overrides the entries in vertexBuffers
      */
-    public bindBuffers(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, indexBuffer: Nullable<DataBuffer>, effect: Effect): void {
+    public bindBuffers(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, indexBuffer: Nullable<DataBuffer>, effect: Effect, overrideVertexBuffers?: {[kind: string]: Nullable<VertexBuffer>}): void {
         this._currentIndexBuffer = indexBuffer;
         this._currentVertexBuffers = vertexBuffers;
-        this._cacheRenderPipeline.setBuffers(vertexBuffers, indexBuffer);
+        this._currentOverrideVertexBuffers = overrideVertexBuffers ?? null;
+        this._cacheRenderPipeline.setBuffers(vertexBuffers, indexBuffer, this._currentOverrideVertexBuffers);
     }
 
     /** @hidden */
@@ -2289,6 +2296,11 @@ export class WebGPUEngine extends Engine {
         }
 
         return this._textureHelper.readPixels(gpuTextureWrapper.underlyingResource!, 0, 0, width, height, gpuTextureWrapper.format, faceIndex, level, buffer);
+    }
+
+    /** @hidden */
+    public _readTexturePixelsSync(texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer: Nullable<ArrayBufferView> = null, flushRenderer = true): ArrayBufferView {
+        throw "_readTexturePixelsSync is unsupported in WebGPU!";
     }
 
     //------------------------------------------------------------------------------
@@ -3574,7 +3586,7 @@ export class WebGPUEngine extends Engine {
             const order = effect.getAttributeLocation(index);
 
             if (order >= 0) {
-                let vertexBuffer = this._currentVertexBuffers![attributes[index]];
+                let vertexBuffer = (this._currentOverrideVertexBuffers && this._currentOverrideVertexBuffers[attributes[index]]) ?? this._currentVertexBuffers![attributes[index]];
                 if (!vertexBuffer) {
                     // In WebGL it's valid to not bind a vertex buffer to an attribute, but it's not valid in WebGPU
                     // So we must bind a dummy buffer when we are not given one for a specific attribute

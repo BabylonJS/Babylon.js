@@ -852,7 +852,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (!this._geometry) {
             return null;
         }
-        return this._geometry.getVerticesData(kind, copyWhenShared, forceCopy);
+        let data = this._userInstancedBuffersStorage?.vertexBuffers[kind]?.getFloatData(this._geometry.getTotalVertices(), forceCopy || (copyWhenShared && this._geometry.meshes.length !== 1));
+        if (!data) {
+            data = this._geometry.getVerticesData(kind, copyWhenShared, forceCopy);
+        }
+        return data;
     }
 
     /**
@@ -877,7 +881,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (!this._geometry) {
             return null;
         }
-        return this._geometry.getVertexBuffer(kind);
+
+        return this._userInstancedBuffersStorage?.vertexBuffers[kind] ?? this._geometry.getVertexBuffer(kind);
     }
 
     /**
@@ -905,7 +910,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
             return false;
         }
-        return this._geometry.isVerticesDataPresent(kind);
+        return this._userInstancedBuffersStorage?.vertexBuffers[kind] !== undefined || this._geometry.isVerticesDataPresent(kind);
     }
 
     /**
@@ -932,7 +937,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
             return false;
         }
-        return this._geometry.isVertexBufferUpdatable(kind);
+        return this._userInstancedBuffersStorage?.vertexBuffers[kind]?.isUpdatable() || this._geometry.isVertexBufferUpdatable(kind);
     }
 
     /**
@@ -963,7 +968,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
             return result;
         }
-        return this._geometry.getVerticesDataKinds();
+        const kinds = this._geometry.getVerticesDataKinds();
+        if (this._userInstancedBuffersStorage) {
+            for (const kind in this._userInstancedBuffersStorage.vertexBuffers) {
+                kinds.push(kind);
+            }
+        }
+        return kinds;
     }
 
     /**
@@ -1521,7 +1532,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // VBOs
-        this._geometry._bind(effect, indexToBind);
+        if (!this._userInstancedBuffersStorage) {
+            this._geometry._bind(effect, indexToBind);
+        } else {
+            this._geometry._bind(effect, indexToBind, this._userInstancedBuffersStorage.vertexBuffers, this._userInstancedBuffersStorage.vertexArrayObjects);
+        }
         return this;
     }
 
@@ -1678,11 +1693,22 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             instancesBuffer = new Buffer(engine, instanceStorage.instancesData, true, 16, false, true);
             instanceStorage.instancesBuffer = instancesBuffer;
+            if (!this._userInstancedBuffersStorage) {
+                this._userInstancedBuffersStorage = {
+                    data: {},
+                    vertexBuffers: {},
+                    strides: {},
+                    sizes: {},
+                    vertexArrayObjects: (this.getEngine().getCaps().vertexArrayObject) ? {} : undefined
+                };
+            }
 
-            this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world0", 0, 4));
-            this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world1", 4, 4));
-            this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world2", 8, 4));
-            this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world3", 12, 4));
+            this._userInstancedBuffersStorage.vertexBuffers["world0"] = instancesBuffer.createVertexBuffer("world0", 0, 4);
+            this._userInstancedBuffersStorage.vertexBuffers["world1"] = instancesBuffer.createVertexBuffer("world1", 4, 4);
+            this._userInstancedBuffersStorage.vertexBuffers["world2"] = instancesBuffer.createVertexBuffer("world2", 8, 4);
+            this._userInstancedBuffersStorage.vertexBuffers["world3"] = instancesBuffer.createVertexBuffer("world3", 12, 4);
+
+            this._invalidateInstanceVertexArrayObject();
         } else {
             if (!this._instanceDataStorage.isFrozen) {
                 instancesBuffer!.updateDirectly(instanceStorage.instancesData, 0, instancesCount);
@@ -1779,6 +1805,19 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this._instanceDataStorage.instancesBuffer.dispose();
             this._instanceDataStorage.instancesBuffer = null;
         }
+        if (this._userInstancedBuffersStorage) {
+            for (var kind in this._userInstancedBuffersStorage.vertexBuffers) {
+                var buffer = this._userInstancedBuffersStorage.vertexBuffers[kind];
+                if (buffer) {
+                    // Dispose instance buffer to be recreated in _renderWithInstances when rendered
+                    buffer.dispose();
+                    this._userInstancedBuffersStorage.vertexBuffers[kind] = null;
+                }
+            }
+            if (this._userInstancedBuffersStorage.vertexArrayObjects) {
+                this._userInstancedBuffersStorage.vertexArrayObjects = {};
+            }
+        }
         super._rebuild();
     }
 
@@ -1836,8 +1875,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         let oldCameraMaxZ = 0;
+        let oldCamera: Nullable<Camera> = null;
         if (this.ignoreCameraMaxZ && scene.activeCamera && !scene._isInIntermediateRendering()) {
             oldCameraMaxZ = scene.activeCamera.maxZ;
+            oldCamera = scene.activeCamera;
             scene.activeCamera.maxZ = 0;
             scene.updateTransformMatrix(true);
         }
@@ -1851,8 +1892,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         let instanceDataStorage = this._instanceDataStorage;
 
         let material = subMesh.getMaterial();
-
         if (!material) {
+            if (oldCamera) {
+                oldCamera.maxZ = oldCameraMaxZ;
+                scene.updateTransformMatrix(true);
+            }
             return this;
         }
 
@@ -1860,9 +1904,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (!instanceDataStorage.isFrozen || !this._effectiveMaterial || this._effectiveMaterial !== material) {
             if (material._storeEffectOnSubMeshes) {
                 if (!material.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
+                    if (oldCamera) {
+                        oldCamera.maxZ = oldCameraMaxZ;
+                        scene.updateTransformMatrix(true);
+                    }
                     return this;
                 }
             } else if (!material.isReady(this, hardwareInstancedRendering)) {
+                if (oldCamera) {
+                    oldCamera.maxZ = oldCameraMaxZ;
+                    scene.updateTransformMatrix(true);
+                }
                 return this;
             }
 
@@ -1886,6 +1938,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         if (!effect) {
+            if (oldCamera) {
+                oldCamera.maxZ = oldCameraMaxZ;
+                scene.updateTransformMatrix(true);
+            }
             return this;
         }
 
@@ -1952,11 +2008,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this._internalMeshDataInfo._onAfterRenderObservable.notifyObservers(this);
         }
 
-        if (this.ignoreCameraMaxZ && scene.activeCamera && !scene._isInIntermediateRendering()) {
-            scene.activeCamera.maxZ = oldCameraMaxZ;
+        if (oldCamera) {
+            oldCamera.maxZ = oldCameraMaxZ;
             scene.updateTransformMatrix(true);
         }
-
         return this;
     }
 
@@ -2406,6 +2461,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /** @hidden */
     public _disposeThinInstanceSpecificData() {
+        // Do nothing
+    }
+
+    /** @hidden */
+    public _invalidateInstanceVertexArrayObject() {
         // Do nothing
     }
 
@@ -2949,18 +3009,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns a new InstancedMesh
      */
     public createInstance(name: string): InstancedMesh {
-        let geometry = this.geometry;
-
-        if (geometry && geometry.meshes.length > 1) {
-            let others = geometry.meshes.slice(0);
-            for (var other of others) {
-                if (other === this) {
-                    continue;
-                }
-                other.makeGeometryUnique();
-            }
-        }
-
         return Mesh._instancedMeshFactory(name, this);
     }
 
@@ -2970,10 +3018,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns the current mesh
      */
     public synchronizeInstances(): Mesh {
-        if (this._geometry && this._geometry.meshes.length !== 1 && this.instances.length) {
-            this.makeGeometryUnique();
-        }
-
         for (var instanceIndex = 0; instanceIndex < this.instances.length; instanceIndex++) {
             var instance = this.instances[instanceIndex];
             instance._syncSubMeshes();
