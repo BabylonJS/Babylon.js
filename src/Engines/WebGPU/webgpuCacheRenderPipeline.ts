@@ -128,6 +128,8 @@ export abstract class WebGPUCacheRenderPipeline {
     private static _NumPipelineCreationCurrentFrame = 0;
 
     protected _states: number[];
+    protected _stateDirtyLowestIndex: number;
+    public lastStateDirtyLowestIndex: number; // for stats only
 
     private _device: GPUDevice;
     private _isDirty: boolean;
@@ -174,6 +176,7 @@ export abstract class WebGPUCacheRenderPipeline {
         this._device = device;
         this._states = [];
         this._states.length = StatePosition.NumStates;
+        this._stateDirtyLowestIndex = 0;
         this._emptyVertexBuffer = emptyVertexBuffer;
         this._mrtFormats = [];
         this._parameter = { token: undefined, pipeline: null };
@@ -220,14 +223,18 @@ export abstract class WebGPUCacheRenderPipeline {
         this._setDepthStencilState();
         this._setVertexState(effect);
 
+        this.lastStateDirtyLowestIndex = this._stateDirtyLowestIndex;
+
         if (!this._isDirty && this._parameter.pipeline) {
+            this._stateDirtyLowestIndex = this._states.length;
             WebGPUCacheRenderPipeline.NumCacheHitWithoutHash++;
             return this._parameter.pipeline;
         }
 
-        this._isDirty = false;
-
         this._getRenderPipeline(this._parameter);
+
+        this._isDirty = false;
+        this._stateDirtyLowestIndex = this._states.length;
 
         if (this._parameter.pipeline) {
             WebGPUCacheRenderPipeline.NumCacheHitWithHash++;
@@ -305,6 +312,7 @@ export abstract class WebGPUCacheRenderPipeline {
             this._depthBiasSlopeScale = depthBiasSlopeScale;
             this._states[StatePosition.DepthBiasSlopeScale] = depthBiasSlopeScale;
             this._isDirty = true;
+            this._stateDirtyLowestIndex = Math.min(this._stateDirtyLowestIndex, StatePosition.DepthBiasSlopeScale);
         }
     }
 
@@ -344,6 +352,7 @@ export abstract class WebGPUCacheRenderPipeline {
             this._states[StatePosition.MRTAttachments1] = bits[0];
             this._states[StatePosition.MRTAttachments2] = bits[1];
             this._isDirty = true;
+            this._stateDirtyLowestIndex = Math.min(this._stateDirtyLowestIndex, StatePosition.MRTAttachments1);
         }
     }
 
@@ -402,6 +411,7 @@ export abstract class WebGPUCacheRenderPipeline {
             this._stencilReadMask = mask;
             this._states[StatePosition.StencilReadMask] = mask;
             this._isDirty = true;
+            this._stateDirtyLowestIndex = Math.min(this._stateDirtyLowestIndex, StatePosition.StencilReadMask);
         }
     }
 
@@ -410,6 +420,7 @@ export abstract class WebGPUCacheRenderPipeline {
             this._stencilWriteMask = mask;
             this._states[StatePosition.StencilWriteMask] = mask;
             this._isDirty = true;
+            this._stateDirtyLowestIndex = Math.min(this._stateDirtyLowestIndex, StatePosition.StencilWriteMask);
         }
     }
 
@@ -677,6 +688,7 @@ export abstract class WebGPUCacheRenderPipeline {
             this._shaderId = id;
             this._states[StatePosition.ShaderStage] = id;
             this._isDirty = true;
+            this._stateDirtyLowestIndex = Math.min(this._stateDirtyLowestIndex, StatePosition.ShaderStage);
         }
     }
 
@@ -697,6 +709,7 @@ export abstract class WebGPUCacheRenderPipeline {
             this._rasterizationState = rasterizationState;
             this._states[StatePosition.RasterizationState] = this._rasterizationState;
             this._isDirty = true;
+            this._stateDirtyLowestIndex = Math.min(this._stateDirtyLowestIndex, StatePosition.RasterizationState);
         }
     }
 
@@ -719,6 +732,7 @@ export abstract class WebGPUCacheRenderPipeline {
             this._colorStates = colorStates;
             this._states[StatePosition.ColorStates] = this._colorStates;
             this._isDirty = true;
+            this._stateDirtyLowestIndex = Math.min(this._stateDirtyLowestIndex, StatePosition.ColorStates);
         }
     }
 
@@ -736,6 +750,7 @@ export abstract class WebGPUCacheRenderPipeline {
             this._depthStencilState = depthStencilState;
             this._states[StatePosition.DepthStencilState] = this._depthStencilState;
             this._isDirty = true;
+            this._stateDirtyLowestIndex = Math.min(this._stateDirtyLowestIndex, StatePosition.DepthStencilState);
         }
     }
 
@@ -763,6 +778,9 @@ export abstract class WebGPUCacheRenderPipeline {
 
         this._states.length = newNumStates;
         this._isDirty = this._isDirty || newNumStates !== currStateLen;
+        if (this._isDirty) {
+            this._stateDirtyLowestIndex = Math.min(this._stateDirtyLowestIndex, StatePosition.VertexState);
+        }
     }
 
     private _createPipelineLayout(webgpuPipelineContext: WebGPUPipelineContext): GPUPipelineLayout {
