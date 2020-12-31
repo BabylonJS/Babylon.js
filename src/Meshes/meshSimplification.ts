@@ -309,7 +309,7 @@ export class QuadraticErrorSimplification implements ISimplifier {
 
     private _reconstructedMesh: Mesh;
 
-    /** Gets or sets the number pf sync interations */
+    /** Gets or sets the number pf sync iterations */
     public syncIterations = 5000;
 
     /** Gets or sets the aggressiveness of the simplifier */
