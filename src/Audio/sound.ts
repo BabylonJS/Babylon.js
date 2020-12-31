@@ -245,6 +245,7 @@ export class Sound {
                             break;
                         case "String":
                             urls.push(urlOrArrayBuffer);
+                            break;
                         case "Array":
                             if (urls.length === 0) {
                                 urls = urlOrArrayBuffer;
