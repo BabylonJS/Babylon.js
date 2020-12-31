@@ -1,4 +1,4 @@
-/** Defines the cross module used constants to avoid circular dependncies */
+/** Defines the cross module used constants to avoid circular dependencies */
 export class Constants {
     /** Defines that alpha blending is disabled */
     public static readonly ALPHA_DISABLE = 0;
@@ -74,16 +74,16 @@ export class Constants {
      */
     public static readonly ALPHA_EQUATION_DARKEN = 5;
 
-    /** Defines that the ressource is not delayed*/
+    /** Defines that the resource is not delayed*/
     public static readonly DELAYLOADSTATE_NONE = 0;
-    /** Defines that the ressource was successfully delay loaded */
+    /** Defines that the resource was successfully delay loaded */
     public static readonly DELAYLOADSTATE_LOADED = 1;
-    /** Defines that the ressource is currently delay loading */
+    /** Defines that the resource is currently delay loading */
     public static readonly DELAYLOADSTATE_LOADING = 2;
-    /** Defines that the ressource is delayed and has not started loading */
+    /** Defines that the resource is delayed and has not started loading */
     public static readonly DELAYLOADSTATE_NOTLOADED = 4;
 
-    // Depht or Stencil test Constants.
+    // Depth or Stencil test Constants.
     /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will never pass. i.e. Nothing will be drawn */
     public static readonly NEVER = 0x0200;
     /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn */
@@ -507,7 +507,7 @@ export class Constants {
      */
     public static readonly SCENELOADER_SUMMARY_LOGGING = 2;
     /**
-     * Detailled logging while loading
+     * Detailed logging while loading
      */
     public static readonly SCENELOADER_DETAILED_LOGGING = 3;
 
