@@ -283,7 +283,7 @@ export class NullEngine extends Engine {
     }
 
     /**
-     * Activates an effect, mkaing it the current one (ie. the one used for rendering)
+     * Activates an effect, making it the current one (ie. the one used for rendering)
      * @param effect defines the effect to activate
      */
     public enableEffect(effect: Effect): void {
