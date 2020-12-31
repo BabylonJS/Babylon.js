@@ -253,7 +253,6 @@ export class LightGizmo extends Gizmo {
 
         var lines = this._CreateLightLines(3, scene);
         lines.parent = root;
-        lines.position.z - 0.15;
 
         root.scaling.scaleInPlace(LightGizmo._Scale);
         root.rotation.x = Math.PI / 2;
