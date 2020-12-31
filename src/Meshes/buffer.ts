@@ -68,7 +68,7 @@ export class Buffer {
         const byteOffset = useBytes ? offset : offset * Float32Array.BYTES_PER_ELEMENT;
         const byteStride = stride ? (useBytes ? stride : stride * Float32Array.BYTES_PER_ELEMENT) : this.byteStride;
 
-        // a lot of these parameters are ignored as they are overriden by the buffer
+        // a lot of these parameters are ignored as they are overridden by the buffer
         return new VertexBuffer(this._engine, this, kind, this._updatable, true, byteStride, instanced === undefined ? this._instanced : instanced, byteOffset, size, undefined, undefined, true, this._divisor || divisor);
     }
 
@@ -428,7 +428,7 @@ export class VertexBuffer {
                     return result;
                 }
 
-                // Portect against bad data
+                // Protect against bad data
                 let remainder = offset % 4;
 
                 if (remainder) {
