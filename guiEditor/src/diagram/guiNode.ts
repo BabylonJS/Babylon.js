@@ -9,8 +9,10 @@ import { Control } from 'babylonjs-gui/2D/controls/control';
 import { Vector2 } from 'babylonjs/Maths/math.vector';
 import { Container } from 'babylonjs-gui/2D/controls/container';
 import { _ThinInstanceDataStorage } from 'babylonjs';
+import { ContainerPropertyTabComponent } from './properties/containterPropertyComponent';
 
 export class GUINode {
+
     private _x = 0;
     private _y = 0;
     private _gridAlignedX = 0;
@@ -24,6 +26,9 @@ export class GUINode {
     private _isVisible = true;
     private _enclosingFrameId = -1;
     private _isContainer = false;
+    
+    public children: GUINode[] = [];
+
     public get isVisible() {
         return this._isVisible;
     }
@@ -108,19 +113,21 @@ export class GUINode {
         this._ownerCanvas = this._globalState.workbench;
         this.x = guiNode.leftInPixels;
         this.y = guiNode.topInPixels;
-        
         guiNode.onPointerUpObservable.add(evt => {
             this.clicked = false;
             console.log("up");
         });
 
         guiNode.onPointerDownObservable.add( evt => {
+            if(!this._ownerCanvas.isUp) return;
             this.clicked = true;
             this.isSelected = true;
             console.log("down");
+            this._ownerCanvas.isUp = false;
         }
         );
 
+        
         guiNode.onPointerEnterObservable.add( evt => {
             this._ownerCanvas.isOverGUINode = true;
             console.log("in");
@@ -147,9 +154,9 @@ export class GUINode {
     }
 
     public clicked: boolean;
-    public _onMove(evt: Vector2, startPos: Vector2) {
+    public _onMove(evt: Vector2, startPos: Vector2, ignorClick: boolean = false) {
        
-        if(!this.clicked) return false;
+        if(!this.clicked && !ignorClick) return false;
         console.log("moving");
 
         //TODO: Implement move with zoom factor.
@@ -158,6 +165,10 @@ export class GUINode {
 
         this.x += newX;
         this.y += newY;  
+
+        this.children.forEach(child => {
+           child._onMove(evt, startPos, true);
+        });
 
         return true;
         //evt.stopPropagation();
@@ -177,6 +188,15 @@ export class GUINode {
         });
     }
 
+    renderContainer(): React.ReactNode {
+        if(!this._isContainer) return null;
+
+        return React.createElement(ContainerPropertyTabComponent, {
+        globalState: this._globalState,
+        guiNode: this
+        });
+    }
+
     public updateVisual()
     {
         this.guiNode.leftInPixels = this.x;
@@ -188,6 +208,7 @@ export class GUINode {
             case "Button":
             case "StackPanel":
             case "Rectangle":
+            case "Ellipse":
                 return true;
             default:
                 return false;
@@ -198,12 +219,12 @@ export class GUINode {
     public addGui(childNode: GUINode)
     {
         if(!this._isContainer) return;
-        
+        this.children.push(childNode);
         (this.guiNode as Container).addControl(childNode.guiNode);
         
         //adjust the position to be relative
-        childNode.x = this.x - childNode.x;
-        childNode.y = this.y - childNode.y;
+        //childNode.x = this.x - childNode.x;
+        //childNode.y = this.y - childNode.y;
     }
 
     public dispose() {

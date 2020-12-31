@@ -150,7 +150,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 this._selectedGuiNodes = [];
             } 
             else {
-                if (selection instanceof GUINode){
+                if (selection instanceof GUINode ) {
                     if (this._ctrlKeyIsPressed) {
                         if (this._selectedGuiNodes.indexOf(selection) === -1) {
                             this._selectedGuiNodes.push(selection);
@@ -159,6 +159,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                     else {              
                         this._selectedGuiNodes = [selection];
                     }
+                    
                 
                 } 
             }
@@ -241,8 +242,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._oldY = -1;
     }
 
-    findNodeFromGuiElement(guiElement: Control) {
-       return this._guiNodes.filter(n => n.guiNode === guiElement)[0];
+    findNodeFromGuiElementName(guiElement: string) {
+       return this._guiNodes.filter(n => n.guiNode.name === guiElement)[0];
     }
 
     reset() {
@@ -420,9 +421,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }
         
         this._mouseStartPointX = evt.clientX;
-        this._mouseStartPointY = evt.clientY;        
+        this._mouseStartPointY = evt.clientY;   
+             
     }
 
+    public isUp : boolean = true;
     onUp(evt: React.PointerEvent) {
         this._mouseStartPointX = null;
         this._mouseStartPointY = null;
@@ -441,6 +444,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this._frameCandidate = null;
 
         }
+        this.isUp = true;
+        
     }
 
     onWheel(evt: React.WheelEvent) {

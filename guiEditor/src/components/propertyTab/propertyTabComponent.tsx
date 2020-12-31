@@ -165,6 +165,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     </div>
                     {//myScene && <SceneExplorerComponent globalState={this.props.globalState} scene={myScene}></SceneExplorerComponent>
                     }
+                    {this.state.currentNode?.renderContainer()}
                     {this.state.currentNode?.renderProperties()}
                 </div>
             );
