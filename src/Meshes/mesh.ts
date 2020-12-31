@@ -2051,7 +2051,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             // check for invalid weight and just set it to 1.
             if (t === 0) { matricesWeights[a] = 1; }
             else {
-                // renormalize so everything adds to 1 use reciprical
+                // renormalize so everything adds to 1 use reciprocal
                 let recip = 1 / t;
                 matricesWeights[a] *= recip;
                 matricesWeights[a + 1] *= recip;
@@ -2076,7 +2076,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             // check for invalid weight and just set it to 1.
             if (t === 0) { matricesWeights[a] = 1; }
             else {
-                // renormalize so everything adds to 1 use reciprical
+                // renormalize so everything adds to 1 use reciprocal
                 let recip = 1 / t;
                 matricesWeights[a] *= recip;
                 matricesWeights[a + 1] *= recip;
@@ -2144,7 +2144,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 missingWeights++;
             }
             else {
-                // renormalize so everything adds to 1 use reciprical
+                // renormalize so everything adds to 1 use reciprocal
                 let recip = 1 / t;
                 let tolerance = 0;
                 for (b = 0; b < numInfluences; b++) {
@@ -2155,7 +2155,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                         tolerance += Math.abs(matricesWeightsExtra[a + b - 4] - (matricesWeightsExtra[a + b - 4] * recip));
                     }
                 }
-                // arbitary epsilon value for dicdating not normalized
+                // arbitrary epsilon value for dictating not normalized
                 if (tolerance > toleranceEpsilon) { numberNotNormalized++; }
             }
         }
@@ -3780,7 +3780,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param name defines the name of the mesh to create
      * @param diameter sets the diameter size (float) of the torus (default 1)
      * @param thickness sets the diameter size of the tube of the torus (float, default 0.5)
-     * @param tessellation sets the number of torus sides (postive integer, default 16)
+     * @param tessellation sets the number of torus sides (positive integer, default 16)
      * @param scene defines the hosting scene
      * @param updatable defines if the mesh must be flagged as updatable
      * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
@@ -3922,7 +3922,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Creates lathe mesh.
-     * The lathe is a shape with a symetry axis : a 2D model shape is rotated around this axis to design the lathe.
+     * The lathe is a shape with a symmetry axis : a 2D model shape is rotated around this axis to design the lathe.
      * Please consider using the same method from the MeshBuilder class instead
      * @param name defines the name of the mesh to create
      * @param shape is a required array of successive Vector3. This array depicts the shape to be rotated in its local space : the shape must be designed in the xOy plane and will be rotated around the Y axis. It's usually a 2D shape, so the Vector3 z coordinates are often set to zero
@@ -4014,7 +4014,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param path is a required array of successive Vector3. It is the curve used as the axis of the tube
      * @param radius sets the tube radius size
      * @param tessellation is the number of sides on the tubular surface
-     * @param radiusFunction is a custom function. If it is not null, it overwrittes the parameter `radius`. This function is called on each point of the tube path and is passed the index `i` of the i-th point and the distance of this point from the first point of the path
+     * @param radiusFunction is a custom function. If it is not null, it overrides the parameter `radius`. This function is called on each point of the tube path and is passed the index `i` of the i-th point and the distance of this point from the first point of the path
      * @param cap sets the way the extruded shape is capped. Possible values : Mesh.NO_CAP (default), Mesh.CAP_START, Mesh.CAP_END, Mesh.CAP_ALL
      * @param scene defines the hosting scene
      * @param updatable defines if the mesh must be flagged as updatable
@@ -4029,7 +4029,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
       * Creates a polyhedron mesh.
       * Please consider using the same method from the MeshBuilder class instead.
-      * * The parameter `type` (positive integer, max 14, default 0) sets the polyhedron type to build among the 15 embbeded types. Please refer to the type sheet in the tutorial to choose the wanted type
+      * * The parameter `type` (positive integer, max 14, default 0) sets the polyhedron type to build among the 15 embedded types. Please refer to the type sheet in the tutorial to choose the wanted type
       * * The parameter `size` (positive float, default 1) sets the polygon size
       * * You can overwrite the `size` on each dimension bu using the parameters `sizeX`, `sizeY` or `sizeZ` (positive floats, default to `size` value)
       * * You can build other polyhedron types than the 15 embbeded ones by setting the parameter `custom` (`polyhedronObject`, default null). If you set the parameter `custom`, this overwrittes the parameter `type`
@@ -4053,7 +4053,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Creates a sphere based upon an icosahedron with 20 triangular faces which can be subdivided
      * * The parameter `radius` sets the radius size (float) of the icosphere (default 1)
      * * You can set some different icosphere dimensions, for instance to build an ellipsoid, by using the parameters `radiusX`, `radiusY` and `radiusZ` (all by default have the same value than `radius`)
-     * * The parameter `subdivisions` sets the number of subdivisions (postive integer, default 4). The more subdivisions, the more faces on the icosphere whatever its size
+     * * The parameter `subdivisions` sets the number of subdivisions (positive integer, default 4). The more subdivisions, the more faces on the icosphere whatever its size
      * * The parameter `flat` (boolean, default true) gives each side its own normals. Set it to false to get a smooth continuous light reflection on the surface
      * * You can also set the mesh side orientation with the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
      * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation

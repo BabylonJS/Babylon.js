@@ -113,7 +113,7 @@ export class Geometry implements IGetSetVerticesData {
     }
 
     /**
-     * If set to true (false by defaut), the bounding info applied to the meshes sharing this geometry will be the bounding info defined at the class level
+     * If set to true (false by default), the bounding info applied to the meshes sharing this geometry will be the bounding info defined at the class level
      * and won't be computed based on the vertex positions (which is what we get when useBoundingInfoFromGeometry = false)
      */
     public useBoundingInfoFromGeometry = false;
@@ -1010,7 +1010,7 @@ export class Geometry implements IGetSetVerticesData {
     }
 
     /**
-     * Serialize all vertices data into a JSON oject
+     * Serialize all vertices data into a JSON object
      * @returns a JSON representation of the current geometry data
      */
     public serializeVerticeData(): any {
