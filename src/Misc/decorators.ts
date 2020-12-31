@@ -312,6 +312,7 @@ export class SerializationHelper {
                         break;
                     case 11:    // Camera reference
                         serializationObject[targetPropertyName] = (<Camera>sourceProperty).id;
+                        break;
                     case 12:    // Matrix
                         serializationObject[targetPropertyName] = (<Matrix>sourceProperty).asArray();
                         break;
