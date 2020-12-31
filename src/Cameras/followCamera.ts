@@ -65,7 +65,7 @@ export class FollowCamera extends TargetCamera {
 
     /**
      * Define a height offset between the camera and the object it follows.
-     * It can help following an object from the top (like a car chaing a plane)
+     * It can help following an object from the top (like a car chasing a plane)
      */
     @serialize()
     public heightOffset: number = 4;
@@ -259,7 +259,7 @@ export class ArcFollowCamera extends TargetCamera {
      * Instantiates a new ArcFollowCamera
      * @see https://doc.babylonjs.com/features/cameras#follow-camera
      * @param name Define the name of the camera
-     * @param alpha Define the rotation angle of the camera around the logitudinal axis
+     * @param alpha Define the rotation angle of the camera around the longitudinal axis
      * @param beta Define the rotation angle of the camera around the elevation axis
      * @param radius Define the radius of the camera from its target point
      * @param target Define the target of the camera
