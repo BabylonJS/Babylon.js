@@ -154,7 +154,7 @@ export class SetValueAction extends Action {
     }
 
     /**
-     * Execute the action and set the targetted property to the desired value.
+     * Execute the action and set the targeted property to the desired value.
      */
     public execute(): void {
         this._effectiveTarget[this._property] = this.value;
