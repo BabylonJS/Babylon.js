@@ -96,7 +96,7 @@ export class BouncingBehavior implements Behavior<ArcRotateCamera> {
      * Initializes the behavior.
      */
     public init(): void {
-        // Do notihng
+        // Do nothing
     }
 
     /**
