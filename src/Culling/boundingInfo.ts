@@ -41,7 +41,7 @@ export interface ICullable {
     isInFrustum(frustumPlanes: Plane[]): boolean;
     /**
      * Checks if a cullable object (mesh...) is in the camera frustum
-     * Unlike isInFrustum this cheks the full bounding box
+     * Unlike isInFrustum this checks the full bounding box
      * @param frustumPlanes Camera near/planes
      * @returns true if the object is in frustum otherwise false
      */
@@ -216,7 +216,7 @@ export class BoundingInfo implements ICullable {
 
     /**
      * Checks if a cullable object (mesh...) is in the camera frustum
-     * Unlike isInFrustum this cheks the full bounding box
+     * Unlike isInFrustum this checks the full bounding box
      * @param frustumPlanes Camera near/planes
      * @returns true if the object is in frustum otherwise false
      */
