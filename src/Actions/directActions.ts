@@ -281,7 +281,7 @@ export class PlayAnimationAction extends Action {
      * @param triggerOptions defines the trigger options
      * @param target defines the target animation or animation name
      * @param from defines from where the animation should start (animation frame)
-     * @param end defines where the animation should stop (animation frame)
+     * @param to defines where the animation should stop (animation frame)
      * @param loop defines if the animation should loop or stop after the first play
      * @param condition defines the trigger related conditions
      */
