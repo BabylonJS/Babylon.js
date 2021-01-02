@@ -15,7 +15,7 @@ import "../Engines/Extensions/engine.uniformBuffer";
  *
  * Handles blocks of uniform on the GPU.
  *
- * If WebGL 2 is not available, this class falls back on traditionnal setUniformXXX calls.
+ * If WebGL 2 is not available, this class falls back on traditional setUniformXXX calls.
  *
  * For more information, please refer to :
  * https://www.khronos.org/opengl/wiki/Uniform_Buffer_Object
@@ -189,7 +189,7 @@ export class UniformBuffer {
      *
      * Handles blocks of uniform on the GPU.
      *
-     * If WebGL 2 is not available, this class falls back on traditionnal setUniformXXX calls.
+     * If WebGL 2 is not available, this class falls back on traditional setUniformXXX calls.
      *
      * For more information, please refer to :
      * @see https://www.khronos.org/opengl/wiki/Uniform_Buffer_Object

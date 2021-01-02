@@ -511,7 +511,7 @@ export class Material implements IAnimatable {
     public separateCullingPass = false;
 
     /**
-     * Stores the state specifing if fog should be enabled
+     * Stores the state specifying if fog should be enabled
      */
     @serialize("fogEnabled")
     private _fogEnabled = true;
