@@ -274,7 +274,7 @@ export class Layer {
     }
 
     /**
-     * Disposes and releases the associated ressources.
+     * Disposes and releases the associated resources.
      */
     public dispose(): void {
         var vertexBuffer = this._vertexBuffers[VertexBuffer.PositionKind];
