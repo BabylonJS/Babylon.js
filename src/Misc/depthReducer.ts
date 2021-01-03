@@ -69,7 +69,7 @@ export class DepthReducer extends MinMaxReducer {
     /**
      * Activates the reduction computation.
      * When activated, the observers registered in onAfterReductionPerformed are
-     * called after the compuation is performed
+     * called after the computation is performed
      */
     public activate(): void {
         if (this._depthRenderer) {
