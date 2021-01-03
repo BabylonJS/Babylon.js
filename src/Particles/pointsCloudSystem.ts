@@ -462,7 +462,7 @@ export class PointsCloudSystem implements IDisposable {
         var mat = mesh.material;
         let textureList: BaseTexture[] = mat.getActiveTextures();
         if (textureList.length === 0) {
-            Logger.Warn(mesh.name + "has no useable texture.");
+            Logger.Warn(mesh.name + "has no usable texture.");
             pointsGroup._groupImageData = null;
             this._setPointsColorOrUV(mesh, pointsGroup, isVolume, true, false);
             return;
