@@ -844,7 +844,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
     /**
      * Gets the current list of ramp gradients.
-     * You must use addRampGradient and removeRampGradient to udpate this list
+     * You must use addRampGradient and removeRampGradient to update this list
      * @returns the list of ramp gradients
      */
     public getRampGradients(): Nullable<Array<Color3Gradient>> {
@@ -2033,7 +2033,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
     /**
      * Disposes the particle system and free the associated resources
-     * @param disposeTexture defines if the particule texture must be disposed as well (true by default)
+     * @param disposeTexture defines if the particle texture must be disposed as well (true by default)
      */
     public dispose(disposeTexture = true): void {
         if (this._vertexBuffer) {

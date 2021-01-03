@@ -31,7 +31,7 @@ export enum PointColor {
  * The PointCloudSystem (PCS) is a single updatable mesh. The points corresponding to the vertices of this big mesh.
  * As it is just a mesh, the PointCloudSystem has all the same properties as any other BJS mesh : not more, not less. It can be scaled, rotated, translated, enlighted, textured, moved, etc.
 
- * The PointCloudSytem is also a particle system, with each point being a particle. It provides some methods to manage the particles.
+ * The PointCloudSystem is also a particle system, with each point being a particle. It provides some methods to manage the particles.
  * However it is behavior agnostic. This means it has no emitter, no particle physics, no particle recycler. You have to implement your own behavior.
  *
  * Full documentation here : TO BE ENTERED
@@ -55,7 +55,7 @@ export class PointsCloudSystem implements IDisposable {
      */
     public name: string;
     /**
-     * The PCS mesh. It's a standard BJS Mesh, so all the methods from the Mesh class are avalaible.
+     * The PCS mesh. It's a standard BJS Mesh, so all the methods from the Mesh class are available.
      */
     public mesh: Mesh;
     /**
@@ -916,7 +916,7 @@ export class PointsCloudSystem implements IDisposable {
     }
 
     /**
-     * Visibilty helper : Recomputes the visible size according to the mesh bounding box
+     * Visibility helper : Recomputes the visible size according to the mesh bounding box
      * doc :
      * @returns the PCS.
      */
