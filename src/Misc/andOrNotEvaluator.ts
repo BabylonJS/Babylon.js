@@ -1,5 +1,5 @@
 /**
- * Class used to evalaute queries containing `and` and `or` operators
+ * Class used to evaluate queries containing `and` and `or` operators
  */
 export class AndOrNotEvaluator {
     /**

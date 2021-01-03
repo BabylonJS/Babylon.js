@@ -269,7 +269,7 @@ export class VirtualJoystick {
     }
 
     /**
-     * Defines joystick sensibility (ie. the ratio beteen a physical move and virtual joystick position change)
+     * Defines joystick sensibility (ie. the ratio between a physical move and virtual joystick position change)
      * @param newJoystickSensibility defines the new sensibility
      */
     public setJoystickSensibility(newJoystickSensibility: number) {
