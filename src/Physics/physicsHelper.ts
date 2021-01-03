@@ -244,7 +244,7 @@ class PhysicsRadialExplosionEvent {
     private _dataFetched: boolean = false; // check if the data has been fetched. If not, do cleanup
 
     /**
-     * Initializes a radial explosioin event
+     * Initializes a radial explosion event
      * @param _scene BabylonJS scene
      * @param _options The options for the vortex event
      */
@@ -310,7 +310,7 @@ class PhysicsRadialExplosionEvent {
     }
 
     /**
-     * Triggers affecterd impostors callbacks
+     * Triggers affected impostors callbacks
      * @param affectedImpostorsWithData defines the list of affected impostors (including associated data)
      */
     public triggerAffectedImpostorsCallback(affectedImpostorsWithData: Array<PhysicsAffectedImpostorWithData>) {
@@ -745,12 +745,12 @@ export class PhysicsRadialExplosionEventOptions {
     radius: number = 5;
 
     /**
-     * The strenth of the explosion.
+     * The strength of the explosion.
      */
     strength: number = 10;
 
     /**
-     * The strenght of the force in correspondence to the distance of the affected object
+     * The strength of the force in correspondence to the distance of the affected object
      */
     falloff: PhysicsRadialImpulseFalloff = PhysicsRadialImpulseFalloff.Constant;
 
@@ -776,7 +776,7 @@ export class PhysicsUpdraftEventOptions {
     radius: number = 5;
 
     /**
-     * The strenth of the updraft.
+     * The strength of the updraft.
      */
     strength: number = 10;
 
@@ -802,7 +802,7 @@ export class PhysicsVortexEventOptions {
     radius: number = 5;
 
     /**
-     * The strenth of the vortex.
+     * The strength of the vortex.
      */
     strength: number = 10;
 
@@ -817,12 +817,12 @@ export class PhysicsVortexEventOptions {
     centripetalForceThreshold: number = 0.7;
 
     /**
-     * This multiplier determines with how much force the objects will be pushed sideways/around the vortex, when below the treshold.
+     * This multiplier determines with how much force the objects will be pushed sideways/around the vortex, when below the threshold.
      */
     centripetalForceMultiplier: number = 5;
 
     /**
-     * This multiplier determines with how much force the objects will be pushed sideways/around the vortex, when above the treshold.
+     * This multiplier determines with how much force the objects will be pushed sideways/around the vortex, when above the threshold.
      */
     centrifugalForceMultiplier: number = 0.5;
 
@@ -833,7 +833,7 @@ export class PhysicsVortexEventOptions {
 }
 
 /**
-* The strenght of the force in correspondence to the distance of the affected object
+* The strength of the force in correspondence to the distance of the affected object
 * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
 */
 export enum PhysicsRadialImpulseFalloff {
@@ -928,7 +928,7 @@ export interface PhysicsAffectedImpostorWithData {
     impostor: PhysicsImpostor;
 
     /**
-     * The data about the hit/horce from the explosion
+     * The data about the hit/force from the explosion
      */
     hitData: PhysicsHitData;
 }
