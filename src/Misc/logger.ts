@@ -1,5 +1,5 @@
 /**
- * Logger used througouht the application to allow configuration of
+ * Logger used throughout the application to allow configuration of
  * the log level required for the messages.
  */
 export class Logger {
