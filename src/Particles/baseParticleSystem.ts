@@ -346,7 +346,7 @@ export class BaseParticleSystem {
 
     /**
      * Gets the current list of drag gradients.
-     * You must use addDragGradient and removeDragGradient to udpate this list
+     * You must use addDragGradient and removeDragGradient to update this list
      * @returns the list of drag gradients
      */
     public getDragGradients(): Nullable<Array<FactorGradient>> {
@@ -358,7 +358,7 @@ export class BaseParticleSystem {
 
     /**
      * Gets the current list of limit velocity gradients.
-     * You must use addLimitVelocityGradient and removeLimitVelocityGradient to udpate this list
+     * You must use addLimitVelocityGradient and removeLimitVelocityGradient to update this list
      * @returns the list of limit velocity gradients
      */
     public getLimitVelocityGradients(): Nullable<Array<FactorGradient>> {
@@ -367,7 +367,7 @@ export class BaseParticleSystem {
 
     /**
      * Gets the current list of color gradients.
-     * You must use addColorGradient and removeColorGradient to udpate this list
+     * You must use addColorGradient and removeColorGradient to update this list
      * @returns the list of color gradients
      */
     public getColorGradients(): Nullable<Array<ColorGradient>> {
@@ -376,7 +376,7 @@ export class BaseParticleSystem {
 
     /**
      * Gets the current list of size gradients.
-     * You must use addSizeGradient and removeSizeGradient to udpate this list
+     * You must use addSizeGradient and removeSizeGradient to update this list
      * @returns the list of size gradients
      */
     public getSizeGradients(): Nullable<Array<FactorGradient>> {
@@ -385,7 +385,7 @@ export class BaseParticleSystem {
 
     /**
      * Gets the current list of color remap gradients.
-     * You must use addColorRemapGradient and removeColorRemapGradient to udpate this list
+     * You must use addColorRemapGradient and removeColorRemapGradient to update this list
      * @returns the list of color remap gradients
      */
     public getColorRemapGradients(): Nullable<Array<FactorGradient>> {
@@ -394,7 +394,7 @@ export class BaseParticleSystem {
 
     /**
      * Gets the current list of alpha remap gradients.
-     * You must use addAlphaRemapGradient and removeAlphaRemapGradient to udpate this list
+     * You must use addAlphaRemapGradient and removeAlphaRemapGradient to update this list
      * @returns the list of alpha remap gradients
      */
     public getAlphaRemapGradients(): Nullable<Array<FactorGradient>> {
@@ -403,7 +403,7 @@ export class BaseParticleSystem {
 
     /**
      * Gets the current list of life time gradients.
-     * You must use addLifeTimeGradient and removeLifeTimeGradient to udpate this list
+     * You must use addLifeTimeGradient and removeLifeTimeGradient to update this list
      * @returns the list of life time gradients
      */
     public getLifeTimeGradients(): Nullable<Array<FactorGradient>> {
@@ -412,7 +412,7 @@ export class BaseParticleSystem {
 
     /**
      * Gets the current list of angular speed gradients.
-     * You must use addAngularSpeedGradient and removeAngularSpeedGradient to udpate this list
+     * You must use addAngularSpeedGradient and removeAngularSpeedGradient to update this list
      * @returns the list of angular speed gradients
      */
     public getAngularSpeedGradients(): Nullable<Array<FactorGradient>> {
@@ -421,7 +421,7 @@ export class BaseParticleSystem {
 
     /**
      * Gets the current list of velocity gradients.
-     * You must use addVelocityGradient and removeVelocityGradient to udpate this list
+     * You must use addVelocityGradient and removeVelocityGradient to update this list
      * @returns the list of velocity gradients
      */
     public getVelocityGradients(): Nullable<Array<FactorGradient>> {
@@ -430,7 +430,7 @@ export class BaseParticleSystem {
 
     /**
      * Gets the current list of start size gradients.
-     * You must use addStartSizeGradient and removeStartSizeGradient to udpate this list
+     * You must use addStartSizeGradient and removeStartSizeGradient to update this list
      * @returns the list of start size gradients
      */
     public getStartSizeGradients(): Nullable<Array<FactorGradient>> {
@@ -439,7 +439,7 @@ export class BaseParticleSystem {
 
     /**
      * Gets the current list of emit rate gradients.
-     * You must use addEmitRateGradient and removeEmitRateGradient to udpate this list
+     * You must use addEmitRateGradient and removeEmitRateGradient to update this list
      * @returns the list of emit rate gradients
      */
     public getEmitRateGradients(): Nullable<Array<FactorGradient>> {
