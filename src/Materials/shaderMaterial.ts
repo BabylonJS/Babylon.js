@@ -853,7 +853,7 @@ export class ShaderMaterial extends Material {
             }
         }
 
-        if (effect && (mustRebind || !this.isFrozen)) {
+        if (effect && mesh && (mustRebind || !this.isFrozen)) {
             // Morph targets
             const manager = (<Mesh>mesh).morphTargetManager;
             if (manager && manager.numInfluencers > 0) {
