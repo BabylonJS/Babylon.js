@@ -597,6 +597,13 @@ export class StandardMaterial extends PushMaterial {
     public readonly prePassConfiguration: PrePassConfiguration;
 
     /**
+     * Can this material render to prepass
+     */
+    public get isPrePassCapable(): boolean {
+        return true;
+    }
+
+    /**
      * Gets wether the color curves effect is enabled.
      */
     public get cameraColorCurvesEnabled(): boolean {

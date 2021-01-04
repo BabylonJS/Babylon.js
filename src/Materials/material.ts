@@ -481,6 +481,13 @@ export class Material implements IAnimatable {
     }
 
     /**
+     * Can this material render to prepass
+     */
+    public get isPrePassCapable(): boolean {
+        return false;
+    }
+
+    /**
      * Specifies if depth writing should be disabled
      */
     @serialize()

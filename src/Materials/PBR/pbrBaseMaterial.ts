@@ -888,6 +888,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     }
 
     /**
+     * Can this material render to prepass
+     */
+    public get isPrePassCapable(): boolean {
+        return true;
+    }
+
+    /**
      * Gets the name of the material class.
      */
     public getClassName(): string {
