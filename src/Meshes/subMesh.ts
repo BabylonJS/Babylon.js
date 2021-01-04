@@ -181,7 +181,7 @@ export class SubMesh implements ICullable {
     }
 
     /**
-     * Returns the submesh BoudingInfo object
+     * Returns the submesh BoundingInfo object
      * @returns current bounding info (or mesh's one if the submesh is global)
      */
     public getBoundingInfo(): BoundingInfo {
