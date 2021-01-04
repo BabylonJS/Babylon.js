@@ -1058,6 +1058,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 var ShaderAlebdoParts = /** @class */ (function () {
     function ShaderAlebdoParts() {
     }
@@ -1124,8 +1125,19 @@ var PBRCustomMaterial = /** @class */ (function (_super) {
         }
         return arr;
     };
-    PBRCustomMaterial.prototype.Builder = function (shaderName, uniforms, uniformBuffers, samplers, defines, attributes) {
+    PBRCustomMaterial.prototype.Builder = function (shaderName, uniforms, uniformBuffers, samplers, defines, attributes, options) {
         var _this = this;
+        if (options) {
+            options.processFinalCode = function (type, code) {
+                if (type === "vertex") {
+                    return code;
+                }
+                var sci = new babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["ShaderCodeInliner"](code);
+                sci.inlineToken = "#define pbr_inline";
+                sci.processCode();
+                return sci.code;
+            };
+        }
         if (attributes && this._customAttributes && this._customAttributes.length > 0) {
             attributes.push.apply(attributes, this._customAttributes);
         }
