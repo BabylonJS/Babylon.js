@@ -349,11 +349,6 @@ export class RefractionBlock extends NodeMaterialBlock {
         this.linkRefractionWithTransparency = serializationObject.linkRefractionWithTransparency;
         this.invertRefractionY = serializationObject.invertRefractionY;
     }
-
-    public dispose() {
-        super.dispose();
-        this.texture?.dispose();
-    }
 }
 
 _TypeStore.RegisteredTypes["BABYLON.RefractionBlock"] = RefractionBlock;

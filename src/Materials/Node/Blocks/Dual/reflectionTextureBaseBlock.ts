@@ -459,11 +459,6 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
             }
         }
     }
-
-    public dispose() {
-        super.dispose();
-        this.texture?.dispose();
-    }
 }
 
 _TypeStore.RegisteredTypes["BABYLON.ReflectionTextureBaseBlock"] = ReflectionTextureBaseBlock;
