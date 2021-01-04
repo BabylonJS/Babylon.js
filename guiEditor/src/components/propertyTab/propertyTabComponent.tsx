@@ -9,12 +9,10 @@ import { Tools } from 'babylonjs/Misc/tools';
 import { CheckBoxLineComponent } from '../../sharedComponents/checkBoxLineComponent';
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { GUINode } from '../../diagram/guiNode';
-import { SliderLineComponent } from '../../sharedComponents/sliderLineComponent';
-import { Engine } from 'babylonjs/Engines/engine';
-import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { Observer } from 'babylonjs/Misc/observable';
 import { TextLineComponent } from "../../sharedUiComponents/lines/textLineComponent";
 import { SerializationTools } from "../../serializationTools";
+import { Engine } from "babylonjs/Engines/engine";
 
 require("./propertyTab.scss");
 
@@ -51,14 +49,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
     componentWillUnmount() {
         this.props.globalState.onBuiltObservable.remove(this._onBuiltObserver);
-    }
-
-    processInputBlockUpdate(ib: InputBlock) {
-        this.props.globalState.onUpdateRequiredObservable.notifyObservers();
-
-        if (ib.isConstant) {
-            this.props.globalState.onRebuildRequiredObservable.notifyObservers();
-        }
     }
 
 
@@ -186,8 +176,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             );
         }
 
-        let gridSize = DataStorage.ReadNumber("GridSize", 20);
-
         return (
             <div id="propertyTab">
                 <div id="header">
@@ -205,21 +193,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         }} />
                     </LineContainerComponent>
                     <LineContainerComponent title="OPTIONS">
-                        <CheckBoxLineComponent label="Embed textures when saving"
-                            isSelected={() => DataStorage.ReadBoolean("EmbedTextures", true)}
-                            onSelect={(value: boolean) => {
-                                DataStorage.WriteBoolean("EmbedTextures", value);
-                            }}
-                        />
-                        <SliderLineComponent label="Grid size" minimum={0} maximum={100} step={5}
-                            decimalCount={0} globalState={this.props.globalState}
-                            directValue={gridSize}
-                            onChange={(value) => {
-                                DataStorage.WriteNumber("GridSize", value);
-                                this.props.globalState.onGridSizeChanged.notifyObservers();
-                                this.forceUpdate();
-                            }}
-                        />
                         <CheckBoxLineComponent label="Show grid"
                             isSelected={() => DataStorage.ReadBoolean("ShowGrid", true)}
                             onSelect={(value: boolean) => {

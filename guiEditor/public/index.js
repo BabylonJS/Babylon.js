@@ -28,23 +28,18 @@ var checkHash = function () {
                     if (xmlHttp.readyState == 4) {
                         if (xmlHttp.status == 200) {
                             var snippet = JSON.parse(JSON.parse(xmlHttp.responseText).jsonPayload);
-                            let serializationObject = JSON.parse(snippet.nodeMaterial);
+                            let serializationObject = JSON.parse(snippet);
 
                             if (editorDisplayed) {
                                 customLoadObservable.notifyObservers(serializationObject);
                             } else {
-                                nodeMaterial.loadFromSerialization(serializationObject);
-                                try {
-                                    nodeMaterial.build(true);
-                                } catch (err) {
-                                     // Swallow the error here
-                                }
+                                //load from selization
                                 showEditor();
                             }
                         }
                     }
                 }
-
+                
                 var hash = location.hash.substr(1);
                 currentSnippetToken = hash.split("#")[0];
                 xmlHttp.open("GET", snippetUrl + "/" + hash.replace("#", "/"));
