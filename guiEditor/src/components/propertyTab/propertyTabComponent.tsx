@@ -6,7 +6,6 @@ import { ButtonLineComponent } from '../../sharedUiComponents/lines/buttonLineCo
 import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
 import { FileButtonLineComponent } from '../../sharedUiComponents/lines/fileButtonLineComponent';
 import { Tools } from 'babylonjs/Misc/tools';
-import { SerializationTools } from '../../serializationTools';
 import { CheckBoxLineComponent } from '../../sharedComponents/checkBoxLineComponent';
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { GUINode } from '../../diagram/guiNode';
@@ -15,6 +14,7 @@ import { Engine } from 'babylonjs/Engines/engine';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { Observer } from 'babylonjs/Misc/observable';
 import { TextLineComponent } from "../../sharedUiComponents/lines/textLineComponent";
+import { SerializationTools } from "../../serializationTools";
 
 require("./propertyTab.scss");
 
@@ -66,7 +66,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         Tools.ReadFile(file, (data) => {
             let decoder = new TextDecoder("utf-8");
             SerializationTools.Deserialize(JSON.parse(decoder.decode(data)), this.props.globalState);
-
 
             this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         }, undefined, true);
@@ -203,14 +202,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <TextLineComponent label="Help" value="doc.babylonjs.com" underline={true} onLink={() => window.open('https://doc.babylonjs.com/how_to/node_material', '_blank')}/>
                         <ButtonLineComponent label="Reset to default" onClick={() => {
                             this.props.globalState.onResetRequiredObservable.notifyObservers();
-                        }} />
-                    </LineContainerComponent>
-                    <LineContainerComponent title="UI">
-                        <ButtonLineComponent label="Zoom to fit" onClick={() => {
-                            this.props.globalState.onZoomToFitRequiredObservable.notifyObservers();
-                        }} />
-                        <ButtonLineComponent label="Reorganize" onClick={() => {
-                            this.props.globalState.onReOrganizedRequiredObservable.notifyObservers();
                         }} />
                     </LineContainerComponent>
                     <LineContainerComponent title="OPTIONS">

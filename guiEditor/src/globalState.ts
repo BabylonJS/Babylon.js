@@ -1,13 +1,11 @@
 import { Nullable } from "babylonjs/types";
 import { Observable } from "babylonjs/Misc/observable";
-import { LogEntry } from "./components/log/logComponent";
-import { NodeMaterialBlock } from "babylonjs/Materials/Node/nodeMaterialBlock";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
 import { Color4 } from "babylonjs/Maths/math.color";
 import { GUINode } from "./diagram/guiNode";
-import { Vector2 } from "babylonjs/Maths/math.vector";
 import { FramePortData, WorkbenchComponent } from "./diagram/workbench";
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
+import { LogEntry } from "./components/log/logComponent";
 
 export class GlobalState {
     guiTexture: AdvancedDynamicTexture;
@@ -24,20 +22,9 @@ export class GlobalState {
     onLogRequiredObservable = new Observable<LogEntry>();
     onErrorMessageDialogRequiredObservable = new Observable<string>();
     onIsLoadingChanged = new Observable<boolean>();
-    onPreviewCommandActivated = new Observable<boolean>();
-    onLightUpdated = new Observable<void>();
-    onPreviewBackgroundChanged = new Observable<void>();
-    onBackFaceCullingChanged = new Observable<void>();
-    onDepthPrePassChanged = new Observable<void>();
-    onAnimationCommandActivated = new Observable<void>();
-    onCandidateLinkMoved = new Observable<Nullable<Vector2>>();
     onSelectionBoxMoved = new Observable<ClientRect | DOMRect>();
-    onImportFrameObservable = new Observable<any>();
-    onGraphNodeRemovalObservable = new Observable<GUINode>();
-    onGetNodeFromBlock: (block: NodeMaterialBlock) => GUINode;
+    onGuiNodeRemovalObservable = new Observable<GUINode>();
     onGridSizeChanged = new Observable<void>();
-    onExposePortOnFrameObservable = new Observable<GUINode>();
-    previewFile: File;
     listOfCustomPreviewFiles: File[] = [];
     rotatePreview: boolean;
     backgroundColor: Color4;
@@ -51,14 +38,10 @@ export class GlobalState {
     workbench: WorkbenchComponent;
     storeEditorData: (serializationObject: any, frame?: Nullable<null>) => void;
 
+
     customSave?: { label: string; action: (data: string) => Promise<void> };
 
     public constructor() {
-        this.backFaceCulling = DataStorage.ReadBoolean("BackFaceCulling", true);
-        this.depthPrePass = DataStorage.ReadBoolean("DepthPrePass", false);
-        this.hemisphericLight = DataStorage.ReadBoolean("HemisphericLight", true);
-        this.directionalLight0 = DataStorage.ReadBoolean("DirectionalLight0", false);
-        this.directionalLight1 = DataStorage.ReadBoolean("DirectionalLight1", false);
         this.controlCamera = DataStorage.ReadBoolean("ControlCamera", true);
 
         let r = DataStorage.ReadNumber("BackgroundColorR", 0.12549019607843137);

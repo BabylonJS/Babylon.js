@@ -165,10 +165,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         });
 
 
-        props.globalState.onGridSizeChanged.add(() => {
-            this.gridSize = DataStorage.ReadNumber("GridSize", 20);
-        });
-
         this.props.globalState.hostDocument!.addEventListener("keyup", () => this.onKeyUp(), false);
         this.props.globalState.hostDocument!.addEventListener("keydown", evt => {
             this._altKeyIsPressed = evt.altKey;            
