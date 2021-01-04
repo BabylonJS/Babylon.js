@@ -471,7 +471,7 @@ export class SceneOptimizerOptions {
     /**
      * Creates a new list of options used by SceneOptimizer
      * @param targetFrameRate defines the target frame rate to reach (60 by default)
-     * @param trackerDuration defines the interval between two checkes (2000ms by default)
+     * @param trackerDuration defines the interval between two checks (2000ms by default)
      */
     constructor(
         /**
@@ -479,7 +479,7 @@ export class SceneOptimizerOptions {
          */
         public targetFrameRate: number = 60,
         /**
-         * Defines the interval between two checkes (2000ms by default)
+         * Defines the interval between two checks (2000ms by default)
          */
         public trackerDuration: number = 2000) {
     }
@@ -739,7 +739,7 @@ export class SceneOptimizer implements IDisposable {
 
     /**
      * Start the optimizer. By default it will try to reach a specific framerate
-     * but if the optimizer is set with improvementMode === true then it will run all optimiatiation while frame rate is above the target frame rate
+     * but if the optimizer is set with improvementMode === true then it will run all optimization while frame rate is above the target frame rate
      */
     public start() {
         if (this._isRunning) {

@@ -937,7 +937,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
 
         switch (impostor.type) {
             case PhysicsImpostor.SphereImpostor:
-                // Is there a better way to compare floats number? With an epsylon or with a Math function
+                // Is there a better way to compare floats number? With an epsilon or with a Math function
                 if (Scalar.WithinEpsilon(extendSize.x, extendSize.y, 0.0001) && Scalar.WithinEpsilon(extendSize.x, extendSize.z, 0.0001)) {
                     returnValue = new this.bjsAMMO.btSphereShape(extendSize.x / 2);
                 } else {
@@ -1206,7 +1206,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     }
 
     /**
-     * Sets resitution of the impostor
+     * Sets restitution of the impostor
      * @param impostor impostor to set resitution on
      * @param restitution resitution value
      */
@@ -1344,7 +1344,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     * @param otherImpostor is the rigid impostor to anchor to
     * @param width ratio across width from 0 to 1
     * @param height ratio up height from 0 to 1
-    * @param influence the elasticity between cloth impostor and anchor from 0, very stretchy to 1, little strech
+    * @param influence the elasticity between cloth impostor and anchor from 0, very stretchy to 1, little stretch
     * @param noCollisionBetweenLinkedBodies when true collisions between soft impostor and anchor are ignored; default false
     */
     public appendAnchor(impostor: PhysicsImpostor, otherImpostor: PhysicsImpostor, width: number, height: number, influence: number = 1, noCollisionBetweenLinkedBodies: boolean = false) {
@@ -1361,7 +1361,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @param impostor is the rope impostor to add hook to
      * @param otherImpostor is the rigid impostor to hook to
      * @param length ratio along the rope from 0 to 1
-     * @param influence the elasticity between soft impostor and anchor from 0, very stretchy to 1, little strech
+     * @param influence the elasticity between soft impostor and anchor from 0, very stretchy to 1, little stretch
      * @param noCollisionBetweenLinkedBodies when true collisions between soft impostor and anchor are ignored; default false
      */
     public appendHook(impostor: PhysicsImpostor, otherImpostor: PhysicsImpostor, length: number, influence: number = 1, noCollisionBetweenLinkedBodies: boolean = false) {

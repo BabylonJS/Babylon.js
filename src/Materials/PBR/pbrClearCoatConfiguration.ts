@@ -171,7 +171,7 @@ export class PBRClearCoatConfiguration {
     }
 
     /**
-     * Instantiate a new istance of clear coat configuration.
+     * Instantiate a new instance of clear coat configuration.
      * @param markAllSubMeshesAsTexturesDirty Callback to flag the material to dirty
      */
     constructor(markAllSubMeshesAsTexturesDirty: () => void) {
@@ -179,11 +179,11 @@ export class PBRClearCoatConfiguration {
     }
 
     /**
-     * Gets wehter the submesh is ready to be used or not.
+     * Gets whether the submesh is ready to be used or not.
      * @param defines the list of "defines" to update.
      * @param scene defines the scene the material belongs to.
      * @param engine defines the engine the material belongs to.
-     * @param disableBumpMap defines wether the material disables bump or not.
+     * @param disableBumpMap defines whether the material disables bump or not.
      * @returns - boolean indicating that the submesh is ready or not.
      */
     public isReadyForSubMesh(defines: IMaterialClearCoatDefines, scene: Scene, engine: Engine, disableBumpMap: boolean): boolean {
@@ -286,8 +286,8 @@ export class PBRClearCoatConfiguration {
      * @param uniformBuffer defines the Uniform buffer to fill in.
      * @param scene defines the scene the material belongs to.
      * @param engine defines the engine the material belongs to.
-     * @param disableBumpMap defines wether the material disables bump or not.
-     * @param isFrozen defines wether the material is frozen or not.
+     * @param disableBumpMap defines whether the material disables bump or not.
+     * @param isFrozen defines whether the material is frozen or not.
      * @param invertNormalMapX If sets to true, x component of normal map value will be inverted (x = 1.0 - x).
      * @param invertNormalMapY If sets to true, y component of normal map value will be inverted (y = 1.0 - y).
      * @param subMesh the submesh to bind data for

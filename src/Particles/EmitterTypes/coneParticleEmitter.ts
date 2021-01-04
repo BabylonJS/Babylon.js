@@ -159,7 +159,7 @@ export class ConeParticleEmitter implements IParticleEmitterType {
 
     /**
      * Returns a string to use to update the GPU particles update shader
-     * @returns a string containng the defines string
+     * @returns a string containing the defines string
      */
     public getEffectDefines(): string {
         let defines = "#define CONEEMITTER";
