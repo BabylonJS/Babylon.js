@@ -213,7 +213,7 @@ export interface IDracoCompressionConfiguration {
  *     };
  * ```
  *
- * Draco has two versions, one for WebAssembly and one for JavaScript. The decoder configuration can be set to only support Webssembly or only support the JavaScript version.
+ * Draco has two versions, one for WebAssembly and one for JavaScript. The decoder configuration can be set to only support WebAssembly or only support the JavaScript version.
  * Decoding will automatically fallback to the JavaScript version if WebAssembly version is not configured or if WebAssembly is not supported by the browser.
  * Use `DracoCompression.DecoderAvailable` to determine if the decoder configuration is available for the current context.
  *

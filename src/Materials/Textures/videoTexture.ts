@@ -57,7 +57,7 @@ export class VideoTexture extends Texture {
     private _onUserActionRequestedObservable: Nullable<Observable<Texture>> = null;
 
     /**
-     * Event triggerd when a dom action is required by the user to play the video.
+     * Event triggered when a dom action is required by the user to play the video.
      * This happens due to recent changes in browser policies preventing video to auto start.
      */
     public get onUserActionRequestedObservable(): Observable<Texture> {
@@ -285,7 +285,7 @@ export class VideoTexture extends Texture {
 
     /**
      * Update Texture in `manual` mode. Does not do anything if not visible or paused.
-     * @param isVisible Visibility state, detected by user using `scene.getActiveMeshes()` or othervise.
+     * @param isVisible Visibility state, detected by user using `scene.getActiveMeshes()` or otherwise.
      */
     public updateTexture(isVisible: boolean): void {
         if (!isVisible) {

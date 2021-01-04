@@ -529,15 +529,19 @@ export class RuntimeAnimation {
                     // Vector3
                     case Animation.ANIMATIONTYPE_VECTOR3:
                         this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
+                        break;
                     // Vector2
                     case Animation.ANIMATIONTYPE_VECTOR2:
                         this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
+                        break;
                     // Size
                     case Animation.ANIMATIONTYPE_SIZE:
                         this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
+                        break;
                     // Color3
                     case Animation.ANIMATIONTYPE_COLOR3:
                         this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
+                        break;
                     default:
                         break;
                 }

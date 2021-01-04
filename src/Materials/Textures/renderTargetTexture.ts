@@ -31,7 +31,7 @@ export class RenderTargetTexture extends Texture {
      */
     public static readonly REFRESHRATE_RENDER_ONCE: number = 0;
     /**
-     * The texture will only be rendered rendered every frame and is recomended for dynamic contents.
+     * The texture will only be rendered rendered every frame and is recommended for dynamic contents.
      */
     public static readonly REFRESHRATE_RENDER_ONEVERYFRAME: number = 1;
     /**
@@ -64,7 +64,7 @@ export class RenderTargetTexture extends Texture {
 
     /**
      * Use this function to overload the renderList array at rendering time.
-     * Return null to render with the curent renderList, else return the list of meshes to use for rendering.
+     * Return null to render with the current renderList, else return the list of meshes to use for rendering.
      * For 2DArray RTT, layerOrFace is the index of the layer that is going to be rendered, else it is the faceIndex of
      * the cube (if the RTT is a cube, else layerOrFace=0).
      * The renderList passed to the function is the current render list (the one that will be used if the function returns null).
@@ -295,7 +295,7 @@ export class RenderTargetTexture extends Texture {
     }
 
     /**
-     * Instantiate a render target texture. This is mainly used to render of screen the scene to for instance apply post processse
+     * Instantiate a render target texture. This is mainly used to render of screen the scene to for instance apply post process
      * or used a shadow, depth texture...
      * @param name The friendly name of the texture
      * @param size The size of the RTT (number if square, or {width: number, height:number} or {ratio:} to define a ratio from the main scene)
@@ -472,7 +472,7 @@ export class RenderTargetTexture extends Texture {
 
     /**
      * Clear all the post processes attached to the render target
-     * @param dispose define if the cleared post processesshould also be disposed (false by default)
+     * @param dispose define if the cleared post processes should also be disposed (false by default)
      */
     public clearPostProcesses(dispose: boolean = false): void {
         if (!this._postProcesses) {
@@ -602,7 +602,7 @@ export class RenderTargetTexture extends Texture {
 
     /**
      * Resize the texture to a new desired size.
-     * Be carrefull as it will recreate all the data in the new texture.
+     * Be careful as it will recreate all the data in the new texture.
      * @param size Define the new size. It can be:
      *   - a number for squared texture,
      *   - an object containing { width: number, height: number }
@@ -985,8 +985,8 @@ export class RenderTargetTexture extends Texture {
     }
 
     /**
-     * Overrides the default sort function applied in the renderging group to prepare the meshes.
-     * This allowed control for front to back rendering or reversly depending of the special needs.
+     * Overrides the default sort function applied in the rendering group to prepare the meshes.
+     * This allowed control for front to back rendering or reversely depending of the special needs.
      *
      * @param renderingGroupId The rendering group id corresponding to its index
      * @param opaqueSortCompareFn The opaque queue comparison function use to sort.
@@ -1052,7 +1052,7 @@ export class RenderTargetTexture extends Texture {
     }
 
     /**
-     * Serialize the texture to a JSON representation we can easily use in the resepective Parse function.
+     * Serialize the texture to a JSON representation we can easily use in the respective Parse function.
      * @returns The JSON representation of the texture
      */
     public serialize(): any {
