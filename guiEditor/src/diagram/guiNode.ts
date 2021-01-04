@@ -179,7 +179,7 @@ export class GUINode {
 
     public dispose() {
         // notify frame observers that this node is being deleted
-        this._globalState.onGraphNodeRemovalObservable.notifyObservers(this);
+        this._globalState.onGuiNodeRemovalObservable.notifyObservers(this);
 
         if (this._onSelectionChangedObserver) {
             this._globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);

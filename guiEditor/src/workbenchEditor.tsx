@@ -3,7 +3,7 @@ import { GlobalState } from "./globalState";
 import { GuiListComponent } from "./components/nodeList/guiListComponent";
 import { PropertyTabComponent } from "./components/propertyTab/propertyTabComponent";
 import { Portal } from "./portal";
-import { LogComponent, LogEntry } from "./components/log/logComponent";
+import { LogComponent } from "./components/log/logComponent";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
 import { Nullable } from "babylonjs/types";
 import { GuiNodeTools } from "./guiNodeTools";
@@ -79,14 +79,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
             showPreviewPopUp: false,
         };
 
-        this.props.globalState.onZoomToFitRequiredObservable.add(() => {
-            this.zoomToFit();
-        });
-
-        this.props.globalState.onReOrganizedRequiredObservable.add(() => {
-            this.reOrganize();
-        });
-
         this.props.globalState.hostDocument!.addEventListener(
             "keydown",
             (evt) => {
@@ -99,7 +91,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                     }
 
                     this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-                    this.props.globalState.onRebuildRequiredObservable.notifyObservers();
                     return;
                 }
 
@@ -155,12 +146,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     zoomToFit() {
         this._workbenchCanvas.zoomToFit();
     }
-
-    buildMaterial() {
-        this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Node material build successful", false));
-        this.props.globalState.onBuiltObservable.notifyObservers();
-    }
-
+    
     showWaitScreen() {
         this.props.globalState.hostDocument.querySelector(".wait-screen")?.classList.remove("hidden");
     }
