@@ -111,6 +111,7 @@ export class RenderTargetTexture extends Texture {
      * Define if sprites should be rendered in your texture.
      */
     public renderSprites = false;
+
     /**
      * Define the camera used to render the texture.
      */
@@ -133,8 +134,19 @@ export class RenderTargetTexture extends Texture {
     public ignoreCameraViewport: boolean = false;
 
     private _postProcessManager: Nullable<PostProcessManager>;
+
+    /**
+     * Post-processes for this render target
+     */
+    public get postProcesses() {
+        return this._postProcesses;
+    }
     private _postProcesses: PostProcess[];
     private _resizeObserver: Nullable<Observer<Engine>>;
+
+    private get _prePassEnabled() {
+        return !!this._prePassRenderTarget && this._prePassRenderTarget.enabled;
+    }
 
     /**
     * An event triggered when the texture is unbind.
@@ -848,6 +860,20 @@ export class RenderTargetTexture extends Texture {
         });
     }
 
+    /**
+     * @hidden
+     */
+    public _prepareFrame(scene: Scene, faceIndex?: number, layer?: number, useCameraPostProcess?: boolean) {
+        if (this._postProcessManager) {
+            if (!this._prePassEnabled) {
+                this._postProcessManager._prepareFrame(this._texture, this._postProcesses);
+            }
+        }
+        else if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(this._texture)) {
+            this._bindFrameBuffer(faceIndex, layer);
+        }
+    }
+
     private renderToTarget(faceIndex: number, useCameraPostProcess: boolean, dumpForDebug: boolean, layer = 0, camera: Nullable<Camera> = null): void {
         var scene = this.getScene();
 
@@ -864,12 +890,7 @@ export class RenderTargetTexture extends Texture {
         engine._debugPushGroup(`render to face #${faceIndex} layer #${layer}`, 1);
 
         // Bind
-        if (this._postProcessManager) {
-            this._postProcessManager._prepareFrame(this._texture, this._postProcesses);
-        }
-        else if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(this._texture)) {
-            this._bindFrameBuffer(faceIndex, layer);
-        }
+        this._prepareFrame(scene, faceIndex, layer, useCameraPostProcess);
 
         if (this.is2DArray) {
             this.onBeforeRenderObservable.notifyObservers(layer);
@@ -900,6 +921,11 @@ export class RenderTargetTexture extends Texture {
             this._prepareRenderingManager(currentRenderList, currentRenderList.length, camera, false);
         }
 
+        // Before clear
+        for (let step of scene._beforeRenderTargetClearStage) {
+            step.action(this, faceIndex, layer);
+        }
+
         // Clear
         if (this.onClearObservable.hasObservers()) {
             this.onClearObservable.notifyObservers(engine);
@@ -913,7 +939,7 @@ export class RenderTargetTexture extends Texture {
 
         // Before Camera Draw
         for (let step of scene._beforeRenderTargetDrawStage) {
-            step.action(this);
+            step.action(this, faceIndex, layer);
         }
 
         // Render
@@ -921,7 +947,7 @@ export class RenderTargetTexture extends Texture {
 
         // After Camera Draw
         for (let step of scene._afterRenderTargetDrawStage) {
-            step.action(this);
+            step.action(this, faceIndex, layer);
         }
 
         const saveGenerateMipMaps = this._texture.generateMipMaps;
@@ -1073,6 +1099,10 @@ export class RenderTargetTexture extends Texture {
         if (this._postProcessManager) {
             this._postProcessManager.dispose();
             this._postProcessManager = null;
+        }
+
+        if (this._prePassRenderTarget) {
+            this._prePassRenderTarget.dispose();
         }
 
         this.clearPostProcesses(true);

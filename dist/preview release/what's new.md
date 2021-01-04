@@ -35,6 +35,7 @@
 ### Materials
 
 - Added an `OcclusionMaterial` to simplify depth-only rendering of geometry ([rgerd](https://github.com/rgerd))
+- PrePass can now be used in `RenderTargets` speeding up effects like SSAO2 or MotionBlur ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Added support for morph targets to `ShaderMaterial` ([Popov72](https://github.com/Popov72))
 
 ### Inspector
@@ -83,6 +84,11 @@
 - Fix canvas not resized correctly in a multi-canvas scenario ([Popov72](https://github.com/Popov72))
 - Fix NaN values returned by `GetAngleBetweenVectors` when vectors are the same or directly opposite ([Popov72](https://github.com/Popov72))
 - Fix 404 occurring on some pictures in some cases when using particle systems ([Popov72](https://github.com/Popov72))
+- Fix PrePass bugs with transparency ([CraigFeldspar](https://github.com/CraigFeldspar))
+- Fix PrePass bugs with layers ([CraigFeldspar](https://github.com/CraigFeldspar))
+- Fix SSAO2 with PrePass sometimes causing colors brighter than they should be ([CraigFeldspar](https://github.com/CraigFeldspar))
+- Fix PostProcess sharing between cameras/renderTargets, that would create/destroy a texture on every frame ([CraigFeldspar](https://github.com/CraigFeldspar))
+
 
 ## Breaking changes
 

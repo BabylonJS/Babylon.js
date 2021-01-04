@@ -21,7 +21,7 @@ export class ScreenSpaceReflectionsConfiguration implements PrePassEffectConfigu
      * Textures that should be present in the MRT for this effect to work
      */
     public readonly texturesRequired: number[] = [
-        Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE,
+        Constants.PREPASS_NORMAL_TEXTURE_TYPE,
         Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE,
         Constants.PREPASS_POSITION_TEXTURE_TYPE,
     ];
