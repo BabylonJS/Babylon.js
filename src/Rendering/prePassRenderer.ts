@@ -258,7 +258,7 @@ export class PrePassRenderer {
 
                 if (this._geometryBuffer && this.currentRTisSceneRT) {
                     const material = subMesh.getMaterial();
-                    if (material && this.excludedMaterials.indexOf(material) === -1) {
+                    if (material && !material.isPrePassCapable && this.excludedMaterials.indexOf(material) === -1) {
                         this._geometryBuffer.renderList!.push(subMesh.getRenderingMesh());
                     }
                 }
