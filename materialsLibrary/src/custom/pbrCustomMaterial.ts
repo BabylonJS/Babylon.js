@@ -110,15 +110,17 @@ export class PBRCustomMaterial extends PBRMaterial {
     }
 
     public Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines | string[], attributes?: string[], options?: BABYLON.ICustomShaderNameResolveOptions): string {
-        options!.processFinalCode = (type: string, code: string) => {
-            if (type === "vertex") {
-                return code;
-            }
-            const sci = new BABYLON.ShaderCodeInliner(code);
-            sci.inlineToken = "#define pbr_inline";
-            sci.processCode();
-            return sci.code;
-        };
+        if (options) {
+            options.processFinalCode = (type: string, code: string) => {
+                if (type === "vertex") {
+                    return code;
+                }
+                const sci = new BABYLON.ShaderCodeInliner(code);
+                sci.inlineToken = "#define pbr_inline";
+                sci.processCode();
+                return sci.code;
+            };
+        }
 
         if (attributes && this._customAttributes && this._customAttributes.length > 0) {
             attributes.push(...this._customAttributes);
