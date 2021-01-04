@@ -157,6 +157,10 @@ export class TextureBlock extends NodeMaterialBlock {
             if (parent.target === NodeMaterialBlockTargets.Neutral || parent.target === NodeMaterialBlockTargets.VertexAndFragment) {
                 let parentBlock = parent.ownerBlock;
 
+                if (parentBlock.target === NodeMaterialBlockTargets.Fragment) {
+                    return NodeMaterialBlockTargets.Fragment;
+                }
+
                 parent = null;
                 for (var input of parentBlock.inputs) {
                     if (input.connectedPoint) {
@@ -448,11 +452,6 @@ export class TextureBlock extends NodeMaterialBlock {
             rootUrl = serializationObject.texture.url.indexOf("data:") === 0 ? "" : rootUrl;
             this.texture = Texture.Parse(serializationObject.texture, scene, rootUrl) as Texture;
         }
-    }
-
-    public dispose() {
-        super.dispose();
-        this.texture?.dispose();
     }
 }
 

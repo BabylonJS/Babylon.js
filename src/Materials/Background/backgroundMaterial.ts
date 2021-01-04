@@ -913,7 +913,7 @@ export class BackgroundMaterial extends PushMaterial {
                     this.onCompiled(effect);
                 }
 
-                this.bindSceneUniformBuffer(effect, scene.getSceneUniformBuffer());
+                MaterialHelper.BindSceneUniformBuffer(effect, scene.getSceneUniformBuffer());
             };
 
             var join = defines.toString();

@@ -73,7 +73,7 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
      * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: true)
      * @param forceGeometryBuffer If this post process should use geometry buffer instead of prepass (default: false)
      */
-    constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false, forceGeometryBuffer = true) {
+    constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false, forceGeometryBuffer = false) {
         super(name, "screenSpaceReflection", [
             "projection", "view", "threshold", "reflectionSpecularFalloffExponent", "strength", "step", "roughnessFactor"
         ], [
@@ -123,11 +123,11 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
                 // Samplers
                 const positionIndex = prePassRenderer.getIndex(Constants.PREPASS_POSITION_TEXTURE_TYPE);
                 const roughnessIndex = prePassRenderer.getIndex(Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE);
-                const normalIndex = prePassRenderer.getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE);
+                const normalIndex = prePassRenderer.getIndex(Constants.PREPASS_NORMAL_TEXTURE_TYPE);
 
-                effect.setTexture("normalSampler", prePassRenderer.prePassRT.textures[normalIndex]);
-                effect.setTexture("positionSampler", prePassRenderer.prePassRT.textures[positionIndex]);
-                effect.setTexture("reflectivitySampler", prePassRenderer.prePassRT.textures[roughnessIndex]);
+                effect.setTexture("normalSampler", prePassRenderer.getRenderTarget().textures[normalIndex]);
+                effect.setTexture("positionSampler", prePassRenderer.getRenderTarget().textures[positionIndex]);
+                effect.setTexture("reflectivitySampler", prePassRenderer.getRenderTarget().textures[roughnessIndex]);
             }
 
             // Uniforms
@@ -136,8 +136,8 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
                 return;
             }
 
-            const viewMatrix = camera.getViewMatrix();
-            const projectionMatrix = camera.getProjectionMatrix();
+            const viewMatrix = camera.getViewMatrix(true);
+            const projectionMatrix = camera.getProjectionMatrix(true);
 
             effect.setMatrix("projection", projectionMatrix);
             effect.setMatrix("view", viewMatrix);
@@ -221,9 +221,6 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
         const defines: string[] = [];
         if (this._geometryBufferRenderer || this._prePassRenderer) {
             defines.push("#define SSR_SUPPORTED");
-            if (this._prePassRenderer) {
-                defines.push("#define PREPASS_LAYOUT");
-            }
         }
         if (this._enableSmoothReflections) {
             defines.push("#define ENABLE_SMOOTH_REFLECTIONS");

@@ -106,7 +106,7 @@ export class MotionBlurPostProcess extends PostProcess {
      * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: true)
      * @param forceGeometryBuffer If this post process should use geometry buffer instead of prepass (default: false)
      */
-    constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false, forceGeometryBuffer = true) {
+    constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false, forceGeometryBuffer = false) {
         super(name, "motionBlur", ["motionStrength", "motionScale", "screenSize", "inverseViewProjection", "prevViewProjection"], ["velocitySampler"], options, camera, samplingMode, engine, reusable, "#define GEOMETRY_SUPPORTED\n#define SAMPLES 64.0\n#define OBJECT_BASED", textureType, undefined, null, blockCompilation);
 
         this._forceGeometryBuffer = forceGeometryBuffer;
@@ -213,7 +213,7 @@ export class MotionBlurPostProcess extends PostProcess {
             this._previousViewProjection = Matrix.Identity();
 
             if (this._prePassRenderer && this._prePassEffectConfiguration) {
-                this._prePassEffectConfiguration.texturesRequired[0] = Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE;
+                this._prePassEffectConfiguration.texturesRequired[0] = Constants.PREPASS_DEPTH_TEXTURE_TYPE;
             }
 
             this.onApply = (effect: Effect) => this._onApplyScreenBased(effect);
@@ -234,7 +234,7 @@ export class MotionBlurPostProcess extends PostProcess {
             effect.setTexture("velocitySampler", this._geometryBufferRenderer.getGBuffer().textures[velocityIndex]);
         } else if (this._prePassRenderer) {
             const velocityIndex = this._prePassRenderer.getIndex(Constants.PREPASS_VELOCITY_TEXTURE_TYPE);
-            effect.setTexture("velocitySampler", this._prePassRenderer.prePassRT.textures[velocityIndex]);
+            effect.setTexture("velocitySampler", this._prePassRenderer.getRenderTarget().textures[velocityIndex]);
         }
     }
 
@@ -256,11 +256,11 @@ export class MotionBlurPostProcess extends PostProcess {
         effect.setFloat("motionStrength", this.motionStrength);
 
         if (this._geometryBufferRenderer) {
-            const depthIndex = this._geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.DEPTHNORMAL_TEXTURE_TYPE);
+            const depthIndex = this._geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.DEPTH_TEXTURE_TYPE);
             effect.setTexture("depthSampler", this._geometryBufferRenderer.getGBuffer().textures[depthIndex]);
         } else if (this._prePassRenderer) {
-            const depthIndex = this._prePassRenderer.getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE);
-            effect.setTexture("depthSampler", this._prePassRenderer.prePassRT.textures[depthIndex]);
+            const depthIndex = this._prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
+            effect.setTexture("depthSampler", this._prePassRenderer.getRenderTarget().textures[depthIndex]);
         }
     }
 
