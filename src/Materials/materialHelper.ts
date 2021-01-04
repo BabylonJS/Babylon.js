@@ -614,7 +614,7 @@ export class MaterialHelper {
 
     /**
      * Prepares the uniforms and samplers list to be used in the effect
-     * @param uniformsListOrOptions The uniform names to prepare or an EffectCreationOptions containing the liist and extra information
+     * @param uniformsListOrOptions The uniform names to prepare or an EffectCreationOptions containing the list and extra information
      * @param samplersList The sampler list
      * @param defines The defines helping in the list generation
      * @param maxSimultaneousLights The maximum number of simultanous light allowed in the effect
