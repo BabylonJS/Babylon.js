@@ -146,7 +146,7 @@ export class NodeMaterialBlock {
 
     /**
      * Find an output by its name
-     * @param name defines the name of the outputto look for
+     * @param name defines the name of the output to look for
      * @returns the output or null if not found
      */
     public getOutputByName(name: string) {

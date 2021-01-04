@@ -117,7 +117,7 @@ export abstract class Light extends Node {
     public specular = new Color3(1.0, 1.0, 1.0);
 
     /**
-     * Defines the falloff type for this light. This lets overrriding how punctual light are
+     * Defines the falloff type for this light. This lets overriding how punctual light are
      * falling off base on range or angle.
      * This can be set to any values in Light.FALLOFF_x.
      *
@@ -207,14 +207,14 @@ export abstract class Light extends Node {
     @serialize("shadowEnabled")
     private _shadowEnabled: boolean = true;
     /**
-     * Gets wether or not the shadows are enabled for this light. This can help turning off/on shadow without detaching
+     * Gets whether or not the shadows are enabled for this light. This can help turning off/on shadow without detaching
      * the current shadow generator.
      */
     public get shadowEnabled(): boolean {
         return this._shadowEnabled;
     }
     /**
-     * Sets wether or not the shadows are enabled for this light. This can help turning off/on shadow without detaching
+     * Sets whether or not the shadows are enabled for this light. This can help turning off/on shadow without detaching
      * the current shadow generator.
      */
     public set shadowEnabled(value: boolean) {
@@ -313,7 +313,7 @@ export abstract class Light extends Node {
     }
 
     /**
-     * Shadow generator associted to the light.
+     * Shadow generator associated to the light.
      * @hidden Internal use only.
      */
     public _shadowGenerator: Nullable<IShadowGenerator>;
@@ -329,7 +329,7 @@ export abstract class Light extends Node {
     public _includedOnlyMeshesIds = new Array<string>();
 
     /**
-     * The current light unifom buffer.
+     * The current light uniform buffer.
      * @hidden Internal use only.
      */
     public _uniformBuffer: UniformBuffer;
@@ -339,7 +339,7 @@ export abstract class Light extends Node {
     /**
      * Creates a Light object in the scene.
      * Documentation : https://doc.babylonjs.com/babylon101/lights
-     * @param name The firendly name of the light
+     * @param name The friendly name of the light
      * @param scene The scene the light belongs too
      */
     constructor(name: string, scene: Scene) {
@@ -534,7 +534,7 @@ export abstract class Light extends Node {
      */
     public static CompareLightsPriority(a: Light, b: Light): number {
         //shadow-casting lights have priority over non-shadow-casting lights
-        //the renderPrioirty is a secondary sort criterion
+        //the renderPriority is a secondary sort criterion
         if (a.shadowEnabled !== b.shadowEnabled) {
             return (b.shadowEnabled ? 1 : 0) - (a.shadowEnabled ? 1 : 0);
         }
@@ -845,7 +845,7 @@ export abstract class Light extends Node {
                 break;
 
             case Light.LIGHTTYPEID_HEMISPHERICLIGHT:
-                // No fall off in hemisperic light.
+                // No fall off in hemispheric light.
                 photometricScale = 1.0;
                 break;
         }

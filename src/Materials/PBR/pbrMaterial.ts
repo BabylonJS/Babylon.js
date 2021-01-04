@@ -62,7 +62,7 @@ export class PBRMaterial extends PBRBaseMaterial {
 
     /**
      * Intensity of the environment e.g. how much the environment will light the object
-     * either through harmonics for rough material or through the refelction for shiny ones.
+     * either through harmonics for rough material or through the reflection for shiny ones.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
@@ -304,7 +304,7 @@ export class PBRMaterial extends PBRBaseMaterial {
     }
 
     /**
-     * This parameters will make the material used its opacity to control how much it is refracting aginst not.
+     * This parameters will make the material used its opacity to control how much it is refracting against not.
      * Materials half opaque for instance using refraction could benefit from this control.
      */
     public get linkRefractionWithTransparency(): boolean {
@@ -346,8 +346,8 @@ export class PBRMaterial extends PBRBaseMaterial {
     public alphaCutOff = 0.4;
 
     /**
-     * Specifies that the material will keep the specular highlights over a transparent surface (only the most limunous ones).
-     * A car glass is a good exemple of that. When sun reflects on it you can not see what is behind.
+     * Specifies that the material will keep the specular highlights over a transparent surface (only the most luminous ones).
+     * A car glass is a good example of that. When sun reflects on it you can not see what is behind.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
@@ -404,8 +404,8 @@ export class PBRMaterial extends PBRBaseMaterial {
     public useAutoMicroSurfaceFromReflectivityMap = false;
 
     /**
-     * BJS is using an harcoded light falloff based on a manually sets up range.
-     * In PBR, one way to represents the fallof is to use the inverse squared root algorythm.
+     * BJS is using an hardcoded light falloff based on a manually sets up range.
+     * In PBR, one way to represents the falloff is to use the inverse squared root algorithm.
      * This parameter can help you switch back to the BJS mode in order to create scenes using both materials.
      */
     @serialize()
@@ -414,8 +414,8 @@ export class PBRMaterial extends PBRBaseMaterial {
     }
 
     /**
-     * BJS is using an harcoded light falloff based on a manually sets up range.
-     * In PBR, one way to represents the fallof is to use the inverse squared root algorythm.
+     * BJS is using an hardcoded light falloff based on a manually sets up range.
+     * In PBR, one way to represents the falloff is to use the inverse squared root algorithm.
      * This parameter can help you switch back to the BJS mode in order to create scenes using both materials.
      */
     public set usePhysicalLightFalloff(value: boolean) {
@@ -460,8 +460,8 @@ export class PBRMaterial extends PBRBaseMaterial {
     }
 
     /**
-     * Specifies that the material will keeps the reflection highlights over a transparent surface (only the most limunous ones).
-     * A car glass is a good exemple of that. When the street lights reflects on it you can not see what is behind.
+     * Specifies that the material will keeps the reflection highlights over a transparent surface (only the most luminous ones).
+     * A car glass is a good example of that. When the street lights reflects on it you can not see what is behind.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
@@ -624,39 +624,39 @@ export class PBRMaterial extends PBRBaseMaterial {
     }
 
     /**
-     * Gets wether the color curves effect is enabled.
+     * Gets whether the color curves effect is enabled.
      */
     public get cameraColorCurvesEnabled(): boolean {
         return this.imageProcessingConfiguration.colorCurvesEnabled;
     }
     /**
-     * Sets wether the color curves effect is enabled.
+     * Sets whether the color curves effect is enabled.
      */
     public set cameraColorCurvesEnabled(value: boolean) {
         this.imageProcessingConfiguration.colorCurvesEnabled = value;
     }
 
     /**
-     * Gets wether the color grading effect is enabled.
+     * Gets whether the color grading effect is enabled.
      */
     public get cameraColorGradingEnabled(): boolean {
         return this.imageProcessingConfiguration.colorGradingEnabled;
     }
     /**
-     * Gets wether the color grading effect is enabled.
+     * Gets whether the color grading effect is enabled.
      */
     public set cameraColorGradingEnabled(value: boolean) {
         this.imageProcessingConfiguration.colorGradingEnabled = value;
     }
 
     /**
-     * Gets wether tonemapping is enabled or not.
+     * Gets whether tonemapping is enabled or not.
      */
     public get cameraToneMappingEnabled(): boolean {
         return this._imageProcessingConfiguration.toneMappingEnabled;
     }
     /**
-     * Sets wether tonemapping is enabled or not
+     * Sets whether tonemapping is enabled or not
      */
     public set cameraToneMappingEnabled(value: boolean) {
         this._imageProcessingConfiguration.toneMappingEnabled = value;
@@ -707,7 +707,7 @@ export class PBRMaterial extends PBRBaseMaterial {
     }
 
     /**
-     * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
+     * The color grading curves provide additional color adjustment that is applied after any color grading transform (3D LUT).
      * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
      * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
      * corresponding to low luminance, medium luminance, and high luminance areas respectively.
@@ -716,7 +716,7 @@ export class PBRMaterial extends PBRBaseMaterial {
         return this._imageProcessingConfiguration.colorCurves;
     }
     /**
-     * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
+     * The color grading curves provide additional color adjustment that is applied after any color grading transform (3D LUT).
      * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
      * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
      * corresponding to low luminance, medium luminance, and high luminance areas respectively.

@@ -55,7 +55,7 @@ export class VRCameraMetrics {
      */
     public lensCenterOffset: number;
     /**
-     * Define if the current vr camera should compensate the distortion of the lense or not.
+     * Define if the current vr camera should compensate the distortion of the lens or not.
      */
     public compensateDistortion = true;
 

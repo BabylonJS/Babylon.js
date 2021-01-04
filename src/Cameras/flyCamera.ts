@@ -264,7 +264,7 @@ export class FlyCamera extends TargetCamera {
      * @param name Define the name of the camera in the scene.
      * @param position Define the starting position of the camera in the scene.
      * @param scene Define the scene the camera belongs to.
-     * @param setActiveOnSceneIfNoneActive Defines wheter the camera should be marked as active, if no other camera has been defined as active.
+     * @param setActiveOnSceneIfNoneActive Defines whether the camera should be marked as active, if no other camera has been defined as active.
     */
     constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive = true) {
         super(name, position, scene, setActiveOnSceneIfNoneActive);

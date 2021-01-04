@@ -292,7 +292,7 @@ export class Texture extends BaseTexture {
      * @param sceneOrEngine defines the scene or engine the texture will belong to
      * @param noMipmap defines if the texture will require mip maps or not
      * @param invertY defines if the texture needs to be inverted on the y axis during loading
-     * @param samplingMode defines the sampling mode we want for the texture while fectching from it (Texture.NEAREST_SAMPLINGMODE...)
+     * @param samplingMode defines the sampling mode we want for the texture while fetching from it (Texture.NEAREST_SAMPLINGMODE...)
      * @param onLoad defines a callback triggered when the texture has been loaded
      * @param onError defines a callback triggered when an error occurred during the loading session
      * @param buffer defines the buffer to load the texture from in case the texture is loaded from a buffer representation
@@ -335,7 +335,7 @@ export class Texture extends BaseTexture {
                     this.vOffset += 1;
                 }
 
-                // Update texutre to match internal texture's wrapping
+                // Update texture to match internal texture's wrapping
                 if (this._texture._cachedWrapU !== null) {
                     this.wrapU = this._texture._cachedWrapU;
                     this._texture._cachedWrapU = null;
@@ -652,7 +652,7 @@ export class Texture extends BaseTexture {
     }
 
     /**
-     * Serialize the texture to a JSON representation we can easily use in the resepective Parse function.
+     * Serialize the texture to a JSON representation we can easily use in the respective Parse function.
      * @returns The JSON representation of the texture
      */
     public serialize(): any {
@@ -830,7 +830,7 @@ export class Texture extends BaseTexture {
      * @param scene Define the scene the texture should belong to
      * @param noMipmap Forces the texture to not create mip map information if true
      * @param invertY define if the texture needs to be inverted on the y axis during loading
-     * @param samplingMode define the sampling mode we want for the texture while fectching from it (Texture.NEAREST_SAMPLINGMODE...)
+     * @param samplingMode define the sampling mode we want for the texture while fetching from it (Texture.NEAREST_SAMPLINGMODE...)
      * @param onLoad define a callback triggered when the texture has been loaded
      * @param onError define a callback triggered when an error occurred during the loading session
      * @param format define the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
@@ -850,7 +850,7 @@ export class Texture extends BaseTexture {
      * @param deleteBuffer define if the buffer we are loading the texture from should be deleted after load
      * @param noMipmap Forces the texture to not create mip map information if true
      * @param invertY define if the texture needs to be inverted on the y axis during loading
-     * @param samplingMode define the sampling mode we want for the texture while fectching from it (Texture.NEAREST_SAMPLINGMODE...)
+     * @param samplingMode define the sampling mode we want for the texture while fetching from it (Texture.NEAREST_SAMPLINGMODE...)
      * @param onLoad define a callback triggered when the texture has been loaded
      * @param onError define a callback triggered when an error occurred during the loading session
      * @param format define the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)

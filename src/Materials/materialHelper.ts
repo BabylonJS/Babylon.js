@@ -61,7 +61,7 @@ export class MaterialHelper {
 
     /**
      * Helps preparing the defines values about the UVs in used in the effect.
-     * UVs are shared as much as we can accross channels in the shaders.
+     * UVs are shared as much as we can across channels in the shaders.
      * @param texture The texture we are preparing the UVs for
      * @param defines The defines to update
      * @param key The channel key "diffuse", "specular"... used in the shader
@@ -82,9 +82,9 @@ export class MaterialHelper {
     }
 
     /**
-     * Binds a texture matrix value to its corrsponding uniform
+     * Binds a texture matrix value to its corresponding uniform
      * @param texture The texture to bind the matrix for
-     * @param uniformBuffer The uniform buffer receivin the data
+     * @param uniformBuffer The uniform buffer receiving the data
      * @param key The channel key "diffuse", "specular"... used in the shader
      */
     public static BindTextureMatrix(texture: BaseTexture, uniformBuffer: UniformBuffer, key: string): void {
@@ -486,7 +486,7 @@ export class MaterialHelper {
      * @param mesh The mesh the effect is compiling for
      * @param defines The defines to update
      * @param specularSupported Specifies whether specular is supported or not (override lights data)
-     * @param maxSimultaneousLights Specfies how manuy lights can be added to the effect at max
+     * @param maxSimultaneousLights Specifies how manuy lights can be added to the effect at max
      * @param disableLighting Specifies whether the lighting is disabled (override scene and light)
      * @returns true if normals will be required for the rest of the effect
      */
@@ -614,10 +614,10 @@ export class MaterialHelper {
 
     /**
      * Prepares the uniforms and samplers list to be used in the effect
-     * @param uniformsListOrOptions The uniform names to prepare or an EffectCreationOptions containing the liist and extra information
+     * @param uniformsListOrOptions The uniform names to prepare or an EffectCreationOptions containing the list and extra information
      * @param samplersList The sampler list
      * @param defines The defines helping in the list generation
-     * @param maxSimultaneousLights The maximum number of simultanous light allowed in the effect
+     * @param maxSimultaneousLights The maximum number of simultaneous light allowed in the effect
      */
     public static PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] | IEffectCreationOptions, samplersList?: string[], defines?: any, maxSimultaneousLights = 4): void {
         let uniformsList: string[];
@@ -752,7 +752,7 @@ export class MaterialHelper {
      * @param attribs The current list of supported attribs
      * @param mesh The mesh to prepare the bones attributes for
      * @param defines The current Defines of the effect
-     * @param fallbacks The current efffect fallback strategy
+     * @param fallbacks The current effect fallback strategy
      */
     public static PrepareAttributesForBones(attribs: string[], mesh: AbstractMesh, defines: any, fallbacks: EffectFallbacks): void {
         if (defines["NUM_BONE_INFLUENCERS"] > 0) {
