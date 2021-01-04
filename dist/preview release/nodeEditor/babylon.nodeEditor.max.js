@@ -56325,7 +56325,7 @@ var PreviewManager = /** @class */ (function () {
                         });
                     }
                     if (this._material) {
-                        this._material.dispose();
+                        this._material.dispose(false, true);
                     }
                     this._material = tempMaterial_1;
                     break;
@@ -56334,7 +56334,7 @@ var PreviewManager = /** @class */ (function () {
                     this._globalState.onIsLoadingChanged.notifyObservers(false);
                     this._proceduralTexture = tempMaterial_1.createProceduralTexture(512, this._scene);
                     if (this._material) {
-                        this._material.dispose();
+                        this._material.dispose(false, true);
                     }
                     if (this._layer) {
                         this._layer.texture = this._proceduralTexture;
@@ -56352,7 +56352,7 @@ var PreviewManager = /** @class */ (function () {
                     });
                     tempMaterial_1.createEffectForParticles(this._particleSystem);
                     if (this._material) {
-                        this._material.dispose();
+                        this._material.dispose(false, true);
                     }
                     this._material = tempMaterial_1;
                     break;
@@ -56367,7 +56367,7 @@ var PreviewManager = /** @class */ (function () {
                                 mesh.material = tempMaterial_1;
                             }
                             if (_this._material) {
-                                _this._material.dispose();
+                                _this._material.dispose(false, true);
                             }
                             _this._material = tempMaterial_1;
                             _this._globalState.onIsLoadingChanged.notifyObservers(false);
@@ -56399,7 +56399,7 @@ var PreviewManager = /** @class */ (function () {
         this._globalState.onDepthPrePassChanged.remove(this._onDepthPrePassChangedObserver);
         this._globalState.onLightUpdated.remove(this._onLightUpdatedObserver);
         if (this._material) {
-            this._material.dispose();
+            this._material.dispose(false, true);
         }
         this._camera.dispose();
         for (var _i = 0, _a = this._meshes; _i < _a.length; _i++) {

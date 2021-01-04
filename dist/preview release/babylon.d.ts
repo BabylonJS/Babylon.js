@@ -12885,7 +12885,6 @@ declare module BABYLON {
         protected _dumpPropertiesCode(): string;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
-        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -13016,7 +13015,6 @@ declare module BABYLON {
         protected _dumpPropertiesCode(): string;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
-        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -13202,7 +13200,6 @@ declare module BABYLON {
         protected _dumpPropertiesCode(): string;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
-        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -13279,7 +13276,6 @@ declare module BABYLON {
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
-        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -13353,7 +13349,6 @@ declare module BABYLON {
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
-        dispose(): void;
     }
 }
 declare module BABYLON {
