@@ -35,6 +35,7 @@
 ### Materials
 
 - Added an `OcclusionMaterial` to simplify depth-only rendering of geometry ([rgerd](https://github.com/rgerd))
+- Added support for morph targets to `ShaderMaterial` ([Popov72](https://github.com/Popov72))
 
 ### Inspector
 
