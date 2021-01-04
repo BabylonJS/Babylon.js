@@ -153,7 +153,7 @@ export class HexLineComponent extends React.Component<IHexLineComponentProps, { 
             for (let i = 0; i < 8 - valueAsHex.length; i++) { //padding the '0's
                 hex0String += "0";
             }
-            valueAsHex = "0x" + valueAsHex.toUpperCase() + hex0String;
+            valueAsHex = "0x" + hex0String + valueAsHex.toUpperCase();
         }
         else
         {
