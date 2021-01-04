@@ -246,7 +246,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
     }
 
     /**
-     * Force relase the drag action by code.
+     * Force release the drag action by code.
      */
     public releaseDrag() {
         if (this.dragging) {
@@ -427,7 +427,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
                 }
             } else {
                 Vector3.CrossToRef(this._localAxis, this._pointC, this._lookAt);
-                // Get perpendicular line from previous result and drag axis to adjust lineB to be perpendiculat to camera
+                // Get perpendicular line from previous result and drag axis to adjust lineB to be perpendicular to camera
                 Vector3.CrossToRef(this._localAxis, this._lookAt, this._lookAt);
                 this._lookAt.normalize();
             }

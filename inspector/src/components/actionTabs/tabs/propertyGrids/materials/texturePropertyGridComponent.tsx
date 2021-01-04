@@ -10,14 +10,14 @@ import { CubeTexture } from "babylonjs/Materials/Textures/cubeTexture";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
-import { TextLineComponent } from "../../../lines/textLineComponent";
+import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
 import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
 import { TextureLineComponent } from "../../../lines/textureLineComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
-import { FileButtonLineComponent } from "../../../lines/fileButtonLineComponent";
+import { FileButtonLineComponent } from "../../../../../sharedUiComponents/lines/fileButtonLineComponent";
 import { LockObject } from "../lockObject";
-import { ValueLineComponent } from "../../../lines/valueLineComponent";
+import { ValueLineComponent } from "../../../../../sharedUiComponents/lines/valueLineComponent";
 import { GlobalState } from "../../../../../components/globalState";
 
 import { AdvancedDynamicTextureInstrumentation } from "babylonjs-gui/2D/adtInstrumentation";

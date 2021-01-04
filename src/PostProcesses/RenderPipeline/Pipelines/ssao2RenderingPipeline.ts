@@ -78,12 +78,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     */
     public set samples(n: number) {
         this._samples = n;
-        if (this._prePassRenderer) {
-            this._prePassRenderer.samples = n;
-        }
-        else {
-            this._ssaoPostProcess.updateEffect(this._getDefinesForSSAO());
-        }
+        this._ssaoPostProcess.updateEffect(this._getDefinesForSSAO());
         this._sampleSphere = this._generateHemisphere();
     }
     public get samples(): number {
@@ -98,11 +93,12 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     public set textureSamples(n: number) {
         this._textureSamples = n;
 
-        this._originalColorPostProcess.samples = n;
-        this._blurHPostProcess.samples = n;
-        this._blurVPostProcess.samples = n;
-        this._ssaoPostProcess.samples = n;
-        this._ssaoCombinePostProcess.samples = n;
+        if (this._prePassRenderer) {
+            this._prePassRenderer.samples = n;
+        }
+        else {
+            this._originalColorPostProcess.samples = n;
+        }
     }
     public get textureSamples(): number {
         return this._textureSamples;
@@ -136,9 +132,9 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     */
     public set expensiveBlur(b: boolean) {
         this._blurHPostProcess.updateEffect("#define BILATERAL_BLUR\n#define BILATERAL_BLUR_H\n#define SAMPLES 16\n#define EXPENSIVE " + (b ? "1" : "0") + "\n",
-            null, ["textureSampler", "depthNormalSampler"]);
+            null, ["textureSampler", "depthSampler"]);
         this._blurVPostProcess.updateEffect("#define BILATERAL_BLUR\n#define SAMPLES 16\n#define EXPENSIVE " + (b ? "1" : "0") + "\n",
-            null, ["textureSampler", "depthNormalSampler"]);
+            null, ["textureSampler", "depthSampler"]);
         this._expensiveBlur = b;
     }
 
@@ -195,7 +191,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
      * @param cameras The array of cameras that the rendering pipeline will be attached to
      * @param forceGeometryBuffer Set to true if you want to use the legacy geometry buffer renderer
      */
-    constructor(name: string, scene: Scene, ratio: any, cameras?: Camera[], forceGeometryBuffer = true) {
+    constructor(name: string, scene: Scene, ratio: any, cameras?: Camera[], forceGeometryBuffer = false) {
         super(scene.getEngine(), name);
 
         this._scene = scene;
@@ -283,7 +279,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             this._samplerOffsets.push(i * 2 + 0.5);
         }
 
-        this._blurHPostProcess = new PostProcess("BlurH", "ssao2", ["outSize", "samplerOffsets", "near", "far", "radius"], ["depthNormalSampler"], ssaoRatio, null, Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define BILATERAL_BLUR_H\n#define SAMPLES 16\n#define EXPENSIVE " + (expensive ? "1" : "0") + "\n");
+        this._blurHPostProcess = new PostProcess("BlurH", "ssao2", ["outSize", "samplerOffsets", "near", "far", "radius"], ["depthSampler"], ssaoRatio, null, Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define BILATERAL_BLUR_H\n#define SAMPLES 16\n#define EXPENSIVE " + (expensive ? "1" : "0") + "\n");
         this._blurHPostProcess.onApply = (effect: Effect) => {
             if (!this._scene.activeCamera) {
                 return;
@@ -294,14 +290,14 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             effect.setFloat("far", this._scene.activeCamera.maxZ);
             effect.setFloat("radius", this.radius);
             if (this._forceGeometryBuffer) {
-                effect.setTexture("depthNormalSampler", this._scene.enableGeometryBufferRenderer()!.getGBuffer().textures[0]);
+                effect.setTexture("depthSampler", this._scene.enableGeometryBufferRenderer()!.getGBuffer().textures[0]);
             } else {
-                effect.setTexture("depthNormalSampler", this._prePassRenderer.prePassRT.textures[this._prePassRenderer.getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE)]);
+                effect.setTexture("depthSampler", this._prePassRenderer.getRenderTarget().textures[this._prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)]);
             }
             effect.setArray("samplerOffsets", this._samplerOffsets);
         };
 
-        this._blurVPostProcess = new PostProcess("BlurV", "ssao2", ["outSize", "samplerOffsets", "near", "far", "radius"], ["depthNormalSampler"], blurRatio, null, Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define BILATERAL_BLUR_V\n#define SAMPLES 16\n#define EXPENSIVE " + (expensive ? "1" : "0") + "\n");
+        this._blurVPostProcess = new PostProcess("BlurV", "ssao2", ["outSize", "samplerOffsets", "near", "far", "radius"], ["depthSampler"], blurRatio, null, Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define BILATERAL_BLUR_V\n#define SAMPLES 16\n#define EXPENSIVE " + (expensive ? "1" : "0") + "\n");
         this._blurVPostProcess.onApply = (effect: Effect) => {
             if (!this._scene.activeCamera) {
                 return;
@@ -312,9 +308,9 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             effect.setFloat("far", this._scene.activeCamera.maxZ);
             effect.setFloat("radius", this.radius);
             if (this._forceGeometryBuffer) {
-                effect.setTexture("depthNormalSampler", this._scene.enableGeometryBufferRenderer()!.getGBuffer().textures[0]);
+                effect.setTexture("depthSampler", this._scene.enableGeometryBufferRenderer()!.getGBuffer().textures[0]);
             } else {
-                effect.setTexture("depthNormalSampler", this._prePassRenderer.prePassRT.textures[this._prePassRenderer.getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE)]);
+                effect.setTexture("depthSampler", this._prePassRenderer.getRenderTarget().textures[this._prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)]);
             }
             effect.setArray("samplerOffsets", this._samplerOffsets);
 
@@ -378,10 +374,6 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     private _getDefinesForSSAO() {
         let defines = "#define SAMPLES " + this.samples + "\n#define SSAO";
 
-        if (this._forceGeometryBuffer) {
-            defines = defines + "\n#define GEOMETRYBUFFER";
-        }
-
         return defines;
     }
 
@@ -399,13 +391,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         this._sampleSphere = this._generateHemisphere();
 
         const defines = this._getDefinesForSSAO();
-        let samplers;
-
-        if (this._forceGeometryBuffer) {
-            samplers = ["randomSampler", "depthSampler", "normalSampler"];
-        } else {
-            samplers = ["randomSampler", "depthNormalSampler"];
-        }
+        const samplers = ["randomSampler", "depthSampler", "normalSampler"];
 
         this._ssaoPostProcess = new PostProcess("ssao2", "ssao2",
             [
@@ -455,7 +441,8 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
                 effect.setTexture("depthSampler", this._scene.enableGeometryBufferRenderer()!.getGBuffer().textures[0]);
                 effect.setTexture("normalSampler", this._scene.enableGeometryBufferRenderer()!.getGBuffer().textures[1]);
             } else {
-                effect.setTexture("depthNormalSampler", this._prePassRenderer.prePassRT.textures[this._prePassRenderer.getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE)]);
+                effect.setTexture("depthSampler", this._prePassRenderer.getRenderTarget().textures[this._prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)]);
+                effect.setTexture("normalSampler", this._prePassRenderer.getRenderTarget().textures[this._prePassRenderer.getIndex(Constants.PREPASS_NORMAL_TEXTURE_TYPE)]);
             }
             effect.setTexture("randomSampler", this._randomTexture);
         };

@@ -113,7 +113,7 @@ export class Geometry implements IGetSetVerticesData {
     }
 
     /**
-     * If set to true (false by defaut), the bounding info applied to the meshes sharing this geometry will be the bounding info defined at the class level
+     * If set to true (false by default), the bounding info applied to the meshes sharing this geometry will be the bounding info defined at the class level
      * and won't be computed based on the vertex positions (which is what we get when useBoundingInfoFromGeometry = false)
      */
     public useBoundingInfoFromGeometry = false;
@@ -253,6 +253,10 @@ export class Geometry implements IGetSetVerticesData {
             this._vertexBuffers[kind].dispose();
             delete this._vertexBuffers[kind];
         }
+
+        if (this._vertexArrayObjects) {
+            this._disposeVertexArrayObjects();
+        }
     }
 
     /**
@@ -267,6 +271,8 @@ export class Geometry implements IGetSetVerticesData {
         }
 
         this._vertexBuffers[kind] = buffer;
+        var meshes = this._meshes;
+        var numOfMeshes = meshes.length;
 
         if (kind === VertexBuffer.PositionKind) {
             var data = <FloatArray>buffer.getData();
@@ -281,14 +287,12 @@ export class Geometry implements IGetSetVerticesData {
             this._updateExtend(data);
             this._resetPointsArrayCache();
 
-            var meshes = this._meshes;
-            var numOfMeshes = meshes.length;
-
             for (var index = 0; index < numOfMeshes; index++) {
                 var mesh = meshes[index];
                 mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
                 mesh._createGlobalSubMesh(false);
                 mesh.computeWorldMatrix(true);
+                mesh.synchronizeInstances();
             }
         }
 
@@ -296,7 +300,6 @@ export class Geometry implements IGetSetVerticesData {
 
         if (this._vertexArrayObjects) {
             this._disposeVertexArrayObjects();
-            this._vertexArrayObjects = {}; // Will trigger a rebuild of the VAO if supported
         }
     }
 
@@ -367,7 +370,7 @@ export class Geometry implements IGetSetVerticesData {
     }
 
     /** @hidden */
-    public _bind(effect: Nullable<Effect>, indexToBind?: Nullable<DataBuffer>): void {
+    public _bind(effect: Nullable<Effect>, indexToBind?: Nullable<DataBuffer>, overrideVertexBuffers?: { [kind: string]: Nullable<VertexBuffer>}, overrideVertexArrayObjects?: {[key: string]: WebGLVertexArrayObject}): void {
         if (!effect) {
             return;
         }
@@ -381,17 +384,19 @@ export class Geometry implements IGetSetVerticesData {
             return;
         }
 
-        if (indexToBind != this._indexBuffer || !this._vertexArrayObjects) {
-            this._engine.bindBuffers(vbs, indexToBind, effect);
+        if (indexToBind != this._indexBuffer || (!this._vertexArrayObjects && !overrideVertexArrayObjects)) {
+            this._engine.bindBuffers(vbs, indexToBind, effect, overrideVertexBuffers);
             return;
         }
 
+        var vaos = overrideVertexArrayObjects ? overrideVertexArrayObjects : this._vertexArrayObjects;
+
         // Using VAO
-        if (!this._vertexArrayObjects[effect.key]) {
-            this._vertexArrayObjects[effect.key] = this._engine.recordVertexArrayObject(vbs, indexToBind, effect);
+        if (!vaos[effect.key]) {
+            vaos[effect.key] = this._engine.recordVertexArrayObject(vbs, indexToBind, effect, overrideVertexBuffers);
         }
 
-        this._engine.bindVertexArrayObject(this._vertexArrayObjects[effect.key], indexToBind);
+        this._engine.bindVertexArrayObject(vaos[effect.key], indexToBind);
     }
 
     /**
@@ -419,53 +424,7 @@ export class Geometry implements IGetSetVerticesData {
             return null;
         }
 
-        let data = vertexBuffer.getData();
-        if (!data) {
-            return null;
-        }
-
-        const tightlyPackedByteStride = vertexBuffer.getSize() * VertexBuffer.GetTypeByteLength(vertexBuffer.type);
-        const count = this._totalVertices * vertexBuffer.getSize();
-
-        if (vertexBuffer.type !== VertexBuffer.FLOAT || vertexBuffer.byteStride !== tightlyPackedByteStride) {
-            const copy: number[] = [];
-            vertexBuffer.forEach(count, (value) => copy.push(value));
-            return copy;
-        }
-
-        if (!(data instanceof Array || data instanceof Float32Array) || vertexBuffer.byteOffset !== 0 || data.length !== count) {
-            if (data instanceof Array) {
-                const offset = vertexBuffer.byteOffset / 4;
-                return Tools.Slice(data, offset, offset + count);
-            } else if (data instanceof ArrayBuffer) {
-                return new Float32Array(data, vertexBuffer.byteOffset, count);
-            } else {
-                let offset = data.byteOffset + vertexBuffer.byteOffset;
-                if (forceCopy || (copyWhenShared && this._meshes.length !== 1)) {
-                    let result = new Float32Array(count);
-                    let source = new Float32Array(data.buffer, offset, count);
-
-                    result.set(source);
-
-                    return result;
-                }
-
-                // Portect against bad data
-                let remainder = offset % 4;
-
-                if (remainder) {
-                    offset = Math.max(0, offset - remainder);
-                }
-
-                return new Float32Array(data.buffer, offset, count);
-            }
-        }
-
-        if (forceCopy || (copyWhenShared && this._meshes.length !== 1)) {
-            return Tools.Slice(data);
-        }
-
-        return data;
+        return vertexBuffer.getFloatData(this._totalVertices, forceCopy || (copyWhenShared && this._meshes.length !== 1));
     }
 
     /**
@@ -580,8 +539,6 @@ export class Geometry implements IGetSetVerticesData {
             this._engine._releaseBuffer(this._indexBuffer);
         }
 
-        this._disposeVertexArrayObjects();
-
         this._indices = indices;
         this._indexBufferIsUpdatable = updatable;
         if (this._meshes.length !== 0 && this._indices) {
@@ -595,6 +552,7 @@ export class Geometry implements IGetSetVerticesData {
 
         for (const mesh of this._meshes) {
             mesh._createGlobalSubMesh(true);
+            mesh.synchronizeInstances();
         }
 
         this.notifyUpdate();
@@ -672,6 +630,10 @@ export class Geometry implements IGetSetVerticesData {
 
         meshes.splice(index, 1);
 
+        if (this._vertexArrayObjects) {
+            mesh._invalidateInstanceVertexArrayObject();
+        }
+
         mesh._geometry = null;
 
         if (meshes.length === 0 && shouldDispose) {
@@ -691,6 +653,10 @@ export class Geometry implements IGetSetVerticesData {
         var previousGeometry = mesh._geometry;
         if (previousGeometry) {
             previousGeometry.releaseForMesh(mesh);
+        }
+
+        if (this._vertexArrayObjects) {
+            mesh._invalidateInstanceVertexArrayObject();
         }
 
         var meshes = this._meshes;
@@ -913,7 +879,13 @@ export class Geometry implements IGetSetVerticesData {
             for (var kind in this._vertexArrayObjects) {
                 this._engine.releaseVertexArrayObject(this._vertexArrayObjects[kind]);
             }
-            this._vertexArrayObjects = {};
+            this._vertexArrayObjects = {}; // Will trigger a rebuild of the VAO if supported
+
+            var meshes = this._meshes;
+            var numOfMeshes = meshes.length;
+            for (var index = 0; index < numOfMeshes; index++) {
+                meshes[index]._invalidateInstanceVertexArrayObject();
+            }
         }
     }
 
@@ -1038,7 +1010,7 @@ export class Geometry implements IGetSetVerticesData {
     }
 
     /**
-     * Serialize all vertices data into a JSON oject
+     * Serialize all vertices data into a JSON object
      * @returns a JSON representation of the current geometry data
      */
     public serializeVerticeData(): any {

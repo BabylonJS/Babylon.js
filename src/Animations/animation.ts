@@ -713,7 +713,7 @@ export class Animation {
     }
 
     /**
-     * Interpolates a Vector3 linearl
+     * Interpolates a Vector3 linearly
      * @param startValue Start value of the animation curve
      * @param endValue End value of the animation curve
      * @param gradient Scalar amount to interpolate

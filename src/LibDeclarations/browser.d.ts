@@ -28,7 +28,7 @@ interface HTMLCanvasElement {
     mozRequestPointerLock?(): void;
     webkitRequestPointerLock?(): void;
 
-    /** Track wether a record is in progress */
+    /** Track whether a record is in progress */
     isRecording: boolean;
     /** Capture Stream method defined by some browsers */
     captureStream(fps?: number): MediaStream;

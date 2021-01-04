@@ -69,7 +69,7 @@ export abstract class PBRBaseSimpleMaterial extends PBRBaseMaterial {
     public emissiveTexture: BaseTexture;
 
     /**
-     * Occlusion Channel Strenght.
+     * Occlusion Channel Strength.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_ambientTextureStrength")

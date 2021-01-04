@@ -39,7 +39,7 @@ export interface IShaderMaterialOptions {
     attributes: string[];
 
     /**
-     * The list of unifrom names used in the shader
+     * The list of uniform names used in the shader
      */
     uniforms: string[];
 
@@ -504,6 +504,11 @@ export class ShaderMaterial extends Material {
         var attribs = [];
         var fallbacks = new EffectFallbacks();
 
+        let shaderName = this._shaderPath,
+            uniforms = this._options.uniforms,
+            uniformBuffers = this._options.uniformBuffers,
+            samplers = this._options.samplers;
+
         // global multiview
         if (engine.getCaps().multiview &&
             scene.activeCamera &&
@@ -539,7 +544,6 @@ export class ShaderMaterial extends Material {
         }
 
         // Bones
-        let numInfluencers = 0;
         if (mesh && mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
             attribs.push(VertexBuffer.MatricesIndicesKind);
             attribs.push(VertexBuffer.MatricesWeightsKind);
@@ -550,8 +554,7 @@ export class ShaderMaterial extends Material {
 
             const skeleton = mesh.skeleton;
 
-            numInfluencers = mesh.numBoneInfluencers;
-            defines.push("#define NUM_BONE_INFLUENCERS " + numInfluencers);
+            defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
             fallbacks.addCPUSkinningFallback(0, mesh);
 
             if (skeleton.isUsingTextureForMatrices) {
@@ -575,6 +578,50 @@ export class ShaderMaterial extends Material {
             defines.push("#define NUM_BONE_INFLUENCERS 0");
         }
 
+        // Morph
+        let numInfluencers = 0;
+        const manager = mesh ? (<Mesh>mesh).morphTargetManager : null;
+        if (manager) {
+            const uv = manager.supportsUVs && defines.indexOf("#define UV1") !== -1;
+            const tangent = manager.supportsTangents && defines.indexOf("#define TANGENT") !== -1;
+            const normal = manager.supportsNormals && defines.indexOf("#define NORMAL") !== -1;
+            numInfluencers = manager.numInfluencers;
+            if (uv) {
+                defines.push("#define MORPHTARGETS_UV");
+            }
+            if (tangent) {
+                defines.push("#define MORPHTARGETS_TANGENT");
+            }
+            if (normal) {
+                defines.push("#define MORPHTARGETS_NORMAL");
+            }
+            if (numInfluencers > 0) {
+                defines.push("#define MORPHTARGETS");
+            }
+            defines.push("#define NUM_MORPH_INFLUENCERS " + numInfluencers);
+            for (var index = 0; index < numInfluencers; index++) {
+                attribs.push(VertexBuffer.PositionKind + index);
+
+                if (normal) {
+                    attribs.push(VertexBuffer.NormalKind + index);
+                }
+
+                if (tangent) {
+                    attribs.push(VertexBuffer.TangentKind + index);
+                }
+
+                if (uv) {
+                    attribs.push(VertexBuffer.UVKind + "_" + index);
+                }
+            }
+            if (numInfluencers > 0) {
+                uniforms = uniforms.slice();
+                uniforms.push("morphTargetInfluences");
+            }
+        } else {
+            defines.push("#define NUM_MORPH_INFLUENCERS 0");
+        }
+
         // Textures
         for (var name in this._textures) {
             if (!this._textures[name].isReady()) {
@@ -586,11 +633,6 @@ export class ShaderMaterial extends Material {
         if (mesh && this._shouldTurnAlphaTestOn(mesh)) {
             defines.push("#define ALPHATEST");
         }
-
-        let shaderName = this._shaderPath,
-            uniforms = this._options.uniforms,
-            uniformBuffers = this._options.uniformBuffers,
-            samplers = this._options.samplers;
 
         if (this.customShaderNameResolve) {
             uniforms = uniforms.slice();
@@ -688,7 +730,9 @@ export class ShaderMaterial extends Material {
 
         const effect = effectOverride ?? this._effect;
 
-        if (effect && this.getScene().getCachedMaterial() !== this) {
+        let mustRebind = this.getScene().getCachedMaterial() !== this;
+
+        if (effect && mustRebind) {
             if (this._options.uniforms.indexOf("view") !== -1) {
                 effect.setMatrix("view", this.getScene().getViewMatrix());
             }
@@ -806,6 +850,14 @@ export class ShaderMaterial extends Material {
             // Vector4Array
             for (name in this._vectors4Arrays) {
                 effect.setArray4(name, this._vectors4Arrays[name]);
+            }
+        }
+
+        if (effect && mesh && (mustRebind || !this.isFrozen)) {
+            // Morph targets
+            const manager = (<Mesh>mesh).morphTargetManager;
+            if (manager && manager.numInfluencers > 0) {
+                MaterialHelper.BindMorphTargetParameters(<Mesh>mesh, effect);
             }
         }
 
@@ -1111,7 +1163,7 @@ export class ShaderMaterial extends Material {
 
     /**
      * Creates a shader material from parsed shader material data
-     * @param source defines the JSON represnetation of the material
+     * @param source defines the JSON representation of the material
      * @param scene defines the hosting scene
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @returns a new material

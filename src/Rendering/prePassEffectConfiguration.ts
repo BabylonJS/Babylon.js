@@ -21,6 +21,10 @@ export interface PrePassEffectConfiguration {
      */
     enabled: boolean;
     /**
+     * Does the output of this prepass need to go through imageprocessing
+     */
+    needsImageProcessing?: boolean;
+    /**
      * Disposes the effect configuration
      */
     dispose?: () => void;

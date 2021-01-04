@@ -46,8 +46,8 @@ class _FacetDataStorage {
     public facetNormals: Vector3[];               // facet local normals
     public facetPartitioning: number[][];         // partitioning array of facet index arrays
     public facetNb: number = 0;                   // facet number
-    public partitioningSubdivisions: number = 10; // number of subdivisions per axis in the partioning space
-    public partitioningBBoxRatio: number = 1.01;  // the partioning array space is by default 1% bigger than the bounding box
+    public partitioningSubdivisions: number = 10; // number of subdivisions per axis in the partitioning space
+    public partitioningBBoxRatio: number = 1.01;  // the partitioning array space is by default 1% bigger than the bounding box
     public facetDataEnabled: boolean = false;     // is the facet data feature enabled on this mesh ?
     public facetParameters: any = {};             // keep a reference to the object parameters to avoid memory re-allocation
     public bbSize: Vector3 = Vector3.Zero();      // bbox size approximated for facet data
@@ -98,11 +98,11 @@ class _InternalAbstractMeshDataInfo {
 export class AbstractMesh extends TransformNode implements IDisposable, ICullable, IGetSetVerticesData {
     /** No occlusion */
     public static OCCLUSION_TYPE_NONE = 0;
-    /** Occlusion set to optimisitic */
+    /** Occlusion set to optimistic */
     public static OCCLUSION_TYPE_OPTIMISTIC = 1;
     /** Occlusion set to strict */
     public static OCCLUSION_TYPE_STRICT = 2;
-    /** Use an accurante occlusion algorithm */
+    /** Use an accurate occlusion algorithm */
     public static OCCLUSION_ALGORITHM_TYPE_ACCURATE = 0;
     /** Use a conservative occlusion algorithm */
     public static OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE = 1;
@@ -198,7 +198,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         return this._internalAbstractMeshDataInfo._facetData.facetNb;
     }
     /**
-     * Gets or set the number (integer) of subdivisions per axis in the partioning space
+     * Gets or set the number (integer) of subdivisions per axis in the partitioning space
      * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata#tweaking-the-partitioning
      */
     public get partitioningSubdivisions(): number {
@@ -208,8 +208,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         this._internalAbstractMeshDataInfo._facetData.partitioningSubdivisions = nb;
     }
     /**
-     * The ratio (float) to apply to the bouding box size to set to the partioning space.
-     * Ex : 1.01 (default) the partioning space is 1% bigger than the bounding box
+     * The ratio (float) to apply to the bounding box size to set to the partitioning space.
+     * Ex : 1.01 (default) the partitioning space is 1% bigger than the bounding box
      * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata#tweaking-the-partitioning
      */
     public get partitioningBBoxRatio(): number {
@@ -668,7 +668,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public _transformMatrixTexture: Nullable<RawTexture> = null;
 
     /**
-     * Gets or sets a skeleton to apply skining transformations
+     * Gets or sets a skeleton to apply skinning transformations
      * @see https://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
      */
     public set skeleton(value: Nullable<Skeleton>) {
@@ -700,7 +700,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public onRebuildObservable = new Observable<AbstractMesh>();
 
     /**
-     * The current mesh unifom buffer.
+     * The current mesh uniform buffer.
      * @hidden Internal use only.
      */
     public _uniformBuffer: UniformBuffer;
@@ -950,7 +950,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /**
      * Returns a positive integer : the total number of indices in this mesh geometry.
-     * @returns the numner of indices or zero if the mesh has no geometry.
+     * @returns the number of indices or zero if the mesh has no geometry.
      */
     public getTotalIndices(): number {
         return 0;
@@ -1590,10 +1590,10 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             if (!material) {
                 continue;
             }
-            if (this.getIndices()?.length && (material.fillMode == Constants.MATERIAL_TriangleStripDrawMode ||
+            if (material.fillMode == Constants.MATERIAL_TriangleStripDrawMode ||
                     material.fillMode == Constants.MATERIAL_TriangleFillMode ||
                     material.fillMode == Constants.MATERIAL_WireFrameFillMode ||
-                    material.fillMode == Constants.MATERIAL_PointFillMode)) {
+                    material.fillMode == Constants.MATERIAL_PointFillMode) {
                 anySubmeshSupportIntersect = true;
                 break;
             }
@@ -1987,7 +1987,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
-     * Returns the facetLocalPartioning array
+     * Returns the facetLocalPartitioning array
      * @returns an array of array of numbers
      * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata
      */
@@ -2093,7 +2093,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         Vector3.TransformCoordinatesFromFloatsToRef(x, y, z, invMat, invVect);  // transform (x,y,z) to coordinates in the mesh local space
         var closest = this.getClosestFacetAtLocalCoordinates(invVect.x, invVect.y, invVect.z, projected, checkFace, facing);
         if (projected) {
-            // tranform the local computed projected vector to world coordinates
+            // transform the local computed projected vector to world coordinates
             Vector3.TransformCoordinatesFromFloatsToRef(projected.x, projected.y, projected.z, world, projected);
         }
         return closest;

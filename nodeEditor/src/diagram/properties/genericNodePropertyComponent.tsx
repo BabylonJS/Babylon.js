@@ -11,6 +11,7 @@ import { Vector2LineComponent } from '../../sharedComponents/vector2LineComponen
 import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { PropertyTypeForEdition, IPropertyDescriptionForEdition, IEditablePropertyListOption } from 'babylonjs/Materials/Node/nodeMaterialDecorator';
+import { NodeMaterialBlockTargets } from "babylonjs/Materials/Node/Enums/nodeMaterialBlockTargets";
 
 export class GenericPropertyComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
@@ -33,6 +34,13 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
     }
 
     render() {
+
+        var targetOptions = [
+            { label: "Neutral", value: NodeMaterialBlockTargets.Neutral },
+            { label: "Vertex", value: NodeMaterialBlockTargets.Vertex },
+            { label: "Fragment", value: NodeMaterialBlockTargets.Fragment },
+        ];
+
         return (
             <>
                 <LineContainerComponent title="GENERAL">
@@ -47,6 +55,19 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
                             }
                             return true;
                             }} />
+                    }
+                    {
+                        (this.props.block._originalTargetIsNeutral) &&
+                        <OptionsLineComponent label="Target" options={targetOptions} target={this.props.block} propertyName="target" onSelect={(value: any) => {
+                            this.forceUpdate();
+
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                        }} />
+                    }
+                    {
+                        (!this.props.block._originalTargetIsNeutral) &&
+                        <TextLineComponent label="Type" value={NodeMaterialBlockTargets[this.props.block.target]} />
                     }
                     <TextLineComponent label="Type" value={this.props.block.getClassName()} />
                     <TextInputLineComponent globalState={this.props.globalState} label="Comments" propertyName="comments" target={this.props.block}

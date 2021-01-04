@@ -151,10 +151,10 @@ export class BoundingSphere {
 
     // Statics
     /**
-     * Checks if two sphere intersct
+     * Checks if two sphere intersect
      * @param sphere0 sphere 0
      * @param sphere1 sphere 1
-     * @returns true if the speres intersect
+     * @returns true if the spheres intersect
      */
     public static Intersects(sphere0: DeepImmutable<BoundingSphere>, sphere1: DeepImmutable<BoundingSphere>): boolean {
         const squareDistance = Vector3.DistanceSquared(sphere0.centerWorld, sphere1.centerWorld);
