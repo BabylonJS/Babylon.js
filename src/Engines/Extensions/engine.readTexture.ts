@@ -6,10 +6,13 @@ declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
         /** @hidden */
         _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean): Promise<ArrayBufferView>;
+
+        /** @hidden */
+        _readTexturePixelsSync(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean): ArrayBufferView;
     }
 }
 
-ThinEngine.prototype._readTexturePixels = function(texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer: Nullable<ArrayBufferView> = null, flushRenderer = true): Promise<ArrayBufferView> {
+ThinEngine.prototype._readTexturePixelsSync = function(texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer: Nullable<ArrayBufferView> = null, flushRenderer = true): ArrayBufferView {
     let gl = this._gl;
     if (!gl) {
         throw new Error ("Engine does not have gl rendering context.");
@@ -55,5 +58,9 @@ ThinEngine.prototype._readTexturePixels = function(texture: InternalTexture, wid
     gl.readPixels(0, 0, width, height, gl.RGBA, readType, <DataView>buffer);
     gl.bindFramebuffer(gl.FRAMEBUFFER, this._currentFramebuffer);
 
-    return Promise.resolve(buffer);
+    return buffer;
+};
+
+ThinEngine.prototype._readTexturePixels = function(texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer: Nullable<ArrayBufferView> = null, flushRenderer = true): Promise<ArrayBufferView> {
+    return Promise.resolve(this._readTexturePixelsSync(texture, width, height, faceIndex, level, buffer, flushRenderer));
 };

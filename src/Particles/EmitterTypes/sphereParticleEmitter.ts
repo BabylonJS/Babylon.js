@@ -103,7 +103,7 @@ export class SphereParticleEmitter implements IParticleEmitterType {
 
     /**
      * Returns a string to use to update the GPU particles update shader
-     * @returns a string containng the defines string
+     * @returns a string containing the defines string
      */
     public getEffectDefines(): string {
         return "#define SPHEREEMITTER";
@@ -204,7 +204,7 @@ export class SphereDirectedParticleEmitter extends SphereParticleEmitter {
 
     /**
      * Returns a string to use to update the GPU particles update shader
-     * @returns a string containng the defines string
+     * @returns a string containing the defines string
      */
     public getEffectDefines(): string {
         return "#define SPHEREEMITTER\n#define DIRECTEDSPHEREEMITTER";

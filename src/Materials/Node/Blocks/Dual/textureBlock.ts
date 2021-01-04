@@ -157,6 +157,10 @@ export class TextureBlock extends NodeMaterialBlock {
             if (parent.target === NodeMaterialBlockTargets.Neutral || parent.target === NodeMaterialBlockTargets.VertexAndFragment) {
                 let parentBlock = parent.ownerBlock;
 
+                if (parentBlock.target === NodeMaterialBlockTargets.Fragment) {
+                    return NodeMaterialBlockTargets.Fragment;
+                }
+
                 parent = null;
                 for (var input of parentBlock.inputs) {
                     if (input.connectedPoint) {
@@ -350,7 +354,7 @@ export class TextureBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        if (state.target === NodeMaterialBlockTargets.Vertex || this._fragmentOnly) {
+        if (state.target === NodeMaterialBlockTargets.Vertex || this._fragmentOnly || (state.target === NodeMaterialBlockTargets.Fragment && this._tempTextureRead === undefined)) {
             this._tempTextureRead = state._getFreeVariableName("tempTextureRead");
         }
 

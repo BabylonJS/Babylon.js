@@ -16376,7 +16376,7 @@ var Control3D = /** @class */ (function () {
             if (!this.node) {
                 return;
             }
-            this._node.metadata = this; // Store the control on the metadata field in order to get it when picking
+            this._injectGUI3DMetadata(this._node).control = this; // Store the control on the metadata field in order to get it when picking
             this._node.position = this.position;
             this._node.scaling = this.scaling;
             var mesh = this.mesh;
@@ -16385,6 +16385,12 @@ var Control3D = /** @class */ (function () {
                 this._affectMaterial(mesh);
             }
         }
+    };
+    Control3D.prototype._injectGUI3DMetadata = function (node) {
+        var _a, _b;
+        node.metadata = (_a = node.metadata) !== null && _a !== void 0 ? _a : {};
+        node.metadata.GUI3D = (_b = node.metadata.GUI3D) !== null && _b !== void 0 ? _b : {};
+        return node.metadata.GUI3D;
     };
     /**
      * Node creation.
@@ -17107,7 +17113,7 @@ var MeshButton3D = /** @class */ (function (_super) {
     MeshButton3D.prototype._createNode = function (scene) {
         var _this = this;
         this._currentMesh.getChildMeshes().forEach(function (mesh) {
-            mesh.metadata = _this;
+            _this._injectGUI3DMetadata(mesh).control = _this;
         });
         return this._currentMesh;
     };
@@ -17757,7 +17763,8 @@ var GUI3DManager = /** @class */ (function () {
         this._utilityLayer.onlyCheckPointerDownEvents = false;
         this._utilityLayer.pickUtilitySceneFirst = false;
         this._utilityLayer.mainSceneTrackerPredicate = function (mesh) {
-            return mesh && mesh.metadata && mesh.metadata._node;
+            var _a, _b, _c;
+            return mesh && ((_c = (_b = (_a = mesh.metadata) === null || _a === void 0 ? void 0 : _a.GUI3D) === null || _b === void 0 ? void 0 : _b.control) === null || _c === void 0 ? void 0 : _c._node);
         };
         // Root
         this._rootContainer = new _controls_container3D__WEBPACK_IMPORTED_MODULE_1__["Container3D"]("RootContainer");
@@ -17806,6 +17813,7 @@ var GUI3DManager = /** @class */ (function () {
         this.onPickedPointChangedObservable.notifyObservers(null);
     };
     GUI3DManager.prototype._doPicking = function (pi) {
+        var _a, _b;
         if (!this._utilityLayer || !this._utilityLayer.shouldRender || !this._utilityLayer.utilityLayerScene.activeCamera) {
             return false;
         }
@@ -17817,7 +17825,7 @@ var GUI3DManager = /** @class */ (function () {
             this._handlePointerOut(pointerId, pi.type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERUP);
             return false;
         }
-        var control = (pickingInfo.pickedMesh.metadata);
+        var control = ((_b = (_a = pickingInfo.pickedMesh.metadata) === null || _a === void 0 ? void 0 : _a.GUI3D) === null || _b === void 0 ? void 0 : _b.control);
         if (pickingInfo.pickedPoint) {
             this.onPickedPointChangedObservable.notifyObservers(pickingInfo.pickedPoint);
         }

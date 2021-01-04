@@ -702,7 +702,7 @@ class TrajectoryClass {
      * TrajectoryDescriptor describes a Trajectory that is considered to be the same as
      * the class represented by this DescribedTrajectory.
      * @param descriptor the descriptor to be costed
-     * @returns cost of the match, which is a nonnegative similarity metric where larger values indicate dissimiliarity
+     * @returns cost of the match, which is a nonnegative similarity metric where larger values indicate dissimilarity
      */
     public getMatchCost(descriptor: TrajectoryDescriptor): number {
         return descriptor.distance(this._descriptors[this._centroidIdx]) / this._averageDistance;

@@ -40,6 +40,9 @@ export class NodeMaterialBlock {
     /** @hidden */
     public _preparationId: number;
 
+    /** @hidden */
+    public readonly _originalTargetIsNeutral: boolean;
+
     /**
      * Gets the name of the block
      */
@@ -143,7 +146,7 @@ export class NodeMaterialBlock {
 
     /**
      * Find an output by its name
-     * @param name defines the name of the outputto look for
+     * @param name defines the name of the output to look for
      * @returns the output or null if not found
      */
     public getOutputByName(name: string) {
@@ -172,6 +175,7 @@ export class NodeMaterialBlock {
     public constructor(name: string, target = NodeMaterialBlockTargets.Vertex, isFinalMerger = false, isInput = false) {
 
         this._target = target;
+        this._originalTargetIsNeutral = target === NodeMaterialBlockTargets.Neutral;
         this._isFinalMerger = isFinalMerger;
         this._isInput = isInput;
         this._name = name;
@@ -716,6 +720,7 @@ export class NodeMaterialBlock {
         serializationObject.comments = this.comments;
         serializationObject.visibleInInspector = this.visibleInInspector;
         serializationObject.visibleOnFrame = this.visibleOnFrame;
+        serializationObject.target = this.target;
 
         serializationObject.inputs = [];
         serializationObject.outputs = [];
@@ -737,6 +742,7 @@ export class NodeMaterialBlock {
         this.comments = serializationObject.comments;
         this.visibleInInspector = !!serializationObject.visibleInInspector;
         this.visibleOnFrame = !!serializationObject.visibleOnFrame;
+        this._target = serializationObject.target ?? this.target;
         this._deserializePortDisplayNamesAndExposedOnFrame(serializationObject);
     }
 

@@ -144,7 +144,7 @@ export class EnvironmentTextureTools {
     /**
      * Creates an environment texture from a loaded cube texture.
      * @param texture defines the cube texture to convert in env file
-     * @return a promise containing the environment data if succesfull.
+     * @return a promise containing the environment data if successful.
      */
     public static async CreateEnvTextureAsync(texture: BaseTexture): Promise<ArrayBuffer> {
         let internalTexture = texture.getInternalTexture();
@@ -375,7 +375,7 @@ export class EnvironmentTextureTools {
                         // Uncompress the data to a RTT
                         rgbdPostProcess!.onApply = (effect) => {
                             effect._bindTexture("textureSampler", tempTexture);
-                            effect.setFloat2("scale", 1, 1);
+                            effect.setFloat2("scale", 1, (image instanceof ImageBitmap) ? -1 : 1);
                         };
 
                         if (!engine.scenes.length) {

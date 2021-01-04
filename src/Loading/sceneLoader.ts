@@ -351,7 +351,7 @@ export class SceneLoader {
     public static readonly SUMMARY_LOGGING = Constants.SCENELOADER_SUMMARY_LOGGING;
 
     /**
-     * Detailled logging while loading
+     * Detailed logging while loading
      */
     public static readonly DETAILED_LOGGING = Constants.SCENELOADER_DETAILED_LOGGING;
 
@@ -791,8 +791,7 @@ export class SceneLoader {
                 });
             }, onProgress, (scene, message, exception) => {
                 reject(exception || new Error(message));
-            },
-                pluginExtension);
+            }, pluginExtension);
         });
     }
 

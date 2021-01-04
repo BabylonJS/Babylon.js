@@ -108,7 +108,7 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
         }
 
         if (this.freeSetIndex === _maxSets) {
-            throw "Too many textures or UBOs have been declared and it is not supprted in WebGPU.";
+            throw "Too many textures or UBOs have been declared and it is not supported in WebGPU.";
         }
 
         const returnValue = {

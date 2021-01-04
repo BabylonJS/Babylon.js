@@ -104,12 +104,12 @@ async function evaluate(test, resultCanvas, result, renderImage, waitRing, done)
     var testRes = true;
 
     // gl check
-    var gl = engine._gl;
-    if (gl && gl.getError() !== 0) {
+    var gl = engine._gl, glError = gl ? gl.getError() : 0;
+    if (gl && glError !== 0) {
         result.classList.add("failed");
         result.innerHTML = "×";
         testRes = false;
-        console.log('%c failed (gl error)', 'color: red');
+        console.log(`%c failed (gl error: ${glError})`, 'color: red');
     } else {
 
         // Visual check

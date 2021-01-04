@@ -34,6 +34,10 @@ declare module BABYLON {
         static GetLocalStorageItem(key: string): string;
         /** Set an item to top window local storage. */
         static SetLocalStorageItem(key: string, value: string): void;
+        /** Get an item from top window session storage. */
+        static GetSessionStorageItem(key: string): string;
+        /** Set an item to top window session storage. */
+        static SetSessionStorageItem(key: string, value: string): void;
         /** Store data object in the window state cache */
         static SetWindowState(name: string, data: any): void;
         /** Retrieve data object from the window state cache */
@@ -320,9 +324,9 @@ declare module BABYLON {
         /** Gets the current recast navigation mesh. (Navigation Helper) */
         static GetNavigationMesh(): BABYLON.Mesh;
         /** Bake the recast navigation mesh from geometry. (Navigation Helper) */
-        static BakeNavigationMesh(scene: BABYLON.Scene, meshes: BABYLON.Mesh[], properties: BABYLON.INavMeshParameters, debug?: boolean, color?: BABYLON.Color3): BABYLON.Mesh;
+        static BakeNavigationMesh(scene: BABYLON.Scene, meshes: BABYLON.Mesh[], properties: BABYLON.INavMeshParameters, debug?: boolean, color?: BABYLON.Color3, collisionMesh?: boolean): BABYLON.Mesh;
         /** Load the recast navigation mesh binary data. (Navigation Helper) */
-        static LoadNavigationMesh(scene: BABYLON.Scene, data: Uint8Array, debug?: boolean, color?: BABYLON.Color3, timeSteps?: number): BABYLON.Mesh;
+        static LoadNavigationMesh(scene: BABYLON.Scene, data: Uint8Array, debug?: boolean, color?: BABYLON.Color3, timeSteps?: number, collisionMesh?: boolean): BABYLON.Mesh;
         /** Save the recast navigation mesh binary data. (Navigation Helper) */
         static SaveNavigationMesh(): Uint8Array;
         /** Computes a recast navigation path. (Navigation Helper) */
@@ -855,7 +859,7 @@ declare module BABYLON {
         IndexOf = 3
     }
     enum PlayerNumber {
-        None = 0,
+        Auto = 0,
         One = 1,
         Two = 2,
         Three = 3,
@@ -1370,7 +1374,10 @@ declare module BABYLON {
         private static TmpAmmoVectorB;
         private static TmpAmmoVectorC;
         private static TmpAmmoVectorD;
-        static AddMeshVerts(btTriangleMesh: any, topLevelObject: BABYLON.IPhysicsEnabledObject, object: BABYLON.IPhysicsEnabledObject, scaling?: boolean): number;
+        private static TmpAmmoNormalA;
+        private static TmpAmmoNormalB;
+        private static TmpAmmoNormalC;
+        static AddMeshVerts(btTriangleMesh: any, topLevelObject: BABYLON.IPhysicsEnabledObject, object: BABYLON.IPhysicsEnabledObject, scaling?: boolean, normals?: boolean): number;
         static AddHullVerts(btConvexHullShape: any, topLevelObject: BABYLON.IPhysicsEnabledObject, object: BABYLON.IPhysicsEnabledObject, scaling?: boolean): number;
         static CreateImpostorCustomShape(scene: BABYLON.Scene, impostor: BABYLON.PhysicsImpostor, type: number, showDebugColliders?: boolean, colliderVisibility?: number): any;
         static ShowDebugColliders(): boolean;
@@ -2617,7 +2624,6 @@ declare module BABYLON {
         /** Sets entity collision shape margin using physics impostor body. (Advanved Use Only) */
         setCollisionShapeMargin(margin: number): void;
         /** Gets the entity contact processing threshold using physics impostor body. (Advanved Use Only) */
-        getContactProcessingThreshold(): number;
         /** Sets entity contact processing threshold using physics impostor body. (Advanved Use Only) */
         setContactProcessingThreshold(threshold: number): void;
         /** TODO */

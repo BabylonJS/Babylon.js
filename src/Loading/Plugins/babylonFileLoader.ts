@@ -39,7 +39,7 @@ export var _BabylonLoaderRegistered = true;
  */
 export class BabylonFileLoaderConfiguration {
     /**
-     * The loader does not allow injecting custom physix engine into the plugins.
+     * The loader does not allow injecting custom physics engine into the plugins.
      * Unfortunately in ES6, we need to manually inject them into the plugin.
      * So you could set this variable to your engine import to make it work.
      */
