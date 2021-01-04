@@ -567,7 +567,7 @@ void main(void) {
             float scatteringDiffusionProfile = 255.;
         #endif
 
-        gl_FragData[PREPASS_IRRADIANCE_INDEX] = vec4(irradiance, scatteringDiffusionProfile / 255.); // Irradiance + SS diffusion profile
+        gl_FragData[PREPASS_IRRADIANCE_INDEX] = vec4(clamp(irradiance, vec3(0.), vec3(1.)), scatteringDiffusionProfile / 255.); // Irradiance + SS diffusion profile
     #else
         gl_FragData[0] = vec4(finalColor.rgb, finalColor.a);
     #endif
