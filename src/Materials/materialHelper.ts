@@ -60,6 +60,34 @@ export class MaterialHelper {
     }
 
     /**
+     * Update the scene ubo before it can be used in rendering processing
+     * @param scene the scene to retrieve the ubo from
+     * @returns the scene UniformBuffer
+     */
+    public static FinalizeSceneUbo(scene: Scene): UniformBuffer {
+        const ubo = scene.getSceneUniformBuffer();
+        const eyePosition = MaterialHelper.BindEyePosition(null, scene);
+        ubo.updateFloat4("vEyePosition",
+            eyePosition.x,
+            eyePosition.y,
+            eyePosition.z,
+            eyePosition.w);
+
+        ubo.update();
+
+        return ubo;
+    }
+
+    /**
+     * Binds the scene's uniform buffer to the effect.
+     * @param effect defines the effect to bind to the scene uniform buffer
+     * @param sceneUbo defines the uniform buffer storing scene data
+     */
+    public static BindSceneUniformBuffer(effect: Effect, sceneUbo: UniformBuffer): void {
+        sceneUbo.bindToEffect(effect, "Scene");
+    }
+
+    /**
      * Helps preparing the defines values about the UVs in used in the effect.
      * UVs are shared as much as we can across channels in the shaders.
      * @param texture The texture we are preparing the UVs for
@@ -354,9 +382,14 @@ export class MaterialHelper {
             index: "PREPASS_ALBEDO_INDEX",
         },
         {
-            type: Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE,
-            define: "PREPASS_DEPTHNORMAL",
-            index: "PREPASS_DEPTHNORMAL_INDEX",
+            type: Constants.PREPASS_DEPTH_TEXTURE_TYPE,
+            define: "PREPASS_DEPTH",
+            index: "PREPASS_DEPTH_INDEX",
+        },
+        {
+            type: Constants.PREPASS_NORMAL_TEXTURE_TYPE,
+            define: "PREPASS_NORMAL",
+            index: "PREPASS_NORMAL_INDEX",
         }];
 
         if (scene.prePassRenderer && scene.prePassRenderer.enabled && canRenderToMRT) {

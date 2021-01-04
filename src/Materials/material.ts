@@ -481,6 +481,13 @@ export class Material implements IAnimatable {
     }
 
     /**
+     * Can this material render to prepass
+     */
+    public get isPrePassCapable(): boolean {
+        return false;
+    }
+
+    /**
      * Specifies if depth writing should be disabled
      */
     @serialize()
@@ -928,34 +935,6 @@ export class Material implements IAnimatable {
     }
 
     /**
-     * Update the scene ubo before it can be used in rendering processing
-     * @param scene the scene to retrieve the ubo from
-     * @returns the scene UniformBuffer
-     */
-    public finalizeSceneUbo(scene: Scene): UniformBuffer {
-        const ubo = scene.getSceneUniformBuffer();
-        const eyePosition = MaterialHelper.BindEyePosition(null, scene);
-        ubo.updateFloat4("vEyePosition",
-            eyePosition.x,
-            eyePosition.y,
-            eyePosition.z,
-            eyePosition.w);
-
-        ubo.update();
-
-        return ubo;
-    }
-
-    /**
-     * Binds the scene's uniform buffer to the effect.
-     * @param effect defines the effect to bind to the scene uniform buffer
-     * @param sceneUbo defines the uniform buffer storing scene data
-     */
-    public bindSceneUniformBuffer(effect: Effect, sceneUbo: UniformBuffer): void {
-        sceneUbo.bindToEffect(effect, "Scene");
-    }
-
-    /**
      * Binds the view matrix to the effect
      * @param effect defines the effect to bind the view matrix to
      */
@@ -1002,8 +981,8 @@ export class Material implements IAnimatable {
         if (this._needToBindSceneUbo) {
             if (effect) {
                 this._needToBindSceneUbo = false;
-                this.finalizeSceneUbo(this.getScene());
-                this.bindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
+                MaterialHelper.FinalizeSceneUbo(this.getScene());
+                MaterialHelper.BindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
             }
         }
         if (mesh) {

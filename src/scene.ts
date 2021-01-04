@@ -897,7 +897,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
     * Flag indicating that the frame buffer binding is handled by another component
     */
-    public prePass: boolean = false;
+    public get prePass(): boolean {
+        return !!this.prePassRenderer && this.prePassRenderer.defaultRT.enabled;
+    }
 
     // Lights
     private _shadowsEnabled = true;
@@ -1284,6 +1286,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Defines the actions happening before clear the canvas.
      */
     public _beforeClearStage = Stage.Create<SimpleStageAction>();
+    /**
+     * @hidden
+     * Defines the actions happening before clear the canvas.
+     */
+    public _beforeRenderTargetClearStage = Stage.Create<RenderTargetStageAction>();
     /**
      * @hidden
      * Defines the actions when collecting render targets for the frame.
@@ -4112,7 +4119,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         // Clear
-        if ((this.autoClearDepthAndStencil || this.autoClear) && !this.prePass) {
+        if (this.autoClearDepthAndStencil || this.autoClear) {
             this._engine.clear(this.clearColor,
                 this.autoClear || this.forceWireframe || this.forcePointsCloud,
                 this.autoClearDepthAndStencil,

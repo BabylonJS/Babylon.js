@@ -1186,7 +1186,16 @@ export class Engine extends ThinEngine {
      * @param name name of the channel
      */
     public setTextureFromPostProcess(channel: number, postProcess: Nullable<PostProcess>, name: string): void {
-        this._bindTexture(channel, postProcess ? postProcess._textures.data[postProcess._currentRenderTextureInd] : null, name);
+        let postProcessInput = null;
+        if (postProcess) {
+            if (postProcess._textures.data[postProcess._currentRenderTextureInd]) {
+                postProcessInput = postProcess._textures.data[postProcess._currentRenderTextureInd];
+            } else if (postProcess._forcedOutputTexture) {
+                postProcessInput = postProcess._forcedOutputTexture;
+            }
+        }
+
+        this._bindTexture(channel, postProcessInput, name);
     }
 
     /**
