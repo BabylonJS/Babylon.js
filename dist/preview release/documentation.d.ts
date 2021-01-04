@@ -1118,10 +1118,15 @@ declare module BABYLON {
          */
         static readonly PREPASS_COLOR_TEXTURE_TYPE: number;
         /**
-         * Constant used to retrieve depth + normal index in the textures array in the prepass
-         * using the getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE)
+         * Constant used to retrieve depth index in the textures array in the prepass
+         * using the getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)
          */
-        static readonly PREPASS_DEPTHNORMAL_TEXTURE_TYPE: number;
+        static readonly PREPASS_DEPTH_TEXTURE_TYPE: number;
+        /**
+         * Constant used to retrieve normal index in the textures array in the prepass
+         * using the getIndex(Constants.PREPASS_NORMAL_TEXTURE_TYPE)
+         */
+        static readonly PREPASS_NORMAL_TEXTURE_TYPE: number;
         /**
          * Constant used to retrieve albedo index in the textures array in the prepass
          * using the getIndex(Constants.PREPASS_ALBEDO_TEXTURE_TYPE)
@@ -11097,9 +11102,10 @@ declare module BABYLON {
         static readonly STEP_EVALUATESUBMESH_BOUNDINGBOXRENDERER: number;
         static readonly STEP_PREACTIVEMESH_BOUNDINGBOXRENDERER: number;
         static readonly STEP_CAMERADRAWRENDERTARGET_EFFECTLAYER: number;
+        static readonly STEP_BEFORECAMERADRAW_PREPASS: number;
         static readonly STEP_BEFORECAMERADRAW_EFFECTLAYER: number;
         static readonly STEP_BEFORECAMERADRAW_LAYER: number;
-        static readonly STEP_BEFORECAMERADRAW_PREPASS: number;
+        static readonly STEP_BEFORERENDERTARGETDRAW_PREPASS: number;
         static readonly STEP_BEFORERENDERTARGETDRAW_LAYER: number;
         static readonly STEP_BEFORERENDERINGMESH_PREPASS: number;
         static readonly STEP_BEFORERENDERINGMESH_OUTLINE: number;
@@ -11110,12 +11116,13 @@ declare module BABYLON {
         static readonly STEP_BEFORECAMERAUPDATE_SIMPLIFICATIONQUEUE: number;
         static readonly STEP_BEFORECAMERAUPDATE_GAMEPAD: number;
         static readonly STEP_BEFORECLEAR_PROCEDURALTEXTURE: number;
+        static readonly STEP_AFTERRENDERTARGETDRAW_PREPASS: number;
         static readonly STEP_AFTERRENDERTARGETDRAW_LAYER: number;
+        static readonly STEP_AFTERCAMERADRAW_PREPASS: number;
         static readonly STEP_AFTERCAMERADRAW_EFFECTLAYER: number;
         static readonly STEP_AFTERCAMERADRAW_LENSFLARESYSTEM: number;
         static readonly STEP_AFTERCAMERADRAW_EFFECTLAYER_DRAW: number;
         static readonly STEP_AFTERCAMERADRAW_LAYER: number;
-        static readonly STEP_AFTERCAMERADRAW_PREPASS: number;
         static readonly STEP_AFTERRENDER_AUDIO: number;
         static readonly STEP_GATHERRENDERTARGETS_DEPTHRENDERER: number;
         static readonly STEP_GATHERRENDERTARGETS_GEOMETRYBUFFERRENDERER: number;
@@ -11123,6 +11130,7 @@ declare module BABYLON {
         static readonly STEP_GATHERRENDERTARGETS_POSTPROCESSRENDERPIPELINEMANAGER: number;
         static readonly STEP_GATHERACTIVECAMERARENDERTARGETS_DEPTHRENDERER: number;
         static readonly STEP_BEFORECLEARSTAGE_PREPASS: number;
+        static readonly STEP_BEFORERENDERTARGETCLEARSTAGE_PREPASS: number;
         static readonly STEP_POINTERMOVE_SPRITE: number;
         static readonly STEP_POINTERDOWN_SPRITE: number;
         static readonly STEP_POINTERUP_SPRITE: number;
@@ -11202,7 +11210,7 @@ declare module BABYLON {
     /**
      * Strong typing of a Render Target related stage step action
      */
-    export type RenderTargetStageAction = (renderTarget: RenderTargetTexture) => void;
+    export type RenderTargetStageAction = (renderTarget: RenderTargetTexture, faceIndex?: number, layer?: number) => void;
     /**
      * Strong typing of a RenderingGroup related stage step action
      */
@@ -12877,7 +12885,6 @@ declare module BABYLON {
         protected _dumpPropertiesCode(): string;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
-        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -13008,7 +13015,6 @@ declare module BABYLON {
         protected _dumpPropertiesCode(): string;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
-        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -13194,7 +13200,6 @@ declare module BABYLON {
         protected _dumpPropertiesCode(): string;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
-        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -13271,7 +13276,6 @@ declare module BABYLON {
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
-        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -13345,7 +13349,6 @@ declare module BABYLON {
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
-        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -18288,17 +18291,19 @@ declare module BABYLON {
              * @see https://doc.babylonjs.com/features/webgl2#multiple-render-target
              * @param size defines the size of the texture
              * @param options defines the creation options
+             * @param initializeBuffers if set to true, the engine will make an initializing call of drawBuffers
              * @returns the cube texture as an InternalTexture
              */
-            createMultipleRenderTarget(size: any, options: IMultiRenderTargetOptions): InternalTexture[];
+            createMultipleRenderTarget(size: any, options: IMultiRenderTargetOptions, initializeBuffers?: boolean): InternalTexture[];
             /**
              * Update the sample count for a given multiple render target texture
              * @see https://doc.babylonjs.com/features/webgl2#multisample-render-targets
              * @param textures defines the textures to update
              * @param samples defines the sample count to set
+             * @param initializeBuffers if set to true, the engine will make an initializing call of drawBuffers
              * @returns the effective sample count (could be 0 if multisample render targets are not supported)
              */
-            updateMultipleRenderTargetTextureSampleCount(textures: Nullable<InternalTexture[]>, samples: number): number;
+            updateMultipleRenderTargetTextureSampleCount(textures: Nullable<InternalTexture[]>, samples: number, initializeBuffers?: boolean): number;
             /**
              * Select a subsets of attachments to draw to.
              * @param attachments gl attachments
@@ -18312,8 +18317,14 @@ declare module BABYLON {
             buildTextureLayout(textureStatus: boolean[]): number[];
             /**
              * Restores the webgl state to only draw on the main color attachment
+             * when the frame buffer associated is the canvas frame buffer
              */
             restoreSingleAttachment(): void;
+            /**
+             * Restores the webgl state to only draw on the main color attachment
+             * when the frame buffer associated is not the canvas frame buffer
+             */
+            restoreSingleAttachmentForRenderTarget(): void;
             /**
              * Clears a list of attachments
              * @param attachments list of the attachments
@@ -18366,6 +18377,10 @@ declare module BABYLON {
          * Define the default type of the buffers we are creating
          */
         defaultType?: number;
+        /**
+         * Define the default type of the buffers we are creating
+         */
+        drawOnlyOnFirstAttachmentByDefault?: boolean;
     }
     /**
      * A multi render target, like a render target provides the ability to render to a texture.
@@ -18378,6 +18393,7 @@ declare module BABYLON {
         private _textures;
         private _multiRenderTargetOptions;
         private _count;
+        private _drawOnlyOnFirstAttachmentByDefault;
         /**
          * Get if draw buffers are currently supported by the used hardware and browser.
          */
@@ -18655,6 +18671,79 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * A multi render target designed to render the prepass.
+     * Prepass is a scene component used to render information in multiple textures
+     * alongside with the scene materials rendering.
+     * Note : This is an internal class, and you should NOT need to instanciate this.
+     * Only the `PrePassRenderer` should instanciate this class.
+     * It is more likely that you need a regular `MultiRenderTarget`
+     * @hidden
+     */
+    export class PrePassRenderTarget extends MultiRenderTarget {
+        /**
+         * @hidden
+         */
+        _beforeCompositionPostProcesses: PostProcess[];
+        /**
+         * Image processing post process for composition
+         */
+        imageProcessingPostProcess: ImageProcessingPostProcess;
+        /**
+         * @hidden
+         */
+        _engine: Engine;
+        /**
+         * @hidden
+         */
+        _scene: Scene;
+        /**
+         * @hidden
+         */
+        _outputPostProcess: Nullable<PostProcess>;
+        /**
+         * @hidden
+         */
+        _internalTextureDirty: boolean;
+        /**
+          * Is this render target enabled for prepass rendering
+          */
+        enabled: boolean;
+        /**
+          * Render target associated with this prePassRenderTarget
+          * If this is `null`, it means this prePassRenderTarget is associated with the scene
+          */
+        renderTargetTexture: Nullable<RenderTargetTexture>;
+        constructor(name: string, renderTargetTexture: Nullable<RenderTargetTexture>, size: any, count: number, scene: Scene, options?: IMultiRenderTargetOptions | undefined);
+        /**
+         * Creates a composition effect for this RT
+         * @hidden
+         */
+        _createCompositionEffect(): void;
+        /**
+         * Checks that the size of this RT is still adapted to the desired render size.
+         * @hidden
+         */
+        _checkSize(): void;
+        /**
+         * Changes the number of render targets in this MRT
+         * Be careful as it will recreate all the data in the new texture.
+         * @param count new texture count
+         * @param options Specifies texture types and sampling modes for new textures
+         */
+        updateCount(count: number, options?: IMultiRenderTargetOptions): void;
+        /**
+         * Resets the post processes chains applied to this RT.
+         * @hidden
+         */
+        _resetPostProcessChain(): void;
+        /**
+         * Diposes this render target
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Interface for defining prepass effects in the prepass post-process pipeline
      */
     export interface PrePassEffectConfiguration {
@@ -18674,6 +18763,10 @@ declare module BABYLON {
          * Is the effect enabled
          */
         enabled: boolean;
+        /**
+         * Does the output of this prepass need to go through imageprocessing
+         */
+        needsImageProcessing?: boolean;
         /**
          * Disposes the effect configuration
          */
@@ -19415,8 +19508,10 @@ declare module BABYLON {
         PREPASS_IRRADIANCE_INDEX: number;
         PREPASS_ALBEDO: boolean;
         PREPASS_ALBEDO_INDEX: number;
-        PREPASS_DEPTHNORMAL: boolean;
-        PREPASS_DEPTHNORMAL_INDEX: number;
+        PREPASS_DEPTH: boolean;
+        PREPASS_DEPTH_INDEX: number;
+        PREPASS_NORMAL: boolean;
+        PREPASS_NORMAL_INDEX: number;
         PREPASS_POSITION: boolean;
         PREPASS_POSITION_INDEX: number;
         PREPASS_VELOCITY: boolean;
@@ -19708,6 +19803,10 @@ declare module BABYLON {
          * Defines additional PrePass parameters for the material.
          */
         readonly prePassConfiguration: PrePassConfiguration;
+        /**
+         * Can this material render to prepass
+         */
+        get isPrePassCapable(): boolean;
         /**
          * Gets whether the color curves effect is enabled.
          */
@@ -21677,8 +21776,10 @@ declare module BABYLON {
         PREPASS_IRRADIANCE_INDEX: number;
         PREPASS_ALBEDO: boolean;
         PREPASS_ALBEDO_INDEX: number;
-        PREPASS_DEPTHNORMAL: boolean;
-        PREPASS_DEPTHNORMAL_INDEX: number;
+        PREPASS_DEPTH: boolean;
+        PREPASS_DEPTH_INDEX: number;
+        PREPASS_NORMAL: boolean;
+        PREPASS_NORMAL_INDEX: number;
         PREPASS_POSITION: boolean;
         PREPASS_POSITION_INDEX: number;
         PREPASS_VELOCITY: boolean;
@@ -22210,6 +22311,10 @@ declare module BABYLON {
          * Gets a boolean indicating that current material needs to register RTT
          */
         get hasRenderTargetTextures(): boolean;
+        /**
+         * Can this material render to prepass
+         */
+        get isPrePassCapable(): boolean;
         /**
          * Gets the name of the material class.
          */
@@ -22795,6 +22900,20 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var geometryVertexDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var geometryUboDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var geometryVertexShader: {
         name: string;
         shader: string;
@@ -22811,10 +22930,15 @@ declare module BABYLON {
      */
     export class GeometryBufferRenderer {
         /**
-         * Constant used to retrieve the depth + normal texture index in the G-Buffer textures array
-         * using getIndex(GeometryBufferRenderer.DEPTHNORMAL_TEXTURE_INDEX)
+         * Constant used to retrieve the depth texture index in the G-Buffer textures array
+         * using getIndex(GeometryBufferRenderer.DEPTH_TEXTURE_INDEX)
          */
-        static readonly DEPTHNORMAL_TEXTURE_TYPE: number;
+        static readonly DEPTH_TEXTURE_TYPE: number;
+        /**
+         * Constant used to retrieve the normal texture index in the G-Buffer textures array
+         * using getIndex(GeometryBufferRenderer.NORMAL_TEXTURE_INDEX)
+         */
+        static readonly NORMAL_TEXTURE_TYPE: number;
         /**
          * Constant used to retrieve the position texture index in the G-Buffer textures array
          * using getIndex(GeometryBufferRenderer.POSITION_TEXTURE_INDEX)
@@ -22863,10 +22987,12 @@ declare module BABYLON {
         private _positionIndex;
         private _velocityIndex;
         private _reflectivityIndex;
-        private _depthNormalIndex;
+        private _depthIndex;
+        private _normalIndex;
         private _linkedWithPrePass;
         private _prePassRenderer;
         private _attachments;
+        private _useUbo;
         protected _effect: Effect;
         protected _cachedDefines: string;
         /**
@@ -23003,7 +23129,6 @@ declare module BABYLON {
     export class PrePassRenderer {
         /** @hidden */
         static _SceneComponentInitialization: (scene: Scene) => void;
-        private _textureFormats;
         /**
          * To save performance, we can excluded skinned meshes from the prepass
          */
@@ -23014,49 +23139,75 @@ declare module BABYLON {
          * and you don't want a material to show in the effect.
          */
         excludedMaterials: Material[];
-        private _textureIndices;
         private _scene;
         private _engine;
-        private _isDirty;
         /**
          * Number of textures in the multi render target texture where the scene is directly rendered
          */
         mrtCount: number;
-        /**
-         * The render target where the scene is directly rendered
-         */
-        prePassRT: MultiRenderTarget;
-        private _multiRenderAttachments;
-        private _defaultAttachments;
-        private _postProcesses;
-        private readonly _clearColor;
-        /**
-         * Image processing post process for composition
-         */
-        imageProcessingPostProcess: ImageProcessingPostProcess;
-        /**
-         * Configuration for prepass effects
-         */
-        private _effectConfigurations;
         private _mrtFormats;
         private _mrtLayout;
-        private _enabled;
+        private _textureIndices;
+        private _multiRenderAttachments;
+        private _defaultAttachments;
+        private _clearAttachments;
         /**
-         * Indicates if the prepass is enabled
+         * Returns the index of a texture in the multi render target texture array.
+         * @param type Texture type
+         * @return The index
          */
-        get enabled(): boolean;
+        getIndex(type: number): number;
         /**
          * How many samples are used for MSAA of the scene render target
          */
         get samples(): number;
         set samples(n: number);
-        private _geometryBuffer;
-        private _useGeometryBufferFallback;
+        private static _textureFormats;
+        private _isDirty;
         /**
-         * Uses the geometry buffer renderer as a fallback for non prepass capable effects
+         * The render target where the scene is directly rendered
          */
-        get useGeometryBufferFallback(): boolean;
-        set useGeometryBufferFallback(value: boolean);
+        defaultRT: PrePassRenderTarget;
+        /**
+         * Configuration for prepass effects
+         */
+        private _effectConfigurations;
+        /**
+         * @return the prepass render target for the rendering pass.
+         * If we are currently rendering a render target, it returns the PrePassRenderTarget
+         * associated with that render target. Otherwise, it returns the scene default PrePassRenderTarget
+         */
+        getRenderTarget(): PrePassRenderTarget;
+        /**
+         * @hidden
+         * Managed by the scene component
+         * @param prePassRenderTarget
+         */
+        _setRenderTarget(prePassRenderTarget: Nullable<PrePassRenderTarget>): void;
+        /**
+         * Returns true if the currently rendered prePassRenderTarget is the one
+         * associated with the scene.
+         */
+        get currentRTisSceneRT(): boolean;
+        private _geometryBuffer;
+        /**
+         * Prevents the PrePassRenderer from using the GeometryBufferRenderer as a fallback
+         */
+        doNotUseGeometryRendererFallback: boolean;
+        private _refreshGeometryBufferRendererLink;
+        private _currentTarget;
+        /**
+          * All the render targets generated by prepass
+          */
+        renderTargets: PrePassRenderTarget[];
+        private readonly _clearColor;
+        private _enabled;
+        private _needsCompositionForThisPass;
+        private _postProcessesSourceForThisPass;
+        /**
+         * Indicates if the prepass is enabled
+         */
+        get enabled(): boolean;
         /**
          * Set to true to disable gamma transform in PrePass.
          * Can be useful in case you already proceed to gamma transform on a material level
@@ -23068,8 +23219,15 @@ declare module BABYLON {
          * @param scene The scene
          */
         constructor(scene: Scene);
-        private _initializeAttachments;
-        private _createCompositionEffect;
+        /**
+         * Creates a new PrePassRenderTarget
+         * This should be the only way to instanciate a `PrePassRenderTarget`
+         * @param name Name of the `PrePassRenderTarget`
+         * @param renderTargetTexture RenderTarget the `PrePassRenderTarget` will be attached to.
+         * Can be `null` if the created `PrePassRenderTarget` is attached to the scene (default framebuffer).
+         * @hidden
+         */
+        _createRenderTarget(name: string, renderTargetTexture: Nullable<RenderTargetTexture>): PrePassRenderTarget;
         /**
          * Indicates if rendering a prepass is supported
          */
@@ -23080,6 +23238,9 @@ declare module BABYLON {
          * @param subMesh Submesh on which the effect is applied
          */
         bindAttachmentsForEffect(effect: Effect, subMesh: SubMesh): void;
+        private _reinitializeAttachments;
+        private _resetLayout;
+        private _updateGeometryBufferLayout;
         /**
          * Restores attachments for single texture draw.
          */
@@ -23087,38 +23248,41 @@ declare module BABYLON {
         /**
          * @hidden
          */
-        _beforeCameraDraw(): void;
+        _beforeDraw(camera?: Camera, faceIndex?: number, layer?: number): void;
+        private _prepareFrame;
+        private _renderPostProcesses;
         /**
          * @hidden
          */
-        _afterCameraDraw(): void;
-        private _checkRTSize;
-        private _bindFrameBuffer;
+        _afterDraw(faceIndex?: number, layer?: number): void;
         /**
-         * Clears the scene render target (in the sense of settings pixels to the scene clear color value)
+         * Clears the current prepass render target (in the sense of settings pixels to the scene clear color value)
+         * @hidden
          */
-        clear(): void;
-        private _setState;
-        private _updateGeometryBufferLayout;
+        _clear(): void;
+        private _bindFrameBuffer;
+        private _setEnabled;
+        private _setRenderTargetEnabled;
         /**
-         * Adds an effect configuration to the prepass.
+         * Adds an effect configuration to the prepass render target.
          * If an effect has already been added, it won't add it twice and will return the configuration
          * already present.
          * @param cfg the effect configuration
          * @return the effect configuration now used by the prepass
          */
         addEffectConfiguration(cfg: PrePassEffectConfiguration): PrePassEffectConfiguration;
-        /**
-         * Returns the index of a texture in the multi render target texture array.
-         * @param type Texture type
-         * @return The index
-         */
-        getIndex(type: number): number;
         private _enable;
         private _disable;
-        private _resetLayout;
-        private _resetPostProcessChain;
-        private _bindPostProcessChain;
+        private _getPostProcessesSource;
+        private _setupOutputForThisPass;
+        private _linkInternalTexture;
+        private _needsImageProcessing;
+        private _hasImageProcessing;
+        /**
+         * Internal, gets the first post proces.
+         * @returns the first post process to be run on this camera.
+         */
+        private _getFirstPostProcess;
         /**
          * Marks the prepass renderer as dirty, triggering a check if the prepass is necessary for the next rendering.
          */
@@ -23241,6 +23405,7 @@ declare module BABYLON {
         private _engine;
         private _options;
         private _reusable;
+        private _renderId;
         private _textureType;
         private _textureFormat;
         /**
@@ -23248,6 +23413,11 @@ declare module BABYLON {
         * @hidden
         */
         _textures: SmartArray<InternalTexture>;
+        /**
+        * Smart array of input and output textures for the post process.
+        * @hidden
+        */
+        private _textureCache;
         /**
         * The index in _textures that corresponds to the output texture.
         * @hidden
@@ -23258,11 +23428,13 @@ declare module BABYLON {
         private _fragmentUrl;
         private _vertexUrl;
         private _parameters;
+        protected _postProcessDefines: Nullable<string>;
         private _scaleRatio;
         protected _indexParameters: any;
         private _shareOutputWithPostProcess;
         private _texelSize;
-        private _forcedOutputTexture;
+        /** @hidden */
+        _forcedOutputTexture: Nullable<InternalTexture>;
         /**
         * Prepass configuration in case this post process needs a texture from prepass
         * @hidden
@@ -23403,6 +23575,9 @@ declare module BABYLON {
         isReusable(): boolean;
         /** invalidate frameBuffer to hint the postprocess to create a depth buffer */
         markTextureDirty(): void;
+        private _createRenderTargetTexture;
+        private _flushTextureCache;
+        private _resize;
         /**
          * Activates the post process by intializing the textures to be used when executed. Notifies onActivateObservable.
          * When this post process is used in a pipeline, this is call will bind the input texture of this post process to the output of the previous.
@@ -23431,6 +23606,7 @@ declare module BABYLON {
          */
         apply(): Nullable<Effect>;
         private _disposeTextures;
+        private _disposeTextureCache;
         /**
          * Sets the required values to the prepass renderer.
          * @param prePassRenderer defines the prepass renderer to setup.
@@ -23448,6 +23624,11 @@ declare module BABYLON {
          */
         serialize(): any;
         /**
+         * Clones this post process
+         * @returns a new post process similar to this one
+         */
+        clone(): Nullable<PostProcess>;
+        /**
          * Creates a material from parsed material data
          * @param parsedPostProcess defines parsed post process data
          * @param scene defines the hosting scene
@@ -23455,6 +23636,8 @@ declare module BABYLON {
          * @returns a new post process
          */
         static Parse(parsedPostProcess: any, scene: Scene, rootUrl: string): Nullable<PostProcess>;
+        /** @hidden */
+        static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<PostProcess>;
     }
 }
 declare module BABYLON {
@@ -23641,7 +23824,6 @@ declare module BABYLON {
         private _imageProcessingConfigChangeObserver;
         private _transformMatrix;
         private _mirrorMatrix;
-        private _savedViewMatrix;
         private _blurX;
         private _blurY;
         private _adaptiveBlurKernel;
@@ -27979,6 +28161,18 @@ declare module BABYLON {
          */
         static BindEyePosition(effect: Nullable<Effect>, scene: Scene, variableName?: string, isVector3?: boolean): Vector4;
         /**
+         * Update the scene ubo before it can be used in rendering processing
+         * @param scene the scene to retrieve the ubo from
+         * @returns the scene UniformBuffer
+         */
+        static FinalizeSceneUbo(scene: Scene): UniformBuffer;
+        /**
+         * Binds the scene's uniform buffer to the effect.
+         * @param effect defines the effect to bind to the scene uniform buffer
+         * @param sceneUbo defines the uniform buffer storing scene data
+         */
+        static BindSceneUniformBuffer(effect: Effect, sceneUbo: UniformBuffer): void;
+        /**
          * Helps preparing the defines values about the UVs in used in the effect.
          * UVs are shared as much as we can across channels in the shaders.
          * @param texture The texture we are preparing the UVs for
@@ -30420,6 +30614,10 @@ declare module BABYLON {
          */
         get needDepthPrePass(): boolean;
         /**
+         * Can this material render to prepass
+         */
+        get isPrePassCapable(): boolean;
+        /**
          * Specifies if depth writing should be disabled
          */
         disableDepthWrite: boolean;
@@ -30653,18 +30851,6 @@ declare module BABYLON {
          * @param world defines the world transformation matrix
          */
         bindOnlyWorldMatrix(world: Matrix): void;
-        /**
-         * Update the scene ubo before it can be used in rendering processing
-         * @param scene the scene to retrieve the ubo from
-         * @returns the scene UniformBuffer
-         */
-        finalizeSceneUbo(scene: Scene): UniformBuffer;
-        /**
-         * Binds the scene's uniform buffer to the effect.
-         * @param effect defines the effect to bind to the scene uniform buffer
-         * @param sceneUbo defines the uniform buffer storing scene data
-         */
-        bindSceneUniformBuffer(effect: Effect, sceneUbo: UniformBuffer): void;
         /**
          * Binds the view matrix to the effect
          * @param effect defines the effect to bind the view matrix to
@@ -38544,8 +38730,13 @@ declare module BABYLON {
          */
         ignoreCameraViewport: boolean;
         private _postProcessManager;
+        /**
+         * Post-processes for this render target
+         */
+        get postProcesses(): PostProcess[];
         private _postProcesses;
         private _resizeObserver;
+        private get _prePassEnabled();
         /**
         * An event triggered when the texture is unbind.
         */
@@ -38779,6 +38970,10 @@ declare module BABYLON {
          */
         _bindFrameBuffer(faceIndex?: number, layer?: number): void;
         protected unbindFrameBuffer(engine: Engine, faceIndex: number): void;
+        /**
+         * @hidden
+         */
+        _prepareFrame(scene: Scene, faceIndex?: number, layer?: number, useCameraPostProcess?: boolean): void;
         private renderToTarget;
         /**
          * Overrides the default sort function applied in the rendering group to prepare the meshes.
@@ -46416,7 +46611,7 @@ declare module BABYLON {
         /**
         * Flag indicating that the frame buffer binding is handled by another component
         */
-        prePass: boolean;
+        get prePass(): boolean;
         private _shadowsEnabled;
         /**
         * Gets or sets a boolean indicating if shadows are enabled on this scene
@@ -46650,6 +46845,11 @@ declare module BABYLON {
          * Defines the actions happening before clear the canvas.
          */
         _beforeClearStage: Stage<SimpleStageAction>;
+        /**
+         * @hidden
+         * Defines the actions happening before clear the canvas.
+         */
+        _beforeRenderTargetClearStage: Stage<RenderTargetStageAction>;
         /**
          * @hidden
          * Defines the actions when collecting render targets for the frame.
@@ -76387,6 +76587,10 @@ declare module BABYLON {
              */
             disablePrePassRenderer(): void;
         }
+        interface RenderTargetTexture {
+            /** @hidden */
+            _prePassRenderTarget: PrePassRenderTarget;
+        }
     /**
      * Defines the Geometry Buffer scene component responsible to manage a G-Buffer useful
      * in several rendering techniques.
@@ -76409,6 +76613,9 @@ declare module BABYLON {
          * Registers the component in a given scene
          */
         register(): void;
+        private _beforeRenderTargetDraw;
+        private _afterRenderTargetDraw;
+        private _beforeRenderTargetClearStage;
         private _beforeCameraDraw;
         private _afterCameraDraw;
         private _beforeClearStage;
@@ -76490,6 +76697,10 @@ declare module BABYLON {
          * Is subsurface enabled
          */
         enabled: boolean;
+        /**
+         * Does the output of this prepass need to go through imageprocessing
+         */
+        needsImageProcessing: boolean;
         /**
          * Name of the configuration
          */

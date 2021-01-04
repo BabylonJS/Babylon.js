@@ -1,5 +1,4 @@
 precision highp float;
-precision highp int;
 
 #include<bonesDeclaration>
 
@@ -7,6 +6,7 @@ precision highp int;
 #include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]
 
 #include<instancesDeclaration>
+#include<__decl__geometryVertex>
 
 attribute vec3 position;
 attribute vec3 normal;
@@ -34,10 +34,6 @@ attribute vec3 normal;
 	attribute vec2 uv2;
 	#endif
 #endif
-
-// Uniform
-uniform mat4 viewProjection;
-uniform mat4 view;
 
 #ifdef BUMP
 varying mat4 vWorldView;

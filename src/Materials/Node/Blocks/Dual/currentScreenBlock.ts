@@ -300,11 +300,6 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
             this.texture = Texture.Parse(serializationObject.texture, scene, rootUrl) as Texture;
         }
     }
-
-    public dispose() {
-        super.dispose();
-        this.texture?.dispose();
-    }
 }
 
 _TypeStore.RegisteredTypes["BABYLON.CurrentScreenBlock"] = CurrentScreenBlock;
