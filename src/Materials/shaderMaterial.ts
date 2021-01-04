@@ -580,7 +580,7 @@ export class ShaderMaterial extends Material {
 
         // Morph
         let numInfluencers = 0;
-        const manager = (<Mesh>mesh).morphTargetManager;
+        const manager = mesh ? (<Mesh>mesh).morphTargetManager : null;
         if (manager) {
             const uv = manager.supportsUVs && defines.indexOf("#define UV1") !== -1;
             const tangent = manager.supportsTangents && defines.indexOf("#define TANGENT") !== -1;
