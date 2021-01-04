@@ -26,7 +26,7 @@ export class FogBlock extends NodeMaterialBlock {
      * @param name defines the block name
      */
     public constructor(name: string) {
-        super(name, NodeMaterialBlockTargets.VertexAndFragment, true);
+        super(name, NodeMaterialBlockTargets.VertexAndFragment, false);
 
         // Vertex
         this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Vertex);
