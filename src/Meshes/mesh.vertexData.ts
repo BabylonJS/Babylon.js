@@ -689,7 +689,7 @@ export class VertexData {
     /**
      * Extracts the vertexData from the geometry
      * @param geometry the geometry from which to extract the VertexData
-     * @param copyWhenShared defines if the VertexData must be cloned when the geometrty is shared between multiple meshes, optional, default false
+     * @param copyWhenShared defines if the VertexData must be cloned when the geometry is shared between multiple meshes, optional, default false
      * @param forceCopy indicating that the VertexData must be cloned, optional, default false
      * @returns the object VertexData associated to the passed mesh
      */
@@ -1093,7 +1093,7 @@ export class VertexData {
       * * ratio : optional partitioning ratio / bounding box, required for facetPartitioning computation
       * * bInfo : optional bounding info, required for facetPartitioning computation
       * * bbSize : optional bounding box size data, required for facetPartitioning computation
-      * * subDiv : optional partitioning data about subdivsions on  each axis (int), required for facetPartitioning computation
+      * * subDiv : optional partitioning data about subdivisions on  each axis (int), required for facetPartitioning computation
       * * useRightHandedSystem: optional boolean to for right handed system computation
       * * depthSort : optional boolean to enable the facet depth sort computation
       * * distanceTo : optional Vector3 to compute the facet depth from this location
@@ -1156,8 +1156,8 @@ export class VertexData {
         let subSq = 0;
         if (computeFacetPartitioning && options && options.bbSize) {
             var ox = 0;                 // X partitioning index for facet position
-            var oy = 0;                 // Y partinioning index for facet position
-            var oz = 0;                 // Z partinioning index for facet position
+            var oy = 0;                 // Y partitioning index for facet position
+            var oz = 0;                 // Z partitioning index for facet position
             var b1x = 0;                // X partitioning index for facet v1 vertex
             var b1y = 0;                // Y partitioning index for facet v1 vertex
             var b1z = 0;                // z partitioning index for facet v1 vertex

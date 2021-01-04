@@ -361,7 +361,7 @@ function workerFunc(): void {
     }
 
     /**
-     * Retreives information about the basis file eg. dimensions
+     * Retrieves information about the basis file eg. dimensions
      * @param basisFile the basis file to get the info from
      * @returns information about the basis file
      */

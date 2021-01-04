@@ -249,7 +249,7 @@ export class InstancedLinesMesh extends InstancedMesh {
     /**
      * The intersection Threshold is the margin applied when intersection a segment of the LinesMesh with a Ray.
      * This margin is expressed in world space coordinates, so its value may vary.
-     * Initilized with the intersectionThreshold value of the source LinesMesh
+     * Initialized with the intersectionThreshold value of the source LinesMesh
      */
     public intersectionThreshold: number;
 

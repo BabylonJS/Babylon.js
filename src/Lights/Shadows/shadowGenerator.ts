@@ -47,7 +47,7 @@ export interface ICustomShaderOptions {
     attributes?: string[];
 
     /**
-     * The list of unifrom names used in the shader
+     * The list of uniform names used in the shader
      */
     uniforms?: string[];
 
@@ -75,9 +75,9 @@ export interface IShadowGenerator {
     getShadowMap(): Nullable<RenderTargetTexture>;
 
     /**
-     * Determine wheter the shadow generator is ready or not (mainly all effects and related post processes needs to be ready).
+     * Determine whether the shadow generator is ready or not (mainly all effects and related post processes needs to be ready).
      * @param subMesh The submesh we want to render in the shadow map
-     * @param useInstances Defines wether will draw in the map using instances
+     * @param useInstances Defines whether will draw in the map using instances
      * @param isTransparent Indicates that isReady is called for a transparent subMesh
      * @returns true if ready otherwise, false
      */
@@ -92,14 +92,14 @@ export interface IShadowGenerator {
     /**
      * Binds the shadow related information inside of an effect (information like near, far, darkness...
      * defined in the generator but impacting the effect).
-     * It implies the unifroms available on the materials are the standard BJS ones.
+     * It implies the uniforms available on the materials are the standard BJS ones.
      * @param lightIndex Index of the light in the enabled light list of the material owning the effect
-     * @param effect The effect we are binfing the information for
+     * @param effect The effect we are binding the information for
      */
     bindShadowLight(lightIndex: string, effect: Effect): void;
     /**
      * Gets the transformation matrix used to project the meshes into the map from the light point of view.
-     * (eq to shadow prjection matrix * light transform matrix)
+     * (eq to shadow projection matrix * light transform matrix)
      * @returns The transform matrix used to create the shadow map
      */
     getTransformMatrix(): Matrix;
@@ -111,14 +111,14 @@ export interface IShadowGenerator {
     recreateShadowMap(): void;
 
     /**
-     * Forces all the attached effect to compile to enable rendering only once ready vs. lazyly compiling effects.
+     * Forces all the attached effect to compile to enable rendering only once ready vs. lazily compiling effects.
      * @param onCompiled Callback triggered at the and of the effects compilation
      * @param options Sets of optional options forcing the compilation with different modes
      */
     forceCompilation(onCompiled?: (generator: IShadowGenerator) => void, options?: Partial<{ useInstances: boolean }>): void;
 
     /**
-     * Forces all the attached effect to compile to enable rendering only once ready vs. lazyly compiling effects.
+     * Forces all the attached effect to compile to enable rendering only once ready vs. lazily compiling effects.
      * @param options Sets of optional options forcing the compilation with different modes
      * @returns A promise that resolves when the compilation completes
      */
@@ -269,13 +269,13 @@ export class ShadowGenerator implements IShadowGenerator {
 
     protected _normalBias = 0;
     /**
-     * Gets the normalBias: offset applied on the depth preventing acnea (along side the normal direction and proportinal to the light/normal angle).
+     * Gets the normalBias: offset applied on the depth preventing acnea (along side the normal direction and proportional to the light/normal angle).
      */
     public get normalBias(): number {
         return this._normalBias;
     }
     /**
-     * Sets the normalBias: offset applied on the depth preventing acnea (along side the normal direction and proportinal to the light/normal angle).
+     * Sets the normalBias: offset applied on the depth preventing acnea (along side the normal direction and proportional to the light/normal angle).
      */
     public set normalBias(normalBias: number) {
         this._normalBias = normalBias;
@@ -908,7 +908,7 @@ export class ShadowGenerator implements IShadowGenerator {
         // Custom render function.
         this._shadowMap.customRenderFunction = this._renderForShadowMap.bind(this);
 
-        // Force the mesh is ready funcion to true as we are double checking it
+        // Force the mesh is ready function to true as we are double checking it
         // in the custom render function. Also it prevents side effects and useless
         // shader variations in DEPTHPREPASS mode.
         this._shadowMap.customIsReadyFunction = (m: AbstractMesh, r: number) => {
@@ -931,7 +931,7 @@ export class ShadowGenerator implements IShadowGenerator {
             this._scene.setTransformMatrix(this._viewMatrix, this._projectionMatrix);
         });
 
-        // Blur if required afer render.
+        // Blur if required after render.
         this._shadowMap.onAfterUnbindObservable.add(() => {
             this._scene.updateTransformMatrix(); // restore the view/projection matrices of the active camera
 
@@ -1222,7 +1222,7 @@ export class ShadowGenerator implements IShadowGenerator {
     }
 
     /**
-     * Forces all the attached effect to compile to enable rendering only once ready vs. lazyly compiling effects.
+     * Forces all the attached effect to compile to enable rendering only once ready vs. lazily compiling effects.
      * @param onCompiled Callback triggered at the and of the effects compilation
      * @param options Sets of optional options forcing the compilation with different modes
      */
@@ -1282,7 +1282,7 @@ export class ShadowGenerator implements IShadowGenerator {
     }
 
     /**
-     * Forces all the attached effect to compile to enable rendering only once ready vs. lazyly compiling effects.
+     * Forces all the attached effect to compile to enable rendering only once ready vs. lazily compiling effects.
      * @param options Sets of optional options forcing the compilation with different modes
      * @returns A promise that resolves when the compilation completes
      */
@@ -1322,9 +1322,9 @@ export class ShadowGenerator implements IShadowGenerator {
     }
 
     /**
-     * Determine wheter the shadow generator is ready or not (mainly all effects and related post processes needs to be ready).
+     * Determine whether the shadow generator is ready or not (mainly all effects and related post processes needs to be ready).
      * @param subMesh The submesh we want to render in the shadow map
-     * @param useInstances Defines wether will draw in the map using instances
+     * @param useInstances Defines whether will draw in the map using instances
      * @param isTransparent Indicates that isReady is called for a transparent subMesh
      * @returns true if ready otherwise, false
      */
@@ -1593,7 +1593,7 @@ export class ShadowGenerator implements IShadowGenerator {
      * Binds the shadow related information inside of an effect (information like near, far, darkness...
      * defined in the generator but impacting the effect).
      * @param lightIndex Index of the light in the enabled light list of the material owning the effect
-     * @param effect The effect we are binfing the information for
+     * @param effect The effect we are binding the information for
      */
     public bindShadowLight(lightIndex: string, effect: Effect): void {
         const light = this._light;
@@ -1638,7 +1638,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
     /**
      * Gets the transformation matrix used to project the meshes into the map from the light point of view.
-     * (eq to shadow prjection matrix * light transform matrix)
+     * (eq to shadow projection matrix * light transform matrix)
      * @returns The transform matrix used to create the shadow map
      */
     public getTransformMatrix(): Matrix {

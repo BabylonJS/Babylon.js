@@ -50,7 +50,7 @@ declare module "../Engines/engine" {
          * @param uniformsNames defines a list of attribute names
          * @param samplers defines an array of string used to represent textures
          * @param defines defines the string containing the defines to use to compile the shaders
-         * @param fallbacks defines the list of potential fallbacks to use if shader conmpilation fails
+         * @param fallbacks defines the list of potential fallbacks to use if shader compilation fails
          * @param onCompiled defines a function to call when the effect creation is successful
          * @param onError defines a function to call when the effect creation has failed
          * @param particleSystem the particle system you want to create the effect for

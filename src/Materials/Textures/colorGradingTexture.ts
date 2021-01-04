@@ -35,7 +35,7 @@ export class ColorGradingTexture extends BaseTexture {
     /**
      * Instantiates a ColorGradingTexture from the following parameters.
      *
-     * @param url The location of the color gradind data (currently only supporting 3dl)
+     * @param url The location of the color grading data (currently only supporting 3dl)
      * @param sceneOrEngine The scene or engine the texture will be used in
      * @param onLoad defines a callback triggered when the texture has been loaded
      */
@@ -231,7 +231,7 @@ export class ColorGradingTexture extends BaseTexture {
     }
 
     /**
-     * Clones the color gradind texture.
+     * Clones the color grading texture.
      */
     public clone(): ColorGradingTexture {
         var newTexture = new ColorGradingTexture(this.url, this.getScene() || this._getEngine()!);
@@ -263,7 +263,7 @@ export class ColorGradingTexture extends BaseTexture {
      * @param parsedTexture The texture information being parsedTexture
      * @param scene The scene to load the texture in
      * @param rootUrl The root url of the data assets to load
-     * @return A color gradind texture
+     * @return A color grading texture
      */
     public static Parse(parsedTexture: any, scene: Scene): Nullable<ColorGradingTexture> {
         var texture = null;
