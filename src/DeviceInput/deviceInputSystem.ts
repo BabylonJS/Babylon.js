@@ -398,7 +398,7 @@ export class DeviceInputSystem implements IDisposable {
      * @returns DeviceType enum value
      */
     private _getGamepadDeviceType(deviceName: string): DeviceType {
-        if (deviceName.indexOf("054c") !== -1) { // DualShock 4 Gamepad
+        if (deviceName.indexOf("054c") !== -1 && deviceName.indexOf("0ce6") === -1) { // DualShock 4 Gamepad
             return DeviceType.DualShock;
         }
         else if (deviceName.indexOf("Xbox One") !== -1 || deviceName.search("Xbox 360") !== -1 || deviceName.search("xinput") !== -1) { // Xbox Gamepad
