@@ -5,6 +5,8 @@ import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { ShaderCodeInliner } from "babylonjs/Engines/Processors/shaderCodeInliner";
+import { ICustomShaderNameResolveOptions } from "babylonjs/Materials/material";
 
 export class ShaderAlebdoParts {
 
@@ -109,7 +111,18 @@ export class PBRCustomMaterial extends PBRMaterial {
         return arr;
     }
 
-    public Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines | string[], attributes?: string[]): string {
+    public Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines | string[], attributes?: string[], options?: ICustomShaderNameResolveOptions): string {
+        if (options) {
+            options.processFinalCode = (type: string, code: string) => {
+                if (type === "vertex") {
+                    return code;
+                }
+                const sci = new ShaderCodeInliner(code);
+                sci.inlineToken = "#define pbr_inline";
+                sci.processCode();
+                return sci.code;
+            };
+        }
 
         if (attributes && this._customAttributes && this._customAttributes.length > 0) {
             attributes.push(...this._customAttributes);
