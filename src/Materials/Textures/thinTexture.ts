@@ -183,7 +183,7 @@ export class ThinTexture {
 
     /**
      * Get the underlying lower level texture from Babylon.
-     * @returns the insternal texture
+     * @returns the internal texture
      */
     public getInternalTexture(): Nullable<InternalTexture> {
         return this._texture;

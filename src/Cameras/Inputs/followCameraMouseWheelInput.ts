@@ -73,7 +73,7 @@ export class FollowCameraMouseWheelInput implements ICameraInput<FollowCamera> {
                                 <number>(<unknown>this.axisControlHeight) +
                                 <number>(<unknown>this.axisControlRotation)) <= 1,
                                "wheelDeltaPercentage only usable when mouse wheel " +
-                               "controlls ONE axis. " +
+                               "controls ONE axis. " +
                                "Currently enabled: " +
                                "axisControlRadius: " + this.axisControlRadius +
                                ", axisControlHeightOffset: " + this.axisControlHeight +
@@ -134,7 +134,7 @@ export class FollowCameraMouseWheelInput implements ICameraInput<FollowCamera> {
     }
 
     /**
-     * Gets the class name of the current intput.
+     * Gets the class name of the current input.
      * @returns the class name
      */
     public getClassName(): string {

@@ -152,7 +152,7 @@ export class MirrorTexture extends RenderTargetTexture {
 
         this._updateGammaSpace();
         this._imageProcessingConfigChangeObserver = scene.imageProcessingConfiguration.onUpdateParameters.add(() => {
-            this._updateGammaSpace;
+            this._updateGammaSpace();
         });
 
         const engine = this.getScene()!.getEngine();

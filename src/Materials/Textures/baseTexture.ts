@@ -83,7 +83,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     public level = 1;
 
     /**
-     * Define the UV chanel to use starting from 0 and defaulting to 0.
+     * Define the UV channel to use starting from 0 and defaulting to 0.
      * This is part of the texture as textures usually maps to one uv set.
      */
     @serialize()
@@ -415,7 +415,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     private _uid: Nullable<string> = null;
 
     /**
-     * Define if the texture is preventinga material to render or not.
+     * Define if the texture is preventing a material to render or not.
      * If not and the texture is not ready, the engine will use a default black texture instead.
      */
     public get isBlocking(): boolean {
@@ -427,7 +427,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
      * Base class of all the textures in babylon.
      * It groups all the common properties the materials, post process, lights... might need
      * in order to make a correct use of the texture.
-     * @param sceneOrEngine Define the scene or engine the texture blongs to
+     * @param sceneOrEngine Define the scene or engine the texture belongs to
      */
     constructor(sceneOrEngine: Nullable<Scene | ThinEngine>) {
         super(null);
@@ -476,7 +476,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     }
 
     /**
-     * Get the texture transform matrix used to offset tile the texture for istance.
+     * Get the texture transform matrix used to offset tile the texture for instance.
      * @returns the transformation matrix
      */
     public getTextureMatrix(): Matrix {

@@ -104,7 +104,7 @@ export class SpotLight extends ShadowLight {
 
     private _projectionTextureMatrix = Matrix.Zero();
     /**
-    * Allows reading the projecton texture
+    * Allows reading the projection texture
     */
     public get projectionTextureMatrix(): Matrix {
         return this._projectionTextureMatrix;
@@ -368,7 +368,7 @@ export class SpotLight extends ShadowLight {
     }
 
     /**
-     * Sets the passed Effect object with the SpotLight transfomed position (or position if not parented) and normalized direction.
+     * Sets the passed Effect object with the SpotLight transformed position (or position if not parented) and normalized direction.
      * @param effect The effect to update
      * @param lightIndex The index of the light in the effect to update
      * @returns The spot light

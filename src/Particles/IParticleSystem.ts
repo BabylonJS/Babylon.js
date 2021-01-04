@@ -288,7 +288,7 @@ export interface IParticleSystem {
     render(): number;
     /**
      * Dispose the particle system and frees its associated resources.
-     * @param disposeTexture defines if the particule texture must be disposed as well (true by default)
+     * @param disposeTexture defines if the particle texture must be disposed as well (true by default)
      */
     dispose(disposeTexture?: boolean): void;
     /**
@@ -417,19 +417,19 @@ export interface IParticleSystem {
     removeSizeGradient(gradient: number): IParticleSystem;
     /**
      * Gets the current list of color gradients.
-     * You must use addColorGradient and removeColorGradient to udpate this list
+     * You must use addColorGradient and removeColorGradient to update this list
      * @returns the list of color gradients
      */
     getColorGradients(): Nullable<Array<ColorGradient>>;
     /**
      * Gets the current list of size gradients.
-     * You must use addSizeGradient and removeSizeGradient to udpate this list
+     * You must use addSizeGradient and removeSizeGradient to update this list
      * @returns the list of size gradients
      */
     getSizeGradients(): Nullable<Array<FactorGradient>>;
     /**
      * Gets the current list of angular speed gradients.
-     * You must use addAngularSpeedGradient and removeAngularSpeedGradient to udpate this list
+     * You must use addAngularSpeedGradient and removeAngularSpeedGradient to update this list
      * @returns the list of angular speed gradients
      */
     getAngularSpeedGradients(): Nullable<Array<FactorGradient>>;
@@ -449,7 +449,7 @@ export interface IParticleSystem {
     removeAngularSpeedGradient(gradient: number): IParticleSystem;
     /**
      * Gets the current list of velocity gradients.
-     * You must use addVelocityGradient and removeVelocityGradient to udpate this list
+     * You must use addVelocityGradient and removeVelocityGradient to update this list
      * @returns the list of velocity gradients
      */
     getVelocityGradients(): Nullable<Array<FactorGradient>>;
@@ -469,7 +469,7 @@ export interface IParticleSystem {
     removeVelocityGradient(gradient: number): IParticleSystem;
     /**
      * Gets the current list of limit velocity gradients.
-     * You must use addLimitVelocityGradient and removeLimitVelocityGradient to udpate this list
+     * You must use addLimitVelocityGradient and removeLimitVelocityGradient to update this list
      * @returns the list of limit velocity gradients
      */
     getLimitVelocityGradients(): Nullable<Array<FactorGradient>>;
@@ -503,7 +503,7 @@ export interface IParticleSystem {
     removeDragGradient(gradient: number): IParticleSystem;
     /**
      * Gets the current list of drag gradients.
-     * You must use addDragGradient and removeDragGradient to udpate this list
+     * You must use addDragGradient and removeDragGradient to update this list
      * @returns the list of drag gradients
      */
     getDragGradients(): Nullable<Array<FactorGradient>>;
@@ -523,7 +523,7 @@ export interface IParticleSystem {
     removeEmitRateGradient(gradient: number): IParticleSystem;
     /**
      * Gets the current list of emit rate gradients.
-     * You must use addEmitRateGradient and removeEmitRateGradient to udpate this list
+     * You must use addEmitRateGradient and removeEmitRateGradient to update this list
      * @returns the list of emit rate gradients
      */
     getEmitRateGradients(): Nullable<Array<FactorGradient>>;
@@ -544,7 +544,7 @@ export interface IParticleSystem {
     removeStartSizeGradient(gradient: number): IParticleSystem;
     /**
      * Gets the current list of start size gradients.
-     * You must use addStartSizeGradient and removeStartSizeGradient to udpate this list
+     * You must use addStartSizeGradient and removeStartSizeGradient to update this list
      * @returns the list of start size gradients
      */
     getStartSizeGradients(): Nullable<Array<FactorGradient>>;
@@ -565,14 +565,14 @@ export interface IParticleSystem {
     removeLifeTimeGradient(gradient: number): IParticleSystem;
     /**
      * Gets the current list of life time gradients.
-     * You must use addLifeTimeGradient and removeLifeTimeGradient to udpate this list
+     * You must use addLifeTimeGradient and removeLifeTimeGradient to update this list
      * @returns the list of life time gradients
      */
     getLifeTimeGradients(): Nullable<Array<FactorGradient>>;
 
     /**
      * Gets the current list of color gradients.
-     * You must use addColorGradient and removeColorGradient to udpate this list
+     * You must use addColorGradient and removeColorGradient to update this list
      * @returns the list of color gradients
      */
     getColorGradients(): Nullable<Array<ColorGradient>>;
@@ -586,7 +586,7 @@ export interface IParticleSystem {
     addRampGradient(gradient: number, color: Color3): IParticleSystem;
     /**
      * Gets the current list of ramp gradients.
-     * You must use addRampGradient and removeRampGradient to udpate this list
+     * You must use addRampGradient and removeRampGradient to update this list
      * @returns the list of ramp gradients
      */
     getRampGradients(): Nullable<Array<Color3Gradient>>;
@@ -606,7 +606,7 @@ export interface IParticleSystem {
     addColorRemapGradient(gradient: number, min: number, max: number): IParticleSystem;
     /**
      * Gets the current list of color remap gradients.
-     * You must use addColorRemapGradient and removeColorRemapGradient to udpate this list
+     * You must use addColorRemapGradient and removeColorRemapGradient to update this list
      * @returns the list of color remap gradients
      */
     getColorRemapGradients(): Nullable<Array<FactorGradient>>;
@@ -621,7 +621,7 @@ export interface IParticleSystem {
     addAlphaRemapGradient(gradient: number, min: number, max: number): IParticleSystem;
     /**
      * Gets the current list of alpha remap gradients.
-     * You must use addAlphaRemapGradient and removeAlphaRemapGradient to udpate this list
+     * You must use addAlphaRemapGradient and removeAlphaRemapGradient to update this list
      * @returns the list of alpha remap gradients
      */
     getAlphaRemapGradients(): Nullable<Array<FactorGradient>>;

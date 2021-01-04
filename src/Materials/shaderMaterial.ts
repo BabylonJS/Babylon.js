@@ -39,7 +39,7 @@ export interface IShaderMaterialOptions {
     attributes: string[];
 
     /**
-     * The list of unifrom names used in the shader
+     * The list of uniform names used in the shader
      */
     uniforms: string[];
 
@@ -1111,7 +1111,7 @@ export class ShaderMaterial extends Material {
 
     /**
      * Creates a shader material from parsed shader material data
-     * @param source defines the JSON represnetation of the material
+     * @param source defines the JSON representation of the material
      * @param scene defines the hosting scene
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @returns a new material

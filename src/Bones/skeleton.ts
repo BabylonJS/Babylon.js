@@ -251,7 +251,7 @@ export class Skeleton implements IAnimatable {
     }
 
     /**
-     * Creater a new animation range
+     * Create a new animation range
      * @param name defines the name of the range
      * @param from defines the start key
      * @param to defines the end key
@@ -319,7 +319,7 @@ export class Skeleton implements IAnimatable {
         var ret = true;
         var frameOffset = this._getHighestAnimationFrame() + 1;
 
-        // make a dictionary of source skeleton's bones, so exact same order or doublely nested loop is not required
+        // make a dictionary of source skeleton's bones, so exact same order or doubly nested loop is not required
         var boneDict: { [key: string]: Bone } = {};
         var sourceBones = source.bones;
         var nBones: number;

@@ -144,7 +144,7 @@ export class EnvironmentTextureTools {
     /**
      * Creates an environment texture from a loaded cube texture.
      * @param texture defines the cube texture to convert in env file
-     * @return a promise containing the environment data if succesfull.
+     * @return a promise containing the environment data if successful.
      */
     public static async CreateEnvTextureAsync(texture: BaseTexture): Promise<ArrayBuffer> {
         let internalTexture = texture.getInternalTexture();

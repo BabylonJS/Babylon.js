@@ -10,7 +10,7 @@ import { Nullable } from '../../types';
 export class CustomParticleEmitter implements IParticleEmitterType {
 
     /**
-     * Gets or sets the position generator that will create the inital position of each particle.
+     * Gets or sets the position generator that will create the initial position of each particle.
      * Index will be provided when used with GPU particle. Particle will be provided when used with CPU particles
      */
     public particlePositionGenerator: (index: number, particle: Nullable<Particle>, outPosition: Vector3) => void = () => {};
@@ -103,7 +103,7 @@ export class CustomParticleEmitter implements IParticleEmitterType {
 
     /**
      * Returns a string to use to update the GPU particles update shader
-     * @returns a string containng the defines string
+     * @returns a string containing the defines string
      */
     public getEffectDefines(): string {
         return "#define CUSTOMEMITTER";

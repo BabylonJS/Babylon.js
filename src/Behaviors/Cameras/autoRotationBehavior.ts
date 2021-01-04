@@ -99,7 +99,7 @@ export class AutoRotationBehavior implements Behavior<ArcRotateCamera> {
      * Initializes the behavior.
      */
     public init(): void {
-        // Do notihng
+        // Do nothing
     }
 
     /**

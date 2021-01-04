@@ -96,7 +96,7 @@ export class LightBlock extends NodeMaterialBlock {
     }
 
     /**
-    * Gets the glossinness power component
+    * Gets the glossiness power component
     */
     public get glossPower(): NodeMaterialConnectionPoint {
         return this._inputs[4];

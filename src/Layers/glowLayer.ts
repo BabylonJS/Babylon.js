@@ -57,7 +57,7 @@ export interface IGlowLayerOptions {
     mainTextureRatio: number;
 
     /**
-     * Enforces a fixed size texture to ensure resize independant blur.
+     * Enforces a fixed size texture to ensure resize independent blur.
      */
     mainTextureFixedSize?: number;
 
@@ -72,7 +72,7 @@ export interface IGlowLayerOptions {
     camera: Nullable<Camera>;
 
     /**
-     * Enable MSAA by chosing the number of samples.
+     * Enable MSAA by choosing the number of samples.
      */
     mainTextureSamples?: number;
 
@@ -334,7 +334,7 @@ export class GlowLayer extends EffectLayer {
     /**
      * Checks for the readiness of the element composing the layer.
      * @param subMesh the mesh to check for
-     * @param useInstances specify wether or not to use instances to render the mesh
+     * @param useInstances specify whether or not to use instances to render the mesh
      * @param emissiveTexture the associated emissive texture used to generate the glow
      * @return true if ready otherwise, false
      */
@@ -351,7 +351,7 @@ export class GlowLayer extends EffectLayer {
     }
 
     /**
-     * Returns whether or nood the layer needs stencil enabled during the mesh rendering.
+     * Returns whether or not the layer needs stencil enabled during the mesh rendering.
      */
     public needStencil(): boolean {
         return false;
