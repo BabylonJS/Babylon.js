@@ -134,19 +134,19 @@ export class PostProcessRenderEffect {
 
     /**
      * Detaches the effect on cameras
-     * @param cameras The camera to detatch from.
+     * @param cameras The camera to detach from.
      * @hidden
      */
     public _detachCameras(cameras: Camera): void;
     /**
-     * Detatches the effect on cameras
-     * @param cameras The camera to detatch from.
+     * Detaches the effect on cameras
+     * @param cameras The camera to detach from.
      * @hidden
      */
     public _detachCameras(cameras: Camera[]): void;
     /**
-     * Detatches the effect on cameras
-     * @param cameras The camera to detatch from.
+     * Detaches the effect on cameras
+     * @param cameras The camera to detach from.
      * @hidden
      */
     public _detachCameras(cameras: any): void {
