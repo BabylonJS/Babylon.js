@@ -8,6 +8,7 @@ import { Scene } from "../../scene";
 import { Quaternion } from "../../Maths/math.vector";
 import { Axis } from '../../Maths/math.axis';
 import { Tools } from '../../Misc/tools';
+import { IPointerEvent } from "../../Events/deviceInputEvents";
 /**
  * Listen to mouse events to control the camera.
  * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -139,7 +140,7 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
 
     // Track mouse movement, when the pointer is not locked.
     private _pointerInput(p: any, s: any): void {
-        var e = <PointerEvent>p.event;
+        var e = <IPointerEvent>p.event;
 
         let camera = this.camera;
         let engine = camera.getEngine();

@@ -4,6 +4,7 @@ import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { BaseCameraPointersInput } from "../../Cameras/Inputs/BaseCameraPointersInput";
 import { PointerTouch } from "../../Events/pointerEvents";
+import { IPointerEvent } from "../../Events/deviceInputEvents";
 
 /**
  * Manage the pointers inputs to control an arc rotate camera.
@@ -223,7 +224,7 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
      * Called each time a new POINTERDOWN event occurs. Ie, for each button
      * press.
      */
-    protected onButtonDown(evt: PointerEvent): void {
+    protected onButtonDown(evt: IPointerEvent): void {
         this._isPanClick = evt.button === this.camera._panningMouseButton;
     }
 
@@ -231,7 +232,7 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
      * Called each time a new POINTERUP event occurs. Ie, for each button
      * release.
      */
-    protected onButtonUp(evt: PointerEvent): void {
+    protected onButtonUp(evt: IPointerEvent): void {
         this._twoFingerActivityCount = 0;
         this._isPinching = false;
     }

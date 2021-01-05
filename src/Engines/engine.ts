@@ -24,6 +24,7 @@ import "./Extensions/engine.alpha";
 import "./Extensions/engine.readTexture";
 import "./Extensions/engine.dynamicBuffer";
 import { IAudioEngine } from '../Audio/Interfaces/IAudioEngine';
+import { IPointerEvent } from "../Events/deviceInputEvents";
 
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
@@ -371,7 +372,7 @@ export class Engine extends ThinEngine {
     /**
      * Observable event triggered each time the canvas receives pointerout event
      */
-    public onCanvasPointerOutObservable = new Observable<PointerEvent>();
+    public onCanvasPointerOutObservable = new Observable<IPointerEvent>();
 
     /**
      * Observable raised when the engine begins a new frame

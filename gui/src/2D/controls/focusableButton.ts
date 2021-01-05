@@ -7,6 +7,7 @@ import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
 import { IFocusableControl } from "./focusableControl";
 import { Observable } from 'babylonjs/Misc/observable';
+import { IKeyboardEvent } from "babylonjs/Events/deviceInputEvents";
 
 /**
  * Class used to create a focusable button that can easily handle keyboard events
@@ -22,7 +23,7 @@ export class FocusableButton extends Button implements IFocusableControl {
     /** Observable raised when the control loses the focus */
     public onBlurObservable = new Observable<Button>();
     /** Observable raised when a key event was processed */
-    public onKeyboardEventProcessedObservable = new Observable<KeyboardEvent>();
+    public onKeyboardEventProcessedObservable = new Observable<IKeyboardEvent>();
 
     constructor(public name?: string) {
         super(name);
@@ -80,7 +81,7 @@ export class FocusableButton extends Button implements IFocusableControl {
      * Handles the keyboard event
      * @param evt Defines the KeyboardEvent
      */
-    public processKeyboard(evt: KeyboardEvent): void {
+    public processKeyboard(evt: IKeyboardEvent): void {
         this.onKeyboardEventProcessedObservable.notifyObservers(evt, -1, this);
     }
 
