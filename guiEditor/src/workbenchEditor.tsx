@@ -200,7 +200,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         }
 
         const deltaX = evt.clientX - this._startX;
-        const rootElement = evt.currentTarget.ownerDocument!.getElementById("node-editor-graph-root") as HTMLDivElement;
+        const rootElement = evt.currentTarget.ownerDocument!.getElementById("workbench-editor-workbench-root") as HTMLDivElement;
 
         if (forLeft) {
             this._leftWidth += deltaX;
@@ -287,7 +287,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         parentControl.style.padding = "0";
         parentControl.style.display = "grid";
         parentControl.style.gridTemplateRows = "40px auto";
-        parentControl.id = "node-editor-graph-root";
+        parentControl.id = "gui-editor-workbench-root";
         parentControl.className = "right-panel";
 
         popupWindow.document.body.appendChild(parentControl);
