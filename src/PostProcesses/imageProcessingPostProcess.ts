@@ -126,13 +126,13 @@ export class ImageProcessingPostProcess extends PostProcess {
     }
 
     /**
-     * Gets wether the color curves effect is enabled.
+     * Gets whether the color curves effect is enabled.
      */
     public get colorCurvesEnabled(): boolean {
         return this.imageProcessingConfiguration.colorCurvesEnabled;
     }
     /**
-     * Sets wether the color curves effect is enabled.
+     * Sets whether the color curves effect is enabled.
      */
     public set colorCurvesEnabled(value: boolean) {
         this.imageProcessingConfiguration.colorCurvesEnabled = value;
@@ -152,13 +152,13 @@ export class ImageProcessingPostProcess extends PostProcess {
     }
 
     /**
-     * Gets wether the color grading effect is enabled.
+     * Gets whether the color grading effect is enabled.
      */
     public get colorGradingEnabled(): boolean {
         return this.imageProcessingConfiguration.colorGradingEnabled;
     }
     /**
-     * Gets wether the color grading effect is enabled.
+     * Gets whether the color grading effect is enabled.
      */
     public set colorGradingEnabled(value: boolean) {
         this.imageProcessingConfiguration.colorGradingEnabled = value;
@@ -178,13 +178,13 @@ export class ImageProcessingPostProcess extends PostProcess {
     }
 
     /**
-     * Gets wether tonemapping is enabled or not.
+     * Gets whether tonemapping is enabled or not.
      */
     public get toneMappingEnabled(): boolean {
         return this._imageProcessingConfiguration.toneMappingEnabled;
     }
     /**
-     * Sets wether tonemapping is enabled or not
+     * Sets whether tonemapping is enabled or not
      */
     public set toneMappingEnabled(value: boolean) {
         this._imageProcessingConfiguration.toneMappingEnabled = value;
@@ -310,13 +310,13 @@ export class ImageProcessingPostProcess extends PostProcess {
     }
 
     /**
-     * Gets wether the vignette effect is enabled.
+     * Gets whether the vignette effect is enabled.
      */
     public get vignetteEnabled(): boolean {
         return this.imageProcessingConfiguration.vignetteEnabled;
     }
     /**
-     * Sets wether the vignette effect is enabled.
+     * Sets whether the vignette effect is enabled.
      */
     public set vignetteEnabled(value: boolean) {
         this.imageProcessingConfiguration.vignetteEnabled = value;
@@ -325,13 +325,13 @@ export class ImageProcessingPostProcess extends PostProcess {
     @serialize()
     private _fromLinearSpace = true;
     /**
-     * Gets wether the input of the processing is in Gamma or Linear Space.
+     * Gets whether the input of the processing is in Gamma or Linear Space.
      */
     public get fromLinearSpace(): boolean {
         return this._fromLinearSpace;
     }
     /**
-     * Sets wether the input of the processing is in Gamma or Linear Space.
+     * Sets whether the input of the processing is in Gamma or Linear Space.
      */
     public set fromLinearSpace(value: boolean) {
         if (this._fromLinearSpace === value) {

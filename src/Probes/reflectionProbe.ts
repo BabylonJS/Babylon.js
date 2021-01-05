@@ -77,7 +77,7 @@ export class ReflectionProbe {
      * @param size defines the texture resolution (for each face)
      * @param scene defines the hosting scene
      * @param generateMipMaps defines if mip maps should be generated automatically (true by default)
-     * @param useFloat defines if HDR data (flaot data) should be used to store colors (false by default)
+     * @param useFloat defines if HDR data (float data) should be used to store colors (false by default)
      */
     constructor(
         /** defines the name of the probe */
@@ -253,7 +253,7 @@ export class ReflectionProbe {
     }
 
     /**
-     * Get the class name of the relfection probe.
+     * Get the class name of the refection probe.
      * @returns "ReflectionProbe"
      */
     public getClassName(): string {
@@ -261,7 +261,7 @@ export class ReflectionProbe {
     }
 
     /**
-     * Serialize the reflection probe to a JSON representation we can easily use in the resepective Parse function.
+     * Serialize the reflection probe to a JSON representation we can easily use in the respective Parse function.
      * @returns The JSON representation of the texture
      */
     public serialize(): any {
