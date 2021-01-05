@@ -187,7 +187,7 @@ export class Animatable {
 
     /**
      * Gets the source animation for a specific property
-     * @param property defines the propertyu to look for
+     * @param property defines the property to look for
      * @returns null or the source animation for the given property
      */
     public getAnimationByTargetProperty(property: string): Nullable<Animation> {
@@ -204,7 +204,7 @@ export class Animatable {
 
     /**
      * Gets the runtime animation for a specific property
-     * @param property defines the propertyu to look for
+     * @param property defines the property to look for
      * @returns null or the runtime animation for the given property
      */
     public getRuntimeAnimationByTargetProperty(property: string): Nullable<RuntimeAnimation> {
@@ -357,7 +357,7 @@ export class Animatable {
 
     /**
      * Wait asynchronously for the animation to end
-     * @returns a promise which will be fullfilled when the animation ends
+     * @returns a promise which will be fulfilled when the animation ends
      */
     public waitAsync(): Promise<Animatable> {
         return new Promise((resolve, reject) => {

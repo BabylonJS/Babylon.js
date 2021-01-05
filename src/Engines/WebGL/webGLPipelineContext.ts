@@ -175,7 +175,7 @@ export class WebGLPipelineContext implements IPipelineContext {
     }
 
     /**
-     * Sets an interger value on a uniform variable.
+     * Sets an integer value on a uniform variable.
      * @param uniformName Name of the variable.
      * @param value Value to be set.
      */
@@ -344,7 +344,7 @@ export class WebGLPipelineContext implements IPipelineContext {
     }
 
     /**
-     * Sets a 3x3 matrix on a uniform variable. (Speicified as [1,2,3,4,5,6,7,8,9] will result in [1,2,3][4,5,6][7,8,9] matrix)
+     * Sets a 3x3 matrix on a uniform variable. (Specified as [1,2,3,4,5,6,7,8,9] will result in [1,2,3][4,5,6][7,8,9] matrix)
      * @param uniformName Name of the variable.
      * @param matrix matrix to be set.
      */
@@ -354,7 +354,7 @@ export class WebGLPipelineContext implements IPipelineContext {
     }
 
     /**
-     * Sets a 2x2 matrix on a uniform variable. (Speicified as [1,2,3,4] will result in [1,2][3,4] matrix)
+     * Sets a 2x2 matrix on a uniform variable. (Specified as [1,2,3,4] will result in [1,2][3,4] matrix)
      * @param uniformName Name of the variable.
      * @param matrix matrix to be set.
      */

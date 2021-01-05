@@ -84,7 +84,7 @@ export class Polygon {
      * @param ymin bottom Y coord
      * @param xmax top X coord
      * @param ymax top Y coord
-     * @returns points that make the resulting rectation
+     * @returns points that make the resulting rectangle
      */
     static Rectangle(xmin: number, ymin: number, xmax: number, ymax: number): Vector2[] {
         return [

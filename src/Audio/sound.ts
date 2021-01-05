@@ -624,7 +624,7 @@ export class Sound {
 
     /**
      * Sets the position of the emitter if spatial sound is enabled
-     * @param newPosition Defines the new posisiton
+     * @param newPosition Defines the new position
      */
     public setPosition(newPosition: Vector3): void {
         this._position = newPosition;
@@ -721,7 +721,7 @@ export class Sound {
                         // required to manage properly the new suspended default state of Chrome
                         // When the option 'streaming: true' is used, we need first to wait for
                         // the audio engine to be unlocked by a user gesture before trying to play
-                        // an HTML Audio elememt
+                        // an HTML Audio element
                         var tryToPlay = () => {
                             if (Engine.audioEngine.unlocked) {
                                 var playPromise = this._htmlAudioElement.play();
@@ -1078,11 +1078,11 @@ export class Sound {
     }
 
     /**
-     * Parse a JSON representation of a sound to innstantiate in a given scene
+     * Parse a JSON representation of a sound to instantiate in a given scene
      * @param parsedSound Define the JSON representation of the sound (usually coming from the serialize method)
      * @param scene Define the scene the new parsed sound should be created in
      * @param rootUrl Define the rooturl of the load in case we need to fetch relative dependencies
-     * @param sourceSound Define a cound place holder if do not need to instantiate a new one
+     * @param sourceSound Define a sound place holder if do not need to instantiate a new one
      * @returns the newly parsed sound
      */
     public static Parse(parsedSound: any, scene: Scene, rootUrl: string, sourceSound?: Sound): Sound {

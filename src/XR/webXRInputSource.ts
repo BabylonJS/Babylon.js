@@ -43,7 +43,7 @@ export class WebXRInputSource {
     private _disposed = false;
 
     /**
-     * Represents the part of the controller that is held. This may not exist if the controller is the head mounted display itself, if thats the case only the pointer from the head will be availible
+     * Represents the part of the controller that is held. This may not exist if the controller is the head mounted display itself, if that's the case only the pointer from the head will be available
      */
     public grip?: AbstractMesh;
     /**

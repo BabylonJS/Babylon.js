@@ -120,7 +120,7 @@ export interface IEdgesRenderer extends IDisposable {
     render(): void;
 
     /**
-     * Checks wether or not the edges renderer is ready to render.
+     * Checks whether or not the edges renderer is ready to render.
      * @return true if ready, otherwise false.
      */
     isReady(): boolean;
@@ -150,7 +150,7 @@ export interface IEdgesRendererOptions {
     useFastVertexMerger?: boolean;
 
     /**
-     * During edges processing, the vertices are merged if they are close enough: epsilonVertexMerge is the limit whithin which vertices are considered to be equal.
+     * During edges processing, the vertices are merged if they are close enough: epsilonVertexMerge is the limit within which vertices are considered to be equal.
      * The default value is 1e-6
      * This option is used only if useAlternateEdgeFinder = true
      */
@@ -844,7 +844,7 @@ export class EdgesRenderer implements IEdgesRenderer {
     }
 
     /**
-     * Checks wether or not the edges renderer is ready to render.
+     * Checks whether or not the edges renderer is ready to render.
      * @return true if ready, otherwise false.
      */
     public isReady(): boolean {

@@ -6,7 +6,7 @@ import { InternalTexture } from "../../Materials/Textures/internalTexture";
  */
 export interface IInternalTextureLoader {
     /**
-     * Defines wether the loader supports cascade loading the different faces.
+     * Defines whether the loader supports cascade loading the different faces.
      */
     supportCascades: boolean;
 
