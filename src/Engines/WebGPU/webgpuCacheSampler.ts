@@ -75,12 +75,13 @@ export class WebGPUCacheSampler {
         return code;
     }
 
-    private static _GetSamplerFilterDescriptor(internalTexture: InternalTexture): {
+    private static _GetSamplerFilterDescriptor(internalTexture: InternalTexture, anisotropy: number): {
         magFilter: GPUFilterMode,
         minFilter: GPUFilterMode,
         mipmapFilter: GPUFilterMode,
         lodMinClamp?: number,
         lodMaxClamp?: number,
+        anisotropyEnabled?: boolean,
     } {
         let magFilter: GPUFilterMode, minFilter: GPUFilterMode, mipmapFilter: GPUFilterMode, lodMinClamp: number | undefined, lodMaxClamp: number | undefined;
         const useMipMaps = internalTexture.generateMipMaps;
@@ -192,6 +193,15 @@ export class WebGPUCacheSampler {
                 break;
         }
 
+        if (anisotropy > 1 && (lodMinClamp !== 0 || lodMaxClamp !== 0)) {
+            return {
+                magFilter: WebGPUConstants.FilterMode.Linear,
+                minFilter: WebGPUConstants.FilterMode.Linear,
+                mipmapFilter: WebGPUConstants.FilterMode.Linear,
+                anisotropyEnabled: true,
+            };
+        }
+
         return {
             magFilter,
             minFilter,
@@ -226,11 +236,13 @@ export class WebGPUCacheSampler {
     }
 
     private static _GetSamplerDescriptor(internalTexture: InternalTexture): GPUSamplerDescriptor {
+        const anisotropy = internalTexture.generateMipMaps ? (internalTexture._cachedAnisotropicFilteringLevel ?? 1) : 1;
+        const filterDescriptor = this._GetSamplerFilterDescriptor(internalTexture, anisotropy);
         return {
-            ...this._GetSamplerFilterDescriptor(internalTexture),
+            ...filterDescriptor,
             ...this._GetSamplerWrappingDescriptor(internalTexture),
             compare: internalTexture._comparisonFunction ? WebGPUTextureHelper.GetCompareFunction(internalTexture._comparisonFunction) : undefined,
-            maxAnisotropy: internalTexture._cachedAnisotropicFilteringLevel ?? 1,
+            maxAnisotropy: filterDescriptor.anisotropyEnabled ? anisotropy : 1,
         };
     }
 
