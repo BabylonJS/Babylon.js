@@ -176,15 +176,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }, false);     
 
         // Store additional data to serialization object
-        this.props.globalState.storeEditorData = (editorData, graphFrame) => {
-            editorData.frames = [];
-            if (graphFrame) {
-                
-            } else {
-                editorData.x = this.x;
-                editorData.y = this.y;
-                editorData.zoom = this.zoom;
-            }
+        this.props.globalState.storeEditorData = (editorData) => {
+            editorData.x = this.x;
+            editorData.y = this.y;
+            editorData.zoom = this.zoom;
         }
         this.props.globalState.workbench = this;
     }
