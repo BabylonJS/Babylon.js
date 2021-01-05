@@ -23,7 +23,6 @@ export class GlobalState {
     onIsLoadingChanged = new Observable<boolean>();
     onSelectionBoxMoved = new Observable<ClientRect | DOMRect>();
     onGuiNodeRemovalObservable = new Observable<GUINode>();
-    onGridSizeChanged = new Observable<void>();
     backgroundColor: Color4;
     blockKeyboardEvents = false;
     controlCamera: boolean;
