@@ -66,19 +66,19 @@ export class GUINode {
     }
 
     public get width() {
-        return this.guiNode.widthInPixels;
+        return this.guiControl.widthInPixels;
     }
 
     public get height() {
-        return this.guiNode.heightInPixels;
+        return this.guiControl.heightInPixels;
     }
 
     public get id() {
-        return this.guiNode.uniqueId;
+        return this.guiControl.uniqueId;
     }
 
     public get name() {
-        return this.guiNode.name;
+        return this.guiControl.name;
     }
 
     public get isSelected() {
@@ -101,29 +101,29 @@ export class GUINode {
         }
     }
 
-    public constructor(globalState: GlobalState, public guiNode: Control) {
+    public constructor(globalState: GlobalState, public guiControl: Control) {
         this._globalState = globalState;
         this._ownerCanvas = this._globalState.workbench;
         
-        guiNode.onPointerUpObservable.add(evt => {
+        guiControl.onPointerUpObservable.add(evt => {
             this.clicked = false;
             console.log("up");
         });
 
-        guiNode.onPointerDownObservable.add( evt => {
+        guiControl.onPointerDownObservable.add( evt => {
             this.clicked = true;
             this.isSelected = true;
             console.log("down");
         }
         );
 
-        guiNode.onPointerEnterObservable.add( evt => {
+        guiControl.onPointerEnterObservable.add( evt => {
             this._ownerCanvas.isOverGUINode = true;
             console.log("in");
         }
         );
 
-        guiNode.onPointerOutObservable.add( evt => {
+        guiControl.onPointerOutObservable.add( evt => {
             this._ownerCanvas.isOverGUINode = false;
             console.log("out");
         }
@@ -158,7 +158,7 @@ export class GUINode {
     }
 
     public renderProperties(): Nullable<JSX.Element> {
-        let className = this.guiNode.getClassName();
+        let className = this.guiControl.getClassName();
         let control = PropertyGuiLedger.RegisteredControls[className];
         
         if (!control) {
@@ -167,14 +167,14 @@ export class GUINode {
 
         return React.createElement(control, {
         globalState: this._globalState,
-        guiBlock: this.guiNode
+        guiControl: this.guiControl
         });
     }
 
     public updateVisual()
     {
-        this.guiNode.leftInPixels = this.x;
-        this.guiNode.topInPixels = this.y;
+        this.guiControl.leftInPixels = this.x;
+        this.guiControl.topInPixels = this.y;
     }
 
     public dispose() {
@@ -193,6 +193,6 @@ export class GUINode {
             this._globalState.onSelectionBoxMoved.remove(this._onSelectionBoxMovedObserver);
         }
 
-        this.guiNode.dispose();   
+        this.guiControl.dispose();   
     }
 }
