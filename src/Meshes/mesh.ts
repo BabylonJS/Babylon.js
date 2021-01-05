@@ -3298,6 +3298,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 return;
             }
 
+            if (morphTargetManager.isUsingTextureForTargets) {
+                return;
+            }
+
             for (var index = 0; index < morphTargetManager.numInfluencers; index++) {
                 var morphTarget = morphTargetManager.getActiveTarget(index);
 
