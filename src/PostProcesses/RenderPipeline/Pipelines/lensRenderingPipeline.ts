@@ -294,7 +294,7 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
      */
     public disableEdgeBlur() { this._edgeBlur = 0; }
     /**
-     * Sets the amout of grain
+     * Sets the amount of grain
      * @param amount Amount of grain
      */
     public setGrainAmount(amount: number) { this._grainAmount = amount; }
@@ -389,7 +389,7 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
 
     /**
      * Removes the internal pipeline assets and detaches the pipeline from the scene cameras
-     * @param disableDepthRender If the scens depth rendering should be disabled (default: false)
+     * @param disableDepthRender If the scene's depth rendering should be disabled (default: false)
      */
     public dispose(disableDepthRender: boolean = false): void {
         this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
