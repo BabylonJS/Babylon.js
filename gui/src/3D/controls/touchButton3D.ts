@@ -1,7 +1,7 @@
 // Assumptions: absolute position of button mesh is inside the mesh
 
 import { DeepImmutableObject, Nullable } from "babylonjs/types";
-import { Vector3 } from "babylonjs/Maths/math.vector";
+import { Vector3, Quaternion} from "babylonjs/Maths/math.vector";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
@@ -80,7 +80,8 @@ export class TouchButton3D extends Button3D {
     private _collisionMesh: Mesh;
     private _collidableFrontDirection: Vector3;
     private _lastTouchPoint: Vector3;
-    private _buttonForwardRay: Ray;
+    private _tempButtonForwardRay: Ray;
+    private _lastKnownCollidableScale: Vector3;
 
     private _collidableInitialized = false;
 
@@ -103,7 +104,7 @@ export class TouchButton3D extends Button3D {
     constructor(name?: string, collisionMesh?: Mesh) {
         super(name);
 
-        this._buttonForwardRay = new Ray(Vector3.Zero(), Vector3.Zero());
+        this._tempButtonForwardRay = new Ray(Vector3.Zero(), Vector3.Zero());
 
         if (collisionMesh) {
             this.collisionMesh = collisionMesh;
@@ -116,10 +117,23 @@ export class TouchButton3D extends Button3D {
      * Sets the front-facing direction of the button
      * @param frontDir the forward direction of the button
      */
-    public set collidableFrontDirection(frontDir: Vector3) {
-        this._collidableFrontDirection = frontDir.normalize();
+    public set collidableFrontDirection(frontWorldDir: Vector3) {
+        this._collidableFrontDirection = frontWorldDir.normalize();
 
-        this._updateDistances();
+        // Zero out the scale to force it to be proplerly updated in _updateDistanceOffsets
+        this._lastKnownCollidableScale = Vector3.Zero();
+
+        this._updateDistanceOffsets();
+    }
+
+    private _getWorldMatrixData(mesh: Mesh) {
+        let translation = Vector3.Zero();
+        let rotation = Quaternion.Identity();
+        let scale = Vector3.Zero();
+
+        mesh.getWorldMatrix().decompose(scale, rotation, translation);
+
+        return {translation: translation, rotation: rotation, scale: scale};
     }
 
     /**
@@ -129,6 +143,11 @@ export class TouchButton3D extends Button3D {
     public set collisionMesh(collisionMesh: Mesh) {
         if (this._collisionMesh) {
             this._collisionMesh.dispose();
+        }
+
+        // parent the mesh to sync transforms
+        if (!collisionMesh.parent && this.mesh) {
+            collisionMesh.setParent(this.mesh);
         }
 
         this._collisionMesh = collisionMesh;
@@ -220,33 +239,39 @@ export class TouchButton3D extends Button3D {
      *    _collisionMesh
      *    _collidableFrontDirection
      */
-    private _updateDistances() {
-        const collisionMeshPos = this._collisionMesh.getAbsolutePosition();
+    private _updateDistanceOffsets() {
+        let worldMatrixData = this._getWorldMatrixData(this._collisionMesh);
+        
+        if (!worldMatrixData.scale.equalsWithEpsilon(this._lastKnownCollidableScale)) {
+            const collisionMeshPos = this._collisionMesh.getAbsolutePosition();
 
-        this._buttonForwardRay.origin = collisionMeshPos;
-        this._buttonForwardRay.direction = this._collidableFrontDirection;
+            this._tempButtonForwardRay.origin = collisionMeshPos;
+            this._tempButtonForwardRay.direction = this._collidableFrontDirection;
 
-        const frontPickingInfo = this._buttonForwardRay.intersectsMesh(this._collisionMesh as DeepImmutableObject<AbstractMesh>);
-        this._buttonForwardRay.direction = this._buttonForwardRay.direction.negate();
-        const backPickingInfo = this._buttonForwardRay.intersectsMesh(this._collisionMesh as DeepImmutableObject<AbstractMesh>);
+            const frontPickingInfo = this._tempButtonForwardRay.intersectsMesh(this._collisionMesh as DeepImmutableObject<AbstractMesh>);
+            this._tempButtonForwardRay.direction = this._tempButtonForwardRay.direction.negate();
+            const backPickingInfo = this._tempButtonForwardRay.intersectsMesh(this._collisionMesh as DeepImmutableObject<AbstractMesh>);
 
-        this._frontOffset = 0;
-        this._backOffset = 0;
+            this._frontOffset = 0;
+            this._backOffset = 0;
 
-        if (frontPickingInfo.hit && backPickingInfo.hit) {
-            this._frontOffset = this._getDistanceOffPlane(frontPickingInfo.pickedPoint!,
-                                                              this._collidableFrontDirection,
-                                                              collisionMeshPos);
-            this._backOffset = this._getDistanceOffPlane(backPickingInfo.pickedPoint!,
-                                                             this._collidableFrontDirection,
-                                                             collisionMeshPos);
+            if (frontPickingInfo.hit && backPickingInfo.hit) {
+                this._frontOffset = this._getDistanceOffPlane(frontPickingInfo.pickedPoint!,
+                                                                  this._collidableFrontDirection,
+                                                                  collisionMeshPos);
+                this._backOffset = this._getDistanceOffPlane(backPickingInfo.pickedPoint!,
+                                                                 this._collidableFrontDirection,
+                                                                 collisionMeshPos);
+            }
+
+            // For now, set the hover height equal to the thickness of the button
+            const buttonThickness = this._frontOffset - this._backOffset;
+
+            this._hoverOffset = this._frontOffset + (buttonThickness * 1.25);
+            this._pushThroughBackOffset = this._backOffset - (buttonThickness * 1.5);
+
+            this._lastKnownCollidableScale = this._getWorldMatrixData(this._collisionMesh).scale;
         }
-
-        // For now, set the hover height equal to the thickness of the button
-        const buttonThickness = this._frontOffset - this._backOffset;
-
-        this._hoverOffset = this._frontOffset + (buttonThickness * 1.25);
-        this._pushThroughBackOffset = this._backOffset - (buttonThickness * 1.5);
     }
 
     // Returns the distance in front of the center of the button
@@ -323,6 +348,8 @@ export class TouchButton3D extends Button3D {
     /** @hidden */
     public _collisionCheckForStateChange(mesh: Mesh) {
         if (this._collidableInitialized) {
+            this._updateDistanceOffsets();
+
             const collidablePosition = mesh.getAbsolutePosition();
             const inRange = this._isPrimedForInteraction(collidablePosition);
 
