@@ -107,7 +107,7 @@ export class RenderingManager {
     }
 
     /**
-     * Renders the entire managed groups. This is used by the scene or the different rennder targets.
+     * Renders the entire managed groups. This is used by the scene or the different render targets.
      * @hidden
      */
     public render(customRenderFunction: Nullable<(opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>) => void>,
@@ -252,8 +252,8 @@ export class RenderingManager {
     }
 
     /**
-     * Overrides the default sort function applied in the renderging group to prepare the meshes.
-     * This allowed control for front to back rendering or reversly depending of the special needs.
+     * Overrides the default sort function applied in the rendering group to prepare the meshes.
+     * This allowed control for front to back rendering or reversely depending of the special needs.
      *
      * @param renderingGroupId The rendering group id corresponding to its index
      * @param opaqueSortCompareFn The opaque queue comparison function use to sort.
