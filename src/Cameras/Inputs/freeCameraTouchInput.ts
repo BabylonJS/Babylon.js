@@ -6,6 +6,7 @@ import { FreeCamera } from "../../Cameras/freeCamera";
 import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { Tools } from "../../Misc/tools";
+import { IPointerEvent } from "../../Events/deviceInputEvents";
 /**
  * Manage the touch inputs to control the movement of a free camera.
  * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -65,7 +66,7 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
             };
 
             this._pointerInput = (p) => {
-                var evt = <PointerEvent>p.event;
+                var evt = <IPointerEvent>p.event;
 
                 let isMouseEvent = !this.camera.getEngine().hostInformation.isMobile && evt instanceof MouseEvent;
                 if (!this.allowMouse && (evt.pointerType === "mouse" || isMouseEvent)) {

@@ -5,6 +5,7 @@ import { Tools } from "../../Misc/tools";
 import { Camera } from "../../Cameras/camera";
 import { ICameraInput } from "../../Cameras/cameraInputsManager";
 import { PointerInfo, PointerEventTypes, PointerTouch } from "../../Events/pointerEvents";
+import { IPointerEvent } from "../../Events/deviceInputEvents";
 
 /**
  * Base class for Camera Pointer Inputs.
@@ -59,7 +60,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
         this._buttonsPressed = 0;
 
         this._pointerInput = (p, s) => {
-            var evt = <PointerEvent>p.event;
+            var evt = <IPointerEvent>p.event;
             let isTouch = evt.pointerType === "touch";
 
             if (engine.isInVRExclusivePointerMode) {
@@ -80,12 +81,12 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
             this._buttonsPressed = evt.buttons;
 
             if (engine.isPointerLock) {
-                var offsetX = evt.movementX ||
+                const offsetX = evt.movementX ||
                               evt.mozMovementX ||
                               evt.webkitMovementX ||
                               evt.msMovementX ||
                               0;
-                var offsetY = evt.movementY ||
+                const offsetY = evt.movementY ||
                               evt.mozMovementY ||
                               evt.webkitMovementY ||
                               evt.msMovementY ||
@@ -180,8 +181,8 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
 
                 // One button down
                 if (this.pointA && this.pointB === null) {
-                    var offsetX = evt.clientX - this.pointA.x;
-                    var offsetY = evt.clientY - this.pointA.y;
+                    const offsetX = evt.clientX - this.pointA.x;
+                    const offsetY = evt.clientY - this.pointA.y;
                     this.onTouch(this.pointA, offsetX, offsetY);
 
                     this.pointA.x = evt.clientX;
@@ -334,7 +335,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
      * press.
      * Override this method to provide functionality.
      */
-    protected onButtonDown(evt: PointerEvent): void {
+    protected onButtonDown(evt: IPointerEvent): void {
     }
 
     /**
@@ -342,7 +343,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
      * release.
      * Override this method to provide functionality.
      */
-    protected onButtonUp(evt: PointerEvent): void {
+    protected onButtonUp(evt: IPointerEvent): void {
     }
 
     /**
