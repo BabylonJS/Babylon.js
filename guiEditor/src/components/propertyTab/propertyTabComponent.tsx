@@ -197,7 +197,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             isSelected={() => DataStorage.ReadBoolean("ShowGrid", true)}
                             onSelect={(value: boolean) => {
                                 DataStorage.WriteBoolean("ShowGrid", value);
-                                this.props.globalState.onGridSizeChanged.notifyObservers();
                             }}
                         />
                     </LineContainerComponent>
@@ -212,7 +211,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 this.customSave();
                             }} />
                         }
-                        <FileButtonLineComponent label="Load Frame" onClick={(file) => this.loadFrame(file)} accept=".json" />
                     </LineContainerComponent>
                     {
                         !this.props.globalState.customSave &&
