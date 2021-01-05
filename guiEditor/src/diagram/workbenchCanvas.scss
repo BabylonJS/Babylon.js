@@ -1,4 +1,4 @@
-#graph-canvas {
+#workbench-canvas {
     width: 100%;
     height: 100%;
     margin: 0;
@@ -22,78 +22,7 @@
         }
     }
 
-    .port {
-        border-radius: 20px;
-        width: 20px;
-        height: 20px;                                                    
-        align-self: center;   
-        
-        .img {
-            width: 100%;
-        }
-
-        img.selected {
-            box-shadow: 0 0 0 2px;
-            border-radius: 50%;
-        }
-        
-        &:hover, &.selected {
-            filter: brightness(2);
-        }
-    }
-
-    .portLine {
-        height: 24px;
-        display: grid;                
-        grid-template-rows: 100%;
-    }
-
-    .port-label {                   
-        align-items: center;
-    }
-
-    .inputsContainer {                        
-        grid-row: 1;
-        grid-column: 1;
-
-        .portLine {
-            grid-template-columns: 12px calc(100% - 15px);
-
-            .port-label {                    
-                grid-row: 1;
-                grid-column: 2;
-            }
-
-            .port {                              
-                grid-row: 1;
-                grid-column: 1;
-                transform: translateX(-12px);     
-            }
-        }
-    }
-
-    .outputsContainer {                  
-        grid-row: 1;
-        grid-column: 2;
-
-        .portLine {
-            grid-template-columns: calc(100% - 10px) 12px;
-
-            .port-label {                    
-                grid-row: 1;
-                grid-column: 1;
-                text-align: right;
-            }
-
-            .port {                              
-                grid-row: 1;
-                grid-column: 2;
-                transform: translateX(2px);                        
-            }        
-        }
-    }
-
-    #graph-container {
+    #workbench-container {
         width: 100%;
         height: 100%;
         left: 0;
@@ -206,19 +135,6 @@
                 }
             }
 
-            .port-container {
-                margin-top: 6px;      
-                margin-bottom: 6px; 
-                margin-left: 4px;     
-                margin-right: 4px;     
-                color: white;
-                grid-row: 2;
-                grid-column: 1;
-                display: grid;
-                grid-template-rows: 100%;
-                grid-template-columns: 50% 50%; 
-                z-index: 2;
-            }
 
             .frame-comments.has-comments{
                 display: grid;
@@ -407,7 +323,7 @@
             }
         }
 
-        #graph-svg-container {
+        #workbench-svg-container {
             grid-row: 1;
             grid-column: 1;
             position: relative;
@@ -448,7 +364,7 @@
             }
         }
 
-        #graph-canvas-container {
+        #workbench-canvas-container {
             grid-row: 1;
             grid-column: 1;
             position: relative;
@@ -528,96 +444,6 @@
                     &.inspector {
                         border-color: #66491b;
                         background: #66491b;
-                    }
-                }
-
-                .connections {
-                    grid-row: 2;
-                    grid-column: 1;
-
-                    display: grid;
-                    grid-template-columns: 50% 50%;                  
-                }
-
-                .content {
-                    min-height: 20px;
-                    grid-row: 3;
-                    grid-column: 1;
-
-                    &.input-block {
-                        grid-row: 2;
-                        min-height: 34px;
-                        text-align: center;
-                        font-size: 18px;
-                        font-weight: bold;
-                        margin: 0 10px 5px;
-                        display: grid;
-                        align-content: center;
-
-                        &.small-font {                            
-                            font-size: 17px;
-                        }
-                    }
-
-                    &.output-block {
-                        min-height: 0px;
-                        height: 5px;
-                    }
-
-                    &.clamp-block {                    
-                        grid-row: 2;
-                        height: 34px;
-                        text-align: center;
-                        font-size: 18px;
-                        font-weight: bold;
-                        margin: 0 10px;
-                    }
-
-                    &.gradient-block {                    
-                        grid-row: 2;
-                        height: 34px;
-                    }
-
-                    &.texture-block {                    
-                        grid-row: 3;
-                        height: 140px;
-                        width: 140px;
-                        overflow: hidden;
-                        border-bottom-left-radius: 7px;
-                        border: black 4px solid;
-                        border-left: 0px;
-                        border-bottom: 0px;
-
-                        img {
-                            width: 100%;
-                            height: 100%;
-                            pointer-events: none;
-
-                            &.empty {
-                                display: none;
-                            }
-                        }
-                    }
-
-                    &.regular-texture-block {  
-                        margin-top: -115px;                        
-                    }
-
-                    &.remap-block {                    
-                        height: 34px;
-                        text-align: center;
-                        font-size: 18px;
-                        font-weight: bold;
-                        margin: 0 10px;
-                    }      
-                    
-                    &.trigonometry-block {                    
-                        grid-row: 2;
-                        height: 34px;
-                        text-align: center;
-                        font-size: 18px;
-                        font-weight: bold;
-                        margin: 0 10px;
                     }
                 }
             }
