@@ -187,7 +187,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 <div>
                     <LineContainerComponent title="GENERAL">
                         <TextLineComponent label="Version" value={Engine.Version}/>
-                        <TextLineComponent label="Help" value="doc.babylonjs.com" underline={true} onLink={() => window.open('https://doc.babylonjs.com/how_to/node_material', '_blank')}/>
+                        <TextLineComponent label="Help" value="doc.babylonjs.com" underline={true} onLink={() => window.open('https://doc.babylonjs.com', '_blank')}/>
                         <ButtonLineComponent label="Reset to default" onClick={() => {
                             this.props.globalState.onResetRequiredObservable.notifyObservers();
                         }} />

@@ -220,8 +220,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._oldY = -1;
     }
 
-    findNodeFromGuiElement(guiElement: Control) {
-       return this._guiNodes.filter(n => n.guiNode === guiElement)[0];
+    findNodeFromGuiElement(guiControl: Control) {
+       return this._guiNodes.filter(n => n.guiControl === guiControl)[0];
     }
 
     reset() {

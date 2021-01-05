@@ -11,43 +11,43 @@ import { TextLineComponent } from "../../sharedUiComponents/lines/textLineCompon
 export class SliderPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
         super(props);
-        this.slider = this.props.guiBlock as Slider;
+        this._slider = this.props.guiControl as Slider;
     }
 
-    private slider : Slider;
+    private _slider : Slider;
 
     render() {
         return (
             <>                
-                <GeneralPropertyTabComponent globalState={this.props.globalState} guiBlock={this.props.guiBlock}/>
+                <GeneralPropertyTabComponent globalState={this.props.globalState} guiControl={this.props.guiControl}/>
                 <LineContainerComponent title="PROPERTIES"> 
-                <NumericInputComponent globalState={this.props.globalState} label="Minimum Value" value={this.slider.minimum}
+                <NumericInputComponent globalState={this.props.globalState} label="Minimum Value" value={this._slider.minimum}
                 onChange={evt =>{
-                    this.slider.minimum = evt;
+                    this._slider.minimum = evt;
                 }}>
                 </NumericInputComponent>
-                <NumericInputComponent globalState={this.props.globalState} label="Maximum Value" value={this.slider.maximum} 
+                <NumericInputComponent globalState={this.props.globalState} label="Maximum Value" value={this._slider.maximum} 
                 onChange={evt =>{
-                   this.slider.maximum = evt;
+                   this._slider.maximum = evt;
                 }}>
 
                 </NumericInputComponent>
-                <NumericInputComponent globalState={this.props.globalState} label="Value" value={this.slider.value} 
+                <NumericInputComponent globalState={this.props.globalState} label="Value" value={this._slider.value} 
                 onChange={evt =>{
-                   this.slider.value = evt;
+                   this._slider.value = evt;
                 }}>
                 </NumericInputComponent>
-                <NumericInputComponent globalState={this.props.globalState} label="Height" value={this.slider.heightInPixels} 
+                <NumericInputComponent globalState={this.props.globalState} label="Height" value={this._slider.heightInPixels} 
                 onChange={evt =>{
-                   this.slider.height = evt;
+                   this._slider.height = evt;
                 }}>
                 </NumericInputComponent>
-                <NumericInputComponent globalState={this.props.globalState} label="Width" value={this.slider.widthInPixels} 
+                <NumericInputComponent globalState={this.props.globalState} label="Width" value={this._slider.widthInPixels} 
                 onChange={evt =>{
-                   this.slider.width = evt;
+                   this._slider.width = evt;
                 }}>
                 </NumericInputComponent>
-                <TextLineComponent label="Color" value={this.slider.background} />
+                <TextLineComponent label="Color" value={this._slider.background} />
                 </LineContainerComponent>            
             </>
         );

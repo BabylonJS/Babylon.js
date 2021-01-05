@@ -46,7 +46,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
      */
     public createNodeFromObject(block: Control, recursion = true) {
         if (this._blocks.indexOf(block) !== -1) {
-            return this._workbenchCanvas.nodes.filter((n) => n.guiNode === block)[0];
+            return this._workbenchCanvas.nodes.filter((n) => n.guiControl === block)[0];
         }
 
         this._blocks.push(block);
@@ -108,7 +108,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
 
                     let selectedItem = selectedItems[0] as GUINode;
 
-                    if (!selectedItem.guiNode) {
+                    if (!selectedItem.guiControl) {
                         return;
                     }
                 } else if (evt.key === "v") {
@@ -133,7 +133,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
 
         // Create new nodes
         for (var node of copiedNodes) {
-            let block = node.guiNode;
+            let block = node.guiControl;
 
             if (!block) {
                 continue;
@@ -166,7 +166,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                 // Locations
                 for (var location of editorData.locations) {
                     for (var node of this._workbenchCanvas.nodes) {
-                        if (node.guiNode && node.guiNode.uniqueId === location.blockId) {
+                        if (node.guiControl && node.guiControl.uniqueId === location.blockId) {
                             node.x = location.x;
                             node.y = location.y;
                             node.cleanAccumulation();
@@ -225,7 +225,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     emitNewBlock(event: React.DragEvent<HTMLDivElement>) {
         var data = event.dataTransfer.getData("babylonjs-gui-node") as string;
 
-        let guiElement = GuiNodeTools.GetGuiFromString(data);
+        let guiElement = GuiNodeTools.CreateControlFromString (data);
 
         let newGuiNode = this._workbenchCanvas.appendBlock(guiElement);
 

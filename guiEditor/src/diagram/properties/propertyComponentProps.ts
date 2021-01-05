@@ -3,5 +3,5 @@ import { GlobalState } from "../../globalState";
 
 export interface IPropertyComponentProps {
     globalState: GlobalState;
-    guiBlock: Control;
+    guiControl: Control;
 }
