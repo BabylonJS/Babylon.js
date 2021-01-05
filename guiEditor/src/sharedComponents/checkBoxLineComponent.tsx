@@ -48,7 +48,7 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
             return true;
         }
 
-        if(nextProps.disabled !== !!nextState.isDisabled){
+        if(nextProps.disabled !== nextState.isDisabled){
             return true;
         }
         

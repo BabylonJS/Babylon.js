@@ -7,7 +7,7 @@ import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
 import { Slider } from "babylonjs-gui/2D/controls/sliders/slider";
 import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
 
-export class GuiNodeTools {
+export class GUINodeTools {
     public static CreateControlFromString (data: string) {
         //TODO: Add more elements and create default values for certain types.
         let element;
