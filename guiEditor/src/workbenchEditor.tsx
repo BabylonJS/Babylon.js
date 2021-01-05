@@ -1,6 +1,6 @@
 import * as React from "react";
 import { GlobalState } from "./globalState";
-import { GuiListComponent } from "./components/nodeList/guiListComponent";
+import { GuiListComponent } from "./components/guiList/guiListComponent";
 import { PropertyTabComponent } from "./components/propertyTab/propertyTabComponent";
 import { Portal } from "./portal";
 import { LogComponent } from "./components/log/logComponent";
