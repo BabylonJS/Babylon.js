@@ -165,7 +165,7 @@ export class WebXRDefaultExperience {
     }
 
     /**
-     * DIsposes of the experience helper
+     * Disposes of the experience helper
      */
     public dispose() {
         if (this.baseExperience) {

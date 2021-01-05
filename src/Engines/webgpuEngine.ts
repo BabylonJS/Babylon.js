@@ -55,7 +55,7 @@ function assert(condition: any, msg?: string): asserts condition {
  */
 export interface GlslangOptions {
     /**
-     * Defines an existing instance of Glslang (usefull in modules who do not access the global instance).
+     * Defines an existing instance of Glslang (useful in modules who do not access the global instance).
      */
     glslang?: any;
     /**
@@ -119,17 +119,17 @@ export interface WebGPUEngineOptions extends GPURequestAdapterOptions {
     swapChainFormat?: GPUTextureFormat;
 
     /**
-     * Defines wether MSAA is enabled on the canvas.
+     * Defines whether MSAA is enabled on the canvas.
      */
     antialiasing?: boolean;
 
     /**
-     * Defines wether the stencil buffer should be enabled.
+     * Defines whether the stencil buffer should be enabled.
      */
     stencil?: boolean;
 
     /**
-     * Defines wether we should generate debug markers in the gpu command lists (can be seen with PIX for eg)
+     * Defines whether we should generate debug markers in the gpu command lists (can be seen with PIX for eg)
      */
     enableGPUDebugMarkers?: boolean;
 
@@ -212,6 +212,7 @@ export class WebGPUEngine extends Engine {
     // Effect is on the parent class
     // protected _currentEffect: Nullable<Effect> = null;
     private _currentVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }> = null;
+    private _currentOverrideVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }> = null;
     private _currentIndexBuffer: Nullable<DataBuffer> = null;
     private __colorWrite = true;
     private _uniformsBuffers: { [name: string]: WebGPUDataBuffer } = {};
@@ -258,7 +259,7 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * Gets a boolean indicating if the engine can be instanciated (ie. if a WebGPU context can be found)
+     * Gets a boolean indicating if the engine can be instantiated (ie. if a WebGPU context can be found)
      * @returns true if the engine can be created
      */
     public static get IsSupported(): boolean {
@@ -373,6 +374,8 @@ export class WebGPUEngine extends Engine {
         this._depthCullingState.depthMask = true;
 
         this._sharedInit(canvas, !!options.doNotHandleTouchAction, options.audioEngine);
+
+        this._shaderProcessor = this._getShaderProcessor();
 
         // TODO. WEBGPU. Use real way to do it.
         this._canvas.style.transform = "scaleY(-1)";
@@ -554,6 +557,7 @@ export class WebGPUEngine extends Engine {
             supportSSAO2: true,
             supportExtendedTextureFormats: true,
             supportSwitchCaseInShader: true,
+            supportSyncTextureRead: false,
             _collectUbosUpdatedInFrame: true,
         };
     }
@@ -704,7 +708,8 @@ export class WebGPUEngine extends Engine {
         this._forceEnableEffect = true;
         this._currentIndexBuffer = null;
         this._currentVertexBuffers = null;
-        this._cacheRenderPipeline.setBuffers(null, null);
+        this._currentOverrideVertexBuffers = null;
+        this._cacheRenderPipeline.setBuffers(null, null, null);
 
         if (bruteForce) {
             this._currentProgram = null;
@@ -1064,11 +1069,13 @@ export class WebGPUEngine extends Engine {
      * @param vertexBuffers defines the list of vertex buffers to bind
      * @param indexBuffer defines the index buffer to bind
      * @param effect defines the effect associated with the vertex buffers
+     * @param overrideVertexBuffers defines optional list of avertex buffers that overrides the entries in vertexBuffers
      */
-    public bindBuffers(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, indexBuffer: Nullable<DataBuffer>, effect: Effect): void {
+    public bindBuffers(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, indexBuffer: Nullable<DataBuffer>, effect: Effect, overrideVertexBuffers?: {[kind: string]: Nullable<VertexBuffer>}): void {
         this._currentIndexBuffer = indexBuffer;
         this._currentVertexBuffers = vertexBuffers;
-        this._cacheRenderPipeline.setBuffers(vertexBuffers, indexBuffer);
+        this._currentOverrideVertexBuffers = overrideVertexBuffers ?? null;
+        this._cacheRenderPipeline.setBuffers(vertexBuffers, indexBuffer, this._currentOverrideVertexBuffers);
     }
 
     /** @hidden */
@@ -1137,7 +1144,7 @@ export class WebGPUEngine extends Engine {
      * @param uniformsNamesOrEngine defines either a list of uniform names or the engine to use
      * @param samplers defines an array of string used to represent textures
      * @param defines defines the string containing the defines to use to compile the shaders
-     * @param fallbacks defines the list of potential fallbacks to use if shader conmpilation fails
+     * @param fallbacks defines the list of potential fallbacks to use if shader compilation fails
      * @param onCompiled defines a function to call when the effect creation is successful
      * @param onError defines a function to call when the effect creation has failed
      * @param indexParameters defines an object containing the index values to use to compile shaders (like the maximum number of simultaneous lights)
@@ -2172,7 +2179,7 @@ export class WebGPUEngine extends Engine {
 
     /**
      * Update a raw cube texture
-     * @param texture defines the texture to udpdate
+     * @param texture defines the texture to update
      * @param bufferView defines the data to store
      * @param format defines the data format
      * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
@@ -2289,6 +2296,11 @@ export class WebGPUEngine extends Engine {
         }
 
         return this._textureHelper.readPixels(gpuTextureWrapper.underlyingResource!, 0, 0, width, height, gpuTextureWrapper.format, faceIndex, level, buffer);
+    }
+
+    /** @hidden */
+    public _readTexturePixelsSync(texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer: Nullable<ArrayBufferView> = null, flushRenderer = true): ArrayBufferView {
+        throw "_readTexturePixelsSync is unsupported in WebGPU!";
     }
 
     //------------------------------------------------------------------------------
@@ -2645,7 +2657,7 @@ export class WebGPUEngine extends Engine {
         samples = Math.min(samples, this.getCaps().maxMSAASamples);
 
         // Note that the last texture of textures is the depth texture (if the depth texture has been generated by the MRT class) and so the MSAA texture
-        // will be recreated for this texture too. As a consequence, there's no need to explicitely recreate the MSAA texture for textures[0]._depthStencilTexture
+        // will be recreated for this texture too. As a consequence, there's no need to explicitly recreate the MSAA texture for textures[0]._depthStencilTexture
         for (let i = 0; i < textures.length; ++i) {
             const texture = textures[i];
             this._textureHelper.createMSAATexture(texture, samples);
@@ -3129,7 +3141,7 @@ export class WebGPUEngine extends Engine {
      */
     public unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
         // TODO WEBGPU remove the assert debugging code
-        assert(this._currentRenderTarget === null || (this._currentRenderTarget !== null && texture === this._currentRenderTarget), "unBindFramebuffer - the texture we wan't to unbind is not the same than the currentRenderTarget! texture=" + texture + ", this._currentRenderTarget=" + this._currentRenderTarget);
+        assert(this._currentRenderTarget === null || (this._currentRenderTarget !== null && texture === this._currentRenderTarget), "unBindFramebuffer - the texture we want to unbind is not the same than the currentRenderTarget! texture=" + texture + ", this._currentRenderTarget=" + this._currentRenderTarget);
 
         if (onBeforeUnbind) {
             onBeforeUnbind();
@@ -3574,7 +3586,7 @@ export class WebGPUEngine extends Engine {
             const order = effect.getAttributeLocation(index);
 
             if (order >= 0) {
-                let vertexBuffer = this._currentVertexBuffers![attributes[index]];
+                let vertexBuffer = (this._currentOverrideVertexBuffers && this._currentOverrideVertexBuffers[attributes[index]]) ?? this._currentVertexBuffers![attributes[index]];
                 if (!vertexBuffer) {
                     // In WebGL it's valid to not bind a vertex buffer to an attribute, but it's not valid in WebGPU
                     // So we must bind a dummy buffer when we are not given one for a specific attribute
@@ -3649,7 +3661,7 @@ export class WebGPUEngine extends Engine {
      * @param fillMode defines the primitive to use
      * @param indexStart defines the starting index
      * @param indexCount defines the number of index to draw
-     * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
+     * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
      */
     public drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount: number = 1): void {
         const renderPass = this._bundleEncoder || this._getCurrentRenderPass();
@@ -3665,7 +3677,7 @@ export class WebGPUEngine extends Engine {
      * @param fillMode defines the primitive to use
      * @param verticesStart defines the index of first vertex to draw
      * @param verticesCount defines the count of vertices to draw
-     * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
+     * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
      */
     public drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount: number = 1): void {
         const renderPass = this._bundleEncoder || this._getCurrentRenderPass();

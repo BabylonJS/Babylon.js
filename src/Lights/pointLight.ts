@@ -95,7 +95,7 @@ export class PointLight extends ShadowLight {
     }
 
     /**
-     * Specifies wether or not the shadowmap should be a cube texture.
+     * Specifies whether or not the shadowmap should be a cube texture.
      * @returns true if the shadowmap needs to be a cube texture.
      */
     public needCube(): boolean {

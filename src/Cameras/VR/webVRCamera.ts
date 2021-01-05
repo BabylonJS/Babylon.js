@@ -147,7 +147,7 @@ export interface WebVROptions {
     defaultHeight?: number;
 
     /**
-     * If multiview should be used if availible (default: false)
+     * If multiview should be used if available (default: false)
      */
     useMultiview?: boolean;
 }

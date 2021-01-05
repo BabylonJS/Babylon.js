@@ -323,7 +323,7 @@ class NativePipelineContext implements IPipelineContext {
     }
 
     /**
-     * Sets an interger value on a uniform variable.
+     * Sets an integer value on a uniform variable.
      * @param uniformName Name of the variable.
      * @param value Value to be set.
      */
@@ -815,6 +815,7 @@ export class NativeEngine extends Engine {
             supportSSAO2: false,
             supportExtendedTextureFormats: false,
             supportSwitchCaseInShader: false,
+            supportSyncTextureRead: false,
             _collectUbosUpdatedInFrame: false,
         };
 
@@ -997,7 +998,7 @@ export class NativeEngine extends Engine {
      * @param fillMode defines the primitive to use
      * @param indexStart defines the starting index
      * @param indexCount defines the number of index to draw
-     * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
+     * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
      */
     public drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount?: number): void {
         // Apply states
@@ -1021,7 +1022,7 @@ export class NativeEngine extends Engine {
      * @param fillMode defines the primitive to use
      * @param verticesStart defines the index of first vertex to draw
      * @param verticesCount defines the count of vertices to draw
-     * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
+     * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
      */
     public drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void {
         // Apply states
@@ -1502,7 +1503,9 @@ export class NativeEngine extends Engine {
     }
 
     protected _deleteTexture(texture: Nullable<WebGLTexture>): void {
-        this._native.deleteTexture(texture);
+        if (texture) {
+            this._native.deleteTexture(texture);
+        }
     }
 
     /**

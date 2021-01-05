@@ -645,7 +645,7 @@ export class ProceduralTexture extends Texture {
     }
 
     /**
-     * Dispose the texture and release its asoociated resources.
+     * Dispose the texture and release its associated resources.
      */
     public dispose(): void {
         let scene = this.getScene();

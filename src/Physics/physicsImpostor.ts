@@ -505,7 +505,7 @@ export class PhysicsImpostor {
     }
 
     /**
-     * This function will completly initialize this impostor.
+     * This function will completely initialize this impostor.
      * It will create a new body - but only if this mesh has no parent.
      * If it has, this impostor will not be used other than to define the impostor
      * of the child mesh.
@@ -979,7 +979,7 @@ export class PhysicsImpostor {
      * @param otherImpostor rigid impostor to anchor to
      * @param width ratio across width from 0 to 1
      * @param height ratio up height from 0 to 1
-     * @param influence the elasticity between cloth impostor and anchor from 0, very stretchy to 1, little strech
+     * @param influence the elasticity between cloth impostor and anchor from 0, very stretchy to 1, little stretch
      * @param noCollisionBetweenLinkedBodies when true collisions between cloth impostor and anchor are ignored; default false
      * @returns impostor the soft imposter
      */
@@ -1001,7 +1001,7 @@ export class PhysicsImpostor {
      * Add a hook to a rope impostor
      * @param otherImpostor rigid impostor to anchor to
      * @param length ratio across rope from 0 to 1
-     * @param influence the elasticity between rope impostor and anchor from 0, very stretchy to 1, little strech
+     * @param influence the elasticity between rope impostor and anchor from 0, very stretchy to 1, little stretch
      * @param noCollisionBetweenLinkedBodies when true collisions between soft impostor and anchor are ignored; default false
      * @returns impostor the rope imposter
      */

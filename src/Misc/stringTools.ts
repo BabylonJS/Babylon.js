@@ -78,7 +78,7 @@ export class StringTools {
     }
 
     /**
-    * Converts a number to string and pads with preceeding zeroes until it is of specified length.
+    * Converts a number to string and pads with preceding zeroes until it is of specified length.
     * @param num the number to convert and pad
     * @param length the expected length of the string
     * @returns the padded string

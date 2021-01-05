@@ -13,6 +13,8 @@ interface IRenderingComponentProps {
     globalState: GlobalState;
 }
 
+declare const Ammo: any;
+
 export class RenderingComponent extends React.Component<IRenderingComponentProps> {
     private _engine: Nullable<Engine>;
     private _scene: Nullable<Scene>;
@@ -154,6 +156,11 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
             if (!code) {
                 return;
+            }
+
+            // Check for Ammo.js
+            if (code.indexOf("AmmoJSPlugin") > -1 && typeof Ammo === "function") {
+                await Ammo();
             }
 
             // Check for Unity Toolkit

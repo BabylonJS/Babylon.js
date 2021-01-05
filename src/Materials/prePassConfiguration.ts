@@ -49,7 +49,7 @@ export class PrePassConfiguration {
      * @param isFrozen Is the material frozen
      */
     public bindForSubMesh(effect: Effect, scene: Scene, mesh: Mesh, world: Matrix, isFrozen: boolean): void {
-        if (scene.prePassRenderer && scene.prePassRenderer.enabled) {
+        if (scene.prePassRenderer && scene.prePassRenderer.enabled && scene.prePassRenderer.currentRTisSceneRT) {
             if (scene.prePassRenderer.getIndex(Constants.PREPASS_VELOCITY_TEXTURE_TYPE) !== -1) {
                 if (!this.previousWorldMatrices[mesh.uniqueId]) {
                     this.previousWorldMatrices[mesh.uniqueId] = Matrix.Identity();

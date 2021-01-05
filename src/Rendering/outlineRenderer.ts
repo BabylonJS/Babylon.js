@@ -86,7 +86,7 @@ Object.defineProperty(Mesh.prototype, "renderOverlay", {
 });
 
 /**
- * This class is responsible to draw bothe outline/overlay of meshes.
+ * This class is responsible to draw the outline/overlay of meshes.
  * It should not be used directly but through the available method on mesh.
  */
 export class OutlineRenderer implements ISceneComponent {
@@ -141,7 +141,7 @@ export class OutlineRenderer implements ISceneComponent {
     }
 
     /**
-     * Disposes the component and the associated ressources.
+     * Disposes the component and the associated resources.
      */
     public dispose(): void {
         // Nothing to do here.
@@ -214,8 +214,8 @@ export class OutlineRenderer implements ISceneComponent {
     /**
      * Returns whether or not the outline renderer is ready for a given submesh.
      * All the dependencies e.g. submeshes, texture, effect... mus be ready
-     * @param subMesh Defines the submesh to check readyness for
-     * @param useInstances Defines wheter wee are trying to render instances or not
+     * @param subMesh Defines the submesh to check readiness for
+     * @param useInstances Defines whether wee are trying to render instances or not
      * @returns true if ready otherwise false
      */
     public isReady(subMesh: SubMesh, useInstances: boolean): boolean {

@@ -315,7 +315,7 @@ export class PhysicsEngineSceneComponent implements ISceneComponent {
     }
 
     /**
-     * Disposes the component and the associated ressources
+     * Disposes the component and the associated resources
      */
     public dispose(): void {
         this.scene.onBeforePhysicsObservable.clear();

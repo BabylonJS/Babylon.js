@@ -3,7 +3,7 @@ import { serialize, serializeAsMeshReference } from "../Misc/decorators";
 import { Tools } from "../Misc/tools";
 import { TargetCamera } from "./targetCamera";
 import { Scene } from "../scene";
-import { Matrix, Vector3 } from "../Maths/math.vector";
+import { TmpVectors, Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { FollowCameraInputsManager } from './followCameraInputsManager';
@@ -65,7 +65,7 @@ export class FollowCamera extends TargetCamera {
 
     /**
      * Define a height offset between the camera and the object it follows.
-     * It can help following an object from the top (like a car chaing a plane)
+     * It can help following an object from the top (like a car chasing a plane)
      */
     @serialize()
     public heightOffset: number = 4;
@@ -130,14 +130,10 @@ export class FollowCamera extends TargetCamera {
             return;
         }
 
-        var yRotation;
-        if (cameraTarget.rotationQuaternion) {
-            var rotMatrix = new Matrix();
-            cameraTarget.rotationQuaternion.toRotationMatrix(rotMatrix);
-            yRotation = Math.atan2(rotMatrix.m[8], rotMatrix.m[10]);
-        } else {
-            yRotation = cameraTarget.rotation.y;
-        }
+        var rotMatrix = TmpVectors.Matrix[0];
+        cameraTarget.absoluteRotationQuaternion.toRotationMatrix(rotMatrix);
+        var yRotation = Math.atan2(rotMatrix.m[8], rotMatrix.m[10]);
+
         var radians = Tools.ToRadians(this.rotationOffset) + yRotation;
         var targetPosition = cameraTarget.getAbsolutePosition();
         var targetX: number = targetPosition.x + Math.sin(radians) * this.radius;
@@ -263,7 +259,7 @@ export class ArcFollowCamera extends TargetCamera {
      * Instantiates a new ArcFollowCamera
      * @see https://doc.babylonjs.com/features/cameras#follow-camera
      * @param name Define the name of the camera
-     * @param alpha Define the rotation angle of the camera around the logitudinal axis
+     * @param alpha Define the rotation angle of the camera around the longitudinal axis
      * @param beta Define the rotation angle of the camera around the elevation axis
      * @param radius Define the radius of the camera from its target point
      * @param target Define the target of the camera
