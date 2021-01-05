@@ -72,7 +72,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
         return this._circleOfConfusion.focusDistance;
     }
     /**
-     * Max lens size in scene units/1000 (eg. millimeter). Standard cameras are 50mm. (default: 50) The diamater of the resulting aperture can be computed by lensSize/fStop.
+     * Max lens size in scene units/1000 (eg. millimeter). Standard cameras are 50mm. (default: 50) The diameter of the resulting aperture can be computed by lensSize/fStop.
      */
     public set lensSize(value: number) {
         this._circleOfConfusion.lensSize = value;
@@ -145,7 +145,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
     }
 
     /**
-    * Get the current class name of the current effet
+    * Get the current class name of the current effect
     * @returns "DepthOfFieldEffect"
     */
     public getClassName(): string {

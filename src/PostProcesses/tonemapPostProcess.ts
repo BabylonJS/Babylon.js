@@ -42,7 +42,7 @@ export class TonemapPostProcess extends PostProcess {
      * @param textureFormat defines the texture format to use (BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT by default)
      */
     constructor(name: string, private _operator: TonemappingOperator,
-        /** Defines the required exposure adjustement */
+        /** Defines the required exposure adjustment */
         public exposureAdjustment: number, camera: Camera, samplingMode: number = Constants.TEXTURE_BILINEAR_SAMPLINGMODE, engine?: Engine, textureFormat = Constants.TEXTURETYPE_UNSIGNED_INT) {
         super(name, "tonemap", ["_ExposureAdjustment"], null, 1.0, camera, samplingMode, engine, true, null, textureFormat);
 
