@@ -70,6 +70,7 @@
 - Fix issue where PBRSpecularGlossiness materials were excluded from export [#9423](https://github.com/BabylonJS/Babylon.js/issues/9423)([Drigax](https://github.com/drigax))
 - Fix issue when scaling is reapplied with BoundingBoxGizmo and GizmoManager ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Fix direct loading of a glTF string that has base64-encoded URI. ([bghgary](https://github.com/bghgary))
+- Fix capsule impostor size computation for ammojs ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Fix crash of some node materials using instances on iOS ([Popov72](https://github.com/Popov72))
 - Fix the code generated for the NME gradient block ([Popov72](https://github.com/Popov72))
 - Fix ssao2RenderingPipeline for orthographic cameras ([Kesshi](https://github.com/Kesshi))
