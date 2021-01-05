@@ -27,19 +27,14 @@ var checkHash = function () {
                 xmlHttp.onreadystatechange = function () {
                     if (xmlHttp.readyState == 4) {
                         if (xmlHttp.status == 200) {
-                            var snippet = JSON.parse(JSON.parse(xmlHttp.responseText).jsonPayload);
-                            let serializationObject = JSON.parse(snippet);
-
-                            if (editorDisplayed) {
-                                customLoadObservable.notifyObservers(serializationObject);
-                            } else {
-                                //load from selization
-                                showEditor();
-                            }
+                            
+                            //TODO: Implement
+                            //var snippet = JSON.parse(JSON.parse(xmlHttp.responseText).jsonPayload);
+                            showEditor();
                         }
                     }
                 }
-                
+
                 var hash = location.hash.substr(1);
                 currentSnippetToken = hash.split("#")[0];
                 xmlHttp.open("GET", snippetUrl + "/" + hash.replace("#", "/"));

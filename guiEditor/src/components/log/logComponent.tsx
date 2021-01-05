@@ -25,10 +25,9 @@ export class LogComponent extends React.Component<ILogComponentProps, { logs: Lo
 
     componentDidMount() {
         this.props.globalState.onLogRequiredObservable.add(log => {
-            let currentLogs = this.state.logs;
-            currentLogs.push(log);
-
-            this.setState({ logs: currentLogs });
+            let newLogArray = this.state.logs.map(number => number);
+            newLogArray.push(log);
+            this.setState({ logs: newLogArray });
         });
     }
 
