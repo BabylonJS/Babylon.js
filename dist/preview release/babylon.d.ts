@@ -11367,7 +11367,7 @@ declare module BABYLON {
          */
         rebuild(): void;
         /**
-         * Disposes the component and the associated ressources.
+         * Disposes the component and the associated resources.
          */
         dispose(): void;
         private _pickSpriteButKeepRay;
@@ -18522,11 +18522,11 @@ declare module BABYLON {
          */
         set colorCurves(value: Nullable<ColorCurves>);
         /**
-         * Gets wether the color curves effect is enabled.
+         * Gets whether the color curves effect is enabled.
          */
         get colorCurvesEnabled(): boolean;
         /**
-         * Sets wether the color curves effect is enabled.
+         * Sets whether the color curves effect is enabled.
          */
         set colorCurvesEnabled(value: boolean);
         /**
@@ -18538,11 +18538,11 @@ declare module BABYLON {
          */
         set colorGradingTexture(value: Nullable<BaseTexture>);
         /**
-         * Gets wether the color grading effect is enabled.
+         * Gets whether the color grading effect is enabled.
          */
         get colorGradingEnabled(): boolean;
         /**
-         * Gets wether the color grading effect is enabled.
+         * Gets whether the color grading effect is enabled.
          */
         set colorGradingEnabled(value: boolean);
         /**
@@ -18554,11 +18554,11 @@ declare module BABYLON {
          */
         set exposure(value: number);
         /**
-         * Gets wether tonemapping is enabled or not.
+         * Gets whether tonemapping is enabled or not.
          */
         get toneMappingEnabled(): boolean;
         /**
-         * Sets wether tonemapping is enabled or not
+         * Sets whether tonemapping is enabled or not
          */
         set toneMappingEnabled(value: boolean);
         /**
@@ -18636,20 +18636,20 @@ declare module BABYLON {
          */
         set vignetteBlendMode(value: number);
         /**
-         * Gets wether the vignette effect is enabled.
+         * Gets whether the vignette effect is enabled.
          */
         get vignetteEnabled(): boolean;
         /**
-         * Sets wether the vignette effect is enabled.
+         * Sets whether the vignette effect is enabled.
          */
         set vignetteEnabled(value: boolean);
         private _fromLinearSpace;
         /**
-         * Gets wether the input of the processing is in Gamma or Linear Space.
+         * Gets whether the input of the processing is in Gamma or Linear Space.
          */
         get fromLinearSpace(): boolean;
         /**
-         * Sets wether the input of the processing is in Gamma or Linear Space.
+         * Sets whether the input of the processing is in Gamma or Linear Space.
          */
         set fromLinearSpace(value: boolean);
         /**
@@ -22926,7 +22926,7 @@ declare module BABYLON {
         viewProjection: Matrix;
     }
     /**
-     * This renderer is helpfull to fill one of the render target with a geometry buffer.
+     * This renderer is helpful to fill one of the render target with a geometry buffer.
      */
     export class GeometryBufferRenderer {
         /**
@@ -23039,7 +23039,7 @@ declare module BABYLON {
          */
         set renderList(meshes: Nullable<AbstractMesh[]>);
         /**
-         * Gets wether or not G buffer are supported by the running hardware.
+         * Gets whether or not G buffer are supported by the running hardware.
          * This requires draw buffer supports
          */
         get isSupported(): boolean;
@@ -23062,7 +23062,7 @@ declare module BABYLON {
          */
         get enableVelocity(): boolean;
         /**
-         * Sets wether or not objects velocities are enabled for the G buffer.
+         * Sets whether or not objects velocities are enabled for the G buffer.
          */
         set enableVelocity(enable: boolean);
         /**
@@ -23070,7 +23070,7 @@ declare module BABYLON {
          */
         get enableReflectivity(): boolean;
         /**
-         * Sets wether or not objects roughness are enabled for the G buffer.
+         * Sets whether or not objects roughness are enabled for the G buffer.
          */
         set enableReflectivity(enable: boolean);
         /**
@@ -23091,7 +23091,7 @@ declare module BABYLON {
          */
         constructor(scene: Scene, ratio?: number);
         /**
-         * Checks wether everything is ready to render a submesh to the G buffer.
+         * Checks whether everything is ready to render a submesh to the G buffer.
          * @param subMesh the submesh to check readiness for
          * @param useInstances is the mesh drawn using instance or not
          * @returns true if ready otherwise false
@@ -23692,7 +23692,7 @@ declare module BABYLON {
 declare module BABYLON {
     /**
      * The Blur Post Process which blurs an image based on a kernel and direction.
-     * Can be used twice in x and y directions to perform a guassian blur in two passes.
+     * Can be used twice in x and y directions to perform a gaussian blur in two passes.
      */
     export class BlurPostProcess extends PostProcess {
         private blockCompilation;
@@ -23711,11 +23711,11 @@ declare module BABYLON {
          */
         get kernel(): number;
         /**
-         * Sets wether or not the blur needs to unpack/repack floats
+         * Sets whether or not the blur needs to unpack/repack floats
          */
         set packedFloat(v: boolean);
         /**
-         * Gets wether or not the blur is unpacking/repacking floats
+         * Gets whether or not the blur is unpacking/repacking floats
          */
         get packedFloat(): boolean;
         /**
@@ -24352,7 +24352,7 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Defines the minimum interface to fullfil in order to be a sprite manager.
+     * Defines the minimum interface to fulfill in order to be a sprite manager.
      */
     export interface ISpriteManager extends IDisposable {
         /**
@@ -24499,7 +24499,7 @@ declare module BABYLON {
          * @param cellSize defines the size of a sprite cell
          * @param scene defines the hosting scene
          * @param epsilon defines the epsilon value to align texture (0.01 by default)
-         * @param samplingMode defines the smapling mode to use with spritesheet
+         * @param samplingMode defines the sampling mode to use with spritesheet
          * @param fromPacked set to false; do not alter
          * @param spriteJSON null otherwise a JSON object defining sprite sheet data; do not alter
          */
@@ -24548,7 +24548,7 @@ declare module BABYLON {
         /**
          * Parses a JSON object to create a new sprite manager.
          * @param parsedManager The JSON object to parse
-         * @param scene The scene to create the sprite managerin
+         * @param scene The scene to create the sprite manager
          * @param rootUrl The root url to use to load external dependencies like texture
          * @returns the new sprite manager
          */
@@ -29232,7 +29232,7 @@ declare module BABYLON {
          */
         render(): void;
         /**
-         * Checks wether or not the edges renderer is ready to render.
+         * Checks whether or not the edges renderer is ready to render.
          * @return true if ready, otherwise false.
          */
         isReady(): boolean;
@@ -29258,7 +29258,7 @@ declare module BABYLON {
          */
         useFastVertexMerger?: boolean;
         /**
-         * During edges processing, the vertices are merged if they are close enough: epsilonVertexMerge is the limit whithin which vertices are considered to be equal.
+         * During edges processing, the vertices are merged if they are close enough: epsilonVertexMerge is the limit within which vertices are considered to be equal.
          * The default value is 1e-6
          * This option is used only if useAlternateEdgeFinder = true
          */
@@ -29364,7 +29364,7 @@ declare module BABYLON {
          */
         _generateEdgesLines(): void;
         /**
-         * Checks wether or not the edges renderer is ready to render.
+         * Checks whether or not the edges renderer is ready to render.
          * @return true if ready, otherwise false.
          */
         isReady(): boolean;
@@ -29591,7 +29591,7 @@ declare module BABYLON {
         constructor(scene: Scene);
         private _clearDepthStencilBuffer;
         /**
-         * Renders the entire managed groups. This is used by the scene or the different rennder targets.
+         * Renders the entire managed groups. This is used by the scene or the different render targets.
          * @hidden
          */
         render(customRenderFunction: Nullable<(opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>) => void>, activeMeshes: Nullable<AbstractMesh[]>, renderParticles: boolean, renderSprites: boolean): void;
@@ -29628,8 +29628,8 @@ declare module BABYLON {
          */
         dispatch(subMesh: SubMesh, mesh?: AbstractMesh, material?: Nullable<Material>): void;
         /**
-         * Overrides the default sort function applied in the renderging group to prepare the meshes.
-         * This allowed control for front to back rendering or reversly depending of the special needs.
+         * Overrides the default sort function applied in the rendering group to prepare the meshes.
+         * This allowed control for front to back rendering or reversely depending of the special needs.
          *
          * @param renderingGroupId The rendering group id corresponding to its index
          * @param opaqueSortCompareFn The opaque queue comparison function use to sort.
@@ -38626,7 +38626,7 @@ declare module BABYLON {
         _rebuild(): void;
         /**
          * Prepares a frame to be run through a post process.
-         * @param sourceTexture The input texture to the post procesess. (default: null)
+         * @param sourceTexture The input texture to the post processes. (default: null)
          * @param postProcesses An array of post processes to be run. (default: null)
          * @returns True if the post processes were able to be run.
          * @hidden
@@ -53059,7 +53059,7 @@ declare module BABYLON {
         /**
          * Initializes a StereoscopicInterlacePostProcessI
          * @param name The name of the effect.
-         * @param rigCameras The rig cameras to be appled to the post process
+         * @param rigCameras The rig cameras to be applied to the post process
          * @param isStereoscopicHoriz If the rendered results are horizontal or vertical
          * @param isStereoscopicInterlaced If the rendered results are alternate line interlaced
          * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
@@ -53082,8 +53082,8 @@ declare module BABYLON {
         /**
          * Initializes a StereoscopicInterlacePostProcess
          * @param name The name of the effect.
-         * @param rigCameras The rig cameras to be appled to the post process
-         * @param isStereoscopicHoriz If the rendered results are horizontal or verticle
+         * @param rigCameras The rig cameras to be applied to the post process
+         * @param isStereoscopicHoriz If the rendered results are horizontal or vertical
          * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
          * @param engine The engine which the post process will be applied. (default: current engine)
          * @param reusable If the post process can be reused on the same frame. (default: false)
@@ -53716,7 +53716,7 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * COnfiguration object for WebXR output canvas
+     * Configuration object for WebXR output canvas
      */
     export class WebXRManagedOutputCanvasOptions {
         /**
@@ -53756,7 +53756,7 @@ declare module BABYLON {
          */
         xrLayer: Nullable<XRWebGLLayer>;
         /**
-         * Obseervers registered here will be triggered when the xr layer was initialized
+         * Observers registered here will be triggered when the xr layer was initialized
          */
         onXRLayerInitObservable: Observable<XRWebGLLayer>;
         /**
@@ -55470,7 +55470,7 @@ declare module BABYLON {
         private _uniqueId;
         private _disposed;
         /**
-         * Represents the part of the controller that is held. This may not exist if the controller is the head mounted display itself, if thats the case only the pointer from the head will be availible
+         * Represents the part of the controller that is held. This may not exist if the controller is the head mounted display itself, if that's the case only the pointer from the head will be available
          */
         grip?: AbstractMesh;
         /**
@@ -56456,7 +56456,7 @@ declare module BABYLON {
          */
         get rotationEnabled(): boolean;
         /**
-         * Sets wether rotation is enabled or not
+         * Sets whether rotation is enabled or not
          * @param enabled is rotation enabled when teleportation is shown
          */
         set rotationEnabled(enabled: boolean);
@@ -56612,7 +56612,7 @@ declare module BABYLON {
          */
         static CreateAsync(scene: Scene, options?: WebXRDefaultExperienceOptions): Promise<WebXRDefaultExperience>;
         /**
-         * DIsposes of the experience helper
+         * Disposes of the experience helper
          */
         dispose(): void;
     }
@@ -64314,7 +64314,7 @@ declare module BABYLON {
         /** Enable or disable the depth renderer. When disabled, the depth texture is not updated */
         enabled: boolean;
         /**
-         * Specifiess that the depth renderer will only be used within
+         * Specifies that the depth renderer will only be used within
          * the camera it is created for.
          * This can help forcing its rendering during the camera processing.
          */
@@ -65921,7 +65921,7 @@ declare module BABYLON {
          * @param size defines the texture resolution (for each face)
          * @param scene defines the hosting scene
          * @param generateMipMaps defines if mip maps should be generated automatically (true by default)
-         * @param useFloat defines if HDR data (flaot data) should be used to store colors (false by default)
+         * @param useFloat defines if HDR data (float data) should be used to store colors (false by default)
          */
         constructor(
         /** defines the name of the probe */
@@ -65963,12 +65963,12 @@ declare module BABYLON {
          */
         toString(fullDetails?: boolean): string;
         /**
-         * Get the class name of the relfection probe.
+         * Get the class name of the refection probe.
          * @returns "ReflectionProbe"
          */
         getClassName(): string;
         /**
-         * Serialize the reflection probe to a JSON representation we can easily use in the resepective Parse function.
+         * Serialize the reflection probe to a JSON representation we can easily use in the respective Parse function.
          * @returns The JSON representation of the texture
          */
         serialize(): any;
@@ -73747,13 +73747,13 @@ declare module BABYLON {
         _attachCameras(cameras: Camera[]): void;
         /**
          * Detaches the effect on cameras
-         * @param cameras The camera to detatch from.
+         * @param cameras The camera to detach from.
          * @hidden
          */
         _detachCameras(cameras: Camera): void;
         /**
-         * Detatches the effect on cameras
-         * @param cameras The camera to detatch from.
+         * Detaches the effect on cameras
+         * @param cameras The camera to detach from.
          * @hidden
          */
         _detachCameras(cameras: Camera[]): void;
@@ -73930,7 +73930,7 @@ declare module BABYLON {
      */
     export class ChromaticAberrationPostProcess extends PostProcess {
         /**
-         * The amount of seperation of rgb channels (default: 30)
+         * The amount of separation of rgb channels (default: 30)
          */
         aberrationAmount: number;
         /**
@@ -73938,11 +73938,11 @@ declare module BABYLON {
          */
         radialIntensity: number;
         /**
-         * The normilized direction in which the rgb channels should be seperated. If set to 0,0 radial direction will be used. (default: Vector2(0.707,0.707))
+         * The normalized direction in which the rgb channels should be separated. If set to 0,0 radial direction will be used. (default: Vector2(0.707,0.707))
          */
         direction: Vector2;
         /**
-         * The center position where the radialIntensity should be around. [0.5,0.5 is center of screen, 1,1 is top right corder] (default: Vector2(0.5 ,0.5))
+         * The center position where the radialIntensity should be around. [0.5,0.5 is center of screen, 1,1 is top right corner] (default: Vector2(0.5 ,0.5))
          */
         centerPosition: Vector2;
         /** The width of the screen to apply the effect on */
@@ -73985,11 +73985,11 @@ declare module BABYLON {
      */
     export class CircleOfConfusionPostProcess extends PostProcess {
         /**
-         * Max lens size in scene units/1000 (eg. millimeter). Standard cameras are 50mm. (default: 50) The diamater of the resulting aperture can be computed by lensSize/fStop.
+         * Max lens size in scene units/1000 (eg. millimeter). Standard cameras are 50mm. (default: 50) The diameter of the resulting aperture can be computed by lensSize/fStop.
          */
         lensSize: number;
         /**
-         * F-Stop of the effect's camera. The diamater of the resulting aperture can be computed by lensSize/fStop. (default: 1.4)
+         * F-Stop of the effect's camera. The diameter of the resulting aperture can be computed by lensSize/fStop. (default: 1.4)
          */
         fStop: number;
         /**
@@ -74150,7 +74150,7 @@ declare module BABYLON {
          * @param kernel The size of the kernel used to blur.
          * @param options The required width/height ratio to downsize to before computing the render pass.
          * @param camera The camera to apply the render pass to.
-         * @param circleOfConfusion The circle of confusion + depth map to be used to avoid blurring accross edges
+         * @param circleOfConfusion The circle of confusion + depth map to be used to avoid blurring across edges
          * @param imageToBlur The image to apply the blur to (default: Current rendered frame)
          * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
          * @param engine The engine which the post process will be applied. (default: current engine)
@@ -74278,7 +74278,7 @@ declare module BABYLON {
         set focusDistance(value: number);
         get focusDistance(): number;
         /**
-         * Max lens size in scene units/1000 (eg. millimeter). Standard cameras are 50mm. (default: 50) The diamater of the resulting aperture can be computed by lensSize/fStop.
+         * Max lens size in scene units/1000 (eg. millimeter). Standard cameras are 50mm. (default: 50) The diameter of the resulting aperture can be computed by lensSize/fStop.
          */
         set lensSize(value: number);
         get lensSize(): number;
@@ -74291,7 +74291,7 @@ declare module BABYLON {
          */
         constructor(scene: Scene, depthTexture: Nullable<RenderTargetTexture>, blurLevel?: DepthOfFieldEffectBlurLevel, pipelineTextureType?: number, blockCompilation?: boolean);
         /**
-        * Get the current class name of the current effet
+        * Get the current class name of the current effect
         * @returns "DepthOfFieldEffect"
         */
         getClassName(): string;
@@ -74552,7 +74552,7 @@ declare module BABYLON {
          */
         rebuild(): void;
         /**
-         * Disposes the component and the associated ressources
+         * Disposes the component and the associated resources
          */
         dispose(): void;
         private _gatherRenderTargets;
@@ -74593,11 +74593,11 @@ declare module BABYLON {
         set motionBlurSamples(samples: number);
         private _motionBlurSamples;
         /**
-         * Gets wether or not the motion blur post-process is in object based mode.
+         * Gets whether or not the motion blur post-process is in object based mode.
          */
         get isObjectBased(): boolean;
         /**
-         * Sets wether or not the motion blur post-process is in object based mode.
+         * Sets whether or not the motion blur post-process is in object based mode.
          */
         set isObjectBased(value: boolean);
         private _isObjectBased;
@@ -74671,7 +74671,7 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Post process which applies a refractin texture
+     * Post process which applies a refraction texture
      * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#refraction
      */
     export class RefractionPostProcess extends PostProcess {
@@ -74919,7 +74919,7 @@ declare module BABYLON {
      */
     export class PostProcessRenderPipelineManagerSceneComponent implements ISceneComponent {
         /**
-         * The component name helpfull to identify the component in the list of scene components.
+         * The component name helpful to identify the component in the list of scene components.
          */
         readonly name: string;
         /**
@@ -74941,7 +74941,7 @@ declare module BABYLON {
          */
         rebuild(): void;
         /**
-         * Disposes the component and the associated ressources
+         * Disposes the component and the associated resources
          */
         dispose(): void;
         private _gatherRenderTargets;
@@ -74988,7 +74988,7 @@ declare module BABYLON {
          */
         depthOfField: DepthOfFieldEffect;
         /**
-         * The Fast Approximate Anti-Aliasing post process which attemps to remove aliasing from an image.
+         * The Fast Approximate Anti-Aliasing post process which attempts to remove aliasing from an image.
          */
         fxaa: FxaaPostProcess;
         /**
@@ -75330,7 +75330,7 @@ declare module BABYLON {
          */
         disableEdgeBlur(): void;
         /**
-         * Sets the amout of grain
+         * Sets the amount of grain
          * @param amount Amount of grain
          */
         setGrainAmount(amount: number): void;
@@ -75408,7 +75408,7 @@ declare module BABYLON {
         disableHighlights(): void;
         /**
          * Removes the internal pipeline assets and detaches the pipeline from the scene cameras
-         * @param disableDepthRender If the scens depth rendering should be disabled (default: false)
+         * @param disableDepthRender If the scene's depth rendering should be disabled (default: false)
          */
         dispose(disableDepthRender?: boolean): void;
         private _createChromaticAberrationPostProcess;
@@ -75567,7 +75567,7 @@ declare module BABYLON {
          */
         getClassName(): string;
         /**
-         * Removes the internal pipeline assets and detatches the pipeline from the scene cameras
+         * Removes the internal pipeline assets and detaches the pipeline from the scene cameras
          */
         dispose(disableGeometryBufferRenderer?: boolean): void;
         private _createBlurPostProcess;
@@ -75688,7 +75688,7 @@ declare module BABYLON {
          */
         getClassName(): string;
         /**
-         * Removes the internal pipeline assets and detatches the pipeline from the scene cameras
+         * Removes the internal pipeline assets and detaches the pipeline from the scene cameras
          */
         dispose(disableDepthRender?: boolean): void;
         private _createBlurPostProcess;
@@ -75778,12 +75778,12 @@ declare module BABYLON {
          */
         constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, blockCompilation?: boolean, forceGeometryBuffer?: boolean);
         /**
-         * Gets wether or not smoothing reflections is enabled.
+         * Gets whether or not smoothing reflections is enabled.
          * Enabling smoothing will require more GPU power and can generate a drop in FPS.
          */
         get enableSmoothReflections(): boolean;
         /**
-         * Sets wether or not smoothing reflections is enabled.
+         * Sets whether or not smoothing reflections is enabled.
          * Enabling smoothing will require more GPU power and can generate a drop in FPS.
          */
         set enableSmoothReflections(enabled: boolean);
@@ -75913,7 +75913,7 @@ declare module BABYLON {
          */
         depthOfFieldPostProcess: Nullable<PostProcess>;
         /**
-         * The Fast Approximate Anti-Aliasing post process which attemps to remove aliasing from an image.
+         * The Fast Approximate Anti-Aliasing post process which attempts to remove aliasing from an image.
          */
         fxaaPostProcess: Nullable<FxaaPostProcess>;
         /**
@@ -75975,11 +75975,11 @@ declare module BABYLON {
          */
         hdrIncreaseRate: number;
         /**
-         * Gets wether or not the exposure of the overall pipeline should be automatically adjusted by the HDR post-process
+         * Gets whether or not the exposure of the overall pipeline should be automatically adjusted by the HDR post-process
          */
         get hdrAutoExposure(): boolean;
         /**
-         * Sets wether or not the exposure of the overall pipeline should be automatically adjusted by the HDR post-process
+         * Sets whether or not the exposure of the overall pipeline should be automatically adjusted by the HDR post-process
          */
         set hdrAutoExposure(value: boolean);
         /**
@@ -76034,11 +76034,11 @@ declare module BABYLON {
          */
         set motionStrength(strength: number);
         /**
-         * Gets wether or not the motion blur post-process is object based or screen based.
+         * Gets whether or not the motion blur post-process is object based or screen based.
          */
         get objectBasedMotionBlur(): boolean;
         /**
-         * Sets wether or not the motion blur post-process should be object based or screen based
+         * Sets whether or not the motion blur post-process should be object based or screen based
          */
         set objectBasedMotionBlur(value: boolean);
         /**
@@ -76079,13 +76079,13 @@ declare module BABYLON {
         set BloomEnabled(enabled: boolean);
         /**
          * @ignore
-         * Specifies if the depth of field pipeline is enabed
+         * Specifies if the depth of field pipeline is enabled
          */
         get DepthOfFieldEnabled(): boolean;
         set DepthOfFieldEnabled(enabled: boolean);
         /**
          * @ignore
-         * Specifies if the lens flare pipeline is enabed
+         * Specifies if the lens flare pipeline is enabled
          */
         get LensFlareEnabled(): boolean;
         set LensFlareEnabled(enabled: boolean);
@@ -76204,7 +76204,7 @@ declare module BABYLON {
      */
     export class TonemapPostProcess extends PostProcess {
         private _operator;
-        /** Defines the required exposure adjustement */
+        /** Defines the required exposure adjustment */
         exposureAdjustment: number;
         /**
          * Gets a string identifying the name of the class
@@ -76222,7 +76222,7 @@ declare module BABYLON {
          * @param textureFormat defines the texture format to use (BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT by default)
          */
         constructor(name: string, _operator: TonemappingOperator, 
-        /** Defines the required exposure adjustement */
+        /** Defines the required exposure adjustment */
         exposureAdjustment: number, camera: Camera, samplingMode?: number, engine?: Engine, textureFormat?: number);
     }
 }
@@ -76432,7 +76432,7 @@ declare module BABYLON {
      */
     export class BoundingBoxRenderer implements ISceneComponent {
         /**
-         * The component name helpfull to identify the component in the list of scene components.
+         * The component name helpful to identify the component in the list of scene components.
          */
         readonly name: string;
         /**
@@ -76540,7 +76540,7 @@ declare module BABYLON {
      */
     export class DepthRendererSceneComponent implements ISceneComponent {
         /**
-         * The component name helpfull to identify the component in the list of scene components.
+         * The component name helpful to identify the component in the list of scene components.
          */
         readonly name: string;
         /**
@@ -76562,7 +76562,7 @@ declare module BABYLON {
          */
         rebuild(): void;
         /**
-         * Disposes the component and the associated ressources
+         * Disposes the component and the associated resources
          */
         dispose(): void;
         private _gatherRenderTargets;
@@ -76627,7 +76627,7 @@ declare module BABYLON {
          */
         rebuild(): void;
         /**
-         * Disposes the component and the associated ressources
+         * Disposes the component and the associated resources
          */
         dispose(): void;
     }
@@ -76832,7 +76832,7 @@ declare module BABYLON {
          */
         rebuild(): void;
         /**
-         * Disposes the component and the associated ressources
+         * Disposes the component and the associated resources
          */
         dispose(): void;
     }
@@ -76878,7 +76878,7 @@ declare module BABYLON {
             renderOverlay: boolean;
         }
     /**
-     * This class is responsible to draw bothe outline/overlay of meshes.
+     * This class is responsible to draw the outline/overlay of meshes.
      * It should not be used directly but through the available method on mesh.
      */
     export class OutlineRenderer implements ISceneComponent {
@@ -76917,7 +76917,7 @@ declare module BABYLON {
          */
         rebuild(): void;
         /**
-         * Disposes the component and the associated ressources.
+         * Disposes the component and the associated resources.
          */
         dispose(): void;
         /**
@@ -76930,8 +76930,8 @@ declare module BABYLON {
         /**
          * Returns whether or not the outline renderer is ready for a given submesh.
          * All the dependencies e.g. submeshes, texture, effect... mus be ready
-         * @param subMesh Defines the submesh to check readyness for
-         * @param useInstances Defines wheter wee are trying to render instances or not
+         * @param subMesh Defines the submesh to check readiness for
+         * @param useInstances Defines whether wee are trying to render instances or not
          * @returns true if ready otherwise false
          */
         isReady(subMesh: SubMesh, useInstances: boolean): boolean;
@@ -77228,7 +77228,7 @@ declare module BABYLON {
          * @param scene defines the hosting scene
          * @param spriteJSON null otherwise a JSON object defining sprite sheet data
          * @param epsilon defines the epsilon value to align texture (0.01 by default)
-         * @param samplingMode defines the smapling mode to use with spritesheet
+         * @param samplingMode defines the sampling mode to use with spritesheet
          * @param fromPacked set to true; do not alter
          */
         constructor(
@@ -80082,7 +80082,7 @@ declare module BABYLON {
          */
         WRIST = "wrist",
         /**
-         * HandPart - The THumb
+         * HandPart - The Thumb
          */
         THUMB = "thumb",
         /**
