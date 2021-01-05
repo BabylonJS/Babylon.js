@@ -101,7 +101,7 @@ export const enum HandPart {
      */
     WRIST = "wrist",
     /**
-     * HandPart - The THumb
+     * HandPart - The Thumb
      */
     THUMB = "thumb",
     /**

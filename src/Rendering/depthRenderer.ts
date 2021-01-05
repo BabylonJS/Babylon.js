@@ -37,7 +37,7 @@ export class DepthRenderer {
     public enabled = true;
 
     /**
-     * Specifiess that the depth renderer will only be used within
+     * Specifies that the depth renderer will only be used within
      * the camera it is created for.
      * This can help forcing its rendering during the camera processing.
      */

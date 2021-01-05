@@ -293,7 +293,7 @@ export class SpriteSceneComponent implements ISceneComponent {
     }
 
     /**
-     * Disposes the component and the associated ressources.
+     * Disposes the component and the associated resources.
      */
     public dispose(): void {
         this.scene.onBeforeSpritesRenderingObservable.clear();
