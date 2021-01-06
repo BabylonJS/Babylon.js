@@ -269,6 +269,8 @@ export class MaterialHelper {
             defines["MORPHTARGETS_NORMAL"] = manager.supportsNormals && defines["NORMAL"];
             defines["MORPHTARGETS"] = (manager.numInfluencers > 0);
             defines["NUM_MORPH_INFLUENCERS"] = manager.numInfluencers;
+
+            defines["MORPHTARGETS_TEXTURE"] = manager.isUsingTextureForTargets;
         } else {
             defines["MORPHTARGETS_UV"] = false;
             defines["MORPHTARGETS_TANGENT"] = false;

@@ -28,6 +28,8 @@ void main(void)
 #if (defined(ALPHATEST) || defined(NEED_UV)) && defined(UV1)
     vec2 uvUpdated = uv;
 #endif
+
+#include<morphTargetsVertexGlobal>
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 
 #include<instancesVertex>

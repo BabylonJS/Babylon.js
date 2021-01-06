@@ -8,6 +8,7 @@ import { Mesh } from "../Meshes/mesh";
 import { MorphTarget } from "./morphTarget";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { Constants } from "../Engines/constants";
+import { Effect } from "../Materials/effect";
 /**
  * This class is used to deform meshes using morphing between different targets
  * @see https://doc.babylonjs.com/how_to/how_to_use_morphtargets
@@ -23,6 +24,9 @@ export class MorphTargetManager {
     private _supportsTangents = false;
     private _supportsUVs = false;
     private _vertexCount = 0;
+    private _textureVertexStride = 0;
+    private _textureWidth = 0;
+    private _textureHeight = 1;
     private _uniqueId = 0;
     private _tempInfluences = new Array<number>();
     private _canUseTextureForTargets = false;
@@ -190,6 +194,12 @@ export class MorphTargetManager {
         }
     }
 
+    /** @hidden */
+    public _bind(effect: Effect) {
+        effect.setFloat3("morphTargetTextureInfo", this._textureVertexStride, this._textureWidth, this._textureHeight);
+        effect.setTextureArray("morphTargets", this._targetStoreTextures);
+    }
+
     /**
      * Clone the current manager
      * @returns a new MorphTargetManager
@@ -283,29 +293,40 @@ export class MorphTargetManager {
                 return;
             }
 
-            let textureWidth = this._vertexCount * 3;
+            this._textureVertexStride = 1;
 
             if (this._supportsNormals) {
-                textureWidth *= 2;
+                this._textureVertexStride++;
             }
 
             if (this._supportsTangents) {
-                textureWidth += this._vertexCount * 4;
+                this._textureVertexStride++;
             }
 
             if (this._supportsUVs) {
-                textureWidth += this._vertexCount * 2;
+                this._textureVertexStride++;
+            }
+
+            this._textureWidth = this._vertexCount * this._textureVertexStride;
+            this._textureHeight = 1;
+
+            const maxTextureSize = this._scene.getEngine().getCaps().maxTextureSize;
+            if (this._textureWidth > maxTextureSize) {
+                this._textureHeight = Math.ceil(this._textureWidth / maxTextureSize);
+                this._textureWidth = maxTextureSize;
             }
 
             for (var index = 0; index < this._targets.length; index++) {
                 let target = this._targets[index];
 
-                if (!this._targetStoreTextures[index] || this._targetStoreTextures[index].getSize().width !== textureWidth) {
+                if (!this._targetStoreTextures[index]
+                    || this._targetStoreTextures[index].getSize().width !== this._textureWidth * 4
+                    || this._targetStoreTextures[index].getSize().height !== this._textureHeight * 4) {
                     if (this._targetStoreTextures[index]) {
                         this._targetStoreTextures[index].dispose();
                     }
 
-                    let data = new Float32Array(textureWidth);
+                    let data = new Float32Array(this._textureWidth * this._textureHeight * 4);
 
                     let offset = 0;
                     const positions = target.getPositions();
@@ -323,31 +344,30 @@ export class MorphTargetManager {
                         data[offset + 1] = positions[vertex * 3 + 1];
                         data[offset + 2] = positions[vertex * 3 + 2];
 
-                        offset += 3;
+                        offset += 4;
 
                         if (normals) {
                             data[offset] = normals[vertex * 3];
                             data[offset + 1] = normals[vertex * 3 + 1];
                             data[offset + 2] = normals[vertex * 3 + 2];
-                            offset += 3;
+                            offset += 4;
                         }
 
                         if (uvs) {
                             data[offset] = uvs[vertex * 2];
                             data[offset + 1] = uvs[vertex * 2 + 1];
-                            offset += 2;
+                            offset += 4;
                         }
 
                         if (tangents) {
-                            data[offset] = tangents[vertex * 4];
-                            data[offset + 1] = tangents[vertex * 4 + 1];
-                            data[offset + 2] = tangents[vertex * 4 + 2];
-                            data[offset + 3] = tangents[vertex * 4 + 3];
+                            data[offset] = tangents[vertex * 3];
+                            data[offset + 1] = tangents[vertex * 3 + 1];
+                            data[offset + 2] = tangents[vertex * 3 + 2];
                             offset += 4;
                         }
                     }
 
-                    this._targetStoreTextures[index]= RawTexture.CreateRGBATexture(data, textureWidth, 1, 
+                    this._targetStoreTextures[index]= RawTexture.CreateRGBATexture(data, this._textureWidth, this._textureHeight, 
                         this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
                 }
             }

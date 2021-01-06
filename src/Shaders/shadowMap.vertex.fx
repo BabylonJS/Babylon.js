@@ -41,6 +41,7 @@ vec3 positionUpdated = position;
 	vec3 normalUpdated = normal;
 #endif
 
+#include<morphTargetsVertexGlobal>
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 
 #include<instancesVertex>

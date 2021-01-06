@@ -81,7 +81,8 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     public MORPHTARGETS_NORMAL = false;
     public MORPHTARGETS_TANGENT = false;
     public MORPHTARGETS_UV = false;
-    public NUM_MORPH_INFLUENCERS = 0;
+    public NUM_MORPH_INFLUENCERS = 0;    
+    public MORPHTARGETS_TEXTURE = false;
 
     /** IMAGE PROCESSING */
     public IMAGEPROCESSING = false;

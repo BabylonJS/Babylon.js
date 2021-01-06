@@ -173,6 +173,7 @@ void main(void) {
     vec2 uvUpdated = uv;
 #endif  
 
+#include<morphTargetsVertexGlobal>
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 
 #ifdef REFLECTIONMAP_SKYBOX

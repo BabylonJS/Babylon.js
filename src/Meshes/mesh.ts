@@ -1511,6 +1511,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         var engine = this.getScene().getEngine();
 
+        // Morph targets
+        if (this.morphTargetManager && this.morphTargetManager.isUsingTextureForTargets) {
+            this.morphTargetManager._bind(effect);
+        }
+
         // Wireframe
         var indexToBind;
 
