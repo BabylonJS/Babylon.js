@@ -130,7 +130,6 @@ interface INativeEngine {
     setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
 
     createTexture(): WebGLTexture;
-    createDepthTexture(texture: WebGLTexture, width: number, height: number): WebGLTexture;
     loadTexture(texture: WebGLTexture, data: ArrayBufferView, generateMips: boolean, invertY: boolean, onSuccess: () => void, onError: () => void): void;
     loadRawTexture(texture: WebGLTexture, data: ArrayBufferView, width: number, height: number, format: number, generateMips: boolean, invertY: boolean): void;
     loadCubeTexture(texture: WebGLTexture, data: Array<ArrayBufferView>, generateMips: boolean, onSuccess: () => void, onError: () => void): void;
@@ -1725,11 +1724,15 @@ export class NativeEngine extends Engine {
         const width = (<{ width: number, height: number, layers?: number }>size).width || <number>size;
         const height = (<{ width: number, height: number, layers?: number }>size).height || <number>size;
 
-        var framebuffer = this._native.createDepthTexture(
+        var framebuffer = this._native.createFramebuffer(
             texture._hardwareTexture!.underlyingResource,
             width,
-            height);
-
+            height,
+            this._native.TEXTURE_FORMAT_RGBA8,
+            this._native.TEXTURE_LINEAR_LINEAR,
+            false,
+            true,
+            false);
         texture._framebuffer = framebuffer;
         return texture;
     }

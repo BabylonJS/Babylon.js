@@ -55,12 +55,22 @@ export class PhotoDome extends TextureDome<Texture> {
     }
 
     protected _initTexture(urlsOrElement: string, scene: Scene, options: any): Texture {
-        return new Texture(urlsOrElement, scene, !options.generateMipMaps, !this._useDirectMapping, undefined, undefined, (message, exception) => {
-            this.onLoadErrorObservable.notifyObservers(message || "Unknown error occured");
+        return new Texture(
+            urlsOrElement,
+            scene,
+            !options.generateMipMaps,
+            !this._useDirectMapping,
+            undefined,
+            () => {
+                this.onLoadObservable.notifyObservers();
+            },
+            (message, exception) => {
+                this.onLoadErrorObservable.notifyObservers(message || "Unknown error occured");
 
-            if (this.onError) {
-                this.onError(message, exception);
+                if (this.onError) {
+                    this.onError(message, exception);
+                }
             }
-        });
+        );
     }
 }
