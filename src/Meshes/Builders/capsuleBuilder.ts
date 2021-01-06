@@ -1,6 +1,8 @@
 import { VertexData } from "../mesh.vertexData";
 import { Vector2, Vector3, Matrix } from "../../Maths/math.vector";
 import { Mesh, _CreationDataStorage } from "../mesh";
+import { Nullable } from "../../types";
+import { Scene } from "../../scene";
 /**
  * Scripts based off of https://github.com/maximeq/three-js-capsule-geometry/blob/master/src/CapsuleBufferGeometry.js
  * @param options the constructors options used to shape the mesh.
@@ -285,7 +287,7 @@ export class CapsuleBuilder {
             capSubdivisions: 6,
             updatable: false,
         },
-        scene: any
+        scene: Nullable<Scene> = null
     ): Mesh {
         var capsule = new Mesh(name, scene);
         var vertexData = VertexData.CreateCapsule(options);
