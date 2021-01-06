@@ -1120,8 +1120,7 @@ export class _GLTFMaterialExporter {
     }
 
     private getPixelsFromTexture(babylonTexture: BaseTexture): Promise<Nullable<Uint8Array | Float32Array>> {
-        // TODO WEBGPU remove the as unknown cast once using the new babylonjs package to compile the glTF material exporter
-        const pixels = babylonTexture.textureType === Constants.TEXTURETYPE_UNSIGNED_INT ? babylonTexture.readPixels() as unknown as Promise<Uint8Array> : babylonTexture.readPixels() as unknown as Promise<Float32Array>;
+        const pixels = babylonTexture.textureType === Constants.TEXTURETYPE_UNSIGNED_INT ? babylonTexture.readPixels() as Promise<Uint8Array> : babylonTexture.readPixels() as Promise<Float32Array>;
         return pixels;
     }
 
