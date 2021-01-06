@@ -48,7 +48,8 @@
         "serializers",
         "gui",
         "inspector",
-        "nodeEditor"
+        "nodeEditor",
+        "guiEditor"
     ],
     "es6modules": [
         "core",
@@ -60,7 +61,8 @@
         "gui",
         "inspector",
         "viewer",
-        "nodeEditor"
+        "nodeEditor",
+        "guiEditor"
     ],
     "apps": [
         "playground",
@@ -648,6 +650,61 @@
                 ],
                 "typings": "babylon.nodeEditor.module.d.ts",
                 "index": "babylon.nodeEditor.max.js"
+            }
+        }
+    },
+    "guiEditor": {
+        "libraries": [
+            {
+                "output": "babylon.guiEditor.js",
+                "entry": "./legacy/legacy.ts"
+            }
+        ],
+        "build": {            
+            "ignoreInWorkerMode": true,
+            "ignoreInTestMode": true,
+            "mainFolder": "./guiEditor/",
+            "uncheckedLintImports": [
+                "react",
+                "react-dom",
+                "dagre",
+                "re-resizable",
+                "glTF",
+                "file-saver"
+            ],
+            "sharedUiComponents": "src/sharedUiComponents/",
+            "umd": {
+                "packageName": "babylonjs-gui-editor",
+                "webpackRoot": "GUIEDITOR",
+                "processDeclaration": {
+                    "filename": "babylon.guiEditor.module.d.ts",
+                    "moduleName": "GUIEDITOR",
+                    "importsToRemove": [],
+                    "classMap": {
+                        "babylonjs": "BABYLON",
+                        "react": "React",
+                        "@babylonjs/core": "BABYLON",
+                        "@fortawesome": false,
+                        "react-contextmenu": false
+                    }
+                }
+            },
+            "es6": {
+                "webpackBuild": true,
+                "buildDependencies": [
+                    "node_modules/re-resizable/lib/index.es5.js",
+                    "Tools/**/*"
+                ],
+                "packageName": "@babylonjs/gui-editor",
+                "readme": "dist/preview release/guiEditor/readme-es6.md",
+                "packagesFiles": [
+                    "babylon.guiEditor.max.js",
+                    "babylon.guiEditor.max.js.map",
+                    "babylon.guiEditor.module.d.ts",
+                    "readme.md"
+                ],
+                "typings": "babylon.guiEditor.module.d.ts",
+                "index": "babylon.guiEditor.max.js"
             }
         }
     },
