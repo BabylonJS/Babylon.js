@@ -2,6 +2,7 @@ import { VertexBuffer } from "../../Meshes/buffer";
 import { Nullable } from "../../types";
 import { WebGPUCacheRenderPipeline } from "./webgpuCacheRenderPipeline";
 
+/** @hidden */
 class NodeState {
     public values: { [name: number]: NodeState };
     public pipeline: GPURenderPipeline;
