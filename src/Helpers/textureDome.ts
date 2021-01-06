@@ -166,9 +166,13 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
      */
     private _onBeforeCameraRenderObserver: Nullable<Observer<Camera>> = null;
     /**
-     * Observable raised when an error occured while loading the 360 image
+     * Observable raised when an error occurred while loading the texture
      */
     public onLoadErrorObservable = new Observable<string>();
+    /**
+     * Observable raised when the texture finished loading
+     */
+    public onLoadObservable = new Observable<void>();
 
     /**
      * Create an instance of this class and pass through the parameters to the relevant classes- Texture, StandardMaterial, and Mesh.
@@ -328,6 +332,7 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
 
         this._scene.onBeforeCameraRenderObservable.remove(this._onBeforeCameraRenderObserver);
         this.onLoadErrorObservable.clear();
+        this.onLoadObservable.clear();
 
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
     }
