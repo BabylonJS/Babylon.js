@@ -4397,4 +4397,20 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     export const Contrast: IToolData;
+}
+declare module INSPECTOR {
+    export interface IButtonLineComponentProps {
+        data: string;
+        tooltip: string;
+    }
+    export class DraggableLineComponent extends React.Component<IButtonLineComponentProps> {
+        constructor(props: IButtonLineComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    export class Popup {
+        static CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): HTMLDivElement | null;
+        private static _CopyStyles;
+    }
 }

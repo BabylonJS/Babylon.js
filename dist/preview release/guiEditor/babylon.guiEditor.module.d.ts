@@ -1,16 +1,4 @@
 /// <reference types="react" />
-declare module "babylonjs-gui-editor/blockTools" {
-    import { Checkbox } from "babylonjs-gui/2D/controls/checkbox";
-    import { ColorPicker } from "babylonjs-gui/2D/controls/colorpicker";
-    import { Ellipse } from "babylonjs-gui/2D/controls/ellipse";
-    import { Line } from "babylonjs-gui/2D/controls/line";
-    import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
-    import { Slider } from "babylonjs-gui/2D/controls/sliders/slider";
-    import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
-    export class BlockTools {
-        static GetGuiFromString(data: string): Slider | Checkbox | ColorPicker | Ellipse | Rectangle | Line | TextBlock;
-    }
-}
 declare module "babylonjs-gui-editor/components/log/logComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-gui-editor/globalState";
@@ -45,7 +33,7 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         private readonly MinZoom;
         private readonly MaxZoom;
         private _hostCanvas;
-        private _graphCanvas;
+        private _gridCanvas;
         private _selectionContainer;
         private _frameContainer;
         private _svgCanvas;
@@ -89,7 +77,7 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         getGridPositionCeil(position: number): number;
         updateTransform(): void;
         onKeyUp(): void;
-        findNodeFromGuiElement(guiElement: Control): GUINode;
+        findNodeFromGuiElement(guiControl: Control): GUINode;
         reset(): void;
         appendBlock(guiElement: Control): GUINode;
         distributeGraph(): void;
@@ -109,7 +97,7 @@ declare module "babylonjs-gui-editor/diagram/properties/propertyComponentProps" 
     import { GlobalState } from "babylonjs-gui-editor/globalState";
     export interface IPropertyComponentProps {
         globalState: GlobalState;
-        guiBlock: Control;
+        guiControl: Control;
     }
 }
 declare module "babylonjs-gui-editor/sharedComponents/lineContainerComponent" {
@@ -193,6 +181,7 @@ declare module "babylonjs-gui-editor/sharedComponents/floatLineComponent" {
         private _localChange;
         private _store;
         private _regExp;
+        private _digits;
         constructor(props: IFloatLineComponentProps);
         shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: {
             value: string;
@@ -256,22 +245,6 @@ declare module "babylonjs-gui-editor/diagram/properties/genericNodePropertyCompo
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-gui-editor/sharedComponents/textLineComponent" {
-    import * as React from "react";
-    interface ITextLineComponentProps {
-        label: string;
-        value: string;
-        color?: string;
-        underline?: boolean;
-        onLink?: () => void;
-    }
-    export class TextLineComponent extends React.Component<ITextLineComponentProps> {
-        constructor(props: ITextLineComponentProps);
-        onLink(): void;
-        renderContent(): JSX.Element;
-        render(): JSX.Element;
-    }
-}
 declare module "babylonjs-gui-editor/sharedComponents/numericInputComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-gui-editor/globalState";
@@ -297,12 +270,31 @@ declare module "babylonjs-gui-editor/sharedComponents/numericInputComponent" {
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-gui-editor/sharedUiComponents/lines/textLineComponent" {
+    import * as React from "react";
+    interface ITextLineComponentProps {
+        label?: string;
+        value?: string;
+        color?: string;
+        underline?: boolean;
+        onLink?: () => void;
+        url?: string;
+        ignoreValue?: boolean;
+        additionalClass?: string;
+    }
+    export class TextLineComponent extends React.Component<ITextLineComponentProps> {
+        constructor(props: ITextLineComponentProps);
+        onLink(): void;
+        renderContent(): JSX.Element | null;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-gui-editor/diagram/properties/sliderGuiPropertyComponent" {
     import * as React from "react";
     import { IPropertyComponentProps } from "babylonjs-gui-editor/diagram/properties/propertyComponentProps";
     export class SliderPropertyTabComponent extends React.Component<IPropertyComponentProps> {
         constructor(props: IPropertyComponentProps);
-        private slider;
+        private _slider;
         render(): JSX.Element;
     }
 }
@@ -318,11 +310,10 @@ declare module "babylonjs-gui-editor/diagram/propertyLedger" {
 declare module "babylonjs-gui-editor/diagram/guiNode" {
     import { GlobalState } from "babylonjs-gui-editor/globalState";
     import { Nullable } from 'babylonjs/types';
-    import { WorkbenchComponent } from "babylonjs-gui-editor/diagram/workbench";
     import { Control } from 'babylonjs-gui/2D/controls/control';
     import { Vector2 } from 'babylonjs/Maths/math.vector';
     export class GUINode {
-        guiNode: Control;
+        guiControl: Control;
         private _x;
         private _y;
         private _gridAlignedX;
@@ -351,67 +342,44 @@ declare module "babylonjs-gui-editor/diagram/guiNode" {
         get enclosingFrameId(): number;
         set enclosingFrameId(value: number);
         set isSelected(value: boolean);
-        constructor(globalState: GlobalState, guiNode: Control);
+        constructor(globalState: GlobalState, guiControl: Control);
         cleanAccumulation(useCeil?: boolean): void;
         clicked: boolean;
         _onMove(evt: Vector2, startPos: Vector2): boolean;
         renderProperties(): Nullable<JSX.Element>;
         updateVisual(): void;
-        appendVisual(root: HTMLDivElement, owner: WorkbenchComponent): void;
         dispose(): void;
     }
 }
 declare module "babylonjs-gui-editor/globalState" {
     import { Nullable } from "babylonjs/types";
-    import { Observable } from 'babylonjs/Misc/observable';
+    import { Observable } from "babylonjs/Misc/observable";
     import { LogEntry } from "babylonjs-gui-editor/components/log/logComponent";
-    import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
-    import { Color4 } from 'babylonjs/Maths/math.color';
+    import { Color4 } from "babylonjs/Maths/math.color";
     import { GUINode } from "babylonjs-gui-editor/diagram/guiNode";
-    import { Vector2 } from 'babylonjs/Maths/math.vector';
-    import { FramePortData, WorkbenchComponent } from "babylonjs-gui-editor/diagram/workbench";
+    import { WorkbenchComponent } from "babylonjs-gui-editor/diagram/workbench";
     import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
     export class GlobalState {
         guiTexture: AdvancedDynamicTexture;
         hostElement: HTMLElement;
         hostDocument: HTMLDocument;
         hostWindow: Window;
-        onSelectionChangedObservable: Observable<Nullable<FramePortData | GUINode>>;
+        onSelectionChangedObservable: Observable<Nullable<GUINode>>;
         onRebuildRequiredObservable: Observable<void>;
         onBuiltObservable: Observable<void>;
         onResetRequiredObservable: Observable<void>;
         onUpdateRequiredObservable: Observable<void>;
-        onZoomToFitRequiredObservable: Observable<void>;
         onReOrganizedRequiredObservable: Observable<void>;
         onLogRequiredObservable: Observable<LogEntry>;
         onErrorMessageDialogRequiredObservable: Observable<string>;
         onIsLoadingChanged: Observable<boolean>;
-        onPreviewCommandActivated: Observable<boolean>;
-        onLightUpdated: Observable<void>;
-        onPreviewBackgroundChanged: Observable<void>;
-        onBackFaceCullingChanged: Observable<void>;
-        onDepthPrePassChanged: Observable<void>;
-        onAnimationCommandActivated: Observable<void>;
-        onCandidateLinkMoved: Observable<Nullable<Vector2>>;
         onSelectionBoxMoved: Observable<DOMRect | ClientRect>;
-        onImportFrameObservable: Observable<any>;
-        onGraphNodeRemovalObservable: Observable<GUINode>;
-        onGetNodeFromBlock: (block: NodeMaterialBlock) => GUINode;
-        onGridSizeChanged: Observable<void>;
-        onExposePortOnFrameObservable: Observable<GUINode>;
-        previewFile: File;
-        listOfCustomPreviewFiles: File[];
-        rotatePreview: boolean;
+        onGuiNodeRemovalObservable: Observable<GUINode>;
         backgroundColor: Color4;
-        backFaceCulling: boolean;
-        depthPrePass: boolean;
         blockKeyboardEvents: boolean;
-        hemisphericLight: boolean;
-        directionalLight0: boolean;
-        directionalLight1: boolean;
         controlCamera: boolean;
         workbench: WorkbenchComponent;
-        storeEditorData: (serializationObject: any, frame?: Nullable<null>) => void;
+        storeEditorData: (serializationObject: any) => void;
         customSave?: {
             label: string;
             action: (data: string) => Promise<void>;
@@ -419,7 +387,7 @@ declare module "babylonjs-gui-editor/globalState" {
         constructor();
     }
 }
-declare module "babylonjs-gui-editor/sharedComponents/draggableLineComponent" {
+declare module "babylonjs-gui-editor/sharedUiComponents/lines/draggableLineComponent" {
     import * as React from "react";
     export interface IButtonLineComponentProps {
         data: string;
@@ -430,7 +398,7 @@ declare module "babylonjs-gui-editor/sharedComponents/draggableLineComponent" {
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-gui-editor/components/nodeList/guiListComponent" {
+declare module "babylonjs-gui-editor/components/guiList/guiListComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-gui-editor/globalState";
     interface IGuiListComponentProps {
@@ -447,7 +415,7 @@ declare module "babylonjs-gui-editor/components/nodeList/guiListComponent" {
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-gui-editor/sharedComponents/buttonLineComponent" {
+declare module "babylonjs-gui-editor/sharedUiComponents/lines/buttonLineComponent" {
     import * as React from "react";
     export interface IButtonLineComponentProps {
         label: string;
@@ -458,29 +426,26 @@ declare module "babylonjs-gui-editor/sharedComponents/buttonLineComponent" {
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-gui-editor/sharedComponents/fileButtonLineComponent" {
+declare module "babylonjs-gui-editor/sharedUiComponents/lines/fileButtonLineComponent" {
     import * as React from "react";
     interface IFileButtonLineComponentProps {
         label: string;
         onClick: (file: File) => void;
         accept: string;
-        uploadName?: string;
     }
     export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
-        private uploadRef;
+        private static _IDGenerator;
+        private _id;
+        private uploadInputRef;
         constructor(props: IFileButtonLineComponentProps);
         onChange(evt: any): void;
         render(): JSX.Element;
     }
 }
 declare module "babylonjs-gui-editor/serializationTools" {
-    import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
     import { GlobalState } from "babylonjs-gui-editor/globalState";
     export class SerializationTools {
-        static UpdateLocations(material: NodeMaterial, globalState: GlobalState): void;
-        static Serialize(material: NodeMaterial, globalState: GlobalState): string;
         static Deserialize(serializationObject: any, globalState: GlobalState): void;
-        static AddFrameToMaterial(serializationObject: any, globalState: GlobalState, currentMaterial: NodeMaterial): void;
     }
 }
 declare module "babylonjs-gui-editor/components/propertyTab/propertyTabComponent" {
@@ -488,7 +453,6 @@ declare module "babylonjs-gui-editor/components/propertyTab/propertyTabComponent
     import { GlobalState } from "babylonjs-gui-editor/globalState";
     import { Nullable } from 'babylonjs/types';
     import { GUINode } from "babylonjs-gui-editor/diagram/guiNode";
-    import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
     interface IPropertyTabComponentProps {
         globalState: GlobalState;
     }
@@ -500,7 +464,6 @@ declare module "babylonjs-gui-editor/components/propertyTab/propertyTabComponent
         constructor(props: IPropertyTabComponentProps);
         componentDidMount(): void;
         componentWillUnmount(): void;
-        processInputBlockUpdate(ib: InputBlock): void;
         load(file: File): void;
         loadFrame(file: File): void;
         save(): void;
@@ -518,6 +481,18 @@ declare module "babylonjs-gui-editor/portal" {
     }
     export class Portal extends React.Component<IPortalProps> {
         render(): React.ReactPortal;
+    }
+}
+declare module "babylonjs-gui-editor/guiNodeTools" {
+    import { Checkbox } from "babylonjs-gui/2D/controls/checkbox";
+    import { ColorPicker } from "babylonjs-gui/2D/controls/colorpicker";
+    import { Ellipse } from "babylonjs-gui/2D/controls/ellipse";
+    import { Line } from "babylonjs-gui/2D/controls/line";
+    import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
+    import { Slider } from "babylonjs-gui/2D/controls/sliders/slider";
+    import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
+    export class GUINodeTools {
+        static CreateControlFromString(data: string): Slider | Checkbox | ColorPicker | Ellipse | Rectangle | Line | TextBlock;
     }
 }
 declare module "babylonjs-gui-editor/nodeLocationInfo" {
@@ -565,7 +540,7 @@ declare module "babylonjs-gui-editor/sharedComponents/messageDialog" {
 declare module "babylonjs-gui-editor/workbenchEditor" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-gui-editor/globalState";
-    import { Nullable } from 'babylonjs/types';
+    import { Nullable } from "babylonjs/types";
     import { IEditorData } from "babylonjs-gui-editor/nodeLocationInfo";
     import { GUINode } from "babylonjs-gui-editor/diagram/guiNode";
     import { Control } from "babylonjs-gui/2D/controls/control";
@@ -594,7 +569,6 @@ declare module "babylonjs-gui-editor/workbenchEditor" {
         constructor(props: IGraphEditorProps);
         pasteSelection(copiedNodes: GUINode[], currentX: number, currentY: number, selectNew?: boolean): GUINode[];
         zoomToFit(): void;
-        buildMaterial(): void;
         showWaitScreen(): void;
         hideWaitScreen(): void;
         reOrganize(editorData?: Nullable<IEditorData>, isImportingAFrame?: boolean): void;
@@ -611,18 +585,18 @@ declare module "babylonjs-gui-editor/workbenchEditor" {
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-gui-editor/sharedComponents/popup" {
+declare module "babylonjs-gui-editor/sharedUiComponents/lines/popup" {
     export class Popup {
         static CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): HTMLDivElement | null;
         private static _CopyStyles;
     }
 }
 declare module "babylonjs-gui-editor/guiEditor" {
-    import { Observable } from 'babylonjs/Misc/observable';
+    import { Observable } from "babylonjs/Misc/observable";
     /**
      * Interface used to specify creation options for the gui editor
      */
-    export interface INodeEditorOptions {
+    export interface IGUIEditorOptions {
         hostElement?: HTMLElement;
         customSave?: {
             label: string;
@@ -633,46 +607,17 @@ declare module "babylonjs-gui-editor/guiEditor" {
     /**
      * Class used to create a gui editor
      */
-    export class GuiEditor {
+    export class GUIEditor {
         private static _CurrentState;
         /**
          * Show the gui editor
          * @param options defines the options to use to configure the gui editor
          */
-        static Show(options: INodeEditorOptions): void;
+        static Show(options: IGUIEditorOptions): void;
     }
 }
 declare module "babylonjs-gui-editor/index" {
     export * from "babylonjs-gui-editor/guiEditor";
-}
-declare module "babylonjs-gui-editor/stringTools" {
-    import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
-    export class StringTools {
-        private static _SaveAs;
-        private static _Click;
-        /**
-         * Gets the base math type of node material block connection point.
-         * @param type Type to parse.
-         */
-        static GetBaseType(type: NodeMaterialBlockConnectionPointTypes): string;
-        /**
-         * Download a string into a file that will be saved locally by the browser
-         * @param content defines the string to download locally as a file
-         */
-        static DownloadAsFile(document: HTMLDocument, content: string, filename: string): void;
-    }
-}
-declare module "babylonjs-gui-editor/components/propertyTab/properties/floatPropertyTabComponent" {
-    import * as React from "react";
-    import { GlobalState } from "babylonjs-gui-editor/globalState";
-    import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
-    interface IFloatPropertyTabComponentProps {
-        globalState: GlobalState;
-        inputBlock: InputBlock;
-    }
-    export class FloatPropertyTabComponent extends React.Component<IFloatPropertyTabComponentProps> {
-        render(): JSX.Element;
-    }
 }
 declare module "babylonjs-gui-editor/legacy/legacy" {
     export * from "babylonjs-gui-editor/index";
@@ -811,33 +756,6 @@ declare module "babylonjs-gui-editor/sharedUiComponents/lines/booleanLineCompone
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-gui-editor/sharedUiComponents/lines/buttonLineComponent" {
-    import * as React from "react";
-    export interface IButtonLineComponentProps {
-        label: string;
-        onClick: () => void;
-    }
-    export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
-        constructor(props: IButtonLineComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-gui-editor/sharedUiComponents/lines/fileButtonLineComponent" {
-    import * as React from "react";
-    interface IFileButtonLineComponentProps {
-        label: string;
-        onClick: (file: File) => void;
-        accept: string;
-    }
-    export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
-        private static _IDGenerator;
-        private _id;
-        private uploadInputRef;
-        constructor(props: IFileButtonLineComponentProps);
-        onChange(evt: any): void;
-        render(): JSX.Element;
-    }
-}
 declare module "babylonjs-gui-editor/sharedUiComponents/lines/fileMultipleButtonLineComponent" {
     import * as React from "react";
     interface IFileMultipleButtonLineComponentProps {
@@ -955,25 +873,6 @@ declare module "babylonjs-gui-editor/sharedUiComponents/lines/radioLineComponent
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-gui-editor/sharedUiComponents/lines/textLineComponent" {
-    import * as React from "react";
-    interface ITextLineComponentProps {
-        label?: string;
-        value?: string;
-        color?: string;
-        underline?: boolean;
-        onLink?: () => void;
-        url?: string;
-        ignoreValue?: boolean;
-        additionalClass?: string;
-    }
-    export class TextLineComponent extends React.Component<ITextLineComponentProps> {
-        constructor(props: ITextLineComponentProps);
-        onLink(): void;
-        renderContent(): JSX.Element | null;
-        render(): JSX.Element;
-    }
-}
 declare module "babylonjs-gui-editor/sharedUiComponents/lines/valueLineComponent" {
     import * as React from "react";
     interface IValueLineComponentProps {
@@ -992,11 +891,6 @@ declare module "babylonjs-gui-editor" {
     export * from "babylonjs-gui-editor/legacy/legacy";
 }
 /// <reference types="react" />
-declare module GUIEDITOR {
-    export class BlockTools {
-        static GetGuiFromString(data: string): Slider | Checkbox | ColorPicker | Ellipse | Rectangle | Line | TextBlock;
-    }
-}
 declare module GUIEDITOR {
     interface ILogComponentProps {
         globalState: GlobalState;
@@ -1025,7 +919,7 @@ declare module GUIEDITOR {
         private readonly MinZoom;
         private readonly MaxZoom;
         private _hostCanvas;
-        private _graphCanvas;
+        private _gridCanvas;
         private _selectionContainer;
         private _frameContainer;
         private _svgCanvas;
@@ -1069,7 +963,7 @@ declare module GUIEDITOR {
         getGridPositionCeil(position: number): number;
         updateTransform(): void;
         onKeyUp(): void;
-        findNodeFromGuiElement(guiElement: Control): GUINode;
+        findNodeFromGuiElement(guiControl: Control): GUINode;
         reset(): void;
         appendBlock(guiElement: Control): GUINode;
         distributeGraph(): void;
@@ -1087,7 +981,7 @@ declare module GUIEDITOR {
 declare module GUIEDITOR {
     export interface IPropertyComponentProps {
         globalState: GlobalState;
-        guiBlock: Control;
+        guiControl: Control;
     }
 }
 declare module GUIEDITOR {
@@ -1163,6 +1057,7 @@ declare module GUIEDITOR {
         private _localChange;
         private _store;
         private _regExp;
+        private _digits;
         constructor(props: IFloatLineComponentProps);
         shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: {
             value: string;
@@ -1221,21 +1116,6 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
-    interface ITextLineComponentProps {
-        label: string;
-        value: string;
-        color?: string;
-        underline?: boolean;
-        onLink?: () => void;
-    }
-    export class TextLineComponent extends React.Component<ITextLineComponentProps> {
-        constructor(props: ITextLineComponentProps);
-        onLink(): void;
-        renderContent(): JSX.Element;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
     interface INumericInputComponentProps {
         label: string;
         value: number;
@@ -1259,9 +1139,27 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
+    interface ITextLineComponentProps {
+        label?: string;
+        value?: string;
+        color?: string;
+        underline?: boolean;
+        onLink?: () => void;
+        url?: string;
+        ignoreValue?: boolean;
+        additionalClass?: string;
+    }
+    export class TextLineComponent extends React.Component<ITextLineComponentProps> {
+        constructor(props: ITextLineComponentProps);
+        onLink(): void;
+        renderContent(): JSX.Element | null;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
     export class SliderPropertyTabComponent extends React.Component<IPropertyComponentProps> {
         constructor(props: IPropertyComponentProps);
-        private slider;
+        private _slider;
         render(): JSX.Element;
     }
 }
@@ -1274,7 +1172,7 @@ declare module GUIEDITOR {
 }
 declare module GUIEDITOR {
     export class GUINode {
-        guiNode: Control;
+        guiControl: Control;
         private _x;
         private _y;
         private _gridAlignedX;
@@ -1303,13 +1201,12 @@ declare module GUIEDITOR {
         get enclosingFrameId(): number;
         set enclosingFrameId(value: number);
         set isSelected(value: boolean);
-        constructor(globalState: GlobalState, guiNode: Control);
+        constructor(globalState: GlobalState, guiControl: Control);
         cleanAccumulation(useCeil?: boolean): void;
         clicked: boolean;
         _onMove(evt: BABYLON.Vector2, startPos: BABYLON.Vector2): boolean;
         renderProperties(): BABYLON.Nullable<JSX.Element>;
         updateVisual(): void;
-        appendVisual(root: HTMLDivElement, owner: WorkbenchComponent): void;
         dispose(): void;
     }
 }
@@ -1319,42 +1216,22 @@ declare module GUIEDITOR {
         hostElement: HTMLElement;
         hostDocument: HTMLDocument;
         hostWindow: Window;
-        onSelectionChangedObservable: BABYLON.Observable<BABYLON.Nullable<FramePortData | GUINode>>;
+        onSelectionChangedObservable: BABYLON.Observable<BABYLON.Nullable<GUINode>>;
         onRebuildRequiredObservable: BABYLON.Observable<void>;
         onBuiltObservable: BABYLON.Observable<void>;
         onResetRequiredObservable: BABYLON.Observable<void>;
         onUpdateRequiredObservable: BABYLON.Observable<void>;
-        onZoomToFitRequiredObservable: BABYLON.Observable<void>;
         onReOrganizedRequiredObservable: BABYLON.Observable<void>;
         onLogRequiredObservable: BABYLON.Observable<LogEntry>;
         onErrorMessageDialogRequiredObservable: BABYLON.Observable<string>;
         onIsLoadingChanged: BABYLON.Observable<boolean>;
-        onPreviewCommandActivated: BABYLON.Observable<boolean>;
-        onLightUpdated: BABYLON.Observable<void>;
-        onPreviewBackgroundChanged: BABYLON.Observable<void>;
-        onBackFaceCullingChanged: BABYLON.Observable<void>;
-        onDepthPrePassChanged: BABYLON.Observable<void>;
-        onAnimationCommandActivated: BABYLON.Observable<void>;
-        onCandidateLinkMoved: BABYLON.Observable<BABYLON.Nullable<BABYLON.Vector2>>;
         onSelectionBoxMoved: BABYLON.Observable<DOMRect | ClientRect>;
-        onImportFrameObservable: BABYLON.Observable<any>;
-        onGraphNodeRemovalObservable: BABYLON.Observable<GUINode>;
-        onGetNodeFromBlock: (block: BABYLON.NodeMaterialBlock) => GUINode;
-        onGridSizeChanged: BABYLON.Observable<void>;
-        onExposePortOnFrameObservable: BABYLON.Observable<GUINode>;
-        previewFile: File;
-        listOfCustomPreviewFiles: File[];
-        rotatePreview: boolean;
+        onGuiNodeRemovalObservable: BABYLON.Observable<GUINode>;
         backgroundColor: BABYLON.Color4;
-        backFaceCulling: boolean;
-        depthPrePass: boolean;
         blockKeyboardEvents: boolean;
-        hemisphericLight: boolean;
-        directionalLight0: boolean;
-        directionalLight1: boolean;
         controlCamera: boolean;
         workbench: WorkbenchComponent;
-        storeEditorData: (serializationObject: any, frame?: BABYLON.Nullable<null>) => void;
+        storeEditorData: (serializationObject: any) => void;
         customSave?: {
             label: string;
             action: (data: string) => Promise<void>;
@@ -1402,10 +1279,11 @@ declare module GUIEDITOR {
         label: string;
         onClick: (file: File) => void;
         accept: string;
-        uploadName?: string;
     }
     export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
-        private uploadRef;
+        private static _IDGenerator;
+        private _id;
+        private uploadInputRef;
         constructor(props: IFileButtonLineComponentProps);
         onChange(evt: any): void;
         render(): JSX.Element;
@@ -1413,10 +1291,7 @@ declare module GUIEDITOR {
 }
 declare module GUIEDITOR {
     export class SerializationTools {
-        static UpdateLocations(material: BABYLON.NodeMaterial, globalState: GlobalState): void;
-        static Serialize(material: BABYLON.NodeMaterial, globalState: GlobalState): string;
         static Deserialize(serializationObject: any, globalState: GlobalState): void;
-        static AddFrameToMaterial(serializationObject: any, globalState: GlobalState, currentMaterial: BABYLON.NodeMaterial): void;
     }
 }
 declare module GUIEDITOR {
@@ -1431,7 +1306,6 @@ declare module GUIEDITOR {
         constructor(props: IPropertyTabComponentProps);
         componentDidMount(): void;
         componentWillUnmount(): void;
-        processInputBlockUpdate(ib: BABYLON.InputBlock): void;
         load(file: File): void;
         loadFrame(file: File): void;
         save(): void;
@@ -1447,6 +1321,11 @@ declare module GUIEDITOR {
     }
     export class Portal extends React.Component<IPortalProps> {
         render(): React.ReactPortal;
+    }
+}
+declare module GUIEDITOR {
+    export class GUINodeTools {
+        static CreateControlFromString(data: string): Slider | Checkbox | ColorPicker | Ellipse | Rectangle | Line | TextBlock;
     }
 }
 declare module GUIEDITOR {
@@ -1515,7 +1394,6 @@ declare module GUIEDITOR {
         constructor(props: IGraphEditorProps);
         pasteSelection(copiedNodes: GUINode[], currentX: number, currentY: number, selectNew?: boolean): GUINode[];
         zoomToFit(): void;
-        buildMaterial(): void;
         showWaitScreen(): void;
         hideWaitScreen(): void;
         reOrganize(editorData?: BABYLON.Nullable<IEditorData>, isImportingAFrame?: boolean): void;
@@ -1542,7 +1420,7 @@ declare module GUIEDITOR {
     /**
      * Interface used to specify creation options for the gui editor
      */
-    export interface INodeEditorOptions {
+    export interface IGUIEditorOptions {
         hostElement?: HTMLElement;
         customSave?: {
             label: string;
@@ -1553,38 +1431,13 @@ declare module GUIEDITOR {
     /**
      * Class used to create a gui editor
      */
-    export class GuiEditor {
+    export class GUIEditor {
         private static _CurrentState;
         /**
          * Show the gui editor
          * @param options defines the options to use to configure the gui editor
          */
-        static Show(options: INodeEditorOptions): void;
-    }
-}
-declare module GUIEDITOR {
-    export class StringTools {
-        private static _SaveAs;
-        private static _Click;
-        /**
-         * Gets the base math type of node material block connection point.
-         * @param type Type to parse.
-         */
-        static GetBaseType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): string;
-        /**
-         * Download a string into a file that will be saved locally by the browser
-         * @param content defines the string to download locally as a file
-         */
-        static DownloadAsFile(document: HTMLDocument, content: string, filename: string): void;
-    }
-}
-declare module GUIEDITOR {
-    interface IFloatPropertyTabComponentProps {
-        globalState: GlobalState;
-        inputBlock: BABYLON.InputBlock;
-    }
-    export class FloatPropertyTabComponent extends React.Component<IFloatPropertyTabComponentProps> {
-        render(): JSX.Element;
+        static Show(options: IGUIEditorOptions): void;
     }
 }
 declare module GUIEDITOR {
@@ -1712,31 +1565,6 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
-    export interface IButtonLineComponentProps {
-        label: string;
-        onClick: () => void;
-    }
-    export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
-        constructor(props: IButtonLineComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    interface IFileButtonLineComponentProps {
-        label: string;
-        onClick: (file: File) => void;
-        accept: string;
-    }
-    export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
-        private static _IDGenerator;
-        private _id;
-        private uploadInputRef;
-        constructor(props: IFileButtonLineComponentProps);
-        onChange(evt: any): void;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
     interface IFileMultipleButtonLineComponentProps {
         label: string;
         onClick: (event: any) => void;
@@ -1842,24 +1670,6 @@ declare module GUIEDITOR {
         componentDidMount(): void;
         componentWillUnmount(): void;
         onChange(): void;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    interface ITextLineComponentProps {
-        label?: string;
-        value?: string;
-        color?: string;
-        underline?: boolean;
-        onLink?: () => void;
-        url?: string;
-        ignoreValue?: boolean;
-        additionalClass?: string;
-    }
-    export class TextLineComponent extends React.Component<ITextLineComponentProps> {
-        constructor(props: ITextLineComponentProps);
-        onLink(): void;
-        renderContent(): JSX.Element | null;
         render(): JSX.Element;
     }
 }
