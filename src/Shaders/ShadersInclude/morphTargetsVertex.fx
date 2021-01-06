@@ -16,6 +16,9 @@
 		#ifdef MORPHTARGETS_TANGENT
 			tangentUpdated.xyz += (readVector3FromRawSampler(morphTargets[{X}], vertexID)  - tangent.xyz) * morphTargetInfluences[{X}];
 		#endif
+
+		// Restore for next target
+		vertexID = float(gl_VertexID) * morphTargetTextureInfo.x;
 	#else
 		positionUpdated += (position{X} - position) * morphTargetInfluences[{X}];
 		

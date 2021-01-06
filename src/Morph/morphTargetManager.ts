@@ -2,7 +2,7 @@ import { Observer } from "../Misc/observable";
 import { SmartArray } from "../Misc/smartArray";
 import { Logger } from "../Misc/logger";
 import { Nullable } from "../types";
-import { Scene } from "../scene";
+import { IDisposable, Scene } from "../scene";
 import { EngineStore } from "../Engines/engineStore";
 import { Mesh } from "../Meshes/mesh";
 import { MorphTarget } from "./morphTarget";
@@ -13,7 +13,7 @@ import { Effect } from "../Materials/effect";
  * This class is used to deform meshes using morphing between different targets
  * @see https://doc.babylonjs.com/how_to/how_to_use_morphtargets
  */
-export class MorphTargetManager {
+export class MorphTargetManager implements IDisposable {
     private _targets = new Array<MorphTarget>();
     private _targetInfluenceChangedObservers = new Array<Nullable<Observer<boolean>>>();
     private _targetDataLayoutChangedObservers = new Array<Nullable<Observer<void>>>();
@@ -281,7 +281,7 @@ export class MorphTargetManager {
     }
 
     /**
-     * Syncrhonize the targets with all the meshes using this morph target manager
+     * Synchronize the targets with all the meshes using this morph target manager
      */
     public synchronize(): void {
         if (!this._scene) {
@@ -320,8 +320,8 @@ export class MorphTargetManager {
                 let target = this._targets[index];
 
                 if (!this._targetStoreTextures[index]
-                    || this._targetStoreTextures[index].getSize().width !== this._textureWidth * 4
-                    || this._targetStoreTextures[index].getSize().height !== this._textureHeight * 4) {
+                    || this._targetStoreTextures[index].getSize().width !== this._textureWidth
+                    || this._targetStoreTextures[index].getSize().height !== this._textureHeight) {
                     if (this._targetStoreTextures[index]) {
                         this._targetStoreTextures[index].dispose();
                     }
@@ -381,6 +381,17 @@ export class MorphTargetManager {
                 (<Mesh>mesh)._syncGeometryWithMorphTargetManager();
             }
         }
+    }
+
+    /**
+     * Release all resources
+     */
+    public dispose() {
+        for (var targetTexture of this._targetStoreTextures) {
+            targetTexture.dispose();
+        }
+
+        this._targetStoreTextures = [];
     }
 
     // Statics
