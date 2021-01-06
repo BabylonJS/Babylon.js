@@ -123,6 +123,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public MORPHTARGETS_TANGENT = false;
     public MORPHTARGETS_UV = false;
     public NUM_MORPH_INFLUENCERS = 0;
+    public MORPHTARGETS_TEXTURE = false;
     public NONUNIFORMSCALING = false; // https://playground.babylonjs.com#V6DWIH
     public PREMULTIPLYALPHA = false; // https://playground.babylonjs.com#LNVJJ7
     public ALPHATEST_AFTERALLALPHACOMPUTATIONS = false;
@@ -1214,12 +1215,13 @@ export class StandardMaterial extends PushMaterial {
                 "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "normalMatrix", "lightmapMatrix", "refractionMatrix",
                 "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor", "refractionLeftColor", "refractionRightColor",
                 "vReflectionPosition", "vReflectionSize",
-                "logarithmicDepthConstant", "vTangentSpaceParams", "alphaCutOff", "boneTextureWidth"
+                "logarithmicDepthConstant", "vTangentSpaceParams", "alphaCutOff", "boneTextureWidth",
+                "morphTargetTextureInfo"
             ];
 
             var samplers = ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler",
                 "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler",
-                "refractionCubeSampler", "refraction2DSampler", "boneSampler"];
+                "refractionCubeSampler", "refraction2DSampler", "boneSampler", "morphTargets"];
 
             var uniformBuffers = ["Material", "Scene", "Mesh"];
 
