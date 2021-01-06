@@ -3143,9 +3143,15 @@ export class WebGPUEngine extends Engine {
         // TODO WEBGPU remove the assert debugging code
         assert(this._currentRenderTarget === null || (this._currentRenderTarget !== null && texture === this._currentRenderTarget), "unBindFramebuffer - the texture we want to unbind is not the same than the currentRenderTarget! texture=" + texture + ", this._currentRenderTarget=" + this._currentRenderTarget);
 
+        const saveCRT = this._currentRenderTarget;
+
+        this._currentRenderTarget = null; // to be iso with thinEngine, this._currentRenderTarget must be null when onBeforeUnbind is called
+
         if (onBeforeUnbind) {
             onBeforeUnbind();
         }
+
+        this._currentRenderTarget = saveCRT;
 
         if (this._currentRenderPass && this._currentRenderPass !== this._mainRenderPassWrapper.renderPass) {
             this._endRenderTargetRenderPass();
