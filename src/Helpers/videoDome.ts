@@ -54,6 +54,9 @@ export class VideoDome extends TextureDome<VideoTexture> {
                 this._texture.video.play();
             };
         }
+        texture.onLoadObservable.add(() => {
+            this.onLoadObservable.notifyObservers();
+        });
         return texture;
     }
 }
