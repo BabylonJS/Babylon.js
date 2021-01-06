@@ -50,6 +50,10 @@
 - Increased float precision to 4([msDestiny14](https://github.com/msDestiny14))
 - Added ability to make input node's properties visible in the properties of a custom frame ([msDestiny14](https://github.com/msDestiny14))
 
+### GUIEditor
+
+- Added GUI Editor project to master. ([msDestiny14](https://github.com/msDestiny14))
+
 ### GUI
 
 - Added a `FocusableButton` gui control to simplify creating menus with keyboard navigation ([Flux159](https://github.com/Flux159))

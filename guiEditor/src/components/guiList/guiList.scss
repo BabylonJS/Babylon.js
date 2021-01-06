@@ -1,0 +1,211 @@
+#guiList {
+    background: #333333;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    width: 100%; 
+    overflow: hidden;
+
+    .panes {
+        overflow: hidden;
+        
+        .pane {
+            color: white;
+
+            overflow: hidden;
+            height: 100%;
+
+            -webkit-user-select: none; 
+            -moz-user-select: none;   
+            -ms-user-select: none;    
+            user-select: none;     
+
+            .filter {
+                display: flex;
+                align-items: stretch;
+        
+                input {
+                    width: 100%;
+                    margin: 10px 10px 5px 10px;
+                    display: block;
+                    border: none;
+                    padding: 0;
+                    border-bottom: solid 1px rgb(51, 122, 183);
+                    background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, rgb(51, 122, 183) 4%);
+                    background-position: -1000px 0;
+                    background-size: 1000px 100%;
+                    background-repeat: no-repeat;  
+                    color:white;    
+                }
+        
+                input:focus  {
+                    box-shadow: none;
+                    outline: none;
+                    background-position: 0 0;
+                }
+
+                input::placeholder {
+                    color: gray;
+                }
+            }
+
+            .list-container {
+                overflow-x: hidden;
+                overflow-y: auto;
+                height: calc(100% - 32px);
+
+                .underline {
+                    border-bottom: 0.5px solid rgba(255, 255, 255, 0.5);
+                }
+
+                .draggableLine {
+                    height: 30px;
+                    display: grid;
+                    align-items: center;
+                    justify-items: stretch;
+                    background: #222222;
+                    cursor: grab;
+                    text-align: center;
+                    margin: 0;
+                    box-sizing: border-box;
+
+                    &:hover {
+                        background: rgb(51, 122, 183);
+                        color: white;
+                    }
+                }
+
+                .nonDraggableLine {
+                    height: 30px;
+                    display: grid;
+                    align-items: center;
+                    justify-items: stretch;
+                    background: #222222;
+                    text-align: center;
+                    margin: 0;
+                    box-sizing: border-box;
+                }
+
+                .withButton {
+                    height: 30px;
+                    position: relative;
+                    .icon {
+                        position: absolute;
+                        right: 4px;
+                        top: 5px;
+                        &:hover {
+                            cursor: pointer;
+                        }
+
+                        .img {
+                            height: 17px;
+                            width: 17px;
+                        }
+                    }
+
+                    .buttonLine {
+                        height: 30px;
+                        display: grid;
+                        align-items: center;
+                        justify-items: stretch;
+                        padding-bottom: 5px;
+                        position: absolute;
+                        right: 0px;
+                        top: 2px;
+                        input[type="file"] {
+                            display: none;
+                        }
+                
+                        .file-upload {            
+                            background: transparent;
+                            border: transparent;
+                            padding: 15px 200px;
+                            opacity: 0.9;
+                            cursor: pointer;
+                            text-align: center;
+                        }
+                
+                        .file-upload:hover {
+                            opacity: 1.0;
+                        }
+                
+                        .file-upload:active {
+                            transform: scale(0.98);
+                            transform-origin: 0.5 0.5;
+                        }
+                
+                        button {
+                            background: transparent;
+                            border: transparent;
+                            margin: 5px 10px 5px 10px;
+                            color:white;
+                            padding: 4px 5px;
+                            opacity: 0.9;
+                        }
+                
+                        button:hover {
+                            opacity: 0.0;
+                        }
+                
+                        button:active {
+                            background: transparent;
+                        }   
+                        
+                        button:focus {
+                            border: transparent;
+                            outline: 0px;
+                        }  
+                    }
+                    
+                }                
+
+                .paneContainer {
+                    margin-top: 3px;
+                    display:grid;
+                    grid-template-rows: 100%;
+                    grid-template-columns: 100%;
+
+                    .paneContainer-content {
+                        grid-row: 1;
+                        grid-column: 1;
+
+                        .header {
+                            display: grid;
+                            grid-template-columns: 1fr auto;
+                            background: #555555;    
+                            height: 30px;   
+                            padding-right: 5px;                        
+                            cursor: pointer;
+                            
+                            .title {                                
+                                border-left: 3px solid transparent;
+                                padding-left: 5px;
+                                grid-column: 1;
+                                display: flex;
+                                align-items: center;
+                            }
+
+                            .collapse {
+                                grid-column: 2;
+                                display: flex;
+                                align-items: center;  
+                                justify-items: center;
+                                transform-origin: center;
+
+                                &.closed {
+                                    transform: rotate(180deg);
+                                }
+                            }                        
+                        }
+
+                        .paneList > div:not(:last-child) {
+                            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+                        }
+                    }
+                }
+            }    
+        }
+    }
+}
+
