@@ -246,6 +246,9 @@ export interface ICreateCapsuleOptions{
 
     /** Overwrite for the bottom capSubdivisions. */
     bottomCapSubdivisions?: number;
+
+    /** Internal geometry is supposed to change once created. */
+    updatable?: boolean;
 }
 
 /**
@@ -271,18 +274,22 @@ export class CapsuleBuilder {
      * @param scene The scene the mesh is scoped to.
      * @returns Capsule Mesh
      */
-    public static CreateCapsule(name: string, options: ICreateCapsuleOptions = {
+    public static CreateCapsule(
+        name: string,
+        options: ICreateCapsuleOptions = {
             orientation : Vector3.Up(),
             subdivisions: 2,
             tessellation: 16,
             height: 1,
             radius: 0.25,
-            capSubdivisions: 6
-        }, scene: any): Mesh {
-
+            capSubdivisions: 6,
+            updatable: false,
+        },
+        scene: any
+    ): Mesh {
         var capsule = new Mesh(name, scene);
         var vertexData = VertexData.CreateCapsule(options);
-        vertexData.applyToMesh(capsule);
+        vertexData.applyToMesh(capsule, options.updatable);
         return capsule;
     }
 }
