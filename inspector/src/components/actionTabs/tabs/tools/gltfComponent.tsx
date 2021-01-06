@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Scene } from "babylonjs/scene";
 import { LineContainerComponent } from "../../lineContainerComponent";
-import { CheckBoxLineComponent } from "../../lines/checkBoxLineComponent";
+import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { GlobalState } from "../../../globalState";
 import { FloatLineComponent } from "../../lines/floatLineComponent";
 import { OptionsLineComponent } from "../../lines/optionsLineComponent";

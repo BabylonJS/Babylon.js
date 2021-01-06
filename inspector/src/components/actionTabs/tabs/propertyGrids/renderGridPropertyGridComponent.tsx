@@ -9,7 +9,7 @@ import { UtilityLayerRenderer } from "babylonjs/Rendering/utilityLayerRenderer";
 import { Scene } from "babylonjs/scene";
 import { GridMaterial } from "babylonjs-materials/grid/gridMaterial";
 
-import { CheckBoxLineComponent } from "../../lines/checkBoxLineComponent";
+import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { GlobalState } from '../../../globalState';
 
 interface IRenderGridPropertyGridComponentProps {

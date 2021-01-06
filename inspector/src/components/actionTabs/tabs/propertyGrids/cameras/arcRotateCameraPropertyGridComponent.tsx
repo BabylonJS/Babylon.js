@@ -6,7 +6,7 @@ import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { CommonCameraPropertyGridComponent } from "./commonCameraPropertyGridComponent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
-import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
+import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { Vector3LineComponent } from "../../../lines/vector3LineComponent";

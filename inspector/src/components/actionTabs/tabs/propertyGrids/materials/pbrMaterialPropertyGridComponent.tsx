@@ -7,7 +7,7 @@ import { Constants } from "babylonjs/Engines/constants";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { Color3LineComponent } from "../../../lines/color3LineComponent";
-import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
+import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { Vector2LineComponent } from "../../../lines/vector2LineComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
