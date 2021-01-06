@@ -14,8 +14,10 @@
 - Moving button to shared uI folder.([msDestiny14](https://github.com/msDestiny14))
 - Moving additional components to shared UI folder.([msDestiny14](https://github.com/msDestiny14))
 - Added encapsulate and encapsulateBoundingInfo methods to BoundingInfo. ([Tolo789](https://github.com/Tolo789))
+- Added onLoadObservable to the textureDome class(es) ([RaananW](https://github.com/RaananW))
 
 ### Engine
+
 - Moved all instance data from Geometry to Mesh such that the same Geometry objects can be used by many meshes with instancing. Reduces memory consumption on CPU/GPU. ([breakin](https://github.com/breakin)
 
 ### Loaders
@@ -91,12 +93,11 @@
 - Fix PostProcess sharing between cameras/renderTargets, that would create/destroy a texture on every frame ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Fix for DualSense gamepads being incorrectly read as DualShock gamepads ([PolygonalSun](https://github.com/PolygonalSun))
 
-
 ## Breaking changes
 
 - [List of breaking changes introduced by ou compatibility with WebGPU](https://doc.babylonjs.com/advanced_topics/webGPU/webGPUBreakingChanges)
-    - [ReadPixels and ProceduralTexture.getContent are now async](https://doc.babylonjs.com/advanced_topics/webGPU/webGPUBreakingChanges#readpixels-is-now-asynchronous)
-    - [Shader support differences](https://doc.babylonjs.com/advanced_topics/webGPU/webGPUBreakingChanges#shader-code-differences)
+  - [ReadPixels and ProceduralTexture.getContent are now async](https://doc.babylonjs.com/advanced_topics/webGPU/webGPUBreakingChanges#readpixels-is-now-asynchronous)
+  - [Shader support differences](https://doc.babylonjs.com/advanced_topics/webGPU/webGPUBreakingChanges#shader-code-differences)
 - Use both `mesh.visibility` and `material.alpha` values to compute the global alpha value used by the soft transparent shadow rendering code. Formerly was only using `mesh.visibility` ([Popov72](https://github.com/Popov72))
 - Depth renderer: don't render mesh if `infiniteDistance = true` or if `material.disableDepthWrite = true` ([Popov72](https://github.com/Popov72))
 - Mesh.createInstance no longer make a unique Geometry for the Mesh so updating one Geometry can affect more meshes than before. Use Mesh.makeUniqueGeometry for old behaviour. ([breakin](https://github.com/breakin))
