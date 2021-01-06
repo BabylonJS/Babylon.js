@@ -8,7 +8,7 @@ import { LineContainerComponent } from "../../../lineContainerComponent";
 import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
 import { LockObject } from "../lockObject";
 import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
-import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
+import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { GlobalState } from '../../../../globalState';
 

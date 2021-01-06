@@ -6,7 +6,7 @@ import { LockObject } from "../lockObject";
 import { Ellipse } from "babylonjs-gui/2D/controls/ellipse";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
-import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
+import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { GlobalState } from '../../../../globalState';
 
 interface IEllipsePropertyGridComponentProps {

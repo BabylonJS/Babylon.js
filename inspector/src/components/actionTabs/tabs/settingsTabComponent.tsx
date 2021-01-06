@@ -1,6 +1,6 @@
 import * as React from "react";
 import { PaneComponent, IPaneComponentProps } from "../paneComponent";
-import { CheckBoxLineComponent } from '../lines/checkBoxLineComponent';
+import { CheckBoxLineComponent } from '../../../sharedUiComponents/lines/checkBoxLineComponent';
 import { LineContainerComponent } from '../lineContainerComponent';
 
 export class SettingsTabComponent extends PaneComponent {

@@ -11,7 +11,7 @@ import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
-import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
+import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { TextureLineComponent } from "../../../lines/textureLineComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { OptionsLineComponent } from "../../../lines/optionsLineComponent";

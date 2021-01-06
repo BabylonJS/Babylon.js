@@ -4,7 +4,7 @@ import { PropertyChangedEvent } from "../../../propertyChangedEvent";
 import { Color3LineComponent } from "../../lines/color3LineComponent";
 import { GlobalState } from '../../../globalState';
 import { IInspectable, InspectableType } from 'babylonjs/Misc/iInspectable';
-import { CheckBoxLineComponent } from '../../lines/checkBoxLineComponent';
+import { CheckBoxLineComponent } from '../../../../sharedUiComponents/lines/checkBoxLineComponent';
 import { SliderLineComponent } from '../../lines/sliderLineComponent';
 import { Vector3LineComponent } from '../../lines/vector3LineComponent';
 import { QuaternionLineComponent } from '../../lines/quaternionLineComponent';
