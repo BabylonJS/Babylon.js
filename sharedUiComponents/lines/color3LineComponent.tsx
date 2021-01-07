@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
-import { PropertyChangedEvent } from "../../propertyChangedEvent";
-import { NumericInputComponent } from "./../../../sharedUiComponents/lines/numericInputComponent";
+import { PropertyChangedEvent } from "../propertyChangedEvent";
+import { NumericInputComponent } from "./numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { Color3 } from 'babylonjs/Maths/math.color';

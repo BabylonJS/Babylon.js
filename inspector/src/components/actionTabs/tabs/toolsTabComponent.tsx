@@ -27,7 +27,7 @@ import { NumericInputComponent } from '../../../sharedUiComponents/lines/numeric
 import { CheckBoxLineComponent } from '../../../sharedUiComponents/lines/checkBoxLineComponent';
 import { TextLineComponent } from '../../../sharedUiComponents/lines/textLineComponent';
 import { FileMultipleButtonLineComponent } from '../../../sharedUiComponents/lines/fileMultipleButtonLineComponent';
-import { OptionsLineComponent } from '../lines/optionsLineComponent';
+import { OptionsLineComponent } from '../../../sharedUiComponents/lines/optionsLineComponent';
 import { MessageLineComponent } from '../../../sharedUiComponents/lines/messageLineComponent';
 import { FileButtonLineComponent } from '../../../sharedUiComponents/lines/fileButtonLineComponent';
 import { IndentedTextLineComponent } from '../../../sharedUiComponents/lines/indentedTextLineComponent';

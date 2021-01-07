@@ -1,10 +1,10 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 import { Color4 } from "babylonjs/Maths/math.color";
-import { NumericInputComponent } from "./../../../sharedUiComponents/lines/numericInputComponent";
+import { NumericInputComponent } from "../lines/numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
-import { PropertyChangedEvent } from '../../propertyChangedEvent';
+import { PropertyChangedEvent } from '../propertyChangedEvent';
 import { ColorPickerLineComponent } from './colorPickerComponent';
 
 const copyIcon: string = require("./copy.svg");

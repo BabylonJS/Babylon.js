@@ -12,7 +12,7 @@ import { Skeleton } from 'babylonjs/Bones/skeleton';
 import { AnimationGridComponent } from '../animations/animationPropertyGridComponent';
 import { SkeletonViewer } from 'babylonjs/Debug/skeletonViewer';
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
-import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
+import { OptionsLineComponent } from "../../../../../sharedUiComponents/lines/optionsLineComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
 
 

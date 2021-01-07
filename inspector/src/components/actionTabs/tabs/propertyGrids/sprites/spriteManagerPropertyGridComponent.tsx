@@ -19,7 +19,7 @@ import { Sprite } from 'babylonjs/Sprites/sprite';
 import { Tools } from 'babylonjs/Misc/tools';
 import { FileButtonLineComponent } from '../../../../../sharedUiComponents/lines/fileButtonLineComponent';
 import { Constants } from 'babylonjs/Engines/constants';
-import { OptionsLineComponent } from '../../../lines/optionsLineComponent';
+import { OptionsLineComponent } from '../../../../../sharedUiComponents/lines/optionsLineComponent';
 
 interface ISpriteManagerPropertyGridComponentProps {
     globalState: GlobalState;

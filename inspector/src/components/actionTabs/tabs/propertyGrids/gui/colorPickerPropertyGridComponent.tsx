@@ -4,7 +4,7 @@ import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "./commonControlPropertyGridComponent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { ColorPicker } from "babylonjs-gui/2D/controls/colorpicker";
-import { Color3LineComponent } from "../../../lines/color3LineComponent";
+import { Color3LineComponent } from "../../../../../sharedUiComponents/lines/color3LineComponent";
 import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';
 
