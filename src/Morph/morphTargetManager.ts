@@ -371,8 +371,6 @@ export class MorphTargetManager implements IDisposable {
                         this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
                 }
             }
-
-            return;
         }
 
         // Flag meshes as dirty to resync with the active targets
