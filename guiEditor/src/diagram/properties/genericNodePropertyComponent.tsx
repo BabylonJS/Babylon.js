@@ -2,7 +2,7 @@
 import * as React from "react";
 import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
 import { IPropertyComponentProps } from './propertyComponentProps';
-import { CheckBoxLineComponent } from '../../sharedComponents/checkBoxLineComponent';
+import { CheckBoxLineComponent } from '../../sharedUiComponents/lines/checkBoxLineComponent';
 import { FloatLineComponent } from '../../sharedComponents/floatLineComponent';
 import { SliderLineComponent } from '../../sharedComponents/sliderLineComponent';
 import { PropertyTypeForEdition, IPropertyDescriptionForEdition } from 'babylonjs/Materials/Node/nodeMaterialDecorator';

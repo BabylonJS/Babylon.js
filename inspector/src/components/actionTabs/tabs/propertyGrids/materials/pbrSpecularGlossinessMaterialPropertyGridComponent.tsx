@@ -11,7 +11,7 @@ import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGri
 import { TextureLinkLineComponent } from "../../../lines/textureLinkLineComponent";
 import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';
-import { CheckBoxLineComponent } from '../../../lines/checkBoxLineComponent';
+import { CheckBoxLineComponent } from '../../../../../sharedUiComponents/lines/checkBoxLineComponent';
 
 interface IPBRSpecularGlossinessMaterialPropertyGridComponentProps {
     globalState: GlobalState;

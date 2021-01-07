@@ -16,7 +16,7 @@ import { OptionsLineComponent } from '../../../lines/optionsLineComponent';
 import { ParticleSystem } from 'babylonjs/Particles/particleSystem';
 import { Color4LineComponent } from '../../../lines/color4LineComponent';
 import { Vector3LineComponent } from '../../../lines/vector3LineComponent';
-import { CheckBoxLineComponent } from '../../../lines/checkBoxLineComponent';
+import { CheckBoxLineComponent } from '../../../../../sharedUiComponents/lines/checkBoxLineComponent';
 import { SliderLineComponent } from '../../../lines/sliderLineComponent';
 import { BoxParticleEmitter } from 'babylonjs/Particles/EmitterTypes/boxParticleEmitter';
 import { ConeParticleEmitter } from 'babylonjs/Particles/EmitterTypes/coneParticleEmitter';

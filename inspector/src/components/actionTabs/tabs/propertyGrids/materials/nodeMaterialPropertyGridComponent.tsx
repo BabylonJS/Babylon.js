@@ -9,7 +9,7 @@ import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGri
 import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';
 import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
-import { CheckBoxLineComponent } from '../../../lines/checkBoxLineComponent';
+import { CheckBoxLineComponent } from '../../../../../sharedUiComponents/lines/checkBoxLineComponent';
 import { FloatLineComponent } from '../../../lines/floatLineComponent';
 import { Color3LineComponent } from '../../../lines/color3LineComponent';
 import { Vector3LineComponent } from '../../../lines/vector3LineComponent';

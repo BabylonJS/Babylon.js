@@ -9,7 +9,7 @@ import { GlobalState } from '../../../../globalState';
 import { SpriteManager } from 'babylonjs/Sprites/spriteManager';
 import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
 import { TextLineComponent } from '../../../../../sharedUiComponents/lines/textLineComponent';
-import { CheckBoxLineComponent } from '../../../lines/checkBoxLineComponent';
+import { CheckBoxLineComponent } from '../../../../../sharedUiComponents/lines/checkBoxLineComponent';
 import { FloatLineComponent } from '../../../lines/floatLineComponent';
 import { SliderLineComponent } from '../../../lines/sliderLineComponent';
 import { RenderingManager } from 'babylonjs/Rendering/renderingManager';
