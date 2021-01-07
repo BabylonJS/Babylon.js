@@ -535,7 +535,7 @@ export abstract class EffectLayer {
                 defines.push("#define NUM_MORPH_INFLUENCERS " + morphInfluencers);
                 if (manager.isUsingTextureForTargets) {
                     defines.push("#define MORPHTARGETS_TEXTURE");
-                };
+                }
                 MaterialHelper.PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, morphInfluencers);
             }
         }

@@ -273,7 +273,7 @@ export class OutlineRenderer implements ISceneComponent {
 
                 if (morphTargetManager.isUsingTextureForTargets) {
                     defines.push("#define MORPHTARGETS_TEXTURE");
-                };
+                }
 
                 MaterialHelper.PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, numMorphInfluencers);
             }
@@ -294,7 +294,7 @@ export class OutlineRenderer implements ISceneComponent {
             this._cachedDefines = join;
             this._effect = this.scene.getEngine().createEffect("outline",
                 attribs,
-                ["world", "mBones", "viewProjection", "diffuseMatrix", "offset", "color", "logarithmicDepthConstant", 
+                ["world", "mBones", "viewProjection", "diffuseMatrix", "offset", "color", "logarithmicDepthConstant",
                 "morphTargetInfluences", "morphTargetTextureInfo"],
                 ["diffuseSampler", "morphTargets"], join,
                 undefined, undefined, undefined,

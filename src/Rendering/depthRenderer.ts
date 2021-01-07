@@ -242,7 +242,7 @@ export class DepthRenderer {
 
                 if (morphTargetManager.isUsingTextureForTargets) {
                     defines.push("#define MORPHTARGETS_TEXTURE");
-                };
+                }
 
                 MaterialHelper.PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, numMorphInfluencers);
             }
