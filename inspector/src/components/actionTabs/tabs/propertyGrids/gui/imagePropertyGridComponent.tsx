@@ -6,8 +6,8 @@ import { LineContainerComponent } from "../../../lineContainerComponent";
 import { LockObject } from "../lockObject";
 import { Image } from "babylonjs-gui/2D/controls/image";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
-import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
-import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
+import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
+import { OptionsLineComponent } from "../../../../../sharedUiComponents/lines/optionsLineComponent";
 import { GlobalState } from '../../../../globalState';
 
 interface IImagePropertyGridComponentProps {

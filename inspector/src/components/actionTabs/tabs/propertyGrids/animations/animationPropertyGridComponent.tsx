@@ -13,7 +13,7 @@ import { Animation } from "babylonjs/Animations/animation";
 import { Animatable } from "babylonjs/Animations/animatable";
 import { AnimationPropertiesOverride } from "babylonjs/Animations/animationPropertiesOverride";
 import { AnimationRange } from "babylonjs/Animations/animationRange";
-import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
+import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { Nullable } from "babylonjs/types";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";

@@ -1,22 +1,23 @@
 import * as React from "react";
-import { Vector2 } from "babylonjs/Maths/math.vector";
+import { Vector4 } from "babylonjs/Maths/math.vector";
 import { Observable } from "babylonjs/Misc/observable";
 
-import { NumericInputComponent } from "./../../../sharedUiComponents/lines/numericInputComponent";
+import { NumericInputComponent } from "./numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
-import { PropertyChangedEvent } from "../../propertyChangedEvent";
+import { PropertyChangedEvent } from "../propertyChangedEvent";
 
-interface IVector2LineComponentProps {
+interface IVector4LineComponentProps {
     label: string;
     target: any;
     propertyName: string;
     step?: number;
-    onChange?: (newvalue: Vector2) => void;
+    onChange?: (newvalue: Vector4) => void;
+    useEuler?: boolean,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
-export class Vector2LineComponent extends React.Component<IVector2LineComponentProps, { isExpanded: boolean, value: Vector2 }> {
+export class Vector4LineComponent extends React.Component<IVector4LineComponentProps, { isExpanded: boolean, value: Vector4 }> {
 
     static defaultProps = {
         step: 0.001, // cm
@@ -24,14 +25,18 @@ export class Vector2LineComponent extends React.Component<IVector2LineComponentP
 
     private _localChange = false;
 
-    constructor(props: IVector2LineComponentProps) {
+    constructor(props: IVector4LineComponentProps) {
         super(props);
 
-        this.state = { isExpanded: false, value: this.props.target[this.props.propertyName].clone() }
+        this.state = { isExpanded: false, value: this.getCurrentValue().clone() }
     }
 
-    shouldComponentUpdate(nextProps: IVector2LineComponentProps, nextState: { isExpanded: boolean, value: Vector2 }) {
-        const nextPropsValue = nextProps.target[nextProps.propertyName];
+    getCurrentValue() {
+        return this.props.target[this.props.propertyName];
+    }
+
+    shouldComponentUpdate(nextProps: IVector4LineComponentProps, nextState: { isExpanded: boolean, value: Vector4 }) {
+        const nextPropsValue = this.getCurrentValue();
 
         if (!nextPropsValue.equals(nextState.value) || this._localChange) {
             nextState.value = nextPropsValue.clone();
@@ -46,7 +51,7 @@ export class Vector2LineComponent extends React.Component<IVector2LineComponentP
         this.setState({ isExpanded: !this.state.isExpanded });
     }
 
-    raiseOnPropertyChanged(previousValue: Vector2) {
+    raiseOnPropertyChanged(previousValue: Vector4) {
         if (this.props.onChange) {
             this.props.onChange(this.state.value);
         }
@@ -62,26 +67,41 @@ export class Vector2LineComponent extends React.Component<IVector2LineComponentP
         });
     }
 
+    updateVector4() {
+        const store = this.props.target[this.props.propertyName].clone();
+        this.props.target[this.props.propertyName] = this.state.value;
+
+        this.setState({ value: store });
+
+        this.raiseOnPropertyChanged(store);
+    }
+
     updateStateX(value: number) {
         this._localChange = true;
 
-        const store = this.state.value.clone();
-        this.props.target[this.props.propertyName].x = value;
         this.state.value.x = value;
-        this.setState({ value: this.state.value });
-
-        this.raiseOnPropertyChanged(store);
+        this.updateVector4();
     }
 
     updateStateY(value: number) {
         this._localChange = true;
 
-        const store = this.state.value.clone();
-        this.props.target[this.props.propertyName].y = value;
         this.state.value.y = value;
-        this.setState({ value: this.state.value });
+        this.updateVector4();
+    }
 
-        this.raiseOnPropertyChanged(store);
+    updateStateZ(value: number) {
+        this._localChange = true;
+
+        this.state.value.z = value;
+        this.updateVector4();
+    }
+
+    updateStateW(value: number) {
+        this._localChange = true;
+
+        this.state.value.w = value;
+        this.updateVector4();
     }
 
     render() {
@@ -89,23 +109,25 @@ export class Vector2LineComponent extends React.Component<IVector2LineComponentP
 
         return (
             <div className="vector3Line">
-                <div className="firstLine" title={this.props.label}>
-                    <div className="label">
+                <div className="firstLine">
+                    <div className="label" title={this.props.label}>
                         {this.props.label}
                     </div>
                     <div className="vector">
-                        {`X: ${this.state.value.x.toFixed(2)}, Y: ${this.state.value.y.toFixed(2)}`}
-
+                        {
+                            `X: ${this.state.value.x.toFixed(2)}, Y: ${this.state.value.y.toFixed(2)}, Z: ${this.state.value.z.toFixed(2)}, W: ${this.state.value.w.toFixed(2)}`
+                        }
                     </div>
                     <div className="expand hoverIcon" onClick={() => this.switchExpandState()} title="Expand">
                         {chevron}
                     </div>
                 </div>
                 {
-                    this.state.isExpanded &&
                     <div className="secondLine">
                         <NumericInputComponent label="x" step={this.props.step} value={this.state.value.x} onChange={value => this.updateStateX(value)} />
                         <NumericInputComponent label="y" step={this.props.step} value={this.state.value.y} onChange={value => this.updateStateY(value)} />
+                        <NumericInputComponent label="z" step={this.props.step} value={this.state.value.z} onChange={value => this.updateStateZ(value)} />
+                        <NumericInputComponent label="w" step={this.props.step} value={this.state.value.w} onChange={value => this.updateStateW(value)} />
                     </div>
                 }
             </div>

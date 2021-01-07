@@ -9,7 +9,7 @@ import { GlobalState } from '../../../../globalState';
 import { SpriteManager } from 'babylonjs/Sprites/spriteManager';
 import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
 import { TextLineComponent } from '../../../../../sharedUiComponents/lines/textLineComponent';
-import { CheckBoxLineComponent } from '../../../lines/checkBoxLineComponent';
+import { CheckBoxLineComponent } from '../../../../../sharedUiComponents/lines/checkBoxLineComponent';
 import { FloatLineComponent } from '../../../lines/floatLineComponent';
 import { SliderLineComponent } from '../../../lines/sliderLineComponent';
 import { RenderingManager } from 'babylonjs/Rendering/renderingManager';
@@ -19,7 +19,7 @@ import { Sprite } from 'babylonjs/Sprites/sprite';
 import { Tools } from 'babylonjs/Misc/tools';
 import { FileButtonLineComponent } from '../../../../../sharedUiComponents/lines/fileButtonLineComponent';
 import { Constants } from 'babylonjs/Engines/constants';
-import { OptionsLineComponent } from '../../../lines/optionsLineComponent';
+import { OptionsLineComponent } from '../../../../../sharedUiComponents/lines/optionsLineComponent';
 
 interface ISpriteManagerPropertyGridComponentProps {
     globalState: GlobalState;

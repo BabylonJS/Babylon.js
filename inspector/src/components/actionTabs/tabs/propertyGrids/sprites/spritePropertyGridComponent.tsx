@@ -1,7 +1,6 @@
 import * as React from "react";
 
 import { Observable } from "babylonjs/Misc/observable";
-
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LockObject } from "../lockObject";
 import { LineContainerComponent } from '../../../lineContainerComponent';
@@ -9,14 +8,14 @@ import { GlobalState } from '../../../../globalState';
 import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
 import { TextLineComponent } from '../../../../../sharedUiComponents/lines/textLineComponent';
 import { Sprite } from 'babylonjs/Sprites/sprite';
-import { CheckBoxLineComponent } from '../../../lines/checkBoxLineComponent';
+import { CheckBoxLineComponent } from '../../../../../sharedUiComponents/lines/checkBoxLineComponent';
 import { Vector3LineComponent } from '../../../lines/vector3LineComponent';
-import { Color4LineComponent } from '../../../lines/color4LineComponent';
 import { FloatLineComponent } from '../../../lines/floatLineComponent';
 import { SliderLineComponent } from '../../../lines/sliderLineComponent';
 import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
 import { TextureHelper } from '../../../../../textureHelper';
 import { Nullable } from 'babylonjs/types';
+import { Color4LineComponent } from "../../../../../sharedUiComponents/lines/color4LineComponent";
 
 interface ISpritePropertyGridComponentProps {
     globalState: GlobalState;
