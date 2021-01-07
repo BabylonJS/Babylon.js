@@ -4,7 +4,7 @@ import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { Control } from "babylonjs-gui/2D/controls/control";
 import { CommonControlPropertyGridComponent } from "./commonControlPropertyGridComponent";
 import { GlobalState } from '../../../../globalState';
-import { LockObject } from "../lockObject";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 
 interface IControlPropertyGridComponentProps {
     globalState: GlobalState;

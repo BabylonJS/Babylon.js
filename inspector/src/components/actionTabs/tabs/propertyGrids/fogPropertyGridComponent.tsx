@@ -6,7 +6,7 @@ import { PropertyChangedEvent } from "../../../propertyChangedEvent";
 import { Color3LineComponent } from "../../../../sharedUiComponents/lines/color3LineComponent";
 import { FloatLineComponent } from "../../lines/floatLineComponent";
 import { OptionsLineComponent } from "../../../../sharedUiComponents/lines/optionsLineComponent";
-import { LockObject } from "./lockObject";
+import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from '../../../globalState';
 
 interface IFogPropertyGridComponentProps {

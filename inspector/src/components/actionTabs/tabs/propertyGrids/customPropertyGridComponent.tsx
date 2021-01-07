@@ -10,7 +10,7 @@ import { Vector3LineComponent } from '../../lines/vector3LineComponent';
 import { QuaternionLineComponent } from '../../lines/quaternionLineComponent';
 import { LineContainerComponent } from '../../lineContainerComponent';
 import { TextInputLineComponent } from '../../lines/textInputLineComponent';
-import { LockObject } from './lockObject';
+import { LockObject } from '../../../../sharedUiComponents/tabs/propertyGrids/lockObject';
 
 interface ICustomPropertyGridComponentProps {
     globalState: GlobalState;

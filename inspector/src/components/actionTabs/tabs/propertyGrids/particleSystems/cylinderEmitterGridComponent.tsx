@@ -6,7 +6,7 @@ import { PropertyChangedEvent } from '../../../../propertyChangedEvent';
 import { SliderLineComponent } from '../../../lines/sliderLineComponent';
 import { CylinderParticleEmitter } from 'babylonjs/Particles/EmitterTypes/cylinderParticleEmitter';
 import { FloatLineComponent } from '../../../lines/floatLineComponent';
-import { LockObject } from '../lockObject';
+import { LockObject } from '../../../../../sharedUiComponents/tabs/propertyGrids/lockObject';
 
 interface ICylinderEmitterGridComponentProps {
     globalState: GlobalState;

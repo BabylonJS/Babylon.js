@@ -6,7 +6,7 @@ import { TextBlock, TextWrapping } from "babylonjs-gui/2D/controls/textBlock";
 import { Control } from "babylonjs-gui/2D/controls/control";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
-import { LockObject } from "../lockObject";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { OptionsLineComponent } from "../../../../../sharedUiComponents/lines/optionsLineComponent";
 import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";

@@ -2,7 +2,7 @@ import * as React from "react";
 
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LockObject } from "../lockObject";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { LineContainerComponent } from '../../../lineContainerComponent';
 import { GlobalState } from '../../../../globalState';
 import { TextInputLineComponent } from '../../../lines/textInputLineComponent';

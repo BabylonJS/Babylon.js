@@ -9,7 +9,7 @@ import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/c
 import { Vector3LineComponent } from "../../../lines/vector3LineComponent";
 import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
 import { QuaternionLineComponent } from "../../../lines/quaternionLineComponent";
-import { LockObject } from "../lockObject";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from '../../../../globalState';
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
 import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
