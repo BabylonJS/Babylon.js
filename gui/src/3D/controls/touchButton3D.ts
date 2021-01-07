@@ -1,7 +1,7 @@
 // Assumptions: absolute position of button mesh is inside the mesh
 
 import { DeepImmutableObject, Nullable } from "babylonjs/types";
-import { Vector3, Quaternion} from "babylonjs/Maths/math.vector";
+import { Vector3, Quaternion } from "babylonjs/Maths/math.vector";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
@@ -241,7 +241,7 @@ export class TouchButton3D extends Button3D {
      */
     private _updateDistanceOffsets() {
         let worldMatrixData = this._getWorldMatrixData(this._collisionMesh);
-        
+
         if (!worldMatrixData.scale.equalsWithEpsilon(this._lastKnownCollidableScale)) {
             const collisionMeshPos = this._collisionMesh.getAbsolutePosition();
 
