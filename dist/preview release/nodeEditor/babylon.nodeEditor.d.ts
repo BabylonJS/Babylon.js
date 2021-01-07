@@ -1701,6 +1701,16 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export interface IButtonLineComponentProps {
+        data: string;
+        tooltip: string;
+    }
+    export class DraggableLineComponent extends React.Component<IButtonLineComponentProps> {
+        constructor(props: IButtonLineComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
     interface IFileButtonLineComponentProps {
         label: string;
         onClick: (file: File) => void;
@@ -1804,6 +1814,12 @@ declare module NODEEDITOR {
         updateValue(evt: any): void;
         onBlur(): void;
         render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export class Popup {
+        static CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): HTMLDivElement | null;
+        private static _CopyStyles;
     }
 }
 declare module NODEEDITOR {

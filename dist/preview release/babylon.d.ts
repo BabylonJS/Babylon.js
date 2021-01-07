@@ -62143,9 +62143,13 @@ declare module BABYLON {
          */
         private _onBeforeCameraRenderObserver;
         /**
-         * Observable raised when an error occured while loading the 360 image
+         * Observable raised when an error occurred while loading the texture
          */
         onLoadErrorObservable: Observable<string>;
+        /**
+         * Observable raised when the texture finished loading
+         */
+        onLoadObservable: Observable<void>;
         /**
          * Create an instance of this class and pass through the parameters to the relevant classes- Texture, StandardMaterial, and Mesh.
          * @param name Element's name, child elements will append suffixes for their own names.
