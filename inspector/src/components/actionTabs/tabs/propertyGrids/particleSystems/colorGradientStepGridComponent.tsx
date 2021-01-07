@@ -7,7 +7,7 @@ import { LockObject } from '../lockObject';
 import { Color3, Color4 } from 'babylonjs/Maths/math.color';
 import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
 import { ParticleSystem } from 'babylonjs/Particles/particleSystem';
-import { ColorPickerLineComponent } from '../../../lines/colorPickerComponent';
+import { ColorPickerLineComponent } from '../../../../../sharedUiComponents/lines/colorPickerComponent';
 
 interface IColorGradientStepGridComponent {
     globalState: GlobalState;

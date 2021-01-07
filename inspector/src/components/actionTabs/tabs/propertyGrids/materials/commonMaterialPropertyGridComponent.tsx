@@ -11,7 +11,7 @@ import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/c
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
-import { OptionsLineComponent, Null_Value } from "../../../lines/optionsLineComponent";
+import { OptionsLineComponent, Null_Value } from "../../../../../sharedUiComponents/lines/optionsLineComponent";
 import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
