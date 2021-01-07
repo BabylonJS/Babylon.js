@@ -9,7 +9,7 @@ import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
 import { LockObject } from "../lockObject";
-import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
+import { OptionsLineComponent } from "../../../../../sharedUiComponents/lines/optionsLineComponent";
 import { GlobalState } from '../../../../globalState';
 
 interface ICommonControlPropertyGridComponentProps {

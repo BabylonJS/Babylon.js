@@ -4,7 +4,7 @@ import { HemisphericLight } from "babylonjs/Lights/hemisphericLight";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { CommonLightPropertyGridComponent } from "./commonLightPropertyGridComponent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
-import { Color3LineComponent } from "../../../lines/color3LineComponent";
+import { Color3LineComponent } from "../../../../../sharedUiComponents/lines/color3LineComponent";
 import { Vector3LineComponent } from "../../../lines/vector3LineComponent";
 import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';
