@@ -142,6 +142,7 @@ export class NullEngine extends Engine {
             maxMSAASamples: 1,
             blendMinMax: false,
             canUseGLInstanceID: false,
+            canUseGLVertexID: false
         };
 
         this._features = {
