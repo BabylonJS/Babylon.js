@@ -12,7 +12,7 @@ import { IExplorerExtensibilityGroup } from 'babylonjs/Debug/debugLayer';
 import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
 import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
 import { SliderLineComponent } from '../../../lines/sliderLineComponent';
-import { CheckBoxLineComponent } from '../../../lines/checkBoxLineComponent';
+import { CheckBoxLineComponent } from '../../../../../sharedUiComponents/lines/checkBoxLineComponent';
 
 interface ISoundPropertyGridComponentProps {
     globalState: GlobalState;

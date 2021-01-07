@@ -8,7 +8,7 @@ import { LockObject } from "../lockObject";
 import { CommonRenderingPipelinePropertyGridComponent } from './commonRenderingPipelinePropertyGridComponent';
 import { SliderLineComponent } from '../../../lines/sliderLineComponent';
 import { LineContainerComponent } from '../../../lineContainerComponent';
-import { CheckBoxLineComponent } from '../../../lines/checkBoxLineComponent';
+import { CheckBoxLineComponent } from '../../../../../sharedUiComponents/lines/checkBoxLineComponent';
 import { Vector2LineComponent } from '../../../lines/vector2LineComponent';
 import { OptionsLineComponent } from '../../../lines/optionsLineComponent';
 import { ImageProcessingConfiguration } from 'babylonjs/Materials/imageProcessingConfiguration';

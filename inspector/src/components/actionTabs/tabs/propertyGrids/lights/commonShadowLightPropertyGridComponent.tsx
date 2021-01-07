@@ -3,7 +3,7 @@ import { Observable } from "babylonjs/Misc/observable";
 import { IShadowLight } from "babylonjs/Lights/shadowLight";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
-import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
+import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';

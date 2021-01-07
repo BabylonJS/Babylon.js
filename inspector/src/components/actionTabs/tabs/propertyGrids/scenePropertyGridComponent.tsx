@@ -13,7 +13,7 @@ import { PropertyChangedEvent } from "../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../lineContainerComponent";
 import { RadioButtonLineComponent } from "../../../../sharedUiComponents/lines/radioLineComponent";
 import { Color3LineComponent } from "../../lines/color3LineComponent";
-import { CheckBoxLineComponent } from "../../lines/checkBoxLineComponent";
+import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { FogPropertyGridComponent } from "./fogPropertyGridComponent";
 import { FileButtonLineComponent } from "../../../../sharedUiComponents/lines/fileButtonLineComponent";
 import { TextureLinkLineComponent } from "../../lines/textureLinkLineComponent";
