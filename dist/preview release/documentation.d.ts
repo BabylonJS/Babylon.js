@@ -17888,6 +17888,7 @@ declare module BABYLON {
         MORPHTARGETS_TANGENT: boolean;
         MORPHTARGETS_UV: boolean;
         NUM_MORPH_INFLUENCERS: number;
+        MORPHTARGETS_TEXTURE: boolean;
         /** IMAGE PROCESSING */
         IMAGEPROCESSING: boolean;
         VIGNETTE: boolean;
@@ -19211,6 +19212,13 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var morphTargetsVertexGlobal: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var morphTargetsVertex: {
         name: string;
         shader: string;
@@ -19505,6 +19513,7 @@ declare module BABYLON {
         MORPHTARGETS_TANGENT: boolean;
         MORPHTARGETS_UV: boolean;
         NUM_MORPH_INFLUENCERS: number;
+        MORPHTARGETS_TEXTURE: boolean;
         NONUNIFORMSCALING: boolean;
         PREMULTIPLYALPHA: boolean;
         ALPHATEST_AFTERALLALPHACOMPUTATIONS: boolean;
@@ -21803,6 +21812,7 @@ declare module BABYLON {
         MORPHTARGETS_TANGENT: boolean;
         MORPHTARGETS_UV: boolean;
         NUM_MORPH_INFLUENCERS: number;
+        MORPHTARGETS_TEXTURE: boolean;
         IMAGEPROCESSING: boolean;
         VIGNETTE: boolean;
         VIGNETTEBLENDMODEMULTIPLY: boolean;
@@ -31839,7 +31849,7 @@ declare module BABYLON {
      * This class is used to deform meshes using morphing between different targets
      * @see https://doc.babylonjs.com/how_to/how_to_use_morphtargets
      */
-    export class MorphTargetManager {
+    export class MorphTargetManager implements IDisposable {
         private _targets;
         private _targetInfluenceChangedObservers;
         private _targetDataLayoutChangedObservers;
@@ -31850,8 +31860,14 @@ declare module BABYLON {
         private _supportsTangents;
         private _supportsUVs;
         private _vertexCount;
+        private _textureVertexStride;
+        private _textureWidth;
+        private _textureHeight;
         private _uniqueId;
         private _tempInfluences;
+        private _canUseTextureForTargets;
+        /** @hidden */
+        _targetStoreTextures: Array<RawTexture>;
         /**
          * Gets or sets a boolean indicating if normals must be morphed
          */
@@ -31901,6 +31917,17 @@ declare module BABYLON {
          * Gets the list of influences (one per target)
          */
         get influences(): Float32Array;
+        private _useTextureToStoreTargets;
+        /**
+         * Gets or sets a boolean indicating that targets should be stored as a texture instead of using vertex attributes (default is true).
+         * Please note that this option is not available if the hardware does not support it
+         */
+        get useTextureToStoreTargets(): boolean;
+        set useTextureToStoreTargets(value: boolean);
+        /**
+         * Gets a boolean indicating that the targets are stored into a texture (instead of as attributes)
+         */
+        get isUsingTextureForTargets(): boolean;
         /**
          * Gets the active target at specified index. An active target is a target with an influence > 0
          * @param index defines the index to check
@@ -31923,6 +31950,8 @@ declare module BABYLON {
          * @param target defines the target to remove
          */
         removeTarget(target: MorphTarget): void;
+        /** @hidden */
+        _bind(effect: Effect): void;
         /**
          * Clone the current manager
          * @returns a new MorphTargetManager
@@ -31935,9 +31964,13 @@ declare module BABYLON {
         serialize(): any;
         private _syncActiveTargets;
         /**
-         * Syncrhonize the targets with all the meshes using this morph target manager
+         * Synchronize the targets with all the meshes using this morph target manager
          */
         synchronize(): void;
+        /**
+         * Release all resources
+         */
+        dispose(): void;
         /**
          * Creates a new MorphTargetManager from serialized data
          * @param serializationObject defines the serialized data
@@ -39738,6 +39771,8 @@ declare module BABYLON {
         blendMinMax: boolean;
         /** In some iOS + WebGL1, gl_InstanceID (and gl_InstanceIDEXT) is undefined even if instancedArrays is true. So don't use gl_InstanceID in those cases */
         canUseGLInstanceID: boolean;
+        /** Defines if gl_vertexID is available */
+        canUseGLVertexID: boolean;
     }
 }
 declare module BABYLON {
