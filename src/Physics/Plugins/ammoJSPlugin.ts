@@ -377,14 +377,17 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             impostor.physicsBody.activate();
             var worldPoint = this._tmpAmmoVectorA;
             var impulse = this._tmpAmmoVectorB;
-            var localContactPoint = new Vector3().copyFrom(contactPoint);
+            
+            worldPoint.setValue(contactPoint.x, contactPoint.y, contactPoint.z);
 
             // Convert contactPoint relative to center of mass
             if (impostor.object && impostor.object.getWorldMatrix) {
-                localContactPoint.subtractInPlace(impostor.object.getWorldMatrix().getTranslation());
+                var localTranslation = impostor.object.getWorldMatrix().getTranslation();
+                worldPoint.x -= localTranslation.x;
+                worldPoint.y -= localTranslation.y;
+                worldPoint.z -= localTranslation.z;
             }
 
-            worldPoint.setValue(localContactPoint.x, localContactPoint.y, localContactPoint.z);
             impulse.setValue(force.x, force.y, force.z);
 
             impostor.physicsBody.applyForce(impulse, worldPoint);
