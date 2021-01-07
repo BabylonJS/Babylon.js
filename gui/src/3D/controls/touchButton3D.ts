@@ -355,6 +355,7 @@ export class TouchButton3D extends Button3D {
 
             const uniqueId = mesh.uniqueId;
 
+            let activeInteraction = this._activeInteractions.get(uniqueId);
             if (inRange) {
                 const pointOnButton = this._getPointOnButton(collidablePosition);
                 const heightFromCenter = this._getHeightFromButtonCenter(collidablePosition);
@@ -371,7 +372,7 @@ export class TouchButton3D extends Button3D {
                 };
 
                 // Update button state and fire events
-                switch (this._activeInteractions.get(uniqueId) || ButtonState.None) {
+                switch (activeInteraction || ButtonState.None) {
                     case ButtonState.None:
                         if (isGreater(this._frontOffset) &&
                             isLower(this._hoverOffset)) {
@@ -401,7 +402,7 @@ export class TouchButton3D extends Button3D {
 
                 this._previousHeight.set(uniqueId, heightFromCenter);
             }
-            else {
+            else if ((activeInteraction != undefined) && (activeInteraction != ButtonState.None)) {
                 this._updateButtonState(uniqueId, ButtonState.None, this._lastTouchPoint);
                 this._previousHeight.delete(uniqueId);
             }
