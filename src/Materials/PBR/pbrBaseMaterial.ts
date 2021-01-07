@@ -191,7 +191,7 @@ export class PBRMaterialDefines extends MaterialDefines
     public MORPHTARGETS_NORMAL = false;
     public MORPHTARGETS_TANGENT = false;
     public MORPHTARGETS_UV = false;
-    public NUM_MORPH_INFLUENCERS = 0;    
+    public NUM_MORPH_INFLUENCERS = 0;
     public MORPHTARGETS_TEXTURE = false;
 
     public IMAGEPROCESSING = false;

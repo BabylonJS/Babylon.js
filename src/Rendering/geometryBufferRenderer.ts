@@ -430,7 +430,7 @@ export class GeometryBufferRenderer {
                 defines.push("#define NUM_MORPH_INFLUENCERS " + numMorphInfluencers);
                 if (morphTargetManager.isUsingTextureForTargets) {
                     defines.push("#define MORPHTARGETS_TEXTURE");
-                };
+                }
                 MaterialHelper.PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, numMorphInfluencers);
             }
         }
