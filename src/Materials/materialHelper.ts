@@ -757,6 +757,9 @@ export class MaterialHelper {
         if (influencers > 0 && EngineStore.LastCreatedEngine) {
             var maxAttributesCount = EngineStore.LastCreatedEngine.getCaps().maxVertexAttribs;
             var manager = (<Mesh>mesh).morphTargetManager;
+            if (manager?.isUsingTextureForTargets) {
+                return;
+            }
             var normal = manager && manager.supportsNormals && defines["NORMAL"];
             var tangent = manager && manager.supportsTangents && defines["TANGENT"];
             var uv = manager && manager.supportsUVs && defines["UV1"];

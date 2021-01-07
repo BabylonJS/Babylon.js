@@ -428,7 +428,9 @@ export class GeometryBufferRenderer {
 
                 defines.push("#define MORPHTARGETS");
                 defines.push("#define NUM_MORPH_INFLUENCERS " + numMorphInfluencers);
-
+                if (morphTargetManager.isUsingTextureForTargets) {
+                    defines.push("#define MORPHTARGETS_TEXTURE");
+                };
                 MaterialHelper.PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, numMorphInfluencers);
             }
         }
@@ -458,9 +460,10 @@ export class GeometryBufferRenderer {
                     attributes: attribs,
                     uniformsNames: [
                         "world", "mBones", "viewProjection", "diffuseMatrix", "view", "previousWorld", "previousViewProjection", "mPreviousBones",
-                        "morphTargetInfluences", "bumpMatrix", "reflectivityMatrix", "vTangentSpaceParams", "vBumpInfos"
+                        "bumpMatrix", "reflectivityMatrix", "vTangentSpaceParams", "vBumpInfos",
+                        "morphTargetInfluences", "morphTargetTextureInfo"
                     ],
-                    samplers: ["diffuseSampler", "bumpSampler", "reflectivitySampler"],
+                    samplers: ["diffuseSampler", "bumpSampler", "reflectivitySampler", "morphTargets"],
                     defines: join,
                     onCompiled: null,
                     fallbacks: null,
@@ -664,6 +667,9 @@ export class GeometryBufferRenderer {
 
                 // Morph targets
                 MaterialHelper.BindMorphTargetParameters(renderingMesh, this._effect);
+                if (renderingMesh.morphTargetManager && renderingMesh.morphTargetManager.isUsingTextureForTargets) {
+                    renderingMesh.morphTargetManager._bind(this._effect);
+                }
 
                 // Velocity
                 if (this._enableVelocity) {

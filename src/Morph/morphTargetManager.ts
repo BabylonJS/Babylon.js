@@ -66,7 +66,7 @@ export class MorphTargetManager implements IDisposable {
             this._uniqueId = this._scene.getUniqueId();
             
             const engineCaps = this._scene.getEngine().getCaps();
-            this._canUseTextureForTargets = engineCaps.textureFloat && engineCaps.maxVertexTextureImageUnits > 0;
+            this._canUseTextureForTargets = engineCaps.canUseGLVertexID && engineCaps.textureFloat && engineCaps.maxVertexTextureImageUnits > 0;
         }
     }
 
@@ -335,7 +335,9 @@ export class MorphTargetManager implements IDisposable {
                     const tangents = target.getTangents();
 
                     if (!positions) {
-                        Logger.Error("Invalid morph target. Target must have positions.");
+                        if (index ===0) {
+                            Logger.Error("Invalid morph target. Target must have positions.");
+                        }
                         return;
                     }
 
