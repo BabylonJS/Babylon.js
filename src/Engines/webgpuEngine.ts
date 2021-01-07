@@ -11,7 +11,7 @@ import { _TimeToken } from "../Instrumentation/timeToken";
 import { Constants } from "./constants";
 import * as WebGPUConstants from './WebGPU/webgpuConstants';
 import { VertexBuffer } from "../Meshes/buffer";
-import { WebGPUPipelineContext, IWebGPURenderPipelineStageDescriptor } from './WebGPU/webgpuPipelineContext';
+import { WebGPUPipelineContext, IWebGPURenderPipelineStageDescriptor, WebGPUBindGroupCacheNode } from './WebGPU/webgpuPipelineContext';
 import { IPipelineContext } from './IPipelineContext';
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { WebGPUDataBuffer } from '../Meshes/WebGPU/webgpuDataBuffer';
@@ -36,6 +36,9 @@ import { IMultiRenderTargetOptions } from '../Materials/Textures/multiRenderTarg
 import { WebGPUCacheSampler } from "./WebGPU/webgpuCacheSampler";
 import { WebGPUShaderManager } from "./WebGPU/webgpuShaderManager";
 import { WebGPUCacheRenderPipeline } from "./WebGPU/webgpuCacheRenderPipeline";
+import { WebGPUCacheRenderPipelineTree } from "./WebGPU/webgpuCacheRenderPipelineTree";
+import { WebGPUStencilState } from "./WebGPU/webgpuStencilState";
+import { WebGPUDepthCullingState } from "./WebGPU/webgpuDepthCullingState";
 
 import "../Shaders/clearQuad.vertex";
 import "../Shaders/clearQuad.fragment";
@@ -369,10 +372,6 @@ export class WebGPUEngine extends Engine {
         this._mainPassSampleCount = options.antialiasing ? this._defaultSampleCount : 1;
         this._isStencilEnable = options.stencil;
 
-        this._depthCullingState.depthTest = true;
-        this._depthCullingState.depthFunc = Constants.LEQUAL;
-        this._depthCullingState.depthMask = true;
-
         this._sharedInit(canvas, !!options.doNotHandleTouchAction, options.audioEngine);
 
         this._shaderProcessor = this._getShaderProcessor();
@@ -445,10 +444,14 @@ export class WebGPUEngine extends Engine {
 
                 this._emptyVertexBuffer = new VertexBuffer(this, [0], "", false, false, 1, false, 0, 1);
 
-                this._cacheRenderPipeline = new WebGPUCacheRenderPipeline(this._device, this._emptyVertexBuffer);
+                this._cacheRenderPipeline = new WebGPUCacheRenderPipelineTree(this._device, this._emptyVertexBuffer);
 
-                this._cacheRenderPipeline.setDepthCompare(this._depthCullingState.depthFunc);
-                //this._cacheRenderPipeline.disabled = true;
+                this._depthCullingState = new WebGPUDepthCullingState(this._cacheRenderPipeline);
+                this._stencilState = new WebGPUStencilState(this._cacheRenderPipeline);
+
+                this._depthCullingState.depthTest = true;
+                this._depthCullingState.depthFunc = Constants.LEQUAL;
+                this._depthCullingState.depthMask = true;
 
                 this._textureHelper.setCommandEncoder(this._uploadEncoder);
 
@@ -715,12 +718,9 @@ export class WebGPUEngine extends Engine {
             this._currentProgram = null;
 
             this._stencilState.reset();
-            this._cacheRenderPipeline.resetStencilState();
 
             this._depthCullingState.reset();
             this._depthCullingState.depthFunc = Constants.LEQUAL;
-            this._cacheRenderPipeline.resetDepthCullingState();
-            this._cacheRenderPipeline.setDepthCompare(Constants.LEQUAL);
 
             this._alphaState.reset();
             this._alphaMode = Constants.ALPHA_ADD;
@@ -1805,7 +1805,7 @@ export class WebGPUEngine extends Engine {
 
             if (webgpuPipelineContext.textures[name]) {
                 if (webgpuPipelineContext.textures[name]!.texture !== internalTexture) {
-                    webgpuPipelineContext.bindGroupsCache = {}; // the bind groups need to be rebuilt (at least the bind group owning this texture, but it's easier to just have them all rebuilt)
+                    webgpuPipelineContext.bindGroupsCache.values = {}; // the bind groups need to be rebuilt (at least the bind group owning this texture, but it's easier to just have them all rebuilt)
                 }
                 webgpuPipelineContext.textures[name]!.texture = internalTexture!;
             }
@@ -1859,7 +1859,7 @@ export class WebGPUEngine extends Engine {
             const webgpuPipelineContext = this._currentEffect._pipelineContext as WebGPUPipelineContext;
             if (!texture) {
                 if (webgpuPipelineContext.textures[name] && webgpuPipelineContext.textures[name]!.texture) {
-                    webgpuPipelineContext.bindGroupsCache = {}; // the bind groups need to be rebuilt (at least the bind group owning this texture, but it's easier to just have them all rebuilt)
+                    webgpuPipelineContext.bindGroupsCache.values = {}; // the bind groups need to be rebuilt (at least the bind group owning this texture, but it's easier to just have them all rebuilt)
                 }
                 webgpuPipelineContext.textures[name] = null;
                 return false;
@@ -3143,9 +3143,15 @@ export class WebGPUEngine extends Engine {
         // TODO WEBGPU remove the assert debugging code
         assert(this._currentRenderTarget === null || (this._currentRenderTarget !== null && texture === this._currentRenderTarget), "unBindFramebuffer - the texture we want to unbind is not the same than the currentRenderTarget! texture=" + texture + ", this._currentRenderTarget=" + this._currentRenderTarget);
 
+        const saveCRT = this._currentRenderTarget;
+
+        this._currentRenderTarget = null; // to be iso with thinEngine, this._currentRenderTarget must be null when onBeforeUnbind is called
+
         if (onBeforeUnbind) {
             onBeforeUnbind();
         }
+
+        this._currentRenderTarget = saveCRT;
 
         if (this._currentRenderPass && this._currentRenderPass !== this._mainRenderPassWrapper.renderPass) {
             this._endRenderTargetRenderPass();
@@ -3222,12 +3228,6 @@ export class WebGPUEngine extends Engine {
     //                              Render
     //------------------------------------------------------------------------------
 
-    public setZOffset(value: number): void {
-        if (value !== this._depthCullingState.zOffset) {
-            this._depthCullingState.zOffset = value;
-        }
-    }
-
     private _setColorFormat(wrapper: WebGPURenderPassWrapper): void {
         const format = wrapper.colorAttachmentGPUTextures[0].format;
         this._cacheRenderPipeline.setColorFormat(format);
@@ -3245,102 +3245,12 @@ export class WebGPUEngine extends Engine {
         this._depthTextureFormat = wrapper.depthTextureFormat;
     }
 
-    public setDepthBuffer(enable: boolean): void {
-        if (this._depthCullingState.depthTest !== enable) {
-            this._depthCullingState.depthTest = enable;
-        }
-    }
-
-    public setDepthWrite(enable: boolean): void {
-        if (this._depthCullingState.depthMask !== enable) {
-            this._depthCullingState.depthMask = enable;
-        }
-    }
-
-    public setStencilBuffer(enable: boolean): void {
-        if (this._stencilState.stencilTest !== enable) {
-            this._stencilState.stencilTest = enable;
-        }
-    }
-
-    public setStencilMask(mask: number): void {
-        if (this._stencilState.stencilMask !== mask) {
-            this._stencilState.stencilMask = mask;
-        }
-    }
-
-    public setStencilFunction(stencilFunc: number) {
-        if (this._stencilState.stencilFunc !== stencilFunc) {
-            this._stencilState.stencilFunc = stencilFunc;
-        }
-    }
-
-    public setStencilFunctionReference(reference: number) {
-        if (this._stencilState.stencilFuncRef !== reference) {
-            this._stencilState.stencilFuncRef = reference;
-        }
-    }
-
-    public setStencilFunctionMask(mask: number) {
-        if (this._stencilState.stencilFuncMask !== mask) {
-            this._stencilState.stencilFuncMask = mask;
-        }
-    }
-
-    public setStencilOperationFail(operation: number): void {
-        if (this._stencilState.stencilOpStencilFail !== operation) {
-            this._stencilState.stencilOpStencilFail = operation;
-        }
-    }
-
-    public setStencilOperationDepthFail(operation: number): void {
-        if (this._stencilState.stencilOpDepthFail !== operation) {
-            this._stencilState.stencilOpDepthFail = operation;
-        }
-    }
-
-    public setStencilOperationPass(operation: number): void {
-        if (this._stencilState.stencilOpStencilDepthPass !== operation) {
-            this._stencilState.stencilOpStencilDepthPass = operation;
-        }
-    }
-
     public setDitheringState(value: boolean): void {
         // Does not exist in WebGPU
     }
 
     public setRasterizerState(value: boolean): void {
         // Does not exist in WebGPU
-    }
-
-    public setDepthFunction(depthFunc: number) {
-        if (this._depthCullingState.depthFunc !== depthFunc) {
-            this._depthCullingState.depthFunc = depthFunc;
-        }
-    }
-
-    public setDepthFunctionToGreater(): void {
-        if (this._depthCullingState.depthFunc !== Constants.GREATER) {
-            this._depthCullingState.depthFunc = Constants.GREATER;
-        }
-    }
-
-    public setDepthFunctionToGreaterOrEqual(): void {
-        if (this._depthCullingState.depthFunc !== Constants.GEQUAL) {
-            this._depthCullingState.depthFunc = Constants.GEQUAL;
-        }
-    }
-
-    public setDepthFunctionToLess(): void {
-        if (this._depthCullingState.depthFunc !== Constants.LESS) {
-            this._depthCullingState.depthFunc = Constants.LESS;
-        }
-    }
-
-    public setDepthFunctionToLessOrEqual(): void {
-        if (this._depthCullingState.depthFunc !== Constants.LEQUAL) {
-            this._depthCullingState.depthFunc = Constants.LEQUAL;
-        }
     }
 
     /**
@@ -3467,23 +3377,26 @@ export class WebGPUEngine extends Engine {
             webgpuPipelineContext.uniformBuffer.update();
         }
 
-        let bufferKey = "";
+        let node: WebGPUBindGroupCacheNode = webgpuPipelineContext.bindGroupsCache;
         for (let i = 0; i < webgpuPipelineContext.shaderProcessingContext.uniformBufferNames.length; ++i) {
             const bufferName = webgpuPipelineContext.shaderProcessingContext.uniformBufferNames[i];
-            const dataBuffer = this._uniformsBuffers[bufferName];
-            if (dataBuffer) {
-                bufferKey += dataBuffer.uniqueId + "_";
+            const uboId = this._uniformsBuffers[bufferName].uniqueId;
+            let nextNode = node.values[uboId];
+            if (!nextNode) {
+                nextNode = new WebGPUBindGroupCacheNode();
+                node.values[uboId] = nextNode;
             }
+            node = nextNode;
         }
 
-        let bindGroups: GPUBindGroup[] = webgpuPipelineContext.bindGroupsCache[bufferKey];
+        let bindGroups: GPUBindGroup[] = node.bindGroups;
         if (bindGroups) {
             return bindGroups;
         }
 
         bindGroups = [];
 
-        webgpuPipelineContext.bindGroupsCache[bufferKey] = bindGroups;
+        node.bindGroups = bindGroups;
         this._counters.numBindGroupsCreation++;
 
         const bindGroupLayouts = webgpuPipelineContext.bindGroupLayouts;
@@ -3579,24 +3492,19 @@ export class WebGPUEngine extends Engine {
             renderPass.setIndexBuffer(this._currentIndexBuffer.underlyingResource, this._currentIndexBuffer!.is32Bits ? WebGPUConstants.IndexFormat.Uint32 : WebGPUConstants.IndexFormat.Uint16, 0);
         }
 
-        const effect = this._currentEffect!;
-        const attributes = effect.getAttributesNames();
-        let bufferIdx = 0;
+        const webgpuPipelineContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
+        const attributes = webgpuPipelineContext.shaderProcessingContext.attributeNamesFromEffect;
         for (var index = 0; index < attributes.length; index++) {
-            const order = effect.getAttributeLocation(index);
+            let vertexBuffer = (this._currentOverrideVertexBuffers && this._currentOverrideVertexBuffers[attributes[index]]) ?? this._currentVertexBuffers![attributes[index]];
+            if (!vertexBuffer) {
+                // In WebGL it's valid to not bind a vertex buffer to an attribute, but it's not valid in WebGPU
+                // So we must bind a dummy buffer when we are not given one for a specific attribute
+                vertexBuffer = this._emptyVertexBuffer;
+            }
 
-            if (order >= 0) {
-                let vertexBuffer = (this._currentOverrideVertexBuffers && this._currentOverrideVertexBuffers[attributes[index]]) ?? this._currentVertexBuffers![attributes[index]];
-                if (!vertexBuffer) {
-                    // In WebGL it's valid to not bind a vertex buffer to an attribute, but it's not valid in WebGPU
-                    // So we must bind a dummy buffer when we are not given one for a specific attribute
-                    vertexBuffer = this._emptyVertexBuffer;
-                }
-
-                const buffer = vertexBuffer.getBuffer();
-                if (buffer) {
-                    renderPass.setVertexBuffer(bufferIdx++, buffer.underlyingResource, vertexBuffer.byteOffset);
-                }
+            const buffer = vertexBuffer.getBuffer();
+            if (buffer) {
+                renderPass.setVertexBuffer(index, buffer.underlyingResource, vertexBuffer.byteOffset);
             }
         }
     }
@@ -3611,26 +3519,6 @@ export class WebGPUEngine extends Engine {
 
     private _setRenderPipeline(fillMode: number): void {
         const renderPass = this._bundleEncoder || this._getCurrentRenderPass();
-
-        this._cacheRenderPipeline.setDepthCullingState(
-            !!this._depthCullingState.cull,
-            this._depthCullingState.frontFace ?? 2,
-            this._depthCullingState.cullFace ?? 1,
-            this._depthCullingState.zOffset,
-            this._depthCullingState.depthTest,
-            this._depthCullingState.depthMask,
-            this._depthCullingState.depthFunc
-        );
-
-        this._cacheRenderPipeline.setStencilState(
-            this._stencilState.stencilTest,
-            this._stencilState.stencilFunc,
-            this._stencilState.stencilOpDepthFail,
-            this._stencilState.stencilOpStencilDepthPass,
-            this._stencilState.stencilOpStencilFail,
-            this._stencilState.stencilFuncMask,
-            this._stencilState.stencilMask
-        );
 
         const pipeline = this._cacheRenderPipeline.getRenderPipeline(fillMode, this._currentEffect!, this._currentRenderTarget ? this._currentRenderTarget.samples : this._mainPassSampleCount);
         renderPass.setPipeline(pipeline);
