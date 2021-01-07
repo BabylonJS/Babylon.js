@@ -2664,23 +2664,6 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
-     * Babylon window socket controller pro class (Socket.IO)
-     * @class SocketController - All rights reserved (c) 2020 Mackey Kinard
-     */
-    class SocketController {
-        /** Registers an handler for window socket connect event */
-        static RegisterOnSocketConnect(func: () => void): void;
-        /** Registers an handler for window socket disconnect event */
-        static RegisterOnSocketDisconnect(func: () => void): void;
-        /** Connects a window state socket */
-        static ConnectWindowSocket(connection: string): SocketIOClient.Socket;
-        /** Get the window state socket */
-        static GetWindowSocket(): SocketIOClient.Socket;
-    }
-}
-
-declare module BABYLON {
-    /**
      * Babylon web video player pro class (Unity Style Shuriken Particle System)
      * @class WebVideoPlayer - All rights reserved (c) 2020 Mackey Kinard
      */
