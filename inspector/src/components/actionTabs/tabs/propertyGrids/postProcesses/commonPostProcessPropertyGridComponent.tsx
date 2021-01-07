@@ -3,12 +3,12 @@ import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
+import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
 import { LockObject } from "../lockObject";
 import { PostProcess } from 'babylonjs/PostProcesses/postProcess';
-import { Color3LineComponent } from '../../../lines/color3LineComponent';
+import { Color3LineComponent } from '../../../../../sharedUiComponents/lines/color3LineComponent';
 import { SliderLineComponent } from '../../../lines/sliderLineComponent';
 import { GlobalState } from '../../../../globalState';
 import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';

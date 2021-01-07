@@ -4724,7 +4724,6 @@ var _GLTFMaterialExporter = /** @class */ (function () {
         return this._finishMaterial(promises, glTFMaterial, babylonPBRMaterial, mimeType);
     };
     _GLTFMaterialExporter.prototype.getPixelsFromTexture = function (babylonTexture) {
-        // TODO WEBGPU remove the as unknown cast once using the new babylonjs package to compile the glTF material exporter
         var pixels = babylonTexture.textureType === babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Constants"].TEXTURETYPE_UNSIGNED_INT ? babylonTexture.readPixels() : babylonTexture.readPixels();
         return pixels;
     };

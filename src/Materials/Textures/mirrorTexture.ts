@@ -171,8 +171,7 @@ export class MirrorTexture extends RenderTargetTexture {
             Matrix.ReflectionToRef(this.mirrorPlane, this._mirrorMatrix);
             this._mirrorMatrix.multiplyToRef(scene.getViewMatrix(), this._transformMatrix);
 
-            // Clone to not mark matrices as updated
-            scene.setTransformMatrix(this._transformMatrix.clone(), scene.getProjectionMatrix().clone());
+            scene.setTransformMatrix(this._transformMatrix, scene.getProjectionMatrix());
 
             saveClipPlane = scene.clipPlane;
             scene.clipPlane = this.mirrorPlane;

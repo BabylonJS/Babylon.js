@@ -6,15 +6,15 @@ import { Constants } from "babylonjs/Engines/constants";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
-import { Color3LineComponent } from "../../../lines/color3LineComponent";
-import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
-import { Vector2LineComponent } from "../../../lines/vector2LineComponent";
+import { Color3LineComponent } from "../../../../../sharedUiComponents/lines/color3LineComponent";
+import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
-import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
+import { OptionsLineComponent } from "../../../../../sharedUiComponents/lines/optionsLineComponent";
 import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGridComponent";
 import { TextureLinkLineComponent } from "../../../lines/textureLinkLineComponent";
 import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';
+import { Vector2LineComponent } from "../../../../../sharedUiComponents/lines/vector2LineComponent";
 
 interface IPBRMaterialPropertyGridComponentProps {
     globalState: GlobalState;

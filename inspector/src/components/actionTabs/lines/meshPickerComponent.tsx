@@ -3,7 +3,7 @@ import { GlobalState } from '../../globalState';
 import { Observable } from 'babylonjs/Misc/observable';
 import { PropertyChangedEvent } from '../../propertyChangedEvent';
 import { Scene } from 'babylonjs/scene';
-import { OptionsLineComponent } from './optionsLineComponent';
+import { OptionsLineComponent } from '../../../sharedUiComponents/lines/optionsLineComponent';
 import { AbstractMesh } from 'babylonjs/Meshes/abstractMesh';
 
 

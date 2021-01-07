@@ -8,13 +8,13 @@ import { LockObject } from "../lockObject";
 import { CommonRenderingPipelinePropertyGridComponent } from './commonRenderingPipelinePropertyGridComponent';
 import { SliderLineComponent } from '../../../lines/sliderLineComponent';
 import { LineContainerComponent } from '../../../lineContainerComponent';
-import { CheckBoxLineComponent } from '../../../lines/checkBoxLineComponent';
-import { Vector2LineComponent } from '../../../lines/vector2LineComponent';
-import { OptionsLineComponent } from '../../../lines/optionsLineComponent';
+import { CheckBoxLineComponent } from '../../../../../sharedUiComponents/lines/checkBoxLineComponent';
+import { OptionsLineComponent } from '../../../../../sharedUiComponents/lines/optionsLineComponent';
 import { ImageProcessingConfiguration } from 'babylonjs/Materials/imageProcessingConfiguration';
-import { Color3LineComponent } from '../../../lines/color3LineComponent';
+import { Color3LineComponent } from '../../../../../sharedUiComponents/lines/color3LineComponent';
 import { GlobalState } from '../../../../globalState';
 import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
+import { Vector2LineComponent } from "../../../../../sharedUiComponents/lines/vector2LineComponent";
 
 interface IDefaultRenderingPipelinePropertyGridComponentProps {
     globalState: GlobalState;

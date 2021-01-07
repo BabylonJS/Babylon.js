@@ -6,7 +6,7 @@ import { ButtonLineComponent } from '../../sharedUiComponents/lines/buttonLineCo
 import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
 import { FileButtonLineComponent } from '../../sharedUiComponents/lines/fileButtonLineComponent';
 import { Tools } from 'babylonjs/Misc/tools';
-import { CheckBoxLineComponent } from '../../sharedComponents/checkBoxLineComponent';
+import { CheckBoxLineComponent } from '../../sharedUiComponents/lines/checkBoxLineComponent';
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { GUINode } from '../../diagram/guiNode';
 import { Observer } from 'babylonjs/Misc/observable';

@@ -4,12 +4,12 @@ import { DirectionalLight } from "babylonjs/Lights/directionalLight";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { CommonLightPropertyGridComponent } from "./commonLightPropertyGridComponent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
-import { Color3LineComponent } from "../../../lines/color3LineComponent";
+import { Color3LineComponent } from "../../../../../sharedUiComponents/lines/color3LineComponent";
 import { Vector3LineComponent } from "../../../lines/vector3LineComponent";
 import { CommonShadowLightPropertyGridComponent } from "./commonShadowLightPropertyGridComponent";
 import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';
-import { CheckBoxLineComponent } from '../../../lines/checkBoxLineComponent';
+import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent"
 import { ShadowGenerator } from 'babylonjs/Lights/Shadows/shadowGenerator';
 import { CascadedShadowGenerator } from 'babylonjs/Lights/Shadows/cascadedShadowGenerator';
 

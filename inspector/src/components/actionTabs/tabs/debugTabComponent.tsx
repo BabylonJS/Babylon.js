@@ -1,7 +1,7 @@
 import * as React from "react";
 import { PaneComponent, IPaneComponentProps } from "../paneComponent";
 import { LineContainerComponent } from "../lineContainerComponent";
-import { CheckBoxLineComponent } from "../lines/checkBoxLineComponent";
+import { CheckBoxLineComponent } from "../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { RenderGridPropertyGridComponent } from "./propertyGrids/renderGridPropertyGridComponent";
 
 import { PhysicsViewer } from "babylonjs/Debug/physicsViewer";
