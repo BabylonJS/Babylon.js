@@ -796,6 +796,7 @@ export class NativeEngine extends Engine {
             blendMinMax: false,
             maxMSAASamples: 1,
             canUseGLInstanceID: true,
+            canUseGLVertexID: true
         };
 
         this._features = {

@@ -540,6 +540,7 @@ export class WebGPUEngine extends Engine {
             blendMinMax: true,
             maxMSAASamples: 4,
             canUseGLInstanceID: true,
+            canUseGLVertexID: true
         };
 
         this._caps.parallelShaderCompile = null as any;

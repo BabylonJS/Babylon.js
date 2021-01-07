@@ -2,6 +2,8 @@
 
 ## Major updates
 
+- Infinite Morph Targets: When supported (WebGL2+) you are no more limited to 4 morph targets per mesh ([Deltakosh](https://github.com/deltakosh))
+
 ## Updates
 
 ### General

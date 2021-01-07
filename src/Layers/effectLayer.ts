@@ -533,6 +533,9 @@ export abstract class EffectLayer {
                 defines.push("#define MORPHTARGETS");
                 morphInfluencers = manager.numInfluencers;
                 defines.push("#define NUM_MORPH_INFLUENCERS " + morphInfluencers);
+                if (manager.isUsingTextureForTargets) {
+                    defines.push("#define MORPHTARGETS_TEXTURE");
+                }
                 MaterialHelper.PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, morphInfluencers);
             }
         }
@@ -556,8 +559,9 @@ export abstract class EffectLayer {
                 attribs,
                 ["world", "mBones", "viewProjection",
                     "glowColor", "morphTargetInfluences", "boneTextureWidth",
-                    "diffuseMatrix", "emissiveMatrix", "opacityMatrix", "opacityIntensity"],
-                ["diffuseSampler", "emissiveSampler", "opacitySampler", "boneSampler"], join,
+                    "diffuseMatrix", "emissiveMatrix", "opacityMatrix", "opacityIntensity",
+                    "morphTargetTextureInfo"],
+                ["diffuseSampler", "emissiveSampler", "opacitySampler", "boneSampler", "morphTargets"], join,
                 fallbacks, undefined, undefined, { maxSimultaneousMorphTargets: morphInfluencers });
         }
 
@@ -787,6 +791,9 @@ export abstract class EffectLayer {
 
             // Morph targets
             MaterialHelper.BindMorphTargetParameters(renderingMesh, this._effectLayerMapGenerationEffect);
+            if (renderingMesh.morphTargetManager && renderingMesh.morphTargetManager.isUsingTextureForTargets) {
+                renderingMesh.morphTargetManager._bind(this._effectLayerMapGenerationEffect);
+            }
 
             // Alpha mode
             if (enableAlphaMode) {
