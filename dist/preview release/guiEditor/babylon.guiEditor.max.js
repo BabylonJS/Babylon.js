@@ -43793,7 +43793,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../sharedUiComponents/lines/fileButtonLineComponent */ "./sharedUiComponents/lines/fileButtonLineComponent.tsx");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_5__);
-/* harmony import */ var _sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../sharedComponents/checkBoxLineComponent */ "./sharedComponents/checkBoxLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
 /* harmony import */ var _diagram_guiNode__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../diagram/guiNode */ "./diagram/guiNode.ts");
 /* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
 /* harmony import */ var _serializationTools__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../serializationTools */ "./serializationTools.ts");
@@ -43958,7 +43958,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                             _this.props.globalState.onResetRequiredObservable.notifyObservers();
                         } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "OPTIONS" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Show grid", isSelected: function () { return babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_5__["DataStorage"].ReadBoolean("ShowGrid", true); }, onSelect: function (value) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Show grid", isSelected: function () { return babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_5__["DataStorage"].ReadBoolean("ShowGrid", true); }, onSelect: function (value) {
                             babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_5__["DataStorage"].WriteBoolean("ShowGrid", value);
                         } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "FILE" },
@@ -44206,7 +44206,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
-/* harmony import */ var _sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../sharedComponents/checkBoxLineComponent */ "./sharedComponents/checkBoxLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
 /* harmony import */ var _sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../sharedComponents/floatLineComponent */ "./sharedComponents/floatLineComponent.tsx");
 /* harmony import */ var _sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../sharedComponents/sliderLineComponent */ "./sharedComponents/sliderLineComponent.tsx");
 /* harmony import */ var babylonjs_Materials_Node_nodeMaterialDecorator__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterialDecorator */ "babylonjs/Misc/observable");
@@ -44272,7 +44272,7 @@ var GenericPropertyTabComponent = /** @class */ (function (_super) {
             }
             switch (type) {
                 case babylonjs_Materials_Node_nodeMaterialDecorator__WEBPACK_IMPORTED_MODULE_6__["PropertyTypeForEdition"].Boolean: {
-                    components.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: displayName, target: this_1.props.guiControl, propertyName: propertyName, onValueChanged: function () { return _this.forceRebuild(options.notifiers); } }));
+                    components.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: displayName, target: this_1.props.guiControl, propertyName: propertyName, onValueChanged: function () { return _this.forceRebuild(options.notifiers); } }));
                     break;
                 }
                 case babylonjs_Materials_Node_nodeMaterialDecorator__WEBPACK_IMPORTED_MODULE_6__["PropertyTypeForEdition"].Float: {
@@ -45236,93 +45236,6 @@ var SerializationTools = /** @class */ (function () {
 
 /***/ }),
 
-/***/ "./sharedComponents/checkBoxLineComponent.tsx":
-/*!****************************************************!*\
-  !*** ./sharedComponents/checkBoxLineComponent.tsx ***!
-  \****************************************************/
-/*! exports provided: CheckBoxLineComponent */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CheckBoxLineComponent", function() { return CheckBoxLineComponent; });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-
-
-var CheckBoxLineComponent = /** @class */ (function (_super) {
-    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CheckBoxLineComponent, _super);
-    function CheckBoxLineComponent(props) {
-        var _this = _super.call(this, props) || this;
-        _this._localChange = false;
-        _this._uniqueId = CheckBoxLineComponent._UniqueIdSeed++;
-        if (_this.props.isSelected) {
-            _this.state = { isSelected: _this.props.isSelected() };
-        }
-        else {
-            _this.state = { isSelected: _this.props.target[_this.props.propertyName] == true };
-        }
-        if (_this.props.disabled) {
-            _this.state = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, _this.state), { isDisabled: _this.props.disabled });
-        }
-        return _this;
-    }
-    CheckBoxLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        var currentState;
-        if (nextProps.isSelected) {
-            currentState = nextProps.isSelected();
-        }
-        else {
-            currentState = nextProps.target[nextProps.propertyName] == true;
-        }
-        if (currentState !== nextState.isSelected || this._localChange) {
-            nextState.isSelected = currentState;
-            this._localChange = false;
-            return true;
-        }
-        if (nextProps.disabled !== nextState.isDisabled) {
-            return true;
-        }
-        return nextProps.label !== this.props.label || nextProps.target !== this.props.target;
-    };
-    CheckBoxLineComponent.prototype.onChange = function () {
-        this._localChange = true;
-        if (this.props.onSelect) {
-            this.props.onSelect(!this.state.isSelected);
-        }
-        else {
-            if (this.props.onPropertyChangedObservable) {
-                this.props.onPropertyChangedObservable.notifyObservers({
-                    object: this.props.target,
-                    property: this.props.propertyName,
-                    value: !this.state.isSelected,
-                    initialValue: this.state.isSelected
-                });
-            }
-            this.props.target[this.props.propertyName] = !this.state.isSelected;
-        }
-        if (this.props.onValueChanged) {
-            this.props.onValueChanged();
-        }
-        this.setState({ isSelected: !this.state.isSelected });
-    };
-    CheckBoxLineComponent.prototype.render = function () {
-        var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "checkBoxLine" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "checkBox" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkbox", id: "checkbox" + this._uniqueId, className: "cbx hidden", checked: this.state.isSelected, onChange: function () { return _this.onChange(); }, disabled: !!this.props.disabled }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "checkbox" + this._uniqueId, className: "lbl" + (!!this.props.disabled ? ' disabled' : '') }))));
-    };
-    CheckBoxLineComponent._UniqueIdSeed = 0;
-    return CheckBoxLineComponent;
-}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
-
-
-
-/***/ }),
-
 /***/ "./sharedComponents/floatLineComponent.tsx":
 /*!*************************************************!*\
   !*** ./sharedComponents/floatLineComponent.tsx ***!
@@ -45735,6 +45648,93 @@ var ButtonLineComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { onClick: function () { return _this.props.onClick(); } }, this.props.label)));
     };
     return ButtonLineComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./sharedUiComponents/lines/checkBoxLineComponent.tsx":
+/*!************************************************************!*\
+  !*** ./sharedUiComponents/lines/checkBoxLineComponent.tsx ***!
+  \************************************************************/
+/*! exports provided: CheckBoxLineComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CheckBoxLineComponent", function() { return CheckBoxLineComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+
+
+var CheckBoxLineComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CheckBoxLineComponent, _super);
+    function CheckBoxLineComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this._localChange = false;
+        _this._uniqueId = CheckBoxLineComponent._UniqueIdSeed++;
+        if (_this.props.isSelected) {
+            _this.state = { isSelected: _this.props.isSelected() };
+        }
+        else {
+            _this.state = { isSelected: _this.props.target[_this.props.propertyName] == true };
+        }
+        if (_this.props.disabled) {
+            _this.state = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, _this.state), { isDisabled: _this.props.disabled });
+        }
+        return _this;
+    }
+    CheckBoxLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
+        var currentState;
+        if (nextProps.isSelected) {
+            currentState = nextProps.isSelected();
+        }
+        else {
+            currentState = nextProps.target[nextProps.propertyName] == true;
+        }
+        if (currentState !== nextState.isSelected || this._localChange) {
+            nextState.isSelected = currentState;
+            this._localChange = false;
+            return true;
+        }
+        if (nextProps.disabled !== nextState.isDisabled) {
+            return true;
+        }
+        return nextProps.label !== this.props.label || nextProps.target !== this.props.target;
+    };
+    CheckBoxLineComponent.prototype.onChange = function () {
+        this._localChange = true;
+        if (this.props.onSelect) {
+            this.props.onSelect(!this.state.isSelected);
+        }
+        else {
+            if (this.props.onPropertyChangedObservable) {
+                this.props.onPropertyChangedObservable.notifyObservers({
+                    object: this.props.target,
+                    property: this.props.propertyName,
+                    value: !this.state.isSelected,
+                    initialValue: this.state.isSelected
+                });
+            }
+            this.props.target[this.props.propertyName] = !this.state.isSelected;
+        }
+        if (this.props.onValueChanged) {
+            this.props.onValueChanged();
+        }
+        this.setState({ isSelected: !this.state.isSelected });
+    };
+    CheckBoxLineComponent.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "checkBoxLine" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "checkBox" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkbox", id: "checkbox" + this._uniqueId, className: "cbx hidden", checked: this.state.isSelected, onChange: function () { return _this.onChange(); }, disabled: !!this.props.disabled }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "checkbox" + this._uniqueId, className: "lbl" + (!!this.props.disabled ? ' disabled' : '') }))));
+    };
+    CheckBoxLineComponent._UniqueIdSeed = 0;
+    return CheckBoxLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 

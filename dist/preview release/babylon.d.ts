@@ -7118,6 +7118,11 @@ declare module BABYLON {
          */
         readonly uniqueId: number;
         /**
+         * Gets a hash code representing the format (type, normalized, size, instanced, stride) of this buffer
+         * All buffers with the same format will have the same hash code
+         */
+        readonly hashCode: number;
+        /**
          * Constructor
          * @param engine the engine
          * @param data the data to use for this vertex buffer
@@ -7135,6 +7140,7 @@ declare module BABYLON {
          * @param takeBufferOwnership defines if the buffer should be released when the vertex buffer is disposed
          */
         constructor(engine: any, data: DataArray | Buffer, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number, instanced?: boolean, offset?: number, size?: number, type?: number, normalized?: boolean, useBytes?: boolean, divisor?: number, takeBufferOwnership?: boolean);
+        private _computeHashCode;
         /** @hidden */
         _rebuild(): void;
         /**
@@ -34503,6 +34509,8 @@ declare module BABYLON {
         topCapSubdivisions?: number;
         /** Overwrite for the bottom capSubdivisions. */
         bottomCapSubdivisions?: number;
+        /** Internal geometry is supposed to change once created. */
+        updatable?: boolean;
     }
     /**
      * Class containing static functions to help procedurally build meshes
@@ -34515,7 +34523,7 @@ declare module BABYLON {
          * @param scene The scene the mesh is scoped to.
          * @returns Capsule Mesh
          */
-        static CreateCapsule(name: string, options: ICreateCapsuleOptions | undefined, scene: any): Mesh;
+        static CreateCapsule(name: string, options?: ICreateCapsuleOptions, scene?: Nullable<Scene>): Mesh;
     }
 }
 declare module BABYLON {
@@ -39737,24 +39745,24 @@ declare module BABYLON {
      * @hidden
      **/
     export class DepthCullingState {
-        private _isDepthTestDirty;
-        private _isDepthMaskDirty;
-        private _isDepthFuncDirty;
-        private _isCullFaceDirty;
-        private _isCullDirty;
-        private _isZOffsetDirty;
-        private _isFrontFaceDirty;
-        private _depthTest;
-        private _depthMask;
-        private _depthFunc;
-        private _cull;
-        private _cullFace;
-        private _zOffset;
-        private _frontFace;
+        protected _isDepthTestDirty: boolean;
+        protected _isDepthMaskDirty: boolean;
+        protected _isDepthFuncDirty: boolean;
+        protected _isCullFaceDirty: boolean;
+        protected _isCullDirty: boolean;
+        protected _isZOffsetDirty: boolean;
+        protected _isFrontFaceDirty: boolean;
+        protected _depthTest: boolean;
+        protected _depthMask: boolean;
+        protected _depthFunc: Nullable<number>;
+        protected _cull: Nullable<boolean>;
+        protected _cullFace: Nullable<number>;
+        protected _zOffset: number;
+        protected _frontFace: Nullable<number>;
         /**
          * Initializes the state.
          */
-        constructor();
+        constructor(reset?: boolean);
         get isDirty(): boolean;
         get zOffset(): number;
         set zOffset(value: number);
@@ -39785,18 +39793,18 @@ declare module BABYLON {
         static readonly KEEP: number;
         /** Passed to stencilOperation to specify that stencil value must be replaced */
         static readonly REPLACE: number;
-        private _isStencilTestDirty;
-        private _isStencilMaskDirty;
-        private _isStencilFuncDirty;
-        private _isStencilOpDirty;
-        private _stencilTest;
-        private _stencilMask;
-        private _stencilFunc;
-        private _stencilFuncRef;
-        private _stencilFuncMask;
-        private _stencilOpStencilFail;
-        private _stencilOpDepthFail;
-        private _stencilOpStencilDepthPass;
+        protected _isStencilTestDirty: boolean;
+        protected _isStencilMaskDirty: boolean;
+        protected _isStencilFuncDirty: boolean;
+        protected _isStencilOpDirty: boolean;
+        protected _stencilTest: boolean;
+        protected _stencilMask: number;
+        protected _stencilFunc: number;
+        protected _stencilFuncRef: number;
+        protected _stencilFuncMask: number;
+        protected _stencilOpStencilFail: number;
+        protected _stencilOpDepthFail: number;
+        protected _stencilOpStencilDepthPass: number;
         get isDirty(): boolean;
         get stencilFunc(): number;
         set stencilFunc(value: number);
@@ -39814,7 +39822,7 @@ declare module BABYLON {
         set stencilMask(value: number);
         get stencilTest(): boolean;
         set stencilTest(value: boolean);
-        constructor();
+        constructor(reset?: boolean);
         reset(): void;
         apply(gl: WebGLRenderingContext): void;
     }
@@ -44542,6 +44550,8 @@ declare module BABYLON {
         orderedAttributes: string[];
         orderedUBOsAndSamplers: WebGPUBindingDescription[][];
         uniformBufferNames: string[];
+        attributeNamesFromEffect: string[];
+        attributeLocationsFromEffect: number[];
         private _attributeNextLocation;
         private _varyingNextLocation;
         constructor();
@@ -44579,6 +44589,14 @@ declare module BABYLON {
         fragmentStage?: GPUProgrammableStageDescriptor;
     }
     /** @hidden */
+    export class WebGPUBindGroupCacheNode {
+        values: {
+            [id: number]: WebGPUBindGroupCacheNode;
+        };
+        bindGroups: GPUBindGroup[];
+        constructor();
+    }
+    /** @hidden */
     export class WebGPUPipelineContext implements IPipelineContext {
         engine: WebGPUEngine;
         shaderProcessingContext: WebGPUShaderProcessingContext;
@@ -44599,9 +44617,7 @@ declare module BABYLON {
             [name: string]: Nullable<IWebGPUPipelineContextTextureCache>;
         };
         bindGroupLayouts: GPUBindGroupLayout[];
-        bindGroupsCache: {
-            [key: string]: GPUBindGroup[];
-        };
+        bindGroupsCache: WebGPUBindGroupCacheNode;
         /**
          * Stores the uniform buffer
          */
@@ -45007,19 +45023,20 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
-    export class WebGPUCacheRenderPipeline {
+    export abstract class WebGPUCacheRenderPipeline {
         static NumCacheHitWithoutHash: number;
         static NumCacheHitWithHash: number;
         static NumCacheMiss: number;
         static NumPipelineCreationLastFrame: number;
         disabled: boolean;
-        private static _Cache;
         private static _NumPipelineCreationCurrentFrame;
+        protected _states: number[];
+        protected _stateDirtyLowestIndex: number;
+        lastStateDirtyLowestIndex: number;
         private _device;
-        private _states;
         private _isDirty;
-        private _currentRenderPipeline;
         private _emptyVertexBuffer;
+        private _parameter;
         private _shaderId;
         private _alphaToCoverageEnabled;
         private _frontFace;
@@ -45058,6 +45075,14 @@ declare module BABYLON {
         private _indexBuffer;
         constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer);
         reset(): void;
+        protected abstract _getRenderPipeline(param: {
+            token: any;
+            pipeline: Nullable<GPURenderPipeline>;
+        }): void;
+        protected abstract _setRenderPipeline(param: {
+            token: any;
+            pipeline: Nullable<GPURenderPipeline>;
+        }): void;
         getRenderPipeline(fillMode: number, effect: Effect, sampleCount: number): GPURenderPipeline;
         endFrame(): void;
         setAlphaToCoverage(enabled: boolean): void;
@@ -45107,6 +45132,90 @@ declare module BABYLON {
         private _createPipelineLayout;
         private _getVertexInputDescriptor;
         private _createRenderPipeline;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    class NodeState {
+        values: {
+            [name: number]: NodeState;
+        };
+        pipeline: GPURenderPipeline;
+        constructor();
+        count(): [number, number];
+    }
+    /** @hidden */
+    export class WebGPUCacheRenderPipelineTree extends WebGPUCacheRenderPipeline {
+        private static _Cache;
+        private _nodeStack;
+        static GetNodeCounts(): {
+            nodeCount: number;
+            pipelineCount: number;
+        };
+        constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer);
+        protected _getRenderPipeline(param: {
+            token: any;
+            pipeline: Nullable<GPURenderPipeline>;
+        }): void;
+        protected _setRenderPipeline(param: {
+            token: NodeState;
+            pipeline: Nullable<GPURenderPipeline>;
+        }): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * @hidden
+     **/
+    export class WebGPUStencilState extends StencilState {
+        private _cache;
+        constructor(cache: WebGPUCacheRenderPipeline);
+        get stencilFunc(): number;
+        set stencilFunc(value: number);
+        get stencilFuncRef(): number;
+        set stencilFuncRef(value: number);
+        get stencilFuncMask(): number;
+        set stencilFuncMask(value: number);
+        get stencilOpStencilFail(): number;
+        set stencilOpStencilFail(value: number);
+        get stencilOpDepthFail(): number;
+        set stencilOpDepthFail(value: number);
+        get stencilOpStencilDepthPass(): number;
+        set stencilOpStencilDepthPass(value: number);
+        get stencilMask(): number;
+        set stencilMask(value: number);
+        get stencilTest(): boolean;
+        set stencilTest(value: boolean);
+        reset(): void;
+        apply(gl: WebGLRenderingContext): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * @hidden
+     **/
+    export class WebGPUDepthCullingState extends DepthCullingState {
+        private _cache;
+        /**
+         * Initializes the state.
+         */
+        constructor(cache: WebGPUCacheRenderPipeline);
+        get zOffset(): number;
+        set zOffset(value: number);
+        get cullFace(): Nullable<number>;
+        set cullFace(value: Nullable<number>);
+        get cull(): Nullable<boolean>;
+        set cull(value: Nullable<boolean>);
+        get depthFunc(): Nullable<number>;
+        set depthFunc(value: Nullable<number>);
+        get depthMask(): boolean;
+        set depthMask(value: boolean);
+        get depthTest(): boolean;
+        set depthTest(value: boolean);
+        get frontFace(): Nullable<number>;
+        set frontFace(value: Nullable<number>);
+        reset(): void;
+        apply(gl: WebGLRenderingContext): void;
     }
 }
 declare module BABYLON {
@@ -45865,26 +45974,10 @@ declare module BABYLON {
          * Unbind the current render target and bind the default framebuffer
          */
         restoreDefaultFramebuffer(): void;
-        setZOffset(value: number): void;
         private _setColorFormat;
         private _setDepthTextureFormat;
-        setDepthBuffer(enable: boolean): void;
-        setDepthWrite(enable: boolean): void;
-        setStencilBuffer(enable: boolean): void;
-        setStencilMask(mask: number): void;
-        setStencilFunction(stencilFunc: number): void;
-        setStencilFunctionReference(reference: number): void;
-        setStencilFunctionMask(mask: number): void;
-        setStencilOperationFail(operation: number): void;
-        setStencilOperationDepthFail(operation: number): void;
-        setStencilOperationPass(operation: number): void;
         setDitheringState(value: boolean): void;
         setRasterizerState(value: boolean): void;
-        setDepthFunction(depthFunc: number): void;
-        setDepthFunctionToGreater(): void;
-        setDepthFunctionToGreaterOrEqual(): void;
-        setDepthFunctionToLess(): void;
-        setDepthFunctionToLessOrEqual(): void;
         /**
          * Set various states to the context
          * @param culling defines backface culling state
@@ -80703,6 +80796,20 @@ declare module BABYLON {
          * @returns This path cursor
          */
         onchange(f: (cursor: PathCursor) => void): PathCursor;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class WebGPUCacheRenderPipelineString extends WebGPUCacheRenderPipeline {
+        private static _Cache;
+        protected _getRenderPipeline(param: {
+            token: any;
+            pipeline: Nullable<GPURenderPipeline>;
+        }): void;
+        protected _setRenderPipeline(param: {
+            token: any;
+            pipeline: Nullable<GPURenderPipeline>;
+        }): void;
     }
 }
 declare module BABYLON {
