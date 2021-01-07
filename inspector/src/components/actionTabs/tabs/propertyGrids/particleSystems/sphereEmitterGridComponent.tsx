@@ -3,7 +3,7 @@ import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 import { GlobalState } from '../../../../globalState';
 import { PropertyChangedEvent } from '../../../../propertyChangedEvent';
-import { LockObject } from '../lockObject';
+import { LockObject } from '../../../../../sharedUiComponents/tabs/propertyGrids/lockObject';
 import { SphereParticleEmitter } from 'babylonjs/Particles/EmitterTypes/sphereParticleEmitter';
 import { FloatLineComponent } from '../../../lines/floatLineComponent';
 import { SliderLineComponent } from '../../../lines/sliderLineComponent';

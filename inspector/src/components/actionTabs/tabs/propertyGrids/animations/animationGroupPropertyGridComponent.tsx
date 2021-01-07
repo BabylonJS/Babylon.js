@@ -10,7 +10,7 @@ import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/but
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
-import { LockObject } from "../lockObject";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from "../../../../globalState";
 import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
 

@@ -5,7 +5,7 @@ import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
-import { LockObject } from "../lockObject";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from '../../../../globalState';
 import { OptionsLineComponent } from '../../../../../sharedUiComponents/lines/optionsLineComponent';
 import { ShadowGenerator } from 'babylonjs/Lights/Shadows/shadowGenerator';

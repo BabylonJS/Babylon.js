@@ -16,7 +16,7 @@ import { TextureLineComponent } from "../../../lines/textureLineComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { OptionsLineComponent } from "../../../../../sharedUiComponents/lines/optionsLineComponent";
 import { FileButtonLineComponent } from "../../../../../sharedUiComponents/lines/fileButtonLineComponent";
-import { LockObject } from "../lockObject";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { ValueLineComponent } from "../../../../../sharedUiComponents/lines/valueLineComponent";
 import { GlobalState } from "../../../../../components/globalState";
 

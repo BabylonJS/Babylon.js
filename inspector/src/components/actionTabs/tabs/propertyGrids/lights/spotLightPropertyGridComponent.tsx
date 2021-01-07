@@ -8,7 +8,7 @@ import { Color3LineComponent } from "../../../../../sharedUiComponents/lines/col
 import { Vector3LineComponent } from "../../../lines/vector3LineComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { CommonShadowLightPropertyGridComponent } from "./commonShadowLightPropertyGridComponent";
-import { LockObject } from "../lockObject";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from '../../../../globalState';
 
 interface ISpotLightPropertyGridComponentProps {

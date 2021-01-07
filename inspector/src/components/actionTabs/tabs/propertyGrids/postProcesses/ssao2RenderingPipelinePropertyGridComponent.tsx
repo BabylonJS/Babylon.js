@@ -3,7 +3,7 @@ import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LockObject } from "../lockObject";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { CommonRenderingPipelinePropertyGridComponent } from './commonRenderingPipelinePropertyGridComponent';
 import { SliderLineComponent } from '../../../lines/sliderLineComponent';
 import { LineContainerComponent } from '../../../lineContainerComponent';

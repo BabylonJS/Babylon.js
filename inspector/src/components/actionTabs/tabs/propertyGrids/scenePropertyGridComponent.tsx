@@ -21,7 +21,7 @@ import { Vector3LineComponent } from "../../lines/vector3LineComponent";
 import { FloatLineComponent } from "../../lines/floatLineComponent";
 import { SliderLineComponent } from "../../lines/sliderLineComponent";
 import { OptionsLineComponent } from "../../../../sharedUiComponents/lines/optionsLineComponent";
-import { LockObject } from "./lockObject";
+import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from '../../../globalState';
 import { ButtonLineComponent } from '../../../../sharedUiComponents/lines/buttonLineComponent';
 import { AnimationGridComponent } from './animations/animationPropertyGridComponent';

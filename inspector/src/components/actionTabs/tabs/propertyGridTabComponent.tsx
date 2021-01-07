@@ -51,7 +51,7 @@ import { StackPanel } from "babylonjs-gui/2D/controls/stackPanel";
 
 import { ColorPickerPropertyGridComponent } from "./propertyGrids/gui/colorPickerPropertyGridComponent";
 import { AnimationGroupGridComponent } from "./propertyGrids/animations/animationGroupPropertyGridComponent";
-import { LockObject } from "./propertyGrids/lockObject";
+import { LockObject } from "../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { ImagePropertyGridComponent } from "./propertyGrids/gui/imagePropertyGridComponent";
 import { SliderPropertyGridComponent } from "./propertyGrids/gui/sliderPropertyGridComponent";
 import { ImageBasedSliderPropertyGridComponent } from "./propertyGrids/gui/imageBasedSliderPropertyGridComponent";

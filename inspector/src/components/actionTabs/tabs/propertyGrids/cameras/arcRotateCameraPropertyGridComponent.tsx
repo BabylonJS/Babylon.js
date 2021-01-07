@@ -10,7 +10,7 @@ import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/c
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { Vector3LineComponent } from "../../../lines/vector3LineComponent";
-import { LockObject } from "../lockObject";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from '../../../../globalState';
 
 interface IArcRotateCameraPropertyGridComponentProps {

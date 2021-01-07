@@ -6,7 +6,7 @@ import { CommonLightPropertyGridComponent } from "./commonLightPropertyGridCompo
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { Color3LineComponent } from "../../../../../sharedUiComponents/lines/color3LineComponent";
 import { Vector3LineComponent } from "../../../lines/vector3LineComponent";
-import { LockObject } from "../lockObject";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from '../../../../globalState';
 
 interface IHemisphericLightPropertyGridComponentProps {

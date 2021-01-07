@@ -8,7 +8,7 @@ import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
-import { LockObject } from "../lockObject";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from '../../../../globalState';
 
 interface IInputTextPropertyGridComponentProps {

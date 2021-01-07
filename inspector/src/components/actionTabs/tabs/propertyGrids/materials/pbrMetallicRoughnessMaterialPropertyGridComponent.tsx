@@ -9,7 +9,7 @@ import { Color3LineComponent } from "../../../../../sharedUiComponents/lines/col
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGridComponent";
 import { TextureLinkLineComponent } from "../../../lines/textureLinkLineComponent";
-import { LockObject } from "../lockObject";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from '../../../../globalState';
 import { CheckBoxLineComponent } from '../../../../../sharedUiComponents/lines/checkBoxLineComponent';
 

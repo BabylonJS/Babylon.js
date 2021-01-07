@@ -7,7 +7,7 @@ import { LineContainerComponent } from "../../../lineContainerComponent";
 import { Color3LineComponent } from "../../../../../sharedUiComponents/lines/color3LineComponent";
 import { Vector3LineComponent } from "../../../lines/vector3LineComponent";
 import { CommonShadowLightPropertyGridComponent } from "./commonShadowLightPropertyGridComponent";
-import { LockObject } from "../lockObject";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from '../../../../globalState';
 import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent"
 import { ShadowGenerator } from 'babylonjs/Lights/Shadows/shadowGenerator';

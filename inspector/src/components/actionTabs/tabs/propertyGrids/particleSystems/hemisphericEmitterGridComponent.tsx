@@ -5,7 +5,7 @@ import { GlobalState } from '../../../../globalState';
 import { PropertyChangedEvent } from '../../../../propertyChangedEvent';
 import { SliderLineComponent } from '../../../lines/sliderLineComponent';
 import { FloatLineComponent } from '../../../lines/floatLineComponent';
-import { LockObject } from '../lockObject';
+import { LockObject } from '../../../../../sharedUiComponents/tabs/propertyGrids/lockObject';
 import { HemisphericParticleEmitter } from 'babylonjs/Particles/EmitterTypes/hemisphericParticleEmitter';
 
 interface IHemisphericEmitterGridComponentProps {

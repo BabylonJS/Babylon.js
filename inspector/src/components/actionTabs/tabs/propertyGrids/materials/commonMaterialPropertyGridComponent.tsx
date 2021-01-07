@@ -12,7 +12,7 @@ import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
 import { OptionsLineComponent, Null_Value } from "../../../../../sharedUiComponents/lines/optionsLineComponent";
-import { LockObject } from "../lockObject";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from '../../../../globalState';
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
 import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';

@@ -12,7 +12,7 @@ import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { OptionsLineComponent } from "../../../../../sharedUiComponents/lines/optionsLineComponent";
 import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGridComponent";
 import { TextureLinkLineComponent } from "../../../lines/textureLinkLineComponent";
-import { LockObject } from "../lockObject";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from '../../../../globalState';
 import { Vector2LineComponent } from "../../../../../sharedUiComponents/lines/vector2LineComponent";
 

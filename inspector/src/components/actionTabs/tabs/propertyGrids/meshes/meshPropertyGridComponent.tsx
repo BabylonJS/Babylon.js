@@ -18,7 +18,7 @@ import { Vector3LineComponent } from "../../../lines/vector3LineComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { QuaternionLineComponent } from "../../../lines/quaternionLineComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
-import { LockObject } from "../lockObject";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from "../../../../globalState";
 import { CustomPropertyGridComponent } from "../customPropertyGridComponent";
 import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
