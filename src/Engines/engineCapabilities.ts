@@ -90,4 +90,6 @@ export interface EngineCapabilities {
     blendMinMax: boolean;
     /** In some iOS + WebGL1, gl_InstanceID (and gl_InstanceIDEXT) is undefined even if instancedArrays is true. So don't use gl_InstanceID in those cases */
     canUseGLInstanceID: boolean;
+    /** Defines if gl_vertexID is available */
+    canUseGLVertexID: boolean;
 }

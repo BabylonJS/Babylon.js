@@ -1,6 +1,7 @@
 ﻿{
     "root": "https://cdn.babylonjs.com",
     "tests": [
+
         {
             "title": "Sprites",
             "playgroundId": "#ZX8DJ3#1",
@@ -1165,7 +1166,7 @@
         },
         {
             "title": "Prepass SSAO + visibility",
-            "renderCount": 10,
+            "renderCount": 30,
             "playgroundId": "#PXC9CF#4",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-visibility.png"

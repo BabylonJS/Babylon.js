@@ -1176,6 +1176,10 @@ export class ShadowGenerator implements IShadowGenerator {
                 // Morph targets
                 MaterialHelper.BindMorphTargetParameters(renderingMesh, effect);
 
+                if (renderingMesh.morphTargetManager && renderingMesh.morphTargetManager.isUsingTextureForTargets) {
+                    renderingMesh.morphTargetManager._bind(effect);
+                }
+
                 // Clip planes
                 MaterialHelper.BindClipPlane(effect, scene);
             }
@@ -1414,6 +1418,9 @@ export class ShadowGenerator implements IShadowGenerator {
                     defines.push("#define MORPHTARGETS");
                     morphInfluencers = manager.numInfluencers;
                     defines.push("#define NUM_MORPH_INFLUENCERS " + morphInfluencers);
+                    if (manager.isUsingTextureForTargets) {
+                        defines.push("#define MORPHTARGETS_TEXTURE");
+                    };
                     MaterialHelper.PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, morphInfluencers);
                 }
             }
@@ -1465,8 +1472,9 @@ export class ShadowGenerator implements IShadowGenerator {
 
                 let shaderName = "shadowMap";
                 let uniforms = ["world", "mBones", "viewProjection", "diffuseMatrix", "lightDataSM", "depthValuesSM", "biasAndScaleSM", "morphTargetInfluences", "boneTextureWidth",
-                                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "softTransparentShadowSM"];
-                let samplers = ["diffuseSampler", "boneSampler"];
+                                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "softTransparentShadowSM",
+                                "morphTargetTextureInfo"];
+                let samplers = ["diffuseSampler", "boneSampler", "morphTargets"];
 
                 // Custom shader?
                 if (this.customShaderOptions) {
