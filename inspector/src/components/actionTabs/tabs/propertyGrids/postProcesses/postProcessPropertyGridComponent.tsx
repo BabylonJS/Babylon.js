@@ -4,7 +4,7 @@ import { Observable } from "babylonjs/Misc/observable";
 import { PostProcess } from "babylonjs/PostProcesses/postProcess";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LockObject } from "../lockObject";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { CommonPostProcessPropertyGridComponent } from './commonPostProcessPropertyGridComponent';
 import { GlobalState } from '../../../../globalState';
 import { LineContainerComponent } from '../../../lineContainerComponent';

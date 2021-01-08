@@ -9,10 +9,10 @@ import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/buttonLineComponent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
-import { SliderLineComponent } from "../../../lines/sliderLineComponent";
-import { LockObject } from "../lockObject";
+import { SliderLineComponent } from "../../../../../sharedUiComponents/lines/sliderLineComponent";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from "../../../../globalState";
-import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
+import { TextInputLineComponent } from "../../../../../sharedUiComponents/lines/textInputLineComponent";
 
 interface IAnimationGroupGridComponentProps {
     globalState: GlobalState;

@@ -5,7 +5,7 @@ import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGridComponent";
-import { LockObject } from "../lockObject";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from '../../../../globalState';
 import { TextLineComponent } from '../../../../../sharedUiComponents/lines/textLineComponent';
 import { Material } from 'babylonjs/Materials/material';
