@@ -6,7 +6,7 @@ import { Scene } from "babylonjs/scene";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/buttonLineComponent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
-import { SliderLineComponent } from "../../../lines/sliderLineComponent";
+import { SliderLineComponent } from "../../../../../sharedUiComponents/lines/sliderLineComponent";
 import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from "../../../../globalState";
 import { Animation } from "babylonjs/Animations/animation";
@@ -15,7 +15,7 @@ import { AnimationPropertiesOverride } from "babylonjs/Animations/animationPrope
 import { AnimationRange } from "babylonjs/Animations/animationRange";
 import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { Nullable } from "babylonjs/types";
-import { FloatLineComponent } from "../../../lines/floatLineComponent";
+import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
 import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
 import { IAnimatable } from "babylonjs/Animations/animatable.interface";
 // import { AnimationCurveEditorComponent } from "../animations/animationCurveEditorComponent";

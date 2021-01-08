@@ -8,7 +8,7 @@ import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textL
 import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from '../../../../globalState';
 import { Bone } from 'babylonjs/Bones/bone';
-import { Vector3LineComponent } from '../../../lines/vector3LineComponent';
+import { Vector3LineComponent } from '../../../../../sharedUiComponents/lines/vector3LineComponent';
 import { QuaternionLineComponent } from '../../../lines/quaternionLineComponent';
 
 interface IBonePropertyGridComponentProps {

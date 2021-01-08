@@ -5,7 +5,7 @@ import { GlobalState } from '../../../../globalState';
 import { PropertyChangedEvent } from '../../../../propertyChangedEvent';
 import { LockObject } from '../../../../../sharedUiComponents/tabs/propertyGrids/lockObject';
 import { PointParticleEmitter } from 'babylonjs/Particles/EmitterTypes/pointParticleEmitter';
-import { Vector3LineComponent } from '../../../lines/vector3LineComponent';
+import { Vector3LineComponent } from '../../../../../sharedUiComponents/lines/vector3LineComponent';
 
 interface IPointEmitterGridComponentProps {
     globalState: GlobalState;

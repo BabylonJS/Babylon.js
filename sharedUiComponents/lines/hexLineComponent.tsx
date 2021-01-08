@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
-import { PropertyChangedEvent } from "../../propertyChangedEvent";
-import { LockObject } from "../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { PropertyChangedEvent } from "../propertyChangedEvent";
+import { LockObject } from "../tabs/propertyGrids/lockObject";
 
 interface IHexLineComponentProps {
     label: string;

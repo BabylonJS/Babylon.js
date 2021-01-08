@@ -5,11 +5,11 @@ import { Color3LineComponent } from "../../../../sharedUiComponents/lines/color3
 import { GlobalState } from '../../../globalState';
 import { IInspectable, InspectableType } from 'babylonjs/Misc/iInspectable';
 import { CheckBoxLineComponent } from '../../../../sharedUiComponents/lines/checkBoxLineComponent';
-import { SliderLineComponent } from '../../lines/sliderLineComponent';
-import { Vector3LineComponent } from '../../lines/vector3LineComponent';
+import { SliderLineComponent } from '../../../../sharedUiComponents/lines/sliderLineComponent';
+import { Vector3LineComponent } from '../../../../sharedUiComponents/lines/vector3LineComponent';
 import { QuaternionLineComponent } from '../../lines/quaternionLineComponent';
 import { LineContainerComponent } from '../../lineContainerComponent';
-import { TextInputLineComponent } from '../../lines/textInputLineComponent';
+import { TextInputLineComponent } from '../../../../sharedUiComponents/lines/textInputLineComponent';
 import { LockObject } from '../../../../sharedUiComponents/tabs/propertyGrids/lockObject';
 
 interface ICustomPropertyGridComponentProps {

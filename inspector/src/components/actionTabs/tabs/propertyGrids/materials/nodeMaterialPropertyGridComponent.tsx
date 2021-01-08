@@ -9,13 +9,13 @@ import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids
 import { GlobalState } from '../../../../globalState';
 import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
 import { CheckBoxLineComponent } from '../../../../../sharedUiComponents/lines/checkBoxLineComponent';
-import { FloatLineComponent } from '../../../lines/floatLineComponent';
+import { FloatLineComponent } from '../../../../../sharedUiComponents/lines/floatLineComponent';
 import { Color3LineComponent } from '../../../../../sharedUiComponents/lines/color3LineComponent';
-import { Vector3LineComponent } from '../../../lines/vector3LineComponent';
+import { Vector3LineComponent } from '../../../../../sharedUiComponents/lines/vector3LineComponent';
 import { Vector4LineComponent } from '../../../../../sharedUiComponents/lines/vector4LineComponent';
 import { Vector2LineComponent } from '../../../../../sharedUiComponents/lines/vector2LineComponent';
 import { TextureLinkLineComponent } from '../../../lines/textureLinkLineComponent';
-import { SliderLineComponent } from '../../../lines/sliderLineComponent';
+import { SliderLineComponent } from '../../../../../sharedUiComponents/lines/sliderLineComponent';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { GradientPropertyTabComponent } from '../../gradientNodePropertyComponent';

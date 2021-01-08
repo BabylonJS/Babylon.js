@@ -9,9 +9,9 @@ import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids
 import { GlobalState } from '../../../../globalState';
 import { Sound } from 'babylonjs/Audio/sound';
 import { IExplorerExtensibilityGroup } from 'babylonjs/Debug/debugLayer';
-import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
+import { TextInputLineComponent } from '../../../../../sharedUiComponents/lines/textInputLineComponent';
 import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
-import { SliderLineComponent } from '../../../lines/sliderLineComponent';
+import { SliderLineComponent } from '../../../../../sharedUiComponents/lines/sliderLineComponent';
 import { CheckBoxLineComponent } from '../../../../../sharedUiComponents/lines/checkBoxLineComponent';
 
 interface ISoundPropertyGridComponentProps {

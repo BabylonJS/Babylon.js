@@ -9,10 +9,10 @@ import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textL
 import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { PostProcess } from 'babylonjs/PostProcesses/postProcess';
 import { Color3LineComponent } from '../../../../../sharedUiComponents/lines/color3LineComponent';
-import { SliderLineComponent } from '../../../lines/sliderLineComponent';
+import { SliderLineComponent } from '../../../../../sharedUiComponents/lines/sliderLineComponent';
 import { GlobalState } from '../../../../globalState';
 import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
-import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
+import { TextInputLineComponent } from '../../../../../sharedUiComponents/lines/textInputLineComponent';
 
 interface ICommonPostProcessPropertyGridComponentProps {
     globalState: GlobalState;

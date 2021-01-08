@@ -5,7 +5,7 @@ import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { CommonLightPropertyGridComponent } from "./commonLightPropertyGridComponent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { Color3LineComponent } from "../../../../../sharedUiComponents/lines/color3LineComponent";
-import { Vector3LineComponent } from "../../../lines/vector3LineComponent";
+import { Vector3LineComponent } from "../../../../../sharedUiComponents/lines/vector3LineComponent";
 import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from '../../../../globalState';
 

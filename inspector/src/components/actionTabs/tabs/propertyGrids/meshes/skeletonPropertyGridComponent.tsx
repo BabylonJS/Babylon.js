@@ -13,7 +13,7 @@ import { AnimationGridComponent } from '../animations/animationPropertyGridCompo
 import { SkeletonViewer } from 'babylonjs/Debug/skeletonViewer';
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
 import { OptionsLineComponent } from "../../../../../sharedUiComponents/lines/optionsLineComponent";
-import { FloatLineComponent } from "../../../lines/floatLineComponent";
+import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
 
 
 interface ISkeletonPropertyGridComponentProps {
