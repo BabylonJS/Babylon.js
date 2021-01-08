@@ -9,11 +9,11 @@ import { CubeTexture } from "babylonjs/Materials/Textures/cubeTexture";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
-import { SliderLineComponent } from "../../../lines/sliderLineComponent";
+import { SliderLineComponent } from "../../../../../sharedUiComponents/lines/sliderLineComponent";
 import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
 import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { TextureLineComponent } from "../../../lines/textureLineComponent";
-import { FloatLineComponent } from "../../../lines/floatLineComponent";
+import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
 import { OptionsLineComponent } from "../../../../../sharedUiComponents/lines/optionsLineComponent";
 import { FileButtonLineComponent } from "../../../../../sharedUiComponents/lines/fileButtonLineComponent";
 import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
@@ -24,7 +24,7 @@ import { AdvancedDynamicTextureInstrumentation } from "babylonjs-gui/2D/adtInstr
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
 import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
-import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
+import { TextInputLineComponent } from '../../../../../sharedUiComponents/lines/textInputLineComponent';
 import { AnimationGridComponent } from '../animations/animationPropertyGridComponent';
 
 import { PopupComponent } from '../../../../popupComponent';

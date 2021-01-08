@@ -8,7 +8,7 @@ import { LineContainerComponent } from "../../../lineContainerComponent";
 import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
 import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from "../../../../globalState";
-import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
+import { TextInputLineComponent } from "../../../../../sharedUiComponents/lines/textInputLineComponent";
 // import { PopupComponent } from "../../../../popupComponent";
 // import { AnimationCurveEditorComponent } from "../animations/animationCurveEditorComponent";
 import { AnimationGroup } from "babylonjs/Animations/animationGroup";

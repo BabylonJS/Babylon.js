@@ -3,9 +3,9 @@ import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 import { GlobalState } from '../../../../globalState';
 import { PropertyChangedEvent } from '../../../../propertyChangedEvent';
-import { SliderLineComponent } from '../../../lines/sliderLineComponent';
+import { SliderLineComponent } from '../../../../../sharedUiComponents/lines/sliderLineComponent';
 import { CylinderParticleEmitter } from 'babylonjs/Particles/EmitterTypes/cylinderParticleEmitter';
-import { FloatLineComponent } from '../../../lines/floatLineComponent';
+import { FloatLineComponent } from '../../../../../sharedUiComponents/lines/floatLineComponent';
 import { LockObject } from '../../../../../sharedUiComponents/tabs/propertyGrids/lockObject';
 
 interface ICylinderEmitterGridComponentProps {

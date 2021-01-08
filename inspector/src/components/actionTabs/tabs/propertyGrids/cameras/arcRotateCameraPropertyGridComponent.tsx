@@ -7,9 +7,9 @@ import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { CommonCameraPropertyGridComponent } from "./commonCameraPropertyGridComponent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
-import { FloatLineComponent } from "../../../lines/floatLineComponent";
-import { SliderLineComponent } from "../../../lines/sliderLineComponent";
-import { Vector3LineComponent } from "../../../lines/vector3LineComponent";
+import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
+import { SliderLineComponent } from "../../../../../sharedUiComponents/lines/sliderLineComponent";
+import { Vector3LineComponent } from "../../../../../sharedUiComponents/lines/vector3LineComponent";
 import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from '../../../../globalState';
 

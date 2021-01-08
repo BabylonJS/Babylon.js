@@ -5,7 +5,7 @@ import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { CommonCameraPropertyGridComponent } from "./commonCameraPropertyGridComponent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
-import { FloatLineComponent } from "../../../lines/floatLineComponent";
+import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
 import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from '../../../../globalState';
 import { FollowCamera } from 'babylonjs/Cameras/followCamera';

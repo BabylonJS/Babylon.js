@@ -5,8 +5,8 @@ import { CommonControlPropertyGridComponent } from "./commonControlPropertyGridC
 import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { ScrollViewer } from "babylonjs-gui/2D/controls/scrollViewers/scrollViewer";
 import { LineContainerComponent } from "../../../lineContainerComponent";
-import { FloatLineComponent } from "../../../lines/floatLineComponent";
-import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
+import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
+import { TextInputLineComponent } from "../../../../../sharedUiComponents/lines/textInputLineComponent";
 import { GlobalState } from '../../../../globalState';
 
 interface IScrollViewerPropertyGridComponentProps {

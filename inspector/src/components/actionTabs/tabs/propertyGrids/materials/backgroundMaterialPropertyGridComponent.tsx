@@ -7,7 +7,7 @@ import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { Color3LineComponent } from "../../../../../sharedUiComponents/lines/color3LineComponent";
 import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
-import { SliderLineComponent } from "../../../lines/sliderLineComponent";
+import { SliderLineComponent } from "../../../../../sharedUiComponents/lines/sliderLineComponent";
 import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGridComponent";
 import { TextureLinkLineComponent } from "../../../lines/textureLinkLineComponent";
 import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";

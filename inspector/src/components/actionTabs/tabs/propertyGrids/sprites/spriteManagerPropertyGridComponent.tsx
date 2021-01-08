@@ -7,11 +7,11 @@ import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids
 import { LineContainerComponent } from '../../../lineContainerComponent';
 import { GlobalState } from '../../../../globalState';
 import { SpriteManager } from 'babylonjs/Sprites/spriteManager';
-import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
+import { TextInputLineComponent } from '../../../../../sharedUiComponents/lines/textInputLineComponent';
 import { TextLineComponent } from '../../../../../sharedUiComponents/lines/textLineComponent';
 import { CheckBoxLineComponent } from '../../../../../sharedUiComponents/lines/checkBoxLineComponent';
-import { FloatLineComponent } from '../../../lines/floatLineComponent';
-import { SliderLineComponent } from '../../../lines/sliderLineComponent';
+import { FloatLineComponent } from '../../../../../sharedUiComponents/lines/floatLineComponent';
+import { SliderLineComponent } from '../../../../../sharedUiComponents/lines/sliderLineComponent';
 import { RenderingManager } from 'babylonjs/Rendering/renderingManager';
 import { TextureLinkLineComponent } from '../../../lines/textureLinkLineComponent';
 import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
