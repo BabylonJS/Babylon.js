@@ -3,7 +3,7 @@ import { Scene } from "babylonjs/scene";
 import { LineContainerComponent } from "../../lineContainerComponent";
 import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { GlobalState } from "../../../globalState";
-import { FloatLineComponent } from "../../lines/floatLineComponent";
+import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
 import { OptionsLineComponent } from "../../../../sharedUiComponents/lines/optionsLineComponent";
 import { MessageLineComponent } from "../../../../sharedUiComponents/lines/messageLineComponent";
 import { faCheck, faTimesCircle } from "@fortawesome/free-solid-svg-icons";

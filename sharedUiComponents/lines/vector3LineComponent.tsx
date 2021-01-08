@@ -2,11 +2,11 @@ import * as React from "react";
 import { Vector3 } from "babylonjs/Maths/math.vector";
 import { Observable } from "babylonjs/Misc/observable";
 
-import { NumericInputComponent } from "./../../../sharedUiComponents/lines/numericInputComponent";
+import { NumericInputComponent } from "../lines/numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
-import { PropertyChangedEvent } from "../../propertyChangedEvent";
-import { SliderLineComponent } from './sliderLineComponent';
+import { PropertyChangedEvent } from "../propertyChangedEvent";
+import { SliderLineComponent } from '../lines/sliderLineComponent';
 import { Tools } from 'babylonjs/Misc/tools';
 
 interface IVector3LineComponentProps {

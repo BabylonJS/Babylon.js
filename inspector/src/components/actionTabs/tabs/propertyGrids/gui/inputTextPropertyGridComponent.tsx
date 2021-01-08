@@ -4,11 +4,11 @@ import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "./commonControlPropertyGridComponent";
 import { InputText } from "babylonjs-gui/2D/controls/inputText";
 import { LineContainerComponent } from "../../../lineContainerComponent";
-import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
-import { SliderLineComponent } from "../../../lines/sliderLineComponent";
+import { TextInputLineComponent } from "../../../../../sharedUiComponents/lines/textInputLineComponent";
+import { SliderLineComponent } from "../../../../../sharedUiComponents/lines/sliderLineComponent";
 import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
-import { FloatLineComponent } from "../../../lines/floatLineComponent";
-import { LockObject } from "../lockObject";
+import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from '../../../../globalState';
 
 interface IInputTextPropertyGridComponentProps {

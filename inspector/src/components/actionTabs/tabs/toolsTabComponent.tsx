@@ -21,7 +21,7 @@ import { SceneLoaderAnimationGroupLoadingMode } from 'babylonjs/Loading/sceneLoa
 import { GLTFComponent } from "./tools/gltfComponent";
 
 import { GLTFData, GLTF2Export } from "babylonjs-serializers/glTF/2.0/index";
-import { FloatLineComponent } from '../lines/floatLineComponent';
+import { FloatLineComponent } from '../../../sharedUiComponents/lines/floatLineComponent';
 import { IScreenshotSize } from 'babylonjs/Misc/interfaces/screenshotSize';
 import { NumericInputComponent } from '../../../sharedUiComponents/lines/numericInputComponent';
 import { CheckBoxLineComponent } from '../../../sharedUiComponents/lines/checkBoxLineComponent';

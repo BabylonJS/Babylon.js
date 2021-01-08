@@ -31846,6 +31846,50 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Class used to store 2D array textures containing user data
+     */
+    export class RawTexture2DArray extends Texture {
+        /** Gets or sets the texture format to use */
+        format: number;
+        /**
+         * Create a new RawTexture2DArray
+         * @param data defines the data of the texture
+         * @param width defines the width of the texture
+         * @param height defines the height of the texture
+         * @param depth defines the number of layers of the texture
+         * @param format defines the texture format to use
+         * @param scene defines the hosting scene
+         * @param generateMipMaps defines a boolean indicating if mip levels should be generated (true by default)
+         * @param invertY defines if texture must be stored with Y axis inverted
+         * @param samplingMode defines the sampling mode to use (Texture.TRILINEAR_SAMPLINGMODE by default)
+         * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
+         */
+        constructor(data: ArrayBufferView, width: number, height: number, depth: number, 
+        /** Gets or sets the texture format to use */
+        format: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, textureType?: number);
+        /**
+         * Update the texture with new data
+         * @param data defines the data to store in the texture
+         */
+        update(data: ArrayBufferView): void;
+        /**
+         * Creates a RGBA texture from some data.
+         * @param data Define the texture data
+         * @param width Define the width of the texture
+         * @param height Define the height of the texture
+         * @param depth defines the number of layers of the texture
+         * @param scene defines the scene the texture will belong to
+         * @param generateMipMaps Define whether or not to create mip maps for the texture
+         * @param invertY define if the data should be flipped on Y when uploaded to the GPU
+         * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
+         * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
+         * @returns the RGBA texture
+         */
+        static CreateRGBATexture(data: ArrayBufferView, width: number, height: number, depth: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, type?: number): RawTexture2DArray;
+    }
+}
+declare module BABYLON {
+    /**
      * This class is used to deform meshes using morphing between different targets
      * @see https://doc.babylonjs.com/how_to/how_to_use_morphtargets
      */
@@ -31867,7 +31911,7 @@ declare module BABYLON {
         private _tempInfluences;
         private _canUseTextureForTargets;
         /** @hidden */
-        _targetStoreTextures: Array<RawTexture>;
+        _targetStoreTexture: Nullable<RawTexture2DArray>;
         /**
          * Gets or sets a boolean indicating if normals must be morphed
          */
@@ -48809,6 +48853,71 @@ declare module BABYLON {
          * @returns the serialized object
          */
         serialize(parent: any): any;
+    }
+}
+declare module BABYLON {
+    /**
+     * A cursor which tracks a point on a path
+     */
+    export class PathCursor {
+        private path;
+        /**
+         * Stores path cursor callbacks for when an onchange event is triggered
+         */
+        private _onchange;
+        /**
+         * The value of the path cursor
+         */
+        value: number;
+        /**
+         * The animation array of the path cursor
+         */
+        animations: Animation[];
+        /**
+         * Initializes the path cursor
+         * @param path The path to track
+         */
+        constructor(path: Path2);
+        /**
+         * Gets the cursor point on the path
+         * @returns A point on the path cursor at the cursor location
+         */
+        getPoint(): Vector3;
+        /**
+         * Moves the cursor ahead by the step amount
+         * @param step The amount to move the cursor forward
+         * @returns This path cursor
+         */
+        moveAhead(step?: number): PathCursor;
+        /**
+         * Moves the cursor behind by the step amount
+         * @param step The amount to move the cursor back
+         * @returns This path cursor
+         */
+        moveBack(step?: number): PathCursor;
+        /**
+         * Moves the cursor by the step amount
+         * If the step amount is greater than one, an exception is thrown
+         * @param step The amount to move the cursor
+         * @returns This path cursor
+         */
+        move(step: number): PathCursor;
+        /**
+         * Ensures that the value is limited between zero and one
+         * @returns This path cursor
+         */
+        private ensureLimits;
+        /**
+         * Runs onchange callbacks on change (used by the animation engine)
+         * @returns This path cursor
+         */
+        private raiseOnChange;
+        /**
+         * Executes a function on change
+         * @param f A path cursor onchange callback
+         * @returns This path cursor
+         */
+        onchange(f: (cursor: PathCursor) => void): PathCursor;
     }
 }
 declare module BABYLON {
@@ -67159,36 +67268,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Class used to store 2D array textures containing user data
-     */
-    export class RawTexture2DArray extends Texture {
-        /** Gets or sets the texture format to use */
-        format: number;
-        /**
-         * Create a new RawTexture2DArray
-         * @param data defines the data of the texture
-         * @param width defines the width of the texture
-         * @param height defines the height of the texture
-         * @param depth defines the number of layers of the texture
-         * @param format defines the texture format to use
-         * @param scene defines the hosting scene
-         * @param generateMipMaps defines a boolean indicating if mip levels should be generated (true by default)
-         * @param invertY defines if texture must be stored with Y axis inverted
-         * @param samplingMode defines the sampling mode to use (Texture.TRILINEAR_SAMPLINGMODE by default)
-         * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
-         */
-        constructor(data: ArrayBufferView, width: number, height: number, depth: number, 
-        /** Gets or sets the texture format to use */
-        format: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, textureType?: number);
-        /**
-         * Update the texture with new data
-         * @param data defines the data to store in the texture
-         */
-        update(data: ArrayBufferView): void;
-    }
-}
-declare module BABYLON {
-    /**
      * Class used to store 3D textures containing user data
      */
     export class RawTexture3D extends Texture {
@@ -80197,6 +80276,10 @@ declare module BABYLON {
                 left: AbstractMesh;
             };
             /**
+             * Are the meshes prepared for a left-handed system. Default hand meshes are right-handed.
+             */
+            leftHandedSystemMeshes?: boolean;
+            /**
              * If a hand mesh was provided, this array will define what axis will update which node. This will override the default hand mesh
              */
             rigMapping?: {
@@ -80244,9 +80327,12 @@ declare module BABYLON {
         readonly trackedMeshes: AbstractMesh[];
         private _handMesh?;
         private _rigMapping?;
+        private _leftHandedMeshes?;
         private _scene;
         private _defaultHandMesh;
         private _transformNodeMapping;
+        private _boneMapping;
+        private _useBones;
         /**
          * Hand-parts definition (key is HandPart)
          */
@@ -80269,12 +80355,13 @@ declare module BABYLON {
          * @param _handMesh an optional hand mesh. if not provided, ours will be used
          * @param _rigMapping an optional rig mapping for the hand mesh. if not provided, ours will be used
          * @param disableDefaultHandMesh should the default mesh creation be disabled
+         * @param _leftHandedMeshes are the hand meshes left-handed-system meshes
          */
         constructor(
         /** the controller to which the hand correlates */
         xrController: WebXRInputSource, 
         /** the meshes to be used to track the hand joints */
-        trackedMeshes: AbstractMesh[], _handMesh?: AbstractMesh | undefined, _rigMapping?: string[] | undefined, disableDefaultHandMesh?: boolean);
+        trackedMeshes: AbstractMesh[], _handMesh?: AbstractMesh | undefined, _rigMapping?: string[] | undefined, disableDefaultHandMesh?: boolean, _leftHandedMeshes?: boolean | undefined);
         /**
          * Get the hand mesh. It is possible that the hand mesh is not yet ready!
          */
@@ -80766,71 +80853,6 @@ declare module BABYLON {
         protected _processLoadedModel(_meshes: AbstractMesh[]): void;
         protected _setRootMesh(meshes: AbstractMesh[]): void;
         protected _updateModel(): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * A cursor which tracks a point on a path
-     */
-    export class PathCursor {
-        private path;
-        /**
-         * Stores path cursor callbacks for when an onchange event is triggered
-         */
-        private _onchange;
-        /**
-         * The value of the path cursor
-         */
-        value: number;
-        /**
-         * The animation array of the path cursor
-         */
-        animations: Animation[];
-        /**
-         * Initializes the path cursor
-         * @param path The path to track
-         */
-        constructor(path: Path2);
-        /**
-         * Gets the cursor point on the path
-         * @returns A point on the path cursor at the cursor location
-         */
-        getPoint(): Vector3;
-        /**
-         * Moves the cursor ahead by the step amount
-         * @param step The amount to move the cursor forward
-         * @returns This path cursor
-         */
-        moveAhead(step?: number): PathCursor;
-        /**
-         * Moves the cursor behind by the step amount
-         * @param step The amount to move the cursor back
-         * @returns This path cursor
-         */
-        moveBack(step?: number): PathCursor;
-        /**
-         * Moves the cursor by the step amount
-         * If the step amount is greater than one, an exception is thrown
-         * @param step The amount to move the cursor
-         * @returns This path cursor
-         */
-        move(step: number): PathCursor;
-        /**
-         * Ensures that the value is limited between zero and one
-         * @returns This path cursor
-         */
-        private ensureLimits;
-        /**
-         * Runs onchange callbacks on change (used by the animation engine)
-         * @returns This path cursor
-         */
-        private raiseOnChange;
-        /**
-         * Executes a function on change
-         * @param f A path cursor onchange callback
-         * @returns This path cursor
-         */
-        onchange(f: (cursor: PathCursor) => void): PathCursor;
     }
 }
 declare module BABYLON {

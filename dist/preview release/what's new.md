@@ -14,7 +14,7 @@
 - Added support for infinite perspective cameras ([Deltakosh](https://github.com/deltakosh))
 - Added ability to enable/disable ArcRotateCamera zoom on multiTouch event ([NicolasBuecher](https://github.com/NicolasBuecher))
 - Moving button to shared uI folder.([msDestiny14](https://github.com/msDestiny14))
-- Moving components to shared UI folder: vector3, vecto4, color3, color4, optionsLine, colorPicker.([msDestiny14](https://github.com/msDestiny14))
+- Moving remaining components to shared UI folder. ([msDestiny14](https://github.com/msDestiny14))
 - Added encapsulate and encapsulateBoundingInfo methods to BoundingInfo. ([Tolo789](https://github.com/Tolo789))
 - Added onLoadObservable to the textureDome class(es) ([RaananW](https://github.com/RaananW))
 
@@ -69,6 +69,11 @@
 - Added a way to extend the XRSessionInit Object from inside of a feature ([RaananW](https://github.com/RaananW))
 - Added image tracking feature ([RaananW](https://github.com/RaananW))
 - Pointer Events of WebXR controllers have pointerType `xr` ([RaananW](https://github.com/RaananW))
+- better support for custom hand meshes ([RaananW](https://github.com/RaananW))
+
+### Viewer
+
+- Fixed an issue with dual callback binding in case of a forced redraw ([#9608](https://github.com/BabylonJS/Babylon.js/issues/9608)) ([RaananW](https://github.com/RaananW))
 
 ## Bugs
 

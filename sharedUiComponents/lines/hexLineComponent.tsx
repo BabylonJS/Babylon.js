@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
-import { PropertyChangedEvent } from "../../propertyChangedEvent";
+import { PropertyChangedEvent } from "../propertyChangedEvent";
 import { LockObject } from "../tabs/propertyGrids/lockObject";
 
 interface IHexLineComponentProps {
