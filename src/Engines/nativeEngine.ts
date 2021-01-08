@@ -747,7 +747,11 @@ export class NativeEngine extends Engine {
     private _currentDepthTest: number = this._native.DEPTH_TEST_LEQUAL;
 
     public getHardwareScalingLevel(): number {
-        return 1.0;
+        return _native.getHardwareScalingLevel();
+    }
+
+    public setHardwareScalingLevel(level: number): void {
+        _native.setHardwareScalingLevel(level);
     }
 
     public constructor() {
