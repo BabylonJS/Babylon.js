@@ -10,7 +10,7 @@ import { IAnimatable } from "babylonjs/Animations/animatable.interface";
 import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
 import { LoadSnippet } from "./loadsnippet";
 import { SaveSnippet } from "./saveSnippet";
-import { LockObject } from "../lockObject";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from "../../../../globalState";
 
 interface IEditorControlsProps {

@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { GlobalState } from '../../../../globalState';
 import { ColorGradient, Color3Gradient } from 'babylonjs/Misc/gradients';
-import { LockObject } from '../lockObject';
+import { LockObject } from '../../../../../sharedUiComponents/tabs/propertyGrids/lockObject';
 import { Color3, Color4 } from 'babylonjs/Maths/math.color';
 import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
 import { ParticleSystem } from 'babylonjs/Particles/particleSystem';

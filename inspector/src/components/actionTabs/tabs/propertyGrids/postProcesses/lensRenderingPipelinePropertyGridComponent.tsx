@@ -4,9 +4,9 @@ import { Observable } from "babylonjs/Misc/observable";
 import { LensRenderingPipeline } from "babylonjs/PostProcesses/RenderPipeline/Pipelines/lensRenderingPipeline";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LockObject } from "../lockObject";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { CommonRenderingPipelinePropertyGridComponent } from './commonRenderingPipelinePropertyGridComponent';
-import { SliderLineComponent } from '../../../lines/sliderLineComponent';
+import { SliderLineComponent } from '../../../../../sharedUiComponents/lines/sliderLineComponent';
 import { LineContainerComponent } from '../../../lineContainerComponent';
 import { CheckBoxLineComponent } from '../../../../../sharedUiComponents/lines/checkBoxLineComponent';
 import { GlobalState } from '../../../../globalState';

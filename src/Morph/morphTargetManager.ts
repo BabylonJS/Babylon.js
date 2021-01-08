@@ -6,9 +6,9 @@ import { IDisposable, Scene } from "../scene";
 import { EngineStore } from "../Engines/engineStore";
 import { Mesh } from "../Meshes/mesh";
 import { MorphTarget } from "./morphTarget";
-import { RawTexture } from "../Materials/Textures/rawTexture";
 import { Constants } from "../Engines/constants";
 import { Effect } from "../Materials/effect";
+import { RawTexture2DArray } from "../Materials/Textures/rawTexture2DArray";
 /**
  * This class is used to deform meshes using morphing between different targets
  * @see https://doc.babylonjs.com/how_to/how_to_use_morphtargets
@@ -32,7 +32,7 @@ export class MorphTargetManager implements IDisposable {
     private _canUseTextureForTargets = false;
 
     /** @hidden */
-    public _targetStoreTextures: Array<RawTexture> = [];
+    public _targetStoreTexture: Nullable<RawTexture2DArray>;
 
     /**
      * Gets or sets a boolean indicating if normals must be morphed
@@ -197,7 +197,7 @@ export class MorphTargetManager implements IDisposable {
     /** @hidden */
     public _bind(effect: Effect) {
         effect.setFloat3("morphTargetTextureInfo", this._textureVertexStride, this._textureWidth, this._textureHeight);
-        effect.setTextureArray("morphTargets", this._targetStoreTextures);
+        effect.setTexture("morphTargets", this._targetStoreTexture);
     }
 
     /**
@@ -316,63 +316,69 @@ export class MorphTargetManager implements IDisposable {
                 this._textureWidth = maxTextureSize;
             }
 
-            for (var index = 0; index < this._targets.length; index++) {
-                let target = this._targets[index];
-
-                if (!this._targetStoreTextures[index]
-                    || this._targetStoreTextures[index].getSize().width !== this._textureWidth
-                    || this._targetStoreTextures[index].getSize().height !== this._textureHeight) {
-                    if (this._targetStoreTextures[index]) {
-                        this._targetStoreTextures[index].dispose();
-                    }
-
-                    let data = new Float32Array(this._textureWidth * this._textureHeight * 4);
-
-                    let offset = 0;
-                    const positions = target.getPositions();
-                    const normals = target.getNormals();
-                    const uvs = target.getUVs();
-                    const tangents = target.getTangents();
-
-                    if (!positions) {
-                        if (index === 0) {
-                            Logger.Error("Invalid morph target. Target must have positions.");
-                        }
-                        return;
-                    }
-
-                    for (var vertex = 0; vertex < this._vertexCount; vertex++) {
-                        data[offset] = positions[vertex * 3];
-                        data[offset + 1] = positions[vertex * 3 + 1];
-                        data[offset + 2] = positions[vertex * 3 + 2];
-
-                        offset += 4;
-
-                        if (normals) {
-                            data[offset] = normals[vertex * 3];
-                            data[offset + 1] = normals[vertex * 3 + 1];
-                            data[offset + 2] = normals[vertex * 3 + 2];
-                            offset += 4;
-                        }
-
-                        if (uvs) {
-                            data[offset] = uvs[vertex * 2];
-                            data[offset + 1] = uvs[vertex * 2 + 1];
-                            offset += 4;
-                        }
-
-                        if (tangents) {
-                            data[offset] = tangents[vertex * 3];
-                            data[offset + 1] = tangents[vertex * 3 + 1];
-                            data[offset + 2] = tangents[vertex * 3 + 2];
-                            offset += 4;
-                        }
-                    }
-
-                    this._targetStoreTextures[index] = RawTexture.CreateRGBATexture(data, this._textureWidth, this._textureHeight,
-                        this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
+            if (this._targetStoreTexture) {
+                let textureSize = this._targetStoreTexture.getSize();
+                if (textureSize.width === this._textureWidth
+                && textureSize.height === this._textureHeight) {
+                    return;
                 }
             }
+
+            if (this._targetStoreTexture) {
+                this._targetStoreTexture.dispose();
+            }
+
+            let targetCount = this._targets.length;
+            let data = new Float32Array(targetCount * this._textureWidth * this._textureHeight * 4);
+
+            let offset = 0;
+            for (var index = 0; index < targetCount; index++) {
+                let target = this._targets[index];
+
+                const positions = target.getPositions();
+                const normals = target.getNormals();
+                const uvs = target.getUVs();
+                const tangents = target.getTangents();
+
+                if (!positions) {
+                    if (index === 0) {
+                        Logger.Error("Invalid morph target. Target must have positions.");
+                    }
+                    return;
+                }
+
+                offset = index * this._textureWidth * this._textureHeight * 4;
+                for (var vertex = 0; vertex < this._vertexCount; vertex++) {
+                    data[offset] = positions[vertex * 3];
+                    data[offset + 1] = positions[vertex * 3 + 1];
+                    data[offset + 2] = positions[vertex * 3 + 2];
+
+                    offset += 4;
+
+                    if (normals) {
+                        data[offset] = normals[vertex * 3];
+                        data[offset + 1] = normals[vertex * 3 + 1];
+                        data[offset + 2] = normals[vertex * 3 + 2];
+                        offset += 4;
+                    }
+
+                    if (uvs) {
+                        data[offset] = uvs[vertex * 2];
+                        data[offset + 1] = uvs[vertex * 2 + 1];
+                        offset += 4;
+                    }
+
+                    if (tangents) {
+                        data[offset] = tangents[vertex * 3];
+                        data[offset + 1] = tangents[vertex * 3 + 1];
+                        data[offset + 2] = tangents[vertex * 3 + 2];
+                        offset += 4;
+                    }
+                }
+            }
+
+            this._targetStoreTexture = RawTexture2DArray.CreateRGBATexture(data, this._textureWidth, this._textureHeight, targetCount,
+                this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
         }
 
         // Flag meshes as dirty to resync with the active targets
@@ -387,11 +393,11 @@ export class MorphTargetManager implements IDisposable {
      * Release all resources
      */
     public dispose() {
-        for (var targetTexture of this._targetStoreTextures) {
-            targetTexture.dispose();
+        if (this._targetStoreTexture) {
+            this._targetStoreTexture.dispose();
         }
 
-        this._targetStoreTextures = [];
+        this._targetStoreTexture = null;
     }
 
     // Statics

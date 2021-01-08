@@ -5,7 +5,7 @@ import { Nullable } from 'babylonjs/types';
 
 import { PropertyChangedEvent } from "../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../lineContainerComponent";
-import { LockObject } from "./lockObject";
+import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from "../../../globalState";
 import { OptionsLineComponent } from '../../../../sharedUiComponents/lines/optionsLineComponent';
 
