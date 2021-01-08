@@ -5,10 +5,10 @@ import { LineContainerComponent } from "../../../lineContainerComponent";
 import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
 import { Control } from "babylonjs-gui/2D/controls/control";
 import { Grid } from "babylonjs-gui/2D/controls/grid";
-import { SliderLineComponent } from "../../../lines/sliderLineComponent";
-import { FloatLineComponent } from "../../../lines/floatLineComponent";
-import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
-import { LockObject } from "../lockObject";
+import { SliderLineComponent } from "../../../../../sharedUiComponents/lines/sliderLineComponent";
+import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
+import { TextInputLineComponent } from "../../../../../sharedUiComponents/lines/textInputLineComponent";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { OptionsLineComponent } from "../../../../../sharedUiComponents/lines/optionsLineComponent";
 import { GlobalState } from '../../../../globalState';
 
