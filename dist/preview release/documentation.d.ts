@@ -80276,6 +80276,10 @@ declare module BABYLON {
                 left: AbstractMesh;
             };
             /**
+             * Are the meshes prepared for a left-handed system. Default hand meshes are right-handed.
+             */
+            leftHandedSystemMeshes?: boolean;
+            /**
              * If a hand mesh was provided, this array will define what axis will update which node. This will override the default hand mesh
              */
             rigMapping?: {
@@ -80323,9 +80327,12 @@ declare module BABYLON {
         readonly trackedMeshes: AbstractMesh[];
         private _handMesh?;
         private _rigMapping?;
+        private _leftHandedMeshes?;
         private _scene;
         private _defaultHandMesh;
         private _transformNodeMapping;
+        private _boneMapping;
+        private _useBones;
         /**
          * Hand-parts definition (key is HandPart)
          */
@@ -80348,12 +80355,13 @@ declare module BABYLON {
          * @param _handMesh an optional hand mesh. if not provided, ours will be used
          * @param _rigMapping an optional rig mapping for the hand mesh. if not provided, ours will be used
          * @param disableDefaultHandMesh should the default mesh creation be disabled
+         * @param _leftHandedMeshes are the hand meshes left-handed-system meshes
          */
         constructor(
         /** the controller to which the hand correlates */
         xrController: WebXRInputSource, 
         /** the meshes to be used to track the hand joints */
-        trackedMeshes: AbstractMesh[], _handMesh?: AbstractMesh | undefined, _rigMapping?: string[] | undefined, disableDefaultHandMesh?: boolean);
+        trackedMeshes: AbstractMesh[], _handMesh?: AbstractMesh | undefined, _rigMapping?: string[] | undefined, disableDefaultHandMesh?: boolean, _leftHandedMeshes?: boolean | undefined);
         /**
          * Get the hand mesh. It is possible that the hand mesh is not yet ready!
          */
