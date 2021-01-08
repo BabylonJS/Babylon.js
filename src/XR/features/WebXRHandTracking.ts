@@ -197,6 +197,7 @@ export class WebXRHand implements IDisposable {
         if (this._handMesh && this._rigMapping) {
             this._defaultHandMesh = false;
             this._handMesh.alwaysSelectAsActiveMesh = true;
+            this._handMesh.getChildMeshes().forEach((m) => (m.alwaysSelectAsActiveMesh = true));
             this.onHandMeshReadyObservable.notifyObservers(this);
         } else {
             if (!disableDefaultHandMesh) {
