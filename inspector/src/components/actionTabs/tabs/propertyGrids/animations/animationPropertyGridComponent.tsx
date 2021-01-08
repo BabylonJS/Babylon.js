@@ -5,7 +5,7 @@ import { Scene } from "babylonjs/scene";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/buttonLineComponent";
-import { LineContainerComponent } from "../../../lineContainerComponent";
+import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
 import { SliderLineComponent } from "../../../../../sharedUiComponents/lines/sliderLineComponent";
 import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from "../../../../globalState";
@@ -168,7 +168,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
         return (
             <div>
                 {this._ranges.length > 0 && (
-                    <LineContainerComponent globalState={this.props.globalState} title="ANIMATION RANGES">
+                    <LineContainerComponent title="ANIMATION RANGES">
                         {this._ranges.map((range, i) => {
                             return (
                                 <ButtonLineComponent
@@ -185,7 +185,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                 )}
                 {animations && (
                     <>
-                        <LineContainerComponent globalState={this.props.globalState} title="ANIMATIONS">
+                        <LineContainerComponent title="ANIMATIONS">
                             <TextLineComponent label="Count" value={animations.length.toString()} />
                             {/* <ButtonLineComponent label="Edit" onClick={() => this.onOpenAnimationCurveEditor()} />
                             {animations.map((anim, i) => {
@@ -218,7 +218,6 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                         </LineContainerComponent>
                         {animations.length > 0 && (
                             <LineContainerComponent
-                                globalState={this.props.globalState}
                                 title="ANIMATION GENERAL CONTROL"
                             >
                                 <FloatLineComponent
