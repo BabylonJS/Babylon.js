@@ -2657,6 +2657,9 @@ export class ThinEngine {
             return false;
         }
 
+        if (array.length < 1) {
+            return false;
+        }
         this._gl.uniform1fv(uniform, array);
         return true;
     }
