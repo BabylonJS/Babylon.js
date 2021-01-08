@@ -2331,7 +2331,7 @@ declare module BABYLON {
         /** Teleport agent to destination point. */
         teleport(destination: BABYLON.Vector3, closetPoint?: boolean): void;
         /** Sets agent current destination point. */
-        setDestination(destination: BABYLON.Vector3, closetPoint?: boolean, resetAgent?: boolean): void;
+        setDestination(destination: BABYLON.Vector3, closetPoint?: boolean, resetAgentPosition?: boolean): void;
         /** Gets agent current world space velocity. */
         getAgentVelocity(): BABYLON.Vector3;
         /** Gets agent current world space velocity. */
