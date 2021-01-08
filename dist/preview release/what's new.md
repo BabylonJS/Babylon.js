@@ -70,6 +70,10 @@
 - Added image tracking feature ([RaananW](https://github.com/RaananW))
 - Pointer Events of WebXR controllers have pointerType `xr` ([RaananW](https://github.com/RaananW))
 
+### Viewer
+
+- Fixed an issue with dual callback binding in case of a forced redraw ([#9608](https://github.com/BabylonJS/Babylon.js/issues/9608)) ([RaananW](https://github.com/RaananW))
+
 ## Bugs
 
 - Fix issue with the Promise polyfill where a return value was expected from resolve() ([Deltakosh](https://github.com/deltakosh))
