@@ -596,7 +596,7 @@ export class Template {
                             selector = this.parent.tagName;
                         }
                         let binding = functionToFire.bind(this, selector);
-                        this.parent.addEventListener(eventName, functionToFire.bind(this, selector), false);
+                        this.parent.addEventListener(eventName, binding, false);
                         this._registeredEvents.push({
                             htmlElement: this.parent,
                             eventName: eventName,
