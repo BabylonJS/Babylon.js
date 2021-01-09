@@ -1,6 +1,6 @@
 // Assumptions: absolute position of button mesh is inside the mesh
 
-import { DeepImmutableObject, Nullable } from "babylonjs/types";
+import { DeepImmutableObject } from "babylonjs/types";
 import { Vector3, Quaternion } from "babylonjs/Maths/math.vector";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -20,57 +20,6 @@ enum ButtonState {
     Hover = 1,
     /** Pointer Down */
     Press = 2
-}
-
-class TouchButton3DManager {
-    private _touchButtonList = new Map<number, TouchButton3D>();
-    private _buttonIndex = 1;
-
-    private _sceneRegisteredOn: Nullable<Scene>;
-
-    private _handleCollisions = () => {
-        if (this._sceneRegisteredOn != null) {
-            const touchMeshes = this._sceneRegisteredOn.getMeshesByTags("touchEnabled");
-
-            this._touchButtonList.forEach(function (button: TouchButton3D) {
-                touchMeshes.forEach(function (mesh: Mesh) {
-                    button._collisionCheckForStateChange(mesh);
-                });
-            });
-        }
-    }
-
-    /**
-     * Creates a new touchButton3DManager
-     */
-    constructor() {
-    }
-
-    public addButton(button: TouchButton3D): number {
-        const index = this._buttonIndex++;
-        this._touchButtonList.set(index, button);
-        return index;
-    }
-
-    public removeButton(index: number): boolean {
-        return this._touchButtonList.delete(index);
-    }
-
-    public enableCollisionHandling(scene: Scene) {
-        if (this._sceneRegisteredOn != scene) {
-            if (this._sceneRegisteredOn != null) {
-                this.disableCollisionHandling();
-            }
-
-            scene.registerBeforeRender(this._handleCollisions);
-            this._sceneRegisteredOn = scene;
-        }
-    }
-
-    public disableCollisionHandling() {
-        this._sceneRegisteredOn?.unregisterBeforeRender(this._handleCollisions);
-        this._sceneRegisteredOn = null;
-    }
 }
 
 /**
@@ -93,9 +42,6 @@ export class TouchButton3D extends Button3D {
     private _activeInteractions = new Map<number, ButtonState>();
     private _previousHeight = new Map<number, number>();
 
-    private static _buttonManager = new TouchButton3DManager();
-    private _buttonManagerIndex = 0;
-
     /**
      * Creates a new touchable button
      * @param name defines the control name
@@ -109,8 +55,6 @@ export class TouchButton3D extends Button3D {
         if (collisionMesh) {
             this.collisionMesh = collisionMesh;
         }
-
-        this._buttonManagerIndex = TouchButton3D._buttonManager.addButton(this);
     }
 
     /**
@@ -156,14 +100,6 @@ export class TouchButton3D extends Button3D {
         this.collidableFrontDirection = collisionMesh.forward;
 
         this._collidableInitialized = true;
-    }
-
-    /**
-     * Sets the scene used on the manager to register the collision callback on
-     * @param scene the scene to use
-     */
-    public set sceneForCollisions(scene: Scene) {
-        TouchButton3D._buttonManager.enableCollisionHandling(scene);
     }
 
     /*
@@ -346,7 +282,7 @@ export class TouchButton3D extends Button3D {
 
     // Decides whether to change button state based on the planar depth of the input source
     /** @hidden */
-    public _collisionCheckForStateChange(mesh: Mesh) {
+    public _collisionCheckForStateChange(mesh: AbstractMesh) {
         if (this._collidableInitialized) {
             this._updateDistanceOffsets();
 
@@ -416,8 +352,6 @@ export class TouchButton3D extends Button3D {
     // Mesh association
     protected _createNode(scene: Scene): TransformNode {
         return super._createNode(scene);
-
-        this.sceneForCollisions = scene;
     }
 
     /**
@@ -429,7 +363,5 @@ export class TouchButton3D extends Button3D {
         if (this._collisionMesh) {
             this._collisionMesh.dispose();
         }
-
-        TouchButton3D._buttonManager.removeButton(this._buttonManagerIndex);
     }
 }
