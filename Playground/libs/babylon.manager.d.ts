@@ -198,6 +198,8 @@ declare module BABYLON {
         static GetTransformNode(scene: BABYLON.Scene, name: string): BABYLON.TransformNode;
         /** Gets the specified transform node by id from scene. */
         static GetTransformNodeByID(scene: BABYLON.Scene, id: string): BABYLON.TransformNode;
+        /** Gets the transform node child detail mesh. */
+        static GetTransformDetailMesh(transform: TransformNode): BABYLON.AbstractMesh;
         /** Gets the transform node primitive meshes. */
         static GetPrimitiveMeshes(transform: TransformNode): BABYLON.AbstractMesh[];
         /** Gets the specified transform node primary layer index. */
