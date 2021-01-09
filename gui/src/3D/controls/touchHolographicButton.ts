@@ -277,7 +277,6 @@ export class TouchHolographicButton extends TouchButton3D {
 
         this.collisionMesh = this._frontPlate;
         this.collidableFrontDirection = this._frontPlate.forward.negate(); // Mesh is facing the wrong way
-        this.sceneForCollisions = scene;
 
         return this._backPlate;
     }

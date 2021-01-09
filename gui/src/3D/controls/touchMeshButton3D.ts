@@ -73,8 +73,6 @@ export class TouchMeshButton3D extends TouchButton3D {
             mesh.metadata = this;
         });
 
-        this.sceneForCollisions = scene;
-
         return this._currentMesh;
     }
 
