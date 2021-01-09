@@ -2298,17 +2298,18 @@ declare module BABYLON {
         distanceEpsilon: number;
         velocityEpsilon: number;
         stoppingDistance: number;
+        isReady(): boolean;
         isNavigating(): boolean;
         getAgentType(): number;
         getAgentState(): number;
         getAgentIndex(): number;
-        getAgentRadius(): number;
-        getAgentHeight(): number;
-        getAgentSpeed(): number;
         getAgentOffset(): number;
         getTargetDistance(): number;
+        getAgentParameters(): BABYLON.IAgentParameters;
+        setAgentParameters(parameters: BABYLON.IAgentParameters): void;
         protected m_agentState: number;
         protected m_agentIndex: number;
+        protected m_agentReady: boolean;
         protected m_agentGhost: BABYLON.TransformNode;
         protected m_agentParams: BABYLON.IAgentParameters;
         protected m_agentRotation: BABYLON.Quaternion;
@@ -2317,8 +2318,10 @@ declare module BABYLON {
         protected m_agentQuaternion: BABYLON.Quaternion;
         protected m_agentDestination: BABYLON.Vector3;
         protected awake(): void;
-        protected update(): void;
+        protected late(): void;
         protected destroy(): void;
+        /** Register handler that is triggered when the agent is ready for navigation */
+        onReadyObservable: Observable<TransformNode>;
         /** Register handler that is triggered before the navigation update */
         onPreUpdateObservable: Observable<TransformNode>;
         /** Register handler that is triggered after the navigation update */
@@ -2327,13 +2330,14 @@ declare module BABYLON {
         onNavCompleteObservable: Observable<TransformNode>;
         private awakeNavigationAgent;
         private updateNavigationAgent;
+        private updateAgentParameters;
         private destroyNavigationAgent;
         /** Move agent relative to current position. */
         move(offset: BABYLON.Vector3, closetPoint?: boolean): void;
         /** Teleport agent to destination point. */
         teleport(destination: BABYLON.Vector3, closetPoint?: boolean): void;
         /** Sets agent current destination point. */
-        setDestination(destination: BABYLON.Vector3, closetPoint?: boolean, resetAgentPosition?: boolean): void;
+        setDestination(destination: BABYLON.Vector3, closetPoint?: boolean): void;
         /** Gets agent current world space velocity. */
         getAgentVelocity(): BABYLON.Vector3;
         /** Gets agent current world space velocity. */
