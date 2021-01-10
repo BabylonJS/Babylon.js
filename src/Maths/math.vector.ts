@@ -6,22 +6,54 @@ import { ArrayTools } from '../Misc/arrayTools';
 import { IPlaneLike } from './math.like';
 import { _TypeStore } from '../Misc/typeStore';
 import { Plane } from './math.plane';
-import { PerformanceConfigurator } from '../Engines/performanceConfigurator';
+import { PerformanceConfigurator } from "../Engines/performanceConfigurator";
+import { byRefFunc } from "helpers";
 
 /**
  * Class representing a vector containing 2 coordinates
  */
 export class Vector2 {
+
+    /** @hidden */
+    public _x: number;
+
+    /** @hidden */
+    public _y: number;
+
+    /** @hidden */
+    public _isDirty = true;
+
+    /** Gets or sets the x coordinate */
+    public get x() {
+        return this._x;
+    }
+
+    public set x(value: number) {
+        this._x = value;
+        this._isDirty = true;
+    }
+
+    /** Gets or sets the y coordinate */
+    public get y() {
+        return this._y;
+    }
+
+    public set y(value: number) {
+        this._y = value;
+        this._isDirty = true;
+    }
+
     /**
      * Creates a new Vector2 from the given x and y coordinates
-     * @param x defines the first coordinate
-     * @param y defines the second coordinate
+     * @param x defines the first coordinate (on X axis)
+     * @param y defines the second coordinate (on Y axis)
      */
     constructor(
-        /** defines the first coordinate */
-        public x: number = 0,
-        /** defines the second coordinate */
-        public y: number = 0) {
+        x: number = 0,
+        y: number = 0,
+    ) {
+        this._x = x;
+        this._y = y;
     }
 
     /**
@@ -117,13 +149,14 @@ export class Vector2 {
     public set(x: number, y: number): Vector2 {
         return this.copyFromFloats(x, y);
     }
+
     /**
      * Add another vector with the current one
      * @param otherVector defines the other vector
      * @returns a new Vector2 set with the addition of the current Vector2 and the given one coordinates
      */
     public add(otherVector: DeepImmutable<Vector2>): Vector2 {
-        return new Vector2(this.x + otherVector.x, this.y + otherVector.y);
+        return byRefFunc<Vector2>(this.addToRef, new Vector2(), arguments);
     }
 
     /**
@@ -135,7 +168,8 @@ export class Vector2 {
     public addToRef(otherVector: DeepImmutable<Vector2>, result: Vector2): Vector2 {
         result.x = this.x + otherVector.x;
         result.y = this.y + otherVector.y;
-        return this;
+
+        return result;
     }
 
     /**
@@ -164,7 +198,7 @@ export class Vector2 {
      * @returns a new Vector2
      */
     public subtract(otherVector: Vector2): Vector2 {
-        return new Vector2(this.x - otherVector.x, this.y - otherVector.y);
+        return byRefFunc<Vector2>(this.subtractToRef, new Vector2(), arguments);
     }
 
     /**
@@ -176,17 +210,17 @@ export class Vector2 {
     public subtractToRef(otherVector: DeepImmutable<Vector2>, result: Vector2): Vector2 {
         result.x = this.x - otherVector.x;
         result.y = this.y - otherVector.y;
-        return this;
+
+        return result;
     }
+
     /**
      * Sets the current Vector2 coordinates by subtracting from it the given one coordinates
      * @param otherVector defines the other vector
      * @returns the current updated Vector2
      */
     public subtractInPlace(otherVector: DeepImmutable<Vector2>): Vector2 {
-        this.x -= otherVector.x;
-        this.y -= otherVector.y;
-        return this;
+        return byRefFunc<Vector2>(this.subtractToRef, this, arguments);
     }
 
     /**
@@ -195,9 +229,7 @@ export class Vector2 {
      * @returns the current updated Vector2
      */
     public multiplyInPlace(otherVector: DeepImmutable<Vector2>): Vector2 {
-        this.x *= otherVector.x;
-        this.y *= otherVector.y;
-        return this;
+        return byRefFunc<Vector2>(this.multiplyToRef, this, arguments);
     }
 
     /**
@@ -206,7 +238,7 @@ export class Vector2 {
      * @returns a new Vector2
      */
     public multiply(otherVector: DeepImmutable<Vector2>): Vector2 {
-        return new Vector2(this.x * otherVector.x, this.y * otherVector.y);
+        return byRefFunc<Vector2>(this.multiplyToRef, new Vector2(), arguments);
     }
 
     /**
@@ -218,7 +250,8 @@ export class Vector2 {
     public multiplyToRef(otherVector: DeepImmutable<Vector2>, result: Vector2): Vector2 {
         result.x = this.x * otherVector.x;
         result.y = this.y * otherVector.y;
-        return this;
+
+        return result;
     }
 
     /**
@@ -237,7 +270,7 @@ export class Vector2 {
      * @returns a new Vector2
      */
     public divide(otherVector: Vector2): Vector2 {
-        return new Vector2(this.x / otherVector.x, this.y / otherVector.y);
+        return byRefFunc<Vector2>(this.divideToRef, new Vector2(), arguments);
     }
 
     /**
@@ -249,7 +282,8 @@ export class Vector2 {
     public divideToRef(otherVector: DeepImmutable<Vector2>, result: Vector2): Vector2 {
         result.x = this.x / otherVector.x;
         result.y = this.y / otherVector.y;
-        return this;
+
+        return result;
     }
 
     /**
@@ -258,7 +292,7 @@ export class Vector2 {
      * @returns the current updated Vector2
      */
     public divideInPlace(otherVector: DeepImmutable<Vector2>): Vector2 {
-        return this.divideToRef(otherVector, this);
+        return byRefFunc<Vector2>(this.divideToRef, this, arguments);
     }
 
     /**
@@ -266,7 +300,7 @@ export class Vector2 {
      * @returns a new Vector2
      */
     public negate(): Vector2 {
-        return new Vector2(-this.x, -this.y);
+        return byRefFunc<Vector2>(this.negateToRef, new Vector2(), arguments);
     }
 
     /**
@@ -274,9 +308,7 @@ export class Vector2 {
      * @returns this
      */
     public negateInPlace(): Vector2 {
-        this.x *= -1;
-        this.y *= -1;
-        return this;
+        return byRefFunc<Vector2>(this.negateToRef, this, arguments);
     }
 
     /**
@@ -294,9 +326,7 @@ export class Vector2 {
      * @returns the current updated Vector2
      */
     public scaleInPlace(scale: number): Vector2 {
-        this.x *= scale;
-        this.y *= scale;
-        return this;
+        return byRefFunc<Vector2>(this.scaleToRef, this, arguments);
     }
 
     /**
@@ -305,9 +335,7 @@ export class Vector2 {
      * @returns a new Vector2
      */
     public scale(scale: number): Vector2 {
-        let result = new Vector2(0, 0);
-        this.scaleToRef(scale, result);
-        return result;
+        return byRefFunc<Vector2>(this.scaleToRef, new Vector2(), arguments);
     }
 
     /**
@@ -319,7 +347,8 @@ export class Vector2 {
     public scaleToRef(scale: number, result: Vector2): Vector2 {
         result.x = this.x * scale;
         result.y = this.y * scale;
-        return this;
+
+        return result;
     }
 
     /**
@@ -331,7 +360,8 @@ export class Vector2 {
     public scaleAndAddToRef(scale: number, result: Vector2): Vector2 {
         result.x += this.x * scale;
         result.y += this.y * scale;
-        return this;
+
+        return result;
     }
 
     /**
@@ -439,7 +469,7 @@ export class Vector2 {
      * @returns a new Vector2
      */
     public static FromArray(array: DeepImmutable<ArrayLike<number>>, offset: number = 0): Vector2 {
-        return new Vector2(array[offset], array[offset + 1]);
+        return byRefFunc<Vector2>(this.FromArrayToRef, new Vector2(), arguments);
     }
 
     /**
@@ -448,9 +478,11 @@ export class Vector2 {
      * @param offset defines the offset in the data source
      * @param result defines the target vector
      */
-    public static FromArrayToRef(array: DeepImmutable<ArrayLike<number>>, offset: number, result: Vector2): void {
+    public static FromArrayToRef(array: DeepImmutable<ArrayLike<number>>, offset: number, result: Vector2): Vector2 {
         result.x = array[offset];
         result.y = array[offset + 1];
+
+        return result;
     }
 
     /**
@@ -586,9 +618,7 @@ export class Vector2 {
      * @returns a new Vector2
      */
     public static Transform(vector: DeepImmutable<Vector2>, transformation: DeepImmutable<Matrix>): Vector2 {
-        let r = Vector2.Zero();
-        Vector2.TransformToRef(vector, transformation, r);
-        return r;
+        return byRefFunc<Vector2>(this.TransformToRef, new Vector2(), arguments);
     }
 
     /**
@@ -597,12 +627,14 @@ export class Vector2 {
      * @param transformation defines the matrix to apply
      * @param result defines the target vector
      */
-    public static TransformToRef(vector: DeepImmutable<Vector2>, transformation: DeepImmutable<Matrix>, result: Vector2) {
+    public static TransformToRef(vector: DeepImmutable<Vector2>, transformation: DeepImmutable<Matrix>, result: Vector2): Vector2 {
         const m = transformation.m;
         var x = (vector.x * m[0]) + (vector.y * m[4]) + m[12];
         var y = (vector.x * m[1]) + (vector.y * m[5]) + m[13];
         result.x = x;
         result.y = y;
+
+        return result;
     }
 
     /**
@@ -651,7 +683,7 @@ export class Vector2 {
      * @returns a new Vector2
      */
     public static Center(value1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>): Vector2 {
-        return Vector2.CenterToRef(value1, value2, Vector2.Zero());
+        return byRefFunc<Vector2>(this.CenterToRef, new Vector2(), arguments);
     }
 
     /**
@@ -852,7 +884,7 @@ export class Vector3 {
      * @returns the resulting Vector3
      */
     public add(otherVector: DeepImmutable<Vector3>): Vector3 {
-        return new Vector3(this._x + otherVector._x, this._y + otherVector._y, this._z + otherVector._z);
+        return byRefFunc<Vector3>(this.addToRef, new Vector3(), arguments);
     }
 
     /**
@@ -883,7 +915,7 @@ export class Vector3 {
      * @returns the resulting Vector3
      */
     public subtract(otherVector: DeepImmutable<Vector3>): Vector3 {
-        return new Vector3(this._x - otherVector._x, this._y - otherVector._y, this._z - otherVector._z);
+        return byRefFunc<Vector3>(this.subtractToRef, new Vector3(), arguments);
     }
 
     /**
@@ -904,7 +936,7 @@ export class Vector3 {
      * @returns the resulting Vector3
      */
     public subtractFromFloats(x: number, y: number, z: number): Vector3 {
-        return new Vector3(this._x - x, this._y - y, this._z - z);
+        return byRefFunc<Vector3>(this.subtractFromFloatsToRef, new Vector3(), arguments);
     }
 
     /**
@@ -924,7 +956,7 @@ export class Vector3 {
      * @returns a new Vector3
      */
     public negate(): Vector3 {
-        return new Vector3(-this._x, -this._y, -this._z);
+        return byRefFunc<Vector3>(this.negateToRef, new Vector3(), arguments);
     }
 
     /**
@@ -932,10 +964,7 @@ export class Vector3 {
      * @returns this
      */
     public negateInPlace(): Vector3 {
-        this.x *= -1;
-        this.y *= -1;
-        this.z *= -1;
-        return this;
+        return byRefFunc<Vector3>(this.negateToRef, this, arguments);
     }
 
     /**
@@ -965,7 +994,7 @@ export class Vector3 {
      * @returns a new Vector3
      */
     public scale(scale: number): Vector3 {
-        return new Vector3(this._x * scale, this._y * scale, this._z * scale);
+        return byRefFunc<Vector3>(this.scaleToRef, new Vector3(), arguments);
     }
 
     /**
@@ -995,11 +1024,7 @@ export class Vector3 {
      * @returns the projected vector3
      */
     public projectOnPlane(plane: Plane, origin: Vector3): Vector3 {
-        let result = Vector3.Zero();
-
-        this.projectOnPlaneToRef(plane, origin, result);
-
-        return result;
+        return byRefFunc<Vector3>(this.projectOnPlaneToRef, new Vector3(), arguments);
     }
 
     /**
@@ -1008,7 +1033,7 @@ export class Vector3 {
      * @param plane defines the plane to project to
      * @param result defines the Vector3 where to store the result
      */
-    public projectOnPlaneToRef(plane: Plane, origin: Vector3, result: Vector3): void {
+    public projectOnPlaneToRef(plane: Plane, origin: Vector3, result: Vector3): Vector3 {
         let n = plane.normal;
         let d = plane.d;
 
@@ -1025,6 +1050,8 @@ export class Vector3 {
         // P = P0 + t*V
         let scaledV = V.scaleInPlace(t);
         origin.addToRef(scaledV, result);
+
+        return result;
     }
 
     /**
@@ -1075,7 +1102,7 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public multiply(otherVector: DeepImmutable<Vector3>): Vector3 {
-        return this.multiplyByFloats(otherVector._x, otherVector._y, otherVector._z);
+        return byRefFunc<Vector3>(this.multiplyToRef, new Vector3(), arguments);
     }
 
     /**
@@ -1105,7 +1132,7 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public divide(otherVector: DeepImmutable<Vector3>): Vector3 {
-        return new Vector3(this._x / otherVector._x, this._y / otherVector._y, this._z / otherVector._z);
+        return byRefFunc<Vector3>(this.divideToRef, new Vector3(), arguments);
     }
 
     /**
@@ -1124,7 +1151,7 @@ export class Vector3 {
      * @returns the current updated Vector3
      */
     public divideInPlace(otherVector: Vector3): Vector3 {
-        return this.divideToRef(otherVector, this);
+        return byRefFunc<Vector3>(this.divideToRef, this, arguments);
     }
 
     /**
@@ -1233,6 +1260,7 @@ export class Vector3 {
     }
 
     // Properties
+
     /**
      * Gets the length of the Vector3
      * @returns the length of the Vector3
@@ -1278,13 +1306,33 @@ export class Vector3 {
     /**
      * Rotates the vector around 0,0,0 by a quaternion
      * @param quaternion the rotation quaternion
+     * @returns the new Vector3
+     */
+    public rotateByQuaternion(quaternion: Quaternion): Vector3 {
+        return byRefFunc<Vector3>(this.rotateByQuaternionToRef, new Vector3(), arguments);
+    }
+
+    /**
+     * Rotates the vector around 0,0,0 by a quaternion
+     * @param quaternion the rotation quaternion
      * @param result vector to store the result
      * @returns the resulting vector
      */
-    public rotateByQuaternionToRef(quaternion: Quaternion, result: Vector3) {
+    public rotateByQuaternionToRef(quaternion: Quaternion, result: Vector3): Vector3 {
         quaternion.toRotationMatrix(MathTmp.Matrix[0]);
         Vector3.TransformCoordinatesToRef(this, MathTmp.Matrix[0], result);
+
         return result;
+    }
+
+    /**
+     * Rotates a vector around a given point
+     * @param quaternion the rotation quaternion
+     * @param point the point to rotate around
+     * @returns the new Vector3
+     */
+    public rotateByQuaternionAroundPoint(quaternion: Quaternion, point: Vector3): Vector3 {
+        return byRefFunc<Vector3>(this.rotateByQuaternionAroundPointToRef, new Vector3(), arguments);
     }
 
     /**
@@ -1294,10 +1342,11 @@ export class Vector3 {
      * @param result vector to store the result
      * @returns the resulting vector
      */
-    public rotateByQuaternionAroundPointToRef(quaternion: Quaternion, point: Vector3, result: Vector3) {
+    public rotateByQuaternionAroundPointToRef(quaternion: Quaternion, point: Vector3, result: Vector3): Vector3 {
         this.subtractToRef(point, MathTmp.Vector3[0]);
         MathTmp.Vector3[0].rotateByQuaternionToRef(quaternion, MathTmp.Vector3[0]);
         point.addToRef(MathTmp.Vector3[0], result);
+
         return result;
     }
 
@@ -1330,9 +1379,7 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public normalizeToNew(): Vector3 {
-        const normalized = new Vector3(0, 0, 0);
-        this.normalizeToRef(normalized);
-        return normalized;
+        return byRefFunc<Vector3>(this.normalizeToRef, new Vector3(), arguments);
     }
 
     /**
@@ -1447,7 +1494,21 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public static FromArray(array: DeepImmutable<ArrayLike<number>>, offset: number = 0): Vector3 {
-        return new Vector3(array[offset], array[offset + 1], array[offset + 2]);
+        return byRefFunc<Vector3>(this.FromArrayToRef, new Vector3(), arguments);
+    }
+
+    /**
+     * Sets the given vector "result" with the element values from the index "offset" of the given array
+     * @param array defines the source array
+     * @param offset defines the offset in the source array
+     * @param result defines the Vector3 where to store the result
+     */
+    public static FromArrayToRef(array: DeepImmutable<ArrayLike<number>>, offset: number, result: Vector3): Vector3 {
+        result.x = array[offset];
+        result.y = array[offset + 1];
+        result.z = array[offset + 2];
+
+        return result;
     }
 
     /**
@@ -1458,19 +1519,7 @@ export class Vector3 {
      * @deprecated Please use FromArray instead.
      */
     public static FromFloatArray(array: DeepImmutable<Float32Array>, offset?: number): Vector3 {
-        return Vector3.FromArray(array, offset);
-    }
-
-    /**
-     * Sets the given vector "result" with the element values from the index "offset" of the given array
-     * @param array defines the source array
-     * @param offset defines the offset in the source array
-     * @param result defines the Vector3 where to store the result
-     */
-    public static FromArrayToRef(array: DeepImmutable<ArrayLike<number>>, offset: number, result: Vector3): void {
-        result.x = array[offset];
-        result.y = array[offset + 1];
-        result.z = array[offset + 2];
+        return byRefFunc<Vector3>(this.FromFloatArrayToRef, new Vector3(), arguments);
     }
 
     /**
@@ -1480,7 +1529,7 @@ export class Vector3 {
      * @param result defines the Vector3 where to store the result
      * @deprecated Please use FromArrayToRef instead.
      */
-    public static FromFloatArrayToRef(array: DeepImmutable<Float32Array>, offset: number, result: Vector3): void {
+    public static FromFloatArrayToRef(array: DeepImmutable<Float32Array>, offset: number, result: Vector3): Vector3 {
         return Vector3.FromArrayToRef(array, offset, result);
     }
 
@@ -1491,8 +1540,8 @@ export class Vector3 {
      * @param z defines the z coordinate of the source
      * @param result defines the Vector3 where to store the result
      */
-    public static FromFloatsToRef(x: number, y: number, z: number, result: Vector3): void {
-        result.copyFromFloats(x, y, z);
+    public static FromFloatsToRef(x: number, y: number, z: number, result: Vector3): Vector3 {
+        return result.copyFromFloats(x, y, z);
     }
 
     /**
@@ -1502,6 +1551,7 @@ export class Vector3 {
     public static Zero(): Vector3 {
         return new Vector3(0.0, 0.0, 0.0);
     }
+
     /**
      * Returns a new Vector3 set to (1.0, 1.0, 1.0)
      * @returns a new unit Vector3
@@ -1509,6 +1559,7 @@ export class Vector3 {
     public static One(): Vector3 {
         return new Vector3(1.0, 1.0, 1.0);
     }
+
     /**
      * Returns a new Vector3 set to (0.0, 1.0, 0.0)
      * @returns a new up Vector3
@@ -1538,6 +1589,7 @@ export class Vector3 {
     public static Down(): Vector3 {
         return new Vector3(0.0, -1.0, 0.0);
     }
+
     /**
      * Returns a new Vector3 set to (0.0, 0.0, 1.0)
      * @param rightHandedSystem is the scene right-handed (negative z)
@@ -1546,6 +1598,7 @@ export class Vector3 {
     public static Forward(rightHandedSystem: boolean = false): Vector3 {
         return new Vector3(0.0, 0.0, (rightHandedSystem ? -1.0 : 1.0));
     }
+
     /**
      * Returns a new Vector3 set to (0.0, 0.0, -1.0)
      * @param rightHandedSystem is the scene right-handed (negative-z)
@@ -1554,6 +1607,7 @@ export class Vector3 {
     public static Backward(rightHandedSystem: boolean = false): Vector3 {
         return new Vector3(0.0, 0.0, (rightHandedSystem ? 1.0 : -1.0));
     }
+
     /**
      * Returns a new Vector3 set to (1.0, 0.0, 0.0)
      * @returns a new right Vector3
@@ -1561,6 +1615,7 @@ export class Vector3 {
     public static Right(): Vector3 {
         return new Vector3(1.0, 0.0, 0.0);
     }
+
     /**
      * Returns a new Vector3 set to (-1.0, 0.0, 0.0)
      * @returns a new left Vector3
@@ -1577,9 +1632,7 @@ export class Vector3 {
      * @returns the transformed Vector3
      */
     public static TransformCoordinates(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>): Vector3 {
-        var result = Vector3.Zero();
-        Vector3.TransformCoordinatesToRef(vector, transformation, result);
-        return result;
+        return byRefFunc<Vector3>(this.TransformCoordinatesToRef, new Vector3(), arguments);
     }
 
     /**
@@ -1589,8 +1642,8 @@ export class Vector3 {
      * @param transformation defines the transformation matrix
      * @param result defines the Vector3 where to store the result
      */
-    public static TransformCoordinatesToRef(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>, result: Vector3): void {
-        Vector3.TransformCoordinatesFromFloatsToRef(vector._x, vector._y, vector._z, transformation, result);
+    public static TransformCoordinatesToRef(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>, result: Vector3): Vector3 {
+        return Vector3.TransformCoordinatesFromFloatsToRef(vector._x, vector._y, vector._z, transformation, result);
     }
 
     /**
@@ -1602,7 +1655,7 @@ export class Vector3 {
      * @param transformation defines the transformation matrix
      * @param result defines the Vector3 where to store the result
      */
-    public static TransformCoordinatesFromFloatsToRef(x: number, y: number, z: number, transformation: DeepImmutable<Matrix>, result: Vector3): void {
+    public static TransformCoordinatesFromFloatsToRef(x: number, y: number, z: number, transformation: DeepImmutable<Matrix>, result: Vector3): Vector3 {
         const m = transformation.m;
         var rx = x * m[0] + y * m[4] + z * m[8] + m[12];
         var ry = x * m[1] + y * m[5] + z * m[9] + m[13];
@@ -1612,6 +1665,8 @@ export class Vector3 {
         result.x = rx * rw;
         result.y = ry * rw;
         result.z = rz * rw;
+
+        return result;
     }
 
     /**
@@ -1622,9 +1677,7 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public static TransformNormal(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>): Vector3 {
-        var result = Vector3.Zero();
-        Vector3.TransformNormalToRef(vector, transformation, result);
-        return result;
+        return byRefFunc<Vector3>(this.TransformNormalToRef, new Vector3(), arguments);
     }
 
     /**
@@ -1634,8 +1687,8 @@ export class Vector3 {
      * @param transformation defines the transformation matrix
      * @param result defines the Vector3 where to store the result
      */
-    public static TransformNormalToRef(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>, result: Vector3): void {
-        this.TransformNormalFromFloatsToRef(vector._x, vector._y, vector._z, transformation, result);
+    public static TransformNormalToRef(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>, result: Vector3): Vector3 {
+        return this.TransformNormalFromFloatsToRef(vector._x, vector._y, vector._z, transformation, result);
     }
 
     /**
@@ -1647,11 +1700,13 @@ export class Vector3 {
      * @param transformation defines the transformation matrix
      * @param result defines the Vector3 where to store the result
      */
-    public static TransformNormalFromFloatsToRef(x: number, y: number, z: number, transformation: DeepImmutable<Matrix>, result: Vector3): void {
+    public static TransformNormalFromFloatsToRef(x: number, y: number, z: number, transformation: DeepImmutable<Matrix>, result: Vector3): Vector3 {
         const m = transformation.m;
         result.x = x * m[0] + y * m[4] + z * m[8];
         result.y = x * m[1] + y * m[5] + z * m[9];
         result.z = x * m[2] + y * m[6] + z * m[10];
+
+        return result;
     }
 
     /**
@@ -1692,9 +1747,7 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public static Clamp(value: DeepImmutable<Vector3>, min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>): Vector3 {
-        const v = new Vector3();
-        Vector3.ClampToRef(value, min, max, v);
-        return v;
+        return byRefFunc<Vector3>(this.ClampToRef, new Vector3(), arguments);
     }
     /**
      * Sets the given vector "result" with the coordinates of "value", if the vector "value" is in the cube defined by the vectors "min" and "max"
@@ -1705,7 +1758,7 @@ export class Vector3 {
      * @param max defines the upper range value
      * @param result defines the Vector3 where to store the result
      */
-    public static ClampToRef(value: DeepImmutable<Vector3>, min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>, result: Vector3): void {
+    public static ClampToRef(value: DeepImmutable<Vector3>, min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>, result: Vector3): Vector3 {
         var x = value._x;
         x = (x > max._x) ? max._x : x;
         x = (x < min._x) ? min._x : x;
@@ -1719,6 +1772,8 @@ export class Vector3 {
         z = (z < min._z) ? min._z : z;
 
         result.copyFromFloats(x, y, z);
+
+        return result;
     }
 
     /**
@@ -1763,9 +1818,7 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public static Lerp(start: DeepImmutable<Vector3>, end: DeepImmutable<Vector3>, amount: number): Vector3 {
-        var result = new Vector3(0, 0, 0);
-        Vector3.LerpToRef(start, end, amount, result);
-        return result;
+        return byRefFunc<Vector3>(this.LerpToRef, new Vector3(), arguments);
     }
 
     /**
@@ -1775,10 +1828,12 @@ export class Vector3 {
      * @param amount max defines amount between both (between 0 and 1)
      * @param result defines the Vector3 where to store the result
      */
-    public static LerpToRef(start: DeepImmutable<Vector3>, end: DeepImmutable<Vector3>, amount: number, result: Vector3): void {
+    public static LerpToRef(start: DeepImmutable<Vector3>, end: DeepImmutable<Vector3>, amount: number, result: Vector3): Vector3 {
         result.x = start._x + ((end._x - start._x) * amount);
         result.y = start._y + ((end._y - start._y) * amount);
         result.z = start._z + ((end._z - start._z) * amount);
+
+        return result;
     }
 
     /**
@@ -1799,9 +1854,7 @@ export class Vector3 {
      * @returns the cross product
      */
     public static Cross(left: DeepImmutable<Vector3>, right: DeepImmutable<Vector3>): Vector3 {
-        var result = Vector3.Zero();
-        Vector3.CrossToRef(left, right, result);
-        return result;
+        return byRefFunc<Vector3>(this.CrossToRef, new Vector3(), arguments);
     }
 
     /**
@@ -1811,11 +1864,13 @@ export class Vector3 {
      * @param right defines the right operand
      * @param result defines the Vector3 where to store the result
      */
-    public static CrossToRef(left: DeepImmutable<Vector3>, right: DeepImmutable<Vector3>, result: Vector3): void {
+    public static CrossToRef(left: DeepImmutable<Vector3>, right: DeepImmutable<Vector3>, result: Vector3): Vector3 {
         const x = left._y * right._z - left._z * right._y;
         const y = left._z * right._x - left._x * right._z;
         const z = left._x * right._y - left._y * right._x;
         result.copyFromFloats(x, y, z);
+
+        return result;
     }
 
     /**
@@ -1824,9 +1879,7 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public static Normalize(vector: DeepImmutable<Vector3>): Vector3 {
-        var result = Vector3.Zero();
-        Vector3.NormalizeToRef(vector, result);
-        return result;
+        return byRefFunc<Vector3>(this.NormalizeToRef, new Vector3(), arguments);
     }
 
     /**
@@ -1834,8 +1887,10 @@ export class Vector3 {
      * @param vector defines the Vector3 to normalize
      * @param result defines the Vector3 where to store the result
      */
-    public static NormalizeToRef(vector: DeepImmutable<Vector3>, result: Vector3): void {
+    public static NormalizeToRef(vector: DeepImmutable<Vector3>, result: Vector3): Vector3 {
         vector.normalizeToRef(result);
+
+        return result;
     }
 
     /**
@@ -1847,9 +1902,7 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public static Project(vector: DeepImmutable<Vector3>, world: DeepImmutable<Matrix>, transform: DeepImmutable<Matrix>, viewport: DeepImmutable<Viewport>): Vector3 {
-        const result = new Vector3();
-        Vector3.ProjectToRef(vector, world, transform, viewport, result);
-        return result;
+        return byRefFunc<Vector3>(this.ProjectToRef, new Vector3(), arguments);
     }
 
     /**
@@ -1924,11 +1977,7 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public static Unproject(source: DeepImmutable<Vector3>, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>): Vector3 {
-        let result = Vector3.Zero();
-
-        Vector3.UnprojectToRef(source, viewportWidth, viewportHeight, world, view, projection, result);
-
-        return result;
+        return byRefFunc<Vector3>(this.UnprojectToRef, new Vector3(), arguments);
     }
 
     /**
@@ -1941,8 +1990,10 @@ export class Vector3 {
      * @param projection defines the projection matrix to use
      * @param result defines the Vector3 where to store the result
      */
-    public static UnprojectToRef(source: DeepImmutable<Vector3>, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>, result: Vector3): void {
+    public static UnprojectToRef(source: DeepImmutable<Vector3>, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>, result: Vector3): Vector3 {
         Vector3.UnprojectFloatsToRef(source._x, source._y, source._z, viewportWidth, viewportHeight, world, view, projection, result);
+
+        return result;
     }
 
     /**
@@ -1957,7 +2008,7 @@ export class Vector3 {
      * @param projection defines the projection matrix to use
      * @param result defines the Vector3 where to store the result
      */
-    public static UnprojectFloatsToRef(sourceX: float, sourceY: float, sourceZ: float, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>, result: Vector3): void {
+    public static UnprojectFloatsToRef(sourceX: float, sourceY: float, sourceZ: float, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>, result: Vector3): Vector3 {
         var matrix = MathTmp.Matrix[0];
         world.multiplyToRef(view, matrix);
         matrix.multiplyToRef(projection, matrix);
@@ -1967,6 +2018,8 @@ export class Vector3 {
         screenSource.y = -(sourceY / viewportHeight * 2 - 1);
         screenSource.z = 2 * sourceZ - 1.0;
         Vector3._UnprojectFromInvertedMatrixToRef(screenSource, matrix, result);
+
+        return result;
     }
 
     /**
@@ -2024,7 +2077,7 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public static Center(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>): Vector3 {
-        return Vector3.CenterToRef(value1, value2, Vector3.Zero());
+        return byRefFunc<Vector3>(this.CenterToRef, new Vector3(), arguments);
     }
 
     /**
@@ -2049,9 +2102,7 @@ export class Vector3 {
      * @returns a new Vector3
      */
     public static RotationFromAxis(axis1: DeepImmutable<Vector3>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>): Vector3 {
-        var rotation = Vector3.Zero();
-        Vector3.RotationFromAxisToRef(axis1, axis2, axis3, rotation);
-        return rotation;
+        return byRefFunc<Vector3>(this.RotationFromAxisToRef, new Vector3(), arguments);
     }
 
     /**
@@ -2061,10 +2112,12 @@ export class Vector3 {
      * @param axis3 defines the third axis
      * @param ref defines the Vector3 where to store the result
      */
-    public static RotationFromAxisToRef(axis1: DeepImmutable<Vector3>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>, ref: Vector3): void {
+    public static RotationFromAxisToRef(axis1: DeepImmutable<Vector3>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>, ref: Vector3): Vector3 {
         var quat = MathTmp.Quaternion[0];
         Quaternion.RotationQuaternionFromAxisToRef(axis1, axis2, axis3, quat);
         quat.toEulerAnglesToRef(ref);
+
+        return ref;
     }
 }
 
@@ -2072,23 +2125,74 @@ export class Vector3 {
  * Vector4 class created for EulerAngle class conversion to Quaternion
  */
 export class Vector4 {
+    /** @hidden */
+    public _x: number;
+
+    /** @hidden */
+    public _y: number;
+
+    /** @hidden */
+    public _z: number;
+
+    /** @hidden */
+    public _w: number;
+
+    /** @hidden */
+    public _isDirty = true;
+
+    /** Gets or sets the x coordinate */
+    public get x() {
+        return this._x;
+    }
+
+    public set x(value: number) {
+        this._x = value;
+        this._isDirty = true;
+    }
+
+    /** Gets or sets the y coordinate */
+    public get y() {
+        return this._y;
+    }
+
+    public set y(value: number) {
+        this._y = value;
+        this._isDirty = true;
+    }
+
+    /** Gets or sets the z coordinate */
+    public get z() {
+        return this._z;
+    }
+
+    public set z(value: number) {
+        this._z = value;
+        this._isDirty = true;
+    }
+
+    /** Gets or sets the w coordinate */
+    public get w() {
+        return this._w;
+    }
+
+    public set w(value: number) {
+        this._w = value;
+        this._isDirty = true;
+    }
+
     /**
      * Creates a Vector4 object from the given floats.
-     * @param x x value of the vector
-     * @param y y value of the vector
-     * @param z z value of the vector
-     * @param w w value of the vector
+     * @param x defines "x" value of the vector
+     * @param y defines "y" value of the vector
+     * @param z defines "z" value of the vector
+     * @param w defines "w" value of the vector
      */
-    constructor(
-        /** x value of the vector */
-        public x: number,
-        /** y value of the vector */
-        public y: number,
-        /** z value of the vector */
-        public z: number,
-        /** w value of the vector */
-        public w: number
-    ) { }
+    constructor(x: number = 0, y: number = 0, z: number = 0, w: number = 0) {
+        this._x = x;
+        this._y = y;
+        this._z = z;
+        this._w = w;
+    }
 
     /**
      * Returns the string with the Vector4 coordinates.
@@ -2119,6 +2223,7 @@ export class Vector4 {
     }
 
     // Operators
+
     /**
      * Returns a new array populated with 4 elements : the Vector4 coordinates.
      * @returns the resulting array
@@ -2178,7 +2283,7 @@ export class Vector4 {
      * @returns the resulting vector
      */
     public add(otherVector: DeepImmutable<Vector4>): Vector4 {
-        return new Vector4(this.x + otherVector.x, this.y + otherVector.y, this.z + otherVector.z, this.w + otherVector.w);
+        return byRefFunc<Vector4>(this.addToRef, Vector4.Zero(), arguments);
     }
 
     /**
@@ -2201,11 +2306,7 @@ export class Vector4 {
      * @returns the updated Vector4.
      */
     public subtractInPlace(otherVector: DeepImmutable<Vector4>): Vector4 {
-        this.x -= otherVector.x;
-        this.y -= otherVector.y;
-        this.z -= otherVector.z;
-        this.w -= otherVector.w;
-        return this;
+        return byRefFunc<Vector4>(this.subtractToRef, this, arguments);
     }
 
     /**
@@ -2214,7 +2315,7 @@ export class Vector4 {
      * @returns the new vector with the result
      */
     public subtract(otherVector: DeepImmutable<Vector4>): Vector4 {
-        return new Vector4(this.x - otherVector.x, this.y - otherVector.y, this.z - otherVector.z, this.w - otherVector.w);
+        return byRefFunc<Vector4>(this.subtractToRef, Vector4.Zero(), arguments);
     }
 
     /**
@@ -2233,9 +2334,6 @@ export class Vector4 {
 
     /**
      * Returns a new Vector4 set with the result of the subtraction of the given floats from the current Vector4 coordinates.
-     */
-    /**
-     * Returns a new Vector4 set with the result of the subtraction of the given floats from the current Vector4 coordinates.
      * @param x value to subtract
      * @param y value to subtract
      * @param z value to subtract
@@ -2243,7 +2341,7 @@ export class Vector4 {
      * @returns new vector containing the result
      */
     public subtractFromFloats(x: number, y: number, z: number, w: number): Vector4 {
-        return new Vector4(this.x - x, this.y - y, this.z - z, this.w - w);
+        return byRefFunc<Vector4>(this.subtractFromFloatsToRef, Vector4.Zero(), arguments);
     }
 
     /**
@@ -2268,7 +2366,7 @@ export class Vector4 {
      * @returns a new vector with the negated values
      */
     public negate(): Vector4 {
-        return new Vector4(-this.x, -this.y, -this.z, -this.w);
+        return byRefFunc<Vector4>(this.negateToRef, Vector4.Zero(), arguments);
     }
 
     /**
@@ -2276,11 +2374,7 @@ export class Vector4 {
      * @returns this
      */
     public negateInPlace(): Vector4 {
-        this.x *= -1;
-        this.y *= -1;
-        this.z *= -1;
-        this.w *= -1;
-        return this;
+        return byRefFunc<Vector4>(this.negateToRef, this, arguments);
     }
 
     /**
@@ -2298,11 +2392,7 @@ export class Vector4 {
      * @returns the updated Vector4.
      */
     public scaleInPlace(scale: number): Vector4 {
-        this.x *= scale;
-        this.y *= scale;
-        this.z *= scale;
-        this.w *= scale;
-        return this;
+        return byRefFunc<Vector4>(this.scaleToRef, this, arguments);
     }
 
     /**
@@ -2311,7 +2401,7 @@ export class Vector4 {
      * @returns a new vector with the result
      */
     public scale(scale: number): Vector4 {
-        return new Vector4(this.x * scale, this.y * scale, this.z * scale, this.w * scale);
+        return byRefFunc<Vector4>(this.scaleToRef, Vector4.Zero(), arguments);
     }
 
     /**
@@ -2358,11 +2448,7 @@ export class Vector4 {
      * @returns true if they are equal
      */
     public equalsWithEpsilon(otherVector: DeepImmutable<Vector4>, epsilon: number = Epsilon): boolean {
-        return otherVector
-            && Scalar.WithinEpsilon(this.x, otherVector.x, epsilon)
-            && Scalar.WithinEpsilon(this.y, otherVector.y, epsilon)
-            && Scalar.WithinEpsilon(this.z, otherVector.z, epsilon)
-            && Scalar.WithinEpsilon(this.w, otherVector.w, epsilon);
+        return otherVector && Scalar.WithinEpsilon(this.x, otherVector.x, epsilon) && Scalar.WithinEpsilon(this.y, otherVector.y, epsilon) && Scalar.WithinEpsilon(this.z, otherVector.z, epsilon) && Scalar.WithinEpsilon(this.w, otherVector.w, epsilon);
     }
 
     /**
@@ -2383,11 +2469,7 @@ export class Vector4 {
      * @returns the updated Vector4.
      */
     public multiplyInPlace(otherVector: Vector4): Vector4 {
-        this.x *= otherVector.x;
-        this.y *= otherVector.y;
-        this.z *= otherVector.z;
-        this.w *= otherVector.w;
-        return this;
+        return byRefFunc<Vector4>(this.multiplyToRef, this, arguments);
     }
 
     /**
@@ -2396,8 +2478,9 @@ export class Vector4 {
      * @returns resulting new vector
      */
     public multiply(otherVector: DeepImmutable<Vector4>): Vector4 {
-        return new Vector4(this.x * otherVector.x, this.y * otherVector.y, this.z * otherVector.z, this.w * otherVector.w);
+        return byRefFunc<Vector4>(this.multiplyToRef, Vector4.Zero(), arguments);
     }
+
     /**
      * Updates the given vector "result" with the multiplication result of the current Vector4 and the given one.
      * @param otherVector vector to multiple with
@@ -2411,6 +2494,7 @@ export class Vector4 {
         result.w = this.w * otherVector.w;
         return this;
     }
+
     /**
      * Returns a new Vector4 set with the multiplication result of the given floats and the current Vector4 coordinates.
      * @param x x value multiply with
@@ -2422,14 +2506,16 @@ export class Vector4 {
     public multiplyByFloats(x: number, y: number, z: number, w: number): Vector4 {
         return new Vector4(this.x * x, this.y * y, this.z * z, this.w * w);
     }
+
     /**
      * Returns a new Vector4 set with the division result of the current Vector4 by the given one.
      * @param otherVector vector to devide with
      * @returns resulting new vector
      */
     public divide(otherVector: DeepImmutable<Vector4>): Vector4 {
-        return new Vector4(this.x / otherVector.x, this.y / otherVector.y, this.z / otherVector.z, this.w / otherVector.w);
+        return byRefFunc<Vector4>(this.divideToRef, Vector4.Zero(), arguments);
     }
+
     /**
      * Updates the given vector "result" with the division result of the current Vector4 by the given one.
      * @param otherVector vector to devide with
@@ -2450,7 +2536,7 @@ export class Vector4 {
      * @returns the updated Vector3.
      */
     public divideInPlace(otherVector: DeepImmutable<Vector4>): Vector4 {
-        return this.divideToRef(otherVector, this);
+        return byRefFunc<Vector4>(this.divideToRef, this, arguments);
     }
 
     /**
@@ -2459,22 +2545,39 @@ export class Vector4 {
      * @returns the current updated Vector4
      */
     public minimizeInPlace(other: DeepImmutable<Vector4>): Vector4 {
-        if (other.x < this.x) { this.x = other.x; }
-        if (other.y < this.y) { this.y = other.y; }
-        if (other.z < this.z) { this.z = other.z; }
-        if (other.w < this.w) { this.w = other.w; }
+        if (other.x < this.x) {
+            this.x = other.x;
+        }
+        if (other.y < this.y) {
+            this.y = other.y;
+        }
+        if (other.z < this.z) {
+            this.z = other.z;
+        }
+        if (other.w < this.w) {
+            this.w = other.w;
+        }
         return this;
     }
+
     /**
      * Updates the Vector4 coordinates with the maximum values between its own and the given vector ones
      * @param other defines the second operand
      * @returns the current updated Vector4
      */
     public maximizeInPlace(other: DeepImmutable<Vector4>): Vector4 {
-        if (other.x > this.x) { this.x = other.x; }
-        if (other.y > this.y) { this.y = other.y; }
-        if (other.z > this.z) { this.z = other.z; }
-        if (other.w > this.w) { this.w = other.w; }
+        if (other.x > this.x) {
+            this.x = other.x;
+        }
+        if (other.y > this.y) {
+            this.y = other.y;
+        }
+        if (other.z > this.z) {
+            this.z = other.z;
+        }
+        if (other.w > this.w) {
+            this.w = other.w;
+        }
         return this;
     }
 
@@ -2495,6 +2598,7 @@ export class Vector4 {
     }
 
     // Properties
+
     /**
      * Returns the Vector4 length (float).
      * @returns the length
@@ -2502,15 +2606,17 @@ export class Vector4 {
     public length(): number {
         return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w);
     }
+
     /**
      * Returns the Vector4 squared length (float).
      * @returns the length squared
      */
     public lengthSquared(): number {
-        return (this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w);
+        return this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w;
     }
 
     // Methods
+
     /**
      * Normalizes in place the Vector4.
      * @returns the updated Vector4.
@@ -2532,6 +2638,7 @@ export class Vector4 {
     public toVector3(): Vector3 {
         return new Vector3(this.x, this.y, this.z);
     }
+
     /**
      * Returns a new Vector4 copied from the current one.
      * @returns the new cloned vector
@@ -2539,6 +2646,7 @@ export class Vector4 {
     public clone(): Vector4 {
         return new Vector4(this.x, this.y, this.z, this.w);
     }
+
     /**
      * Updates the current Vector4 with the given one coordinates.
      * @param source the source vector to copy from
@@ -2551,6 +2659,7 @@ export class Vector4 {
         this.w = source.w;
         return this;
     }
+
     /**
      * Updates the current Vector4 coordinates with the given floats.
      * @param x float to copy from
@@ -2566,6 +2675,7 @@ export class Vector4 {
         this.w = w;
         return this;
     }
+
     /**
      * Updates the current Vector4 coordinates with the given floats.
      * @param x float to set from
@@ -2589,39 +2699,44 @@ export class Vector4 {
     }
 
     // Statics
+
     /**
      * Returns a new Vector4 set from the starting index of the given array.
      * @param array the array to pull values from
      * @param offset the offset into the array to start at
      * @returns the new vector
      */
-    public static FromArray(array: DeepImmutable<ArrayLike<number>>, offset?: number): Vector4 {
-        if (!offset) {
-            offset = 0;
-        }
-        return new Vector4(array[offset], array[offset + 1], array[offset + 2], array[offset + 3]);
+    public static FromArray(array: DeepImmutable<ArrayLike<number>>, offset: number = 0): Vector4 {
+        return byRefFunc<Vector4>(this.FromArrayToRef, Vector4.Zero(), arguments);
     }
+
     /**
      * Updates the given vector "result" from the starting index of the given array.
      * @param array the array to pull values from
      * @param offset the offset into the array to start at
      * @param result the vector to store the result in
      */
-    public static FromArrayToRef(array: DeepImmutable<ArrayLike<number>>, offset: number, result: Vector4): void {
+    public static FromArrayToRef(array: DeepImmutable<ArrayLike<number>>, offset: number, result: Vector4): Vector4 {
         result.x = array[offset];
         result.y = array[offset + 1];
         result.z = array[offset + 2];
         result.w = array[offset + 3];
+
+        return result;
     }
+
     /**
      * Updates the given vector "result" from the starting index of the given Float32Array.
      * @param array the array to pull values from
      * @param offset the offset into the array to start at
      * @param result the vector to store the result in
      */
-    public static FromFloatArrayToRef(array: DeepImmutable<Float32Array>, offset: number, result: Vector4): void {
+    public static FromFloatArrayToRef(array: DeepImmutable<Float32Array>, offset: number, result: Vector4): Vector4 {
         Vector4.FromArrayToRef(array, offset, result);
+
+        return result;
     }
+
     /**
      * Updates the given vector "result" coordinates from the given floats.
      * @param x float to set from
@@ -2630,12 +2745,15 @@ export class Vector4 {
      * @param w float to set from
      * @param result the vector to the floats in
      */
-    public static FromFloatsToRef(x: number, y: number, z: number, w: number, result: Vector4): void {
+    public static FromFloatsToRef(x: number, y: number, z: number, w: number, result: Vector4): Vector4 {
         result.x = x;
         result.y = y;
         result.z = z;
         result.w = w;
+
+        return result;
     }
+
     /**
      * Returns a new Vector4 set to (0.0, 0.0, 0.0, 0.0)
      * @returns the new vector
@@ -2643,6 +2761,7 @@ export class Vector4 {
     public static Zero(): Vector4 {
         return new Vector4(0.0, 0.0, 0.0, 0.0);
     }
+
     /**
      * Returns a new Vector4 set to (1.0, 1.0, 1.0, 1.0)
      * @returns the new vector
@@ -2650,24 +2769,26 @@ export class Vector4 {
     public static One(): Vector4 {
         return new Vector4(1.0, 1.0, 1.0, 1.0);
     }
+
     /**
      * Returns a new normalized Vector4 from the given one.
      * @param vector the vector to normalize
      * @returns the vector
      */
     public static Normalize(vector: DeepImmutable<Vector4>): Vector4 {
-        var result = Vector4.Zero();
-        Vector4.NormalizeToRef(vector, result);
-        return result;
+        return byRefFunc<Vector4>(this.NormalizeToRef, Vector4.Zero(), arguments);
     }
+
     /**
      * Updates the given vector "result" from the normalization of the given one.
      * @param vector the vector to normalize
      * @param result the vector to store the result in
      */
-    public static NormalizeToRef(vector: DeepImmutable<Vector4>, result: Vector4): void {
+    public static NormalizeToRef(vector: DeepImmutable<Vector4>, result: Vector4): Vector4 {
         result.copyFrom(vector);
         result.normalize();
+
+        return result;
     }
 
     /**
@@ -2693,6 +2814,7 @@ export class Vector4 {
         max.maximizeInPlace(right);
         return max;
     }
+
     /**
      * Returns the distance (float) between the vectors "value1" and "value2".
      * @param value1 value to calulate the distance between
@@ -2702,6 +2824,7 @@ export class Vector4 {
     public static Distance(value1: DeepImmutable<Vector4>, value2: DeepImmutable<Vector4>): number {
         return Math.sqrt(Vector4.DistanceSquared(value1, value2));
     }
+
     /**
      * Returns the squared distance (float) between the vectors "value1" and "value2".
      * @param value1 value to calulate the distance between
@@ -2714,8 +2837,9 @@ export class Vector4 {
         var z = value1.z - value2.z;
         var w = value1.w - value2.w;
 
-        return (x * x) + (y * y) + (z * z) + (w * w);
+        return x * x + y * y + z * z + w * w;
     }
+
     /**
      * Returns a new Vector4 located at the center between the vectors "value1" and "value2".
      * @param value1 value to calulate the center between
@@ -2723,7 +2847,7 @@ export class Vector4 {
      * @return the center between the two vectors
      */
     public static Center(value1: DeepImmutable<Vector4>, value2: DeepImmutable<Vector4>): Vector4 {
-        return Vector4.CenterToRef(value1, value2, Vector4.Zero());
+        return byRefFunc<Vector4>(this.CenterToRef, Vector4.Zero(), arguments);
     }
 
     /**
@@ -2745,9 +2869,7 @@ export class Vector4 {
      * @returns the new vector
      */
     public static TransformNormal(vector: DeepImmutable<Vector4>, transformation: DeepImmutable<Matrix>): Vector4 {
-        var result = Vector4.Zero();
-        Vector4.TransformNormalToRef(vector, transformation, result);
-        return result;
+        return byRefFunc<Vector4>(this.TransformNormalToRef, Vector4.Zero(), arguments);
     }
 
     /**
@@ -2757,15 +2879,17 @@ export class Vector4 {
      * @param transformation the transformation matrix to apply
      * @param result the vector to store the result in
      */
-    public static TransformNormalToRef(vector: DeepImmutable<Vector4>, transformation: DeepImmutable<Matrix>, result: Vector4): void {
+    public static TransformNormalToRef(vector: DeepImmutable<Vector4>, transformation: DeepImmutable<Matrix>, result: Vector4): Vector4 {
         const m = transformation.m;
-        var x = (vector.x * m[0]) + (vector.y * m[4]) + (vector.z * m[8]);
-        var y = (vector.x * m[1]) + (vector.y * m[5]) + (vector.z * m[9]);
-        var z = (vector.x * m[2]) + (vector.y * m[6]) + (vector.z * m[10]);
+        var x = vector.x * m[0] + vector.y * m[4] + vector.z * m[8];
+        var y = vector.x * m[1] + vector.y * m[5] + vector.z * m[9];
+        var z = vector.x * m[2] + vector.y * m[6] + vector.z * m[10];
         result.x = x;
         result.y = y;
         result.z = z;
         result.w = vector.w;
+
+        return result;
     }
 
     /**
@@ -2778,12 +2902,14 @@ export class Vector4 {
      * @param transformation the transformation matrix to apply
      * @param result the vector to store the results in
      */
-    public static TransformNormalFromFloatsToRef(x: number, y: number, z: number, w: number, transformation: DeepImmutable<Matrix>, result: Vector4): void {
+    public static TransformNormalFromFloatsToRef(x: number, y: number, z: number, w: number, transformation: DeepImmutable<Matrix>, result: Vector4): Vector4 {
         const m = transformation.m;
-        result.x = (x * m[0]) + (y * m[4]) + (z * m[8]);
-        result.y = (x * m[1]) + (y * m[5]) + (z * m[9]);
-        result.z = (x * m[2]) + (y * m[6]) + (z * m[10]);
+        result.x = x * m[0] + y * m[4] + z * m[8];
+        result.y = x * m[1] + y * m[5] + z * m[9];
+        result.z = x * m[2] + y * m[6] + z * m[10];
         result.w = w;
+
+        return result;
     }
 
     /**
@@ -2857,6 +2983,7 @@ export class Quaternion {
         this._w = value;
         this._isDirty = true;
     }
+
     /**
      * Creates a new Quaternion from the given floats
      * @param x defines the first component (0 by default)
@@ -2868,11 +2995,12 @@ export class Quaternion {
         x: number = 0.0,
         y: number = 0.0,
         z: number = 0.0,
-        w: number = 1.0) {
-            this._x = x;
-            this._y = y;
-            this._z = z;
-            this._w = w;
+        w: number = 1.0
+    ) {
+        this._x = x;
+        this._y = y;
+        this._z = z;
+        this._w = w;
     }
 
     /**
@@ -3018,7 +3146,7 @@ export class Quaternion {
      * @returns a new quaternion set by multiplying the current quaternion coordinates by the float "scale"
      */
     public scale(value: number): Quaternion {
-        return new Quaternion(this._x * value, this._y * value, this._z * value, this._w * value);
+        return byRefFunc<Quaternion>(this.scaleToRef, new Quaternion(), arguments);
     }
 
     /**
@@ -3041,12 +3169,7 @@ export class Quaternion {
      * @returns the current modified quaternion
      */
     public scaleInPlace(value: number): Quaternion {
-        this.x *= value;
-        this.y *= value;
-        this.z *= value;
-        this.w *= value;
-
-        return this;
+        return byRefFunc<Quaternion>(this.scaleToRef, this, arguments);
     }
 
     /**
@@ -3069,9 +3192,7 @@ export class Quaternion {
      * @returns a new quaternion set as the multiplication result of the current one with the given one "q1"
      */
     public multiply(q1: DeepImmutable<Quaternion>): Quaternion {
-        var result = new Quaternion(0, 0, 0, 1.0);
-        this.multiplyToRef(q1, result);
-        return result;
+        return byRefFunc<Quaternion>(this.multiplyToRef, new Quaternion(), arguments);
     }
     /**
      * Sets the given "result" as the the multiplication result of the current one with the given one "q1"
@@ -3094,8 +3215,7 @@ export class Quaternion {
      * @returns the currentupdated quaternion
      */
     public multiplyInPlace(q1: DeepImmutable<Quaternion>): Quaternion {
-        this.multiplyToRef(q1, this);
-        return this;
+        return byRefFunc<Quaternion>(this.multiplyToRef, this, arguments);
     }
 
     /**
@@ -3113,10 +3233,7 @@ export class Quaternion {
      * @returns the current updated quaternion
      */
     public conjugateInPlace(): Quaternion {
-        this.x *= -1;
-        this.y *= -1;
-        this.z *= -1;
-        return this;
+        return byRefFunc<Quaternion>(this.conjugateToRef, this, arguments);
     }
 
     /**
@@ -3124,8 +3241,7 @@ export class Quaternion {
      * @returns a new quaternion
      */
     public conjugate(): Quaternion {
-        var result = new Quaternion(-this._x, -this._y, -this._z, this._w);
-        return result;
+        return byRefFunc<Quaternion>(this.conjugateToRef, new Quaternion(), arguments);
     }
 
     /**
@@ -3171,7 +3287,7 @@ export class Quaternion {
      * @param result defines the vector which will be filled with the Euler angles
      * @returns the current unchanged quaternion
      */
-    public toEulerAnglesToRef(result: Vector3): Quaternion {
+    public toEulerAnglesToRef(result: Vector3): Vector3 {
 
         var qz = this._z;
         var qx = this._x;
@@ -3200,7 +3316,7 @@ export class Quaternion {
             result.y = Math.atan2(2.0 * (qz * qx + qy * qw), (sqz - sqx - sqy + sqw));
         }
 
-        return this;
+        return result;
 
     }
 
@@ -3232,9 +3348,7 @@ export class Quaternion {
      * @returns a new quaternion created from the given rotation matrix values
      */
     public static FromRotationMatrix(matrix: DeepImmutable<Matrix>): Quaternion {
-        var result = new Quaternion();
-        Quaternion.FromRotationMatrixToRef(matrix, result);
-        return result;
+        return byRefFunc<Quaternion>(this.FromRotationMatrixToRef, new Quaternion(), arguments);
     }
 
     /**
@@ -3242,7 +3356,7 @@ export class Quaternion {
      * @param matrix defines the source matrix
      * @param result defines the target quaternion
      */
-    public static FromRotationMatrixToRef(matrix: DeepImmutable<Matrix>, result: Quaternion): void {
+    public static FromRotationMatrixToRef(matrix: DeepImmutable<Matrix>, result: Quaternion): Quaternion {
         var data = matrix.m;
         var m11 = data[0], m12 = data[4], m13 = data[8];
         var m21 = data[1], m22 = data[5], m23 = data[9];
@@ -3283,6 +3397,8 @@ export class Quaternion {
             result.y = (m23 + m32) / s;
             result.z = 0.25 * s;
         }
+
+        return result;
     }
 
     /**
@@ -3321,7 +3437,7 @@ export class Quaternion {
      * @returns a new quaternion as the inverted current quaternion
      */
     public static Inverse(q: DeepImmutable<Quaternion>): Quaternion {
-        return new Quaternion(-q._x, -q._y, -q._z, q._w);
+        return byRefFunc<Quaternion>(this.InverseToRef, new Quaternion(), arguments);
     }
 
     /**
@@ -3359,7 +3475,7 @@ export class Quaternion {
      * @returns a new quaternion created from the given axis (Vector3) and angle in radians (float)
      */
     public static RotationAxis(axis: DeepImmutable<Vector3>, angle: number): Quaternion {
-        return Quaternion.RotationAxisToRef(axis, angle, new Quaternion());
+        return byRefFunc<Quaternion>(this.RotationAxisToRef, new Quaternion(), arguments);
     }
 
     /**
@@ -3385,11 +3501,8 @@ export class Quaternion {
      * @param offset defines the offset in the source array where the data starts
      * @returns a new quaternion
      */
-    public static FromArray(array: DeepImmutable<ArrayLike<number>>, offset?: number): Quaternion {
-        if (!offset) {
-            offset = 0;
-        }
-        return new Quaternion(array[offset], array[offset + 1], array[offset + 2], array[offset + 3]);
+    public static FromArray(array: DeepImmutable<ArrayLike<number>>, offset: number = 0): Quaternion {
+        return byRefFunc<Quaternion>(this.FromArrayToRef, new Quaternion(), arguments);
     }
 
     /**
@@ -3398,11 +3511,13 @@ export class Quaternion {
      * @param offset the offset into the array to start at
      * @param result the quaternion to store the result in
      */
-    public static FromArrayToRef(array: DeepImmutable<ArrayLike<number>>, offset: number, result: Quaternion): void {
+    public static FromArrayToRef(array: DeepImmutable<ArrayLike<number>>, offset: number, result: Quaternion): Quaternion {
         result.x = array[offset];
         result.y = array[offset + 1];
         result.z = array[offset + 2];
         result.w = array[offset + 3];
+
+        return result;
     }
 
     /**
@@ -3413,9 +3528,7 @@ export class Quaternion {
      * @returns the new Quaternion
      */
     public static FromEulerAngles(x: number, y: number, z: number): Quaternion {
-        var q = new Quaternion();
-        Quaternion.RotationYawPitchRollToRef(y, x, z, q);
-        return q;
+        return byRefFunc<Quaternion>(this.FromEulerAnglesToRef, new Quaternion(), arguments);
     }
 
     /**
@@ -3437,9 +3550,7 @@ export class Quaternion {
      * @returns the new Quaternion
      */
     public static FromEulerVector(vec: DeepImmutable<Vector3>): Quaternion {
-        var q = new Quaternion();
-        Quaternion.RotationYawPitchRollToRef(vec._y, vec._x, vec._z, q);
-        return q;
+        return byRefFunc<Quaternion>(this.FromEulerVectorToRef, new Quaternion(), arguments);
     }
 
     /**
@@ -3490,9 +3601,7 @@ export class Quaternion {
      * @returns the new quaternion
      */
     public static RotationYawPitchRoll(yaw: number, pitch: number, roll: number): Quaternion {
-        var q = new Quaternion();
-        Quaternion.RotationYawPitchRollToRef(yaw, pitch, roll, q);
-        return q;
+        return byRefFunc<Quaternion>(this.RotationYawPitchRollToRef, new Quaternion(), arguments);
     }
 
     /**
@@ -3502,7 +3611,7 @@ export class Quaternion {
      * @param roll defines the rotation around Z axis
      * @param result defines the target quaternion
      */
-    public static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Quaternion): void {
+    public static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Quaternion): Quaternion {
         // Produces a quaternion from Euler angles in the z-y-x orientation (Tait-Bryan angles)
         var halfRoll = roll * 0.5;
         var halfPitch = pitch * 0.5;
@@ -3519,6 +3628,8 @@ export class Quaternion {
         result.y = (sinYaw * cosPitch * cosRoll) - (cosYaw * sinPitch * sinRoll);
         result.z = (cosYaw * cosPitch * sinRoll) - (sinYaw * sinPitch * cosRoll);
         result.w = (cosYaw * cosPitch * cosRoll) + (sinYaw * sinPitch * sinRoll);
+
+        return result;
     }
 
     /**
@@ -3529,9 +3640,7 @@ export class Quaternion {
      * @returns the new quaternion
      */
     public static RotationAlphaBetaGamma(alpha: number, beta: number, gamma: number): Quaternion {
-        var result = new Quaternion();
-        Quaternion.RotationAlphaBetaGammaToRef(alpha, beta, gamma, result);
-        return result;
+        return byRefFunc<Quaternion>(this.RotationAlphaBetaGammaToRef, new Quaternion(), arguments);
     }
 
     /**
@@ -3541,7 +3650,7 @@ export class Quaternion {
      * @param gamma defines the rotation around third axis
      * @param result defines the target quaternion
      */
-    public static RotationAlphaBetaGammaToRef(alpha: number, beta: number, gamma: number, result: Quaternion): void {
+    public static RotationAlphaBetaGammaToRef(alpha: number, beta: number, gamma: number, result: Quaternion): Quaternion {
         // Produces a quaternion from Euler angles in the z-x-z orientation
         var halfGammaPlusAlpha = (gamma + alpha) * 0.5;
         var halfGammaMinusAlpha = (gamma - alpha) * 0.5;
@@ -3551,6 +3660,8 @@ export class Quaternion {
         result.y = Math.sin(halfGammaMinusAlpha) * Math.sin(halfBeta);
         result.z = Math.sin(halfGammaPlusAlpha) * Math.cos(halfBeta);
         result.w = Math.cos(halfGammaPlusAlpha) * Math.cos(halfBeta);
+
+        return result;
     }
 
     /**
@@ -3561,9 +3672,7 @@ export class Quaternion {
      * @returns the new quaternion
      */
     public static RotationQuaternionFromAxis(axis1: DeepImmutable<Vector3>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>): Quaternion {
-        var quat = new Quaternion(0.0, 0.0, 0.0, 0.0);
-        Quaternion.RotationQuaternionFromAxisToRef(axis1, axis2, axis3, quat);
-        return quat;
+        return byRefFunc<Quaternion>(this.RotationQuaternionFromAxisToRef, new Quaternion(), arguments);
     }
 
     /**
@@ -3573,10 +3682,12 @@ export class Quaternion {
      * @param axis3 defines the third axis
      * @param ref defines the target quaternion
      */
-    public static RotationQuaternionFromAxisToRef(axis1: DeepImmutable<Vector3>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>, ref: Quaternion): void {
+    public static RotationQuaternionFromAxisToRef(axis1: DeepImmutable<Vector3>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>, ref: Quaternion): Quaternion {
         var rotMat = MathTmp.Matrix[0];
         Matrix.FromXYZAxesToRef(axis1.normalize(), axis2.normalize(), axis3.normalize(), rotMat);
         Quaternion.FromRotationMatrixToRef(rotMat, ref);
+
+        return ref;
     }
 
     /**
@@ -3587,11 +3698,7 @@ export class Quaternion {
      * @returns the new interpolated quaternion
      */
     public static Slerp(left: DeepImmutable<Quaternion>, right: DeepImmutable<Quaternion>, amount: number): Quaternion {
-        var result = Quaternion.Identity();
-
-        Quaternion.SlerpToRef(left, right, amount, result);
-
-        return result;
+        return byRefFunc<Quaternion>(this.SlerpToRef, new Quaternion(), arguments);
     }
 
     /**
@@ -3601,7 +3708,7 @@ export class Quaternion {
      * @param amount defines the gradient to use
      * @param result defines the target quaternion
      */
-    public static SlerpToRef(left: DeepImmutable<Quaternion>, right: DeepImmutable<Quaternion>, amount: number, result: Quaternion): void {
+    public static SlerpToRef(left: DeepImmutable<Quaternion>, right: DeepImmutable<Quaternion>, amount: number, result: Quaternion): Quaternion {
         var num2;
         var num3;
         var num4 = (((left._x * right._x) + (left._y * right._y)) + (left._z * right._z)) + (left._w * right._w);
@@ -3627,6 +3734,8 @@ export class Quaternion {
         result.y = (num3 * left._y) + (num2 * right._y);
         result.z = (num3 * left._z) + (num2 * right._z);
         result.w = (num3 * left._w) + (num2 * right._w);
+
+        return result;
     }
 
     /**
@@ -3667,12 +3776,17 @@ export class Matrix {
     }
 
     private static _updateFlagSeed = 0;
+
     private static _identityReadOnly = Matrix.Identity() as DeepImmutable<Matrix>;
 
     private _isIdentity = false;
+
     private _isIdentityDirty = true;
+
     private _isIdentity3x2 = true;
+
     private _isIdentity3x2Dirty = true;
+
     /**
      * Gets the update flag of the matrix which is an unique number for the matrix.
      * It will be incremented every time the matrix data change.
@@ -3765,7 +3879,7 @@ export class Matrix {
      * @returns the matrix determinant
      */
     public determinant(): number {
-        if (this._isIdentity === true) {
+        if (this._isIdentity) {
             return 1;
         }
 
@@ -3806,6 +3920,7 @@ export class Matrix {
     public toArray(): DeepImmutable<Float32Array | Array<number>> {
         return this._m;
     }
+
     /**
      * Returns the matrix as a Float32Array or Array<number>
     * @returns the matrix underlying array.
@@ -3822,6 +3937,7 @@ export class Matrix {
         this.invertToRef(this);
         return this;
     }
+
     /**
      * Sets all the matrix elements to zero
      * @returns the current matrix
@@ -3844,9 +3960,7 @@ export class Matrix {
      * @returns a new matrix as the addition of the current matrix and the given one
      */
     public add(other: DeepImmutable<Matrix>): Matrix {
-        var result = new Matrix();
-        this.addToRef(other, result);
-        return result;
+        return byRefFunc<Matrix>(this.addToRef, new Matrix(), arguments);
     }
 
     /**
@@ -4027,7 +4141,7 @@ export class Matrix {
      * @returns a new Vector3 as the extracted translation from the matrix
      */
     public getTranslation(): Vector3 {
-        return new Vector3(this._m[12], this._m[13], this._m[14]);
+        return byRefFunc<Vector3>(this.getTranslationToRef, new Vector3(), arguments);
     }
 
     /**
@@ -4035,11 +4149,12 @@ export class Matrix {
      * @param result defines the Vector3 where to store the translation
      * @returns the current matrix
      */
-    public getTranslationToRef(result: Vector3): Matrix {
+    public getTranslationToRef(result: Vector3): Vector3 {
         result.x = this._m[12];
         result.y = this._m[13];
         result.z = this._m[14];
-        return this;
+
+        return result;
     }
 
     /**
@@ -4057,17 +4172,6 @@ export class Matrix {
         );
         this._updateIdentityStatus(m[12] === 0 && m[13] === 0 && m[14] === 0 && m[15] === 1);
         return this;
-    }
-
-    /**
-     * Multiply two matrices
-     * @param other defines the second operand
-     * @returns a new matrix set with the multiplication result of the current Matrix and the given one
-     */
-    public multiply(other: DeepImmutable<Matrix>): Matrix {
-        var result = new Matrix();
-        this.multiplyToRef(other, result);
-        return result;
     }
 
     /**
@@ -4108,6 +4212,15 @@ export class Matrix {
         array[offset + 15] = source[15];
 
         return this;
+    }
+
+    /**
+     * Multiply two matrices
+     * @param other defines the second operand
+     * @returns a new matrix set with the multiplication result of the current Matrix and the given one
+     */
+    public multiply(other: DeepImmutable<Matrix>): Matrix {
+        return byRefFunc<Matrix>(this.multiplyToRef, new Matrix(), arguments);
     }
 
     /**
@@ -4358,9 +4471,7 @@ export class Matrix {
      * @returns a new matrix
      */
     public scale(scale: number): Matrix {
-        var result = new Matrix();
-        this.scaleToRef(scale, result);
-        return result;
+        return byRefFunc<Matrix>(this.scaleToRef, new Matrix(), arguments);
     }
 
     /**
@@ -4395,7 +4506,7 @@ export class Matrix {
      * Writes to the given matrix a normal matrix, computed from this one (using values from identity matrix for fourth row and column).
      * @param ref matrix to store the result
      */
-    public toNormalMatrix(ref: Matrix): void {
+    public toNormalMatrix(ref: Matrix): Matrix {
         const tmp = MathTmp.Matrix[0];
         this.invertToRef(tmp);
         tmp.transposeToRef(ref);
@@ -4407,6 +4518,8 @@ export class Matrix {
             0.0, 0.0, 0.0, 1.0,
             ref
         );
+
+        return ref;
     }
 
     /**
@@ -4414,9 +4527,7 @@ export class Matrix {
      * @returns a new matrix sets to the extracted rotation matrix from the current one
      */
     public getRotationMatrix(): Matrix {
-        var result = new Matrix();
-        this.getRotationMatrixToRef(result);
-        return result;
+        return byRefFunc<Matrix>(this.getRotationMatrixToRef, new Matrix(), arguments);
     }
 
     /**
@@ -4469,6 +4580,7 @@ export class Matrix {
     }
 
     // Statics
+
     /**
      * Creates a matrix from an array
      * @param array defines the source array
@@ -4476,9 +4588,7 @@ export class Matrix {
      * @returns a new Matrix set from the starting index of the given array
      */
     public static FromArray(array: DeepImmutable<ArrayLike<number>>, offset: number = 0): Matrix {
-        var result = new Matrix();
-        Matrix.FromArrayToRef(array, offset, result);
-        return result;
+        return byRefFunc<Matrix>(this.FromArrayToRef, new Matrix(), arguments);
     }
 
     /**
@@ -4538,7 +4648,7 @@ export class Matrix {
     public static FromValuesToRef(initialM11: number, initialM12: number, initialM13: number, initialM14: number,
         initialM21: number, initialM22: number, initialM23: number, initialM24: number,
         initialM31: number, initialM32: number, initialM33: number, initialM34: number,
-        initialM41: number, initialM42: number, initialM43: number, initialM44: number, result: Matrix): void {
+        initialM41: number, initialM42: number, initialM43: number, initialM44: number, result: Matrix): Matrix {
 
         const m = result._m;
         m[0] = initialM11; m[1] = initialM12; m[2] = initialM13; m[3] = initialM14;
@@ -4547,6 +4657,8 @@ export class Matrix {
         m[12] = initialM41; m[13] = initialM42; m[14] = initialM43; m[15] = initialM44;
 
         result._markAsUpdated();
+
+        return result;
     }
 
     /**
@@ -4592,9 +4704,7 @@ export class Matrix {
      * @returns a new matrix
      */
     public static Compose(scale: DeepImmutable<Vector3>, rotation: DeepImmutable<Quaternion>, translation: DeepImmutable<Vector3>): Matrix {
-        var result = new Matrix();
-        Matrix.ComposeToRef(scale, rotation, translation, result);
-        return result;
+        return byRefFunc<Matrix>(this.ComposeToRef, new Matrix(), arguments);
     }
 
     /**
@@ -4604,7 +4714,7 @@ export class Matrix {
      * @param translation defines the translation vector3
      * @param result defines the target matrix
      */
-    public static ComposeToRef(scale: DeepImmutable<Vector3>, rotation: DeepImmutable<Quaternion>, translation: DeepImmutable<Vector3>, result: Matrix): void {
+    public static ComposeToRef(scale: DeepImmutable<Vector3>, rotation: DeepImmutable<Quaternion>, translation: DeepImmutable<Vector3>, result: Matrix): Matrix {
         let m = result._m;
         var x = rotation._x, y = rotation._y, z = rotation._z, w = rotation._w;
         var x2 = x + x, y2 = y + y, z2 = z + z;
@@ -4635,6 +4745,8 @@ export class Matrix {
         m[15] = 1;
 
         result._markAsUpdated();
+
+        return result;
     }
 
     /**
@@ -4642,20 +4754,14 @@ export class Matrix {
      * @returns a new identity matrix
      */
     public static Identity(): Matrix {
-        const identity = Matrix.FromValues(
-            1.0, 0.0, 0.0, 0.0,
-            0.0, 1.0, 0.0, 0.0,
-            0.0, 0.0, 1.0, 0.0,
-            0.0, 0.0, 0.0, 1.0);
-        identity._updateIdentityStatus(true);
-        return identity;
+        return byRefFunc<Matrix>(this.IdentityToRef, new Matrix(), arguments);
     }
 
     /**
      * Creates a new identity matrix and stores the result in a given matrix
      * @param result defines the target matrix
      */
-    public static IdentityToRef(result: Matrix): void {
+    public static IdentityToRef(result: Matrix): Matrix {
         Matrix.FromValuesToRef(
             1.0, 0.0, 0.0, 0.0,
             0.0, 1.0, 0.0, 0.0,
@@ -4664,6 +4770,8 @@ export class Matrix {
             result
         );
         result._updateIdentityStatus(true);
+
+        return result;
     }
 
     /**
@@ -4681,17 +4789,6 @@ export class Matrix {
     }
 
     /**
-     * Creates a new rotation matrix for "angle" radians around the X axis
-     * @param angle defines the angle (in radians) to use
-     * @return the new matrix
-     */
-    public static RotationX(angle: number): Matrix {
-        var result = new Matrix();
-        Matrix.RotationXToRef(angle, result);
-        return result;
-    }
-
-    /**
      * Creates a new matrix as the invert of a given matrix
      * @param source defines the source matrix
      * @returns the new matrix
@@ -4703,11 +4800,20 @@ export class Matrix {
     }
 
     /**
+     * Creates a new rotation matrix for "angle" radians around the X axis
+     * @param angle defines the angle (in radians) to use
+     * @return the new matrix
+     */
+    public static RotationX(angle: number): Matrix {
+        return byRefFunc<Matrix>(this.RotationXToRef, new Matrix(), arguments);
+    }
+
+    /**
      * Creates a new rotation matrix for "angle" radians around the X axis and stores it in a given matrix
      * @param angle defines the angle (in radians) to use
      * @param result defines the target matrix
      */
-    public static RotationXToRef(angle: number, result: Matrix): void {
+    public static RotationXToRef(angle: number, result: Matrix): Matrix {
         var s = Math.sin(angle);
         var c = Math.cos(angle);
         Matrix.FromValuesToRef(
@@ -4719,6 +4825,8 @@ export class Matrix {
         );
 
         result._updateIdentityStatus(c === 1 && s === 0);
+
+        return result;
     }
 
     /**
@@ -4727,9 +4835,7 @@ export class Matrix {
      * @return the new matrix
      */
     public static RotationY(angle: number): Matrix {
-        var result = new Matrix();
-        Matrix.RotationYToRef(angle, result);
-        return result;
+        return byRefFunc<Matrix>(this.RotationYToRef, new Matrix(), arguments);
     }
 
     /**
@@ -4737,7 +4843,7 @@ export class Matrix {
      * @param angle defines the angle (in radians) to use
      * @param result defines the target matrix
      */
-    public static RotationYToRef(angle: number, result: Matrix): void {
+    public static RotationYToRef(angle: number, result: Matrix): Matrix {
         var s = Math.sin(angle);
         var c = Math.cos(angle);
         Matrix.FromValuesToRef(
@@ -4749,6 +4855,8 @@ export class Matrix {
         );
 
         result._updateIdentityStatus(c === 1 && s === 0);
+
+        return result;
     }
 
     /**
@@ -4757,9 +4865,7 @@ export class Matrix {
      * @return the new matrix
      */
     public static RotationZ(angle: number): Matrix {
-        var result = new Matrix();
-        Matrix.RotationZToRef(angle, result);
-        return result;
+        return byRefFunc<Matrix>(this.RotationZToRef, new Matrix(), arguments);
     }
 
     /**
@@ -4767,7 +4873,7 @@ export class Matrix {
      * @param angle defines the angle (in radians) to use
      * @param result defines the target matrix
      */
-    public static RotationZToRef(angle: number, result: Matrix): void {
+    public static RotationZToRef(angle: number, result: Matrix): Matrix {
         var s = Math.sin(angle);
         var c = Math.cos(angle);
         Matrix.FromValuesToRef(
@@ -4779,6 +4885,8 @@ export class Matrix {
         );
 
         result._updateIdentityStatus(c === 1 && s === 0);
+
+        return result;
     }
 
     /**
@@ -4788,9 +4896,7 @@ export class Matrix {
      * @return the new matrix
      */
     public static RotationAxis(axis: DeepImmutable<Vector3>, angle: number): Matrix {
-        var result = new Matrix();
-        Matrix.RotationAxisToRef(axis, angle, result);
-        return result;
+        return byRefFunc<Matrix>(this.RotationAxisToRef, new Matrix(), arguments);
     }
 
     /**
@@ -4799,7 +4905,7 @@ export class Matrix {
      * @param angle defines the angle (in radians) to use
      * @param result defines the target matrix
      */
-    public static RotationAxisToRef(axis: DeepImmutable<Vector3>, angle: number, result: Matrix): void {
+    public static RotationAxisToRef(axis: DeepImmutable<Vector3>, angle: number, result: Matrix): Matrix {
         var s = Math.sin(-angle);
         var c = Math.cos(-angle);
         var c1 = 1 - c;
@@ -4827,6 +4933,8 @@ export class Matrix {
         m[15] = 1.0;
 
         result._markAsUpdated();
+
+        return result;
     }
 
     /**
@@ -4836,7 +4944,7 @@ export class Matrix {
      * @param to defines the vector to align to
      * @param result defines the target matrix
      */
-    public static RotationAlignToRef(from: DeepImmutable<Vector3>, to: DeepImmutable<Vector3>, result: Matrix): void {
+    public static RotationAlignToRef(from: DeepImmutable<Vector3>, to: DeepImmutable<Vector3>, result: Matrix): Matrix {
         const v = Vector3.Cross(to, from);
         const c = Vector3.Dot(to, from);
         const k = 1 / (1 + c);
@@ -4848,6 +4956,8 @@ export class Matrix {
         m[12] = 0; m[13] = 0; m[14] = 0; m[15] = 1;
 
         result._markAsUpdated();
+
+        return result;
     }
 
     /**
@@ -4858,9 +4968,7 @@ export class Matrix {
      * @returns the new rotation matrix
      */
     public static RotationYawPitchRoll(yaw: number, pitch: number, roll: number): Matrix {
-        var result = new Matrix();
-        Matrix.RotationYawPitchRollToRef(yaw, pitch, roll, result);
-        return result;
+        return byRefFunc<Matrix>(this.RotationYawPitchRollToRef, new Matrix(), arguments);
     }
 
     /**
@@ -4870,9 +4978,11 @@ export class Matrix {
      * @param roll defines the roll angle in radians (Z axis)
      * @param result defines the target matrix
      */
-    public static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Matrix): void {
+    public static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Matrix): Matrix {
         Quaternion.RotationYawPitchRollToRef(yaw, pitch, roll, MathTmp.Quaternion[0]);
         MathTmp.Quaternion[0].toRotationMatrix(result);
+
+        return result;
     }
 
     /**
@@ -4883,9 +4993,7 @@ export class Matrix {
      * @returns the new matrix
      */
     public static Scaling(x: number, y: number, z: number): Matrix {
-        var result = new Matrix();
-        Matrix.ScalingToRef(x, y, z, result);
-        return result;
+        return byRefFunc<Matrix>(this.ScalingToRef, new Matrix(), arguments);
     }
 
     /**
@@ -4895,7 +5003,7 @@ export class Matrix {
      * @param z defines the scale factor on Z axis
      * @param result defines the target matrix
      */
-    public static ScalingToRef(x: number, y: number, z: number, result: Matrix): void {
+    public static ScalingToRef(x: number, y: number, z: number, result: Matrix): Matrix {
         Matrix.FromValuesToRef(
             x, 0.0, 0.0, 0.0,
             0.0, y, 0.0, 0.0,
@@ -4905,6 +5013,8 @@ export class Matrix {
         );
 
         result._updateIdentityStatus(x === 1 && y === 1 && z === 1);
+
+        return result;
     }
 
     /**
@@ -4915,9 +5025,7 @@ export class Matrix {
      * @returns the new matrix
      */
     public static Translation(x: number, y: number, z: number): Matrix {
-        var result = new Matrix();
-        Matrix.TranslationToRef(x, y, z, result);
-        return result;
+        return byRefFunc<Matrix>(this.TranslationToRef, new Matrix(), arguments);
     }
 
     /**
@@ -4927,7 +5035,7 @@ export class Matrix {
      * @param z defines the translationon Z axis
      * @param result defines the target matrix
      */
-    public static TranslationToRef(x: number, y: number, z: number, result: Matrix): void {
+    public static TranslationToRef(x: number, y: number, z: number, result: Matrix): Matrix {
         Matrix.FromValuesToRef(
             1.0, 0.0, 0.0, 0.0,
             0.0, 1.0, 0.0, 0.0,
@@ -4935,7 +5043,10 @@ export class Matrix {
             x, y, z, 1.0,
             result
         );
+
         result._updateIdentityStatus(x === 0 && y === 0 && z === 0);
+
+        return result;
     }
 
     /**
@@ -4946,9 +5057,7 @@ export class Matrix {
      * @returns the new matrix
      */
     public static Lerp(startValue: DeepImmutable<Matrix>, endValue: DeepImmutable<Matrix>, gradient: number): Matrix {
-        var result = new Matrix();
-        Matrix.LerpToRef(startValue, endValue, gradient, result);
-        return result;
+        return byRefFunc<Matrix>(this.LerpToRef, new Matrix(), arguments);
     }
 
     /**
@@ -4958,7 +5067,7 @@ export class Matrix {
      * @param gradient defines the gradient factor
      * @param result defines the Matrix object where to store data
      */
-    public static LerpToRef(startValue: DeepImmutable<Matrix>, endValue: DeepImmutable<Matrix>, gradient: number, result: Matrix): void {
+    public static LerpToRef(startValue: DeepImmutable<Matrix>, endValue: DeepImmutable<Matrix>, gradient: number, result: Matrix): Matrix {
         const resultM = result._m;
         const startM = startValue.m;
         const endM = endValue.m;
@@ -4966,6 +5075,8 @@ export class Matrix {
             resultM[index] = startM[index] * (1.0 - gradient) + endM[index] * gradient;
         }
         result._markAsUpdated();
+
+        return result;
     }
 
     /**
@@ -4979,9 +5090,7 @@ export class Matrix {
      * @returns the new matrix
      */
     public static DecomposeLerp(startValue: DeepImmutable<Matrix>, endValue: DeepImmutable<Matrix>, gradient: number): Matrix {
-        var result = new Matrix();
-        Matrix.DecomposeLerpToRef(startValue, endValue, gradient, result);
-        return result;
+        return byRefFunc<Matrix>(this.DecomposeLerpToRef, new Matrix(), arguments);
     }
 
     /**
@@ -4994,7 +5103,7 @@ export class Matrix {
      * @param gradient defines the gradient between the two matrices
      * @param result defines the target matrix
      */
-    public static DecomposeLerpToRef(startValue: DeepImmutable<Matrix>, endValue: DeepImmutable<Matrix>, gradient: number, result: Matrix) {
+    public static DecomposeLerpToRef(startValue: DeepImmutable<Matrix>, endValue: DeepImmutable<Matrix>, gradient: number, result: Matrix): Matrix {
         var startScale = MathTmp.Vector3[0];
         var startRotation = MathTmp.Quaternion[0];
         var startTranslation = MathTmp.Vector3[1];
@@ -5014,6 +5123,8 @@ export class Matrix {
         Vector3.LerpToRef(startTranslation, endTranslation, gradient, resultTranslation);
 
         Matrix.ComposeToRef(resultScale, resultRotation, resultTranslation, result);
+
+        return result;
     }
 
     /**
@@ -5025,9 +5136,7 @@ export class Matrix {
      * @returns the new matrix
      */
     public static LookAtLH(eye: DeepImmutable<Vector3>, target: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Matrix {
-        var result = new Matrix();
-        Matrix.LookAtLHToRef(eye, target, up, result);
-        return result;
+        return byRefFunc<Matrix>(this.LookAtLHToRef, new Matrix(), arguments);
     }
 
     /**
@@ -5038,7 +5147,7 @@ export class Matrix {
      * @param up defines the up vector for the entity
      * @param result defines the target matrix
      */
-    public static LookAtLHToRef(eye: DeepImmutable<Vector3>, target: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, result: Matrix): void {
+    public static LookAtLHToRef(eye: DeepImmutable<Vector3>, target: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, result: Matrix): Matrix {
         const xAxis = MathTmp.Vector3[0];
         const yAxis = MathTmp.Vector3[1];
         const zAxis = MathTmp.Vector3[2];
@@ -5073,6 +5182,8 @@ export class Matrix {
             ex, ey, ez, 1.0,
             result
         );
+
+        return result;
     }
 
     /**
@@ -5084,9 +5195,7 @@ export class Matrix {
      * @returns the new matrix
      */
     public static LookAtRH(eye: DeepImmutable<Vector3>, target: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Matrix {
-        var result = new Matrix();
-        Matrix.LookAtRHToRef(eye, target, up, result);
-        return result;
+        return byRefFunc<Matrix>(this.LookAtRHToRef, new Matrix(), arguments);
     }
 
     /**
@@ -5097,7 +5206,7 @@ export class Matrix {
      * @param up defines the up vector for the entity
      * @param result defines the target matrix
      */
-    public static LookAtRHToRef(eye: DeepImmutable<Vector3>, target: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, result: Matrix): void {
+    public static LookAtRHToRef(eye: DeepImmutable<Vector3>, target: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, result: Matrix): Matrix {
         const xAxis = MathTmp.Vector3[0];
         const yAxis = MathTmp.Vector3[1];
         const zAxis = MathTmp.Vector3[2];
@@ -5132,6 +5241,8 @@ export class Matrix {
             ex, ey, ez, 1.0,
             result
         );
+
+        return result;
     }
 
     /**
@@ -5143,9 +5254,7 @@ export class Matrix {
      * @returns a new matrix as a left-handed orthographic projection matrix
      */
     public static OrthoLH(width: number, height: number, znear: number, zfar: number): Matrix {
-        var matrix = new Matrix();
-        Matrix.OrthoLHToRef(width, height, znear, zfar, matrix);
-        return matrix;
+        return byRefFunc<Matrix>(this.OrthoLHToRef, new Matrix(), arguments);
     }
 
     /**
@@ -5156,7 +5265,7 @@ export class Matrix {
      * @param zfar defines the far clip plane
      * @param result defines the target matrix
      */
-    public static OrthoLHToRef(width: number, height: number, znear: number, zfar: number, result: Matrix): void {
+    public static OrthoLHToRef(width: number, height: number, znear: number, zfar: number, result: Matrix): Matrix {
         let n = znear;
         let f = zfar;
 
@@ -5174,6 +5283,8 @@ export class Matrix {
         );
 
         result._updateIdentityStatus(a === 1 && b === 1 && c === 1 && d === 0);
+
+        return result;
     }
 
     /**
@@ -5187,9 +5298,7 @@ export class Matrix {
      * @returns a new matrix as a left-handed orthographic projection matrix
      */
     public static OrthoOffCenterLH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix {
-        var matrix = new Matrix();
-        Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, znear, zfar, matrix);
-        return matrix;
+        return byRefFunc<Matrix>(this.OrthoOffCenterLHToRef, new Matrix(), arguments);
     }
 
     /**
@@ -5202,7 +5311,7 @@ export class Matrix {
      * @param zfar defines the far clip plane
      * @param result defines the target matrix
      */
-    public static OrthoOffCenterLHToRef(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void {
+    public static OrthoOffCenterLHToRef(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, result: Matrix): Matrix {
         let n = znear;
         let f = zfar;
 
@@ -5222,6 +5331,8 @@ export class Matrix {
         );
 
         result._markAsUpdated();
+
+        return result;
     }
 
     /**
@@ -5235,9 +5346,7 @@ export class Matrix {
      * @returns a new matrix as a right-handed orthographic projection matrix
      */
     public static OrthoOffCenterRH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix {
-        var matrix = new Matrix();
-        Matrix.OrthoOffCenterRHToRef(left, right, bottom, top, znear, zfar, matrix);
-        return matrix;
+        return byRefFunc<Matrix>(this.OrthoOffCenterRHToRef, new Matrix(), arguments);
     }
 
     /**
@@ -5250,9 +5359,11 @@ export class Matrix {
      * @param zfar defines the far clip plane
      * @param result defines the target matrix
      */
-    public static OrthoOffCenterRHToRef(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void {
+    public static OrthoOffCenterRHToRef(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, result: Matrix): Matrix {
         Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, znear, zfar, result);
         result._m[10] *= -1; // No need to call _markAsUpdated as previous function already called it and let _isIdentityDirty to true
+
+        return result;
     }
 
     /**
@@ -5295,9 +5406,7 @@ export class Matrix {
      * @returns a new matrix as a left-handed perspective projection matrix
      */
     public static PerspectiveFovLH(fov: number, aspect: number, znear: number, zfar: number): Matrix {
-        var matrix = new Matrix();
-        Matrix.PerspectiveFovLHToRef(fov, aspect, znear, zfar, matrix);
-        return matrix;
+        return byRefFunc<Matrix>(this.PerspectiveFovLHToRef, new Matrix(), arguments);
     }
 
     /**
@@ -5309,7 +5418,7 @@ export class Matrix {
      * @param result defines the target matrix
      * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
      */
-    public static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
+    public static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): Matrix {
         let n = znear;
         let f = zfar;
 
@@ -5327,6 +5436,8 @@ export class Matrix {
             result
         );
         result._updateIdentityStatus(false);
+
+        return result;
     }
 
     /**
@@ -5338,7 +5449,7 @@ export class Matrix {
      * @param result defines the target matrix
      * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
      */
-    public static PerspectiveFovReverseLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
+    public static PerspectiveFovReverseLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): Matrix {
         let t = 1.0 / (Math.tan(fov * 0.5));
         let a = isVerticalFovFixed ? (t / aspect) : t;
         let b = isVerticalFovFixed ? t : (t * aspect);
@@ -5350,6 +5461,8 @@ export class Matrix {
             result
         );
         result._updateIdentityStatus(false);
+
+        return result;
     }
 
     /**
@@ -5361,9 +5474,7 @@ export class Matrix {
      * @returns a new matrix as a right-handed perspective projection matrix
      */
     public static PerspectiveFovRH(fov: number, aspect: number, znear: number, zfar: number): Matrix {
-        var matrix = new Matrix();
-        Matrix.PerspectiveFovRHToRef(fov, aspect, znear, zfar, matrix);
-        return matrix;
+        return byRefFunc<Matrix>(this.PerspectiveFovRHToRef, new Matrix(), arguments);
     }
 
     /**
@@ -5375,7 +5486,7 @@ export class Matrix {
      * @param result defines the target matrix
      * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
      */
-    public static PerspectiveFovRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
+    public static PerspectiveFovRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): Matrix {
         //alternatively this could be expressed as:
         //    m = PerspectiveFovLHToRef
         //    m[10] *= -1.0;
@@ -5399,6 +5510,8 @@ export class Matrix {
         );
 
         result._updateIdentityStatus(false);
+
+        return result;
     }
 
     /**
@@ -5410,7 +5523,7 @@ export class Matrix {
      * @param result defines the target matrix
      * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
      */
-    public static PerspectiveFovReverseRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
+    public static PerspectiveFovReverseRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): Matrix {
         //alternatively this could be expressed as:
         //    m = PerspectiveFovLHToRef
         //    m[10] *= -1.0;
@@ -5429,6 +5542,8 @@ export class Matrix {
         );
 
         result._updateIdentityStatus(false);
+
+        return result;
     }
 
     /**
@@ -5439,7 +5554,7 @@ export class Matrix {
      * @param result defines the target matrix
      * @param rightHanded defines if the matrix must be in right-handed mode (false by default)
      */
-    public static PerspectiveFovWebVRToRef(fov: { upDegrees: number, downDegrees: number, leftDegrees: number, rightDegrees: number }, znear: number, zfar: number, result: Matrix, rightHanded = false): void {
+    public static PerspectiveFovWebVRToRef(fov: { upDegrees: number, downDegrees: number, leftDegrees: number, rightDegrees: number }, znear: number, zfar: number, result: Matrix, rightHanded = false): Matrix {
 
         var rightHandedFactor = rightHanded ? -1 : 1;
 
@@ -5462,6 +5577,8 @@ export class Matrix {
         m[14] = -(2.0 * zfar * znear) / (zfar - znear);
 
         result._markAsUpdated();
+
+        return result;
     }
 
     /**
@@ -5502,6 +5619,7 @@ export class Matrix {
         const arr = [m[0], m[1], m[4], m[5]];
         return PerformanceConfigurator.MatrixUse64Bits ? arr : new Float32Array(arr);
     }
+
     /**
      * Extracts a 3x3 matrix from a given matrix and store the result in a Float32Array
      * @param matrix defines the matrix to use
@@ -5523,9 +5641,7 @@ export class Matrix {
      * @returns the new matrix
      */
     public static Transpose(matrix: DeepImmutable<Matrix>): Matrix {
-        var result = new Matrix();
-        Matrix.TransposeToRef(matrix, result);
-        return result;
+        return byRefFunc<Matrix>(this.TransposeToRef, new Matrix(), arguments);
     }
 
     /**
@@ -5533,7 +5649,7 @@ export class Matrix {
      * @param matrix defines the matrix to transpose
      * @param result defines the target matrix
      */
-    public static TransposeToRef(matrix: DeepImmutable<Matrix>, result: Matrix): void {
+    public static TransposeToRef(matrix: DeepImmutable<Matrix>, result: Matrix): Matrix {
         const rm = result._m;
         const mm = matrix.m;
         rm[0] = mm[0];
@@ -5557,6 +5673,8 @@ export class Matrix {
         rm[15] = mm[15];
         // identity-ness does not change when transposing
         result._updateIdentityStatus((matrix as Matrix)._isIdentity, (matrix as Matrix)._isIdentityDirty);
+
+        return result;
     }
 
     /**
@@ -5565,9 +5683,7 @@ export class Matrix {
      * @returns a new matrix
      */
     public static Reflection(plane: DeepImmutable<IPlaneLike>): Matrix {
-        var matrix = new Matrix();
-        Matrix.ReflectionToRef(plane, matrix);
-        return matrix;
+        return byRefFunc<Matrix>(this.ReflectionToRef, new Matrix(), arguments);
     }
 
     /**
@@ -5575,7 +5691,7 @@ export class Matrix {
      * @param plane defines the reflection plane
      * @param result defines the target matrix
      */
-    public static ReflectionToRef(plane: DeepImmutable<IPlaneLike>, result: Matrix): void {
+    public static ReflectionToRef(plane: DeepImmutable<IPlaneLike>, result: Matrix): Matrix {
         plane.normalize();
         var x = plane.normal.x;
         var y = plane.normal.y;
@@ -5590,6 +5706,8 @@ export class Matrix {
             temp * plane.d, temp2 * plane.d, temp3 * plane.d, 1.0,
             result
         );
+
+        return result;
     }
 
     /**
@@ -5599,7 +5717,7 @@ export class Matrix {
      * @param zaxis defines the value of the 3rd axis
      * @param result defines the target matrix
      */
-    public static FromXYZAxesToRef(xaxis: DeepImmutable<Vector3>, yaxis: DeepImmutable<Vector3>, zaxis: DeepImmutable<Vector3>, result: Matrix) {
+    public static FromXYZAxesToRef(xaxis: DeepImmutable<Vector3>, yaxis: DeepImmutable<Vector3>, zaxis: DeepImmutable<Vector3>, result: Matrix): Matrix {
         Matrix.FromValuesToRef(
             xaxis._x, xaxis._y, xaxis._z, 0.0,
             yaxis._x, yaxis._y, yaxis._z, 0.0,
@@ -5607,6 +5725,8 @@ export class Matrix {
             0.0, 0.0, 0.0, 1.0,
             result
         );
+
+        return result;
     }
 
     /**
@@ -5614,7 +5734,7 @@ export class Matrix {
      * @param quat defines the quaternion to use
      * @param result defines the target matrix
      */
-    public static FromQuaternionToRef(quat: DeepImmutable<Quaternion>, result: Matrix) {
+    public static FromQuaternionToRef(quat: DeepImmutable<Quaternion>, result: Matrix): Matrix {
         var xx = quat._x * quat._x;
         var yy = quat._y * quat._y;
         var zz = quat._z * quat._z;
@@ -5646,6 +5766,8 @@ export class Matrix {
         result._m[15] = 1.0;
 
         result._markAsUpdated();
+
+        return result;
     }
 }
 
