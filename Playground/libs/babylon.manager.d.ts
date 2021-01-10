@@ -2295,6 +2295,7 @@ declare module BABYLON {
         heightOffset: number;
         angularSpeed: number;
         updatePosition: boolean;
+        updateRotation: boolean;
         distanceEpsilon: number;
         velocityEpsilon: number;
         stoppingDistance: number;
