@@ -320,26 +320,7 @@ export class TextureBlock extends NodeMaterialBlock {
         state.compilationString += `#endif\r\n`;
     }
 
-    private _writeOutput(state: NodeMaterialBuildState, output: NodeMaterialConnectionPoint, swizzle: string, vertexMode = false) {
-        if (vertexMode) {
-            if (state.target === NodeMaterialBlockTargets.Fragment) {
-                return;
-            }
-
-            state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle};\r\n`;
-
-            return;
-        }
-
-        if (this.uv.ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
-            state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle};\r\n`;
-            return;
-        }
-
-        const complement = ` * ${this._textureInfoName}`;
-
-        state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle}${complement};\r\n`;
-
+    private _generateConversionCode(state: NodeMaterialBuildState, output: NodeMaterialConnectionPoint, swizzle: string): void {
         if (swizzle !== 'a') { // no conversion if the output is "a" (alpha)
             state.compilationString += `#ifdef ${this._linearDefineName}\r\n`;
             state.compilationString += `${output.associatedVariableName} = toGammaSpace(${output.associatedVariableName});\r\n`;
@@ -349,6 +330,29 @@ export class TextureBlock extends NodeMaterialBlock {
             state.compilationString += `${output.associatedVariableName} = toLinearSpace(${output.associatedVariableName});\r\n`;
             state.compilationString += `#endif\r\n`;
         }
+    }
+
+    private _writeOutput(state: NodeMaterialBuildState, output: NodeMaterialConnectionPoint, swizzle: string, vertexMode = false) {
+        if (vertexMode) {
+            if (state.target === NodeMaterialBlockTargets.Fragment) {
+                return;
+            }
+
+            state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle};\r\n`;
+            this._generateConversionCode(state, output, swizzle);
+            return;
+        }
+
+        if (this.uv.ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
+            state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle};\r\n`;
+            this._generateConversionCode(state, output, swizzle);
+            return;
+        }
+
+        const complement = ` * ${this._textureInfoName}`;
+
+        state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle}${complement};\r\n`;
+        this._generateConversionCode(state, output, swizzle);
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
