@@ -848,7 +848,7 @@ export class InputManager {
                     ? "mousewheel" // Webkit and IE support at least "mousewheel"
                     : "DOMMouseScroll"; // let's assume that remaining browsers are older Firefox
 
-            elementToAttachTo.addEventListener(this._wheelEventName, <any>this._onPointerMove, false);
+            elementToAttachTo.addEventListener(this._wheelEventName, <any>this._onPointerMove, { passive: false });
         }
 
         if (attachDown) {
