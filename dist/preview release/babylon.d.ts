@@ -12886,6 +12886,7 @@ declare module BABYLON {
         private get _isMixed();
         private _injectVertexCode;
         private _writeTextureRead;
+        private _generateConversionCode;
         private _writeOutput;
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
         protected _dumpPropertiesCode(): string;
