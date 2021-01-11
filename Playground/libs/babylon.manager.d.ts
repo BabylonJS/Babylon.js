@@ -1477,19 +1477,19 @@ declare module BABYLON {
         /** Set animation target property */
         static SetAnimationTargetProperty(animation: BABYLON.Animation, property: string): void;
         /** Gets the float "result" as the sampled key frame value for the specfied animation track. */
-        static SampleAnimationFloat(animation: BABYLON.Animation, frame: number): number;
+        static SampleAnimationFloat(animation: BABYLON.Animation, time: number): number;
         /** Set the passed vector2 "result" as the sampled key frame value for the specfied animation track. */
-        static SampleAnimationVector2(animation: BABYLON.Animation, frame: number): BABYLON.Vector2;
+        static SampleAnimationVector2(animation: BABYLON.Animation, time: number): BABYLON.Vector2;
         /** Set the passed vector3 "result" as the sampled key frame value for the specfied animation track. */
-        static SampleAnimationVector3(animation: BABYLON.Animation, frame: number): BABYLON.Vector3;
+        static SampleAnimationVector3(animation: BABYLON.Animation, time: number): BABYLON.Vector3;
         /** Set the passed quaternion "result" as the sampled key frame value for the specfied animation track. */
-        static SampleAnimationQuaternion(animation: BABYLON.Animation, frame: number): BABYLON.Quaternion;
+        static SampleAnimationQuaternion(animation: BABYLON.Animation, time: number): BABYLON.Quaternion;
         /** Set the passed matrix "result" as the sampled key frame value for the specfied animation track. */
-        static SampleAnimationMatrix(animation: BABYLON.Animation, frame: number): BABYLON.Matrix;
+        static SampleAnimationMatrix(animation: BABYLON.Animation, time: number): BABYLON.Matrix;
         /** Creates a targeted float animation for tweening.  */
-        static CreateFloatAnimation(name: string, targetProperty: string, startValue: number, endValue: number, frameRate?: number, loopMode?: number): BABYLON.Animation;
+        static CreateTweenAnimation(name: string, targetProperty: string, startValue: number, endValue: number, frameRate?: number, loopMode?: number): BABYLON.Animation;
         /** Gets the last key frame index value. */
-        static GetLastKeyFrameIndex(animation: BABYLON.Animation): number;
+        static GetLastKeyFrameValue(animation: BABYLON.Animation): number;
         /** Private internal frame interpolation helper */
         private static InterpolateAnimation;
         /** Initialize default shader material properties */
@@ -2298,9 +2298,11 @@ declare module BABYLON {
         updateRotation: boolean;
         distanceEpsilon: number;
         velocityEpsilon: number;
+        offMeshVelocity: number;
         stoppingDistance: number;
         isReady(): boolean;
         isNavigating(): boolean;
+        isOnOffMeshLink(): boolean;
         getAgentType(): number;
         getAgentState(): number;
         getAgentIndex(): number;
