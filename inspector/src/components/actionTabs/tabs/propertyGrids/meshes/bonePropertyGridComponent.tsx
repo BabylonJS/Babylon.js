@@ -3,7 +3,7 @@ import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LineContainerComponent } from "../../../lineContainerComponent";
+import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
 import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
 import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from '../../../../globalState';
@@ -37,7 +37,7 @@ export class BonePropertyGridComponent extends React.Component<IBonePropertyGrid
 
         return (
             <div className="pane">
-                <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
+                <LineContainerComponent title="GENERAL">
                     <TextLineComponent label="Name" value={bone.name} />
                     <TextLineComponent label="Index" value={bone.getIndex().toString()} />
                     <TextLineComponent label="Unique ID" value={bone.uniqueId.toString()} />
@@ -50,7 +50,7 @@ export class BonePropertyGridComponent extends React.Component<IBonePropertyGrid
                         <TextLineComponent label="Linked node" value={bone.getTransformNode()!.name} onLink={() => this.onTransformNodeLink()}/>
                     }
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="TRANSFORMATIONS">
+                <LineContainerComponent title="TRANSFORMATIONS">
                     <Vector3LineComponent label="Position" target={bone} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         !bone.rotationQuaternion &&

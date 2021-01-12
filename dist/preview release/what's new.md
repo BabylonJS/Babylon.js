@@ -14,7 +14,7 @@
 - Added support for infinite perspective cameras ([Deltakosh](https://github.com/deltakosh))
 - Added ability to enable/disable ArcRotateCamera zoom on multiTouch event ([NicolasBuecher](https://github.com/NicolasBuecher))
 - Moving button to shared uI folder.([msDestiny14](https://github.com/msDestiny14))
-- Moving remaining components to shared UI folder. ([msDestiny14](https://github.com/msDestiny14))
+- Moving linecontainer component to shared UI folder. ([msDestiny14](https://github.com/msDestiny14))
 - Added encapsulate and encapsulateBoundingInfo methods to BoundingInfo. ([Tolo789](https://github.com/Tolo789))
 - Added onLoadObservable to the textureDome class(es) ([RaananW](https://github.com/RaananW))
 
@@ -104,6 +104,7 @@
 - Fix PostProcess sharing between cameras/renderTargets, that would create/destroy a texture on every frame ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Fix for DualSense gamepads being incorrectly read as DualShock gamepads ([PolygonalSun](https://github.com/PolygonalSun))
 - Fix for warning in chrome about passive wheel events ([#9777](https://github.com/BabylonJS/Babylon.js/pull/9777)) ([kaliatech](https://github.com/kaliatech))
+- Fix crash when cloning material in `AssetContainer.instantiateModelsToScene` when mesh is an instanced mesh ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
