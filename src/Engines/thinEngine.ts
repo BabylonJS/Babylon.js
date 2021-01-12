@@ -1062,7 +1062,7 @@ export class ThinEngine {
 
     protected _initFeatures(): void {
         this._features = {
-            forceBitmapOverHTMLImageElement: false,
+            forceBitmapOverHTMLImageElement: true,
             supportRenderAndCopyToLodForFloatTextures: this._webGLVersion !== 1,
             supportDepthStencilTexture: this._webGLVersion !== 1,
             supportShadowSamplers: this._webGLVersion !== 1,
@@ -1078,6 +1078,7 @@ export class ThinEngine {
             supportExtendedTextureFormats: this._webGLVersion !== 1,
             supportSwitchCaseInShader: this._webGLVersion !== 1,
             supportSyncTextureRead: true,
+            needsInvertingBitmap: true,
             _collectUbosUpdatedInFrame: false,
         };
     }
