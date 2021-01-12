@@ -9,7 +9,7 @@ import { Engine } from "babylonjs/Engines/engine";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { SliderLineComponent } from "../../../../../sharedUiComponents/lines/sliderLineComponent";
-import { LineContainerComponent } from "../../../lineContainerComponent";
+import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
 import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
 import { OptionsLineComponent, Null_Value } from "../../../../../sharedUiComponents/lines/optionsLineComponent";
 import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
@@ -76,7 +76,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={material}
                     lockObject={this.props.lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
+                <LineContainerComponent title="GENERAL">
                     <TextLineComponent label="ID" value={material.id} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={material} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                     <TextLineComponent label="Unique ID" value={material.uniqueId.toString()} />
@@ -97,7 +97,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                     }} />
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="TRANSPARENCY">
+                <LineContainerComponent title="TRANSPARENCY">
                     <SliderLineComponent label="Alpha" target={material} propertyName="alpha" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         (material as any).transparencyMode !== undefined &&

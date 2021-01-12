@@ -2,7 +2,7 @@ import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 import { Light } from "babylonjs/Lights/light";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LineContainerComponent } from "../../../lineContainerComponent";
+import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
 import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
 import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
 import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
@@ -32,7 +32,7 @@ export class CommonLightPropertyGridComponent extends React.Component<ICommonLig
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={light}
                     lockObject={this.props.lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
+                <LineContainerComponent title="GENERAL">
                     <TextLineComponent label="ID" value={light.id} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={light} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                     <TextLineComponent label="Unique ID" value={light.uniqueId.toString()} />

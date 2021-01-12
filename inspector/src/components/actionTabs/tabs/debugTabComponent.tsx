@@ -1,6 +1,6 @@
 import * as React from "react";
 import { PaneComponent, IPaneComponentProps } from "../paneComponent";
-import { LineContainerComponent } from "../lineContainerComponent";
+import { LineContainerComponent } from "../../../sharedUiComponents/lines/lineContainerComponent";
 import { CheckBoxLineComponent } from "../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { RenderGridPropertyGridComponent } from "./propertyGrids/renderGridPropertyGridComponent";
 
@@ -60,11 +60,11 @@ export class DebugTabComponent extends PaneComponent {
 
         return (
             <div className="pane">
-                <LineContainerComponent globalState={this.props.globalState} title="HELPERS">
+                <LineContainerComponent title="HELPERS">
                     <RenderGridPropertyGridComponent globalState={this.props.globalState} scene={scene} />
                     <CheckBoxLineComponent label="Physics" isSelected={() => this._physicsViewersEnabled} onSelect={() => this.switchPhysicsViewers()} />
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="CORE TEXTURE CHANNELS">
+                <LineContainerComponent title="CORE TEXTURE CHANNELS">
                     <CheckBoxLineComponent label="Diffuse" isSelected={() => StandardMaterial.DiffuseTextureEnabled} onSelect={() => StandardMaterial.DiffuseTextureEnabled = !StandardMaterial.DiffuseTextureEnabled} />
                     <CheckBoxLineComponent label="Ambient" isSelected={() => StandardMaterial.AmbientTextureEnabled} onSelect={() => StandardMaterial.AmbientTextureEnabled = !StandardMaterial.AmbientTextureEnabled} />
                     <CheckBoxLineComponent label="Specular" isSelected={() => StandardMaterial.SpecularTextureEnabled} onSelect={() => StandardMaterial.SpecularTextureEnabled = !StandardMaterial.SpecularTextureEnabled} />
@@ -77,7 +77,7 @@ export class DebugTabComponent extends PaneComponent {
                     <CheckBoxLineComponent label="Lightmap" isSelected={() => StandardMaterial.LightmapTextureEnabled} onSelect={() => StandardMaterial.LightmapTextureEnabled = !StandardMaterial.LightmapTextureEnabled} />
                     <CheckBoxLineComponent label="Fresnel" isSelected={() => StandardMaterial.FresnelEnabled} onSelect={() => StandardMaterial.FresnelEnabled = !StandardMaterial.FresnelEnabled} />
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="FEATURES">
+                <LineContainerComponent title="FEATURES">
                     <CheckBoxLineComponent label="Animations" isSelected={() => scene.animationsEnabled} onSelect={() => scene.animationsEnabled = !scene.animationsEnabled} />
                     <CheckBoxLineComponent label="Physics" isSelected={() => scene.physicsEnabled} onSelect={() => scene.physicsEnabled = !scene.physicsEnabled} />
                     <CheckBoxLineComponent label="Collisions" isSelected={() => scene.collisionsEnabled} onSelect={() => scene.collisionsEnabled = !scene.collisionsEnabled} />
