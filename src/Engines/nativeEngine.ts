@@ -1162,6 +1162,22 @@ export class NativeEngine extends Engine {
     }
 
     /**
+     * Gets the client rect of native canvas.  Needed for InputManager.
+     * @returns a client rectangle
+     */
+    public getInputElementClientRect(): Nullable<ClientRect> {
+        const rect = {
+            bottom: this.getRenderHeight(),
+            height: this.getRenderHeight(),
+            left: 0,
+            right: this.getRenderWidth(),
+            top: 0,
+            width: this.getRenderWidth()
+        };
+        return rect;
+    }
+
+    /**
      * Set the z offset to apply to current rendering
      * @param value defines the offset to apply
      */

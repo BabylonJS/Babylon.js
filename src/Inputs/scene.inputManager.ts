@@ -658,7 +658,6 @@ export class InputManager {
             this._updatePointerPosition(evt);
 
             if (scene.preventDefaultOnPointerDown && elementToAttachTo) { // TODO: DO WE NEED THIS?
-                //evt.preventDefault();
                 elementToAttachTo.focus();
             }
 
@@ -708,7 +707,6 @@ export class InputManager {
             this._updatePointerPosition(evt);
 
             if (scene.preventDefaultOnPointerUp && elementToAttachTo) { // TODO: DO WE NEED THIS?
-                //evt.preventDefault();
                 elementToAttachTo.focus();
             }
 
@@ -813,37 +811,26 @@ export class InputManager {
                 || this._deviceInputSystem.pollInput(DeviceType.Keyboard, 0, Constants.INPUT_META_KEY3) === 1));
             const shiftKey = (isKeyboardActive && this._deviceInputSystem.pollInput(DeviceType.Keyboard, 0, Constants.INPUT_SHIFT_KEY) === 1);
 
-            const evt = {
-                target: elementToAttachTo,
-                preventDefault: () => { },
-                altKey: altKey,
-                ctrlKey: ctrlKey,
-                metaKey: metaKey,
-                shiftKey: shiftKey
-            };
+            const evt: {[k: string]: any} = {};
+
+            evt.target = elementToAttachTo;
+            evt.preventDefault = () => { },
+            evt.altKey = altKey;
+            evt.ctrlKey = ctrlKey;
+            evt.metaKey = metaKey;
+            evt.shiftKey = shiftKey;
 
             // Keyboard Events
             if (deviceType === DeviceType.Keyboard) {
-                if (!elementToAttachTo || document.activeElement !== elementToAttachTo) {
-                    return;
-                }
-
-                Object.defineProperties(evt, {
-                    key: {
-                        value: String.fromCharCode(inputIndex)
-                    },
-                    keyCode: {
-                        value: inputIndex
-                    }
-                });
+                evt.type = ((currentState === 1) ? "keydown" : "keyup");
+                evt.key = String.fromCharCode(inputIndex);
+                evt.keyCode = inputIndex;
 
                 if (currentState == 1) {
-                    Object.defineProperty(evt, 'type', { value: "keydown" });
                     this._onKeyDown((evt as IKeyboardEvent));
                 }
 
                 if (currentState == 0) {
-                    Object.defineProperty(evt, 'type', { value: "keyup" });
                     this._onKeyUp((evt as IKeyboardEvent));
                 }
             }
@@ -858,65 +845,35 @@ export class InputManager {
                 // Get offsets from container
                 const offsetX = (inputIndex === PointerInput.DeltaHorizontal && elementToAttachTo) ? movementX! - elementToAttachTo.getBoundingClientRect().x : 0;
                 const offsetY = (inputIndex === PointerInput.DeltaVertical && elementToAttachTo) ? movementY! - elementToAttachTo.getBoundingClientRect().y : 0;
-                Object.defineProperties(evt, {
-                    pointerId: {
-                        value: (deviceType === DeviceType.Mouse ? 1 : deviceSlot)
-                    },
-                    clientX: {
-                        value: pointerX
-                    },
-                    clientY: {
-                        value: pointerY
-                    },
-                    movementX: {
-                        value: movementX
-                    },
-                    movementY: {
-                        value: movementY
-                    },
-                    offsetX: {
-                        value: offsetX
-                    },
-                    offsetY: {
-                        value: offsetY
-                    },
-                    x: {
-                        value: pointerX
-                    },
-                    y: {
-                        value: pointerY
-                    }
-                });
+
+                evt.pointerId = (deviceType === DeviceType.Mouse ? 1 : deviceSlot);
+                evt.clientX = pointerX;
+                evt.clientY = pointerY;
+                evt.movementX = movementX;
+                evt.movementY = movementY;
+                evt.offsetX = offsetX;
+                evt.offsetY = offsetY;
+                evt.x = pointerX;
+                evt.y = pointerY;
 
                 if (attachDown && inputIndex >= PointerInput.LeftClick && inputIndex <= PointerInput.RightClick && currentState == 1) {   // Pointer Down
-                    Object.defineProperties(evt, {
-                        type: {
-                            value: "pointerdown"
-                        },
-                        button: {
-                            value: (inputIndex - 2)
-                        }
-                    });
+                    evt.type = "pointerdown";
+                    evt.button = (inputIndex - 2);
 
                     this._onPointerDown((evt as IPointerEvent));
                 }
 
                 if (attachUp && inputIndex >= PointerInput.LeftClick && inputIndex <= PointerInput.RightClick && currentState == 0) {   // Pointer Up
-                    Object.defineProperties(evt, {
-                        type: {
-                            value: "pointerup"
-                        },
-                        button: {
-                            value: inputIndex
-                        }
-                    });
+                    evt.type = "pointerup";
+                    evt.button = (inputIndex - 2);
 
                     this._onPointerUp((evt as IPointerEvent));
                 }
 
                 if (attachMove) {
-                    if (inputIndex == PointerInput.Horizontal || inputIndex === PointerInput.Vertical || inputIndex === PointerInput.DeltaHorizontal || inputIndex === PointerInput.DeltaVertical) {
-                        Object.defineProperty(evt, 'type', { value: "pointermove" });
+                    if (inputIndex === PointerInput.Horizontal || inputIndex === PointerInput.Vertical || inputIndex === PointerInput.DeltaHorizontal || inputIndex === PointerInput.DeltaVertical) {
+                        evt.type = "pointermove";
+
                         this._onPointerMove((evt as IPointerEvent));
                     }
                     else if (inputIndex === PointerInput.MouseWheelX || inputIndex === PointerInput.MouseWheelY || inputIndex === PointerInput.MouseWheelZ) {
@@ -929,23 +886,11 @@ export class InputManager {
                         const deltaY = this._deviceInputSystem.pollInput(deviceType, deviceSlot, PointerInput.MouseWheelY);
                         const deltaZ = this._deviceInputSystem.pollInput(deviceType, deviceSlot, PointerInput.MouseWheelZ);
 
-                        Object.defineProperties(evt, {
-                            type: {
-                                value: "wheel"
-                            },
-                            deltaMode: {
-                                value: 0x00 // Default, by Pixel
-                            },
-                            deltaX: {
-                                value: deltaX,
-                            },
-                            deltaY: {
-                                value: deltaY,
-                            },
-                            deltaZ: {
-                                value: deltaZ,
-                            }
-                        });
+                        evt.type = "wheel";
+                        evt.deltaMode = 0x00;
+                        evt.deltaX = deltaX;
+                        evt.deltaY = deltaY;
+                        evt.deltaZ = deltaZ;
 
                         // If we have a delta, use it.
                         if (deltaX != 0 || deltaY != 0 || deltaZ != 0) {

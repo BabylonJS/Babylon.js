@@ -179,7 +179,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
 
         this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
 
-        element && element.addEventListener("contextmenu", <EventListener>this.onContextMenu.bind(this), false); // TODO: HOW DO WE HANDLE THIS?
+        element && element.addEventListener("contextmenu", <EventListener>this.onContextMenu.bind(this), false); // TODO: We need to figure out how to handle this for Native
     }
 
     /**
