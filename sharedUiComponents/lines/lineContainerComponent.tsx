@@ -1,6 +1,6 @@
 import * as React from "react";
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
-const downArrow = require("../../imgs/downArrow.svg");
+const downArrow = require("./downArrow.svg");
 
 interface ILineContainerComponentProps {
     title: string;

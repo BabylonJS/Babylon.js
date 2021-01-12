@@ -8,6 +8,15 @@ declare type Scene = import("../../scene").Scene;
  * Class used to store 2D array textures containing user data
  */
 export class RawTexture2DArray extends Texture {
+    private _depth: number;
+
+    /**
+     * Gets the number of layers of the texture
+     */
+    public get depth() {
+        return this._depth;
+    }
+
     /**
      * Create a new RawTexture2DArray
      * @param data defines the data of the texture
@@ -43,6 +52,7 @@ export class RawTexture2DArray extends Texture {
             textureType
         );
 
+        this._depth = depth;
         this.is2DArray = true;
     }
 

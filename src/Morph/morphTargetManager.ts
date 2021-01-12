@@ -316,69 +316,73 @@ export class MorphTargetManager implements IDisposable {
                 this._textureWidth = maxTextureSize;
             }
 
+            let mustUpdateTexture = true;
             if (this._targetStoreTexture) {
                 let textureSize = this._targetStoreTexture.getSize();
                 if (textureSize.width === this._textureWidth
-                && textureSize.height === this._textureHeight) {
-                    return;
+                && textureSize.height === this._textureHeight
+                && this._targetStoreTexture.depth === this._targets.length) {
+                    mustUpdateTexture = false;
                 }
             }
 
-            if (this._targetStoreTexture) {
-                this._targetStoreTexture.dispose();
-            }
-
-            let targetCount = this._targets.length;
-            let data = new Float32Array(targetCount * this._textureWidth * this._textureHeight * 4);
-
-            let offset = 0;
-            for (var index = 0; index < targetCount; index++) {
-                let target = this._targets[index];
-
-                const positions = target.getPositions();
-                const normals = target.getNormals();
-                const uvs = target.getUVs();
-                const tangents = target.getTangents();
-
-                if (!positions) {
-                    if (index === 0) {
-                        Logger.Error("Invalid morph target. Target must have positions.");
-                    }
-                    return;
+            if (mustUpdateTexture) {
+                if (this._targetStoreTexture) {
+                    this._targetStoreTexture.dispose();
                 }
 
-                offset = index * this._textureWidth * this._textureHeight * 4;
-                for (var vertex = 0; vertex < this._vertexCount; vertex++) {
-                    data[offset] = positions[vertex * 3];
-                    data[offset + 1] = positions[vertex * 3 + 1];
-                    data[offset + 2] = positions[vertex * 3 + 2];
+                let targetCount = this._targets.length;
+                let data = new Float32Array(targetCount * this._textureWidth * this._textureHeight * 4);
 
-                    offset += 4;
+                let offset = 0;
+                for (var index = 0; index < targetCount; index++) {
+                    let target = this._targets[index];
 
-                    if (normals) {
-                        data[offset] = normals[vertex * 3];
-                        data[offset + 1] = normals[vertex * 3 + 1];
-                        data[offset + 2] = normals[vertex * 3 + 2];
-                        offset += 4;
+                    const positions = target.getPositions();
+                    const normals = target.getNormals();
+                    const uvs = target.getUVs();
+                    const tangents = target.getTangents();
+
+                    if (!positions) {
+                        if (index === 0) {
+                            Logger.Error("Invalid morph target. Target must have positions.");
+                        }
+                        return;
                     }
 
-                    if (uvs) {
-                        data[offset] = uvs[vertex * 2];
-                        data[offset + 1] = uvs[vertex * 2 + 1];
-                        offset += 4;
-                    }
+                    offset = index * this._textureWidth * this._textureHeight * 4;
+                    for (var vertex = 0; vertex < this._vertexCount; vertex++) {
+                        data[offset] = positions[vertex * 3];
+                        data[offset + 1] = positions[vertex * 3 + 1];
+                        data[offset + 2] = positions[vertex * 3 + 2];
 
-                    if (tangents) {
-                        data[offset] = tangents[vertex * 3];
-                        data[offset + 1] = tangents[vertex * 3 + 1];
-                        data[offset + 2] = tangents[vertex * 3 + 2];
                         offset += 4;
+
+                        if (normals) {
+                            data[offset] = normals[vertex * 3];
+                            data[offset + 1] = normals[vertex * 3 + 1];
+                            data[offset + 2] = normals[vertex * 3 + 2];
+                            offset += 4;
+                        }
+
+                        if (uvs) {
+                            data[offset] = uvs[vertex * 2];
+                            data[offset + 1] = uvs[vertex * 2 + 1];
+                            offset += 4;
+                        }
+
+                        if (tangents) {
+                            data[offset] = tangents[vertex * 3];
+                            data[offset + 1] = tangents[vertex * 3 + 1];
+                            data[offset + 2] = tangents[vertex * 3 + 2];
+                            offset += 4;
+                        }
                     }
                 }
-            }
 
-            this._targetStoreTexture = RawTexture2DArray.CreateRGBATexture(data, this._textureWidth, this._textureHeight, targetCount,
-                this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
+                this._targetStoreTexture = RawTexture2DArray.CreateRGBATexture(data, this._textureWidth, this._textureHeight, targetCount,
+                    this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
+            }
         }
 
         // Flag meshes as dirty to resync with the active targets
