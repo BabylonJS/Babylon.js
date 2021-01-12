@@ -13,6 +13,8 @@ import { _TypeStore } from '../../../../Misc/typeStore';
 import { Texture } from '../../../Textures/texture';
 import { Scene } from '../../../../scene';
 import { NodeMaterialModes } from '../../Enums/nodeMaterialModes';
+import { Engine } from "../../../../Engines/engine";
+import { Constants } from '../../../../Engines/constants';
 
 import "../../../../Shaders/ShadersInclude/helperFunctions";
 
@@ -32,10 +34,35 @@ export class TextureBlock extends NodeMaterialBlock {
     private _mainUVDefineName: string;
     private _fragmentOnly: boolean;
 
+    protected _texture: Nullable<Texture>;
     /**
      * Gets or sets the texture associated with the node
      */
-    public texture: Nullable<Texture>;
+    public get texture(): Nullable<Texture> {
+        return this._texture;
+    }
+
+    public set texture(texture: Nullable<Texture>) {
+        if (this._texture === texture) {
+            return;
+        }
+
+        const scene = texture?.getScene() ?? Engine.LastCreatedScene;
+
+        if (!texture && scene) {
+            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+                return mat.hasTexture(this._texture!);
+            });
+        }
+
+        this._texture = texture;
+
+        if (texture && scene) {
+            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+                return mat.hasTexture(texture);
+            });
+        }
+    }
 
     /**
      * Gets or sets a boolean indicating if content needs to be converted to gamma space
@@ -320,26 +347,7 @@ export class TextureBlock extends NodeMaterialBlock {
         state.compilationString += `#endif\r\n`;
     }
 
-    private _writeOutput(state: NodeMaterialBuildState, output: NodeMaterialConnectionPoint, swizzle: string, vertexMode = false) {
-        if (vertexMode) {
-            if (state.target === NodeMaterialBlockTargets.Fragment) {
-                return;
-            }
-
-            state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle};\r\n`;
-
-            return;
-        }
-
-        if (this.uv.ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
-            state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle};\r\n`;
-            return;
-        }
-
-        const complement = ` * ${this._textureInfoName}`;
-
-        state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle}${complement};\r\n`;
-
+    private _generateConversionCode(state: NodeMaterialBuildState, output: NodeMaterialConnectionPoint, swizzle: string): void {
         if (swizzle !== 'a') { // no conversion if the output is "a" (alpha)
             state.compilationString += `#ifdef ${this._linearDefineName}\r\n`;
             state.compilationString += `${output.associatedVariableName} = toGammaSpace(${output.associatedVariableName});\r\n`;
@@ -351,11 +359,36 @@ export class TextureBlock extends NodeMaterialBlock {
         }
     }
 
+    private _writeOutput(state: NodeMaterialBuildState, output: NodeMaterialConnectionPoint, swizzle: string, vertexMode = false) {
+        if (vertexMode) {
+            if (state.target === NodeMaterialBlockTargets.Fragment) {
+                return;
+            }
+
+            state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle};\r\n`;
+            this._generateConversionCode(state, output, swizzle);
+            return;
+        }
+
+        if (this.uv.ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
+            state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle};\r\n`;
+            this._generateConversionCode(state, output, swizzle);
+            return;
+        }
+
+        const complement = ` * ${this._textureInfoName}`;
+
+        state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle}${complement};\r\n`;
+        this._generateConversionCode(state, output, swizzle);
+    }
+
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         if (state.target === NodeMaterialBlockTargets.Vertex || this._fragmentOnly || (state.target === NodeMaterialBlockTargets.Fragment && this._tempTextureRead === undefined)) {
             this._tempTextureRead = state._getFreeVariableName("tempTextureRead");
+            this._linearDefineName = state._getFreeDefineName("ISLINEAR");
+            this._gammaDefineName = state._getFreeDefineName("ISGAMMA");
         }
 
         if (!this._isMixed && state.target === NodeMaterialBlockTargets.Fragment || this._isMixed && state.target === NodeMaterialBlockTargets.Vertex) {
@@ -385,9 +418,6 @@ export class TextureBlock extends NodeMaterialBlock {
             // Reexport the sampler
             state._emit2DSampler(this._samplerName);
         }
-
-        this._linearDefineName = state._getFreeDefineName("ISLINEAR");
-        this._gammaDefineName = state._getFreeDefineName("ISGAMMA");
 
         let comments = `//${this.name}`;
         state._emitFunctionFromInclude("helperFunctions", comments);

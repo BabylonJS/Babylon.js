@@ -4386,6 +4386,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this.textures[0].dispose();
         }
 
+        // Release morph targets
+        while (this.morphTargetManagers.length) {
+            this.morphTargetManagers[0].dispose();
+        }
+
         // Release UBO
         this._sceneUbo.dispose();
 

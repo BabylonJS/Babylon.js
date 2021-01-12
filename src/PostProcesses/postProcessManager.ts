@@ -72,7 +72,7 @@ export class PostProcessManager {
     // Methods
     /**
      * Prepares a frame to be run through a post process.
-     * @param sourceTexture The input texture to the post procesess. (default: null)
+     * @param sourceTexture The input texture to the post processes. (default: null)
      * @param postProcesses An array of post processes to be run. (default: null)
      * @returns True if the post processes were able to be run.
      * @hidden

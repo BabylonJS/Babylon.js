@@ -953,28 +953,28 @@ export class Engine extends ThinEngine {
      * Sets the current depth function to GREATER
      */
     public setDepthFunctionToGreater(): void {
-        this._depthCullingState.depthFunc = this._gl.GREATER;
+        this._depthCullingState.depthFunc = Constants.GREATER;
     }
 
     /**
      * Sets the current depth function to GEQUAL
      */
     public setDepthFunctionToGreaterOrEqual(): void {
-        this._depthCullingState.depthFunc = this._gl.GEQUAL;
+        this._depthCullingState.depthFunc = Constants.GEQUAL;
     }
 
     /**
      * Sets the current depth function to LESS
      */
     public setDepthFunctionToLess(): void {
-        this._depthCullingState.depthFunc = this._gl.LESS;
+        this._depthCullingState.depthFunc = Constants.LESS;
     }
 
     /**
      * Sets the current depth function to LEQUAL
      */
     public setDepthFunctionToLessOrEqual(): void {
-        this._depthCullingState.depthFunc = this._gl.LEQUAL;
+        this._depthCullingState.depthFunc = Constants.LEQUAL;
     }
 
     private _cachedStencilBuffer: boolean;

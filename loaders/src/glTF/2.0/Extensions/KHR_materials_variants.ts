@@ -192,19 +192,20 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
                     extensionMetadata.original.push({ mesh: babylonMesh, material: babylonMesh.material });
 
                     // For each mapping, look at the variants and make a new entry for them.
-                    const variants = extensionMetadata.variants;
-                    for (const mapping of extension.mappings) {
-                        for (const variantIndex of mapping.variants) {
-                            const variant = ArrayItem.Get(`${extensionContext}/mapping/${variantIndex}`, this._variants, variantIndex);
-                            const material = ArrayItem.Get(`#/materials/`, this._loader.gltf.materials, mapping.material);
-                            promises.push(this._loader._loadMaterialAsync(`#/materials/${mapping.material}`, material, babylonMesh, babylonDrawMode, (babylonMaterial) => {
-                                variants[variant.name] = variants[variant.name] || [];
-                                variants[variant.name].push({
+                    for (let mappingIndex = 0; mappingIndex < extension.mappings.length; ++mappingIndex) {
+                        const mapping = extension.mappings[mappingIndex];
+                        const material = ArrayItem.Get(`${extensionContext}/mappings/${mappingIndex}/material`, this._loader.gltf.materials, mapping.material);
+                        promises.push(this._loader._loadMaterialAsync(`#/materials/${mapping.material}`, material, babylonMesh, babylonDrawMode, (babylonMaterial) => {
+                            for (let mappingVariantIndex = 0; mappingVariantIndex < mapping.variants.length; ++mappingVariantIndex) {
+                                const variantIndex = mapping.variants[mappingVariantIndex];
+                                const variant = ArrayItem.Get(`/extensions/${NAME}/variants/${variantIndex}`, this._variants, variantIndex);
+                                extensionMetadata.variants[variant.name] = extensionMetadata.variants[variant.name] || [];
+                                extensionMetadata.variants[variant.name].push({
                                     mesh: babylonMesh,
                                     material: babylonMaterial
                                 });
-                            }));
-                        }
+                            }
+                        }));
                     }
                 }
             }));

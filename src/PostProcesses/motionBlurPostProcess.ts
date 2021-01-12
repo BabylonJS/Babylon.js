@@ -57,7 +57,7 @@ export class MotionBlurPostProcess extends PostProcess {
     private _motionBlurSamples: number = 32;
 
     /**
-     * Gets wether or not the motion blur post-process is in object based mode.
+     * Gets whether or not the motion blur post-process is in object based mode.
      */
     @serialize()
     public get isObjectBased(): boolean {
@@ -65,7 +65,7 @@ export class MotionBlurPostProcess extends PostProcess {
     }
 
     /**
-     * Sets wether or not the motion blur post-process is in object based mode.
+     * Sets whether or not the motion blur post-process is in object based mode.
      */
     public set isObjectBased(value: boolean) {
         if (this._isObjectBased === value) {
