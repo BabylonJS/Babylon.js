@@ -855,7 +855,7 @@ export class InputManager {
             var passiveSupported = false;
             var noop = function () {};
             try {
-                var options:object = {
+                var options: object = {
                         passive: {
                             get: function () {
                                 passiveSupported = true;
