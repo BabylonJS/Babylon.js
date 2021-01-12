@@ -30,6 +30,8 @@ void main(void)
 #ifdef UV1
     vec2 uvUpdated = uv;
 #endif
+
+#include<morphTargetsVertexGlobal>
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 
 #include<instancesVertex>

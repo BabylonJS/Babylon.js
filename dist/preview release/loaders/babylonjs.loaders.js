@@ -5835,28 +5835,27 @@ var KHR_materials_variants = /** @class */ (function () {
                     var root = _this._loader.rootBabylonMesh;
                     var metadata = (root.metadata = root.metadata || {});
                     var gltf = (metadata.gltf = metadata.gltf || {});
-                    var extensionMetadata = (gltf[NAME] = gltf[NAME] || { lastSelected: null, original: [], variants: {} });
+                    var extensionMetadata_1 = (gltf[NAME] = gltf[NAME] || { lastSelected: null, original: [], variants: {} });
                     // Store the original material.
-                    extensionMetadata.original.push({ mesh: babylonMesh, material: babylonMesh.material });
-                    // For each mapping, look at the variants and make a new entry for them.
-                    var variants_1 = extensionMetadata.variants;
-                    for (var _i = 0, _a = extension.mappings; _i < _a.length; _i++) {
-                        var mapping = _a[_i];
-                        var _loop_1 = function (variantIndex) {
-                            var variant = _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["ArrayItem"].Get(extensionContext + "/mapping/" + variantIndex, _this._variants, variantIndex);
-                            var material = _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["ArrayItem"].Get("#/materials/", _this._loader.gltf.materials, mapping.material);
-                            promises.push(_this._loader._loadMaterialAsync("#/materials/" + mapping.material, material, babylonMesh, babylonDrawMode, function (babylonMaterial) {
-                                variants_1[variant.name] = variants_1[variant.name] || [];
-                                variants_1[variant.name].push({
+                    extensionMetadata_1.original.push({ mesh: babylonMesh, material: babylonMesh.material });
+                    var _loop_1 = function (mappingIndex) {
+                        var mapping = extension.mappings[mappingIndex];
+                        var material = _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["ArrayItem"].Get(extensionContext + "/mappings/" + mappingIndex + "/material", _this._loader.gltf.materials, mapping.material);
+                        promises.push(_this._loader._loadMaterialAsync("#/materials/" + mapping.material, material, babylonMesh, babylonDrawMode, function (babylonMaterial) {
+                            for (var mappingVariantIndex = 0; mappingVariantIndex < mapping.variants.length; ++mappingVariantIndex) {
+                                var variantIndex = mapping.variants[mappingVariantIndex];
+                                var variant = _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["ArrayItem"].Get("/extensions/" + NAME + "/variants/" + variantIndex, _this._variants, variantIndex);
+                                extensionMetadata_1.variants[variant.name] = extensionMetadata_1.variants[variant.name] || [];
+                                extensionMetadata_1.variants[variant.name].push({
                                     mesh: babylonMesh,
                                     material: babylonMaterial
                                 });
-                            }));
-                        };
-                        for (var _b = 0, _c = mapping.variants; _b < _c.length; _b++) {
-                            var variantIndex = _c[_b];
-                            _loop_1(variantIndex);
-                        }
+                            }
+                        }));
+                    };
+                    // For each mapping, look at the variants and make a new entry for them.
+                    for (var mappingIndex = 0; mappingIndex < extension.mappings.length; ++mappingIndex) {
+                        _loop_1(mappingIndex);
                     }
                 }
             }));

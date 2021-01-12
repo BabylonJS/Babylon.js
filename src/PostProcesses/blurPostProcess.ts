@@ -16,7 +16,7 @@ declare type Scene = import("../scene").Scene;
 
 /**
  * The Blur Post Process which blurs an image based on a kernel and direction.
- * Can be used twice in x and y directions to perform a guassian blur in two passes.
+ * Can be used twice in x and y directions to perform a gaussian blur in two passes.
  */
 export class BlurPostProcess extends PostProcess {
     @serialize("kernel")
@@ -54,7 +54,7 @@ export class BlurPostProcess extends PostProcess {
     }
 
     /**
-     * Sets wether or not the blur needs to unpack/repack floats
+     * Sets whether or not the blur needs to unpack/repack floats
      */
     public set packedFloat(v: boolean) {
         if (this._packedFloat === v) {
@@ -67,7 +67,7 @@ export class BlurPostProcess extends PostProcess {
     }
 
     /**
-     * Gets wether or not the blur is unpacking/repacking floats
+     * Gets whether or not the blur is unpacking/repacking floats
      */
     public get packedFloat(): boolean {
         return this._packedFloat;

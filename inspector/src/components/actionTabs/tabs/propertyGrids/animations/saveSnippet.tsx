@@ -4,7 +4,7 @@ import { PropertyChangedEvent } from "../../../../../components/propertyChangedE
 import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/buttonLineComponent";
 import { Tools } from "babylonjs/Misc/tools";
 import { Animation } from "babylonjs/Animations/animation";
-import { LockObject } from "../lockObject";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { Nullable } from "babylonjs/types";
 import { GlobalState } from "../../../../globalState";
 

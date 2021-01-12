@@ -4,7 +4,7 @@ import { Observable } from "babylonjs/Misc/observable";
 import { GlobalState } from '../../../../globalState';
 import { PropertyChangedEvent } from '../../../../propertyChangedEvent';
 import { BoxParticleEmitter } from 'babylonjs/Particles/EmitterTypes/boxParticleEmitter';
-import { Vector3LineComponent } from '../../../lines/vector3LineComponent';
+import { Vector3LineComponent } from '../../../../../sharedUiComponents/lines/vector3LineComponent';
 
 interface IBoxEmitterGridComponentProps {
     globalState: GlobalState;
