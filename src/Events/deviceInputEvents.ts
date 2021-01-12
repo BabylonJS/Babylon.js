@@ -259,3 +259,23 @@ export interface IWheelEvent extends IMouseEvent {
      */
     deltaZ: number;
 }
+
+/**
+ * Constants used for Events
+ */
+export class EventConstants {
+    /**
+     * Pixel delta for Wheel Events (Default)
+     */
+    public static DOM_DELTA_PIXEL = 0x00;
+
+    /**
+     * Line delta for Wheel Events
+     */
+    public static DOM_DELTA_LINE = 0x01;
+
+    /**
+     * Page delta for Wheel Events
+     */
+    public static DOM_DELTA_PAGE = 0x02;
+}

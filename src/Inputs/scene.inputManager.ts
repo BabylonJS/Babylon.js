@@ -9,7 +9,7 @@ import { Constants } from "../Engines/constants";
 import { ActionEvent } from "../Actions/actionEvent";
 import { KeyboardEventTypes, KeyboardInfoPre, KeyboardInfo } from "../Events/keyboardEvents";
 import { DeviceType, PointerInput } from '../DeviceInput/InputDevices/deviceEnums';
-import { IKeyboardEvent, IMouseEvent, IPointerEvent, IWheelEvent } from '../Events/deviceInputEvents';
+import { EventConstants, IKeyboardEvent, IMouseEvent, IPointerEvent, IWheelEvent } from '../Events/deviceInputEvents';
 import { DeviceInputSystem } from '../DeviceInput/deviceInputSystem';
 
 declare type Scene = import("../scene").Scene;
@@ -887,7 +887,7 @@ export class InputManager {
                         const deltaZ = this._deviceInputSystem.pollInput(deviceType, deviceSlot, PointerInput.MouseWheelZ);
 
                         evt.type = "wheel";
-                        evt.deltaMode = 0x00;
+                        evt.deltaMode = EventConstants.DOM_DELTA_PIXEL;
                         evt.deltaX = deltaX;
                         evt.deltaY = deltaY;
                         evt.deltaZ = deltaZ;
