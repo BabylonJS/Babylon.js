@@ -4,7 +4,7 @@ import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "./commonControlPropertyGridComponent";
 import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { Line } from "babylonjs-gui/2D/controls/line";
-import { LineContainerComponent } from "../../../lineContainerComponent";
+import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
 import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
 import { TextInputLineComponent } from "../../../../../sharedUiComponents/lines/textInputLineComponent";
 import { GlobalState } from '../../../../globalState';
@@ -43,7 +43,7 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
         return (
             <div className="pane">
                 <CommonControlPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} control={line} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent globalState={this.props.globalState} title="LINE">
+                <LineContainerComponent title="LINE">
                     <FloatLineComponent lockObject={this.props.lockObject} label="Line width" target={line} propertyName="lineWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="X1" target={line} propertyName="x1" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Y1" target={line} propertyName="y1" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

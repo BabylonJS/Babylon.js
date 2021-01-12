@@ -8,7 +8,7 @@ import { CheckBoxLineComponent } from '../../../../sharedUiComponents/lines/chec
 import { SliderLineComponent } from '../../../../sharedUiComponents/lines/sliderLineComponent';
 import { Vector3LineComponent } from '../../../../sharedUiComponents/lines/vector3LineComponent';
 import { QuaternionLineComponent } from '../../lines/quaternionLineComponent';
-import { LineContainerComponent } from '../../lineContainerComponent';
+import { LineContainerComponent } from '../../../../sharedUiComponents/lines/lineContainerComponent';
 import { TextInputLineComponent } from '../../../../sharedUiComponents/lines/textInputLineComponent';
 import { LockObject } from '../../../../sharedUiComponents/tabs/propertyGrids/lockObject';
 
@@ -72,7 +72,7 @@ export class CustomPropertyGridComponent extends React.Component<ICustomProperty
         }
 
         return (
-            <LineContainerComponent title="CUSTOM" globalState={this.props.globalState}>
+            <LineContainerComponent title="CUSTOM">
                 {
                     inspectables.map(inspectable => {
                         return this.renderInspectable(inspectable);
