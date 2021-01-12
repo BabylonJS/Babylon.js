@@ -78,11 +78,12 @@ export class ReflectionProbe {
      * @param scene defines the hosting scene
      * @param generateMipMaps defines if mip maps should be generated automatically (true by default)
      * @param useFloat defines if HDR data (float data) should be used to store colors (false by default)
+     * @param linearSpace defines if the probe should be generated in linear space or not (false by default)
      */
     constructor(
         /** defines the name of the probe */
         public name: string,
-        size: number, scene: Scene, generateMipMaps = true, useFloat = false) {
+        size: number, scene: Scene, generateMipMaps = true, useFloat = false, linearSpace = false) {
         this._scene = scene;
 
         // Create the scene field if not exist.
@@ -102,6 +103,7 @@ export class ReflectionProbe {
             }
         }
         this._renderTargetTexture = new RenderTargetTexture(name, size, scene, generateMipMaps, true, textureType, true);
+        this._renderTargetTexture.gammaSpace = !linearSpace;
 
         this._renderTargetTexture.onBeforeRenderObservable.add((faceIndex: number) => {
             switch (faceIndex) {
@@ -152,11 +154,18 @@ export class ReflectionProbe {
             scene._forcedViewPosition = this.position;
         });
 
+        let currentApplyByPostProcess: boolean;
+
         this._renderTargetTexture.onBeforeBindObservable.add(() => {
             scene.getEngine()._debugPushGroup(`reflection probe generation for ${name}`, 1);
+            currentApplyByPostProcess = this._scene.imageProcessingConfiguration.applyByPostProcess;
+            if (linearSpace) {
+                scene.imageProcessingConfiguration.applyByPostProcess = true;
+            }
         });
 
         this._renderTargetTexture.onAfterUnbindObservable.add(() => {
+            scene.imageProcessingConfiguration.applyByPostProcess = currentApplyByPostProcess;
             scene._forcedViewPosition = null;
             scene.updateTransformMatrix(true);
             scene.getEngine()._debugPopGroup(1);
