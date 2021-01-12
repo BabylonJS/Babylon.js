@@ -3,10 +3,10 @@ import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LockObject } from "../lockObject";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { CommonRenderingPipelinePropertyGridComponent } from './commonRenderingPipelinePropertyGridComponent';
-import { SliderLineComponent } from '../../../lines/sliderLineComponent';
-import { LineContainerComponent } from '../../../lineContainerComponent';
+import { SliderLineComponent } from '../../../../../sharedUiComponents/lines/sliderLineComponent';
+import { LineContainerComponent } from '../../../../../sharedUiComponents/lines/lineContainerComponent';
 import { SSAO2RenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline';
 import { GlobalState } from '../../../../globalState';
 
@@ -30,7 +30,7 @@ export class SSAO2RenderingPipelinePropertyGridComponent extends React.Component
         return (
             <div className="pane">
                 <CommonRenderingPipelinePropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} renderPipeline={renderPipeline} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent globalState={this.props.globalState} title="SSAO">
+                <LineContainerComponent title="SSAO">
                     <SliderLineComponent label="Strength" minimum={0} maximum={2} step={0.05} target={renderPipeline} propertyName="totalStrength" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Base" minimum={0} maximum={1} step={0.05} target={renderPipeline} propertyName="base" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Max Z" minimum={0} maximum={camera.maxZ} step={1} target={renderPipeline} propertyName="maxZ" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

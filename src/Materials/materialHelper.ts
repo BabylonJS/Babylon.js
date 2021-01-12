@@ -269,6 +269,8 @@ export class MaterialHelper {
             defines["MORPHTARGETS_NORMAL"] = manager.supportsNormals && defines["NORMAL"];
             defines["MORPHTARGETS"] = (manager.numInfluencers > 0);
             defines["NUM_MORPH_INFLUENCERS"] = manager.numInfluencers;
+
+            defines["MORPHTARGETS_TEXTURE"] = manager.isUsingTextureForTargets;
         } else {
             defines["MORPHTARGETS_UV"] = false;
             defines["MORPHTARGETS_TANGENT"] = false;
@@ -755,6 +757,9 @@ export class MaterialHelper {
         if (influencers > 0 && EngineStore.LastCreatedEngine) {
             var maxAttributesCount = EngineStore.LastCreatedEngine.getCaps().maxVertexAttribs;
             var manager = (<Mesh>mesh).morphTargetManager;
+            if (manager?.isUsingTextureForTargets) {
+                return;
+            }
             var normal = manager && manager.supportsNormals && defines["NORMAL"];
             var tangent = manager && manager.supportsTangents && defines["TANGENT"];
             var uv = manager && manager.supportsUVs && defines["UV1"];

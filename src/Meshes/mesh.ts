@@ -1511,6 +1511,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         var engine = this.getScene().getEngine();
 
+        // Morph targets
+        if (this.morphTargetManager && this.morphTargetManager.isUsingTextureForTargets) {
+            this.morphTargetManager._bind(effect);
+        }
+
         // Wireframe
         var indexToBind;
 
@@ -3295,6 +3300,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             if (morphTargetManager.vertexCount !== this.getTotalVertices()) {
                 Logger.Error("Mesh is incompatible with morph targets. Targets and mesh must all have the same vertices count.");
                 this.morphTargetManager = null;
+                return;
+            }
+
+            if (morphTargetManager.isUsingTextureForTargets) {
                 return;
             }
 

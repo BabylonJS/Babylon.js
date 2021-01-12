@@ -2,7 +2,7 @@ import * as React from 'react';
 import { GlobalState } from '../../globalState';
 import { Color3 } from 'babylonjs/Maths/math.color';
 import { GradientBlockColorStep } from 'babylonjs/Materials/Node/Blocks/gradientBlock';
-import { ColorPickerLineComponent } from '../lines/colorPickerComponent';
+import { ColorPickerLineComponent } from '../../../sharedUiComponents/lines/colorPickerComponent';
 
 const deleteButton = require('../lines/delete.svg');
 const copyIcon = require('../lines/copyStep.svg');

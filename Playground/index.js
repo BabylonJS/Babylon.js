@@ -5,6 +5,7 @@ var Versions = {
         "https://preview.babylonjs.com/gui/babylon.gui.min.js",
         "https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js",
         "https://preview.babylonjs.com/nodeEditor/babylon.nodeEditor.js",
+        "https://preview.babylonjs.com/guiEditor/babylon.guiEditor.js",
         "https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js",
         "https://preview.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js",
         "https://preview.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js",

@@ -1,10 +1,10 @@
 import * as React from "react";
 import { Scene } from "babylonjs/scene";
-import { LineContainerComponent } from "../../lineContainerComponent";
-import { CheckBoxLineComponent } from "../../lines/checkBoxLineComponent";
+import { LineContainerComponent } from "../../../../sharedUiComponents/lines/lineContainerComponent";
+import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { GlobalState } from "../../../globalState";
-import { FloatLineComponent } from "../../lines/floatLineComponent";
-import { OptionsLineComponent } from "../../lines/optionsLineComponent";
+import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
+import { OptionsLineComponent } from "../../../../sharedUiComponents/lines/optionsLineComponent";
 import { MessageLineComponent } from "../../../../sharedUiComponents/lines/messageLineComponent";
 import { faCheck, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
@@ -68,7 +68,7 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
         const issues = validationResults.issues;
 
         return (
-            <LineContainerComponent globalState={this.props.globalState} title="GLTF VALIDATION" closed={!issues.numErrors && !issues.numWarnings}>
+            <LineContainerComponent title="GLTF VALIDATION" closed={!issues.numErrors && !issues.numWarnings}>
                 {issues.numErrors !== 0 && <MessageLineComponent text="Your file has some validation issues" icon={faTimesCircle} color="Red" />}
                 {issues.numErrors === 0 && <MessageLineComponent text="Your file is a valid glTF file" icon={faCheck} color="Green" />}
                 <TextLineComponent label="Errors" value={issues.numErrors.toString()} />
@@ -110,7 +110,7 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
 
         return (
             <div>
-                <LineContainerComponent globalState={this.props.globalState} title="GLTF LOADER" closed={true}>
+                <LineContainerComponent title="GLTF LOADER" closed={true}>
                     <OptionsLineComponent label="Animation start mode" options={animationStartMode} target={loaderState} propertyName="animationStartMode" />
                     <CheckBoxLineComponent label="Capture performance counters" target={loaderState} propertyName="capturePerformanceCounters" />
                     <CheckBoxLineComponent label="Compile materials" target={loaderState} propertyName="compileMaterials" />
@@ -122,7 +122,7 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
                     <CheckBoxLineComponent label="Validate" target={loaderState} propertyName="validate" />
                     <MessageLineComponent text="You need to reload your file to see these changes" />
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="GLTF EXTENSIONS" closed={true}>
+                <LineContainerComponent title="GLTF EXTENSIONS" closed={true}>
                     <CheckBoxLineComponent label="EXT_lights_image_based" isSelected={() => extensionStates["EXT_lights_image_based"].enabled} onSelect={(value) => (extensionStates["EXT_lights_image_based"].enabled = value)} />
                     <CheckBoxLineComponent label="EXT_mesh_gpu_instancing" isSelected={() => extensionStates["EXT_mesh_gpu_instancing"].enabled} onSelect={(value) => (extensionStates["EXT_mesh_gpu_instancing"].enabled = value)} />
                     <CheckBoxLineComponent label="EXT_texture_webp" isSelected={() => extensionStates["EXT_texture_webp"].enabled} onSelect={(value) => (extensionStates["EXT_texture_webp"].enabled = value)} />
