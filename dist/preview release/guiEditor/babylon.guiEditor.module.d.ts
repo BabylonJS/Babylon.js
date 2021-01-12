@@ -100,7 +100,7 @@ declare module "babylonjs-gui-editor/diagram/properties/propertyComponentProps" 
         guiControl: Control;
     }
 }
-declare module "babylonjs-gui-editor/sharedComponents/lineContainerComponent" {
+declare module "babylonjs-gui-editor/sharedUiComponents/lines/lineContainerComponent" {
     import * as React from "react";
     interface ILineContainerComponentProps {
         title: string;

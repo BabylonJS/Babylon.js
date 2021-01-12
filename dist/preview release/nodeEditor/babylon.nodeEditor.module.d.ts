@@ -2383,6 +2383,22 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/indentedTextLineC
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-node-editor/sharedUiComponents/lines/lineContainerComponent" {
+    import * as React from "react";
+    interface ILineContainerComponentProps {
+        title: string;
+        children: any[] | any;
+        closed?: boolean;
+    }
+    export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
+        isExpanded: boolean;
+    }> {
+        constructor(props: ILineContainerComponentProps);
+        switchExpandedState(): void;
+        renderHeader(): JSX.Element;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-node-editor/sharedUiComponents/lines/linkButtonComponent" {
     import * as React from "react";
     interface ILinkButtonComponentProps {
@@ -4661,6 +4677,21 @@ declare module NODEEDITOR {
         constructor(props: IIndentedTextLineComponentProps);
         onLink(): void;
         renderContent(): JSX.Element;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface ILineContainerComponentProps {
+        title: string;
+        children: any[] | any;
+        closed?: boolean;
+    }
+    export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
+        isExpanded: boolean;
+    }> {
+        constructor(props: ILineContainerComponentProps);
+        switchExpandedState(): void;
+        renderHeader(): JSX.Element;
         render(): JSX.Element;
     }
 }
