@@ -91,7 +91,7 @@ export interface IWebXRHandTrackingOptions {
             left: string[];
         };
         /**
-         * The scene that contains the 3D UI elements. Passing this in turns on near interactions with the index finger tip
+         * The utilityLayer scene that contains the 3D UI elements. Passing this in turns on near interactions with the index finger tip
          */
         sceneForNearInteraction?: Scene;
     };
