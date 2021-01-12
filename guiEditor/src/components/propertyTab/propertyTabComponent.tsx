@@ -13,6 +13,9 @@ import { Observer } from 'babylonjs/Misc/observable';
 import { TextLineComponent } from "../../sharedUiComponents/lines/textLineComponent";
 import { SerializationTools } from "../../serializationTools";
 import { Engine } from "babylonjs/Engines/engine";
+import { LockObject } from "../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { SliderPropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/sliderPropertyGridComponent";
+import { Slider } from "babylonjs-gui/2D/controls/sliders/slider";
 
 require("./propertyTab.scss");
 
@@ -26,14 +29,22 @@ interface IPropertyTabComponentState {
 
 export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
     private _onBuiltObserver: Nullable<Observer<void>>;
-
+    private _timerIntervalId: number;
+    private _lockObject = new LockObject();
     constructor(props: IPropertyTabComponentProps) {
         super(props);
 
         this.state = { currentNode: null};
     }
 
+    timerRefresh() {
+        if (!this._lockObject.lock) {
+            this.forceUpdate();
+        }
+    }
+
     componentDidMount() {
+        this._timerIntervalId = window.setInterval(() => this.timerRefresh(), 500);
         this.props.globalState.onSelectionChangedObservable.add((selection) => {
             if (selection instanceof GUINode) {
                 this.setState({ currentNode: selection});
@@ -48,6 +59,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     }
 
     componentWillUnmount() {
+        window.clearInterval(this._timerIntervalId);
         this.props.globalState.onBuiltObservable.remove(this._onBuiltObserver);
     }
 
@@ -160,6 +172,17 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         });*/
     }
 
+    renderProperties()
+    {
+        var className = this.state.currentNode?.guiControl.getClassName();
+        if (className === "Slider") {
+            const slider = this.state.currentNode?.guiControl as Slider;
+            return (<SliderPropertyGridComponent slider={slider}
+                lockObject={this._lockObject}
+                onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
+        }
+        return null;
+    }
 
     render() {
         if (this.state.currentNode) {
@@ -171,7 +194,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             GUI EDITOR
                         </div>
                     </div>
-                    {this.state.currentNode?.renderProperties()}
+                    {this.renderProperties()}
                 </div>
             );
         }
