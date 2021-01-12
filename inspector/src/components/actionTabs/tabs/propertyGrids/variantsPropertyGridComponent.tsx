@@ -4,7 +4,7 @@ import { Observable } from "babylonjs/Misc/observable";
 import { Nullable } from 'babylonjs/types';
 
 import { PropertyChangedEvent } from "../../../propertyChangedEvent";
-import { LineContainerComponent } from "../../lineContainerComponent";
+import { LineContainerComponent } from "../../../../sharedUiComponents/lines/lineContainerComponent";
 import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from "../../../globalState";
 import { OptionsLineComponent } from '../../../../sharedUiComponents/lines/optionsLineComponent';
@@ -47,7 +47,7 @@ export class VariantsPropertyGridComponent extends React.Component<IVariantsProp
 
         return (
             <div>
-                <LineContainerComponent globalState={this.props.globalState} title="VARIANTS">             
+                <LineContainerComponent title="VARIANTS">             
                 <OptionsLineComponent
                     label="Active variant" options={options} noDirectUpdate={true}
                     target={this.props.host}

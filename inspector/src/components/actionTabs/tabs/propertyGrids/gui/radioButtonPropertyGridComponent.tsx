@@ -4,7 +4,7 @@ import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "./commonControlPropertyGridComponent";
 import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { RadioButton } from "babylonjs-gui/2D/controls/radioButton";
-import { LineContainerComponent } from "../../../lineContainerComponent";
+import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
 import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
 import { TextInputLineComponent } from "../../../../../sharedUiComponents/lines/textInputLineComponent";
 import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
@@ -28,7 +28,7 @@ export class RadioButtonPropertyGridComponent extends React.Component<IRadioButt
         return (
             <div className="pane">
                 <CommonControlPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} control={radioButton} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent globalState={this.props.globalState} title="RADIO BUTTON">
+                <LineContainerComponent title="RADIO BUTTON">
                     <FloatLineComponent lockObject={this.props.lockObject} label="Thickness" target={radioButton} propertyName="thickness" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Check size ratio" target={radioButton} propertyName="checkSizeRatio" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Group" target={radioButton} propertyName="group" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

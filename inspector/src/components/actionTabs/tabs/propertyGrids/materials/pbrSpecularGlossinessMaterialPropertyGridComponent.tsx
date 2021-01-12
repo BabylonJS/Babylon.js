@@ -4,7 +4,7 @@ import { Observable } from "babylonjs/Misc/observable";
 import { PBRSpecularGlossinessMaterial } from "babylonjs/Materials/PBR/pbrSpecularGlossinessMaterial";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LineContainerComponent } from "../../../lineContainerComponent";
+import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
 import { Color3LineComponent } from "../../../../../sharedUiComponents/lines/color3LineComponent";
 import { SliderLineComponent } from "../../../../../sharedUiComponents/lines/sliderLineComponent";
 import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGridComponent";
@@ -33,7 +33,7 @@ export class PBRSpecularGlossinessMaterialPropertyGridComponent extends React.Co
         const onDebugSelectionChangeObservable = this._onDebugSelectionChangeObservable;
 
         return (
-            <LineContainerComponent globalState={this.props.globalState} title="TEXTURES">
+            <LineContainerComponent title="TEXTURES">
                 <TextureLinkLineComponent label="Diffuse" texture={material.diffuseTexture} propertyName="diffuseTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
                 <TextureLinkLineComponent label="Specular glossiness" texture={material.specularGlossinessTexture} propertyName="specularGlossinessTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
                 <TextureLinkLineComponent label="Normal" texture={material.normalTexture} propertyName="normalTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
@@ -51,14 +51,14 @@ export class PBRSpecularGlossinessMaterialPropertyGridComponent extends React.Co
             <div className="pane">
                 <CommonMaterialPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} material={material} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 {this.renderTextures()}
-                <LineContainerComponent globalState={this.props.globalState} title="LIGHTING & COLORS">
+                <LineContainerComponent title="LIGHTING & COLORS">
                     <Color3LineComponent label="Diffuse" target={material} propertyName="diffuseColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} isLinear={true} />
                     <Color3LineComponent label="Specular" target={material} propertyName="specularColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} isLinear={true} />
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="LEVELS" closed={true}>
+                <LineContainerComponent title="LEVELS" closed={true}>
                     <SliderLineComponent label="Glossiness" target={material} propertyName="glossiness" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="NORMAL MAP" closed={true}>
+                <LineContainerComponent title="NORMAL MAP" closed={true}>
                     <CheckBoxLineComponent label="Invert X axis" target={material} propertyName="invertNormalMapX" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Invert Y axis" target={material} propertyName="invertNormalMapY" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
