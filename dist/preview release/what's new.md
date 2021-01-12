@@ -12,7 +12,7 @@
 - Added support for infinite perspective cameras ([Deltakosh](https://github.com/deltakosh))
 - Added ability to enable/disable ArcRotateCamera zoom on multiTouch event ([NicolasBuecher](https://github.com/NicolasBuecher))
 - Moving button to shared uI folder.([msDestiny14](https://github.com/msDestiny14))
-- Moving linecontainer component to shared UI folder. ([msDestiny14](https://github.com/msDestiny14))
+- Moved sharedUI component to shared UI folder. ([msDestiny14](https://github.com/msDestiny14))
 - Added encapsulate and encapsulateBoundingInfo methods to BoundingInfo. ([Tolo789](https://github.com/Tolo789))
 - Added onLoadObservable to the textureDome class(es) ([RaananW](https://github.com/RaananW))
 
@@ -53,6 +53,7 @@
 ### GUIEditor
 
 - Added GUI Editor project to master. ([msDestiny14](https://github.com/msDestiny14))
+- Moving GUI property tab components into GUIEditor: Slider. ([msDestiny14](https://github.com/msDestiny14))
 
 ### GUI
 
