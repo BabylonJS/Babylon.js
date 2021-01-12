@@ -12886,6 +12886,7 @@ declare module BABYLON {
         private get _isMixed();
         private _injectVertexCode;
         private _writeTextureRead;
+        private _generateConversionCode;
         private _writeOutput;
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
         protected _dumpPropertiesCode(): string;
@@ -31851,6 +31852,11 @@ declare module BABYLON {
     export class RawTexture2DArray extends Texture {
         /** Gets or sets the texture format to use */
         format: number;
+        private _depth;
+        /**
+         * Gets the number of layers of the texture
+         */
+        get depth(): number;
         /**
          * Create a new RawTexture2DArray
          * @param data defines the data of the texture

@@ -2,7 +2,7 @@ import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 import { IShadowLight } from "babylonjs/Lights/shadowLight";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LineContainerComponent } from "../../../lineContainerComponent";
+import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
 import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
 import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
@@ -119,7 +119,7 @@ export class CommonShadowLightPropertyGridComponent extends React.Component<ICom
 
         return (
             <div>
-                <LineContainerComponent globalState={this.props.globalState} title="SHADOWS">
+                <LineContainerComponent title="SHADOWS">
                     <CheckBoxLineComponent label="Shadows enabled" target={light} propertyName="shadowEnabled" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     { !csmGenerator && <>
                         <FloatLineComponent lockObject={this.props.lockObject} label="Shadows near plane" target={light} propertyName="shadowMinZ" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -128,7 +128,7 @@ export class CommonShadowLightPropertyGridComponent extends React.Component<ICom
                 </LineContainerComponent>
                 {
                     generator == null &&
-                    <LineContainerComponent globalState={this.props.globalState} title="SHADOW GENERATOR">
+                    <LineContainerComponent title="SHADOW GENERATOR">
                         <OptionsLineComponent label="Type" options={typeGeneratorOptions} target={internals} propertyName="generatorType" />
                         <OptionsLineComponent label="Map size" options={mapSizeOptions} target={internals} propertyName="mapSize" />
                         <ButtonLineComponent label="Create generator" onClick={() => this.createShadowGenerator()} />
@@ -136,7 +136,7 @@ export class CommonShadowLightPropertyGridComponent extends React.Component<ICom
                 }
                 {
                     generator !== null &&
-                    <LineContainerComponent globalState={this.props.globalState} title="SHADOW GENERATOR">
+                    <LineContainerComponent title="SHADOW GENERATOR">
                         <ButtonLineComponent label="Dispose generator" onClick={() => this.disposeShadowGenerator()} />
                         { csmGenerator && <>
                             <OptionsLineComponent label="Num cascades" options={numCascadesOptions} target={generator} propertyName="numCascades" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

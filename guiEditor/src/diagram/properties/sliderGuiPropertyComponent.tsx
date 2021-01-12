@@ -1,6 +1,6 @@
 
 import * as React from "react";
-import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
+import { LineContainerComponent } from '../../sharedUiComponents/lines/lineContainerComponent';
 import { IPropertyComponentProps } from './propertyComponentProps';
 import { GeneralPropertyTabComponent } from './genericNodePropertyComponent';
 import { NumericInputComponent } from '../../sharedComponents/numericInputComponent';

@@ -7,7 +7,7 @@ import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { CommonRenderingPipelinePropertyGridComponent } from './commonRenderingPipelinePropertyGridComponent';
 import { SliderLineComponent } from '../../../../../sharedUiComponents/lines/sliderLineComponent';
-import { LineContainerComponent } from '../../../lineContainerComponent';
+import { LineContainerComponent } from '../../../../../sharedUiComponents/lines/lineContainerComponent';
 import { CheckBoxLineComponent } from '../../../../../sharedUiComponents/lines/checkBoxLineComponent';
 import { OptionsLineComponent } from '../../../../../sharedUiComponents/lines/optionsLineComponent';
 import { ImageProcessingConfiguration } from 'babylonjs/Materials/imageProcessingConfiguration';
@@ -46,7 +46,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
         return (
             <div className="pane">
                 <CommonRenderingPipelinePropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} renderPipeline={renderPipeline} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent globalState={this.props.globalState} title="BLOOM">
+                <LineContainerComponent title="BLOOM">
                     <CheckBoxLineComponent label="Enabled" target={renderPipeline}
                         onValueChanged={() => this.forceUpdate()}
                         propertyName="bloomEnabled" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -60,7 +60,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                         </div>
                     }
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="CHROMATIC ABERRATION">
+                <LineContainerComponent title="CHROMATIC ABERRATION">
                     <CheckBoxLineComponent label="Enabled" target={renderPipeline}
                         onValueChanged={() => this.forceUpdate()}
                         propertyName="chromaticAberrationEnabled" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -74,7 +74,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                         </div>
                     }
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="DEPTH OF FIELD">
+                <LineContainerComponent title="DEPTH OF FIELD">
                     <CheckBoxLineComponent label="Enabled" target={renderPipeline}
                         onValueChanged={() => this.forceUpdate()}
                         propertyName="depthOfFieldEnabled" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -88,10 +88,10 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                         </div>
                     }
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="FXAA">
+                <LineContainerComponent title="FXAA">
                     <CheckBoxLineComponent label="Enabled" target={renderPipeline} propertyName="fxaaEnabled" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="GLOW LAYER">
+                <LineContainerComponent title="GLOW LAYER">
                     <CheckBoxLineComponent label="Enabled" target={renderPipeline} propertyName="glowLayerEnabled" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         renderPipeline.glowLayerEnabled &&
@@ -101,7 +101,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                         </div>
                     }
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="GRAIN">
+                <LineContainerComponent title="GRAIN">
                     <CheckBoxLineComponent label="Enabled" target={renderPipeline}
                         onValueChanged={() => this.forceUpdate()}
                         propertyName="grainEnabled" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -113,7 +113,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                         </div>
                     }
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="IMAGE PROCESSING">
+                <LineContainerComponent title="IMAGE PROCESSING">
                     <CheckBoxLineComponent label="Enabled" target={renderPipeline}
                         onValueChanged={() => this.forceUpdate()}
                         propertyName="imageProcessingEnabled" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -137,7 +137,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                         </div>
                     }
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="SHARPEN">
+                <LineContainerComponent title="SHARPEN">
                     <CheckBoxLineComponent label="Enabled" target={renderPipeline}
                         onValueChanged={() => this.forceUpdate()}
                         propertyName="sharpenEnabled" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

@@ -3,7 +3,7 @@ import { Camera } from "babylonjs/Cameras/camera";
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { SliderLineComponent } from "../../../../../sharedUiComponents/lines/sliderLineComponent";
-import { LineContainerComponent } from "../../../lineContainerComponent";
+import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
 import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
 import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
 import { OptionsLineComponent } from "../../../../../sharedUiComponents/lines/optionsLineComponent";
@@ -42,7 +42,7 @@ export class CommonCameraPropertyGridComponent extends React.Component<ICommonCa
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={camera}
                     lockObject={this.props.lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
+                <LineContainerComponent title="GENERAL">
                     <TextLineComponent label="ID" value={camera.id} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={camera} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                     <TextLineComponent label="Unique ID" value={camera.uniqueId.toString()} />

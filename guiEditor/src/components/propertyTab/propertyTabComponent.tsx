@@ -3,7 +3,7 @@ import * as React from "react";
 import { GlobalState } from '../../globalState';
 import { Nullable } from 'babylonjs/types';
 import { ButtonLineComponent } from '../../sharedUiComponents/lines/buttonLineComponent';
-import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
+import { LineContainerComponent } from '../../sharedUiComponents/lines/lineContainerComponent';
 import { FileButtonLineComponent } from '../../sharedUiComponents/lines/fileButtonLineComponent';
 import { Tools } from 'babylonjs/Misc/tools';
 import { CheckBoxLineComponent } from '../../sharedUiComponents/lines/checkBoxLineComponent';
