@@ -76,17 +76,17 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         const scene = texture?.getScene() ?? Engine.LastCreatedScene;
 
         if (!texture && scene) {
-            /*scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
                 return mat.hasTexture(this._texture!);
-            });*/
+            });
         }
 
         this._texture = texture;
 
         if (texture && scene) {
-            /*scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
                 return mat.hasTexture(texture);
-            });*/
+            });
         }
     }
 
