@@ -184,7 +184,7 @@ export class WebXRHand implements IDisposable {
         private _handMesh?: AbstractMesh,
         private _rigMapping?: string[],
         disableDefaultHandMesh?: boolean,
-        private _nearInteractionMesh?: Nullable<AbstractMesh>
+        private _nearInteractionMesh?: Nullable<AbstractMesh>,
         private _leftHandedMeshes?: boolean
     ) {
         this.handPartsDefinition = this.generateHandPartsDefinition(xrController.inputSource.hand!);
