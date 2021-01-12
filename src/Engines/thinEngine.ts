@@ -1062,7 +1062,7 @@ export class ThinEngine {
 
     protected _initFeatures(): void {
         this._features = {
-            forceBitmapOverHTMLImageElement: true,
+            forceBitmapOverHTMLImageElement: false,
             supportRenderAndCopyToLodForFloatTextures: this._webGLVersion !== 1,
             supportDepthStencilTexture: this._webGLVersion !== 1,
             supportShadowSamplers: this._webGLVersion !== 1,
