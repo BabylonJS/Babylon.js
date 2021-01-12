@@ -360,6 +360,8 @@ export class TextureBlock extends NodeMaterialBlock {
 
         if (state.target === NodeMaterialBlockTargets.Vertex || this._fragmentOnly || (state.target === NodeMaterialBlockTargets.Fragment && this._tempTextureRead === undefined)) {
             this._tempTextureRead = state._getFreeVariableName("tempTextureRead");
+            this._linearDefineName = state._getFreeDefineName("ISLINEAR");
+            this._gammaDefineName = state._getFreeDefineName("ISGAMMA");
         }
 
         if (!this._isMixed && state.target === NodeMaterialBlockTargets.Fragment || this._isMixed && state.target === NodeMaterialBlockTargets.Vertex) {
@@ -389,9 +391,6 @@ export class TextureBlock extends NodeMaterialBlock {
             // Reexport the sampler
             state._emit2DSampler(this._samplerName);
         }
-
-        this._linearDefineName = state._getFreeDefineName("ISLINEAR");
-        this._gammaDefineName = state._getFreeDefineName("ISGAMMA");
 
         let comments = `//${this.name}`;
         state._emitFunctionFromInclude("helperFunctions", comments);
