@@ -848,7 +848,28 @@ export class InputManager {
                     ? "mousewheel" // Webkit and IE support at least "mousewheel"
                     : "DOMMouseScroll"; // let's assume that remaining browsers are older Firefox
 
-            elementToAttachTo.addEventListener(this._wheelEventName, <any>this._onPointerMove, { passive: false });
+            // Chrome reports warning in console if wheel listener doesn't set an explicit passive option.
+            // IE11 only supports captureEvent:boolean, not options:object, and it defaults to false.
+            // Feature detection technique copied from: https://github.com/github/eventlistener-polyfill (MIT license)
+            // ----------
+            var passiveSupported = false;
+            var noop = function () {};
+            try {
+                var options:object = {
+                        passive: {
+                            get: function () {
+                                passiveSupported = true;
+                            }
+                        }
+                    };
+                elementToAttachTo.addEventListener("test", noop, options);
+                elementToAttachTo.removeEventListener("test", noop, options);
+            } catch (e) {
+                /* */
+            }
+            // ----------
+
+            elementToAttachTo.addEventListener(this._wheelEventName, <any>this._onPointerMove, passiveSupported ? { passive: false } : false);
         }
 
         if (attachDown) {
