@@ -3,17 +3,17 @@ import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LineContainerComponent } from "../../../lineContainerComponent";
-import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
+import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
+import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
-import { LockObject } from "../lockObject";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from '../../../../globalState';
 import { Skeleton } from 'babylonjs/Bones/skeleton';
 import { AnimationGridComponent } from '../animations/animationPropertyGridComponent';
 import { SkeletonViewer } from 'babylonjs/Debug/skeletonViewer';
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
-import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
-import { FloatLineComponent } from "../../../lines/floatLineComponent";
+import { OptionsLineComponent } from "../../../../../sharedUiComponents/lines/optionsLineComponent";
+import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
 
 
 interface ISkeletonPropertyGridComponentProps {
@@ -168,7 +168,7 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
         let displayOptions;
         if(this._skeletonViewerDisplayOptions.displayMode > SkeletonViewer.DISPLAY_LINES){
             displayOptions = 
-            (<LineContainerComponent globalState={this.props.globalState} title="DISPLAY OPTIONS">
+            (<LineContainerComponent title="DISPLAY OPTIONS">
                 <FloatLineComponent label="sphereBaseSize" target={this._skeletonViewerDisplayOptions} propertyName='sphereBaseSize' onPropertyChangedObservable={this.props.onPropertyChangedObservable} onChange={(value)=>{this.changeDisplayOptions('sphereBaseSize', value)}}/>
                 <FloatLineComponent label="sphereScaleUnit" target={this._skeletonViewerDisplayOptions} propertyName='sphereScaleUnit' onPropertyChangedObservable={this.props.onPropertyChangedObservable} onChange={(value)=>{this.changeDisplayOptions('sphereScaleUnit', value)}}/>
                 <FloatLineComponent label="sphereFactor" target={this._skeletonViewerDisplayOptions} propertyName='sphereFactor' onPropertyChangedObservable={this.props.onPropertyChangedObservable} onChange={(value)=>{this.changeDisplayOptions('sphereFactor', value)}}/>
@@ -184,7 +184,7 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={skeleton}
                     lockObject={this.props.lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />                    
-                <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
+                <LineContainerComponent title="GENERAL">
                     <TextLineComponent label="ID" value={skeleton.id} />
                     <TextLineComponent label="Bone count" value={skeleton.bones.length.toString()} />
                     {
@@ -193,7 +193,7 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
                     }                        
                     <CheckBoxLineComponent label="Use texture to store matrices" target={skeleton} propertyName="useTextureToStoreBoneMatrices" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     
-                    <LineContainerComponent globalState={this.props.globalState} title="DEBUG">                        
+                    <LineContainerComponent title="DEBUG">                        
                         <CheckBoxLineComponent label="Enabled" isSelected={() => this._skeletonViewersEnabled} onSelect={() => this.switchSkeletonViewers()} />
                         <OptionsLineComponent label="displayMode" options={debugModeOptions} target={this._skeletonViewerDisplayOptions} propertyName="displayMode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={() => this.changeDisplayMode()} />
                         {displayOptions}                   

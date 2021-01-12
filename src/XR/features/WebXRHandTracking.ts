@@ -23,6 +23,7 @@ import { Tools } from "../../Misc/tools";
 import { Axis } from "../../Maths/math.axis";
 import { TransformNode } from "../../Meshes/transformNode";
 import { Tags } from "../../Misc/tags";
+import { Bone } from "../../Bones/bone";
 
 declare const XRHand: XRHand;
 
@@ -84,6 +85,10 @@ export interface IWebXRHandTrackingOptions {
             left: AbstractMesh;
         };
         /**
+         * Are the meshes prepared for a left-handed system. Default hand meshes are right-handed.
+         */
+        leftHandedSystemMeshes?: boolean;
+        /**
          * If a hand mesh was provided, this array will define what axis will update which node. This will override the default hand mesh
          */
         rigMapping?: {
@@ -134,6 +139,8 @@ export class WebXRHand implements IDisposable {
     private _scene: Scene;
     private _defaultHandMesh: boolean = false;
     private _transformNodeMapping: TransformNode[] = [];
+    private _boneMapping: Bone[] = [];
+    private _useBones = false;
     /**
      * Hand-parts definition (key is HandPart)
      */
@@ -167,6 +174,7 @@ export class WebXRHand implements IDisposable {
      * @param _rigMapping an optional rig mapping for the hand mesh. if not provided, ours will be used
      * @param disableDefaultHandMesh should the default mesh creation be disabled
      * @param _nearInteractionMesh as optional mesh used for near interaction collision checking
+     * @param _leftHandedMeshes are the hand meshes left-handed-system meshes
      */
     constructor(
         /** the controller to which the hand correlates */
@@ -177,11 +185,27 @@ export class WebXRHand implements IDisposable {
         private _rigMapping?: string[],
         disableDefaultHandMesh?: boolean,
         private _nearInteractionMesh?: Nullable<AbstractMesh>
+        private _leftHandedMeshes?: boolean
     ) {
         this.handPartsDefinition = this.generateHandPartsDefinition(xrController.inputSource.hand!);
         this._scene = trackedMeshes[0].getScene();
+        this.onHandMeshReadyObservable.add(() => {
+            // check if we should use bones or transform nodes
+            if (!this._rigMapping) {
+                return;
+            }
+            const transformNode = this._scene.getTransformNodeByName(this._rigMapping[0]);
+            if (!transformNode) {
+                const bone = this._scene.getBoneByName(this._rigMapping[0]);
+                if (bone) {
+                    this._useBones = true;
+                }
+            }
+        });
         if (this._handMesh && this._rigMapping) {
             this._defaultHandMesh = false;
+            this._handMesh.alwaysSelectAsActiveMesh = true;
+            this._handMesh.getChildMeshes().forEach((m) => (m.alwaysSelectAsActiveMesh = true));
             this.onHandMeshReadyObservable.notifyObservers(this);
         } else {
             if (!disableDefaultHandMesh) {
@@ -249,20 +273,36 @@ export class WebXRHand implements IDisposable {
                 const radius = (pose.radius || 0.008) * scaleFactor;
                 mesh.scaling.set(radius, radius, radius);
 
+                // if we are using left-handed meshes, transform before applying to the hand mesh
+                if (this._leftHandedMeshes && !mesh.getScene().useRightHandedSystem) {
+                    mesh.position.z *= -1;
+                    mesh.rotationQuaternion!.z *= -1;
+                    mesh.rotationQuaternion!.w *= -1;
+                }
+
                 // now check for the hand mesh
                 if (this._handMesh && this._rigMapping) {
                     if (this._rigMapping[idx]) {
-                        this._transformNodeMapping[idx] = this._transformNodeMapping[idx] || this._scene.getTransformNodeByName(this._rigMapping[idx]);
-                        if (this._transformNodeMapping[idx]) {
-                            this._transformNodeMapping[idx].position.copyFrom(mesh.position);
-                            this._transformNodeMapping[idx].rotationQuaternion!.copyFrom(mesh.rotationQuaternion!);
-                            // no scaling at the moment
-                            // this._transformNodeMapping[idx].scaling.copyFrom(mesh.scaling).scaleInPlace(20);
-                            mesh.isVisible = false;
+                        if (this._useBones) {
+                            this._boneMapping[idx] = this._boneMapping[idx] || this._scene.getBoneByName(this._rigMapping[idx]);
+                            if (this._boneMapping[idx]) {
+                                this._boneMapping[idx].setPosition(mesh.position);
+                                this._boneMapping[idx].setRotationQuaternion(mesh.rotationQuaternion!);
+                                mesh.isVisible = false;
+                            }
+                        } else {
+                            this._transformNodeMapping[idx] = this._transformNodeMapping[idx] || this._scene.getTransformNodeByName(this._rigMapping[idx]);
+                            if (this._transformNodeMapping[idx]) {
+                                this._transformNodeMapping[idx].position.copyFrom(mesh.position);
+                                this._transformNodeMapping[idx].rotationQuaternion!.copyFrom(mesh.rotationQuaternion!);
+                                // no scaling at the moment
+                                // this._transformNodeMapping[idx].scaling.copyFrom(mesh.scaling).scaleInPlace(20);
+                                mesh.isVisible = false;
+                            }
                         }
                     }
                 }
-                if (!mesh.getScene().useRightHandedSystem) {
+                if (!this._leftHandedMeshes && !mesh.getScene().useRightHandedSystem) {
                     mesh.position.z *= -1;
                     mesh.rotationQuaternion!.z *= -1;
                     mesh.rotationQuaternion!.w *= -1;
@@ -557,7 +597,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
         const handedness = xrController.inputSource.handedness === "right" ? "right" : "left";
         const handMesh = this.options.jointMeshes?.handMeshes && this.options.jointMeshes?.handMeshes[handedness];
         const rigMapping = this.options.jointMeshes?.rigMapping && this.options.jointMeshes?.rigMapping[handedness];
-        const webxrHand = new WebXRHand(xrController, trackedMeshes, handMesh, rigMapping, this.options.jointMeshes?.disableDefaultHandMesh, touchMesh);
+        const webxrHand = new WebXRHand(xrController, trackedMeshes, handMesh, rigMapping, this.options.jointMeshes?.disableDefaultHandMesh, touchMesh, this.options.jointMeshes?.leftHandedSystemMeshes);
 
         // get two new meshes
         this._hands[xrController.uniqueId] = {

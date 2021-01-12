@@ -7118,6 +7118,11 @@ declare module BABYLON {
          */
         readonly uniqueId: number;
         /**
+         * Gets a hash code representing the format (type, normalized, size, instanced, stride) of this buffer
+         * All buffers with the same format will have the same hash code
+         */
+        readonly hashCode: number;
+        /**
          * Constructor
          * @param engine the engine
          * @param data the data to use for this vertex buffer
@@ -7135,6 +7140,7 @@ declare module BABYLON {
          * @param takeBufferOwnership defines if the buffer should be released when the vertex buffer is disposed
          */
         constructor(engine: any, data: DataArray | Buffer, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number, instanced?: boolean, offset?: number, size?: number, type?: number, normalized?: boolean, useBytes?: boolean, divisor?: number, takeBufferOwnership?: boolean);
+        private _computeHashCode;
         /** @hidden */
         _rebuild(): void;
         /**
@@ -12880,6 +12886,7 @@ declare module BABYLON {
         private get _isMixed();
         private _injectVertexCode;
         private _writeTextureRead;
+        private _generateConversionCode;
         private _writeOutput;
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
         protected _dumpPropertiesCode(): string;
@@ -17882,6 +17889,7 @@ declare module BABYLON {
         MORPHTARGETS_TANGENT: boolean;
         MORPHTARGETS_UV: boolean;
         NUM_MORPH_INFLUENCERS: number;
+        MORPHTARGETS_TEXTURE: boolean;
         /** IMAGE PROCESSING */
         IMAGEPROCESSING: boolean;
         VIGNETTE: boolean;
@@ -19205,6 +19213,13 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var morphTargetsVertexGlobal: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var morphTargetsVertex: {
         name: string;
         shader: string;
@@ -19499,6 +19514,7 @@ declare module BABYLON {
         MORPHTARGETS_TANGENT: boolean;
         MORPHTARGETS_UV: boolean;
         NUM_MORPH_INFLUENCERS: number;
+        MORPHTARGETS_TEXTURE: boolean;
         NONUNIFORMSCALING: boolean;
         PREMULTIPLYALPHA: boolean;
         ALPHATEST_AFTERALLALPHACOMPUTATIONS: boolean;
@@ -21797,6 +21813,7 @@ declare module BABYLON {
         MORPHTARGETS_TANGENT: boolean;
         MORPHTARGETS_UV: boolean;
         NUM_MORPH_INFLUENCERS: number;
+        MORPHTARGETS_TEXTURE: boolean;
         IMAGEPROCESSING: boolean;
         VIGNETTE: boolean;
         VIGNETTEBLENDMODEMULTIPLY: boolean;
@@ -31830,10 +31847,59 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Class used to store 2D array textures containing user data
+     */
+    export class RawTexture2DArray extends Texture {
+        /** Gets or sets the texture format to use */
+        format: number;
+        private _depth;
+        /**
+         * Gets the number of layers of the texture
+         */
+        get depth(): number;
+        /**
+         * Create a new RawTexture2DArray
+         * @param data defines the data of the texture
+         * @param width defines the width of the texture
+         * @param height defines the height of the texture
+         * @param depth defines the number of layers of the texture
+         * @param format defines the texture format to use
+         * @param scene defines the hosting scene
+         * @param generateMipMaps defines a boolean indicating if mip levels should be generated (true by default)
+         * @param invertY defines if texture must be stored with Y axis inverted
+         * @param samplingMode defines the sampling mode to use (Texture.TRILINEAR_SAMPLINGMODE by default)
+         * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
+         */
+        constructor(data: ArrayBufferView, width: number, height: number, depth: number, 
+        /** Gets or sets the texture format to use */
+        format: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, textureType?: number);
+        /**
+         * Update the texture with new data
+         * @param data defines the data to store in the texture
+         */
+        update(data: ArrayBufferView): void;
+        /**
+         * Creates a RGBA texture from some data.
+         * @param data Define the texture data
+         * @param width Define the width of the texture
+         * @param height Define the height of the texture
+         * @param depth defines the number of layers of the texture
+         * @param scene defines the scene the texture will belong to
+         * @param generateMipMaps Define whether or not to create mip maps for the texture
+         * @param invertY define if the data should be flipped on Y when uploaded to the GPU
+         * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
+         * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
+         * @returns the RGBA texture
+         */
+        static CreateRGBATexture(data: ArrayBufferView, width: number, height: number, depth: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, type?: number): RawTexture2DArray;
+    }
+}
+declare module BABYLON {
+    /**
      * This class is used to deform meshes using morphing between different targets
      * @see https://doc.babylonjs.com/how_to/how_to_use_morphtargets
      */
-    export class MorphTargetManager {
+    export class MorphTargetManager implements IDisposable {
         private _targets;
         private _targetInfluenceChangedObservers;
         private _targetDataLayoutChangedObservers;
@@ -31844,8 +31910,14 @@ declare module BABYLON {
         private _supportsTangents;
         private _supportsUVs;
         private _vertexCount;
+        private _textureVertexStride;
+        private _textureWidth;
+        private _textureHeight;
         private _uniqueId;
         private _tempInfluences;
+        private _canUseTextureForTargets;
+        /** @hidden */
+        _targetStoreTexture: Nullable<RawTexture2DArray>;
         /**
          * Gets or sets a boolean indicating if normals must be morphed
          */
@@ -31895,6 +31967,17 @@ declare module BABYLON {
          * Gets the list of influences (one per target)
          */
         get influences(): Float32Array;
+        private _useTextureToStoreTargets;
+        /**
+         * Gets or sets a boolean indicating that targets should be stored as a texture instead of using vertex attributes (default is true).
+         * Please note that this option is not available if the hardware does not support it
+         */
+        get useTextureToStoreTargets(): boolean;
+        set useTextureToStoreTargets(value: boolean);
+        /**
+         * Gets a boolean indicating that the targets are stored into a texture (instead of as attributes)
+         */
+        get isUsingTextureForTargets(): boolean;
         /**
          * Gets the active target at specified index. An active target is a target with an influence > 0
          * @param index defines the index to check
@@ -31917,6 +32000,8 @@ declare module BABYLON {
          * @param target defines the target to remove
          */
         removeTarget(target: MorphTarget): void;
+        /** @hidden */
+        _bind(effect: Effect): void;
         /**
          * Clone the current manager
          * @returns a new MorphTargetManager
@@ -31929,9 +32014,13 @@ declare module BABYLON {
         serialize(): any;
         private _syncActiveTargets;
         /**
-         * Syncrhonize the targets with all the meshes using this morph target manager
+         * Synchronize the targets with all the meshes using this morph target manager
          */
         synchronize(): void;
+        /**
+         * Release all resources
+         */
+        dispose(): void;
         /**
          * Creates a new MorphTargetManager from serialized data
          * @param serializationObject defines the serialized data
@@ -34503,6 +34592,8 @@ declare module BABYLON {
         topCapSubdivisions?: number;
         /** Overwrite for the bottom capSubdivisions. */
         bottomCapSubdivisions?: number;
+        /** Internal geometry is supposed to change once created. */
+        updatable?: boolean;
     }
     /**
      * Class containing static functions to help procedurally build meshes
@@ -34515,7 +34606,7 @@ declare module BABYLON {
          * @param scene The scene the mesh is scoped to.
          * @returns Capsule Mesh
          */
-        static CreateCapsule(name: string, options: ICreateCapsuleOptions | undefined, scene: any): Mesh;
+        static CreateCapsule(name: string, options?: ICreateCapsuleOptions, scene?: Nullable<Scene>): Mesh;
     }
 }
 declare module BABYLON {
@@ -39730,6 +39821,8 @@ declare module BABYLON {
         blendMinMax: boolean;
         /** In some iOS + WebGL1, gl_InstanceID (and gl_InstanceIDEXT) is undefined even if instancedArrays is true. So don't use gl_InstanceID in those cases */
         canUseGLInstanceID: boolean;
+        /** Defines if gl_vertexID is available */
+        canUseGLVertexID: boolean;
     }
 }
 declare module BABYLON {
@@ -39737,24 +39830,24 @@ declare module BABYLON {
      * @hidden
      **/
     export class DepthCullingState {
-        private _isDepthTestDirty;
-        private _isDepthMaskDirty;
-        private _isDepthFuncDirty;
-        private _isCullFaceDirty;
-        private _isCullDirty;
-        private _isZOffsetDirty;
-        private _isFrontFaceDirty;
-        private _depthTest;
-        private _depthMask;
-        private _depthFunc;
-        private _cull;
-        private _cullFace;
-        private _zOffset;
-        private _frontFace;
+        protected _isDepthTestDirty: boolean;
+        protected _isDepthMaskDirty: boolean;
+        protected _isDepthFuncDirty: boolean;
+        protected _isCullFaceDirty: boolean;
+        protected _isCullDirty: boolean;
+        protected _isZOffsetDirty: boolean;
+        protected _isFrontFaceDirty: boolean;
+        protected _depthTest: boolean;
+        protected _depthMask: boolean;
+        protected _depthFunc: Nullable<number>;
+        protected _cull: Nullable<boolean>;
+        protected _cullFace: Nullable<number>;
+        protected _zOffset: number;
+        protected _frontFace: Nullable<number>;
         /**
          * Initializes the state.
          */
-        constructor();
+        constructor(reset?: boolean);
         get isDirty(): boolean;
         get zOffset(): number;
         set zOffset(value: number);
@@ -39785,18 +39878,18 @@ declare module BABYLON {
         static readonly KEEP: number;
         /** Passed to stencilOperation to specify that stencil value must be replaced */
         static readonly REPLACE: number;
-        private _isStencilTestDirty;
-        private _isStencilMaskDirty;
-        private _isStencilFuncDirty;
-        private _isStencilOpDirty;
-        private _stencilTest;
-        private _stencilMask;
-        private _stencilFunc;
-        private _stencilFuncRef;
-        private _stencilFuncMask;
-        private _stencilOpStencilFail;
-        private _stencilOpDepthFail;
-        private _stencilOpStencilDepthPass;
+        protected _isStencilTestDirty: boolean;
+        protected _isStencilMaskDirty: boolean;
+        protected _isStencilFuncDirty: boolean;
+        protected _isStencilOpDirty: boolean;
+        protected _stencilTest: boolean;
+        protected _stencilMask: number;
+        protected _stencilFunc: number;
+        protected _stencilFuncRef: number;
+        protected _stencilFuncMask: number;
+        protected _stencilOpStencilFail: number;
+        protected _stencilOpDepthFail: number;
+        protected _stencilOpStencilDepthPass: number;
         get isDirty(): boolean;
         get stencilFunc(): number;
         set stencilFunc(value: number);
@@ -39814,7 +39907,7 @@ declare module BABYLON {
         set stencilMask(value: number);
         get stencilTest(): boolean;
         set stencilTest(value: boolean);
-        constructor();
+        constructor(reset?: boolean);
         reset(): void;
         apply(gl: WebGLRenderingContext): void;
     }
@@ -44542,6 +44635,8 @@ declare module BABYLON {
         orderedAttributes: string[];
         orderedUBOsAndSamplers: WebGPUBindingDescription[][];
         uniformBufferNames: string[];
+        attributeNamesFromEffect: string[];
+        attributeLocationsFromEffect: number[];
         private _attributeNextLocation;
         private _varyingNextLocation;
         constructor();
@@ -44579,6 +44674,14 @@ declare module BABYLON {
         fragmentStage?: GPUProgrammableStageDescriptor;
     }
     /** @hidden */
+    export class WebGPUBindGroupCacheNode {
+        values: {
+            [id: number]: WebGPUBindGroupCacheNode;
+        };
+        bindGroups: GPUBindGroup[];
+        constructor();
+    }
+    /** @hidden */
     export class WebGPUPipelineContext implements IPipelineContext {
         engine: WebGPUEngine;
         shaderProcessingContext: WebGPUShaderProcessingContext;
@@ -44599,9 +44702,7 @@ declare module BABYLON {
             [name: string]: Nullable<IWebGPUPipelineContextTextureCache>;
         };
         bindGroupLayouts: GPUBindGroupLayout[];
-        bindGroupsCache: {
-            [key: string]: GPUBindGroup[];
-        };
+        bindGroupsCache: WebGPUBindGroupCacheNode;
         /**
          * Stores the uniform buffer
          */
@@ -45007,19 +45108,20 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
-    export class WebGPUCacheRenderPipeline {
+    export abstract class WebGPUCacheRenderPipeline {
         static NumCacheHitWithoutHash: number;
         static NumCacheHitWithHash: number;
         static NumCacheMiss: number;
         static NumPipelineCreationLastFrame: number;
         disabled: boolean;
-        private static _Cache;
         private static _NumPipelineCreationCurrentFrame;
+        protected _states: number[];
+        protected _stateDirtyLowestIndex: number;
+        lastStateDirtyLowestIndex: number;
         private _device;
-        private _states;
         private _isDirty;
-        private _currentRenderPipeline;
         private _emptyVertexBuffer;
+        private _parameter;
         private _shaderId;
         private _alphaToCoverageEnabled;
         private _frontFace;
@@ -45058,6 +45160,14 @@ declare module BABYLON {
         private _indexBuffer;
         constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer);
         reset(): void;
+        protected abstract _getRenderPipeline(param: {
+            token: any;
+            pipeline: Nullable<GPURenderPipeline>;
+        }): void;
+        protected abstract _setRenderPipeline(param: {
+            token: any;
+            pipeline: Nullable<GPURenderPipeline>;
+        }): void;
         getRenderPipeline(fillMode: number, effect: Effect, sampleCount: number): GPURenderPipeline;
         endFrame(): void;
         setAlphaToCoverage(enabled: boolean): void;
@@ -45107,6 +45217,90 @@ declare module BABYLON {
         private _createPipelineLayout;
         private _getVertexInputDescriptor;
         private _createRenderPipeline;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    class NodeState {
+        values: {
+            [name: number]: NodeState;
+        };
+        pipeline: GPURenderPipeline;
+        constructor();
+        count(): [number, number];
+    }
+    /** @hidden */
+    export class WebGPUCacheRenderPipelineTree extends WebGPUCacheRenderPipeline {
+        private static _Cache;
+        private _nodeStack;
+        static GetNodeCounts(): {
+            nodeCount: number;
+            pipelineCount: number;
+        };
+        constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer);
+        protected _getRenderPipeline(param: {
+            token: any;
+            pipeline: Nullable<GPURenderPipeline>;
+        }): void;
+        protected _setRenderPipeline(param: {
+            token: NodeState;
+            pipeline: Nullable<GPURenderPipeline>;
+        }): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * @hidden
+     **/
+    export class WebGPUStencilState extends StencilState {
+        private _cache;
+        constructor(cache: WebGPUCacheRenderPipeline);
+        get stencilFunc(): number;
+        set stencilFunc(value: number);
+        get stencilFuncRef(): number;
+        set stencilFuncRef(value: number);
+        get stencilFuncMask(): number;
+        set stencilFuncMask(value: number);
+        get stencilOpStencilFail(): number;
+        set stencilOpStencilFail(value: number);
+        get stencilOpDepthFail(): number;
+        set stencilOpDepthFail(value: number);
+        get stencilOpStencilDepthPass(): number;
+        set stencilOpStencilDepthPass(value: number);
+        get stencilMask(): number;
+        set stencilMask(value: number);
+        get stencilTest(): boolean;
+        set stencilTest(value: boolean);
+        reset(): void;
+        apply(gl: WebGLRenderingContext): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * @hidden
+     **/
+    export class WebGPUDepthCullingState extends DepthCullingState {
+        private _cache;
+        /**
+         * Initializes the state.
+         */
+        constructor(cache: WebGPUCacheRenderPipeline);
+        get zOffset(): number;
+        set zOffset(value: number);
+        get cullFace(): Nullable<number>;
+        set cullFace(value: Nullable<number>);
+        get cull(): Nullable<boolean>;
+        set cull(value: Nullable<boolean>);
+        get depthFunc(): Nullable<number>;
+        set depthFunc(value: Nullable<number>);
+        get depthMask(): boolean;
+        set depthMask(value: boolean);
+        get depthTest(): boolean;
+        set depthTest(value: boolean);
+        get frontFace(): Nullable<number>;
+        set frontFace(value: Nullable<number>);
+        reset(): void;
+        apply(gl: WebGLRenderingContext): void;
     }
 }
 declare module BABYLON {
@@ -45865,26 +46059,10 @@ declare module BABYLON {
          * Unbind the current render target and bind the default framebuffer
          */
         restoreDefaultFramebuffer(): void;
-        setZOffset(value: number): void;
         private _setColorFormat;
         private _setDepthTextureFormat;
-        setDepthBuffer(enable: boolean): void;
-        setDepthWrite(enable: boolean): void;
-        setStencilBuffer(enable: boolean): void;
-        setStencilMask(mask: number): void;
-        setStencilFunction(stencilFunc: number): void;
-        setStencilFunctionReference(reference: number): void;
-        setStencilFunctionMask(mask: number): void;
-        setStencilOperationFail(operation: number): void;
-        setStencilOperationDepthFail(operation: number): void;
-        setStencilOperationPass(operation: number): void;
         setDitheringState(value: boolean): void;
         setRasterizerState(value: boolean): void;
-        setDepthFunction(depthFunc: number): void;
-        setDepthFunctionToGreater(): void;
-        setDepthFunctionToGreaterOrEqual(): void;
-        setDepthFunctionToLess(): void;
-        setDepthFunctionToLessOrEqual(): void;
         /**
          * Set various states to the context
          * @param culling defines backface culling state
@@ -48681,6 +48859,71 @@ declare module BABYLON {
          * @returns the serialized object
          */
         serialize(parent: any): any;
+    }
+}
+declare module BABYLON {
+    /**
+     * A cursor which tracks a point on a path
+     */
+    export class PathCursor {
+        private path;
+        /**
+         * Stores path cursor callbacks for when an onchange event is triggered
+         */
+        private _onchange;
+        /**
+         * The value of the path cursor
+         */
+        value: number;
+        /**
+         * The animation array of the path cursor
+         */
+        animations: Animation[];
+        /**
+         * Initializes the path cursor
+         * @param path The path to track
+         */
+        constructor(path: Path2);
+        /**
+         * Gets the cursor point on the path
+         * @returns A point on the path cursor at the cursor location
+         */
+        getPoint(): Vector3;
+        /**
+         * Moves the cursor ahead by the step amount
+         * @param step The amount to move the cursor forward
+         * @returns This path cursor
+         */
+        moveAhead(step?: number): PathCursor;
+        /**
+         * Moves the cursor behind by the step amount
+         * @param step The amount to move the cursor back
+         * @returns This path cursor
+         */
+        moveBack(step?: number): PathCursor;
+        /**
+         * Moves the cursor by the step amount
+         * If the step amount is greater than one, an exception is thrown
+         * @param step The amount to move the cursor
+         * @returns This path cursor
+         */
+        move(step: number): PathCursor;
+        /**
+         * Ensures that the value is limited between zero and one
+         * @returns This path cursor
+         */
+        private ensureLimits;
+        /**
+         * Runs onchange callbacks on change (used by the animation engine)
+         * @returns This path cursor
+         */
+        private raiseOnChange;
+        /**
+         * Executes a function on change
+         * @param f A path cursor onchange callback
+         * @returns This path cursor
+         */
+        onchange(f: (cursor: PathCursor) => void): PathCursor;
     }
 }
 declare module BABYLON {
@@ -62143,9 +62386,13 @@ declare module BABYLON {
          */
         private _onBeforeCameraRenderObserver;
         /**
-         * Observable raised when an error occured while loading the 360 image
+         * Observable raised when an error occurred while loading the texture
          */
         onLoadErrorObservable: Observable<string>;
+        /**
+         * Observable raised when the texture finished loading
+         */
+        onLoadObservable: Observable<void>;
         /**
          * Create an instance of this class and pass through the parameters to the relevant classes- Texture, StandardMaterial, and Mesh.
          * @param name Element's name, child elements will append suffixes for their own names.
@@ -67023,36 +67270,6 @@ declare module BABYLON {
         clone(): CubeTexture;
         /** @hidden */
         static _UpdateRGBDAsync(internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number): Promise<void>;
-    }
-}
-declare module BABYLON {
-    /**
-     * Class used to store 2D array textures containing user data
-     */
-    export class RawTexture2DArray extends Texture {
-        /** Gets or sets the texture format to use */
-        format: number;
-        /**
-         * Create a new RawTexture2DArray
-         * @param data defines the data of the texture
-         * @param width defines the width of the texture
-         * @param height defines the height of the texture
-         * @param depth defines the number of layers of the texture
-         * @param format defines the texture format to use
-         * @param scene defines the hosting scene
-         * @param generateMipMaps defines a boolean indicating if mip levels should be generated (true by default)
-         * @param invertY defines if texture must be stored with Y axis inverted
-         * @param samplingMode defines the sampling mode to use (Texture.TRILINEAR_SAMPLINGMODE by default)
-         * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
-         */
-        constructor(data: ArrayBufferView, width: number, height: number, depth: number, 
-        /** Gets or sets the texture format to use */
-        format: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, textureType?: number);
-        /**
-         * Update the texture with new data
-         * @param data defines the data to store in the texture
-         */
-        update(data: ArrayBufferView): void;
     }
 }
 declare module BABYLON {
@@ -80065,6 +80282,10 @@ declare module BABYLON {
                 left: AbstractMesh;
             };
             /**
+             * Are the meshes prepared for a left-handed system. Default hand meshes are right-handed.
+             */
+            leftHandedSystemMeshes?: boolean;
+            /**
              * If a hand mesh was provided, this array will define what axis will update which node. This will override the default hand mesh
              */
             rigMapping?: {
@@ -80112,9 +80333,12 @@ declare module BABYLON {
         readonly trackedMeshes: AbstractMesh[];
         private _handMesh?;
         private _rigMapping?;
+        private _leftHandedMeshes?;
         private _scene;
         private _defaultHandMesh;
         private _transformNodeMapping;
+        private _boneMapping;
+        private _useBones;
         /**
          * Hand-parts definition (key is HandPart)
          */
@@ -80137,12 +80361,13 @@ declare module BABYLON {
          * @param _handMesh an optional hand mesh. if not provided, ours will be used
          * @param _rigMapping an optional rig mapping for the hand mesh. if not provided, ours will be used
          * @param disableDefaultHandMesh should the default mesh creation be disabled
+         * @param _leftHandedMeshes are the hand meshes left-handed-system meshes
          */
         constructor(
         /** the controller to which the hand correlates */
         xrController: WebXRInputSource, 
         /** the meshes to be used to track the hand joints */
-        trackedMeshes: AbstractMesh[], _handMesh?: AbstractMesh | undefined, _rigMapping?: string[] | undefined, disableDefaultHandMesh?: boolean);
+        trackedMeshes: AbstractMesh[], _handMesh?: AbstractMesh | undefined, _rigMapping?: string[] | undefined, disableDefaultHandMesh?: boolean, _leftHandedMeshes?: boolean | undefined);
         /**
          * Get the hand mesh. It is possible that the hand mesh is not yet ready!
          */
@@ -80637,68 +80862,17 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    /**
-     * A cursor which tracks a point on a path
-     */
-    export class PathCursor {
-        private path;
-        /**
-         * Stores path cursor callbacks for when an onchange event is triggered
-         */
-        private _onchange;
-        /**
-         * The value of the path cursor
-         */
-        value: number;
-        /**
-         * The animation array of the path cursor
-         */
-        animations: Animation[];
-        /**
-         * Initializes the path cursor
-         * @param path The path to track
-         */
-        constructor(path: Path2);
-        /**
-         * Gets the cursor point on the path
-         * @returns A point on the path cursor at the cursor location
-         */
-        getPoint(): Vector3;
-        /**
-         * Moves the cursor ahead by the step amount
-         * @param step The amount to move the cursor forward
-         * @returns This path cursor
-         */
-        moveAhead(step?: number): PathCursor;
-        /**
-         * Moves the cursor behind by the step amount
-         * @param step The amount to move the cursor back
-         * @returns This path cursor
-         */
-        moveBack(step?: number): PathCursor;
-        /**
-         * Moves the cursor by the step amount
-         * If the step amount is greater than one, an exception is thrown
-         * @param step The amount to move the cursor
-         * @returns This path cursor
-         */
-        move(step: number): PathCursor;
-        /**
-         * Ensures that the value is limited between zero and one
-         * @returns This path cursor
-         */
-        private ensureLimits;
-        /**
-         * Runs onchange callbacks on change (used by the animation engine)
-         * @returns This path cursor
-         */
-        private raiseOnChange;
-        /**
-         * Executes a function on change
-         * @param f A path cursor onchange callback
-         * @returns This path cursor
-         */
-        onchange(f: (cursor: PathCursor) => void): PathCursor;
+    /** @hidden */
+    export class WebGPUCacheRenderPipelineString extends WebGPUCacheRenderPipeline {
+        private static _Cache;
+        protected _getRenderPipeline(param: {
+            token: any;
+            pipeline: Nullable<GPURenderPipeline>;
+        }): void;
+        protected _setRenderPipeline(param: {
+            token: any;
+            pipeline: Nullable<GPURenderPipeline>;
+        }): void;
     }
 }
 declare module BABYLON {

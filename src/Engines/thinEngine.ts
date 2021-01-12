@@ -911,6 +911,7 @@ export class ThinEngine {
             oculusMultiview: this._gl.getExtension('OCULUS_multiview'),
             depthTextureExtension: false,
             canUseGLInstanceID: !(this._badOS && this._webGLVersion <= 1),
+            canUseGLVertexID: this._webGLVersion > 1,
         };
 
         // Infos
@@ -2656,6 +2657,9 @@ export class ThinEngine {
             return false;
         }
 
+        if (array.length < 1) {
+            return false;
+        }
         this._gl.uniform1fv(uniform, array);
         return true;
     }
