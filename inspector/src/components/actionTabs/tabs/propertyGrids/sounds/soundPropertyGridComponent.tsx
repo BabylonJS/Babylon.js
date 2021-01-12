@@ -3,7 +3,7 @@ import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LineContainerComponent } from "../../../lineContainerComponent";
+import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
 import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
 import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from '../../../../globalState';
@@ -32,7 +32,7 @@ export class SoundPropertyGridComponent extends React.Component<ISoundPropertyGr
 
         return (
             <div className="pane">
-                <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
+                <LineContainerComponent title="GENERAL">
                     <TextLineComponent label="Class" value={sound.getClassName()} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={sound} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                     <TextLineComponent label="Status" value={sound.isPaused ? "Paused" : (sound.isPlaying ? "Playing" : "Stopped")}/>
@@ -57,7 +57,7 @@ export class SoundPropertyGridComponent extends React.Component<ISoundPropertyGr
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                     }} />                       */}
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="COMMANDS">
+                <LineContainerComponent title="COMMANDS">
                     {
                         sound.isPlaying &&
                         <ButtonLineComponent label="Pause" onClick={() => {
