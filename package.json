@@ -44,7 +44,6 @@
         "@svgr/webpack": "^5.4.0",
         "@types/chai": "^4.2.11",
         "@types/dagre": "^0.7.44",
-        "@types/jest": "^26.0.19",
         "@types/mocha": "^7.0.2",
         "@types/node": "^14.0.11",
         "@types/react": "~16.9.35",
@@ -116,5 +115,6 @@
         "webpack-stream": "~5.2.1",
         "xhr2": "^0.2.0",
         "xmlbuilder": "15.1.1"
-    }
+    },
+    "dependencies": {}
 }
