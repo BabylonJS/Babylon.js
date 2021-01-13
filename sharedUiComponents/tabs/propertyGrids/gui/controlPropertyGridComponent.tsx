@@ -1,13 +1,11 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import { PropertyChangedEvent } from "../../../propertyChangedEvent";
 import { Control } from "babylonjs-gui/2D/controls/control";
-import { CommonControlPropertyGridComponent } from "../../../../../sharedUiComponents/tabs/propertyGrids/gui/commonControlPropertyGridComponent";
-import { GlobalState } from '../../../../globalState';
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { CommonControlPropertyGridComponent } from "../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent";
+import { LockObject } from "../../../tabs/propertyGrids/lockObject";
 
 interface IControlPropertyGridComponentProps {
-    globalState: GlobalState;
     control: Control,
     lockObject: LockObject,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>

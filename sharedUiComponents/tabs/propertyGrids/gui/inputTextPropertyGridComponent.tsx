@@ -1,18 +1,16 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { CommonControlPropertyGridComponent } from "../../../../../sharedUiComponents/tabs/propertyGrids/gui/commonControlPropertyGridComponent";
+import { PropertyChangedEvent } from "../../../propertyChangedEvent";
+import { CommonControlPropertyGridComponent } from "../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent";
 import { InputText } from "babylonjs-gui/2D/controls/inputText";
-import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
-import { TextInputLineComponent } from "../../../../../sharedUiComponents/lines/textInputLineComponent";
-import { SliderLineComponent } from "../../../../../sharedUiComponents/lines/sliderLineComponent";
-import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
-import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { GlobalState } from '../../../../globalState';
+import { LineContainerComponent } from "../../../lines/lineContainerComponent";
+import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
+import { SliderLineComponent } from "../../../lines/sliderLineComponent";
+import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
+import { FloatLineComponent } from "../../../lines/floatLineComponent";
+import { LockObject } from "../../../tabs/propertyGrids/lockObject";
 
 interface IInputTextPropertyGridComponentProps {
-    globalState: GlobalState;
     inputText: InputText;
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;

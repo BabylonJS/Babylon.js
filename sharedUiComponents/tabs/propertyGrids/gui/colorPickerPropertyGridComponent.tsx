@@ -1,15 +1,13 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { CommonControlPropertyGridComponent } from "../../../../../sharedUiComponents/tabs/propertyGrids/gui/commonControlPropertyGridComponent";
-import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
+import { PropertyChangedEvent } from "../../../propertyChangedEvent";
+import { CommonControlPropertyGridComponent } from "../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent";
+import { LineContainerComponent } from "../../../lines/lineContainerComponent";
 import { ColorPicker } from "babylonjs-gui/2D/controls/colorpicker";
-import { Color3LineComponent } from "../../../../../sharedUiComponents/lines/color3LineComponent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { GlobalState } from '../../../../globalState';
+import { Color3LineComponent } from "../../../lines/color3LineComponent";
+import { LockObject } from "../lockObject";
 
 interface IColorPickerPropertyGridComponentProps {
-    globalState: GlobalState;
     colorPicker: ColorPicker;
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;

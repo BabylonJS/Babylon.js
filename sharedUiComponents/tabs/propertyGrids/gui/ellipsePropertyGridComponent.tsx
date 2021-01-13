@@ -1,16 +1,14 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { CommonControlPropertyGridComponent } from "../../../../../sharedUiComponents/tabs/propertyGrids/gui/commonControlPropertyGridComponent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { PropertyChangedEvent } from "../../../propertyChangedEvent";
+import { CommonControlPropertyGridComponent } from "../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent";
+import { LockObject } from "../../../tabs/propertyGrids/lockObject";
 import { Ellipse } from "babylonjs-gui/2D/controls/ellipse";
-import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
-import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
-import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
-import { GlobalState } from '../../../../globalState';
+import { LineContainerComponent } from "../../../lines/lineContainerComponent";
+import { FloatLineComponent } from "../../../lines/floatLineComponent";
+import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
 
 interface IEllipsePropertyGridComponentProps {
-    globalState: GlobalState;
     ellipse: Ellipse,
     lockObject: LockObject,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
