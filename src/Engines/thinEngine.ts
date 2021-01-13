@@ -1078,6 +1078,7 @@ export class ThinEngine {
             supportExtendedTextureFormats: this._webGLVersion !== 1,
             supportSwitchCaseInShader: this._webGLVersion !== 1,
             supportSyncTextureRead: true,
+            needsInvertingBitmap: true,
             _collectUbosUpdatedInFrame: false,
         };
     }

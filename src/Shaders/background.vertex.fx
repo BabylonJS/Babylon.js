@@ -40,7 +40,7 @@ varying vec2 vDiffuseUV;
 #include<clipPlaneVertexDeclaration>
 
 #include<fogVertexDeclaration>
-#include<__decl__lightFragment>[0..maxSimultaneousLights]
+#include<__decl__lightVxFragment>[0..maxSimultaneousLights]
 
 #ifdef REFLECTIONMAP_SKYBOX
 varying vec3 vPositionUVW;
