@@ -6,6 +6,7 @@ import { Color4 } from "babylonjs/Maths/math.color";
 import { GUINode } from "./diagram/guiNode";
 import { WorkbenchComponent } from "./diagram/workbench";
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
+import { PropertyChangedEvent } from "./sharedUiComponents/propertyChangedEvent";
 
 export class GlobalState {
     guiTexture: AdvancedDynamicTexture;
@@ -27,6 +28,7 @@ export class GlobalState {
     blockKeyboardEvents = false;
     controlCamera: boolean;
     workbench: WorkbenchComponent;
+    onPropertyChangedObservable = new Observable<PropertyChangedEvent>();
     storeEditorData: (serializationObject: any) => void;
 
     customSave?: { label: string; action: (data: string) => Promise<void> };

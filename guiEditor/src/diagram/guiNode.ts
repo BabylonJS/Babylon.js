@@ -2,11 +2,9 @@ import { GlobalState } from '../globalState';
 import { Nullable } from 'babylonjs/types';
 import { Observer } from 'babylonjs/Misc/observable';
 import { WorkbenchComponent, FramePortData } from './workbench';
-import { PropertyGuiLedger } from './propertyLedger';
-import * as React from 'react';
-import { GenericPropertyComponent } from './properties/genericNodePropertyComponent';
 import { Control } from 'babylonjs-gui/2D/controls/control';
 import { Vector2 } from 'babylonjs/Maths/math.vector';
+
 
 export class GUINode {
     private _x = 0;
@@ -155,20 +153,6 @@ export class GUINode {
 
         return true;
         //evt.stopPropagation();
-    }
-
-    public renderProperties(): Nullable<JSX.Element> {
-        let className = this.guiControl.getClassName();
-        let control = PropertyGuiLedger.RegisteredControls[className];
-        
-        if (!control) {
-            control = GenericPropertyComponent;
-        }
-
-        return React.createElement(control, {
-        globalState: this._globalState,
-        guiControl: this.guiControl
-        });
     }
 
     public updateVisual()
