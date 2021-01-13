@@ -1,15 +1,13 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { CommonControlPropertyGridComponent } from "../../../../../sharedUiComponents/tabs/propertyGrids/gui/commonControlPropertyGridComponent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { PropertyChangedEvent } from "../../../propertyChangedEvent";
+import { CommonControlPropertyGridComponent } from "../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent";
+import { LockObject } from "../../../tabs/propertyGrids/lockObject";
 import { StackPanel } from "babylonjs-gui/2D/controls/stackPanel";
-import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
-import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
-import { GlobalState } from '../../../../globalState';
+import { LineContainerComponent } from "../../../lines/lineContainerComponent";
+import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
 
 interface IStackPanelPropertyGridComponentProps {
-    globalState: GlobalState;
     stackPanel: StackPanel,
     lockObject: LockObject,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
