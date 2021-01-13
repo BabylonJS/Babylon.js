@@ -56793,7 +56793,13 @@ declare module BABYLON {
          */
         disableDefaultUI?: boolean;
         /**
-         * Should teleportation not initialize. defaults to false.
+         * Should pointer selection not initialize.
+         * Note that disabling pointer selection also disables teleportation.
+         * Defaults to false.
+         */
+        disablePointerSelection?: boolean;
+        /**
+         * Should teleportation not initialize. Defaults to false.
          */
         disableTeleportation?: boolean;
         /**
