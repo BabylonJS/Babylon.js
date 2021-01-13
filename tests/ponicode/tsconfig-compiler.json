@@ -11,7 +11,7 @@
 		"baseUrl": "../../",
 		"paths": {
 			"babylonjs/*": [
-				"./src/*"
+				".temp/manualBuildCore/*"
 			]
 		},
 		"types": [
