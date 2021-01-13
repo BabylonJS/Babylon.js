@@ -12827,10 +12827,12 @@ declare module BABYLON {
         private _mainUVName;
         private _mainUVDefineName;
         private _fragmentOnly;
+        protected _texture: Nullable<Texture>;
         /**
          * Gets or sets the texture associated with the node
          */
-        texture: Nullable<Texture>;
+        get texture(): Nullable<Texture>;
+        set texture(texture: Nullable<Texture>);
         /**
          * Gets or sets a boolean indicating if content needs to be converted to gamma space
          */
@@ -12942,10 +12944,12 @@ declare module BABYLON {
         /** @hidden */
         _reflectionMatrixName: string;
         protected _reflectionColorName: string;
+        protected _texture: Nullable<BaseTexture>;
         /**
          * Gets or sets the texture associated with the node
          */
-        texture: Nullable<BaseTexture>;
+        get texture(): Nullable<BaseTexture>;
+        set texture(texture: Nullable<BaseTexture>);
         /**
          * Create a new ReflectionTextureBaseBlock
          * @param name defines the block name
@@ -14011,11 +14015,17 @@ declare module BABYLON {
      * Block used to output the final color
      */
     export class FragmentOutputBlock extends NodeMaterialBlock {
+        private _linearDefineName;
+        private _gammaDefineName;
         /**
          * Create a new FragmentOutputBlock
          * @param name defines the block name
          */
         constructor(name: string);
+        /** Gets or sets a boolean indicating if content needs to be converted to gamma space */
+        convertToGammaSpace: boolean;
+        /** Gets or sets a boolean indicating if content needs to be converted to linear space */
+        convertToLinearSpace: boolean;
         /**
          * Gets the current class name
          * @returns the class name
@@ -14033,7 +14043,11 @@ declare module BABYLON {
          * Gets the a input component
          */
         get a(): NodeMaterialConnectionPoint;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         protected _buildBlock(state: NodeMaterialBuildState): this;
+        protected _dumpPropertiesCode(): string;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {
@@ -62779,7 +62793,8 @@ declare module BABYLON {
          *     URLConfig.wasmUASTCToRGBA_SRGB
          *     URLConfig.jsMSCTranscoder
          *     URLConfig.wasmMSCTranscoder
-         * You can see their default values in this PG: https://playground.babylonjs.com/#EIJH8L#22
+         *     URLConfig.wasmZSTDDecoder
+         * You can see their default values in this PG: https://playground.babylonjs.com/#EIJH8L#29
          */
         static URLConfig: {
             jsDecoderModule: string;
@@ -62789,6 +62804,7 @@ declare module BABYLON {
             wasmUASTCToRGBA_SRGB: null;
             jsMSCTranscoder: null;
             wasmMSCTranscoder: null;
+            wasmZSTDDecoder: null;
         };
         /**
          * Default number of workers used to handle data decoding
@@ -66169,10 +66185,11 @@ declare module BABYLON {
          * @param scene defines the hosting scene
          * @param generateMipMaps defines if mip maps should be generated automatically (true by default)
          * @param useFloat defines if HDR data (float data) should be used to store colors (false by default)
+         * @param linearSpace defines if the probe should be generated in linear space or not (false by default)
          */
         constructor(
         /** defines the name of the probe */
-        name: string, size: number, scene: Scene, generateMipMaps?: boolean, useFloat?: boolean);
+        name: string, size: number, scene: Scene, generateMipMaps?: boolean, useFloat?: boolean, linearSpace?: boolean);
         /** Gets or sets the number of samples to use for multi-sampling (0 by default). Required WebGL2 */
         get samples(): number;
         set samples(value: number);
