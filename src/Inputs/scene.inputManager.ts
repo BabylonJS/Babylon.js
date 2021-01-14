@@ -306,7 +306,7 @@ export class InputManager {
                         var pickResult = scene.pick(
                             this._unTranslatedPointerX,
                             this._unTranslatedPointerY,
-                            (mesh: AbstractMesh): boolean => <boolean>(mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(Constants.ACTION_OnLongPressTrigger) && mesh == this._pickedDownMesh),
+                            (mesh: AbstractMesh): boolean => <boolean>(mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(Constants.ACTION_OnLongPressTrigger) && mesh === this._pickedDownMesh),
                             false,
                             scene.cameraToUseForPointers
                         );
@@ -635,7 +635,7 @@ export class InputManager {
                     mesh.isVisible &&
                     mesh.isReady() &&
                     mesh.isEnabled() &&
-                    (mesh.enablePointerMoveEvents || scene.constantlyUpdateMeshUnderPointer || mesh._getActionManagerForTrigger() != null) &&
+                    (mesh.enablePointerMoveEvents || scene.constantlyUpdateMeshUnderPointer || mesh._getActionManagerForTrigger() !== null) &&
                     (!scene.cameraToUseForPointers || (scene.cameraToUseForPointers.layerMask & mesh.layerMask) !== 0);
             }
 
@@ -826,11 +826,11 @@ export class InputManager {
                 evt.key = String.fromCharCode(inputIndex);
                 evt.keyCode = inputIndex;
 
-                if (currentState == 1) {
+                if (currentState === 1) {
                     this._onKeyDown((evt as IKeyboardEvent));
                 }
 
-                if (currentState == 0) {
+                if (currentState === 0) {
                     this._onKeyUp((evt as IKeyboardEvent));
                 }
             }
@@ -856,14 +856,14 @@ export class InputManager {
                 evt.x = pointerX;
                 evt.y = pointerY;
 
-                if (attachDown && inputIndex >= PointerInput.LeftClick && inputIndex <= PointerInput.RightClick && currentState == 1) {   // Pointer Down
+                if (attachDown && inputIndex >= PointerInput.LeftClick && inputIndex <= PointerInput.RightClick && currentState === 1) {   // Pointer Down
                     evt.type = "pointerdown";
                     evt.button = (inputIndex - 2);
 
                     this._onPointerDown((evt as IPointerEvent));
                 }
 
-                if (attachUp && inputIndex >= PointerInput.LeftClick && inputIndex <= PointerInput.RightClick && currentState == 0) {   // Pointer Up
+                if (attachUp && inputIndex >= PointerInput.LeftClick && inputIndex <= PointerInput.RightClick && currentState === 0) {   // Pointer Up
                     evt.type = "pointerup";
                     evt.button = (inputIndex - 2);
 
@@ -893,7 +893,7 @@ export class InputManager {
                         evt.deltaZ = deltaZ;
 
                         // If we have a delta, use it.
-                        if (deltaX != 0 || deltaY != 0 || deltaZ != 0) {
+                        if (deltaX !== 0 || deltaY !== 0 || deltaZ !== 0) {
                             this._onPointerMove((evt as IWheelEvent));
                         }
                     }

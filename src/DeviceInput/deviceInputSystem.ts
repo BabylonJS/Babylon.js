@@ -325,16 +325,16 @@ export class DeviceInputSystem implements IDisposable {
                 pointer[PointerInput.DeltaVertical] = evt.movementY;
 
                 if (this.onInputChanged) {
-                    if (previousHorizontal != evt.clientX) {
+                    if (previousHorizontal !== evt.clientX) {
                         this.onInputChanged(deviceType, deviceSlot, PointerInput.Horizontal, previousHorizontal, pointer[PointerInput.Horizontal]);
                     }
-                    if (previousVertical != evt.clientY) {
+                    if (previousVertical !== evt.clientY) {
                         this.onInputChanged(deviceType, deviceSlot, PointerInput.Vertical, previousVertical, pointer[PointerInput.Vertical]);
                     }
-                    if (pointer[PointerInput.DeltaHorizontal] != 0) {
+                    if (pointer[PointerInput.DeltaHorizontal] !== 0) {
                         this.onInputChanged(deviceType, deviceSlot, PointerInput.DeltaHorizontal, previousDeltaHorizontal, pointer[PointerInput.DeltaHorizontal]);
                     }
-                    if (pointer[PointerInput.DeltaVertical] != 0) {
+                    if (pointer[PointerInput.DeltaVertical] !== 0) {
                         this.onInputChanged(deviceType, deviceSlot, PointerInput.DeltaVertical, previousDeltaVertical, pointer[PointerInput.DeltaVertical]);
                     }
                 }
@@ -364,10 +364,10 @@ export class DeviceInputSystem implements IDisposable {
                 pointer[evt.button + 2] = 1;
 
                 if (this.onInputChanged) {
-                    if (previousHorizontal != evt.clientX) {
+                    if (previousHorizontal !== evt.clientX) {
                         this.onInputChanged(deviceType, deviceSlot, PointerInput.Horizontal, previousHorizontal, pointer[PointerInput.Horizontal]);
                     }
-                    if (previousVertical != evt.clientY) {
+                    if (previousVertical !== evt.clientY) {
                         this.onInputChanged(deviceType, deviceSlot, PointerInput.Vertical, previousVertical, pointer[PointerInput.Vertical]);
                     }
                     this.onInputChanged(deviceType, deviceSlot, evt.button + 2, previousButton, pointer[evt.button + 2]);
@@ -390,17 +390,17 @@ export class DeviceInputSystem implements IDisposable {
                 pointer[evt.button + 2] = 0;
 
                 if (this.onInputChanged) {
-                    if (previousHorizontal != evt.clientX) {
+                    if (previousHorizontal !== evt.clientX) {
                         this.onInputChanged(deviceType, deviceSlot, PointerInput.Horizontal, previousHorizontal, pointer[PointerInput.Horizontal]);
                     }
-                    if (previousVertical != evt.clientY) {
+                    if (previousVertical !== evt.clientY) {
                         this.onInputChanged(deviceType, deviceSlot, PointerInput.Vertical, previousVertical, pointer[PointerInput.Vertical]);
                     }
                     this.onInputChanged(deviceType, deviceSlot, evt.button + 2, previousButton, pointer[evt.button + 2]);
                 }
             }
             // We don't want to unregister the mouse because we may miss input data when a mouse is moving after a click
-            if (evt.pointerType != "mouse") {
+            if (evt.pointerType !== "mouse") {
                 this._unregisterDevice(deviceType, deviceSlot);
             }
 
@@ -428,12 +428,11 @@ export class DeviceInputSystem implements IDisposable {
             };
 
             this._elementToAttachTo.addEventListener("test", noop, options);
-            this._elementToAttachTo.removeEventListener("test", noop, options)
+            this._elementToAttachTo.removeEventListener("test", noop, options);
         }
         catch (e) {
             /* */
         }
-
 
         this._pointerWheelEvent = ((evt) => {
             const deviceType = DeviceType.Mouse;
@@ -460,13 +459,13 @@ export class DeviceInputSystem implements IDisposable {
                 pointer[PointerInput.MouseWheelZ] = evt.deltaZ;
 
                 if (this.onInputChanged) {
-                    if (evt.deltaX != 0) {
+                    if (evt.deltaX !== 0) {
                         this.onInputChanged(deviceType, deviceSlot, PointerInput.MouseWheelX, previousWheelScrollX, pointer[PointerInput.MouseWheelX]);
                     }
-                    if (evt.deltaY != 0) {
+                    if (evt.deltaY !== 0) {
                         this.onInputChanged(deviceType, deviceSlot, PointerInput.MouseWheelY, previousWheelScrollY, pointer[PointerInput.MouseWheelY]);
                     }
-                    if (evt.deltaZ != 0) {
+                    if (evt.deltaZ !== 0) {
                         this.onInputChanged(deviceType, deviceSlot, PointerInput.MouseWheelZ, previousWheelScrollZ, pointer[PointerInput.MouseWheelZ]);
                     }
                 }
@@ -511,7 +510,7 @@ export class DeviceInputSystem implements IDisposable {
         // Gamepads
         const gp = navigator.getGamepads()[deviceSlot];
 
-        if (gp && deviceType == this._gamepads[deviceSlot]) {
+        if (gp && deviceType === this._gamepads[deviceSlot]) {
             const device = this._inputs[deviceType][deviceSlot];
 
             if (inputIndex >= gp.buttons.length) {
