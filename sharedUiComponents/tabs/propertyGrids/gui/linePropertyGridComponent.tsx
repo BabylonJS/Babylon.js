@@ -1,16 +1,14 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { CommonControlPropertyGridComponent } from "../../../../../sharedUiComponents/tabs/propertyGrids/gui/commonControlPropertyGridComponent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { PropertyChangedEvent } from "../../../propertyChangedEvent";
+import { CommonControlPropertyGridComponent } from "../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent";
+import { LockObject } from "../../../tabs/propertyGrids/lockObject";
 import { Line } from "babylonjs-gui/2D/controls/line";
-import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
-import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
-import { TextInputLineComponent } from "../../../../../sharedUiComponents/lines/textInputLineComponent";
-import { GlobalState } from '../../../../globalState';
+import { LineContainerComponent } from "../../../lines/lineContainerComponent";
+import { FloatLineComponent } from "../../../lines/floatLineComponent";
+import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
 
 interface ILinePropertyGridComponentProps {
-    globalState: GlobalState;
     line: Line,
     lockObject: LockObject,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>

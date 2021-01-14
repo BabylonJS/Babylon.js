@@ -56,7 +56,7 @@
 ### GUIEditor
 
 - Added GUI Editor project to master. ([msDestiny14](https://github.com/msDestiny14))
-- Moving GUI property tab components into GUIEditor: Slider. ([msDestiny14](https://github.com/msDestiny14))
+- Moving GUI property tab components into GUIEditor. ([msDestiny14](https://github.com/msDestiny14))
 
 ### GUI
 
