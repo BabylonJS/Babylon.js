@@ -81,7 +81,7 @@ export class TextureTools {
      * @param internalTexture the texture to encode
      * @param scene the scene hosting the texture
      * @param type type of the output texture. If not provided, use the one from internalTexture
-     * @param samplingMode sampling moode to use to sample the source texture. If not provided, use the one from internalTexture
+     * @param samplingMode sampling mode to use to sample the source texture. If not provided, use the one from internalTexture
      * @param format format of the output texture. If not provided, use the one from internalTexture
      * @return a promise with the internalTexture having its texture replaced by the result of the processing
      */

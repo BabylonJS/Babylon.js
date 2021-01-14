@@ -33,6 +33,7 @@ void main(void)
 #ifdef UV1
     vec2 uvUpdated = uv;
 #endif    
+    #include<morphTargetsVertexGlobal>
     #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 
 	vec3 offsetPosition = positionUpdated + (normalUpdated * offset);

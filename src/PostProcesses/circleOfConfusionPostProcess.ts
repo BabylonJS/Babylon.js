@@ -16,12 +16,12 @@ import { serialize } from '../Misc/decorators';
  */
 export class CircleOfConfusionPostProcess extends PostProcess {
     /**
-     * Max lens size in scene units/1000 (eg. millimeter). Standard cameras are 50mm. (default: 50) The diamater of the resulting aperture can be computed by lensSize/fStop.
+     * Max lens size in scene units/1000 (eg. millimeter). Standard cameras are 50mm. (default: 50) The diameter of the resulting aperture can be computed by lensSize/fStop.
      */
     @serialize()
     public lensSize = 50;
     /**
-     * F-Stop of the effect's camera. The diamater of the resulting aperture can be computed by lensSize/fStop. (default: 1.4)
+     * F-Stop of the effect's camera. The diameter of the resulting aperture can be computed by lensSize/fStop. (default: 1.4)
      */
     @serialize()
     public fStop = 1.4;

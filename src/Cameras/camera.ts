@@ -56,7 +56,7 @@ export class Camera extends Node {
     public static readonly FOVMODE_HORIZONTAL_FIXED = 1;
 
     /**
-     * This specifies ther is no need for a camera rig.
+     * This specifies there is no need for a camera rig.
      * Basically only one eye is rendered corresponding to the camera.
      */
     public static readonly RIG_MODE_NONE = 0;
@@ -244,10 +244,10 @@ export class Camera extends Node {
 
     /**
      * Defines the list of custom render target which are rendered to and then used as the input to this camera's render. Eg. display another camera view on a TV in the main scene
-     * This is pretty helpfull if you wish to make a camera render to a texture you could reuse somewhere
+     * This is pretty helpful if you wish to make a camera render to a texture you could reuse somewhere
      * else in the scene. (Eg. security camera)
      *
-     * To change the final output target of the camera, camera.outputRenderTarget should be used instead (eg. webXR renders to a render target corrisponding to an HMD)
+     * To change the final output target of the camera, camera.outputRenderTarget should be used instead (eg. webXR renders to a render target corresponding to an HMD)
      */
     public customRenderTargets = new Array<RenderTargetTexture>();
     /**
@@ -585,7 +585,7 @@ export class Camera extends Node {
     }
 
     /**
-     * Internal, gets the first post proces.
+     * Internal, gets the first post process.
      * @returns the first post process to be run on this camera.
      */
     public _getFirstPostProcess(): Nullable<PostProcess> {
@@ -872,7 +872,7 @@ export class Camera extends Node {
 
     /**
      * Checks if a cullable object (mesh...) is in the camera frustum
-     * Unlike isInFrustum this cheks the full bounding box
+     * Unlike isInFrustum this checks the full bounding box
      * @param target The object to check
      * @returns true if the object is in frustum otherwise false
      */
@@ -885,7 +885,7 @@ export class Camera extends Node {
     /**
      * Gets a ray in the forward direction from the camera.
      * @param length Defines the length of the ray to create
-     * @param transform Defines the transform to apply to the ray, by default the world matrx is used to create a workd space ray
+     * @param transform Defines the transform to apply to the ray, by default the world matrix is used to create a workd space ray
      * @param origin Defines the start point of the ray which defaults to the camera position
      * @returns the forward ray
      */
@@ -1182,7 +1182,7 @@ export class Camera extends Node {
     }
 
     /**
-     * Serialiaze the camera setup to a json represention
+     * Serialiaze the camera setup to a json representation
      * @returns the JSON representation
      */
     public serialize(): any {
@@ -1255,7 +1255,7 @@ export class Camera extends Node {
      * @param scene The scene the result will construct the camera in
      * @param interaxial_distance In case of stereoscopic setup, the distance between both eyes
      * @param isStereoscopicSideBySide In case of stereoscopic setup, should the sereo be side b side
-     * @returns a factory method to construc the camera
+     * @returns a factory method to construct the camera
      */
     static GetConstructorFromName(type: string, name: string, scene: Scene, interaxial_distance: number = 0, isStereoscopicSideBySide: boolean = true): () => Camera {
         let constructorFunc = Node.Construct(type, name, scene, {

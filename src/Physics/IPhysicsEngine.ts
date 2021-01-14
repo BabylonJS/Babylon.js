@@ -189,7 +189,7 @@ export interface IPhysicsEngine {
 
     /**
      * Called by the scene. No need to call it.
-     * @param delta defines the timespam between frames
+     * @param delta defines the timespan between frames
      */
     _step(delta: number): void;
 }

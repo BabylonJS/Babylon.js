@@ -82,6 +82,7 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     public MORPHTARGETS_TANGENT = false;
     public MORPHTARGETS_UV = false;
     public NUM_MORPH_INFLUENCERS = 0;
+    public MORPHTARGETS_TEXTURE = false;
 
     /** IMAGE PROCESSING */
     public IMAGEPROCESSING = false;
@@ -1579,7 +1580,7 @@ export class NodeMaterial extends PushMaterial {
     /**
      * Loads the current Node Material from a url pointing to a file save by the Node Material Editor
      * @param url defines the url to load from
-     * @returns a promise that will fullfil when the material is fully loaded
+     * @returns a promise that will fulfil when the material is fully loaded
      */
     public loadAsync(url: string) {
         return this.getScene()._loadFileAsync(url).then((data) => {

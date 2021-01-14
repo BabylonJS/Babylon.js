@@ -132,7 +132,7 @@ export class AxisDragGizmo extends Gizmo {
                         (this.attachedNode as any).position.addInPlaceFromFloats(event.delta.x, event.delta.y, event.delta.z);
                     }
 
-                    // use _worldMatrix to not force a matrix update when calling GetWorldMatrix especialy with Cameras
+                    // use _worldMatrix to not force a matrix update when calling GetWorldMatrix especially with Cameras
                     this.attachedNode.getWorldMatrix().addTranslationFromFloats(event.delta.x, event.delta.y, event.delta.z);
                     this.attachedNode.updateCache();
                 } else {

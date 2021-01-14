@@ -132,7 +132,7 @@ export class MultiMaterial extends Material {
     /**
      * Checks if the material is ready to render the requested sub mesh
      * @param mesh Define the mesh the submesh belongs to
-     * @param subMesh Define the sub mesh to look readyness for
+     * @param subMesh Define the sub mesh to look readiness for
      * @param useInstances Define whether or not the material is used with instances
      * @returns true if ready, otherwise false
      */

@@ -8,7 +8,7 @@ import { Observable } from "babylonjs/Misc/observable";
 /**
  * Interface used to specify creation options for the gui editor
  */
-export interface IGuiEditorOptions {
+export interface IGUIEditorOptions {
     hostElement?: HTMLElement;
     customSave?: { label: string; action: (data: string) => Promise<void> };
     customLoadObservable?: Observable<any>;
@@ -17,14 +17,14 @@ export interface IGuiEditorOptions {
 /**
  * Class used to create a gui editor
  */
-export class GuiEditor {
+export class GUIEditor {
     private static _CurrentState: GlobalState;
 
     /**
      * Show the gui editor
      * @param options defines the options to use to configure the gui editor
      */
-    public static Show(options: IGuiEditorOptions) {
+    public static Show(options: IGUIEditorOptions) {
         if (this._CurrentState) {
             var popupWindow = (Popup as any)["gui-editor"];
             if (popupWindow) {

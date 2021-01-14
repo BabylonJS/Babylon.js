@@ -27,20 +27,10 @@ var checkHash = function () {
                 xmlHttp.onreadystatechange = function () {
                     if (xmlHttp.readyState == 4) {
                         if (xmlHttp.status == 200) {
-                            var snippet = JSON.parse(JSON.parse(xmlHttp.responseText).jsonPayload);
-                            let serializationObject = JSON.parse(snippet.nodeMaterial);
-
-                            if (editorDisplayed) {
-                                customLoadObservable.notifyObservers(serializationObject);
-                            } else {
-                                nodeMaterial.loadFromSerialization(serializationObject);
-                                try {
-                                    nodeMaterial.build(true);
-                                } catch (err) {
-                                     // Swallow the error here
-                                }
-                                showEditor();
-                            }
+                            
+                            //TODO: Implement
+                            //var snippet = JSON.parse(JSON.parse(xmlHttp.responseText).jsonPayload);
+                            showEditor();
                         }
                     }
                 }

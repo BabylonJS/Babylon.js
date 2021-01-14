@@ -460,7 +460,7 @@ export class PreviewManager {
                     }
 
                     if (this._material) {
-                        this._material.dispose();
+                        this._material.dispose(false, true);
                     }
                     this._material = tempMaterial;
                     break;
@@ -471,7 +471,7 @@ export class PreviewManager {
                     this._proceduralTexture = tempMaterial.createProceduralTexture(512, this._scene);
 
                     if (this._material) {
-                        this._material.dispose();
+                        this._material.dispose(false, true);
                     }
 
                     if (this._layer) {
@@ -495,7 +495,7 @@ export class PreviewManager {
                     tempMaterial.createEffectForParticles(this._particleSystem!);
 
                     if (this._material) {
-                        this._material.dispose();
+                        this._material.dispose(false, true);
                     }
                     this._material = tempMaterial;
                     break;
@@ -512,7 +512,7 @@ export class PreviewManager {
                                 }
 
                                 if (this._material) {
-                                    this._material.dispose();
+                                    this._material.dispose(false, true);
                                 }
 
                                 this._material = tempMaterial;
@@ -545,7 +545,7 @@ export class PreviewManager {
         this._globalState.onLightUpdated.remove(this._onLightUpdatedObserver);
 
         if (this._material) {
-            this._material.dispose();
+            this._material.dispose(false, true);
         }
 
         this._camera.dispose();

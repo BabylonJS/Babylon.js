@@ -9,6 +9,7 @@ import { PickingInfo } from "../Collisions/pickingInfo";
 import { ISceneComponent, SceneComponentConstants } from "../sceneComponent";
 import { ActionEvent } from "../Actions/actionEvent";
 import { Constants } from "../Engines/constants";
+import { IPointerEvent } from "../Events/deviceInputEvents";
 
 declare module "../scene" {
     export interface Scene {
@@ -293,7 +294,7 @@ export class SpriteSceneComponent implements ISceneComponent {
     }
 
     /**
-     * Disposes the component and the associated ressources.
+     * Disposes the component and the associated resources.
      */
     public dispose(): void {
         this.scene.onBeforeSpritesRenderingObservable.clear();
@@ -337,7 +338,7 @@ export class SpriteSceneComponent implements ISceneComponent {
         return pickResult;
     }
 
-    private _pointerDown(unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, evt: PointerEvent): Nullable<PickingInfo> {
+    private _pointerDown(unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, evt: IPointerEvent): Nullable<PickingInfo> {
         var scene = this.scene;
         scene._pickedDownSprite = null;
         if (scene.spriteManagers.length > 0) {
@@ -367,7 +368,7 @@ export class SpriteSceneComponent implements ISceneComponent {
         return pickResult;
     }
 
-    private _pointerUp(unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, evt: PointerEvent): Nullable<PickingInfo> {
+    private _pointerUp(unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, evt: IPointerEvent): Nullable<PickingInfo> {
         var scene = this.scene;
         if (scene.spriteManagers.length > 0) {
             let spritePickResult = scene.pickSprite(unTranslatedPointerX, unTranslatedPointerY, this._spritePredicate, false, scene.cameraToUseForPointers || undefined);

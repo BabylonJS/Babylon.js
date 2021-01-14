@@ -120,7 +120,7 @@ export class PBRSheenConfiguration {
     }
 
     /**
-     * Instantiate a new istance of clear coat configuration.
+     * Instantiate a new instance of clear coat configuration.
      * @param markAllSubMeshesAsTexturesDirty Callback to flag the material to dirty
      */
     constructor(markAllSubMeshesAsTexturesDirty: () => void) {
@@ -199,7 +199,7 @@ export class PBRSheenConfiguration {
      * Binds the material data.
      * @param uniformBuffer defines the Uniform buffer to fill in.
      * @param scene defines the scene the material belongs to.
-     * @param isFrozen defines wether the material is frozen or not.
+     * @param isFrozen defines whether the material is frozen or not.
      * @param subMesh the submesh to bind data for
      */
     public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, isFrozen: boolean, subMesh?: SubMesh): void {

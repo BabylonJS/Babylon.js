@@ -852,7 +852,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (!this._geometry) {
             return null;
         }
-        return this._geometry.getVerticesData(kind, copyWhenShared, forceCopy);
+        let data = this._userInstancedBuffersStorage?.vertexBuffers[kind]?.getFloatData(this._geometry.getTotalVertices(), forceCopy || (copyWhenShared && this._geometry.meshes.length !== 1));
+        if (!data) {
+            data = this._geometry.getVerticesData(kind, copyWhenShared, forceCopy);
+        }
+        return data;
     }
 
     /**
@@ -877,7 +881,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (!this._geometry) {
             return null;
         }
-        return this._geometry.getVertexBuffer(kind);
+
+        return this._userInstancedBuffersStorage?.vertexBuffers[kind] ?? this._geometry.getVertexBuffer(kind);
     }
 
     /**
@@ -905,7 +910,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
             return false;
         }
-        return this._geometry.isVerticesDataPresent(kind);
+        return this._userInstancedBuffersStorage?.vertexBuffers[kind] !== undefined || this._geometry.isVerticesDataPresent(kind);
     }
 
     /**
@@ -932,7 +937,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
             return false;
         }
-        return this._geometry.isVertexBufferUpdatable(kind);
+        return this._userInstancedBuffersStorage?.vertexBuffers[kind]?.isUpdatable() || this._geometry.isVertexBufferUpdatable(kind);
     }
 
     /**
@@ -963,7 +968,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
             return result;
         }
-        return this._geometry.getVerticesDataKinds();
+        const kinds = this._geometry.getVerticesDataKinds();
+        if (this._userInstancedBuffersStorage) {
+            for (const kind in this._userInstancedBuffersStorage.vertexBuffers) {
+                kinds.push(kind);
+            }
+        }
+        return kinds;
     }
 
     /**
@@ -1500,6 +1511,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         var engine = this.getScene().getEngine();
 
+        // Morph targets
+        if (this.morphTargetManager && this.morphTargetManager.isUsingTextureForTargets) {
+            this.morphTargetManager._bind(effect);
+        }
+
         // Wireframe
         var indexToBind;
 
@@ -1693,9 +1709,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
 
             this._userInstancedBuffersStorage.vertexBuffers["world0"] = instancesBuffer.createVertexBuffer("world0", 0, 4);
-            this._userInstancedBuffersStorage.vertexBuffers["world1"] = instancesBuffer.createVertexBuffer("world0", 4, 4);
-            this._userInstancedBuffersStorage.vertexBuffers["world2"] = instancesBuffer.createVertexBuffer("world0", 8, 4);
-            this._userInstancedBuffersStorage.vertexBuffers["world3"] = instancesBuffer.createVertexBuffer("world0", 12, 4);
+            this._userInstancedBuffersStorage.vertexBuffers["world1"] = instancesBuffer.createVertexBuffer("world1", 4, 4);
+            this._userInstancedBuffersStorage.vertexBuffers["world2"] = instancesBuffer.createVertexBuffer("world2", 8, 4);
+            this._userInstancedBuffersStorage.vertexBuffers["world3"] = instancesBuffer.createVertexBuffer("world3", 12, 4);
+
+            this._invalidateInstanceVertexArrayObject();
         } else {
             if (!this._instanceDataStorage.isFrozen) {
                 instancesBuffer!.updateDirectly(instanceStorage.instancesData, 0, instancesCount);
@@ -1862,8 +1880,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         let oldCameraMaxZ = 0;
+        let oldCamera: Nullable<Camera> = null;
         if (this.ignoreCameraMaxZ && scene.activeCamera && !scene._isInIntermediateRendering()) {
             oldCameraMaxZ = scene.activeCamera.maxZ;
+            oldCamera = scene.activeCamera;
             scene.activeCamera.maxZ = 0;
             scene.updateTransformMatrix(true);
         }
@@ -1877,8 +1897,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         let instanceDataStorage = this._instanceDataStorage;
 
         let material = subMesh.getMaterial();
-
         if (!material) {
+            if (oldCamera) {
+                oldCamera.maxZ = oldCameraMaxZ;
+                scene.updateTransformMatrix(true);
+            }
             return this;
         }
 
@@ -1886,9 +1909,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (!instanceDataStorage.isFrozen || !this._effectiveMaterial || this._effectiveMaterial !== material) {
             if (material._storeEffectOnSubMeshes) {
                 if (!material.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
+                    if (oldCamera) {
+                        oldCamera.maxZ = oldCameraMaxZ;
+                        scene.updateTransformMatrix(true);
+                    }
                     return this;
                 }
             } else if (!material.isReady(this, hardwareInstancedRendering)) {
+                if (oldCamera) {
+                    oldCamera.maxZ = oldCameraMaxZ;
+                    scene.updateTransformMatrix(true);
+                }
                 return this;
             }
 
@@ -1912,6 +1943,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         if (!effect) {
+            if (oldCamera) {
+                oldCamera.maxZ = oldCameraMaxZ;
+                scene.updateTransformMatrix(true);
+            }
             return this;
         }
 
@@ -1978,11 +2013,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this._internalMeshDataInfo._onAfterRenderObservable.notifyObservers(this);
         }
 
-        if (this.ignoreCameraMaxZ && scene.activeCamera && !scene._isInIntermediateRendering()) {
-            scene.activeCamera.maxZ = oldCameraMaxZ;
+        if (oldCamera) {
+            oldCamera.maxZ = oldCameraMaxZ;
             scene.updateTransformMatrix(true);
         }
-
         return this;
     }
 
@@ -2022,7 +2056,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             // check for invalid weight and just set it to 1.
             if (t === 0) { matricesWeights[a] = 1; }
             else {
-                // renormalize so everything adds to 1 use reciprical
+                // renormalize so everything adds to 1 use reciprocal
                 let recip = 1 / t;
                 matricesWeights[a] *= recip;
                 matricesWeights[a + 1] *= recip;
@@ -2047,7 +2081,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             // check for invalid weight and just set it to 1.
             if (t === 0) { matricesWeights[a] = 1; }
             else {
-                // renormalize so everything adds to 1 use reciprical
+                // renormalize so everything adds to 1 use reciprocal
                 let recip = 1 / t;
                 matricesWeights[a] *= recip;
                 matricesWeights[a + 1] *= recip;
@@ -2115,7 +2149,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 missingWeights++;
             }
             else {
-                // renormalize so everything adds to 1 use reciprical
+                // renormalize so everything adds to 1 use reciprocal
                 let recip = 1 / t;
                 let tolerance = 0;
                 for (b = 0; b < numInfluences; b++) {
@@ -2126,7 +2160,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                         tolerance += Math.abs(matricesWeightsExtra[a + b - 4] - (matricesWeightsExtra[a + b - 4] * recip));
                     }
                 }
-                // arbitary epsilon value for dicdating not normalized
+                // arbitrary epsilon value for dictating not normalized
                 if (tolerance > toleranceEpsilon) { numberNotNormalized++; }
             }
         }
@@ -2989,10 +3023,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns the current mesh
      */
     public synchronizeInstances(): Mesh {
-        if (this._geometry && this._geometry.meshes.length !== 1 && this.instances.length) {
-            this.makeGeometryUnique();
-        }
-
         for (var instanceIndex = 0; instanceIndex < this.instances.length; instanceIndex++) {
             var instance = this.instances[instanceIndex];
             instance._syncSubMeshes();
@@ -3270,6 +3300,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             if (morphTargetManager.vertexCount !== this.getTotalVertices()) {
                 Logger.Error("Mesh is incompatible with morph targets. Targets and mesh must all have the same vertices count.");
                 this.morphTargetManager = null;
+                return;
+            }
+
+            if (morphTargetManager.isUsingTextureForTargets) {
                 return;
             }
 
@@ -3755,7 +3789,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param name defines the name of the mesh to create
      * @param diameter sets the diameter size (float) of the torus (default 1)
      * @param thickness sets the diameter size of the tube of the torus (float, default 0.5)
-     * @param tessellation sets the number of torus sides (postive integer, default 16)
+     * @param tessellation sets the number of torus sides (positive integer, default 16)
      * @param scene defines the hosting scene
      * @param updatable defines if the mesh must be flagged as updatable
      * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
@@ -3897,7 +3931,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Creates lathe mesh.
-     * The lathe is a shape with a symetry axis : a 2D model shape is rotated around this axis to design the lathe.
+     * The lathe is a shape with a symmetry axis : a 2D model shape is rotated around this axis to design the lathe.
      * Please consider using the same method from the MeshBuilder class instead
      * @param name defines the name of the mesh to create
      * @param shape is a required array of successive Vector3. This array depicts the shape to be rotated in its local space : the shape must be designed in the xOy plane and will be rotated around the Y axis. It's usually a 2D shape, so the Vector3 z coordinates are often set to zero
@@ -3989,7 +4023,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param path is a required array of successive Vector3. It is the curve used as the axis of the tube
      * @param radius sets the tube radius size
      * @param tessellation is the number of sides on the tubular surface
-     * @param radiusFunction is a custom function. If it is not null, it overwrittes the parameter `radius`. This function is called on each point of the tube path and is passed the index `i` of the i-th point and the distance of this point from the first point of the path
+     * @param radiusFunction is a custom function. If it is not null, it overrides the parameter `radius`. This function is called on each point of the tube path and is passed the index `i` of the i-th point and the distance of this point from the first point of the path
      * @param cap sets the way the extruded shape is capped. Possible values : Mesh.NO_CAP (default), Mesh.CAP_START, Mesh.CAP_END, Mesh.CAP_ALL
      * @param scene defines the hosting scene
      * @param updatable defines if the mesh must be flagged as updatable
@@ -4004,7 +4038,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
       * Creates a polyhedron mesh.
       * Please consider using the same method from the MeshBuilder class instead.
-      * * The parameter `type` (positive integer, max 14, default 0) sets the polyhedron type to build among the 15 embbeded types. Please refer to the type sheet in the tutorial to choose the wanted type
+      * * The parameter `type` (positive integer, max 14, default 0) sets the polyhedron type to build among the 15 embedded types. Please refer to the type sheet in the tutorial to choose the wanted type
       * * The parameter `size` (positive float, default 1) sets the polygon size
       * * You can overwrite the `size` on each dimension bu using the parameters `sizeX`, `sizeY` or `sizeZ` (positive floats, default to `size` value)
       * * You can build other polyhedron types than the 15 embbeded ones by setting the parameter `custom` (`polyhedronObject`, default null). If you set the parameter `custom`, this overwrittes the parameter `type`
@@ -4028,7 +4062,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Creates a sphere based upon an icosahedron with 20 triangular faces which can be subdivided
      * * The parameter `radius` sets the radius size (float) of the icosphere (default 1)
      * * You can set some different icosphere dimensions, for instance to build an ellipsoid, by using the parameters `radiusX`, `radiusY` and `radiusZ` (all by default have the same value than `radius`)
-     * * The parameter `subdivisions` sets the number of subdivisions (postive integer, default 4). The more subdivisions, the more faces on the icosphere whatever its size
+     * * The parameter `subdivisions` sets the number of subdivisions (positive integer, default 4). The more subdivisions, the more faces on the icosphere whatever its size
      * * The parameter `flat` (boolean, default true) gives each side its own normals. Set it to false to get a smooth continuous light reflection on the surface
      * * You can also set the mesh side orientation with the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
      * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation

@@ -51,6 +51,16 @@ export interface IWebGPURenderPipelineStageDescriptor {
 }
 
 /** @hidden */
+export class WebGPUBindGroupCacheNode {
+    public values: { [id: number]: WebGPUBindGroupCacheNode };
+    public bindGroups: GPUBindGroup[];
+
+    constructor() {
+        this.values = {};
+    }
+}
+
+/** @hidden */
 export class WebGPUPipelineContext implements IPipelineContext {
     public engine: WebGPUEngine;
 
@@ -71,7 +81,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
     public textures: { [name: string]: Nullable<IWebGPUPipelineContextTextureCache> } = { };
 
     public bindGroupLayouts: GPUBindGroupLayout[];
-    public bindGroupsCache: { [key: string]: GPUBindGroup[] };
+    public bindGroupsCache: WebGPUBindGroupCacheNode;
 
     /**
      * Stores the uniform buffer
@@ -101,7 +111,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
         this.shaderProcessingContext = shaderProcessingContext;
         this.leftOverUniformsByName = {};
         this.engine = engine;
-        this.bindGroupsCache = {};
+        this.bindGroupsCache = new WebGPUBindGroupCacheNode();
     }
 
     public _handlesSpectorRebuildCallback(onCompiled: (program: any) => void): void {
@@ -144,6 +154,18 @@ export class WebGPUPipelineContext implements IPipelineContext {
 
         // Build the uniform layout for the left over uniforms.
         this.buildUniformLayout();
+
+        let attributeNamesFromEffect: string[] = [];
+        let attributeLocationsFromEffect: number[] = [];
+        for (index = 0; index < attributesNames.length; index++) {
+            const location = attributes[index];
+            if (location >= 0) {
+                attributeNamesFromEffect.push(attributesNames[index]);
+                attributeLocationsFromEffect.push(location);
+            }
+        }
+        this.shaderProcessingContext.attributeNamesFromEffect = attributeNamesFromEffect;
+        this.shaderProcessingContext.attributeLocationsFromEffect = attributeLocationsFromEffect;
     }
 
     /** @hidden */
@@ -334,7 +356,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
     }
 
     /**
-     * Sets a 3x3 matrix on a uniform variable. (Speicified as [1,2,3,4,5,6,7,8,9] will result in [1,2,3][4,5,6][7,8,9] matrix)
+     * Sets a 3x3 matrix on a uniform variable. (Specified as [1,2,3,4,5,6,7,8,9] will result in [1,2,3][4,5,6][7,8,9] matrix)
      * @param uniformName Name of the variable.
      * @param matrix matrix to be set.
      */
@@ -346,7 +368,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
     }
 
     /**
-     * Sets a 2x2 matrix on a uniform variable. (Speicified as [1,2,3,4] will result in [1,2][3,4] matrix)
+     * Sets a 2x2 matrix on a uniform variable. (Specified as [1,2,3,4] will result in [1,2][3,4] matrix)
      * @param uniformName Name of the variable.
      * @param matrix matrix to be set.
      */

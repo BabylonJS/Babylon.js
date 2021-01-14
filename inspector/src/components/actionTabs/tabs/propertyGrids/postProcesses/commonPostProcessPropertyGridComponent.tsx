@@ -3,16 +3,16 @@ import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
-import { LineContainerComponent } from "../../../lineContainerComponent";
+import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
+import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
 import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
-import { LockObject } from "../lockObject";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { PostProcess } from 'babylonjs/PostProcesses/postProcess';
-import { Color3LineComponent } from '../../../lines/color3LineComponent';
-import { SliderLineComponent } from '../../../lines/sliderLineComponent';
+import { Color3LineComponent } from '../../../../../sharedUiComponents/lines/color3LineComponent';
+import { SliderLineComponent } from '../../../../../sharedUiComponents/lines/sliderLineComponent';
 import { GlobalState } from '../../../../globalState';
 import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
-import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
+import { TextInputLineComponent } from '../../../../../sharedUiComponents/lines/textInputLineComponent';
 
 interface ICommonPostProcessPropertyGridComponentProps {
     globalState: GlobalState;
@@ -31,7 +31,7 @@ export class CommonPostProcessPropertyGridComponent extends React.Component<ICom
 
         return (
             <div>
-                <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
+                <LineContainerComponent title="GENERAL">
                     <TextLineComponent label="Class" value={postProcess.getClassName()} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={postProcess} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                     {

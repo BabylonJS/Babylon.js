@@ -1,8 +1,8 @@
 
 import * as React from "react";
-import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
+import { LineContainerComponent } from '../../sharedUiComponents/lines/lineContainerComponent';
 import { IPropertyComponentProps } from './propertyComponentProps';
-import { CheckBoxLineComponent } from '../../sharedComponents/checkBoxLineComponent';
+import { CheckBoxLineComponent } from '../../sharedUiComponents/lines/checkBoxLineComponent';
 import { FloatLineComponent } from '../../sharedComponents/floatLineComponent';
 import { SliderLineComponent } from '../../sharedComponents/sliderLineComponent';
 import { PropertyTypeForEdition, IPropertyDescriptionForEdition } from 'babylonjs/Materials/Node/nodeMaterialDecorator';
@@ -15,8 +15,8 @@ export class GenericPropertyComponent extends React.Component<IPropertyComponent
     render() {
         return (
             <>
-                <GeneralPropertyTabComponent globalState={this.props.globalState} guiBlock={this.props.guiBlock}/>
-                <GenericPropertyTabComponent globalState={this.props.globalState} guiBlock={this.props.guiBlock}/>
+                <GeneralPropertyTabComponent globalState={this.props.globalState} guiControl={this.props.guiControl}/>
+                <GenericPropertyTabComponent globalState={this.props.globalState} guiControl={this.props.guiControl}/>
             </>
         );
     }
@@ -53,7 +53,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
     }
 
     render() {
-        const block = this.props.guiBlock,
+        const block = this.props.guiControl,
               propStore: IPropertyDescriptionForEdition[] = (block as any)._propStore;
 
         if (!propStore) {
@@ -78,7 +78,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
             switch (type) {
                 case PropertyTypeForEdition.Boolean: {
                     components.push(
-                        <CheckBoxLineComponent label={displayName} target={this.props.guiBlock} propertyName={propertyName} onValueChanged={() => this.forceRebuild(options.notifiers)} />
+                        <CheckBoxLineComponent label={displayName} target={this.props.guiControl} propertyName={propertyName} onValueChanged={() => this.forceRebuild(options.notifiers)} />
                     );
                     break;
                 }
@@ -86,11 +86,11 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                     let cantDisplaySlider = (isNaN(options.min as number) || isNaN(options.max as number) || options.min === options.max);
                     if (cantDisplaySlider) {
                         components.push(
-                            <FloatLineComponent globalState={this.props.globalState} label={displayName} propertyName={propertyName} target={this.props.guiBlock} onChange={() => this.forceRebuild(options.notifiers)} />
+                            <FloatLineComponent globalState={this.props.globalState} label={displayName} propertyName={propertyName} target={this.props.guiControl} onChange={() => this.forceRebuild(options.notifiers)} />
                         );
                     } else {
                         components.push(
-                            <SliderLineComponent label={displayName} target={this.props.guiBlock} globalState={this.props.globalState} propertyName={propertyName} step={Math.abs((options.max as number) - (options.min as number)) / 100.0} minimum={Math.min(options.min as number, options.max as number)} maximum={options.max as number} onChange={() => this.forceRebuild(options.notifiers)}/>
+                            <SliderLineComponent label={displayName} target={this.props.guiControl} globalState={this.props.globalState} propertyName={propertyName} step={Math.abs((options.max as number) - (options.min as number)) / 100.0} minimum={Math.min(options.min as number, options.max as number)} maximum={options.max as number} onChange={() => this.forceRebuild(options.notifiers)}/>
                         );
                     }
                     break;

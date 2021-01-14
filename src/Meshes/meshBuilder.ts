@@ -108,7 +108,7 @@ export class MeshBuilder {
      * Creates a sphere based upon an icosahedron with 20 triangular faces which can be subdivided
      * * The parameter `radius` sets the radius size (float) of the icosphere (default 1)
      * * You can set some different icosphere dimensions, for instance to build an ellipsoid, by using the parameters `radiusX`, `radiusY` and `radiusZ` (all by default have the same value of `radius`)
-     * * The parameter `subdivisions` sets the number of subdivisions (postive integer, default 4). The more subdivisions, the more faces on the icosphere whatever its size
+     * * The parameter `subdivisions` sets the number of subdivisions (positive integer, default 4). The more subdivisions, the more faces on the icosphere whatever its size
      * * The parameter `flat` (boolean, default true) gives each side its own normals. Set it to false to get a smooth continuous light reflection on the surface
      * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
      * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
@@ -186,7 +186,7 @@ export class MeshBuilder {
      * Creates a torus mesh
      * * The parameter `diameter` sets the diameter size (float) of the torus (default 1)
      * * The parameter `thickness` sets the diameter size of the tube of the torus (float, default 0.5)
-     * * The parameter `tessellation` sets the number of torus sides (postive integer, default 16)
+     * * The parameter `tessellation` sets the number of torus sides (positive integer, default 16)
      * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
      * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
      * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
@@ -310,7 +310,7 @@ export class MeshBuilder {
      * The custom extrusion is a parametric shape. It has no predefined shape. Its final shape will depend on the input parameters.
      * * The parameter `shape` is a required array of successive Vector3. This array depicts the shape to be extruded in its local space : the shape must be designed in the xOy plane and will be extruded along the Z axis.
      * * The parameter `path` is a required array of successive Vector3. This is the axis curve the shape is extruded along.
-     * * The parameter `rotationFunction` (JS function) is a custom Javascript function called on each path point. This function is passed the position i of the point in the path and the distance of this point from the begining of the path
+     * * The parameter `rotationFunction` (JS function) is a custom Javascript function called on each path point. This function is passed the position i of the point in the path and the distance of this point from the beginning of the path
      * * It must returns a float value that will be the rotation in radians applied to the shape on each path point.
      * * The parameter `scaleFunction` (JS function) is a custom Javascript function called on each path point. This function is passed the position i of the point in the path and the distance of this point from the begining of the path
      * * It must returns a float value that will be the scale value applied to the shape on each path point
@@ -337,7 +337,7 @@ export class MeshBuilder {
 
     /**
      * Creates lathe mesh.
-     * The lathe is a shape with a symetry axis : a 2D model shape is rotated around this axis to design the lathe
+     * The lathe is a shape with a symmetry axis : a 2D model shape is rotated around this axis to design the lathe
      * * The parameter `shape` is a required array of successive Vector3. This array depicts the shape to be rotated in its local space : the shape must be designed in the xOy plane and will be rotated around the Y axis. It's usually a 2D shape, so the Vector3 z coordinates are often set to zero
      * * The parameter `radius` (positive float, default 1) is the radius value of the lathe
      * * The parameter `tessellation` (positive integer, default 64) is the side number of the lathe
@@ -486,7 +486,7 @@ export class MeshBuilder {
      * * The parameter `path` is a required array of successive Vector3. It is the curve used as the axis of the tube
      * * The parameter `radius` (positive float, default 1) sets the tube radius size
      * * The parameter `tessellation` (positive float, default 64) is the number of sides on the tubular surface
-     * * The parameter `radiusFunction` (javascript function, default null) is a vanilla javascript function. If it is not null, it overwrittes the parameter `radius`
+     * * The parameter `radiusFunction` (javascript function, default null) is a vanilla javascript function. If it is not null, it overrides the parameter `radius`
      * * This function is called on each point of the tube path and is passed the index `i` of the i-th point and the distance of this point from the first point of the path. It must return a radius value (positive float)
      * * The parameter `arc` (positive float, maximum 1, default 1) is the ratio to apply to the tube circumference : 2 x PI x arc
      * * The parameter `cap` sets the way the extruded shape is capped. Possible values : BABYLON.Mesh.NO_CAP (default), BABYLON.Mesh.CAP_START, BABYLON.Mesh.CAP_END, BABYLON.Mesh.CAP_ALL

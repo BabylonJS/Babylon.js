@@ -566,7 +566,7 @@ export class AnimationGroup implements IDisposable {
      * Clone the current animation group and returns a copy
      * @param newName defines the name of the new group
      * @param targetConverter defines an optional function used to convert current animation targets to new ones
-     * @returns the new aniamtion group
+     * @returns the new animation group
      */
     public clone(newName: string, targetConverter?: (oldTarget: any) => any): AnimationGroup {
         let newGroup = new AnimationGroup(newName || this.name, this._scene);
@@ -667,7 +667,7 @@ export class AnimationGroup implements IDisposable {
     }
 
     /**
-     * Creates a detailled string about the object
+     * Creates a detailed string about the object
      * @param fullDetails defines if the output string will support multiple levels of logging within scene loading
      * @returns a string representing the object
      */

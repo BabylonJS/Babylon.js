@@ -12,6 +12,7 @@ interface IDropUpButtonProps {
     icon?: any;
     label: string;
     options: string[];
+    activeEntry: () => string;
     selectedOption?: string;
     onOptionPicked: (option: string) => void;
 }
@@ -78,8 +79,13 @@ export class DropUpButton extends React.Component<IDropUpButtonProps, {isOpen: b
                     {
                         this.props.options.map(o => {
                             return(
-                                <div key={o} onClick={() => this.clickOption(o)}>
-                                    {o}
+                                <div key={o} onClick={() => this.clickOption(o)} className="dropup-content-line">
+                                    <div style={{
+                                        opacity: this.props.activeEntry() === o ? "1.0" : "0.8",
+                                        fontSize: this.props.activeEntry() === o ? "var(--active-font-size)" : "var(--font-size)"
+                                    }}>
+                                        {o}
+                                    </div>                                    
                                 </div>
                             )
                         })

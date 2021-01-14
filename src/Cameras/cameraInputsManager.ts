@@ -19,7 +19,7 @@ export interface ICameraInput<TCamera extends Camera> {
      */
     camera: Nullable<TCamera>;
     /**
-     * Gets the class name of the current intput.
+     * Gets the class name of the current input.
      * @returns the class name
      */
     getClassName(): string;
@@ -65,7 +65,7 @@ export interface CameraInputsMap<TCamera extends Camera> {
  */
 export class CameraInputsManager<TCamera extends Camera> {
     /**
-     * Defines the list of inputs attahed to the camera.
+     * Defines the list of inputs attached to the camera.
      */
     public attached: CameraInputsMap<TCamera>;
 
@@ -93,7 +93,7 @@ export class CameraInputsManager<TCamera extends Camera> {
 
     /**
      * Instantiate a new Camera Input Manager.
-     * @param camera Defines the camera the input manager blongs to
+     * @param camera Defines the camera the input manager belongs to
      */
     constructor(camera: TCamera) {
         this.attached = {};

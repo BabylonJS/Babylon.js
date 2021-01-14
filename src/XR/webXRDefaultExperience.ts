@@ -18,7 +18,13 @@ export class WebXRDefaultExperienceOptions {
      */
     public disableDefaultUI?: boolean;
     /**
-     * Should teleportation not initialize. defaults to false.
+     * Should pointer selection not initialize.
+     * Note that disabling pointer selection also disables teleportation.
+     * Defaults to false.
+     */
+    public disablePointerSelection?: boolean;
+    /**
+     * Should teleportation not initialize. Defaults to false.
      */
     public disableTeleportation?: boolean;
     /**
@@ -116,19 +122,23 @@ export class WebXRDefaultExperience {
                     },
                     ...(options.inputOptions || {}),
                 });
-                result.pointerSelection = <WebXRControllerPointerSelection>result.baseExperience.featuresManager.enableFeature(WebXRControllerPointerSelection.Name, options.useStablePlugins ? "stable" : "latest", <IWebXRControllerPointerSelectionOptions>{
-                    xrInput: result.input,
-                    renderingGroupId: options.renderingGroupId,
-                });
 
-                // Add default teleportation, including rotation
-                if (!options.disableTeleportation) {
-                    result.teleportation = <WebXRMotionControllerTeleportation>result.baseExperience.featuresManager.enableFeature(WebXRMotionControllerTeleportation.Name, options.useStablePlugins ? "stable" : "latest", <IWebXRTeleportationOptions>{
-                        floorMeshes: options.floorMeshes,
+                if (!options.disablePointerSelection) {
+                    // Add default pointer selection
+                    result.pointerSelection = <WebXRControllerPointerSelection>result.baseExperience.featuresManager.enableFeature(WebXRControllerPointerSelection.Name, options.useStablePlugins ? "stable" : "latest", <IWebXRControllerPointerSelectionOptions>{
                         xrInput: result.input,
                         renderingGroupId: options.renderingGroupId,
                     });
-                    result.teleportation.setSelectionFeature(result.pointerSelection);
+
+                    if (!options.disableTeleportation) {
+                        // Add default teleportation, including rotation
+                        result.teleportation = <WebXRMotionControllerTeleportation>result.baseExperience.featuresManager.enableFeature(WebXRMotionControllerTeleportation.Name, options.useStablePlugins ? "stable" : "latest", <IWebXRTeleportationOptions>{
+                            floorMeshes: options.floorMeshes,
+                            xrInput: result.input,
+                            renderingGroupId: options.renderingGroupId,
+                        });
+                        result.teleportation.setSelectionFeature(result.pointerSelection);
+                    }
                 }
 
                 // Create the WebXR output target
@@ -165,7 +175,7 @@ export class WebXRDefaultExperience {
     }
 
     /**
-     * DIsposes of the experience helper
+     * Disposes of the experience helper
      */
     public dispose() {
         if (this.baseExperience) {

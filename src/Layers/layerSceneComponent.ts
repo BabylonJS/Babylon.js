@@ -21,7 +21,7 @@ declare module "../abstractScene" {
  */
 export class LayerSceneComponent implements ISceneComponent {
     /**
-     * The component name helpfull to identify the component in the list of scene components.
+     * The component name helpful to identify the component in the list of scene components.
      */
     public readonly name = SceneComponentConstants.NAME_LAYER;
 
@@ -66,7 +66,7 @@ export class LayerSceneComponent implements ISceneComponent {
     }
 
     /**
-     * Disposes the component and the associated ressources.
+     * Disposes the component and the associated resources.
      */
     public dispose(): void {
         let layers = this.scene.layers;

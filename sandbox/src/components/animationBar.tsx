@@ -146,6 +146,7 @@ export class AnimationBar extends React.Component<IAnimationBarProps, {groupInde
                 <DropUpButton globalState={this.props.globalState} 
                                     label="Active animation group"
                                     options={groupNames}
+                                    activeEntry= {() => ""}
                                     selectedOption={this._currentGroup.name}
                                     onOptionPicked={option => {
                                         this._currentGroup!.stop();

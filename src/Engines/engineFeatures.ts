@@ -45,6 +45,12 @@ export interface EngineFeatures {
     /** Indicates that the switch/case construct is supported in shaders */
     supportSwitchCaseInShader: boolean;
 
+    /** Indicates that synchronous texture reading is supported */
+    supportSyncTextureRead: boolean;
+
+    /** Indicates that y should be inverted when dealing with bitmaps (notably in environment tools) */
+    needsInvertingBitmap: boolean;
+
     /** @hidden */
     _collectUbosUpdatedInFrame: boolean;
 }

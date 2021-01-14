@@ -113,7 +113,7 @@ export class Geometry implements IGetSetVerticesData {
     }
 
     /**
-     * If set to true (false by defaut), the bounding info applied to the meshes sharing this geometry will be the bounding info defined at the class level
+     * If set to true (false by default), the bounding info applied to the meshes sharing this geometry will be the bounding info defined at the class level
      * and won't be computed based on the vertex positions (which is what we get when useBoundingInfoFromGeometry = false)
      */
     public useBoundingInfoFromGeometry = false;
@@ -292,6 +292,7 @@ export class Geometry implements IGetSetVerticesData {
                 mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
                 mesh._createGlobalSubMesh(false);
                 mesh.computeWorldMatrix(true);
+                mesh.synchronizeInstances();
             }
         }
 
@@ -423,53 +424,7 @@ export class Geometry implements IGetSetVerticesData {
             return null;
         }
 
-        let data = vertexBuffer.getData();
-        if (!data) {
-            return null;
-        }
-
-        const tightlyPackedByteStride = vertexBuffer.getSize() * VertexBuffer.GetTypeByteLength(vertexBuffer.type);
-        const count = this._totalVertices * vertexBuffer.getSize();
-
-        if (vertexBuffer.type !== VertexBuffer.FLOAT || vertexBuffer.byteStride !== tightlyPackedByteStride) {
-            const copy: number[] = [];
-            vertexBuffer.forEach(count, (value) => copy.push(value));
-            return copy;
-        }
-
-        if (!(data instanceof Array || data instanceof Float32Array) || vertexBuffer.byteOffset !== 0 || data.length !== count) {
-            if (data instanceof Array) {
-                const offset = vertexBuffer.byteOffset / 4;
-                return Tools.Slice(data, offset, offset + count);
-            } else if (data instanceof ArrayBuffer) {
-                return new Float32Array(data, vertexBuffer.byteOffset, count);
-            } else {
-                let offset = data.byteOffset + vertexBuffer.byteOffset;
-                if (forceCopy || (copyWhenShared && this._meshes.length !== 1)) {
-                    let result = new Float32Array(count);
-                    let source = new Float32Array(data.buffer, offset, count);
-
-                    result.set(source);
-
-                    return result;
-                }
-
-                // Portect against bad data
-                let remainder = offset % 4;
-
-                if (remainder) {
-                    offset = Math.max(0, offset - remainder);
-                }
-
-                return new Float32Array(data.buffer, offset, count);
-            }
-        }
-
-        if (forceCopy || (copyWhenShared && this._meshes.length !== 1)) {
-            return Tools.Slice(data);
-        }
-
-        return data;
+        return vertexBuffer.getFloatData(this._totalVertices, forceCopy || (copyWhenShared && this._meshes.length !== 1));
     }
 
     /**
@@ -597,6 +552,7 @@ export class Geometry implements IGetSetVerticesData {
 
         for (const mesh of this._meshes) {
             mesh._createGlobalSubMesh(true);
+            mesh.synchronizeInstances();
         }
 
         this.notifyUpdate();
@@ -1054,7 +1010,7 @@ export class Geometry implements IGetSetVerticesData {
     }
 
     /**
-     * Serialize all vertices data into a JSON oject
+     * Serialize all vertices data into a JSON object
      * @returns a JSON representation of the current geometry data
      */
     public serializeVerticeData(): any {

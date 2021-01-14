@@ -14,7 +14,7 @@ import { Scene } from "babylonjs/scene";
 import { Color4 } from "babylonjs/Maths/math.color";
 import { FreeCamera } from "babylonjs/Cameras/freeCamera";
 
-require("./graphCanvas.scss");
+require("./workbenchCanvas.scss");
 
 export interface IWorkbenchComponentProps {
     globalState: GlobalState
@@ -166,10 +166,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         });
 
 
-        props.globalState.onGridSizeChanged.add(() => {
-            this.gridSize = DataStorage.ReadNumber("GridSize", 20);
-        });
-
         this.props.globalState.hostDocument!.addEventListener("keyup", () => this.onKeyUp(), false);
         this.props.globalState.hostDocument!.addEventListener("keydown", evt => {
             this._altKeyIsPressed = evt.altKey;            
@@ -181,15 +177,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }, false);     
 
         // Store additional data to serialization object
-        this.props.globalState.storeEditorData = (editorData, graphFrame) => {
-            editorData.frames = [];
-            if (graphFrame) {
-                
-            } else {
-                editorData.x = this.x;
-                editorData.y = this.y;
-                editorData.zoom = this.zoom;
-            }
+        this.props.globalState.storeEditorData = (editorData) => {
+            editorData.x = this.x;
+            editorData.y = this.y;
+            editorData.zoom = this.zoom;
         }
         this.props.globalState.workbench = this;
     }
@@ -242,8 +233,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._oldY = -1;
     }
 
-    findNodeFromGuiElementName(guiElement: string) {
-       return this._guiNodes.filter(n => n.guiNode.name === guiElement)[0];
+    findNodeFromGuiElement(guiControl: Control) {
+       return this._guiNodes.filter(n => n.guiControl === guiControl)[0];
     }
 
     reset() {
@@ -308,10 +299,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     componentDidMount() {
-        this._hostCanvas = this.props.globalState.hostDocument.getElementById("graph-canvas") as HTMLDivElement;
-        this._rootContainer = this.props.globalState.hostDocument.getElementById("graph-container") as HTMLDivElement;
-        this._gridCanvas = this.props.globalState.hostDocument.getElementById("graph-canvas-container") as HTMLDivElement;
-        this._svgCanvas = this.props.globalState.hostDocument.getElementById("graph-svg-container") as HTMLElement;        
+        this._hostCanvas = this.props.globalState.hostDocument.getElementById("workbench-canvas") as HTMLDivElement;
+        this._rootContainer = this.props.globalState.hostDocument.getElementById("workbench-container") as HTMLDivElement;
+        this._gridCanvas = this.props.globalState.hostDocument.getElementById("workbench-canvas-container") as HTMLDivElement;
+        this._svgCanvas = this.props.globalState.hostDocument.getElementById("workbench-svg-container") as HTMLElement;        
         this._selectionContainer = this.props.globalState.hostDocument.getElementById("selection-container") as HTMLDivElement;   
         this._frameContainer = this.props.globalState.hostDocument.getElementById("frame-container") as HTMLDivElement;        
         
@@ -507,7 +498,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     public createGUICanvas()
     {
         // Get the canvas element from the DOM.
-        const canvas = document.getElementById("graph-canvas") as HTMLCanvasElement;
+        const canvas = document.getElementById("workbench-canvas") as HTMLCanvasElement;
 
         // Associate a Babylon Engine to it.
         const engine = new Engine(canvas);
@@ -546,18 +537,18 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
  
     render() {
  
-        return <canvas id="graph-canvas" 
+        return <canvas id="workbench-canvas" 
         onWheel={evt => this.onWheel(evt)}
         onPointerMove={evt => this.onMove(evt)}
         onPointerDown={evt =>  this.onDown(evt)}   
         onPointerUp={evt =>  this.onUp(evt)} 
         >   
-        <div id="graph-container">
-            <div id="graph-canvas-container">  
+        <div id="workbench-container">
+            <div id="workbench-canvas-container">  
             </div>     
             <div id="frame-container">                        
             </div>
-            <svg id="graph-svg-container">
+            <svg id="workbench-svg-container">
             </svg>                    
             <div id="selection-container">                        
             </div>

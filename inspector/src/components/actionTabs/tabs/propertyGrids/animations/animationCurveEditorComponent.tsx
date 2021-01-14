@@ -16,7 +16,7 @@ import { Animatable } from "babylonjs/Animations/animatable";
 import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
 import { EditorControls } from "./editorControls";
 import { SelectedCoordinate } from "./animationListTree";
-import { LockObject } from "../lockObject";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from "../../../../globalState";
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";

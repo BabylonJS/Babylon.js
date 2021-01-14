@@ -185,7 +185,7 @@ interface ISceneSize {
 }
 
 /**
- * The Environment helper class can be used to add a fully featuread none expensive background to your scene.
+ * The Environment helper class can be used to add a fully featured none expensive background to your scene.
  * It includes by default a skybox and a ground relying on the BackgroundMaterial.
  * It also helps with the default setup of your imageProcessing configuration.
  */

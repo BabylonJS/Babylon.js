@@ -39,7 +39,7 @@ Object.defineProperty(Scene.prototype, "postProcessRenderPipelineManager", {
  */
 export class PostProcessRenderPipelineManagerSceneComponent implements ISceneComponent {
     /**
-     * The component name helpfull to identify the component in the list of scene components.
+     * The component name helpful to identify the component in the list of scene components.
      */
     public readonly name = SceneComponentConstants.NAME_POSTPROCESSRENDERPIPELINEMANAGER;
 
@@ -74,7 +74,7 @@ export class PostProcessRenderPipelineManagerSceneComponent implements ISceneCom
     }
 
     /**
-     * Disposes the component and the associated ressources
+     * Disposes the component and the associated resources
      */
     public dispose(): void {
         if (this.scene._postProcessRenderPipelineManager) {

@@ -474,12 +474,12 @@ export class VRExperienceHelper {
     private _raySelectionPredicate: (mesh: AbstractMesh) => boolean;
 
     /**
-     * To be optionaly changed by user to define custom ray selection
+     * To be optionally changed by user to define custom ray selection
      */
     public raySelectionPredicate: (mesh: AbstractMesh) => boolean;
 
     /**
-     * To be optionaly changed by user to define custom selection logic (after ray selection)
+     * To be optionally changed by user to define custom selection logic (after ray selection)
      */
     public meshSelectionPredicate: (mesh: AbstractMesh) => boolean;
 
