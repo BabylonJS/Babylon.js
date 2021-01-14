@@ -747,15 +747,23 @@ export class Image extends Control {
     }
 
     private _renderNinePatch(context: CanvasRenderingContext2D): void {
-        let height = this._imageHeight, width = this._imageWidth;
-        let leftWidth = this._sliceLeft, rightWidth = this._imageWidth - this._sliceRight;
-        let topHeight = this._sliceTop, bottomHeight = this._imageHeight - this._sliceBottom;
-        let centerWidth = width - leftWidth - rightWidth, centerHeight = height - topHeight - bottomHeight;
-        let widthFactor = width / this._currentMeasure.width, heightFactor = height / this._currentMeasure.height;
+        let height = this._imageHeight
+        let width = this._imageWidth;
+        let leftWidth = this._sliceLeft;
+        let rightWidth = this._imageWidth - this._sliceRight;
+        let topHeight = this._sliceTop;
+        let bottomHeight = this._imageHeight - this._sliceBottom;
+        let centerWidth = width - leftWidth - rightWidth;
+        let centerHeight = height - topHeight - bottomHeight;
+        let widthFactor = width / this._currentMeasure.width;
+        let heightFactor = height / this._currentMeasure.height;
         let wfh = widthFactor * 0.5, hfh = heightFactor * 0.5;
-        let leftTargetWidth = leftWidth * widthFactor, rightTargetWidth = rightWidth * widthFactor;
-        let topTargetHeight = topHeight * heightFactor, bottomTargetHeight = bottomHeight * heightFactor;
-        let centerTargetWidth = centerWidth * widthFactor, centerTargetHeight = centerHeight * heightFactor;
+        let leftTargetWidth = leftWidth * widthFactor;
+        let rightTargetWidth = rightWidth * widthFactor;
+        let topTargetHeight = topHeight * heightFactor;
+        let bottomTargetHeight = bottomHeight * heightFactor;
+        let centerTargetWidth = centerWidth * widthFactor;
+        let centerTargetHeight = centerHeight * heightFactor;
 
         //Top Left
         this._drawImage(context, 0, 0, leftWidth, topHeight, this._currentMeasure.left, this._currentMeasure.top, leftTargetWidth, topTargetHeight);
