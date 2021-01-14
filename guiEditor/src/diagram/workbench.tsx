@@ -204,12 +204,23 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 		return gridSize * Math.ceil(position / gridSize);
 	}
 
-    loadFromGuiTexture(serializationObject: any) {
+    loadFromJson(serializationObject: any) {
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
         this._guiNodes = [];
         this.globalState.guiTexture.parseContent(serializationObject);
+        this.props.globalState.workbench.loadFromGuiTexture();
+    }
+    
+    async loadFromSnippet(snippedID: string){
+        this.globalState.onSelectionChangedObservable.notifyObservers(null);
+        this._guiNodes = [];
+        await this.globalState.guiTexture.parseFromSnippetAsync(snippedID);
+        this.props.globalState.workbench.loadFromGuiTexture();
+    }
+    
+    loadFromGuiTexture()
+    {
         var children = this.globalState.guiTexture.getChildren();
-
         children[0].children.forEach(guiElement => {
             var newGuiNode = new GUINode(this.props.globalState, guiElement);
             this._guiNodes.push(newGuiNode);
