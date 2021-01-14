@@ -204,90 +204,93 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     renderProperties()
     {
         var className = this.state.currentNode?.guiControl.getClassName();
-        if (className === "TextBlock") {
-            const textBlock = this.state.currentNode?.guiControl as TextBlock;
-            return (<TextBlockPropertyGridComponent textBlock={textBlock}
-                lockObject={this._lockObject}
-                onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
+        switch (className) {
+            case "TextBlock": {
+                const textBlock = this.state.currentNode?.guiControl as TextBlock;
+                return (<TextBlockPropertyGridComponent textBlock={textBlock}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
+            }
+            case "InputText": {
+                const inputText = this.state.currentNode?.guiControl as InputText;
+                return (<InputTextPropertyGridComponent inputText={inputText}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
+            }
+            case "ColorPicker": {
+                const colorPicker = this.state.currentNode?.guiControl as ColorPicker;
+                return (<ColorPickerPropertyGridComponent colorPicker={colorPicker}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
+            }
+            case "Image": {
+                const image = this.state.currentNode?.guiControl as Image;
+                return (<ImagePropertyGridComponent image={image}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
+            }
+            case "Slider": {
+                const slider = this.state.currentNode?.guiControl as Slider;
+                return (<SliderPropertyGridComponent slider={slider}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
+            }
+            case "ImageBasedSlider": {
+                const imageBasedSlider = this.state.currentNode?.guiControl as ImageBasedSlider;
+                return (<ImageBasedSliderPropertyGridComponent imageBasedSlider={imageBasedSlider}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
+            }
+            case "Rectangle": {
+                const rectangle = this.state.currentNode?.guiControl as Rectangle;
+                return (<RectanglePropertyGridComponent rectangle={rectangle}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
+            }
+            case "StackPanel": {
+                const stackPanel = this.state.currentNode?.guiControl as StackPanel;
+                return (<StackPanelPropertyGridComponent stackPanel={stackPanel}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
+            }
+            case "Grid": {
+                const grid = this.state.currentNode?.guiControl as Grid;
+                return (<GridPropertyGridComponent grid={grid}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
+            }
+            case "ScrollViewer": {
+                const scrollViewer = this.state.currentNode?.guiControl as ScrollViewer;
+                return (<ScrollViewerPropertyGridComponent scrollViewer={scrollViewer}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
+            }
+            case "Ellipse": {
+                const ellipse = this.state.currentNode?.guiControl as Ellipse;
+                return (<EllipsePropertyGridComponent ellipse={ellipse}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
+            }
+            case "Checkbox": {
+                const checkbox = this.state.currentNode?.guiControl as Checkbox;
+                return (<CheckboxPropertyGridComponent checkbox={checkbox}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
+            }
+            case "RadioButton": {
+                const radioButton = this.state.currentNode?.guiControl as RadioButton;
+                return (<RadioButtonPropertyGridComponent radioButton={radioButton}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
+            }
+            case "Line": {
+                const line = this.state.currentNode?.guiControl as Line;
+                return (<LinePropertyGridComponent line={line}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
+            }
         }
-        if (className === "InputText") {
-            const inputText = this.state.currentNode?.guiControl as InputText;
-            return (<InputTextPropertyGridComponent inputText={inputText}
-                lockObject={this._lockObject}
-                onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
-        }
-        if (className === "ColorPicker") {
-            const colorPicker = this.state.currentNode?.guiControl as ColorPicker;
-            return (<ColorPickerPropertyGridComponent colorPicker={colorPicker}
-                lockObject={this._lockObject}
-                onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
-        }
-        if (className === "Image") {
-            const image = this.state.currentNode?.guiControl as Image;
-            return (<ImagePropertyGridComponent image={image}
-                lockObject={this._lockObject}
-                onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
-        }
-        if (className === "Slider") {
-            const slider = this.state.currentNode?.guiControl as Slider;
-            return (<SliderPropertyGridComponent slider={slider}
-                lockObject={this._lockObject}
-                onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
-        }
-        if (className === "ImageBasedSlider") {
-            const imageBasedSlider = this.state.currentNode?.guiControl as ImageBasedSlider;
-            return (<ImageBasedSliderPropertyGridComponent imageBasedSlider={imageBasedSlider}
-                lockObject={this._lockObject}
-                onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
-        }
-        if (className === "Rectangle") {
-            const rectangle = this.state.currentNode?.guiControl as Rectangle;
-            return (<RectanglePropertyGridComponent rectangle={rectangle}
-                lockObject={this._lockObject}
-                onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
-        }
-        if (className === "StackPanel") {
-            const stackPanel = this.state.currentNode?.guiControl as StackPanel;
-            return (<StackPanelPropertyGridComponent stackPanel={stackPanel}
-                lockObject={this._lockObject}
-                onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
-        }
-        if (className === "Grid") {
-            const grid = this.state.currentNode?.guiControl as Grid;
-            return (<GridPropertyGridComponent grid={grid}
-                lockObject={this._lockObject}
-                onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
-        }
-        if (className === "ScrollViewer") {
-            const scrollViewer = this.state.currentNode?.guiControl as ScrollViewer;
-            return (<ScrollViewerPropertyGridComponent scrollViewer={scrollViewer}
-                lockObject={this._lockObject}
-                onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
-        }
-        if (className === "Ellipse") {
-            const ellipse = this.state.currentNode?.guiControl as Ellipse;
-            return (<EllipsePropertyGridComponent ellipse={ellipse}
-                lockObject={this._lockObject}
-                onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
-        }
-        if (className === "Checkbox") {
-            const checkbox = this.state.currentNode?.guiControl as Checkbox;
-            return (<CheckboxPropertyGridComponent checkbox={checkbox}
-                lockObject={this._lockObject}
-                onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
-        }
-        if (className === "RadioButton") {
-            const radioButton = this.state.currentNode?.guiControl as RadioButton;
-            return (<RadioButtonPropertyGridComponent radioButton={radioButton}
-                lockObject={this._lockObject}
-                onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
-        }
-        if (className === "Line") {
-            const line = this.state.currentNode?.guiControl as Line;
-            return (<LinePropertyGridComponent line={line}
-                lockObject={this._lockObject}
-                onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
-        }
+
         if (className !== "") {
             const control = this.state.currentNode?.guiControl as Control;
             return (<ControlPropertyGridComponent control={control}
