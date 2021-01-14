@@ -1,13 +1,13 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { CommonControlPropertyGridComponent } from "./commonControlPropertyGridComponent";
-import { LineContainerComponent } from "../../../lineContainerComponent";
-import { LockObject } from "../lockObject";
+import { CommonControlPropertyGridComponent } from "../../../../../sharedUiComponents/tabs/propertyGrids/gui/commonControlPropertyGridComponent";
+import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { Image } from "babylonjs-gui/2D/controls/image";
-import { FloatLineComponent } from "../../../lines/floatLineComponent";
-import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
-import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
+import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
+import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
+import { OptionsLineComponent } from "../../../../../sharedUiComponents/lines/optionsLineComponent";
 import { GlobalState } from '../../../../globalState';
 
 interface IImagePropertyGridComponentProps {
@@ -35,8 +35,8 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} control={image} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent globalState={this.props.globalState} title="IMAGE">
+                <CommonControlPropertyGridComponent  lockObject={this.props.lockObject} control={image} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <LineContainerComponent title="IMAGE">
                     <FloatLineComponent lockObject={this.props.lockObject} label="Source left" target={image} propertyName="sourceLeft" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Source top" target={image} propertyName="sourceTop" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Source width" target={image} propertyName="sourceWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -44,7 +44,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                     <CheckBoxLineComponent label="Autoscale" target={image} propertyName="autoScale" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <OptionsLineComponent label="Stretch" options={stretchOptions} target={image} propertyName="stretch" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={value => this.setState({ mode: value })} />
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="ANIMATION SHEET">
+                <LineContainerComponent title="ANIMATION SHEET">
                     <FloatLineComponent lockObject={this.props.lockObject} label="Cell Id" isInteger={true} target={image} propertyName="cellId" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Cell width" target={image} propertyName="cellWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Cell height" target={image} propertyName="cellHeight" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

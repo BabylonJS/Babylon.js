@@ -1,6 +1,6 @@
 import * as React from "react";
 import { PaneComponent, IPaneComponentProps } from "../paneComponent";
-import { LineContainerComponent } from "../lineContainerComponent";
+import { LineContainerComponent } from "../../../sharedUiComponents/lines/lineContainerComponent";
 import { ButtonLineComponent } from "../../../sharedUiComponents/lines/buttonLineComponent";
 import { Node } from "babylonjs/node";
 import { Nullable } from "babylonjs/types";
@@ -21,13 +21,13 @@ import { SceneLoaderAnimationGroupLoadingMode } from 'babylonjs/Loading/sceneLoa
 import { GLTFComponent } from "./tools/gltfComponent";
 
 import { GLTFData, GLTF2Export } from "babylonjs-serializers/glTF/2.0/index";
-import { FloatLineComponent } from '../lines/floatLineComponent';
+import { FloatLineComponent } from '../../../sharedUiComponents/lines/floatLineComponent';
 import { IScreenshotSize } from 'babylonjs/Misc/interfaces/screenshotSize';
 import { NumericInputComponent } from '../../../sharedUiComponents/lines/numericInputComponent';
-import { CheckBoxLineComponent } from '../lines/checkBoxLineComponent';
+import { CheckBoxLineComponent } from '../../../sharedUiComponents/lines/checkBoxLineComponent';
 import { TextLineComponent } from '../../../sharedUiComponents/lines/textLineComponent';
 import { FileMultipleButtonLineComponent } from '../../../sharedUiComponents/lines/fileMultipleButtonLineComponent';
-import { OptionsLineComponent } from '../lines/optionsLineComponent';
+import { OptionsLineComponent } from '../../../sharedUiComponents/lines/optionsLineComponent';
 import { MessageLineComponent } from '../../../sharedUiComponents/lines/messageLineComponent';
 import { FileButtonLineComponent } from '../../../sharedUiComponents/lines/fileButtonLineComponent';
 import { IndentedTextLineComponent } from '../../../sharedUiComponents/lines/indentedTextLineComponent';
@@ -293,11 +293,11 @@ export class ToolsTabComponent extends PaneComponent {
 
         return (
             <div className="pane">
-                <LineContainerComponent globalState={this.props.globalState} title="CAPTURE">
+                <LineContainerComponent title="CAPTURE">
                     <ButtonLineComponent label="Screenshot" onClick={() => this.captureScreenshot()} />
                     <ButtonLineComponent label={this.state.tag} onClick={() => this.recordVideo()} />
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="CAPTURE WITH RTT">
+                <LineContainerComponent title="CAPTURE WITH RTT">
                     <ButtonLineComponent label="Capture" onClick={() => this.captureRender()} />
                     <div className="vector3Line">
                         <FloatLineComponent label="Precision" target={this._screenShotSize} propertyName='precision' onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -314,7 +314,7 @@ export class ToolsTabComponent extends PaneComponent {
                         }      
                     </div>              
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="GIF">
+                <LineContainerComponent title="GIF">
                     {
                         this._crunchingGIF &&
                         <MessageLineComponent text="Creating the GIF file..." />
@@ -331,7 +331,7 @@ export class ToolsTabComponent extends PaneComponent {
                         </>
                     }
                 </LineContainerComponent>                
-                <LineContainerComponent globalState={this.props.globalState} title="REPLAY">
+                <LineContainerComponent title="REPLAY">
                     {
                         !this.props.globalState.recorder.isRecording &&
                         <ButtonLineComponent label="Start recording" onClick={() => this.startRecording()} />
@@ -346,7 +346,7 @@ export class ToolsTabComponent extends PaneComponent {
                     }
                     <FileButtonLineComponent label={`Apply delta file`} onClick={(file) => this.applyDelta(file)} accept=".json" />
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="SCENE IMPORT">
+                <LineContainerComponent title="SCENE IMPORT">
                     <FileMultipleButtonLineComponent label="Import animations" accept="gltf" onClick={(evt: any) => this.importAnimations(evt)} />
                     <CheckBoxLineComponent label="Overwrite animations" target={sceneImportDefaults} propertyName="overwriteAnimations" onSelect={value => {
                         sceneImportDefaults["overwriteAnimations"] = value;
@@ -357,7 +357,7 @@ export class ToolsTabComponent extends PaneComponent {
                         <OptionsLineComponent label="Animation merge mode" options={animationGroupLoadingModes} target={sceneImportDefaults} propertyName="animationGroupLoadingMode" />
                     }
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="SCENE EXPORT">
+                <LineContainerComponent title="SCENE EXPORT">
                     {
                         this._isExporting && 
                         <TextLineComponent label="Please wait..exporting" ignoreValue={true} />

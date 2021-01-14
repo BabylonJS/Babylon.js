@@ -6,7 +6,7 @@ import { Observable } from "../Misc/observable";
 import { Tools } from "../Misc/tools";
 
 /**
- * COnfiguration object for WebXR output canvas
+ * Configuration object for WebXR output canvas
  */
 export class WebXRManagedOutputCanvasOptions {
     /**
@@ -65,7 +65,7 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
     public xrLayer: Nullable<XRWebGLLayer> = null;
 
     /**
-     * Obseervers registered here will be triggered when the xr layer was initialized
+     * Observers registered here will be triggered when the xr layer was initialized
      */
     public onXRLayerInitObservable: Observable<XRWebGLLayer> = new Observable();
 

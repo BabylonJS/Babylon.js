@@ -320,7 +320,8 @@ function init() {
         wasmUASTCToRGBA_UNORM: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/uastc_rgba32_unorm.wasm"),
         wasmUASTCToRGBA_SRGB: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/uastc_rgba32_srgb.wasm"),
         jsMSCTranscoder: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/msc_basis_transcoder.js"),
-        wasmMSCTranscoder: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/msc_basis_transcoder.wasm")
+        wasmMSCTranscoder: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/msc_basis_transcoder.wasm"),
+        wasmZSTDDecoder: GetAbsoluteUrl("../../dist/preview%20release/zstddec.wasm"),
     };
 
     BABYLON.KhronosTextureContainer2.URLConfig = {
@@ -330,7 +331,8 @@ function init() {
         wasmUASTCToRGBA_UNORM: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/uastc_rgba32_unorm.wasm"),
         wasmUASTCToRGBA_SRGB: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/uastc_rgba32_srgb.wasm"),
         jsMSCTranscoder: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/msc_basis_transcoder.js"),
-        wasmMSCTranscoder: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/msc_basis_transcoder.wasm")
+        wasmMSCTranscoder: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/msc_basis_transcoder.wasm"),
+        wasmZSTDDecoder: GetAbsoluteUrl("../../dist/preview%20release/zstddec.wasm"),
     };
 
     viewerElement = document.createElement("babylon");

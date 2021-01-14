@@ -31,7 +31,7 @@ interface ISavedTransformationMatrix {
 }
 
 /**
- * This renderer is helpfull to fill one of the render target with a geometry buffer.
+ * This renderer is helpful to fill one of the render target with a geometry buffer.
  */
 export class GeometryBufferRenderer {
     /**
@@ -197,7 +197,7 @@ export class GeometryBufferRenderer {
     }
 
     /**
-     * Gets wether or not G buffer are supported by the running hardware.
+     * Gets whether or not G buffer are supported by the running hardware.
      * This requires draw buffer supports
      */
     public get isSupported(): boolean {
@@ -246,7 +246,7 @@ export class GeometryBufferRenderer {
     }
 
     /**
-     * Sets wether or not objects velocities are enabled for the G buffer.
+     * Sets whether or not objects velocities are enabled for the G buffer.
      */
     public set enableVelocity(enable: boolean) {
         this._enableVelocity = enable;
@@ -269,7 +269,7 @@ export class GeometryBufferRenderer {
     }
 
     /**
-     * Sets wether or not objects roughness are enabled for the G buffer.
+     * Sets whether or not objects roughness are enabled for the G buffer.
      */
     public set enableReflectivity(enable: boolean) {
         this._enableReflectivity = enable;
@@ -317,7 +317,7 @@ export class GeometryBufferRenderer {
     }
 
     /**
-     * Checks wether everything is ready to render a submesh to the G buffer.
+     * Checks whether everything is ready to render a submesh to the G buffer.
      * @param subMesh the submesh to check readiness for
      * @param useInstances is the mesh drawn using instance or not
      * @returns true if ready otherwise false
@@ -428,7 +428,9 @@ export class GeometryBufferRenderer {
 
                 defines.push("#define MORPHTARGETS");
                 defines.push("#define NUM_MORPH_INFLUENCERS " + numMorphInfluencers);
-
+                if (morphTargetManager.isUsingTextureForTargets) {
+                    defines.push("#define MORPHTARGETS_TEXTURE");
+                }
                 MaterialHelper.PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, numMorphInfluencers);
             }
         }
@@ -458,9 +460,10 @@ export class GeometryBufferRenderer {
                     attributes: attribs,
                     uniformsNames: [
                         "world", "mBones", "viewProjection", "diffuseMatrix", "view", "previousWorld", "previousViewProjection", "mPreviousBones",
-                        "morphTargetInfluences", "bumpMatrix", "reflectivityMatrix", "vTangentSpaceParams", "vBumpInfos"
+                        "bumpMatrix", "reflectivityMatrix", "vTangentSpaceParams", "vBumpInfos",
+                        "morphTargetInfluences", "morphTargetTextureInfo"
                     ],
-                    samplers: ["diffuseSampler", "bumpSampler", "reflectivitySampler"],
+                    samplers: ["diffuseSampler", "bumpSampler", "reflectivitySampler", "morphTargets"],
                     defines: join,
                     onCompiled: null,
                     fallbacks: null,
@@ -664,6 +667,9 @@ export class GeometryBufferRenderer {
 
                 // Morph targets
                 MaterialHelper.BindMorphTargetParameters(renderingMesh, this._effect);
+                if (renderingMesh.morphTargetManager && renderingMesh.morphTargetManager.isUsingTextureForTargets) {
+                    renderingMesh.morphTargetManager._bind(this._effect);
+                }
 
                 // Velocity
                 if (this._enableVelocity) {

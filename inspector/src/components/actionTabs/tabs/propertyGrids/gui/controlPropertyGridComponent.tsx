@@ -2,9 +2,9 @@ import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { Control } from "babylonjs-gui/2D/controls/control";
-import { CommonControlPropertyGridComponent } from "./commonControlPropertyGridComponent";
+import { CommonControlPropertyGridComponent } from "../../../../../sharedUiComponents/tabs/propertyGrids/gui/commonControlPropertyGridComponent";
 import { GlobalState } from '../../../../globalState';
-import { LockObject } from "../lockObject";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 
 interface IControlPropertyGridComponentProps {
     globalState: GlobalState;
@@ -23,7 +23,7 @@ export class ControlPropertyGridComponent extends React.Component<IControlProper
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} control={control} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent  lockObject={this.props.lockObject} control={control} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
             </div>
         );
     }

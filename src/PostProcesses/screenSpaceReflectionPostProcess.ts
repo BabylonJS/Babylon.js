@@ -150,7 +150,7 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
     }
 
     /**
-     * Gets wether or not smoothing reflections is enabled.
+     * Gets whether or not smoothing reflections is enabled.
      * Enabling smoothing will require more GPU power and can generate a drop in FPS.
      */
     @serialize()
@@ -159,7 +159,7 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
     }
 
     /**
-     * Sets wether or not smoothing reflections is enabled.
+     * Sets whether or not smoothing reflections is enabled.
      * Enabling smoothing will require more GPU power and can generate a drop in FPS.
      */
     public set enableSmoothReflections(enabled: boolean) {
