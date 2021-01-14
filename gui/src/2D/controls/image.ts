@@ -32,7 +32,6 @@ export class Image extends Control {
     private _cellHeight: number = 0;
     private _cellId: number = -1;
 
-    private _populateNinePatchSlicesFromImage = false;
     private _sliceLeft: number;
     private _sliceRight: number;
     private _sliceTop: number;
@@ -60,26 +59,6 @@ export class Image extends Control {
      */
     public get isLoaded(): boolean {
         return this._loaded;
-    }
-
-    /**
-     * Gets or sets a boolean indicating if nine patch slices (left, top, right, bottom) should be read from image data
-     */
-    @serialize()
-    public get populateNinePatchSlicesFromImage(): boolean {
-        return this._populateNinePatchSlicesFromImage;
-    }
-
-    public set populateNinePatchSlicesFromImage(value: boolean) {
-        if (this._populateNinePatchSlicesFromImage === value) {
-            return;
-        }
-
-        this._populateNinePatchSlicesFromImage = value;
-
-        if (this._populateNinePatchSlicesFromImage && this._loaded) {
-            this._extractNinePatchSliceDataFromImage();
-        }
     }
 
     /**
@@ -402,9 +381,9 @@ export class Image extends Control {
         this._imageHeight = this._domImage.height;
         this._loaded = true;
 
-        if (this._populateNinePatchSlicesFromImage) {
-            this._extractNinePatchSliceDataFromImage();
-        }
+        // if (this._populateNinePatchSlicesFromImage) {
+        //     this._extractNinePatchSliceDataFromImage();
+        // }
 
         if (this._autoScale) {
             this.synchronizeSizeWithContent();
@@ -413,56 +392,6 @@ export class Image extends Control {
         this.onImageLoadedObservable.notifyObservers(this);
 
         this._markAsDirty();
-    }
-
-    private _extractNinePatchSliceDataFromImage() {
-        if (!this._workingCanvas) {
-            this._workingCanvas = document.createElement("canvas");
-        }
-        const canvas = this._workingCanvas;
-        const context = canvas.getContext("2d")!;
-        const width = this._domImage.width;
-        const height = this._domImage.height;
-
-        canvas.width = width;
-        canvas.height = height;
-
-        context.drawImage(this._domImage, 0, 0, width, height);
-        const imageData = context.getImageData(0, 0, width, height);
-
-        // Left and right
-        this._sliceLeft = -1;
-        this._sliceRight = -1;
-        for (var x = 0; x < width; x++) {
-            const alpha = imageData.data[x * 4 + 3];
-
-            if (alpha > 127 && this._sliceLeft === -1) {
-                this._sliceLeft = x;
-                continue;
-            }
-
-            if (alpha < 127 && this._sliceLeft > -1) {
-                this._sliceRight = x;
-                break;
-            }
-        }
-
-        // top and bottom
-        this._sliceTop = -1;
-        this._sliceBottom = -1;
-        for (var y = 0; y < height; y++) {
-            const alpha = imageData.data[y * width * 4 + 3];
-
-            if (alpha > 127 && this._sliceTop === -1) {
-                this._sliceTop = y;
-                continue;
-            }
-
-            if (alpha < 127 && this._sliceTop > -1) {
-                this._sliceBottom = y;
-                break;
-            }
-        }
     }
 
     /**
@@ -644,7 +573,6 @@ export class Image extends Control {
      */
     constructor(public name?: string, url: Nullable<string> = null) {
         super(name);
-
         this.source = url;
     }
 
@@ -818,51 +746,35 @@ export class Image extends Control {
         context.restore();
     }
 
-    private _renderCornerPatch(context: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, targetX: number, targetY: number): void {
-        this._drawImage(context, x, y, width, height, this._currentMeasure.left + targetX, this._currentMeasure.top + targetY, width, height);
-    }
-
     private _renderNinePatch(context: CanvasRenderingContext2D): void {
-        let height = this._imageHeight;
-        let leftWidth = this._sliceLeft;
-        let topHeight = this._sliceTop;
-        let bottomHeight = this._imageHeight - this._sliceBottom;
-        let rightWidth = this._imageWidth - this._sliceRight;
-        let left = 0;
-        let top = 0;
+        let height = this._imageHeight, width = this._imageWidth;
+        let leftWidth = this._sliceLeft, rightWidth = this._imageWidth - this._sliceRight;
+        let topHeight = this._sliceTop, bottomHeight = this._imageHeight - this._sliceBottom;
+        let centerWidth = width - leftWidth - rightWidth, centerHeight = height - topHeight - bottomHeight;
+        let widthFactor = width / this._currentMeasure.width, heightFactor = height / this._currentMeasure.height;
+        let wfh = widthFactor * 0.5, hfh = heightFactor * 0.5;
+        let leftTargetWidth = leftWidth * widthFactor, rightTargetWidth = rightWidth * widthFactor;
+        let topTargetHeight = topHeight * heightFactor, bottomTargetHeight = bottomHeight * heightFactor;
+        let centerTargetWidth = centerWidth * widthFactor, centerTargetHeight = centerHeight * heightFactor;
 
-        if (this._populateNinePatchSlicesFromImage) {
-            left = 1;
-            top = 1;
-            height -= 2;
-            leftWidth -= 1;
-            topHeight -= 1;
-            bottomHeight -= 1;
-            rightWidth -= 1;
-        }
-
-        const centerWidth = this._sliceRight - this._sliceLeft;
-        const targetCenterWidth = this._currentMeasure.width - rightWidth - this.sliceLeft;
-        const targetTopHeight = this._currentMeasure.height - height + this._sliceBottom;
-
-        // Corners
-        this._renderCornerPatch(context, left, top, leftWidth, topHeight, 0, 0);
-        this._renderCornerPatch(context, left, this._sliceBottom, leftWidth, height - this._sliceBottom, 0, targetTopHeight);
-
-        this._renderCornerPatch(context, this._sliceRight, top, rightWidth, topHeight, this._currentMeasure.width - rightWidth, 0);
-        this._renderCornerPatch(context, this._sliceRight, this._sliceBottom, rightWidth, height - this._sliceBottom, this._currentMeasure.width - rightWidth, targetTopHeight);
-
-        // Center
-        this._drawImage(context, this._sliceLeft, this._sliceTop, centerWidth, this._sliceBottom - this._sliceTop, this._currentMeasure.left + leftWidth, this._currentMeasure.top + topHeight, targetCenterWidth, targetTopHeight - topHeight);
-
-        // Borders
-        this._drawImage(context, left, this._sliceTop, leftWidth, this._sliceBottom - this._sliceTop, this._currentMeasure.left, this._currentMeasure.top + topHeight, leftWidth, targetTopHeight - topHeight);
-
-        this._drawImage(context, this._sliceRight, this._sliceTop, leftWidth, this._sliceBottom - this._sliceTop, this._currentMeasure.left + this._currentMeasure.width - rightWidth, this._currentMeasure.top + topHeight, leftWidth, targetTopHeight - topHeight);
-
-        this._drawImage(context, this._sliceLeft, top, centerWidth, topHeight, this._currentMeasure.left + leftWidth, this._currentMeasure.top, targetCenterWidth, topHeight);
-
-        this._drawImage(context, this._sliceLeft, this._sliceBottom, centerWidth, bottomHeight, this._currentMeasure.left + leftWidth, this._currentMeasure.top + targetTopHeight, targetCenterWidth, bottomHeight);
+        //Top Left
+        this._drawImage(context, 0, 0, leftWidth, topHeight, this._currentMeasure.left, this._currentMeasure.top, leftTargetWidth, topTargetHeight);
+        //Top
+        this._drawImage(context, leftWidth, 0, centerWidth, topHeight, this._currentMeasure.left + leftTargetWidth - wfh, this._currentMeasure.top, centerTargetWidth + widthFactor, topTargetHeight);
+        //Top Right
+        this._drawImage(context, leftWidth + centerWidth, 0, rightWidth, topHeight, this._currentMeasure.left + leftTargetWidth + centerTargetWidth, this._currentMeasure.top, rightTargetWidth, topTargetHeight);
+        //Left
+        this._drawImage(context, 0, topHeight, leftWidth, centerHeight, this._currentMeasure.left, this._currentMeasure.top + topTargetHeight - hfh, leftTargetWidth, centerTargetHeight + heightFactor);
+        //Center
+        this._drawImage(context, leftWidth, topHeight, centerWidth, centerHeight, this._currentMeasure.left + leftTargetWidth - wfh, this._currentMeasure.top + topTargetHeight - hfh, centerTargetWidth + widthFactor, centerTargetHeight + heightFactor);
+        //Right
+        this._drawImage(context, leftWidth + centerWidth, topHeight, rightWidth, centerHeight, this._currentMeasure.left + leftTargetWidth + centerTargetWidth, this._currentMeasure.top + topTargetHeight - hfh, rightTargetWidth, centerTargetHeight + heightFactor);
+        //Bottom Left
+        this._drawImage(context, 0, topHeight + centerHeight, leftWidth, bottomHeight, this._currentMeasure.left, this._currentMeasure.top + topTargetHeight + centerTargetHeight, leftTargetWidth, bottomTargetHeight);
+        //Bottom
+        this._drawImage(context, leftWidth, topHeight + centerHeight, centerWidth, bottomHeight, this._currentMeasure.left + leftTargetWidth - wfh, this._currentMeasure.top + topTargetHeight + centerTargetHeight, centerTargetWidth + widthFactor, bottomTargetHeight);
+        //Bottom Right
+        this._drawImage(context, leftWidth + centerWidth, topHeight + centerHeight, rightWidth, bottomHeight, this._currentMeasure.left + leftTargetWidth + centerTargetWidth, this._currentMeasure.top + topTargetHeight + centerTargetHeight, rightTargetWidth, bottomTargetHeight);
     }
 
     public dispose() {
