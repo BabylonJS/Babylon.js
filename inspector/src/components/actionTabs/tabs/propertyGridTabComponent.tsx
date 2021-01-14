@@ -53,7 +53,7 @@ import { ColorPickerPropertyGridComponent } from "./propertyGrids/gui/colorPicke
 import { AnimationGroupGridComponent } from "./propertyGrids/animations/animationGroupPropertyGridComponent";
 import { LockObject } from "../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { ImagePropertyGridComponent } from "./propertyGrids/gui/imagePropertyGridComponent";
-import { SliderPropertyGridComponent } from "./propertyGrids/gui/sliderPropertyGridComponent";
+import { SliderPropertyGridComponent } from "../../../sharedUiComponents/tabs/propertyGrids/gui/sliderPropertyGridComponent";
 import { ImageBasedSliderPropertyGridComponent } from "./propertyGrids/gui/imageBasedSliderPropertyGridComponent";
 import { RectanglePropertyGridComponent } from "./propertyGrids/gui/rectanglePropertyGridComponent";
 import { EllipsePropertyGridComponent } from "./propertyGrids/gui/ellipsePropertyGridComponent";
@@ -466,7 +466,6 @@ export class PropertyGridTabComponent extends PaneComponent {
             if (className === "Slider") {
                 const slider = entity as Slider;
                 return (<SliderPropertyGridComponent slider={slider}
-                    globalState={this.props.globalState}
                     lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }

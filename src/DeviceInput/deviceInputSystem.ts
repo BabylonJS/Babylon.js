@@ -411,6 +411,30 @@ export class DeviceInputSystem implements IDisposable {
             (<any>document).onmousewheel !== undefined ? "mousewheel" :                     // Webkit and IE support at least "mousewheel"
                 "DOMMouseScroll";                                                           // let's assume that remaining browsers are older Firefox
 
+        // Code originally in scene.inputManager.ts
+        // Chrome reports warning in console if wheel listener doesn't set an explicit passive option.
+        // IE11 only supports captureEvent:boolean, not options:object, and it defaults to false.
+        // Feature detection technique copied from: https://github.com/github/eventlistener-polyfill (MIT license)
+        let passiveSupported = false;
+        const noop = function () { };
+
+        try {
+            const options: object = {
+                passive: {
+                    get: function () {
+                        passiveSupported = true;
+                    }
+                }
+            };
+
+            this._elementToAttachTo.addEventListener("test", noop, options);
+            this._elementToAttachTo.removeEventListener("test", noop, options)
+        }
+        catch (e) {
+            /* */
+        }
+
+
         this._pointerWheelEvent = ((evt) => {
             const deviceType = DeviceType.Mouse;
             const deviceSlot = 0;
@@ -452,7 +476,7 @@ export class DeviceInputSystem implements IDisposable {
         this._elementToAttachTo.addEventListener(this._eventPrefix + "move", this._pointerMoveEvent);
         this._elementToAttachTo.addEventListener(this._eventPrefix + "down", this._pointerDownEvent);
         this._elementToAttachTo.addEventListener(this._eventPrefix + "up", this._pointerUpEvent);
-        this._elementToAttachTo.addEventListener(this._wheelEventName, this._pointerWheelEvent);
+        this._elementToAttachTo.addEventListener(this._wheelEventName, this._pointerWheelEvent, passiveSupported ? { passive: false } : false);
     }
 
     /**
