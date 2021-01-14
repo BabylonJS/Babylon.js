@@ -747,7 +747,7 @@ export class Image extends Control {
     }
 
     private _renderNinePatch(context: CanvasRenderingContext2D): void {
-        let height = this._imageHeight
+        let height = this._imageHeight;
         let width = this._imageWidth;
         let leftWidth = this._sliceLeft;
         let rightWidth = this._imageWidth - this._sliceRight;
