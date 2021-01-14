@@ -122,7 +122,6 @@ export class MirrorTexture extends RenderTargetTexture {
 
     private _transformMatrix = Matrix.Zero();
     private _mirrorMatrix = Matrix.Zero();
-    private _savedViewMatrix: Matrix;
 
     private _blurX: Nullable<BlurPostProcess>;
     private _blurY: Nullable<BlurPostProcess>;
@@ -153,7 +152,7 @@ export class MirrorTexture extends RenderTargetTexture {
 
         this._updateGammaSpace();
         this._imageProcessingConfigChangeObserver = scene.imageProcessingConfiguration.onUpdateParameters.add(() => {
-            this._updateGammaSpace;
+            this._updateGammaSpace();
         });
 
         const engine = this.getScene()!.getEngine();
@@ -170,9 +169,7 @@ export class MirrorTexture extends RenderTargetTexture {
 
         this.onBeforeRenderObservable.add(() => {
             Matrix.ReflectionToRef(this.mirrorPlane, this._mirrorMatrix);
-            this._savedViewMatrix = scene.getViewMatrix();
-
-            this._mirrorMatrix.multiplyToRef(this._savedViewMatrix, this._transformMatrix);
+            this._mirrorMatrix.multiplyToRef(scene.getViewMatrix(), this._transformMatrix);
 
             scene.setTransformMatrix(this._transformMatrix, scene.getProjectionMatrix());
 
@@ -185,7 +182,7 @@ export class MirrorTexture extends RenderTargetTexture {
         });
 
         this.onAfterRenderObservable.add(() => {
-            scene.setTransformMatrix(this._savedViewMatrix, scene.getProjectionMatrix());
+            scene.updateTransformMatrix();
             scene.getEngine().cullBackFaces = true;
             scene._mirroredCameraPosition = null;
 

@@ -18,7 +18,7 @@ export interface IEffectFallbacks {
     unBindMesh(): void;
 
     /**
-     * Checks to see if more fallbacks are still availible.
+     * Checks to see if more fallbacks are still available.
      */
     hasMoreFallbacks: boolean;
 }

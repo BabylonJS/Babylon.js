@@ -8,6 +8,7 @@ import { Camera } from "./Cameras/camera";
 import { RenderTargetTexture } from "./Materials/Textures/renderTargetTexture";
 import { PickingInfo } from "./Collisions/pickingInfo";
 import { AbstractScene } from "./abstractScene";
+import { IPointerEvent } from "./Events/deviceInputEvents";
 
 declare type Mesh = import("./Meshes/mesh").Mesh;
 declare type Effect = import("./Materials/effect").Effect;
@@ -47,11 +48,12 @@ export class SceneComponentConstants {
 
     public static readonly STEP_CAMERADRAWRENDERTARGET_EFFECTLAYER = 1;
 
-    public static readonly STEP_BEFORECAMERADRAW_EFFECTLAYER = 0;
-    public static readonly STEP_BEFORECAMERADRAW_LAYER = 1;
-    public static readonly STEP_BEFORECAMERADRAW_PREPASS = 2;
+    public static readonly STEP_BEFORECAMERADRAW_PREPASS = 0;
+    public static readonly STEP_BEFORECAMERADRAW_EFFECTLAYER = 1;
+    public static readonly STEP_BEFORECAMERADRAW_LAYER = 2;
 
-    public static readonly STEP_BEFORERENDERTARGETDRAW_LAYER = 0;
+    public static readonly STEP_BEFORERENDERTARGETDRAW_PREPASS = 0;
+    public static readonly STEP_BEFORERENDERTARGETDRAW_LAYER = 1;
 
     public static readonly STEP_BEFORERENDERINGMESH_PREPASS = 0;
     public static readonly STEP_BEFORERENDERINGMESH_OUTLINE = 1;
@@ -67,13 +69,14 @@ export class SceneComponentConstants {
 
     public static readonly STEP_BEFORECLEAR_PROCEDURALTEXTURE = 0;
 
-    public static readonly STEP_AFTERRENDERTARGETDRAW_LAYER = 0;
+    public static readonly STEP_AFTERRENDERTARGETDRAW_PREPASS = 0;
+    public static readonly STEP_AFTERRENDERTARGETDRAW_LAYER = 1;
 
-    public static readonly STEP_AFTERCAMERADRAW_EFFECTLAYER = 0;
-    public static readonly STEP_AFTERCAMERADRAW_LENSFLARESYSTEM = 1;
-    public static readonly STEP_AFTERCAMERADRAW_EFFECTLAYER_DRAW = 2;
-    public static readonly STEP_AFTERCAMERADRAW_LAYER = 3;
-    public static readonly STEP_AFTERCAMERADRAW_PREPASS = 4;
+    public static readonly STEP_AFTERCAMERADRAW_PREPASS = 0;
+    public static readonly STEP_AFTERCAMERADRAW_EFFECTLAYER = 1;
+    public static readonly STEP_AFTERCAMERADRAW_LENSFLARESYSTEM = 2;
+    public static readonly STEP_AFTERCAMERADRAW_EFFECTLAYER_DRAW = 3;
+    public static readonly STEP_AFTERCAMERADRAW_LAYER = 4;
 
     public static readonly STEP_AFTERRENDER_AUDIO = 0;
 
@@ -85,6 +88,7 @@ export class SceneComponentConstants {
     public static readonly STEP_GATHERACTIVECAMERARENDERTARGETS_DEPTHRENDERER = 0;
 
     public static readonly STEP_BEFORECLEARSTAGE_PREPASS = 0;
+    public static readonly STEP_BEFORERENDERTARGETCLEARSTAGE_PREPASS = 0;
 
     public static readonly STEP_POINTERMOVE_SPRITE = 0;
     public static readonly STEP_POINTERDOWN_SPRITE = 0;
@@ -179,7 +183,7 @@ export type CameraStageFrameBufferAction = (camera: Camera) => boolean;
 /**
  * Strong typing of a Render Target related stage step action
  */
-export type RenderTargetStageAction = (renderTarget: RenderTargetTexture) => void;
+export type RenderTargetStageAction = (renderTarget: RenderTargetTexture, faceIndex?: number, layer?: number) => void;
 
 /**
  * Strong typing of a RenderingGroup related stage step action
@@ -209,7 +213,7 @@ export type PointerMoveStageAction = (unTranslatedPointerX: number, unTranslated
 /**
  * Strong typing of a pointer up/down action.
  */
-export type PointerUpDownStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, evt: PointerEvent) => Nullable<PickingInfo>;
+export type PointerUpDownStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, evt: IPointerEvent) => Nullable<PickingInfo>;
 
 /**
  * Representation of a stage in the scene (Basically a list of ordered steps)

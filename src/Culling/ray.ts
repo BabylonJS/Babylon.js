@@ -37,7 +37,7 @@ export class Ray {
     // Methods
     /**
      * Checks if the ray intersects a box
-     * This does not account for the ray lenght by design to improve perfs.
+     * This does not account for the ray length by design to improve perfs.
      * @param minimum bound of the box
      * @param maximum bound of the box
      * @param intersectionTreshold extra extend to be added to the box in all direction
@@ -282,7 +282,7 @@ export class Ray {
      * Checks if ray intersects a mesh
      * @param mesh the mesh to check
      * @param fastCheck defines if the first intersection will be used (and not the closest)
-     * @returns picking info of the intersecton
+     * @returns picking info of the intersection
      */
     public intersectsMesh(mesh: DeepImmutable<AbstractMesh>, fastCheck?: boolean): PickingInfo {
         var tm = TmpVectors.Matrix[0];
@@ -339,7 +339,7 @@ export class Ray {
     private static rayl = 10e8;
 
     /**
-     * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
+     * Intersection test between the ray and a given segment within a given tolerance (threshold)
      * @param sega the first point of the segment to test the intersection against
      * @param segb the second point of the segment to test the intersection against
      * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful

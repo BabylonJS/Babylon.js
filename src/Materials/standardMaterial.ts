@@ -110,6 +110,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public REFLECTIONMAP_EQUIRECTANGULAR = false;
     public REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
     public REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = false;
+    public REFLECTIONMAP_OPPOSITEZ = false;
     public INVERTCUBICMAP = false;
     public LOGARITHMICDEPTH = false;
     public REFRACTION = false;
@@ -122,6 +123,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public MORPHTARGETS_TANGENT = false;
     public MORPHTARGETS_UV = false;
     public NUM_MORPH_INFLUENCERS = 0;
+    public MORPHTARGETS_TEXTURE = false;
     public NONUNIFORMSCALING = false; // https://playground.babylonjs.com#V6DWIH
     public PREMULTIPLYALPHA = false; // https://playground.babylonjs.com#LNVJJ7
     public ALPHATEST_AFTERALLALPHACOMPUTATIONS = false;
@@ -132,8 +134,10 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public PREPASS_IRRADIANCE_INDEX = -1;
     public PREPASS_ALBEDO = false;
     public PREPASS_ALBEDO_INDEX = -1;
-    public PREPASS_DEPTHNORMAL = false;
-    public PREPASS_DEPTHNORMAL_INDEX = -1;
+    public PREPASS_DEPTH = false;
+    public PREPASS_DEPTH_INDEX = -1;
+    public PREPASS_NORMAL = false;
+    public PREPASS_NORMAL_INDEX = -1;
     public PREPASS_POSITION = false;
     public PREPASS_POSITION_INDEX = -1;
     public PREPASS_VELOCITY = false;
@@ -340,7 +344,7 @@ export class StandardMaterial extends PushMaterial {
     @serialize("useSpecularOverAlpha")
     private _useSpecularOverAlpha = false;
     /**
-     * Specifies that the material will keep the specular highlights over a transparent surface (only the most limunous ones).
+     * Specifies that the material will keep the specular highlights over a transparent surface (only the most luminous ones).
      * A car glass is a good exemple of that. When sun reflects on it you can not see what is behind.
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
@@ -349,7 +353,7 @@ export class StandardMaterial extends PushMaterial {
     @serialize("useReflectionOverAlpha")
     private _useReflectionOverAlpha = false;
     /**
-     * Specifies that the material will keeps the reflection highlights over a transparent surface (only the most limunous ones).
+     * Specifies that the material will keeps the reflection highlights over a transparent surface (only the most luminous ones).
      * A car glass is a good exemple of that. When the street lights reflects on it you can not see what is behind.
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
@@ -589,44 +593,51 @@ export class StandardMaterial extends PushMaterial {
     }
 
     /**
-     * Defines additionnal PrePass parameters for the material.
+     * Defines additional PrePass parameters for the material.
      */
     public readonly prePassConfiguration: PrePassConfiguration;
 
     /**
-     * Gets wether the color curves effect is enabled.
+     * Can this material render to prepass
+     */
+    public get isPrePassCapable(): boolean {
+        return true;
+    }
+
+    /**
+     * Gets whether the color curves effect is enabled.
      */
     public get cameraColorCurvesEnabled(): boolean {
         return this.imageProcessingConfiguration.colorCurvesEnabled;
     }
     /**
-     * Sets wether the color curves effect is enabled.
+     * Sets whether the color curves effect is enabled.
      */
     public set cameraColorCurvesEnabled(value: boolean) {
         this.imageProcessingConfiguration.colorCurvesEnabled = value;
     }
 
     /**
-     * Gets wether the color grading effect is enabled.
+     * Gets whether the color grading effect is enabled.
      */
     public get cameraColorGradingEnabled(): boolean {
         return this.imageProcessingConfiguration.colorGradingEnabled;
     }
     /**
-     * Gets wether the color grading effect is enabled.
+     * Gets whether the color grading effect is enabled.
      */
     public set cameraColorGradingEnabled(value: boolean) {
         this.imageProcessingConfiguration.colorGradingEnabled = value;
     }
 
     /**
-     * Gets wether tonemapping is enabled or not.
+     * Gets whether tonemapping is enabled or not.
      */
     public get cameraToneMappingEnabled(): boolean {
         return this._imageProcessingConfiguration.toneMappingEnabled;
     }
     /**
-     * Sets wether tonemapping is enabled or not
+     * Sets whether tonemapping is enabled or not
      */
     public set cameraToneMappingEnabled(value: boolean) {
         this._imageProcessingConfiguration.toneMappingEnabled = value;
@@ -686,7 +697,7 @@ export class StandardMaterial extends PushMaterial {
         return this._imageProcessingConfiguration.colorCurves;
     }
     /**
-     * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
+     * The color grading curves provide additional color adjustment that is applied after any color grading transform (3D LUT).
      * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
      * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
      * corresponding to low luminance, medium luminance, and high luminance areas respectively.
@@ -914,6 +925,7 @@ export class StandardMaterial extends PushMaterial {
                         defines.INVERTCUBICMAP = (this._reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE);
                         defines.REFLECTIONMAP_3D = this._reflectionTexture.isCube;
                         defines.RGBDREFLECTION = this._reflectionTexture.isRGBD;
+                        defines.REFLECTIONMAP_OPPOSITEZ = this.getScene().useRightHandedSystem ? !this._reflectionTexture.invertZ : this._reflectionTexture.invertZ;
 
                         switch (this._reflectionTexture.coordinatesMode) {
                             case Texture.EXPLICIT_MODE:
@@ -951,6 +963,7 @@ export class StandardMaterial extends PushMaterial {
                     }
                 } else {
                     defines.REFLECTION = false;
+                    defines.REFLECTIONMAP_OPPOSITEZ = false;
                 }
 
                 if (this._emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
@@ -987,7 +1000,7 @@ export class StandardMaterial extends PushMaterial {
                 }
 
                 if (scene.getEngine().getCaps().standardDerivatives && this._bumpTexture && StandardMaterial.BumpTextureEnabled) {
-                    // Bump texure can not be not blocking.
+                    // Bump texture can not be not blocking.
                     if (!this._bumpTexture.isReady()) {
                         return false;
                     } else {
@@ -1202,12 +1215,13 @@ export class StandardMaterial extends PushMaterial {
                 "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "normalMatrix", "lightmapMatrix", "refractionMatrix",
                 "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor", "refractionLeftColor", "refractionRightColor",
                 "vReflectionPosition", "vReflectionSize",
-                "logarithmicDepthConstant", "vTangentSpaceParams", "alphaCutOff", "boneTextureWidth"
+                "logarithmicDepthConstant", "vTangentSpaceParams", "alphaCutOff", "boneTextureWidth",
+                "morphTargetTextureInfo"
             ];
 
             var samplers = ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler",
                 "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler",
-                "refractionCubeSampler", "refraction2DSampler", "boneSampler"];
+                "refractionCubeSampler", "refraction2DSampler", "boneSampler", "morphTargets"];
 
             var uniformBuffers = ["Material", "Scene", "Mesh"];
 

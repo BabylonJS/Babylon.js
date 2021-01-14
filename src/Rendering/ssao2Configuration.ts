@@ -21,6 +21,7 @@ export class SSAO2Configuration implements PrePassEffectConfiguration {
      * Textures that should be present in the MRT for this effect to work
      */
     public readonly texturesRequired: number[] = [
-        Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE
+        Constants.PREPASS_NORMAL_TEXTURE_TYPE,
+        Constants.PREPASS_DEPTH_TEXTURE_TYPE,
     ];
 }

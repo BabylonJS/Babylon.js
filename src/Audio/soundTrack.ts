@@ -89,7 +89,7 @@ export class SoundTrack {
 
     /**
      * Adds a sound to this sound track
-     * @param sound define the cound to add
+     * @param sound define the sound to add
      * @ignoreNaming
      */
     public addSound(sound: Sound): void {
@@ -114,7 +114,7 @@ export class SoundTrack {
 
     /**
      * Removes a sound to this sound track
-     * @param sound define the cound to remove
+     * @param sound define the sound to remove
      * @ignoreNaming
      */
     public removeSound(sound: Sound): void {
@@ -162,7 +162,7 @@ export class SoundTrack {
 
     /**
      * Connect the sound track to an audio analyser allowing some amazing
-     * synchornization between the sounds/music and your visualization (VuMeter for instance).
+     * synchronization between the sounds/music and your visualization (VuMeter for instance).
      * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#using-the-analyser
      * @param analyser The analyser to connect to the engine
      */

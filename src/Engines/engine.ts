@@ -24,6 +24,7 @@ import "./Extensions/engine.alpha";
 import "./Extensions/engine.readTexture";
 import "./Extensions/engine.dynamicBuffer";
 import { IAudioEngine } from '../Audio/Interfaces/IAudioEngine';
+import { IPointerEvent } from "../Events/deviceInputEvents";
 
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
@@ -83,13 +84,13 @@ export class Engine extends ThinEngine {
      */
     public static readonly ALPHA_SCREENMODE = Constants.ALPHA_SCREENMODE;
 
-    /** Defines that the ressource is not delayed*/
+    /** Defines that the resource is not delayed*/
     public static readonly DELAYLOADSTATE_NONE = Constants.DELAYLOADSTATE_NONE;
-    /** Defines that the ressource was successfully delay loaded */
+    /** Defines that the resource was successfully delay loaded */
     public static readonly DELAYLOADSTATE_LOADED = Constants.DELAYLOADSTATE_LOADED;
-    /** Defines that the ressource is currently delay loading */
+    /** Defines that the resource is currently delay loading */
     public static readonly DELAYLOADSTATE_LOADING = Constants.DELAYLOADSTATE_LOADING;
-    /** Defines that the ressource is delayed and has not started loading */
+    /** Defines that the resource is delayed and has not started loading */
     public static readonly DELAYLOADSTATE_NOTLOADED = Constants.DELAYLOADSTATE_NOTLOADED;
 
     // Depht or Stencil test Constants.
@@ -306,7 +307,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Method called to create the default loading screen.
-     * This can be overriden in your own app.
+     * This can be overridden in your own app.
      * @param canvas The rendering canvas element
      * @returns The loading screen
      */
@@ -371,7 +372,7 @@ export class Engine extends ThinEngine {
     /**
      * Observable event triggered each time the canvas receives pointerout event
      */
-    public onCanvasPointerOutObservable = new Observable<PointerEvent>();
+    public onCanvasPointerOutObservable = new Observable<IPointerEvent>();
 
     /**
      * Observable raised when the engine begins a new frame
@@ -394,7 +395,7 @@ export class Engine extends ThinEngine {
     public onBeforeShaderCompilationObservable = new Observable<Engine>();
 
     /**
-     * Observable raised when the engine has jsut compiled a shader
+     * Observable raised when the engine has just compiled a shader
      */
     public onAfterShaderCompilationObservable = new Observable<Engine>();
 
@@ -476,7 +477,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Creates a new engine
-     * @param canvasOrContext defines the canvas or WebGL context to use for rendering. If you provide a WebGL context, Babylon.js will not hook events on the canvas (like pointers, keyboards, etc...) so no event observables will be available. This is mostly used when Babylon.js is used as a plugin on a system which alreay used the WebGL context
+     * @param canvasOrContext defines the canvas or WebGL context to use for rendering. If you provide a WebGL context, Babylon.js will not hook events on the canvas (like pointers, keyboards, etc...) so no event observables will be available. This is mostly used when Babylon.js is used as a plugin on a system which already used the WebGL context
      * @param antialias defines enable antialiasing (default: false)
      * @param options defines further options to be sent to the getContext() function
      * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
@@ -639,7 +640,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Gets the client rect of the HTML canvas attached with the current webGL context
-     * @returns a client rectanglee
+     * @returns a client rectangle
      */
     public getRenderingCanvasClientRect(): Nullable<ClientRect> {
         if (!this._renderingCanvas) {
@@ -650,7 +651,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Gets the client rect of the HTML element used for events
-     * @returns a client rectanglee
+     * @returns a client rectangle
      */
     public getInputElementClientRect(): Nullable<ClientRect> {
         if (!this._renderingCanvas) {
@@ -952,28 +953,28 @@ export class Engine extends ThinEngine {
      * Sets the current depth function to GREATER
      */
     public setDepthFunctionToGreater(): void {
-        this._depthCullingState.depthFunc = this._gl.GREATER;
+        this._depthCullingState.depthFunc = Constants.GREATER;
     }
 
     /**
      * Sets the current depth function to GEQUAL
      */
     public setDepthFunctionToGreaterOrEqual(): void {
-        this._depthCullingState.depthFunc = this._gl.GEQUAL;
+        this._depthCullingState.depthFunc = Constants.GEQUAL;
     }
 
     /**
      * Sets the current depth function to LESS
      */
     public setDepthFunctionToLess(): void {
-        this._depthCullingState.depthFunc = this._gl.LESS;
+        this._depthCullingState.depthFunc = Constants.LESS;
     }
 
     /**
      * Sets the current depth function to LEQUAL
      */
     public setDepthFunctionToLessOrEqual(): void {
-        this._depthCullingState.depthFunc = this._gl.LEQUAL;
+        this._depthCullingState.depthFunc = Constants.LEQUAL;
     }
 
     private _cachedStencilBuffer: boolean;
@@ -1186,7 +1187,16 @@ export class Engine extends ThinEngine {
      * @param name name of the channel
      */
     public setTextureFromPostProcess(channel: number, postProcess: Nullable<PostProcess>, name: string): void {
-        this._bindTexture(channel, postProcess ? postProcess._textures.data[postProcess._currentRenderTextureInd] : null, name);
+        let postProcessInput = null;
+        if (postProcess) {
+            if (postProcess._textures.data[postProcess._currentRenderTextureInd]) {
+                postProcessInput = postProcess._textures.data[postProcess._currentRenderTextureInd];
+            } else if (postProcess._forcedOutputTexture) {
+                postProcessInput = postProcess._forcedOutputTexture;
+            }
+        }
+
+        this._bindTexture(channel, postProcessInput, name);
     }
 
     /**
@@ -1462,7 +1472,7 @@ export class Engine extends ThinEngine {
     /**
      * @hidden
      * Rescales a texture
-     * @param source input texutre
+     * @param source input texture
      * @param destination destination texture
      * @param scene scene to use to render the resize
      * @param internalFormat format to use when resizing
@@ -1677,7 +1687,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Creates a webGL buffer to use with instanciation
+     * Creates a webGL buffer to use with instantiation
      * @param capacity defines the size of the buffer
      * @returns the webGL buffer
      */
@@ -1697,7 +1707,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Delete a webGL buffer used with instanciation
+     * Delete a webGL buffer used with instantiation
      * @param buffer defines the webGL buffer to delete
      */
     public deleteInstancesBuffer(buffer: WebGLBuffer): void {

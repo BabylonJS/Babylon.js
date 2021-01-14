@@ -198,13 +198,13 @@ export class ArcRotateCamera extends TargetCamera {
 
     /**
      * Defines the maximum distance the camera can pan.
-     * This could help keeping the cammera always in your scene.
+     * This could help keeping the camera always in your scene.
      */
     @serialize()
     public panningDistanceLimit: Nullable<number> = null;
 
     /**
-     * Defines the target of the camera before paning.
+     * Defines the target of the camera before panning.
      */
     @serializeAsVector3()
     public panningOriginTarget: Vector3 = Vector3.Zero();
@@ -457,7 +457,7 @@ export class ArcRotateCamera extends TargetCamera {
     //-- end properties for backward compatibility for inputs
 
     /**
-     * Defines how much the radius should be scaled while zomming on a particular mesh (through the zoomOn function)
+     * Defines how much the radius should be scaled while zooming on a particular mesh (through the zoomOn function)
      */
     @serialize()
     public zoomOnFactor = 1;
@@ -639,12 +639,12 @@ export class ArcRotateCamera extends TargetCamera {
     /**
      * Instantiates a new ArcRotateCamera in a given scene
      * @param name Defines the name of the camera
-     * @param alpha Defines the camera rotation along the logitudinal axis
+     * @param alpha Defines the camera rotation along the longitudinal axis
      * @param beta Defines the camera rotation along the latitudinal axis
      * @param radius Defines the camera distance from its target
      * @param target Defines the camera target
      * @param scene Defines the scene the camera belongs to
-     * @param setActiveOnSceneIfNoneActive Defines wheter the camera should be marked as active if not other active cameras have been defined
+     * @param setActiveOnSceneIfNoneActive Defines whether the camera should be marked as active if not other active cameras have been defined
      */
     constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene, setActiveOnSceneIfNoneActive = true) {
         super(name, Vector3.Zero(), scene, setActiveOnSceneIfNoneActive);
@@ -774,20 +774,20 @@ export class ArcRotateCamera extends TargetCamera {
     /**
      * Attached controls to the current camera.
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
-     * @param useCtrlForPanning  Defines whether ctrl is used for paning within the controls
+     * @param useCtrlForPanning  Defines whether ctrl is used for panning within the controls
      */
     public attachControl(noPreventDefault: boolean, useCtrlForPanning: boolean): void;
     /**
      * Attached controls to the current camera.
      * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
-     * @param useCtrlForPanning  Defines whether ctrl is used for paning within the controls
+     * @param useCtrlForPanning  Defines whether ctrl is used for panning within the controls
      */
     public attachControl(ignored: any, noPreventDefault: boolean, useCtrlForPanning: boolean): void;
     /**
      * Attached controls to the current camera.
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
-     * @param useCtrlForPanning  Defines whether ctrl is used for paning within the controls
+     * @param useCtrlForPanning  Defines whether ctrl is used for panning within the controls
      * @param panningMouseButton Defines whether panning is allowed through mouse click button
      */
     public attachControl(noPreventDefault: boolean, useCtrlForPanning: boolean, panningMouseButton: number): void;
@@ -795,7 +795,7 @@ export class ArcRotateCamera extends TargetCamera {
      * Attached controls to the current camera.
      * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
-     * @param useCtrlForPanning  Defines whether ctrl is used for paning within the controls
+     * @param useCtrlForPanning  Defines whether ctrl is used for panning within the controls
      * @param panningMouseButton Defines whether panning is allowed through mouse click button
      */
     public attachControl(ignored: any, noPreventDefault?: boolean, useCtrlForPanning: boolean | number = true, panningMouseButton: number = 2): void {
@@ -885,20 +885,11 @@ export class ArcRotateCamera extends TargetCamera {
 
         // Panning inertia
         if (this.inertialPanningX !== 0 || this.inertialPanningY !== 0) {
+            let localDirection = new Vector3(this.inertialPanningX, this.inertialPanningY, this.inertialPanningY);
+
             this._viewMatrix.invertToRef(this._cameraTransformMatrix);
-            this._transformedDirection.set(this._cameraTransformMatrix.m[0], this._cameraTransformMatrix.m[1], this._cameraTransformMatrix.m[2]);
-
-            // panning on X Axis
-            this._transformedDirection.x *= this.panningAxis.x * this.inertialPanningX;
-            this._transformedDirection.y *= this.panningAxis.x * this.inertialPanningX;
-            this._transformedDirection.z *= this.panningAxis.x * this.inertialPanningX;
-
-            // panning on Y axis
-            this._transformedDirection.y += this.panningAxis.y * this.inertialPanningY;
-
-            // panning on Z axis
-            this._transformedDirection.x -= Math.cos(this.alpha) * this.panningAxis.z * this.inertialPanningY;
-            this._transformedDirection.z -= Math.sin(this.alpha) * this.panningAxis.z * this.inertialPanningY;
+            localDirection.multiplyInPlace(this.panningAxis);
+            Vector3.TransformNormalToRef(localDirection, this._cameraTransformMatrix, this._transformedDirection);
 
             if (!this._targetHost) {
                 if (this.panningDistanceLimit) {

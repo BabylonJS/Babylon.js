@@ -3,8 +3,8 @@ import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 
 import { PropertyChangedEvent } from "../../../propertyChangedEvent";
-import { LineContainerComponent } from "../../lineContainerComponent";
-import { LockObject } from "./lockObject";
+import { LineContainerComponent } from "../../../../sharedUiComponents/lines/lineContainerComponent";
+import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from "../../../globalState";
 import { TextLineComponent } from '../../../../sharedUiComponents/lines/textLineComponent';
 import { IndentedTextLineComponent } from '../../../../sharedUiComponents/lines/indentedTextLineComponent';
@@ -74,7 +74,7 @@ export class CommonPropertyGridComponent extends React.Component<ICommonProperty
 
         return (
             <div>
-                <LineContainerComponent globalState={this.props.globalState} title="XMP METADATA">
+                <LineContainerComponent title="XMP METADATA">
                     {
                         this.renderLevel(this.props.host.metadata.xmp)
                     }

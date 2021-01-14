@@ -130,7 +130,7 @@ export class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<Arc
     }
 
     /**
-     * Gets the class name of the current intput.
+     * Gets the class name of the current input.
      * @returns the class name
      */
     public getClassName(): string {

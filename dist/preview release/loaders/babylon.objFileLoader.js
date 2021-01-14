@@ -406,6 +406,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 /**
  * OBJ file type loader.
  * This is a babylon scene loader plugin.
@@ -478,6 +479,7 @@ var OBJFileLoader = /** @class */ (function () {
         get: function () {
             return {
                 ComputeNormals: OBJFileLoader.COMPUTE_NORMALS,
+                OptimizeNormals: OBJFileLoader.OPTIMIZE_NORMALS,
                 ImportVertexColors: OBJFileLoader.IMPORT_VERTEX_COLORS,
                 InvertY: OBJFileLoader.INVERT_Y,
                 InvertTextureY: OBJFileLoader.INVERT_TEXTURE_Y,
@@ -601,6 +603,49 @@ var OBJFileLoader = /** @class */ (function () {
             _this._forAssetContainer = false;
             throw ex;
         });
+    };
+    OBJFileLoader.prototype._optimizeNormals = function (mesh) {
+        var positions = mesh.getVerticesData(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].PositionKind);
+        var normals = mesh.getVerticesData(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].NormalKind);
+        var mapVertices = {};
+        if (!positions || !normals) {
+            return;
+        }
+        for (var i = 0; i < positions.length / 3; i++) {
+            var x = positions[i * 3 + 0];
+            var y = positions[i * 3 + 1];
+            var z = positions[i * 3 + 2];
+            var key = x + "_" + y + "_" + z;
+            var lst = mapVertices[key];
+            if (!lst) {
+                lst = [];
+                mapVertices[key] = lst;
+            }
+            lst.push(i);
+        }
+        var normal = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Vector3"]();
+        for (var key in mapVertices) {
+            var lst = mapVertices[key];
+            if (lst.length < 2) {
+                continue;
+            }
+            var v0Idx = lst[0];
+            for (var i = 1; i < lst.length; ++i) {
+                var vIdx = lst[i];
+                normals[v0Idx * 3 + 0] += normals[vIdx * 3 + 0];
+                normals[v0Idx * 3 + 1] += normals[vIdx * 3 + 1];
+                normals[v0Idx * 3 + 2] += normals[vIdx * 3 + 2];
+            }
+            normal.copyFromFloats(normals[v0Idx * 3 + 0], normals[v0Idx * 3 + 1], normals[v0Idx * 3 + 2]);
+            normal.normalize();
+            for (var i = 0; i < lst.length; ++i) {
+                var vIdx = lst[i];
+                normals[vIdx * 3 + 0] = normal.x;
+                normals[vIdx * 3 + 1] = normal.y;
+                normals[vIdx * 3 + 2] = normal.z;
+            }
+        }
+        mesh.setVerticesData(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].NormalKind, normals);
     };
     /**
      * Read the OBJ file and create an Array of meshes.
@@ -1159,6 +1204,9 @@ var OBJFileLoader = /** @class */ (function () {
             if (this._meshLoadOptions.InvertY) {
                 babylonMesh.scaling.y *= -1;
             }
+            if (this._meshLoadOptions.OptimizeNormals === true) {
+                this._optimizeNormals(babylonMesh);
+            }
             //Push the mesh into an array
             babylonMeshesArray.push(babylonMesh);
         }
@@ -1240,6 +1288,11 @@ var OBJFileLoader = /** @class */ (function () {
      * Compute the normals for the model, even if normals are present in the file.
      */
     OBJFileLoader.COMPUTE_NORMALS = false;
+    /**
+     * Optimize the normals for the model. Lighting can be uneven if you use OptimizeWithUV = true because new vertices can be created for the same location if they pertain to different faces.
+     * Using OptimizehNormals = true will help smoothing the lighting by averaging the normals of those vertices.
+     */
+    OBJFileLoader.OPTIMIZE_NORMALS = false;
     /**
      * Defines custom scaling of UV coordinates of loaded meshes.
      */

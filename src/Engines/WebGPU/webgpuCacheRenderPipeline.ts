@@ -9,17 +9,17 @@ import { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
 import { WebGPUPipelineContext } from "./webgpuPipelineContext";
 
 enum StatePosition {
-    ShaderStage = 0,
-    RasterizationState = 1,
-    //DepthBias = 2, // not used, so remove it to improve perf
-    //DepthBiasClamp = 3, // not used, so remove it to improve perf
+    //DepthBias = 0, // not used, so remove it to improve perf
+    //DepthBiasClamp = 1, // not used, so remove it to improve perf
+    StencilReadMask = 0,
+    StencilWriteMask = 1,
     DepthBiasSlopeScale = 2,
     MRTAttachments1 = 3,
     MRTAttachments2 = 4,
-    ColorStates = 5,
-    DepthStencilState = 6,
-    StencilReadMask = 7,
-    StencilWriteMask = 8,
+    DepthStencilState = 5,
+    RasterizationState = 6,
+    ColorStates = 7,
+    ShaderStage = 8,
     VertexState = 9, // vertex state will consume positions 9, 10, ... depending on the number of vertex inputs
 
     NumStates = 10
@@ -116,7 +116,7 @@ const stencilOpToIndex: { [name: number]: number } = {
 };
 
 /** @hidden */
-export class WebGPUCacheRenderPipeline {
+export abstract class WebGPUCacheRenderPipeline {
 
     public static NumCacheHitWithoutHash = 0;
     public static NumCacheHitWithHash = 0;
@@ -125,14 +125,16 @@ export class WebGPUCacheRenderPipeline {
 
     public disabled: boolean;
 
-    private static _Cache: { [hash: string]: GPURenderPipeline } = {};
     private static _NumPipelineCreationCurrentFrame = 0;
 
+    protected _states: number[];
+    protected _stateDirtyLowestIndex: number;
+    public lastStateDirtyLowestIndex: number; // for stats only
+
     private _device: GPUDevice;
-    private _states: string[];
     private _isDirty: boolean;
-    private _currentRenderPipeline: GPURenderPipeline;
     private _emptyVertexBuffer: VertexBuffer;
+    private _parameter: { token: any, pipeline: Nullable<GPURenderPipeline> };
 
     private _shaderId: number;
     private _alphaToCoverageEnabled: boolean;
@@ -168,14 +170,17 @@ export class WebGPUCacheRenderPipeline {
     private _stencilWriteMask: number;
     private _depthStencilState: number;
     private _vertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }>;
+    private _overrideVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }>;
     private _indexBuffer: Nullable<DataBuffer>;
 
     constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer) {
         this._device = device;
         this._states = [];
         this._states.length = StatePosition.NumStates;
+        this._stateDirtyLowestIndex = 0;
         this._emptyVertexBuffer = emptyVertexBuffer;
         this._mrtFormats = [];
+        this._parameter = { token: undefined, pipeline: null };
         this.disabled = false;
         this.reset();
     }
@@ -195,19 +200,22 @@ export class WebGPUCacheRenderPipeline {
         this.setDepthStencilFormat(WebGPUConstants.TextureFormat.Depth24PlusStencil8);
         this.setStencilEnabled(false);
         this.resetStencilState();
-        this.setBuffers(null, null);
+        this.setBuffers(null, null, null);
     }
+
+    protected abstract _getRenderPipeline(param: { token: any, pipeline: Nullable<GPURenderPipeline> }): void;
+    protected abstract _setRenderPipeline(param: { token: any, pipeline: Nullable<GPURenderPipeline> }): void;
 
     public getRenderPipeline(fillMode: number, effect: Effect, sampleCount: number): GPURenderPipeline {
         if (this.disabled) {
             const topology = WebGPUCacheRenderPipeline._GetTopology(fillMode);
 
-            this._currentRenderPipeline = this._createRenderPipeline(effect, topology, sampleCount);
+            this._parameter.pipeline = this._createRenderPipeline(effect, topology, sampleCount);
 
             WebGPUCacheRenderPipeline.NumCacheMiss++;
             WebGPUCacheRenderPipeline._NumPipelineCreationCurrentFrame++;
 
-            return this._currentRenderPipeline;
+            return this._parameter.pipeline;
         }
 
         this._setShaderStage(effect.uniqueId);
@@ -216,31 +224,33 @@ export class WebGPUCacheRenderPipeline {
         this._setDepthStencilState();
         this._setVertexState(effect);
 
-        if (!this._isDirty && this._currentRenderPipeline) {
+        this.lastStateDirtyLowestIndex = this._stateDirtyLowestIndex;
+
+        if (!this._isDirty && this._parameter.pipeline) {
+            this._stateDirtyLowestIndex = this._states.length;
             WebGPUCacheRenderPipeline.NumCacheHitWithoutHash++;
-            return this._currentRenderPipeline;
+            return this._parameter.pipeline;
         }
 
+        this._getRenderPipeline(this._parameter);
+
         this._isDirty = false;
+        this._stateDirtyLowestIndex = this._states.length;
 
-        let hash = this._states.join();
-        let pipeline = WebGPUCacheRenderPipeline._Cache[hash];
-
-        if (pipeline) {
-            this._currentRenderPipeline = pipeline;
+        if (this._parameter.pipeline) {
             WebGPUCacheRenderPipeline.NumCacheHitWithHash++;
-            return pipeline;
+            return this._parameter.pipeline;
         }
 
         const topology = WebGPUCacheRenderPipeline._GetTopology(fillMode);
 
-        this._currentRenderPipeline = this._createRenderPipeline(effect, topology, sampleCount);
-        WebGPUCacheRenderPipeline._Cache[hash] = this._currentRenderPipeline;
+        this._parameter.pipeline = this._createRenderPipeline(effect, topology, sampleCount);
+        this._setRenderPipeline(this._parameter);
 
         WebGPUCacheRenderPipeline.NumCacheMiss++;
         WebGPUCacheRenderPipeline._NumPipelineCreationCurrentFrame++;
 
-        return this._currentRenderPipeline;
+        return this._parameter.pipeline;
     }
 
     public endFrame(): void {
@@ -301,8 +311,9 @@ export class WebGPUCacheRenderPipeline {
     public setDepthBiasSlopeScale(depthBiasSlopeScale: number): void {
         if (this._depthBiasSlopeScale !== depthBiasSlopeScale) {
             this._depthBiasSlopeScale = depthBiasSlopeScale;
-            this._states[StatePosition.DepthBiasSlopeScale] = depthBiasSlopeScale.toString();
+            this._states[StatePosition.DepthBiasSlopeScale] = depthBiasSlopeScale;
             this._isDirty = true;
+            this._stateDirtyLowestIndex = Math.min(this._stateDirtyLowestIndex, StatePosition.DepthBiasSlopeScale);
         }
     }
 
@@ -339,9 +350,10 @@ export class WebGPUCacheRenderPipeline {
         if (this._mrtAttachments1 !== bits[0] || this._mrtAttachments2 !== bits[1]) {
             this._mrtAttachments1 = bits[0];
             this._mrtAttachments2 = bits[1];
-            this._states[StatePosition.MRTAttachments1] = bits[0].toString();
-            this._states[StatePosition.MRTAttachments2] = bits[1].toString();
+            this._states[StatePosition.MRTAttachments1] = bits[0];
+            this._states[StatePosition.MRTAttachments2] = bits[1];
             this._isDirty = true;
+            this._stateDirtyLowestIndex = Math.min(this._stateDirtyLowestIndex, StatePosition.MRTAttachments1);
         }
     }
 
@@ -398,16 +410,18 @@ export class WebGPUCacheRenderPipeline {
     public setStencilReadMask(mask: number): void {
         if (this._stencilReadMask !== mask) {
             this._stencilReadMask = mask;
-            this._states[StatePosition.StencilReadMask] = mask.toString();
+            this._states[StatePosition.StencilReadMask] = mask;
             this._isDirty = true;
+            this._stateDirtyLowestIndex = Math.min(this._stateDirtyLowestIndex, StatePosition.StencilReadMask);
         }
     }
 
     public setStencilWriteMask(mask: number): void {
         if (this._stencilWriteMask !== mask) {
             this._stencilWriteMask = mask;
-            this._states[StatePosition.StencilWriteMask] = mask.toString();
+            this._states[StatePosition.StencilWriteMask] = mask;
             this._isDirty = true;
+            this._stateDirtyLowestIndex = Math.min(this._stateDirtyLowestIndex, StatePosition.StencilWriteMask);
         }
     }
 
@@ -425,8 +439,9 @@ export class WebGPUCacheRenderPipeline {
         this.setStencilWriteMask(writeMask);
     }
 
-    public setBuffers(vertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }>, indexBuffer: Nullable<DataBuffer>): void {
+    public setBuffers(vertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }>, indexBuffer: Nullable<DataBuffer>, overrideVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }>): void {
         this._vertexBuffers = vertexBuffers;
+        this._overrideVertexBuffers = overrideVertexBuffers;
         this._indexBuffer = indexBuffer;
     }
 
@@ -673,8 +688,9 @@ export class WebGPUCacheRenderPipeline {
     private _setShaderStage(id: number): void {
         if (this._shaderId !== id) {
             this._shaderId = id;
-            this._states[StatePosition.ShaderStage] = id.toString();
+            this._states[StatePosition.ShaderStage] = id;
             this._isDirty = true;
+            this._stateDirtyLowestIndex = Math.min(this._stateDirtyLowestIndex, StatePosition.ShaderStage);
         }
     }
 
@@ -693,13 +709,16 @@ export class WebGPUCacheRenderPipeline {
 
         if (this._rasterizationState !== rasterizationState) {
             this._rasterizationState = rasterizationState;
-            this._states[StatePosition.RasterizationState] = this._rasterizationState.toString();
+            this._states[StatePosition.RasterizationState] = this._rasterizationState;
             this._isDirty = true;
+            this._stateDirtyLowestIndex = Math.min(this._stateDirtyLowestIndex, StatePosition.RasterizationState);
         }
     }
 
     private _setColorStates(): void {
-        let colorStates = ((this._writeMask ? 1 : 0) << 22) + (this._colorFormat << 23);
+        let colorStates =
+            ((this._writeMask ? 1 : 0) << 22) + (this._colorFormat << 23) +
+            ((this._depthWriteEnabled ? 1 : 0) << 29); // this state has been moved from depthStencilState here because alpha and depth are related (generally when alpha is on, depth write is off and the other way around)
 
         if (this._alphaBlendEnabled) {
             colorStates +=
@@ -713,8 +732,9 @@ export class WebGPUCacheRenderPipeline {
 
         if (colorStates !== this._colorStates) {
             this._colorStates = colorStates;
-            this._states[StatePosition.ColorStates] = this._colorStates.toString();
+            this._states[StatePosition.ColorStates] = this._colorStates;
             this._isDirty = true;
+            this._stateDirtyLowestIndex = Math.min(this._stateDirtyLowestIndex, StatePosition.ColorStates);
         }
     }
 
@@ -725,14 +745,14 @@ export class WebGPUCacheRenderPipeline {
 
         const depthStencilState =
                 this._depthStencilFormat +
-                ((this._depthWriteEnabled ? 1 : 0) << 6) +
-                ((this._depthTestEnabled ? this._depthCompare : 7 /* ALWAYS */) << 7) +
+                ((this._depthTestEnabled ? this._depthCompare : 7 /* ALWAYS */) << 6) +
                 (stencilState << 10); // stencil front - stencil back is the same
 
         if (this._depthStencilState !== depthStencilState) {
             this._depthStencilState = depthStencilState;
-            this._states[StatePosition.DepthStencilState] = this._depthStencilState.toString();
+            this._states[StatePosition.DepthStencilState] = this._depthStencilState;
             this._isDirty = true;
+            this._stateDirtyLowestIndex = Math.min(this._stateDirtyLowestIndex, StatePosition.DepthStencilState);
         }
     }
 
@@ -740,39 +760,29 @@ export class WebGPUCacheRenderPipeline {
         const currStateLen = this._states.length;
         let newNumStates = StatePosition.VertexState;
 
-        const attributes = effect.getAttributesNames();
+        const webgpuPipelineContext = effect._pipelineContext as WebGPUPipelineContext;
+        const attributes = webgpuPipelineContext.shaderProcessingContext.attributeNamesFromEffect;
+        const locations = webgpuPipelineContext.shaderProcessingContext.attributeLocationsFromEffect;
         for (var index = 0; index < attributes.length; index++) {
-            const location = effect.getAttributeLocation(index);
-
-            if (location >= 0) {
-                let  vertexBuffer = this._vertexBuffers![attributes[index]];
-                if (!vertexBuffer) {
-                    // In WebGL it's valid to not bind a vertex buffer to an attribute, but it's not valid in WebGPU
-                    // So we must bind a dummy buffer when we are not given one for a specific attribute
-                    vertexBuffer = this._emptyVertexBuffer;
-                }
-
-                const type = vertexBuffer.type - 5120;
-                const normalized = vertexBuffer.normalized ? 1 : 0;
-                const size = vertexBuffer.getSize();
-                const stepMode = vertexBuffer.getIsInstanced() ? 1 : 0;
-                const stride = vertexBuffer.byteStride;
-
-                const vid =
-                    ((type << 0) +
-                    (normalized << 3) +
-                    (size << 4) +
-                    (stepMode << 6) +
-                    (location << 7) +
-                    (stride << 12)).toString();
-
-                this._isDirty = this._isDirty || this._states[newNumStates] !== vid;
-                this._states[newNumStates++] = vid;
+            const location = locations[index];
+            let vertexBuffer = (this._overrideVertexBuffers && this._overrideVertexBuffers[attributes[index]]) ?? this._vertexBuffers![attributes[index]];
+            if (!vertexBuffer) {
+                // In WebGL it's valid to not bind a vertex buffer to an attribute, but it's not valid in WebGPU
+                // So we must bind a dummy buffer when we are not given one for a specific attribute
+                vertexBuffer = this._emptyVertexBuffer;
             }
+
+            const vid = vertexBuffer.hashCode + (location << 7);
+
+            this._isDirty = this._isDirty || this._states[newNumStates] !== vid;
+            this._states[newNumStates++] = vid;
         }
 
         this._states.length = newNumStates;
         this._isDirty = this._isDirty || newNumStates !== currStateLen;
+        if (this._isDirty) {
+            this._stateDirtyLowestIndex = Math.min(this._stateDirtyLowestIndex, StatePosition.VertexState);
+        }
     }
 
     private _createPipelineLayout(webgpuPipelineContext: WebGPUPipelineContext): GPUPipelineLayout {
@@ -846,33 +856,32 @@ export class WebGPUCacheRenderPipeline {
 
     private _getVertexInputDescriptor(effect: Effect, topology: GPUPrimitiveTopology): GPUVertexStateDescriptor {
         const descriptors: GPUVertexBufferLayoutDescriptor[] = [];
-        const attributes = effect.getAttributesNames();
+        const webgpuPipelineContext = effect._pipelineContext as WebGPUPipelineContext;
+        const attributes = webgpuPipelineContext.shaderProcessingContext.attributeNamesFromEffect;
+        const locations = webgpuPipelineContext.shaderProcessingContext.attributeLocationsFromEffect;
         for (var index = 0; index < attributes.length; index++) {
-            const location = effect.getAttributeLocation(index);
-
-            if (location >= 0) {
-                let  vertexBuffer = this._vertexBuffers![attributes[index]];
-                if (!vertexBuffer) {
-                    // In WebGL it's valid to not bind a vertex buffer to an attribute, but it's not valid in WebGPU
-                    // So we must bind a dummy buffer when we are not given one for a specific attribute
-                    vertexBuffer = this._emptyVertexBuffer;
-                }
-
-                const attributeDescriptor: GPUVertexAttributeDescriptor = {
-                    shaderLocation: location,
-                    offset: 0, // not available in WebGL
-                    format: WebGPUCacheRenderPipeline._GetVertexInputDescriptorFormat(vertexBuffer),
-                };
-
-                // TODO WEBGPU. Factorize the one with the same underlying buffer.
-                const vertexBufferDescriptor: GPUVertexBufferLayoutDescriptor = {
-                    arrayStride: vertexBuffer.byteStride,
-                    stepMode: vertexBuffer.getIsInstanced() ? WebGPUConstants.InputStepMode.Instance : WebGPUConstants.InputStepMode.Vertex,
-                    attributes: [attributeDescriptor]
-                };
-
-               descriptors.push(vertexBufferDescriptor);
+            const location = locations[index];
+            let vertexBuffer = (this._overrideVertexBuffers && this._overrideVertexBuffers[attributes[index]]) ?? this._vertexBuffers![attributes[index]];
+            if (!vertexBuffer) {
+                // In WebGL it's valid to not bind a vertex buffer to an attribute, but it's not valid in WebGPU
+                // So we must bind a dummy buffer when we are not given one for a specific attribute
+                vertexBuffer = this._emptyVertexBuffer;
             }
+
+            const attributeDescriptor: GPUVertexAttributeDescriptor = {
+                shaderLocation: location,
+                offset: 0, // not available in WebGL
+                format: WebGPUCacheRenderPipeline._GetVertexInputDescriptorFormat(vertexBuffer),
+            };
+
+            // TODO WEBGPU. Factorize the one with the same underlying buffer.
+            const vertexBufferDescriptor: GPUVertexBufferLayoutDescriptor = {
+                arrayStride: vertexBuffer.byteStride,
+                stepMode: vertexBuffer.getIsInstanced() ? WebGPUConstants.InputStepMode.Instance : WebGPUConstants.InputStepMode.Vertex,
+                attributes: [attributeDescriptor]
+            };
+
+            descriptors.push(vertexBufferDescriptor);
         }
 
         const inputStateDescriptor: GPUVertexStateDescriptor = {

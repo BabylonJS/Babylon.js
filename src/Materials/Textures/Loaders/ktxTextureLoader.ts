@@ -13,7 +13,7 @@ import { Logger } from '../../../Misc/logger';
  */
 export class _KTXTextureLoader implements IInternalTextureLoader {
     /**
-     * Defines wether the loader supports cascade loading the different faces.
+     * Defines whether the loader supports cascade loading the different faces.
      */
     public readonly supportCascades = false;
 

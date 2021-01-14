@@ -1,12 +1,12 @@
 import * as React from "react";
 import { GlobalState } from "./globalState";
-import { GuiListComponent } from "./components/nodeList/guiListComponent";
+import { GuiListComponent } from "./components/guiList/guiListComponent";
 import { PropertyTabComponent } from "./components/propertyTab/propertyTabComponent";
 import { Portal } from "./portal";
-import { LogComponent, LogEntry } from "./components/log/logComponent";
+import { LogComponent } from "./components/log/logComponent";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
 import { Nullable } from "babylonjs/types";
-import { GuiNodeTools } from "./guiNodeTools";
+import { GUINodeTools } from "./guiNodeTools";
 import { IEditorData } from "./nodeLocationInfo";
 import { WorkbenchComponent } from "./diagram/workbench";
 import { GUINode } from "./diagram/guiNode";
@@ -46,7 +46,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
      */
     public createNodeFromObject(block: Control, recursion = true) {
         if (this._blocks.indexOf(block) !== -1) {
-            return this._workbenchCanvas.nodes.filter((n) => n.guiNode === block)[0];
+            return this._workbenchCanvas.nodes.filter((n) => n.guiControl === block)[0];
         }
 
         this._blocks.push(block);
@@ -79,14 +79,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
             showPreviewPopUp: false,
         };
 
-        this.props.globalState.onZoomToFitRequiredObservable.add(() => {
-            this.zoomToFit();
-        });
-
-        this.props.globalState.onReOrganizedRequiredObservable.add(() => {
-            this.reOrganize();
-        });
-
         this.props.globalState.hostDocument!.addEventListener(
             "keydown",
             (evt) => {
@@ -99,7 +91,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                     }
 
                     this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-                    this.props.globalState.onRebuildRequiredObservable.notifyObservers();
                     return;
                 }
 
@@ -117,7 +108,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
 
                     let selectedItem = selectedItems[0] as GUINode;
 
-                    if (!selectedItem.guiNode) {
+                    if (!selectedItem.guiControl) {
                         return;
                     }
                 } else if (evt.key === "v") {
@@ -142,7 +133,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
 
         // Create new nodes
         for (var node of copiedNodes) {
-            let block = node.guiNode;
+            let block = node.guiControl;
 
             if (!block) {
                 continue;
@@ -155,12 +146,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     zoomToFit() {
         this._workbenchCanvas.zoomToFit();
     }
-
-    buildMaterial() {
-        this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Node material build successful", false));
-        this.props.globalState.onBuiltObservable.notifyObservers();
-    }
-
+    
     showWaitScreen() {
         this.props.globalState.hostDocument.querySelector(".wait-screen")?.classList.remove("hidden");
     }
@@ -180,7 +166,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                 // Locations
                 for (var location of editorData.locations) {
                     for (var node of this._workbenchCanvas.nodes) {
-                        if (node.guiNode && node.guiNode.uniqueId === location.blockId) {
+                        if (node.guiControl && node.guiControl.uniqueId === location.blockId) {
                             node.x = location.x;
                             node.y = location.y;
                             node.cleanAccumulation();
@@ -214,7 +200,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         }
 
         const deltaX = evt.clientX - this._startX;
-        const rootElement = evt.currentTarget.ownerDocument!.getElementById("node-editor-graph-root") as HTMLDivElement;
+        const rootElement = evt.currentTarget.ownerDocument!.getElementById("workbench-editor-workbench-root") as HTMLDivElement;
 
         if (forLeft) {
             this._leftWidth += deltaX;
@@ -239,7 +225,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     emitNewBlock(event: React.DragEvent<HTMLDivElement>) {
         var data = event.dataTransfer.getData("babylonjs-gui-node") as string;
 
-        let guiElement = GuiNodeTools.GetGuiFromString(data);
+        let guiElement = GUINodeTools.CreateControlFromString (data);
 
         let newGuiNode = this._workbenchCanvas.appendBlock(guiElement);
 
@@ -301,7 +287,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         parentControl.style.padding = "0";
         parentControl.style.display = "grid";
         parentControl.style.gridTemplateRows = "40px auto";
-        parentControl.id = "node-editor-graph-root";
+        parentControl.id = "gui-editor-workbench-root";
         parentControl.className = "right-panel";
 
         popupWindow.document.body.appendChild(parentControl);

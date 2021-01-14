@@ -17,7 +17,7 @@ declare type Scene = import("../scene").Scene;
  */
 export class ChromaticAberrationPostProcess extends PostProcess {
     /**
-     * The amount of seperation of rgb channels (default: 30)
+     * The amount of separation of rgb channels (default: 30)
      */
     @serialize()
     aberrationAmount = 30;
@@ -29,13 +29,13 @@ export class ChromaticAberrationPostProcess extends PostProcess {
     radialIntensity = 0;
 
     /**
-     * The normilized direction in which the rgb channels should be seperated. If set to 0,0 radial direction will be used. (default: Vector2(0.707,0.707))
+     * The normalized direction in which the rgb channels should be separated. If set to 0,0 radial direction will be used. (default: Vector2(0.707,0.707))
      */
     @serialize()
     direction = new Vector2(0.707, 0.707);
 
     /**
-     * The center position where the radialIntensity should be around. [0.5,0.5 is center of screen, 1,1 is top right corder] (default: Vector2(0.5 ,0.5))
+     * The center position where the radialIntensity should be around. [0.5,0.5 is center of screen, 1,1 is top right corner] (default: Vector2(0.5 ,0.5))
      */
     @serialize()
     centerPosition = new Vector2(0.5, 0.5);

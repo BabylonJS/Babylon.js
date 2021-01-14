@@ -15,7 +15,7 @@ declare module BABYLON.GUI {
          * Function called to let the control handle keyboard events
          * @param evt defines the current keyboard event
          */
-        processKeyboard(evt: KeyboardEvent): void;
+        processKeyboard(evt: BABYLON.IKeyboardEvent): void;
         /**
         * Function called to get the list of controls that should not steal the focus from this control
         * @returns an array of controls
@@ -2190,7 +2190,7 @@ declare module BABYLON.GUI {
         /** BABYLON.Observable raised when paste event is triggered */
         onTextPasteObservable: BABYLON.Observable<InputText>;
         /** BABYLON.Observable raised when a key event was processed */
-        onKeyboardEventProcessedObservable: BABYLON.Observable<KeyboardEvent>;
+        onKeyboardEventProcessedObservable: BABYLON.Observable<BABYLON.IKeyboardEvent>;
         /** Gets or sets the maximum width allowed by the control */
         get maxWidth(): string | number;
         /** Gets the maximum width allowed by the control in pixels */
@@ -2275,7 +2275,7 @@ declare module BABYLON.GUI {
          */
         keepsFocusWith(): BABYLON.Nullable<Control[]>;
         /** @hidden */
-        processKey(keyCode: number, key?: string, evt?: KeyboardEvent): void;
+        processKey(keyCode: number, key?: string, evt?: BABYLON.IKeyboardEvent): void;
         /** @hidden */
         private _updateValueFromCursorIndex;
         /** @hidden */
@@ -2286,7 +2286,7 @@ declare module BABYLON.GUI {
          * Handles the keyboard event
          * @param evt Defines the KeyboardEvent
          */
-        processKeyboard(evt: KeyboardEvent): void;
+        processKeyboard(evt: BABYLON.IKeyboardEvent): void;
         /** @hidden */
         private _onCopyText;
         /** @hidden */
@@ -2540,7 +2540,7 @@ declare module BABYLON.GUI {
         /** BABYLON.Observable raised when the control loses the focus */
         onBlurObservable: BABYLON.Observable<Button>;
         /** BABYLON.Observable raised when a key event was processed */
-        onKeyboardEventProcessedObservable: BABYLON.Observable<KeyboardEvent>;
+        onKeyboardEventProcessedObservable: BABYLON.Observable<BABYLON.IKeyboardEvent>;
         constructor(name?: string | undefined);
         /** @hidden */
         onBlur(): void;
@@ -2563,7 +2563,7 @@ declare module BABYLON.GUI {
          * Handles the keyboard event
          * @param evt Defines the KeyboardEvent
          */
-        processKeyboard(evt: KeyboardEvent): void;
+        processKeyboard(evt: BABYLON.IKeyboardEvent): void;
         /** @hidden */
         _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
         /** @hidden */
@@ -3777,6 +3777,105 @@ declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
     /**
+     * Class used to create a button in 3D
+     */
+    export class Button3D extends AbstractButton3D {
+        /** @hidden */
+        protected _currentMaterial: BABYLON.Material;
+        private _facadeTexture;
+        private _content;
+        private _contentResolution;
+        private _contentScaleRatio;
+        /**
+         * Gets or sets the texture resolution used to render content (512 by default)
+         */
+        get contentResolution(): BABYLON.int;
+        set contentResolution(value: BABYLON.int);
+        /**
+         * Gets or sets the texture scale ratio used to render content (2 by default)
+         */
+        get contentScaleRatio(): number;
+        set contentScaleRatio(value: number);
+        protected _disposeFacadeTexture(): void;
+        protected _resetContent(): void;
+        /**
+         * Creates a new button
+         * @param name defines the control name
+         */
+        constructor(name?: string);
+        /**
+         * Gets or sets the GUI 2D content used to display the button's facade
+         */
+        get content(): Control;
+        set content(value: Control);
+        /**
+         * Apply the facade texture (created from the content property).
+         * This function can be overloaded by child classes
+         * @param facadeTexture defines the AdvancedDynamicTexture to use
+         */
+        protected _applyFacade(facadeTexture: AdvancedDynamicTexture): void;
+        protected _getTypeName(): string;
+        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
+        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a touchable button in 3D
+     */
+    export class TouchButton3D extends Button3D {
+        private _collisionMesh;
+        private _collidableFrontDirection;
+        private _lastTouchPoint;
+        private _tempButtonForwardRay;
+        private _lastKnownCollidableScale;
+        private _collidableInitialized;
+        private _frontOffset;
+        private _backOffset;
+        private _hoverOffset;
+        private _pushThroughBackOffset;
+        private _activeInteractions;
+        private _previousHeight;
+        /**
+         * Creates a new touchable button
+         * @param name defines the control name
+         * @param collisionMesh mesh to track collisions with
+         */
+        constructor(name?: string, collisionMesh?: BABYLON.Mesh);
+        /**
+         * Sets the front-facing direction of the button
+         * @param frontDir the forward direction of the button
+         */
+        set collidableFrontDirection(frontWorldDir: BABYLON.Vector3);
+        private _getWorldMatrixData;
+        /**
+         * Sets the mesh used for testing input collision
+         * @param collisionMesh the new collision mesh for the button
+         */
+        set collisionMesh(collisionMesh: BABYLON.Mesh);
+        private _getShortestDistancePointToLine;
+        private _isPrimedForInteraction;
+        private _getPointOnButton;
+        private _updateDistanceOffsets;
+        private _getHeightFromButtonCenter;
+        private _getDistanceOffPlane;
+        private _updateButtonState;
+        /** @hidden */
+        _collisionCheckForStateChange(mesh: BABYLON.AbstractMesh): void;
+        protected _getTypeName(): string;
+        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
      * Class used to manage 3D user interface
      * @see https://doc.babylonjs.com/how_to/gui3d
      */
@@ -3787,6 +3886,7 @@ declare module BABYLON.GUI {
         private _rootContainer;
         private _pointerObserver;
         private _pointerOutObserver;
+        private _touchableButtons;
         /** @hidden */
         _lastPickedControl: Control3D;
         /** @hidden */
@@ -3805,6 +3905,10 @@ declare module BABYLON.GUI {
         _sharedMaterials: {
             [key: string]: BABYLON.Material;
         };
+        /** @hidden */
+        _touchSharedMaterials: {
+            [key: string]: BABYLON.Material;
+        };
         /** Gets the hosting scene */
         get scene(): BABYLON.Scene;
         /** Gets associated utility layer */
@@ -3816,6 +3920,7 @@ declare module BABYLON.GUI {
         constructor(scene?: BABYLON.Scene);
         private _handlePointerOut;
         private _doPicking;
+        private _processTouchControls;
         /**
          * Gets the root container
          */
@@ -3980,6 +4085,7 @@ declare module BABYLON.GUI {
         linkToTransformNode(node: BABYLON.Nullable<BABYLON.TransformNode>): Control3D;
         /** @hidden **/
         _prepareNode(scene: BABYLON.Scene): void;
+        protected _injectGUI3DMetadata(node: BABYLON.TransformNode): any;
         /**
          * Node creation.
          * Can be overriden by children
@@ -4026,54 +4132,6 @@ declare module BABYLON.GUI {
         constructor(name?: string);
         protected _getTypeName(): string;
         protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
-    }
-}
-declare module BABYLON.GUI {
-    /**
-     * Class used to create a button in 3D
-     */
-    export class Button3D extends AbstractButton3D {
-        /** @hidden */
-        protected _currentMaterial: BABYLON.Material;
-        private _facadeTexture;
-        private _content;
-        private _contentResolution;
-        private _contentScaleRatio;
-        /**
-         * Gets or sets the texture resolution used to render content (512 by default)
-         */
-        get contentResolution(): BABYLON.int;
-        set contentResolution(value: BABYLON.int);
-        /**
-         * Gets or sets the texture scale ratio used to render content (2 by default)
-         */
-        get contentScaleRatio(): number;
-        set contentScaleRatio(value: number);
-        protected _disposeFacadeTexture(): void;
-        protected _resetContent(): void;
-        /**
-         * Creates a new button
-         * @param name defines the control name
-         */
-        constructor(name?: string);
-        /**
-         * Gets or sets the GUI 2D content used to display the button's facade
-         */
-        get content(): Control;
-        set content(value: Control);
-        /**
-         * Apply the facade texture (created from the content property).
-         * This function can be overloaded by child classes
-         * @param facadeTexture defines the AdvancedDynamicTexture to use
-         */
-        protected _applyFacade(facadeTexture: AdvancedDynamicTexture): void;
-        protected _getTypeName(): string;
-        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
-        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
-        /**
-         * Releases all associated resources
-         */
-        dispose(): void;
     }
 }
 declare module BABYLON.GUI {
@@ -4390,5 +4448,104 @@ declare module BABYLON.GUI {
          */
         constructor(isVertical?: boolean);
         protected _arrangeChildren(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to create an interactable object. It's a touchable 3D button using a mesh coming from the current scene
+     */
+    export class TouchMeshButton3D extends TouchButton3D {
+        /** @hidden */
+        protected _currentMesh: BABYLON.Mesh;
+        /**
+         * Creates a new 3D button based on a mesh
+         * @param mesh mesh to become a 3D button
+         * @param collisionMesh mesh to track collisions with
+         * @param name defines the control name
+         */
+        constructor(mesh: BABYLON.Mesh, options: {
+            collisionMesh: BABYLON.Mesh;
+            useDynamicMesh?: boolean;
+        }, name?: string);
+        protected _getTypeName(): string;
+        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
+        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a holographic button in 3D
+     */
+    export class TouchHolographicButton extends TouchButton3D {
+        private _backPlate;
+        private _textPlate;
+        private _frontPlate;
+        private _text;
+        private _imageUrl;
+        private _shareMaterials;
+        private _frontMaterial;
+        private _backMaterial;
+        private _plateMaterial;
+        private _pickedPointObserver;
+        private _tooltipFade;
+        private _tooltipTextBlock;
+        private _tooltipTexture;
+        private _tooltipMesh;
+        private _tooltipHoverObserver;
+        private _tooltipOutObserver;
+        private _disposeTooltip;
+        /**
+         * Rendering ground id of all the mesh in the button
+         */
+        set renderingGroupId(id: number);
+        get renderingGroupId(): number;
+        /**
+         * Text to be displayed on the tooltip shown when hovering on the button. When set to null tooltip is disabled. (Default: null)
+         */
+        set tooltipText(text: BABYLON.Nullable<string>);
+        get tooltipText(): BABYLON.Nullable<string>;
+        /**
+         * Gets or sets text for the button
+         */
+        get text(): string;
+        set text(value: string);
+        /**
+         * Gets or sets the image url for the button
+         */
+        get imageUrl(): string;
+        set imageUrl(value: string);
+        /**
+         * Gets the back material used by this button
+         */
+        get backMaterial(): FluentMaterial;
+        /**
+         * Gets the front material used by this button
+         */
+        get frontMaterial(): FluentMaterial;
+        /**
+         * Gets the plate material used by this button
+         */
+        get plateMaterial(): BABYLON.StandardMaterial;
+        /**
+         * Gets a boolean indicating if this button shares its material with other HolographicButtons
+         */
+        get shareMaterials(): boolean;
+        /**
+         * Creates a new button
+         * @param name defines the control name
+         */
+        constructor(name?: string, shareMaterials?: boolean);
+        protected _getTypeName(): string;
+        private _rebuildContent;
+        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
+        protected _applyFacade(facadeTexture: AdvancedDynamicTexture): void;
+        private _createBackMaterial;
+        private _createFrontMaterial;
+        private _createPlateMaterial;
+        protected _affectMaterial(mesh: BABYLON.Mesh): void;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
     }
 }

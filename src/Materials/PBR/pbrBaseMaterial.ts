@@ -168,8 +168,10 @@ export class PBRMaterialDefines extends MaterialDefines
     public PREPASS_IRRADIANCE_INDEX = -1;
     public PREPASS_ALBEDO = false;
     public PREPASS_ALBEDO_INDEX = -1;
-    public PREPASS_DEPTHNORMAL = false;
-    public PREPASS_DEPTHNORMAL_INDEX = -1;
+    public PREPASS_DEPTH = false;
+    public PREPASS_DEPTH_INDEX = -1;
+    public PREPASS_NORMAL = false;
+    public PREPASS_NORMAL_INDEX = -1;
     public PREPASS_POSITION = false;
     public PREPASS_POSITION_INDEX = -1;
     public PREPASS_VELOCITY = false;
@@ -190,6 +192,7 @@ export class PBRMaterialDefines extends MaterialDefines
     public MORPHTARGETS_TANGENT = false;
     public MORPHTARGETS_UV = false;
     public NUM_MORPH_INFLUENCERS = 0;
+    public MORPHTARGETS_TEXTURE = false;
 
     public IMAGEPROCESSING = false;
     public VIGNETTE = false;
@@ -368,7 +371,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
     /**
      * Intensity of the environment e.g. how much the environment will light the object
-     * either through harmonics for rough material or through the refelction for shiny ones.
+     * either through harmonics for rough material or through the reflection for shiny ones.
      */
     protected _environmentIntensity: number = 1.0;
 
@@ -544,8 +547,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     protected _useAlphaFromAlbedoTexture = false;
 
     /**
-     * Specifies that the material will keeps the specular highlights over a transparent surface (only the most limunous ones).
-     * A car glass is a good exemple of that. When sun reflects on it you can not see what is behind.
+     * Specifies that the material will keeps the specular highlights over a transparent surface (only the most luminous ones).
+     * A car glass is a good example of that. When sun reflects on it you can not see what is behind.
      */
     protected _useSpecularOverAlpha = true;
 
@@ -592,8 +595,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     protected _lightFalloff = PBRBaseMaterial.LIGHTFALLOFF_PHYSICAL;
 
     /**
-     * Specifies that the material will keeps the reflection highlights over a transparent surface (only the most limunous ones).
-     * A car glass is a good exemple of that. When the street lights reflects on it you can not see what is behind.
+     * Specifies that the material will keeps the reflection highlights over a transparent surface (only the most luminous ones).
+     * A car glass is a good example of that. When the street lights reflects on it you can not see what is behind.
      */
     protected _useRadianceOverAlpha = true;
 
@@ -665,8 +668,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     protected _useLinearAlphaFresnel = false;
 
     /**
-     * Specifies the environment BRDF texture used to comput the scale and offset roughness values
-     * from cos thetav and roughness:
+     * Specifies the environment BRDF texture used to compute the scale and offset roughness values
+     * from cos theta and roughness:
      * http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
      */
     protected _environmentBRDFTexture: Nullable<BaseTexture> = null;
@@ -834,7 +837,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     public readonly subSurface: PBRSubSurfaceConfiguration;
 
     /**
-     * Defines additionnal PrePass parameters for the material.
+     * Defines additional PrePass parameters for the material.
      */
     public readonly prePassConfiguration: PrePassConfiguration;
 
@@ -883,6 +886,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         return this.subSurface.hasRenderTargetTextures();
+    }
+
+    /**
+     * Can this material render to prepass
+     */
+    public get isPrePassCapable(): boolean {
+        return true;
     }
 
     /**
@@ -1133,7 +1143,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
     /**
      * Specifies if the material uses metallic roughness workflow.
-     * @returns boolean specifiying if the material uses metallic roughness workflow.
+     * @returns boolean specifying if the material uses metallic roughness workflow.
     */
     public isMetallicWorkflow(): boolean {
         if (this._metallic != null || this._roughness != null || this._metallicTexture) {
@@ -1286,13 +1296,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             "vSphericalL2_2", "vSphericalL2_1", "vSphericalL20", "vSphericalL21", "vSphericalL22",
             "vReflectionMicrosurfaceInfos",
             "vTangentSpaceParams", "boneTextureWidth",
-            "vDebugMode"
+            "vDebugMode", "morphTargetTextureInfo"
         ];
 
         var samplers = ["albedoSampler", "reflectivitySampler", "ambientSampler", "emissiveSampler",
             "bumpSampler", "lightmapSampler", "opacitySampler",
             "reflectionSampler", "reflectionSamplerLow", "reflectionSamplerHigh", "irradianceSampler",
-            "microSurfaceSampler", "environmentBrdfSampler", "boneSampler", "metallicReflectanceSampler"];
+            "microSurfaceSampler", "environmentBrdfSampler", "boneSampler", "metallicReflectanceSampler", "morphTargets"];
 
         var uniformBuffers = ["Material", "Scene", "Mesh"];
 
@@ -1953,7 +1963,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     ubo.updateColor4("vReflectivityColor", TmpColors.Color3[0], 1);
 
                     const ior = this.subSurface.indexOfRefraction;
-                    const outside_ior = 1; // consider air as clear coat and other layaers would remap in the shader.
+                    const outside_ior = 1; // consider air as clear coat and other layers would remap in the shader.
 
                     // We are here deriving our default reflectance from a common value for none metallic surface.
                     // Based of the schlick fresnel approximation model

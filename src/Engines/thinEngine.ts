@@ -167,14 +167,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-alpha.4";
+        return "babylonjs@5.0.0-alpha.6";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-alpha.4";
+        return "5.0.0-alpha.6";
     }
 
     /**
@@ -761,11 +761,7 @@ export class ThinEngine {
         }
 
         // Shader processor
-        if (this.webGLVersion > 1) {
-            this._shaderProcessor = new WebGL2ShaderProcessor();
-        } else {
-            this._shaderProcessor = new WebGLShaderProcessor();
-        }
+        this._shaderProcessor = this._getShaderProcessor();
 
         // Detect if we are running on a faulty buggy OS.
         this._badOS = /iPad/i.test(navigator.userAgent) || /iPhone/i.test(navigator.userAgent);
@@ -812,9 +808,6 @@ export class ThinEngine {
      */
     protected _sharedInit(canvas: HTMLCanvasElement, doNotHandleTouchAction: boolean, audioEngine: boolean) {
         this._renderingCanvas = canvas;
-
-        // Shader processor
-        this._shaderProcessor = this._getShaderProcessor();
     }
 
     /**
@@ -822,10 +815,7 @@ export class ThinEngine {
      * @returns The shader processor implementation.
      */
     protected _getShaderProcessor(): Nullable<IShaderProcessor> {
-        if (this.webGLVersion > 1) {
-            return new WebGL2ShaderProcessor();
-        }
-        return null;
+        return (this.webGLVersion > 1 ? new WebGL2ShaderProcessor() : new WebGLShaderProcessor());
     }
 
     /** @hidden */
@@ -921,6 +911,7 @@ export class ThinEngine {
             oculusMultiview: this._gl.getExtension('OCULUS_multiview'),
             depthTextureExtension: false,
             canUseGLInstanceID: !(this._badOS && this._webGLVersion <= 1),
+            canUseGLVertexID: this._webGLVersion > 1,
         };
 
         // Infos
@@ -1086,6 +1077,8 @@ export class ThinEngine {
             supportSSAO2: this._webGLVersion !== 1,
             supportExtendedTextureFormats: this._webGLVersion !== 1,
             supportSwitchCaseInShader: this._webGLVersion !== 1,
+            supportSyncTextureRead: true,
+            needsInvertingBitmap: true,
             _collectUbosUpdatedInFrame: false,
         };
     }
@@ -1143,7 +1136,7 @@ export class ThinEngine {
 
     /**
      * Gets an object containing information about the current webGL context
-     * @returns an object containing the vender, the renderer and the version of the current webGL context
+     * @returns an object containing the vendor, the renderer and the version of the current webGL context
      */
     public getGlInfo() {
         return {
@@ -1970,7 +1963,7 @@ export class ThinEngine {
     }
 
     /**
-     * Update the content of a webGL buffer used with instanciation and bind it to the webGL context
+     * Update the content of a webGL buffer used with instantiation and bind it to the webGL context
      * @param instancesBuffer defines the webGL buffer to update and bind
      * @param data defines the data to store in the buffer
      * @param offsetLocations defines the offsets or attributes information used to determine where data must be stored in the buffer
@@ -2088,7 +2081,7 @@ export class ThinEngine {
      * @param useTriangles defines if triangles must be used to draw (else wireframe will be used)
      * @param indexStart defines the starting index
      * @param indexCount defines the number of index to draw
-     * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
+     * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
      */
     public draw(useTriangles: boolean, indexStart: number, indexCount: number, instancesCount?: number): void {
         this.drawElementsType(useTriangles ? Constants.MATERIAL_TriangleFillMode : Constants.MATERIAL_WireFrameFillMode, indexStart, indexCount, instancesCount);
@@ -2098,7 +2091,7 @@ export class ThinEngine {
      * Draw a list of points
      * @param verticesStart defines the index of first vertex to draw
      * @param verticesCount defines the count of vertices to draw
-     * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
+     * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
      */
     public drawPointClouds(verticesStart: number, verticesCount: number, instancesCount?: number): void {
         this.drawArraysType(Constants.MATERIAL_PointFillMode, verticesStart, verticesCount, instancesCount);
@@ -2109,7 +2102,7 @@ export class ThinEngine {
      * @param useTriangles defines if triangles must be used to draw (else wireframe will be used)
      * @param verticesStart defines the index of first vertex to draw
      * @param verticesCount defines the count of vertices to draw
-     * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
+     * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
      */
     public drawUnIndexed(useTriangles: boolean, verticesStart: number, verticesCount: number, instancesCount?: number): void {
         this.drawArraysType(useTriangles ? Constants.MATERIAL_TriangleFillMode : Constants.MATERIAL_WireFrameFillMode, verticesStart, verticesCount, instancesCount);
@@ -2120,7 +2113,7 @@ export class ThinEngine {
      * @param fillMode defines the primitive to use
      * @param indexStart defines the starting index
      * @param indexCount defines the number of index to draw
-     * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
+     * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
      */
     public drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount?: number): void {
         // Apply states
@@ -2145,7 +2138,7 @@ export class ThinEngine {
      * @param fillMode defines the primitive to use
      * @param verticesStart defines the index of first vertex to draw
      * @param verticesCount defines the count of vertices to draw
-     * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
+     * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
      */
     public drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void {
         // Apply states
@@ -2221,7 +2214,7 @@ export class ThinEngine {
      * @param uniformsNamesOrEngine defines either a list of uniform names or the engine to use
      * @param samplers defines an array of string used to represent textures
      * @param defines defines the string containing the defines to use to compile the shaders
-     * @param fallbacks defines the list of potential fallbacks to use if shader conmpilation fails
+     * @param fallbacks defines the list of potential fallbacks to use if shader compilation fails
      * @param onCompiled defines a function to call when the effect creation is successful
      * @param onError defines a function to call when the effect creation has failed
      * @param indexParameters defines an object containing the index values to use to compile shaders (like the maximum number of simultaneous lights)
@@ -2258,10 +2251,13 @@ export class ThinEngine {
 
     private _compileRawShader(source: string, type: string): WebGLShader {
         var gl = this._gl;
+
+        while (gl.getError() != gl.NO_ERROR) { }
+
         var shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
 
         if (!shader) {
-            throw new Error(`Something went wrong while creating a gl ${type} shader object. gl error=${gl.getError()}`);
+            throw new Error(`Something went wrong while creating a gl ${type} shader object. gl error=${gl.getError()}, gl isContextLost=${gl.isContextLost()}, _contextWasLost=${this._contextWasLost}`);
         }
 
         gl.shaderSource(shader, source);
@@ -2499,7 +2495,7 @@ export class ThinEngine {
     }
 
     /**
-     * Activates an effect, mkaing it the current one (ie. the one used for rendering)
+     * Activates an effect, making it the current one (ie. the one used for rendering)
      * @param effect defines the effect to activate
      */
     public enableEffect(effect: Nullable<Effect>): void {
@@ -2662,6 +2658,9 @@ export class ThinEngine {
             return false;
         }
 
+        if (array.length < 1) {
+            return false;
+        }
         this._gl.uniform1fv(uniform, array);
         return true;
     }
@@ -2760,7 +2759,7 @@ export class ThinEngine {
      * Set the value of an uniform to a number (float)
      * @param uniform defines the webGL uniform location where to store the value
      * @param value defines the float number to store
-     * @returns true if the value was transfered
+     * @returns true if the value was transferred
      */
     public setFloat(uniform: Nullable<WebGLUniformLocation>, value: number): boolean {
         if (!uniform) {
@@ -3184,7 +3183,7 @@ export class ThinEngine {
             };
 
             if (!fromData || isBase64) {
-                if (buffer && ((<HTMLImageElement>buffer).decoding || (<ImageBitmap>buffer).close)) {
+                if (buffer && (typeof (<HTMLImageElement>buffer).decoding === "string" || (<ImageBitmap>buffer).close)) {
                     onload(<HTMLImageElement>buffer);
                 } else {
                     ThinEngine._FileToolsLoadImage(url, onload, onInternalError, scene ? scene.offlineProvider : null, mimeType);
@@ -4564,14 +4563,14 @@ export class ThinEngine {
     private static _HasMajorPerformanceCaveat : Nullable<boolean> = null;
 
     /**
-     * Gets a boolean indicating if the engine can be instanciated (ie. if a webGL context can be found)
+     * Gets a boolean indicating if the engine can be instantiated (ie. if a webGL context can be found)
      */
     public static get IsSupported(): boolean {
         return this.isSupported(); // Backward compat
     }
 
     /**
-     * Gets a boolean indicating if the engine can be instanciated (ie. if a webGL context can be found)
+     * Gets a boolean indicating if the engine can be instantiated (ie. if a webGL context can be found)
      * @returns true if the engine can be created
      * @ignorenaming
      */
@@ -4595,7 +4594,7 @@ export class ThinEngine {
     }
 
     /**
-     * Gets a boolean indicating if the engine can be instanciated on a performant device (ie. if a webGL context can be found and it does not use a slow implementation)
+     * Gets a boolean indicating if the engine can be instantiated on a performant device (ie. if a webGL context can be found and it does not use a slow implementation)
      */
     public static get HasMajorPerformanceCaveat(): boolean {
         if (this._HasMajorPerformanceCaveat === null) {

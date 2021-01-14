@@ -154,7 +154,7 @@ export class OctreeBlock<T> {
     }
 
     /**
-     * Test if the current block intersects the furstum planes and if yes, then add its content to the selection array
+     * Test if the current block intersects the frustum planes and if yes, then add its content to the selection array
      * @param frustumPlanes defines the frustum planes to test
      * @param selection defines the array to store current content if selection is positive
      * @param allowDuplicate defines if the selection array can contains duplicated entries

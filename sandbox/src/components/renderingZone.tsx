@@ -337,10 +337,17 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
 
         // Setting up some GLTF values
         GLTFFileLoader.IncrementalLoading = false;
+        this.props.globalState.glTFLoaderExtensions = {};
         SceneLoader.OnPluginActivatedObservable.add((plugin) => {
             this._currentPluginName = plugin.name;
             if (this._currentPluginName === "gltf") {
-                (plugin as GLTFFileLoader).onValidatedObservable.add((results) => {
+                let loader = plugin as GLTFFileLoader;
+
+                loader.onExtensionLoadedObservable.add((extension: import("babylonjs-loaders/glTF/index").IGLTFLoaderExtension) => {       
+                    this.props.globalState.glTFLoaderExtensions[extension.name] = extension;
+                });
+
+                loader.onValidatedObservable.add((results) => {
                     if (results.issues.numErrors > 0) {
                         this.props.globalState.showDebugLayer();
                     }

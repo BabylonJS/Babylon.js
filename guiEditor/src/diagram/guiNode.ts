@@ -2,14 +2,13 @@ import { GlobalState } from '../globalState';
 import { Nullable } from 'babylonjs/types';
 import { Observer } from 'babylonjs/Misc/observable';
 import { WorkbenchComponent, FramePortData } from './workbench';
-import { PropertyGuiLedger } from './propertyLedger';
-import * as React from 'react';
-import { GenericPropertyComponent } from './properties/genericNodePropertyComponent';
 import { Control } from 'babylonjs-gui/2D/controls/control';
 import { Vector2 } from 'babylonjs/Maths/math.vector';
 import { Container } from 'babylonjs-gui/2D/controls/container';
 import { _ThinInstanceDataStorage } from 'babylonjs';
 import { ContainerPropertyTabComponent } from './properties/containterPropertyComponent';
+import * as React from 'react';
+
 
 export class GUINode {
 
@@ -73,19 +72,19 @@ export class GUINode {
     }
 
     public get width() {
-        return this.guiNode.widthInPixels;
+        return this.guiControl.widthInPixels;
     }
 
     public get height() {
-        return this.guiNode.heightInPixels;
+        return this.guiControl.heightInPixels;
     }
 
     public get id() {
-        return this.guiNode.uniqueId;
+        return this.guiControl.uniqueId;
     }
 
     public get name() {
-        return this.guiNode.name;
+        return this.guiControl.name;
     }
 
     public get isSelected() {
@@ -108,17 +107,17 @@ export class GUINode {
         }
     }
 
-    public constructor(globalState: GlobalState, public guiNode: Control) {
+    public constructor(globalState: GlobalState, public guiControl: Control) {
         this._globalState = globalState;
         this._ownerCanvas = this._globalState.workbench;
-        this.x = guiNode.leftInPixels;
-        this.y = guiNode.topInPixels;
-        guiNode.onPointerUpObservable.add(evt => {
+        this.x = guiControl.leftInPixels;
+        this.y = guiControl.topInPixels;
+        guiControl.onPointerUpObservable.add(evt => {
             this.clicked = false;
             console.log("up");
         });
 
-        guiNode.onPointerDownObservable.add( evt => {
+        guiControl.onPointerDownObservable.add( evt => {
             if(!this._ownerCanvas.isUp) return;
             this.clicked = true;
             this.isSelected = true;
@@ -128,13 +127,13 @@ export class GUINode {
         );
 
         
-        guiNode.onPointerEnterObservable.add( evt => {
+        guiControl.onPointerEnterObservable.add( evt => {
             this._ownerCanvas.isOverGUINode = true;
             console.log("in");
         }
         );
 
-        guiNode.onPointerOutObservable.add( evt => {
+        guiControl.onPointerOutObservable.add( evt => {
             this._ownerCanvas.isOverGUINode = false;
             console.log("out");
         }
@@ -174,37 +173,23 @@ export class GUINode {
         //evt.stopPropagation();
     }
 
-    public renderProperties(): Nullable<JSX.Element> {
-        let className = this.guiNode.getClassName();
-        let control = PropertyGuiLedger.RegisteredControls[className];
-        
-        if (!control) {
-            control = GenericPropertyComponent;
-        }
-
-        return React.createElement(control, {
-        globalState: this._globalState,
-        guiBlock: this.guiNode
-        });
-    }
-
     renderContainer(): React.ReactNode {
         if(!this._isContainer) return null;
 
         return React.createElement(ContainerPropertyTabComponent, {
         globalState: this._globalState,
-        guiNode: this
+        guiControl: this
         });
     }
 
     public updateVisual()
     {
-        this.guiNode.leftInPixels = this.x;
-        this.guiNode.topInPixels = this.y;
+        this.guiControl.leftInPixels = this.x;
+        this.guiControl.topInPixels = this.y;
     }
 
     private isContainer() {
-        switch (this.guiNode.typeName) {
+        switch (this.guiControl.typeName) {
             case "Button":
             case "StackPanel":
             case "Rectangle":
@@ -220,7 +205,7 @@ export class GUINode {
     {
         if(!this._isContainer) return;
         this.children.push(childNode);
-        (this.guiNode as Container).addControl(childNode.guiNode);
+        (this.guiControl as Container).addControl(childNode.guiControl);
         
         //adjust the position to be relative
         //childNode.x = this.x - childNode.x;
@@ -229,7 +214,7 @@ export class GUINode {
 
     public dispose() {
         // notify frame observers that this node is being deleted
-        this._globalState.onGraphNodeRemovalObservable.notifyObservers(this);
+        this._globalState.onGuiNodeRemovalObservable.notifyObservers(this);
 
         if (this._onSelectionChangedObserver) {
             this._globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
@@ -243,6 +228,6 @@ export class GUINode {
             this._globalState.onSelectionBoxMoved.remove(this._onSelectionBoxMovedObserver);
         }
 
-        this.guiNode.dispose();   
+        this.guiControl.dispose();   
     }
 }

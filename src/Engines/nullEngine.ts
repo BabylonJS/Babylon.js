@@ -142,6 +142,7 @@ export class NullEngine extends Engine {
             maxMSAASamples: 1,
             blendMinMax: false,
             canUseGLInstanceID: false,
+            canUseGLVertexID: false
         };
 
         this._features = {
@@ -160,6 +161,8 @@ export class NullEngine extends Engine {
             supportSSAO2: false,
             supportExtendedTextureFormats: false,
             supportSwitchCaseInShader: false,
+            supportSyncTextureRead: false,
+            needsInvertingBitmap: false,
             _collectUbosUpdatedInFrame: false,
         };
 
@@ -282,7 +285,7 @@ export class NullEngine extends Engine {
     }
 
     /**
-     * Activates an effect, mkaing it the current one (ie. the one used for rendering)
+     * Activates an effect, making it the current one (ie. the one used for rendering)
      * @param effect defines the effect to activate
      */
     public enableEffect(effect: Effect): void {

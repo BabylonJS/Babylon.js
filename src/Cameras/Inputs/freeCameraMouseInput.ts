@@ -5,6 +5,7 @@ import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManage
 import { FreeCamera } from "../../Cameras/freeCamera";
 import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 import { Tools } from "../../Misc/tools";
+import { IMouseEvent, IPointerEvent } from "../../Events/deviceInputEvents";
 /**
  * Manage the mouse inputs to control the movement of a free camera.
  * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -28,7 +29,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
     public angularSensibility = 2000.0;
 
     private _pointerInput: (p: PointerInfo, s: EventState) => void;
-    private _onMouseMove: Nullable<(e: MouseEvent) => any>;
+    private _onMouseMove: Nullable<(e: IMouseEvent) => any>;
     private _observer: Nullable<Observer<PointerInfo>>;
     private previousPosition: Nullable<{ x: number; y: number }> = null;
 
@@ -64,7 +65,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
 
         if (!this._pointerInput) {
             this._pointerInput = (p) => {
-                var evt = <PointerEvent>p.event;
+                var evt = <IPointerEvent>p.event;
 
                 if (engine.isInVRExclusivePointerMode) {
                     return;
@@ -178,7 +179,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
 
         this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
 
-        element && element.addEventListener("contextmenu", <EventListener>this.onContextMenu.bind(this), false);
+        element && element.addEventListener("contextmenu", <EventListener>this.onContextMenu.bind(this), false); // TODO: We need to figure out how to handle this for Native
     }
 
     /**
@@ -219,7 +220,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
     }
 
     /**
-     * Gets the class name of the current intput.
+     * Gets the class name of the current input.
      * @returns the class name
      */
     public getClassName(): string {

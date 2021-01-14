@@ -64,7 +64,7 @@ AbstractScene.prototype.addEffectLayer = function(newEffectLayer: EffectLayer): 
  */
 export class EffectLayerSceneComponent implements ISceneSerializableComponent {
     /**
-     * The component name helpfull to identify the component in the list of scene components.
+     * The component name helpful to identify the component in the list of scene components.
      */
     public readonly name = SceneComponentConstants.NAME_EFFECTLAYER;
 
@@ -162,7 +162,7 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
     }
 
     /**
-     * Disposes the component and the associated ressources.
+     * Disposes the component and the associated resources.
      */
     public dispose(): void {
         let layers = this.scene.effectLayers;

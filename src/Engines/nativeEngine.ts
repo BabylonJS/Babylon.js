@@ -130,7 +130,6 @@ interface INativeEngine {
     setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
 
     createTexture(): WebGLTexture;
-    createDepthTexture(texture: WebGLTexture, width: number, height: number): WebGLTexture;
     loadTexture(texture: WebGLTexture, data: ArrayBufferView, generateMips: boolean, invertY: boolean, onSuccess: () => void, onError: () => void): void;
     loadRawTexture(texture: WebGLTexture, data: ArrayBufferView, width: number, height: number, format: number, generateMips: boolean, invertY: boolean): void;
     loadCubeTexture(texture: WebGLTexture, data: Array<ArrayBufferView>, generateMips: boolean, onSuccess: () => void, onError: () => void): void;
@@ -323,7 +322,7 @@ class NativePipelineContext implements IPipelineContext {
     }
 
     /**
-     * Sets an interger value on a uniform variable.
+     * Sets an integer value on a uniform variable.
      * @param uniformName Name of the variable.
      * @param value Value to be set.
      */
@@ -797,6 +796,7 @@ export class NativeEngine extends Engine {
             blendMinMax: false,
             maxMSAASamples: 1,
             canUseGLInstanceID: true,
+            canUseGLVertexID: true
         };
 
         this._features = {
@@ -815,6 +815,8 @@ export class NativeEngine extends Engine {
             supportSSAO2: false,
             supportExtendedTextureFormats: false,
             supportSwitchCaseInShader: false,
+            supportSyncTextureRead: false,
+            needsInvertingBitmap: true,
             _collectUbosUpdatedInFrame: false,
         };
 
@@ -997,7 +999,7 @@ export class NativeEngine extends Engine {
      * @param fillMode defines the primitive to use
      * @param indexStart defines the starting index
      * @param indexCount defines the number of index to draw
-     * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
+     * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
      */
     public drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount?: number): void {
         // Apply states
@@ -1021,7 +1023,7 @@ export class NativeEngine extends Engine {
      * @param fillMode defines the primitive to use
      * @param verticesStart defines the index of first vertex to draw
      * @param verticesCount defines the count of vertices to draw
-     * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
+     * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
      */
     public drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void {
         // Apply states
@@ -1158,6 +1160,22 @@ export class NativeEngine extends Engine {
 
     public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {
         this._native.setState(culling, zOffset, reverseSide);
+    }
+
+    /**
+     * Gets the client rect of native canvas.  Needed for InputManager.
+     * @returns a client rectangle
+     */
+    public getInputElementClientRect(): Nullable<ClientRect> {
+        const rect = {
+            bottom: this.getRenderHeight(),
+            height: this.getRenderHeight(),
+            left: 0,
+            right: this.getRenderWidth(),
+            top: 0,
+            width: this.getRenderWidth()
+        };
+        return rect;
     }
 
     /**
@@ -1502,7 +1520,9 @@ export class NativeEngine extends Engine {
     }
 
     protected _deleteTexture(texture: Nullable<WebGLTexture>): void {
-        this._native.deleteTexture(texture);
+        if (texture) {
+            this._native.deleteTexture(texture);
+        }
     }
 
     /**
@@ -1722,11 +1742,15 @@ export class NativeEngine extends Engine {
         const width = (<{ width: number, height: number, layers?: number }>size).width || <number>size;
         const height = (<{ width: number, height: number, layers?: number }>size).height || <number>size;
 
-        var framebuffer = this._native.createDepthTexture(
+        var framebuffer = this._native.createFramebuffer(
             texture._hardwareTexture!.underlyingResource,
             width,
-            height);
-
+            height,
+            this._native.TEXTURE_FORMAT_RGBA8,
+            this._native.TEXTURE_LINEAR_LINEAR,
+            false,
+            true,
+            false);
         texture._framebuffer = framebuffer;
         return texture;
     }

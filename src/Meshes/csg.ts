@@ -569,7 +569,7 @@ export class CSG {
 
     /**
      * Subtracts this CSG with another CSG in place
-     * @param csg The CSG to subtact against this CSG
+     * @param csg The CSG to subtract against this CSG
      */
     public subtractInPlace(csg: CSG): void {
         var a = new Node(this.polygons);

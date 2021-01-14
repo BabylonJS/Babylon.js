@@ -85,7 +85,7 @@ export class AxisScaleGizmo extends Gizmo {
         this._rootMesh.addChild(this._gizmoMesh);
         this._gizmoMesh.scaling.scaleInPlace(1 / 3);
 
-        // Closure of inital prop values for resetting
+        // Closure of initial prop values for resetting
         const nodePosition = arrowMesh.position.clone();
         const linePosition = arrowTail.position.clone();
         const lineScale = arrowTail.scaling.clone();

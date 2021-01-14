@@ -22,18 +22,20 @@ declare module "../../Engines/thinEngine" {
          * @see https://doc.babylonjs.com/features/webgl2#multiple-render-target
          * @param size defines the size of the texture
          * @param options defines the creation options
+         * @param initializeBuffers if set to true, the engine will make an initializing call of drawBuffers
          * @returns the cube texture as an InternalTexture
          */
-        createMultipleRenderTarget(size: any, options: IMultiRenderTargetOptions): InternalTexture[];
+        createMultipleRenderTarget(size: any, options: IMultiRenderTargetOptions, initializeBuffers?: boolean): InternalTexture[];
 
         /**
          * Update the sample count for a given multiple render target texture
          * @see https://doc.babylonjs.com/features/webgl2#multisample-render-targets
          * @param textures defines the textures to update
          * @param samples defines the sample count to set
+         * @param initializeBuffers if set to true, the engine will make an initializing call of drawBuffers
          * @returns the effective sample count (could be 0 if multisample render targets are not supported)
          */
-        updateMultipleRenderTargetTextureSampleCount(textures: Nullable<InternalTexture[]>, samples: number): number;
+        updateMultipleRenderTargetTextureSampleCount(textures: Nullable<InternalTexture[]>, samples: number, initializeBuffers?: boolean): number;
 
         /**
          * Select a subsets of attachments to draw to.
@@ -50,8 +52,15 @@ declare module "../../Engines/thinEngine" {
 
         /**
          * Restores the webgl state to only draw on the main color attachment
+         * when the frame buffer associated is the canvas frame buffer
          */
         restoreSingleAttachment() : void;
+
+        /**
+         * Restores the webgl state to only draw on the main color attachment
+         * when the frame buffer associated is not the canvas frame buffer
+         */
+        restoreSingleAttachmentForRenderTarget() : void;
 
         /**
          * Clears a list of attachments
@@ -69,6 +78,12 @@ ThinEngine.prototype.restoreSingleAttachment = function(): void {
     const gl = this._gl;
 
     this.bindAttachments([gl.BACK]);
+};
+
+ThinEngine.prototype.restoreSingleAttachmentForRenderTarget = function(): void {
+    const gl = this._gl;
+
+    this.bindAttachments([gl.COLOR_ATTACHMENT0]);
 };
 
 ThinEngine.prototype.buildTextureLayout = function(textureStatus: boolean[]): number[] {
@@ -168,7 +183,7 @@ ThinEngine.prototype.unBindMultiColorAttachmentFramebuffer = function(textures: 
     this._bindUnboundFramebuffer(null);
 };
 
-ThinEngine.prototype.createMultipleRenderTarget = function(size: any, options: IMultiRenderTargetOptions): InternalTexture[] {
+ThinEngine.prototype.createMultipleRenderTarget = function(size: any, options: IMultiRenderTargetOptions, initializeBuffers: boolean = true): InternalTexture[] {
     var generateMipMaps = false;
     var generateDepthBuffer = true;
     var generateStencilBuffer = false;
@@ -317,8 +332,10 @@ ThinEngine.prototype.createMultipleRenderTarget = function(size: any, options: I
         textures.push(depthTexture);
         this._internalTexturesCache.push(depthTexture);
     }
+    if (initializeBuffers) {
+        gl.drawBuffers(attachments);
+    }
 
-    gl.drawBuffers(attachments);
     this._bindUnboundFramebuffer(null);
 
     this.resetTextureCache();
@@ -326,7 +343,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function(size: any, options: I
     return textures;
 };
 
-ThinEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function(textures: Nullable<InternalTexture[]>, samples: number): number {
+ThinEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function(textures: Nullable<InternalTexture[]>, samples: number, initializeBuffers: boolean = true): number {
     if (this.webGLVersion < 2 || !textures) {
         return 1;
     }
@@ -398,7 +415,9 @@ ThinEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function(tex
             gl.bindRenderbuffer(gl.RENDERBUFFER, null);
             attachments.push(attachment);
         }
-        gl.drawBuffers(attachments);
+        if (initializeBuffers) {
+            gl.drawBuffers(attachments);
+        }
     } else {
         this._bindUnboundFramebuffer(textures[0]._framebuffer);
     }

@@ -103,7 +103,7 @@ export class PBRSubSurfaceConfiguration {
     /**
      * Defines the refraction intensity of the material.
      * The refraction when enabled replaces the Diffuse part of the material.
-     * The intensity helps transitionning between diffuse and refraction.
+     * The intensity helps transitioning between diffuse and refraction.
      */
     @serialize()
     public refractionIntensity: number = 1;
@@ -111,7 +111,7 @@ export class PBRSubSurfaceConfiguration {
     /**
      * Defines the translucency intensity of the material.
      * When translucency has been enabled, this defines how much of the "translucency"
-     * is addded to the diffuse part of the material.
+     * is added to the diffuse part of the material.
      */
     @serialize()
     public translucencyIntensity: number = 1;
@@ -190,7 +190,7 @@ export class PBRSubSurfaceConfiguration {
 
     private _linkRefractionWithTransparency = false;
     /**
-     * This parameters will make the material used its opacity to control how much it is refracting aginst not.
+     * This parameters will make the material used its opacity to control how much it is refracting against not.
      * Materials half opaque for instance using refraction could benefit from this control.
      */
     @serialize()
@@ -269,7 +269,7 @@ export class PBRSubSurfaceConfiguration {
     }
 
     /**
-     * Instantiate a new istance of sub surface configuration.
+     * Instantiate a new instance of sub surface configuration.
      * @param markAllSubMeshesAsTexturesDirty Callback to flag the material to dirty
      * @param markScenePrePassDirty Callback to flag the scene as prepass dirty
      * @param scene The scene
@@ -281,7 +281,7 @@ export class PBRSubSurfaceConfiguration {
     }
 
     /**
-     * Gets wehter the submesh is ready to be used or not.
+     * Gets whether the submesh is ready to be used or not.
      * @param defines the list of "defines" to update.
      * @param scene defines the scene the material belongs to.
      * @returns - boolean indicating that the submesh is ready or not.

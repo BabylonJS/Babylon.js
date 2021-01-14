@@ -198,6 +198,8 @@ declare module BABYLON {
         static GetTransformNode(scene: BABYLON.Scene, name: string): BABYLON.TransformNode;
         /** Gets the specified transform node by id from scene. */
         static GetTransformNodeByID(scene: BABYLON.Scene, id: string): BABYLON.TransformNode;
+        /** Gets the transform node child detail mesh. */
+        static GetTransformDetailMesh(transform: TransformNode): BABYLON.AbstractMesh;
         /** Gets the transform node primitive meshes. */
         static GetPrimitiveMeshes(transform: TransformNode): BABYLON.AbstractMesh[];
         /** Gets the specified transform node primary layer index. */
@@ -324,9 +326,9 @@ declare module BABYLON {
         /** Gets the current recast navigation mesh. (Navigation Helper) */
         static GetNavigationMesh(): BABYLON.Mesh;
         /** Bake the recast navigation mesh from geometry. (Navigation Helper) */
-        static BakeNavigationMesh(scene: BABYLON.Scene, meshes: BABYLON.Mesh[], properties: BABYLON.INavMeshParameters, debug?: boolean, color?: BABYLON.Color3): BABYLON.Mesh;
+        static BakeNavigationMesh(scene: BABYLON.Scene, meshes: BABYLON.Mesh[], properties: BABYLON.INavMeshParameters, debug?: boolean, color?: BABYLON.Color3, collisionMesh?: boolean): BABYLON.Mesh;
         /** Load the recast navigation mesh binary data. (Navigation Helper) */
-        static LoadNavigationMesh(scene: BABYLON.Scene, data: Uint8Array, debug?: boolean, color?: BABYLON.Color3, timeSteps?: number): BABYLON.Mesh;
+        static LoadNavigationMesh(scene: BABYLON.Scene, data: Uint8Array, debug?: boolean, color?: BABYLON.Color3, timeSteps?: number, collisionMesh?: boolean): BABYLON.Mesh;
         /** Save the recast navigation mesh binary data. (Navigation Helper) */
         static SaveNavigationMesh(): Uint8Array;
         /** Computes a recast navigation path. (Navigation Helper) */
@@ -859,7 +861,7 @@ declare module BABYLON {
         IndexOf = 3
     }
     enum PlayerNumber {
-        None = 0,
+        Auto = 0,
         One = 1,
         Two = 2,
         Three = 3,
@@ -1374,7 +1376,10 @@ declare module BABYLON {
         private static TmpAmmoVectorB;
         private static TmpAmmoVectorC;
         private static TmpAmmoVectorD;
-        static AddMeshVerts(btTriangleMesh: any, topLevelObject: BABYLON.IPhysicsEnabledObject, object: BABYLON.IPhysicsEnabledObject, scaling?: boolean): number;
+        private static TmpAmmoNormalA;
+        private static TmpAmmoNormalB;
+        private static TmpAmmoNormalC;
+        static AddMeshVerts(btTriangleMesh: any, topLevelObject: BABYLON.IPhysicsEnabledObject, object: BABYLON.IPhysicsEnabledObject, scaling?: boolean, normals?: boolean): number;
         static AddHullVerts(btConvexHullShape: any, topLevelObject: BABYLON.IPhysicsEnabledObject, object: BABYLON.IPhysicsEnabledObject, scaling?: boolean): number;
         static CreateImpostorCustomShape(scene: BABYLON.Scene, impostor: BABYLON.PhysicsImpostor, type: number, showDebugColliders?: boolean, colliderVisibility?: number): any;
         static ShowDebugColliders(): boolean;
@@ -1472,19 +1477,19 @@ declare module BABYLON {
         /** Set animation target property */
         static SetAnimationTargetProperty(animation: BABYLON.Animation, property: string): void;
         /** Gets the float "result" as the sampled key frame value for the specfied animation track. */
-        static SampleAnimationFloat(animation: BABYLON.Animation, frame: number): number;
+        static SampleAnimationFloat(animation: BABYLON.Animation, time: number): number;
         /** Set the passed vector2 "result" as the sampled key frame value for the specfied animation track. */
-        static SampleAnimationVector2(animation: BABYLON.Animation, frame: number): BABYLON.Vector2;
+        static SampleAnimationVector2(animation: BABYLON.Animation, time: number): BABYLON.Vector2;
         /** Set the passed vector3 "result" as the sampled key frame value for the specfied animation track. */
-        static SampleAnimationVector3(animation: BABYLON.Animation, frame: number): BABYLON.Vector3;
+        static SampleAnimationVector3(animation: BABYLON.Animation, time: number): BABYLON.Vector3;
         /** Set the passed quaternion "result" as the sampled key frame value for the specfied animation track. */
-        static SampleAnimationQuaternion(animation: BABYLON.Animation, frame: number): BABYLON.Quaternion;
+        static SampleAnimationQuaternion(animation: BABYLON.Animation, time: number): BABYLON.Quaternion;
         /** Set the passed matrix "result" as the sampled key frame value for the specfied animation track. */
-        static SampleAnimationMatrix(animation: BABYLON.Animation, frame: number): BABYLON.Matrix;
+        static SampleAnimationMatrix(animation: BABYLON.Animation, time: number): BABYLON.Matrix;
         /** Creates a targeted float animation for tweening.  */
-        static CreateFloatAnimation(name: string, targetProperty: string, startValue: number, endValue: number, frameRate?: number, loopMode?: number): BABYLON.Animation;
+        static CreateTweenAnimation(name: string, targetProperty: string, startValue: number, endValue: number, frameRate?: number, loopMode?: number): BABYLON.Animation;
         /** Gets the last key frame index value. */
-        static GetLastKeyFrameIndex(animation: BABYLON.Animation): number;
+        static GetLastKeyFrameValue(animation: BABYLON.Animation): number;
         /** Private internal frame interpolation helper */
         private static InterpolateAnimation;
         /** Initialize default shader material properties */
@@ -2290,20 +2295,24 @@ declare module BABYLON {
         heightOffset: number;
         angularSpeed: number;
         updatePosition: boolean;
+        updateRotation: boolean;
         distanceEpsilon: number;
         velocityEpsilon: number;
+        offMeshVelocity: number;
         stoppingDistance: number;
+        isReady(): boolean;
         isNavigating(): boolean;
+        isOnOffMeshLink(): boolean;
         getAgentType(): number;
         getAgentState(): number;
         getAgentIndex(): number;
-        getAgentRadius(): number;
-        getAgentHeight(): number;
-        getAgentSpeed(): number;
         getAgentOffset(): number;
         getTargetDistance(): number;
+        getAgentParameters(): BABYLON.IAgentParameters;
+        setAgentParameters(parameters: BABYLON.IAgentParameters): void;
         protected m_agentState: number;
         protected m_agentIndex: number;
+        protected m_agentReady: boolean;
         protected m_agentGhost: BABYLON.TransformNode;
         protected m_agentParams: BABYLON.IAgentParameters;
         protected m_agentRotation: BABYLON.Quaternion;
@@ -2312,8 +2321,10 @@ declare module BABYLON {
         protected m_agentQuaternion: BABYLON.Quaternion;
         protected m_agentDestination: BABYLON.Vector3;
         protected awake(): void;
-        protected update(): void;
+        protected late(): void;
         protected destroy(): void;
+        /** Register handler that is triggered when the agent is ready for navigation */
+        onReadyObservable: Observable<TransformNode>;
         /** Register handler that is triggered before the navigation update */
         onPreUpdateObservable: Observable<TransformNode>;
         /** Register handler that is triggered after the navigation update */
@@ -2322,13 +2333,14 @@ declare module BABYLON {
         onNavCompleteObservable: Observable<TransformNode>;
         private awakeNavigationAgent;
         private updateNavigationAgent;
+        private updateAgentParameters;
         private destroyNavigationAgent;
         /** Move agent relative to current position. */
         move(offset: BABYLON.Vector3, closetPoint?: boolean): void;
         /** Teleport agent to destination point. */
         teleport(destination: BABYLON.Vector3, closetPoint?: boolean): void;
         /** Sets agent current destination point. */
-        setDestination(destination: BABYLON.Vector3, closetPoint?: boolean, resetAgent?: boolean): void;
+        setDestination(destination: BABYLON.Vector3, closetPoint?: boolean): void;
         /** Gets agent current world space velocity. */
         getAgentVelocity(): BABYLON.Vector3;
         /** Gets agent current world space velocity. */
@@ -2621,7 +2633,6 @@ declare module BABYLON {
         /** Sets entity collision shape margin using physics impostor body. (Advanved Use Only) */
         setCollisionShapeMargin(margin: number): void;
         /** Gets the entity contact processing threshold using physics impostor body. (Advanved Use Only) */
-        getContactProcessingThreshold(): number;
         /** Sets entity contact processing threshold using physics impostor body. (Advanved Use Only) */
         setContactProcessingThreshold(threshold: number): void;
         /** TODO */
@@ -2657,23 +2668,6 @@ declare module BABYLON {
         protected late(): void;
         protected after(): void;
         protected destroy(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Babylon window socket controller pro class (Socket.IO)
-     * @class SocketController - All rights reserved (c) 2020 Mackey Kinard
-     */
-    class SocketController {
-        /** Registers an handler for window socket connect event */
-        static RegisterOnSocketConnect(func: () => void): void;
-        /** Registers an handler for window socket disconnect event */
-        static RegisterOnSocketDisconnect(func: () => void): void;
-        /** Connects a window state socket */
-        static ConnectWindowSocket(connection: string): SocketIOClient.Socket;
-        /** Get the window state socket */
-        static GetWindowSocket(): SocketIOClient.Socket;
     }
 }
 

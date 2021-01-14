@@ -31,29 +31,34 @@ interface ISavedTransformationMatrix {
 }
 
 /**
- * This renderer is helpfull to fill one of the render target with a geometry buffer.
+ * This renderer is helpful to fill one of the render target with a geometry buffer.
  */
 export class GeometryBufferRenderer {
     /**
-     * Constant used to retrieve the depth + normal texture index in the G-Buffer textures array
-     * using getIndex(GeometryBufferRenderer.DEPTHNORMAL_TEXTURE_INDEX)
+     * Constant used to retrieve the depth texture index in the G-Buffer textures array
+     * using getIndex(GeometryBufferRenderer.DEPTH_TEXTURE_INDEX)
      */
-    public static readonly DEPTHNORMAL_TEXTURE_TYPE = 0;
+    public static readonly DEPTH_TEXTURE_TYPE = 0;
+    /**
+     * Constant used to retrieve the normal texture index in the G-Buffer textures array
+     * using getIndex(GeometryBufferRenderer.NORMAL_TEXTURE_INDEX)
+     */
+    public static readonly NORMAL_TEXTURE_TYPE = 1;
     /**
      * Constant used to retrieve the position texture index in the G-Buffer textures array
      * using getIndex(GeometryBufferRenderer.POSITION_TEXTURE_INDEX)
      */
-    public static readonly POSITION_TEXTURE_TYPE = 1;
+    public static readonly POSITION_TEXTURE_TYPE = 2;
     /**
      * Constant used to retrieve the velocity texture index in the G-Buffer textures array
      * using getIndex(GeometryBufferRenderer.VELOCITY_TEXTURE_INDEX)
      */
-    public static readonly VELOCITY_TEXTURE_TYPE = 2;
+    public static readonly VELOCITY_TEXTURE_TYPE = 3;
     /**
      * Constant used to retrieve the reflectivity texture index in the G-Buffer textures array
      * using the getIndex(GeometryBufferRenderer.REFLECTIVITY_TEXTURE_TYPE)
      */
-    public static readonly REFLECTIVITY_TEXTURE_TYPE = 3;
+    public static readonly REFLECTIVITY_TEXTURE_TYPE = 4;
 
     /**
      * Dictionary used to store the previous transformation matrices of each rendered mesh
@@ -87,11 +92,13 @@ export class GeometryBufferRenderer {
     private _positionIndex: number = -1;
     private _velocityIndex: number = -1;
     private _reflectivityIndex: number = -1;
-    private _depthNormalIndex: number = -1;
+    private _depthIndex: number = -1;
+    private _normalIndex: number = -1;
 
     private _linkedWithPrePass: boolean = false;
     private _prePassRenderer: PrePassRenderer;
     private _attachments: number[];
+    private _useUbo: boolean;
 
     protected _effect: Effect;
     protected _cachedDefines: string;
@@ -150,8 +157,10 @@ export class GeometryBufferRenderer {
         } else if (geometryBufferType === GeometryBufferRenderer.REFLECTIVITY_TEXTURE_TYPE) {
             this._reflectivityIndex = index;
             this._enableReflectivity = true;
-        } else if (geometryBufferType === GeometryBufferRenderer.DEPTHNORMAL_TEXTURE_TYPE) {
-            this._depthNormalIndex = index;
+        } else if (geometryBufferType === GeometryBufferRenderer.DEPTH_TEXTURE_TYPE) {
+            this._depthIndex = index;
+        } else if (geometryBufferType === GeometryBufferRenderer.NORMAL_TEXTURE_TYPE) {
+            this._normalIndex = index;
         }
     }
 
@@ -188,7 +197,7 @@ export class GeometryBufferRenderer {
     }
 
     /**
-     * Gets wether or not G buffer are supported by the running hardware.
+     * Gets whether or not G buffer are supported by the running hardware.
      * This requires draw buffer supports
      */
     public get isSupported(): boolean {
@@ -237,7 +246,7 @@ export class GeometryBufferRenderer {
     }
 
     /**
-     * Sets wether or not objects velocities are enabled for the G buffer.
+     * Sets whether or not objects velocities are enabled for the G buffer.
      */
     public set enableVelocity(enable: boolean) {
         this._enableVelocity = enable;
@@ -260,7 +269,7 @@ export class GeometryBufferRenderer {
     }
 
     /**
-     * Sets wether or not objects roughness are enabled for the G buffer.
+     * Sets whether or not objects roughness are enabled for the G buffer.
      */
     public set enableReflectivity(enable: boolean) {
         this._enableReflectivity = enable;
@@ -299,6 +308,7 @@ export class GeometryBufferRenderer {
     constructor(scene: Scene, ratio: number = 1) {
         this._scene = scene;
         this._ratio = ratio;
+        this._useUbo = scene.getEngine().supportsUniformBuffers;
 
         GeometryBufferRenderer._SceneComponentInitialization(this._scene);
 
@@ -307,7 +317,7 @@ export class GeometryBufferRenderer {
     }
 
     /**
-     * Checks wether everything is ready to render a submesh to the G buffer.
+     * Checks whether everything is ready to render a submesh to the G buffer.
      * @param subMesh the submesh to check readiness for
      * @param useInstances is the mesh drawn using instance or not
      * @returns true if ready otherwise false
@@ -366,9 +376,13 @@ export class GeometryBufferRenderer {
         // PrePass
         if (this._linkedWithPrePass) {
             defines.push("#define PREPASS");
-            if (this._depthNormalIndex !== -1) {
-                defines.push("#define DEPTHNORMAL_INDEX " + this._depthNormalIndex);
-                defines.push("#define PREPASS_DEPTHNORMAL");
+            if (this._depthIndex !== -1) {
+                defines.push("#define DEPTH_INDEX " + this._depthIndex);
+                defines.push("#define PREPASS_DEPTH");
+            }
+            if (this._normalIndex !== -1) {
+                defines.push("#define NORMAL_INDEX " + this._normalIndex);
+                defines.push("#define PREPASS_NORMAL");
             }
         }
 
@@ -414,7 +428,9 @@ export class GeometryBufferRenderer {
 
                 defines.push("#define MORPHTARGETS");
                 defines.push("#define NUM_MORPH_INFLUENCERS " + numMorphInfluencers);
-
+                if (morphTargetManager.isUsingTextureForTargets) {
+                    defines.push("#define MORPHTARGETS_TEXTURE");
+                }
                 MaterialHelper.PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, numMorphInfluencers);
             }
         }
@@ -440,14 +456,22 @@ export class GeometryBufferRenderer {
         if (this._cachedDefines !== join) {
             this._cachedDefines = join;
             this._effect = this._scene.getEngine().createEffect("geometry",
-                attribs,
-                [
-                    "world", "mBones", "viewProjection", "diffuseMatrix", "view", "previousWorld", "previousViewProjection", "mPreviousBones",
-                    "morphTargetInfluences", "bumpMatrix", "reflectivityMatrix", "vTangentSpaceParams", "vBumpInfos"
-                ],
-                ["diffuseSampler", "bumpSampler", "reflectivitySampler"], join,
-                undefined, undefined, undefined,
-                { buffersCount: this._multiRenderTarget.textures.length - 1, maxSimultaneousMorphTargets: numMorphInfluencers });
+                {
+                    attributes: attribs,
+                    uniformsNames: [
+                        "world", "mBones", "viewProjection", "diffuseMatrix", "view", "previousWorld", "previousViewProjection", "mPreviousBones",
+                        "bumpMatrix", "reflectivityMatrix", "vTangentSpaceParams", "vBumpInfos",
+                        "morphTargetInfluences", "morphTargetTextureInfo"
+                    ],
+                    samplers: ["diffuseSampler", "bumpSampler", "reflectivitySampler", "morphTargets"],
+                    defines: join,
+                    onCompiled: null,
+                    fallbacks: null,
+                    onError: null,
+                    uniformBuffersNames: ["Scene"],
+                    indexParameters: { buffersCount: this._multiRenderTarget.textures.length - 1, maxSimultaneousMorphTargets: numMorphInfluencers },
+                },
+                this._scene.getEngine());
         }
 
         return this._effect.isReady();
@@ -576,8 +600,13 @@ export class GeometryBufferRenderer {
                 engine.enableEffect(this._effect);
                 renderingMesh._bind(subMesh, this._effect, material.fillMode);
 
-                this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
-                this._effect.setMatrix("view", scene.getViewMatrix());
+                if (!this._useUbo) {
+                    this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
+                    this._effect.setMatrix("view", scene.getViewMatrix());
+                } else {
+                    MaterialHelper.FinalizeSceneUbo(this._scene);
+                    MaterialHelper.BindSceneUniformBuffer(this._effect, this._scene.getSceneUniformBuffer());
+                }
 
                 if (material) {
                     var sideOrientation: Nullable<number>;
@@ -638,6 +667,9 @@ export class GeometryBufferRenderer {
 
                 // Morph targets
                 MaterialHelper.BindMorphTargetParameters(renderingMesh, this._effect);
+                if (renderingMesh.morphTargetManager && renderingMesh.morphTargetManager.isUsingTextureForTargets) {
+                    renderingMesh.morphTargetManager._bind(this._effect);
+                }
 
                 // Velocity
                 if (this._enableVelocity) {
@@ -682,6 +714,7 @@ export class GeometryBufferRenderer {
                 renderSubMesh(opaqueSubMeshes.data[index]);
             }
 
+            engine.setDepthWrite(false);
             for (index = 0; index < alphaTestSubMeshes.length; index++) {
                 renderSubMesh(alphaTestSubMeshes.data[index]);
             }
@@ -691,6 +724,7 @@ export class GeometryBufferRenderer {
                     renderSubMesh(transparentSubMeshes.data[index]);
                 }
             }
+            engine.setDepthWrite(true);
         };
     }
 

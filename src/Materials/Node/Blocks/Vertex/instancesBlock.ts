@@ -83,7 +83,7 @@ export class InstancesBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the isntanceID component
+     * Gets the instanceID component
      */
     public get instanceID(): NodeMaterialConnectionPoint {
         return this._outputs[1];

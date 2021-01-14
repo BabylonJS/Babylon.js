@@ -23,11 +23,11 @@ declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
  */
 export interface IEffectCreationOptions {
     /**
-     * Atrributes that will be used in the shader.
+     * Attributes that will be used in the shader.
      */
     attributes: string[];
     /**
-     * Uniform varible names that will be set in the shader.
+     * Uniform variable names that will be set in the shader.
      */
     uniformsNames: string[];
     /**
@@ -423,7 +423,7 @@ export class Effect implements IDisposable {
 
     /**
      * The number of attributes.
-     * @returns the numnber of attributes.
+     * @returns the number of attributes.
      */
     public getAttributesCount(): number {
         return this._attributes.length;
@@ -496,7 +496,7 @@ export class Effect implements IDisposable {
     }
 
     /**
-     * Adds a callback to the onCompiled observable and call the callback imediatly if already ready.
+     * Adds a callback to the onCompiled observable and call the callback immediately if already ready.
      * @param func The callback to be used.
      */
     public executeWhenCompiled(func: (effect: Effect) => void): void {
@@ -903,7 +903,7 @@ export class Effect implements IDisposable {
     }
 
     /**
-     * Sets an interger value on a uniform variable.
+     * Sets an integer value on a uniform variable.
      * @param uniformName Name of the variable.
      * @param value Value to be set.
      * @returns this effect.
@@ -1107,7 +1107,7 @@ export class Effect implements IDisposable {
     }
 
     /**
-     * Sets a 3x3 matrix on a uniform variable. (Speicified as [1,2,3,4,5,6,7,8,9] will result in [1,2,3][4,5,6][7,8,9] matrix)
+     * Sets a 3x3 matrix on a uniform variable. (Specified as [1,2,3,4,5,6,7,8,9] will result in [1,2,3][4,5,6][7,8,9] matrix)
      * @param uniformName Name of the variable.
      * @param matrix matrix to be set.
      * @returns this effect.
@@ -1119,7 +1119,7 @@ export class Effect implements IDisposable {
     }
 
     /**
-     * Sets a 2x2 matrix on a uniform variable. (Speicified as [1,2,3,4] will result in [1,2][3,4] matrix)
+     * Sets a 2x2 matrix on a uniform variable. (Specified as [1,2,3,4] will result in [1,2][3,4] matrix)
      * @param uniformName Name of the variable.
      * @param matrix matrix to be set.
      * @returns this effect.
