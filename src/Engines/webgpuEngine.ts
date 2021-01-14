@@ -232,8 +232,6 @@ export class WebGPUEngine extends Engine {
     public dbgVerboseLogsForFirstFrames = false;
     /** @hidden */
     public dbgVerboseLogsNumFrames = 10;
-    /** @hidden */
-    public dbgShowWarningsNotImplemented = false;
 
     /**
      * Sets this to true to disable the cache for the samplers. You should do it only for testing purpose!
@@ -1677,9 +1675,27 @@ export class WebGPUEngine extends Engine {
         var source = InternalTextureSource.Raw2DArray;
         var texture = new InternalTexture(this, source);
 
-        if (this.dbgShowWarningsNotImplemented) {
-            console.warn("createRawTexture2DArray not implemented yet in WebGPU");
+        texture.baseWidth = width;
+        texture.baseHeight = height;
+        texture.baseDepth = depth;
+        texture.width = width;
+        texture.height = height;
+        texture.depth = depth;
+        texture.format = format;
+        texture.type = textureType;
+        texture.generateMipMaps = generateMipMaps;
+        texture.samplingMode = samplingMode;
+        texture.is2DArray = true;
+
+        if (!this._doNotHandleContextLost) {
+            texture._bufferView = data;
         }
+
+        this._textureHelper.createGPUTextureForInternalTexture(texture, width, height, depth);
+
+        this.updateRawTexture2DArray(texture, data, format, invertY, compression, textureType);
+
+        this._internalTexturesCache.push(texture);
 
         return texture;
     }
@@ -2224,9 +2240,30 @@ export class WebGPUEngine extends Engine {
      * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
      */
     public updateRawTexture2DArray(texture: InternalTexture, bufferView: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): void {
-        if (this.dbgShowWarningsNotImplemented) {
-            console.warn("updateRawTexture2DArray not implemented yet in WebGPU");
+        if (!this._doNotHandleContextLost) {
+            texture._bufferView = bufferView;
+            texture.format = format;
+            texture.invertY = invertY;
+            texture._compression = compression;
         }
+
+        if (bufferView) {
+            const gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
+            const needConversion = format === Constants.TEXTUREFORMAT_RGB;
+
+            if (needConversion) {
+                bufferView = _convertRGBtoRGBATextureData(bufferView, texture.width, texture.height, textureType);
+            }
+
+            const data = new Uint8Array(bufferView.buffer, bufferView.byteOffset, bufferView.byteLength);
+
+            this._textureHelper.updateTexture(data, gpuTextureWrapper.underlyingResource!, texture.width, texture.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0, this._uploadEncoder);
+            if (texture.generateMipMaps) {
+                this._generateMipmaps(texture, this._uploadEncoder);
+            }
+        }
+
+        texture.isReady = true;
     }
 
     /**
@@ -2239,7 +2276,7 @@ export class WebGPUEngine extends Engine {
      * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
      */
     public updateRawTexture3D(texture: InternalTexture, bufferView: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): void {
-    if (!this._doNotHandleContextLost) {
+        if (!this._doNotHandleContextLost) {
             texture._bufferView = bufferView;
             texture.format = format;
             texture.invertY = invertY;
