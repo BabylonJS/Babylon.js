@@ -1031,7 +1031,8 @@ export class WebGPUTextureHelper {
                 commandEncoder!.copyBufferToTexture({
                     buffer: buffer,
                     offset: 0,
-                    bytesPerRow
+                    bytesPerRow,
+                    rowsPerImage: height,
                 }, textureCopyView, textureExtent);
 
                 if (useOwnCommandEncoder) {
@@ -1043,7 +1044,8 @@ export class WebGPUTextureHelper {
             } else {
                 this._device.defaultQueue.writeTexture(textureCopyView, imageBitmap, {
                     offset: 0,
-                    bytesPerRow
+                    bytesPerRow,
+                    rowsPerImage: height,
                 }, textureExtent);
             }
 
