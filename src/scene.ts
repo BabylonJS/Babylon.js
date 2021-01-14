@@ -55,6 +55,7 @@ import { Frustum } from './Maths/math.frustum';
 import { UniqueIdGenerator } from './Misc/uniqueIdGenerator';
 import { FileTools, LoadFileError, RequestFileError, ReadFileError } from './Misc/fileTools';
 import { IClipPlanesHolder } from './Misc/interfaces/iClipPlanesHolder';
+import { IPointerEvent } from "./Events/deviceInputEvents";
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -694,13 +695,13 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public pointerMovePredicate: (Mesh: AbstractMesh) => boolean;
 
     /** Callback called when a pointer move is detected */
-    public onPointerMove: (evt: PointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
+    public onPointerMove: (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
     /** Callback called when a pointer down is detected  */
-    public onPointerDown: (evt: PointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
+    public onPointerDown: (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
     /** Callback called when a pointer up is detected  */
-    public onPointerUp: (evt: PointerEvent, pickInfo: Nullable<PickingInfo>, type: PointerEventTypes) => void;
+    public onPointerUp: (evt: IPointerEvent, pickInfo: Nullable<PickingInfo>, type: PointerEventTypes) => void;
     /** Callback called when a pointer pick is detected */
-    public onPointerPick: (evt: PointerEvent, pickInfo: PickingInfo) => void;
+    public onPointerPick: (evt: IPointerEvent, pickInfo: PickingInfo) => void;
 
     /**
      * This observable event is triggered when any ponter event is triggered. It is registered during Scene.attachControl() and it is called BEFORE the 3D engine process anything (mesh/sprite picking for instance).
