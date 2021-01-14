@@ -1489,7 +1489,7 @@ declare module BABYLON {
         /** Creates a targeted float animation for tweening.  */
         static CreateTweenAnimation(name: string, targetProperty: string, startValue: number, endValue: number, frameRate?: number, loopMode?: number): BABYLON.Animation;
         /** Gets the last key frame index value. */
-        static GetLastKeyFrameIndex(animation: BABYLON.Animation): number;
+        static GetLastKeyFrameValue(animation: BABYLON.Animation): number;
         /** Private internal frame interpolation helper */
         private static InterpolateAnimation;
         /** Initialize default shader material properties */
@@ -2177,7 +2177,6 @@ declare module BABYLON {
         private _isPhysicsReady;
         private _maxCollisions;
         private _useGhostSweepTest;
-        private _tmpPositionBuffer;
         private _tmpCollisionContacts;
         updatePosition: boolean;
         getInternalCharacter(): any;
@@ -2215,7 +2214,7 @@ declare module BABYLON {
         protected m_moveDeltaX: number;
         protected m_moveDeltaZ: number;
         protected m_physicsEngine: BABYLON.IPhysicsEngine;
-        protected m_characterPosition: BABYLON.Vector3;
+        protected m_collisionPosition: BABYLON.Vector3;
         protected internalWarp(position: any): void;
         protected internalJump(): void;
         protected internalSetJumpSpeed(speed: number): void;
@@ -2255,19 +2254,13 @@ declare module BABYLON {
         getContactProcessingThreshold(): number;
         /** Sets character contact processing threshold using physics ghost object. (Advanved Use Only) */
         setContactProcessingThreshold(threshold: number): void;
-        /** Get the current position of the physics ghost object world transform. (Advanved Use Only) */
-        getGhostWorldPosition(): BABYLON.Vector3;
-        /** Get the current position of the physics ghost object world transform. (Advanved Use Only) */
-        getGhostWorldPositionToRef(result: BABYLON.Vector3): void;
         /** Manually set the position of the physics ghost object world transform. (Advanved Use Only) */
         setGhostWorldPosition(position: BABYLON.Nullable<BABYLON.Vector3>): void;
-        /** Sets the kinematic character position to the specified location. */
-        set(x: number, y: number, z: number): void;
-        /** Translates the kinematic character with the specfied velocity. */
+        /** Translates the kinematic character with the specfied movement velocity. */
         move(velocity: BABYLON.Vector3): void;
-        /** Jumps the kinematic chacracter with the specified speed. */
+        /** Jumps the kinematic chacracter with the specified jump speed. */
         jump(speed: number): void;
-        /** Warps the kinematic chacracter to the specified position. */
+        /** Warps the kinematic chacracter to the specified warp position. */
         warp(position: BABYLON.Vector3): void;
     }
 }
@@ -2293,13 +2286,10 @@ declare module BABYLON {
         private avoidancePriority;
         private obstacleAvoidanceType;
         private distanceToTarget;
-        private teleporting;
         private moveDirection;
         private resetPosition;
         private lastPosition;
-        private distancePosition;
         private currentPosition;
-        private currentRotation;
         private currentVelocity;
         private currentWaypoint;
         heightOffset: number;
@@ -2312,17 +2302,12 @@ declare module BABYLON {
         stoppingDistance: number;
         isReady(): boolean;
         isNavigating(): boolean;
-        isTeleporting(): boolean;
         isOnOffMeshLink(): boolean;
         getAgentType(): number;
         getAgentState(): number;
         getAgentIndex(): number;
         getAgentOffset(): number;
         getTargetDistance(): number;
-        getCurrentWaypoint(): BABYLON.Vector3;
-        getCurrentPosition(): BABYLON.Vector3;
-        getCurrentRotation(): BABYLON.Quaternion;
-        getCurrentVelocity(): BABYLON.Vector3;
         getAgentParameters(): BABYLON.IAgentParameters;
         setAgentParameters(parameters: BABYLON.IAgentParameters): void;
         protected m_agentState: number;
@@ -2330,12 +2315,13 @@ declare module BABYLON {
         protected m_agentReady: boolean;
         protected m_agentGhost: BABYLON.TransformNode;
         protected m_agentParams: BABYLON.IAgentParameters;
+        protected m_agentRotation: BABYLON.Quaternion;
         protected m_agentMovement: BABYLON.Vector3;
         protected m_agentDirection: BABYLON.Vector3;
         protected m_agentQuaternion: BABYLON.Quaternion;
         protected m_agentDestination: BABYLON.Vector3;
         protected awake(): void;
-        protected update(): void;
+        protected late(): void;
         protected destroy(): void;
         /** Register handler that is triggered when the agent is ready for navigation */
         onReadyObservable: Observable<TransformNode>;
@@ -2367,6 +2353,8 @@ declare module BABYLON {
         getAgentWaypoint(): BABYLON.Vector3;
         /** Gets agent current waypoint position. */
         getAgentWaypointToRef(result: BABYLON.Vector3): void;
+        /** Reset the agent to transform world space position. */
+        resetAgentPosition(): void;
         /** Cancel current waypoint path navigation. */
         cancelNavigation(): void;
     }
