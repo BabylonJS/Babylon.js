@@ -816,6 +816,7 @@ export class NativeEngine extends Engine {
             supportExtendedTextureFormats: false,
             supportSwitchCaseInShader: false,
             supportSyncTextureRead: false,
+            needsInvertingBitmap: true,
             _collectUbosUpdatedInFrame: false,
         };
 
@@ -1159,6 +1160,22 @@ export class NativeEngine extends Engine {
 
     public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {
         this._native.setState(culling, zOffset, reverseSide);
+    }
+
+    /**
+     * Gets the client rect of native canvas.  Needed for InputManager.
+     * @returns a client rectangle
+     */
+    public getInputElementClientRect(): Nullable<ClientRect> {
+        const rect = {
+            bottom: this.getRenderHeight(),
+            height: this.getRenderHeight(),
+            left: 0,
+            right: this.getRenderWidth(),
+            top: 0,
+            width: this.getRenderWidth()
+        };
+        return rect;
     }
 
     /**

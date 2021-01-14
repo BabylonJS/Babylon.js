@@ -1,15 +1,13 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { CommonControlPropertyGridComponent } from "./commonControlPropertyGridComponent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { PropertyChangedEvent } from "../../../propertyChangedEvent";
+import { CommonControlPropertyGridComponent } from "../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent";
+import { LockObject } from "../../../tabs/propertyGrids/lockObject";
 import { Grid } from "babylonjs-gui/2D/controls/grid";
-import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
-import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
-import { GlobalState } from '../../../../globalState';
+import { LineContainerComponent } from "../../../lines/lineContainerComponent";
+import { TextLineComponent } from "../../../lines/textLineComponent";
 
 interface IGridPropertyGridComponentProps {
-    globalState: GlobalState;
     grid: Grid,
     lockObject: LockObject,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
@@ -67,7 +65,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} control={grid} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent  lockObject={this.props.lockObject} control={grid} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent title="GRID">
                     {
                         this.renderRows()

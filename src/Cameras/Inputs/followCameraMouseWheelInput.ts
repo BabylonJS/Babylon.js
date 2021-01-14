@@ -5,6 +5,7 @@ import { FollowCamera } from "../../Cameras/followCamera";
 import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 import { Tools } from '../../Misc/tools';
+import { IWheelEvent } from "../../Events/deviceInputEvents";
 
 /**
  * Manage the mouse wheel inputs to control a follow camera.
@@ -60,7 +61,7 @@ export class FollowCameraMouseWheelInput implements ICameraInput<FollowCamera> {
         this._wheel = (p, s) => {
             // sanity check - this should be a PointerWheel event.
             if (p.type !== PointerEventTypes.POINTERWHEEL) { return; }
-            var event = <MouseWheelEvent>p.event;
+            var event = <IWheelEvent>p.event;
             var delta = 0;
 
             // Chrome, Safari: event.deltaY

@@ -733,6 +733,11 @@ export class WebGPUTextureHelper {
     public createTexture(imageBitmap: ImageBitmap | { width: number, height: number, layers: number }, hasMipmaps = false, generateMipmaps = false, invertY = false, premultiplyAlpha = false, is3D = false, format: GPUTextureFormat = WebGPUConstants.TextureFormat.RGBA8Unorm,
         sampleCount = 1, commandEncoder?: GPUCommandEncoder, usage = -1): GPUTexture
     {
+        if (sampleCount > 1) {
+            // TODO WEBGPU for the time being, Chrome only accepts values of 1 or 4
+            sampleCount = 4;
+        }
+
         const layerCount = (imageBitmap as any).layers || 1;
         let textureSize = {
             width: imageBitmap.width,
@@ -767,6 +772,11 @@ export class WebGPUTextureHelper {
     public createCubeTexture(imageBitmaps: ImageBitmap[] | { width: number, height: number }, hasMipmaps = false, generateMipmaps = false, invertY = false, premultiplyAlpha = false, format: GPUTextureFormat = WebGPUConstants.TextureFormat.RGBA8Unorm,
         sampleCount = 1, commandEncoder?: GPUCommandEncoder, usage = -1): GPUTexture
     {
+        if (sampleCount > 1) {
+            // TODO WEBGPU for the time being, Chrome only accepts values of 1 or 4
+            sampleCount = 4;
+        }
+
         const width = WebGPUTextureHelper.IsImageBitmapArray(imageBitmaps) ? imageBitmaps[0].width : imageBitmaps.width;
         const height = WebGPUTextureHelper.IsImageBitmapArray(imageBitmaps) ? imageBitmaps[0].height : imageBitmaps.height;
 
@@ -1021,7 +1031,8 @@ export class WebGPUTextureHelper {
                 commandEncoder!.copyBufferToTexture({
                     buffer: buffer,
                     offset: 0,
-                    bytesPerRow
+                    bytesPerRow,
+                    rowsPerImage: height,
                 }, textureCopyView, textureExtent);
 
                 if (useOwnCommandEncoder) {
@@ -1033,7 +1044,8 @@ export class WebGPUTextureHelper {
             } else {
                 this._device.defaultQueue.writeTexture(textureCopyView, imageBitmap, {
                     offset: 0,
-                    bytesPerRow
+                    bytesPerRow,
+                    rowsPerImage: height,
                 }, textureExtent);
             }
 

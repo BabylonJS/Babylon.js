@@ -1,17 +1,15 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { CommonControlPropertyGridComponent } from "./commonControlPropertyGridComponent";
-import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { PropertyChangedEvent } from "../../../propertyChangedEvent";
+import { CommonControlPropertyGridComponent } from "../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent";
+import { LineContainerComponent } from "../../../lines/lineContainerComponent";
+import { LockObject } from "../../../tabs/propertyGrids/lockObject";
 import { Image } from "babylonjs-gui/2D/controls/image";
-import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
-import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
-import { OptionsLineComponent } from "../../../../../sharedUiComponents/lines/optionsLineComponent";
-import { GlobalState } from '../../../../globalState';
+import { FloatLineComponent } from "../../../lines/floatLineComponent";
+import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
+import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
 
 interface IImagePropertyGridComponentProps {
-    globalState: GlobalState;
     image: Image,
     lockObject: LockObject,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
@@ -35,7 +33,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} control={image} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent  lockObject={this.props.lockObject} control={image} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent title="IMAGE">
                     <FloatLineComponent lockObject={this.props.lockObject} label="Source left" target={image} propertyName="sourceLeft" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Source top" target={image} propertyName="sourceTop" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

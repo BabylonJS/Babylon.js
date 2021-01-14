@@ -1,17 +1,15 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { CommonControlPropertyGridComponent } from "./commonControlPropertyGridComponent";
-import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { PropertyChangedEvent } from "../../../propertyChangedEvent";
+import { CommonControlPropertyGridComponent } from "../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent";
+import { LineContainerComponent } from "../../../lines/lineContainerComponent";
+import { LockObject } from "../../../tabs/propertyGrids/lockObject";
 import { ImageBasedSlider } from "babylonjs-gui/2D/controls/sliders/imageBasedSlider";
-import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
-import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
-import { TextInputLineComponent } from "../../../../../sharedUiComponents/lines/textInputLineComponent";
-import { GlobalState } from '../../../../globalState';
+import { FloatLineComponent } from "../../../lines/floatLineComponent";
+import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
+import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
 
 interface IImageBasedSliderPropertyGridComponentProps {
-    globalState: GlobalState;
     imageBasedSlider: ImageBasedSlider,
     lockObject: LockObject,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
@@ -27,7 +25,7 @@ export class ImageBasedSliderPropertyGridComponent extends React.Component<IImag
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} control={imageBasedSlider} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent  lockObject={this.props.lockObject} control={imageBasedSlider} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent title="IMAGE BASED SLIDER">
                     <CheckBoxLineComponent label="Display thumb" target={imageBasedSlider} propertyName="displayThumb" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Vertical" target={imageBasedSlider} propertyName="isVertical" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

@@ -23,6 +23,7 @@ import { Constants } from 'babylonjs/Engines/constants';
 import { Viewport } from 'babylonjs/Maths/math.viewport';
 import { Color3 } from 'babylonjs/Maths/math.color';
 import { WebRequest } from "babylonjs/Misc/webRequest";
+import { IPointerEvent, IWheelEvent } from 'babylonjs/Events/deviceInputEvents';
 
 /**
 * Class used to create texture to support 2D GUI elements
@@ -41,7 +42,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _preKeyboardObserver: Nullable<Observer<KeyboardInfoPre>>;
     private _pointerMoveObserver: Nullable<Observer<PointerInfoPre>>;
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
-    private _canvasPointerOutObserver: Nullable<Observer<PointerEvent>>;
+    private _canvasPointerOutObserver: Nullable<Observer<IPointerEvent>>;
     private _canvasBlurObserver: Nullable<Observer<Engine>>;
     private _background: string;
     /** @hidden */
@@ -711,7 +712,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         let tempViewport = new Viewport(0, 0, 0, 0);
 
         this._pointerMoveObserver = scene.onPrePointerObservable.add((pi, state) => {
-            if (scene!.isPointerCaptured((<PointerEvent>(pi.event)).pointerId)) {
+            if (scene!.isPointerCaptured((<IPointerEvent>(pi.event)).pointerId)) {
                 return;
             }
             if (pi.type !== PointerEventTypes.POINTERMOVE
@@ -724,8 +725,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 return;
             }
 
-            if (pi.type === PointerEventTypes.POINTERMOVE && (pi.event as PointerEvent).pointerId) {
-                this._defaultMousePointerId = (pi.event as PointerEvent).pointerId; // This is required to make sure we have the correct pointer ID for wheel
+            if (pi.type === PointerEventTypes.POINTERMOVE && (pi.event as IPointerEvent).pointerId) {
+                this._defaultMousePointerId = (pi.event as IPointerEvent).pointerId; // This is required to make sure we have the correct pointer ID for wheel
             }
 
             let camera = scene.cameraToUseForPointers || scene.activeCamera;
@@ -744,8 +745,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             let y = scene.pointerY / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - tempViewport.y - tempViewport.height);
             this._shouldBlockPointer = false;
             // Do picking modifies _shouldBlockPointer
-            let pointerId = (pi.event as PointerEvent).pointerId || this._defaultMousePointerId;
-            this._doPicking(x, y, pi, pi.type, pointerId, pi.event.button, (<MouseWheelEvent>pi.event).deltaX, (<MouseWheelEvent>pi.event).deltaY);
+            let pointerId = (pi.event as IPointerEvent).pointerId || this._defaultMousePointerId;
+            this._doPicking(x, y, pi, pi.type, pointerId, pi.event.button, (<IWheelEvent>pi.event).deltaX, (<IWheelEvent>pi.event).deltaY);
             // Avoid overwriting a true skipOnPointerObservable to false
             if (this._shouldBlockPointer) {
                 pi.skipOnPointerObservable = this._shouldBlockPointer;
@@ -808,7 +809,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 return;
             }
 
-            var pointerId = (pi.event as PointerEvent).pointerId || this._defaultMousePointerId;
+            var pointerId = (pi.event as IPointerEvent).pointerId || this._defaultMousePointerId;
             if (pi.pickInfo && pi.pickInfo.hit && pi.pickInfo.pickedMesh === mesh) {
                 var uv = pi.pickInfo.getTextureCoordinates();
                 if (uv) {
