@@ -13,7 +13,6 @@ import { Observer } from 'babylonjs/Misc/observable';
 import { TextLineComponent } from "../../sharedUiComponents/lines/textLineComponent";
 import { StringTools } from "../../stringTools";
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/index";
-import { SerializationTools } from "../../serializationTools";
 //import { SceneExplorerComponent } from "../sceneExplorer/sceneExplorerComponent";
 import { Engine } from "babylonjs/Engines/engine";
 import { LockObject } from "../../sharedUiComponents/tabs/propertyGrids/lockObject";
@@ -99,7 +98,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     load(file: File) {
         Tools.ReadFile(file, (data) => {
             let decoder = new TextDecoder("utf-8");
-            SerializationTools.Deserialize(JSON.parse(decoder.decode(data)), this.props.globalState);
+            this.props.globalState.workbench.loadFromJson(JSON.parse(decoder.decode(data)));
 
             this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         }, undefined, true);
@@ -108,15 +107,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     save() {
         let json = JSON.stringify(this.props.globalState.guiTexture.serializeContent());
         StringTools.DownloadAsFile(this.props.globalState.hostDocument, json, "guiTexture.json");
-    }
-
-    customSave() {
-        /*this.props.globalState.onLogRequiredObservable.notifyObservers({message: "Saving your material to Babylon.js snippet server...", isError: false});
-        this.props.globalState.customSave!.action(SerializationTools.Serialize(this.props.globalState.nodeMaterial, this.props.globalState)).then(() => {
-            this.props.globalState.onLogRequiredObservable.notifyObservers({message: "Material saved successfully", isError: false});
-        }).catch((err) => {
-            this.props.globalState.onLogRequiredObservable.notifyObservers({message: err, isError: true});
-        });*/
     }
 
     saveToSnippetServer() {
@@ -177,8 +167,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         if (!snippedID) {
             return;
         }
-        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-        this.props.globalState.guiTexture.parseFromSnippetAsync(snippedID);
+        this.props.globalState.workbench.loadFromSnippet(snippedID);
     }
 
     renderProperties()
@@ -326,12 +315,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <ButtonLineComponent label="Save" onClick={() => {
                             this.save();
                         }} />
-                        {
-                            this.props.globalState.customSave &&
-                            <ButtonLineComponent label={this.props.globalState.customSave!.label} onClick={() => {
-                                this.customSave();
-                            }} />
-                        }
                     </LineContainerComponent>
                     {
                         
