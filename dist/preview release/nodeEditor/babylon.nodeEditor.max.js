@@ -62793,7 +62793,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _diagram_graphFrame__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./diagram/graphFrame */ "./diagram/graphFrame.ts");
 /* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! react-dom */ "../../node_modules/react-dom/index.js");
 /* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_15___default = /*#__PURE__*/__webpack_require__.n(react_dom__WEBPACK_IMPORTED_MODULE_15__);
-/* harmony import */ var _sharedComponents_popup__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./sharedComponents/popup */ "./sharedComponents/popup.ts");
+/* harmony import */ var _sharedComponents_popup__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./sharedComponents/popup */ "./sharedComponents/popup.tsx");
 
 
 
@@ -63576,7 +63576,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react_dom__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _globalState__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./globalState */ "./globalState.ts");
 /* harmony import */ var _graphEditor__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./graphEditor */ "./graphEditor.tsx");
-/* harmony import */ var _src_sharedComponents_popup__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../src/sharedComponents/popup */ "./sharedComponents/popup.ts");
+/* harmony import */ var _src_sharedComponents_popup__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../src/sharedComponents/popup */ "./sharedComponents/popup.tsx");
 /* harmony import */ var _serializationTools__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./serializationTools */ "./serializationTools.ts");
 /* harmony import */ var _components_preview_previewType__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./components/preview/previewType */ "./components/preview/previewType.ts");
 /* harmony import */ var babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! babylonjs/Misc/dataStorage */ "babylonjs/Misc/dataStorage");
@@ -64971,10 +64971,10 @@ module.exports = "data:image/svg+xml,%3Csvg viewBox='0 0 24 24' version='1.1' xm
 
 /***/ }),
 
-/***/ "./sharedComponents/popup.ts":
-/*!***********************************!*\
-  !*** ./sharedComponents/popup.ts ***!
-  \***********************************/
+/***/ "./sharedComponents/popup.tsx":
+/*!************************************!*\
+  !*** ./sharedComponents/popup.tsx ***!
+  \************************************/
 /*! exports provided: Popup */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 

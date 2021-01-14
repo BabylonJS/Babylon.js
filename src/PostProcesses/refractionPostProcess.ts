@@ -12,7 +12,7 @@ import { SerializationHelper, serialize } from '../Misc/decorators';
 declare type Scene = import("../scene").Scene;
 
 /**
- * Post process which applies a refractin texture
+ * Post process which applies a refraction texture
  * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#refraction
  */
 export class RefractionPostProcess extends PostProcess {

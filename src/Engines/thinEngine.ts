@@ -167,14 +167,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-alpha.5";
+        return "babylonjs@5.0.0-alpha.6";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-alpha.5";
+        return "5.0.0-alpha.6";
     }
 
     /**
@@ -911,6 +911,7 @@ export class ThinEngine {
             oculusMultiview: this._gl.getExtension('OCULUS_multiview'),
             depthTextureExtension: false,
             canUseGLInstanceID: !(this._badOS && this._webGLVersion <= 1),
+            canUseGLVertexID: this._webGLVersion > 1,
         };
 
         // Infos
@@ -1077,6 +1078,7 @@ export class ThinEngine {
             supportExtendedTextureFormats: this._webGLVersion !== 1,
             supportSwitchCaseInShader: this._webGLVersion !== 1,
             supportSyncTextureRead: true,
+            needsInvertingBitmap: true,
             _collectUbosUpdatedInFrame: false,
         };
     }
@@ -2656,6 +2658,9 @@ export class ThinEngine {
             return false;
         }
 
+        if (array.length < 1) {
+            return false;
+        }
         this._gl.uniform1fv(uniform, array);
         return true;
     }

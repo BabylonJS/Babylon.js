@@ -4,8 +4,8 @@ import { PropertyChangedEvent } from "../../../../../components/propertyChangedE
 import { Animation } from "babylonjs/Animations/animation";
 import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/buttonLineComponent";
 import { FileButtonLineComponent } from "../../../../../sharedUiComponents/lines/fileButtonLineComponent";
-import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
-import { LockObject } from "../lockObject";
+import { TextInputLineComponent } from "../../../../../sharedUiComponents/lines/textInputLineComponent";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { Tools } from "babylonjs/Misc/tools";
 import { GlobalState } from "../../../../globalState";
 import { ReadFileError } from "babylonjs/Misc/fileTools";

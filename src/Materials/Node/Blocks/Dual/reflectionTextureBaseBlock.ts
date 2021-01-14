@@ -17,6 +17,7 @@ import { Constants } from '../../../../Engines/constants';
 import "../../../../Shaders/ShadersInclude/reflectionFunction";
 import { CubeTexture } from '../../../Textures/cubeTexture';
 import { Texture } from '../../../Textures/texture';
+import { Engine } from "../../../../Engines/engine";
 
 /**
  * Base block used to read a reflection texture from a sampler
@@ -59,10 +60,35 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
     public _reflectionMatrixName: string;
     protected _reflectionColorName: string;
 
+    protected _texture: Nullable<BaseTexture>;
     /**
      * Gets or sets the texture associated with the node
      */
-    public texture: Nullable<BaseTexture>;
+    public get texture(): Nullable<BaseTexture> {
+        return this._texture;
+    }
+
+    public set texture(texture: Nullable<BaseTexture>) {
+        if (this._texture === texture) {
+            return;
+        }
+
+        const scene = texture?.getScene() ?? Engine.LastCreatedScene;
+
+        if (!texture && scene) {
+            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+                return mat.hasTexture(this._texture!);
+            });
+        }
+
+        this._texture = texture;
+
+        if (texture && scene) {
+            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+                return mat.hasTexture(texture);
+            });
+        }
+    }
 
     /**
      * Create a new ReflectionTextureBaseBlock

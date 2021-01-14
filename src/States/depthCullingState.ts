@@ -4,27 +4,29 @@ import { Nullable } from "../types";
  * @hidden
  **/
 export class DepthCullingState {
-    private _isDepthTestDirty = false;
-    private _isDepthMaskDirty = false;
-    private _isDepthFuncDirty = false;
-    private _isCullFaceDirty = false;
-    private _isCullDirty = false;
-    private _isZOffsetDirty = false;
-    private _isFrontFaceDirty = false;
+    protected _isDepthTestDirty = false;
+    protected _isDepthMaskDirty = false;
+    protected _isDepthFuncDirty = false;
+    protected _isCullFaceDirty = false;
+    protected _isCullDirty = false;
+    protected _isZOffsetDirty = false;
+    protected _isFrontFaceDirty = false;
 
-    private _depthTest: boolean;
-    private _depthMask: boolean;
-    private _depthFunc: Nullable<number>;
-    private _cull: Nullable<boolean>;
-    private _cullFace: Nullable<number>;
-    private _zOffset: number;
-    private _frontFace: Nullable<number>;
+    protected _depthTest: boolean;
+    protected _depthMask: boolean;
+    protected _depthFunc: Nullable<number>;
+    protected _cull: Nullable<boolean>;
+    protected _cullFace: Nullable<number>;
+    protected _zOffset: number;
+    protected _frontFace: Nullable<number>;
 
     /**
      * Initializes the state.
      */
-    public constructor() {
-        this.reset();
+    public constructor(reset = true) {
+        if (reset) {
+            this.reset();
+        }
     }
 
     public get isDirty(): boolean {

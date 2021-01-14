@@ -5,7 +5,7 @@ import { Material } from "babylonjs/Materials/material";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGridComponent";
-import { LockObject } from "../lockObject";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from '../../../../globalState';
 
 interface IMaterialPropertyGridComponentProps {

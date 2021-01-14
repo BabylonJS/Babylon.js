@@ -126,7 +126,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
      */
     public depthOfFieldPostProcess: Nullable<PostProcess> = null;
     /**
-     * The Fast Approximate Anti-Aliasing post process which attemps to remove aliasing from an image.
+     * The Fast Approximate Anti-Aliasing post process which attempts to remove aliasing from an image.
      */
     public fxaaPostProcess: Nullable<FxaaPostProcess> = null;
     /**
@@ -212,14 +212,14 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
     @serialize()
     public hdrIncreaseRate: number = 0.5;
     /**
-     * Gets wether or not the exposure of the overall pipeline should be automatically adjusted by the HDR post-process
+     * Gets whether or not the exposure of the overall pipeline should be automatically adjusted by the HDR post-process
      */
     @serialize()
     public get hdrAutoExposure(): boolean {
         return this._hdrAutoExposure;
     }
     /**
-     * Sets wether or not the exposure of the overall pipeline should be automatically adjusted by the HDR post-process
+     * Sets whether or not the exposure of the overall pipeline should be automatically adjusted by the HDR post-process
      */
     public set hdrAutoExposure(value: boolean) {
         this._hdrAutoExposure = value;
@@ -306,14 +306,14 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
     }
 
     /**
-     * Gets wether or not the motion blur post-process is object based or screen based.
+     * Gets whether or not the motion blur post-process is object based or screen based.
      */
     @serialize()
     public get objectBasedMotionBlur(): boolean {
         return this._isObjectBasedMotionBlur;
     }
     /**
-     * Sets wether or not the motion blur post-process should be object based or screen based
+     * Sets whether or not the motion blur post-process should be object based or screen based
      */
     public set objectBasedMotionBlur(value: boolean) {
         const shouldRebuild = this._isObjectBasedMotionBlur !== value;
@@ -384,7 +384,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
 
     /**
      * @ignore
-     * Specifies if the depth of field pipeline is enabed
+     * Specifies if the depth of field pipeline is enabled
      */
     @serialize()
     public get DepthOfFieldEnabled(): boolean {
@@ -402,7 +402,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
 
     /**
      * @ignore
-     * Specifies if the lens flare pipeline is enabed
+     * Specifies if the lens flare pipeline is enabled
      */
     @serialize()
     public get LensFlareEnabled(): boolean {

@@ -949,7 +949,10 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 }
                 break;
             case PhysicsImpostor.CapsuleImpostor:
-                returnValue = new this.bjsAMMO.btCapsuleShape(extendSize.x / 2, extendSize.y / 2);
+                // https://pybullet.org/Bullet/BulletFull/classbtCapsuleShape.html#details
+                // Height is just the height between the center of each 'sphere' of the capsule caps
+                const capRadius = extendSize.x / 2;
+                returnValue = new this.bjsAMMO.btCapsuleShape(capRadius, extendSize.y - capRadius * 2);
                 break;
             case PhysicsImpostor.CylinderImpostor:
                 this._tmpAmmoVectorA.setValue(extendSize.x / 2, extendSize.y / 2, extendSize.z / 2);
