@@ -14,7 +14,7 @@
 - Added support for infinite perspective cameras ([Deltakosh](https://github.com/deltakosh))
 - Added ability to enable/disable ArcRotateCamera zoom on multiTouch event ([NicolasBuecher](https://github.com/NicolasBuecher))
 - Moving button to shared uI folder.([msDestiny14](https://github.com/msDestiny14))
-- Moving linecontainer component to shared UI folder. ([msDestiny14](https://github.com/msDestiny14))
+- Moved sharedUI component to shared UI folder. ([msDestiny14](https://github.com/msDestiny14))
 - Added encapsulate and encapsulateBoundingInfo methods to BoundingInfo. ([Tolo789](https://github.com/Tolo789))
 - Added onLoadObservable to the textureDome class(es) ([RaananW](https://github.com/RaananW))
 - Modified InputManager to use DeviceInputSystem ([PolygonalSun](https://github.com/PolygonalSun))
@@ -56,6 +56,7 @@
 ### GUIEditor
 
 - Added GUI Editor project to master. ([msDestiny14](https://github.com/msDestiny14))
+- Moving GUI property tab components into GUIEditor: Slider. ([msDestiny14](https://github.com/msDestiny14))
 
 ### GUI
 
@@ -63,6 +64,7 @@
 - Added `focus()` and `blur()` functions for controls that implement `IFocusableControl` ([Flux159](https://github.com/Flux159))
 - Added `ToggleButton` GUI control ([kintz09](https://github.com/kintz09))
 - Added shorthand methods which set all padding values at once, named `setPadding` and `setPaddingInPixels`, to the control class  ([kintz09](https://github.com/kintz09))
+- Added two touch-enabled GUI controls, `TouchMeshButton3D` and `TouchHolographicButton`, added option on the WebXR hand tracking feature for enabling touch collisions ([rickfromwork](https://github.com/rickfromwork), [satyapoojasama](https://github.com/satyapoojasama))
 
 ### WebXR
 
@@ -72,6 +74,7 @@
 - Pointer Events of WebXR controllers have pointerType `xr` ([RaananW](https://github.com/RaananW))
 - better support for custom hand meshes ([RaananW](https://github.com/RaananW))
 - Allow disabling of the WebXRControllerPointerSelection feature as part of the WebXR Default Experience ([rgerd](https://github.com/rgerd))
+- Added two touch-enabled GUI controls, `TouchMeshButton3D` and `TouchHolographicButton`, added option on the WebXR hand tracking feature for enabling touch collisions ([rickfromwork](https://github.com/rickfromwork), [satyapoojasama](https://github.com/satyapoojasama))
 
 ### Viewer
 
@@ -105,6 +108,7 @@
 - Fix SSAO2 with PrePass sometimes causing colors brighter than they should be ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Fix PostProcess sharing between cameras/renderTargets, that would create/destroy a texture on every frame ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Fix for DualSense gamepads being incorrectly read as DualShock gamepads ([PolygonalSun](https://github.com/PolygonalSun))
+- Fix for warning in chrome about passive wheel events ([#9777](https://github.com/BabylonJS/Babylon.js/pull/9777)) ([kaliatech](https://github.com/kaliatech))
 - Fix crash when cloning material in `AssetContainer.instantiateModelsToScene` when mesh is an instanced mesh ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes

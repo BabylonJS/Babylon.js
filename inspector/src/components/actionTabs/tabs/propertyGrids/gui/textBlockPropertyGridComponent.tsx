@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { CommonControlPropertyGridComponent } from "./commonControlPropertyGridComponent";
+import { CommonControlPropertyGridComponent } from "../../../../../sharedUiComponents/tabs/propertyGrids/gui/commonControlPropertyGridComponent";
 import { TextBlock, TextWrapping } from "babylonjs-gui/2D/controls/textBlock";
 import { Control } from "babylonjs-gui/2D/controls/control";
 import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
@@ -47,7 +47,7 @@ export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPr
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} control={textBlock} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent  lockObject={this.props.lockObject} control={textBlock} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent title="TEXTBLOCK">
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Text" target={textBlock} propertyName="text" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <OptionsLineComponent label="Horizontal text alignment" options={horizontalOptions} target={textBlock} propertyName="textHorizontalAlignment" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

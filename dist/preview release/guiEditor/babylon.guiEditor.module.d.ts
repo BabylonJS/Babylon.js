@@ -92,233 +92,8 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-gui-editor/diagram/properties/propertyComponentProps" {
-    import { Control } from "babylonjs-gui/2D/controls/control";
-    import { GlobalState } from "babylonjs-gui-editor/globalState";
-    export interface IPropertyComponentProps {
-        globalState: GlobalState;
-        guiControl: Control;
-    }
-}
-declare module "babylonjs-gui-editor/sharedUiComponents/lines/lineContainerComponent" {
-    import * as React from "react";
-    interface ILineContainerComponentProps {
-        title: string;
-        children: any[] | any;
-        closed?: boolean;
-    }
-    export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
-        isExpanded: boolean;
-    }> {
-        constructor(props: ILineContainerComponentProps);
-        switchExpandedState(): void;
-        renderHeader(): JSX.Element;
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent" {
-    export class PropertyChangedEvent {
-        object: any;
-        property: string;
-        value: any;
-        initialValue: any;
-        allowNullValue?: boolean;
-    }
-}
-declare module "babylonjs-gui-editor/sharedUiComponents/lines/checkBoxLineComponent" {
-    import * as React from "react";
-    import { Observable } from "babylonjs/Misc/observable";
-    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
-    export interface ICheckBoxLineComponentProps {
-        label: string;
-        target?: any;
-        propertyName?: string;
-        isSelected?: () => boolean;
-        onSelect?: (value: boolean) => void;
-        onValueChanged?: () => void;
-        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
-        disabled?: boolean;
-    }
-    export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
-        isSelected: boolean;
-        isDisabled?: boolean;
-    }> {
-        private static _UniqueIdSeed;
-        private _uniqueId;
-        private _localChange;
-        constructor(props: ICheckBoxLineComponentProps);
-        shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: {
-            isSelected: boolean;
-            isDisabled: boolean;
-        }): boolean;
-        onChange(): void;
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-gui-editor/sharedComponents/propertyChangedEvent" {
-    export class PropertyChangedEvent {
-        object: any;
-        property: string;
-        value: any;
-        initialValue: any;
-    }
-}
-declare module "babylonjs-gui-editor/sharedComponents/floatLineComponent" {
-    import * as React from "react";
-    import { Observable } from "babylonjs/Misc/observable";
-    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedComponents/propertyChangedEvent";
-    import { GlobalState } from "babylonjs-gui-editor/globalState";
-    interface IFloatLineComponentProps {
-        label: string;
-        target: any;
-        propertyName: string;
-        onChange?: (newValue: number) => void;
-        isInteger?: boolean;
-        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
-        additionalClass?: string;
-        step?: string;
-        digits?: number;
-        globalState: GlobalState;
-        min?: number;
-        max?: number;
-        smallUI?: boolean;
-        onEnter?: (newValue: number) => void;
-    }
-    export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
-        value: string;
-    }> {
-        private _localChange;
-        private _store;
-        private _regExp;
-        private _digits;
-        constructor(props: IFloatLineComponentProps);
-        shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: {
-            value: string;
-        }): boolean;
-        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
-        updateValue(valueString: string): void;
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-gui-editor/sharedComponents/sliderLineComponent" {
-    import * as React from "react";
-    import { Observable } from "babylonjs/Misc/observable";
-    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedComponents/propertyChangedEvent";
-    import { GlobalState } from "babylonjs-gui-editor/globalState";
-    interface ISliderLineComponentProps {
-        label: string;
-        target?: any;
-        propertyName?: string;
-        minimum: number;
-        maximum: number;
-        step: number;
-        directValue?: number;
-        useEuler?: boolean;
-        onChange?: (value: number) => void;
-        onInput?: (value: number) => void;
-        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
-        decimalCount?: number;
-        globalState: GlobalState;
-    }
-    export class SliderLineComponent extends React.Component<ISliderLineComponentProps, {
-        value: number;
-    }> {
-        private _localChange;
-        constructor(props: ISliderLineComponentProps);
-        shouldComponentUpdate(nextProps: ISliderLineComponentProps, nextState: {
-            value: number;
-        }): boolean;
-        onChange(newValueString: any): void;
-        onInput(newValueString: any): void;
-        prepareDataToRead(value: number): number;
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-gui-editor/diagram/properties/genericNodePropertyComponent" {
-    import * as React from "react";
-    import { IPropertyComponentProps } from "babylonjs-gui-editor/diagram/properties/propertyComponentProps";
-    export class GenericPropertyComponent extends React.Component<IPropertyComponentProps> {
-        constructor(props: IPropertyComponentProps);
-        render(): JSX.Element;
-    }
-    export class GeneralPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-        constructor(props: IPropertyComponentProps);
-        render(): JSX.Element;
-    }
-    export class GenericPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-        constructor(props: IPropertyComponentProps);
-        forceRebuild(notifiers?: {
-            "rebuild"?: boolean;
-            "update"?: boolean;
-        }): void;
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-gui-editor/sharedComponents/numericInputComponent" {
-    import * as React from "react";
-    import { GlobalState } from "babylonjs-gui-editor/globalState";
-    interface INumericInputComponentProps {
-        label: string;
-        value: number;
-        step?: number;
-        onChange: (value: number) => void;
-        globalState: GlobalState;
-    }
-    export class NumericInputComponent extends React.Component<INumericInputComponentProps, {
-        value: string;
-    }> {
-        static defaultProps: {
-            step: number;
-        };
-        private _localChange;
-        constructor(props: INumericInputComponentProps);
-        shouldComponentUpdate(nextProps: INumericInputComponentProps, nextState: {
-            value: string;
-        }): boolean;
-        updateValue(evt: any): void;
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-gui-editor/sharedUiComponents/lines/textLineComponent" {
-    import * as React from "react";
-    interface ITextLineComponentProps {
-        label?: string;
-        value?: string;
-        color?: string;
-        underline?: boolean;
-        onLink?: () => void;
-        url?: string;
-        ignoreValue?: boolean;
-        additionalClass?: string;
-    }
-    export class TextLineComponent extends React.Component<ITextLineComponentProps> {
-        constructor(props: ITextLineComponentProps);
-        onLink(): void;
-        renderContent(): JSX.Element | null;
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-gui-editor/diagram/properties/sliderGuiPropertyComponent" {
-    import * as React from "react";
-    import { IPropertyComponentProps } from "babylonjs-gui-editor/diagram/properties/propertyComponentProps";
-    export class SliderPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-        constructor(props: IPropertyComponentProps);
-        private _slider;
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-gui-editor/diagram/propertyLedger" {
-    import { ComponentClass } from 'react';
-    import { IPropertyComponentProps } from "babylonjs-gui-editor/diagram/properties/propertyComponentProps";
-    export class PropertyGuiLedger {
-        static RegisteredControls: {
-            [key: string]: ComponentClass<IPropertyComponentProps>;
-        };
-    }
-}
 declare module "babylonjs-gui-editor/diagram/guiNode" {
     import { GlobalState } from "babylonjs-gui-editor/globalState";
-    import { Nullable } from 'babylonjs/types';
     import { Control } from 'babylonjs-gui/2D/controls/control';
     import { Vector2 } from 'babylonjs/Maths/math.vector';
     export class GUINode {
@@ -355,9 +130,17 @@ declare module "babylonjs-gui-editor/diagram/guiNode" {
         cleanAccumulation(useCeil?: boolean): void;
         clicked: boolean;
         _onMove(evt: Vector2, startPos: Vector2): boolean;
-        renderProperties(): Nullable<JSX.Element>;
         updateVisual(): void;
         dispose(): void;
+    }
+}
+declare module "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent" {
+    export class PropertyChangedEvent {
+        object: any;
+        property: string;
+        value: any;
+        initialValue: any;
+        allowNullValue?: boolean;
     }
 }
 declare module "babylonjs-gui-editor/globalState" {
@@ -368,6 +151,7 @@ declare module "babylonjs-gui-editor/globalState" {
     import { GUINode } from "babylonjs-gui-editor/diagram/guiNode";
     import { WorkbenchComponent } from "babylonjs-gui-editor/diagram/workbench";
     import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
+    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
     export class GlobalState {
         guiTexture: AdvancedDynamicTexture;
         hostElement: HTMLElement;
@@ -388,12 +172,29 @@ declare module "babylonjs-gui-editor/globalState" {
         blockKeyboardEvents: boolean;
         controlCamera: boolean;
         workbench: WorkbenchComponent;
+        onPropertyChangedObservable: Observable<PropertyChangedEvent>;
         storeEditorData: (serializationObject: any) => void;
         customSave?: {
             label: string;
             action: (data: string) => Promise<void>;
         };
         constructor();
+    }
+}
+declare module "babylonjs-gui-editor/sharedUiComponents/lines/lineContainerComponent" {
+    import * as React from "react";
+    interface ILineContainerComponentProps {
+        title: string;
+        children: any[] | any;
+        closed?: boolean;
+    }
+    export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
+        isExpanded: boolean;
+    }> {
+        constructor(props: ILineContainerComponentProps);
+        switchExpandedState(): void;
+        renderHeader(): JSX.Element;
+        render(): JSX.Element;
     }
 }
 declare module "babylonjs-gui-editor/sharedUiComponents/lines/draggableLineComponent" {
@@ -451,10 +252,239 @@ declare module "babylonjs-gui-editor/sharedUiComponents/lines/fileButtonLineComp
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-gui-editor/sharedUiComponents/lines/checkBoxLineComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
+    export interface ICheckBoxLineComponentProps {
+        label: string;
+        target?: any;
+        propertyName?: string;
+        isSelected?: () => boolean;
+        onSelect?: (value: boolean) => void;
+        onValueChanged?: () => void;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        disabled?: boolean;
+    }
+    export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
+        isSelected: boolean;
+        isDisabled?: boolean;
+    }> {
+        private static _UniqueIdSeed;
+        private _uniqueId;
+        private _localChange;
+        constructor(props: ICheckBoxLineComponentProps);
+        shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: {
+            isSelected: boolean;
+            isDisabled: boolean;
+        }): boolean;
+        onChange(): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-gui-editor/sharedUiComponents/lines/textLineComponent" {
+    import * as React from "react";
+    interface ITextLineComponentProps {
+        label?: string;
+        value?: string;
+        color?: string;
+        underline?: boolean;
+        onLink?: () => void;
+        url?: string;
+        ignoreValue?: boolean;
+        additionalClass?: string;
+    }
+    export class TextLineComponent extends React.Component<ITextLineComponentProps> {
+        constructor(props: ITextLineComponentProps);
+        onLink(): void;
+        renderContent(): JSX.Element | null;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-gui-editor/serializationTools" {
     import { GlobalState } from "babylonjs-gui-editor/globalState";
     export class SerializationTools {
         static Deserialize(serializationObject: any, globalState: GlobalState): void;
+    }
+}
+declare module "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject" {
+    /**
+     * Class used to provide lock mechanism
+     */
+    export class LockObject {
+        /**
+         * Gets or set if the lock is engaged
+         */
+        lock: boolean;
+    }
+}
+declare module "babylonjs-gui-editor/sharedUiComponents/lines/floatLineComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
+    import { LockObject } from "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject";
+    interface IFloatLineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        lockObject?: LockObject;
+        onChange?: (newValue: number) => void;
+        isInteger?: boolean;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        additionalClass?: string;
+        step?: string;
+        digits?: number;
+        useEuler?: boolean;
+        min?: number;
+        max?: number;
+        smallUI?: boolean;
+        onEnter?: (newValue: number) => void;
+    }
+    export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
+        value: string;
+    }> {
+        private _localChange;
+        private _store;
+        constructor(props: IFloatLineComponentProps);
+        componentWillUnmount(): void;
+        shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: {
+            value: string;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
+        updateValue(valueString: string): void;
+        lock(): void;
+        unlock(): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-gui-editor/sharedUiComponents/lines/sliderLineComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
+    interface ISliderLineComponentProps {
+        label: string;
+        target?: any;
+        propertyName?: string;
+        minimum: number;
+        maximum: number;
+        step: number;
+        directValue?: number;
+        useEuler?: boolean;
+        onChange?: (value: number) => void;
+        onInput?: (value: number) => void;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        decimalCount?: number;
+        margin?: boolean;
+    }
+    export class SliderLineComponent extends React.Component<ISliderLineComponentProps, {
+        value: number;
+    }> {
+        private _localChange;
+        constructor(props: ISliderLineComponentProps);
+        shouldComponentUpdate(nextProps: ISliderLineComponentProps, nextState: {
+            value: number;
+        }): boolean;
+        onChange(newValueString: any): void;
+        onInput(newValueString: any): void;
+        prepareDataToRead(value: number): number;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-gui-editor/sharedUiComponents/lines/textInputLineComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
+    import { LockObject } from "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject";
+    interface ITextInputLineComponentProps {
+        label: string;
+        lockObject: LockObject;
+        target?: any;
+        propertyName?: string;
+        value?: string;
+        onChange?: (value: string) => void;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
+        value: string;
+    }> {
+        private _localChange;
+        constructor(props: ITextInputLineComponentProps);
+        componentWillUnmount(): void;
+        shouldComponentUpdate(nextProps: ITextInputLineComponentProps, nextState: {
+            value: string;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: string, previousValue: string): void;
+        updateValue(value: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-gui-editor/sharedUiComponents/lines/optionsLineComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
+    export const Null_Value: number;
+    export class ListLineOption {
+        label: string;
+        value: number;
+        selected?: boolean;
+    }
+    export interface IOptionsLineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        options: ListLineOption[];
+        noDirectUpdate?: boolean;
+        onSelect?: (value: number) => void;
+        extractValue?: () => number;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        allowNullValue?: boolean;
+    }
+    export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, {
+        value: number;
+    }> {
+        private _localChange;
+        private remapValueIn;
+        private remapValueOut;
+        constructor(props: IOptionsLineComponentProps);
+        shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: {
+            value: number;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
+        updateValue(valueString: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/gui/commonControlPropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
+    import { Control } from "babylonjs-gui/2D/controls/control";
+    import { LockObject } from "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject";
+    interface ICommonControlPropertyGridComponentProps {
+        control: Control;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
+        constructor(props: ICommonControlPropertyGridComponentProps);
+        renderGridInformation(): JSX.Element | null;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/gui/sliderPropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
+    import { LockObject } from "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject";
+    import { Slider } from "babylonjs-gui/2D/controls/sliders/slider";
+    interface ISliderPropertyGridComponentProps {
+        slider: Slider;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class SliderPropertyGridComponent extends React.Component<ISliderPropertyGridComponentProps> {
+        constructor(props: ISliderPropertyGridComponentProps);
+        render(): JSX.Element;
     }
 }
 declare module "babylonjs-gui-editor/components/propertyTab/propertyTabComponent" {
@@ -470,7 +500,10 @@ declare module "babylonjs-gui-editor/components/propertyTab/propertyTabComponent
     }
     export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
         private _onBuiltObserver;
+        private _timerIntervalId;
+        private _lockObject;
         constructor(props: IPropertyTabComponentProps);
+        timerRefresh(): void;
         componentDidMount(): void;
         componentWillUnmount(): void;
         load(file: File): void;
@@ -479,6 +512,7 @@ declare module "babylonjs-gui-editor/components/propertyTab/propertyTabComponent
         customSave(): void;
         saveToSnippetServer(): void;
         loadFromSnippet(): void;
+        renderProperties(): JSX.Element | null;
         render(): JSX.Element;
     }
 }
@@ -628,6 +662,113 @@ declare module "babylonjs-gui-editor/guiEditor" {
 declare module "babylonjs-gui-editor/index" {
     export * from "babylonjs-gui-editor/guiEditor";
 }
+declare module "babylonjs-gui-editor/diagram/properties/propertyComponentProps" {
+    import { Control } from "babylonjs-gui/2D/controls/control";
+    import { GlobalState } from "babylonjs-gui-editor/globalState";
+    export interface IPropertyComponentProps {
+        globalState: GlobalState;
+        guiControl: Control;
+    }
+}
+declare module "babylonjs-gui-editor/sharedComponents/propertyChangedEvent" {
+    export class PropertyChangedEvent {
+        object: any;
+        property: string;
+        value: any;
+        initialValue: any;
+    }
+}
+declare module "babylonjs-gui-editor/sharedComponents/floatLineComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedComponents/propertyChangedEvent";
+    import { GlobalState } from "babylonjs-gui-editor/globalState";
+    interface IFloatLineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        onChange?: (newValue: number) => void;
+        isInteger?: boolean;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        additionalClass?: string;
+        step?: string;
+        digits?: number;
+        globalState: GlobalState;
+        min?: number;
+        max?: number;
+        smallUI?: boolean;
+        onEnter?: (newValue: number) => void;
+    }
+    export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
+        value: string;
+    }> {
+        private _localChange;
+        private _store;
+        private _regExp;
+        private _digits;
+        constructor(props: IFloatLineComponentProps);
+        shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: {
+            value: string;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
+        updateValue(valueString: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-gui-editor/sharedComponents/sliderLineComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedComponents/propertyChangedEvent";
+    import { GlobalState } from "babylonjs-gui-editor/globalState";
+    interface ISliderLineComponentProps {
+        label: string;
+        target?: any;
+        propertyName?: string;
+        minimum: number;
+        maximum: number;
+        step: number;
+        directValue?: number;
+        useEuler?: boolean;
+        onChange?: (value: number) => void;
+        onInput?: (value: number) => void;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        decimalCount?: number;
+        globalState: GlobalState;
+    }
+    export class SliderLineComponent extends React.Component<ISliderLineComponentProps, {
+        value: number;
+    }> {
+        private _localChange;
+        constructor(props: ISliderLineComponentProps);
+        shouldComponentUpdate(nextProps: ISliderLineComponentProps, nextState: {
+            value: number;
+        }): boolean;
+        onChange(newValueString: any): void;
+        onInput(newValueString: any): void;
+        prepareDataToRead(value: number): number;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-gui-editor/diagram/properties/genericNodePropertyComponent" {
+    import * as React from "react";
+    import { IPropertyComponentProps } from "babylonjs-gui-editor/diagram/properties/propertyComponentProps";
+    export class GenericPropertyComponent extends React.Component<IPropertyComponentProps> {
+        constructor(props: IPropertyComponentProps);
+        render(): JSX.Element;
+    }
+    export class GeneralPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        constructor(props: IPropertyComponentProps);
+        render(): JSX.Element;
+    }
+    export class GenericPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        constructor(props: IPropertyComponentProps);
+        forceRebuild(notifiers?: {
+            "rebuild"?: boolean;
+            "update"?: boolean;
+        }): void;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-gui-editor/legacy/legacy" {
     export * from "babylonjs-gui-editor/index";
 }
@@ -649,6 +790,31 @@ declare module "babylonjs-gui-editor/sharedComponents/lineWithFileButtonComponen
         constructor(props: ILineWithFileButtonComponentProps);
         onChange(evt: any): void;
         switchExpandedState(): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-gui-editor/sharedComponents/numericInputComponent" {
+    import * as React from "react";
+    import { GlobalState } from "babylonjs-gui-editor/globalState";
+    interface INumericInputComponentProps {
+        label: string;
+        value: number;
+        step?: number;
+        onChange: (value: number) => void;
+        globalState: GlobalState;
+    }
+    export class NumericInputComponent extends React.Component<INumericInputComponentProps, {
+        value: string;
+    }> {
+        static defaultProps: {
+            step: number;
+        };
+        private _localChange;
+        constructor(props: INumericInputComponentProps);
+        shouldComponentUpdate(nextProps: INumericInputComponentProps, nextState: {
+            value: string;
+        }): boolean;
+        updateValue(evt: any): void;
         render(): JSX.Element;
     }
 }
@@ -895,89 +1061,6 @@ declare module "babylonjs-gui-editor/sharedUiComponents/lines/fileMultipleButton
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject" {
-    /**
-     * Class used to provide lock mechanism
-     */
-    export class LockObject {
-        /**
-         * Gets or set if the lock is engaged
-         */
-        lock: boolean;
-    }
-}
-declare module "babylonjs-gui-editor/sharedUiComponents/lines/sliderLineComponent" {
-    import * as React from "react";
-    import { Observable } from "babylonjs/Misc/observable";
-    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
-    interface ISliderLineComponentProps {
-        label: string;
-        target?: any;
-        propertyName?: string;
-        minimum: number;
-        maximum: number;
-        step: number;
-        directValue?: number;
-        useEuler?: boolean;
-        onChange?: (value: number) => void;
-        onInput?: (value: number) => void;
-        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
-        decimalCount?: number;
-        margin?: boolean;
-    }
-    export class SliderLineComponent extends React.Component<ISliderLineComponentProps, {
-        value: number;
-    }> {
-        private _localChange;
-        constructor(props: ISliderLineComponentProps);
-        shouldComponentUpdate(nextProps: ISliderLineComponentProps, nextState: {
-            value: number;
-        }): boolean;
-        onChange(newValueString: any): void;
-        onInput(newValueString: any): void;
-        prepareDataToRead(value: number): number;
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-gui-editor/sharedUiComponents/lines/floatLineComponent" {
-    import * as React from "react";
-    import { Observable } from "babylonjs/Misc/observable";
-    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
-    import { LockObject } from "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject";
-    interface IFloatLineComponentProps {
-        label: string;
-        target: any;
-        propertyName: string;
-        lockObject?: LockObject;
-        onChange?: (newValue: number) => void;
-        isInteger?: boolean;
-        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
-        additionalClass?: string;
-        step?: string;
-        digits?: number;
-        useEuler?: boolean;
-        min?: number;
-        max?: number;
-        smallUI?: boolean;
-        onEnter?: (newValue: number) => void;
-    }
-    export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
-        value: string;
-    }> {
-        private _localChange;
-        private _store;
-        constructor(props: IFloatLineComponentProps);
-        componentWillUnmount(): void;
-        shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: {
-            value: string;
-        }): boolean;
-        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
-        updateValue(valueString: string): void;
-        lock(): void;
-        unlock(): void;
-        render(): JSX.Element;
-    }
-}
 declare module "babylonjs-gui-editor/sharedUiComponents/lines/hexLineComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
@@ -1073,42 +1156,6 @@ declare module "babylonjs-gui-editor/sharedUiComponents/lines/messageLineCompone
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-gui-editor/sharedUiComponents/lines/optionsLineComponent" {
-    import * as React from "react";
-    import { Observable } from "babylonjs/Misc/observable";
-    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
-    export const Null_Value: number;
-    export class ListLineOption {
-        label: string;
-        value: number;
-        selected?: boolean;
-    }
-    export interface IOptionsLineComponentProps {
-        label: string;
-        target: any;
-        propertyName: string;
-        options: ListLineOption[];
-        noDirectUpdate?: boolean;
-        onSelect?: (value: number) => void;
-        extractValue?: () => number;
-        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
-        allowNullValue?: boolean;
-    }
-    export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, {
-        value: number;
-    }> {
-        private _localChange;
-        private remapValueIn;
-        private remapValueOut;
-        constructor(props: IOptionsLineComponentProps);
-        shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: {
-            value: number;
-        }): boolean;
-        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
-        updateValue(valueString: string): void;
-        render(): JSX.Element;
-    }
-}
 declare module "babylonjs-gui-editor/sharedUiComponents/lines/radioLineComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
@@ -1126,34 +1173,6 @@ declare module "babylonjs-gui-editor/sharedUiComponents/lines/radioLineComponent
         componentDidMount(): void;
         componentWillUnmount(): void;
         onChange(): void;
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-gui-editor/sharedUiComponents/lines/textInputLineComponent" {
-    import * as React from "react";
-    import { Observable } from "babylonjs/Misc/observable";
-    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
-    import { LockObject } from "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject";
-    interface ITextInputLineComponentProps {
-        label: string;
-        lockObject: LockObject;
-        target?: any;
-        propertyName?: string;
-        value?: string;
-        onChange?: (value: string) => void;
-        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
-    }
-    export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
-        value: string;
-    }> {
-        private _localChange;
-        constructor(props: ITextInputLineComponentProps);
-        componentWillUnmount(): void;
-        shouldComponentUpdate(nextProps: ITextInputLineComponentProps, nextState: {
-            value: string;
-        }): boolean;
-        raiseOnPropertyChanged(newValue: string, previousValue: string): void;
-        updateValue(value: string): void;
         render(): JSX.Element;
     }
 }
@@ -1372,207 +1391,6 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
-    export interface IPropertyComponentProps {
-        globalState: GlobalState;
-        guiControl: Control;
-    }
-}
-declare module GUIEDITOR {
-    interface ILineContainerComponentProps {
-        title: string;
-        children: any[] | any;
-        closed?: boolean;
-    }
-    export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
-        isExpanded: boolean;
-    }> {
-        constructor(props: ILineContainerComponentProps);
-        switchExpandedState(): void;
-        renderHeader(): JSX.Element;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    export class PropertyChangedEvent {
-        object: any;
-        property: string;
-        value: any;
-        initialValue: any;
-        allowNullValue?: boolean;
-    }
-}
-declare module GUIEDITOR {
-    export interface ICheckBoxLineComponentProps {
-        label: string;
-        target?: any;
-        propertyName?: string;
-        isSelected?: () => boolean;
-        onSelect?: (value: boolean) => void;
-        onValueChanged?: () => void;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-        disabled?: boolean;
-    }
-    export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
-        isSelected: boolean;
-        isDisabled?: boolean;
-    }> {
-        private static _UniqueIdSeed;
-        private _uniqueId;
-        private _localChange;
-        constructor(props: ICheckBoxLineComponentProps);
-        shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: {
-            isSelected: boolean;
-            isDisabled: boolean;
-        }): boolean;
-        onChange(): void;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    export class PropertyChangedEvent {
-        object: any;
-        property: string;
-        value: any;
-        initialValue: any;
-    }
-}
-declare module GUIEDITOR {
-    interface IFloatLineComponentProps {
-        label: string;
-        target: any;
-        propertyName: string;
-        onChange?: (newValue: number) => void;
-        isInteger?: boolean;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-        additionalClass?: string;
-        step?: string;
-        digits?: number;
-        globalState: GlobalState;
-        min?: number;
-        max?: number;
-        smallUI?: boolean;
-        onEnter?: (newValue: number) => void;
-    }
-    export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
-        value: string;
-    }> {
-        private _localChange;
-        private _store;
-        private _regExp;
-        private _digits;
-        constructor(props: IFloatLineComponentProps);
-        shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: {
-            value: string;
-        }): boolean;
-        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
-        updateValue(valueString: string): void;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    interface ISliderLineComponentProps {
-        label: string;
-        target?: any;
-        propertyName?: string;
-        minimum: number;
-        maximum: number;
-        step: number;
-        directValue?: number;
-        useEuler?: boolean;
-        onChange?: (value: number) => void;
-        onInput?: (value: number) => void;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-        decimalCount?: number;
-        globalState: GlobalState;
-    }
-    export class SliderLineComponent extends React.Component<ISliderLineComponentProps, {
-        value: number;
-    }> {
-        private _localChange;
-        constructor(props: ISliderLineComponentProps);
-        shouldComponentUpdate(nextProps: ISliderLineComponentProps, nextState: {
-            value: number;
-        }): boolean;
-        onChange(newValueString: any): void;
-        onInput(newValueString: any): void;
-        prepareDataToRead(value: number): number;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    export class GenericPropertyComponent extends React.Component<IPropertyComponentProps> {
-        constructor(props: IPropertyComponentProps);
-        render(): JSX.Element;
-    }
-    export class GeneralPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-        constructor(props: IPropertyComponentProps);
-        render(): JSX.Element;
-    }
-    export class GenericPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-        constructor(props: IPropertyComponentProps);
-        forceRebuild(notifiers?: {
-            "rebuild"?: boolean;
-            "update"?: boolean;
-        }): void;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    interface INumericInputComponentProps {
-        label: string;
-        value: number;
-        step?: number;
-        onChange: (value: number) => void;
-        globalState: GlobalState;
-    }
-    export class NumericInputComponent extends React.Component<INumericInputComponentProps, {
-        value: string;
-    }> {
-        static defaultProps: {
-            step: number;
-        };
-        private _localChange;
-        constructor(props: INumericInputComponentProps);
-        shouldComponentUpdate(nextProps: INumericInputComponentProps, nextState: {
-            value: string;
-        }): boolean;
-        updateValue(evt: any): void;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    interface ITextLineComponentProps {
-        label?: string;
-        value?: string;
-        color?: string;
-        underline?: boolean;
-        onLink?: () => void;
-        url?: string;
-        ignoreValue?: boolean;
-        additionalClass?: string;
-    }
-    export class TextLineComponent extends React.Component<ITextLineComponentProps> {
-        constructor(props: ITextLineComponentProps);
-        onLink(): void;
-        renderContent(): JSX.Element | null;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    export class SliderPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-        constructor(props: IPropertyComponentProps);
-        private _slider;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    export class PropertyGuiLedger {
-        static RegisteredControls: {
-            [key: string]: React.ComponentClass<IPropertyComponentProps>;
-        };
-    }
-}
-declare module GUIEDITOR {
     export class GUINode {
         guiControl: Control;
         private _x;
@@ -1607,9 +1425,17 @@ declare module GUIEDITOR {
         cleanAccumulation(useCeil?: boolean): void;
         clicked: boolean;
         _onMove(evt: BABYLON.Vector2, startPos: BABYLON.Vector2): boolean;
-        renderProperties(): BABYLON.Nullable<JSX.Element>;
         updateVisual(): void;
         dispose(): void;
+    }
+}
+declare module GUIEDITOR {
+    export class PropertyChangedEvent {
+        object: any;
+        property: string;
+        value: any;
+        initialValue: any;
+        allowNullValue?: boolean;
     }
 }
 declare module GUIEDITOR {
@@ -1633,12 +1459,28 @@ declare module GUIEDITOR {
         blockKeyboardEvents: boolean;
         controlCamera: boolean;
         workbench: WorkbenchComponent;
+        onPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
         storeEditorData: (serializationObject: any) => void;
         customSave?: {
             label: string;
             action: (data: string) => Promise<void>;
         };
         constructor();
+    }
+}
+declare module GUIEDITOR {
+    interface ILineContainerComponentProps {
+        title: string;
+        children: any[] | any;
+        closed?: boolean;
+    }
+    export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
+        isExpanded: boolean;
+    }> {
+        constructor(props: ILineContainerComponentProps);
+        switchExpandedState(): void;
+        renderHeader(): JSX.Element;
+        render(): JSX.Element;
     }
 }
 declare module GUIEDITOR {
@@ -1692,8 +1534,209 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
+    export interface ICheckBoxLineComponentProps {
+        label: string;
+        target?: any;
+        propertyName?: string;
+        isSelected?: () => boolean;
+        onSelect?: (value: boolean) => void;
+        onValueChanged?: () => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        disabled?: boolean;
+    }
+    export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
+        isSelected: boolean;
+        isDisabled?: boolean;
+    }> {
+        private static _UniqueIdSeed;
+        private _uniqueId;
+        private _localChange;
+        constructor(props: ICheckBoxLineComponentProps);
+        shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: {
+            isSelected: boolean;
+            isDisabled: boolean;
+        }): boolean;
+        onChange(): void;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface ITextLineComponentProps {
+        label?: string;
+        value?: string;
+        color?: string;
+        underline?: boolean;
+        onLink?: () => void;
+        url?: string;
+        ignoreValue?: boolean;
+        additionalClass?: string;
+    }
+    export class TextLineComponent extends React.Component<ITextLineComponentProps> {
+        constructor(props: ITextLineComponentProps);
+        onLink(): void;
+        renderContent(): JSX.Element | null;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
     export class SerializationTools {
         static Deserialize(serializationObject: any, globalState: GlobalState): void;
+    }
+}
+declare module GUIEDITOR {
+    /**
+     * Class used to provide lock mechanism
+     */
+    export class LockObject {
+        /**
+         * Gets or set if the lock is engaged
+         */
+        lock: boolean;
+    }
+}
+declare module GUIEDITOR {
+    interface IFloatLineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        lockObject?: LockObject;
+        onChange?: (newValue: number) => void;
+        isInteger?: boolean;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        additionalClass?: string;
+        step?: string;
+        digits?: number;
+        useEuler?: boolean;
+        min?: number;
+        max?: number;
+        smallUI?: boolean;
+        onEnter?: (newValue: number) => void;
+    }
+    export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
+        value: string;
+    }> {
+        private _localChange;
+        private _store;
+        constructor(props: IFloatLineComponentProps);
+        componentWillUnmount(): void;
+        shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: {
+            value: string;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
+        updateValue(valueString: string): void;
+        lock(): void;
+        unlock(): void;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface ISliderLineComponentProps {
+        label: string;
+        target?: any;
+        propertyName?: string;
+        minimum: number;
+        maximum: number;
+        step: number;
+        directValue?: number;
+        useEuler?: boolean;
+        onChange?: (value: number) => void;
+        onInput?: (value: number) => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        decimalCount?: number;
+        margin?: boolean;
+    }
+    export class SliderLineComponent extends React.Component<ISliderLineComponentProps, {
+        value: number;
+    }> {
+        private _localChange;
+        constructor(props: ISliderLineComponentProps);
+        shouldComponentUpdate(nextProps: ISliderLineComponentProps, nextState: {
+            value: number;
+        }): boolean;
+        onChange(newValueString: any): void;
+        onInput(newValueString: any): void;
+        prepareDataToRead(value: number): number;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface ITextInputLineComponentProps {
+        label: string;
+        lockObject: LockObject;
+        target?: any;
+        propertyName?: string;
+        value?: string;
+        onChange?: (value: string) => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
+        value: string;
+    }> {
+        private _localChange;
+        constructor(props: ITextInputLineComponentProps);
+        componentWillUnmount(): void;
+        shouldComponentUpdate(nextProps: ITextInputLineComponentProps, nextState: {
+            value: string;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: string, previousValue: string): void;
+        updateValue(value: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    export const Null_Value: number;
+    export class ListLineOption {
+        label: string;
+        value: number;
+        selected?: boolean;
+    }
+    export interface IOptionsLineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        options: ListLineOption[];
+        noDirectUpdate?: boolean;
+        onSelect?: (value: number) => void;
+        extractValue?: () => number;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        allowNullValue?: boolean;
+    }
+    export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, {
+        value: number;
+    }> {
+        private _localChange;
+        private remapValueIn;
+        private remapValueOut;
+        constructor(props: IOptionsLineComponentProps);
+        shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: {
+            value: number;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
+        updateValue(valueString: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface ICommonControlPropertyGridComponentProps {
+        control: Control;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
+        constructor(props: ICommonControlPropertyGridComponentProps);
+        renderGridInformation(): JSX.Element | null;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface ISliderPropertyGridComponentProps {
+        slider: Slider;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class SliderPropertyGridComponent extends React.Component<ISliderPropertyGridComponentProps> {
+        constructor(props: ISliderPropertyGridComponentProps);
+        render(): JSX.Element;
     }
 }
 declare module GUIEDITOR {
@@ -1705,7 +1748,10 @@ declare module GUIEDITOR {
     }
     export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
         private _onBuiltObserver;
+        private _timerIntervalId;
+        private _lockObject;
         constructor(props: IPropertyTabComponentProps);
+        timerRefresh(): void;
         componentDidMount(): void;
         componentWillUnmount(): void;
         load(file: File): void;
@@ -1714,6 +1760,7 @@ declare module GUIEDITOR {
         customSave(): void;
         saveToSnippetServer(): void;
         loadFromSnippet(): void;
+        renderProperties(): JSX.Element | null;
         render(): JSX.Element;
     }
 }
@@ -1843,6 +1890,101 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
+    export interface IPropertyComponentProps {
+        globalState: GlobalState;
+        guiControl: Control;
+    }
+}
+declare module GUIEDITOR {
+    export class PropertyChangedEvent {
+        object: any;
+        property: string;
+        value: any;
+        initialValue: any;
+    }
+}
+declare module GUIEDITOR {
+    interface IFloatLineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        onChange?: (newValue: number) => void;
+        isInteger?: boolean;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        additionalClass?: string;
+        step?: string;
+        digits?: number;
+        globalState: GlobalState;
+        min?: number;
+        max?: number;
+        smallUI?: boolean;
+        onEnter?: (newValue: number) => void;
+    }
+    export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
+        value: string;
+    }> {
+        private _localChange;
+        private _store;
+        private _regExp;
+        private _digits;
+        constructor(props: IFloatLineComponentProps);
+        shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: {
+            value: string;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
+        updateValue(valueString: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface ISliderLineComponentProps {
+        label: string;
+        target?: any;
+        propertyName?: string;
+        minimum: number;
+        maximum: number;
+        step: number;
+        directValue?: number;
+        useEuler?: boolean;
+        onChange?: (value: number) => void;
+        onInput?: (value: number) => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        decimalCount?: number;
+        globalState: GlobalState;
+    }
+    export class SliderLineComponent extends React.Component<ISliderLineComponentProps, {
+        value: number;
+    }> {
+        private _localChange;
+        constructor(props: ISliderLineComponentProps);
+        shouldComponentUpdate(nextProps: ISliderLineComponentProps, nextState: {
+            value: number;
+        }): boolean;
+        onChange(newValueString: any): void;
+        onInput(newValueString: any): void;
+        prepareDataToRead(value: number): number;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    export class GenericPropertyComponent extends React.Component<IPropertyComponentProps> {
+        constructor(props: IPropertyComponentProps);
+        render(): JSX.Element;
+    }
+    export class GeneralPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        constructor(props: IPropertyComponentProps);
+        render(): JSX.Element;
+    }
+    export class GenericPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        constructor(props: IPropertyComponentProps);
+        forceRebuild(notifiers?: {
+            "rebuild"?: boolean;
+            "update"?: boolean;
+        }): void;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
     interface ILineWithFileButtonComponentProps {
         title: string;
         closed?: boolean;
@@ -1859,6 +2001,29 @@ declare module GUIEDITOR {
         constructor(props: ILineWithFileButtonComponentProps);
         onChange(evt: any): void;
         switchExpandedState(): void;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface INumericInputComponentProps {
+        label: string;
+        value: number;
+        step?: number;
+        onChange: (value: number) => void;
+        globalState: GlobalState;
+    }
+    export class NumericInputComponent extends React.Component<INumericInputComponentProps, {
+        value: string;
+    }> {
+        static defaultProps: {
+            step: number;
+        };
+        private _localChange;
+        constructor(props: INumericInputComponentProps);
+        shouldComponentUpdate(nextProps: INumericInputComponentProps, nextState: {
+            value: string;
+        }): boolean;
+        updateValue(evt: any): void;
         render(): JSX.Element;
     }
 }
@@ -2085,82 +2250,6 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
-    /**
-     * Class used to provide lock mechanism
-     */
-    export class LockObject {
-        /**
-         * Gets or set if the lock is engaged
-         */
-        lock: boolean;
-    }
-}
-declare module GUIEDITOR {
-    interface ISliderLineComponentProps {
-        label: string;
-        target?: any;
-        propertyName?: string;
-        minimum: number;
-        maximum: number;
-        step: number;
-        directValue?: number;
-        useEuler?: boolean;
-        onChange?: (value: number) => void;
-        onInput?: (value: number) => void;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-        decimalCount?: number;
-        margin?: boolean;
-    }
-    export class SliderLineComponent extends React.Component<ISliderLineComponentProps, {
-        value: number;
-    }> {
-        private _localChange;
-        constructor(props: ISliderLineComponentProps);
-        shouldComponentUpdate(nextProps: ISliderLineComponentProps, nextState: {
-            value: number;
-        }): boolean;
-        onChange(newValueString: any): void;
-        onInput(newValueString: any): void;
-        prepareDataToRead(value: number): number;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    interface IFloatLineComponentProps {
-        label: string;
-        target: any;
-        propertyName: string;
-        lockObject?: LockObject;
-        onChange?: (newValue: number) => void;
-        isInteger?: boolean;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-        additionalClass?: string;
-        step?: string;
-        digits?: number;
-        useEuler?: boolean;
-        min?: number;
-        max?: number;
-        smallUI?: boolean;
-        onEnter?: (newValue: number) => void;
-    }
-    export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
-        value: string;
-    }> {
-        private _localChange;
-        private _store;
-        constructor(props: IFloatLineComponentProps);
-        componentWillUnmount(): void;
-        shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: {
-            value: string;
-        }): boolean;
-        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
-        updateValue(valueString: string): void;
-        lock(): void;
-        unlock(): void;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
     interface IHexLineComponentProps {
         label: string;
         target: any;
@@ -2248,39 +2337,6 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
-    export const Null_Value: number;
-    export class ListLineOption {
-        label: string;
-        value: number;
-        selected?: boolean;
-    }
-    export interface IOptionsLineComponentProps {
-        label: string;
-        target: any;
-        propertyName: string;
-        options: ListLineOption[];
-        noDirectUpdate?: boolean;
-        onSelect?: (value: number) => void;
-        extractValue?: () => number;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-        allowNullValue?: boolean;
-    }
-    export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, {
-        value: number;
-    }> {
-        private _localChange;
-        private remapValueIn;
-        private remapValueOut;
-        constructor(props: IOptionsLineComponentProps);
-        shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: {
-            value: number;
-        }): boolean;
-        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
-        updateValue(valueString: string): void;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
     interface IRadioButtonLineComponentProps {
         onSelectionChangedObservable: BABYLON.Observable<RadioButtonLineComponent>;
         label: string;
@@ -2295,30 +2351,6 @@ declare module GUIEDITOR {
         componentDidMount(): void;
         componentWillUnmount(): void;
         onChange(): void;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    interface ITextInputLineComponentProps {
-        label: string;
-        lockObject: LockObject;
-        target?: any;
-        propertyName?: string;
-        value?: string;
-        onChange?: (value: string) => void;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-    }
-    export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
-        value: string;
-    }> {
-        private _localChange;
-        constructor(props: ITextInputLineComponentProps);
-        componentWillUnmount(): void;
-        shouldComponentUpdate(nextProps: ITextInputLineComponentProps, nextState: {
-            value: string;
-        }): boolean;
-        raiseOnPropertyChanged(newValue: string, previousValue: string): void;
-        updateValue(value: string): void;
         render(): JSX.Element;
     }
 }

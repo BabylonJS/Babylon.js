@@ -43786,6 +43786,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _diagram_guiNode__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../diagram/guiNode */ "./diagram/guiNode.ts");
 /* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
 /* harmony import */ var _serializationTools__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../serializationTools */ "./serializationTools.ts");
+/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_lockObject__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/lockObject */ "./sharedUiComponents/tabs/propertyGrids/lockObject.ts");
+/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_sliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/sliderPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/sliderPropertyGridComponent.tsx");
+
+
 
 
 
@@ -43803,11 +43807,18 @@ var PropertyTabComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PropertyTabComponent, _super);
     function PropertyTabComponent(props) {
         var _this = _super.call(this, props) || this;
+        _this._lockObject = new _sharedUiComponents_tabs_propertyGrids_lockObject__WEBPACK_IMPORTED_MODULE_10__["LockObject"]();
         _this.state = { currentNode: null };
         return _this;
     }
+    PropertyTabComponent.prototype.timerRefresh = function () {
+        if (!this._lockObject.lock) {
+            this.forceUpdate();
+        }
+    };
     PropertyTabComponent.prototype.componentDidMount = function () {
         var _this = this;
+        this._timerIntervalId = window.setInterval(function () { return _this.timerRefresh(); }, 500);
         this.props.globalState.onSelectionChangedObservable.add(function (selection) {
             if (selection instanceof _diagram_guiNode__WEBPACK_IMPORTED_MODULE_7__["GUINode"]) {
                 _this.setState({ currentNode: selection });
@@ -43821,6 +43832,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         });
     };
     PropertyTabComponent.prototype.componentWillUnmount = function () {
+        window.clearInterval(this._timerIntervalId);
         this.props.globalState.onBuiltObservable.remove(this._onBuiltObserver);
     };
     PropertyTabComponent.prototype.load = function (file) {
@@ -43925,15 +43937,23 @@ var PropertyTabComponent = /** @class */ (function (_super) {
             this.props.globalState.hostDocument.defaultView!.alert("Unable to load your node material: " + err);
         });*/
     };
+    PropertyTabComponent.prototype.renderProperties = function () {
+        var _a, _b;
+        var className = (_a = this.state.currentNode) === null || _a === void 0 ? void 0 : _a.guiControl.getClassName();
+        if (className === "Slider") {
+            var slider = (_b = this.state.currentNode) === null || _b === void 0 ? void 0 : _b.guiControl;
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_sliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__["SliderPropertyGridComponent"], { slider: slider, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
+        }
+        return null;
+    };
     PropertyTabComponent.prototype.render = function () {
         var _this = this;
-        var _a;
         if (this.state.currentNode) {
             return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "propertyTab" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "header" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { id: "logo", src: "https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "title" }, "GUI EDITOR")), (_a = this.state.currentNode) === null || _a === void 0 ? void 0 :
-                _a.renderProperties()));
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "title" }, "GUI EDITOR")),
+                this.renderProperties()));
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "propertyTab" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "header" },
@@ -43983,13 +44003,6 @@ var PropertyTabComponent = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GUINode", function() { return GUINode; });
-/* harmony import */ var _propertyLedger__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./propertyLedger */ "./diagram/propertyLedger.ts");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _properties_genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./properties/genericNodePropertyComponent */ "./diagram/properties/genericNodePropertyComponent.tsx");
-
-
-
 var GUINode = /** @class */ (function () {
     function GUINode(globalState, guiControl) {
         var _this = this;
@@ -44143,17 +44156,6 @@ var GUINode = /** @class */ (function () {
         return true;
         //evt.stopPropagation();
     };
-    GUINode.prototype.renderProperties = function () {
-        var className = this.guiControl.getClassName();
-        var control = _propertyLedger__WEBPACK_IMPORTED_MODULE_0__["PropertyGuiLedger"].RegisteredControls[className];
-        if (!control) {
-            control = _properties_genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_2__["GenericPropertyComponent"];
-        }
-        return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](control, {
-            globalState: this._globalState,
-            guiControl: this.guiControl
-        });
-    };
     GUINode.prototype.updateVisual = function () {
         this.guiControl.leftInPixels = this.x;
         this.guiControl.topInPixels = this.y;
@@ -44175,202 +44177,6 @@ var GUINode = /** @class */ (function () {
     return GUINode;
 }());
 
-
-
-/***/ }),
-
-/***/ "./diagram/properties/genericNodePropertyComponent.tsx":
-/*!*************************************************************!*\
-  !*** ./diagram/properties/genericNodePropertyComponent.tsx ***!
-  \*************************************************************/
-/*! exports provided: GenericPropertyComponent, GeneralPropertyTabComponent, GenericPropertyTabComponent */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GenericPropertyComponent", function() { return GenericPropertyComponent; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GeneralPropertyTabComponent", function() { return GeneralPropertyTabComponent; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GenericPropertyTabComponent", function() { return GenericPropertyTabComponent; });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../sharedUiComponents/lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
-/* harmony import */ var _sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../sharedComponents/floatLineComponent */ "./sharedComponents/floatLineComponent.tsx");
-/* harmony import */ var _sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../sharedComponents/sliderLineComponent */ "./sharedComponents/sliderLineComponent.tsx");
-/* harmony import */ var babylonjs_Materials_Node_nodeMaterialDecorator__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterialDecorator */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Materials_Node_nodeMaterialDecorator__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_nodeMaterialDecorator__WEBPACK_IMPORTED_MODULE_6__);
-
-
-
-
-
-
-
-var GenericPropertyComponent = /** @class */ (function (_super) {
-    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GenericPropertyComponent, _super);
-    function GenericPropertyComponent(props) {
-        return _super.call(this, props) || this;
-    }
-    GenericPropertyComponent.prototype.render = function () {
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](GeneralPropertyTabComponent, { globalState: this.props.globalState, guiControl: this.props.guiControl }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](GenericPropertyTabComponent, { globalState: this.props.globalState, guiControl: this.props.guiControl })));
-    };
-    return GenericPropertyComponent;
-}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
-
-var GeneralPropertyTabComponent = /** @class */ (function (_super) {
-    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GeneralPropertyTabComponent, _super);
-    function GeneralPropertyTabComponent(props) {
-        return _super.call(this, props) || this;
-    }
-    GeneralPropertyTabComponent.prototype.render = function () {
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "GENERAL" })));
-    };
-    return GeneralPropertyTabComponent;
-}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
-
-var GenericPropertyTabComponent = /** @class */ (function (_super) {
-    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GenericPropertyTabComponent, _super);
-    function GenericPropertyTabComponent(props) {
-        return _super.call(this, props) || this;
-    }
-    GenericPropertyTabComponent.prototype.forceRebuild = function (notifiers) {
-        if (!notifiers || notifiers.update) {
-            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
-        }
-        if (!notifiers || notifiers.rebuild) {
-            this.props.globalState.onRebuildRequiredObservable.notifyObservers();
-        }
-    };
-    GenericPropertyTabComponent.prototype.render = function () {
-        var _this = this;
-        var block = this.props.guiControl, propStore = block._propStore;
-        if (!propStore) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null));
-        }
-        var componentList = {}, groups = [];
-        var _loop_1 = function (propertyName, displayName, type, groupName, options) {
-            var components = componentList[groupName];
-            if (!components) {
-                components = [];
-                componentList[groupName] = components;
-                groups.push(groupName);
-            }
-            switch (type) {
-                case babylonjs_Materials_Node_nodeMaterialDecorator__WEBPACK_IMPORTED_MODULE_6__["PropertyTypeForEdition"].Boolean: {
-                    components.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: displayName, target: this_1.props.guiControl, propertyName: propertyName, onValueChanged: function () { return _this.forceRebuild(options.notifiers); } }));
-                    break;
-                }
-                case babylonjs_Materials_Node_nodeMaterialDecorator__WEBPACK_IMPORTED_MODULE_6__["PropertyTypeForEdition"].Float: {
-                    var cantDisplaySlider = (isNaN(options.min) || isNaN(options.max) || options.min === options.max);
-                    if (cantDisplaySlider) {
-                        components.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { globalState: this_1.props.globalState, label: displayName, propertyName: propertyName, target: this_1.props.guiControl, onChange: function () { return _this.forceRebuild(options.notifiers); } }));
-                    }
-                    else {
-                        components.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { label: displayName, target: this_1.props.guiControl, globalState: this_1.props.globalState, propertyName: propertyName, step: Math.abs(options.max - options.min) / 100.0, minimum: Math.min(options.min, options.max), maximum: options.max, onChange: function () { return _this.forceRebuild(options.notifiers); } }));
-                    }
-                    break;
-                }
-            }
-        };
-        var this_1 = this;
-        for (var _i = 0, propStore_1 = propStore; _i < propStore_1.length; _i++) {
-            var _a = propStore_1[_i], propertyName = _a.propertyName, displayName = _a.displayName, type = _a.type, groupName = _a.groupName, options = _a.options;
-            _loop_1(propertyName, displayName, type, groupName, options);
-        }
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null, groups.map(function (group) {
-            return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: group }, componentList[group]);
-        })));
-    };
-    return GenericPropertyTabComponent;
-}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
-
-
-
-/***/ }),
-
-/***/ "./diagram/properties/sliderGuiPropertyComponent.tsx":
-/*!***********************************************************!*\
-  !*** ./diagram/properties/sliderGuiPropertyComponent.tsx ***!
-  \***********************************************************/
-/*! exports provided: SliderPropertyTabComponent */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SliderPropertyTabComponent", function() { return SliderPropertyTabComponent; });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../sharedUiComponents/lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
-/* harmony import */ var _genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./genericNodePropertyComponent */ "./diagram/properties/genericNodePropertyComponent.tsx");
-/* harmony import */ var _sharedComponents_numericInputComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../sharedComponents/numericInputComponent */ "./sharedComponents/numericInputComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
-
-
-
-
-
-
-var SliderPropertyTabComponent = /** @class */ (function (_super) {
-    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SliderPropertyTabComponent, _super);
-    function SliderPropertyTabComponent(props) {
-        var _this = _super.call(this, props) || this;
-        _this._slider = _this.props.guiControl;
-        return _this;
-    }
-    SliderPropertyTabComponent.prototype.render = function () {
-        var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_3__["GeneralPropertyTabComponent"], { globalState: this.props.globalState, guiControl: this.props.guiControl }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "PROPERTIES" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_numericInputComponent__WEBPACK_IMPORTED_MODULE_4__["NumericInputComponent"], { globalState: this.props.globalState, label: "Minimum Value", value: this._slider.minimum, onChange: function (evt) {
-                        _this._slider.minimum = evt;
-                    } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_numericInputComponent__WEBPACK_IMPORTED_MODULE_4__["NumericInputComponent"], { globalState: this.props.globalState, label: "Maximum Value", value: this._slider.maximum, onChange: function (evt) {
-                        _this._slider.maximum = evt;
-                    } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_numericInputComponent__WEBPACK_IMPORTED_MODULE_4__["NumericInputComponent"], { globalState: this.props.globalState, label: "Value", value: this._slider.value, onChange: function (evt) {
-                        _this._slider.value = evt;
-                    } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_numericInputComponent__WEBPACK_IMPORTED_MODULE_4__["NumericInputComponent"], { globalState: this.props.globalState, label: "Height", value: this._slider.heightInPixels, onChange: function (evt) {
-                        _this._slider.height = evt;
-                    } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_numericInputComponent__WEBPACK_IMPORTED_MODULE_4__["NumericInputComponent"], { globalState: this.props.globalState, label: "Width", value: this._slider.widthInPixels, onChange: function (evt) {
-                        _this._slider.width = evt;
-                    } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Color", value: this._slider.background }))));
-    };
-    return SliderPropertyTabComponent;
-}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
-
-
-
-/***/ }),
-
-/***/ "./diagram/propertyLedger.ts":
-/*!***********************************!*\
-  !*** ./diagram/propertyLedger.ts ***!
-  \***********************************/
-/*! exports provided: PropertyGuiLedger */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PropertyGuiLedger", function() { return PropertyGuiLedger; });
-/* harmony import */ var _properties_sliderGuiPropertyComponent__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./properties/sliderGuiPropertyComponent */ "./diagram/properties/sliderGuiPropertyComponent.tsx");
-
-var PropertyGuiLedger = /** @class */ (function () {
-    function PropertyGuiLedger() {
-    }
-    PropertyGuiLedger.RegisteredControls = {};
-    return PropertyGuiLedger;
-}());
-
-PropertyGuiLedger.RegisteredControls["Slider"] = _properties_sliderGuiPropertyComponent__WEBPACK_IMPORTED_MODULE_0__["SliderPropertyTabComponent"];
 
 
 /***/ }),
@@ -44929,6 +44735,7 @@ var GlobalState = /** @class */ (function () {
         this.onSelectionBoxMoved = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onGuiNodeRemovalObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.blockKeyboardEvents = false;
+        this.onPropertyChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.controlCamera = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadBoolean("ControlCamera", true);
         var r = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("BackgroundColorR", 0.12549019607843137);
         var g = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("BackgroundColorG", 0.09803921568627451);
@@ -45225,120 +45032,6 @@ var SerializationTools = /** @class */ (function () {
 
 /***/ }),
 
-/***/ "./sharedComponents/floatLineComponent.tsx":
-/*!*************************************************!*\
-  !*** ./sharedComponents/floatLineComponent.tsx ***!
-  \*************************************************/
-/*! exports provided: FloatLineComponent */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FloatLineComponent", function() { return FloatLineComponent; });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-
-
-var FloatLineComponent = /** @class */ (function (_super) {
-    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(FloatLineComponent, _super);
-    function FloatLineComponent(props) {
-        var _this = _super.call(this, props) || this;
-        _this._localChange = false;
-        var currentValue = _this.props.target[_this.props.propertyName];
-        _this._digits == _this.props.digits == undefined ? 2 : _this.props.digits;
-        _this.state = { value: currentValue ? (_this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(_this._digits)) : "0" };
-        _this._store = currentValue;
-        var rexp = "(.*\\.";
-        var numDigits = _this._digits;
-        while (numDigits--) {
-            rexp += ".";
-        }
-        rexp += ").+";
-        _this._regExp = new RegExp(rexp);
-        return _this;
-    }
-    FloatLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        if (this._localChange) {
-            this._localChange = false;
-            return true;
-        }
-        var newValue = nextProps.target[nextProps.propertyName];
-        var newValueString = newValue ? this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this._digits) : "0";
-        if (newValueString !== nextState.value) {
-            nextState.value = newValueString;
-            return true;
-        }
-        return false;
-    };
-    FloatLineComponent.prototype.raiseOnPropertyChanged = function (newValue, previousValue) {
-        if (this.props.onChange) {
-            this.props.onChange(newValue);
-        }
-        if (!this.props.onPropertyChangedObservable) {
-            return;
-        }
-        this.props.onPropertyChangedObservable.notifyObservers({
-            object: this.props.target,
-            property: this.props.propertyName,
-            value: newValue,
-            initialValue: previousValue
-        });
-    };
-    FloatLineComponent.prototype.updateValue = function (valueString) {
-        if (/[^0-9\.\-]/g.test(valueString)) {
-            return;
-        }
-        valueString = valueString.replace(this._regExp, "$1");
-        var valueAsNumber;
-        if (this.props.isInteger) {
-            valueAsNumber = parseInt(valueString);
-        }
-        else {
-            valueAsNumber = parseFloat(valueString);
-        }
-        this._localChange = true;
-        this.setState({ value: valueString });
-        if (isNaN(valueAsNumber)) {
-            return;
-        }
-        if (this.props.max != undefined && (valueAsNumber > this.props.max)) {
-            valueAsNumber = this.props.max;
-        }
-        if (this.props.min != undefined && (valueAsNumber < this.props.min)) {
-            valueAsNumber = this.props.min;
-        }
-        this.props.target[this.props.propertyName] = valueAsNumber;
-        this.raiseOnPropertyChanged(valueAsNumber, this._store);
-        this._store = valueAsNumber;
-    };
-    FloatLineComponent.prototype.render = function () {
-        var _this = this;
-        var className = this.props.smallUI ? "short" : "value";
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null, react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: className },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", step: this.props.step || "0.01", className: "numeric-input", onBlur: function (evt) {
-                        _this.props.globalState.blockKeyboardEvents = false;
-                        if (_this.props.onEnter) {
-                            _this.props.onEnter(_this._store);
-                        }
-                    }, onKeyDown: function (evt) {
-                        if (evt.keyCode !== 13) {
-                            return;
-                        }
-                        if (_this.props.onEnter) {
-                            _this.props.onEnter(_this._store);
-                        }
-                    }, onFocus: function () { return _this.props.globalState.blockKeyboardEvents = true; }, value: this.state.value, onChange: function (evt) { return _this.updateValue(evt.target.value); } })))));
-    };
-    return FloatLineComponent;
-}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
-
-
-
-/***/ }),
-
 /***/ "./sharedComponents/messageDialog.tsx":
 /*!********************************************!*\
   !*** ./sharedComponents/messageDialog.tsx ***!
@@ -45376,178 +45069,6 @@ var MessageDialogComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "dialog-button-ok" + (this.state.isError ? " error" : ""), onClick: function () { return _this.setState({ message: "" }); } }, "OK")))));
     };
     return MessageDialogComponent;
-}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
-
-
-
-/***/ }),
-
-/***/ "./sharedComponents/numericInputComponent.tsx":
-/*!****************************************************!*\
-  !*** ./sharedComponents/numericInputComponent.tsx ***!
-  \****************************************************/
-/*! exports provided: NumericInputComponent */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "NumericInputComponent", function() { return NumericInputComponent; });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-
-
-var NumericInputComponent = /** @class */ (function (_super) {
-    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(NumericInputComponent, _super);
-    function NumericInputComponent(props) {
-        var _this = _super.call(this, props) || this;
-        _this._localChange = false;
-        _this.state = { value: _this.props.value.toFixed(3) };
-        return _this;
-    }
-    NumericInputComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        if (this._localChange) {
-            this._localChange = false;
-            return true;
-        }
-        if (nextProps.value.toString() !== nextState.value) {
-            nextState.value = nextProps.value.toFixed(3);
-            return true;
-        }
-        return false;
-    };
-    NumericInputComponent.prototype.updateValue = function (evt) {
-        var value = evt.target.value;
-        if (/[^0-9\.\-]/g.test(value)) {
-            return;
-        }
-        var valueAsNumber = parseFloat(value);
-        this._localChange = true;
-        this.setState({ value: value });
-        if (isNaN(valueAsNumber)) {
-            return;
-        }
-        this.props.onChange(valueAsNumber);
-    };
-    NumericInputComponent.prototype.render = function () {
-        var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "numeric" },
-            this.props.label &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "numeric-label" }, this.props.label + ": "),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", onFocus: function () { return _this.props.globalState.blockKeyboardEvents = true; }, onBlur: function (evt) {
-                    _this.props.globalState.blockKeyboardEvents = false;
-                }, step: this.props.step, className: "numeric-input", value: this.state.value, onChange: function (evt) { return _this.updateValue(evt); } })));
-    };
-    NumericInputComponent.defaultProps = {
-        step: 1,
-    };
-    return NumericInputComponent;
-}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
-
-
-
-/***/ }),
-
-/***/ "./sharedComponents/sliderLineComponent.tsx":
-/*!**************************************************!*\
-  !*** ./sharedComponents/sliderLineComponent.tsx ***!
-  \**************************************************/
-/*! exports provided: SliderLineComponent */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SliderLineComponent", function() { return SliderLineComponent; });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _floatLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./floatLineComponent */ "./sharedComponents/floatLineComponent.tsx");
-
-
-
-
-var SliderLineComponent = /** @class */ (function (_super) {
-    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SliderLineComponent, _super);
-    function SliderLineComponent(props) {
-        var _this = _super.call(this, props) || this;
-        _this._localChange = false;
-        if (_this.props.directValue !== undefined) {
-            _this.state = {
-                value: _this.props.directValue
-            };
-        }
-        else {
-            var value = _this.props.target[_this.props.propertyName];
-            if (value === undefined) {
-                value = _this.props.maximum;
-            }
-            _this.state = { value: value };
-        }
-        return _this;
-    }
-    SliderLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        if (nextProps.directValue !== undefined) {
-            nextState.value = nextProps.directValue;
-            return true;
-        }
-        var currentState = nextProps.target[nextProps.propertyName];
-        if (currentState === undefined) {
-            currentState = nextProps.maximum;
-        }
-        if (currentState !== nextState.value || nextProps.minimum !== this.props.minimum || nextProps.maximum !== this.props.maximum || this._localChange) {
-            nextState.value = Math.min(Math.max(currentState, nextProps.minimum), nextProps.maximum);
-            this._localChange = false;
-            return true;
-        }
-        return false;
-    };
-    SliderLineComponent.prototype.onChange = function (newValueString) {
-        this._localChange = true;
-        var newValue = parseFloat(newValueString);
-        if (this.props.useEuler) {
-            newValue = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Tools"].ToRadians(newValue);
-        }
-        if (this.props.target) {
-            if (this.props.onPropertyChangedObservable) {
-                this.props.onPropertyChangedObservable.notifyObservers({
-                    object: this.props.target,
-                    property: this.props.propertyName,
-                    value: newValue,
-                    initialValue: this.state.value
-                });
-            }
-            this.props.target[this.props.propertyName] = newValue;
-        }
-        if (this.props.onChange) {
-            this.props.onChange(newValue);
-        }
-        this.setState({ value: newValue });
-    };
-    SliderLineComponent.prototype.onInput = function (newValueString) {
-        var newValue = parseFloat(newValueString);
-        if (this.props.onInput) {
-            this.props.onInput(newValue);
-        }
-    };
-    SliderLineComponent.prototype.prepareDataToRead = function (value) {
-        if (this.props.useEuler) {
-            return babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Tools"].ToDegrees(value);
-        }
-        return value;
-    };
-    SliderLineComponent.prototype.render = function () {
-        var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "sliderLine" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { globalState: this.props.globalState, smallUI: true, label: "", target: this.state, propertyName: "value", min: this.prepareDataToRead(this.props.minimum), max: this.prepareDataToRead(this.props.maximum), onEnter: function () {
-                    _this.onChange(_this.state.value);
-                } }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "slider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { className: "range", type: "range", step: this.props.step, min: this.prepareDataToRead(this.props.minimum), max: this.prepareDataToRead(this.props.maximum), value: this.prepareDataToRead(this.state.value), onInput: function (evt) { return _this.onInput(evt.target.value); }, onChange: function (evt) { return _this.onChange(evt.target.value); } }))));
-    };
-    return SliderLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
@@ -45761,6 +45282,148 @@ var FileButtonLineComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./sharedUiComponents/lines/floatLineComponent.tsx":
+/*!*********************************************************!*\
+  !*** ./sharedUiComponents/lines/floatLineComponent.tsx ***!
+  \*********************************************************/
+/*! exports provided: FloatLineComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FloatLineComponent", function() { return FloatLineComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _sliderLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./sliderLineComponent */ "./sharedUiComponents/lines/sliderLineComponent.tsx");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__);
+
+
+
+
+var FloatLineComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(FloatLineComponent, _super);
+    function FloatLineComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this._localChange = false;
+        var currentValue = _this.props.target[_this.props.propertyName];
+        _this.state = { value: currentValue ? (_this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(_this.props.digits || 4)) : "0" };
+        _this._store = currentValue;
+        return _this;
+    }
+    FloatLineComponent.prototype.componentWillUnmount = function () {
+        this.unlock();
+    };
+    FloatLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
+        if (this._localChange) {
+            this._localChange = false;
+            return true;
+        }
+        var newValue = nextProps.target[nextProps.propertyName];
+        var newValueString = newValue ? this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this.props.digits || 4) : "0";
+        if (newValueString !== nextState.value) {
+            nextState.value = newValueString;
+            return true;
+        }
+        return false;
+    };
+    FloatLineComponent.prototype.raiseOnPropertyChanged = function (newValue, previousValue) {
+        if (this.props.onChange) {
+            this.props.onChange(newValue);
+        }
+        if (!this.props.onPropertyChangedObservable) {
+            return;
+        }
+        this.props.onPropertyChangedObservable.notifyObservers({
+            object: this.props.target,
+            property: this.props.propertyName,
+            value: newValue,
+            initialValue: previousValue
+        });
+    };
+    FloatLineComponent.prototype.updateValue = function (valueString) {
+        if (/[^0-9\.\-]/g.test(valueString)) {
+            return;
+        }
+        var valueAsNumber;
+        if (this.props.isInteger) {
+            valueAsNumber = parseInt(valueString);
+        }
+        else {
+            valueAsNumber = parseFloat(valueString);
+        }
+        if (!isNaN(valueAsNumber)) {
+            if (this.props.min !== undefined) {
+                if (valueAsNumber < this.props.min) {
+                    valueAsNumber = this.props.min;
+                    valueString = valueAsNumber.toString();
+                }
+            }
+            if (this.props.max !== undefined) {
+                if (valueAsNumber > this.props.max) {
+                    valueAsNumber = this.props.max;
+                    valueString = valueAsNumber.toString();
+                }
+            }
+        }
+        this._localChange = true;
+        this.setState({ value: valueString });
+        if (isNaN(valueAsNumber)) {
+            return;
+        }
+        this.props.target[this.props.propertyName] = valueAsNumber;
+        this.raiseOnPropertyChanged(valueAsNumber, this._store);
+        this._store = valueAsNumber;
+    };
+    FloatLineComponent.prototype.lock = function () {
+        if (this.props.lockObject) {
+            this.props.lockObject.lock = true;
+        }
+    };
+    FloatLineComponent.prototype.unlock = function () {
+        if (this.props.lockObject) {
+            this.props.lockObject.lock = false;
+        }
+    };
+    FloatLineComponent.prototype.render = function () {
+        var _this = this;
+        var valueAsNumber;
+        if (this.props.isInteger) {
+            valueAsNumber = parseInt(this.state.value);
+        }
+        else {
+            valueAsNumber = parseFloat(this.state.value);
+        }
+        var className = this.props.smallUI ? "short" : "value";
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+            !this.props.useEuler &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: className },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", step: this.props.step || this.props.isInteger ? "1" : "0.01", className: "numeric-input", onKeyDown: function (evt) {
+                                if (evt.keyCode !== 13) {
+                                    return;
+                                }
+                                if (_this.props.onEnter) {
+                                    _this.props.onEnter(_this._store);
+                                }
+                            }, value: this.state.value, onBlur: function () {
+                                _this.unlock();
+                                if (_this.props.onEnter) {
+                                    _this.props.onEnter(_this._store);
+                                }
+                            }, onFocus: function () { return _this.lock(); }, onChange: function (evt) { return _this.updateValue(evt.target.value); } }))),
+            this.props.useEuler &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sliderLineComponent__WEBPACK_IMPORTED_MODULE_2__["SliderLineComponent"], { label: this.props.label, minimum: 0, maximum: 360, step: 0.1, directValue: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Tools"].ToDegrees(valueAsNumber), onChange: function (value) { return _this.updateValue(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Tools"].ToRadians(value).toString()); } })));
+    };
+    return FloatLineComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
 /***/ "./sharedUiComponents/lines/lineContainerComponent.tsx":
 /*!*************************************************************!*\
   !*** ./sharedUiComponents/lines/lineContainerComponent.tsx ***!
@@ -45812,6 +45475,99 @@ var LineContainerComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "paneList" }, this.props.children))));
     };
     return LineContainerComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./sharedUiComponents/lines/optionsLineComponent.tsx":
+/*!***********************************************************!*\
+  !*** ./sharedUiComponents/lines/optionsLineComponent.tsx ***!
+  \***********************************************************/
+/*! exports provided: Null_Value, ListLineOption, OptionsLineComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Null_Value", function() { return Null_Value; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ListLineOption", function() { return ListLineOption; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "OptionsLineComponent", function() { return OptionsLineComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+
+
+var Null_Value = Number.MAX_SAFE_INTEGER;
+var ListLineOption = /** @class */ (function () {
+    function ListLineOption() {
+    }
+    return ListLineOption;
+}());
+
+var OptionsLineComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(OptionsLineComponent, _super);
+    function OptionsLineComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this._localChange = false;
+        _this.state = { value: _this.remapValueIn(_this.props.extractValue ? _this.props.extractValue() : props.target[props.propertyName]) };
+        return _this;
+    }
+    OptionsLineComponent.prototype.remapValueIn = function (value) {
+        return this.props.allowNullValue && value === null ? Null_Value : value;
+    };
+    OptionsLineComponent.prototype.remapValueOut = function (value) {
+        return this.props.allowNullValue && value === Null_Value ? null : value;
+    };
+    OptionsLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
+        if (this._localChange) {
+            this._localChange = false;
+            return true;
+        }
+        var newValue = this.remapValueIn(nextProps.extractValue ? nextProps.extractValue() : nextProps.target[nextProps.propertyName]);
+        if (newValue != null && newValue !== nextState.value) {
+            nextState.value = newValue;
+            return true;
+        }
+        return false;
+    };
+    OptionsLineComponent.prototype.raiseOnPropertyChanged = function (newValue, previousValue) {
+        if (!this.props.onPropertyChangedObservable) {
+            return;
+        }
+        this.props.onPropertyChangedObservable.notifyObservers({
+            object: this.props.target,
+            property: this.props.propertyName,
+            value: newValue,
+            initialValue: previousValue,
+            allowNullValue: this.props.allowNullValue,
+        });
+    };
+    OptionsLineComponent.prototype.updateValue = function (valueString) {
+        var value = parseInt(valueString);
+        this._localChange = true;
+        var store = this.props.extractValue ? this.props.extractValue() : this.props.target[this.props.propertyName];
+        if (!this.props.noDirectUpdate) {
+            this.props.target[this.props.propertyName] = this.remapValueOut(value);
+        }
+        this.setState({ value: value });
+        if (this.props.onSelect) {
+            this.props.onSelect(value);
+        }
+        var newValue = this.props.extractValue ? this.props.extractValue() : this.props.target[this.props.propertyName];
+        this.raiseOnPropertyChanged(newValue, store);
+    };
+    OptionsLineComponent.prototype.render = function () {
+        var _this = this;
+        var _a;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "listLine" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "options" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { onChange: function (evt) { return _this.updateValue(evt.target.value); }, value: (_a = this.state.value) !== null && _a !== void 0 ? _a : "" }, this.props.options.map(function (option, i) {
+                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { selected: option.selected, key: option.label + i, value: option.value, title: option.label }, option.label));
+                })))));
+    };
+    return OptionsLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
@@ -45904,6 +45660,192 @@ var Popup = /** @class */ (function () {
 
 /***/ }),
 
+/***/ "./sharedUiComponents/lines/sliderLineComponent.tsx":
+/*!**********************************************************!*\
+  !*** ./sharedUiComponents/lines/sliderLineComponent.tsx ***!
+  \**********************************************************/
+/*! exports provided: SliderLineComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SliderLineComponent", function() { return SliderLineComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _floatLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
+
+
+
+
+var SliderLineComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SliderLineComponent, _super);
+    function SliderLineComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this._localChange = false;
+        if (_this.props.directValue !== undefined) {
+            _this.state = {
+                value: _this.props.directValue
+            };
+        }
+        else {
+            var value = _this.props.target[_this.props.propertyName];
+            if (value === undefined) {
+                value = _this.props.maximum;
+            }
+            _this.state = { value: value };
+        }
+        return _this;
+    }
+    SliderLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
+        if (nextProps.directValue !== undefined) {
+            nextState.value = nextProps.directValue;
+            return true;
+        }
+        var currentState = nextProps.target[nextProps.propertyName];
+        if (currentState === undefined) {
+            currentState = nextProps.maximum;
+        }
+        if (currentState !== nextState.value || this._localChange || nextProps.maximum !== this.props.maximum || nextProps.minimum !== this.props.minimum) {
+            nextState.value = currentState;
+            this._localChange = false;
+            return true;
+        }
+        return false;
+    };
+    SliderLineComponent.prototype.onChange = function (newValueString) {
+        this._localChange = true;
+        var newValue = parseFloat(newValueString);
+        if (this.props.useEuler) {
+            newValue = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Tools"].ToRadians(newValue);
+        }
+        if (this.props.target) {
+            if (this.props.onPropertyChangedObservable) {
+                this.props.onPropertyChangedObservable.notifyObservers({
+                    object: this.props.target,
+                    property: this.props.propertyName,
+                    value: newValue,
+                    initialValue: this.state.value
+                });
+            }
+            this.props.target[this.props.propertyName] = newValue;
+        }
+        if (this.props.onChange) {
+            this.props.onChange(newValue);
+        }
+        this.setState({ value: newValue });
+    };
+    SliderLineComponent.prototype.onInput = function (newValueString) {
+        var newValue = parseFloat(newValueString);
+        if (this.props.onInput) {
+            this.props.onInput(newValue);
+        }
+    };
+    SliderLineComponent.prototype.prepareDataToRead = function (value) {
+        if (value === null) {
+            value = 0;
+        }
+        if (this.props.useEuler) {
+            return babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Tools"].ToDegrees(value);
+        }
+        return value;
+    };
+    SliderLineComponent.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "sliderLine" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.margin ? "label withMargins" : "label", title: this.props.label }, this.props.label),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { smallUI: true, label: "", target: this.state, digits: this.props.decimalCount === undefined ? 4 : this.props.decimalCount, propertyName: "value", min: this.props.minimum, max: this.props.maximum, onEnter: function () {
+                    var changed = _this.prepareDataToRead(_this.state.value);
+                    _this.onChange(changed);
+                }, onChange: function (evt) { var changed = _this.prepareDataToRead(_this.state.value); _this.onChange(changed); } }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "slider" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { className: "range", type: "range", step: this.props.step, min: this.prepareDataToRead(this.props.minimum), max: this.prepareDataToRead(this.props.maximum), value: this.prepareDataToRead(this.state.value), onInput: function (evt) { return _this.onInput(evt.target.value); }, onChange: function (evt) { return _this.onChange(evt.target.value); } }))));
+    };
+    return SliderLineComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./sharedUiComponents/lines/textInputLineComponent.tsx":
+/*!*************************************************************!*\
+  !*** ./sharedUiComponents/lines/textInputLineComponent.tsx ***!
+  \*************************************************************/
+/*! exports provided: TextInputLineComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TextInputLineComponent", function() { return TextInputLineComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+
+
+var TextInputLineComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TextInputLineComponent, _super);
+    function TextInputLineComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this._localChange = false;
+        _this.state = { value: (_this.props.value !== undefined ? _this.props.value : _this.props.target[_this.props.propertyName]) || "" };
+        return _this;
+    }
+    TextInputLineComponent.prototype.componentWillUnmount = function () {
+        this.props.lockObject.lock = false;
+    };
+    TextInputLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
+        if (this._localChange) {
+            this._localChange = false;
+            return true;
+        }
+        var newValue = nextProps.value !== undefined ? nextProps.value : nextProps.target[nextProps.propertyName];
+        if (newValue !== nextState.value) {
+            nextState.value = newValue || "";
+            return true;
+        }
+        return false;
+    };
+    TextInputLineComponent.prototype.raiseOnPropertyChanged = function (newValue, previousValue) {
+        if (this.props.onChange) {
+            this.props.onChange(newValue);
+            return;
+        }
+        if (!this.props.onPropertyChangedObservable) {
+            return;
+        }
+        this.props.onPropertyChangedObservable.notifyObservers({
+            object: this.props.target,
+            property: this.props.propertyName,
+            value: newValue,
+            initialValue: previousValue
+        });
+    };
+    TextInputLineComponent.prototype.updateValue = function (value) {
+        this._localChange = true;
+        var store = this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName];
+        this.setState({ value: value });
+        this.raiseOnPropertyChanged(value, store);
+        if (this.props.propertyName) {
+            this.props.target[this.props.propertyName] = value;
+        }
+    };
+    TextInputLineComponent.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "textInputLine" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { value: this.state.value, onBlur: function () { return _this.props.lockObject.lock = false; }, onFocus: function () { return _this.props.lockObject.lock = true; }, onChange: function (evt) { return _this.updateValue(evt.target.value); } }))));
+    };
+    return TextInputLineComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
 /***/ "./sharedUiComponents/lines/textLineComponent.tsx":
 /*!********************************************************!*\
   !*** ./sharedUiComponents/lines/textLineComponent.tsx ***!
@@ -45952,6 +45894,199 @@ var TextLineComponent = /** @class */ (function (_super) {
     };
     return TextLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./sharedUiComponents/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx":
+/*!******************************************************************************************!*\
+  !*** ./sharedUiComponents/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx ***!
+  \******************************************************************************************/
+/*! exports provided: CommonControlPropertyGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CommonControlPropertyGridComponent", function() { return CommonControlPropertyGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
+/* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/button");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./sharedUiComponents/lines/sliderLineComponent.tsx");
+/* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
+/* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
+/* harmony import */ var _lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../lines/optionsLineComponent */ "./sharedUiComponents/lines/optionsLineComponent.tsx");
+
+
+
+
+
+
+
+
+
+var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CommonControlPropertyGridComponent, _super);
+    function CommonControlPropertyGridComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    CommonControlPropertyGridComponent.prototype.renderGridInformation = function () {
+        var control = this.props.control;
+        if (!control.parent) {
+            return null;
+        }
+        var gridParent = control.parent;
+        if (gridParent.rowCount === undefined) {
+            return null;
+        }
+        var grid = gridParent;
+        var childCellInfo = grid.getChildCellInfo(control);
+        if (childCellInfo === undefined) {
+            return null;
+        }
+        var cellInfos = childCellInfo.split(":");
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "GRID" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Row", value: cellInfos[0] }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Column", value: cellInfos[1] })));
+    };
+    CommonControlPropertyGridComponent.prototype.render = function () {
+        var control = this.props.control;
+        var horizontalOptions = [
+            { label: "Left", value: babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__["Control"].HORIZONTAL_ALIGNMENT_LEFT },
+            { label: "Right", value: babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__["Control"].HORIZONTAL_ALIGNMENT_RIGHT },
+            { label: "Center", value: babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__["Control"].HORIZONTAL_ALIGNMENT_CENTER },
+        ];
+        var verticalOptions = [
+            { label: "Top", value: babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__["Control"].VERTICAL_ALIGNMENT_TOP },
+            { label: "Bottom", value: babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__["Control"].VERTICAL_ALIGNMENT_BOTTOM },
+            { label: "Center", value: babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__["Control"].VERTICAL_ALIGNMENT_CENTER },
+        ];
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "GENERAL" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Class", value: control.getClassName() }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Name", target: control, propertyName: "name", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Unique ID", value: control.uniqueId.toString() }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { label: "Alpha", target: control, propertyName: "alpha", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                control.color !== undefined &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Color", target: control, propertyName: "color", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                control.background !== undefined &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Background", target: control, propertyName: "background", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            this.renderGridInformation(),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "ALIGNMENT" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_8__["OptionsLineComponent"], { label: "Horizontal", options: horizontalOptions, target: control, propertyName: "horizontalAlignment", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_8__["OptionsLineComponent"], { label: "Vertical", options: verticalOptions, target: control, propertyName: "verticalAlignment", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "POSITION" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Left", target: control, propertyName: "left", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Top", target: control, propertyName: "top", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Width", target: control, propertyName: "width", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Height", target: control, propertyName: "height", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Padding left", target: control, propertyName: "paddingLeft", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Padding top", target: control, propertyName: "paddingTop", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Padding right", target: control, propertyName: "paddingRight", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Padding bottom", target: control, propertyName: "paddingBottom", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "TRANSFORMATION", closed: true },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "ScaleX", target: control, propertyName: "scaleX", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "ScaleY", target: control, propertyName: "scaleY", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { label: "Rotation", target: control, propertyName: "rotation", minimum: 0, maximum: 2 * Math.PI, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Transform center X", target: control, propertyName: "transformCenterX", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Transform center Y", target: control, propertyName: "transformCenterY", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "FONT", closed: true },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Family", target: control, propertyName: "fontFamily", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Size", target: control, propertyName: "fontSize", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Weight", target: control, propertyName: "fontWeight", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Style", target: control, propertyName: "fontStyle", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "SHADOWS", closed: true },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Color", target: control, propertyName: "shadowColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Offset X", target: control, propertyName: "shadowOffsetX", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Offset Y", target: control, propertyName: "shadowOffsetY", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Blur", target: control, propertyName: "shadowBlur", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
+    };
+    return CommonControlPropertyGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./sharedUiComponents/tabs/propertyGrids/gui/sliderPropertyGridComponent.tsx":
+/*!***********************************************************************************!*\
+  !*** ./sharedUiComponents/tabs/propertyGrids/gui/sliderPropertyGridComponent.tsx ***!
+  \***********************************************************************************/
+/*! exports provided: SliderPropertyGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SliderPropertyGridComponent", function() { return SliderPropertyGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./commonControlPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
+/* harmony import */ var _lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
+/* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
+/* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
+/* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
+
+
+
+
+
+
+
+var SliderPropertyGridComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SliderPropertyGridComponent, _super);
+    function SliderPropertyGridComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    SliderPropertyGridComponent.prototype.render = function () {
+        var slider = this.props.slider;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: slider, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "SLIDER" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Border color", target: slider, propertyName: "borderColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Display thumb", target: slider, propertyName: "displayThumb", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Thumb circle", target: slider, propertyName: "isThumbCircle", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Vertical", target: slider, propertyName: "isVertical", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Thumb clamped", target: slider, propertyName: "isThumbClamped", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Bar offset", target: slider, propertyName: "barOffset", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Thumb width", target: slider, propertyName: "thumbWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Minimum", target: slider, propertyName: "minimum", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Maximum", target: slider, propertyName: "maximum", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Value", target: slider, propertyName: "value", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
+    };
+    return SliderPropertyGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./sharedUiComponents/tabs/propertyGrids/lockObject.ts":
+/*!*************************************************************!*\
+  !*** ./sharedUiComponents/tabs/propertyGrids/lockObject.ts ***!
+  \*************************************************************/
+/*! exports provided: LockObject */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LockObject", function() { return LockObject; });
+/**
+ * Class used to provide lock mechanism
+ */
+var LockObject = /** @class */ (function () {
+    function LockObject() {
+        /**
+         * Gets or set if the lock is engaged
+         */
+        this.lock = false;
+    }
+    return LockObject;
+}());
 
 
 
