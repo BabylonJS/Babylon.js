@@ -7586,7 +7586,9 @@ var GLTFLoader = /** @class */ (function () {
         var babylonAbstractMesh;
         var promise;
         if (shouldInstance && primitive._instanceData) {
+            this._babylonScene._blockEntityCollection = this._forAssetContainer;
             babylonAbstractMesh = primitive._instanceData.babylonSourceMesh.createInstance(name);
+            this._babylonScene._blockEntityCollection = false;
             promise = primitive._instanceData.promise;
         }
         else {

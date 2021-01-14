@@ -361,6 +361,20 @@
             ]
         },
         {
+            "name": "Launch WebGPU Build Validation (Edge) - Direct",
+            "type": "edge",
+            "version": "canary",
+            "request": "launch",
+            "url": "http://localhost:1338/tests/validation/?engine=webgpu",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis",
+                "--enable-unsafe-webgpu"
+            ]
+        },
+        {
             "name": "Launch memory checks (Chrome)",
             "type": "chrome",
             "request": "launch",

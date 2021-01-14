@@ -556,4 +556,34 @@ export class Constants {
      * Prefixes used by the engine for custom effects
      */
     public static readonly CUSTOMEFFECT_PREFIX_SHADOWGENERATOR = "bjs_shadowgenerator_";
+
+    /**
+     * Constant used as key code for Alt key
+     */
+    public static readonly INPUT_ALT_KEY = 18;
+
+    /**
+     * Constant used as key code for Ctrl key
+     */
+    public static readonly INPUT_CTRL_KEY = 17;
+
+    /**
+     * Constant used as key code for Meta key (Left Win, Left Cmd)
+     */
+    public static readonly INPUT_META_KEY1 = 91;
+
+    /**
+     * Constant used as key code for Meta key (Right Win)
+     */
+    public static readonly INPUT_META_KEY2 = 92;
+
+    /**
+     * Constant used as key code for Meta key (Right Win, Right Cmd)
+     */
+    public static readonly INPUT_META_KEY3 = 93;
+
+    /**
+     * Constant used as key code for Shift key
+     */
+    public static readonly INPUT_SHIFT_KEY = 16;
 }
