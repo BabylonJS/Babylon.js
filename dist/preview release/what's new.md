@@ -63,6 +63,7 @@
 - Added `focus()` and `blur()` functions for controls that implement `IFocusableControl` ([Flux159](https://github.com/Flux159))
 - Added `ToggleButton` GUI control ([kintz09](https://github.com/kintz09))
 - Added shorthand methods which set all padding values at once, named `setPadding` and `setPaddingInPixels`, to the control class  ([kintz09](https://github.com/kintz09))
+- Added two touch-enabled GUI controls, `TouchMeshButton3D` and `TouchHolographicButton`, added option on the WebXR hand tracking feature for enabling touch collisions ([rickfromwork](https://github.com/rickfromwork), [satyapoojasama](https://github.com/satyapoojasama))
 
 ### WebXR
 
@@ -72,6 +73,7 @@
 - Pointer Events of WebXR controllers have pointerType `xr` ([RaananW](https://github.com/RaananW))
 - better support for custom hand meshes ([RaananW](https://github.com/RaananW))
 - Allow disabling of the WebXRControllerPointerSelection feature as part of the WebXR Default Experience ([rgerd](https://github.com/rgerd))
+- Added two touch-enabled GUI controls, `TouchMeshButton3D` and `TouchHolographicButton`, added option on the WebXR hand tracking feature for enabling touch collisions ([rickfromwork](https://github.com/rickfromwork), [satyapoojasama](https://github.com/satyapoojasama))
 
 ### Viewer
 
