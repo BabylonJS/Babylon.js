@@ -1,7 +1,8 @@
 import { Engine } from '../Engines/engine';
+import { Tools } from '../Misc/tools';
 import { IDisposable } from '../scene';
 import { Nullable } from '../types';
-import { DeviceType } from './InputDevices/deviceEnums';
+import { DeviceType, PointerInput } from './InputDevices/deviceEnums';
 
 /** @hidden */
 declare const _native: any;
@@ -62,6 +63,8 @@ export class DeviceInputSystem implements IDisposable {
     private _pointerMoveEvent = (evt: any) => { };
     private _pointerDownEvent = (evt: any) => { };
     private _pointerUpEvent = (evt: any) => { };
+    private _pointerWheelEvent = (evt: any) => { };
+    private _wheelEventName: string;
 
     private _gamepadConnectedEvent = (evt: any) => { };
     private _gamepadDisconnectedEvent = (evt: any) => { };
@@ -69,10 +72,13 @@ export class DeviceInputSystem implements IDisposable {
     private _onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void = () => { };
 
     private static _MAX_KEYCODES: number = 255;
-    private static _MAX_POINTER_INPUTS: number = 7;
+    private static _MAX_POINTER_INPUTS: number = Object.keys(PointerInput).length / 2;
+
+    private _eventPrefix: string;
 
     private constructor(engine: Engine) {
         const inputElement = engine.getInputElement();
+        this._eventPrefix = Tools.GetPointerPrefix(engine);
 
         if (inputElement) {
             this._elementToAttachTo = inputElement;
@@ -127,7 +133,25 @@ export class DeviceInputSystem implements IDisposable {
             throw `Unable to find input ${inputIndex} for device ${DeviceType[deviceType]} in slot ${deviceSlot}`;
         }
 
+        // When the mouse wheel is moved, only clear the value if that input is polled for
+        if (deviceType === DeviceType.Mouse && (inputIndex >= PointerInput.MouseWheelX && inputIndex <= PointerInput.MouseWheelZ)) {
+            const currentValue = device[inputIndex];
+
+            device[inputIndex] = 0;
+
+            return currentValue;
+        }
+
         return device[inputIndex];
+    }
+
+    /**
+     * Check for a specific device in the DeviceInputSystem
+     * @param deviceType Type of device to check for
+     * @returns bool with status of device's existence
+     */
+    public isDeviceAvailable(deviceType: DeviceType) {
+        return (this._inputs[deviceType] !== undefined);
     }
 
     /**
@@ -142,9 +166,10 @@ export class DeviceInputSystem implements IDisposable {
 
         // Pointer Events
         if (this._pointerActive) {
-            this._elementToAttachTo.removeEventListener("pointermove", this._pointerMoveEvent);
-            this._elementToAttachTo.removeEventListener("pointerdown", this._pointerDownEvent);
-            this._elementToAttachTo.removeEventListener("pointerup", this._pointerUpEvent);
+            this._elementToAttachTo.removeEventListener(this._eventPrefix + "move", this._pointerMoveEvent);
+            this._elementToAttachTo.removeEventListener(this._eventPrefix + "down", this._pointerDownEvent);
+            this._elementToAttachTo.removeEventListener(this._eventPrefix + "up", this._pointerUpEvent);
+            this._elementToAttachTo.removeEventListener(this._wheelEventName, this._pointerWheelEvent);
         }
 
         // Gamepad Events
@@ -249,20 +274,20 @@ export class DeviceInputSystem implements IDisposable {
 
             const kbKey = this._inputs[DeviceType.Keyboard][0];
             if (kbKey) {
-                if (this.onInputChanged) {
-                    this.onInputChanged(DeviceType.Keyboard, 0, evt.keyCode, kbKey[evt.keyCode], 1);
-                }
                 kbKey[evt.keyCode] = 1;
+                if (this.onInputChanged) {
+                    this.onInputChanged(DeviceType.Keyboard, 0, evt.keyCode, 0, kbKey[evt.keyCode]);
+                }
             }
         });
 
         this._keyboardUpEvent = ((evt) => {
             const kbKey = this._inputs[DeviceType.Keyboard][0];
             if (kbKey) {
-                if (this.onInputChanged) {
-                    this.onInputChanged(DeviceType.Keyboard, 0, evt.keyCode, kbKey[evt.keyCode], 0);
-                }
                 kbKey[evt.keyCode] = 0;
+                if (this.onInputChanged) {
+                    this.onInputChanged(DeviceType.Keyboard, 0, evt.keyCode, 1, kbKey[evt.keyCode]);
+                }
             }
         });
 
@@ -275,8 +300,8 @@ export class DeviceInputSystem implements IDisposable {
      */
     private _handlePointerActions() {
         this._pointerMoveEvent = ((evt) => {
-            const deviceType = (evt.pointerType == "mouse") ? DeviceType.Mouse : DeviceType.Touch;
-            const deviceSlot = (evt.pointerType == "mouse") ? 0 : evt.pointerId;
+            const deviceType = (evt.pointerType === "mouse") ? DeviceType.Mouse : DeviceType.Touch;
+            const deviceSlot = (evt.pointerType === "mouse") ? 0 : evt.pointerId;
 
             if (!this._inputs[deviceType]) {
                 this._inputs[deviceType] = [];
@@ -288,18 +313,37 @@ export class DeviceInputSystem implements IDisposable {
 
             const pointer = this._inputs[deviceType][deviceSlot];
             if (pointer) {
+                // Store previous values for event
+                const previousHorizontal = pointer[PointerInput.Horizontal];
+                const previousVertical = pointer[PointerInput.Vertical];
+                const previousDeltaHorizontal = pointer[PointerInput.DeltaHorizontal];
+                const previousDeltaVertical = pointer[PointerInput.DeltaVertical];
+
+                pointer[PointerInput.Horizontal] = evt.clientX;
+                pointer[PointerInput.Vertical] = evt.clientY;
+                pointer[PointerInput.DeltaHorizontal] = evt.movementX;
+                pointer[PointerInput.DeltaVertical] = evt.movementY;
+
                 if (this.onInputChanged) {
-                    this.onInputChanged(deviceType, deviceSlot, 0, pointer[0], evt.clientX);
-                    this.onInputChanged(deviceType, deviceSlot, 1, pointer[1], evt.clientY);
+                    if (previousHorizontal !== evt.clientX) {
+                        this.onInputChanged(deviceType, deviceSlot, PointerInput.Horizontal, previousHorizontal, pointer[PointerInput.Horizontal]);
+                    }
+                    if (previousVertical !== evt.clientY) {
+                        this.onInputChanged(deviceType, deviceSlot, PointerInput.Vertical, previousVertical, pointer[PointerInput.Vertical]);
+                    }
+                    if (pointer[PointerInput.DeltaHorizontal] !== 0) {
+                        this.onInputChanged(deviceType, deviceSlot, PointerInput.DeltaHorizontal, previousDeltaHorizontal, pointer[PointerInput.DeltaHorizontal]);
+                    }
+                    if (pointer[PointerInput.DeltaVertical] !== 0) {
+                        this.onInputChanged(deviceType, deviceSlot, PointerInput.DeltaVertical, previousDeltaVertical, pointer[PointerInput.DeltaVertical]);
+                    }
                 }
-                pointer[0] = evt.clientX;
-                pointer[1] = evt.clientY;
             }
         });
 
         this._pointerDownEvent = ((evt) => {
-            const deviceType = (evt.pointerType == "mouse") ? DeviceType.Mouse : DeviceType.Touch;
-            const deviceSlot = (evt.pointerType == "mouse") ? 0 : evt.pointerId;
+            const deviceType = (evt.pointerType === "mouse") ? DeviceType.Mouse : DeviceType.Touch;
+            const deviceSlot = (evt.pointerType === "mouse") ? 0 : evt.pointerId;
 
             if (!this._inputs[deviceType]) {
                 this._inputs[deviceType] = [];
@@ -311,41 +355,127 @@ export class DeviceInputSystem implements IDisposable {
 
             const pointer = this._inputs[deviceType][deviceSlot];
             if (pointer) {
-                if (this.onInputChanged) {
-                    this.onInputChanged(deviceType, deviceSlot, 0, pointer[0], evt.clientX);
-                    this.onInputChanged(deviceType, deviceSlot, 1, pointer[1], evt.clientY);
-                    this.onInputChanged(deviceType, deviceSlot, evt.button + 2, pointer[evt.button + 2], 1);
-                }
-                pointer[0] = evt.clientX;
-                pointer[1] = evt.clientY;
+                const previousHorizontal = pointer[PointerInput.Horizontal];
+                const previousVertical = pointer[PointerInput.Vertical];
+                const previousButton = pointer[evt.button + 2];
+
+                pointer[PointerInput.Horizontal] = evt.clientX;
+                pointer[PointerInput.Vertical] = evt.clientY;
                 pointer[evt.button + 2] = 1;
+
+                if (this.onInputChanged) {
+                    if (previousHorizontal !== evt.clientX) {
+                        this.onInputChanged(deviceType, deviceSlot, PointerInput.Horizontal, previousHorizontal, pointer[PointerInput.Horizontal]);
+                    }
+                    if (previousVertical !== evt.clientY) {
+                        this.onInputChanged(deviceType, deviceSlot, PointerInput.Vertical, previousVertical, pointer[PointerInput.Vertical]);
+                    }
+                    this.onInputChanged(deviceType, deviceSlot, evt.button + 2, previousButton, pointer[evt.button + 2]);
+                }
             }
         });
 
         this._pointerUpEvent = ((evt) => {
-            const deviceType = (evt.pointerType == "mouse") ? DeviceType.Mouse : DeviceType.Touch;
-            const deviceSlot = (evt.pointerType == "mouse") ? 0 : evt.pointerId;
+            const deviceType = (evt.pointerType === "mouse") ? DeviceType.Mouse : DeviceType.Touch;
+            const deviceSlot = (evt.pointerType === "mouse") ? 0 : evt.pointerId;
 
             const pointer = this._inputs[deviceType][deviceSlot];
             if (pointer) {
-                if (this.onInputChanged) {
-                    this.onInputChanged(deviceType, deviceSlot, evt.button + 2, pointer[evt.button + 2], 0);
-                }
+                const previousHorizontal = pointer[PointerInput.Horizontal];
+                const previousVertical = pointer[PointerInput.Vertical];
+                const previousButton = pointer[evt.button + 2];
 
-                pointer[0] = evt.clientX;
-                pointer[1] = evt.clientY;
+                pointer[PointerInput.Horizontal] = evt.clientX;
+                pointer[PointerInput.Vertical] = evt.clientY;
                 pointer[evt.button + 2] = 0;
+
+                if (this.onInputChanged) {
+                    if (previousHorizontal !== evt.clientX) {
+                        this.onInputChanged(deviceType, deviceSlot, PointerInput.Horizontal, previousHorizontal, pointer[PointerInput.Horizontal]);
+                    }
+                    if (previousVertical !== evt.clientY) {
+                        this.onInputChanged(deviceType, deviceSlot, PointerInput.Vertical, previousVertical, pointer[PointerInput.Vertical]);
+                    }
+                    this.onInputChanged(deviceType, deviceSlot, evt.button + 2, previousButton, pointer[evt.button + 2]);
+                }
             }
             // We don't want to unregister the mouse because we may miss input data when a mouse is moving after a click
-            if (evt.pointerType != "mouse") {
+            if (evt.pointerType !== "mouse") {
                 this._unregisterDevice(deviceType, deviceSlot);
             }
 
         });
 
-        this._elementToAttachTo.addEventListener("pointermove", this._pointerMoveEvent);
-        this._elementToAttachTo.addEventListener("pointerdown", this._pointerDownEvent);
-        this._elementToAttachTo.addEventListener("pointerup", this._pointerUpEvent);
+        // Set Wheel Event Name, code originally from scene.inputManager
+        this._wheelEventName = "onwheel" in document.createElement("div") ? "wheel" :       // Modern browsers support "wheel"
+            (<any>document).onmousewheel !== undefined ? "mousewheel" :                     // Webkit and IE support at least "mousewheel"
+                "DOMMouseScroll";                                                           // let's assume that remaining browsers are older Firefox
+
+        // Code originally in scene.inputManager.ts
+        // Chrome reports warning in console if wheel listener doesn't set an explicit passive option.
+        // IE11 only supports captureEvent:boolean, not options:object, and it defaults to false.
+        // Feature detection technique copied from: https://github.com/github/eventlistener-polyfill (MIT license)
+        let passiveSupported = false;
+        const noop = function () { };
+
+        try {
+            const options: object = {
+                passive: {
+                    get: function () {
+                        passiveSupported = true;
+                    }
+                }
+            };
+
+            this._elementToAttachTo.addEventListener("test", noop, options);
+            this._elementToAttachTo.removeEventListener("test", noop, options);
+        }
+        catch (e) {
+            /* */
+        }
+
+        this._pointerWheelEvent = ((evt) => {
+            const deviceType = DeviceType.Mouse;
+            const deviceSlot = 0;
+
+            if (!this._inputs[deviceType]) {
+                this._inputs[deviceType] = [];
+            }
+
+            if (!this._inputs[deviceType][deviceSlot]) {
+                this._pointerActive = true;
+                this._registerDevice(deviceType, deviceSlot, DeviceInputSystem._MAX_POINTER_INPUTS);
+            }
+
+            const pointer = this._inputs[deviceType][deviceSlot];
+            if (pointer) {
+                // Store previous values for event
+                let previousWheelScrollX = pointer[PointerInput.MouseWheelX];
+                let previousWheelScrollY = pointer[PointerInput.MouseWheelY];
+                let previousWheelScrollZ = pointer[PointerInput.MouseWheelZ];
+
+                pointer[PointerInput.MouseWheelX] = evt.deltaX;
+                pointer[PointerInput.MouseWheelY] = evt.deltaY;
+                pointer[PointerInput.MouseWheelZ] = evt.deltaZ;
+
+                if (this.onInputChanged) {
+                    if (evt.deltaX !== 0) {
+                        this.onInputChanged(deviceType, deviceSlot, PointerInput.MouseWheelX, previousWheelScrollX, pointer[PointerInput.MouseWheelX]);
+                    }
+                    if (evt.deltaY !== 0) {
+                        this.onInputChanged(deviceType, deviceSlot, PointerInput.MouseWheelY, previousWheelScrollY, pointer[PointerInput.MouseWheelY]);
+                    }
+                    if (evt.deltaZ !== 0) {
+                        this.onInputChanged(deviceType, deviceSlot, PointerInput.MouseWheelZ, previousWheelScrollZ, pointer[PointerInput.MouseWheelZ]);
+                    }
+                }
+            }
+        });
+
+        this._elementToAttachTo.addEventListener(this._eventPrefix + "move", this._pointerMoveEvent);
+        this._elementToAttachTo.addEventListener(this._eventPrefix + "down", this._pointerDownEvent);
+        this._elementToAttachTo.addEventListener(this._eventPrefix + "up", this._pointerUpEvent);
+        this._elementToAttachTo.addEventListener(this._wheelEventName, this._pointerWheelEvent, passiveSupported ? { passive: false } : false);
     }
 
     /**
@@ -380,7 +510,7 @@ export class DeviceInputSystem implements IDisposable {
         // Gamepads
         const gp = navigator.getGamepads()[deviceSlot];
 
-        if (gp && deviceType == this._gamepads[deviceSlot]) {
+        if (gp && deviceType === this._gamepads[deviceSlot]) {
             const device = this._inputs[deviceType][deviceSlot];
 
             if (inputIndex >= gp.buttons.length) {
