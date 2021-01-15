@@ -7,7 +7,6 @@ import { AnimatedInputBlockTypes } from 'babylonjs/Materials/Node/Blocks/Input/a
 import { Vector2, Vector3, Vector4 } from 'babylonjs/Maths/math.vector';
 import { Color3 } from 'babylonjs/Maths/math.color';
 import { BlockTools } from '../../blockTools';
-import { StringTools } from '../../stringTools';
 
 const inputNameToAttributeValue: { [name: string] : string } = {
     "position2d" : "position",
@@ -46,13 +45,17 @@ export class InputDisplayManager implements IDisplayManager {
 
     public getHeaderText(block: NodeMaterialBlock): string {
         let inputBlock = block as InputBlock;
-        let name = `${inputBlock.name} (${StringTools.GetBaseType(inputBlock.output.type)})`;
+        let name = `${inputBlock.name} (${this.GetBaseType(inputBlock.output.type)})`;
 
         if (inputBlock.isAttribute) {
-            name = StringTools.GetBaseType(inputBlock.output.type);
+            name = this.GetBaseType(inputBlock.output.type);
         }
 
         return name;
+    }
+
+    public GetBaseType(type: NodeMaterialBlockConnectionPointTypes): string {
+        return NodeMaterialBlockConnectionPointTypes[type];
     }
 
     public getBackgroundColor(block: NodeMaterialBlock): string {
