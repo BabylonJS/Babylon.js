@@ -5,10 +5,8 @@ import { WorkbenchComponent, FramePortData } from './workbench';
 import { Control } from 'babylonjs-gui/2D/controls/control';
 import { Vector2 } from 'babylonjs/Maths/math.vector';
 import { Container } from 'babylonjs-gui/2D/controls/container';
-import { _ThinInstanceDataStorage } from 'babylonjs';
-import { ContainerPropertyTabComponent } from './properties/containterPropertyComponent';
+import { ContainerPropertyTabComponent } from './properties/containerPropertyComponent';
 import * as React from 'react';
-
 
 export class GUINode {
 
