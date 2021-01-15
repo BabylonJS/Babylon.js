@@ -827,8 +827,8 @@ export class Image extends Control {
         let bottomHeight = this._imageHeight - this._sliceBottom;
         let centerWidth = width - leftWidth - rightWidth;
         let centerHeight = height - topHeight - bottomHeight;
-        let widthFactor = width / this._currentMeasure.width;
-        let heightFactor = height / this._currentMeasure.height;
+        let widthFactor = this._currentMeasure.width / width;
+        let heightFactor = this._currentMeasure.height / height;
         let wfh = widthFactor * 0.5;
         let hfh = heightFactor * 0.5;
         let leftTargetWidth = leftWidth * widthFactor;
