@@ -12,7 +12,6 @@ import { GUINode } from '../../diagram/guiNode';
 import { Observer } from 'babylonjs/Misc/observable';
 import { TextLineComponent } from "../../sharedUiComponents/lines/textLineComponent";
 import { StringTools } from "../../sharedUiComponents/stringTools";
-import { AdvancedDynamicTexture } from "babylonjs-gui/2D/index";
 import { Engine } from "babylonjs/Engines/engine";
 import { LockObject } from "../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { SliderPropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/sliderPropertyGridComponent";
@@ -46,6 +45,7 @@ import { EllipsePropertyGridComponent } from "../../sharedUiComponents/tabs/prop
 import { CheckboxPropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/checkboxPropertyGridComponent";
 import { Control } from "babylonjs-gui/2D/controls/control";
 import { ControlPropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/controlPropertyGridComponent";
+import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
 
 require("./propertyTab.scss");
 
