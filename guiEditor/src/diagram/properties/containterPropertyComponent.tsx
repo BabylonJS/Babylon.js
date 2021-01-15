@@ -4,7 +4,7 @@ import * as React from "react";
 import { ButtonLineComponent } from "../../sharedUiComponents/lines/buttonLineComponent";
 import { LineContainerComponent } from "../../sharedUiComponents/lines/lineContainerComponent";
 import { TextLineComponent } from "../../sharedUiComponents/lines/textLineComponent";
-import { IContainerComponentProps} from './propertyComponentProps';
+import { IContainerComponentProps } from "./propertyComponentProps";
 
 export class ContainerPropertyTabComponent extends React.Component<IContainerComponentProps> {
     constructor(props: IContainerComponentProps) {
@@ -32,7 +32,6 @@ export class ContainerPropertyTabComponent extends React.Component<IContainerCom
             guiElementMenu.push(<TextLineComponent label={child.name}></TextLineComponent>);           
         });
 
-        
 
         return (
             <>                
