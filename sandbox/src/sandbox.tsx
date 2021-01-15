@@ -37,6 +37,7 @@ export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: b
         // Events
         this._globalState.onSceneLoaded.add((info) => {
             document.title = "Babylon.js - " + info.filename;
+            this.setState({ errorMessage: "" });
 
             this._globalState.currentScene = info.scene;
             if (this._globalState.currentScene.meshes.length === 0 && this._globalState.currentScene.clearColor.r === 1 && this._globalState.currentScene.clearColor.g === 0 && this._globalState.currentScene.clearColor.b === 0) {
