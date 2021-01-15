@@ -17,6 +17,7 @@
 - Moved sharedUI component to shared UI folder. ([msDestiny14](https://github.com/msDestiny14))
 - Added encapsulate and encapsulateBoundingInfo methods to BoundingInfo. ([Tolo789](https://github.com/Tolo789))
 - Added onLoadObservable to the textureDome class(es) ([RaananW](https://github.com/RaananW))
+- Modified InputManager to use DeviceInputSystem ([PolygonalSun](https://github.com/PolygonalSun))
 
 ### Engine
 
@@ -55,7 +56,7 @@
 ### GUIEditor
 
 - Added GUI Editor project to master. ([msDestiny14](https://github.com/msDestiny14))
-- Moving GUI property tab components into GUIEditor: Slider. ([msDestiny14](https://github.com/msDestiny14))
+- Moving GUI property tab components into GUIEditor. ([msDestiny14](https://github.com/msDestiny14))
 
 ### GUI
 

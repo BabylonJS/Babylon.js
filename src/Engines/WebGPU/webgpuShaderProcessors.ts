@@ -31,6 +31,7 @@ const _knownSamplers: { [key: string]: WebGPUTextureSamplerBindingDescription } 
 // TODO WEBGPU. sampler3D
 const _samplerFunctionByWebGLSamplerType: { [key: string]: string } = {
     "sampler2D": "sampler2D",
+    "sampler2DArray": "sampler2DArray",
     "sampler2DShadow": "sampler2DShadow",
     "sampler2DArrayShadow": "sampler2DArrayShadow",
     "samplerCube": "samplerCube"
@@ -38,6 +39,7 @@ const _samplerFunctionByWebGLSamplerType: { [key: string]: string } = {
 
 const _textureTypeByWebGLSamplerType: { [key: string]: string } = {
     "sampler2D": "texture2D",
+    "sampler2DArray": "texture2DArray",
     "sampler2DShadow": "texture2D",
     "sampler2DArrayShadow": "texture2DArray",
     "samplerCube": "textureCube",

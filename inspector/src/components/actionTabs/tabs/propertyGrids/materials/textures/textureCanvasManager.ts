@@ -31,6 +31,8 @@ import { IMetadata } from './textureEditorComponent';
 
 import { canvasShader } from './canvasShader';
 
+import { IWheelEvent } from 'babylonjs/Events/deviceInputEvents';
+
 export interface IPixelData {
     x? : number;
     y? : number;
@@ -267,7 +269,7 @@ export class TextureCanvasManager {
         this._scene.onPointerObservable.add((pointerInfo) => {
             switch (pointerInfo.type) {
                 case PointerEventTypes.POINTERWHEEL:
-                    const event = pointerInfo.event as MouseWheelEvent;
+                    const event = pointerInfo.event as IWheelEvent;
                     this._scale -= (event.deltaY * this.ZOOM_MOUSE_SPEED * this._scale);
                     break;
                 case PointerEventTypes.POINTERDOWN:

@@ -679,7 +679,8 @@
         {
             "title": "GLTF Buggy with Meshopt Compression",
             "playgroundId": "#CIYTF6#0",
-            "referenceImage": "gltfBuggyMeshopt.png"
+            "referenceImage": "gltfBuggyMeshopt.png",
+            "excludedEngines": ["webgpu"]
         },
         {
             "title": "GLTF BoomBox with Unlit Material",
