@@ -37,6 +37,8 @@ export class Image extends Control {
     private _sliceTop: number;
     private _sliceBottom: number;
 
+    private _populateNinePatchSlicesFromImage = false;
+
     private _detectPointerOnOpaqueOnly: boolean;
 
     private _imageDataCache: {
@@ -222,6 +224,26 @@ export class Image extends Control {
         this._markAsDirty();
     }
 
+    /**
+    * Gets or sets a boolean indicating if nine patch slices (left, top, right, bottom) should be read from image data
+    */
+    @serialize()
+    public get populateNinePatchSlicesFromImage(): boolean {
+        return this._populateNinePatchSlicesFromImage;
+    }
+
+    public set populateNinePatchSlicesFromImage(value: boolean) {
+        if (this._populateNinePatchSlicesFromImage === value) {
+            return;
+        }
+
+        this._populateNinePatchSlicesFromImage = value;
+
+        if (this._populateNinePatchSlicesFromImage && this._loaded) {
+            this._extractNinePatchSliceDataFromImage();
+        }
+    }
+
     /** Indicates if the format of the image is SVG */
     public get isSVG(): boolean {
         return this._isSVG;
@@ -354,6 +376,56 @@ export class Image extends Control {
         dstImage.sourceHeight = dstHeight;
     }
 
+    private _extractNinePatchSliceDataFromImage() {
+        if (!this._workingCanvas) {
+            this._workingCanvas = document.createElement("canvas");
+        }
+        const canvas = this._workingCanvas;
+        const context = canvas.getContext("2d")!;
+        const width = this._domImage.width;
+        const height = this._domImage.height;
+
+        canvas.width = width;
+        canvas.height = height;
+
+        context.drawImage(this._domImage, 0, 0, width, height);
+        const imageData = context.getImageData(0, 0, width, height);
+
+        // Left and right
+        this._sliceLeft = -1;
+        this._sliceRight = -1;
+        for (var x = 0; x < width; x++) {
+            const alpha = imageData.data[x * 4 + 3];
+
+            if (alpha > 127 && this._sliceLeft === -1) {
+                this._sliceLeft = x;
+                continue;
+            }
+
+            if (alpha < 127 && this._sliceLeft > -1) {
+                this._sliceRight = x;
+                break;
+            }
+        }
+
+        // top and bottom
+        this._sliceTop = -1;
+        this._sliceBottom = -1;
+        for (var y = 0; y < height; y++) {
+            const alpha = imageData.data[y * width * 4 + 3];
+
+            if (alpha > 127 && this._sliceTop === -1) {
+                this._sliceTop = y;
+                continue;
+            }
+
+            if (alpha < 127 && this._sliceTop > -1) {
+                this._sliceBottom = y;
+                break;
+            }
+        }
+    }
+
     /**
      * Gets or sets the internal DOM image used to render the control
      */
@@ -381,9 +453,9 @@ export class Image extends Control {
         this._imageHeight = this._domImage.height;
         this._loaded = true;
 
-        // if (this._populateNinePatchSlicesFromImage) {
-        //     this._extractNinePatchSliceDataFromImage();
-        // }
+        if (this._populateNinePatchSlicesFromImage) {
+            this._extractNinePatchSliceDataFromImage();
+        }
 
         if (this._autoScale) {
             this.synchronizeSizeWithContent();
