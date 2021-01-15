@@ -282,6 +282,11 @@ export class DeviceInputSystem implements IDisposable {
         });
 
         this._keyboardUpEvent = ((evt) => {
+            if (!this._keyboardActive) {
+                this._keyboardActive = true;
+                this._registerDevice(DeviceType.Keyboard, 0, DeviceInputSystem._MAX_KEYCODES);
+            }
+
             const kbKey = this._inputs[DeviceType.Keyboard][0];
             if (kbKey) {
                 kbKey[evt.keyCode] = 0;
