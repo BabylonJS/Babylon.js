@@ -5,8 +5,6 @@ import { WorkbenchComponent, FramePortData } from './workbench';
 import { Control } from 'babylonjs-gui/2D/controls/control';
 import { Vector2 } from 'babylonjs/Maths/math.vector';
 import { Container } from 'babylonjs-gui/2D/controls/container';
-import { ContainerPropertyTabComponent } from './properties/containerPropertyComponent';
-import * as React from 'react';
 
 export class GUINode {
 
@@ -22,7 +20,6 @@ export class GUINode {
     private _isSelected: boolean;
     private _isVisible = true;
     private _enclosingFrameId = -1;
-    private _isContainer = false;
     
     public children: GUINode[] = [];
 
@@ -123,7 +120,6 @@ export class GUINode {
             this._ownerCanvas.isUp = false;
         }
         );
-
         
         guiControl.onPointerEnterObservable.add( evt => {
             this._ownerCanvas.isOverGUINode = true;
@@ -136,8 +132,6 @@ export class GUINode {
             console.log("out");
         }
         );
-
-        this._isContainer = this.isContainer();
 
         //TODO: Implement
         this._onSelectionBoxMovedObserver = this._globalState.onSelectionBoxMoved.add(rect1 => {
@@ -171,22 +165,13 @@ export class GUINode {
         //evt.stopPropagation();
     }
 
-    renderContainer(): React.ReactNode {
-        if(!this._isContainer) return null;
-
-        return React.createElement(ContainerPropertyTabComponent, {
-        globalState: this._globalState,
-        guiNode: this
-        });
-    }
-
     public updateVisual()
     {
         this.guiControl.leftInPixels = this.x;
         this.guiControl.topInPixels = this.y;
     }
 
-    private isContainer() {
+    private _isContainer() {
         switch (this.guiControl.typeName) {
             case "Button":
             case "StackPanel":
@@ -197,7 +182,6 @@ export class GUINode {
                 return false;
         }
     }
-
 
     public addGui(childNode: GUINode)
     {
