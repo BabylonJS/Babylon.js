@@ -11,9 +11,8 @@ import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { GUINode } from '../../diagram/guiNode';
 import { Observer } from 'babylonjs/Misc/observable';
 import { TextLineComponent } from "../../sharedUiComponents/lines/textLineComponent";
-import { StringTools } from "../../stringTools";
+import { StringTools } from "../../sharedUiComponents/stringTools";
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/index";
-//import { SceneExplorerComponent } from "../sceneExplorer/sceneExplorerComponent";
 import { Engine } from "babylonjs/Engines/engine";
 import { LockObject } from "../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { SliderPropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/sliderPropertyGridComponent";
@@ -110,15 +109,15 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     }
 
     saveToSnippetServer() {
-        var adt = this.props.globalState.guiTexture;
+        let adt = this.props.globalState.guiTexture;
         let content = JSON.stringify(adt.serializeContent());
 
-        var xmlHttp = new XMLHttpRequest();
+        let xmlHttp = new XMLHttpRequest();
         xmlHttp.onreadystatechange = () => {
             if (xmlHttp.readyState == 4) {
                 if (xmlHttp.status == 200) {
-                    var snippet = JSON.parse(xmlHttp.responseText);
-                    const oldId = adt.snippetId || "_BLANK";
+                    let snippet = JSON.parse(xmlHttp.responseText);
+                    const oldId = adt.snippetId;
                     adt.snippetId = snippet.id;
                     if (snippet.version && snippet.version != "0") {
                         adt.snippetId += "#" + snippet.version;
@@ -148,7 +147,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         xmlHttp.open("POST", AdvancedDynamicTexture.SnippetUrl + (adt.snippetId ? "/" + adt.snippetId : ""), true);
         xmlHttp.setRequestHeader("Content-Type", "application/json");
 
-        var dataToSend = {
+        let dataToSend = {
             payload : JSON.stringify({
                 gui: content
             }),
@@ -172,7 +171,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
     renderProperties()
     {
-        var className = this.state.currentNode?.guiControl.getClassName();
+        let className = this.state.currentNode?.guiControl.getClassName();
         switch (className) {
             case "TextBlock": {
                 const textBlock = this.state.currentNode?.guiControl as TextBlock;
@@ -271,7 +270,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
     render() {
 
-        //var myScene=this.props.globalState.guiTexture.getScene();
         if (this.state.currentNode) {
             return (
                 <div id="propertyTab">
