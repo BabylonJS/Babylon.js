@@ -110,7 +110,7 @@ class _InternalMeshDataInfo {
     public _onBeforeRenderObservable: Nullable<Observable<Mesh>>;
     public _onBeforeBindObservable: Nullable<Observable<Mesh>>;
     public _onAfterRenderObservable: Nullable<Observable<Mesh>>;
-    public _onBeforeDrawObservable: Nullable<Observable<Mesh>>;    
+    public _onBeforeDrawObservable: Nullable<Observable<Mesh>>;
     public _onBetweenPassObservable: Nullable<Observable<Mesh>>;
 
     public _areNormalsFrozen: boolean = false; // Will be used by ribbons mainly

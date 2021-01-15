@@ -33739,6 +33739,10 @@ declare module BABYLON {
         */
         get onAfterRenderObservable(): Observable<Mesh>;
         /**
+        * An event triggeredbetween rendering pass wneh using separateCullingPass = true
+        */
+        get onBetweenPassObservable(): Observable<Mesh>;
+        /**
         * An event triggered before drawing the mesh
         */
         get onBeforeDrawObservable(): Observable<Mesh>;
