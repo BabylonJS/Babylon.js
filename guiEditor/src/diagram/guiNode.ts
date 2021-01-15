@@ -178,7 +178,7 @@ export class GUINode {
 
         return React.createElement(ContainerPropertyTabComponent, {
         globalState: this._globalState,
-        guiControl: this
+        guiNode: this
         });
     }
 
