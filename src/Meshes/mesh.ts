@@ -111,6 +111,7 @@ class _InternalMeshDataInfo {
     public _onBeforeBindObservable: Nullable<Observable<Mesh>>;
     public _onAfterRenderObservable: Nullable<Observable<Mesh>>;
     public _onBeforeDrawObservable: Nullable<Observable<Mesh>>;
+    public _onBetweenPassObservable: Nullable<Observable<Mesh>>;
 
     public _areNormalsFrozen: boolean = false; // Will be used by ribbons mainly
     public _sourcePositions: Float32Array; // Will be used to save original positions when using software skinning
@@ -281,6 +282,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         return this._internalMeshDataInfo._onAfterRenderObservable;
     }
+
+    /**
+    * An event triggeredbetween rendering pass wneh using separateCullingPass = true
+    */
+   public get onBetweenPassObservable(): Observable<Mesh> {
+    if (!this._internalMeshDataInfo._onBetweenPassObservable) {
+        this._internalMeshDataInfo._onBetweenPassObservable = new Observable<Mesh>();
+    }
+
+    return this._internalMeshDataInfo._onBetweenPassObservable;
+}
 
     /**
     * An event triggered before drawing the mesh
@@ -1997,6 +2009,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             engine.setState(true, this._effectiveMaterial.zOffset, false, !reverse);
             this._processRendering(this, subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, this._effectiveMaterial);
             engine.setState(true, this._effectiveMaterial.zOffset, false, reverse);
+
+            if (this._internalMeshDataInfo._onBetweenPassObservable) {
+                this._internalMeshDataInfo._onBetweenPassObservable.notifyObservers(this);
+            }
         }
 
         // Draw
@@ -2420,6 +2436,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         if (internalDataInfo._onAfterRenderObservable) {
             internalDataInfo._onAfterRenderObservable.clear();
+        }
+
+        if (internalDataInfo._onBetweenPassObservable) {
+            internalDataInfo._onBetweenPassObservable.clear();
         }
 
         // Sources

@@ -15,14 +15,14 @@ declare module "./mesh" {
          * @param refresh true to refresh the underlying gpu buffer (default: true). If you do multiple calls to this method in a row, set refresh to true only for the last call to save performance
          * @returns the thin instance index number. If you pass an array of matrices, other instance indexes are index+1, index+2, etc
          */
-        thinInstanceAdd(matrix: DeepImmutableObject<Matrix> | Array<DeepImmutableObject<Matrix>>, refresh: boolean): number;
+        thinInstanceAdd(matrix: DeepImmutableObject<Matrix> | Array<DeepImmutableObject<Matrix>>, refresh?: boolean): number;
 
         /**
          * Adds the transformation (matrix) of the current mesh as a thin instance
          * @param refresh true to refresh the underlying gpu buffer (default: true). If you do multiple calls to this method in a row, set refresh to true only for the last call to save performance
          * @returns the thin instance index number
          */
-        thinInstanceAddSelf(refresh: boolean): number;
+        thinInstanceAddSelf(refresh?: boolean): number;
 
         /**
          * Registers a custom attribute to be used with thin instances
@@ -37,7 +37,7 @@ declare module "./mesh" {
          * @param matrix matrix to set
          * @param refresh true to refresh the underlying gpu buffer (default: true). If you do multiple calls to this method in a row, set refresh to true only for the last call to save performance
          */
-        thinInstanceSetMatrixAt(index: number, matrix: DeepImmutableObject<Matrix>, refresh: boolean): void;
+        thinInstanceSetMatrixAt(index: number, matrix: DeepImmutableObject<Matrix>, refresh?: boolean): void;
 
         /**
          * Sets the value of a custom attribute for a thin instance
@@ -46,7 +46,7 @@ declare module "./mesh" {
          * @param value value to set
          * @param refresh true to refresh the underlying gpu buffer (default: true). If you do multiple calls to this method in a row, set refresh to true only for the last call to save performance
          */
-        thinInstanceSetAttributeAt(kind: string, index: number, value: Array<number>, refresh: boolean): void;
+        thinInstanceSetAttributeAt(kind: string, index: number, value: Array<number>, refresh?: boolean): void;
 
         /**
          * Gets / sets the number of thin instances to display. Note that you can't set a number higher than what the underlying buffer can handle.

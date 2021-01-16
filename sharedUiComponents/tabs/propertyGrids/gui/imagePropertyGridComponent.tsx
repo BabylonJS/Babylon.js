@@ -1,17 +1,15 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { CommonControlPropertyGridComponent } from "../../../../../sharedUiComponents/tabs/propertyGrids/gui/commonControlPropertyGridComponent";
-import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { PropertyChangedEvent } from "../../../propertyChangedEvent";
+import { CommonControlPropertyGridComponent } from "../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent";
+import { LineContainerComponent } from "../../../lines/lineContainerComponent";
+import { LockObject } from "../../../tabs/propertyGrids/lockObject";
 import { Image } from "babylonjs-gui/2D/controls/image";
-import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
-import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
-import { OptionsLineComponent } from "../../../../../sharedUiComponents/lines/optionsLineComponent";
-import { GlobalState } from '../../../../globalState';
+import { FloatLineComponent } from "../../../lines/floatLineComponent";
+import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
+import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
 
 interface IImagePropertyGridComponentProps {
-    globalState: GlobalState;
     image: Image,
     lockObject: LockObject,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>

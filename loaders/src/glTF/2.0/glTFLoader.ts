@@ -803,7 +803,9 @@ export class GLTFLoader implements IGLTFLoader {
         let promise: Promise<any>;
 
         if (shouldInstance && primitive._instanceData) {
+            this._babylonScene._blockEntityCollection = this._forAssetContainer;
             babylonAbstractMesh = primitive._instanceData.babylonSourceMesh.createInstance(name) as InstancedMesh;
+            this._babylonScene._blockEntityCollection = false;
             promise = primitive._instanceData.promise;
         }
         else {
