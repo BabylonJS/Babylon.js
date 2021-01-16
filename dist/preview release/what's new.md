@@ -18,6 +18,7 @@
 - Added encapsulate and encapsulateBoundingInfo methods to BoundingInfo. ([Tolo789](https://github.com/Tolo789))
 - Added onLoadObservable to the textureDome class(es) ([RaananW](https://github.com/RaananW))
 - Modified InputManager to use DeviceInputSystem ([PolygonalSun](https://github.com/PolygonalSun))
+- Added a [helper class](https://doc.babylonjs.com/typedoc/classes/babylon.debug.directionallightfrustumviewer) to display the frustum of a directional light ([Popov72](https://github.com/Popov72))
 
 ### Engine
 
@@ -45,8 +46,9 @@
 
 ### Inspector
 
-- Increased float precision to 4([msDestiny14](https://github.com/msDestiny14))
+- Increased float precision to 4 ([msDestiny14](https://github.com/msDestiny14))
 - Added support for sounds in the inspector ([Deltakosh](https://github.com/deltakosh))
+- Added a debug option to show the frustum of a directional light ([Popov72](https://github.com/Popov72))
 
 ### NME
 
@@ -113,7 +115,7 @@
 
 ## Breaking changes
 
-- [List of breaking changes introduced by ou compatibility with WebGPU](https://doc.babylonjs.com/advanced_topics/webGPU/webGPUBreakingChanges)
+- [List of breaking changes introduced by our compatibility with WebGPU](https://doc.babylonjs.com/advanced_topics/webGPU/webGPUBreakingChanges)
   - [ReadPixels and ProceduralTexture.getContent are now async](https://doc.babylonjs.com/advanced_topics/webGPU/webGPUBreakingChanges#readpixels-is-now-asynchronous)
   - [Shader support differences](https://doc.babylonjs.com/advanced_topics/webGPU/webGPUBreakingChanges#shader-code-differences)
 - Use both `mesh.visibility` and `material.alpha` values to compute the global alpha value used by the soft transparent shadow rendering code. Formerly was only using `mesh.visibility` ([Popov72](https://github.com/Popov72))
