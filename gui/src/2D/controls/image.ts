@@ -819,43 +819,37 @@ export class Image extends Control {
     }
 
     private _renderNinePatch(context: CanvasRenderingContext2D): void {
-        let height = this._imageHeight;
-        let width = this._imageWidth;
-        let leftWidth = this._sliceLeft;
-        let rightWidth = this._imageWidth - this._sliceRight;
-        let topHeight = this._sliceTop;
-        let bottomHeight = this._imageHeight - this._sliceBottom;
-        let centerWidth = width - leftWidth - rightWidth;
-        let centerHeight = height - topHeight - bottomHeight;
-        let widthFactor = this._currentMeasure.width / width;
-        let heightFactor = this._currentMeasure.height / height;
-        let wfh = widthFactor * 0.5;
-        let hfh = heightFactor * 0.5;
-        let leftTargetWidth = leftWidth * widthFactor;
-        let rightTargetWidth = rightWidth * widthFactor;
-        let topTargetHeight = topHeight * heightFactor;
-        let bottomTargetHeight = bottomHeight * heightFactor;
-        let centerTargetWidth = centerWidth * widthFactor;
-        let centerTargetHeight = centerHeight * heightFactor;
+        const leftWidth = this._sliceLeft;
+        const topHeight = this._sliceTop;
+        const bottomHeight = this._imageHeight - this._sliceBottom;
+        const rightWidth = this._imageWidth - this._sliceRight;
+        const centerWidth = this._sliceRight - this._sliceLeft;
+        const centerHeight = this._sliceBottom - this._sliceTop;
+        const targetCenterWidth = (this._currentMeasure.width - rightWidth - leftWidth) + 1;
+        const targetCenterHeight = (this._currentMeasure.height - bottomHeight - topHeight) + 1;
+        const centerLeftOffset = this._currentMeasure.left + leftWidth - 0.5;
+        const centerTopOffset = this._currentMeasure.top + topHeight - 0.5;
+        const rightOffset = this._currentMeasure.left + this._currentMeasure.width - rightWidth;
+        const bottomOffset = this._currentMeasure.top + this._currentMeasure.height - bottomHeight;
 
         //Top Left
-        this._drawImage(context, 0, 0, leftWidth, topHeight, this._currentMeasure.left, this._currentMeasure.top, leftTargetWidth, topTargetHeight);
+        this._drawImage(context, 0, 0, leftWidth, topHeight, this._currentMeasure.left, this._currentMeasure.top, leftWidth, topHeight);
         //Top
-        this._drawImage(context, leftWidth, 0, centerWidth, topHeight, this._currentMeasure.left + leftTargetWidth - wfh, this._currentMeasure.top, centerTargetWidth + widthFactor, topTargetHeight);
+        this._drawImage(context, this._sliceLeft, 0, centerWidth, topHeight, centerLeftOffset, this._currentMeasure.top, targetCenterWidth, topHeight);
         //Top Right
-        this._drawImage(context, leftWidth + centerWidth, 0, rightWidth, topHeight, this._currentMeasure.left + leftTargetWidth + centerTargetWidth, this._currentMeasure.top, rightTargetWidth, topTargetHeight);
+        this._drawImage(context, this.sliceRight, 0, rightWidth, topHeight, rightOffset, this._currentMeasure.top, rightWidth, topHeight);
         //Left
-        this._drawImage(context, 0, topHeight, leftWidth, centerHeight, this._currentMeasure.left, this._currentMeasure.top + topTargetHeight - hfh, leftTargetWidth, centerTargetHeight + heightFactor);
-        //Center
-        this._drawImage(context, leftWidth, topHeight, centerWidth, centerHeight, this._currentMeasure.left + leftTargetWidth - wfh, this._currentMeasure.top + topTargetHeight - hfh, centerTargetWidth + widthFactor, centerTargetHeight + heightFactor);
+        this._drawImage(context, 0, this._sliceTop, leftWidth, centerHeight, this._currentMeasure.left, centerTopOffset, leftWidth, targetCenterHeight);
+        // Center
+        this._drawImage(context, this._sliceLeft, this._sliceTop, centerWidth, centerHeight, centerLeftOffset, centerTopOffset, targetCenterWidth, targetCenterHeight);
         //Right
-        this._drawImage(context, leftWidth + centerWidth, topHeight, rightWidth, centerHeight, this._currentMeasure.left + leftTargetWidth + centerTargetWidth, this._currentMeasure.top + topTargetHeight - hfh, rightTargetWidth, centerTargetHeight + heightFactor);
+        this._drawImage(context, this._sliceRight, this._sliceTop, rightWidth, centerHeight, rightOffset, centerTopOffset, rightWidth, targetCenterHeight);
         //Bottom Left
-        this._drawImage(context, 0, topHeight + centerHeight, leftWidth, bottomHeight, this._currentMeasure.left, this._currentMeasure.top + topTargetHeight + centerTargetHeight, leftTargetWidth, bottomTargetHeight);
+        this._drawImage(context, 0, this._sliceBottom, leftWidth, bottomHeight, this._currentMeasure.left, bottomOffset, leftWidth, bottomHeight);
         //Bottom
-        this._drawImage(context, leftWidth, topHeight + centerHeight, centerWidth, bottomHeight, this._currentMeasure.left + leftTargetWidth - wfh, this._currentMeasure.top + topTargetHeight + centerTargetHeight, centerTargetWidth + widthFactor, bottomTargetHeight);
+        this._drawImage(context, this.sliceLeft, this._sliceBottom, centerWidth, bottomHeight, centerLeftOffset, bottomOffset, targetCenterWidth, bottomHeight);
         //Bottom Right
-        this._drawImage(context, leftWidth + centerWidth, topHeight + centerHeight, rightWidth, bottomHeight, this._currentMeasure.left + leftTargetWidth + centerTargetWidth, this._currentMeasure.top + topTargetHeight + centerTargetHeight, rightTargetWidth, bottomTargetHeight);
+        this._drawImage(context, this._sliceRight, this._sliceBottom, rightWidth, bottomHeight, rightOffset, bottomOffset, rightWidth, bottomHeight);
     }
 
     public dispose() {
