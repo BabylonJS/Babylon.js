@@ -181,34 +181,16 @@ export class DirectionalLightFrustumViewer {
         Vector3.TransformCoordinatesToRef(TmpVectors.Vector3[8], invLightView, TmpVectors.Vector3[8]); // far3
         Vector3.TransformCoordinatesToRef(TmpVectors.Vector3[9], invLightView, TmpVectors.Vector3[9]); // far4
 
-        this._nearLinesPoints[0] = TmpVectors.Vector3[2];
-        this._nearLinesPoints[1] = TmpVectors.Vector3[3];
-        this._nearLinesPoints[2] = TmpVectors.Vector3[4];
-        this._nearLinesPoints[3] = TmpVectors.Vector3[5];
-        this._nearLinesPoints[4] = TmpVectors.Vector3[2];
         MeshBuilder.CreateLines("nearlines", { updatable: true, points: this._nearLinesPoints, instance: this._lightHelperFrustumMeshes[0] as LinesMesh }, this._scene);
 
-        this._farLinesPoints[0] = TmpVectors.Vector3[6];
-        this._farLinesPoints[1] = TmpVectors.Vector3[7];
-        this._farLinesPoints[2] = TmpVectors.Vector3[8];
-        this._farLinesPoints[3] = TmpVectors.Vector3[9];
-        this._farLinesPoints[4] = TmpVectors.Vector3[6];
         MeshBuilder.CreateLines("farlines",  { updatable: true, points: this._farLinesPoints, instance: this._lightHelperFrustumMeshes[1] as LinesMesh }, this._scene);
 
-        this._trLinesPoints[0] = TmpVectors.Vector3[2];
-        this._trLinesPoints[1] = TmpVectors.Vector3[6];
         MeshBuilder.CreateLines("trlines", { updatable: true, points: this._trLinesPoints, instance: this._lightHelperFrustumMeshes[2] as LinesMesh }, this._scene);
 
-        this._brLinesPoints[0] = TmpVectors.Vector3[3];
-        this._brLinesPoints[1] = TmpVectors.Vector3[7];
         MeshBuilder.CreateLines("brlines", { updatable: true, points: this._brLinesPoints, instance: this._lightHelperFrustumMeshes[3] as LinesMesh }, this._scene);
 
-        this._tlLinesPoints[0] = TmpVectors.Vector3[4];
-        this._tlLinesPoints[1] = TmpVectors.Vector3[8];
         MeshBuilder.CreateLines("tllines", { updatable: true, points: this._tlLinesPoints, instance: this._lightHelperFrustumMeshes[4] as LinesMesh }, this._scene);
 
-        this._blLinesPoints[0] = TmpVectors.Vector3[5];
-        this._blLinesPoints [1] = TmpVectors.Vector3[9];
         MeshBuilder.CreateLines("bllines", { updatable: true, points: this._blLinesPoints, instance: this._lightHelperFrustumMeshes[5] as LinesMesh }, this._scene);
 
         TmpVectors.Vector3[2].toArray(this._nearPlaneVertices, 0);
@@ -333,6 +315,30 @@ export class DirectionalLightFrustumViewer {
         makePlane("left",   new Color3(0, 0.3, 0),  this._leftPlaneVertices);
         makePlane("top",    new Color3(0, 0, 1),    this._topPlaneVertices);
         makePlane("bottom", new Color3(0, 0, 0.3),  this._bottomPlaneVertices);
+
+        this._nearLinesPoints[0] = TmpVectors.Vector3[2];
+        this._nearLinesPoints[1] = TmpVectors.Vector3[3];
+        this._nearLinesPoints[2] = TmpVectors.Vector3[4];
+        this._nearLinesPoints[3] = TmpVectors.Vector3[5];
+        this._nearLinesPoints[4] = TmpVectors.Vector3[2];
+
+        this._farLinesPoints[0] = TmpVectors.Vector3[6];
+        this._farLinesPoints[1] = TmpVectors.Vector3[7];
+        this._farLinesPoints[2] = TmpVectors.Vector3[8];
+        this._farLinesPoints[3] = TmpVectors.Vector3[9];
+        this._farLinesPoints[4] = TmpVectors.Vector3[6];
+
+        this._trLinesPoints[0] = TmpVectors.Vector3[2];
+        this._trLinesPoints[1] = TmpVectors.Vector3[6];
+
+        this._brLinesPoints[0] = TmpVectors.Vector3[3];
+        this._brLinesPoints[1] = TmpVectors.Vector3[7];
+
+        this._tlLinesPoints[0] = TmpVectors.Vector3[4];
+        this._tlLinesPoints[1] = TmpVectors.Vector3[8];
+
+        this._blLinesPoints[0] = TmpVectors.Vector3[5];
+        this._blLinesPoints [1] = TmpVectors.Vector3[9];
     }
 
     protected _getInvertViewMatrix(): Matrix {
