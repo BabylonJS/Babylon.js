@@ -18,7 +18,7 @@ export class DirectionalLightFrustumViewer {
     private _scene: Scene;
     private _light: DirectionalLight;
     private _camera: Camera;
-    private _viewMatrix: Matrix;
+    private _inverseViewMatrix: Matrix;
     private _visible: boolean;
 
     private _rootNode: TransformNode;
@@ -38,8 +38,8 @@ export class DirectionalLightFrustumViewer {
     private _topPlaneVertices: number[];
     private _bottomPlaneVertices: number[];
 
-    private _oldPosition: Vector3;
-    private _oldDirection: Vector3;
+    private _oldPosition: Vector3 = new Vector3(Number.NaN, Number.NaN, Number.NaN);
+    private _oldDirection: Vector3 = new Vector3(Number.NaN, Number.NaN, Number.NaN);
     private _oldAutoCalc: boolean;
     private _oldMinZ: number;
     private _oldMaxZ: number;
@@ -104,7 +104,7 @@ export class DirectionalLightFrustumViewer {
         this._scene = light.getScene();
         this._light = light;
         this._camera = camera;
-        this._viewMatrix = Matrix.Identity();
+        this._inverseViewMatrix = Matrix.Identity();
         this._lightHelperFrustumMeshes = [];
         this._createGeometry();
         this.show();
@@ -118,7 +118,7 @@ export class DirectionalLightFrustumViewer {
         this._lightHelperFrustumMeshes.forEach((mesh, index) => {
             mesh.setEnabled(index < 6 && this._showLines || index >= 6 && this._showPlanes);
         });
-        this._oldPosition = null as any;
+        this._oldPosition.set(Number.NaN, Number.NaN, Number.NaN);
         this._visible = true;
     }
 
@@ -141,8 +141,7 @@ export class DirectionalLightFrustumViewer {
             return;
         }
 
-        if (this._oldPosition 
-            && this._oldPosition.equals(this._light.position) 
+        if (this._oldPosition.equals(this._light.position) 
             && this._oldDirection.equals(this._light.direction) 
             && this._oldAutoCalc === this._light.autoCalcShadowZBounds
             && this._oldMinZ === this._light.shadowMinZ
@@ -151,8 +150,8 @@ export class DirectionalLightFrustumViewer {
             return;
         }
 
-        this._oldPosition = this._light.position.clone();
-        this._oldDirection = this._light.direction.clone();
+        this._oldPosition.copyFrom(this._light.position);
+        this._oldDirection.copyFrom(this._light.direction);
         this._oldAutoCalc = this._light.autoCalcShadowZBounds;
         this._oldMinZ = this._light.shadowMinZ;
         this._oldMaxZ = this._light.shadowMaxZ;
@@ -160,8 +159,7 @@ export class DirectionalLightFrustumViewer {
         TmpVectors.Vector3[0].set(this._light.orthoLeft, this._light.orthoBottom, this._light.shadowMinZ !== undefined ? this._light.shadowMinZ : this._camera.minZ); // min light extents
         TmpVectors.Vector3[1].set(this._light.orthoRight, this._light.orthoTop, this._light.shadowMaxZ !== undefined ? this._light.shadowMaxZ : this._camera.maxZ); // max light extents
 
-        const lightView = this._getViewMatrix();
-        const invLightView = Matrix.Invert(lightView);
+        const invLightView = this._getInvertViewMatrix();
 
         TmpVectors.Vector3[2].copyFromFloats(TmpVectors.Vector3[1].x, TmpVectors.Vector3[1].y, TmpVectors.Vector3[0].z); // n1
         TmpVectors.Vector3[3].copyFromFloats(TmpVectors.Vector3[1].x, TmpVectors.Vector3[0].y, TmpVectors.Vector3[0].z); // n2
@@ -337,8 +335,9 @@ export class DirectionalLightFrustumViewer {
         makePlane("bottom", new Color3(0, 0, 0.3),  this._bottomPlaneVertices);
     }
 
-    protected _getViewMatrix(): Matrix {
-        Matrix.LookAtLHToRef(this._light.position, this._light.position.add(this._light.direction), Vector3.Up(), this._viewMatrix);
-        return this._viewMatrix;
+    protected _getInvertViewMatrix(): Matrix {
+        Matrix.LookAtLHToRef(this._light.position, this._light.position.add(this._light.direction), Vector3.Up(), this._inverseViewMatrix);
+        this._inverseViewMatrix.invertToRef(this._inverseViewMatrix);
+        return this._inverseViewMatrix;
     }
 }
