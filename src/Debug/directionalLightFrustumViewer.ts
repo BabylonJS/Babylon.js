@@ -141,8 +141,8 @@ export class DirectionalLightFrustumViewer {
             return;
         }
 
-        if (this._oldPosition.equals(this._light.position) 
-            && this._oldDirection.equals(this._light.direction) 
+        if (this._oldPosition.equals(this._light.position)
+            && this._oldDirection.equals(this._light.direction)
             && this._oldAutoCalc === this._light.autoCalcShadowZBounds
             && this._oldMinZ === this._light.shadowMinZ
             && this._oldMaxZ === this._light.shadowMaxZ
