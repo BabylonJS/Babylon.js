@@ -8,11 +8,11 @@ import { Color3LineComponent } from "../../../../../sharedUiComponents/lines/col
 import { Vector3LineComponent } from "../../../../../sharedUiComponents/lines/vector3LineComponent";
 import { CommonShadowLightPropertyGridComponent } from "./commonShadowLightPropertyGridComponent";
 import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { GlobalState } from '../../../../globalState';
+import { GlobalState } from "../../../../globalState";
 import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent"
-import { ShadowGenerator } from 'babylonjs/Lights/Shadows/shadowGenerator';
-import { CascadedShadowGenerator } from 'babylonjs/Lights/Shadows/cascadedShadowGenerator';
-import { DirectionalLightHelper } from "../../tools/directionalLightHelper";
+import { ShadowGenerator } from "babylonjs/Lights/Shadows/shadowGenerator";
+import { CascadedShadowGenerator } from "babylonjs/Lights/Shadows/cascadedShadowGenerator";
+import { DirectionalLightFrustumViewer } from "babylonjs/Debug/directionalLightFrustumViewer";
 
 interface IDirectionalLightPropertyGridComponentProps {
     globalState: GlobalState,
@@ -33,14 +33,14 @@ export class DirectionalLightPropertyGridComponent extends React.Component<IDire
         let displayFrustum = (light as any)._displayFrustum = !(!!(light as any)._displayFrustum);
 
         if ((light as any)._displayFrustumObservable) {
-            (light as any)._displayFrustumDLH.hide();
             light.getScene().onAfterRenderObservable.remove((light as any)._displayFrustumObservable);
+            (light as any)._displayFrustumDLH.dispose();
         }
 
         if (displayFrustum && camera) {
-            const dlh = (light as any)._displayFrustumDLH = new DirectionalLightHelper(light, camera);
+            const dlh = (light as any)._displayFrustumDLH = new DirectionalLightFrustumViewer(light, camera);
             (light as any)._displayFrustumObservable = light.getScene().onAfterRenderObservable.add(() => {
-                dlh.show();
+                dlh.update();
             });
         }
     }
