@@ -3,10 +3,10 @@ import { DirectionalLight } from "../Lights/directionalLight";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { Color3 } from "../Maths/math.color";
 import { Matrix, TmpVectors, Vector3 } from "../Maths/math.vector";
+import { LinesBuilder } from "../Meshes/Builders/linesBuilder";
 import { LinesMesh } from "../Meshes/linesMesh";
 import { Mesh } from "../Meshes/mesh";
 import { VertexData } from "../Meshes/mesh.vertexData";
-import { MeshBuilder } from "../Meshes/meshBuilder";
 import { TransformNode } from "../Meshes/transformNode";
 import { Scene } from "../scene";
 
@@ -181,17 +181,17 @@ export class DirectionalLightFrustumViewer {
         Vector3.TransformCoordinatesToRef(TmpVectors.Vector3[8], invLightView, TmpVectors.Vector3[8]); // far3
         Vector3.TransformCoordinatesToRef(TmpVectors.Vector3[9], invLightView, TmpVectors.Vector3[9]); // far4
 
-        MeshBuilder.CreateLines("nearlines", { updatable: true, points: this._nearLinesPoints, instance: this._lightHelperFrustumMeshes[0] as LinesMesh }, this._scene);
+        LinesBuilder.CreateLines("nearlines", { updatable: true, points: this._nearLinesPoints, instance: this._lightHelperFrustumMeshes[0] as LinesMesh }, this._scene);
 
-        MeshBuilder.CreateLines("farlines",  { updatable: true, points: this._farLinesPoints, instance: this._lightHelperFrustumMeshes[1] as LinesMesh }, this._scene);
+        LinesBuilder.CreateLines("farlines",  { updatable: true, points: this._farLinesPoints, instance: this._lightHelperFrustumMeshes[1] as LinesMesh }, this._scene);
 
-        MeshBuilder.CreateLines("trlines", { updatable: true, points: this._trLinesPoints, instance: this._lightHelperFrustumMeshes[2] as LinesMesh }, this._scene);
+        LinesBuilder.CreateLines("trlines", { updatable: true, points: this._trLinesPoints, instance: this._lightHelperFrustumMeshes[2] as LinesMesh }, this._scene);
 
-        MeshBuilder.CreateLines("brlines", { updatable: true, points: this._brLinesPoints, instance: this._lightHelperFrustumMeshes[3] as LinesMesh }, this._scene);
+        LinesBuilder.CreateLines("brlines", { updatable: true, points: this._brLinesPoints, instance: this._lightHelperFrustumMeshes[3] as LinesMesh }, this._scene);
 
-        MeshBuilder.CreateLines("tllines", { updatable: true, points: this._tlLinesPoints, instance: this._lightHelperFrustumMeshes[4] as LinesMesh }, this._scene);
+        LinesBuilder.CreateLines("tllines", { updatable: true, points: this._tlLinesPoints, instance: this._lightHelperFrustumMeshes[4] as LinesMesh }, this._scene);
 
-        MeshBuilder.CreateLines("bllines", { updatable: true, points: this._blLinesPoints, instance: this._lightHelperFrustumMeshes[5] as LinesMesh }, this._scene);
+        LinesBuilder.CreateLines("bllines", { updatable: true, points: this._blLinesPoints, instance: this._lightHelperFrustumMeshes[5] as LinesMesh }, this._scene);
 
         TmpVectors.Vector3[2].toArray(this._nearPlaneVertices, 0);
         TmpVectors.Vector3[3].toArray(this._nearPlaneVertices, 3);
@@ -246,32 +246,32 @@ export class DirectionalLightFrustumViewer {
         this._rootNode.parent = this._light.parent;
 
         this._nearLinesPoints = [Vector3.ZeroReadOnly, Vector3.ZeroReadOnly, Vector3.ZeroReadOnly, Vector3.ZeroReadOnly, Vector3.ZeroReadOnly];
-        const nearLines = MeshBuilder.CreateLines("nearlines", { updatable: true, points: this._nearLinesPoints }, this._scene);
+        const nearLines = LinesBuilder.CreateLines("nearlines", { updatable: true, points: this._nearLinesPoints }, this._scene);
         nearLines.parent = this._rootNode;
         nearLines.alwaysSelectAsActiveMesh = true;
 
         this._farLinesPoints = [Vector3.ZeroReadOnly, Vector3.ZeroReadOnly, Vector3.ZeroReadOnly, Vector3.ZeroReadOnly, Vector3.ZeroReadOnly];
-        const farLines = MeshBuilder.CreateLines("farlines",  { updatable: true, points: this._farLinesPoints }, this._scene);
+        const farLines = LinesBuilder.CreateLines("farlines",  { updatable: true, points: this._farLinesPoints }, this._scene);
         farLines.parent = this._rootNode;
         farLines.alwaysSelectAsActiveMesh = true;
 
         this._trLinesPoints = [Vector3.ZeroReadOnly, Vector3.ZeroReadOnly];
-        const trLines = MeshBuilder.CreateLines("trlines", { updatable: true, points: this._trLinesPoints }, this._scene);
+        const trLines = LinesBuilder.CreateLines("trlines", { updatable: true, points: this._trLinesPoints }, this._scene);
         trLines.parent = this._rootNode;
         trLines.alwaysSelectAsActiveMesh = true;
 
         this._brLinesPoints = [Vector3.ZeroReadOnly, Vector3.ZeroReadOnly];
-        const brLines = MeshBuilder.CreateLines("brlines", { updatable: true, points: this._brLinesPoints }, this._scene);
+        const brLines = LinesBuilder.CreateLines("brlines", { updatable: true, points: this._brLinesPoints }, this._scene);
         brLines.parent = this._rootNode;
         brLines.alwaysSelectAsActiveMesh = true;
 
         this._tlLinesPoints = [Vector3.ZeroReadOnly, Vector3.ZeroReadOnly];
-        const tlLines = MeshBuilder.CreateLines("tllines", { updatable: true, points: this._tlLinesPoints }, this._scene);
+        const tlLines = LinesBuilder.CreateLines("tllines", { updatable: true, points: this._tlLinesPoints }, this._scene);
         tlLines.parent = this._rootNode;
         tlLines.alwaysSelectAsActiveMesh = true;
 
         this._blLinesPoints = [Vector3.ZeroReadOnly, Vector3.ZeroReadOnly];
-        const blLines = MeshBuilder.CreateLines("bllines", { updatable: true, points: this._blLinesPoints }, this._scene);
+        const blLines = LinesBuilder.CreateLines("bllines", { updatable: true, points: this._blLinesPoints }, this._scene);
         blLines.parent = this._rootNode;
         blLines.alwaysSelectAsActiveMesh = true;
 
