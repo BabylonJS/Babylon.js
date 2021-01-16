@@ -45,16 +45,16 @@ export class InputDisplayManager implements IDisplayManager {
 
     public getHeaderText(block: NodeMaterialBlock): string {
         let inputBlock = block as InputBlock;
-        let name = `${inputBlock.name} (${this.GetBaseType(inputBlock.output.type)})`;
+        let name = `${inputBlock.name} (${InputDisplayManager.GetBaseType(inputBlock.output.type)})`;
 
         if (inputBlock.isAttribute) {
-            name = this.GetBaseType(inputBlock.output.type);
+            name = InputDisplayManager.GetBaseType(inputBlock.output.type);
         }
 
         return name;
     }
 
-    public GetBaseType(type: NodeMaterialBlockConnectionPointTypes): string {
+    public static GetBaseType(type: NodeMaterialBlockConnectionPointTypes): string {
         return NodeMaterialBlockConnectionPointTypes[type];
     }
 

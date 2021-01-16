@@ -1,15 +1,14 @@
-
 import * as React from "react";
-import { GlobalState } from '../../globalState';
-import { Nullable } from 'babylonjs/types';
-import { ButtonLineComponent } from '../../sharedUiComponents/lines/buttonLineComponent';
-import { LineContainerComponent } from '../../sharedUiComponents/lines/lineContainerComponent';
-import { FileButtonLineComponent } from '../../sharedUiComponents/lines/fileButtonLineComponent';
-import { Tools } from 'babylonjs/Misc/tools';
-import { CheckBoxLineComponent } from '../../sharedUiComponents/lines/checkBoxLineComponent';
-import { DataStorage } from 'babylonjs/Misc/dataStorage';
-import { GUINode } from '../../diagram/guiNode';
-import { Observer } from 'babylonjs/Misc/observable';
+import { GlobalState } from "../../globalState";
+import { Nullable } from "babylonjs/types";
+import { ButtonLineComponent } from "../../sharedUiComponents/lines/buttonLineComponent";
+import { LineContainerComponent } from "../../sharedUiComponents/lines/lineContainerComponent";
+import { FileButtonLineComponent } from "../../sharedUiComponents/lines/fileButtonLineComponent";
+import { Tools } from "babylonjs/Misc/tools";
+import { CheckBoxLineComponent } from "../../sharedUiComponents/lines/checkBoxLineComponent";
+import { DataStorage } from "babylonjs/Misc/dataStorage";
+import { GUINode } from "../../diagram/guiNode";
+import { Observer } from "babylonjs/Misc/observable";
 import { TextLineComponent } from "../../sharedUiComponents/lines/textLineComponent";
 import { StringTools } from "../../sharedUiComponents/stringTools";
 import { Engine } from "babylonjs/Engines/engine";
@@ -55,7 +54,7 @@ interface IPropertyTabComponentProps {
 
 interface IPropertyTabComponentState {
     currentNode: Nullable<GUINode>;
- }
+}
 
 export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
     private _onBuiltObserver: Nullable<Observer<void>>;
@@ -64,7 +63,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     constructor(props: IPropertyTabComponentProps) {
         super(props);
 
-        this.state = { currentNode: null};
+        this.state = { currentNode: null };
     }
 
     timerRefresh() {
@@ -77,7 +76,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this._timerIntervalId = window.setInterval(() => this.timerRefresh(), 500);
         this.props.globalState.onSelectionChangedObservable.add((selection) => {
             if (selection instanceof GUINode) {
-                this.setState({ currentNode: selection});
+                this.setState({ currentNode: selection });
             } else {
                 this.setState({ currentNode: null });
             }
@@ -93,30 +92,34 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this.props.globalState.onBuiltObservable.remove(this._onBuiltObserver);
     }
 
-
     load(file: File) {
-        Tools.ReadFile(file, (data) => {
-            let decoder = new TextDecoder("utf-8");
-            this.props.globalState.workbench.loadFromJson(JSON.parse(decoder.decode(data)));
+        Tools.ReadFile(
+            file,
+            (data) => {
+                const decoder = new TextDecoder("utf-8");
+                this.props.globalState.workbench.loadFromJson(JSON.parse(decoder.decode(data)));
 
-            this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-        }, undefined, true);
+                this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+            },
+            undefined,
+            true
+        );
     }
 
     save() {
-        let json = JSON.stringify(this.props.globalState.guiTexture.serializeContent());
+        const json = JSON.stringify(this.props.globalState.guiTexture.serializeContent());
         StringTools.DownloadAsFile(this.props.globalState.hostDocument, json, "guiTexture.json");
     }
 
     saveToSnippetServer() {
-        let adt = this.props.globalState.guiTexture;
-        let content = JSON.stringify(adt.serializeContent());
+        const adt = this.props.globalState.guiTexture;
+        const content = JSON.stringify(adt.serializeContent());
 
-        let xmlHttp = new XMLHttpRequest();
+        const xmlHttp = new XMLHttpRequest();
         xmlHttp.onreadystatechange = () => {
             if (xmlHttp.readyState == 4) {
                 if (xmlHttp.status == 200) {
-                    let snippet = JSON.parse(xmlHttp.responseText);
+                    const snippet = JSON.parse(xmlHttp.responseText);
                     const oldId = adt.snippetId;
                     adt.snippetId = snippet.id;
                     if (snippet.version && snippet.version != "0") {
@@ -127,41 +130,39 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         navigator.clipboard.writeText(adt.snippetId);
                     }
 
-                    let windowAsAny = window as any;
+                    const windowAsAny = window as any;
 
                     if (windowAsAny.Playground && oldId) {
                         windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
-                            regex: new RegExp(`parseFromSnippetAsync\\("${oldId}`, "g"),
-                            replace: `parseFromSnippetAsync("${adt.snippetId}`
+                            regex: new RegExp(oldId, "g"),
+                            replace: `parseFromSnippetAsync("${adt.snippetId}`,
                         });
                     }
 
                     alert("GUI saved with ID: " + adt.snippetId + " (please note that the id was also saved to your clipboard)");
-                }
-                else {
+                } else {
                     alert("Unable to save your GUI");
                 }
             }
-        }
+        };
 
         xmlHttp.open("POST", AdvancedDynamicTexture.SnippetUrl + (adt.snippetId ? "/" + adt.snippetId : ""), true);
         xmlHttp.setRequestHeader("Content-Type", "application/json");
 
-        let dataToSend = {
-            payload : JSON.stringify({
-                gui: content
+        const dataToSend = {
+            payload: JSON.stringify({
+                gui: content,
             }),
             name: "",
             description: "",
-            tags: ""
+            tags: "",
         };
 
         xmlHttp.send(JSON.stringify(dataToSend));
     }
 
     loadFromSnippet() {
-
-        let snippedID = window.prompt("Please enter the snippet ID to use");
+        const snippedID = window.prompt("Please enter the snippet ID to use");
 
         if (!snippedID) {
             return;
@@ -169,115 +170,81 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this.props.globalState.workbench.loadFromSnippet(snippedID);
     }
 
-    renderProperties()
-    {
-        let className = this.state.currentNode?.guiControl.getClassName();
+    renderProperties() {
+        const className = this.state.currentNode?.guiControl.getClassName();
         switch (className) {
             case "TextBlock": {
                 const textBlock = this.state.currentNode?.guiControl as TextBlock;
-                return (<TextBlockPropertyGridComponent textBlock={textBlock}
-                    lockObject={this._lockObject}
-                    onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
+                return <TextBlockPropertyGridComponent textBlock={textBlock} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
             }
             case "InputText": {
                 const inputText = this.state.currentNode?.guiControl as InputText;
-                return (<InputTextPropertyGridComponent inputText={inputText}
-                    lockObject={this._lockObject}
-                    onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
+                return <InputTextPropertyGridComponent inputText={inputText} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
             }
             case "ColorPicker": {
                 const colorPicker = this.state.currentNode?.guiControl as ColorPicker;
-                return (<ColorPickerPropertyGridComponent colorPicker={colorPicker}
-                    lockObject={this._lockObject}
-                    onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
+                return <ColorPickerPropertyGridComponent colorPicker={colorPicker} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
             }
             case "Image": {
                 const image = this.state.currentNode?.guiControl as Image;
-                return (<ImagePropertyGridComponent image={image}
-                    lockObject={this._lockObject}
-                    onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
+                return <ImagePropertyGridComponent image={image} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
             }
             case "Slider": {
                 const slider = this.state.currentNode?.guiControl as Slider;
-                return (<SliderPropertyGridComponent slider={slider}
-                    lockObject={this._lockObject}
-                    onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
+                return <SliderPropertyGridComponent slider={slider} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
             }
             case "ImageBasedSlider": {
                 const imageBasedSlider = this.state.currentNode?.guiControl as ImageBasedSlider;
-                return (<ImageBasedSliderPropertyGridComponent imageBasedSlider={imageBasedSlider}
-                    lockObject={this._lockObject}
-                    onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
+                return <ImageBasedSliderPropertyGridComponent imageBasedSlider={imageBasedSlider} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
             }
             case "Rectangle": {
                 const rectangle = this.state.currentNode?.guiControl as Rectangle;
-                return (<RectanglePropertyGridComponent rectangle={rectangle}
-                    lockObject={this._lockObject}
-                    onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
+                return <RectanglePropertyGridComponent rectangle={rectangle} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
             }
             case "StackPanel": {
                 const stackPanel = this.state.currentNode?.guiControl as StackPanel;
-                return (<StackPanelPropertyGridComponent stackPanel={stackPanel}
-                    lockObject={this._lockObject}
-                    onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
+                return <StackPanelPropertyGridComponent stackPanel={stackPanel} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
             }
             case "Grid": {
                 const grid = this.state.currentNode?.guiControl as Grid;
-                return (<GridPropertyGridComponent grid={grid}
-                    lockObject={this._lockObject}
-                    onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
+                return <GridPropertyGridComponent grid={grid} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
             }
             case "ScrollViewer": {
                 const scrollViewer = this.state.currentNode?.guiControl as ScrollViewer;
-                return (<ScrollViewerPropertyGridComponent scrollViewer={scrollViewer}
-                    lockObject={this._lockObject}
-                    onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
+                return <ScrollViewerPropertyGridComponent scrollViewer={scrollViewer} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
             }
             case "Ellipse": {
                 const ellipse = this.state.currentNode?.guiControl as Ellipse;
-                return (<EllipsePropertyGridComponent ellipse={ellipse}
-                    lockObject={this._lockObject}
-                    onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
+                return <EllipsePropertyGridComponent ellipse={ellipse} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
             }
             case "Checkbox": {
                 const checkbox = this.state.currentNode?.guiControl as Checkbox;
-                return (<CheckboxPropertyGridComponent checkbox={checkbox}
-                    lockObject={this._lockObject}
-                    onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
+                return <CheckboxPropertyGridComponent checkbox={checkbox} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
             }
             case "RadioButton": {
                 const radioButton = this.state.currentNode?.guiControl as RadioButton;
-                return (<RadioButtonPropertyGridComponent radioButton={radioButton}
-                    lockObject={this._lockObject}
-                    onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
+                return <RadioButtonPropertyGridComponent radioButton={radioButton} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
             }
             case "Line": {
                 const line = this.state.currentNode?.guiControl as Line;
-                return (<LinePropertyGridComponent line={line}
-                    lockObject={this._lockObject}
-                    onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
+                return <LinePropertyGridComponent line={line} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
             }
         }
 
         if (className !== "") {
             const control = this.state.currentNode?.guiControl as Control;
-            return (<ControlPropertyGridComponent control={control}
-                lockObject={this._lockObject}
-                onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
+            return <ControlPropertyGridComponent control={control} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
         }
         return null;
     }
 
     render() {
-
         if (this.state.currentNode) {
             return (
                 <div id="propertyTab">
                     <div id="header">
                         <img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
-                        <div id="title">
-                            GUI EDITOR
-                        </div>
+                        <div id="title">GUI EDITOR</div>
                     </div>
                     {this.renderProperties()}
                 </div>
@@ -288,20 +255,22 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             <div id="propertyTab">
                 <div id="header">
                     <img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
-                    <div id="title">
-                        GUI EDITOR
-                    </div>
+                    <div id="title">GUI EDITOR</div>
                 </div>
                 <div>
                     <LineContainerComponent title="GENERAL">
-                        <TextLineComponent label="Version" value={Engine.Version}/>
-                        <TextLineComponent label="Help" value="doc.babylonjs.com" underline={true} onLink={() => window.open('https://doc.babylonjs.com', '_blank')}/>
-                        <ButtonLineComponent label="Reset to default" onClick={() => {
-                            this.props.globalState.onResetRequiredObservable.notifyObservers();
-                        }} />
+                        <TextLineComponent label="Version" value={Engine.Version} />
+                        <TextLineComponent label="Help" value="doc.babylonjs.com" underline={true} onLink={() => window.open("https://doc.babylonjs.com", "_blank")} />
+                        <ButtonLineComponent
+                            label="Reset to default"
+                            onClick={() => {
+                                this.props.globalState.onResetRequiredObservable.notifyObservers();
+                            }}
+                        />
                     </LineContainerComponent>
                     <LineContainerComponent title="OPTIONS">
-                        <CheckBoxLineComponent label="Show grid"
+                        <CheckBoxLineComponent
+                            label="Show grid"
                             isSelected={() => DataStorage.ReadBoolean("ShowGrid", true)}
                             onSelect={(value: boolean) => {
                                 DataStorage.WriteBoolean("ShowGrid", value);
@@ -310,17 +279,22 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     </LineContainerComponent>
                     <LineContainerComponent title="FILE">
                         <FileButtonLineComponent label="Load" onClick={(file) => this.load(file)} accept=".json" />
-                        <ButtonLineComponent label="Save" onClick={() => {
-                            this.save();
-                        }} />
+                        <ButtonLineComponent
+                            label="Save"
+                            onClick={() => {
+                                this.save();
+                            }}
+                        />
                     </LineContainerComponent>
                     {
-                        
                         <LineContainerComponent title="SNIPPET">
                             <ButtonLineComponent label="Load from snippet server" onClick={() => this.loadFromSnippet()} />
-                            <ButtonLineComponent label="Save to snippet server" onClick={() => {
-                                this.saveToSnippetServer();
-                            }} />
+                            <ButtonLineComponent
+                                label="Save to snippet server"
+                                onClick={() => {
+                                    this.saveToSnippetServer();
+                                }}
+                            />
                         </LineContainerComponent>
                     }
                 </div>
