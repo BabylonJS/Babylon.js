@@ -1136,6 +1136,30 @@ declare module BABYLON {
          * Prefixes used by the engine for custom effects
          */
         static readonly CUSTOMEFFECT_PREFIX_SHADOWGENERATOR: string;
+        /**
+         * Constant used as key code for Alt key
+         */
+        static readonly INPUT_ALT_KEY: number;
+        /**
+         * Constant used as key code for Ctrl key
+         */
+        static readonly INPUT_CTRL_KEY: number;
+        /**
+         * Constant used as key code for Meta key (Left Win, Left Cmd)
+         */
+        static readonly INPUT_META_KEY1: number;
+        /**
+         * Constant used as key code for Meta key (Right Win)
+         */
+        static readonly INPUT_META_KEY2: number;
+        /**
+         * Constant used as key code for Meta key (Right Win, Right Cmd)
+         */
+        static readonly INPUT_META_KEY3: number;
+        /**
+         * Constant used as key code for Shift key
+         */
+        static readonly INPUT_SHIFT_KEY: number;
     }
 }
 declare module BABYLON {
@@ -9907,6 +9931,237 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Event Types
+     */
+    export enum DeviceInputEventType {
+        /** PointerMove */
+        PointerMove = 0,
+        /** PointerDown */
+        PointerDown = 1,
+        /** PointerUp */
+        PointerUp = 2
+    }
+    /**
+     * Native friendly interface for Event Object
+     */
+    export interface IEvent {
+        /**
+         * Current target for an event
+         */
+        currentTarget?: any;
+        /**
+         * Alias for target
+         * @deprecated
+         */
+        srcElement?: any;
+        /**
+         * Type of event
+         */
+        type: string;
+        /**
+         * Reference to object where object was dispatched
+         */
+        target: any;
+        /**
+         * Tells user agent what to do when not explicitly handled
+         */
+        preventDefault: () => void;
+    }
+    /**
+     * Native friendly interface for UIEvent Object
+     */
+    export interface IUIEvent extends IEvent {
+        /**
+         * Provides current click count
+         */
+        detail: number;
+        /**
+         * Horizontal coordinate of event
+         */
+        pageX: number;
+        /**
+         * Vertical coordinate of event
+         */
+        pageY: number;
+    }
+    /**
+     * Native friendly interface for KeyboardEvent Object
+     */
+    export interface IKeyboardEvent extends IUIEvent {
+        /**
+         * Status of Alt key being pressed
+         */
+        altKey: boolean;
+        /**
+         * Unicode value of character pressed
+         * @deprecated
+         */
+        charCode?: number;
+        /**
+         * Code for key based on layout
+         */
+        code: string;
+        /**
+         * Status of Ctrl key being pressed
+         */
+        ctrlKey: boolean;
+        /**
+         * String representation of key
+         */
+        key: string;
+        /**
+         * ASCII value of key
+         * @deprecated
+         */
+        keyCode: number;
+        /**
+         * Status of Meta key (eg. Windows key) being pressed
+         */
+        metaKey: boolean;
+        /**
+         * Status of Shift key being pressed
+         */
+        shiftKey: boolean;
+    }
+    /**
+     * Native friendly interface for MouseEvent Object
+     */
+    export interface IMouseEvent extends IUIEvent {
+        /**
+         * Status of Alt key being pressed
+         */
+        altKey: boolean;
+        /**
+         * Value of single mouse button pressed
+         */
+        button: number;
+        /**
+         * Value of all mouse buttons pressed
+         */
+        buttons: number;
+        /**
+         * Current X coordinate
+         */
+        clientX: number;
+        /**
+         * Current Y coordinate
+         */
+        clientY: number;
+        /**
+         * Status of Ctrl key being pressed
+         */
+        ctrlKey: boolean;
+        /**
+         * Status of Meta key (eg. Windows key) being pressed
+         */
+        metaKey: boolean;
+        /**
+         * Delta of movement on X axis
+         */
+        movementX: number;
+        /**
+         * Delta of movement on Y axis
+         */
+        movementY: number;
+        /**
+         * Delta of movement on X axis
+         */
+        mozMovementX?: number;
+        /**
+         * Delta of movement on Y axis
+         */
+        mozMovementY?: number;
+        /**
+         * Delta of movement on X axis
+         */
+        msMovementX?: any;
+        /**
+         * Delta of movement on Y axis
+         */
+        msMovementY?: any;
+        /**
+         * Current coordinate of X within container
+         */
+        offsetX: number;
+        /**
+         * Current coordinate of Y within container
+         */
+        offsetY: number;
+        /**
+         * Status of Shift key being pressed
+         */
+        shiftKey: boolean;
+        /**
+         * Delta of movement on X axis
+         */
+        webkitMovementX?: any;
+        /**
+         * Delta of movement on Y axis
+         */
+        webkitMovementY?: any;
+        /**
+         * Alias of clientX
+         */
+        x: number;
+        /**
+         * Alias of clientY
+         */
+        y: number;
+    }
+    /**
+     * Native friendly interface for PointerEvent Object
+     */
+    export interface IPointerEvent extends IMouseEvent {
+        /**
+         * Pointer Event ID
+         */
+        pointerId: number;
+        /**
+         * Type of pointer
+         */
+        pointerType: string;
+    }
+    /**
+     * Native friendly interface for WheelEvent Object
+     */
+    export interface IWheelEvent extends IMouseEvent {
+        /**
+         * Units for delta value
+         */
+        deltaMode: number;
+        /**
+         * Horizontal scroll delta
+         */
+        deltaX: number;
+        /**
+         * Vertical scroll delta
+         */
+        deltaY: number;
+        /**
+         * Z-Axis scroll delta
+         */
+        deltaZ: number;
+    }
+    /**
+     * Constants used for Events
+     */
+    export class EventConstants {
+        /**
+         * Pixel delta for Wheel Events (Default)
+         */
+        static DOM_DELTA_PIXEL: number;
+        /**
+         * Line delta for Wheel Events
+         */
+        static DOM_DELTA_LINE: number;
+        /**
+         * Page delta for Wheel Events
+         */
+        static DOM_DELTA_PAGE: number;
+    }
+}
+declare module BABYLON {
+    /**
      * Gather the list of keyboard event types as constants.
      */
     export class KeyboardEventTypes {
@@ -9930,7 +10185,7 @@ declare module BABYLON {
         /**
          * Defines the related dom event
          */
-        event: KeyboardEvent;
+        event: IKeyboardEvent;
         /**
          * Instantiates a new keyboard info.
          * This class is used to store keyboard related info for the onKeyboardObservable event.
@@ -9945,7 +10200,7 @@ declare module BABYLON {
         /**
          * Defines the related dom event
          */
-        event: KeyboardEvent);
+        event: IKeyboardEvent);
     }
     /**
      * This class is used to store keyboard related info for the onPreKeyboardObservable event.
@@ -9959,7 +10214,7 @@ declare module BABYLON {
         /**
          * Defines the related dom event
          */
-        event: KeyboardEvent;
+        event: IKeyboardEvent;
         /**
          * Defines whether the engine should skip the next onKeyboardObservable associated to this pre.
          */
@@ -9978,7 +10233,7 @@ declare module BABYLON {
         /**
          * Defines the related dom event
          */
-        event: KeyboardEvent);
+        event: IKeyboardEvent);
     }
 }
 declare module BABYLON {
@@ -11240,7 +11495,7 @@ declare module BABYLON {
     /**
      * Strong typing of a pointer up/down action.
      */
-    export type PointerUpDownStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, evt: PointerEvent) => Nullable<PickingInfo>;
+    export type PointerUpDownStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, evt: IPointerEvent) => Nullable<PickingInfo>;
     /**
      * Representation of a stage in the scene (Basically a list of ordered steps)
      * @hidden
@@ -24802,7 +25057,7 @@ declare module BABYLON {
         /**
          * Defines the related dom event
          */
-        event: PointerEvent | MouseWheelEvent;
+        event: IMouseEvent;
         /**
          * Instantiates the base class of pointers info.
          * @param type Defines the type of event (PointerEventTypes)
@@ -24816,7 +25071,7 @@ declare module BABYLON {
         /**
          * Defines the related dom event
          */
-        event: PointerEvent | MouseWheelEvent);
+        event: IMouseEvent);
     }
     /**
      * This class is used to store pointer related info for the onPrePointerObservable event.
@@ -24842,7 +25097,7 @@ declare module BABYLON {
          * @param localX Defines the local x coordinates of the pointer when the event occured
          * @param localY Defines the local y coordinates of the pointer when the event occured
          */
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number);
+        constructor(type: number, event: IMouseEvent, localX: number, localY: number);
     }
     /**
      * This type contains all the data related to a pointer event in Babylon.js.
@@ -24859,7 +25114,7 @@ declare module BABYLON {
          * @param event Defines the related dom event
          * @param pickInfo Defines the picking info associated to the info (if any)\
          */
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, 
+        constructor(type: number, event: IMouseEvent, 
         /**
          * Defines the picking info associated to the info (if any)\
          */
@@ -33484,6 +33739,10 @@ declare module BABYLON {
         */
         get onAfterRenderObservable(): Observable<Mesh>;
         /**
+        * An event triggeredbetween rendering pass wneh using separateCullingPass = true
+        */
+        get onBetweenPassObservable(): Observable<Mesh>;
+        /**
         * An event triggered before drawing the mesh
         */
         get onBeforeDrawObservable(): Observable<Mesh>;
@@ -37185,7 +37444,7 @@ declare module BABYLON {
          * @param additionalData additional data for the event
          * @returns the new ActionEvent
          */
-        static CreateNew(source: AbstractMesh, evt?: Event, additionalData?: any): ActionEvent;
+        static CreateNew(source: AbstractMesh, evt?: IEvent, additionalData?: any): ActionEvent;
         /**
          * Helper function to auto-create an ActionEvent from a source sprite
          * @param source The source sprite that triggered the event
@@ -37194,14 +37453,14 @@ declare module BABYLON {
          * @param additionalData additional data for the event
          * @returns the new ActionEvent
          */
-        static CreateNewFromSprite(source: Sprite, scene: Scene, evt?: Event, additionalData?: any): ActionEvent;
+        static CreateNewFromSprite(source: Sprite, scene: Scene, evt?: IEvent, additionalData?: any): ActionEvent;
         /**
          * Helper function to auto-create an ActionEvent from a scene. If triggered by a mesh use ActionEvent.CreateNew
          * @param scene the scene where the event occurred
          * @param evt The original (browser) event
          * @returns the new ActionEvent
          */
-        static CreateNewFromScene(scene: Scene, evt: Event): ActionEvent;
+        static CreateNewFromScene(scene: Scene, evt: IEvent): ActionEvent;
         /**
          * Helper function to auto-create an ActionEvent from a primitive
          * @param prim defines the target primitive
@@ -40041,6 +40300,8 @@ declare module BABYLON {
         supportSwitchCaseInShader: boolean;
         /** Indicates that synchronous texture reading is supported */
         supportSyncTextureRead: boolean;
+        /** Indicates that y should be inverted when dealing with bitmaps (notably in environment tools) */
+        needsInvertingBitmap: boolean;
         /** @hidden */
         _collectUbosUpdatedInFrame: boolean;
     }
@@ -42523,7 +42784,7 @@ declare module BABYLON {
         /**
          * Observable event triggered each time the canvas receives pointerout event
          */
-        onCanvasPointerOutObservable: Observable<PointerEvent>;
+        onCanvasPointerOutObservable: Observable<IPointerEvent>;
         /**
          * Observable raised when the engine begins a new frame
          */
@@ -43911,6 +44172,334 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Enum for Device Types
+     */
+    export enum DeviceType {
+        /** Generic */
+        Generic = 0,
+        /** Keyboard */
+        Keyboard = 1,
+        /** Mouse */
+        Mouse = 2,
+        /** Touch Pointers */
+        Touch = 3,
+        /** PS4 Dual Shock */
+        DualShock = 4,
+        /** Xbox */
+        Xbox = 5,
+        /** Switch Controller */
+        Switch = 6
+    }
+    /**
+     * Enum for All Pointers (Touch/Mouse)
+     */
+    export enum PointerInput {
+        /** Horizontal Axis */
+        Horizontal = 0,
+        /** Vertical Axis */
+        Vertical = 1,
+        /** Left Click or Touch */
+        LeftClick = 2,
+        /** Middle Click */
+        MiddleClick = 3,
+        /** Right Click */
+        RightClick = 4,
+        /** Browser Back */
+        BrowserBack = 5,
+        /** Browser Forward */
+        BrowserForward = 6,
+        /** Mouse Wheel X */
+        MouseWheelX = 7,
+        /** Mouse Wheel Y */
+        MouseWheelY = 8,
+        /** Mouse Wheel Z */
+        MouseWheelZ = 9,
+        /** Delta X */
+        DeltaHorizontal = 10,
+        /** Delta Y */
+        DeltaVertical = 11
+    }
+    /**
+     * Enum for Dual Shock Gamepad
+     */
+    export enum DualShockInput {
+        /** Cross */
+        Cross = 0,
+        /** Circle */
+        Circle = 1,
+        /** Square */
+        Square = 2,
+        /** Triangle */
+        Triangle = 3,
+        /** L1 */
+        L1 = 4,
+        /** R1 */
+        R1 = 5,
+        /** L2 */
+        L2 = 6,
+        /** R2 */
+        R2 = 7,
+        /** Share */
+        Share = 8,
+        /** Options */
+        Options = 9,
+        /** L3 */
+        L3 = 10,
+        /** R3 */
+        R3 = 11,
+        /** DPadUp */
+        DPadUp = 12,
+        /** DPadDown */
+        DPadDown = 13,
+        /** DPadLeft */
+        DPadLeft = 14,
+        /** DRight */
+        DPadRight = 15,
+        /** Home */
+        Home = 16,
+        /** TouchPad */
+        TouchPad = 17,
+        /** LStickXAxis */
+        LStickXAxis = 18,
+        /** LStickYAxis */
+        LStickYAxis = 19,
+        /** RStickXAxis */
+        RStickXAxis = 20,
+        /** RStickYAxis */
+        RStickYAxis = 21
+    }
+    /**
+     * Enum for Xbox Gamepad
+     */
+    export enum XboxInput {
+        /** A */
+        A = 0,
+        /** B */
+        B = 1,
+        /** X */
+        X = 2,
+        /** Y */
+        Y = 3,
+        /** LB */
+        LB = 4,
+        /** RB */
+        RB = 5,
+        /** LT */
+        LT = 6,
+        /** RT */
+        RT = 7,
+        /** Back */
+        Back = 8,
+        /** Start */
+        Start = 9,
+        /** LS */
+        LS = 10,
+        /** RS */
+        RS = 11,
+        /** DPadUp */
+        DPadUp = 12,
+        /** DPadDown */
+        DPadDown = 13,
+        /** DPadLeft */
+        DPadLeft = 14,
+        /** DRight */
+        DPadRight = 15,
+        /** Home */
+        Home = 16,
+        /** LStickXAxis */
+        LStickXAxis = 17,
+        /** LStickYAxis */
+        LStickYAxis = 18,
+        /** RStickXAxis */
+        RStickXAxis = 19,
+        /** RStickYAxis */
+        RStickYAxis = 20
+    }
+    /**
+     * Enum for Switch (Pro/JoyCon L+R) Gamepad
+     */
+    export enum SwitchInput {
+        /** B */
+        B = 0,
+        /** A */
+        A = 1,
+        /** Y */
+        Y = 2,
+        /** X */
+        X = 3,
+        /** L */
+        L = 4,
+        /** R */
+        R = 5,
+        /** ZL */
+        ZL = 6,
+        /** ZR */
+        ZR = 7,
+        /** Minus */
+        Minus = 8,
+        /** Plus */
+        Plus = 9,
+        /** LS */
+        LS = 10,
+        /** RS */
+        RS = 11,
+        /** DPadUp */
+        DPadUp = 12,
+        /** DPadDown */
+        DPadDown = 13,
+        /** DPadLeft */
+        DPadLeft = 14,
+        /** DRight */
+        DPadRight = 15,
+        /** Home */
+        Home = 16,
+        /** Capture */
+        Capture = 17,
+        /** LStickXAxis */
+        LStickXAxis = 18,
+        /** LStickYAxis */
+        LStickYAxis = 19,
+        /** RStickXAxis */
+        RStickXAxis = 20,
+        /** RStickYAxis */
+        RStickYAxis = 21
+    }
+}
+declare module BABYLON {
+    /**
+     * This class will take all inputs from Keyboard, Pointer, and
+     * any Gamepads and provide a polling system that all devices
+     * will use.  This class assumes that there will only be one
+     * pointer device and one keyboard.
+     */
+    export class DeviceInputSystem implements IDisposable {
+        /**
+         * Returns onDeviceConnected callback property
+         * @returns Callback with function to execute when a device is connected
+         */
+        get onDeviceConnected(): (deviceType: DeviceType, deviceSlot: number) => void;
+        /**
+         * Sets callback function when a device is connected and executes against all connected devices
+         * @param callback Function to execute when a device is connected
+         */
+        set onDeviceConnected(callback: (deviceType: DeviceType, deviceSlot: number) => void);
+        /**
+         * Callback to be triggered when a device is disconnected
+         */
+        onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
+        /**
+         * Callback to be triggered when event driven input is updated
+         */
+        onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>) => void;
+        private _inputs;
+        private _gamepads;
+        private _keyboardActive;
+        private _pointerActive;
+        private _elementToAttachTo;
+        private _keyboardDownEvent;
+        private _keyboardUpEvent;
+        private _pointerMoveEvent;
+        private _pointerDownEvent;
+        private _pointerUpEvent;
+        private _pointerWheelEvent;
+        private _wheelEventName;
+        private _gamepadConnectedEvent;
+        private _gamepadDisconnectedEvent;
+        private _onDeviceConnected;
+        private static _MAX_KEYCODES;
+        private static _MAX_POINTER_INPUTS;
+        private _eventPrefix;
+        private constructor();
+        /**
+         * Creates a new DeviceInputSystem instance
+         * @param engine Engine to pull input element from
+         * @returns The new instance
+         */
+        static Create(engine: Engine): DeviceInputSystem;
+        /**
+         * Checks for current device input value, given an id and input index
+         * @param deviceName Id of connected device
+         * @param inputIndex Index of device input
+         * @returns Current value of input
+         */
+        /**
+         * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
+         * @param deviceType Enum specifiying device type
+         * @param deviceSlot "Slot" or index that device is referenced in
+         * @param inputIndex Id of input to be checked
+         * @returns Current value of input
+         */
+        pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): number;
+        /**
+         * Check for a specific device in the DeviceInputSystem
+         * @param deviceType Type of device to check for
+         * @returns bool with status of device's existence
+         */
+        isDeviceAvailable(deviceType: DeviceType): boolean;
+        /**
+         * Dispose of all the eventlisteners
+         */
+        dispose(): void;
+        /**
+         * Checks for existing connections to devices and register them, if necessary
+         * Currently handles gamepads and mouse
+         */
+        private _checkForConnectedDevices;
+        /**
+         * Add a gamepad to the DeviceInputSystem
+         * @param gamepad A single DOM Gamepad object
+         */
+        private _addGamePad;
+        /**
+         * Add pointer device to DeviceInputSystem
+         * @param deviceType Type of Pointer to add
+         * @param deviceSlot Pointer ID (0 for mouse, pointerId for Touch)
+         * @param currentX Current X at point of adding
+         * @param currentY Current Y at point of adding
+         */
+        private _addPointerDevice;
+        /**
+         * Add device and inputs to device array
+         * @param deviceType Enum specifiying device type
+         * @param deviceSlot "Slot" or index that device is referenced in
+         * @param numberOfInputs Number of input entries to create for given device
+         */
+        private _registerDevice;
+        /**
+         * Given a specific device name, remove that device from the device map
+         * @param deviceType Enum specifiying device type
+         * @param deviceSlot "Slot" or index that device is referenced in
+         */
+        private _unregisterDevice;
+        /**
+         * Handle all actions that come from keyboard interaction
+         */
+        private _handleKeyActions;
+        /**
+         * Handle all actions that come from pointer interaction
+         */
+        private _handlePointerActions;
+        /**
+         * Handle all actions that come from gamepad interaction
+         */
+        private _handleGamepadActions;
+        /**
+         * Update all non-event based devices with each frame
+         * @param deviceType Enum specifiying device type
+         * @param deviceSlot "Slot" or index that device is referenced in
+         * @param inputIndex Id of input to be checked
+         */
+        private _updateDevice;
+        /**
+         * Gets DeviceType from the device name
+         * @param deviceName Name of Device from DeviceInputSystem
+         * @returns DeviceType enum value
+         */
+        private _getGamepadDeviceType;
+    }
+}
+declare module BABYLON {
+    /**
      * Class used to manage all inputs for the scene.
      */
     export class InputManager {
@@ -43925,7 +44514,6 @@ declare module BABYLON {
         /** This is a defensive check to not allow control attachment prior to an already active one. If already attached, previous control is unattached before attaching the new one. */
         private _alreadyAttached;
         private _alreadyAttachedTo;
-        private _wheelEventName;
         private _onPointerMove;
         private _onPointerDown;
         private _onPointerUp;
@@ -43955,10 +44543,8 @@ declare module BABYLON {
         private _meshUnderPointerId;
         private _onKeyDown;
         private _onKeyUp;
-        private _keyboardIsAttached;
-        private _onCanvasFocusObserver;
-        private _onCanvasBlurObserver;
         private _scene;
+        private _deviceInputSystem;
         /**
          * Creates a new InputManager
          * @param scene defines the hosting scene
@@ -45470,8 +46056,6 @@ declare module BABYLON {
         dbgVerboseLogsForFirstFrames: boolean;
         /** @hidden */
         dbgVerboseLogsNumFrames: number;
-        /** @hidden */
-        dbgShowWarningsNotImplemented: boolean;
         /**
          * Sets this to true to disable the cache for the samplers. You should do it only for testing purpose!
          */
@@ -46679,13 +47263,13 @@ declare module BABYLON {
          */
         pointerMovePredicate: (Mesh: AbstractMesh) => boolean;
         /** Callback called when a pointer move is detected */
-        onPointerMove: (evt: PointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
+        onPointerMove: (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
         /** Callback called when a pointer down is detected  */
-        onPointerDown: (evt: PointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
+        onPointerDown: (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
         /** Callback called when a pointer up is detected  */
-        onPointerUp: (evt: PointerEvent, pickInfo: Nullable<PickingInfo>, type: PointerEventTypes) => void;
+        onPointerUp: (evt: IPointerEvent, pickInfo: Nullable<PickingInfo>, type: PointerEventTypes) => void;
         /** Callback called when a pointer pick is detected */
-        onPointerPick: (evt: PointerEvent, pickInfo: PickingInfo) => void;
+        onPointerPick: (evt: IPointerEvent, pickInfo: PickingInfo) => void;
         /**
          * This observable event is triggered when any ponter event is triggered. It is registered during Scene.attachControl() and it is called BEFORE the 3D engine process anything (mesh/sprite picking for instance).
          * You have the possibility to skip the process and the call to onPointerObservable by setting PointerInfoPre.skipOnPointerObservable to true
@@ -49690,13 +50274,13 @@ declare module BABYLON {
          * press.
          * Override this method to provide functionality.
          */
-        protected onButtonDown(evt: PointerEvent): void;
+        protected onButtonDown(evt: IPointerEvent): void;
         /**
          * Called each time a new POINTERUP event occurs. Ie, for each button
          * release.
          * Override this method to provide functionality.
          */
-        protected onButtonUp(evt: PointerEvent): void;
+        protected onButtonUp(evt: IPointerEvent): void;
         /**
          * Called when window becomes inactive.
          * Override this method to provide functionality.
@@ -49804,12 +50388,12 @@ declare module BABYLON {
          * Called each time a new POINTERDOWN event occurs. Ie, for each button
          * press.
          */
-        protected onButtonDown(evt: PointerEvent): void;
+        protected onButtonDown(evt: IPointerEvent): void;
         /**
          * Called each time a new POINTERUP event occurs. Ie, for each button
          * release.
          */
-        protected onButtonUp(evt: PointerEvent): void;
+        protected onButtonUp(evt: IPointerEvent): void;
         /**
          * Called when window becomes inactive.
          */
@@ -59221,315 +59805,6 @@ declare module BABYLON.Debug {
 }
 declare module BABYLON {
     /**
-     * Enum for Device Types
-     */
-    export enum DeviceType {
-        /** Generic */
-        Generic = 0,
-        /** Keyboard */
-        Keyboard = 1,
-        /** Mouse */
-        Mouse = 2,
-        /** Touch Pointers */
-        Touch = 3,
-        /** PS4 Dual Shock */
-        DualShock = 4,
-        /** Xbox */
-        Xbox = 5,
-        /** Switch Controller */
-        Switch = 6
-    }
-    /**
-     * Enum for All Pointers (Touch/Mouse)
-     */
-    export enum PointerInput {
-        /** Horizontal Axis */
-        Horizontal = 0,
-        /** Vertical Axis */
-        Vertical = 1,
-        /** Left Click or Touch */
-        LeftClick = 2,
-        /** Middle Click */
-        MiddleClick = 3,
-        /** Right Click */
-        RightClick = 4,
-        /** Browser Back */
-        BrowserBack = 5,
-        /** Browser Forward */
-        BrowserForward = 6
-    }
-    /**
-     * Enum for Dual Shock Gamepad
-     */
-    export enum DualShockInput {
-        /** Cross */
-        Cross = 0,
-        /** Circle */
-        Circle = 1,
-        /** Square */
-        Square = 2,
-        /** Triangle */
-        Triangle = 3,
-        /** L1 */
-        L1 = 4,
-        /** R1 */
-        R1 = 5,
-        /** L2 */
-        L2 = 6,
-        /** R2 */
-        R2 = 7,
-        /** Share */
-        Share = 8,
-        /** Options */
-        Options = 9,
-        /** L3 */
-        L3 = 10,
-        /** R3 */
-        R3 = 11,
-        /** DPadUp */
-        DPadUp = 12,
-        /** DPadDown */
-        DPadDown = 13,
-        /** DPadLeft */
-        DPadLeft = 14,
-        /** DRight */
-        DPadRight = 15,
-        /** Home */
-        Home = 16,
-        /** TouchPad */
-        TouchPad = 17,
-        /** LStickXAxis */
-        LStickXAxis = 18,
-        /** LStickYAxis */
-        LStickYAxis = 19,
-        /** RStickXAxis */
-        RStickXAxis = 20,
-        /** RStickYAxis */
-        RStickYAxis = 21
-    }
-    /**
-     * Enum for Xbox Gamepad
-     */
-    export enum XboxInput {
-        /** A */
-        A = 0,
-        /** B */
-        B = 1,
-        /** X */
-        X = 2,
-        /** Y */
-        Y = 3,
-        /** LB */
-        LB = 4,
-        /** RB */
-        RB = 5,
-        /** LT */
-        LT = 6,
-        /** RT */
-        RT = 7,
-        /** Back */
-        Back = 8,
-        /** Start */
-        Start = 9,
-        /** LS */
-        LS = 10,
-        /** RS */
-        RS = 11,
-        /** DPadUp */
-        DPadUp = 12,
-        /** DPadDown */
-        DPadDown = 13,
-        /** DPadLeft */
-        DPadLeft = 14,
-        /** DRight */
-        DPadRight = 15,
-        /** Home */
-        Home = 16,
-        /** LStickXAxis */
-        LStickXAxis = 17,
-        /** LStickYAxis */
-        LStickYAxis = 18,
-        /** RStickXAxis */
-        RStickXAxis = 19,
-        /** RStickYAxis */
-        RStickYAxis = 20
-    }
-    /**
-     * Enum for Switch (Pro/JoyCon L+R) Gamepad
-     */
-    export enum SwitchInput {
-        /** B */
-        B = 0,
-        /** A */
-        A = 1,
-        /** Y */
-        Y = 2,
-        /** X */
-        X = 3,
-        /** L */
-        L = 4,
-        /** R */
-        R = 5,
-        /** ZL */
-        ZL = 6,
-        /** ZR */
-        ZR = 7,
-        /** Minus */
-        Minus = 8,
-        /** Plus */
-        Plus = 9,
-        /** LS */
-        LS = 10,
-        /** RS */
-        RS = 11,
-        /** DPadUp */
-        DPadUp = 12,
-        /** DPadDown */
-        DPadDown = 13,
-        /** DPadLeft */
-        DPadLeft = 14,
-        /** DRight */
-        DPadRight = 15,
-        /** Home */
-        Home = 16,
-        /** Capture */
-        Capture = 17,
-        /** LStickXAxis */
-        LStickXAxis = 18,
-        /** LStickYAxis */
-        LStickYAxis = 19,
-        /** RStickXAxis */
-        RStickXAxis = 20,
-        /** RStickYAxis */
-        RStickYAxis = 21
-    }
-}
-declare module BABYLON {
-    /**
-     * This class will take all inputs from Keyboard, Pointer, and
-     * any Gamepads and provide a polling system that all devices
-     * will use.  This class assumes that there will only be one
-     * pointer device and one keyboard.
-     */
-    export class DeviceInputSystem implements IDisposable {
-        /**
-         * Returns onDeviceConnected callback property
-         * @returns Callback with function to execute when a device is connected
-         */
-        get onDeviceConnected(): (deviceType: DeviceType, deviceSlot: number) => void;
-        /**
-         * Sets callback function when a device is connected and executes against all connected devices
-         * @param callback Function to execute when a device is connected
-         */
-        set onDeviceConnected(callback: (deviceType: DeviceType, deviceSlot: number) => void);
-        /**
-         * Callback to be triggered when a device is disconnected
-         */
-        onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
-        /**
-         * Callback to be triggered when event driven input is updated
-         */
-        onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>) => void;
-        private _inputs;
-        private _gamepads;
-        private _keyboardActive;
-        private _pointerActive;
-        private _elementToAttachTo;
-        private _keyboardDownEvent;
-        private _keyboardUpEvent;
-        private _pointerMoveEvent;
-        private _pointerDownEvent;
-        private _pointerUpEvent;
-        private _gamepadConnectedEvent;
-        private _gamepadDisconnectedEvent;
-        private _onDeviceConnected;
-        private static _MAX_KEYCODES;
-        private static _MAX_POINTER_INPUTS;
-        private constructor();
-        /**
-         * Creates a new DeviceInputSystem instance
-         * @param engine Engine to pull input element from
-         * @returns The new instance
-         */
-        static Create(engine: Engine): DeviceInputSystem;
-        /**
-         * Checks for current device input value, given an id and input index
-         * @param deviceName Id of connected device
-         * @param inputIndex Index of device input
-         * @returns Current value of input
-         */
-        /**
-         * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
-         * @param deviceType Enum specifiying device type
-         * @param deviceSlot "Slot" or index that device is referenced in
-         * @param inputIndex Id of input to be checked
-         * @returns Current value of input
-         */
-        pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): number;
-        /**
-         * Dispose of all the eventlisteners
-         */
-        dispose(): void;
-        /**
-         * Checks for existing connections to devices and register them, if necessary
-         * Currently handles gamepads and mouse
-         */
-        private _checkForConnectedDevices;
-        /**
-         * Add a gamepad to the DeviceInputSystem
-         * @param gamepad A single DOM Gamepad object
-         */
-        private _addGamePad;
-        /**
-         * Add pointer device to DeviceInputSystem
-         * @param deviceType Type of Pointer to add
-         * @param deviceSlot Pointer ID (0 for mouse, pointerId for Touch)
-         * @param currentX Current X at point of adding
-         * @param currentY Current Y at point of adding
-         */
-        private _addPointerDevice;
-        /**
-         * Add device and inputs to device array
-         * @param deviceType Enum specifiying device type
-         * @param deviceSlot "Slot" or index that device is referenced in
-         * @param numberOfInputs Number of input entries to create for given device
-         */
-        private _registerDevice;
-        /**
-         * Given a specific device name, remove that device from the device map
-         * @param deviceType Enum specifiying device type
-         * @param deviceSlot "Slot" or index that device is referenced in
-         */
-        private _unregisterDevice;
-        /**
-         * Handle all actions that come from keyboard interaction
-         */
-        private _handleKeyActions;
-        /**
-         * Handle all actions that come from pointer interaction
-         */
-        private _handlePointerActions;
-        /**
-         * Handle all actions that come from gamepad interaction
-         */
-        private _handleGamepadActions;
-        /**
-         * Update all non-event based devices with each frame
-         * @param deviceType Enum specifiying device type
-         * @param deviceSlot "Slot" or index that device is referenced in
-         * @param inputIndex Id of input to be checked
-         */
-        private _updateDevice;
-        /**
-         * Gets DeviceType from the device name
-         * @param deviceName Name of Device from DeviceInputSystem
-         * @returns DeviceType enum value
-         */
-        private _getGamepadDeviceType;
-    }
-}
-declare module BABYLON {
-    /**
      * Type to handle enforcement of inputs
      */
     export type DeviceInput<T extends DeviceType> = T extends DeviceType.Keyboard | DeviceType.Generic ? number : T extends DeviceType.Mouse | DeviceType.Touch ? PointerInput : T extends DeviceType.DualShock ? DualShockInput : T extends DeviceType.Xbox ? XboxInput : T extends DeviceType.Switch ? SwitchInput : never;
@@ -60546,6 +60821,11 @@ declare module BABYLON {
         getRenderHeight(useScreen?: boolean): number;
         setViewport(viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number): void;
         setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean): void;
+        /**
+         * Gets the client rect of native canvas.  Needed for InputManager.
+         * @returns a client rectangle
+         */
+        getInputElementClientRect(): Nullable<ClientRect>;
         /**
          * Set the z offset to apply to current rendering
          * @param value defines the offset to apply
@@ -80315,6 +80595,10 @@ declare module BABYLON {
                 right: string[];
                 left: string[];
             };
+            /**
+             * The utilityLayer scene that contains the 3D UI elements. Passing this in turns on near interactions with the index finger tip
+             */
+            sceneForNearInteraction?: Scene;
         };
     }
     /**
@@ -80326,7 +80610,7 @@ declare module BABYLON {
          */
         WRIST = "wrist",
         /**
-         * HandPart - The Thumb
+         * HandPart - The thumb
          */
         THUMB = "thumb",
         /**
@@ -80356,6 +80640,7 @@ declare module BABYLON {
         readonly trackedMeshes: AbstractMesh[];
         private _handMesh?;
         private _rigMapping?;
+        private _nearInteractionMesh?;
         private _leftHandedMeshes?;
         private _scene;
         private _defaultHandMesh;
@@ -80384,13 +80669,14 @@ declare module BABYLON {
          * @param _handMesh an optional hand mesh. if not provided, ours will be used
          * @param _rigMapping an optional rig mapping for the hand mesh. if not provided, ours will be used
          * @param disableDefaultHandMesh should the default mesh creation be disabled
+         * @param _nearInteractionMesh as optional mesh used for near interaction collision checking
          * @param _leftHandedMeshes are the hand meshes left-handed-system meshes
          */
         constructor(
         /** the controller to which the hand correlates */
         xrController: WebXRInputSource, 
         /** the meshes to be used to track the hand joints */
-        trackedMeshes: AbstractMesh[], _handMesh?: AbstractMesh | undefined, _rigMapping?: string[] | undefined, disableDefaultHandMesh?: boolean, _leftHandedMeshes?: boolean | undefined);
+        trackedMeshes: AbstractMesh[], _handMesh?: AbstractMesh | undefined, _rigMapping?: string[] | undefined, disableDefaultHandMesh?: boolean, _nearInteractionMesh?: AbstractMesh | null | undefined, _leftHandedMeshes?: boolean | undefined);
         /**
          * Get the hand mesh. It is possible that the hand mesh is not yet ready!
          */
