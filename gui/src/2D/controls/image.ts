@@ -825,10 +825,10 @@ export class Image extends Control {
         const rightWidth = this._imageWidth - this._sliceRight;
         const centerWidth = this._sliceRight - this._sliceLeft;
         const centerHeight = this._sliceBottom - this._sliceTop;
-        const targetCenterWidth = (this._currentMeasure.width - rightWidth - leftWidth) + 1;
-        const targetCenterHeight = (this._currentMeasure.height - bottomHeight - topHeight) + 1;
-        const centerLeftOffset = this._currentMeasure.left + leftWidth - 0.5;
-        const centerTopOffset = this._currentMeasure.top + topHeight - 0.5;
+        const targetCenterWidth = (this._currentMeasure.width - rightWidth - leftWidth) + 2;
+        const targetCenterHeight = (this._currentMeasure.height - bottomHeight - topHeight) + 2;
+        const centerLeftOffset = this._currentMeasure.left + leftWidth - 1;
+        const centerTopOffset = this._currentMeasure.top + topHeight - 1;
         const rightOffset = this._currentMeasure.left + this._currentMeasure.width - rightWidth;
         const bottomOffset = this._currentMeasure.top + this._currentMeasure.height - bottomHeight;
 
