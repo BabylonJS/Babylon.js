@@ -225,6 +225,22 @@ export class Image extends Control {
     }
 
     /**
+     * Gets the image width
+     */
+    @serialize()
+    public get imageWidth(): number {
+        return this._imageWidth;
+    }
+
+    /**
+     * Gets the image height
+     */
+    @serialize()
+    public get imageHeight(): number {
+        return this._imageHeight;
+    }
+
+    /**
     * Gets or sets a boolean indicating if nine patch slices (left, top, right, bottom) should be read from image data
     */
     @serialize()
