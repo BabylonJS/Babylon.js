@@ -215,7 +215,7 @@ declare module BABYLON {
         /** Unregisters an on pick trigger click action */
         static UnregisterClickAction(mesh: BABYLON.AbstractMesh, action: BABYLON.IAction): boolean;
         /** Starts a targeted float animation for tweening.  */
-        static StartTweenAnimation(scene: BABYLON.Scene, name: string, targetObject: any, targetProperty: string, startValue: number, endValue: number, speedRatio?: number, frameRate?: number, loopMode?: number, easingFunction?: BABYLON.EasingFunction, onAnimationComplete?: () => void): BABYLON.Animatable;
+        static StartTweenAnimation(scene: BABYLON.Scene, name: string, targetObject: any, targetProperty: string, startValue: number, endValue: number, defaultSpeedRatio?: number, defaultFrameRate?: number, defaultLoopMode?: number, defaultEasingFunction?: BABYLON.EasingFunction, onAnimationComplete?: () => void): BABYLON.Animatable;
         /** Get first material with name. (Uses starts with text searching) */
         static GetMaterialWithName(scene: BABYLON.Scene, name: string): BABYLON.Material;
         /** Get all materials with name. (Uses starts with text searching) */
@@ -271,7 +271,7 @@ declare module BABYLON {
         /** Get ammo.js total memory heap size */
         static GetPhysicsHeapSize(): number;
         /** Confiures ammo.js physcis engine advanced sweeping and collision detection options on the scene. */
-        static ConfigurePhysicsEngine(scene: BABYLON.Scene, deltaWorldStep?: boolean, maxPhysicsStep?: number, maxWorldSweep?: number, ccdEnabled?: boolean, ccdPenetration?: number, gravityLevel?: BABYLON.Vector3): void;
+        static ConfigurePhysicsEngine(scene: BABYLON.Scene, deltaWorldStep?: boolean, subTimeStep?: number, maxWorldSweep?: number, ccdEnabled?: boolean, ccdPenetration?: number, gravityLevel?: BABYLON.Vector3): void;
         /** Gets the current ammo.js physics world. */
         static GetPhysicsEngine(scene: BABYLON.Scene): BABYLON.IPhysicsEngine;
         /** Gets the current ammo.js physics world. */
@@ -630,6 +630,7 @@ declare module BABYLON {
         private _update;
         private _late;
         private _after;
+        private _fixed;
         private _lateUpdate;
         private _properties;
         private _awoken;
@@ -637,6 +638,8 @@ declare module BABYLON {
         private _scene;
         private _transform;
         private _registeredClassname;
+        private _lateUpdateObserver;
+        private _fixedUpdateObserver;
         /** Gets the current scene object */
         get scene(): BABYLON.Scene;
         /** Gets the transform node entity */
@@ -694,10 +697,6 @@ declare module BABYLON {
         registerOnClickAction(func: () => void): BABYLON.IAction;
         /** Unregisters an on pick tricgger click action */
         unregisterOnClickAction(action: BABYLON.IAction): boolean;
-        /** Register handler that is triggered after each physics fixed update step */
-        registerOnFixedUpdate(func: (impostor: BABYLON.PhysicsImpostor) => void): boolean;
-        /** Unregister observer that is triggered after each physics fixed update step */
-        unregisterOnFixedUpdate(func: (impostor: BABYLON.PhysicsImpostor) => void): boolean;
         /** Register handler that is triggered when the a volume has entered */
         onTriggerEnterObservable: Observable<AbstractMesh>;
         /** Register handler that is triggered when the a volume contact is active */
@@ -718,6 +717,7 @@ declare module BABYLON {
         private static UpdateInstance;
         private static LateInstance;
         private static AfterInstance;
+        private static FixedInstance;
         private static DestroyInstance;
         private static ParseAutoProperties;
         private static UnpackObjectProperty;
@@ -1690,7 +1690,6 @@ declare module BABYLON {
         private static FPS;
         private static TIME;
         private static EXIT;
-        private static MOTION;
         private _frametime;
         private _layercount;
         private _updatemode;
@@ -1720,6 +1719,7 @@ declare module BABYLON {
         private _rootMotionScaling;
         private _rootMotionRotation;
         private _rootMotionPosition;
+        private _rootMotionVelocity;
         private _lastMotionRotation;
         private _lastMotionPosition;
         private _quatRotationDiff;
@@ -1739,13 +1739,21 @@ declare module BABYLON {
         private _triggers;
         private _parameters;
         speedRatio: number;
+        updatePosition: boolean;
+        updateRotation: boolean;
         applyRootMotion: boolean;
         enableAnimation: boolean;
+        moveWithCollisions: boolean;
         hasRootMotion(): boolean;
         getAnimationTime(): number;
+        getRootPosition(): BABYLON.Vector3;
+        getRootRotation(): BABYLON.Quaternion;
         getDeltaPosition(): BABYLON.Vector3;
         getDeltaRotation(): BABYLON.Quaternion;
         getRuntimeController(): string;
+        protected m_rootTransform: BABYLON.TransformNode;
+        protected m_rigidbodyPhysics: BABYLON.RigidbodyPhysics;
+        protected m_characterController: BABYLON.CharacterController;
         protected m_avatarMask: Map<string, number>;
         protected m_defaultGroup: BABYLON.AnimationGroup;
         protected m_animationTargets: BABYLON.TargetedAnimation[];
@@ -1778,9 +1786,12 @@ declare module BABYLON {
         getAnimationGroup(name: string): BABYLON.AnimationGroup;
         getAnimationGroups(): Map<string, BABYLON.AnimationGroup>;
         setAnimationGroups(groups: BABYLON.AnimationGroup[], remapTargets?: boolean): void;
-        getRootMotionAngle(): number;
+        setRootTransform(transform: BABYLON.TransformNode): void;
+        getRootTransform(): BABYLON.TransformNode;
+        getRigidbodyPhysics(): BABYLON.RigidbodyPhysics;
+        getCharacterController(): BABYLON.CharacterController;
         getRootMotionSpeed(): number;
-        getForwardMoveSpeed(absolute?: boolean): number;
+        getRootMotionAngle(): number;
         private awakeStateMachine;
         private lateStateMachine;
         private destroyStateMachine;
@@ -2319,7 +2330,6 @@ declare module BABYLON {
         getAgentIndex(): number;
         getAgentOffset(): number;
         getTargetDistance(): number;
-        getCurrentWaypoint(): BABYLON.Vector3;
         getCurrentPosition(): BABYLON.Vector3;
         getCurrentRotation(): BABYLON.Quaternion;
         getCurrentVelocity(): BABYLON.Vector3;
@@ -2535,6 +2545,7 @@ declare module BABYLON {
         private _isKinematic;
         private _maxCollisions;
         private _isPhysicsReady;
+        private _collisionObject;
         private _centerOfMass;
         private _tmpLinearFactor;
         private _tmpAngularFactor;
@@ -2589,12 +2600,14 @@ declare module BABYLON {
         getAngularVelocity(): BABYLON.Nullable<BABYLON.Vector3>;
         /** Sets entity angular velocity using physics impostor. */
         setAngularVelocity(velocity: BABYLON.Vector3): void;
+        /** sets the native physics world transform object using physics impostor body. (Advanved Use Only) */
         /** Gets the native physics world transform object using physics impostor body. (Advanved Use Only) */
-        getWorldTransform(): any;
+        /** Sets the entity world transform position using physics impostor body. (Advanved Use Only) */
         /** Gets the entity world transform position using physics impostor body. (Advanved Use Only) */
-        getTransformPositionToRef(result: BABYLON.Vector3): void;
+        /** Gets the entity world transform position using physics impostor body. (Advanved Use Only) */
+        /** Sets the entity world transform position using physics impostor body. (Advanved Use Only) */
         /** Gets the entity world transform rotation using physics impostor body. (Advanved Use Only) */
-        getTransformRotationToRef(result: BABYLON.Quaternion): void;
+        /** Gets the entity world transform rotation using physics impostor body. (Advanved Use Only) */
         clearForces(): void;
         applyTorque(torque: BABYLON.Vector3): void;
         applyLocalTorque(torque: BABYLON.Vector3): void;
