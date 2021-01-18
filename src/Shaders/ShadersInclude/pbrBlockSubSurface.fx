@@ -120,7 +120,7 @@ struct subSurfaceOutParams
             outParams.alpha = 1.0;
         #endif
     #endif
-    #if defined(SS_TRANSLUCENCY) || defined(SS_SCATTERING)
+    #ifdef(SS_TRANSLUCENCY)
         float translucencyIntensity = vSubSurfaceIntensity.y;
     #endif
 
@@ -141,7 +141,7 @@ struct subSurfaceOutParams
         #elif defined(SS_MASK_FROM_THICKNESS_TEXTURE_GLTF)
             #ifdef SS_REFRACTION
                 refractionIntensity *= thicknessMap.r;
-            #elif defined(SS_TRANSLUCENCY) || defined(SS_SCATTERING)
+            #elif defined(SS_TRANSLUCENCY)
                 translucencyIntensity *= thicknessMap.r;
             #endif
             thickness = thicknessMap.g * vThicknessParam.y + vThicknessParam.x;
@@ -315,9 +315,6 @@ struct subSurfaceOutParams
         #endif
     #endif
 
-    #if defined(SS_MULTALBEDOBYSCATTERCOLOR) && defined(SS_SCATTERING)
-        outParams.surfaceAlbedo = mix(surfaceAlbedo, surfaceAlbedo * vTintColor.rgb, translucencyIntensity);
-    #endif
     // __________________________________________________________________________________
     // _______________________________  IBL Translucency ________________________________
     // __________________________________________________________________________________
