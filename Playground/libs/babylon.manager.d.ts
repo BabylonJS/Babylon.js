@@ -215,7 +215,7 @@ declare module BABYLON {
         /** Unregisters an on pick trigger click action */
         static UnregisterClickAction(mesh: BABYLON.AbstractMesh, action: BABYLON.IAction): boolean;
         /** Starts a targeted float animation for tweening.  */
-        static StartTweenAnimation(scene: BABYLON.Scene, name: string, targetObject: any, targetProperty: string, startValue: number, endValue: number, speedRatio?: number, frameRate?: number, loopMode?: number, easingFunction?: BABYLON.EasingFunction, onAnimationComplete?: () => void): BABYLON.Animatable;
+        static StartTweenAnimation(scene: BABYLON.Scene, name: string, targetObject: any, targetProperty: string, startValue: number, endValue: number, defaultSpeedRatio?: number, defaultFrameRate?: number, defaultLoopMode?: number, defaultEasingFunction?: BABYLON.EasingFunction, onAnimationComplete?: () => void): BABYLON.Animatable;
         /** Get first material with name. (Uses starts with text searching) */
         static GetMaterialWithName(scene: BABYLON.Scene, name: string): BABYLON.Material;
         /** Get all materials with name. (Uses starts with text searching) */
@@ -271,7 +271,7 @@ declare module BABYLON {
         /** Get ammo.js total memory heap size */
         static GetPhysicsHeapSize(): number;
         /** Confiures ammo.js physcis engine advanced sweeping and collision detection options on the scene. */
-        static ConfigurePhysicsEngine(scene: BABYLON.Scene, deltaWorldStep?: boolean, maxPhysicsStep?: number, maxWorldSweep?: number, ccdEnabled?: boolean, ccdPenetration?: number, gravityLevel?: BABYLON.Vector3): void;
+        static ConfigurePhysicsEngine(scene: BABYLON.Scene, deltaWorldStep?: boolean, subTimeStep?: number, maxWorldSweep?: number, ccdEnabled?: boolean, ccdPenetration?: number, gravityLevel?: BABYLON.Vector3): void;
         /** Gets the current ammo.js physics world. */
         static GetPhysicsEngine(scene: BABYLON.Scene): BABYLON.IPhysicsEngine;
         /** Gets the current ammo.js physics world. */
@@ -630,6 +630,7 @@ declare module BABYLON {
         private _update;
         private _late;
         private _after;
+        private _fixed;
         private _lateUpdate;
         private _properties;
         private _awoken;
@@ -637,6 +638,8 @@ declare module BABYLON {
         private _scene;
         private _transform;
         private _registeredClassname;
+        private _lateUpdateObserver;
+        private _fixedUpdateObserver;
         /** Gets the current scene object */
         get scene(): BABYLON.Scene;
         /** Gets the transform node entity */
@@ -694,10 +697,6 @@ declare module BABYLON {
         registerOnClickAction(func: () => void): BABYLON.IAction;
         /** Unregisters an on pick tricgger click action */
         unregisterOnClickAction(action: BABYLON.IAction): boolean;
-        /** Register handler that is triggered after each physics fixed update step */
-        registerOnFixedUpdate(func: (impostor: BABYLON.PhysicsImpostor) => void): boolean;
-        /** Unregister observer that is triggered after each physics fixed update step */
-        unregisterOnFixedUpdate(func: (impostor: BABYLON.PhysicsImpostor) => void): boolean;
         /** Register handler that is triggered when the a volume has entered */
         onTriggerEnterObservable: Observable<AbstractMesh>;
         /** Register handler that is triggered when the a volume contact is active */
@@ -718,6 +717,7 @@ declare module BABYLON {
         private static UpdateInstance;
         private static LateInstance;
         private static AfterInstance;
+        private static FixedInstance;
         private static DestroyInstance;
         private static ParseAutoProperties;
         private static UnpackObjectProperty;
@@ -1489,7 +1489,7 @@ declare module BABYLON {
         /** Creates a targeted float animation for tweening.  */
         static CreateTweenAnimation(name: string, targetProperty: string, startValue: number, endValue: number, frameRate?: number, loopMode?: number): BABYLON.Animation;
         /** Gets the last key frame index value. */
-        static GetLastKeyFrameValue(animation: BABYLON.Animation): number;
+        static GetLastKeyFrameIndex(animation: BABYLON.Animation): number;
         /** Private internal frame interpolation helper */
         private static InterpolateAnimation;
         /** Initialize default shader material properties */
@@ -1690,7 +1690,6 @@ declare module BABYLON {
         private static FPS;
         private static TIME;
         private static EXIT;
-        private static MOTION;
         private _frametime;
         private _layercount;
         private _updatemode;
@@ -1720,6 +1719,7 @@ declare module BABYLON {
         private _rootMotionScaling;
         private _rootMotionRotation;
         private _rootMotionPosition;
+        private _rootMotionVelocity;
         private _lastMotionRotation;
         private _lastMotionPosition;
         private _quatRotationDiff;
@@ -1739,13 +1739,21 @@ declare module BABYLON {
         private _triggers;
         private _parameters;
         speedRatio: number;
+        updatePosition: boolean;
+        updateRotation: boolean;
         applyRootMotion: boolean;
         enableAnimation: boolean;
+        moveWithCollisions: boolean;
         hasRootMotion(): boolean;
         getAnimationTime(): number;
+        getRootPosition(): BABYLON.Vector3;
+        getRootRotation(): BABYLON.Quaternion;
         getDeltaPosition(): BABYLON.Vector3;
         getDeltaRotation(): BABYLON.Quaternion;
         getRuntimeController(): string;
+        protected m_rootTransform: BABYLON.TransformNode;
+        protected m_rigidbodyPhysics: BABYLON.RigidbodyPhysics;
+        protected m_characterController: BABYLON.CharacterController;
         protected m_avatarMask: Map<string, number>;
         protected m_defaultGroup: BABYLON.AnimationGroup;
         protected m_animationTargets: BABYLON.TargetedAnimation[];
@@ -1778,9 +1786,12 @@ declare module BABYLON {
         getAnimationGroup(name: string): BABYLON.AnimationGroup;
         getAnimationGroups(): Map<string, BABYLON.AnimationGroup>;
         setAnimationGroups(groups: BABYLON.AnimationGroup[], remapTargets?: boolean): void;
-        getRootMotionAngle(): number;
+        setRootTransform(transform: BABYLON.TransformNode): void;
+        getRootTransform(): BABYLON.TransformNode;
+        getRigidbodyPhysics(): BABYLON.RigidbodyPhysics;
+        getCharacterController(): BABYLON.CharacterController;
         getRootMotionSpeed(): number;
-        getForwardMoveSpeed(absolute?: boolean): number;
+        getRootMotionAngle(): number;
         private awakeStateMachine;
         private lateStateMachine;
         private destroyStateMachine;
@@ -2177,6 +2188,7 @@ declare module BABYLON {
         private _isPhysicsReady;
         private _maxCollisions;
         private _useGhostSweepTest;
+        private _tmpPositionBuffer;
         private _tmpCollisionContacts;
         updatePosition: boolean;
         getInternalCharacter(): any;
@@ -2214,7 +2226,7 @@ declare module BABYLON {
         protected m_moveDeltaX: number;
         protected m_moveDeltaZ: number;
         protected m_physicsEngine: BABYLON.IPhysicsEngine;
-        protected m_collisionPosition: BABYLON.Vector3;
+        protected m_characterPosition: BABYLON.Vector3;
         protected internalWarp(position: any): void;
         protected internalJump(): void;
         protected internalSetJumpSpeed(speed: number): void;
@@ -2254,13 +2266,19 @@ declare module BABYLON {
         getContactProcessingThreshold(): number;
         /** Sets character contact processing threshold using physics ghost object. (Advanved Use Only) */
         setContactProcessingThreshold(threshold: number): void;
+        /** Get the current position of the physics ghost object world transform. (Advanved Use Only) */
+        getGhostWorldPosition(): BABYLON.Vector3;
+        /** Get the current position of the physics ghost object world transform. (Advanved Use Only) */
+        getGhostWorldPositionToRef(result: BABYLON.Vector3): void;
         /** Manually set the position of the physics ghost object world transform. (Advanved Use Only) */
         setGhostWorldPosition(position: BABYLON.Nullable<BABYLON.Vector3>): void;
-        /** Translates the kinematic character with the specfied movement velocity. */
+        /** Sets the kinematic character position to the specified location. */
+        set(x: number, y: number, z: number): void;
+        /** Translates the kinematic character with the specfied velocity. */
         move(velocity: BABYLON.Vector3): void;
-        /** Jumps the kinematic chacracter with the specified jump speed. */
+        /** Jumps the kinematic chacracter with the specified speed. */
         jump(speed: number): void;
-        /** Warps the kinematic chacracter to the specified warp position. */
+        /** Warps the kinematic chacracter to the specified position. */
         warp(position: BABYLON.Vector3): void;
     }
 }
@@ -2286,10 +2304,13 @@ declare module BABYLON {
         private avoidancePriority;
         private obstacleAvoidanceType;
         private distanceToTarget;
+        private teleporting;
         private moveDirection;
         private resetPosition;
         private lastPosition;
+        private distancePosition;
         private currentPosition;
+        private currentRotation;
         private currentVelocity;
         private currentWaypoint;
         heightOffset: number;
@@ -2302,12 +2323,16 @@ declare module BABYLON {
         stoppingDistance: number;
         isReady(): boolean;
         isNavigating(): boolean;
+        isTeleporting(): boolean;
         isOnOffMeshLink(): boolean;
         getAgentType(): number;
         getAgentState(): number;
         getAgentIndex(): number;
         getAgentOffset(): number;
         getTargetDistance(): number;
+        getCurrentPosition(): BABYLON.Vector3;
+        getCurrentRotation(): BABYLON.Quaternion;
+        getCurrentVelocity(): BABYLON.Vector3;
         getAgentParameters(): BABYLON.IAgentParameters;
         setAgentParameters(parameters: BABYLON.IAgentParameters): void;
         protected m_agentState: number;
@@ -2315,13 +2340,12 @@ declare module BABYLON {
         protected m_agentReady: boolean;
         protected m_agentGhost: BABYLON.TransformNode;
         protected m_agentParams: BABYLON.IAgentParameters;
-        protected m_agentRotation: BABYLON.Quaternion;
         protected m_agentMovement: BABYLON.Vector3;
         protected m_agentDirection: BABYLON.Vector3;
         protected m_agentQuaternion: BABYLON.Quaternion;
         protected m_agentDestination: BABYLON.Vector3;
         protected awake(): void;
-        protected late(): void;
+        protected update(): void;
         protected destroy(): void;
         /** Register handler that is triggered when the agent is ready for navigation */
         onReadyObservable: Observable<TransformNode>;
@@ -2353,8 +2377,6 @@ declare module BABYLON {
         getAgentWaypoint(): BABYLON.Vector3;
         /** Gets agent current waypoint position. */
         getAgentWaypointToRef(result: BABYLON.Vector3): void;
-        /** Reset the agent to transform world space position. */
-        resetAgentPosition(): void;
         /** Cancel current waypoint path navigation. */
         cancelNavigation(): void;
     }
@@ -2523,6 +2545,7 @@ declare module BABYLON {
         private _isKinematic;
         private _maxCollisions;
         private _isPhysicsReady;
+        private _collisionObject;
         private _centerOfMass;
         private _tmpLinearFactor;
         private _tmpAngularFactor;
@@ -2577,12 +2600,14 @@ declare module BABYLON {
         getAngularVelocity(): BABYLON.Nullable<BABYLON.Vector3>;
         /** Sets entity angular velocity using physics impostor. */
         setAngularVelocity(velocity: BABYLON.Vector3): void;
+        /** sets the native physics world transform object using physics impostor body. (Advanved Use Only) */
         /** Gets the native physics world transform object using physics impostor body. (Advanved Use Only) */
-        getWorldTransform(): any;
+        /** Sets the entity world transform position using physics impostor body. (Advanved Use Only) */
         /** Gets the entity world transform position using physics impostor body. (Advanved Use Only) */
-        getTransformPositionToRef(result: BABYLON.Vector3): void;
+        /** Gets the entity world transform position using physics impostor body. (Advanved Use Only) */
+        /** Sets the entity world transform position using physics impostor body. (Advanved Use Only) */
         /** Gets the entity world transform rotation using physics impostor body. (Advanved Use Only) */
-        getTransformRotationToRef(result: BABYLON.Quaternion): void;
+        /** Gets the entity world transform rotation using physics impostor body. (Advanved Use Only) */
         clearForces(): void;
         applyTorque(torque: BABYLON.Vector3): void;
         applyLocalTorque(torque: BABYLON.Vector3): void;

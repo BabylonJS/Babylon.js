@@ -442,7 +442,7 @@ export class TextureBlock extends NodeMaterialBlock {
             return "";
         }
 
-        var codeString = `${this._codeVariableName}.texture = new BABYLON.Texture("${this.texture.name}", null);\r\n`;
+        var codeString = `${this._codeVariableName}.texture = new BABYLON.Texture("${this.texture.name}", null, ${this.texture.noMipmap}, ${this.texture.invertY});\r\n`;
         codeString += `${this._codeVariableName}.texture.wrapU = ${this.texture.wrapU};\r\n`;
         codeString += `${this._codeVariableName}.texture.wrapV = ${this.texture.wrapV};\r\n`;
         codeString += `${this._codeVariableName}.texture.uAng = ${this.texture.uAng};\r\n`;
@@ -452,6 +452,7 @@ export class TextureBlock extends NodeMaterialBlock {
         codeString += `${this._codeVariableName}.texture.vOffset = ${this.texture.vOffset};\r\n`;
         codeString += `${this._codeVariableName}.texture.uScale = ${this.texture.uScale};\r\n`;
         codeString += `${this._codeVariableName}.texture.vScale = ${this.texture.vScale};\r\n`;
+        codeString += `${this._codeVariableName}.texture.coordinatesMode = ${this.texture.coordinatesMode};\r\n`;
         codeString += `${this._codeVariableName}.convertToGammaSpace = ${this.convertToGammaSpace};\r\n`;
         codeString += `${this._codeVariableName}.convertToLinearSpace = ${this.convertToLinearSpace};\r\n`;
 
