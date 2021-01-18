@@ -95,6 +95,13 @@ export class CubeTexture extends BaseTexture {
     @serialize("forcedExtension")
     protected _forcedExtension: Nullable<string> = null;
 
+    /**
+     * Gets the forced extension (if any)
+     */
+    public get forcedExtension(): Nullable<string> {
+        return this._forcedExtension;
+    }
+
     @serialize("extensions")
     private _extensions: Nullable<string[]> = null;
 
