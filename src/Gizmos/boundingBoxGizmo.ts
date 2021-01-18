@@ -36,7 +36,7 @@ export class BoundingBoxGizmo extends Gizmo {
     private _tmpVector = new Vector3(0, 0, 0);
     private _tmpRotationMatrix = new Matrix();
     /**
-     * If child meshes should be ignored when calculating the boudning box. This should be set to true to avoid perf hits with heavily nested meshes (Default: false)
+     * If child meshes should be ignored when calculating the bounding box. This should be set to true to avoid perf hits with heavily nested meshes (Default: false)
      */
     public ignoreChildren = false;
     /**
@@ -355,7 +355,7 @@ export class BoundingBoxGizmo extends Gizmo {
 
         // Update bounding box positions
         this._renderObserver = this.gizmoLayer.originalScene.onBeforeRenderObservable.add(() => {
-            // Only update the bouding box if scaling has changed
+            // Only update the bounding box if scaling has changed
             if (this.attachedMesh && !this._existingMeshScale.equals(this.attachedMesh.scaling)) {
                 this.updateBoundingBox();
             } else if (this.fixedDragMeshScreenSize || this.fixedDragMeshBoundsSize) {
@@ -363,7 +363,7 @@ export class BoundingBoxGizmo extends Gizmo {
                 this._updateScaleBoxes();
             }
 
-            // If dragg mesh is enabled and dragging, update the attached mesh pose to match the drag mesh
+            // If drag mesh is enabled and dragging, update the attached mesh pose to match the drag mesh
             if (this._dragMesh && this.attachedMesh && this.pointerDragBehavior.dragging) {
                 this._lineBoundingBox.position.rotateByQuaternionToRef(this._rootMesh.rotationQuaternion!, this._tmpVector);
                 this.attachedMesh.setAbsolutePosition(this._dragMesh.position.add(this._tmpVector.scale(-1)));
@@ -376,6 +376,7 @@ export class BoundingBoxGizmo extends Gizmo {
         if (value) {
             // Reset anchor mesh to match attached mesh's scale
             // This is needed to avoid invalid box/sphere position on first drag
+            this._anchorMesh.scaling.setAll(1);
             PivotTools._RemoveAndStorePivotPoint(value);
             var originalParent = value.parent;
             this._anchorMesh.addChild(value);
@@ -411,7 +412,7 @@ export class BoundingBoxGizmo extends Gizmo {
             var originalParent = this.attachedMesh.parent;
             this.attachedMesh.setParent(null);
 
-            // Store original skelton override mesh
+            // Store original skeleton override mesh
             var originalSkeletonOverrideMesh = null;
             if (this.attachedMesh.skeleton) {
                 originalSkeletonOverrideMesh = this.attachedMesh.skeleton.overrideMesh;
@@ -559,7 +560,7 @@ export class BoundingBoxGizmo extends Gizmo {
     public setEnabledScaling(enable: boolean, homogeneousScaling = false) {
         this._scaleBoxesParent.getChildMeshes().forEach((m, i) => {
             let enableMesh = enable;
-            // Disable heterogenous scale handles if requested.
+            // Disable heterogeneous scale handles if requested.
             if (homogeneousScaling && m.metadata === true) {
                 enableMesh = false;
             }
@@ -615,7 +616,7 @@ export class BoundingBoxGizmo extends Gizmo {
         };
         makeNotPickable(mesh);
 
-        // Reset position to get boudning box from origin with no rotation
+        // Reset position to get bounding box from origin with no rotation
         if (!mesh.rotationQuaternion) {
             mesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(mesh.rotation.y, mesh.rotation.x, mesh.rotation.z);
         }

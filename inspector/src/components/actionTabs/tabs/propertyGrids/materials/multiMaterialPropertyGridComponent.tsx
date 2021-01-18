@@ -3,11 +3,11 @@ import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LineContainerComponent } from "../../../lineContainerComponent";
+import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
 import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGridComponent";
-import { LockObject } from "../lockObject";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from '../../../../globalState';
-import { TextLineComponent } from '../../../lines/textLineComponent';
+import { TextLineComponent } from '../../../../../sharedUiComponents/lines/textLineComponent';
 import { Material } from 'babylonjs/Materials/material';
 import { MultiMaterial } from 'babylonjs/Materials/multiMaterial';
 
@@ -36,7 +36,7 @@ export class MultiMaterialPropertyGridComponent extends React.Component<IMultiMa
         const material = this.props.material;
 
         return (
-            <LineContainerComponent globalState={this.props.globalState} title="CHILDREN">
+            <LineContainerComponent title="CHILDREN">
                 {
                     material.subMaterials.map((mat, i) => {
                         if (mat) {

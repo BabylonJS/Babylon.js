@@ -103,7 +103,7 @@ export class GeometryBufferRendererSceneComponent implements ISceneComponent {
     }
 
     /**
-     * Disposes the component and the associated ressources
+     * Disposes the component and the associated resources
      */
     public dispose(): void {
         // Nothing to do for this component

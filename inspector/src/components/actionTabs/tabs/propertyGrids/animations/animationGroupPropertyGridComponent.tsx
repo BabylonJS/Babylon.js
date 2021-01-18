@@ -6,13 +6,13 @@ import { AnimationGroup } from "babylonjs/Animations/animationGroup";
 import { Scene } from "babylonjs/scene";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { ButtonLineComponent } from "../../../lines/buttonLineComponent";
-import { LineContainerComponent } from "../../../lineContainerComponent";
-import { TextLineComponent } from "../../../lines/textLineComponent";
-import { SliderLineComponent } from "../../../lines/sliderLineComponent";
-import { LockObject } from "../lockObject";
+import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/buttonLineComponent";
+import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
+import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
+import { SliderLineComponent } from "../../../../../sharedUiComponents/lines/sliderLineComponent";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from "../../../../globalState";
-import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
+import { TextInputLineComponent } from "../../../../../sharedUiComponents/lines/textInputLineComponent";
 
 interface IAnimationGroupGridComponentProps {
     globalState: GlobalState;
@@ -133,7 +133,7 @@ export class AnimationGroupGridComponent extends React.Component<
 
         return (
             <div className="pane">
-                <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
+                <LineContainerComponent title="GENERAL">
                     <TextLineComponent label="Class" value={animationGroup.getClassName()} />
                     <TextInputLineComponent
                         lockObject={this.props.lockObject}
@@ -143,7 +143,7 @@ export class AnimationGroupGridComponent extends React.Component<
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="CONTROLS">
+                <LineContainerComponent title="CONTROLS">
                     <ButtonLineComponent label={playButtonText} onClick={() => this.playOrPause()} />
                     <SliderLineComponent
                         label="Speed ratio"
@@ -164,7 +164,7 @@ export class AnimationGroupGridComponent extends React.Component<
                         onInput={(value) => this.onCurrentFrameChange(value)}
                     />
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="INFOS">
+                <LineContainerComponent title="INFOS">
                     <TextLineComponent
                         label="Animation count"
                         value={animationGroup.targetedAnimations.length.toString()}

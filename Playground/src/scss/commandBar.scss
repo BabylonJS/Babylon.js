@@ -20,6 +20,10 @@
                 filter: invert(64%) sepia(78%) saturate(940%) hue-rotate(323deg) brightness(105%) contrast(103%);
             }
 
+            .command-dropdown-active {
+                color: #F78951;
+            }
+
             &:hover, &.activated {
                 img {
                     filter: invert(34%) sepia(21%) saturate(3832%) hue-rotate(324deg) brightness(88%) contrast(82%) !important;
@@ -32,6 +36,10 @@
         .command-button, .command-dropdown  {
             img {
                 filter: invert(57%) sepia(80%) saturate(2031%) hue-rotate(215deg);
+            }
+
+            .command-dropdown-active {
+                color: #9B86FF;
             }
 
             &:hover, &.activated {
@@ -93,8 +101,18 @@
             justify-content: center;
         }
 
+        .command-dropdown-active {
+            height: 100%;
+            width: 100%;
+            display: grid;
+            align-content: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
         &:hover, &.activated {
             background-color: white;
+            color: black;
         } 
         
         &:active {
@@ -146,12 +164,11 @@
         }        
 
         .command-dropdown-label {
-            font-family: "acumin-pro-extra-condensed";
             color:white;
             padding: 5px;
             padding-left: 10px;
             height: 35px;
-            font-size: 20px;
+            font-size: 18px;
             display: grid;
             align-items: center;
             cursor: pointer;
@@ -162,7 +179,7 @@
 
             &.active {
                 font-weight: bold;
-                font-size: 22px;
+                font-size: 20px;
             }
 
             &:hover {
@@ -184,7 +201,7 @@
             .command-dropdown-arrow {
                 grid-column: 2;
                 grid-row: 1;    
-                font-size: 28px;
+                font-size: 20px;
                 font-weight: bold;
                 padding-bottom: 10px;
                 padding-left: 4px;
@@ -218,7 +235,6 @@
                 }   
                                     
                 .sub-item {                      
-                    font-family: "acumin-pro-extra-condensed";                    
                     color: white;
                     padding: 5px;
                     padding-left: 10px;

@@ -50,16 +50,13 @@ interface INativeEngine {
     readonly DEPTH_TEST_NEVER: number;
     readonly DEPTH_TEST_ALWAYS: number;
 
-    readonly CLEAR_FLAG_COLOR: number;
-    readonly CLEAR_FLAG_DEPTH: number;
-    readonly CLEAR_FLAG_STENCIL: number;
-
     readonly ADDRESS_MODE_WRAP: number;
     readonly ADDRESS_MODE_MIRROR: number;
     readonly ADDRESS_MODE_CLAMP: number;
     readonly ADDRESS_MODE_BORDER: number;
     readonly ADDRESS_MODE_MIRROR_ONCE: number;
 
+    readonly TEXTURE_FORMAT_RGB8: number;
     readonly TEXTURE_FORMAT_RGBA8: number;
     readonly TEXTURE_FORMAT_RGBA32F: number;
 
@@ -133,8 +130,8 @@ interface INativeEngine {
     setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
 
     createTexture(): WebGLTexture;
-    createDepthTexture(texture: WebGLTexture, width: number, height: number): WebGLTexture;
     loadTexture(texture: WebGLTexture, data: ArrayBufferView, generateMips: boolean, invertY: boolean, onSuccess: () => void, onError: () => void): void;
+    loadRawTexture(texture: WebGLTexture, data: ArrayBufferView, width: number, height: number, format: number, generateMips: boolean, invertY: boolean): void;
     loadCubeTexture(texture: WebGLTexture, data: Array<ArrayBufferView>, generateMips: boolean, onSuccess: () => void, onError: () => void): void;
     loadCubeTextureWithMips(texture: WebGLTexture, data: Array<Array<ArrayBufferView>>, onSuccess: () => void, onError: () => void): void;
     getTextureWidth(texture: WebGLTexture): number;
@@ -153,10 +150,7 @@ interface INativeEngine {
     drawIndexed(fillMode: number, indexStart: number, indexCount: number): void;
     draw(fillMode: number, vertexStart: number, vertexCount: number): void;
 
-    clear(flags: number): void;
-    clearColor(r: number, g: number, b: number, a: number): void;
-    clearDepth(depth: number): void;
-    clearStencil(stencil: number): void;
+    clear(color: Nullable<IColor4Like>, depth?: number, stencil?: number): void;
 
     getRenderWidth(): number;
     getRenderHeight(): number;
@@ -328,7 +322,7 @@ class NativePipelineContext implements IPipelineContext {
     }
 
     /**
-     * Sets an interger value on a uniform variable.
+     * Sets an integer value on a uniform variable.
      * @param uniformName Name of the variable.
      * @param value Value to be set.
      */
@@ -800,7 +794,9 @@ export class NativeEngine extends Engine {
             instancedArrays: false,
             canUseTimestampForTimerQuery: false,
             blendMinMax: false,
-            maxMSAASamples: 1
+            maxMSAASamples: 1,
+            canUseGLInstanceID: true,
+            canUseGLVertexID: true
         };
 
         this._features = {
@@ -819,6 +815,8 @@ export class NativeEngine extends Engine {
             supportSSAO2: false,
             supportExtendedTextureFormats: false,
             supportSwitchCaseInShader: false,
+            supportSyncTextureRead: false,
+            needsInvertingBitmap: true,
             _collectUbosUpdatedInFrame: false,
         };
 
@@ -906,20 +904,11 @@ export class NativeEngine extends Engine {
     }
 
     public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
-        var mode = 0;
-        if (backBuffer && color) {
-            this._native.clearColor(color.r, color.g, color.b, color.a !== undefined ? color.a : 1.0);
-            mode |= this._native.CLEAR_FLAG_COLOR;
+        if (this.useReverseDepthBuffer) {
+            throw new Error("reverse depth buffer is not currently implemented");
         }
-        if (depth) {
-            this._native.clearDepth(1.0);
-            mode |= this._native.CLEAR_FLAG_DEPTH;
-        }
-        if (stencil) {
-            this._native.clearStencil(0);
-            mode |= this._native.CLEAR_FLAG_STENCIL;
-        }
-        this._native.clear(mode);
+
+        this._native.clear(backBuffer ? color : null, depth ? 1.0 : undefined, stencil ? 0 : undefined);
     }
 
     public createIndexBuffer(indices: IndicesArray, updateable?: boolean): NativeDataBuffer {
@@ -1010,7 +999,7 @@ export class NativeEngine extends Engine {
      * @param fillMode defines the primitive to use
      * @param indexStart defines the starting index
      * @param indexCount defines the number of index to draw
-     * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
+     * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
      */
     public drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount?: number): void {
         // Apply states
@@ -1034,7 +1023,7 @@ export class NativeEngine extends Engine {
      * @param fillMode defines the primitive to use
      * @param verticesStart defines the index of first vertex to draw
      * @param verticesCount defines the count of vertices to draw
-     * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
+     * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
      */
     public drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void {
         // Apply states
@@ -1171,6 +1160,22 @@ export class NativeEngine extends Engine {
 
     public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {
         this._native.setState(culling, zOffset, reverseSide);
+    }
+
+    /**
+     * Gets the client rect of native canvas.  Needed for InputManager.
+     * @returns a client rectangle
+     */
+    public getInputElementClientRect(): Nullable<ClientRect> {
+        const rect = {
+            bottom: this.getRenderHeight(),
+            height: this.getRenderHeight(),
+            left: 0,
+            right: this.getRenderWidth(),
+            top: 0,
+            width: this.getRenderWidth()
+        };
+        return rect;
     }
 
     /**
@@ -1515,7 +1520,9 @@ export class NativeEngine extends Engine {
     }
 
     protected _deleteTexture(texture: Nullable<WebGLTexture>): void {
-        this._native.deleteTexture(texture);
+        if (texture) {
+            this._native.deleteTexture(texture);
+        }
     }
 
     /**
@@ -1532,6 +1539,44 @@ export class NativeEngine extends Engine {
         // Loads a dummy 8x8 transparent png
         var imageData = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYSURBVChTY/z//z8DPsAEpXGC4aCAgQEAGGMDDWwwgqsAAAAASUVORK5CYII=';
         this.createTexture('data:my_image_name', true, invertY, null, Texture.BILINEAR_SAMPLINGMODE, undefined, undefined, imageData, texture, NativeEngine.TEXTUREFORMAT_RGBA, null, undefined);
+    }
+
+    public createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
+        let texture = new InternalTexture(this, InternalTextureSource.Raw);
+
+        texture.generateMipMaps = generateMipMaps;
+        texture.samplingMode = samplingMode;
+        texture.invertY = invertY;
+        texture.baseWidth = width;
+        texture.baseHeight = height;
+        texture.width = texture.baseWidth;
+        texture.height = texture.baseHeight;
+        texture._compression = compression;
+        texture.type = type;
+
+        this.updateRawTexture(texture, data, format, invertY, compression, type);
+
+        if (texture._hardwareTexture) {
+            var webGLTexture = texture._hardwareTexture.underlyingResource;
+            var filter = this._getNativeSamplingMode(samplingMode);
+            this._native.setTextureSampling(webGLTexture, filter);
+        }
+
+        this._internalTexturesCache.push(texture);
+        return texture;
+    }
+
+    public updateRawTexture(texture: Nullable<InternalTexture>, bufferView: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): void {
+        if (!texture) {
+            return;
+        }
+
+        if (bufferView && texture._hardwareTexture) {
+            const webGLTexture = texture._hardwareTexture.underlyingResource;
+            this._native.loadRawTexture(webGLTexture, bufferView, texture.width, texture.height, this._getNativeTextureFormat(format, type), texture.generateMipMaps, texture.invertY);
+        }
+
+        texture.isReady = true;
     }
 
     // TODO: Refactor to share more logic with babylon.engine.ts version.
@@ -1634,14 +1679,15 @@ export class NativeEngine extends Engine {
             throw new Error("Loading textures from IInternalTextureLoader not yet implemented.");
         } else {
             const onload = (data: ArrayBufferView) => {
-                const webGLTexture = texture._hardwareTexture?.underlyingResource;
-                if (!webGLTexture) {
+                if (!texture._hardwareTexture) {
                     if (scene) {
                         scene._removePendingData(texture);
                     }
 
                     return;
                 }
+
+                const webGLTexture = texture._hardwareTexture.underlyingResource;
 
                 this._native.loadTexture(webGLTexture, data, !noMipmap, invertY, () => {
                     texture.baseWidth = this._native.getTextureWidth(webGLTexture);
@@ -1696,11 +1742,15 @@ export class NativeEngine extends Engine {
         const width = (<{ width: number, height: number, layers?: number }>size).width || <number>size;
         const height = (<{ width: number, height: number, layers?: number }>size).height || <number>size;
 
-        var framebuffer = this._native.createDepthTexture(
+        var framebuffer = this._native.createFramebuffer(
             texture._hardwareTexture!.underlyingResource,
             width,
-            height);
-
+            height,
+            this._native.TEXTURE_FORMAT_RGBA8,
+            this._native.TEXTURE_LINEAR_LINEAR,
+            false,
+            true,
+            false);
         texture._framebuffer = framebuffer;
         return texture;
     }
@@ -1903,9 +1953,9 @@ export class NativeEngine extends Engine {
     }
 
     public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
-        if (texture._hardwareTexture?.underlyingResource ?? false) {
+        if (texture._hardwareTexture) {
             var filter = this._getNativeSamplingMode(samplingMode);
-            this._native.setTextureSampling(texture._hardwareTexture?.underlyingResource, filter);
+            this._native.setTextureSampling(texture._hardwareTexture.underlyingResource, filter);
         }
         texture.samplingMode = samplingMode;
     }
@@ -2013,18 +2063,18 @@ export class NativeEngine extends Engine {
         this._activeChannel = channel;
 
         if (!internalTexture ||
-            !internalTexture._hardwareTexture?.underlyingResource) {
+            !internalTexture._hardwareTexture) {
             return false;
         }
 
         this._native.setTextureWrapMode(
-            internalTexture._hardwareTexture?.underlyingResource,
+            internalTexture._hardwareTexture.underlyingResource,
             this._getAddressMode(texture.wrapU),
             this._getAddressMode(texture.wrapV),
             this._getAddressMode(texture.wrapR));
         this._updateAnisotropicLevel(texture);
 
-        this._native.setTexture(uniform, internalTexture._hardwareTexture?.underlyingResource);
+        this._native.setTexture(uniform, internalTexture._hardwareTexture.underlyingResource);
 
         return true;
     }
@@ -2035,12 +2085,12 @@ export class NativeEngine extends Engine {
         var internalTexture = texture.getInternalTexture();
         var value = texture.anisotropicFilteringLevel;
 
-        if (!internalTexture || !internalTexture._hardwareTexture?.underlyingResource) {
+        if (!internalTexture || !internalTexture._hardwareTexture) {
             return;
         }
 
         if (internalTexture._cachedAnisotropicFilteringLevel !== value) {
-            this._native.setTextureAnisotropicLevel(internalTexture._hardwareTexture?.underlyingResource, value);
+            this._native.setTextureAnisotropicLevel(internalTexture._hardwareTexture.underlyingResource, value);
             internalTexture._cachedAnisotropicFilteringLevel = value;
         }
     }
@@ -2138,7 +2188,10 @@ export class NativeEngine extends Engine {
     }
 
     private _getNativeTextureFormat(format: number, type: number): number {
-        if (format == Constants.TEXTUREFORMAT_RGBA && type == Constants.TEXTURETYPE_UNSIGNED_INT) {
+        if (format == Constants.TEXTUREFORMAT_RGB && type == Constants.TEXTURETYPE_UNSIGNED_INT) {
+            return this._native.TEXTURE_FORMAT_RGB8;
+        }
+        else if (format == Constants.TEXTUREFORMAT_RGBA && type == Constants.TEXTURETYPE_UNSIGNED_INT) {
             return this._native.TEXTURE_FORMAT_RGBA8;
         }
         else if (format == Constants.TEXTUREFORMAT_RGBA && type == Constants.TEXTURETYPE_FLOAT) {

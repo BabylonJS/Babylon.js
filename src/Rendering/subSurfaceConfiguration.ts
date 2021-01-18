@@ -53,6 +53,11 @@ export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
     public enabled = false;
 
     /**
+     * Does the output of this prepass need to go through imageprocessing
+     */
+    public needsImageProcessing = true;
+
+    /**
      * Name of the configuration
      */
     public name = SceneComponentConstants.NAME_SUBSURFACE;
@@ -75,7 +80,7 @@ export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
      * Textures that should be present in the MRT for this effect to work
      */
     public readonly texturesRequired: number[] = [
-        Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE,
+        Constants.PREPASS_DEPTH_TEXTURE_TYPE,
         Constants.PREPASS_ALBEDO_TEXTURE_TYPE,
         Constants.PREPASS_COLOR_TEXTURE_TYPE,
         Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
@@ -152,7 +157,9 @@ export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
      */
     public dispose() {
         this.clearAllDiffusionProfiles();
-        this.postProcess.dispose();
+        if (this.postProcess) {
+            this.postProcess.dispose();
+        }
     }
 
     /**

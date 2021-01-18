@@ -63,7 +63,7 @@ export interface IEffectLayerOptions {
 /**
  * The effect layer Helps adding post process effect blended with the main pass.
  *
- * This can be for instance use to generate glow or higlight effects on the scene.
+ * This can be for instance use to generate glow or highlight effects on the scene.
  *
  * The effect layer class can not be used directly and is intented to inherited from to be
  * customized per effects.
@@ -161,7 +161,7 @@ export abstract class EffectLayer {
     public onAfterComposeObservable = new Observable<EffectLayer>();
 
     /**
-     * An event triggered when the efffect layer changes its size.
+     * An event triggered when the effect layer changes its size.
      */
     public onSizeChangedObservable = new Observable<EffectLayer>();
 
@@ -208,7 +208,7 @@ export abstract class EffectLayer {
     public abstract isReady(subMesh: SubMesh, useInstances: boolean): boolean;
 
     /**
-     * Returns whether or nood the layer needs stencil enabled during the mesh rendering.
+     * Returns whether or not the layer needs stencil enabled during the mesh rendering.
      * @returns true if the effect requires stencil during the main canvas render pass.
      */
     public abstract needStencil(): boolean;
@@ -533,6 +533,9 @@ export abstract class EffectLayer {
                 defines.push("#define MORPHTARGETS");
                 morphInfluencers = manager.numInfluencers;
                 defines.push("#define NUM_MORPH_INFLUENCERS " + morphInfluencers);
+                if (manager.isUsingTextureForTargets) {
+                    defines.push("#define MORPHTARGETS_TEXTURE");
+                }
                 MaterialHelper.PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, morphInfluencers);
             }
         }
@@ -556,8 +559,9 @@ export abstract class EffectLayer {
                 attribs,
                 ["world", "mBones", "viewProjection",
                     "glowColor", "morphTargetInfluences", "boneTextureWidth",
-                    "diffuseMatrix", "emissiveMatrix", "opacityMatrix", "opacityIntensity"],
-                ["diffuseSampler", "emissiveSampler", "opacitySampler", "boneSampler"], join,
+                    "diffuseMatrix", "emissiveMatrix", "opacityMatrix", "opacityIntensity",
+                    "morphTargetTextureInfo"],
+                ["diffuseSampler", "emissiveSampler", "opacitySampler", "boneSampler", "morphTargets"], join,
                 fallbacks, undefined, undefined, { maxSimultaneousMorphTargets: morphInfluencers });
         }
 
@@ -787,6 +791,9 @@ export abstract class EffectLayer {
 
             // Morph targets
             MaterialHelper.BindMorphTargetParameters(renderingMesh, this._effectLayerMapGenerationEffect);
+            if (renderingMesh.morphTargetManager && renderingMesh.morphTargetManager.isUsingTextureForTargets) {
+                renderingMesh.morphTargetManager._bind(this._effectLayerMapGenerationEffect);
+            }
 
             // Alpha mode
             if (enableAlphaMode) {

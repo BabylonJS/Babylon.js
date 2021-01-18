@@ -15,6 +15,7 @@ interface ISandboxProps {
 export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: boolean, errorMessage: string }> {
     private _globalState: GlobalState;
     private _assetUrl?: string;
+    private _autoRotate?: boolean;
     private _cameraPosition?: Vector3;
     private _logoRef: React.RefObject<HTMLImageElement>;
     private _dropTextRef: React.RefObject<HTMLDivElement>;
@@ -36,6 +37,7 @@ export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: b
         // Events
         this._globalState.onSceneLoaded.add((info) => {
             document.title = "Babylon.js - " + info.filename;
+            this.setState({ errorMessage: "" });
 
             this._globalState.currentScene = info.scene;
             if (this._globalState.currentScene.meshes.length === 0 && this._globalState.currentScene.clearColor.r === 1 && this._globalState.currentScene.clearColor.g === 0 && this._globalState.currentScene.clearColor.b === 0) {
@@ -90,6 +92,10 @@ export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: b
                         this._assetUrl = value;
                         break;
                     }
+                    case "autoRotate": {
+                        this._autoRotate = !!value;
+                        break;
+                    }
                     case "cameraPosition": {
                         this._cameraPosition = Vector3.FromArray(value.split(",").map(function (component) { return +component; }));
                         break;
@@ -115,6 +121,7 @@ export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: b
                 <p id="droptext" ref={this._dropTextRef}>Drag and drop gltf, glb, obj or babylon files to view them</p>
                 <RenderingZone globalState={this._globalState}
                     assetUrl={this._assetUrl}
+                    autoRotate={this._autoRotate}
                     cameraPosition={this._cameraPosition}
                     expanded={!this.state.isFooterVisible} />
                 <div ref={this._clickInterceptorRef}

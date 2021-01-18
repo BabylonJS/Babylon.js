@@ -86,12 +86,16 @@
                 .version-text {
                     display: none;
                 }
+                
+                .version-number {
+                    font-size: 16px;
+                }
             }
         }
     }
 }
 
-@media screen and (max-width: 1024px) {
+@media screen and (max-width: 1080px) {
     #pg-header {
         grid-template-columns: 100%;
 
@@ -104,7 +108,6 @@
                 }
             }
         }
-
         
         .command-bar {  
             display: none;

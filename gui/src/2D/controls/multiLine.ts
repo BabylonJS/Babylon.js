@@ -6,6 +6,7 @@ import { MultiLinePoint } from "../multiLinePoint";
 import { Measure } from "../measure";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { Vector3 } from "babylonjs/Maths/math.vector";
+import { serialize } from 'babylonjs/Misc/decorators';
 
 /**
  * Class used to create multi line control
@@ -38,6 +39,7 @@ export class MultiLine extends Control {
     }
 
     /** Gets or sets dash pattern */
+    @serialize()
     public get dash(): Array<number> {
         return this._dash;
     }

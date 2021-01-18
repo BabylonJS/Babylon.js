@@ -1,5 +1,5 @@
 #ifdef PREPASS
-#ifdef PREPASS_DEPTHNORMAL
+#ifdef PREPASS_DEPTH
     varying vec3 vViewPos;
 #endif
 #ifdef PREPASS_VELOCITY

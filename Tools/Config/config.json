@@ -48,7 +48,8 @@
         "serializers",
         "gui",
         "inspector",
-        "nodeEditor"
+        "nodeEditor",
+        "guiEditor"
     ],
     "es6modules": [
         "core",
@@ -60,7 +61,8 @@
         "gui",
         "inspector",
         "viewer",
-        "nodeEditor"
+        "nodeEditor",
+        "guiEditor"
     ],
     "apps": [
         "playground",
@@ -149,7 +151,8 @@
             "es6": {
                 "packageName": "@babylonjs/core",
                 "readme": "readme-es6.md",
-                "license": "license.md"
+                "license": "license.md",
+                "type": "module"
             }
         }
     },
@@ -251,7 +254,8 @@
             },
             "es6": {
                 "packageName": "@babylonjs/materials",
-                "readme": "dist/preview release/materialsLibrary/readme-es6.md"
+                "readme": "dist/preview release/materialsLibrary/readme-es6.md",
+                "type": "module"
             }
         }
     },
@@ -288,7 +292,8 @@
             },
             "es6": {
                 "packageName": "@babylonjs/post-processes",
-                "readme": "dist/preview release/postProcessesLibrary/readme-es6.md"
+                "readme": "dist/preview release/postProcessesLibrary/readme-es6.md",
+                "type": "module"
             }
         }
     },
@@ -365,7 +370,8 @@
             },
             "es6": {
                 "packageName": "@babylonjs/procedural-textures",
-                "readme": "dist/preview release/proceduralTexturesLibrary/readme-es6.md"
+                "readme": "dist/preview release/proceduralTexturesLibrary/readme-es6.md",
+                "type": "module"
             }
         }
     },
@@ -436,7 +442,8 @@
             },
             "es6": {
                 "packageName": "@babylonjs/loaders",
-                "readme": "dist/preview release/loaders/readme-es6.md"
+                "readme": "dist/preview release/loaders/readme-es6.md",
+                "type": "module"
             }
         }
     },
@@ -494,7 +501,8 @@
             },
             "es6": {
                 "packageName": "@babylonjs/serializers",
-                "readme": "dist/preview release/serializers/readme-es6.md"
+                "readme": "dist/preview release/serializers/readme-es6.md",
+                "type": "module"
             }
         }
     },
@@ -523,7 +531,8 @@
             },
             "es6": {
                 "packageName": "@babylonjs/gui",
-                "readme": "dist/preview release/gui/readme-es6.md"
+                "readme": "dist/preview release/gui/readme-es6.md",
+                "type": "module"
             }
         }
     },
@@ -641,6 +650,61 @@
                 ],
                 "typings": "babylon.nodeEditor.module.d.ts",
                 "index": "babylon.nodeEditor.max.js"
+            }
+        }
+    },
+    "guiEditor": {
+        "libraries": [
+            {
+                "output": "babylon.guiEditor.js",
+                "entry": "./legacy/legacy.ts"
+            }
+        ],
+        "build": {            
+            "ignoreInWorkerMode": true,
+            "ignoreInTestMode": true,
+            "mainFolder": "./guiEditor/",
+            "uncheckedLintImports": [
+                "react",
+                "react-dom",
+                "dagre",
+                "re-resizable",
+                "glTF",
+                "file-saver"
+            ],
+            "sharedUiComponents": "src/sharedUiComponents/",
+            "umd": {
+                "packageName": "babylonjs-gui-editor",
+                "webpackRoot": "GUIEDITOR",
+                "processDeclaration": {
+                    "filename": "babylon.guiEditor.module.d.ts",
+                    "moduleName": "GUIEDITOR",
+                    "importsToRemove": [],
+                    "classMap": {
+                        "babylonjs": "BABYLON",
+                        "react": "React",
+                        "@babylonjs/core": "BABYLON",
+                        "@fortawesome": false,
+                        "react-contextmenu": false
+                    }
+                }
+            },
+            "es6": {
+                "webpackBuild": true,
+                "buildDependencies": [
+                    "node_modules/re-resizable/lib/index.es5.js",
+                    "Tools/**/*"
+                ],
+                "packageName": "@babylonjs/gui-editor",
+                "readme": "dist/preview release/guiEditor/readme-es6.md",
+                "packagesFiles": [
+                    "babylon.guiEditor.max.js",
+                    "babylon.guiEditor.max.js.map",
+                    "babylon.guiEditor.module.d.ts",
+                    "readme.md"
+                ],
+                "typings": "babylon.guiEditor.module.d.ts",
+                "index": "babylon.guiEditor.max.js"
             }
         }
     },

@@ -70,7 +70,7 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
      */
     public depthOfField: DepthOfFieldEffect;
     /**
-     * The Fast Approximate Anti-Aliasing post process which attemps to remove aliasing from an image.
+     * The Fast Approximate Anti-Aliasing post process which attempts to remove aliasing from an image.
      */
     public fxaa: FxaaPostProcess;
     /**

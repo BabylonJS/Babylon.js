@@ -49,7 +49,7 @@ uniform vec2 vMicroSurfaceSamplerInfos;
 #endif
 
 // Refraction Reflection
-#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(SS_REFRACTION)
+#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(SS_REFRACTION) || defined(PREPASS)
 uniform mat4 view;
 #endif
 
@@ -155,7 +155,7 @@ uniform mat4 view;
 #endif
 
 #ifdef PREPASS
-    #ifdef PREPASS_IRRADIANCE
+    #ifdef SS_SCATTERING
         uniform float scatteringDiffusionProfile;
     #endif
 #endif
@@ -166,7 +166,6 @@ uniform mat4 view;
 
 #ifdef DETAIL
     uniform vec4 vDetailInfos;
-    uniform mat4 detailMatrix;
 #endif
 
 #ifdef USESPHERICALFROMREFLECTIONMAP

@@ -76,7 +76,7 @@ export interface IHighlightLayerOptions {
     mainTextureRatio: number;
 
     /**
-     * Enforces a fixed size texture to ensure resize independant blur.
+     * Enforces a fixed size texture to ensure resize independent blur.
      */
     mainTextureFixedSize?: number;
 
@@ -415,7 +415,7 @@ export class HighlightLayer extends EffectLayer {
     }
 
     /**
-     * Returns wether or nood the layer needs stencil enabled during the mesh rendering.
+     * Returns whether or not the layer needs stencil enabled during the mesh rendering.
      */
     public needStencil(): boolean {
         return true;

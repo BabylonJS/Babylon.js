@@ -1,6 +1,7 @@
-import { Nullable, DataArray } from "../types";
+import { Nullable, DataArray, FloatArray } from "../types";
 import { ThinEngine } from "../Engines/thinEngine";
-import { DataBuffer } from './dataBuffer';
+import { DataBuffer } from "./dataBuffer";
+import { SliceTools } from "../Misc/sliceTools";
 
 /**
  * Class used to store data that will be store in GPU memory
@@ -67,7 +68,7 @@ export class Buffer {
         const byteOffset = useBytes ? offset : offset * Float32Array.BYTES_PER_ELEMENT;
         const byteStride = stride ? (useBytes ? stride : stride * Float32Array.BYTES_PER_ELEMENT) : this.byteStride;
 
-        // a lot of these parameters are ignored as they are overriden by the buffer
+        // a lot of these parameters are ignored as they are overridden by the buffer
         return new VertexBuffer(this._engine, this, kind, this._updatable, true, byteStride, instanced === undefined ? this._instanced : instanced, byteOffset, size, undefined, undefined, true, this._divisor || divisor);
     }
 
@@ -200,6 +201,9 @@ export class Buffer {
      * Specialized buffer used to store vertex data
      */
 export class VertexBuffer {
+
+    private static _Counter = 0;
+
     /** @hidden */
     public _buffer: Buffer;
     private _kind: string;
@@ -257,6 +261,7 @@ export class VertexBuffer {
         } else {
             this._instanced = true;
         }
+        this._computeHashCode();
     }
 
     /**
@@ -278,6 +283,17 @@ export class VertexBuffer {
      * Gets the data type of each component in the array.
      */
     public readonly type: number;
+
+    /**
+     * Gets the unique id of this vertex buffer
+     */
+    public readonly uniqueId: number;
+
+    /**
+     * Gets a hash code representing the format (type, normalized, size, instanced, stride) of this buffer
+     * All buffers with the same format will have the same hash code
+     */
+    public readonly hashCode: number;
 
     /**
      * Constructor
@@ -310,6 +326,7 @@ export class VertexBuffer {
             this._ownsBuffer = true;
         }
 
+        this.uniqueId = VertexBuffer._Counter++;
         this._kind = kind;
 
         if (type == undefined) {
@@ -343,6 +360,19 @@ export class VertexBuffer {
 
         this._instanced = instanced !== undefined ? instanced : false;
         this._instanceDivisor = instanced ? divisor : 0;
+
+        this._computeHashCode();
+    }
+
+    private _computeHashCode(): void {
+        // note: cast to any because the property is declared readonly
+        (this.hashCode as any) =
+            (((this.type - 5120) << 0) +
+            ((this.normalized ? 1 : 0) << 3) +
+            (this._size << 4) +
+            ((this._instanced ? 1 : 0) << 6) +
+            /* keep 5 bits free */
+            (this.byteStride << 12));
     }
 
     /** @hidden */
@@ -378,6 +408,62 @@ export class VertexBuffer {
      */
     public getData(): Nullable<DataArray> {
         return this._buffer.getData();
+    }
+
+    /**
+     * Gets current buffer's data as a float array. Float data is constructed if the vertex buffer data cannot be returned directly.
+     * @param totalVertices number of vertices in the buffer to take into account
+     * @param forceCopy defines a boolean indicating that the returned array must be cloned upon returning it
+     * @returns a float array containing vertex data
+     */
+    public getFloatData(totalVertices: number, forceCopy?: boolean): Nullable<FloatArray> {
+        let data = this.getData();
+        if (!data) {
+            return null;
+        }
+
+        const tightlyPackedByteStride = this.getSize() * VertexBuffer.GetTypeByteLength(this.type);
+        const count = totalVertices * this.getSize();
+
+        if (this.type !== VertexBuffer.FLOAT || this.byteStride !== tightlyPackedByteStride) {
+            const copy: number[] = [];
+            this.forEach(count, (value) => copy.push(value));
+            return copy;
+        }
+
+        if (!(data instanceof Array || data instanceof Float32Array) || this.byteOffset !== 0 || data.length !== count) {
+            if (data instanceof Array) {
+                const offset = this.byteOffset / 4;
+                return SliceTools.Slice(data, offset, offset + count);
+            } else if (data instanceof ArrayBuffer) {
+                return new Float32Array(data, this.byteOffset, count);
+            } else {
+                let offset = data.byteOffset + this.byteOffset;
+                if (forceCopy) {
+                    let result = new Float32Array(count);
+                    let source = new Float32Array(data.buffer, offset, count);
+
+                    result.set(source);
+
+                    return result;
+                }
+
+                // Protect against bad data
+                let remainder = offset % 4;
+
+                if (remainder) {
+                    offset = Math.max(0, offset - remainder);
+                }
+
+                return new Float32Array(data.buffer, offset, count);
+            }
+        }
+
+        if (forceCopy) {
+            return SliceTools.Slice(data);
+        }
+
+        return data;
     }
 
     /**

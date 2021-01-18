@@ -40,7 +40,7 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
      * @param kernel The size of the kernel used to blur.
      * @param options The required width/height ratio to downsize to before computing the render pass.
      * @param camera The camera to apply the render pass to.
-     * @param circleOfConfusion The circle of confusion + depth map to be used to avoid blurring accross edges
+     * @param circleOfConfusion The circle of confusion + depth map to be used to avoid blurring across edges
      * @param imageToBlur The image to apply the blur to (default: Current rendered frame)
      * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
      * @param engine The engine which the post process will be applied. (default: current engine)

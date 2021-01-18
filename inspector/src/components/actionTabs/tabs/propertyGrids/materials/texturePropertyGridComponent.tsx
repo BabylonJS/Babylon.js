@@ -8,23 +8,23 @@ import { Texture } from "babylonjs/Materials/Textures/texture";
 import { CubeTexture } from "babylonjs/Materials/Textures/cubeTexture";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LineContainerComponent } from "../../../lineContainerComponent";
-import { SliderLineComponent } from "../../../lines/sliderLineComponent";
-import { TextLineComponent } from "../../../lines/textLineComponent";
-import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
+import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
+import { SliderLineComponent } from "../../../../../sharedUiComponents/lines/sliderLineComponent";
+import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
+import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { TextureLineComponent } from "../../../lines/textureLineComponent";
-import { FloatLineComponent } from "../../../lines/floatLineComponent";
-import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
-import { FileButtonLineComponent } from "../../../lines/fileButtonLineComponent";
-import { LockObject } from "../lockObject";
-import { ValueLineComponent } from "../../../lines/valueLineComponent";
+import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
+import { OptionsLineComponent } from "../../../../../sharedUiComponents/lines/optionsLineComponent";
+import { FileButtonLineComponent } from "../../../../../sharedUiComponents/lines/fileButtonLineComponent";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { ValueLineComponent } from "../../../../../sharedUiComponents/lines/valueLineComponent";
 import { GlobalState } from "../../../../../components/globalState";
 
 import { AdvancedDynamicTextureInstrumentation } from "babylonjs-gui/2D/adtInstrumentation";
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
-import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
-import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
+import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
+import { TextInputLineComponent } from '../../../../../sharedUiComponents/lines/textInputLineComponent';
 import { AnimationGridComponent } from '../animations/animationPropertyGridComponent';
 
 import { PopupComponent } from '../../../../popupComponent';
@@ -187,7 +187,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
 
         return (
             <div className="pane">
-                <LineContainerComponent globalState={this.props.globalState} title="PREVIEW">
+                <LineContainerComponent title="PREVIEW">
                     <TextureLineComponent ref={this.textureLineRef} texture={texture} width={256} height={256} globalState={this.props.globalState} />
                     <FileButtonLineComponent label="Load texture from file" onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
                     <ButtonLineComponent label="Edit" onClick={() => this.openTextureEditor()} />
@@ -215,7 +215,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={texture}
                     lockObject={this.props.lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
+                <LineContainerComponent title="GENERAL">
                     <TextLineComponent label="Width" value={texture.getSize().width.toString()} />
                     <TextLineComponent label="Height" value={texture.getSize().height.toString()} />
                     {
@@ -268,7 +268,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                 }
                 {
                     (texture as any).rootContainer && this._adtInstrumentation &&
-                    <LineContainerComponent globalState={this.props.globalState} title="ADVANCED TEXTURE PROPERTIES">
+                    <LineContainerComponent title="ADVANCED TEXTURE PROPERTIES">
                         <ValueLineComponent label="Last layout time" value={this._adtInstrumentation!.renderTimeCounter.current} units="ms" />
                         <ValueLineComponent label="Last render time" value={this._adtInstrumentation!.layoutTimeCounter.current} units="ms" />
                         <SliderLineComponent label="Render scale" minimum={0.1} maximum={5} step={0.1} target={texture} propertyName="renderScale" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -280,7 +280,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                         <CheckBoxLineComponent label="Invalidate Rect optimization" target={texture} propertyName="useInvalidateRectOptimization" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     </LineContainerComponent>
                 }
-                <LineContainerComponent globalState={this.props.globalState} title="TRANSFORM">
+                <LineContainerComponent title="TRANSFORM">
                     {
                         !texture.isCube &&
                         <div>

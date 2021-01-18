@@ -89,7 +89,7 @@ export class GizmoManager implements IDisposable {
     }
 
     /**
-     * Instatiates a gizmo manager
+     * Instantiates a gizmo manager
      * @param scene the scene to overlay the gizmos on top of
      * @param thickness display gizmo axis thickness
      * @param utilityLayer the layer where gizmos are rendered
@@ -109,10 +109,10 @@ export class GizmoManager implements IDisposable {
 
     /**
      * Subscribes to pointer down events, for attaching and detaching mesh
-     * @param scene The sceme layer the observer will be added to
+     * @param scene The scene layer the observer will be added to
      */
     private _attachToMeshPointerObserver(scene: Scene): Observer<PointerInfo> {
-        // Instatiate/dispose gizmos based on pointer actions
+        // Instantiate/dispose gizmos based on pointer actions
         const pointerObserver = scene.onPointerObservable.add((pointerInfo) => {
             if (!this.usePointerToAttachGizmos) {
                 return;

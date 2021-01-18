@@ -9,6 +9,7 @@ export class GlobalState {
     onEnvironmentChanged = new Observable<string>();    
     onRequestClickInterceptor = new Observable<void>();
     onClickInterceptorClicked = new Observable<void>();
+    glTFLoaderExtensions: { [key: string]: import("babylonjs-loaders/glTF/index").IGLTFLoaderExtension } = {};
 
     filesInput: FilesInput;
     isDebugLayerEnabled = false;

@@ -77,7 +77,7 @@ export class TextureHelper {
 
             //Reading datas from WebGL
             const bufferView = await engine.readPixels(0, 0, width, height);
-            const data = new Uint8Array(bufferView.buffer);
+            const data = new Uint8Array(bufferView.buffer, 0, bufferView.byteLength);
 
             if (!channels.R || !channels.G || !channels.B || !channels.A) {
                 for (var i = 0; i < width * height * 4; i += 4) {

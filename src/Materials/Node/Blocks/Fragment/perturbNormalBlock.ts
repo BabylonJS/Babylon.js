@@ -17,7 +17,7 @@ import "../../../../Shaders/ShadersInclude/bumpFragmentFunctions";
 import "../../../../Shaders/ShadersInclude/bumpFragment";
 
 /**
- * Block used to pertub normals based on a normal map
+ * Block used to perturb normals based on a normal map
  */
 export class PerturbNormalBlock extends NodeMaterialBlock {
     private _tangentSpaceParameterName = "";

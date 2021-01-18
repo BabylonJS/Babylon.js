@@ -1,5 +1,5 @@
 import * as React from "react";
-import { IconButtonLineComponent } from "../../../lines/iconButtonLineComponent";
+import { IconButtonLineComponent } from "../../../../../sharedUiComponents/lines/iconButtonLineComponent";
 import { IActionableKeyFrame } from "./animationCurveEditorComponent";
 
 interface IGraphActionsBarProps {

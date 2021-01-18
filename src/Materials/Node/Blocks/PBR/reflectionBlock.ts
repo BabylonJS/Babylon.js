@@ -428,7 +428,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         let codeString: string = super._dumpPropertiesCode();
 
         if (this.texture) {
-            codeString += `${this._codeVariableName}.texture.gammaSpace = ${this.texture.gammaSpace});\r\n`;
+            codeString += `${this._codeVariableName}.texture.gammaSpace = ${this.texture.gammaSpace};\r\n`;
         }
         codeString += `${this._codeVariableName}.useSphericalHarmonics = ${this.useSphericalHarmonics};\r\n`;
         codeString += `${this._codeVariableName}.forceIrradianceInFragment = ${this.forceIrradianceInFragment};\r\n`;

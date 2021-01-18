@@ -29,6 +29,11 @@ export class EnvironmentTools {
         return CubeTexture.CreateFromPrefilteredData(path, scene);
     }
 
+    public static GetActiveSkyboxName() {
+        var defaultSkyboxIndex = Math.max(0, LocalStorageHelper.ReadLocalStorageValue("defaultSkyboxId", 0));
+        return this.SkyboxesNames[defaultSkyboxIndex];
+    }
+
     public static HookWithEnvironmentChange(globalState: GlobalState) {
         globalState.onEnvironmentChanged.add((option) => {
             this.SkyboxPath = "";

@@ -88,7 +88,6 @@ float getBlurLevel(float size) {
 vec4 getBlurColor(float size) {
 
 	vec4 col = texture2D(textureSampler, distorted_coords);
-	if (size == 0.0) { return col; }
 
 	// there are max. 30 samples; the number of samples chosen is dependant on the blur size
 	// there can be 10, 20 or 30 samples chosen; levels of blur are then 1, 2 or 3

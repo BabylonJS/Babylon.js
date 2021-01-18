@@ -119,7 +119,7 @@ export class InputDisplayManager implements IDisplayManager {
                     if (inputBlock.animationType !== AnimatedInputBlockTypes.None) {
                         value = AnimatedInputBlockTypes[inputBlock.animationType];
                     } else {
-                        value = inputBlock.value.toFixed(2);
+                        value = inputBlock.value.toFixed(4);
                     }
                     break;
                 case NodeMaterialBlockConnectionPointTypes.Vector2:

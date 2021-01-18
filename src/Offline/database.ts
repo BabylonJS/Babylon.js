@@ -31,7 +31,7 @@ export class Database implements IOfflineProvider {
     private static IsUASupportingBlobStorage = true;
 
     /**
-     * Gets a boolean indicating if Database storate is enabled (off by default)
+     * Gets a boolean indicating if Database storage is enabled (off by default)
      */
     static IDBStorageEnabled = false;
 

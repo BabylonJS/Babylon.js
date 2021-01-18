@@ -94,7 +94,7 @@ export class ParticleHelper {
                 return resolve(ParticleSystemSet.Parse(newData, scene!, gpu));
             }, undefined, undefined, undefined, () => {
                 scene!._removePendingData(token);
-                return reject(`An error occured while the creation of your particle system. Check if your type '${type}' exists.`);
+                return reject(`An error occurred with the creation of your particle system. Check if your type '${type}' exists.`);
             });
 
         });

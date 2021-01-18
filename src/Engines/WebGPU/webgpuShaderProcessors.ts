@@ -31,6 +31,7 @@ const _knownSamplers: { [key: string]: WebGPUTextureSamplerBindingDescription } 
 // TODO WEBGPU. sampler3D
 const _samplerFunctionByWebGLSamplerType: { [key: string]: string } = {
     "sampler2D": "sampler2D",
+    "sampler2DArray": "sampler2DArray",
     "sampler2DShadow": "sampler2DShadow",
     "sampler2DArrayShadow": "sampler2DArrayShadow",
     "samplerCube": "samplerCube"
@@ -38,6 +39,7 @@ const _samplerFunctionByWebGLSamplerType: { [key: string]: string } = {
 
 const _textureTypeByWebGLSamplerType: { [key: string]: string } = {
     "sampler2D": "texture2D",
+    "sampler2DArray": "texture2DArray",
     "sampler2DShadow": "texture2D",
     "sampler2DArrayShadow": "texture2DArray",
     "samplerCube": "textureCube",
@@ -439,6 +441,20 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
             // Currently set in both vert and frag but could be optim away if necessary.
             vertexCode = ubo + vertexCode;
             fragmentCode = ubo + fragmentCode;
+        }
+
+        // collect all the buffer names for faster processing later in _getBindGroupsToRender
+        for (let i = 0; i < webgpuProcessingContext.orderedUBOsAndSamplers.length; i++) {
+            const setDefinition = webgpuProcessingContext.orderedUBOsAndSamplers[i];
+            if (setDefinition === undefined) {
+                continue;
+            }
+            for (let j = 0; j < setDefinition.length; j++) {
+                const bindingDefinition = webgpuProcessingContext.orderedUBOsAndSamplers[i][j];
+                if (bindingDefinition && !bindingDefinition.isSampler && !bindingDefinition.isTexture) {
+                    webgpuProcessingContext.uniformBufferNames.push(bindingDefinition.name);
+                }
+            }
         }
 
         this._preProcessors = null as any;

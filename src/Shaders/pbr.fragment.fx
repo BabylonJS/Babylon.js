@@ -422,6 +422,9 @@ void main(void) {
                 ambientMonochrome,
             #endif
         #endif
+        #if defined(CLEARCOAT_BUMP) || defined(TWOSIDEDLIGHTING)
+            (gl_FrontFacing ? 1. : -1.),
+        #endif
             clearcoatOut
         );
     #else
@@ -538,8 +541,10 @@ void main(void) {
     #define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
 
 #ifdef PREPASS
+    float writeGeometryInfo = finalColor.a > 0.4 ? 1.0 : 0.0;
+    
     #ifdef PREPASS_POSITION
-    gl_FragData[PREPASS_POSITION_INDEX] = vec4(vPositionW, 1.0);
+    gl_FragData[PREPASS_POSITION_INDEX] = vec4(vPositionW, writeGeometryInfo);
     #endif
 
     #ifdef PREPASS_VELOCITY
@@ -549,7 +554,7 @@ void main(void) {
     vec2 velocity = abs(a - b);
     velocity = vec2(pow(velocity.x, 1.0 / 3.0), pow(velocity.y, 1.0 / 3.0)) * sign(a - b) * 0.5 + 0.5;
 
-    gl_FragData[PREPASS_VELOCITY_INDEX] = vec4(velocity, 0.0, 1.0);
+    gl_FragData[PREPASS_VELOCITY_INDEX] = vec4(velocity, 0.0, writeGeometryInfo);
     #endif
 
     #ifdef PREPASS_IRRADIANCE
@@ -569,24 +574,28 @@ void main(void) {
             float scatteringDiffusionProfile = 255.;
         #endif
 
-        gl_FragData[PREPASS_IRRADIANCE_INDEX] = vec4(irradiance, scatteringDiffusionProfile / 255.); // Irradiance + SS diffusion profile
+        gl_FragData[PREPASS_IRRADIANCE_INDEX] = vec4(clamp(irradiance, vec3(0.), vec3(1.)), scatteringDiffusionProfile / 255.); // Irradiance + SS diffusion profile
     #else
         gl_FragData[0] = vec4(finalColor.rgb, finalColor.a);
     #endif
+    
+    #ifdef PREPASS_DEPTH
+        gl_FragData[PREPASS_DEPTH_INDEX] = vec4(vViewPos.z, 0.0, 0.0, writeGeometryInfo); // Linear depth
+    #endif
 
-    #ifdef PREPASS_DEPTHNORMAL
-        gl_FragData[PREPASS_DEPTHNORMAL_INDEX] = vec4(vViewPos.z, (view * vec4(normalW, 0.0)).rgb); // Linear depth + normal
+    #ifdef PREPASS_NORMAL
+        gl_FragData[PREPASS_NORMAL_INDEX] = vec4((view * vec4(normalW, 0.0)).rgb, writeGeometryInfo); // Normal
     #endif
 
     #ifdef PREPASS_ALBEDO
-        gl_FragData[PREPASS_ALBEDO_INDEX] = vec4(sqAlbedo, 1.0); // albedo, for pre and post scatter
+        gl_FragData[PREPASS_ALBEDO_INDEX] = vec4(sqAlbedo, writeGeometryInfo); // albedo, for pre and post scatter
     #endif
 
     #ifdef PREPASS_REFLECTIVITY
         #if defined(REFLECTIVITY)
-            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(baseReflectivity.rgb, 1.0);
+            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(baseReflectivity.rgb, writeGeometryInfo);
         #else
-            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(0.0, 0.0, 0.0, 1.0);
+            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(0.0, 0.0, 0.0, writeGeometryInfo);
         #endif
     #endif
 #endif
