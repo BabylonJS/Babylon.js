@@ -342,7 +342,7 @@ export class DirectionalLightFrustumViewer {
     }
 
     protected _getInvertViewMatrix(): Matrix {
-        Matrix.LookAtLHToRef(this._light.position, this._light.position.add(this._light.direction), Vector3.Up(), this._inverseViewMatrix);
+        Matrix.LookAtLHToRef(this._light.position, this._light.position.add(this._light.direction), Vector3.UpReadOnly, this._inverseViewMatrix);
         this._inverseViewMatrix.invertToRef(this._inverseViewMatrix);
         return this._inverseViewMatrix;
     }
