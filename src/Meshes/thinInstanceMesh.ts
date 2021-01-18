@@ -60,7 +60,7 @@ declare module "./mesh" {
          * @param stride size in floats of each value of the buffer
          * @param staticBuffer indicates that the buffer is static, so that you won't change it after it is set (better performances - false by default)
          */
-        thinInstanceSetBuffer(kind: string, buffer: Nullable<Float32Array>,  stride: number, staticBuffer: boolean): void;
+        thinInstanceSetBuffer(kind: string, buffer: Nullable<Float32Array>,  stride?: number, staticBuffer?: boolean): void;
 
         /**
          * Gets the list of world matrices
@@ -87,13 +87,13 @@ declare module "./mesh" {
          * Refreshes the bounding info, taking into account all the thin instances defined
          * @param forceRefreshParentInfo true to force recomputing the mesh bounding info and use it to compute the aggregated bounding info
          */
-        thinInstanceRefreshBoundingInfo(forceRefreshParentInfo: boolean): void;
+        thinInstanceRefreshBoundingInfo(forceRefreshParentInfo?: boolean): void;
 
         /** @hidden */
         _thinInstanceInitializeUserStorage(): void;
 
         /** @hidden */
-        _thinInstanceUpdateBufferSize(kind: string, numInstances: number): void;
+        _thinInstanceUpdateBufferSize(kind: string, numInstances?: number): void;
 
         /** @hidden */
         _userThinInstanceBuffersStorage: {
