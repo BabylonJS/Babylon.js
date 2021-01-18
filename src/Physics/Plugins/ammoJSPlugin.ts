@@ -377,7 +377,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             impostor.physicsBody.activate();
             var worldPoint = this._tmpAmmoVectorA;
             var impulse = this._tmpAmmoVectorB;
-            
+
             worldPoint.setValue(contactPoint.x, contactPoint.y, contactPoint.z);
 
             // Convert contactPoint relative to center of mass
