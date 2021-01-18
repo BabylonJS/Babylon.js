@@ -101,7 +101,7 @@ struct subSurfaceOutParams
     #ifdef SS_TRANSLUCENCY
         const in vec3 vDiffusionDistance,
     #endif
-    #if defined(SS_TRANSLUCENCY) || defined(SS_SCATTERING)
+    #ifdef(SS_TRANSLUCENCY)
         const in vec3 surfaceAlbedo,
     #endif
         out subSurfaceOutParams outParams

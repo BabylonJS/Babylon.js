@@ -219,9 +219,6 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
             #ifdef SS_TRANSLUCENCY
                 ${translucencyDiffusionDistance},
             #endif
-            #if defined(SS_TRANSLUCENCY) || defined(SS_SCATTERING)
-                surfaceAlbedo,
-            #endif
                 subSurfaceOut
             );
 
