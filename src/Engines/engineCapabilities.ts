@@ -24,7 +24,7 @@ export interface EngineCapabilities {
     maxVertexUniformVectors: number;
     /** Maximum number of uniforms per fragment shader */
     maxFragmentUniformVectors: number;
-    /** Defines if standard derivates (dx/dy) are supported */
+    /** Defines if standard derivatives (dx/dy) are supported */
     standardDerivatives: boolean;
     /** Defines if s3tc texture compression is supported */
     s3tc?: WEBGL_compressed_texture_s3tc;
@@ -88,4 +88,8 @@ export interface EngineCapabilities {
     maxMSAASamples: number;
     /** Defines if the blend min max extension is supported */
     blendMinMax: boolean;
+    /** In some iOS + WebGL1, gl_InstanceID (and gl_InstanceIDEXT) is undefined even if instancedArrays is true. So don't use gl_InstanceID in those cases */
+    canUseGLInstanceID: boolean;
+    /** Defines if gl_vertexID is available */
+    canUseGLVertexID: boolean;
 }

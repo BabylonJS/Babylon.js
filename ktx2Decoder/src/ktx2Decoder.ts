@@ -175,8 +175,8 @@ export class KTX2Decoder {
                 firstImageDescIndex += Math.max(kfr.header.layerCount, 1) * kfr.header.faceCount * Math.max(kfr.header.pixelDepth >> (level - 1), 1);
             }
 
-            const levelWidth = Math.floor(width / (1 << level));
-            const levelHeight = Math.floor(height / (1 << level));
+            const levelWidth = Math.floor(width / (1 << level)) || 1;
+            const levelHeight = Math.floor(height / (1 << level)) || 1;
 
             const numImagesInLevel = kfr.header.faceCount; // note that cubemap are not supported yet (see KTX2FileReader), so faceCount == 1
             const levelImageByteLength = ((levelWidth + 3) >> 2) * ((levelHeight + 3) >> 2) * kfr.dfdBlock.bytesPlane[0];

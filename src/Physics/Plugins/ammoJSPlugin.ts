@@ -70,7 +70,8 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      */
     public constructor(private _useDeltaForWorldStep: boolean = true, ammoInjection: any = Ammo, overlappingPairCache: any = null) {
         if (typeof ammoInjection === "function") {
-            ammoInjection(this.bjsAMMO);
+            Logger.Error("AmmoJS is not ready. Please make sure you await Ammo() before using the plugin.");
+            return;
         } else {
             this.bjsAMMO = ammoInjection;
         }
@@ -377,12 +378,16 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             var worldPoint = this._tmpAmmoVectorA;
             var impulse = this._tmpAmmoVectorB;
 
+            worldPoint.setValue(contactPoint.x, contactPoint.y, contactPoint.z);
+
             // Convert contactPoint relative to center of mass
             if (impostor.object && impostor.object.getWorldMatrix) {
-                contactPoint.subtractInPlace(impostor.object.getWorldMatrix().getTranslation());
+                var localTranslation = impostor.object.getWorldMatrix().getTranslation();
+                worldPoint.x -= localTranslation.x;
+                worldPoint.y -= localTranslation.y;
+                worldPoint.z -= localTranslation.z;
             }
 
-            worldPoint.setValue(contactPoint.x, contactPoint.y, contactPoint.z);
             impulse.setValue(force.x, force.y, force.z);
 
             impostor.physicsBody.applyForce(impulse, worldPoint);
@@ -936,7 +941,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
 
         switch (impostor.type) {
             case PhysicsImpostor.SphereImpostor:
-                // Is there a better way to compare floats number? With an epsylon or with a Math function
+                // Is there a better way to compare floats number? With an epsilon or with a Math function
                 if (Scalar.WithinEpsilon(extendSize.x, extendSize.y, 0.0001) && Scalar.WithinEpsilon(extendSize.x, extendSize.z, 0.0001)) {
                     returnValue = new this.bjsAMMO.btSphereShape(extendSize.x / 2);
                 } else {
@@ -948,7 +953,10 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 }
                 break;
             case PhysicsImpostor.CapsuleImpostor:
-                returnValue = new this.bjsAMMO.btCapsuleShape(extendSize.x / 2, extendSize.y / 2);
+                // https://pybullet.org/Bullet/BulletFull/classbtCapsuleShape.html#details
+                // Height is just the height between the center of each 'sphere' of the capsule caps
+                const capRadius = extendSize.x / 2;
+                returnValue = new this.bjsAMMO.btCapsuleShape(capRadius, extendSize.y - capRadius * 2);
                 break;
             case PhysicsImpostor.CylinderImpostor:
                 this._tmpAmmoVectorA.setValue(extendSize.x / 2, extendSize.y / 2, extendSize.z / 2);
@@ -1205,7 +1213,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     }
 
     /**
-     * Sets resitution of the impostor
+     * Sets restitution of the impostor
      * @param impostor impostor to set resitution on
      * @param restitution resitution value
      */
@@ -1343,7 +1351,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     * @param otherImpostor is the rigid impostor to anchor to
     * @param width ratio across width from 0 to 1
     * @param height ratio up height from 0 to 1
-    * @param influence the elasticity between cloth impostor and anchor from 0, very stretchy to 1, little strech
+    * @param influence the elasticity between cloth impostor and anchor from 0, very stretchy to 1, little stretch
     * @param noCollisionBetweenLinkedBodies when true collisions between soft impostor and anchor are ignored; default false
     */
     public appendAnchor(impostor: PhysicsImpostor, otherImpostor: PhysicsImpostor, width: number, height: number, influence: number = 1, noCollisionBetweenLinkedBodies: boolean = false) {
@@ -1360,7 +1368,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @param impostor is the rope impostor to add hook to
      * @param otherImpostor is the rigid impostor to hook to
      * @param length ratio along the rope from 0 to 1
-     * @param influence the elasticity between soft impostor and anchor from 0, very stretchy to 1, little strech
+     * @param influence the elasticity between soft impostor and anchor from 0, very stretchy to 1, little stretch
      * @param noCollisionBetweenLinkedBodies when true collisions between soft impostor and anchor are ignored; default false
      */
     public appendHook(impostor: PhysicsImpostor, otherImpostor: PhysicsImpostor, length: number, influence: number = 1, noCollisionBetweenLinkedBodies: boolean = false) {

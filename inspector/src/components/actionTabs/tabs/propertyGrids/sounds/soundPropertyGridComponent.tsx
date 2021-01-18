@@ -3,16 +3,16 @@ import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LineContainerComponent } from "../../../lineContainerComponent";
-import { TextLineComponent } from "../../../lines/textLineComponent";
-import { LockObject } from "../lockObject";
+import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
+import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from '../../../../globalState';
 import { Sound } from 'babylonjs/Audio/sound';
 import { IExplorerExtensibilityGroup } from 'babylonjs/Debug/debugLayer';
-import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
-import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
-import { SliderLineComponent } from '../../../lines/sliderLineComponent';
-import { CheckBoxLineComponent } from '../../../lines/checkBoxLineComponent';
+import { TextInputLineComponent } from '../../../../../sharedUiComponents/lines/textInputLineComponent';
+import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
+import { SliderLineComponent } from '../../../../../sharedUiComponents/lines/sliderLineComponent';
+import { CheckBoxLineComponent } from '../../../../../sharedUiComponents/lines/checkBoxLineComponent';
 
 interface ISoundPropertyGridComponentProps {
     globalState: GlobalState;
@@ -32,7 +32,7 @@ export class SoundPropertyGridComponent extends React.Component<ISoundPropertyGr
 
         return (
             <div className="pane">
-                <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
+                <LineContainerComponent title="GENERAL">
                     <TextLineComponent label="Class" value={sound.getClassName()} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={sound} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                     <TextLineComponent label="Status" value={sound.isPaused ? "Paused" : (sound.isPlaying ? "Playing" : "Stopped")}/>
@@ -57,7 +57,7 @@ export class SoundPropertyGridComponent extends React.Component<ISoundPropertyGr
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                     }} />                       */}
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="COMMANDS">
+                <LineContainerComponent title="COMMANDS">
                     {
                         sound.isPlaying &&
                         <ButtonLineComponent label="Pause" onClick={() => {

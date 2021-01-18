@@ -60,7 +60,7 @@ declare module "../../Engines/thinEngine" {
 
         /**
          * Update a raw cube texture
-         * @param texture defines the texture to udpdate
+         * @param texture defines the texture to update
          * @param data defines the data to store
          * @param format defines the data format
          * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
@@ -70,7 +70,7 @@ declare module "../../Engines/thinEngine" {
 
         /**
          * Update a raw cube texture
-         * @param texture defines the texture to udpdate
+         * @param texture defines the texture to update
          * @param data defines the data to store
          * @param format defines the data format
          * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
@@ -81,7 +81,7 @@ declare module "../../Engines/thinEngine" {
 
         /**
          * Update a raw cube texture
-         * @param texture defines the texture to udpdate
+         * @param texture defines the texture to update
          * @param data defines the data to store
          * @param format defines the data format
          * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)

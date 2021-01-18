@@ -56206,7 +56206,7 @@ var PreviewManager = /** @class */ (function () {
                         });
                     }
                     if (this._material) {
-                        this._material.dispose();
+                        this._material.dispose(false, true);
                     }
                     this._material = tempMaterial_1;
                     break;
@@ -56215,7 +56215,7 @@ var PreviewManager = /** @class */ (function () {
                     this._globalState.onIsLoadingChanged.notifyObservers(false);
                     this._proceduralTexture = tempMaterial_1.createProceduralTexture(512, this._scene);
                     if (this._material) {
-                        this._material.dispose();
+                        this._material.dispose(false, true);
                     }
                     if (this._layer) {
                         this._layer.texture = this._proceduralTexture;
@@ -56233,7 +56233,7 @@ var PreviewManager = /** @class */ (function () {
                     });
                     tempMaterial_1.createEffectForParticles(this._particleSystem);
                     if (this._material) {
-                        this._material.dispose();
+                        this._material.dispose(false, true);
                     }
                     this._material = tempMaterial_1;
                     break;
@@ -56248,7 +56248,7 @@ var PreviewManager = /** @class */ (function () {
                                 mesh.material = tempMaterial_1;
                             }
                             if (_this._material) {
-                                _this._material.dispose();
+                                _this._material.dispose(false, true);
                             }
                             _this._material = tempMaterial_1;
                             _this._globalState.onIsLoadingChanged.notifyObservers(false);
@@ -56280,7 +56280,7 @@ var PreviewManager = /** @class */ (function () {
         this._globalState.onDepthPrePassChanged.remove(this._onDepthPrePassChangedObserver);
         this._globalState.onLightUpdated.remove(this._onLightUpdatedObserver);
         if (this._material) {
-            this._material.dispose();
+            this._material.dispose(false, true);
         }
         this._camera.dispose();
         for (var _i = 0, _a = this._meshes; _i < _a.length; _i++) {
@@ -57560,7 +57560,7 @@ var InputDisplayManager = /** @class */ (function () {
                         value = babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_0__["AnimatedInputBlockTypes"][inputBlock.animationType];
                     }
                     else {
-                        value = inputBlock.value.toFixed(2);
+                        value = inputBlock.value.toFixed(4);
                     }
                     break;
                 case babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector2:
@@ -61327,6 +61327,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 var GenericPropertyComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GenericPropertyComponent, _super);
     function GenericPropertyComponent(props) {
@@ -61347,6 +61348,11 @@ var GeneralPropertyTabComponent = /** @class */ (function (_super) {
     }
     GeneralPropertyTabComponent.prototype.render = function () {
         var _this = this;
+        var targetOptions = [
+            { label: "Neutral", value: babylonjs_Materials_Node_nodeMaterialDecorator__WEBPACK_IMPORTED_MODULE_10__["NodeMaterialBlockTargets"].Neutral },
+            { label: "Vertex", value: babylonjs_Materials_Node_nodeMaterialDecorator__WEBPACK_IMPORTED_MODULE_10__["NodeMaterialBlockTargets"].Vertex },
+            { label: "Fragment", value: babylonjs_Materials_Node_nodeMaterialDecorator__WEBPACK_IMPORTED_MODULE_10__["NodeMaterialBlockTargets"].Fragment },
+        ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "GENERAL" },
                 (!this.props.block.isInput || !this.props.block.isAttribute) &&
@@ -61357,6 +61363,14 @@ var GeneralPropertyTabComponent = /** @class */ (function (_super) {
                             }
                             return true;
                         } }),
+                (this.props.block._originalTargetIsNeutral) &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_9__["OptionsLineComponent"], { label: "Target", options: targetOptions, target: this.props.block, propertyName: "target", onSelect: function (value) {
+                            _this.forceUpdate();
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                        } }),
+                (!this.props.block._originalTargetIsNeutral) &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Type", value: babylonjs_Materials_Node_nodeMaterialDecorator__WEBPACK_IMPORTED_MODULE_10__["NodeMaterialBlockTargets"][this.props.block.target] }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Type", value: this.props.block.getClassName() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Comments", propertyName: "comments", target: this.props.block, onChange: function () { return _this.props.globalState.onUpdateRequiredObservable.notifyObservers(); } }))));
     };
@@ -62660,6 +62674,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _diagram_graphFrame__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./diagram/graphFrame */ "./diagram/graphFrame.ts");
 /* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! react-dom */ "../../node_modules/react-dom/index.js");
 /* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_15___default = /*#__PURE__*/__webpack_require__.n(react_dom__WEBPACK_IMPORTED_MODULE_15__);
+/* harmony import */ var _sharedComponents_popup__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./sharedComponents/popup */ "./sharedComponents/popup.tsx");
+
 
 
 
@@ -62764,37 +62780,10 @@ var GraphEditor = /** @class */ (function (_super) {
             parentControl.id = 'node-editor-graph-root';
             parentControl.className = 'right-panel';
             popupWindow.document.body.appendChild(parentControl);
-            _this.copyStyles(_this.props.globalState.hostWindow.document, parentDocument);
+            _sharedComponents_popup__WEBPACK_IMPORTED_MODULE_16__["Popup"]._CopyStyles(_this.props.globalState.hostWindow.document, parentDocument);
             _this[windowVariableName] = popupWindow;
             _this._popUpWindow = popupWindow;
             return popupWindow;
-        };
-        _this.copyStyles = function (sourceDoc, targetDoc) {
-            var styleContainer = [];
-            for (var index = 0; index < sourceDoc.styleSheets.length; index++) {
-                var styleSheet = sourceDoc.styleSheets[index];
-                try {
-                    if (styleSheet.href) { // for <link> elements loading CSS from a URL
-                        var newLinkEl = sourceDoc.createElement('link');
-                        newLinkEl.rel = 'stylesheet';
-                        newLinkEl.href = styleSheet.href;
-                        targetDoc.head.appendChild(newLinkEl);
-                        styleContainer.push(newLinkEl);
-                    }
-                    else if (styleSheet.cssRules) { // for <style> elements
-                        var newStyleEl = sourceDoc.createElement('style');
-                        for (var _i = 0, _a = styleSheet.cssRules; _i < _a.length; _i++) {
-                            var cssRule = _a[_i];
-                            newStyleEl.appendChild(sourceDoc.createTextNode(cssRule.cssText));
-                        }
-                        targetDoc.head.appendChild(newStyleEl);
-                        styleContainer.push(newStyleEl);
-                    }
-                }
-                catch (e) {
-                    console.log(e);
-                }
-            }
         };
         _this.createPreviewMeshControlHost = function (options, parentControl) {
             // Prepare the preview control host
@@ -63468,7 +63457,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react_dom__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _globalState__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./globalState */ "./globalState.ts");
 /* harmony import */ var _graphEditor__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./graphEditor */ "./graphEditor.tsx");
-/* harmony import */ var _src_sharedComponents_popup__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../src/sharedComponents/popup */ "./sharedComponents/popup.ts");
+/* harmony import */ var _src_sharedComponents_popup__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../src/sharedComponents/popup */ "./sharedComponents/popup.tsx");
 /* harmony import */ var _serializationTools__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./serializationTools */ "./serializationTools.ts");
 /* harmony import */ var _components_preview_previewType__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./components/preview/previewType */ "./components/preview/previewType.ts");
 /* harmony import */ var babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! babylonjs/Misc/dataStorage */ "babylonjs/Misc/dataStorage");
@@ -64295,10 +64284,10 @@ var FloatLineComponent = /** @class */ (function (_super) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
         var currentValue = _this.props.target[_this.props.propertyName];
-        _this.state = { value: currentValue ? (_this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(_this.props.digits || 2)) : "0" };
+        _this.state = { value: currentValue ? (_this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(_this.props.digits || 4)) : "0" };
         _this._store = currentValue;
         var rexp = "(.*\\.";
-        var numDigits = _this.props.digits || 2;
+        var numDigits = _this.props.digits || 4;
         while (numDigits--) {
             rexp += ".";
         }
@@ -64312,7 +64301,7 @@ var FloatLineComponent = /** @class */ (function (_super) {
             return true;
         }
         var newValue = nextProps.target[nextProps.propertyName];
-        var newValueString = newValue ? this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this.props.digits || 2) : "0";
+        var newValueString = newValue ? this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this.props.digits || 4) : "0";
         if (newValueString !== nextState.value) {
             nextState.value = newValueString;
             return true;
@@ -64863,10 +64852,10 @@ module.exports = "data:image/svg+xml,%3Csvg viewBox='0 0 24 24' version='1.1' xm
 
 /***/ }),
 
-/***/ "./sharedComponents/popup.ts":
-/*!***********************************!*\
-  !*** ./sharedComponents/popup.ts ***!
-  \***********************************/
+/***/ "./sharedComponents/popup.tsx":
+/*!************************************!*\
+  !*** ./sharedComponents/popup.tsx ***!
+  \************************************/
 /*! exports provided: Popup */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -64938,7 +64927,6 @@ var Popup = /** @class */ (function () {
                 }
             }
             catch (e) {
-                console.log(e);
             }
         }
     };
@@ -65291,7 +65279,7 @@ var TextureLineComponent = /** @class */ (function (_super) {
                         return [4 /*yield*/, engine.readPixels(0, 0, width, height)];
                     case 1:
                         bufferView = _a.sent();
-                        data = new Uint8Array(bufferView.buffer);
+                        data = new Uint8Array(bufferView.buffer, 0, bufferView.byteLength);
                         if (!texture.isCube) {
                             if (!options.displayRed || !options.displayGreen || !options.displayBlue) {
                                 for (i = 0; i < width * height * 4; i += 4) {

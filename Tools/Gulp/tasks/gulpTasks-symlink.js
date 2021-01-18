@@ -46,7 +46,7 @@ config.modules.map(function(module) {
 });
 
 /**
- * Build all es 6 libs.
+ * Build all symlinks.
  */
 gulp.task("generate-symlinks", gulp.series(config.modules.map((module) => module + "-symlinks")));
 

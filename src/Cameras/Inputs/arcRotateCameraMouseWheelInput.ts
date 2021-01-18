@@ -6,6 +6,7 @@ import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManage
 import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 import { Scalar } from '../../Maths/math.scalar';
 import { Tools } from '../../Misc/tools';
+import { IWheelEvent } from "../../Events/deviceInputEvents";
 
 /**
  * Manage the mouse wheel inputs to control an arc rotate camera.
@@ -53,7 +54,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
         this._wheel = (p, s) => {
             //sanity check - this should be a PointerWheel event.
             if (p.type !== PointerEventTypes.POINTERWHEEL) { return; }
-            var event = <MouseWheelEvent>p.event;
+            var event = <IWheelEvent>p.event;
             var delta = 0;
 
             let mouseWheelLegacyEvent = event as any;
@@ -116,7 +117,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
     }
 
     /**
-     * Gets the class name of the current intput.
+     * Gets the class name of the current input.
      * @returns the class name
      */
     public getClassName(): string {

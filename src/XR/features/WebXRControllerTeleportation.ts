@@ -212,7 +212,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
     }
 
     /**
-     * Sets wether rotation is enabled or not
+     * Sets whether rotation is enabled or not
      * @param enabled is rotation enabled when teleportation is shown
      */
     public set rotationEnabled(enabled: boolean) {

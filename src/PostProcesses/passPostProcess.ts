@@ -45,7 +45,7 @@ export class PassPostProcess extends PostProcess {
                 parsedPostProcess.name,
                 parsedPostProcess.options, targetCamera,
                 parsedPostProcess.renderTargetSamplingMode,
-                scene.getEngine(), parsedPostProcess.reusable);
+                parsedPostProcess._engine, parsedPostProcess.reusable);
         }, parsedPostProcess, scene, rootUrl);
     }
 }
@@ -129,7 +129,7 @@ export class PassCubePostProcess extends PostProcess {
                 parsedPostProcess.name,
                 parsedPostProcess.options, targetCamera,
                 parsedPostProcess.renderTargetSamplingMode,
-                scene.getEngine(), parsedPostProcess.reusable);
+                parsedPostProcess._engine, parsedPostProcess.reusable);
         }, parsedPostProcess, scene, rootUrl);
     }
 }

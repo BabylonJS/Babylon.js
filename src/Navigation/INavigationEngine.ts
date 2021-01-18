@@ -14,7 +14,7 @@ export interface INavigationEnginePlugin {
 
     /**
      * Creates a navigation mesh
-     * @param meshes array of all the geometry used to compute the navigatio mesh
+     * @param meshes array of all the geometry used to compute the navigation mesh
      * @param parameters bunch of parameters used to filter geometry
      */
     createNavMesh(meshes: Array<Mesh>, parameters: INavMeshParameters): void;
@@ -332,7 +332,7 @@ export interface IAgentParameters {
     pathOptimizationRange: number;
 
     /**
-     * How aggresive the agent manager should be at avoiding collisions with this agent. [Limit: >= 0]
+     * How aggressive the agent manager should be at avoiding collisions with this agent. [Limit: >= 0]
      */
     separationWeight: number;
 }
@@ -379,7 +379,7 @@ export interface INavMeshParameters {
     maxEdgeLen: number;
 
     /**
-     * The maximum distance a simplfied contour's border edges should deviate
+     * The maximum distance a simplified contour's border edges should deviate
      * the original raw contour. [Limit: >=0] [Units: vx]
      */
     maxSimplificationError: number;

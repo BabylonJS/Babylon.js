@@ -55,6 +55,7 @@ import { Frustum } from './Maths/math.frustum';
 import { UniqueIdGenerator } from './Misc/uniqueIdGenerator';
 import { FileTools, LoadFileError, RequestFileError, ReadFileError } from './Misc/fileTools';
 import { IClipPlanesHolder } from './Misc/interfaces/iClipPlanesHolder';
+import { IPointerEvent } from "./Events/deviceInputEvents";
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -694,13 +695,13 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public pointerMovePredicate: (Mesh: AbstractMesh) => boolean;
 
     /** Callback called when a pointer move is detected */
-    public onPointerMove: (evt: PointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
+    public onPointerMove: (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
     /** Callback called when a pointer down is detected  */
-    public onPointerDown: (evt: PointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
+    public onPointerDown: (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
     /** Callback called when a pointer up is detected  */
-    public onPointerUp: (evt: PointerEvent, pickInfo: Nullable<PickingInfo>, type: PointerEventTypes) => void;
+    public onPointerUp: (evt: IPointerEvent, pickInfo: Nullable<PickingInfo>, type: PointerEventTypes) => void;
     /** Callback called when a pointer pick is detected */
-    public onPointerPick: (evt: PointerEvent, pickInfo: PickingInfo) => void;
+    public onPointerPick: (evt: IPointerEvent, pickInfo: PickingInfo) => void;
 
     /**
      * This observable event is triggered when any ponter event is triggered. It is registered during Scene.attachControl() and it is called BEFORE the 3D engine process anything (mesh/sprite picking for instance).
@@ -897,7 +898,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
     * Flag indicating that the frame buffer binding is handled by another component
     */
-    public prePass: boolean = false;
+    public get prePass(): boolean {
+        return !!this.prePassRenderer && this.prePassRenderer.defaultRT.enabled;
+    }
 
     // Lights
     private _shadowsEnabled = true;
@@ -1284,6 +1287,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Defines the actions happening before clear the canvas.
      */
     public _beforeClearStage = Stage.Create<SimpleStageAction>();
+    /**
+     * @hidden
+     * Defines the actions happening before clear the canvas.
+     */
+    public _beforeRenderTargetClearStage = Stage.Create<RenderTargetStageAction>();
     /**
      * @hidden
      * Defines the actions when collecting render targets for the frame.
@@ -4112,7 +4120,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         // Clear
-        if ((this.autoClearDepthAndStencil || this.autoClear) && !this.prePass) {
+        if (this.autoClearDepthAndStencil || this.autoClear) {
             this._engine.clear(this.clearColor,
                 this.autoClear || this.forceWireframe || this.forcePointsCloud,
                 this.autoClearDepthAndStencil,
@@ -4376,6 +4384,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         // Release textures
         while (this.textures.length) {
             this.textures[0].dispose();
+        }
+
+        // Release morph targets
+        while (this.morphTargetManagers.length) {
+            this.morphTargetManagers[0].dispose();
         }
 
         // Release UBO

@@ -4,6 +4,7 @@ import { ValueAndUnit } from "../valueAndUnit";
 import { Control } from "./control";
 import { _TypeStore } from "babylonjs/Misc/typeStore";
 import { Nullable } from "babylonjs/types";
+import { serialize } from 'babylonjs/Misc/decorators';
 
 /**
  * Enum that determines the text-wrapping mode to use.
@@ -66,6 +67,7 @@ export class TextBlock extends Control {
     /**
      * Gets or sets an boolean indicating that the TextBlock will be resized to fit container
      */
+    @serialize()
     public get resizeToFit(): boolean {
         return this._resizeToFit;
     }
@@ -90,6 +92,7 @@ export class TextBlock extends Control {
     /**
      * Gets or sets a boolean indicating if text must be wrapped
      */
+    @serialize()
     public get textWrapping(): TextWrapping | boolean {
         return this._textWrapping;
     }
@@ -108,6 +111,7 @@ export class TextBlock extends Control {
     /**
      * Gets or sets text to display
      */
+    @serialize()
     public get text(): string {
         return this._text;
     }
@@ -128,6 +132,7 @@ export class TextBlock extends Control {
     /**
      * Gets or sets text horizontal alignment (BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER by default)
      */
+    @serialize()
     public get textHorizontalAlignment(): number {
         return this._textHorizontalAlignment;
     }
@@ -147,6 +152,7 @@ export class TextBlock extends Control {
     /**
      * Gets or sets text vertical alignment (BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER by default)
      */
+    @serialize()
     public get textVerticalAlignment(): number {
         return this._textVerticalAlignment;
     }
@@ -166,6 +172,7 @@ export class TextBlock extends Control {
     /**
      * Gets or sets line spacing value
      */
+    @serialize()
     public set lineSpacing(value: string | number) {
         if (this._lineSpacing.fromString(value)) {
             this._markAsDirty();
@@ -182,6 +189,7 @@ export class TextBlock extends Control {
     /**
      * Gets or sets outlineWidth of the text to display
      */
+    @serialize()
     public get outlineWidth(): number {
         return this._outlineWidth;
     }
@@ -200,6 +208,8 @@ export class TextBlock extends Control {
     /**
      * Gets or sets a boolean indicating that text must have underline
      */
+    @serialize()
+
     public get underline(): boolean {
         return this._underline;
     }
@@ -218,6 +228,7 @@ export class TextBlock extends Control {
     /**
      * Gets or sets an boolean indicating that text must be crossed out
      */
+    @serialize()
     public get lineThrough(): boolean {
         return this._lineThrough;
     }
@@ -236,6 +247,7 @@ export class TextBlock extends Control {
     /**
      * Gets or sets outlineColor of the text to display
      */
+    @serialize()
     public get outlineColor(): string {
         return this._outlineColor;
     }

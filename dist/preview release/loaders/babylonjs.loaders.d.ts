@@ -2163,6 +2163,35 @@ declare module BABYLON.GLTF2.Loader.Extensions {
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
     /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1893)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_xmp_json_ld implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /**
+         * Defines a number that determines the order the extensions are applied.
+         */
+        order: number;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /**
+         * Called after the loader state changes to LOADING.
+         */
+        onLoading(): void;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
      * [Specification](https://github.com/najadojo/glTF/tree/MSFT_audio_emitter/extensions/2.0/Vendor/MSFT_audio_emitter)
      */
     export class MSFT_audio_emitter implements IGLTFLoaderExtension {
@@ -2380,6 +2409,11 @@ declare module BABYLON {
          */
         ComputeNormals: boolean;
         /**
+         * Optimize the normals for the model. Lighting can be uneven if you use OptimizeWithUV = true because new vertices can be created for the same location if they pertain to different faces.
+         * Using OptimizehNormals = true will help smoothing the lighting by averaging the normals of those vertices.
+         */
+        OptimizeNormals: boolean;
+        /**
          * Skip loading the materials even if defined in the OBJ file (materials are ignored).
          */
         SkipMaterials: boolean;
@@ -2414,6 +2448,11 @@ declare module BABYLON {
          * Compute the normals for the model, even if normals are present in the file.
          */
         static COMPUTE_NORMALS: boolean;
+        /**
+         * Optimize the normals for the model. Lighting can be uneven if you use OptimizeWithUV = true because new vertices can be created for the same location if they pertain to different faces.
+         * Using OptimizehNormals = true will help smoothing the lighting by averaging the normals of those vertices.
+         */
+        static OPTIMIZE_NORMALS: boolean;
         /**
          * Defines custom scaling of UV coordinates of loaded meshes.
          */
@@ -2526,6 +2565,7 @@ declare module BABYLON {
          * @returns The loaded asset container
          */
         loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer>;
+        private _optimizeNormals;
         /**
          * Read the OBJ file and create an Array of meshes.
          * Each mesh contains all information given by the OBJ and the MTL file.

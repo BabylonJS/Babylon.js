@@ -309,15 +309,17 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         // Default emitter type
         this.particleEmitterType = new BoxParticleEmitter();
+        let noiseTextureData: Nullable<Uint8Array> = null;
 
         // Update
         this.updateFunction = (particles: Particle[]): void => {
             let noiseTextureSize: Nullable<ISize> = null;
-            let noiseTextureData: Nullable<Uint8Array> = null;
 
             if (this.noiseTexture) { // We need to get texture data back to CPU
                 noiseTextureSize = this.noiseTexture.getSize();
-                noiseTextureData = <Nullable<Uint8Array>>(this.noiseTexture.getContent());
+                this.noiseTexture.getContent()?.then((data) => {
+                    noiseTextureData = data as Uint8Array;
+                });
             }
 
             for (var index = 0; index < particles.length; index++) {
@@ -842,7 +844,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
     /**
      * Gets the current list of ramp gradients.
-     * You must use addRampGradient and removeRampGradient to udpate this list
+     * You must use addRampGradient and removeRampGradient to update this list
      * @returns the list of ramp gradients
      */
     public getRampGradients(): Nullable<Array<Color3Gradient>> {
@@ -2031,7 +2033,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
     /**
      * Disposes the particle system and free the associated resources
-     * @param disposeTexture defines if the particule texture must be disposed as well (true by default)
+     * @param disposeTexture defines if the particle texture must be disposed as well (true by default)
      */
     public dispose(disposeTexture = true): void {
         if (this._vertexBuffer) {
@@ -2128,7 +2130,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         }
 
         let serialization = this.serialize();
-        var result = ParticleSystem.Parse(serialization, this._scene || this._engine, "");
+        var result = ParticleSystem.Parse(serialization, this._scene || this._engine, this._rootUrl);
         result.name = name;
         result.customShader = program;
         result._customEffect = custom;
@@ -2190,6 +2192,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         serializationObject.id = particleSystem.id;
 
         serializationObject.capacity = particleSystem.getCapacity();
+
+        serializationObject.disposeOnStop = particleSystem.disposeOnStop;
+        serializationObject.manualEmitCount = particleSystem.manualEmitCount;
 
         // Emitter
         if ((<AbstractMesh>particleSystem.emitter).position) {
@@ -2735,6 +2740,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         particleSystem.spriteCellHeight = parsedParticleSystem.spriteCellHeight;
         particleSystem.spriteCellChangeSpeed = parsedParticleSystem.spriteCellChangeSpeed;
         particleSystem.spriteRandomStartCell = parsedParticleSystem.spriteRandomStartCell;
+
+        particleSystem.disposeOnStop = parsedParticleSystem.disposeOnStop ?? false;
+        particleSystem.manualEmitCount = parsedParticleSystem.manualEmitCount ?? -1;
     }
 
     /**
@@ -2766,6 +2774,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         }
         var particleSystem = new ParticleSystem(name, parsedParticleSystem.capacity, sceneOrEngine, custom, parsedParticleSystem.isAnimationSheetEnabled);
         particleSystem.customShader = program;
+        particleSystem._rootUrl = rootUrl;
 
         if (parsedParticleSystem.id) {
             particleSystem.id = parsedParticleSystem.id;

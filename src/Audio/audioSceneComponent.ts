@@ -58,7 +58,7 @@ declare module "../scene" {
         _mainSoundTrack: SoundTrack;
         /**
          * The main sound track played by the scene.
-         * It cotains your primary collection of sounds.
+         * It contains your primary collection of sounds.
          */
         mainSoundTrack: SoundTrack;
         /**
@@ -253,7 +253,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
     private static _CameraDirectionRH = new Vector3(0, 0, 1);
 
     /**
-     * The component name helpfull to identify the component in the list of scene components.
+     * The component name helpful to identify the component in the list of scene components.
      */
     public readonly name = SceneComponentConstants.NAME_AUDIO;
 
@@ -273,7 +273,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
 
     private _headphone = false;
     /**
-     * Gets whether audio is outputing to headphone or not.
+     * Gets whether audio is outputting to headphone or not.
      * Please use the according Switch methods to change output.
      */
     public get headphone(): boolean {
@@ -379,7 +379,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
     }
 
     /**
-     * Disposes the component and the associated ressources.
+     * Disposes the component and the associated resources.
      */
     public dispose(): void {
         const scene = this.scene;

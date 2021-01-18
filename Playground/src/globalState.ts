@@ -38,6 +38,7 @@ export class GlobalState {
     public zipCode = "";
 
     public onRunRequiredObservable = new Observable<void>();
+    public onRunExecutedObservable = new Observable<void>();
     public onSavedObservable = new Observable<void>();
     public onNewRequiredObservable = new Observable<void>();
     public onClearRequiredObservable = new Observable<void>();
@@ -62,6 +63,7 @@ export class GlobalState {
     public onNavigateRequiredObservable = new Observable<{lineNumber: number, column: number}>();
     public onExamplesDisplayChangedObservable = new Observable<void>();
     public onQRCodeRequiredObservable = new Observable<boolean>();
+    public OnNewDropdownButtonClicked = new Observable<any>();
 
     public loadingCodeInProgress = false;
     public onCodeLoaded = new Observable<string>();

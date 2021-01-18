@@ -104,12 +104,12 @@ async function evaluate(test, resultCanvas, result, renderImage, waitRing, done)
     var testRes = true;
 
     // gl check
-    var gl = engine._gl;
-    if (gl && gl.getError() !== 0) {
+    var gl = engine._gl, glError = gl ? gl.getError() : 0;
+    if (gl && glError !== 0) {
         result.classList.add("failed");
         result.innerHTML = "×";
         testRes = false;
-        console.log('%c failed (gl error)', 'color: red');
+        console.log(`%c failed (gl error: ${glError})`, 'color: red');
     } else {
 
         // Visual check
@@ -440,7 +440,8 @@ function init(_engineName) {
         wasmUASTCToRGBA_UNORM: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/uastc_rgba32_unorm.wasm"),
         wasmUASTCToRGBA_SRGB: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/uastc_rgba32_srgb.wasm"),
         jsMSCTranscoder: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/msc_basis_transcoder.js"),
-        wasmMSCTranscoder: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/msc_basis_transcoder.wasm")
+        wasmMSCTranscoder: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/msc_basis_transcoder.wasm"),
+        wasmZSTDDecoder: GetAbsoluteUrl("../../dist/preview%20release/zstddec.wasm"),
     };
 
     BABYLON.KhronosTextureContainer2.URLConfig = {
@@ -450,7 +451,8 @@ function init(_engineName) {
         wasmUASTCToRGBA_UNORM: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/uastc_rgba32_unorm.wasm"),
         wasmUASTCToRGBA_SRGB: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/uastc_rgba32_srgb.wasm"),
         jsMSCTranscoder: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/msc_basis_transcoder.js"),
-        wasmMSCTranscoder: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/msc_basis_transcoder.wasm")
+        wasmMSCTranscoder: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/msc_basis_transcoder.wasm"),
+        wasmZSTDDecoder: GetAbsoluteUrl("../../dist/preview%20release/zstddec.wasm"),
     };
 
     canvas = document.createElement("canvas");
@@ -462,7 +464,7 @@ function init(_engineName) {
             wasmPath: "../../dist/preview%20release/glslang/glslang.wasm"
         };
 
-        engine = new BABYLON.WebGPUEngine(canvas, {
+        const options = {
             deviceDescriptor: {
                 extensions: [
                     "texture-compression-bc",
@@ -474,7 +476,9 @@ function init(_engineName) {
                 ]
             },
             antialiasing: false,
-        });
+        };
+
+        engine = new BABYLON.WebGPUEngine(canvas, options);
         engine.enableOfflineSupport = false;
         return new Promise((resolve) => {
             engine.initAsync(glslangOptions).then(() => resolve());

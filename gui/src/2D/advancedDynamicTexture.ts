@@ -22,19 +22,27 @@ import { Measure } from "./measure";
 import { Constants } from 'babylonjs/Engines/constants';
 import { Viewport } from 'babylonjs/Maths/math.viewport';
 import { Color3 } from 'babylonjs/Maths/math.color';
+import { WebRequest } from "babylonjs/Misc/webRequest";
+import { IPointerEvent, IWheelEvent } from 'babylonjs/Events/deviceInputEvents';
 
 /**
 * Class used to create texture to support 2D GUI elements
 * @see https://doc.babylonjs.com/how_to/gui
 */
 export class AdvancedDynamicTexture extends DynamicTexture {
+    /** Define the Uurl to load snippets */
+    public static SnippetUrl = "https://snippet.babylonjs.com";
+
+    /** Snippet ID if the content was created from the snippet server */
+    public snippetId: string;
+
     private _isDirty = false;
     private _renderObserver: Nullable<Observer<Camera>>;
     private _resizeObserver: Nullable<Observer<Engine>>;
     private _preKeyboardObserver: Nullable<Observer<KeyboardInfoPre>>;
     private _pointerMoveObserver: Nullable<Observer<PointerInfoPre>>;
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
-    private _canvasPointerOutObserver: Nullable<Observer<PointerEvent>>;
+    private _canvasPointerOutObserver: Nullable<Observer<IPointerEvent>>;
     private _canvasBlurObserver: Nullable<Observer<Engine>>;
     private _background: string;
     /** @hidden */
@@ -704,7 +712,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         let tempViewport = new Viewport(0, 0, 0, 0);
 
         this._pointerMoveObserver = scene.onPrePointerObservable.add((pi, state) => {
-            if (scene!.isPointerCaptured((<PointerEvent>(pi.event)).pointerId)) {
+            if (scene!.isPointerCaptured((<IPointerEvent>(pi.event)).pointerId)) {
                 return;
             }
             if (pi.type !== PointerEventTypes.POINTERMOVE
@@ -717,8 +725,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 return;
             }
 
-            if (pi.type === PointerEventTypes.POINTERMOVE && (pi.event as PointerEvent).pointerId) {
-                this._defaultMousePointerId = (pi.event as PointerEvent).pointerId; // This is required to make sure we have the correct pointer ID for wheel
+            if (pi.type === PointerEventTypes.POINTERMOVE && (pi.event as IPointerEvent).pointerId) {
+                this._defaultMousePointerId = (pi.event as IPointerEvent).pointerId; // This is required to make sure we have the correct pointer ID for wheel
             }
 
             let camera = scene.cameraToUseForPointers || scene.activeCamera;
@@ -737,8 +745,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             let y = scene.pointerY / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - tempViewport.y - tempViewport.height);
             this._shouldBlockPointer = false;
             // Do picking modifies _shouldBlockPointer
-            let pointerId = (pi.event as PointerEvent).pointerId || this._defaultMousePointerId;
-            this._doPicking(x, y, pi, pi.type, pointerId, pi.event.button, (<MouseWheelEvent>pi.event).deltaX, (<MouseWheelEvent>pi.event).deltaY);
+            let pointerId = (pi.event as IPointerEvent).pointerId || this._defaultMousePointerId;
+            this._doPicking(x, y, pi, pi.type, pointerId, pi.event.button, (<IWheelEvent>pi.event).deltaX, (<IWheelEvent>pi.event).deltaY);
             // Avoid overwriting a true skipOnPointerObservable to false
             if (this._shouldBlockPointer) {
                 pi.skipOnPointerObservable = this._shouldBlockPointer;
@@ -801,7 +809,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 return;
             }
 
-            var pointerId = (pi.event as PointerEvent).pointerId || this._defaultMousePointerId;
+            var pointerId = (pi.event as IPointerEvent).pointerId || this._defaultMousePointerId;
             if (pi.pickInfo && pi.pickInfo.hit && pi.pickInfo.pickedMesh === mesh) {
                 var uv = pi.pickInfo.getTextureCoordinates();
                 if (uv) {
@@ -890,6 +898,62 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             this._lastControlDown = {};
         });
     }
+
+    /**
+     * Serializes the entire GUI system
+     * @returns an object with the JSON serialized data
+     */
+    public serializeContent(): any {
+        let serializationObject = {
+            root: {}
+        };
+
+        this._rootContainer.serialize(serializationObject.root);
+
+        return serializationObject;
+    }
+
+    /**
+     * Recreate the content of the ADT from a JSON object
+     * @param serializedObject define the JSON serialized object to restore from
+     */
+    public parseContent(serializedObject: any) {
+        this._rootContainer = Control.Parse(serializedObject.root, this) as Container;
+    }
+
+    /**
+     * Recreate the content of the ADT from a snippet saved by the GUI editor
+     * @param snippetId defines the snippet to load
+     * @returns a promise that will resolve on success
+     */
+    public parseFromSnippetAsync(snippetId: string): Promise<void> {
+        if (snippetId === "_BLANK") {
+            return Promise.resolve();
+        }
+
+        return new Promise((resolve, reject) => {
+            var request = new WebRequest();
+            request.addEventListener("readystatechange", () => {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        var snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
+                        let serializationObject = JSON.parse(snippet.gui);
+
+                        this.parseContent(serializationObject);
+                        this.snippetId = snippetId;
+
+                        resolve();
+                    } else {
+                        reject("Unable to load the snippet " + snippetId);
+                    }
+                }
+            });
+
+            request.open("GET", AdvancedDynamicTexture.SnippetUrl + "/" + snippetId.replace(/#/g, "/"));
+            request.send();
+        });
+    }
+
     // Statics
     /**
      * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh)

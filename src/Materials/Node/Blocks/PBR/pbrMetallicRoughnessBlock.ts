@@ -121,7 +121,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
     /**
      * Intensity of the environment e.g. how much the environment will light the object
-     * either through harmonics for rough material or through the refelction for shiny ones.
+     * either through harmonics for rough material or through the reflection for shiny ones.
      */
     @editableInPropertyPage("Environment lights", PropertyTypeForEdition.Float, "INTENSITY", { min: 0, max: 1, "notifiers": { "update": true }})
     public environmentIntensity: number = 1.0;
@@ -164,14 +164,14 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
     /**
      * Specifies that the material will keeps the reflection highlights over a transparent surface (only the most luminous ones).
-     * A car glass is a good exemple of that. When the street lights reflects on it you can not see what is behind.
+     * A car glass is a good example of that. When the street lights reflects on it you can not see what is behind.
      */
     @editableInPropertyPage("Radiance over alpha", PropertyTypeForEdition.Boolean, "RENDERING", { "notifiers": { "update": true }})
     public useRadianceOverAlpha: boolean = true;
 
     /**
      * Specifies that the material will keeps the specular highlights over a transparent surface (only the most luminous ones).
-     * A car glass is a good exemple of that. When sun reflects on it you can not see what is behind.
+     * A car glass is a good example of that. When sun reflects on it you can not see what is behind.
      */
     @editableInPropertyPage("Specular over alpha", PropertyTypeForEdition.Boolean, "RENDERING", { "notifiers": { "update": true }})
     public useSpecularOverAlpha: boolean = true;

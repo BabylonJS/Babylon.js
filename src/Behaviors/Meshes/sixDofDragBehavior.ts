@@ -80,7 +80,7 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
     public init() { }
 
     /**
-     * In the case of multiplea active cameras, the cameraToUseForPointers should be used if set instead of active camera
+     * In the case of multiple active cameras, the cameraToUseForPointers should be used if set instead of active camera
      */
     private get _pointerCamera() {
         if (this._scene.cameraToUseForPointers) {

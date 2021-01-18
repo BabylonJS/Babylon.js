@@ -144,7 +144,7 @@ export class EnvironmentTextureTools {
     /**
      * Creates an environment texture from a loaded cube texture.
      * @param texture defines the cube texture to convert in env file
-     * @return a promise containing the environment data if succesfull.
+     * @return a promise containing the environment data if successful.
      */
     public static async CreateEnvTextureAsync(texture: BaseTexture): Promise<ArrayBuffer> {
         let internalTexture = texture.getInternalTexture();
@@ -154,7 +154,12 @@ export class EnvironmentTextureTools {
 
         let engine = internalTexture.getEngine() as Engine;
 
-        if (texture.textureType === Constants.TEXTURETYPE_UNSIGNED_INT) {
+        if (texture.textureType !== Constants.TEXTURETYPE_HALF_FLOAT &&
+            texture.textureType !== Constants.TEXTURETYPE_FLOAT &&
+            texture.textureType !== Constants.TEXTURETYPE_UNSIGNED_BYTE &&
+            texture.textureType !== Constants.TEXTURETYPE_UNSIGNED_INT &&
+            texture.textureType !== Constants.TEXTURETYPE_UNSIGNED_INTEGER &&
+            texture.textureType !== -1) {
             return Promise.reject("The cube texture should allow HDR (Full Float or Half Float).");
         }
 
@@ -181,6 +186,15 @@ export class EnvironmentTextureTools {
             // All faces of the cube.
             for (let face = 0; face < 6; face++) {
                 let faceData = await texture.readPixels(face, i, undefined, false);
+                if (faceData && faceData.byteLength === (faceData as Uint8Array).length) {
+                    const faceDataFloat = new Float32Array(faceData!.byteLength * 4);
+                    for (let i = 0; i < faceData.byteLength; i++) {
+                        faceDataFloat[i] = (faceData as Uint8Array)[i] / 255;
+                        // Gamma to linear
+                        faceDataFloat[i] = Math.pow(faceDataFloat[i], 2.2);
+                    }
+                    faceData = faceDataFloat;
+                }
 
                 let tempTexture = engine.createRawTexture(faceData, faceWidth, faceWidth, Constants.TEXTUREFORMAT_RGBA, false, true, Constants.TEXTURE_NEAREST_SAMPLINGMODE, null, textureType);
 
@@ -361,7 +375,7 @@ export class EnvironmentTextureTools {
                         // Uncompress the data to a RTT
                         rgbdPostProcess!.onApply = (effect) => {
                             effect._bindTexture("textureSampler", tempTexture);
-                            effect.setFloat2("scale", 1, 1);
+                            effect.setFloat2("scale", 1, engine._features.needsInvertingBitmap && (image instanceof ImageBitmap) ? -1 : 1);
                         };
 
                         if (!engine.scenes.length) {

@@ -1,4 +1,4 @@
-/** Defines the cross module used constants to avoid circular dependncies */
+/** Defines the cross module used constants to avoid circular dependencies */
 export class Constants {
     /** Defines that alpha blending is disabled */
     public static readonly ALPHA_DISABLE = 0;
@@ -74,16 +74,16 @@ export class Constants {
      */
     public static readonly ALPHA_EQUATION_DARKEN = 5;
 
-    /** Defines that the ressource is not delayed*/
+    /** Defines that the resource is not delayed*/
     public static readonly DELAYLOADSTATE_NONE = 0;
-    /** Defines that the ressource was successfully delay loaded */
+    /** Defines that the resource was successfully delay loaded */
     public static readonly DELAYLOADSTATE_LOADED = 1;
-    /** Defines that the ressource is currently delay loading */
+    /** Defines that the resource is currently delay loading */
     public static readonly DELAYLOADSTATE_LOADING = 2;
-    /** Defines that the ressource is delayed and has not started loading */
+    /** Defines that the resource is delayed and has not started loading */
     public static readonly DELAYLOADSTATE_NOTLOADED = 4;
 
-    // Depht or Stencil test Constants.
+    // Depth or Stencil test Constants.
     /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will never pass. i.e. Nothing will be drawn */
     public static readonly NEVER = 0x0200;
     /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn */
@@ -507,7 +507,7 @@ export class Constants {
      */
     public static readonly SCENELOADER_SUMMARY_LOGGING = 2;
     /**
-     * Detailled logging while loading
+     * Detailed logging while loading
      */
     public static readonly SCENELOADER_DETAILED_LOGGING = 3;
 
@@ -537,18 +537,53 @@ export class Constants {
      */
     public static readonly PREPASS_COLOR_TEXTURE_TYPE = 4;
     /**
-     * Constant used to retrieve depth + normal index in the textures array in the prepass
-     * using the getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE)
+     * Constant used to retrieve depth index in the textures array in the prepass
+     * using the getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)
      */
-    public static readonly PREPASS_DEPTHNORMAL_TEXTURE_TYPE = 5;
+    public static readonly PREPASS_DEPTH_TEXTURE_TYPE = 5;
+    /**
+     * Constant used to retrieve normal index in the textures array in the prepass
+     * using the getIndex(Constants.PREPASS_NORMAL_TEXTURE_TYPE)
+     */
+    public static readonly PREPASS_NORMAL_TEXTURE_TYPE = 6;
     /**
      * Constant used to retrieve albedo index in the textures array in the prepass
      * using the getIndex(Constants.PREPASS_ALBEDO_TEXTURE_TYPE)
      */
-    public static readonly PREPASS_ALBEDO_TEXTURE_TYPE = 6;
+    public static readonly PREPASS_ALBEDO_TEXTURE_TYPE = 7;
 
     /**
      * Prefixes used by the engine for custom effects
      */
     public static readonly CUSTOMEFFECT_PREFIX_SHADOWGENERATOR = "bjs_shadowgenerator_";
+
+    /**
+     * Constant used as key code for Alt key
+     */
+    public static readonly INPUT_ALT_KEY = 18;
+
+    /**
+     * Constant used as key code for Ctrl key
+     */
+    public static readonly INPUT_CTRL_KEY = 17;
+
+    /**
+     * Constant used as key code for Meta key (Left Win, Left Cmd)
+     */
+    public static readonly INPUT_META_KEY1 = 91;
+
+    /**
+     * Constant used as key code for Meta key (Right Win)
+     */
+    public static readonly INPUT_META_KEY2 = 92;
+
+    /**
+     * Constant used as key code for Meta key (Right Win, Right Cmd)
+     */
+    public static readonly INPUT_META_KEY3 = 93;
+
+    /**
+     * Constant used as key code for Shift key
+     */
+    public static readonly INPUT_SHIFT_KEY = 16;
 }

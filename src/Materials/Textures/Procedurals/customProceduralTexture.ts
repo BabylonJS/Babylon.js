@@ -22,7 +22,7 @@ export class CustomProceduralTexture extends ProceduralTexture {
      * Custom Procedural textures are the easiest way to create your own procedural in your application.
      * @see https://doc.babylonjs.com/how_to/how_to_use_procedural_textures#creating-custom-procedural-textures
      * @param name Define the name of the texture
-     * @param texturePath Define the folder path containing all the cutom texture related files (config, shaders...)
+     * @param texturePath Define the folder path containing all the custom texture related files (config, shaders...)
      * @param size Define the size of the texture to create
      * @param scene Define the scene the texture belongs to
      * @param fallbackTexture Define a fallback texture in case there were issues to create the custom texture

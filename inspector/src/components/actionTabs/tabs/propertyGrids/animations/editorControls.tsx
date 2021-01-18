@@ -2,15 +2,15 @@ import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../../../../components/propertyChangedEvent";
 import { Animation } from "babylonjs/Animations/animation";
-import { IconButtonLineComponent } from "../../../lines/iconButtonLineComponent";
-import { NumericInputComponent } from "../../../lines/numericInputComponent";
+import { IconButtonLineComponent } from "../../../../../sharedUiComponents/lines/iconButtonLineComponent";
+import { NumericInputComponent } from "../../../../../sharedUiComponents/lines/numericInputComponent";
 import { AddAnimation } from "./addAnimation";
 import { AnimationListTree, SelectedCoordinate } from "./animationListTree";
 import { IAnimatable } from "babylonjs/Animations/animatable.interface";
 import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
 import { LoadSnippet } from "./loadsnippet";
 import { SaveSnippet } from "./saveSnippet";
-import { LockObject } from "../lockObject";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from "../../../../globalState";
 
 interface IEditorControlsProps {

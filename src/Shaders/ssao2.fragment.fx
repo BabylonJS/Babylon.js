@@ -41,12 +41,8 @@ float viewZToOrthographicDepth( const in float viewZ, const in float near, const
 #ifdef SSAO
 	uniform sampler2D randomSampler;
 
-	#ifndef GEOMETRYBUFFER
-		uniform sampler2D depthNormalSampler;
-	#else
-		uniform sampler2D depthSampler;
-		uniform sampler2D normalSampler;
-	#endif
+	uniform sampler2D depthSampler;
+	uniform sampler2D normalSampler;
 
 	uniform float randTextureTiles;
 	uniform float samplesFactor;
@@ -56,6 +52,7 @@ float viewZToOrthographicDepth( const in float viewZ, const in float near, const
 	uniform float base;
 	uniform float xViewport;
 	uniform float yViewport;
+	uniform mat3 depthProjection;
 	uniform float maxZ;
 	uniform float minZAspect;
 	uniform vec2 texelSize;
@@ -65,23 +62,16 @@ float viewZToOrthographicDepth( const in float viewZ, const in float near, const
 	void main()
 	{
 		vec3 random = texture2D(randomSampler, vUV * randTextureTiles).rgb;
-		#ifndef GEOMETRYBUFFER
-			float depth = texture2D(depthNormalSampler, vUV).r;
-		#else 
-			float depth = texture2D(depthSampler, vUV).r;
-		#endif
+		float depth = texture2D(depthSampler, vUV).r;
 		float depthSign = depth / abs(depth);
 		depth = depth * depthSign;
-		#ifndef GEOMETRYBUFFER
-			vec3 normal = texture2D(depthNormalSampler, vUV).gba; 
-		#else 
-			vec3 normal = texture2D(normalSampler, vUV).rgb;
-		#endif
+		vec3 normal = texture2D(normalSampler, vUV).rgb;
 		float occlusion = 0.0;
 		float correctedRadius = min(radius, minZAspect * depth / near);
 
 		vec3 vViewRay = vec3((vUV.x * 2.0 - 1.0)*xViewport, (vUV.y * 2.0 - 1.0)*yViewport, depthSign);
-		vec3 origin = vViewRay * depth;
+		vec3 vDepthFactor = depthProjection * vec3(1.0, 1.0, depth);
+		vec3 origin = vViewRay * vDepthFactor;
 		vec3 rvec = random * 2.0 - 1.0;
 		rvec.z = 0.0;
 
@@ -110,11 +100,7 @@ float viewZToOrthographicDepth( const in float viewZ, const in float near, const
 		    }
 		  
 			// get sample linearDepth:
-			#ifndef GEOMETRYBUFFER
-		    	float sampleDepth = abs(texture2D(depthNormalSampler, offset.xy).r);
-		    #else
-		    	float sampleDepth = abs(texture2D(depthSampler, offset.xy).r);
-		    #endif
+		    float sampleDepth = abs(texture2D(depthSampler, offset.xy).r);
 			// range check & accumulate:
 		    difference = depthSign * samplePosition.z - sampleDepth;
 		    float rangeCheck = 1.0 - smoothstep(correctedRadius*0.5, correctedRadius, difference);
@@ -128,7 +114,7 @@ float viewZToOrthographicDepth( const in float viewZ, const in float near, const
 #endif
 
 #ifdef BILATERAL_BLUR
-	uniform sampler2D depthNormalSampler;
+	uniform sampler2D depthSampler;
 	uniform float outSize;
 	uniform float samplerOffsets[SAMPLES];
 
@@ -165,39 +151,39 @@ float viewZToOrthographicDepth( const in float viewZ, const in float near, const
 	  vec2 off2 = vec2(3.2941176470588234) * direction;
 	  vec2 off3 = vec2(5.176470588235294) * direction;
 
-	  float compareDepth = abs(texture2D(depthNormalSampler, uv).r);
+	  float compareDepth = abs(texture2D(depthSampler, uv).r);
 	  float sampleDepth;
 	  float weight;
 	  float weightSum = 30.0;
 
 	  color += texture2D(image, uv) * 30.0;
 
-	  sampleDepth = abs(texture2D(depthNormalSampler, uv + (off1 / resolution)).r);
+	  sampleDepth = abs(texture2D(depthSampler, uv + (off1 / resolution)).r);
 	  weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
 	  weightSum +=  weight;
 	  color += texture2D(image, uv + (off1 / resolution)) * weight;
 
-	  sampleDepth = abs(texture2D(depthNormalSampler, uv - (off1 / resolution)).r);
+	  sampleDepth = abs(texture2D(depthSampler, uv - (off1 / resolution)).r);
 	  weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
 	  weightSum +=  weight;
 	  color += texture2D(image, uv - (off1 / resolution)) * weight;
 
-	  sampleDepth = abs(texture2D(depthNormalSampler, uv + (off2 / resolution)).r);
+	  sampleDepth = abs(texture2D(depthSampler, uv + (off2 / resolution)).r);
 	  weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
 	  weightSum += weight;
 	  color += texture2D(image, uv + (off2 / resolution)) * weight;
 
-	  sampleDepth = abs(texture2D(depthNormalSampler, uv - (off2 / resolution)).r);
+	  sampleDepth = abs(texture2D(depthSampler, uv - (off2 / resolution)).r);
 	  weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
 	  weightSum += weight;
 	  color += texture2D(image, uv - (off2 / resolution)) * weight;
 
-	  sampleDepth = abs(texture2D(depthNormalSampler, uv + (off3 / resolution)).r);
+	  sampleDepth = abs(texture2D(depthSampler, uv + (off3 / resolution)).r);
 	  weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
 	  weightSum += weight;
 	  color += texture2D(image, uv + (off3 / resolution)) * weight;
 
-	  sampleDepth = abs(texture2D(depthNormalSampler, uv - (off3 / resolution)).r);
+	  sampleDepth = abs(texture2D(depthSampler, uv - (off3 / resolution)).r);
 	  weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
 	  weightSum += weight;
 	  color += texture2D(image, uv - (off3 / resolution)) * weight;
@@ -208,7 +194,7 @@ float viewZToOrthographicDepth( const in float viewZ, const in float near, const
 	void main()
 	{
 		#if EXPENSIVE
-		float compareDepth = abs(texture2D(depthNormalSampler, vUV).r);
+		float compareDepth = abs(texture2D(depthSampler, vUV).r);
 		float texelsize = 1.0 / outSize;
 		float result = 0.0;
 		float weightSum = 0.0;
@@ -224,7 +210,7 @@ float viewZToOrthographicDepth( const in float viewZ, const in float near, const
 			#endif
 			vec2 samplePos = vUV + sampleOffset;
 
-			float sampleDepth = abs(texture2D(depthNormalSampler, samplePos).r);
+			float sampleDepth = abs(texture2D(depthSampler, samplePos).r);
 			float weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30000.0);
 
 			result += texture2D(textureSampler, samplePos).r * weight;

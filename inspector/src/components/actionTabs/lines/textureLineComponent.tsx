@@ -3,7 +3,7 @@ import * as React from "react";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 
 import { GlobalState } from "../../../components/globalState";
-import { ButtonLineComponent } from './buttonLineComponent';
+import { ButtonLineComponent } from '../../../sharedUiComponents/lines/buttonLineComponent';
 import { TextureHelper, TextureChannelsToDisplay } from '../../../textureHelper';
 
 interface ITextureLineComponentProps {

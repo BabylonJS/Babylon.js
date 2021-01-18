@@ -15,7 +15,7 @@ declare module BABYLON.GUI {
          * Function called to let the control handle keyboard events
          * @param evt defines the current keyboard event
          */
-        processKeyboard(evt: KeyboardEvent): void;
+        processKeyboard(evt: BABYLON.IKeyboardEvent): void;
         /**
         * Function called to get the list of controls that should not steal the focus from this control
         * @returns an array of controls
@@ -346,6 +346,10 @@ declare module BABYLON.GUI {
     * @see https://doc.babylonjs.com/how_to/gui
     */
     export class AdvancedDynamicTexture extends BABYLON.DynamicTexture {
+        /** Define the Uurl to load snippets */
+        static SnippetUrl: string;
+        /** Snippet ID if the content was created from the snippet server */
+        snippetId: string;
         private _isDirty;
         private _renderObserver;
         private _resizeObserver;
@@ -634,6 +638,22 @@ declare module BABYLON.GUI {
         private _manageFocus;
         private _attachToOnPointerOut;
         private _attachToOnBlur;
+        /**
+         * Serializes the entire GUI system
+         * @returns an object with the JSON serialized data
+         */
+        serializeContent(): any;
+        /**
+         * Recreate the content of the ADT from a JSON object
+         * @param serializedObject define the JSON serialized object to restore from
+         */
+        parseContent(serializedObject: any): void;
+        /**
+         * Recreate the content of the ADT from a snippet saved by the GUI editor
+         * @param snippetId defines the snippet to load
+         * @returns a promise that will resolve on success
+         */
+        parseFromSnippetAsync(snippetId: string): Promise<void>;
         /**
          * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh)
          * @param mesh defines the mesh which will receive the texture
@@ -1103,13 +1123,13 @@ declare module BABYLON.GUI {
         get centerX(): number;
         /** Gets the center coordinate on Y axis */
         get centerY(): number;
-        /** Gets or sets if control is Enabled*/
+        /** Gets or sets if control is Enabled */
         get isEnabled(): boolean;
         set isEnabled(value: boolean);
-        /** Gets or sets background color of control if it's disabled*/
+        /** Gets or sets background color of control if it's disabled */
         get disabledColor(): string;
         set disabledColor(value: string);
-        /** Gets or sets front color of control if it's disabled*/
+        /** Gets or sets front color of control if it's disabled */
         get disabledColorItem(): string;
         set disabledColorItem(value: string);
         /**
@@ -1180,6 +1200,24 @@ declare module BABYLON.GUI {
          * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
          */
         linkWithMesh(mesh: BABYLON.Nullable<BABYLON.TransformNode>): void;
+        /**
+        * Shorthand funtion to set the top, right, bottom, and left padding values on the control.
+        * @param { string | number} paddingTop - The value of the top padding.
+        * @param { string | number} paddingRight - The value of the right padding. If omitted, top is used.
+        * @param { string | number} paddingBottom - The value of the bottom padding. If omitted, top is used.
+        * @param { string | number} paddingLeft - The value of the left padding. If omitted, right is used.
+        * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+        */
+        setPadding(paddingTop: string | number, paddingRight?: string | number, paddingBottom?: string | number, paddingLeft?: string | number): void;
+        /**
+         * Shorthand funtion to set the top, right, bottom, and left padding values in pixels on the control.
+         * @param { number} paddingTop - The value in pixels of the top padding.
+         * @param { number} paddingRight - The value in pixels of the right padding. If omitted, top is used.
+         * @param { number} paddingBottom - The value in pixels of the bottom padding. If omitted, top is used.
+         * @param { number} paddingLeft - The value in pixels of the left padding. If omitted, right is used.
+         * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+         */
+        setPaddingInPixels(paddingTop: number, paddingRight?: number, paddingBottom?: number, paddingLeft?: number): void;
         /** @hidden */
         _moveToProjectedPosition(projectedPosition: BABYLON.Vector3): void;
         /** @hidden */
@@ -1258,6 +1296,13 @@ declare module BABYLON.GUI {
         /** @hidden */
         _processObservables(type: number, x: number, y: number, pi: BABYLON.PointerInfoBase, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         private _prepareFont;
+        /**
+         * Serializes the current control
+         * @param serializationObject defined the JSON serialized object
+         */
+        serialize(serializationObject: any): void;
+        /** @hidden */
+        _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
         /** Releases associated resources */
         dispose(): void;
         private static _HORIZONTAL_ALIGNMENT_LEFT;
@@ -1285,6 +1330,13 @@ declare module BABYLON.GUI {
             height: number;
             descent: number;
         };
+        /**
+         * Creates a Control from parsed data
+         * @param serializedObject defines parsed data
+         * @param host defines the hosting AdvancedDynamicTexture
+         * @returns a new Control
+         */
+        static Parse(serializedObject: any, host: AdvancedDynamicTexture): Control;
         /**
          * Creates a stack panel that can be used to render headers
          * @param control defines the control to associate with the header
@@ -1408,8 +1460,15 @@ declare module BABYLON.GUI {
         _processPicking(x: number, y: number, pi: BABYLON.PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        /**
+        * Serializes the current control
+        * @param serializationObject defined the JSON serialized object
+        */
+        serialize(serializationObject: any): void;
         /** Releases associated resources */
         dispose(): void;
+        /** @hidden */
+        _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
     }
 }
 declare module BABYLON.GUI {
@@ -1716,6 +1775,10 @@ declare module BABYLON.GUI {
         private _onImageLoaded;
         private _extractNinePatchSliceDataFromImage;
         /**
+         * Gets the image source url
+         */
+        get source(): BABYLON.Nullable<string>;
+        /**
          * Gets or sets image source url
          */
         set source(value: BABYLON.Nullable<string>);
@@ -1904,6 +1967,13 @@ declare module BABYLON.GUI {
         protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _postMeasure(): void;
+        /**
+         * Serializes the current control
+         * @param serializationObject defined the JSON serialized object
+         */
+        serialize(serializationObject: any): void;
+        /** @hidden */
+        _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
     }
 }
 declare module BABYLON.GUI {
@@ -2120,7 +2190,7 @@ declare module BABYLON.GUI {
         /** BABYLON.Observable raised when paste event is triggered */
         onTextPasteObservable: BABYLON.Observable<InputText>;
         /** BABYLON.Observable raised when a key event was processed */
-        onKeyboardEventProcessedObservable: BABYLON.Observable<KeyboardEvent>;
+        onKeyboardEventProcessedObservable: BABYLON.Observable<BABYLON.IKeyboardEvent>;
         /** Gets or sets the maximum width allowed by the control */
         get maxWidth(): string | number;
         /** Gets the maximum width allowed by the control in pixels */
@@ -2205,7 +2275,7 @@ declare module BABYLON.GUI {
          */
         keepsFocusWith(): BABYLON.Nullable<Control[]>;
         /** @hidden */
-        processKey(keyCode: number, key?: string, evt?: KeyboardEvent): void;
+        processKey(keyCode: number, key?: string, evt?: BABYLON.IKeyboardEvent): void;
         /** @hidden */
         private _updateValueFromCursorIndex;
         /** @hidden */
@@ -2216,7 +2286,7 @@ declare module BABYLON.GUI {
          * Handles the keyboard event
          * @param evt Defines the KeyboardEvent
          */
-        processKeyboard(evt: KeyboardEvent): void;
+        processKeyboard(evt: BABYLON.IKeyboardEvent): void;
         /** @hidden */
         private _onCopyText;
         /** @hidden */
@@ -2470,7 +2540,7 @@ declare module BABYLON.GUI {
         /** BABYLON.Observable raised when the control loses the focus */
         onBlurObservable: BABYLON.Observable<Button>;
         /** BABYLON.Observable raised when a key event was processed */
-        onKeyboardEventProcessedObservable: BABYLON.Observable<KeyboardEvent>;
+        onKeyboardEventProcessedObservable: BABYLON.Observable<BABYLON.IKeyboardEvent>;
         constructor(name?: string | undefined);
         /** @hidden */
         onBlur(): void;
@@ -2493,7 +2563,7 @@ declare module BABYLON.GUI {
          * Handles the keyboard event
          * @param evt Defines the KeyboardEvent
          */
-        processKeyboard(evt: KeyboardEvent): void;
+        processKeyboard(evt: BABYLON.IKeyboardEvent): void;
         /** @hidden */
         _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
         /** @hidden */
@@ -3352,6 +3422,95 @@ declare module BABYLON.GUI {
     }
 }
 declare module BABYLON.GUI {
+    /**
+     * Class used to create toggle buttons
+     */
+    export class ToggleButton extends Rectangle {
+        name?: string | undefined;
+        /**
+         * Function called to generate the toActive animation
+         */
+        toActiveAnimation: () => void;
+        /**
+         * Function called to generate the toInactive animation
+         */
+        toInactiveAnimation: () => void;
+        /**
+         * Function called to generate a pointer enter animation when the toggle button is active.
+         */
+        pointerEnterActiveAnimation: () => void;
+        /**
+         * Function called to generate a pointer out animation when the toggle button is active.
+         */
+        pointerOutActiveAnimation: () => void;
+        /**
+         * Function called to generate a pointer down animation when the toggle button is active.
+         */
+        pointerDownActiveAnimation: () => void;
+        /**
+         * Function called to generate a pointer up animation when the toggle button is active.
+         */
+        pointerUpActiveAnimation: () => void;
+        /**
+         * Function called to generate a pointer enter animation when the toggle button is inactive.
+         */
+        pointerEnterInactiveAnimation: () => void;
+        /**
+         * Function called to generate a pointer out animation when the toggle button is inactive.
+         */
+        pointerOutInactiveAnimation: () => void;
+        /**
+         * Function called to generate a pointer down animation when the toggle button is inactive.
+         */
+        pointerDownInactiveAnimation: () => void;
+        /**
+         * Function called to generate a pointer up animation when the toggle button is inactive.
+         */
+        pointerUpInactiveAnimation: () => void;
+        /** BABYLON.Observable raised when isActive is changed */
+        onIsActiveChangedObservable: BABYLON.Observable<boolean>;
+        /**
+         * Gets or sets a boolean indicating that the toggle button will let internal controls handle picking instead of doing it directly using its bounding info
+         */
+        delegatePickingToChildren: boolean;
+        private _image;
+        /**
+         * Returns the ToggleButton's image control if it exists
+         */
+        get image(): BABYLON.Nullable<Image>;
+        private _textBlock;
+        /**
+         * Returns the ToggleButton's child TextBlock control if it exists
+         */
+        get textBlock(): BABYLON.Nullable<TextBlock>;
+        private _group;
+        /** Gets or sets group name this toggle button belongs to */
+        get group(): string;
+        set group(value: string);
+        private _isActive;
+        /** Gets or sets a boolean indicating if the toogle button is active or not */
+        get isActive(): boolean;
+        set isActive(value: boolean);
+        /**
+         * Creates a new ToggleButton
+         * @param name defines the control name
+         * @param group defines the toggle group this toggle belongs to
+         */
+        constructor(name?: string | undefined, group?: string);
+        protected _getTypeName(): string;
+        /** @hidden */
+        _processPicking(x: number, y: number, pi: BABYLON.PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
+        /** @hidden */
+        _onPointerEnter(target: Control, pi: BABYLON.PointerInfoBase): boolean;
+        /** @hidden */
+        _onPointerOut(target: Control, pi: BABYLON.PointerInfoBase, force?: boolean): void;
+        /** @hidden */
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
+        /** @hidden */
+        _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi: BABYLON.PointerInfoBase): void;
+    }
+}
+declare module BABYLON.GUI {
     /** Class used to render a grid  */
     export class DisplayGrid extends Control {
         name?: string | undefined;
@@ -3618,6 +3777,105 @@ declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
     /**
+     * Class used to create a button in 3D
+     */
+    export class Button3D extends AbstractButton3D {
+        /** @hidden */
+        protected _currentMaterial: BABYLON.Material;
+        private _facadeTexture;
+        private _content;
+        private _contentResolution;
+        private _contentScaleRatio;
+        /**
+         * Gets or sets the texture resolution used to render content (512 by default)
+         */
+        get contentResolution(): BABYLON.int;
+        set contentResolution(value: BABYLON.int);
+        /**
+         * Gets or sets the texture scale ratio used to render content (2 by default)
+         */
+        get contentScaleRatio(): number;
+        set contentScaleRatio(value: number);
+        protected _disposeFacadeTexture(): void;
+        protected _resetContent(): void;
+        /**
+         * Creates a new button
+         * @param name defines the control name
+         */
+        constructor(name?: string);
+        /**
+         * Gets or sets the GUI 2D content used to display the button's facade
+         */
+        get content(): Control;
+        set content(value: Control);
+        /**
+         * Apply the facade texture (created from the content property).
+         * This function can be overloaded by child classes
+         * @param facadeTexture defines the AdvancedDynamicTexture to use
+         */
+        protected _applyFacade(facadeTexture: AdvancedDynamicTexture): void;
+        protected _getTypeName(): string;
+        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
+        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a touchable button in 3D
+     */
+    export class TouchButton3D extends Button3D {
+        private _collisionMesh;
+        private _collidableFrontDirection;
+        private _lastTouchPoint;
+        private _tempButtonForwardRay;
+        private _lastKnownCollidableScale;
+        private _collidableInitialized;
+        private _frontOffset;
+        private _backOffset;
+        private _hoverOffset;
+        private _pushThroughBackOffset;
+        private _activeInteractions;
+        private _previousHeight;
+        /**
+         * Creates a new touchable button
+         * @param name defines the control name
+         * @param collisionMesh mesh to track collisions with
+         */
+        constructor(name?: string, collisionMesh?: BABYLON.Mesh);
+        /**
+         * Sets the front-facing direction of the button
+         * @param frontDir the forward direction of the button
+         */
+        set collidableFrontDirection(frontWorldDir: BABYLON.Vector3);
+        private _getWorldMatrixData;
+        /**
+         * Sets the mesh used for testing input collision
+         * @param collisionMesh the new collision mesh for the button
+         */
+        set collisionMesh(collisionMesh: BABYLON.Mesh);
+        private _getShortestDistancePointToLine;
+        private _isPrimedForInteraction;
+        private _getPointOnButton;
+        private _updateDistanceOffsets;
+        private _getHeightFromButtonCenter;
+        private _getDistanceOffPlane;
+        private _updateButtonState;
+        /** @hidden */
+        _collisionCheckForStateChange(mesh: BABYLON.AbstractMesh): void;
+        protected _getTypeName(): string;
+        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
      * Class used to manage 3D user interface
      * @see https://doc.babylonjs.com/how_to/gui3d
      */
@@ -3628,6 +3886,7 @@ declare module BABYLON.GUI {
         private _rootContainer;
         private _pointerObserver;
         private _pointerOutObserver;
+        private _touchableButtons;
         /** @hidden */
         _lastPickedControl: Control3D;
         /** @hidden */
@@ -3646,6 +3905,10 @@ declare module BABYLON.GUI {
         _sharedMaterials: {
             [key: string]: BABYLON.Material;
         };
+        /** @hidden */
+        _touchSharedMaterials: {
+            [key: string]: BABYLON.Material;
+        };
         /** Gets the hosting scene */
         get scene(): BABYLON.Scene;
         /** Gets associated utility layer */
@@ -3657,6 +3920,7 @@ declare module BABYLON.GUI {
         constructor(scene?: BABYLON.Scene);
         private _handlePointerOut;
         private _doPicking;
+        private _processTouchControls;
         /**
          * Gets the root container
          */
@@ -3821,6 +4085,7 @@ declare module BABYLON.GUI {
         linkToTransformNode(node: BABYLON.Nullable<BABYLON.TransformNode>): Control3D;
         /** @hidden **/
         _prepareNode(scene: BABYLON.Scene): void;
+        protected _injectGUI3DMetadata(node: BABYLON.TransformNode): any;
         /**
          * Node creation.
          * Can be overriden by children
@@ -3867,54 +4132,6 @@ declare module BABYLON.GUI {
         constructor(name?: string);
         protected _getTypeName(): string;
         protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
-    }
-}
-declare module BABYLON.GUI {
-    /**
-     * Class used to create a button in 3D
-     */
-    export class Button3D extends AbstractButton3D {
-        /** @hidden */
-        protected _currentMaterial: BABYLON.Material;
-        private _facadeTexture;
-        private _content;
-        private _contentResolution;
-        private _contentScaleRatio;
-        /**
-         * Gets or sets the texture resolution used to render content (512 by default)
-         */
-        get contentResolution(): BABYLON.int;
-        set contentResolution(value: BABYLON.int);
-        /**
-         * Gets or sets the texture scale ratio used to render content (2 by default)
-         */
-        get contentScaleRatio(): number;
-        set contentScaleRatio(value: number);
-        protected _disposeFacadeTexture(): void;
-        protected _resetContent(): void;
-        /**
-         * Creates a new button
-         * @param name defines the control name
-         */
-        constructor(name?: string);
-        /**
-         * Gets or sets the GUI 2D content used to display the button's facade
-         */
-        get content(): Control;
-        set content(value: Control);
-        /**
-         * Apply the facade texture (created from the content property).
-         * This function can be overloaded by child classes
-         * @param facadeTexture defines the AdvancedDynamicTexture to use
-         */
-        protected _applyFacade(facadeTexture: AdvancedDynamicTexture): void;
-        protected _getTypeName(): string;
-        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
-        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
-        /**
-         * Releases all associated resources
-         */
-        dispose(): void;
     }
 }
 declare module BABYLON.GUI {
@@ -4231,5 +4448,104 @@ declare module BABYLON.GUI {
          */
         constructor(isVertical?: boolean);
         protected _arrangeChildren(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to create an interactable object. It's a touchable 3D button using a mesh coming from the current scene
+     */
+    export class TouchMeshButton3D extends TouchButton3D {
+        /** @hidden */
+        protected _currentMesh: BABYLON.Mesh;
+        /**
+         * Creates a new 3D button based on a mesh
+         * @param mesh mesh to become a 3D button
+         * @param collisionMesh mesh to track collisions with
+         * @param name defines the control name
+         */
+        constructor(mesh: BABYLON.Mesh, options: {
+            collisionMesh: BABYLON.Mesh;
+            useDynamicMesh?: boolean;
+        }, name?: string);
+        protected _getTypeName(): string;
+        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
+        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a holographic button in 3D
+     */
+    export class TouchHolographicButton extends TouchButton3D {
+        private _backPlate;
+        private _textPlate;
+        private _frontPlate;
+        private _text;
+        private _imageUrl;
+        private _shareMaterials;
+        private _frontMaterial;
+        private _backMaterial;
+        private _plateMaterial;
+        private _pickedPointObserver;
+        private _tooltipFade;
+        private _tooltipTextBlock;
+        private _tooltipTexture;
+        private _tooltipMesh;
+        private _tooltipHoverObserver;
+        private _tooltipOutObserver;
+        private _disposeTooltip;
+        /**
+         * Rendering ground id of all the mesh in the button
+         */
+        set renderingGroupId(id: number);
+        get renderingGroupId(): number;
+        /**
+         * Text to be displayed on the tooltip shown when hovering on the button. When set to null tooltip is disabled. (Default: null)
+         */
+        set tooltipText(text: BABYLON.Nullable<string>);
+        get tooltipText(): BABYLON.Nullable<string>;
+        /**
+         * Gets or sets text for the button
+         */
+        get text(): string;
+        set text(value: string);
+        /**
+         * Gets or sets the image url for the button
+         */
+        get imageUrl(): string;
+        set imageUrl(value: string);
+        /**
+         * Gets the back material used by this button
+         */
+        get backMaterial(): FluentMaterial;
+        /**
+         * Gets the front material used by this button
+         */
+        get frontMaterial(): FluentMaterial;
+        /**
+         * Gets the plate material used by this button
+         */
+        get plateMaterial(): BABYLON.StandardMaterial;
+        /**
+         * Gets a boolean indicating if this button shares its material with other HolographicButtons
+         */
+        get shareMaterials(): boolean;
+        /**
+         * Creates a new button
+         * @param name defines the control name
+         */
+        constructor(name?: string, shareMaterials?: boolean);
+        protected _getTypeName(): string;
+        private _rebuildContent;
+        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
+        protected _applyFacade(facadeTexture: AdvancedDynamicTexture): void;
+        private _createBackMaterial;
+        private _createFrontMaterial;
+        private _createPlateMaterial;
+        protected _affectMaterial(mesh: BABYLON.Mesh): void;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
     }
 }

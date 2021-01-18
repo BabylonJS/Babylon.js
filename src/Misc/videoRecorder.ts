@@ -43,7 +43,7 @@ interface MediaRecorderConstructor {
 }
 
 /**
- * MediaRecoreder object available in some browsers.
+ * MediaRecorder object available in some browsers.
  */
 declare var MediaRecorder: MediaRecorderConstructor;
 

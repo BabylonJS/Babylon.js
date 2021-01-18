@@ -253,7 +253,7 @@ export class SerializationHelper {
     /**
      * Static function used to serialized a specific entity
      * @param entity defines the entity to serialize
-     * @param serializationObject defines the optional target obecjt where serialization data will be stored
+     * @param serializationObject defines the optional target object where serialization data will be stored
      * @returns a JSON compatible object representing the serialization of the entity
      */
     public static Serialize<T>(entity: T, serializationObject?: any): any {
@@ -312,6 +312,7 @@ export class SerializationHelper {
                         break;
                     case 11:    // Camera reference
                         serializationObject[targetPropertyName] = (<Camera>sourceProperty).id;
+                        break;
                     case 12:    // Matrix
                         serializationObject[targetPropertyName] = (<Matrix>sourceProperty).asArray();
                         break;

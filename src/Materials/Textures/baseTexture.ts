@@ -50,40 +50,22 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
      */
     public reservedDataStore: any = null;
 
+    @serialize("hasAlpha")
     private _hasAlpha = false;
     /**
      * Define if the texture is having a usable alpha value (can be use for transparency or glossiness for instance).
      */
-    @serialize()
-    public get hasAlpha(): boolean {
-        if (!this._texture) {
-            return this._hasAlpha;
-        } else {
-            if (this._texture._hasAlpha === null) {
-                this._texture._hasAlpha = this._hasAlpha;
-            }
-        }
-
-        return this._texture._hasAlpha;
-    }
-
     public set hasAlpha(value: boolean) {
-        if (!this._texture) {
-            if (this._hasAlpha === value) {
-                return;
-            }
-
-            this._hasAlpha = value;
-        } else {
-            if (this._texture._hasAlpha === value) {
-                return;
-            }
-            this._texture._hasAlpha = value;
+        if (this._hasAlpha === value) {
+            return;
         }
-
+        this._hasAlpha = value;
         if (this._scene) {
             this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag | Constants.MATERIAL_MiscDirtyFlag);
         }
+    }
+    public get hasAlpha(): boolean {
+        return this._hasAlpha;
     }
 
     /**
@@ -101,7 +83,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     public level = 1;
 
     /**
-     * Define the UV chanel to use starting from 0 and defaulting to 0.
+     * Define the UV channel to use starting from 0 and defaulting to 0.
      * This is part of the texture as textures usually maps to one uv set.
      */
     @serialize()
@@ -433,7 +415,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     private _uid: Nullable<string> = null;
 
     /**
-     * Define if the texture is preventinga material to render or not.
+     * Define if the texture is preventing a material to render or not.
      * If not and the texture is not ready, the engine will use a default black texture instead.
      */
     public get isBlocking(): boolean {
@@ -445,7 +427,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
      * Base class of all the textures in babylon.
      * It groups all the common properties the materials, post process, lights... might need
      * in order to make a correct use of the texture.
-     * @param sceneOrEngine Define the scene or engine the texture blongs to
+     * @param sceneOrEngine Define the scene or engine the texture belongs to
      */
     constructor(sceneOrEngine: Nullable<Scene | ThinEngine>) {
         super(null);
@@ -494,7 +476,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     }
 
     /**
-     * Get the texture transform matrix used to offset tile the texture for istance.
+     * Get the texture transform matrix used to offset tile the texture for instance.
      * @returns the transformation matrix
      */
     public getTextureMatrix(): Matrix {
@@ -641,6 +623,40 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
             }
 
             return engine._readTexturePixels(this._texture, width, height, -1, level, buffer, flushRenderer);
+        } catch (e) {
+            return null;
+        }
+    }
+
+    /** @hidden */
+    public _readPixelsSync(faceIndex = 0, level = 0, buffer: Nullable<ArrayBufferView> = null, flushRenderer = true): Nullable<ArrayBufferView> {
+        if (!this._texture) {
+            return null;
+        }
+
+        var size = this.getSize();
+        var width = size.width;
+        var height = size.height;
+
+        const engine = this._getEngine();
+        if (!engine) {
+            return null;
+        }
+
+        if (level != 0) {
+            width = width / Math.pow(2, level);
+            height = height / Math.pow(2, level);
+
+            width = Math.round(width);
+            height = Math.round(height);
+        }
+
+        try {
+            if (this._texture.isCube) {
+                return engine._readTexturePixelsSync(this._texture, width, height, faceIndex, level, buffer, flushRenderer);
+            }
+
+            return engine._readTexturePixelsSync(this._texture, width, height, -1, level, buffer, flushRenderer);
         } catch (e) {
             return null;
         }

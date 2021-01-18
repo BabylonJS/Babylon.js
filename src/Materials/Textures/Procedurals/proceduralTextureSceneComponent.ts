@@ -19,7 +19,7 @@ declare module "../../../abstractScene" {
  */
 export class ProceduralTextureSceneComponent implements ISceneComponent {
     /**
-     * The component name helpfull to identify the component in the list of scene components.
+     * The component name helpful to identify the component in the list of scene components.
      */
     public readonly name = SceneComponentConstants.NAME_PROCEDURALTEXTURE;
 
@@ -53,7 +53,7 @@ export class ProceduralTextureSceneComponent implements ISceneComponent {
     }
 
     /**
-     * Disposes the component and the associated ressources.
+     * Disposes the component and the associated resources.
      */
     public dispose(): void {
         // Nothing to do here.

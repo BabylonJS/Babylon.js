@@ -16,6 +16,7 @@ import { TimingTools } from "./timingTools";
 import { InstantiationTools } from "./instantiationTools";
 import { GUID } from "./guid";
 import { IScreenshotSize } from "./interfaces/screenshotSize";
+import { SliceTools } from "./sliceTools";
 
 declare type Camera = import("../Cameras/camera").Camera;
 declare type Engine = import("../Engines/engine").Engine;
@@ -93,7 +94,7 @@ export class Tools {
 
     /**
      * Use this object to register external classes like custom textures or material
-     * to allow the laoders to instantiate them
+     * to allow the loaders to instantiate them
      */
     public static get RegisteredExternalClasses() {
         return InstantiationTools.RegisteredExternalClasses;
@@ -163,11 +164,7 @@ export class Tools {
      * @returns the new sliced array
      */
     public static Slice<T>(data: T, start?: number, end?: number): T {
-        if ((data as any).slice) {
-            return (data as any).slice(start, end);
-        }
-
-        return Array.prototype.slice.call(data, start, end);
+        return SliceTools.Slice(data, start, end);
     }
 
     /**
@@ -179,11 +176,7 @@ export class Tools {
      * @returns the new sliced array
      */
     public static SliceToArray<T, P>(data: T, start?: number, end?: number): Array<P> {
-        if (Array.isArray(data)) {
-            return (data as Array<P>).slice(start, end);
-        }
-
-        return Array.prototype.slice.call(data, start, end);
+        return SliceTools.SliceToArray(data, start, end);
     }
 
     /**
@@ -1127,7 +1120,7 @@ export class Tools {
     public static StartPerformanceCounter: (counterName: string, condition?: boolean) => void = Tools._StartPerformanceCounterDisabled;
 
     /**
-     * Ends a specific performance coutner
+     * Ends a specific performance counter
      */
     public static EndPerformanceCounter: (counterName: string, condition?: boolean) => void = Tools._EndPerformanceCounterDisabled;
 
@@ -1262,7 +1255,7 @@ export class AsyncLoop {
      * Constructor.
      * @param iterations the number of iterations.
      * @param func the function to run each iteration
-     * @param successCallback the callback that will be called upon succesful execution
+     * @param successCallback the callback that will be called upon successful execution
      * @param offset starting offset.
      */
     constructor(
@@ -1306,7 +1299,7 @@ export class AsyncLoop {
      * Create and run an async loop.
      * @param iterations the number of iterations.
      * @param fn the function to run each iteration
-     * @param successCallback the callback that will be called upon succesful execution
+     * @param successCallback the callback that will be called upon successful execution
      * @param offset starting offset.
      * @returns the created async loop object
      */

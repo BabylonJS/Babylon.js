@@ -2,6 +2,7 @@
 // 'physicsEngineComponents.ts' injects methods and properties into Scene and AbstractMesh
 // these tests only check that Scene and AbstractMesh have the expected methods.
 
+declare const Ammo: any;
 
 /**
  * Describes the test suite.
@@ -25,7 +26,10 @@ describe('Babylon physicsComponents', () => {
             .load(function() {
                 // Force apply promise polyfill for consistent behavior between chrome headless, IE11, and other browsers.
                 BABYLON.PromisePolyfill.Apply(true);
-                done();
+
+                Ammo().then(() => {
+                    done();
+                });
             });
     });
 

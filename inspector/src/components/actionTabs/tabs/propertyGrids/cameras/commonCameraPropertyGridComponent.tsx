@@ -2,18 +2,18 @@ import * as React from "react";
 import { Camera } from "babylonjs/Cameras/camera";
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { SliderLineComponent } from "../../../lines/sliderLineComponent";
-import { LineContainerComponent } from "../../../lineContainerComponent";
-import { FloatLineComponent } from "../../../lines/floatLineComponent";
-import { TextLineComponent } from "../../../lines/textLineComponent";
-import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
-import { LockObject } from "../lockObject";
+import { SliderLineComponent } from "../../../../../sharedUiComponents/lines/sliderLineComponent";
+import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
+import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
+import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
+import { OptionsLineComponent } from "../../../../../sharedUiComponents/lines/optionsLineComponent";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from '../../../../globalState';
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
-import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
-import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
+import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
+import { TextInputLineComponent } from '../../../../../sharedUiComponents/lines/textInputLineComponent';
 import { AnimationGridComponent } from '../animations/animationPropertyGridComponent';
-import { HexLineComponent } from '../../../lines/hexLineComponent';
+import { HexLineComponent } from '../../../../../sharedUiComponents/lines/hexLineComponent';
 
 interface ICommonCameraPropertyGridComponentProps {
     globalState: GlobalState;
@@ -42,7 +42,7 @@ export class CommonCameraPropertyGridComponent extends React.Component<ICommonCa
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={camera}
                     lockObject={this.props.lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
+                <LineContainerComponent title="GENERAL">
                     <TextLineComponent label="ID" value={camera.id} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={camera} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                     <TextLineComponent label="Unique ID" value={camera.uniqueId.toString()} />

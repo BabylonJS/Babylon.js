@@ -25,7 +25,8 @@ export class KhronosTextureContainer2 {
      *     URLConfig.wasmUASTCToRGBA_SRGB
      *     URLConfig.jsMSCTranscoder
      *     URLConfig.wasmMSCTranscoder
-     * You can see their default values in this PG: https://playground.babylonjs.com/#EIJH8L#22
+     *     URLConfig.wasmZSTDDecoder
+     * You can see their default values in this PG: https://playground.babylonjs.com/#EIJH8L#29
      */
     public static URLConfig = {
         jsDecoderModule: "https://preview.babylonjs.com/babylon.ktx2Decoder.js",
@@ -35,6 +36,7 @@ export class KhronosTextureContainer2 {
         wasmUASTCToRGBA_SRGB: null,
         jsMSCTranscoder: null,
         wasmMSCTranscoder: null,
+        wasmZSTDDecoder: null,
     };
 
     /**
@@ -213,7 +215,6 @@ export class KhronosTextureContainer2 {
 
         internalTexture._gammaSpace = data.isInGammaSpace;
         internalTexture.generateMipMaps = data.mipmaps.length > 1;
-        internalTexture._hasAlpha = data.hasAlpha;
 
         if (data.errors) {
             throw new Error("KTX2 container - could not transcode the data. " + data.errors);
@@ -293,6 +294,9 @@ function workerFunc(): void {
                 }
                 if (urls.wasmMSCTranscoder !== null) {
                     KTX2DECODER.MSCTranscoder.WasmModuleURL = urls.wasmMSCTranscoder;
+                }
+                if (urls.wasmZSTDDecoder !== null) {
+                    KTX2DECODER.ZSTDDecoder.WasmModuleURL = urls.wasmZSTDDecoder;
                 }
                 ktx2Decoder = new KTX2DECODER.KTX2Decoder();
                 postMessage({ action: "init" });

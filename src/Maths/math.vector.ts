@@ -1431,12 +1431,13 @@ export class Vector3 {
         const v0: Vector3 = vector0.normalizeToRef(MathTmp.Vector3[1]);
         const v1: Vector3 = vector1.normalizeToRef(MathTmp.Vector3[2]);
         const dot: number = Vector3.Dot(v0, v1);
+        const angle = Math.acos(dot);
         const n = MathTmp.Vector3[3];
         Vector3.CrossToRef(v0, v1, n);
         if (Vector3.Dot(n, normal) > 0) {
-            return Math.acos(dot);
+            return isNaN(angle) ? 0 : angle;
         }
-        return -Math.acos(dot);
+        return isNaN(angle) ? -Math.PI : -Math.acos(dot);
     }
 
     /**
@@ -3453,6 +3454,35 @@ export class Quaternion {
     }
 
     /**
+     * Updates a quaternion so that it rotates vector vecFrom to vector vecTo
+     * @param vecFrom defines the direction vector from which to rotate
+     * @param vecTo defines the direction vector to which to rotate
+     * @param result the quaternion to store the result
+     * @returns the updated quaternion
+     */
+    public static FromUnitVectorsToRef(vecFrom: DeepImmutable<Vector3>, vecTo: DeepImmutable<Vector3>, result: Quaternion): Quaternion {
+        const r = Vector3.Dot(vecFrom, vecTo) + 1;
+
+        if (r < Epsilon) {
+            if (Math.abs(vecFrom.x) > Math.abs(vecFrom.z)) {
+                result.set(-vecFrom.y, vecFrom.x, 0, 0);
+            } else {
+                result.set(0, - vecFrom.z, vecFrom.y, 0);
+            }
+        } else {
+            Vector3.CrossToRef(vecFrom, vecTo, TmpVectors.Vector3[0]);
+            result.set(
+                TmpVectors.Vector3[0].x,
+                TmpVectors.Vector3[0].y,
+                TmpVectors.Vector3[0].z,
+                r
+            );
+        }
+
+        return result.normalize();
+    }
+
+    /**
      * Creates a new quaternion from the given Euler float angles (y, x, z)
      * @param yaw defines the rotation around Y axis
      * @param pitch defines the rotation around X axis
@@ -5286,8 +5316,8 @@ export class Matrix {
         let t = 1.0 / (Math.tan(fov * 0.5));
         let a = isVerticalFovFixed ? (t / aspect) : t;
         let b = isVerticalFovFixed ? t : (t * aspect);
-        let c = (f + n) / (f - n);
-        let d = -2.0 * f * n / (f - n);
+        let c = f !== 0 ? (f + n) / (f - n) : 1;
+        let d = f !== 0 ? -2.0 * f * n / (f - n) : -2 * n;
 
         Matrix.FromValuesToRef(
             a, 0.0, 0.0, 0.0,
@@ -5357,8 +5387,8 @@ export class Matrix {
         let t = 1.0 / (Math.tan(fov * 0.5));
         let a = isVerticalFovFixed ? (t / aspect) : t;
         let b = isVerticalFovFixed ? t : (t * aspect);
-        let c = -(f + n) / (f - n);
-        let d = -2 * f * n / (f - n);
+        let c = f !== 0 ? -(f + n) / (f - n) : -1;
+        let d = f !== 0 ? -2 * f * n / (f - n) : -2 * n;
 
         Matrix.FromValuesToRef(
             a, 0.0, 0.0, 0.0,

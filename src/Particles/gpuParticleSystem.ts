@@ -1707,7 +1707,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      */
     public clone(name: string, newEmitter: any): GPUParticleSystem {
         let serialization = this.serialize();
-        var result = GPUParticleSystem.Parse(serialization, this._scene || this._engine, "");
+        var result = GPUParticleSystem.Parse(serialization, this._scene || this._engine, this._rootUrl);
         var custom = { ...this._customEffect };
         result.name = name;
         result._customEffect = custom;
@@ -1749,6 +1749,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     public static Parse(parsedParticleSystem: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart = false): GPUParticleSystem {
         var name = parsedParticleSystem.name;
         var particleSystem = new GPUParticleSystem(name, { capacity: parsedParticleSystem.capacity, randomTextureSize: parsedParticleSystem.randomTextureSize }, sceneOrEngine);
+        particleSystem._rootUrl = rootUrl;
 
         if (parsedParticleSystem.activeParticleCount) {
             particleSystem.activeParticleCount = parsedParticleSystem.activeParticleCount;

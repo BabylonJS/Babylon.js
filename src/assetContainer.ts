@@ -161,7 +161,9 @@ export class AssetContainer extends AbstractScene {
                                     }
                                 }
 
-                                mesh.material = storeMap[convertionMap[sourceMaterial.uniqueId]];
+                                if (mesh.getClassName() !== "InstancedMesh") {
+                                    mesh.material = storeMap[convertionMap[sourceMaterial.uniqueId]];
+                                }
                             } else {
                                 if (mesh.material.getClassName() === "MultiMaterial") {
                                     if (this.scene.multiMaterials.indexOf(mesh.material as MultiMaterial) === -1) {

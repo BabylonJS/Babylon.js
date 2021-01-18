@@ -1586,6 +1586,12 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export class Popup {
+        static CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): HTMLDivElement | null;
+        static _CopyStyles(sourceDoc: HTMLDocument, targetDoc: HTMLDocument): void;
+    }
+}
+declare module NODEEDITOR {
     interface IGraphEditorProps {
         globalState: GlobalState;
     }
@@ -1643,17 +1649,10 @@ declare module NODEEDITOR {
         initiatePreviewArea: (canvas?: HTMLCanvasElement) => void;
         createPopUp: () => void;
         createPopupWindow: (title: string, windowVariableName: string, width?: number, height?: number) => Window | null;
-        copyStyles: (sourceDoc: HTMLDocument, targetDoc: HTMLDocument) => void;
         createPreviewMeshControlHost: (options: IInternalPreviewAreaOptions, parentControl: BABYLON.Nullable<HTMLElement>) => void;
         createPreviewHost: (options: IInternalPreviewAreaOptions, parentControl: BABYLON.Nullable<HTMLElement>) => void;
         fixPopUpStyles: (document: Document) => void;
         render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
-    export class Popup {
-        static CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): HTMLDivElement | null;
-        private static _CopyStyles;
     }
 }
 declare module NODEEDITOR {
@@ -1679,5 +1678,771 @@ declare module NODEEDITOR {
          * @param options defines the options to use to configure the node editor
          */
         static Show(options: INodeEditorOptions): void;
+    }
+}
+declare module NODEEDITOR {
+    export class PropertyChangedEvent {
+        object: any;
+        property: string;
+        value: any;
+        initialValue: any;
+        allowNullValue?: boolean;
+    }
+}
+declare module NODEEDITOR {
+    export interface IBooleanLineComponentProps {
+        label: string;
+        value: boolean;
+    }
+    export class BooleanLineComponent extends React.Component<IBooleanLineComponentProps> {
+        constructor(props: IBooleanLineComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export interface IButtonLineComponentProps {
+        label: string;
+        onClick: () => void;
+    }
+    export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
+        constructor(props: IButtonLineComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export interface ICheckBoxLineComponentProps {
+        label: string;
+        target?: any;
+        propertyName?: string;
+        isSelected?: () => boolean;
+        onSelect?: (value: boolean) => void;
+        onValueChanged?: () => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        disabled?: boolean;
+    }
+    export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
+        isSelected: boolean;
+        isDisabled?: boolean;
+    }> {
+        private static _UniqueIdSeed;
+        private _uniqueId;
+        private _localChange;
+        constructor(props: ICheckBoxLineComponentProps);
+        shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: {
+            isSelected: boolean;
+            isDisabled: boolean;
+        }): boolean;
+        onChange(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface INumericInputComponentProps {
+        label: string;
+        value: number;
+        step?: number;
+        onChange: (value: number) => void;
+        precision?: number;
+    }
+    export class NumericInputComponent extends React.Component<INumericInputComponentProps, {
+        value: string;
+    }> {
+        static defaultProps: {
+            step: number;
+        };
+        private _localChange;
+        constructor(props: INumericInputComponentProps);
+        shouldComponentUpdate(nextProps: INumericInputComponentProps, nextState: {
+            value: string;
+        }): boolean;
+        updateValue(evt: any): void;
+        onBlur(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export interface IColorPickerComponentProps {
+        value: BABYLON.Color4 | BABYLON.Color3;
+        onColorChanged: (newOne: string) => void;
+    }
+    interface IColorPickerComponentState {
+        pickerEnabled: boolean;
+        color: BABYLON.Color3 | BABYLON.Color4;
+        hex: string;
+    }
+    export class ColorPickerLineComponent extends React.Component<IColorPickerComponentProps, IColorPickerComponentState> {
+        private _floatRef;
+        private _floatHostRef;
+        constructor(props: IColorPickerComponentProps);
+        syncPositions(): void;
+        shouldComponentUpdate(nextProps: IColorPickerComponentProps, nextState: IColorPickerComponentState): boolean;
+        componentDidUpdate(): void;
+        componentDidMount(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export interface IColor3LineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        isLinear?: boolean;
+    }
+    export class Color3LineComponent extends React.Component<IColor3LineComponentProps, {
+        isExpanded: boolean;
+        color: BABYLON.Color3;
+    }> {
+        private _localChange;
+        constructor(props: IColor3LineComponentProps);
+        shouldComponentUpdate(nextProps: IColor3LineComponentProps, nextState: {
+            color: BABYLON.Color3;
+        }): boolean;
+        setPropertyValue(newColor: BABYLON.Color3): void;
+        onChange(newValue: string): void;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: BABYLON.Color3): void;
+        updateStateR(value: number): void;
+        updateStateG(value: number): void;
+        updateStateB(value: number): void;
+        copyToClipboard(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export interface IColor4LineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        onChange?: () => void;
+        isLinear?: boolean;
+    }
+    export class Color4LineComponent extends React.Component<IColor4LineComponentProps, {
+        isExpanded: boolean;
+        color: BABYLON.Color4;
+    }> {
+        private _localChange;
+        constructor(props: IColor4LineComponentProps);
+        shouldComponentUpdate(nextProps: IColor4LineComponentProps, nextState: {
+            color: BABYLON.Color4;
+        }): boolean;
+        setPropertyValue(newColor: BABYLON.Color4): void;
+        onChange(newValue: string): void;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: BABYLON.Color4): void;
+        updateStateR(value: number): void;
+        updateStateG(value: number): void;
+        updateStateB(value: number): void;
+        updateStateA(value: number): void;
+        copyToClipboard(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export interface IButtonLineComponentProps {
+        data: string;
+        tooltip: string;
+    }
+    export class DraggableLineComponent extends React.Component<IButtonLineComponentProps> {
+        constructor(props: IButtonLineComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IFileButtonLineComponentProps {
+        label: string;
+        onClick: (file: File) => void;
+        accept: string;
+    }
+    export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
+        private static _IDGenerator;
+        private _id;
+        private uploadInputRef;
+        constructor(props: IFileButtonLineComponentProps);
+        onChange(evt: any): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IFileMultipleButtonLineComponentProps {
+        label: string;
+        onClick: (event: any) => void;
+        accept: string;
+    }
+    export class FileMultipleButtonLineComponent extends React.Component<IFileMultipleButtonLineComponentProps> {
+        private static _IDGenerator;
+        private _id;
+        private uploadInputRef;
+        constructor(props: IFileMultipleButtonLineComponentProps);
+        onChange(evt: any): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    /**
+     * Class used to provide lock mechanism
+     */
+    export class LockObject {
+        /**
+         * Gets or set if the lock is engaged
+         */
+        lock: boolean;
+    }
+}
+declare module NODEEDITOR {
+    interface ISliderLineComponentProps {
+        label: string;
+        target?: any;
+        propertyName?: string;
+        minimum: number;
+        maximum: number;
+        step: number;
+        directValue?: number;
+        useEuler?: boolean;
+        onChange?: (value: number) => void;
+        onInput?: (value: number) => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        decimalCount?: number;
+        margin?: boolean;
+    }
+    export class SliderLineComponent extends React.Component<ISliderLineComponentProps, {
+        value: number;
+    }> {
+        private _localChange;
+        constructor(props: ISliderLineComponentProps);
+        shouldComponentUpdate(nextProps: ISliderLineComponentProps, nextState: {
+            value: number;
+        }): boolean;
+        onChange(newValueString: any): void;
+        onInput(newValueString: any): void;
+        prepareDataToRead(value: number): number;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IFloatLineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        lockObject?: LockObject;
+        onChange?: (newValue: number) => void;
+        isInteger?: boolean;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        additionalClass?: string;
+        step?: string;
+        digits?: number;
+        useEuler?: boolean;
+        min?: number;
+        max?: number;
+        smallUI?: boolean;
+        onEnter?: (newValue: number) => void;
+    }
+    export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
+        value: string;
+    }> {
+        private _localChange;
+        private _store;
+        constructor(props: IFloatLineComponentProps);
+        componentWillUnmount(): void;
+        shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: {
+            value: string;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
+        updateValue(valueString: string): void;
+        lock(): void;
+        unlock(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IHexLineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        lockObject?: LockObject;
+        onChange?: (newValue: number) => void;
+        isInteger?: boolean;
+        replaySourceReplacement?: string;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        additionalClass?: string;
+        step?: string;
+        digits?: number;
+        useEuler?: boolean;
+        min?: number;
+    }
+    export class HexLineComponent extends React.Component<IHexLineComponentProps, {
+        value: string;
+    }> {
+        private _localChange;
+        private _store;
+        private _propertyChange;
+        constructor(props: IHexLineComponentProps);
+        componentWillUnmount(): void;
+        shouldComponentUpdate(nextProps: IHexLineComponentProps, nextState: {
+            value: string;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
+        convertToHexString(valueString: string): string;
+        updateValue(valueString: string, raisePropertyChanged: boolean): void;
+        lock(): void;
+        unlock(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export interface IIconButtonLineComponentProps {
+        icon: string;
+        onClick: () => void;
+        tooltip: string;
+        active?: boolean;
+    }
+    export class IconButtonLineComponent extends React.Component<IIconButtonLineComponentProps> {
+        constructor(props: IIconButtonLineComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IIndentedTextLineComponentProps {
+        value?: string;
+        color?: string;
+        underline?: boolean;
+        onLink?: () => void;
+        url?: string;
+        additionalClass?: string;
+    }
+    export class IndentedTextLineComponent extends React.Component<IIndentedTextLineComponentProps> {
+        constructor(props: IIndentedTextLineComponentProps);
+        onLink(): void;
+        renderContent(): JSX.Element;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface ILineContainerComponentProps {
+        title: string;
+        children: any[] | any;
+        closed?: boolean;
+    }
+    export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
+        isExpanded: boolean;
+    }> {
+        constructor(props: ILineContainerComponentProps);
+        switchExpandedState(): void;
+        renderHeader(): JSX.Element;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface ILinkButtonComponentProps {
+        label: string;
+        buttonLabel: string;
+        url?: string;
+        onClick: () => void;
+        onIconClick?: () => void;
+    }
+    export class LinkButtonComponent extends React.Component<ILinkButtonComponentProps> {
+        constructor(props: ILinkButtonComponentProps);
+        onLink(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IMessageLineComponentProps {
+        text: string;
+        color?: string;
+    }
+    export class MessageLineComponent extends React.Component<IMessageLineComponentProps> {
+        constructor(props: IMessageLineComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export const Null_Value: number;
+    export class ListLineOption {
+        label: string;
+        value: number;
+        selected?: boolean;
+    }
+    export interface IOptionsLineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        options: ListLineOption[];
+        noDirectUpdate?: boolean;
+        onSelect?: (value: number) => void;
+        extractValue?: () => number;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        allowNullValue?: boolean;
+    }
+    export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, {
+        value: number;
+    }> {
+        private _localChange;
+        private remapValueIn;
+        private remapValueOut;
+        constructor(props: IOptionsLineComponentProps);
+        shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: {
+            value: number;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
+        updateValue(valueString: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export class Popup {
+        static CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): HTMLDivElement | null;
+        private static _CopyStyles;
+    }
+}
+declare module NODEEDITOR {
+    interface IRadioButtonLineComponentProps {
+        onSelectionChangedObservable: BABYLON.Observable<RadioButtonLineComponent>;
+        label: string;
+        isSelected: () => boolean;
+        onSelect: () => void;
+    }
+    export class RadioButtonLineComponent extends React.Component<IRadioButtonLineComponentProps, {
+        isSelected: boolean;
+    }> {
+        private _onSelectionChangedObserver;
+        constructor(props: IRadioButtonLineComponentProps);
+        componentDidMount(): void;
+        componentWillUnmount(): void;
+        onChange(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface ITextInputLineComponentProps {
+        label: string;
+        lockObject: LockObject;
+        target?: any;
+        propertyName?: string;
+        value?: string;
+        onChange?: (value: string) => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
+        value: string;
+    }> {
+        private _localChange;
+        constructor(props: ITextInputLineComponentProps);
+        componentWillUnmount(): void;
+        shouldComponentUpdate(nextProps: ITextInputLineComponentProps, nextState: {
+            value: string;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: string, previousValue: string): void;
+        updateValue(value: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface ITextLineComponentProps {
+        label?: string;
+        value?: string;
+        color?: string;
+        underline?: boolean;
+        onLink?: () => void;
+        url?: string;
+        ignoreValue?: boolean;
+        additionalClass?: string;
+    }
+    export class TextLineComponent extends React.Component<ITextLineComponentProps> {
+        constructor(props: ITextLineComponentProps);
+        onLink(): void;
+        renderContent(): JSX.Element | null;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IValueLineComponentProps {
+        label: string;
+        value: number;
+        color?: string;
+        fractionDigits?: number;
+        units?: string;
+    }
+    export class ValueLineComponent extends React.Component<IValueLineComponentProps> {
+        constructor(props: IValueLineComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IVector2LineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        step?: number;
+        onChange?: (newvalue: BABYLON.Vector2) => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class Vector2LineComponent extends React.Component<IVector2LineComponentProps, {
+        isExpanded: boolean;
+        value: BABYLON.Vector2;
+    }> {
+        static defaultProps: {
+            step: number;
+        };
+        private _localChange;
+        constructor(props: IVector2LineComponentProps);
+        shouldComponentUpdate(nextProps: IVector2LineComponentProps, nextState: {
+            isExpanded: boolean;
+            value: BABYLON.Vector2;
+        }): boolean;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: BABYLON.Vector2): void;
+        updateStateX(value: number): void;
+        updateStateY(value: number): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IVector3LineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        step?: number;
+        onChange?: (newvalue: BABYLON.Vector3) => void;
+        useEuler?: boolean;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        noSlider?: boolean;
+    }
+    export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, {
+        isExpanded: boolean;
+        value: BABYLON.Vector3;
+    }> {
+        static defaultProps: {
+            step: number;
+        };
+        private _localChange;
+        constructor(props: IVector3LineComponentProps);
+        getCurrentValue(): any;
+        shouldComponentUpdate(nextProps: IVector3LineComponentProps, nextState: {
+            isExpanded: boolean;
+            value: BABYLON.Vector3;
+        }): boolean;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: BABYLON.Vector3): void;
+        updateVector3(): void;
+        updateStateX(value: number): void;
+        updateStateY(value: number): void;
+        updateStateZ(value: number): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IVector4LineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        step?: number;
+        onChange?: (newvalue: BABYLON.Vector4) => void;
+        useEuler?: boolean;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class Vector4LineComponent extends React.Component<IVector4LineComponentProps, {
+        isExpanded: boolean;
+        value: BABYLON.Vector4;
+    }> {
+        static defaultProps: {
+            step: number;
+        };
+        private _localChange;
+        constructor(props: IVector4LineComponentProps);
+        getCurrentValue(): any;
+        shouldComponentUpdate(nextProps: IVector4LineComponentProps, nextState: {
+            isExpanded: boolean;
+            value: BABYLON.Vector4;
+        }): boolean;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: BABYLON.Vector4): void;
+        updateVector4(): void;
+        updateStateX(value: number): void;
+        updateStateY(value: number): void;
+        updateStateZ(value: number): void;
+        updateStateW(value: number): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface ICommonControlPropertyGridComponentProps {
+        control: Control;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
+        constructor(props: ICommonControlPropertyGridComponentProps);
+        renderGridInformation(): JSX.Element | null;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface ICheckboxPropertyGridComponentProps {
+        checkbox: Checkbox;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class CheckboxPropertyGridComponent extends React.Component<ICheckboxPropertyGridComponentProps> {
+        constructor(props: ICheckboxPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IColorPickerPropertyGridComponentProps {
+        colorPicker: ColorPicker;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class ColorPickerPropertyGridComponent extends React.Component<IColorPickerPropertyGridComponentProps> {
+        constructor(props: IColorPickerPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IControlPropertyGridComponentProps {
+        control: Control;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class ControlPropertyGridComponent extends React.Component<IControlPropertyGridComponentProps> {
+        constructor(props: IControlPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IEllipsePropertyGridComponentProps {
+        ellipse: Ellipse;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class EllipsePropertyGridComponent extends React.Component<IEllipsePropertyGridComponentProps> {
+        constructor(props: IEllipsePropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IGridPropertyGridComponentProps {
+        grid: Grid;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class GridPropertyGridComponent extends React.Component<IGridPropertyGridComponentProps> {
+        constructor(props: IGridPropertyGridComponentProps);
+        renderRows(): JSX.Element[];
+        renderColumns(): JSX.Element[];
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IImageBasedSliderPropertyGridComponentProps {
+        imageBasedSlider: ImageBasedSlider;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class ImageBasedSliderPropertyGridComponent extends React.Component<IImageBasedSliderPropertyGridComponentProps> {
+        constructor(props: IImageBasedSliderPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IImagePropertyGridComponentProps {
+        image: Image;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class ImagePropertyGridComponent extends React.Component<IImagePropertyGridComponentProps> {
+        constructor(props: IImagePropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IInputTextPropertyGridComponentProps {
+        inputText: InputText;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class InputTextPropertyGridComponent extends React.Component<IInputTextPropertyGridComponentProps> {
+        constructor(props: IInputTextPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface ILinePropertyGridComponentProps {
+        line: Line;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class LinePropertyGridComponent extends React.Component<ILinePropertyGridComponentProps> {
+        constructor(props: ILinePropertyGridComponentProps);
+        onDashChange(value: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IRadioButtonPropertyGridComponentProps {
+        radioButton: RadioButton;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class RadioButtonPropertyGridComponent extends React.Component<IRadioButtonPropertyGridComponentProps> {
+        constructor(props: IRadioButtonPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IRectanglePropertyGridComponentProps {
+        rectangle: Rectangle;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class RectanglePropertyGridComponent extends React.Component<IRectanglePropertyGridComponentProps> {
+        constructor(props: IRectanglePropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IScrollViewerPropertyGridComponentProps {
+        scrollViewer: ScrollViewer;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class ScrollViewerPropertyGridComponent extends React.Component<IScrollViewerPropertyGridComponentProps> {
+        constructor(props: IScrollViewerPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface ISliderPropertyGridComponentProps {
+        slider: Slider;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class SliderPropertyGridComponent extends React.Component<ISliderPropertyGridComponentProps> {
+        constructor(props: ISliderPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IStackPanelPropertyGridComponentProps {
+        stackPanel: StackPanel;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class StackPanelPropertyGridComponent extends React.Component<IStackPanelPropertyGridComponentProps> {
+        constructor(props: IStackPanelPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface ITextBlockPropertyGridComponentProps {
+        textBlock: TextBlock;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPropertyGridComponentProps> {
+        constructor(props: ITextBlockPropertyGridComponentProps);
+        render(): JSX.Element;
     }
 }

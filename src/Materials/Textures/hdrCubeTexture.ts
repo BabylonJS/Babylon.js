@@ -46,13 +46,13 @@ export class HDRCubeTexture extends BaseTexture {
 
     protected _isBlocking: boolean = true;
     /**
-     * Sets wether or not the texture is blocking during loading.
+     * Sets whether or not the texture is blocking during loading.
      */
     public set isBlocking(value: boolean) {
         this._isBlocking = value;
     }
     /**
-     * Gets wether or not the texture is blocking during loading.
+     * Gets whether or not the texture is blocking during loading.
      */
     public get isBlocking(): boolean {
         return this._isBlocking;

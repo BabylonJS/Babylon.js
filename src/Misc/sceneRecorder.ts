@@ -12,6 +12,7 @@ import { ParticleSystem } from '../Particles/particleSystem';
 import { MorphTargetManager } from '../Morph/morphTargetManager';
 import { ShadowGenerator } from '../Lights/Shadows/shadowGenerator';
 import { PostProcess } from '../PostProcesses/postProcess';
+import { Texture } from "../Materials/Textures/texture";
 
 /**
  * Class used to record delta files between 2 scene states
@@ -32,12 +33,15 @@ export class SceneRecorder {
 
     /**
      * Get the delta between current state and original state
-     * @returns a string containing the delta
+     * @returns a any containing the delta
      */
-    public getDelta() {
+    public getDelta(): any {
         if (!this._trackedScene) {
             return null;
         }
+
+        const currentForceSerializeBuffers = Texture.ForceSerializeBuffers;
+        Texture.ForceSerializeBuffers = false;
 
         let newJSON = SceneSerializer.Serialize(this._trackedScene);
         let deltaJSON: any = {};
@@ -45,6 +49,8 @@ export class SceneRecorder {
         for (var node in newJSON) {
             this._compareCollections(node, this._savedJSON[node], newJSON[node], deltaJSON);
         }
+
+        Texture.ForceSerializeBuffers = currentForceSerializeBuffers;
 
         return deltaJSON;
     }

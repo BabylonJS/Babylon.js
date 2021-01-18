@@ -1,3 +1,5 @@
+export * from "./BaseCameraMouseWheelInput";
+export * from "./BaseCameraPointersInput";
 export * from "./arcRotateCameraGamepadInput";
 export * from "./arcRotateCameraKeyboardMoveInput";
 export * from "./arcRotateCameraMouseWheelInput";

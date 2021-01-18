@@ -122,7 +122,7 @@ export class FresnelParameters {
     }
 
     /**
-     * Clones the current fresnel and its valuues
+     * Clones the current fresnel and its values
      * @returns a clone fresnel configuration
      */
     public clone(): FresnelParameters {

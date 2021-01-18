@@ -35,6 +35,7 @@ function isTextureAsset(name: string): boolean {
 interface IRenderingZoneProps {
     globalState: GlobalState;
     assetUrl?: string;
+    autoRotate?: boolean;
     cameraPosition?: Vector3;
     expanded: boolean;
 }
@@ -141,37 +142,39 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
     }
 
     prepareCamera() {
-        let camera: ArcRotateCamera;
-
         // Attach camera to canvas inputs
-        if (!this._scene.activeCamera || this._scene.lights.length === 0) {
+        if (!this._scene.activeCamera) {
             this._scene.createDefaultCamera(true);
 
-            camera = this._scene.activeCamera! as ArcRotateCamera;
+            const camera = this._scene.activeCamera! as ArcRotateCamera;
+
+            if (this._currentPluginName === "gltf") {
+                // glTF assets use a +Z forward convention while the default camera faces +Z. Rotate the camera to look at the front of the asset.
+                camera.alpha += Math.PI;
+            }
+
+            // Enable camera's behaviors
+            camera.useFramingBehavior = true;
+
+            var framingBehavior = camera.getBehaviorByName("Framing") as FramingBehavior;
+            framingBehavior.framingTime = 0;
+            framingBehavior.elevationReturnTime = -1;
+
+            if (this._scene.meshes.length) {
+                camera.lowerRadiusLimit = null;
+
+                var worldExtends = this._scene.getWorldExtends(function (mesh) {
+                    return mesh.isVisible && mesh.isEnabled();
+                });
+                framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
+            }
+
+            if (this.props.autoRotate) {
+                camera.useAutoRotationBehavior = true;
+            }
 
             if (this.props.cameraPosition) {
                 camera.setPosition(this.props.cameraPosition);
-            } else {
-                if (this._currentPluginName === "gltf") {
-                    // glTF assets use a +Z forward convention while the default camera faces +Z. Rotate the camera to look at the front of the asset.
-                    camera.alpha += Math.PI;
-                }
-
-                // Enable camera's behaviors
-                camera.useFramingBehavior = true;
-
-                var framingBehavior = camera.getBehaviorByName("Framing") as FramingBehavior;
-                framingBehavior.framingTime = 0;
-                framingBehavior.elevationReturnTime = -1;
-
-                if (this._scene.meshes.length) {
-                    camera.lowerRadiusLimit = null;
-
-                    var worldExtends = this._scene.getWorldExtends(function (mesh) {
-                        return mesh.isVisible && mesh.isEnabled();
-                    });
-                    framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
-                }
             }
 
             camera.pinchPrecision = 200 / camera.radius;
@@ -334,10 +337,17 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
 
         // Setting up some GLTF values
         GLTFFileLoader.IncrementalLoading = false;
+        this.props.globalState.glTFLoaderExtensions = {};
         SceneLoader.OnPluginActivatedObservable.add((plugin) => {
             this._currentPluginName = plugin.name;
             if (this._currentPluginName === "gltf") {
-                (plugin as GLTFFileLoader).onValidatedObservable.add((results) => {
+                let loader = plugin as GLTFFileLoader;
+
+                loader.onExtensionLoadedObservable.add((extension: import("babylonjs-loaders/glTF/index").IGLTFLoaderExtension) => {       
+                    this.props.globalState.glTFLoaderExtensions[extension.name] = extension;
+                });
+
+                loader.onValidatedObservable.add((results) => {
                     if (results.issues.numErrors > 0) {
                         this.props.globalState.showDebugLayer();
                     }

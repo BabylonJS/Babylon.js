@@ -53,7 +53,7 @@ export class RawCubeTexture extends CubeTexture {
      * @param sphericalPolynomial defines the spherical polynomial for irradiance
      * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
      * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
-     * @returns a promsie that resolves when the operation is complete
+     * @returns a promise that resolves when the operation is complete
      */
     public updateRGBDAsync(data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial> = null, lodScale: number = 0.8, lodOffset: number = 0): Promise<void> {
         return RawCubeTexture._UpdateRGBDAsync(this._texture!, data, sphericalPolynomial, lodScale, lodOffset);

@@ -95,6 +95,13 @@ export class CubeTexture extends BaseTexture {
     @serialize("forcedExtension")
     protected _forcedExtension: Nullable<string> = null;
 
+    /**
+     * Gets the forced extension (if any)
+     */
+    public get forcedExtension(): Nullable<string> {
+        return this._forcedExtension;
+    }
+
     @serialize("extensions")
     private _extensions: Nullable<string[]> = null;
 
@@ -147,7 +154,7 @@ export class CubeTexture extends BaseTexture {
      * @param extensions defines the suffixes add to the picture name in case six images are in use like _px.jpg...
      * @param noMipmap defines if mipmaps should be created or not
      * @param files defines the six files to load for the different faces in that order: px, py, pz, nx, ny, nz
-     * @param onLoad defines a callback triggered at the end of the file load if no errors occured
+     * @param onLoad defines a callback triggered at the end of the file load if no errors occurred
      * @param onError defines a callback triggered in case of error during load
      * @param format defines the internal format to use for the texture once loaded
      * @param prefiltered defines whether or not the texture is created from prefiltered data

@@ -10,7 +10,7 @@ import { ColorCurves } from "../Materials/colorCurves";
 
 /**
  * Interface to follow in your material defines to integrate easily the
- * Image proccessing functions.
+ * Image processing functions.
  * @hidden
  */
 export interface IImageProcessingConfigurationDefines {
@@ -82,13 +82,13 @@ export class ImageProcessingConfiguration {
     @serialize()
     private _colorCurvesEnabled = false;
     /**
-     * Gets wether the color curves effect is enabled.
+     * Gets whether the color curves effect is enabled.
      */
     public get colorCurvesEnabled(): boolean {
         return this._colorCurvesEnabled;
     }
     /**
-     * Sets wether the color curves effect is enabled.
+     * Sets whether the color curves effect is enabled.
      */
     public set colorCurvesEnabled(value: boolean) {
         if (this._colorCurvesEnabled === value) {
@@ -122,13 +122,13 @@ export class ImageProcessingConfiguration {
     @serialize()
     private _colorGradingEnabled = false;
     /**
-     * Gets wether the color grading effect is enabled.
+     * Gets whether the color grading effect is enabled.
      */
     public get colorGradingEnabled(): boolean {
         return this._colorGradingEnabled;
     }
     /**
-     * Sets wether the color grading effect is enabled.
+     * Sets whether the color grading effect is enabled.
      */
     public set colorGradingEnabled(value: boolean) {
         if (this._colorGradingEnabled === value) {
@@ -142,13 +142,13 @@ export class ImageProcessingConfiguration {
     @serialize()
     private _colorGradingWithGreenDepth = true;
     /**
-     * Gets wether the color grading effect is using a green depth for the 3d Texture.
+     * Gets whether the color grading effect is using a green depth for the 3d Texture.
      */
     public get colorGradingWithGreenDepth(): boolean {
         return this._colorGradingWithGreenDepth;
     }
     /**
-     * Sets wether the color grading effect is using a green depth for the 3d Texture.
+     * Sets whether the color grading effect is using a green depth for the 3d Texture.
      */
     public set colorGradingWithGreenDepth(value: boolean) {
         if (this._colorGradingWithGreenDepth === value) {
@@ -162,13 +162,13 @@ export class ImageProcessingConfiguration {
     @serialize()
     private _colorGradingBGR = true;
     /**
-     * Gets wether the color grading texture contains BGR values.
+     * Gets whether the color grading texture contains BGR values.
      */
     public get colorGradingBGR(): boolean {
         return this._colorGradingBGR;
     }
     /**
-     * Sets wether the color grading texture contains BGR values.
+     * Sets whether the color grading texture contains BGR values.
      */
     public set colorGradingBGR(value: boolean) {
         if (this._colorGradingBGR === value) {
@@ -203,13 +203,13 @@ export class ImageProcessingConfiguration {
     @serialize()
     private _toneMappingEnabled = false;
     /**
-     * Gets wether the tone mapping effect is enabled.
+     * Gets whether the tone mapping effect is enabled.
      */
     public get toneMappingEnabled(): boolean {
         return this._toneMappingEnabled;
     }
     /**
-     * Sets wether the tone mapping effect is enabled.
+     * Sets whether the tone mapping effect is enabled.
      */
     public set toneMappingEnabled(value: boolean) {
         if (this._toneMappingEnabled === value) {
@@ -320,13 +320,13 @@ export class ImageProcessingConfiguration {
     @serialize()
     private _vignetteEnabled = false;
     /**
-     * Gets wether the vignette effect is enabled.
+     * Gets whether the vignette effect is enabled.
      */
     public get vignetteEnabled(): boolean {
         return this._vignetteEnabled;
     }
     /**
-     * Sets wether the vignette effect is enabled.
+     * Sets whether the vignette effect is enabled.
      */
     public set vignetteEnabled(value: boolean) {
         if (this._vignetteEnabled === value) {
@@ -340,13 +340,13 @@ export class ImageProcessingConfiguration {
     @serialize()
     private _applyByPostProcess = false;
     /**
-     * Gets wether the image processing is applied through a post process or not.
+     * Gets whether the image processing is applied through a post process or not.
      */
     public get applyByPostProcess(): boolean {
         return this._applyByPostProcess;
     }
     /**
-     * Sets wether the image processing is applied through a post process or not.
+     * Sets whether the image processing is applied through a post process or not.
      */
     public set applyByPostProcess(value: boolean) {
         if (this._applyByPostProcess === value) {
@@ -360,13 +360,13 @@ export class ImageProcessingConfiguration {
     @serialize()
     private _isEnabled = true;
     /**
-     * Gets wether the image processing is enabled or not.
+     * Gets whether the image processing is enabled or not.
      */
     public get isEnabled(): boolean {
         return this._isEnabled;
     }
     /**
-     * Sets wether the image processing is enabled or not.
+     * Sets whether the image processing is enabled or not.
      */
     public set isEnabled(value: boolean) {
         if (this._isEnabled === value) {
@@ -487,7 +487,7 @@ export class ImageProcessingConfiguration {
      * @returns True if ready, otherwise, false
      */
     public isReady() {
-        // Color Grading texure can not be none blocking.
+        // Color Grading texture can not be none blocking.
         return !this.colorGradingEnabled || !this.colorGradingTexture || this.colorGradingTexture.isReady();
     }
 
