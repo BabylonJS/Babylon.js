@@ -58,7 +58,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
 
     componentDidMount() {
         if (this.props.globalState.hostDocument) {
-            this._workbenchCanvas = this.refs["graphCanvas"] as WorkbenchComponent;
+            this._workbenchCanvas = this.refs["workbenchCanvas"] as WorkbenchComponent;
         }
 
         if (navigator.userAgent.indexOf("Mobile") !== -1) {
@@ -89,7 +89,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                     for (var selectedItem of selectedItems) {
                         selectedItem.dispose();
                     }
-
                     this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                     return;
                 }
@@ -200,7 +199,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         }
 
         const deltaX = evt.clientX - this._startX;
-        const rootElement = evt.currentTarget.ownerDocument!.getElementById("workbench-editor-workbench-root") as HTMLDivElement;
+        const rootElement = evt.currentTarget.ownerDocument!.getElementById("gui-editor-workbench-root") as HTMLDivElement;
 
         if (forLeft) {
             this._leftWidth += deltaX;
@@ -210,7 +209,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
             this._rightWidth -= deltaX;
             this._rightWidth = Math.max(250, Math.min(500, this._rightWidth));
             DataStorage.WriteNumber("RightWidth", this._rightWidth);
-            rootElement.ownerDocument!.getElementById("preview")!.style.height = this._rightWidth + "px";
         }
 
         rootElement.style.gridTemplateColumns = this.buildColumnLayout();
@@ -385,7 +383,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                             event.preventDefault();
                         }}
                     >
-                        <WorkbenchComponent ref={"graphCanvas"} globalState={this.props.globalState} />
+                        <WorkbenchComponent ref={"workbenchCanvas"} globalState={this.props.globalState} />
                     </div>
 
                     <div id="rightGrab" onPointerDown={(evt) => this.onPointerDown(evt)} onPointerUp={(evt) => this.onPointerUp(evt)} onPointerMove={(evt) => this.resizeColumns(evt, false)}></div>
