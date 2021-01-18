@@ -1,4 +1,4 @@
-#if defined(BUMP) || !defined(NORMAL) || defined(FORCENORMALFORWARD) || defined(SPECULARAA) || defined(CLEARCOAT_BUMP) || defined(ANISOTROPIC)
+﻿#if defined(BUMP) || !defined(NORMAL) || defined(FORCENORMALFORWARD) || defined(SPECULARAA) || defined(CLEARCOAT_BUMP) || defined(ANISOTROPIC)
 #extension GL_OES_standard_derivatives : enable
 #endif
 
@@ -514,7 +514,7 @@ void main(void) {
             #ifdef SS_LINKREFRACTIONTOTRANSPARENCY
                 alpha = subSurfaceOut.alpha;
             #endif
-        #elif defined(SS_SCATTERING) && defined(SS_MULTALBEDOBYSCATTERCOLOR)
+        #elif defined(SS_SCATTERING)
             surfaceAlbedo = subSurfaceOut.surfaceAlbedo;
         #endif
     #else

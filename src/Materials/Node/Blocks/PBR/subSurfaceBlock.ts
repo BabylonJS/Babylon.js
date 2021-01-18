@@ -230,7 +230,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
                 #ifdef SS_LINKREFRACTIONTOTRANSPARENCY
                     alpha = subSurfaceOut.alpha;
                 #endif
-            #elif defined(SS_MULTALBEDOBYSCATTERCOLOR) && defined(SS_SCATTERING)
+            #elif defined(SS_SCATTERING)
                 surfaceAlbedo = subSurfaceOut.surfaceAlbedo;
             #endif
         #else
