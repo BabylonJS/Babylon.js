@@ -36,6 +36,7 @@
     "readme": "Babylon.js is a 3D engine based on webgl and javascript",
     "readmeFilename": "README.md",
     "devDependencies": {
+        "@babel/preset-env": "^7.12.11",
         "@fortawesome/fontawesome-svg-core": "~1.2.28",
         "@fortawesome/free-regular-svg-icons": "~5.13.0",
         "@fortawesome/free-solid-svg-icons": "~5.13.0",
@@ -72,6 +73,7 @@
         "gulp-tslint": "^8.1.4",
         "gulp-typedoc": "^2.2.5",
         "gulp-typescript": "4.0.2",
+        "jest": "^26.6.3",
         "karma": "^5.0.9",
         "karma-browserstack-launcher": "^1.6.0",
         "karma-chai": "^0.1.0",
@@ -101,6 +103,7 @@
         "symlink-dir": "^4.1.0",
         "through2": "~3.0.1",
         "ts-loader": "^7.0.5",
+        "ts-node": "^9.1.1",
         "tslib": ">=1.10.0",
         "tslint": "^6.1.2",
         "typedoc": "^0.17.7",
@@ -112,5 +115,6 @@
         "webpack-stream": "~5.2.1",
         "xhr2": "^0.2.0",
         "xmlbuilder": "15.1.1"
-    }
+    },
+    "dependencies": {}
 }

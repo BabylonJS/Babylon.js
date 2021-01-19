@@ -170,16 +170,10 @@ declare module "babylonjs-node-editor/serializationTools" {
         static AddFrameToMaterial(serializationObject: any, globalState: GlobalState, currentMaterial: NodeMaterial): void;
     }
 }
-declare module "babylonjs-node-editor/stringTools" {
-    import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
+declare module "babylonjs-node-editor/sharedUiComponents/stringTools" {
     export class StringTools {
         private static _SaveAs;
         private static _Click;
-        /**
-         * Gets the base math type of node material block connection point.
-         * @param type Type to parse.
-         */
-        static GetBaseType(type: NodeMaterialBlockConnectionPointTypes): string;
         /**
          * Download a string into a file that will be saved locally by the browser
          * @param content defines the string to download locally as a file
@@ -1349,10 +1343,12 @@ declare module "babylonjs-node-editor/diagram/propertyLedger" {
 declare module "babylonjs-node-editor/diagram/display/inputDisplayManager" {
     import { IDisplayManager } from "babylonjs-node-editor/diagram/display/displayManager";
     import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
+    import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
     export class InputDisplayManager implements IDisplayManager {
         getHeaderClass(block: NodeMaterialBlock): "" | "constant" | "inspector";
         shouldDisplayPortLabels(block: NodeMaterialBlock): boolean;
         getHeaderText(block: NodeMaterialBlock): string;
+        static GetBaseType(type: NodeMaterialBlockConnectionPointTypes): string;
         getBackgroundColor(block: NodeMaterialBlock): string;
         updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void;
     }
@@ -3014,11 +3010,6 @@ declare module NODEEDITOR {
         private static _SaveAs;
         private static _Click;
         /**
-         * Gets the base math type of node material block connection point.
-         * @param type Type to parse.
-         */
-        static GetBaseType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): string;
-        /**
          * Download a string into a file that will be saved locally by the browser
          * @param content defines the string to download locally as a file
          */
@@ -4034,6 +4025,7 @@ declare module NODEEDITOR {
         getHeaderClass(block: BABYLON.NodeMaterialBlock): "" | "constant" | "inspector";
         shouldDisplayPortLabels(block: BABYLON.NodeMaterialBlock): boolean;
         getHeaderText(block: BABYLON.NodeMaterialBlock): string;
+        static GetBaseType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): string;
         getBackgroundColor(block: BABYLON.NodeMaterialBlock): string;
         updatePreviewContent(block: BABYLON.NodeMaterialBlock, contentArea: HTMLDivElement): void;
     }

@@ -32179,6 +32179,7 @@ declare module BABYLON {
         private _activeTargets;
         private _scene;
         private _influences;
+        private _morphTargetTextureIndices;
         private _supportsNormals;
         private _supportsTangents;
         private _supportsUVs;
@@ -59809,6 +59810,215 @@ declare module BABYLON.Debug {
 }
 declare module BABYLON {
     /**
+     * A directional light is defined by a direction (what a surprise!).
+     * The light is emitted from everywhere in the specified direction, and has an infinite range.
+     * An example of a directional light is when a distance planet is lit by the apparently parallel lines of light from its sun. Light in a downward direction will light the top of an object.
+     * Documentation: https://doc.babylonjs.com/babylon101/lights
+     */
+    export class DirectionalLight extends ShadowLight {
+        private _shadowFrustumSize;
+        /**
+         * Fix frustum size for the shadow generation. This is disabled if the value is 0.
+         */
+        get shadowFrustumSize(): number;
+        /**
+         * Specifies a fix frustum size for the shadow generation.
+         */
+        set shadowFrustumSize(value: number);
+        private _shadowOrthoScale;
+        /**
+         * Gets the shadow projection scale against the optimal computed one.
+         * 0.1 by default which means that the projection window is increase by 10% from the optimal size.
+         * This does not impact in fixed frustum size (shadowFrustumSize being set)
+         */
+        get shadowOrthoScale(): number;
+        /**
+         * Sets the shadow projection scale against the optimal computed one.
+         * 0.1 by default which means that the projection window is increase by 10% from the optimal size.
+         * This does not impact in fixed frustum size (shadowFrustumSize being set)
+         */
+        set shadowOrthoScale(value: number);
+        /**
+         * Automatically compute the projection matrix to best fit (including all the casters)
+         * on each frame.
+         */
+        autoUpdateExtends: boolean;
+        /**
+         * Automatically compute the shadowMinZ and shadowMaxZ for the projection matrix to best fit (including all the casters)
+         * on each frame. autoUpdateExtends must be set to true for this to work
+         */
+        autoCalcShadowZBounds: boolean;
+        private _orthoLeft;
+        private _orthoRight;
+        private _orthoTop;
+        private _orthoBottom;
+        /**
+         * Gets or sets the orthoLeft property used to build the light frustum
+         */
+        get orthoLeft(): number;
+        set orthoLeft(left: number);
+        /**
+         * Gets or sets the orthoRight property used to build the light frustum
+         */
+        get orthoRight(): number;
+        set orthoRight(right: number);
+        /**
+         * Gets or sets the orthoTop property used to build the light frustum
+         */
+        get orthoTop(): number;
+        set orthoTop(top: number);
+        /**
+         * Gets or sets the orthoBottom property used to build the light frustum
+         */
+        get orthoBottom(): number;
+        set orthoBottom(bottom: number);
+        /**
+         * Creates a DirectionalLight object in the scene, oriented towards the passed direction (Vector3).
+         * The directional light is emitted from everywhere in the given direction.
+         * It can cast shadows.
+         * Documentation : https://doc.babylonjs.com/babylon101/lights
+         * @param name The friendly name of the light
+         * @param direction The direction of the light
+         * @param scene The scene the light belongs to
+         */
+        constructor(name: string, direction: Vector3, scene: Scene);
+        /**
+         * Returns the string "DirectionalLight".
+         * @return The class name
+         */
+        getClassName(): string;
+        /**
+         * Returns the integer 1.
+         * @return The light Type id as a constant defines in Light.LIGHTTYPEID_x
+         */
+        getTypeID(): number;
+        /**
+         * Sets the passed matrix "matrix" as projection matrix for the shadows cast by the light according to the passed view matrix.
+         * Returns the DirectionalLight Shadow projection matrix.
+         */
+        protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
+        /**
+         * Sets the passed matrix "matrix" as fixed frustum projection matrix for the shadows cast by the light according to the passed view matrix.
+         * Returns the DirectionalLight Shadow projection matrix.
+         */
+        protected _setDefaultFixedFrustumShadowProjectionMatrix(matrix: Matrix): void;
+        /**
+         * Sets the passed matrix "matrix" as auto extend projection matrix for the shadows cast by the light according to the passed view matrix.
+         * Returns the DirectionalLight Shadow projection matrix.
+         */
+        protected _setDefaultAutoExtendShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
+        protected _buildUniformLayout(): void;
+        /**
+         * Sets the passed Effect object with the DirectionalLight transformed position (or position if not parented) and the passed name.
+         * @param effect The effect to update
+         * @param lightIndex The index of the light in the effect to update
+         * @returns The directional light
+         */
+        transferToEffect(effect: Effect, lightIndex: string): DirectionalLight;
+        transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string): Light;
+        /**
+         * Gets the minZ used for shadow according to both the scene and the light.
+         *
+         * Values are fixed on directional lights as it relies on an ortho projection hence the need to convert being
+         * -1 and 1 to 0 and 1 doing (depth + min) / (min + max) -> (depth + 1) / (1 + 1) -> (depth * 0.5) + 0.5.
+         * @param activeCamera The camera we are returning the min for
+         * @returns the depth min z
+         */
+        getDepthMinZ(activeCamera: Camera): number;
+        /**
+         * Gets the maxZ used for shadow according to both the scene and the light.
+         *
+         * Values are fixed on directional lights as it relies on an ortho projection hence the need to convert being
+         * -1 and 1 to 0 and 1 doing (depth + min) / (min + max) -> (depth + 1) / (1 + 1) -> (depth * 0.5) + 0.5.
+         * @param activeCamera The camera we are returning the max for
+         * @returns the depth max z
+         */
+        getDepthMaxZ(activeCamera: Camera): number;
+        /**
+         * Prepares the list of defines specific to the light type.
+         * @param defines the list of defines
+         * @param lightIndex defines the index of the light for the effect
+         */
+        prepareLightSpecificDefines(defines: any, lightIndex: number): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to render a debug view of the frustum for a directional light
+     * @see https://playground.babylonjs.com/#7EFGSG#3
+     */
+    export class DirectionalLightFrustumViewer {
+        private _scene;
+        private _light;
+        private _camera;
+        private _inverseViewMatrix;
+        private _visible;
+        private _rootNode;
+        private _lightHelperFrustumMeshes;
+        private _nearLinesPoints;
+        private _farLinesPoints;
+        private _trLinesPoints;
+        private _brLinesPoints;
+        private _tlLinesPoints;
+        private _blLinesPoints;
+        private _nearPlaneVertices;
+        private _farPlaneVertices;
+        private _rightPlaneVertices;
+        private _leftPlaneVertices;
+        private _topPlaneVertices;
+        private _bottomPlaneVertices;
+        private _oldPosition;
+        private _oldDirection;
+        private _oldAutoCalc;
+        private _oldMinZ;
+        private _oldMaxZ;
+        private _transparency;
+        /**
+         * Gets or sets the transparency of the frustum planes
+         */
+        get transparency(): number;
+        set transparency(alpha: number);
+        private _showLines;
+        /**
+         * true to display the edges of the frustum
+         */
+        get showLines(): boolean;
+        set showLines(show: boolean);
+        private _showPlanes;
+        /**
+         * true to display the planes of the frustum
+         */
+        get showPlanes(): boolean;
+        set showPlanes(show: boolean);
+        /**
+         * Creates a new frustum viewer
+         * @param light directional light to display the frustum for
+         * @param camera camera used to retrieve the minZ / maxZ values if the shadowMinZ/shadowMaxZ values of the light are not setup
+         */
+        constructor(light: DirectionalLight, camera: Camera);
+        /**
+         * Shows the frustum
+         */
+        show(): void;
+        /**
+         * Hides the frustum
+         */
+        hide(): void;
+        /**
+         * Updates the frustum.
+         * Call this method to update the frustum view if the light has changed position/direction
+         */
+        update(): void;
+        /**
+         * Dispose of the class / remove the frustum view
+         */
+        dispose(): void;
+        protected _createGeometry(): void;
+        protected _getInvertViewMatrix(): Matrix;
+    }
+}
+declare module BABYLON {
+    /**
      * Type to handle enforcement of inputs
      */
     export type DeviceInput<T extends DeviceType> = T extends DeviceType.Keyboard | DeviceType.Generic ? number : T extends DeviceType.Mouse | DeviceType.Touch ? PointerInput : T extends DeviceType.DualShock ? DualShockInput : T extends DeviceType.Xbox ? XboxInput : T extends DeviceType.Switch ? SwitchInput : never;
@@ -61511,120 +61721,6 @@ declare module BABYLON {
          * Disposes the class with joy
          */
         dispose(): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * A directional light is defined by a direction (what a surprise!).
-     * The light is emitted from everywhere in the specified direction, and has an infinite range.
-     * An example of a directional light is when a distance planet is lit by the apparently parallel lines of light from its sun. Light in a downward direction will light the top of an object.
-     * Documentation: https://doc.babylonjs.com/babylon101/lights
-     */
-    export class DirectionalLight extends ShadowLight {
-        private _shadowFrustumSize;
-        /**
-         * Fix frustum size for the shadow generation. This is disabled if the value is 0.
-         */
-        get shadowFrustumSize(): number;
-        /**
-         * Specifies a fix frustum size for the shadow generation.
-         */
-        set shadowFrustumSize(value: number);
-        private _shadowOrthoScale;
-        /**
-         * Gets the shadow projection scale against the optimal computed one.
-         * 0.1 by default which means that the projection window is increase by 10% from the optimal size.
-         * This does not impact in fixed frustum size (shadowFrustumSize being set)
-         */
-        get shadowOrthoScale(): number;
-        /**
-         * Sets the shadow projection scale against the optimal computed one.
-         * 0.1 by default which means that the projection window is increase by 10% from the optimal size.
-         * This does not impact in fixed frustum size (shadowFrustumSize being set)
-         */
-        set shadowOrthoScale(value: number);
-        /**
-         * Automatically compute the projection matrix to best fit (including all the casters)
-         * on each frame.
-         */
-        autoUpdateExtends: boolean;
-        /**
-         * Automatically compute the shadowMinZ and shadowMaxZ for the projection matrix to best fit (including all the casters)
-         * on each frame. autoUpdateExtends must be set to true for this to work
-         */
-        autoCalcShadowZBounds: boolean;
-        private _orthoLeft;
-        private _orthoRight;
-        private _orthoTop;
-        private _orthoBottom;
-        /**
-         * Creates a DirectionalLight object in the scene, oriented towards the passed direction (Vector3).
-         * The directional light is emitted from everywhere in the given direction.
-         * It can cast shadows.
-         * Documentation : https://doc.babylonjs.com/babylon101/lights
-         * @param name The friendly name of the light
-         * @param direction The direction of the light
-         * @param scene The scene the light belongs to
-         */
-        constructor(name: string, direction: Vector3, scene: Scene);
-        /**
-         * Returns the string "DirectionalLight".
-         * @return The class name
-         */
-        getClassName(): string;
-        /**
-         * Returns the integer 1.
-         * @return The light Type id as a constant defines in Light.LIGHTTYPEID_x
-         */
-        getTypeID(): number;
-        /**
-         * Sets the passed matrix "matrix" as projection matrix for the shadows cast by the light according to the passed view matrix.
-         * Returns the DirectionalLight Shadow projection matrix.
-         */
-        protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
-        /**
-         * Sets the passed matrix "matrix" as fixed frustum projection matrix for the shadows cast by the light according to the passed view matrix.
-         * Returns the DirectionalLight Shadow projection matrix.
-         */
-        protected _setDefaultFixedFrustumShadowProjectionMatrix(matrix: Matrix): void;
-        /**
-         * Sets the passed matrix "matrix" as auto extend projection matrix for the shadows cast by the light according to the passed view matrix.
-         * Returns the DirectionalLight Shadow projection matrix.
-         */
-        protected _setDefaultAutoExtendShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
-        protected _buildUniformLayout(): void;
-        /**
-         * Sets the passed Effect object with the DirectionalLight transformed position (or position if not parented) and the passed name.
-         * @param effect The effect to update
-         * @param lightIndex The index of the light in the effect to update
-         * @returns The directional light
-         */
-        transferToEffect(effect: Effect, lightIndex: string): DirectionalLight;
-        transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string): Light;
-        /**
-         * Gets the minZ used for shadow according to both the scene and the light.
-         *
-         * Values are fixed on directional lights as it relies on an ortho projection hence the need to convert being
-         * -1 and 1 to 0 and 1 doing (depth + min) / (min + max) -> (depth + 1) / (1 + 1) -> (depth * 0.5) + 0.5.
-         * @param activeCamera The camera we are returning the min for
-         * @returns the depth min z
-         */
-        getDepthMinZ(activeCamera: Camera): number;
-        /**
-         * Gets the maxZ used for shadow according to both the scene and the light.
-         *
-         * Values are fixed on directional lights as it relies on an ortho projection hence the need to convert being
-         * -1 and 1 to 0 and 1 doing (depth + min) / (min + max) -> (depth + 1) / (1 + 1) -> (depth * 0.5) + 0.5.
-         * @param activeCamera The camera we are returning the max for
-         * @returns the depth max z
-         */
-        getDepthMaxZ(activeCamera: Camera): number;
-        /**
-         * Prepares the list of defines specific to the light type.
-         * @param defines the list of defines
-         * @param lightIndex defines the index of the light for the effect
-         */
-        prepareLightSpecificDefines(defines: any, lightIndex: number): void;
     }
 }
 declare module BABYLON {
@@ -72064,9 +72160,35 @@ declare module BABYLON {
          */
         getMaximumSubStepCount(): number;
         /**
+         * Creates a cylinder obstacle and add it to the navigation
+         * @param position world position
+         * @param radius cylinder radius
+         * @param height cylinder height
+         * @returns the obstacle freshly created
+         */
+        addCylinderObstacle(position: Vector3, radius: number, height: number): IObstacle;
+        /**
+         * Creates an oriented box obstacle and add it to the navigation
+         * @param position world position
+         * @param extent box size
+         * @param angle angle in radians of the box orientation on Y axis
+         * @returns the obstacle freshly created
+         */
+        addBoxObstacle(position: Vector3, extent: Vector3, angle: number): IObstacle;
+        /**
+         * Removes an obstacle created by addCylinderObstacle or addBoxObstacle
+         * @param obstacle obstacle to remove from the navigation
+         */
+        removeObstacle(obstacle: IObstacle): void;
+        /**
          * Release all resources
          */
         dispose(): void;
+    }
+    /**
+     * Obstacle interface
+     */
+    export interface IObstacle {
     }
     /**
      * Crowd Interface. A Crowd is a collection of moving agents constrained by a navigation mesh
@@ -72180,6 +72302,12 @@ declare module BABYLON {
          */
         getDefaultQueryExtentToRef(result: Vector3): void;
         /**
+         * Get the next corner points composing the path (max 4 points)
+         * @param index agent index returned by addAgent
+         * @returns array containing world position composing the path
+         */
+        getCorners(index: number): Vector3[];
+        /**
          * Release all resources
          */
         dispose(): void;
@@ -72280,6 +72408,16 @@ declare module BABYLON {
          * data. (For height detail only.) [Limit: >=0] [Units: wu]
          */
         detailSampleMaxError: number;
+        /**
+         * If using obstacles, the navmesh must be subdivided internaly by tiles.
+         * This member defines the tile cube side length in world units.
+         * If no obstacles are needed, leave it undefined or 0.
+         */
+        tileSize: number;
+        /**
+        * The size of the non-navigable border around the heightfield.
+        */
+        borderSize: number;
     }
 }
 declare module BABYLON {
@@ -72430,6 +72568,27 @@ declare module BABYLON {
          */
         dispose(): void;
         /**
+         * Creates a cylinder obstacle and add it to the navigation
+         * @param position world position
+         * @param radius cylinder radius
+         * @param height cylinder height
+         * @returns the obstacle freshly created
+         */
+        addCylinderObstacle(position: Vector3, radius: number, height: number): IObstacle;
+        /**
+         * Creates an oriented box obstacle and add it to the navigation
+         * @param position world position
+         * @param extent box size
+         * @param angle angle in radians of the box orientation on Y axis
+         * @returns the obstacle freshly created
+         */
+        addBoxObstacle(position: Vector3, extent: Vector3, angle: number): IObstacle;
+        /**
+         * Removes an obstacle created by addCylinderObstacle or addBoxObstacle
+         * @param obstacle obstacle to remove from the navigation
+         */
+        removeObstacle(obstacle: IObstacle): void;
+        /**
          * If this plugin is supported
          * @returns true if plugin is supported
          */
@@ -72579,6 +72738,12 @@ declare module BABYLON {
          * @param result output the box extent values
          */
         getDefaultQueryExtentToRef(result: Vector3): void;
+        /**
+         * Get the next corner points composing the path (max 4 points)
+         * @param index agent index returned by addAgent
+         * @returns array containing world position composing the path
+         */
+        getCorners(index: number): Vector3[];
         /**
          * Release all resources
          */

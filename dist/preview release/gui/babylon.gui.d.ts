@@ -1680,11 +1680,11 @@ declare module BABYLON.GUI {
         private _cellWidth;
         private _cellHeight;
         private _cellId;
-        private _populateNinePatchSlicesFromImage;
         private _sliceLeft;
         private _sliceRight;
         private _sliceTop;
         private _sliceBottom;
+        private _populateNinePatchSlicesFromImage;
         private _detectPointerOnOpaqueOnly;
         private _imageDataCache;
         /**
@@ -1699,11 +1699,6 @@ declare module BABYLON.GUI {
          * Gets a boolean indicating that the content is loaded
          */
         get isLoaded(): boolean;
-        /**
-         * Gets or sets a boolean indicating if nine patch slices (left, top, right, bottom) should be read from image data
-         */
-        get populateNinePatchSlicesFromImage(): boolean;
-        set populateNinePatchSlicesFromImage(value: boolean);
         /**
          * Gets or sets a boolean indicating if pointers should only be validated on pixels with alpha > 0.
          * Beware using this as this will comsume more memory as the image has to be stored twice
@@ -1750,6 +1745,19 @@ declare module BABYLON.GUI {
          */
         get sourceHeight(): number;
         set sourceHeight(value: number);
+        /**
+         * Gets the image width
+         */
+        get imageWidth(): number;
+        /**
+         * Gets the image height
+         */
+        get imageHeight(): number;
+        /**
+        * Gets or sets a boolean indicating if nine patch slices (left, top, right, bottom) should be read from image data
+        */
+        get populateNinePatchSlicesFromImage(): boolean;
+        set populateNinePatchSlicesFromImage(value: boolean);
         /** Indicates if the format of the image is SVG */
         get isSVG(): boolean;
         /** Gets the status of the SVG attributes computation (sourceLeft, sourceTop, sourceWidth, sourceHeight) */
@@ -1767,13 +1775,13 @@ declare module BABYLON.GUI {
         _rotate90(n: number, preserveProperties?: boolean): Image;
         private _handleRotationForSVGImage;
         private _rotate90SourceProperties;
+        private _extractNinePatchSliceDataFromImage;
         /**
          * Gets or sets the internal DOM image used to render the control
          */
         set domImage(value: HTMLImageElement);
         get domImage(): HTMLImageElement;
         private _onImageLoaded;
-        private _extractNinePatchSliceDataFromImage;
         /**
          * Gets the image source url
          */
@@ -1829,7 +1837,6 @@ declare module BABYLON.GUI {
         private _prepareWorkingCanvasForOpaqueDetection;
         private _drawImage;
         _draw(context: CanvasRenderingContext2D): void;
-        private _renderCornerPatch;
         private _renderNinePatch;
         dispose(): void;
         /** STRETCH_NONE */

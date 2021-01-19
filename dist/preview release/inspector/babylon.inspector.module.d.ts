@@ -2249,6 +2249,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lig
     }
     export class DirectionalLightPropertyGridComponent extends React.Component<IDirectionalLightPropertyGridComponentProps> {
         constructor(props: IDirectionalLightPropertyGridComponentProps);
+        displayFrustum(): void;
         render(): JSX.Element;
     }
 }
@@ -5131,6 +5132,17 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
 declare module "babylonjs-inspector/legacy/legacy" {
     export * from "babylonjs-inspector/index";
 }
+declare module "babylonjs-inspector/sharedUiComponents/stringTools" {
+    export class StringTools {
+        private static _SaveAs;
+        private static _Click;
+        /**
+         * Download a string into a file that will be saved locally by the browser
+         * @param content defines the string to download locally as a file
+         */
+        static DownloadAsFile(document: HTMLDocument, content: string, filename: string): void;
+    }
+}
 declare module "babylonjs-inspector/sharedUiComponents/lines/draggableLineComponent" {
     import * as React from "react";
     export interface IButtonLineComponentProps {
@@ -6987,6 +6999,7 @@ declare module INSPECTOR {
     }
     export class DirectionalLightPropertyGridComponent extends React.Component<IDirectionalLightPropertyGridComponentProps> {
         constructor(props: IDirectionalLightPropertyGridComponentProps);
+        displayFrustum(): void;
         render(): JSX.Element;
     }
 }
@@ -9543,6 +9556,17 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     export const Contrast: IToolData;
+}
+declare module INSPECTOR {
+    export class StringTools {
+        private static _SaveAs;
+        private static _Click;
+        /**
+         * Download a string into a file that will be saved locally by the browser
+         * @param content defines the string to download locally as a file
+         */
+        static DownloadAsFile(document: HTMLDocument, content: string, filename: string): void;
+    }
 }
 declare module INSPECTOR {
     export interface IButtonLineComponentProps {

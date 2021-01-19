@@ -39,6 +39,8 @@ export class DebugNavMesh {
 }
 export class dtNavMesh {
 }
+export class dtObstacleRef {
+}
 export class NavmeshData {
     new ();
     dataPointer: any;
@@ -77,6 +79,10 @@ export class NavMesh {
     computePath(start: Vec3, end: Vec3): NavPath;
     setDefaultQueryExtent(extent: Vec3): void;
     getDefaultQueryExtent(): Vec3;
+    addCylinderObstacle(position: Vec3, radius: number, height: number): dtObstacleRef;
+    addBoxObstacle(position: Vec3, extent: Vec3, angle: number): dtObstacleRef;
+    removeObstacle(obstacle: dtObstacleRef): void;
+    update(): void;
 }
 export class Crowd {
     new (maxAgents: number, maxAgentRadius: number, nav: dtNavMesh);
@@ -95,5 +101,6 @@ export class Crowd {
     setAgentParameters(idx: number, params: dtCrowdAgentParams): void;
     setDefaultQueryExtent(extent: Vec3): void;
     getDefaultQueryExtent(): Vec3;
+    getCorners(idx: number): NavPath;
 }
 }

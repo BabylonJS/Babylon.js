@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!*****************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \*****************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -147,7 +147,7 @@ PERFORMANCE OF THIS SOFTWARE.
 var extendStatics = function(d, b) {
     extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
     return extendStatics(d, b);
 };
 
@@ -241,8 +241,8 @@ var __createBinding = Object.create ? (function(o, m, k, k2) {
     o[k2] = m[k];
 });
 
-function __exportStar(m, exports) {
-    for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
+function __exportStar(m, o) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(o, p)) __createBinding(o, m, p);
 }
 
 function __values(o) {
@@ -332,7 +332,7 @@ var __setModuleDefault = Object.create ? (function(o, v) {
 function __importStar(mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
     __setModuleDefault(result, mod);
     return result;
 }
@@ -7055,25 +7055,6 @@ var Image = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
-    Object.defineProperty(Image.prototype, "populateNinePatchSlicesFromImage", {
-        /**
-         * Gets or sets a boolean indicating if nine patch slices (left, top, right, bottom) should be read from image data
-         */
-        get: function () {
-            return this._populateNinePatchSlicesFromImage;
-        },
-        set: function (value) {
-            if (this._populateNinePatchSlicesFromImage === value) {
-                return;
-            }
-            this._populateNinePatchSlicesFromImage = value;
-            if (this._populateNinePatchSlicesFromImage && this._loaded) {
-                this._extractNinePatchSliceDataFromImage();
-            }
-        },
-        enumerable: false,
-        configurable: true
-    });
     Object.defineProperty(Image.prototype, "detectPointerOnOpaqueOnly", {
         /**
          * Gets or sets a boolean indicating if pointers should only be validated on pixels with alpha > 0.
@@ -7227,6 +7208,45 @@ var Image = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(Image.prototype, "imageWidth", {
+        /**
+         * Gets the image width
+         */
+        get: function () {
+            return this._imageWidth;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Image.prototype, "imageHeight", {
+        /**
+         * Gets the image height
+         */
+        get: function () {
+            return this._imageHeight;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Image.prototype, "populateNinePatchSlicesFromImage", {
+        /**
+        * Gets or sets a boolean indicating if nine patch slices (left, top, right, bottom) should be read from image data
+        */
+        get: function () {
+            return this._populateNinePatchSlicesFromImage;
+        },
+        set: function (value) {
+            if (this._populateNinePatchSlicesFromImage === value) {
+                return;
+            }
+            this._populateNinePatchSlicesFromImage = value;
+            if (this._populateNinePatchSlicesFromImage && this._loaded) {
+                this._extractNinePatchSliceDataFromImage();
+            }
+        },
+        enumerable: false,
+        configurable: true
+    });
     Object.defineProperty(Image.prototype, "isSVG", {
         /** Indicates if the format of the image is SVG */
         get: function () {
@@ -7346,44 +7366,6 @@ var Image = /** @class */ (function (_super) {
         dstImage.sourceWidth = dstWidth;
         dstImage.sourceHeight = dstHeight;
     };
-    Object.defineProperty(Image.prototype, "domImage", {
-        get: function () {
-            return this._domImage;
-        },
-        /**
-         * Gets or sets the internal DOM image used to render the control
-         */
-        set: function (value) {
-            var _this = this;
-            this._domImage = value;
-            this._loaded = false;
-            this._imageDataCache.data = null;
-            if (this._domImage.width) {
-                this._onImageLoaded();
-            }
-            else {
-                this._domImage.onload = function () {
-                    _this._onImageLoaded();
-                };
-            }
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Image.prototype._onImageLoaded = function () {
-        this._imageDataCache.data = null;
-        this._imageWidth = this._domImage.width;
-        this._imageHeight = this._domImage.height;
-        this._loaded = true;
-        if (this._populateNinePatchSlicesFromImage) {
-            this._extractNinePatchSliceDataFromImage();
-        }
-        if (this._autoScale) {
-            this.synchronizeSizeWithContent();
-        }
-        this.onImageLoadedObservable.notifyObservers(this);
-        this._markAsDirty();
-    };
     Image.prototype._extractNinePatchSliceDataFromImage = function () {
         if (!this._workingCanvas) {
             this._workingCanvas = document.createElement("canvas");
@@ -7424,6 +7406,44 @@ var Image = /** @class */ (function (_super) {
                 break;
             }
         }
+    };
+    Object.defineProperty(Image.prototype, "domImage", {
+        get: function () {
+            return this._domImage;
+        },
+        /**
+         * Gets or sets the internal DOM image used to render the control
+         */
+        set: function (value) {
+            var _this = this;
+            this._domImage = value;
+            this._loaded = false;
+            this._imageDataCache.data = null;
+            if (this._domImage.width) {
+                this._onImageLoaded();
+            }
+            else {
+                this._domImage.onload = function () {
+                    _this._onImageLoaded();
+                };
+            }
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Image.prototype._onImageLoaded = function () {
+        this._imageDataCache.data = null;
+        this._imageWidth = this._domImage.width;
+        this._imageHeight = this._domImage.height;
+        this._loaded = true;
+        if (this._populateNinePatchSlicesFromImage) {
+            this._extractNinePatchSliceDataFromImage();
+        }
+        if (this._autoScale) {
+            this.synchronizeSizeWithContent();
+        }
+        this.onImageLoadedObservable.notifyObservers(this);
+        this._markAsDirty();
     };
     Object.defineProperty(Image.prototype, "source", {
         /**
@@ -7740,41 +7760,37 @@ var Image = /** @class */ (function (_super) {
         }
         context.restore();
     };
-    Image.prototype._renderCornerPatch = function (context, x, y, width, height, targetX, targetY) {
-        this._drawImage(context, x, y, width, height, this._currentMeasure.left + targetX, this._currentMeasure.top + targetY, width, height);
-    };
     Image.prototype._renderNinePatch = function (context) {
-        var height = this._imageHeight;
         var leftWidth = this._sliceLeft;
         var topHeight = this._sliceTop;
         var bottomHeight = this._imageHeight - this._sliceBottom;
         var rightWidth = this._imageWidth - this._sliceRight;
-        var left = 0;
-        var top = 0;
-        if (this._populateNinePatchSlicesFromImage) {
-            left = 1;
-            top = 1;
-            height -= 2;
-            leftWidth -= 1;
-            topHeight -= 1;
-            bottomHeight -= 1;
-            rightWidth -= 1;
-        }
         var centerWidth = this._sliceRight - this._sliceLeft;
-        var targetCenterWidth = this._currentMeasure.width - rightWidth - this.sliceLeft;
-        var targetTopHeight = this._currentMeasure.height - height + this._sliceBottom;
-        // Corners
-        this._renderCornerPatch(context, left, top, leftWidth, topHeight, 0, 0);
-        this._renderCornerPatch(context, left, this._sliceBottom, leftWidth, height - this._sliceBottom, 0, targetTopHeight);
-        this._renderCornerPatch(context, this._sliceRight, top, rightWidth, topHeight, this._currentMeasure.width - rightWidth, 0);
-        this._renderCornerPatch(context, this._sliceRight, this._sliceBottom, rightWidth, height - this._sliceBottom, this._currentMeasure.width - rightWidth, targetTopHeight);
+        var centerHeight = this._sliceBottom - this._sliceTop;
+        var targetCenterWidth = (this._currentMeasure.width - rightWidth - leftWidth) + 2;
+        var targetCenterHeight = (this._currentMeasure.height - bottomHeight - topHeight) + 2;
+        var centerLeftOffset = this._currentMeasure.left + leftWidth - 1;
+        var centerTopOffset = this._currentMeasure.top + topHeight - 1;
+        var rightOffset = this._currentMeasure.left + this._currentMeasure.width - rightWidth;
+        var bottomOffset = this._currentMeasure.top + this._currentMeasure.height - bottomHeight;
+        //Top Left
+        this._drawImage(context, 0, 0, leftWidth, topHeight, this._currentMeasure.left, this._currentMeasure.top, leftWidth, topHeight);
+        //Top
+        this._drawImage(context, this._sliceLeft, 0, centerWidth, topHeight, centerLeftOffset, this._currentMeasure.top, targetCenterWidth, topHeight);
+        //Top Right
+        this._drawImage(context, this.sliceRight, 0, rightWidth, topHeight, rightOffset, this._currentMeasure.top, rightWidth, topHeight);
+        //Left
+        this._drawImage(context, 0, this._sliceTop, leftWidth, centerHeight, this._currentMeasure.left, centerTopOffset, leftWidth, targetCenterHeight);
         // Center
-        this._drawImage(context, this._sliceLeft, this._sliceTop, centerWidth, this._sliceBottom - this._sliceTop, this._currentMeasure.left + leftWidth, this._currentMeasure.top + topHeight, targetCenterWidth, targetTopHeight - topHeight);
-        // Borders
-        this._drawImage(context, left, this._sliceTop, leftWidth, this._sliceBottom - this._sliceTop, this._currentMeasure.left, this._currentMeasure.top + topHeight, leftWidth, targetTopHeight - topHeight);
-        this._drawImage(context, this._sliceRight, this._sliceTop, leftWidth, this._sliceBottom - this._sliceTop, this._currentMeasure.left + this._currentMeasure.width - rightWidth, this._currentMeasure.top + topHeight, leftWidth, targetTopHeight - topHeight);
-        this._drawImage(context, this._sliceLeft, top, centerWidth, topHeight, this._currentMeasure.left + leftWidth, this._currentMeasure.top, targetCenterWidth, topHeight);
-        this._drawImage(context, this._sliceLeft, this._sliceBottom, centerWidth, bottomHeight, this._currentMeasure.left + leftWidth, this._currentMeasure.top + targetTopHeight, targetCenterWidth, bottomHeight);
+        this._drawImage(context, this._sliceLeft, this._sliceTop, centerWidth, centerHeight, centerLeftOffset, centerTopOffset, targetCenterWidth, targetCenterHeight);
+        //Right
+        this._drawImage(context, this._sliceRight, this._sliceTop, rightWidth, centerHeight, rightOffset, centerTopOffset, rightWidth, targetCenterHeight);
+        //Bottom Left
+        this._drawImage(context, 0, this._sliceBottom, leftWidth, bottomHeight, this._currentMeasure.left, bottomOffset, leftWidth, bottomHeight);
+        //Bottom
+        this._drawImage(context, this.sliceLeft, this._sliceBottom, centerWidth, bottomHeight, centerLeftOffset, bottomOffset, targetCenterWidth, bottomHeight);
+        //Bottom Right
+        this._drawImage(context, this._sliceRight, this._sliceBottom, rightWidth, bottomHeight, rightOffset, bottomOffset, rightWidth, bottomHeight);
     };
     Image.prototype.dispose = function () {
         _super.prototype.dispose.call(this);
@@ -7792,9 +7808,6 @@ var Image = /** @class */ (function (_super) {
     Image.STRETCH_EXTEND = 3;
     /** NINE_PATCH */
     Image.STRETCH_NINE_PATCH = 4;
-    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
-        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
-    ], Image.prototype, "populateNinePatchSlicesFromImage", null);
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], Image.prototype, "detectPointerOnOpaqueOnly", null);
@@ -7822,6 +7835,15 @@ var Image = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], Image.prototype, "sourceHeight", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Image.prototype, "imageWidth", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Image.prototype, "imageHeight", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Image.prototype, "populateNinePatchSlicesFromImage", null);
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], Image.prototype, "autoScale", null);

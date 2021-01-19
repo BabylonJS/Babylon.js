@@ -1473,7 +1473,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 let shaderName = "shadowMap";
                 let uniforms = ["world", "mBones", "viewProjection", "diffuseMatrix", "lightDataSM", "depthValuesSM", "biasAndScaleSM", "morphTargetInfluences", "boneTextureWidth",
                                 "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "softTransparentShadowSM",
-                                "morphTargetTextureInfo"];
+                                "morphTargetTextureInfo", "morphTargetTextureIndices"];
                 let samplers = ["diffuseSampler", "boneSampler", "morphTargets"];
 
                 // Custom shader?
