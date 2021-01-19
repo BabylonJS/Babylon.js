@@ -468,11 +468,13 @@ void main(void) {
                 #endif
             #endif
         #endif
+        #if defined(SS_REFRACTION) || defined(SS_TRANSLUCENCY)
+            surfaceAlbedo,
+        #endif
         #ifdef SS_REFRACTION
             vPositionW,
             viewDirectionW,
             view,
-            surfaceAlbedo,
             vRefractionInfos,
             refractionMatrix,
             vRefractionMicrosurfaceInfos,

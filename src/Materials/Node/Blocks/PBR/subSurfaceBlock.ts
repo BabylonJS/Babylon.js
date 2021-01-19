@@ -175,11 +175,13 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
                     #endif
                 #endif
             #endif
+            #if defined(SS_REFRACTION) || defined(SS_TRANSLUCENCY)
+                surfaceAlbedo,
+            #endif
             #ifdef SS_REFRACTION
                 ${worldPosVarName}.xyz,
                 viewDirectionW,
                 ${refractionView},
-                surfaceAlbedo,
                 ${refractionBlock?._vRefractionInfosName ?? ""},
                 ${refractionBlock?._refractionMatrixName ?? ""},
                 ${refractionBlock?._vRefractionMicrosurfaceInfosName ?? ""},
@@ -227,7 +229,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
                 #ifdef SS_LINKREFRACTIONTOTRANSPARENCY
                     alpha = subSurfaceOut.alpha;
                 #endif
-            #elif defined(SS_SCATTERING)
+            #elif defined(SS_TRANSLUCENCY)
                 surfaceAlbedo = subSurfaceOut.surfaceAlbedo;
             #endif
         #else
