@@ -4,7 +4,7 @@ import { GlobalState } from '../../globalState';
 import { Nullable } from 'babylonjs/types';
 import { ButtonLineComponent } from '../../sharedComponents/buttonLineComponent';
 import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
-import { StringTools } from '../../stringTools';
+import { StringTools } from '../../sharedUiComponents/stringTools';
 import { FileButtonLineComponent } from '../../sharedComponents/fileButtonLineComponent';
 import { Tools } from 'babylonjs/Misc/tools';
 import { SerializationTools } from '../../serializationTools';
