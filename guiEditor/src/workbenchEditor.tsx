@@ -12,8 +12,6 @@ import { WorkbenchComponent } from "./diagram/workbench";
 import { GUINode } from "./diagram/guiNode";
 import { _TypeStore } from "babylonjs/Misc/typeStore";
 import { MessageDialogComponent } from "./sharedComponents/messageDialog";
-import { Control } from "babylonjs-gui/2D/controls/control";
-import { Container } from "babylonjs-gui/2D/controls/container";
 
 require("./main.scss");
 
@@ -34,27 +32,9 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     private _leftWidth = DataStorage.ReadNumber("LeftWidth", 200);
     private _rightWidth = DataStorage.ReadNumber("RightWidth", 300);
 
-    private _blocks = new Array<Container | Control>();
-
     private _onWidgetKeyUpPointer: any;
-
     private _popUpWindow: Window;
 
-    /**
-     * Creates a node and recursivly creates its parent nodes from it's input
-     * @param block
-     */
-    public createNodeFromObject(block: Control, recursion = true) {
-        if (this._blocks.indexOf(block) !== -1) {
-            return this._workbenchCanvas.nodes.filter((n) => n.guiControl === block)[0];
-        }
-
-        this._blocks.push(block);
-
-        //TODO: Implement
-        const node = null;
-        return node;
-    }
 
     componentDidMount() {
         if (this.props.globalState.hostDocument) {
@@ -84,13 +64,13 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
             (evt) => {
                 if ((evt.keyCode === 46 || evt.keyCode === 8) && !this.props.globalState.blockKeyboardEvents) {
                     // Delete
-                    let selectedItems = this._workbenchCanvas.selectedGuiNodes;
+                    /*let selectedItems = this._workbenchCanvas.selectedGuiNodes;
 
                     for (var selectedItem of selectedItems) {
                         selectedItem.dispose();
                     }
                     this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-                    return;
+                    return;*/
                 }
 
                 if (!evt.ctrlKey || this.props.globalState.blockKeyboardEvents) {
@@ -112,7 +92,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                     }
                 } else if (evt.key === "v") {
                     // Paste
-                    //TODO: Implement
                 }
             },
             false
@@ -226,8 +205,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         let guiElement = GUINodeTools.CreateControlFromString (data);
 
         let newGuiNode = this._workbenchCanvas.appendBlock(guiElement);
-
-        //TODO: Get correct positioning
 
         /*let x = event.clientX; // - event.currentTarget.offsetLeft - this._workbenchCanvas.x;
         let y = event.clientY;   // - event.currentTarget.offsetTop - this._workbenchCanvas.y - 20; 

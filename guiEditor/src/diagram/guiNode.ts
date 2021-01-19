@@ -127,7 +127,6 @@ export class GUINode {
         }
         );
 
-        //TODO: Implement
         this._onSelectionBoxMovedObserver = this._globalState.onSelectionBoxMoved.add(rect1 => {
         });
 
@@ -144,7 +143,6 @@ export class GUINode {
         if(!this.clicked) return false;
         console.log("moving");
 
-        //TODO: Implement move with zoom factor.
         let newX = (evt.x - startPos.x) ;// / this._ownerCanvas.zoom;
         let newY = (evt.y - startPos.y) ;// / this._ownerCanvas.zoom;
 

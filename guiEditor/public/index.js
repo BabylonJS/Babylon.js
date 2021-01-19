@@ -27,8 +27,7 @@ var checkHash = function () {
                 xmlHttp.onreadystatechange = function () {
                     if (xmlHttp.readyState == 4) {
                         if (xmlHttp.status == 200) {
-                            
-                            //TODO: Implement
+
                             //var snippet = JSON.parse(JSON.parse(xmlHttp.responseText).jsonPayload);
                             showEditor();
                         }
