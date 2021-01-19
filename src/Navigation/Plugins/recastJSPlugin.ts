@@ -1,4 +1,4 @@
-import { INavigationEnginePlugin, ICrowd, IAgentParameters, INavMeshParameters } from "../../Navigation/INavigationEngine";
+import { INavigationEnginePlugin, ICrowd, IAgentParameters, INavMeshParameters, IObstacle } from "../../Navigation/INavigationEngine";
 import { Logger } from "../../Misc/logger";
 import { VertexData } from "../../Meshes/mesh.vertexData";
 import { Mesh } from "../../Meshes/mesh";
@@ -98,8 +98,8 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
         const rc = new this.bjsRECAST.rcConfig();
         rc.cs = parameters.cs;
         rc.ch = parameters.ch;
-        rc.borderSize = 0;
-        rc.tileSize = 0;
+        rc.borderSize = parameters.borderSize ? parameters.borderSize : 0;
+        rc.tileSize = parameters.tileSize ? parameters.tileSize : 0;
         rc.walkableSlopeAngle = parameters.walkableSlopeAngle;
         rc.walkableHeight = parameters.walkableHeight;
         rc.walkableClimb = parameters.walkableClimb;
@@ -167,7 +167,6 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
                 }
             }
         }
-
         this.navMesh.build(positions, offset, indices, indices.length, rc);
     }
 
@@ -390,6 +389,39 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      */
     public dispose() {
 
+    }
+
+    /**
+     * Creates a cylinder obstacle and add it to the navigation
+     * @param position world position
+     * @param radius cylinder radius
+     * @param height cylinder height
+     * @returns the obstacle freshly created
+     */
+    addCylinderObstacle(position: Vector3, radius: number, height: number): IObstacle
+    {
+        return this.navMesh.addCylinderObstacle(new this.bjsRECAST.Vec3(position.x, position.y, position.z), radius, height);
+    }
+
+    /**
+     * Creates an oriented box obstacle and add it to the navigation
+     * @param position world position
+     * @param extent box size
+     * @param angle angle in radians of the box orientation on Y axis
+     * @returns the obstacle freshly created
+     */
+    addBoxObstacle(position: Vector3, extent: Vector3, angle: number): IObstacle
+    {
+        return this.navMesh.addBoxObstacle(new this.bjsRECAST.Vec3(position.x, position.y, position.z), new this.bjsRECAST.Vec3(extent.x, extent.y, extent.z), angle);
+    }
+
+    /**
+     * Removes an obstacle created by addCylinderObstacle or addBoxObstacle
+     * @param obstacle obstacle to remove from the navigation
+     */
+    removeObstacle(obstacle: IObstacle): void
+    {
+        this.navMesh.removeObstacle(obstacle);
     }
 
     /**
@@ -634,6 +666,8 @@ export class RecastJSCrowd implements ICrowd {
      * @param deltaTime in seconds
      */
     update(deltaTime: number): void {
+        // update obstacles
+        this.bjsRECASTPlugin.navMesh.update();
         // update crowd
         var timeStep = this.bjsRECASTPlugin.getTimeStep();
         var maxStepCount = this.bjsRECASTPlugin.getMaximumSubStepCount();
@@ -690,6 +724,25 @@ export class RecastJSCrowd implements ICrowd {
     {
         let p = this.recastCrowd.getDefaultQueryExtent();
         result.set(p.x, p.y, p.z);
+    }
+
+    /**
+     * Get the next corner points composing the path (max 4 points)
+     * @param index agent index returned by addAgent
+     * @returns array containing world position composing the path
+     */
+    getCorners(index: number): Vector3[]
+    {
+        let pt: number;
+        const navPath = this.recastCrowd.getPath(index);
+        const pointCount = navPath.getPointCount();
+        var positions = [];
+        for (pt = 0; pt < pointCount; pt++)
+        {
+            let p = navPath.getPoint(pt);
+            positions.push(new Vector3(p.x, p.y, p.z));
+        }
+        return positions;
     }
 
     /**
