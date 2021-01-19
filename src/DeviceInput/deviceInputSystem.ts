@@ -48,7 +48,7 @@ export class DeviceInputSystem implements IDisposable {
     /**
      * Callback to be triggered when event driven input is updated
      */
-    public onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>) => void;
+    public onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>, eventData?: any) => void;
 
     // Private Members
     private _inputs: Array<Array<Array<number>>> = [];
@@ -160,8 +160,8 @@ export class DeviceInputSystem implements IDisposable {
     public dispose() {
         // Keyboard Events
         if (this._keyboardActive) {
-            window.removeEventListener("keydown", this._keyboardDownEvent);
-            window.removeEventListener("keyup", this._keyboardUpEvent);
+            this._elementToAttachTo.removeEventListener("keydown", this._keyboardDownEvent);
+            this._elementToAttachTo.removeEventListener("keyup", this._keyboardUpEvent);
         }
 
         // Pointer Events
@@ -276,7 +276,10 @@ export class DeviceInputSystem implements IDisposable {
             if (kbKey) {
                 kbKey[evt.keyCode] = 1;
                 if (this.onInputChanged) {
-                    this.onInputChanged(DeviceType.Keyboard, 0, evt.keyCode, 0, kbKey[evt.keyCode]);
+                    const eventData: {[k: string]: any} = {};
+                    eventData.key = evt.key;
+
+                    this.onInputChanged(DeviceType.Keyboard, 0, evt.keyCode, 0, kbKey[evt.keyCode], eventData);
                 }
             }
         });
@@ -291,13 +294,16 @@ export class DeviceInputSystem implements IDisposable {
             if (kbKey) {
                 kbKey[evt.keyCode] = 0;
                 if (this.onInputChanged) {
-                    this.onInputChanged(DeviceType.Keyboard, 0, evt.keyCode, 1, kbKey[evt.keyCode]);
+                    const eventData: {[k: string]: any} = {};
+                    eventData.key = evt.key;
+
+                    this.onInputChanged(DeviceType.Keyboard, 0, evt.keyCode, 1, kbKey[evt.keyCode], eventData);
                 }
             }
         });
 
-        window.addEventListener("keydown", this._keyboardDownEvent);
-        window.addEventListener("keyup", this._keyboardUpEvent);
+        this._elementToAttachTo.addEventListener("keydown", this._keyboardDownEvent);
+        this._elementToAttachTo.addEventListener("keyup", this._keyboardUpEvent);
     }
 
     /**

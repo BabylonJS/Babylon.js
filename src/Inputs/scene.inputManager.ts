@@ -801,7 +801,7 @@ export class InputManager {
             }
         };
 
-        this._deviceInputSystem.onInputChanged = (deviceType, deviceSlot, inputIndex, previousState, currentState) => {
+        this._deviceInputSystem.onInputChanged = (deviceType, deviceSlot, inputIndex, previousState, currentState, eventData) => {
             let isKeyboardActive = this._deviceInputSystem.isDeviceAvailable(DeviceType.Keyboard);
 
             const altKey = (isKeyboardActive && this._deviceInputSystem.pollInput(DeviceType.Keyboard, 0, Constants.INPUT_ALT_KEY) === 1);
@@ -823,7 +823,7 @@ export class InputManager {
             // Keyboard Events
             if (deviceType === DeviceType.Keyboard) {
                 evt.type = ((currentState === 1) ? "keydown" : "keyup");
-                evt.key = String.fromCharCode(inputIndex);
+                evt.key = eventData.key;
                 evt.keyCode = inputIndex;
 
                 if (currentState === 1) {
