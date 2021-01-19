@@ -59,11 +59,13 @@ export class DeviceInputSystem implements IDisposable {
 
     private _keyboardDownEvent = (evt: any) => { };
     private _keyboardUpEvent = (evt: any) => { };
+    private _keyboardBlurEvent = (evt: any) => { };
 
     private _pointerMoveEvent = (evt: any) => { };
     private _pointerDownEvent = (evt: any) => { };
     private _pointerUpEvent = (evt: any) => { };
     private _pointerWheelEvent = (evt: any) => { };
+    private _pointerBlurEvent = (evt: any) => { };
     private _wheelEventName: string;
 
     private _gamepadConnectedEvent = (evt: any) => { };
@@ -158,6 +160,10 @@ export class DeviceInputSystem implements IDisposable {
      * Dispose of all the eventlisteners
      */
     public dispose() {
+        // Blur Events
+        this._elementToAttachTo.removeEventListener("blur", this._keyboardBlurEvent);
+        this._elementToAttachTo.removeEventListener("blur", this._pointerBlurEvent);
+
         // Keyboard Events
         if (this._keyboardActive) {
             this._elementToAttachTo.removeEventListener("keydown", this._keyboardDownEvent);
@@ -276,7 +282,7 @@ export class DeviceInputSystem implements IDisposable {
             if (kbKey) {
                 kbKey[evt.keyCode] = 1;
                 if (this.onInputChanged) {
-                    const eventData: {[k: string]: any} = {};
+                    const eventData: { [k: string]: any } = {};
                     eventData.key = evt.key;
 
                     this.onInputChanged(DeviceType.Keyboard, 0, evt.keyCode, 0, kbKey[evt.keyCode], eventData);
@@ -294,7 +300,7 @@ export class DeviceInputSystem implements IDisposable {
             if (kbKey) {
                 kbKey[evt.keyCode] = 0;
                 if (this.onInputChanged) {
-                    const eventData: {[k: string]: any} = {};
+                    const eventData: { [k: string]: any } = {};
                     eventData.key = evt.key;
 
                     this.onInputChanged(DeviceType.Keyboard, 0, evt.keyCode, 1, kbKey[evt.keyCode], eventData);
@@ -302,8 +308,27 @@ export class DeviceInputSystem implements IDisposable {
             }
         });
 
+        this._keyboardBlurEvent = (evt) => {
+            if (this._keyboardActive) {
+                const kbKey = this._inputs[DeviceType.Keyboard][0];
+
+                for (let i = 0; i < kbKey.length; i++) {
+                    if (kbKey[i] !== 0) {
+                        kbKey[i] = 0;
+                        if (this.onInputChanged) {
+                            const eventData: { [k: string]: any } = {};
+                            eventData.key = evt.key;
+
+                            this.onInputChanged(DeviceType.Keyboard, 0, i, 1, kbKey[i], eventData);
+                        }
+                    }
+                }
+            }
+        };
+
         this._elementToAttachTo.addEventListener("keydown", this._keyboardDownEvent);
         this._elementToAttachTo.addEventListener("keyup", this._keyboardUpEvent);
+        this._elementToAttachTo.addEventListener("blur", this._keyboardBlurEvent);
     }
 
     /**
@@ -417,6 +442,36 @@ export class DeviceInputSystem implements IDisposable {
 
         });
 
+        this._pointerBlurEvent = ((evt) => {
+            // Handle mouse buttons
+            if (this.isDeviceAvailable(DeviceType.Mouse)) {
+                const pointer = this._inputs[DeviceType.Mouse][0];
+                for (let i = 0; i < DeviceInputSystem._MAX_POINTER_INPUTS; i++) {
+                    if (pointer[i + 2] === 1) {
+                        pointer[i + 2] = 0;
+
+                        if (this.onInputChanged) {
+                            this.onInputChanged(DeviceType.Mouse, 0, i + 2, 1, pointer[i + 2]);
+                        }
+                    }
+                }
+            }
+
+            // Handle Active Touches
+            if (this.isDeviceAvailable(DeviceType.Touch)) {
+                const pointer = this._inputs[DeviceType.Touch];
+                for (let i = 0; i < pointer.length; i++) {
+                    if (pointer[i][PointerInput.LeftClick] === 1) {
+                        pointer[i][PointerInput.LeftClick] = 0;
+
+                        if (this.onInputChanged) {
+                            this.onInputChanged(DeviceType.Touch, i, PointerInput.LeftClick, 1, pointer[i][PointerInput.LeftClick]);
+                        }
+                    }
+                }
+            }
+        });
+
         // Set Wheel Event Name, code originally from scene.inputManager
         this._wheelEventName = "onwheel" in document.createElement("div") ? "wheel" :       // Modern browsers support "wheel"
             (<any>document).onmousewheel !== undefined ? "mousewheel" :                     // Webkit and IE support at least "mousewheel"
@@ -486,6 +541,7 @@ export class DeviceInputSystem implements IDisposable {
         this._elementToAttachTo.addEventListener(this._eventPrefix + "move", this._pointerMoveEvent);
         this._elementToAttachTo.addEventListener(this._eventPrefix + "down", this._pointerDownEvent);
         this._elementToAttachTo.addEventListener(this._eventPrefix + "up", this._pointerUpEvent);
+        this._elementToAttachTo.addEventListener("blur", this._pointerBlurEvent);
         this._elementToAttachTo.addEventListener(this._wheelEventName, this._pointerWheelEvent, passiveSupported ? { passive: false } : false);
     }
 
