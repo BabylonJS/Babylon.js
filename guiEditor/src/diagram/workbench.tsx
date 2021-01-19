@@ -150,7 +150,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 this._selectedGuiNodes = [];
             } 
             else {
-                if (selection instanceof GUINode){
+                if (selection instanceof GUINode ) {
                     if (this._ctrlKeyIsPressed) {
                         if (this._selectedGuiNodes.indexOf(selection) === -1) {
                             this._selectedGuiNodes.push(selection);
@@ -159,6 +159,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                     else {              
                         this._selectedGuiNodes = [selection];
                     }
+                    
                 
                 } 
             }
@@ -194,7 +195,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }
 		return gridSize * Math.floor(position / gridSize);
     }
-    
+
     public getGridPositionCeil(position: number) {
         let gridSize = this.gridSize;
 		if (gridSize === 0) {
@@ -202,6 +203,29 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 		}
 		return gridSize * Math.ceil(position / gridSize);
 	}
+
+    loadFromJson(serializationObject: any) {
+        this.globalState.onSelectionChangedObservable.notifyObservers(null);
+        this._guiNodes = [];
+        this.globalState.guiTexture.parseContent(serializationObject);
+        this.props.globalState.workbench.loadFromGuiTexture();
+    }
+    
+    async loadFromSnippet(snippedID: string){
+        this.globalState.onSelectionChangedObservable.notifyObservers(null);
+        this._guiNodes = [];
+        await this.globalState.guiTexture.parseFromSnippetAsync(snippedID);
+        this.props.globalState.workbench.loadFromGuiTexture();
+    }
+    
+    loadFromGuiTexture()
+    {
+        var children = this.globalState.guiTexture.getChildren();
+        children[0].children.forEach(guiElement => {
+            var newGuiNode = new GUINode(this.props.globalState, guiElement);
+            this._guiNodes.push(newGuiNode);
+        });
+    }
 
     updateTransform() {
         this._rootContainer.style.transform = `translate(${this._x}px, ${this._y}px) scale(${this._zoom})`;
@@ -399,9 +423,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }
         
         this._mouseStartPointX = evt.clientX;
-        this._mouseStartPointY = evt.clientY;        
+        this._mouseStartPointY = evt.clientY;   
+             
     }
 
+    public isUp : boolean = true;
     onUp(evt: React.PointerEvent) {
         this._mouseStartPointX = null;
         this._mouseStartPointY = null;
@@ -420,6 +446,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this._frameCandidate = null;
 
         }
+        this.isUp = true;
+        
     }
 
     onWheel(evt: React.WheelEvent) {
