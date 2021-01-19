@@ -1,9 +1,9 @@
 struct subSurfaceOutParams
 {
     vec3 specularEnvironmentReflectance;
-    vec3 surfaceAlbedo;
 #ifdef SS_REFRACTION
     vec3 finalRefraction;
+    vec3 surfaceAlbedo;
     #ifdef SS_LINKREFRACTIONTOTRANSPARENCY
         float alpha;
     #endif
@@ -58,11 +58,13 @@ struct subSurfaceOutParams
             #endif
         #endif
     #endif
+    #if defined(SS_REFRACTION) || defined(SS_TRANSLUCENCY)
+        const in vec3 surfaceAlbedo,
+    #endif
     #ifdef SS_REFRACTION
         const in vec3 vPositionW,
         const in vec3 viewDirectionW,
         const in mat4 view,
-        const in vec3 surfaceAlbedo,
         const in vec4 vRefractionInfos,
         const in mat4 refractionMatrix,
         const in vec3 vRefractionMicrosurfaceInfos,
@@ -101,9 +103,6 @@ struct subSurfaceOutParams
     #ifdef SS_TRANSLUCENCY
         const in vec3 vDiffusionDistance,
     #endif
-    #ifdef(SS_TRANSLUCENCY)
-        const in vec3 surfaceAlbedo,
-    #endif
         out subSurfaceOutParams outParams
     )
     {
@@ -120,7 +119,7 @@ struct subSurfaceOutParams
             outParams.alpha = 1.0;
         #endif
     #endif
-    #ifdef(SS_TRANSLUCENCY)
+    #ifdef SS_TRANSLUCENCY
         float translucencyIntensity = vSubSurfaceIntensity.y;
     #endif
 
