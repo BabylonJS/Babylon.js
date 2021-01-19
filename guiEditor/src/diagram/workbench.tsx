@@ -376,8 +376,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     onDown(evt: React.PointerEvent<HTMLElement>) {
         this._rootContainer.setPointerCapture(evt.pointerId);
 
-        //TODO: Inplement group selection
-        // Selection?
         /*if (evt.currentTarget === this._hostCanvas && evt.ctrlKey) {
             this._selectionBox = this.props.globalState.hostDocument.createElement("div");
             this._selectionBox.classList.add("selection-box");
