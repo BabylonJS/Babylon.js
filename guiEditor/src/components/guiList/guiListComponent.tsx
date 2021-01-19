@@ -40,10 +40,10 @@ export class GuiListComponent extends React.Component<IGuiListComponentProps, { 
         // Block types used to create the menu from
         const allBlocks: any = {
             Buttons: ["TextButton", "ImageButton"],
-            Controls: ["Slider", "Checkbox", "ColorPicker", "VisualKeyboard"],
-            Containers: ["DisplayGrid", "Grid", "StackPanel"],
+            Controls: ["Slider", "Checkbox", "ColorPicker", "VirtualKeyboard"],
+            Containers: ["DisplayGrid", "Grid"],
             Shapes: ["Ellipse", "Image", "Line", "Rectangle"],
-            Inputs: ["Text", "IntputText", "InputPassword"],
+            Inputs: ["Text", "InputText", "InputPassword"],
         };
 
         // Create node menu
