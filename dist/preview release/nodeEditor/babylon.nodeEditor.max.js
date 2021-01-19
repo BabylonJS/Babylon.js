@@ -57077,7 +57077,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../sharedComponents/buttonLineComponent */ "./sharedComponents/buttonLineComponent.tsx");
 /* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
-/* harmony import */ var _stringTools__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../stringTools */ "./stringTools.ts");
+/* harmony import */ var _sharedUiComponents_stringTools__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../sharedUiComponents/stringTools */ "./sharedUiComponents/stringTools.ts");
 /* harmony import */ var _sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../sharedComponents/fileButtonLineComponent */ "./sharedComponents/fileButtonLineComponent.tsx");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/dataStorage");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__);
@@ -57225,7 +57225,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
     };
     PropertyTabComponent.prototype.save = function () {
         var json = _serializationTools__WEBPACK_IMPORTED_MODULE_7__["SerializationTools"].Serialize(this.props.globalState.nodeMaterial, this.props.globalState);
-        _stringTools__WEBPACK_IMPORTED_MODULE_4__["StringTools"].DownloadAsFile(this.props.globalState.hostDocument, json, "nodeMaterial.json");
+        _sharedUiComponents_stringTools__WEBPACK_IMPORTED_MODULE_4__["StringTools"].DownloadAsFile(this.props.globalState.hostDocument, json, "nodeMaterial.json");
     };
     PropertyTabComponent.prototype.customSave = function () {
         var _this = this;
@@ -57422,10 +57422,10 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                             _this.save();
                         } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Generate code", onClick: function () {
-                            _stringTools__WEBPACK_IMPORTED_MODULE_4__["StringTools"].DownloadAsFile(_this.props.globalState.hostDocument, _this.props.globalState.nodeMaterial.generateCode(), "code.txt");
+                            _sharedUiComponents_stringTools__WEBPACK_IMPORTED_MODULE_4__["StringTools"].DownloadAsFile(_this.props.globalState.hostDocument, _this.props.globalState.nodeMaterial.generateCode(), "code.txt");
                         } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Export shaders", onClick: function () {
-                            _stringTools__WEBPACK_IMPORTED_MODULE_4__["StringTools"].DownloadAsFile(_this.props.globalState.hostDocument, _this.props.globalState.nodeMaterial.compiledShaders, "shaders.txt");
+                            _sharedUiComponents_stringTools__WEBPACK_IMPORTED_MODULE_4__["StringTools"].DownloadAsFile(_this.props.globalState.hostDocument, _this.props.globalState.nodeMaterial.compiledShaders, "shaders.txt");
                         } }),
                     this.props.globalState.customSave &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: this.props.globalState.customSave.label, onClick: function () {
@@ -57571,8 +57571,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialSystemValues */ "babylonjs/Misc/dataStorage");
 /* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _blockTools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../blockTools */ "./blockTools.ts");
-/* harmony import */ var _stringTools__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../stringTools */ "./stringTools.ts");
-
 
 
 
@@ -57609,11 +57607,14 @@ var InputDisplayManager = /** @class */ (function () {
     };
     InputDisplayManager.prototype.getHeaderText = function (block) {
         var inputBlock = block;
-        var name = inputBlock.name + " (" + _stringTools__WEBPACK_IMPORTED_MODULE_2__["StringTools"].GetBaseType(inputBlock.output.type) + ")";
+        var name = inputBlock.name + " (" + InputDisplayManager.GetBaseType(inputBlock.output.type) + ")";
         if (inputBlock.isAttribute) {
-            name = _stringTools__WEBPACK_IMPORTED_MODULE_2__["StringTools"].GetBaseType(inputBlock.output.type);
+            name = InputDisplayManager.GetBaseType(inputBlock.output.type);
         }
         return name;
+    };
+    InputDisplayManager.GetBaseType = function (type) {
+        return babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"][type];
     };
     InputDisplayManager.prototype.getBackgroundColor = function (block) {
         var color = "";
@@ -59045,7 +59046,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/dataStorage");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _serializationTools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../serializationTools */ "./serializationTools.ts");
-/* harmony import */ var _stringTools__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../stringTools */ "./stringTools.ts");
+/* harmony import */ var _sharedUiComponents_stringTools__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../sharedUiComponents/stringTools */ "./sharedUiComponents/stringTools.ts");
 /* harmony import */ var _frameNodePort__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./frameNodePort */ "./diagram/frameNodePort.ts");
 
 
@@ -60367,7 +60368,7 @@ var GraphFrame = /** @class */ (function () {
     GraphFrame.prototype.export = function () {
         var state = this._ownerCanvas.globalState;
         var json = _serializationTools__WEBPACK_IMPORTED_MODULE_1__["SerializationTools"].Serialize(state.nodeMaterial, state, this);
-        _stringTools__WEBPACK_IMPORTED_MODULE_2__["StringTools"].DownloadAsFile(state.hostDocument, json, this._name + ".json");
+        _sharedUiComponents_stringTools__WEBPACK_IMPORTED_MODULE_2__["StringTools"].DownloadAsFile(state.hostDocument, json, this._name + ".json");
     };
     GraphFrame.Parse = function (serializationData, canvas, map) {
         var newFrame = new GraphFrame(null, canvas, true);
@@ -66094,19 +66095,16 @@ var HexColor = /** @class */ (function (_super) {
 
 /***/ }),
 
-/***/ "./stringTools.ts":
-/*!************************!*\
-  !*** ./stringTools.ts ***!
-  \************************/
+/***/ "./sharedUiComponents/stringTools.ts":
+/*!*******************************************!*\
+  !*** ./sharedUiComponents/stringTools.ts ***!
+  \*******************************************/
 /*! exports provided: StringTools */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "StringTools", function() { return StringTools; });
-/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Misc/dataStorage");
-/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__);
-
 var StringTools = /** @class */ (function () {
     function StringTools() {
     }
@@ -66178,13 +66176,6 @@ var StringTools = /** @class */ (function () {
             evt.initMouseEvent('click', true, true, window, 0, 0, 0, 80, 20, false, false, false, false, 0, null);
             node.dispatchEvent(evt);
         }
-    };
-    /**
-     * Gets the base math type of node material block connection point.
-     * @param type Type to parse.
-     */
-    StringTools.GetBaseType = function (type) {
-        return babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"][type];
     };
     /**
      * Download a string into a file that will be saved locally by the browser

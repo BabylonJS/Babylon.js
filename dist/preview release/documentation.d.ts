@@ -11839,6 +11839,10 @@ declare module BABYLON {
         private _noMipmap;
         private _files;
         protected _forcedExtension: Nullable<string>;
+        /**
+         * Gets the forced extension (if any)
+         */
+        get forcedExtension(): Nullable<string>;
         private _extensions;
         private _textureMatrix;
         private _format;
@@ -33738,6 +33742,10 @@ declare module BABYLON {
         * An event triggered after rendering the mesh
         */
         get onAfterRenderObservable(): Observable<Mesh>;
+        /**
+        * An event triggeredbetween rendering pass wneh using separateCullingPass = true
+        */
+        get onBetweenPassObservable(): Observable<Mesh>;
         /**
         * An event triggered before drawing the mesh
         */
@@ -59801,6 +59809,215 @@ declare module BABYLON.Debug {
 }
 declare module BABYLON {
     /**
+     * A directional light is defined by a direction (what a surprise!).
+     * The light is emitted from everywhere in the specified direction, and has an infinite range.
+     * An example of a directional light is when a distance planet is lit by the apparently parallel lines of light from its sun. Light in a downward direction will light the top of an object.
+     * Documentation: https://doc.babylonjs.com/babylon101/lights
+     */
+    export class DirectionalLight extends ShadowLight {
+        private _shadowFrustumSize;
+        /**
+         * Fix frustum size for the shadow generation. This is disabled if the value is 0.
+         */
+        get shadowFrustumSize(): number;
+        /**
+         * Specifies a fix frustum size for the shadow generation.
+         */
+        set shadowFrustumSize(value: number);
+        private _shadowOrthoScale;
+        /**
+         * Gets the shadow projection scale against the optimal computed one.
+         * 0.1 by default which means that the projection window is increase by 10% from the optimal size.
+         * This does not impact in fixed frustum size (shadowFrustumSize being set)
+         */
+        get shadowOrthoScale(): number;
+        /**
+         * Sets the shadow projection scale against the optimal computed one.
+         * 0.1 by default which means that the projection window is increase by 10% from the optimal size.
+         * This does not impact in fixed frustum size (shadowFrustumSize being set)
+         */
+        set shadowOrthoScale(value: number);
+        /**
+         * Automatically compute the projection matrix to best fit (including all the casters)
+         * on each frame.
+         */
+        autoUpdateExtends: boolean;
+        /**
+         * Automatically compute the shadowMinZ and shadowMaxZ for the projection matrix to best fit (including all the casters)
+         * on each frame. autoUpdateExtends must be set to true for this to work
+         */
+        autoCalcShadowZBounds: boolean;
+        private _orthoLeft;
+        private _orthoRight;
+        private _orthoTop;
+        private _orthoBottom;
+        /**
+         * Gets or sets the orthoLeft property used to build the light frustum
+         */
+        get orthoLeft(): number;
+        set orthoLeft(left: number);
+        /**
+         * Gets or sets the orthoRight property used to build the light frustum
+         */
+        get orthoRight(): number;
+        set orthoRight(right: number);
+        /**
+         * Gets or sets the orthoTop property used to build the light frustum
+         */
+        get orthoTop(): number;
+        set orthoTop(top: number);
+        /**
+         * Gets or sets the orthoBottom property used to build the light frustum
+         */
+        get orthoBottom(): number;
+        set orthoBottom(bottom: number);
+        /**
+         * Creates a DirectionalLight object in the scene, oriented towards the passed direction (Vector3).
+         * The directional light is emitted from everywhere in the given direction.
+         * It can cast shadows.
+         * Documentation : https://doc.babylonjs.com/babylon101/lights
+         * @param name The friendly name of the light
+         * @param direction The direction of the light
+         * @param scene The scene the light belongs to
+         */
+        constructor(name: string, direction: Vector3, scene: Scene);
+        /**
+         * Returns the string "DirectionalLight".
+         * @return The class name
+         */
+        getClassName(): string;
+        /**
+         * Returns the integer 1.
+         * @return The light Type id as a constant defines in Light.LIGHTTYPEID_x
+         */
+        getTypeID(): number;
+        /**
+         * Sets the passed matrix "matrix" as projection matrix for the shadows cast by the light according to the passed view matrix.
+         * Returns the DirectionalLight Shadow projection matrix.
+         */
+        protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
+        /**
+         * Sets the passed matrix "matrix" as fixed frustum projection matrix for the shadows cast by the light according to the passed view matrix.
+         * Returns the DirectionalLight Shadow projection matrix.
+         */
+        protected _setDefaultFixedFrustumShadowProjectionMatrix(matrix: Matrix): void;
+        /**
+         * Sets the passed matrix "matrix" as auto extend projection matrix for the shadows cast by the light according to the passed view matrix.
+         * Returns the DirectionalLight Shadow projection matrix.
+         */
+        protected _setDefaultAutoExtendShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
+        protected _buildUniformLayout(): void;
+        /**
+         * Sets the passed Effect object with the DirectionalLight transformed position (or position if not parented) and the passed name.
+         * @param effect The effect to update
+         * @param lightIndex The index of the light in the effect to update
+         * @returns The directional light
+         */
+        transferToEffect(effect: Effect, lightIndex: string): DirectionalLight;
+        transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string): Light;
+        /**
+         * Gets the minZ used for shadow according to both the scene and the light.
+         *
+         * Values are fixed on directional lights as it relies on an ortho projection hence the need to convert being
+         * -1 and 1 to 0 and 1 doing (depth + min) / (min + max) -> (depth + 1) / (1 + 1) -> (depth * 0.5) + 0.5.
+         * @param activeCamera The camera we are returning the min for
+         * @returns the depth min z
+         */
+        getDepthMinZ(activeCamera: Camera): number;
+        /**
+         * Gets the maxZ used for shadow according to both the scene and the light.
+         *
+         * Values are fixed on directional lights as it relies on an ortho projection hence the need to convert being
+         * -1 and 1 to 0 and 1 doing (depth + min) / (min + max) -> (depth + 1) / (1 + 1) -> (depth * 0.5) + 0.5.
+         * @param activeCamera The camera we are returning the max for
+         * @returns the depth max z
+         */
+        getDepthMaxZ(activeCamera: Camera): number;
+        /**
+         * Prepares the list of defines specific to the light type.
+         * @param defines the list of defines
+         * @param lightIndex defines the index of the light for the effect
+         */
+        prepareLightSpecificDefines(defines: any, lightIndex: number): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to render a debug view of the frustum for a directional light
+     * @see https://playground.babylonjs.com/#7EFGSG#3
+     */
+    export class DirectionalLightFrustumViewer {
+        private _scene;
+        private _light;
+        private _camera;
+        private _inverseViewMatrix;
+        private _visible;
+        private _rootNode;
+        private _lightHelperFrustumMeshes;
+        private _nearLinesPoints;
+        private _farLinesPoints;
+        private _trLinesPoints;
+        private _brLinesPoints;
+        private _tlLinesPoints;
+        private _blLinesPoints;
+        private _nearPlaneVertices;
+        private _farPlaneVertices;
+        private _rightPlaneVertices;
+        private _leftPlaneVertices;
+        private _topPlaneVertices;
+        private _bottomPlaneVertices;
+        private _oldPosition;
+        private _oldDirection;
+        private _oldAutoCalc;
+        private _oldMinZ;
+        private _oldMaxZ;
+        private _transparency;
+        /**
+         * Gets or sets the transparency of the frustum planes
+         */
+        get transparency(): number;
+        set transparency(alpha: number);
+        private _showLines;
+        /**
+         * true to display the edges of the frustum
+         */
+        get showLines(): boolean;
+        set showLines(show: boolean);
+        private _showPlanes;
+        /**
+         * true to display the planes of the frustum
+         */
+        get showPlanes(): boolean;
+        set showPlanes(show: boolean);
+        /**
+         * Creates a new frustum viewer
+         * @param light directional light to display the frustum for
+         * @param camera camera used to retrieve the minZ / maxZ values if the shadowMinZ/shadowMaxZ values of the light are not setup
+         */
+        constructor(light: DirectionalLight, camera: Camera);
+        /**
+         * Shows the frustum
+         */
+        show(): void;
+        /**
+         * Hides the frustum
+         */
+        hide(): void;
+        /**
+         * Updates the frustum.
+         * Call this method to update the frustum view if the light has changed position/direction
+         */
+        update(): void;
+        /**
+         * Dispose of the class / remove the frustum view
+         */
+        dispose(): void;
+        protected _createGeometry(): void;
+        protected _getInvertViewMatrix(): Matrix;
+    }
+}
+declare module BABYLON {
+    /**
      * Type to handle enforcement of inputs
      */
     export type DeviceInput<T extends DeviceType> = T extends DeviceType.Keyboard | DeviceType.Generic ? number : T extends DeviceType.Mouse | DeviceType.Touch ? PointerInput : T extends DeviceType.DualShock ? DualShockInput : T extends DeviceType.Xbox ? XboxInput : T extends DeviceType.Switch ? SwitchInput : never;
@@ -61503,120 +61720,6 @@ declare module BABYLON {
          * Disposes the class with joy
          */
         dispose(): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * A directional light is defined by a direction (what a surprise!).
-     * The light is emitted from everywhere in the specified direction, and has an infinite range.
-     * An example of a directional light is when a distance planet is lit by the apparently parallel lines of light from its sun. Light in a downward direction will light the top of an object.
-     * Documentation: https://doc.babylonjs.com/babylon101/lights
-     */
-    export class DirectionalLight extends ShadowLight {
-        private _shadowFrustumSize;
-        /**
-         * Fix frustum size for the shadow generation. This is disabled if the value is 0.
-         */
-        get shadowFrustumSize(): number;
-        /**
-         * Specifies a fix frustum size for the shadow generation.
-         */
-        set shadowFrustumSize(value: number);
-        private _shadowOrthoScale;
-        /**
-         * Gets the shadow projection scale against the optimal computed one.
-         * 0.1 by default which means that the projection window is increase by 10% from the optimal size.
-         * This does not impact in fixed frustum size (shadowFrustumSize being set)
-         */
-        get shadowOrthoScale(): number;
-        /**
-         * Sets the shadow projection scale against the optimal computed one.
-         * 0.1 by default which means that the projection window is increase by 10% from the optimal size.
-         * This does not impact in fixed frustum size (shadowFrustumSize being set)
-         */
-        set shadowOrthoScale(value: number);
-        /**
-         * Automatically compute the projection matrix to best fit (including all the casters)
-         * on each frame.
-         */
-        autoUpdateExtends: boolean;
-        /**
-         * Automatically compute the shadowMinZ and shadowMaxZ for the projection matrix to best fit (including all the casters)
-         * on each frame. autoUpdateExtends must be set to true for this to work
-         */
-        autoCalcShadowZBounds: boolean;
-        private _orthoLeft;
-        private _orthoRight;
-        private _orthoTop;
-        private _orthoBottom;
-        /**
-         * Creates a DirectionalLight object in the scene, oriented towards the passed direction (Vector3).
-         * The directional light is emitted from everywhere in the given direction.
-         * It can cast shadows.
-         * Documentation : https://doc.babylonjs.com/babylon101/lights
-         * @param name The friendly name of the light
-         * @param direction The direction of the light
-         * @param scene The scene the light belongs to
-         */
-        constructor(name: string, direction: Vector3, scene: Scene);
-        /**
-         * Returns the string "DirectionalLight".
-         * @return The class name
-         */
-        getClassName(): string;
-        /**
-         * Returns the integer 1.
-         * @return The light Type id as a constant defines in Light.LIGHTTYPEID_x
-         */
-        getTypeID(): number;
-        /**
-         * Sets the passed matrix "matrix" as projection matrix for the shadows cast by the light according to the passed view matrix.
-         * Returns the DirectionalLight Shadow projection matrix.
-         */
-        protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
-        /**
-         * Sets the passed matrix "matrix" as fixed frustum projection matrix for the shadows cast by the light according to the passed view matrix.
-         * Returns the DirectionalLight Shadow projection matrix.
-         */
-        protected _setDefaultFixedFrustumShadowProjectionMatrix(matrix: Matrix): void;
-        /**
-         * Sets the passed matrix "matrix" as auto extend projection matrix for the shadows cast by the light according to the passed view matrix.
-         * Returns the DirectionalLight Shadow projection matrix.
-         */
-        protected _setDefaultAutoExtendShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
-        protected _buildUniformLayout(): void;
-        /**
-         * Sets the passed Effect object with the DirectionalLight transformed position (or position if not parented) and the passed name.
-         * @param effect The effect to update
-         * @param lightIndex The index of the light in the effect to update
-         * @returns The directional light
-         */
-        transferToEffect(effect: Effect, lightIndex: string): DirectionalLight;
-        transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string): Light;
-        /**
-         * Gets the minZ used for shadow according to both the scene and the light.
-         *
-         * Values are fixed on directional lights as it relies on an ortho projection hence the need to convert being
-         * -1 and 1 to 0 and 1 doing (depth + min) / (min + max) -> (depth + 1) / (1 + 1) -> (depth * 0.5) + 0.5.
-         * @param activeCamera The camera we are returning the min for
-         * @returns the depth min z
-         */
-        getDepthMinZ(activeCamera: Camera): number;
-        /**
-         * Gets the maxZ used for shadow according to both the scene and the light.
-         *
-         * Values are fixed on directional lights as it relies on an ortho projection hence the need to convert being
-         * -1 and 1 to 0 and 1 doing (depth + min) / (min + max) -> (depth + 1) / (1 + 1) -> (depth * 0.5) + 0.5.
-         * @param activeCamera The camera we are returning the max for
-         * @returns the depth max z
-         */
-        getDepthMaxZ(activeCamera: Camera): number;
-        /**
-         * Prepares the list of defines specific to the light type.
-         * @param defines the list of defines
-         * @param lightIndex defines the index of the light for the effect
-         */
-        prepareLightSpecificDefines(defines: any, lightIndex: number): void;
     }
 }
 declare module BABYLON {
@@ -71838,13 +71941,13 @@ declare module BABYLON {
              * @param refresh true to refresh the underlying gpu buffer (default: true). If you do multiple calls to this method in a row, set refresh to true only for the last call to save performance
              * @returns the thin instance index number. If you pass an array of matrices, other instance indexes are index+1, index+2, etc
              */
-            thinInstanceAdd(matrix: DeepImmutableObject<Matrix> | Array<DeepImmutableObject<Matrix>>, refresh: boolean): number;
+            thinInstanceAdd(matrix: DeepImmutableObject<Matrix> | Array<DeepImmutableObject<Matrix>>, refresh?: boolean): number;
             /**
              * Adds the transformation (matrix) of the current mesh as a thin instance
              * @param refresh true to refresh the underlying gpu buffer (default: true). If you do multiple calls to this method in a row, set refresh to true only for the last call to save performance
              * @returns the thin instance index number
              */
-            thinInstanceAddSelf(refresh: boolean): number;
+            thinInstanceAddSelf(refresh?: boolean): number;
             /**
              * Registers a custom attribute to be used with thin instances
              * @param kind name of the attribute
@@ -71857,7 +71960,7 @@ declare module BABYLON {
              * @param matrix matrix to set
              * @param refresh true to refresh the underlying gpu buffer (default: true). If you do multiple calls to this method in a row, set refresh to true only for the last call to save performance
              */
-            thinInstanceSetMatrixAt(index: number, matrix: DeepImmutableObject<Matrix>, refresh: boolean): void;
+            thinInstanceSetMatrixAt(index: number, matrix: DeepImmutableObject<Matrix>, refresh?: boolean): void;
             /**
              * Sets the value of a custom attribute for a thin instance
              * @param kind name of the attribute
@@ -71865,7 +71968,7 @@ declare module BABYLON {
              * @param value value to set
              * @param refresh true to refresh the underlying gpu buffer (default: true). If you do multiple calls to this method in a row, set refresh to true only for the last call to save performance
              */
-            thinInstanceSetAttributeAt(kind: string, index: number, value: Array<number>, refresh: boolean): void;
+            thinInstanceSetAttributeAt(kind: string, index: number, value: Array<number>, refresh?: boolean): void;
             /**
              * Gets / sets the number of thin instances to display. Note that you can't set a number higher than what the underlying buffer can handle.
              */
@@ -71877,7 +71980,7 @@ declare module BABYLON {
              * @param stride size in floats of each value of the buffer
              * @param staticBuffer indicates that the buffer is static, so that you won't change it after it is set (better performances - false by default)
              */
-            thinInstanceSetBuffer(kind: string, buffer: Nullable<Float32Array>, stride: number, staticBuffer: boolean): void;
+            thinInstanceSetBuffer(kind: string, buffer: Nullable<Float32Array>, stride?: number, staticBuffer?: boolean): void;
             /**
              * Gets the list of world matrices
              * @return an array containing all the world matrices from the thin instances
@@ -71900,11 +72003,11 @@ declare module BABYLON {
              * Refreshes the bounding info, taking into account all the thin instances defined
              * @param forceRefreshParentInfo true to force recomputing the mesh bounding info and use it to compute the aggregated bounding info
              */
-            thinInstanceRefreshBoundingInfo(forceRefreshParentInfo: boolean): void;
+            thinInstanceRefreshBoundingInfo(forceRefreshParentInfo?: boolean): void;
             /** @hidden */
             _thinInstanceInitializeUserStorage(): void;
             /** @hidden */
-            _thinInstanceUpdateBufferSize(kind: string, numInstances: number): void;
+            _thinInstanceUpdateBufferSize(kind: string, numInstances?: number): void;
             /** @hidden */
             _userThinInstanceBuffersStorage: {
                 data: {
@@ -72056,9 +72159,35 @@ declare module BABYLON {
          */
         getMaximumSubStepCount(): number;
         /**
+         * Creates a cylinder obstacle and add it to the navigation
+         * @param position world position
+         * @param radius cylinder radius
+         * @param height cylinder height
+         * @returns the obstacle freshly created
+         */
+        addCylinderObstacle(position: Vector3, radius: number, height: number): IObstacle;
+        /**
+         * Creates an oriented box obstacle and add it to the navigation
+         * @param position world position
+         * @param extent box size
+         * @param angle angle in radians of the box orientation on Y axis
+         * @returns the obstacle freshly created
+         */
+        addBoxObstacle(position: Vector3, extent: Vector3, angle: number): IObstacle;
+        /**
+         * Removes an obstacle created by addCylinderObstacle or addBoxObstacle
+         * @param obstacle obstacle to remove from the navigation
+         */
+        removeObstacle(obstacle: IObstacle): void;
+        /**
          * Release all resources
          */
         dispose(): void;
+    }
+    /**
+     * Obstacle interface
+     */
+    export interface IObstacle {
     }
     /**
      * Crowd Interface. A Crowd is a collection of moving agents constrained by a navigation mesh
@@ -72172,6 +72301,12 @@ declare module BABYLON {
          */
         getDefaultQueryExtentToRef(result: Vector3): void;
         /**
+         * Get the next corner points composing the path (max 4 points)
+         * @param index agent index returned by addAgent
+         * @returns array containing world position composing the path
+         */
+        getCorners(index: number): Vector3[];
+        /**
          * Release all resources
          */
         dispose(): void;
@@ -72272,6 +72407,16 @@ declare module BABYLON {
          * data. (For height detail only.) [Limit: >=0] [Units: wu]
          */
         detailSampleMaxError: number;
+        /**
+         * If using obstacles, the navmesh must be subdivided internaly by tiles.
+         * This member defines the tile cube side length in world units.
+         * If no obstacles are needed, leave it undefined or 0.
+         */
+        tileSize: number;
+        /**
+        * The size of the non-navigable border around the heightfield.
+        */
+        borderSize: number;
     }
 }
 declare module BABYLON {
@@ -72422,6 +72567,27 @@ declare module BABYLON {
          */
         dispose(): void;
         /**
+         * Creates a cylinder obstacle and add it to the navigation
+         * @param position world position
+         * @param radius cylinder radius
+         * @param height cylinder height
+         * @returns the obstacle freshly created
+         */
+        addCylinderObstacle(position: Vector3, radius: number, height: number): IObstacle;
+        /**
+         * Creates an oriented box obstacle and add it to the navigation
+         * @param position world position
+         * @param extent box size
+         * @param angle angle in radians of the box orientation on Y axis
+         * @returns the obstacle freshly created
+         */
+        addBoxObstacle(position: Vector3, extent: Vector3, angle: number): IObstacle;
+        /**
+         * Removes an obstacle created by addCylinderObstacle or addBoxObstacle
+         * @param obstacle obstacle to remove from the navigation
+         */
+        removeObstacle(obstacle: IObstacle): void;
+        /**
          * If this plugin is supported
          * @returns true if plugin is supported
          */
@@ -72571,6 +72737,12 @@ declare module BABYLON {
          * @param result output the box extent values
          */
         getDefaultQueryExtentToRef(result: Vector3): void;
+        /**
+         * Get the next corner points composing the path (max 4 points)
+         * @param index agent index returned by addAgent
+         * @returns array containing world position composing the path
+         */
+        getCorners(index: number): Vector3[];
         /**
          * Release all resources
          */
@@ -84810,11 +84982,11 @@ declare module BABYLON.GUI {
         private _cellWidth;
         private _cellHeight;
         private _cellId;
-        private _populateNinePatchSlicesFromImage;
         private _sliceLeft;
         private _sliceRight;
         private _sliceTop;
         private _sliceBottom;
+        private _populateNinePatchSlicesFromImage;
         private _detectPointerOnOpaqueOnly;
         private _imageDataCache;
         /**
@@ -84829,11 +85001,6 @@ declare module BABYLON.GUI {
          * Gets a boolean indicating that the content is loaded
          */
         get isLoaded(): boolean;
-        /**
-         * Gets or sets a boolean indicating if nine patch slices (left, top, right, bottom) should be read from image data
-         */
-        get populateNinePatchSlicesFromImage(): boolean;
-        set populateNinePatchSlicesFromImage(value: boolean);
         /**
          * Gets or sets a boolean indicating if pointers should only be validated on pixels with alpha > 0.
          * Beware using this as this will comsume more memory as the image has to be stored twice
@@ -84880,6 +85047,19 @@ declare module BABYLON.GUI {
          */
         get sourceHeight(): number;
         set sourceHeight(value: number);
+        /**
+         * Gets the image width
+         */
+        get imageWidth(): number;
+        /**
+         * Gets the image height
+         */
+        get imageHeight(): number;
+        /**
+        * Gets or sets a boolean indicating if nine patch slices (left, top, right, bottom) should be read from image data
+        */
+        get populateNinePatchSlicesFromImage(): boolean;
+        set populateNinePatchSlicesFromImage(value: boolean);
         /** Indicates if the format of the image is SVG */
         get isSVG(): boolean;
         /** Gets the status of the SVG attributes computation (sourceLeft, sourceTop, sourceWidth, sourceHeight) */
@@ -84897,13 +85077,13 @@ declare module BABYLON.GUI {
         _rotate90(n: number, preserveProperties?: boolean): Image;
         private _handleRotationForSVGImage;
         private _rotate90SourceProperties;
+        private _extractNinePatchSliceDataFromImage;
         /**
          * Gets or sets the internal DOM image used to render the control
          */
         set domImage(value: HTMLImageElement);
         get domImage(): HTMLImageElement;
         private _onImageLoaded;
-        private _extractNinePatchSliceDataFromImage;
         /**
          * Gets the image source url
          */
@@ -84959,7 +85139,6 @@ declare module BABYLON.GUI {
         private _prepareWorkingCanvasForOpaqueDetection;
         private _drawImage;
         _draw(context: CanvasRenderingContext2D): void;
-        private _renderCornerPatch;
         private _renderNinePatch;
         dispose(): void;
         /** STRETCH_NONE */

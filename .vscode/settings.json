@@ -58,5 +58,7 @@
     },
     "editor.tabSize": 4,
     "typescript.tsdk": "node_modules\\typescript\\lib",
-    "typescript.preferences.importModuleSpecifier": "relative"
+    "typescript.preferences.importModuleSpecifier": "relative",
+    "ponicode.testSettings.testLocation.locationType": "Custom",
+    "ponicode.testSettings.testLocation.path": "{rootDir}/tests/ponicode/babylon/{filePathWithoutSrc}/{fileName}.test.{ext}"
 }

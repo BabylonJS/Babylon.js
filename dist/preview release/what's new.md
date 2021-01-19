@@ -18,6 +18,7 @@
 - Added encapsulate and encapsulateBoundingInfo methods to BoundingInfo. ([Tolo789](https://github.com/Tolo789))
 - Added onLoadObservable to the textureDome class(es) ([RaananW](https://github.com/RaananW))
 - Modified InputManager to use DeviceInputSystem ([PolygonalSun](https://github.com/PolygonalSun))
+- Added a [helper class](https://doc.babylonjs.com/typedoc/classes/babylon.debug.directionallightfrustumviewer) to display the frustum of a directional light ([Popov72](https://github.com/Popov72))
 
 ### Engine
 
@@ -36,6 +37,7 @@
 
 - Added support for thin instances in navigation mesh creation ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Added recast.d.ts definition file for recast.js ([CedricGuillemet](https://github.com/CedricGuillemet))
+- Added obstacle support ([CedricGuillemet](https://github.com/CedricGuillemet))
 
 ### Materials
 
@@ -45,8 +47,9 @@
 
 ### Inspector
 
-- Increased float precision to 4([msDestiny14](https://github.com/msDestiny14))
+- Increased float precision to 4 ([msDestiny14](https://github.com/msDestiny14))
 - Added support for sounds in the inspector ([Deltakosh](https://github.com/deltakosh))
+- Added a debug option to show the frustum of a directional light ([Popov72](https://github.com/Popov72))
 
 ### NME
 
@@ -57,6 +60,7 @@
 
 - Added GUI Editor project to master. ([msDestiny14](https://github.com/msDestiny14))
 - Moving GUI property tab components into GUIEditor. ([msDestiny14](https://github.com/msDestiny14))
+- Adding basic saving and loading funtionality. ([msDestiny14](https://github.com/msDestiny14))
 
 ### GUI
 
@@ -65,6 +69,7 @@
 - Added `ToggleButton` GUI control ([kintz09](https://github.com/kintz09))
 - Added shorthand methods which set all padding values at once, named `setPadding` and `setPaddingInPixels`, to the control class  ([kintz09](https://github.com/kintz09))
 - Added two touch-enabled GUI controls, `TouchMeshButton3D` and `TouchHolographicButton`, added option on the WebXR hand tracking feature for enabling touch collisions ([rickfromwork](https://github.com/rickfromwork), [satyapoojasama](https://github.com/satyapoojasama))
+- Added `imageWidth()` and `imageHeight()` to access the source image dimensions of `Image` ([Queatz](https://github.com/Queatz))
 
 ### WebXR
 
@@ -110,10 +115,11 @@
 - Fix for DualSense gamepads being incorrectly read as DualShock gamepads ([PolygonalSun](https://github.com/PolygonalSun))
 - Fix for warning in chrome about passive wheel events ([#9777](https://github.com/BabylonJS/Babylon.js/pull/9777)) ([kaliatech](https://github.com/kaliatech))
 - Fix crash when cloning material in `AssetContainer.instantiateModelsToScene` when mesh is an instanced mesh ([Popov72](https://github.com/Popov72))
+- Fix issue with NinePatch displaying half pixel gaps between slices on Firefox browsers. ([Pryme8](https://github.com/Pryme8))
 
 ## Breaking changes
 
-- [List of breaking changes introduced by ou compatibility with WebGPU](https://doc.babylonjs.com/advanced_topics/webGPU/webGPUBreakingChanges)
+- [List of breaking changes introduced by our compatibility with WebGPU](https://doc.babylonjs.com/advanced_topics/webGPU/webGPUBreakingChanges)
   - [ReadPixels and ProceduralTexture.getContent are now async](https://doc.babylonjs.com/advanced_topics/webGPU/webGPUBreakingChanges#readpixels-is-now-asynchronous)
   - [Shader support differences](https://doc.babylonjs.com/advanced_topics/webGPU/webGPUBreakingChanges#shader-code-differences)
 - Use both `mesh.visibility` and `material.alpha` values to compute the global alpha value used by the soft transparent shadow rendering code. Formerly was only using `mesh.visibility` ([Popov72](https://github.com/Popov72))
