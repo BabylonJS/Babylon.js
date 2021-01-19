@@ -92,11 +92,6 @@ declare module NODEEDITOR {
         private static _SaveAs;
         private static _Click;
         /**
-         * Gets the base math type of node material block connection point.
-         * @param type Type to parse.
-         */
-        static GetBaseType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): string;
-        /**
          * Download a string into a file that will be saved locally by the browser
          * @param content defines the string to download locally as a file
          */
@@ -1112,6 +1107,7 @@ declare module NODEEDITOR {
         getHeaderClass(block: BABYLON.NodeMaterialBlock): "" | "constant" | "inspector";
         shouldDisplayPortLabels(block: BABYLON.NodeMaterialBlock): boolean;
         getHeaderText(block: BABYLON.NodeMaterialBlock): string;
+        static GetBaseType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): string;
         getBackgroundColor(block: BABYLON.NodeMaterialBlock): string;
         updatePreviewContent(block: BABYLON.NodeMaterialBlock, contentArea: HTMLDivElement): void;
     }
