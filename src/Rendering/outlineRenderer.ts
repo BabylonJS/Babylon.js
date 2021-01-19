@@ -295,7 +295,7 @@ export class OutlineRenderer implements ISceneComponent {
             this._effect = this.scene.getEngine().createEffect("outline",
                 attribs,
                 ["world", "mBones", "viewProjection", "diffuseMatrix", "offset", "color", "logarithmicDepthConstant",
-                "morphTargetInfluences", "morphTargetTextureInfo"],
+                "morphTargetInfluences", "morphTargetTextureInfo", "morphTargetTextureIndices"],
                 ["diffuseSampler", "morphTargets"], join,
                 undefined, undefined, undefined,
                 { maxSimultaneousMorphTargets: numMorphInfluencers });

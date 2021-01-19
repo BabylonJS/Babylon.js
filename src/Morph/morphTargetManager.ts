@@ -20,6 +20,7 @@ export class MorphTargetManager implements IDisposable {
     private _activeTargets = new SmartArray<MorphTarget>(16);
     private _scene: Nullable<Scene>;
     private _influences: Float32Array;
+    private _morphTargetTextureIndices: Float32Array;
     private _supportsNormals = false;
     private _supportsTangents = false;
     private _supportsUVs = false;
@@ -197,6 +198,7 @@ export class MorphTargetManager implements IDisposable {
     /** @hidden */
     public _bind(effect: Effect) {
         effect.setFloat3("morphTargetTextureInfo", this._textureVertexStride, this._textureWidth, this._textureHeight);
+        effect.setFloatArray("morphTargetTextureIndices", this._morphTargetTextureIndices);
         effect.setTexture("morphTargets", this._targetStoreTexture);
     }
 
@@ -242,12 +244,20 @@ export class MorphTargetManager implements IDisposable {
         this._supportsTangents = true;
         this._supportsUVs = true;
         this._vertexCount = 0;
+
+        if (!this._morphTargetTextureIndices || this._morphTargetTextureIndices.length !== this._targets.length) {
+            this._morphTargetTextureIndices = new Float32Array(this._targets.length);
+        }
+
+        var targetIndex = -1;
         for (var target of this._targets) {
+            targetIndex++;
             if (target.influence === 0) {
                 continue;
             }
 
             this._activeTargets.push(target);
+            this._morphTargetTextureIndices[influenceCount] = targetIndex;
             this._tempInfluences[influenceCount++] = target.influence;
 
             this._supportsNormals = this._supportsNormals && target.hasNormals;
