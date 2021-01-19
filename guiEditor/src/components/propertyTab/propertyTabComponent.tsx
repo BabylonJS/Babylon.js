@@ -241,11 +241,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     render() {
         if (this.state.currentNode) {
             return (
-                <div id="propertyTab"                                 onFocus={() => {(this.props.globalState.blockKeyboardEvents = true); console.log("blocked");}}
-                onBlur={(evt) => {
-                    this.props.globalState.blockKeyboardEvents = false;
-                    console.log("not blocked");
-                }}>
+                <div id="propertyTab">
                     <div id="header" >
                         <img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
                         <div id="title">GUI EDITOR</div>
