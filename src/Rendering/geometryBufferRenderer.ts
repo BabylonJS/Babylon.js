@@ -461,7 +461,7 @@ export class GeometryBufferRenderer {
                     uniformsNames: [
                         "world", "mBones", "viewProjection", "diffuseMatrix", "view", "previousWorld", "previousViewProjection", "mPreviousBones",
                         "bumpMatrix", "reflectivityMatrix", "vTangentSpaceParams", "vBumpInfos",
-                        "morphTargetInfluences", "morphTargetTextureInfo"
+                        "morphTargetInfluences", "morphTargetTextureInfo", "morphTargetTextureIndices"
                     ],
                     samplers: ["diffuseSampler", "bumpSampler", "reflectivitySampler", "morphTargets"],
                     defines: join,
