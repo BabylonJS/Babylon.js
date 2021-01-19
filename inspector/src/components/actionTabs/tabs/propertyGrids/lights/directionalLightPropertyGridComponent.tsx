@@ -8,10 +8,11 @@ import { Color3LineComponent } from "../../../../../sharedUiComponents/lines/col
 import { Vector3LineComponent } from "../../../../../sharedUiComponents/lines/vector3LineComponent";
 import { CommonShadowLightPropertyGridComponent } from "./commonShadowLightPropertyGridComponent";
 import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { GlobalState } from '../../../../globalState';
+import { GlobalState } from "../../../../globalState";
 import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent"
-import { ShadowGenerator } from 'babylonjs/Lights/Shadows/shadowGenerator';
-import { CascadedShadowGenerator } from 'babylonjs/Lights/Shadows/cascadedShadowGenerator';
+import { ShadowGenerator } from "babylonjs/Lights/Shadows/shadowGenerator";
+import { CascadedShadowGenerator } from "babylonjs/Lights/Shadows/cascadedShadowGenerator";
+import { DirectionalLightFrustumViewer } from "babylonjs/Debug/directionalLightFrustumViewer";
 
 interface IDirectionalLightPropertyGridComponentProps {
     globalState: GlobalState,
@@ -25,12 +26,32 @@ export class DirectionalLightPropertyGridComponent extends React.Component<IDire
         super(props);
     }
 
+    displayFrustum() {
+        const light = this.props.light;
+        const camera = light.getScene().activeCamera;
+
+        let displayFrustum = (light as any)._displayFrustum = !(!!(light as any)._displayFrustum);
+
+        if ((light as any)._displayFrustumObservable) {
+            light.getScene().onAfterRenderObservable.remove((light as any)._displayFrustumObservable);
+            (light as any)._displayFrustumDLH.dispose();
+        }
+
+        if (displayFrustum && camera) {
+            const dlh = (light as any)._displayFrustumDLH = new DirectionalLightFrustumViewer(light, camera);
+            (light as any)._displayFrustumObservable = light.getScene().onAfterRenderObservable.add(() => {
+                dlh.update();
+            });
+        }
+    }
+
     render() {
         const light = this.props.light;
 
         const generator = light.getShadowGenerator() as (ShadowGenerator | CascadedShadowGenerator) || null;
 
         const hideAutoCalcShadowZBounds = generator instanceof CascadedShadowGenerator;
+        const displayFrustum = (light as any)._displayFrustum ?? false;;
 
         return (
             <div className="pane">
@@ -45,6 +66,9 @@ export class DirectionalLightPropertyGridComponent extends React.Component<IDire
                     }
                 </LineContainerComponent>
                 <CommonShadowLightPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} light={light} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <LineContainerComponent title="DEBUG" closed={true}>
+                    <CheckBoxLineComponent label="Display frustum" isSelected={() => displayFrustum} onSelect={() => this.displayFrustum()} />
+                </LineContainerComponent>
             </div>
         );
     }

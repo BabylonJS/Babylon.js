@@ -70,10 +70,58 @@ export class DirectionalLight extends ShadowLight {
     public autoCalcShadowZBounds = false;
 
     // Cache
+    @serialize("orthoLeft")
     private _orthoLeft = Number.MAX_VALUE;
+    @serialize("orthoRight")
     private _orthoRight = Number.MIN_VALUE;
+    @serialize("orthoTop")
     private _orthoTop = Number.MIN_VALUE;
+    @serialize("orthoBottom")
     private _orthoBottom = Number.MAX_VALUE;
+
+    /**
+     * Gets or sets the orthoLeft property used to build the light frustum
+     */
+    public get orthoLeft(): number {
+        return this._orthoLeft;
+    }
+
+    public set orthoLeft(left: number) {
+        this._orthoLeft = left;
+    }
+
+    /**
+     * Gets or sets the orthoRight property used to build the light frustum
+     */
+    public get orthoRight(): number {
+        return this._orthoRight;
+    }
+
+    public set orthoRight(right: number) {
+        this._orthoRight = right;
+    }
+
+    /**
+     * Gets or sets the orthoTop property used to build the light frustum
+     */
+    public get orthoTop(): number {
+        return this._orthoTop;
+    }
+
+    public set orthoTop(top: number) {
+        this._orthoTop = top;
+    }
+
+    /**
+     * Gets or sets the orthoBottom property used to build the light frustum
+     */
+    public get orthoBottom(): number {
+        return this._orthoBottom;
+    }
+
+    public set orthoBottom(bottom: number) {
+        this._orthoBottom = bottom;
+    }
 
     /**
      * Creates a DirectionalLight object in the scene, oriented towards the passed direction (Vector3).
