@@ -733,9 +733,9 @@ export class RecastJSCrowd implements ICrowd {
      */
     getCorners(index: number): Vector3[]
     {
-        var pt: number;
-        let navPath = this.recastCrowd.getPath(index);
-        let pointCount = navPath.getPointCount();
+        let pt: number;
+        const navPath = this.recastCrowd.getPath(index);
+        const pointCount = navPath.getPointCount();
         var positions = [];
         for (pt = 0; pt < pointCount; pt++)
         {
