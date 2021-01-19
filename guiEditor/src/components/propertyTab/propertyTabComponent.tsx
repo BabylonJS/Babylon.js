@@ -242,11 +242,15 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         if (this.state.currentNode) {
             return (
                 <div id="propertyTab">
-                    <div id="header">
+                    <div id="header" >
                         <img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
                         <div id="title">GUI EDITOR</div>
                     </div>
                     {this.renderProperties()}
+                        <ButtonLineComponent label="DELETE GUI" onClick={() => {
+                           this.state.currentNode?.dispose();
+                           this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                        }} />
                 </div>
             );
         }
