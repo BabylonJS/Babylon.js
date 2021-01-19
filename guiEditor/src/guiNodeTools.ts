@@ -47,14 +47,14 @@ export class GUINodeTools {
                 element.text = "My Text";
                 return element;
             case "ImageButton":
-                element = Button.CreateImageButton("Button", "Click Me", "textures/grass.png");
+                element = Button.CreateImageButton("Button", "Click Me", "https://playground.babylonjs.com/textures/grass.png");
                 break;
             case "VirtualKeyboard":
                 element = new VirtualKeyboard();
                 element.addKeysRow(["1","2", "3","\u2190"]);
                 break;
             case "Image": 
-                element = new Image("Image", "https://i.imgur.com/ntIgFT6.jpg");
+                element = new Image("Image", "https://playground.babylonjs.com/textures/grass.png");
                 break;
             case "InputText":
                 element = new InputText();

@@ -64,13 +64,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
             (evt) => {
                 if ((evt.keyCode === 46 || evt.keyCode === 8) && !this.props.globalState.blockKeyboardEvents) {
                     // Delete
-                    /*let selectedItems = this._workbenchCanvas.selectedGuiNodes;
-
-                    for (var selectedItem of selectedItems) {
-                        selectedItem.dispose();
-                    }
-                    this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-                    return;*/
                 }
 
                 if (!evt.ctrlKey || this.props.globalState.blockKeyboardEvents) {
