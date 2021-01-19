@@ -7,7 +7,7 @@ import { IFrameData } from '../nodeLocationInfo';
 import { Color3 } from 'babylonjs/Maths/math.color';
 import { NodePort } from './nodePort';
 import { SerializationTools } from '../serializationTools';
-import { StringTools } from '../stringTools';
+import { StringTools } from '../sharedUiComponents/stringTools';
 import { FrameNodePort } from './frameNodePort';
 
 enum ResizingDirection {

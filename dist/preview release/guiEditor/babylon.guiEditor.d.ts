@@ -69,6 +69,9 @@ declare module GUIEDITOR {
         constructor(props: IWorkbenchComponentProps);
         getGridPosition(position: number, useCeil?: boolean): number;
         getGridPositionCeil(position: number): number;
+        loadFromJson(serializationObject: any): void;
+        loadFromSnippet(snippedID: string): Promise<void>;
+        loadFromGuiTexture(): void;
         updateTransform(): void;
         onKeyUp(): void;
         findNodeFromGuiElement(guiControl: Control): GUINode;
@@ -78,6 +81,7 @@ declare module GUIEDITOR {
         componentDidMount(): void;
         onMove(evt: React.PointerEvent): void;
         onDown(evt: React.PointerEvent<HTMLElement>): void;
+        isUp: boolean;
         onUp(evt: React.PointerEvent): void;
         onWheel(evt: React.WheelEvent): void;
         zoomToFit(): void;
@@ -101,6 +105,7 @@ declare module GUIEDITOR {
         private _isSelected;
         private _isVisible;
         private _enclosingFrameId;
+        children: GUINode[];
         get isVisible(): boolean;
         set isVisible(value: boolean);
         get gridAlignedX(): number;
@@ -120,8 +125,10 @@ declare module GUIEDITOR {
         constructor(globalState: GlobalState, guiControl: Control);
         cleanAccumulation(useCeil?: boolean): void;
         clicked: boolean;
-        _onMove(evt: BABYLON.Vector2, startPos: BABYLON.Vector2): boolean;
+        _onMove(evt: BABYLON.Vector2, startPos: BABYLON.Vector2, ignorClick?: boolean): boolean;
         updateVisual(): void;
+        private _isContainer;
+        addGui(childNode: GUINode): void;
         dispose(): void;
     }
 }
@@ -275,8 +282,14 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
-    export class SerializationTools {
-        static Deserialize(serializationObject: any, globalState: GlobalState): void;
+    export class StringTools {
+        private static _SaveAs;
+        private static _Click;
+        /**
+         * Download a string into a file that will be saved locally by the browser
+         * @param content defines the string to download locally as a file
+         */
+        static DownloadAsFile(document: HTMLDocument, content: string, filename: string): void;
     }
 }
 declare module GUIEDITOR {
@@ -750,9 +763,7 @@ declare module GUIEDITOR {
         componentDidMount(): void;
         componentWillUnmount(): void;
         load(file: File): void;
-        loadFrame(file: File): void;
         save(): void;
-        customSave(): void;
         saveToSnippetServer(): void;
         loadFromSnippet(): void;
         renderProperties(): JSX.Element | null;
@@ -885,12 +896,6 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
-    export interface IPropertyComponentProps {
-        globalState: GlobalState;
-        guiControl: Control;
-    }
-}
-declare module GUIEDITOR {
     export class PropertyChangedEvent {
         object: any;
         property: string;
@@ -928,54 +933,6 @@ declare module GUIEDITOR {
         }): boolean;
         raiseOnPropertyChanged(newValue: number, previousValue: number): void;
         updateValue(valueString: string): void;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    interface ISliderLineComponentProps {
-        label: string;
-        target?: any;
-        propertyName?: string;
-        minimum: number;
-        maximum: number;
-        step: number;
-        directValue?: number;
-        useEuler?: boolean;
-        onChange?: (value: number) => void;
-        onInput?: (value: number) => void;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-        decimalCount?: number;
-        globalState: GlobalState;
-    }
-    export class SliderLineComponent extends React.Component<ISliderLineComponentProps, {
-        value: number;
-    }> {
-        private _localChange;
-        constructor(props: ISliderLineComponentProps);
-        shouldComponentUpdate(nextProps: ISliderLineComponentProps, nextState: {
-            value: number;
-        }): boolean;
-        onChange(newValueString: any): void;
-        onInput(newValueString: any): void;
-        prepareDataToRead(value: number): number;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    export class GenericPropertyComponent extends React.Component<IPropertyComponentProps> {
-        constructor(props: IPropertyComponentProps);
-        render(): JSX.Element;
-    }
-    export class GeneralPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-        constructor(props: IPropertyComponentProps);
-        render(): JSX.Element;
-    }
-    export class GenericPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-        constructor(props: IPropertyComponentProps);
-        forceRebuild(notifiers?: {
-            "rebuild"?: boolean;
-            "update"?: boolean;
-        }): void;
         render(): JSX.Element;
     }
 }
@@ -1019,6 +976,36 @@ declare module GUIEDITOR {
             value: string;
         }): boolean;
         updateValue(evt: any): void;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface ISliderLineComponentProps {
+        label: string;
+        target?: any;
+        propertyName?: string;
+        minimum: number;
+        maximum: number;
+        step: number;
+        directValue?: number;
+        useEuler?: boolean;
+        onChange?: (value: number) => void;
+        onInput?: (value: number) => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        decimalCount?: number;
+        globalState: GlobalState;
+    }
+    export class SliderLineComponent extends React.Component<ISliderLineComponentProps, {
+        value: number;
+    }> {
+        private _localChange;
+        constructor(props: ISliderLineComponentProps);
+        shouldComponentUpdate(nextProps: ISliderLineComponentProps, nextState: {
+            value: number;
+        }): boolean;
+        onChange(newValueString: any): void;
+        onInput(newValueString: any): void;
+        prepareDataToRead(value: number): number;
         render(): JSX.Element;
     }
 }

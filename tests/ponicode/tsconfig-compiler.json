@@ -1,0 +1,26 @@
+{
+	"compilerOptions": {
+		"target": "ES5",
+		"module": "commonjs",
+		"declaration": true,
+		"sourceMap": true,
+		"outDir": "../../.temp/tests/ponicode",
+		"rootDir": "babylon",
+		"strict": true,
+		"esModuleInterop": true,
+		"baseUrl": "../../",
+		"paths": {
+			"babylonjs/*": [
+				".temp/manualBuildCore/*"
+			]
+		},
+		"types": [
+			"node",
+			"jest"
+		]
+	},
+	"include": [
+		"babylon"
+	],
+	"exclude": []
+}
