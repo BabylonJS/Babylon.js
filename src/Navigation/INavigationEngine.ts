@@ -457,7 +457,7 @@ export interface INavMeshParameters {
      */
     tileSize: number;
 
-    /*
+    /**
     * The size of the non-navigable border around the heightfield.
     */
     borderSize: number;
