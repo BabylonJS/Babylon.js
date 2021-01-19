@@ -1,24 +1,26 @@
-import { GlobalState } from '../globalState';
-import { Nullable } from 'babylonjs/types';
-import { Observer } from 'babylonjs/Misc/observable';
-import { WorkbenchComponent, FramePortData } from './workbench';
-import { Control } from 'babylonjs-gui/2D/controls/control';
-import { Vector2 } from 'babylonjs/Maths/math.vector';
-
+import { GlobalState } from "../globalState";
+import { Nullable } from "babylonjs/types";
+import { Observer } from "babylonjs/Misc/observable";
+import { WorkbenchComponent, FramePortData } from "./workbench";
+import { Control } from "babylonjs-gui/2D/controls/control";
+import { Vector2 } from "babylonjs/Maths/math.vector";
+import { Container } from "babylonjs-gui/2D/controls/container";
 
 export class GUINode {
     private _x = 0;
     private _y = 0;
     private _gridAlignedX = 0;
-    private _gridAlignedY = 0;    
+    private _gridAlignedY = 0;
     private _globalState: GlobalState;
-    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GUINode | FramePortData>>>;  
-    private _onSelectionBoxMovedObserver: Nullable<Observer<ClientRect | DOMRect>>;   
-    private _onUpdateRequiredObserver: Nullable<Observer<void>>;  
-    private _ownerCanvas: WorkbenchComponent; 
+    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GUINode | FramePortData>>>;
+    private _onSelectionBoxMovedObserver: Nullable<Observer<ClientRect | DOMRect>>;
+    private _onUpdateRequiredObserver: Nullable<Observer<void>>;
+    private _ownerCanvas: WorkbenchComponent;
     private _isSelected: boolean;
     private _isVisible = true;
     private _enclosingFrameId = -1;
+
+    public children: GUINode[] = [];
 
     public get isVisible() {
         return this._isVisible;
@@ -45,7 +47,7 @@ export class GUINode {
             return;
         }
         this._x = value;
-        
+
         this._gridAlignedX = this._ownerCanvas.getGridPosition(value);
     }
 
@@ -95,42 +97,40 @@ export class GUINode {
         this._isSelected = value;
 
         if (value) {
-            this._globalState.onSelectionChangedObservable.notifyObservers(this);  
+            this._globalState.onSelectionChangedObservable.notifyObservers(this);
         }
     }
 
     public constructor(globalState: GlobalState, public guiControl: Control) {
         this._globalState = globalState;
         this._ownerCanvas = this._globalState.workbench;
-        
-        guiControl.onPointerUpObservable.add(evt => {
+        this.x = guiControl.leftInPixels;
+        this.y = guiControl.topInPixels;
+        guiControl.onPointerUpObservable.add((evt) => {
             this.clicked = false;
             console.log("up");
         });
 
-        guiControl.onPointerDownObservable.add( evt => {
+        guiControl.onPointerDownObservable.add((evt) => {
+            if (!this._ownerCanvas.isUp) return;
             this.clicked = true;
             this.isSelected = true;
             console.log("down");
-        }
-        );
-
-        guiControl.onPointerEnterObservable.add( evt => {
-            this._ownerCanvas.isOverGUINode = true;
-            console.log("in");
-        }
-        );
-
-        guiControl.onPointerOutObservable.add( evt => {
-            this._ownerCanvas.isOverGUINode = false;
-            console.log("out");
-        }
-        );
-
-        //TODO: Implement
-        this._onSelectionBoxMovedObserver = this._globalState.onSelectionBoxMoved.add(rect1 => {
+            this._ownerCanvas.isUp = false;
         });
 
+        guiControl.onPointerEnterObservable.add((evt) => {
+            this._ownerCanvas.isOverGUINode = true;
+            console.log("in");
+        });
+
+        guiControl.onPointerOutObservable.add((evt) => {
+            this._ownerCanvas.isOverGUINode = false;
+            console.log("out");
+        });
+
+        //TODO: Implement
+        this._onSelectionBoxMovedObserver = this._globalState.onSelectionBoxMoved.add((rect1) => {});
     }
 
     public cleanAccumulation(useCeil = false) {
@@ -139,26 +139,50 @@ export class GUINode {
     }
 
     public clicked: boolean;
-    public _onMove(evt: Vector2, startPos: Vector2) {
-       
-        if(!this.clicked) return false;
+    public _onMove(evt: Vector2, startPos: Vector2, ignorClick: boolean = false) {
+        if (!this.clicked && !ignorClick) return false;
         console.log("moving");
 
         //TODO: Implement move with zoom factor.
-        let newX = (evt.x - startPos.x) ;// / this._ownerCanvas.zoom;
-        let newY = (evt.y - startPos.y) ;// / this._ownerCanvas.zoom;
+        let newX = evt.x - startPos.x; // / this._ownerCanvas.zoom;
+        let newY = evt.y - startPos.y; // / this._ownerCanvas.zoom;
 
         this.x += newX;
-        this.y += newY;  
+        this.y += newY;
+
+        this.children.forEach((child) => {
+            child._onMove(evt, startPos, true);
+        });
 
         return true;
         //evt.stopPropagation();
     }
 
-    public updateVisual()
-    {
+    public updateVisual() {
         this.guiControl.leftInPixels = this.x;
         this.guiControl.topInPixels = this.y;
+    }
+
+    private _isContainer() {
+        switch (this.guiControl.typeName) {
+            case "Button":
+            case "StackPanel":
+            case "Rectangle":
+            case "Ellipse":
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public addGui(childNode: GUINode) {
+        if (!this._isContainer) return;
+        this.children.push(childNode);
+        (this.guiControl as Container).addControl(childNode.guiControl);
+
+        //adjust the position to be relative
+        //childNode.x = this.x - childNode.x;
+        //childNode.y = this.y - childNode.y;
     }
 
     public dispose() {
@@ -177,6 +201,6 @@ export class GUINode {
             this._globalState.onSelectionBoxMoved.remove(this._onSelectionBoxMovedObserver);
         }
 
-        this.guiControl.dispose();   
+        this.guiControl.dispose();
     }
 }

@@ -1,5 +1,3 @@
-import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
-
 export class StringTools {
     /*
      * Based on FileSaver.js
@@ -72,14 +70,6 @@ export class StringTools {
             evt.initMouseEvent('click', true, true, window, 0, 0, 0, 80, 20, false, false, false, false, 0, null);
             node.dispatchEvent(evt);
         }
-    }
-
-    /**
-     * Gets the base math type of node material block connection point.
-     * @param type Type to parse.
-     */
-    public static GetBaseType(type: NodeMaterialBlockConnectionPointTypes): string {
-        return NodeMaterialBlockConnectionPointTypes[type];
     }
 
     /**

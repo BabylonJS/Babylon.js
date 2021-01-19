@@ -3,7 +3,6 @@ import * as ReactDOM from "react-dom";
 import { GlobalState } from "./globalState";
 import { WorkbenchEditor } from "./workbenchEditor";
 import { Popup } from "./sharedUiComponents/lines/popup";
-import { SerializationTools } from "./serializationTools";
 import { Observable } from "babylonjs/Misc/observable";
 /**
  * Interface used to specify creation options for the gui editor
@@ -57,7 +56,7 @@ export class GUIEditor {
 
         if (options.customLoadObservable) {
             options.customLoadObservable.add((data) => {
-                SerializationTools.Deserialize(data, globalState);
+                //TODO: Add deserilization here.
                 globalState.onResetRequiredObservable.notifyObservers();
                 globalState.onBuiltObservable.notifyObservers();
             });
