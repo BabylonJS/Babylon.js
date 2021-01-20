@@ -37,7 +37,7 @@ export interface IMaterialSubSurfaceDefines {
     SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
     SS_ALBEDOFORREFRACTIONTINT: boolean;
     SS_ALBEDOFORTRANSLUCENCYTINT: boolean;
-    
+
     SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
     SS_MASK_FROM_THICKNESS_TEXTURE_GLTF: boolean;
 
@@ -338,7 +338,7 @@ export class PBRSubSurfaceConfiguration {
             defines.SS_LINKREFRACTIONTOTRANSPARENCY = false;
             defines.SS_ALBEDOFORREFRACTIONTINT = false;
             defines.SS_ALBEDOFORTRANSLUCENCYTINT = false;
-            
+
             if (this._isRefractionEnabled || this._isTranslucencyEnabled || this._isScatteringEnabled) {
                 defines.SUBSURFACE = true;
 
