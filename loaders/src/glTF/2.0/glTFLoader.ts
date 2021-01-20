@@ -1708,7 +1708,6 @@ export class GLTFLoader implements IGLTFLoader {
             if (properties.baseColorFactor) {
                 babylonMaterial.albedoColor = Color3.FromArray(properties.baseColorFactor);
                 babylonMaterial.alpha = properties.baseColorFactor[3];
-                babylonMaterial.albedoColor.toLinearSpaceToRef(babylonMaterial.albedoColor);
             }
             else {
                 babylonMaterial.albedoColor = Color3.White();
