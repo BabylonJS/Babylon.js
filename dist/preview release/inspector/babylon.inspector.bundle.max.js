@@ -50721,7 +50721,7 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
             this.forceUpdate();
             return;
         }
-        var wireframeOver = mesh.clone();
+        var wireframeOver = mesh.clone(mesh.name + "_wireframeover", null, true);
         wireframeOver.reservedDataStore = { hidden: true };
         // Sets up the mesh to be attached to the parent.
         // So all neutral in local space.
