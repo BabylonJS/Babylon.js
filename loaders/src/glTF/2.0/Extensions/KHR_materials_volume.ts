@@ -84,7 +84,7 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
         } else {
             pbrMaterial.subSurface.tintColor = new Color3(1.0, 1.0, 1.0);
         }
-        
+
         if (extension.thicknessTexture) {
             return this._loader.loadTextureInfoAsync(context, extension.thicknessTexture)
                 .then((texture: BaseTexture) => {
