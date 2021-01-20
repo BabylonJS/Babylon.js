@@ -6,6 +6,12 @@ import { Line } from "babylonjs-gui/2D/controls/line";
 import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
 import { Slider } from "babylonjs-gui/2D/controls/sliders/slider";
 import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
+import { VirtualKeyboard } from "babylonjs-gui/2D/controls/virtualKeyboard";
+import { Image } from "babylonjs-gui/2D/controls/image"
+import { InputText } from "babylonjs-gui/2D/controls/inputText";
+import { InputPassword } from "babylonjs-gui/2D/controls/inputPassword";
+import { Grid } from "babylonjs-gui/2D/controls/grid";
+import { DisplayGrid } from "babylonjs-gui/2D/controls/displayGrid";
 
 export class GUINodeTools {
     public static CreateControlFromString (data: string) {
@@ -40,11 +46,42 @@ export class GUINodeTools {
                 element = new TextBlock("Textblock");
                 element.text = "My Text";
                 return element;
+            case "ImageButton":
+                element = Button.CreateImageButton("Button", "Click Me", "https://playground.babylonjs.com/textures/grass.png");
+                break;
+            case "VirtualKeyboard":
+                element = new VirtualKeyboard();
+                element.addKeysRow(["1","2", "3","\u2190"]);
+                break;
+            case "Image": 
+                element = new Image("Image", "https://playground.babylonjs.com/textures/grass.png");
+                break;
+            case "InputText":
+                element = new InputText();
+                element.maxWidth = 0.6;
+                element.text = "Click Me";
+                break;
+            case "InputPassword":
+                element = new InputPassword();
+                break;
+            case "Grid":
+                element = new Grid();
+                element.addColumnDefinition(100, true);
+                element.addColumnDefinition(0.5);
+                element.addColumnDefinition(0.5);
+                element.addColumnDefinition(100, true);
+                element.addRowDefinition(0.5);
+                element.addRowDefinition(0.5);
+                return element;
+            case "DisplayGrid":
+                element = new DisplayGrid();
+                element.width = "200px";
+                element.height = "200px";
+                return element;
             default:
                 element = Button.CreateSimpleButton("Button", "Click Me");
                 break;
         }
-
         element.width = "150px";
         element.height = "40px";
         element.color = "#FFFFFFFF";

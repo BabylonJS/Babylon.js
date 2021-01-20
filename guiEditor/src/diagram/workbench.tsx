@@ -400,8 +400,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     onDown(evt: React.PointerEvent<HTMLElement>) {
         this._rootContainer.setPointerCapture(evt.pointerId);
 
-        //TODO: Inplement group selection
-        // Selection?
         /*if (evt.currentTarget === this._hostCanvas && evt.ctrlKey) {
             this._selectionBox = this.props.globalState.hostDocument.createElement("div");
             this._selectionBox.classList.add("selection-box");
@@ -516,7 +514,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         
         // Create our first scene.
         var scene = new Scene(engine);
-        scene.clearColor = new Color4(0.2, 0.2, 0.3, 0.1);
+        scene.clearColor = new Color4(0.2, 0.2, 0.3, 1.0);
 
         // This creates and positions a free camera (non-mesh)
         var camera = new FreeCamera("camera1", new Vector3(0, 5, -10), scene);

@@ -924,8 +924,13 @@ declare module "babylonjs-gui-editor/guiNodeTools" {
     import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
     import { Slider } from "babylonjs-gui/2D/controls/sliders/slider";
     import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
+    import { VirtualKeyboard } from "babylonjs-gui/2D/controls/virtualKeyboard";
+    import { Image } from "babylonjs-gui/2D/controls/image";
+    import { InputText } from "babylonjs-gui/2D/controls/inputText";
+    import { Grid } from "babylonjs-gui/2D/controls/grid";
+    import { DisplayGrid } from "babylonjs-gui/2D/controls/displayGrid";
     export class GUINodeTools {
-        static CreateControlFromString(data: string): Slider | Line | TextBlock | ColorPicker | Rectangle | Ellipse | Checkbox;
+        static CreateControlFromString(data: string): Grid | Slider | Line | TextBlock | InputText | ColorPicker | Image | Rectangle | Ellipse | Checkbox | DisplayGrid | VirtualKeyboard;
     }
 }
 declare module "babylonjs-gui-editor/nodeLocationInfo" {
@@ -976,7 +981,6 @@ declare module "babylonjs-gui-editor/workbenchEditor" {
     import { Nullable } from "babylonjs/types";
     import { IEditorData } from "babylonjs-gui-editor/nodeLocationInfo";
     import { GUINode } from "babylonjs-gui-editor/diagram/guiNode";
-    import { Control } from "babylonjs-gui/2D/controls/control";
     interface IGraphEditorProps {
         globalState: GlobalState;
     }
@@ -989,14 +993,8 @@ declare module "babylonjs-gui-editor/workbenchEditor" {
         private _moveInProgress;
         private _leftWidth;
         private _rightWidth;
-        private _blocks;
         private _onWidgetKeyUpPointer;
         private _popUpWindow;
-        /**
-         * Creates a node and recursivly creates its parent nodes from it's input
-         * @param block
-         */
-        createNodeFromObject(block: Control, recursion?: boolean): Nullable<GUINode>;
         componentDidMount(): void;
         componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);
@@ -2293,7 +2291,7 @@ declare module GUIEDITOR {
 }
 declare module GUIEDITOR {
     export class GUINodeTools {
-        static CreateControlFromString(data: string): Slider | Line | TextBlock | ColorPicker | Rectangle | Ellipse | Checkbox;
+        static CreateControlFromString(data: string): Grid | Slider | Line | TextBlock | InputText | ColorPicker | Image | Rectangle | Ellipse | Checkbox | DisplayGrid | VirtualKeyboard;
     }
 }
 declare module GUIEDITOR {
@@ -2349,14 +2347,8 @@ declare module GUIEDITOR {
         private _moveInProgress;
         private _leftWidth;
         private _rightWidth;
-        private _blocks;
         private _onWidgetKeyUpPointer;
         private _popUpWindow;
-        /**
-         * Creates a node and recursivly creates its parent nodes from it's input
-         * @param block
-         */
-        createNodeFromObject(block: Control, recursion?: boolean): BABYLON.Nullable<GUINode>;
         componentDidMount(): void;
         componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);

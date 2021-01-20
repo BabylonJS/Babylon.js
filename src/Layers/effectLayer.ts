@@ -560,7 +560,7 @@ export abstract class EffectLayer {
                 ["world", "mBones", "viewProjection",
                     "glowColor", "morphTargetInfluences", "boneTextureWidth",
                     "diffuseMatrix", "emissiveMatrix", "opacityMatrix", "opacityIntensity",
-                    "morphTargetTextureInfo"],
+                    "morphTargetTextureInfo", "morphTargetTextureIndices"],
                 ["diffuseSampler", "emissiveSampler", "opacitySampler", "boneSampler", "morphTargets"], join,
                 fallbacks, undefined, undefined, { maxSimultaneousMorphTargets: morphInfluencers });
         }

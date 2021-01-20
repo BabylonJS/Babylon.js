@@ -780,7 +780,7 @@ declare module GUIEDITOR {
 }
 declare module GUIEDITOR {
     export class GUINodeTools {
-        static CreateControlFromString(data: string): Slider | Line | TextBlock | ColorPicker | Rectangle | Ellipse | Checkbox;
+        static CreateControlFromString(data: string): Grid | Slider | Line | TextBlock | InputText | ColorPicker | Image | Rectangle | Ellipse | Checkbox | DisplayGrid | VirtualKeyboard;
     }
 }
 declare module GUIEDITOR {
@@ -836,14 +836,8 @@ declare module GUIEDITOR {
         private _moveInProgress;
         private _leftWidth;
         private _rightWidth;
-        private _blocks;
         private _onWidgetKeyUpPointer;
         private _popUpWindow;
-        /**
-         * Creates a node and recursivly creates its parent nodes from it's input
-         * @param block
-         */
-        createNodeFromObject(block: Control, recursion?: boolean): BABYLON.Nullable<GUINode>;
         componentDidMount(): void;
         componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);

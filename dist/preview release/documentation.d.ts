@@ -32179,6 +32179,7 @@ declare module BABYLON {
         private _activeTargets;
         private _scene;
         private _influences;
+        private _morphTargetTextureIndices;
         private _supportsNormals;
         private _supportsTangents;
         private _supportsUVs;
