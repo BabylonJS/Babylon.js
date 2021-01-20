@@ -823,7 +823,7 @@ export class InputManager {
             // Keyboard Events
             if (deviceType === DeviceType.Keyboard) {
                 evt.type = ((currentState === 1) ? "keydown" : "keyup");
-                evt.key = eventData.key;
+                evt.key = eventData.key || String.fromCharCode(inputIndex);
                 evt.keyCode = inputIndex;
 
                 if (currentState === 1) {
