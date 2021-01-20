@@ -154,6 +154,8 @@ interface INativeEngine {
 
     getRenderWidth(): number;
     getRenderHeight(): number;
+    getHardwareScalingLevel(): number;
+    setHardwareScalingLevel(level: number): void;
 
     setViewPort(x: number, y: number, width: number, height: number): void;
 }
@@ -747,7 +749,11 @@ export class NativeEngine extends Engine {
     private _currentDepthTest: number = this._native.DEPTH_TEST_LEQUAL;
 
     public getHardwareScalingLevel(): number {
-        return 1.0;
+        return this._native.getHardwareScalingLevel();
+    }
+
+    public setHardwareScalingLevel(level: number): void {
+        this._native.setHardwareScalingLevel(level);
     }
 
     public constructor() {
