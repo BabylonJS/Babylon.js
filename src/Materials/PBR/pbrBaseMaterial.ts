@@ -280,7 +280,7 @@ export class PBRMaterialDefines extends MaterialDefines
     public SS_LINKREFRACTIONTOTRANSPARENCY = false;
     public SS_ALBEDOFORREFRACTIONTINT = false;
     public SS_ALBEDOFORTRANSLUCENCYTINT = false;
-    
+
     public SS_MASK_FROM_THICKNESS_TEXTURE = false;
     public SS_MASK_FROM_THICKNESS_TEXTURE_GLTF = false;
 
@@ -696,7 +696,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     /**
      * Quality switch for realtime filtering
      */
-    public get realTimeFilteringQuality() : number {
+    public get realTimeFilteringQuality(): number {
         return this._realTimeFilteringQuality;
     }
     public set realTimeFilteringQuality(n: number) {
@@ -1155,7 +1155,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     }
 
     private _prepareEffect(mesh: AbstractMesh, defines: PBRMaterialDefines, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null,
-                useInstances: Nullable<boolean> = null, useClipPlane: Nullable<boolean> = null, useThinInstances: boolean): Nullable<Effect> {
+        useInstances: Nullable<boolean> = null, useClipPlane: Nullable<boolean> = null, useThinInstances: boolean): Nullable<Effect> {
         this._prepareDefines(mesh, defines, useInstances, useClipPlane, useThinInstances);
 
         if (!defines.isDirty) {
