@@ -54862,10 +54862,10 @@ var GuiListComponent = /** @class */ (function (_super) {
         // Block types used to create the menu from
         var allBlocks = {
             Buttons: ["TextButton", "ImageButton"],
-            Controls: ["Slider", "Checkbox", "ColorPicker", "VisualKeyboard"],
-            Containers: ["DisplayGrid", "Grid", "StackPanel"],
+            Controls: ["Slider", "Checkbox", "ColorPicker", "VirtualKeyboard"],
+            Containers: ["DisplayGrid", "Grid"],
             Shapes: ["Ellipse", "Image", "Line", "Rectangle"],
-            Inputs: ["Text", "IntputText", "InputPassword"],
+            Inputs: ["Text", "InputText", "InputPassword"],
         };
         // Create node menu
         var blockMenu = [];
@@ -55262,7 +55262,12 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "header" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { id: "logo", src: "https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "title" }, "GUI EDITOR")),
-                this.renderProperties()));
+                this.renderProperties(),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "DELETE GUI", onClick: function () {
+                        var _a;
+                        (_a = _this.state.currentNode) === null || _a === void 0 ? void 0 : _a.dispose();
+                        _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                    } })));
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "propertyTab" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "header" },
@@ -55342,7 +55347,6 @@ var GUINode = /** @class */ (function () {
             _this._ownerCanvas.isOverGUINode = false;
             console.log("out");
         });
-        //TODO: Implement
         this._onSelectionBoxMovedObserver = this._globalState.onSelectionBoxMoved.add(function (rect1) { });
     }
     Object.defineProperty(GUINode.prototype, "isVisible", {
@@ -55458,9 +55462,8 @@ var GUINode = /** @class */ (function () {
         if (!this.clicked && !ignorClick)
             return false;
         console.log("moving");
-        //TODO: Implement move with zoom factor.
-        var newX = evt.x - startPos.x; // / this._ownerCanvas.zoom;
-        var newY = evt.y - startPos.y; // / this._ownerCanvas.zoom;
+        var newX = (evt.x - startPos.x); // / this._ownerCanvas.zoom;
+        var newY = (evt.y - startPos.y); // / this._ownerCanvas.zoom;
         this.x += newX;
         this.y += newY;
         this.children.forEach(function (child) {
@@ -55915,8 +55918,6 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     };
     WorkbenchComponent.prototype.onDown = function (evt) {
         this._rootContainer.setPointerCapture(evt.pointerId);
-        //TODO: Inplement group selection
-        // Selection?
         /*if (evt.currentTarget === this._hostCanvas && evt.ctrlKey) {
             this._selectionBox = this.props.globalState.hostDocument.createElement("div");
             this._selectionBox.classList.add("selection-box");
@@ -56005,7 +56006,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         var engine = new babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_4__["Engine"](canvas);
         // Create our first scene.
         var scene = new babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_4__["Scene"](engine);
-        scene.clearColor = new babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_4__["Color4"](0.2, 0.2, 0.3, 0.1);
+        scene.clearColor = new babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_4__["Color4"](0.2, 0.2, 0.3, 1.0);
         // This creates and positions a free camera (non-mesh)
         var camera = new babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_4__["FreeCamera"]("camera1", new babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_4__["Vector3"](0, 5, -10), scene);
         // This targets the camera to scene origin
@@ -56217,6 +56218,12 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
+
+
+
+
 var GUINodeTools = /** @class */ (function () {
     function GUINodeTools() {
     }
@@ -56251,6 +56258,38 @@ var GUINodeTools = /** @class */ (function () {
             case "Text":
                 element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["TextBlock"]("Textblock");
                 element.text = "My Text";
+                return element;
+            case "ImageButton":
+                element = babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["Button"].CreateImageButton("Button", "Click Me", "https://playground.babylonjs.com/textures/grass.png");
+                break;
+            case "VirtualKeyboard":
+                element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["VirtualKeyboard"]();
+                element.addKeysRow(["1", "2", "3", "\u2190"]);
+                break;
+            case "Image":
+                element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["Image"]("Image", "https://playground.babylonjs.com/textures/grass.png");
+                break;
+            case "InputText":
+                element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["InputText"]();
+                element.maxWidth = 0.6;
+                element.text = "Click Me";
+                break;
+            case "InputPassword":
+                element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["InputPassword"]();
+                break;
+            case "Grid":
+                element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["Grid"]();
+                element.addColumnDefinition(100, true);
+                element.addColumnDefinition(0.5);
+                element.addColumnDefinition(0.5);
+                element.addColumnDefinition(100, true);
+                element.addRowDefinition(0.5);
+                element.addRowDefinition(0.5);
+                return element;
+            case "DisplayGrid":
+                element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["DisplayGrid"]();
+                element.width = "200px";
+                element.height = "200px";
                 return element;
             default:
                 element = babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["Button"].CreateSimpleButton("Button", "Click Me");
@@ -58893,7 +58932,6 @@ var WorkbenchEditor = /** @class */ (function (_super) {
         var _this = _super.call(this, props) || this;
         _this._leftWidth = babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_6__["DataStorage"].ReadNumber("LeftWidth", 200);
         _this._rightWidth = babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_6__["DataStorage"].ReadNumber("RightWidth", 300);
-        _this._blocks = new Array();
         _this.handlePopUp = function () {
             _this.setState({
                 showPreviewPopUp: true,
@@ -58994,13 +59032,6 @@ var WorkbenchEditor = /** @class */ (function (_super) {
         _this.props.globalState.hostDocument.addEventListener("keydown", function (evt) {
             if ((evt.keyCode === 46 || evt.keyCode === 8) && !_this.props.globalState.blockKeyboardEvents) {
                 // Delete
-                var selectedItems = _this._workbenchCanvas.selectedGuiNodes;
-                for (var _i = 0, selectedItems_1 = selectedItems; _i < selectedItems_1.length; _i++) {
-                    var selectedItem = selectedItems_1[_i];
-                    selectedItem.dispose();
-                }
-                _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-                return;
             }
             if (!evt.ctrlKey || _this.props.globalState.blockKeyboardEvents) {
                 return;
@@ -59011,35 +59042,20 @@ var WorkbenchEditor = /** @class */ (function (_super) {
                 if (!selectedItems.length) {
                     return;
                 }
-                var selectedItem_1 = selectedItems[0];
-                if (!selectedItem_1.guiControl) {
+                var selectedItem = selectedItems[0];
+                if (!selectedItem.guiControl) {
                     return;
                 }
             }
             else if (evt.key === "v") {
                 // Paste
-                //TODO: Implement
             }
         }, false);
         return _this;
     }
-    /**
-     * Creates a node and recursivly creates its parent nodes from it's input
-     * @param block
-     */
-    WorkbenchEditor.prototype.createNodeFromObject = function (block, recursion) {
-        if (recursion === void 0) { recursion = true; }
-        if (this._blocks.indexOf(block) !== -1) {
-            return this._workbenchCanvas.nodes.filter(function (n) { return n.guiControl === block; })[0];
-        }
-        this._blocks.push(block);
-        //TODO: Implement
-        var node = null;
-        return node;
-    };
     WorkbenchEditor.prototype.componentDidMount = function () {
         if (this.props.globalState.hostDocument) {
-            this._workbenchCanvas = this.refs["graphCanvas"];
+            this._workbenchCanvas = this.refs["workbenchCanvas"];
         }
         if (navigator.userAgent.indexOf("Mobile") !== -1) {
             (this.props.globalState.hostDocument || document).querySelector(".blocker").style.visibility = "visible";
@@ -59126,7 +59142,7 @@ var WorkbenchEditor = /** @class */ (function (_super) {
             return;
         }
         var deltaX = evt.clientX - this._startX;
-        var rootElement = evt.currentTarget.ownerDocument.getElementById("workbench-editor-workbench-root");
+        var rootElement = evt.currentTarget.ownerDocument.getElementById("gui-editor-workbench-root");
         if (forLeft) {
             this._leftWidth += deltaX;
             this._leftWidth = Math.max(150, Math.min(400, this._leftWidth));
@@ -59136,7 +59152,6 @@ var WorkbenchEditor = /** @class */ (function (_super) {
             this._rightWidth -= deltaX;
             this._rightWidth = Math.max(250, Math.min(500, this._rightWidth));
             babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_6__["DataStorage"].WriteNumber("RightWidth", this._rightWidth);
-            rootElement.ownerDocument.getElementById("preview").style.height = this._rightWidth + "px";
         }
         rootElement.style.gridTemplateColumns = this.buildColumnLayout();
         this._startX = evt.clientX;
@@ -59148,7 +59163,6 @@ var WorkbenchEditor = /** @class */ (function (_super) {
         var data = event.dataTransfer.getData("babylonjs-gui-node");
         var guiElement = _guiNodeTools__WEBPACK_IMPORTED_MODULE_7__["GUINodeTools"].CreateControlFromString(data);
         var newGuiNode = this._workbenchCanvas.appendBlock(guiElement);
-        //TODO: Get correct positioning
         /*let x = event.clientX; // - event.currentTarget.offsetLeft - this._workbenchCanvas.x;
         let y = event.clientY;   // - event.currentTarget.offsetTop - this._workbenchCanvas.y - 20;
 
@@ -59180,7 +59194,7 @@ var WorkbenchEditor = /** @class */ (function (_super) {
                     }, onDragOver: function (event) {
                         event.preventDefault();
                     } },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_workbench__WEBPACK_IMPORTED_MODULE_8__["WorkbenchComponent"], { ref: "graphCanvas", globalState: this.props.globalState })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_workbench__WEBPACK_IMPORTED_MODULE_8__["WorkbenchComponent"], { ref: "workbenchCanvas", globalState: this.props.globalState })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "rightGrab", onPointerDown: function (evt) { return _this.onPointerDown(evt); }, onPointerUp: function (evt) { return _this.onPointerUp(evt); }, onPointerMove: function (evt) { return _this.resizeColumns(evt, false); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "right-panel" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_propertyTabComponent__WEBPACK_IMPORTED_MODULE_3__["PropertyTabComponent"], { globalState: this.props.globalState })),
