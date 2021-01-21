@@ -87,7 +87,7 @@ export class PlaneRotationGizmo extends Gizmo {
             gl_FragColor = vec4(1.,1.,0., min(intensity * 0.25, 0.8)) * opacity;
         }`;
 
-    private _rotationShaderMaterial:ShaderMaterial;
+    private _rotationShaderMaterial: ShaderMaterial;
 
     /**
      * Creates a PlaneRotationGizmo
@@ -123,8 +123,8 @@ export class PlaneRotationGizmo extends Gizmo {
         this._rotationDisplayPlane.parent = this._gizmoMesh;
         this._rotationDisplayPlane.setEnabled(false);
 
-        Effect.ShadersStore["rotationGizmoVertexShader"]= PlaneRotationGizmo._rotationGizmoVertexShader;
-        Effect.ShadersStore["rotationGizmoFragmentShader"]= PlaneRotationGizmo._rotationGizmoFragmentShader;
+        Effect.ShadersStore["rotationGizmoVertexShader"] = PlaneRotationGizmo._rotationGizmoVertexShader;
+        Effect.ShadersStore["rotationGizmoFragmentShader"] = PlaneRotationGizmo._rotationGizmoFragmentShader;
         this._rotationShaderMaterial = new ShaderMaterial("shader", this.gizmoLayer.utilityLayerScene, {
             vertex: "rotationGizmo",
             fragment: "rotationGizmo",
