@@ -50509,7 +50509,6 @@ declare module BABYLON {
         wheelDeltaPercentage: number;
         private _wheel;
         private _observer;
-        private computeDeltaFromMouseWheelLegacyEvent;
         /**
          * Attach the input controls to a specific dom element to get the input from.
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
@@ -60965,6 +60964,7 @@ declare module BABYLON {
         private _boundBuffersVertexArray;
         private _currentDepthTest;
         getHardwareScalingLevel(): number;
+        setHardwareScalingLevel(level: number): void;
         constructor();
         dispose(): void;
         /**
