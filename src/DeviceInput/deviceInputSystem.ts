@@ -1,4 +1,5 @@
 import { Engine } from '../Engines/engine';
+import { Observer } from '../Misc/observable';
 import { Tools } from '../Misc/tools';
 import { IDisposable } from '../scene';
 import { Nullable } from '../types';
@@ -56,10 +57,12 @@ export class DeviceInputSystem implements IDisposable {
     private _keyboardActive: boolean = false;
     private _pointerActive: boolean = false;
     private _elementToAttachTo: HTMLElement;
+    private _engine: Engine;
 
     private _keyboardDownEvent = (evt: any) => { };
     private _keyboardUpEvent = (evt: any) => { };
-    private _keyboardBlurEvent = (evt: any) => { };
+    private _onCanvasFocusObserver: Nullable<Observer<Engine>>;
+    private _onCanvasBlurObserver: Nullable<Observer<Engine>>;
 
     private _pointerMoveEvent = (evt: any) => { };
     private _pointerDownEvent = (evt: any) => { };
@@ -79,6 +82,7 @@ export class DeviceInputSystem implements IDisposable {
     private _eventPrefix: string;
 
     private constructor(engine: Engine) {
+        this._engine = engine;
         const inputElement = engine.getInputElement();
         this._eventPrefix = Tools.GetPointerPrefix(engine);
 
@@ -161,8 +165,14 @@ export class DeviceInputSystem implements IDisposable {
      */
     public dispose() {
         // Blur Events
-        this._elementToAttachTo.removeEventListener("blur", this._keyboardBlurEvent);
         this._elementToAttachTo.removeEventListener("blur", this._pointerBlurEvent);
+
+        if (this._onCanvasFocusObserver) {
+            this._engine.onCanvasFocusObservable.remove(this._onCanvasFocusObserver);
+        }
+        if (this._onCanvasBlurObserver) {
+            this._engine.onCanvasBlurObservable.remove(this._onCanvasBlurObserver);
+        }
 
         // Keyboard Events
         if (this._keyboardActive) {
@@ -282,10 +292,7 @@ export class DeviceInputSystem implements IDisposable {
             if (kbKey) {
                 kbKey[evt.keyCode] = 1;
                 if (this.onInputChanged) {
-                    const eventData: { [k: string]: any } = {};
-                    eventData.key = evt.key;
-
-                    this.onInputChanged(DeviceType.Keyboard, 0, evt.keyCode, 0, kbKey[evt.keyCode], eventData);
+                    this.onInputChanged(DeviceType.Keyboard, 0, evt.keyCode, 0, kbKey[evt.keyCode], evt);
                 }
             }
         });
@@ -300,35 +307,42 @@ export class DeviceInputSystem implements IDisposable {
             if (kbKey) {
                 kbKey[evt.keyCode] = 0;
                 if (this.onInputChanged) {
-                    const eventData: { [k: string]: any } = {};
-                    eventData.key = evt.key;
-
-                    this.onInputChanged(DeviceType.Keyboard, 0, evt.keyCode, 1, kbKey[evt.keyCode], eventData);
+                    this.onInputChanged(DeviceType.Keyboard, 0, evt.keyCode, 1, kbKey[evt.keyCode], evt);
                 }
             }
         });
 
-        this._keyboardBlurEvent = (evt) => {
-            if (this._keyboardActive) {
-                const kbKey = this._inputs[DeviceType.Keyboard][0];
-
-                for (let i = 0; i < kbKey.length; i++) {
-                    if (kbKey[i] !== 0) {
-                        kbKey[i] = 0;
-                        if (this.onInputChanged) {
-                            const eventData: { [k: string]: any } = {};
-                            eventData.key = evt.key;
-
-                            this.onInputChanged(DeviceType.Keyboard, 0, i, 1, kbKey[i], eventData);
-                        }
-                    }
-                }
-            }
+        let attachedFunction = () => {
+            this._elementToAttachTo.addEventListener("keydown", this._keyboardDownEvent);
+            this._elementToAttachTo.addEventListener("keyup", this._keyboardUpEvent);
         };
 
-        this._elementToAttachTo.addEventListener("keydown", this._keyboardDownEvent);
-        this._elementToAttachTo.addEventListener("keyup", this._keyboardUpEvent);
-        this._elementToAttachTo.addEventListener("blur", this._keyboardBlurEvent);
+        this._onCanvasFocusObserver = this._engine.onCanvasFocusObservable.add(
+            (() => {
+                if (document.activeElement === this._elementToAttachTo) {
+                    attachedFunction();
+                }
+                return attachedFunction;
+            })()
+        );
+
+        this._onCanvasBlurObserver = this._engine.onCanvasBlurObservable.add(() => {
+            if (!this._elementToAttachTo) {
+                return;
+            }
+
+            this._elementToAttachTo.removeEventListener("keydown", this._keyboardDownEvent);
+            this._elementToAttachTo.removeEventListener("keyup", this._keyboardUpEvent);
+
+            // Reset all keyboard inputs
+            if (this._inputs[DeviceType.Keyboard][0]) {
+                for(let i = 0; i < DeviceInputSystem._MAX_KEYCODES; i++) {
+                    this._inputs[DeviceType.Keyboard][0][i] = 0;
+                }
+            }
+        });
+
+        attachedFunction();
     }
 
     /**

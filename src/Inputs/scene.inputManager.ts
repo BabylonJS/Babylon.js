@@ -823,15 +823,18 @@ export class InputManager {
             // Keyboard Events
             if (deviceType === DeviceType.Keyboard) {
                 evt.type = ((currentState === 1) ? "keydown" : "keyup");
-                evt.key = eventData.key || String.fromCharCode(inputIndex);
+                evt.key = String.fromCharCode(inputIndex);
                 evt.keyCode = inputIndex;
 
+                // If we have the actual event data, use that.  Otherwise, default to derived data.
+                let currentEvent = eventData || evt;
+
                 if (currentState === 1) {
-                    this._onKeyDown((evt as IKeyboardEvent));
+                    this._onKeyDown((currentEvent as IKeyboardEvent));
                 }
 
                 if (currentState === 0) {
-                    this._onKeyUp((evt as IKeyboardEvent));
+                    this._onKeyUp((currentEvent as IKeyboardEvent));
                 }
             }
 
