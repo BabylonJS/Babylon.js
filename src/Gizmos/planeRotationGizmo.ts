@@ -161,7 +161,7 @@ export class PlaneRotationGizmo extends Gizmo {
                 this._rotationDisplayPlane.setEnabled(true);
 
                 this._rotationDisplayPlane.getWorldMatrix().invertToRef(rotationMatrix);
-                Vector3.TransformCoordinatesToRef(e.dragPlanePoint, rotationMatrix, lastDragPosition)
+                Vector3.TransformCoordinatesToRef(e.dragPlanePoint, rotationMatrix, lastDragPosition);
 
                 this._angles.x = Math.atan2(lastDragPosition.y, lastDragPosition.x) + Math.PI;
                 this._angles.y = 0;
