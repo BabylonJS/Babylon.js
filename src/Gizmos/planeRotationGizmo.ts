@@ -44,7 +44,7 @@ export class PlaneRotationGizmo extends Gizmo {
     private _gizmoMesh: Mesh;
     private _rotationDisplayPlane: Mesh;
     private _dragging: boolean = false;
-    private _angles = new Vector3;
+    private _angles = new Vector3();
 
     private static _rotationGizmoVertexShader = `
         precision highp float;
