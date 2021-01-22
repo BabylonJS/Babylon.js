@@ -501,6 +501,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public useOctreeForPicking = true;
     /** Gets or sets a boolean indicating that internal octree (if available) can be used to boost submeshes collision (true by default) */
     public useOctreeForCollisions = true;
+    /** number of collision detection tries. Change this value if not all colisions are detected and handled properly. */
+    public collisionRetryCount: number = 3;
 
     /**
      * Gets or sets the current layer mask (default is 0x0FFFFFFF)
@@ -1458,7 +1460,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
         this._meshCollisionData._collider._radius = this.ellipsoid;
 
-        coordinator.getNewPosition(this._meshCollisionData._oldPositionForCollisions, displacement, this._meshCollisionData._collider, 3, this, this._onCollisionPositionChange, this.uniqueId);
+        coordinator.getNewPosition(this._meshCollisionData._oldPositionForCollisions, displacement, this._meshCollisionData._collider, this.collisionRetryCount, this, this._onCollisionPositionChange, this.uniqueId);
         return this;
     }
 
