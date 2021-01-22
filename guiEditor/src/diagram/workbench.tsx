@@ -60,7 +60,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     public _frameIsMoving = false;
     public _isLoading = false;
     public isOverGUINode = false;
-
+    
     public get gridSize() {
         return this._gridSize;
     }
@@ -139,7 +139,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     constructor(props: IWorkbenchComponentProps) {
         super(props);
-
         props.globalState.onSelectionChangedObservable.add(selection => {  
             console.log(selection);
             this.selectedGuiNodes.forEach(element => {
