@@ -90,6 +90,7 @@ class _InternalAbstractMeshDataInfo {
     public _actAsRegularMesh = false;
     public _currentLOD: Nullable<AbstractMesh> = null;
     public _currentLODIsUpToDate: boolean = false;
+    public _collisionRetryCount: number = 3;
 }
 
 /**
@@ -245,6 +246,13 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         this._internalAbstractMeshDataInfo._facetData.facetDepthSortFrom = location;
     }
 
+    /** number of collision detection tries. Change this value if not all colisions are detected and handled properly. */
+    public get collisionRetryCount(): number {
+        return this._internalAbstractMeshDataInfo._collisionRetryCount;
+    }
+    public set collisionRetryCount(retryCount: number) {
+        this._internalAbstractMeshDataInfo._collisionRetryCount = retryCount;
+    }
     /**
      * gets a boolean indicating if facetData is enabled
      * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata#what-is-a-mesh-facet
@@ -501,8 +509,6 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public useOctreeForPicking = true;
     /** Gets or sets a boolean indicating that internal octree (if available) can be used to boost submeshes collision (true by default) */
     public useOctreeForCollisions = true;
-    /** number of collision detection tries. Change this value if not all colisions are detected and handled properly. */
-    public collisionRetryCount: number = 3;
 
     /**
      * Gets or sets the current layer mask (default is 0x0FFFFFFF)
