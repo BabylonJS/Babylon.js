@@ -4,12 +4,15 @@ import { GlobalState } from "./globalState";
 import { WorkbenchEditor } from "./workbenchEditor";
 import { Popup } from "./sharedUiComponents/lines/popup";
 import { Observable } from "babylonjs/Misc/observable";
+import { WorkbenchComponent } from "./diagram/workbench";
+
 /**
  * Interface used to specify creation options for the gui editor
  */
 export interface IGUIEditorOptions {
     hostElement?: HTMLElement;
     customSave?: { label: string; action: (data: string) => Promise<void> };
+    currentSnippetToken?: string;
     customLoadObservable?: Observable<any>;
 }
 
@@ -42,16 +45,22 @@ export class GUIEditor {
         globalState.hostDocument = hostElement.ownerDocument!;
         globalState.customSave = options.customSave;
         globalState.hostWindow = hostElement.ownerDocument!.defaultView!;
-
+        
         const graphEditor = React.createElement(WorkbenchEditor, {
             globalState: globalState,
         });
-
+        
         ReactDOM.render(graphEditor, hostElement);
-
         // create the middle workbench canvas
         if (!globalState.guiTexture) {
             globalState.workbench.createGUICanvas();
+            try {
+                if(options.currentSnippetToken) {
+                    globalState.workbench.loadFromSnippet(options.currentSnippetToken);
+                }
+            } catch (error) {
+                console.log(error);
+            }
         }
 
         if (options.customLoadObservable) {

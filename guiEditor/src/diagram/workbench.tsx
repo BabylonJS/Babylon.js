@@ -142,7 +142,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         props.globalState.onSelectionChangedObservable.add(selection => {  
             console.log(selection);
-            
             this.selectedGuiNodes.forEach(element => {
                 element.isSelected = false;
             }); 
@@ -532,7 +531,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         window.addEventListener("resize", function () {
         engine.resize();
         });
-
+        this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(`Please note: This editor is still a work in progress. You may submit feedback to msDestiny14 on GitHub.`);
         engine.runRenderLoop(() => {this.updateGUIs(); scene.render()});
     }
     
