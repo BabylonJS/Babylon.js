@@ -62,6 +62,7 @@
 - Moving GUI property tab components into GUIEditor. ([msDestiny14](https://github.com/msDestiny14))
 - Adding basic saving and loading funtionality. ([msDestiny14](https://github.com/msDestiny14))
 - Adding more GUI controls. ([msDestiny14](https://github.com/msDestiny14))
+- Adding snippet server from url functionality ([msDestiny14](https://github.com/msDestiny14))
 
 ### GUI
 
