@@ -36540,6 +36540,7 @@ declare module BABYLON {
         _actAsRegularMesh: boolean;
         _currentLOD: Nullable<AbstractMesh>;
         _currentLODIsUpToDate: boolean;
+        _collisionRetryCount: number;
     }
     /**
      * Class used to store all common mesh properties
@@ -36650,6 +36651,9 @@ declare module BABYLON {
          */
         get facetDepthSortFrom(): Vector3;
         set facetDepthSortFrom(location: Vector3);
+        /** number of collision detection tries. Change this value if not all colisions are detected and handled properly. */
+        get collisionRetryCount(): number;
+        set collisionRetryCount(retryCount: number);
         /**
          * gets a boolean indicating if facetData is enabled
          * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata#what-is-a-mesh-facet
@@ -44395,7 +44399,7 @@ declare module BABYLON {
         /**
          * Callback to be triggered when event driven input is updated
          */
-        onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>) => void;
+        onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>, eventData?: any) => void;
         private _inputs;
         private _gamepads;
         private _keyboardActive;
@@ -44403,6 +44407,7 @@ declare module BABYLON {
         private _elementToAttachTo;
         private _keyboardDownEvent;
         private _keyboardUpEvent;
+        private _keyboardBlurEvent;
         private _pointerMoveEvent;
         private _pointerDownEvent;
         private _pointerUpEvent;
@@ -58365,9 +58370,12 @@ declare module BABYLON {
         private _hoverMaterial;
         private _disableMaterial;
         private _gizmoMesh;
-        private _rotationCircle;
+        private _rotationDisplayPlane;
         private _dragging;
-        private static _CircleConstants;
+        private _angles;
+        private static _rotationGizmoVertexShader;
+        private static _rotationGizmoFragmentShader;
+        private _rotationShaderMaterial;
         /**
          * Creates a PlaneRotationGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -58381,9 +58389,6 @@ declare module BABYLON {
         /** Create Geometry for Gizmo */
         private _createGizmoMesh;
         protected _attachedNodeChanged(value: Nullable<Node>): void;
-        private setupRotationCircle;
-        private updateRotationPath;
-        private updateRotationCircle;
         /**
              * If the gizmo is enabled
              */
