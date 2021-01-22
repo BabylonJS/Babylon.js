@@ -83,7 +83,8 @@ export class DeviceInputSystem implements IDisposable {
 
         if (inputElement) {
             this._elementToAttachTo = inputElement;
-            this._elementToAttachTo.tabIndex = engine.canvasTabIndex;
+            // Set tab index for the inputElement to the engine's canvasTabIndex, if and only if the element's tab index is -1
+            this._elementToAttachTo.tabIndex = (this._elementToAttachTo.tabIndex !== -1) ? this._elementToAttachTo.tabIndex : engine.canvasTabIndex;
             this._handleKeyActions();
             this._handlePointerActions();
             this._handleGamepadActions();
