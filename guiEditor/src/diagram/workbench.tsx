@@ -200,18 +200,25 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 			return position;
 		}
 		return gridSize * Math.ceil(position / gridSize);
-	}
+    }
+    
+    clearGuiTexture()
+    {
+        while(this._guiNodes.length > 0) {
+            this._guiNodes[this._guiNodes.length-1].dispose();
+            this._guiNodes.pop();
+        }
+    }
 
     loadFromJson(serializationObject: any) {
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
-        this._guiNodes = [];
+        this.clearGuiTexture();
         this.globalState.guiTexture.parseContent(serializationObject);
         this.props.globalState.workbench.loadFromGuiTexture();
-    }
-    
+    }    
     async loadFromSnippet(snippedID: string){
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
-        this._guiNodes = [];
+        this.clearGuiTexture();
         await this.globalState.guiTexture.parseFromSnippetAsync(snippedID);
         this.props.globalState.workbench.loadFromGuiTexture();
     }
