@@ -4,7 +4,6 @@ import { GlobalState } from "./globalState";
 import { WorkbenchEditor } from "./workbenchEditor";
 import { Popup } from "./sharedUiComponents/lines/popup";
 import { Observable } from "babylonjs/Misc/observable";
-import { WorkbenchComponent } from "./diagram/workbench";
 
 /**
  * Interface used to specify creation options for the gui editor
@@ -32,6 +31,14 @@ export class GUIEditor {
             if (popupWindow) {
                 popupWindow.close();
             }
+            if(options.currentSnippetToken) {
+                try {
+                    this._CurrentState.workbench.loadFromSnippet(options.currentSnippetToken);
+                } catch (error) {
+                    //swallow and continue
+                }
+            }
+            return;
         }
 
         let hostElement = options.hostElement;
@@ -45,7 +52,7 @@ export class GUIEditor {
         globalState.hostDocument = hostElement.ownerDocument!;
         globalState.customSave = options.customSave;
         globalState.hostWindow = hostElement.ownerDocument!.defaultView!;
-        
+
         const graphEditor = React.createElement(WorkbenchEditor, {
             globalState: globalState,
         });
@@ -54,18 +61,18 @@ export class GUIEditor {
         // create the middle workbench canvas
         if (!globalState.guiTexture) {
             globalState.workbench.createGUICanvas();
-            try {
-                if(options.currentSnippetToken) {
+            if(options.currentSnippetToken) {
+                try {
                     globalState.workbench.loadFromSnippet(options.currentSnippetToken);
+                
+                } catch (error) {
+                    //swallow and continue
                 }
-            } catch (error) {
-                console.log(error);
             }
         }
 
         if (options.customLoadObservable) {
             options.customLoadObservable.add((data) => {
-                //TODO: Add deserilization here.
                 globalState.onResetRequiredObservable.notifyObservers();
                 globalState.onBuiltObservable.notifyObservers();
             });
