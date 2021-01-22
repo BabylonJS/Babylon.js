@@ -738,9 +738,6 @@ export class Geometry implements IGetSetVerticesData {
 
         for (var mesh of this._meshes) {
             mesh._markSubMeshesAsAttributesDirty();
-            if (this._vertexArrayObjects) {
-                mesh._invalidateInstanceVertexArrayObject();
-            }
         }
     }
 
