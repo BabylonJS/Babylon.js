@@ -44399,7 +44399,7 @@ declare module BABYLON {
         /**
          * Callback to be triggered when event driven input is updated
          */
-        onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>) => void;
+        onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>, eventData?: any) => void;
         private _inputs;
         private _gamepads;
         private _keyboardActive;
@@ -44407,6 +44407,7 @@ declare module BABYLON {
         private _elementToAttachTo;
         private _keyboardDownEvent;
         private _keyboardUpEvent;
+        private _keyboardBlurEvent;
         private _pointerMoveEvent;
         private _pointerDownEvent;
         private _pointerUpEvent;
