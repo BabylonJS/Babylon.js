@@ -863,21 +863,25 @@ export class InputManager {
                     evt.type = "pointerdown";
                     evt.button = (inputIndex - 2);
 
-                    this._onPointerDown((evt as IPointerEvent));
+                    let currentEvent = eventData || evt;
+
+                    this._onPointerDown((currentEvent as IPointerEvent));
                 }
 
                 if (attachUp && inputIndex >= PointerInput.LeftClick && inputIndex <= PointerInput.RightClick && currentState === 0) {   // Pointer Up
                     evt.type = "pointerup";
                     evt.button = (inputIndex - 2);
+                    let currentEvent = eventData || evt;
 
-                    this._onPointerUp((evt as IPointerEvent));
+                    this._onPointerUp((currentEvent as IPointerEvent));
                 }
 
                 if (attachMove) {
                     if (inputIndex === PointerInput.Horizontal || inputIndex === PointerInput.Vertical || inputIndex === PointerInput.DeltaHorizontal || inputIndex === PointerInput.DeltaVertical) {
                         evt.type = "pointermove";
+                        let currentEvent = eventData || evt;
 
-                        this._onPointerMove((evt as IPointerEvent));
+                        this._onPointerMove((currentEvent as IPointerEvent));
                     }
                     else if (inputIndex === PointerInput.MouseWheelX || inputIndex === PointerInput.MouseWheelY || inputIndex === PointerInput.MouseWheelZ) {
                         /*
@@ -897,7 +901,8 @@ export class InputManager {
 
                         // If we have a delta, use it.
                         if (deltaX !== 0 || deltaY !== 0 || deltaZ !== 0) {
-                            this._onPointerMove((evt as IWheelEvent));
+                            let currentEvent = eventData || evt;
+                            this._onPointerMove((currentEvent as IWheelEvent));
                         }
                     }
                 }
