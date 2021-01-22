@@ -60,7 +60,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     public _frameIsMoving = false;
     public _isLoading = false;
     public isOverGUINode = false;
-    
+
     public get gridSize() {
         return this._gridSize;
     }

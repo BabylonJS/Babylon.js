@@ -56,7 +56,7 @@ export class GUIEditor {
         const graphEditor = React.createElement(WorkbenchEditor, {
             globalState: globalState,
         });
-        
+    
         ReactDOM.render(graphEditor, hostElement);
         // create the middle workbench canvas
         if (!globalState.guiTexture) {
