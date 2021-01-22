@@ -297,10 +297,6 @@ export class Geometry implements IGetSetVerticesData {
         }
 
         this.notifyUpdate(kind);
-
-        if (this._vertexArrayObjects) {
-            this._disposeVertexArrayObjects();
-        }
     }
 
     /**
@@ -736,8 +732,15 @@ export class Geometry implements IGetSetVerticesData {
             this.onGeometryUpdated(this, kind);
         }
 
+        if (this._vertexArrayObjects) {
+            this._disposeVertexArrayObjects();
+        }
+
         for (var mesh of this._meshes) {
             mesh._markSubMeshesAsAttributesDirty();
+            if (this._vertexArrayObjects) {
+                mesh._invalidateInstanceVertexArrayObject();
+            }
         }
     }
 
