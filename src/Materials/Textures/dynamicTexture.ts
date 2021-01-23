@@ -27,7 +27,7 @@ export class DynamicTexture extends Texture {
      * @param invertY defines if the texture needs to be inverted on the y axis during loading
      */
 
-    constructor(name: string, options: any, scene: Nullable<Scene> = null, generateMipMaps: boolean, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, format: number = Constants.TEXTUREFORMAT_RGBA, invertY?: boolean) {
+    constructor(name: string, options: any, scene: Nullable<Scene> = null, generateMipMaps: boolean = false, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, format: number = Constants.TEXTUREFORMAT_RGBA, invertY?: boolean) {
         super(null, scene, !generateMipMaps, invertY, samplingMode, undefined, undefined, undefined, undefined, format);
 
         this.name = name;
