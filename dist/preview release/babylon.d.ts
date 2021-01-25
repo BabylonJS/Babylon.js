@@ -70966,6 +70966,7 @@ declare module BABYLON {
          * * The parameter `normal` (Vector3, default `Vector3.Up`) sets the normal of the mesh where the decal is applied onto in World coordinates
          * * The parameter `size` (Vector3, default `(1, 1, 1)`) sets the decal scaling
          * * The parameter `angle` (float in radian, default 0) sets the angle to rotate the decal
+         * * The parameter `captureUVS` defines if we need to capture the uvs or compute them
          * @param name defines the name of the mesh
          * @param sourceMesh defines the mesh where the decal must be applied
          * @param options defines the options used to create the mesh
@@ -70978,6 +70979,7 @@ declare module BABYLON {
             normal?: Vector3;
             size?: Vector3;
             angle?: number;
+            captureUVS?: boolean;
         }): Mesh;
     }
 }
