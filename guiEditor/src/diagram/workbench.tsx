@@ -139,10 +139,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     constructor(props: IWorkbenchComponentProps) {
         super(props);
-
         props.globalState.onSelectionChangedObservable.add(selection => {  
             console.log(selection);
-            
             this.selectedGuiNodes.forEach(element => {
                 element.isSelected = false;
             }); 
@@ -202,18 +200,25 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 			return position;
 		}
 		return gridSize * Math.ceil(position / gridSize);
-	}
+    }
+    
+    clearGuiTexture()
+    {
+        while(this._guiNodes.length > 0) {
+            this._guiNodes[this._guiNodes.length-1].dispose();
+            this._guiNodes.pop();
+        }
+    }
 
     loadFromJson(serializationObject: any) {
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
-        this._guiNodes = [];
+        this.clearGuiTexture();
         this.globalState.guiTexture.parseContent(serializationObject);
         this.props.globalState.workbench.loadFromGuiTexture();
-    }
-    
+    }    
     async loadFromSnippet(snippedID: string){
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
-        this._guiNodes = [];
+        this.clearGuiTexture();
         await this.globalState.guiTexture.parseFromSnippetAsync(snippedID);
         this.props.globalState.workbench.loadFromGuiTexture();
     }
@@ -532,7 +537,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         window.addEventListener("resize", function () {
         engine.resize();
         });
-
+        this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(`Please note: This editor is still a work in progress. You may submit feedback to msDestiny14 on GitHub.`);
         engine.runRenderLoop(() => {this.updateGUIs(); scene.render()});
     }
     

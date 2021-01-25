@@ -69,6 +69,7 @@ declare module GUIEDITOR {
         constructor(props: IWorkbenchComponentProps);
         getGridPosition(position: number, useCeil?: boolean): number;
         getGridPositionCeil(position: number): number;
+        clearGuiTexture(): void;
         loadFromJson(serializationObject: any): void;
         loadFromSnippet(snippedID: string): Promise<void>;
         loadFromGuiTexture(): void;
@@ -875,6 +876,7 @@ declare module GUIEDITOR {
             label: string;
             action: (data: string) => Promise<void>;
         };
+        currentSnippetToken?: string;
         customLoadObservable?: BABYLON.Observable<any>;
     }
     /**

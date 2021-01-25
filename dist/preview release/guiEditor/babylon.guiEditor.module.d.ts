@@ -75,6 +75,7 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         constructor(props: IWorkbenchComponentProps);
         getGridPosition(position: number, useCeil?: boolean): number;
         getGridPositionCeil(position: number): number;
+        clearGuiTexture(): void;
         loadFromJson(serializationObject: any): void;
         loadFromSnippet(snippedID: string): Promise<void>;
         loadFromGuiTexture(): void;
@@ -1033,6 +1034,7 @@ declare module "babylonjs-gui-editor/guiEditor" {
             label: string;
             action: (data: string) => Promise<void>;
         };
+        currentSnippetToken?: string;
         customLoadObservable?: Observable<any>;
     }
     /**
@@ -1580,6 +1582,7 @@ declare module GUIEDITOR {
         constructor(props: IWorkbenchComponentProps);
         getGridPosition(position: number, useCeil?: boolean): number;
         getGridPositionCeil(position: number): number;
+        clearGuiTexture(): void;
         loadFromJson(serializationObject: any): void;
         loadFromSnippet(snippedID: string): Promise<void>;
         loadFromGuiTexture(): void;
@@ -2386,6 +2389,7 @@ declare module GUIEDITOR {
             label: string;
             action: (data: string) => Promise<void>;
         };
+        currentSnippetToken?: string;
         customLoadObservable?: BABYLON.Observable<any>;
     }
     /**
