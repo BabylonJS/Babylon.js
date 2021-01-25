@@ -85,14 +85,14 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
             pbrMaterial.subSurface.tintColor = new Color3(1.0, 1.0, 1.0);
         }
 
+        pbrMaterial.subSurface.minimumThickness = 0.0;
+        pbrMaterial.subSurface.maximumThickness = extension.thicknessFactor !== undefined ? extension.thicknessFactor : 1;
         if (extension.thicknessTexture) {
             return this._loader.loadTextureInfoAsync(context, extension.thicknessTexture)
                 .then((texture: BaseTexture) => {
                     pbrMaterial.subSurface.thicknessTexture = texture;
                     pbrMaterial.subSurface.useMaskFromThicknessTextureGltf = true;
                     pbrMaterial.subSurface.useMaskFromThicknessTexture = false;
-                    pbrMaterial.subSurface.minimumThickness = 0.0;
-                    pbrMaterial.subSurface.maximumThickness = extension.thicknessFactor !== undefined ? extension.thicknessFactor : 1;
                 });
         } else {
             return Promise.resolve();
