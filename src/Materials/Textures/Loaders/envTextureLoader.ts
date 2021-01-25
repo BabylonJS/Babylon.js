@@ -51,7 +51,7 @@ export class _ENVTextureLoader implements IInternalTextureLoader {
                     if (onLoad) {
                         onLoad();
                     }
-                }, (reason) => {
+                }).catch((reason) => {
                     onError?.("Can not upload environment levels", reason);
                 });
             } catch (e) {
