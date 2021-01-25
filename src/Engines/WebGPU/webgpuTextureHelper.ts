@@ -201,9 +201,6 @@ export class WebGPUTextureHelper {
                     entryPoint: 'main'
                 },
                 primitiveTopology: WebGPUConstants.PrimitiveTopology.TriangleStrip,
-                vertexState: {
-                    indexFormat: WebGPUConstants.IndexFormat.Uint16
-                },
                 colorStates: [{
                     format,
                 }]
