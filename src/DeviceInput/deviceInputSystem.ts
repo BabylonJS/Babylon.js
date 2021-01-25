@@ -65,6 +65,7 @@ export class DeviceInputSystem implements IDisposable {
     private _pointerDownEvent = (evt: any) => { };
     private _pointerUpEvent = (evt: any) => { };
     private _pointerWheelEvent = (evt: any) => { };
+    private _pointerBlurEvent = (evt: any) => { };
     private _wheelEventName: string;
 
     private _gamepadConnectedEvent = (evt: any) => { };
@@ -163,6 +164,7 @@ export class DeviceInputSystem implements IDisposable {
     public dispose() {
         // Blur Events
         this._elementToAttachTo.removeEventListener("blur", this._keyboardBlurEvent);
+        this._elementToAttachTo.removeEventListener("blur", this._pointerBlurEvent);
 
         // Keyboard Events
         if (this._keyboardActive) {
@@ -458,6 +460,36 @@ export class DeviceInputSystem implements IDisposable {
             /* */
         }
 
+        this._pointerBlurEvent = ((evt) => {
+            // Handle mouse buttons
+            if (this.isDeviceAvailable(DeviceType.Mouse)) {
+                const pointer = this._inputs[DeviceType.Mouse][0];
+                for (let i = 0; i <= PointerInput.BrowserForward; i++) {
+                    if (pointer[i + 2] === 1) {
+                        pointer[i + 2] = 0;
+
+                        if (this.onInputChanged) {
+                            this.onInputChanged(DeviceType.Mouse, 0, i + 2, 1, pointer[i + 2]);
+                        }
+                    }
+                }
+            }
+
+            // Handle Active Touches
+            if (this.isDeviceAvailable(DeviceType.Touch)) {
+                const pointer = this._inputs[DeviceType.Touch];
+                for (let i = 0; i < pointer.length; i++) {
+                    if (pointer[i][PointerInput.LeftClick] === 1) {
+                        pointer[i][PointerInput.LeftClick] = 0;
+
+                        if (this.onInputChanged) {
+                            this.onInputChanged(DeviceType.Touch, i, PointerInput.LeftClick, 1, pointer[i][PointerInput.LeftClick]);
+                        }
+                    }
+                }
+            }
+        });
+
         this._pointerWheelEvent = ((evt) => {
             const deviceType = DeviceType.Mouse;
             const deviceSlot = 0;
@@ -499,6 +531,7 @@ export class DeviceInputSystem implements IDisposable {
         this._elementToAttachTo.addEventListener(this._eventPrefix + "move", this._pointerMoveEvent);
         this._elementToAttachTo.addEventListener(this._eventPrefix + "down", this._pointerDownEvent);
         this._elementToAttachTo.addEventListener(this._eventPrefix + "up", this._pointerUpEvent);
+        this._elementToAttachTo.addEventListener("blur", this._pointerBlurEvent);
         this._elementToAttachTo.addEventListener(this._wheelEventName, this._pointerWheelEvent, passiveSupported ? { passive: false } : false);
     }
 
