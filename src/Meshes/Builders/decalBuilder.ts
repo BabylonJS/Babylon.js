@@ -1,11 +1,11 @@
 import { Nullable, IndicesArray } from "../../types";
-import { Vector3, Matrix } from "../../Maths/math.vector";
+import { Vector3, Matrix, Vector2 } from "../../Maths/math.vector";
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexBuffer } from "../buffer";
 import { VertexData } from "../mesh.vertexData";
 import { AbstractMesh } from "../abstractMesh";
 import { Camera } from "../../Cameras/camera";
-import { PositionNormalVertex } from '../../Maths/math.vertexFormat';
+import { PositionNormalTextureVertex } from '../../Maths/math.vertexFormat';
 
 Mesh.CreateDecal = (name: string, sourceMesh: AbstractMesh, position: Vector3, normal: Vector3, size: Vector3, angle: number): Mesh => {
     var options = {
@@ -29,6 +29,7 @@ export class DecalBuilder {
      * * The parameter `normal` (Vector3, default `Vector3.Up`) sets the normal of the mesh where the decal is applied onto in World coordinates
      * * The parameter `size` (Vector3, default `(1, 1, 1)`) sets the decal scaling
      * * The parameter `angle` (float in radian, default 0) sets the angle to rotate the decal
+     * * The parameter `captureUVS` defines if we need to capture the uvs or compute them
      * @param name defines the name of the mesh
      * @param sourceMesh defines the mesh where the decal must be applied
      * @param options defines the options used to create the mesh
@@ -36,10 +37,11 @@ export class DecalBuilder {
      * @returns the decal mesh
      * @see https://doc.babylonjs.com/how_to/decals
      */
-    public static CreateDecal(name: string, sourceMesh: AbstractMesh, options: { position?: Vector3, normal?: Vector3, size?: Vector3, angle?: number }): Mesh {
+    public static CreateDecal(name: string, sourceMesh: AbstractMesh, options: { position?: Vector3, normal?: Vector3, size?: Vector3, angle?: number, captureUVS?: boolean }): Mesh {
         var indices = <IndicesArray>sourceMesh.getIndices();
         var positions = sourceMesh.getVerticesData(VertexBuffer.PositionKind);
         var normals = sourceMesh.getVerticesData(VertexBuffer.NormalKind);
+        var uvs = sourceMesh.getVerticesData(VertexBuffer.UVKind);
         var position = options.position || Vector3.Zero();
         var normal = options.normal || Vector3.Up();
         var size = options.size || Vector3.One();
@@ -72,8 +74,8 @@ export class DecalBuilder {
 
         var currentVertexDataIndex = 0;
 
-        var extractDecalVector3 = (indexId: number): PositionNormalVertex => {
-            var result = new PositionNormalVertex();
+        var extractDecalVector3 = (indexId: number): PositionNormalTextureVertex => {
+            var result = new PositionNormalTextureVertex();
             if (!indices || !positions || !normals) {
                 return result;
             }
@@ -88,34 +90,38 @@ export class DecalBuilder {
             result.normal = new Vector3(normals[vertexId * 3], normals[vertexId * 3 + 1], normals[vertexId * 3 + 2]);
             result.normal = Vector3.TransformNormal(result.normal, transformMatrix);
 
+            if (options.captureUVS && uvs) {
+                result.uv = new Vector2(uvs[vertexId * 2], uvs[vertexId * 2 + 1]);
+            }
+
             return result;
         }; // Inspired by https://github.com/mrdoob/three.js/blob/eee231960882f6f3b6113405f524956145148146/examples/js/geometries/DecalGeometry.js
-        var clip = (vertices: PositionNormalVertex[], axis: Vector3): PositionNormalVertex[] => {
+        var clip = (vertices: PositionNormalTextureVertex[], axis: Vector3): PositionNormalTextureVertex[] => {
             if (vertices.length === 0) {
                 return vertices;
             }
 
             var clipSize = 0.5 * Math.abs(Vector3.Dot(size, axis));
 
-            var clipVertices = (v0: PositionNormalVertex, v1: PositionNormalVertex): PositionNormalVertex => {
+            var clipVertices = (v0: PositionNormalTextureVertex, v1: PositionNormalTextureVertex): PositionNormalTextureVertex => {
                 var clipFactor = Vector3.GetClipFactor(v0.position, v1.position, axis, clipSize);
 
-                return new PositionNormalVertex(
+                return new PositionNormalTextureVertex(
                     Vector3.Lerp(v0.position, v1.position, clipFactor),
                     Vector3.Lerp(v0.normal, v1.normal, clipFactor)
                 );
             };
-            var result = new Array<PositionNormalVertex>();
+            var result = new Array<PositionNormalTextureVertex>();
 
             for (var index = 0; index < vertices.length; index += 3) {
                 var v1Out: boolean;
                 var v2Out: boolean;
                 var v3Out: boolean;
                 var total = 0;
-                let nV1: Nullable<PositionNormalVertex> = null;
-                let nV2: Nullable<PositionNormalVertex> = null;
-                let nV3: Nullable<PositionNormalVertex> = null;
-                let nV4: Nullable<PositionNormalVertex> = null;
+                let nV1: Nullable<PositionNormalTextureVertex> = null;
+                let nV2: Nullable<PositionNormalTextureVertex> = null;
+                let nV3: Nullable<PositionNormalTextureVertex> = null;
+                let nV4: Nullable<PositionNormalTextureVertex> = null;
 
                 var d1 = Vector3.Dot(vertices[index].position, axis) - clipSize;
                 var d2 = Vector3.Dot(vertices[index + 1].position, axis) - clipSize;
@@ -208,7 +214,7 @@ export class DecalBuilder {
             return result;
         };
         for (var index = 0; index < indices.length; index += 3) {
-            var faceVertices = new Array<PositionNormalVertex>();
+            var faceVertices = new Array<PositionNormalTextureVertex>();
 
             faceVertices.push(extractDecalVector3(index));
             faceVertices.push(extractDecalVector3(index + 1));
@@ -234,9 +240,13 @@ export class DecalBuilder {
                 (<number[]>vertexData.indices).push(currentVertexDataIndex);
                 vertex.position.toArray(vertexData.positions, currentVertexDataIndex * 3);
                 vertex.normal.toArray(vertexData.normals, currentVertexDataIndex * 3);
-                (<number[]>vertexData.uvs).push(0.5 + vertex.position.x / size.x);
-                (<number[]>vertexData.uvs).push(0.5 + vertex.position.y / size.y);
 
+                if (!options.captureUVS) {
+                    (<number[]>vertexData.uvs).push(0.5 + vertex.position.x / size.x);
+                    (<number[]>vertexData.uvs).push(0.5 + vertex.position.y / size.y);
+                } else {
+                    vertex.uv.toArray(vertexData.uvs, currentVertexDataIndex * 2);
+                }
                 currentVertexDataIndex++;
             }
         }
