@@ -576,9 +576,7 @@ export class WebGPUEngine extends Engine {
         this._mainRenderPassWrapper.colorAttachmentGPUTextures = [new WebGPUHardwareTexture()];
         this._mainRenderPassWrapper.colorAttachmentGPUTextures[0].format = this._colorFormat;
         if (this.dbgGenerateLogs) {
-            this._context.getSwapChainPreferredFormat(this._device).then((format) => {
-                console.log("Swap chain preferred format:", format);
-            });
+            console.log("Swap chain preferred format:", this._context.getSwapChainPreferredFormat(this._adapter));
         }
     }
 
@@ -590,7 +588,7 @@ export class WebGPUEngine extends Engine {
             depth: 1
         };
 
-        let mainColorAttachments: GPURenderPassColorAttachmentDescriptor[];
+        let mainColorAttachments: GPURenderPassColorAttachment[];
 
         if (this._options.antialiasing) {
             const mainTextureDescriptor: GPUTextureDescriptor = {
@@ -637,7 +635,7 @@ export class WebGPUEngine extends Engine {
             this._depthTexture.destroy();
         }
         this._depthTexture = this._device.createTexture(depthTextureDescriptor);
-        const mainDepthAttachment: GPURenderPassDepthStencilAttachmentDescriptor = {
+        const mainDepthAttachment: GPURenderPassDepthStencilAttachment = {
             attachment: this._depthTexture.createView(),
 
             depthLoadValue: this._clearDepthValue,
@@ -712,7 +710,7 @@ export class WebGPUEngine extends Engine {
         this._currentIndexBuffer = null;
         this._currentVertexBuffers = null;
         this._currentOverrideVertexBuffers = null;
-        this._cacheRenderPipeline.setBuffers(null, null, null);
+        this._cacheRenderPipeline.setBuffers(null, null);
 
         if (bruteForce) {
             this._currentProgram = null;
@@ -1075,7 +1073,7 @@ export class WebGPUEngine extends Engine {
         this._currentIndexBuffer = indexBuffer;
         this._currentVertexBuffers = vertexBuffers;
         this._currentOverrideVertexBuffers = overrideVertexBuffers ?? null;
-        this._cacheRenderPipeline.setBuffers(vertexBuffers, indexBuffer, this._currentOverrideVertexBuffers);
+        this._cacheRenderPipeline.setBuffers(vertexBuffers, this._currentOverrideVertexBuffers);
     }
 
     /** @hidden */
@@ -2834,7 +2832,7 @@ export class WebGPUEngine extends Engine {
         const depthTextureView = gpuDepthStencilTexture?.createView(this._rttRenderPassWrapper.depthAttachmentViewDescriptor!);
         const depthMSAATextureView = gpuDepthStencilMSAATexture?.createView(this._rttRenderPassWrapper.depthAttachmentViewDescriptor!);
 
-        const colorAttachments: GPURenderPassColorAttachmentDescriptor[] = [];
+        const colorAttachments: GPURenderPassColorAttachment[] = [];
 
         if (internalTexture._attachments && internalTexture._textureArray) {
             // multi render targets
@@ -2950,7 +2948,7 @@ export class WebGPUEngine extends Engine {
             const depthClearValue = scissorIsActive ? WebGPUConstants.LoadOp.Load : clearDepth ? (this.useReverseDepthBuffer ? this._clearReverseDepthValue : this._clearDepthValue) : WebGPUConstants.LoadOp.Load;
             const stencilClearValue = scissorIsActive ? WebGPUConstants.LoadOp.Load : clearStencil ? this._clearStencilValue : WebGPUConstants.LoadOp.Load;
 
-            (this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments as GPURenderPassColorAttachmentDescriptor[])[0].loadValue = colorClearValue;
+            this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0].loadValue = colorClearValue;
             this._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.depthLoadValue = depthClearValue;
             this._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.stencilLoadValue = stencilClearValue;
         }
@@ -2960,10 +2958,10 @@ export class WebGPUEngine extends Engine {
 
         // Resolve in case of MSAA
         if (this._options.antialiasing) {
-            (this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments as GPURenderPassColorAttachmentDescriptor[])[0].resolveTarget = this._swapChainTexture.createView();
+            this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0].resolveTarget = this._swapChainTexture.createView();
         }
         else {
-            (this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments as GPURenderPassColorAttachmentDescriptor[])[0].attachment = this._swapChainTexture.createView();
+            this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0].attachment = this._swapChainTexture.createView();
         }
 
         if (this.dbgVerboseLogsForFirstFrames) {
@@ -2990,9 +2988,6 @@ export class WebGPUEngine extends Engine {
             const pipeline = this._device.createRenderPipeline({
                 sampleCount: this._currentRenderTarget ? this._currentRenderTarget.samples : this._mainPassSampleCount,
                 primitiveTopology: WebGPUConstants.PrimitiveTopology.TriangleStrip,
-                vertexState: {
-                    indexFormat: WebGPUConstants.IndexFormat.Uint16
-                },
 
                 depthStencilState: this._depthTextureFormat === undefined ? undefined : {
                     depthWriteEnabled: clearDepth,

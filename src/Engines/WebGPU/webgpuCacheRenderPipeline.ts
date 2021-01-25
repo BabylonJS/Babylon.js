@@ -3,7 +3,6 @@ import * as WebGPUConstants from './webgpuConstants';
 import { Effect } from "../../Materials/effect";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { VertexBuffer } from "../../Meshes/buffer";
-import { DataBuffer } from "../../Meshes/dataBuffer";
 import { Nullable } from "../../types";
 import { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
 import { WebGPUPipelineContext } from "./webgpuPipelineContext";
@@ -171,7 +170,6 @@ export abstract class WebGPUCacheRenderPipeline {
     private _depthStencilState: number;
     private _vertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }>;
     private _overrideVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }>;
-    private _indexBuffer: Nullable<DataBuffer>;
 
     constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer) {
         this._device = device;
@@ -200,7 +198,7 @@ export abstract class WebGPUCacheRenderPipeline {
         this.setDepthStencilFormat(WebGPUConstants.TextureFormat.Depth24PlusStencil8);
         this.setStencilEnabled(false);
         this.resetStencilState();
-        this.setBuffers(null, null, null);
+        this.setBuffers(null, null);
     }
 
     protected abstract _getRenderPipeline(param: { token: any, pipeline: Nullable<GPURenderPipeline> }): void;
@@ -439,10 +437,9 @@ export abstract class WebGPUCacheRenderPipeline {
         this.setStencilWriteMask(writeMask);
     }
 
-    public setBuffers(vertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }>, indexBuffer: Nullable<DataBuffer>, overrideVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }>): void {
+    public setBuffers(vertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }>, overrideVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }>): void {
         this._vertexBuffers = vertexBuffers;
         this._overrideVertexBuffers = overrideVertexBuffers;
-        this._indexBuffer = indexBuffer;
     }
 
     private static _GetTopology(fillMode: number): GPUPrimitiveTopology {
@@ -854,8 +851,8 @@ export abstract class WebGPUCacheRenderPipeline {
         return this._device.createPipelineLayout({ bindGroupLayouts });
     }
 
-    private _getVertexInputDescriptor(effect: Effect, topology: GPUPrimitiveTopology): GPUVertexStateDescriptor {
-        const descriptors: GPUVertexBufferLayoutDescriptor[] = [];
+    private _getVertexInputDescriptor(effect: Effect): GPUVertexState {
+        const descriptors: GPUVertexBufferLayout[] = [];
         const webgpuPipelineContext = effect._pipelineContext as WebGPUPipelineContext;
         const attributes = webgpuPipelineContext.shaderProcessingContext.attributeNamesFromEffect;
         const locations = webgpuPipelineContext.shaderProcessingContext.attributeLocationsFromEffect;
@@ -868,14 +865,14 @@ export abstract class WebGPUCacheRenderPipeline {
                 vertexBuffer = this._emptyVertexBuffer;
             }
 
-            const attributeDescriptor: GPUVertexAttributeDescriptor = {
+            const attributeDescriptor: GPUVertexAttribute = {
                 shaderLocation: location,
                 offset: 0, // not available in WebGL
                 format: WebGPUCacheRenderPipeline._GetVertexInputDescriptorFormat(vertexBuffer),
             };
 
             // TODO WEBGPU. Factorize the one with the same underlying buffer.
-            const vertexBufferDescriptor: GPUVertexBufferLayoutDescriptor = {
+            const vertexBufferDescriptor: GPUVertexBufferLayout = {
                 arrayStride: vertexBuffer.byteStride,
                 stepMode: vertexBuffer.getIsInstanced() ? WebGPUConstants.InputStepMode.Instance : WebGPUConstants.InputStepMode.Vertex,
                 attributes: [attributeDescriptor]
@@ -884,20 +881,14 @@ export abstract class WebGPUCacheRenderPipeline {
             descriptors.push(vertexBufferDescriptor);
         }
 
-        const inputStateDescriptor: GPUVertexStateDescriptor = {
-            vertexBuffers: descriptors
+        return {
+            buffers: descriptors
         };
-
-        if (topology === WebGPUConstants.PrimitiveTopology.LineStrip || topology === WebGPUConstants.PrimitiveTopology.TriangleStrip) {
-            inputStateDescriptor.indexFormat = !this._indexBuffer || this._indexBuffer.is32Bits ? WebGPUConstants.IndexFormat.Uint32 : WebGPUConstants.IndexFormat.Uint16;
-        }
-
-        return inputStateDescriptor;
     }
 
     private _createRenderPipeline(effect: Effect, topology: GPUPrimitiveTopology, sampleCount: number, createLayout = true): GPURenderPipeline {
         const webgpuPipelineContext = effect._pipelineContext as WebGPUPipelineContext;
-        const inputStateDescriptor = this._getVertexInputDescriptor(effect, topology);
+        const inputStateDescriptor = this._getVertexInputDescriptor(effect);
         const pipelineLayout = createLayout ? this._createPipelineLayout(webgpuPipelineContext) : undefined;
 
         const colorStates: Array<GPUColorStateDescriptor> = [];
@@ -922,7 +913,7 @@ export abstract class WebGPUCacheRenderPipeline {
             });
         }
 
-        const stencilFrontBack: GPUStencilStateFaceDescriptor = {
+        const stencilFrontBack: GPUStencilStateFace = {
             compare: WebGPUCacheRenderPipeline._GetCompareFunction(this._stencilFrontCompare),
             depthFailOp: WebGPUCacheRenderPipeline._GetStencilOpFunction(this._stencilFrontDepthFailOp),
             failOp: WebGPUCacheRenderPipeline._GetStencilOpFunction(this._stencilFrontFailOp),
