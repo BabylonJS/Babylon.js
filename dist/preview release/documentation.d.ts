@@ -44412,6 +44412,7 @@ declare module BABYLON {
         private _pointerDownEvent;
         private _pointerUpEvent;
         private _pointerWheelEvent;
+        private _pointerBlurEvent;
         private _wheelEventName;
         private _gamepadConnectedEvent;
         private _gamepadDisconnectedEvent;
@@ -54274,7 +54275,7 @@ declare module BABYLON {
          * @param format defines the texture format to use (default is Engine.TEXTUREFORMAT_RGBA)
          * @param invertY defines if the texture needs to be inverted on the y axis during loading
          */
-        constructor(name: string, options: any, scene: Scene | null | undefined, generateMipMaps: boolean, samplingMode?: number, format?: number, invertY?: boolean);
+        constructor(name: string, options: any, scene?: Nullable<Scene>, generateMipMaps?: boolean, samplingMode?: number, format?: number, invertY?: boolean);
         /**
          * Get the current class name of the texture useful for serialization or dynamic coding.
          * @returns "DynamicTexture"
@@ -70965,6 +70966,7 @@ declare module BABYLON {
          * * The parameter `normal` (Vector3, default `Vector3.Up`) sets the normal of the mesh where the decal is applied onto in World coordinates
          * * The parameter `size` (Vector3, default `(1, 1, 1)`) sets the decal scaling
          * * The parameter `angle` (float in radian, default 0) sets the angle to rotate the decal
+         * * The parameter `captureUVS` defines if we need to capture the uvs or compute them
          * @param name defines the name of the mesh
          * @param sourceMesh defines the mesh where the decal must be applied
          * @param options defines the options used to create the mesh
@@ -70977,6 +70979,7 @@ declare module BABYLON {
             normal?: Vector3;
             size?: Vector3;
             angle?: number;
+            captureUVS?: boolean;
         }): Mesh;
     }
 }
