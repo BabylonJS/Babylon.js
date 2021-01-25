@@ -44412,6 +44412,7 @@ declare module BABYLON {
         private _pointerDownEvent;
         private _pointerUpEvent;
         private _pointerWheelEvent;
+        private _pointerBlurEvent;
         private _wheelEventName;
         private _gamepadConnectedEvent;
         private _gamepadDisconnectedEvent;
@@ -54274,7 +54275,7 @@ declare module BABYLON {
          * @param format defines the texture format to use (default is Engine.TEXTUREFORMAT_RGBA)
          * @param invertY defines if the texture needs to be inverted on the y axis during loading
          */
-        constructor(name: string, options: any, scene: Scene | null | undefined, generateMipMaps: boolean, samplingMode?: number, format?: number, invertY?: boolean);
+        constructor(name: string, options: any, scene?: Nullable<Scene>, generateMipMaps?: boolean, samplingMode?: number, format?: number, invertY?: boolean);
         /**
          * Get the current class name of the texture useful for serialization or dynamic coding.
          * @returns "DynamicTexture"
