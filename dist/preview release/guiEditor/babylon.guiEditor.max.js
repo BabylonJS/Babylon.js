@@ -55742,9 +55742,15 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         }
         return gridSize * Math.ceil(position / gridSize);
     };
+    WorkbenchComponent.prototype.clearGuiTexture = function () {
+        while (this._guiNodes.length > 0) {
+            this._guiNodes[this._guiNodes.length - 1].dispose();
+            this._guiNodes.pop();
+        }
+    };
     WorkbenchComponent.prototype.loadFromJson = function (serializationObject) {
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
-        this._guiNodes = [];
+        this.clearGuiTexture();
         this.globalState.guiTexture.parseContent(serializationObject);
         this.props.globalState.workbench.loadFromGuiTexture();
     };
@@ -55754,7 +55760,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                 switch (_a.label) {
                     case 0:
                         this.globalState.onSelectionChangedObservable.notifyObservers(null);
-                        this._guiNodes = [];
+                        this.clearGuiTexture();
                         return [4 /*yield*/, this.globalState.guiTexture.parseFromSnippetAsync(snippedID)];
                     case 1:
                         _a.sent();
@@ -56020,6 +56026,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         window.addEventListener("resize", function () {
             engine.resize();
         });
+        this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Please note: This editor is still a work in progress. You may submit feedback to msDestiny14 on GitHub.");
         engine.runRenderLoop(function () { _this.updateGUIs(); scene.render(); });
     };
     WorkbenchComponent.prototype.updateGUIs = function () {
@@ -56153,6 +56160,15 @@ var GUIEditor = /** @class */ (function () {
             if (popupWindow) {
                 popupWindow.close();
             }
+            if (options.currentSnippetToken) {
+                try {
+                    this._CurrentState.workbench.loadFromSnippet(options.currentSnippetToken);
+                }
+                catch (error) {
+                    //swallow and continue
+                }
+            }
+            return;
         }
         var hostElement = options.hostElement;
         if (!hostElement) {
@@ -56170,10 +56186,17 @@ var GUIEditor = /** @class */ (function () {
         // create the middle workbench canvas
         if (!globalState.guiTexture) {
             globalState.workbench.createGUICanvas();
+            if (options.currentSnippetToken) {
+                try {
+                    globalState.workbench.loadFromSnippet(options.currentSnippetToken);
+                }
+                catch (error) {
+                    //swallow and continue
+                }
+            }
         }
         if (options.customLoadObservable) {
             options.customLoadObservable.add(function (data) {
-                //TODO: Add deserilization here.
                 globalState.onResetRequiredObservable.notifyObservers();
                 globalState.onBuiltObservable.notifyObservers();
             });
