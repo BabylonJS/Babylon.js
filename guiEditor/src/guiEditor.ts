@@ -4,12 +4,14 @@ import { GlobalState } from "./globalState";
 import { WorkbenchEditor } from "./workbenchEditor";
 import { Popup } from "./sharedUiComponents/lines/popup";
 import { Observable } from "babylonjs/Misc/observable";
+
 /**
  * Interface used to specify creation options for the gui editor
  */
 export interface IGUIEditorOptions {
     hostElement?: HTMLElement;
     customSave?: { label: string; action: (data: string) => Promise<void> };
+    currentSnippetToken?: string;
     customLoadObservable?: Observable<any>;
 }
 
@@ -29,6 +31,14 @@ export class GUIEditor {
             if (popupWindow) {
                 popupWindow.close();
             }
+            if(options.currentSnippetToken) {
+                try {
+                    this._CurrentState.workbench.loadFromSnippet(options.currentSnippetToken);
+                } catch (error) {
+                    //swallow and continue
+                }
+            }
+            return;
         }
 
         let hostElement = options.hostElement;
@@ -46,17 +56,23 @@ export class GUIEditor {
         const graphEditor = React.createElement(WorkbenchEditor, {
             globalState: globalState,
         });
-
+    
         ReactDOM.render(graphEditor, hostElement);
-
         // create the middle workbench canvas
         if (!globalState.guiTexture) {
             globalState.workbench.createGUICanvas();
+            if(options.currentSnippetToken) {
+                try {
+                    globalState.workbench.loadFromSnippet(options.currentSnippetToken);
+                
+                } catch (error) {
+                    //swallow and continue
+                }
+            }
         }
 
         if (options.customLoadObservable) {
             options.customLoadObservable.add((data) => {
-                //TODO: Add deserilization here.
                 globalState.onResetRequiredObservable.notifyObservers();
                 globalState.onBuiltObservable.notifyObservers();
             });
