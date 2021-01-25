@@ -600,8 +600,8 @@ export class SceneLoader {
             name = sceneFile.name;
             file = sceneFile;
         }
-        else if (typeof sceneFilename === "string" && Tools.IsBase64(sceneFilename)) {
-            url = rootUrl + sceneFilename;
+        else if (typeof sceneFilename === "string" && StringTools.StartsWith(sceneFilename, "data:")) {
+            url = sceneFilename;
             name = "";
         }
         else {
