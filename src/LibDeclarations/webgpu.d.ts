@@ -346,11 +346,11 @@ interface GPUSamplerBindingLayout {
 }
 
 type GPUTextureSampleType =
-  | "float"
-  | "unfilterable-float"
-  | "depth"
-  | "sint"
-  | "uint";
+    | "float"
+    | "unfilterable-float"
+    | "depth"
+    | "sint"
+    | "uint";
 
 interface GPUTextureBindingLayout {
     sampleType?: GPUTextureSampleType; /* default="float" */
