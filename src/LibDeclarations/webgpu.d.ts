@@ -321,7 +321,7 @@ interface GPUBindGroupLayoutDescriptor extends GPUObjectDescriptorBase {
 
 type GPUShaderStageFlags = number;
 
-interface GPUBindGroupLayoutEntry2 {
+interface GPUBindGroupLayoutEntry {
     binding: GPUIndex32;
     visibility: GPUShaderStageFlags;
 
@@ -336,7 +336,7 @@ type GPUBufferBindingType = "uniform" | "storage" | "read-only-storage";
 interface GPUBufferBindingLayout {
     type?: GPUBufferBindingType; /* default="uniform" */
     hasDynamicOffset?: boolean; /* default=false */
-    minBindingSize?:GPUSize64; /* default=0 */
+    minBindingSize?: GPUSize64; /* default=0 */
 };
 
 type GPUSamplerBindingType = "filtering" | "non-filtering" | "comparison";
@@ -1080,38 +1080,8 @@ interface GPUExtent3DDict {
 }
 type GPUExtent3D = [GPUIntegerCoordinate, GPUIntegerCoordinate, GPUIntegerCoordinate] | GPUExtent3DDict;
 
+// TODO WEBGPU: below to be removed when GPURenderPipelineDescriptor2 implemented by Chrome
 
-
-
-
-
-
-
-
-
-
-
-interface GPUBindGroupLayoutEntry {
-    binding: GPUIndex32;
-    visibility: GPUShaderStageFlags;
-    type: GPUBindingType;
-    hasDynamicOffset?: boolean;
-    minBufferBindingSize?: number;
-    viewDimension?: GPUTextureViewDimension;
-    textureComponentType?: GPUTextureComponentType;
-    storageTextureFormat?: GPUTextureFormat;
-}
-
-type GPUBindingType =
-    | "uniform-buffer"
-    | "storage-buffer"
-    | "readonly-storage-buffer"
-    | "sampler"
-    | "comparison-sampler"
-    | "sampled-texture"
-    | "readonly-storage-texture"
-    | "writeonly-storage-texture";
-type GPUTextureComponentType = "float" | "sint" | "uint" | "depth-comparison";
 
 interface GPURenderPipelineDescriptor extends GPUPipelineDescriptorBase {
     vertexStage: GPUProgrammableStage;

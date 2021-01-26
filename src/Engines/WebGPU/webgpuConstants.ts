@@ -202,31 +202,10 @@ export enum TextureSampleType {
     Uint = "uint"
 }
 
-// TODO WEBGPU to be removed
-export enum TextureComponentType {
-    Float = "float",
-    Sint = "sint",
-    Uint = "uint",
-    // Texture is used with comparison sampling only.
-    DepthComparison = "depth-comparison"
-}
-
 /** @hidden */
 export enum StorageTextureAccess {
     ReadOnly = "read-only",
     WriteOnly = "write-only"
-}
-
-// TODO WEBGPU to be removed
-export enum BindingType {
-    UniformBuffer = "uniform-buffer",
-    StorageBuffer = "storage-buffer",
-    ReadonlyStorageBuffer = "readonly-storage-buffer",
-    Sampler = "sampler",
-    ComparisonSampler = "comparison-sampler",
-    SampledTexture = "sampled-texture",
-    ReadonlyStorageTexture = "readonly-storage-texture",
-    WriteonlyStorageTexture = "writeonly-storage-texture"
 }
 
 /** @hidden */
