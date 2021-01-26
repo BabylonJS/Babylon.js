@@ -34,11 +34,11 @@ interface GPUAdapterLimits {
     readonly maxVertexBuffers: GPUSize32;
     readonly maxVertexAttributes: GPUSize32;
     readonly maxVertexBufferArrayStride: GPUSize32;
-};
+}
 
 interface GPUAdapterFeatures {
     readonly GPUFeatureName: { [name: string]: void };
-};
+}
 
 interface Navigator {
     readonly gpu: GPU | undefined;
@@ -179,7 +179,7 @@ declare class GPUTextureView implements GPUObjectBase {
     private __brand: void;
     label: string | undefined;
 }
-    
+
 interface GPUTextureViewDescriptor extends GPUObjectDescriptorBase {
     format?: GPUTextureFormat;
     dimension?: GPUTextureViewDimension;
@@ -297,7 +297,7 @@ interface GPUSamplerDescriptor extends GPUObjectDescriptorBase {
 }
 
 type GPUAddressMode = "clamp-to-edge" | "repeat" | "mirror-repeat";
-    
+
 type GPUFilterMode = "nearest" | "linear";
 
 type GPUCompareFunction =
@@ -337,7 +337,7 @@ interface GPUBufferBindingLayout {
     type?: GPUBufferBindingType; /* default="uniform" */
     hasDynamicOffset?: boolean; /* default=false */
     minBindingSize?: GPUSize64; /* default=0 */
-};
+}
 
 type GPUSamplerBindingType = "filtering" | "non-filtering" | "comparison";
 
@@ -554,7 +554,7 @@ interface GPUDepthStencilState {
     // Enable depth clamping (requires "depth-clamping" feature)
     clampDepth?: boolean; /* default=false */
 }
-    
+
 interface GPUStencilStateFace {
     compare?: GPUCompareFunction; /* default="always" */
     failOp?: GPUStencilOperation; /* default="keep" */
@@ -605,7 +605,7 @@ type GPUVertexFormat =
     | "int2"
     | "int3"
     | "int4";
-    
+
 type GPUInputStepMode = "vertex" | "instance";
 
 interface GPUVertexState {
@@ -950,7 +950,7 @@ declare class GPUQueue implements GPUObjectBase {
     submit(commandBuffers: GPUCommandBuffer[]): void;
 
     onSubmittedWorkDone(): Promise<void>;
-    
+
     writeBuffer(
         buffer: GPUBuffer,
         bufferOffset: GPUSize64,
@@ -1081,7 +1081,6 @@ interface GPUExtent3DDict {
 type GPUExtent3D = [GPUIntegerCoordinate, GPUIntegerCoordinate, GPUIntegerCoordinate] | GPUExtent3DDict;
 
 // TODO WEBGPU: below to be removed when GPURenderPipelineDescriptor2 implemented by Chrome
-
 
 interface GPURenderPipelineDescriptor extends GPUPipelineDescriptorBase {
     vertexStage: GPUProgrammableStage;
