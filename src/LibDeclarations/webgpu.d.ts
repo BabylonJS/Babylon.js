@@ -609,14 +609,10 @@ type GPUVertexFormat =
 type GPUInputStepMode = "vertex" | "instance";
 
 interface GPUVertexState {
-    buffers?: GPUVertexBufferLayout[];
+    indexFormat?: GPUIndexFormat; // TODO WEBGPU to be removed
+    vertexBuffers?: GPUVertexBufferLayout[]; // TODO WEBGPU to be renamed to buffers
 }
-/*
-interface GPUVertexStateDescriptor {
-    indexFormat?: GPUIndexFormat;
-    vertexBuffers?: GPUVertexBufferLayout[];
-}
-*/
+
 interface GPUVertexBufferLayout {
     arrayStride: GPUSize64;
     stepMode?: GPUInputStepMode; /* default="vertex" */
