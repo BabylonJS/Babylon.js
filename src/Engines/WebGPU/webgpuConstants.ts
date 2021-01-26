@@ -345,7 +345,7 @@ export enum StoreOp {
 export enum QueryType {
     Occlusion = "occlusion",
     PipelineStatistics = "pipeline-statistics",
-    Timestamp = "timestamp"    
+    Timestamp = "timestamp"
 }
 
 /** @hidden */
