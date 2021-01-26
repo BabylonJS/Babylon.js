@@ -130,7 +130,7 @@ declare class GPUDevice extends EventTarget implements GPUObjectBase {
     readonly lost: Promise<GPUDeviceLostInfo>;
     pushErrorScope(filter: GPUErrorFilter): void;
     popErrorScope(): Promise<GPUError | undefined>;
-    onuncapturederror: EventHandler | undefined;
+    onuncapturederror: Event | undefined;
 }
 
 declare class GPUBuffer implements GPUObjectBase {
@@ -147,7 +147,7 @@ declare class GPUBuffer implements GPUObjectBase {
 interface GPUBufferDescriptor extends GPUObjectDescriptorBase {
     size: GPUSize64;
     usage: GPUBufferUsageFlags;
-    mappedAtCreation: boolean = false;
+    mappedAtCreation: boolean; /* default=false */
 }
 
 type GPUBufferUsageFlags = number;
@@ -489,7 +489,7 @@ interface GPUMultisampleState {
     alphaToCoverageEnabled?: boolean; /* default=false */
 }
 
-interface GPUFragmentState implements GPUProgrammableStage {
+interface GPUFragmentState extends GPUProgrammableStage {
     targets: GPUColorTargetState[];
 }
 
@@ -541,8 +541,8 @@ interface GPUDepthStencilState {
     depthWriteEnabled?: boolean; /* default=false */
     depthCompare?: GPUCompareFunction; /* default="always" */
 
-    stencilFront?: GPUStencilFaceState;
-    stencilBack?: GPUStencilFaceState;
+    stencilFront?: GPUStencilStateFace;
+    stencilBack?: GPUStencilStateFace;
 
     stencilReadMask?: GPUStencilValue; /* default=0xFFFFFFFF */
     stencilWriteMask?: GPUStencilValue; /* default=0xFFFFFFFF */
