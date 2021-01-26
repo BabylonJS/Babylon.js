@@ -814,30 +814,26 @@ export abstract class WebGPUCacheRenderPipeline {
                     visibility = visibility | WebGPUConstants.ShaderStage.Fragment;
                 }
 
+                const entry: GPUBindGroupLayoutEntry = {
+                    binding: j,
+                    visibility,
+                };
+                entries.push(entry);
+
                 if (bindingDefinition.isSampler) {
-                    entries.push({
-                        binding: j,
-                        visibility,
-                        type: bindingDefinition.isComparisonSampler ? WebGPUConstants.BindingType.ComparisonSampler : WebGPUConstants.BindingType.Sampler
-                    });
+                    entry.sampler = {
+                        type: bindingDefinition.isComparisonSampler ? WebGPUConstants.SamplerBindingType.Comparison : WebGPUConstants.SamplerBindingType.Filtering
+                    };
                 } else if (bindingDefinition.isTexture) {
-                    entries.push({
-                        binding: j,
-                        visibility,
-                        type: WebGPUConstants.BindingType.SampledTexture,
+                    entry.texture = {
+                        sampleType: bindingDefinition.sampleType,
                         viewDimension: bindingDefinition.textureDimension,
-                        textureComponentType: bindingDefinition.componentType,
-                        // TODO WEBGPU.
-                        // hasDynamicOffset?: boolean;
-                        // storageTextureFormat?: GPUTextureFormat;
-                        // minBufferBindingSize?: number;
-                    });
+                        multisampled: false,
+                    };
                 } else {
-                    entries.push({
-                        binding: j,
-                        visibility,
-                        type: WebGPUConstants.BindingType.UniformBuffer,
-                    });
+                    entry.buffer = {
+                        type: WebGPUConstants.BufferBindingType.Uniform,
+                    };
                 }
             }
 

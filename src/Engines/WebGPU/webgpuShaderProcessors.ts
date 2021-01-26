@@ -243,9 +243,9 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
                         webgpuProcessingContext.orderedUBOsAndSamplers[textureSetIndex][textureBindingIndex] = {
                             isSampler: false,
                             isTexture: true,
-                            componentType: isComparisonSampler ? WebGPUConstants.TextureComponentType.DepthComparison :
-                                        componentType === 'u' ? WebGPUConstants.TextureComponentType.Uint :
-                                        componentType === 'i' ? WebGPUConstants.TextureComponentType.Sint : WebGPUConstants.TextureComponentType.Float,
+                            sampleType: isComparisonSampler ? WebGPUConstants.TextureSampleType.Depth :
+                                        componentType === 'u' ? WebGPUConstants.TextureSampleType.Uint :
+                                        componentType === 'i' ? WebGPUConstants.TextureSampleType.Sint : WebGPUConstants.TextureSampleType.Float,
                             textureDimension,
                             usedInVertex: false,
                             usedInFragment: false,
