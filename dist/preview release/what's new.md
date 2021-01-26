@@ -121,6 +121,7 @@
 - Fix issue with NinePatch displaying half pixel gaps between slices on Firefox browsers. ([Pryme8](https://github.com/Pryme8))
 - Fix issue when canvas loses focus while holding a pointer button ([PolygonalSun](https://github.com/PolygonalSun))
 - Fix issue where camera controls stay detached if PointerDragBehavior is disabled prematurely ([PolygonalSun](https://github.com/PolygonalSun))
+- Fix issue where Ammo contact collision callbacks don't trigger when using physics impostors with collision filter groups and masks ([gbz](https://github.com/regnaio))
 
 ## Breaking changes
 
@@ -131,3 +132,4 @@
 - Depth renderer: don't render mesh if `infiniteDistance = true` or if `material.disableDepthWrite = true` ([Popov72](https://github.com/Popov72))
 - Mesh.createInstance no longer make a unique Geometry for the Mesh so updating one Geometry can affect more meshes than before. Use Mesh.makeUniqueGeometry for old behaviour. ([breakin](https://github.com/breakin))
 - Ammo.js needs to be initialized before creating the plugin with `await Ammo();` since Ammo introduced an async init in their library. ([sebavan](https://github.com/sebavan))
+- Ammo.js needs to be rebuilt with the 2 newly exposed attributes `m_collisionFilterGroup` and `m_collisionFilterMask` in the [Ammo pull request](https://github.com/kripken/ammo.js/pull/352) otherwise the [Babylon pull request](https://github.com/BabylonJS/Babylon.js/pull/9842) will crash when calling `set_m_collisionFilterGroup()` and `set_m_collisionFilterMask()` on `ConcreteContactResultCallback` ([gbz](https://github.com/regnaio))
