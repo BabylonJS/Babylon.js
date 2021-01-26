@@ -509,11 +509,11 @@ export class WebGPUEngine extends Engine {
             maxVertexUniformVectors: 1024,
             standardDerivatives: true,
             astc: null,
-            s3tc: (this._deviceEnabledExtensions.indexOf(WebGPUConstants.ExtensionName.TextureCompressionBC) >= 0 ? true : undefined) as any,
+            s3tc: (this._deviceEnabledExtensions.indexOf(WebGPUConstants.FeatureName.TextureCompressionBC) >= 0 ? true : undefined) as any,
             pvrtc: null,
             etc1: null,
             etc2: null,
-            bptc: this._deviceEnabledExtensions.indexOf(WebGPUConstants.ExtensionName.TextureCompressionBC) >= 0 ? true : undefined,
+            bptc: this._deviceEnabledExtensions.indexOf(WebGPUConstants.FeatureName.TextureCompressionBC) >= 0 ? true : undefined,
             maxAnisotropy: 16, // TODO WEBGPU: Retrieve this smartly
             uintIndices: true,
             fragmentDepthSupported: true,
@@ -710,7 +710,7 @@ export class WebGPUEngine extends Engine {
         this._currentIndexBuffer = null;
         this._currentVertexBuffers = null;
         this._currentOverrideVertexBuffers = null;
-        this._cacheRenderPipeline.setBuffers(null, null);
+        this._cacheRenderPipeline.setBuffers(null, null, null);
 
         if (bruteForce) {
             this._currentProgram = null;
@@ -1073,7 +1073,7 @@ export class WebGPUEngine extends Engine {
         this._currentIndexBuffer = indexBuffer;
         this._currentVertexBuffers = vertexBuffers;
         this._currentOverrideVertexBuffers = overrideVertexBuffers ?? null;
-        this._cacheRenderPipeline.setBuffers(vertexBuffers, this._currentOverrideVertexBuffers);
+        this._cacheRenderPipeline.setBuffers(vertexBuffers, indexBuffer, this._currentOverrideVertexBuffers);
     }
 
     /** @hidden */
@@ -2988,6 +2988,9 @@ export class WebGPUEngine extends Engine {
             const pipeline = this._device.createRenderPipeline({
                 sampleCount: this._currentRenderTarget ? this._currentRenderTarget.samples : this._mainPassSampleCount,
                 primitiveTopology: WebGPUConstants.PrimitiveTopology.TriangleStrip,
+                vertexState: {
+                    indexFormat: WebGPUConstants.IndexFormat.Uint16
+                },
 
                 depthStencilState: this._depthTextureFormat === undefined ? undefined : {
                     depthWriteEnabled: clearDepth,
