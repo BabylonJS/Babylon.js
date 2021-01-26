@@ -120,11 +120,16 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         if (this.props.globalState.hostDocument) {
             this._graphCanvas = (this.refs["graphCanvas"] as GraphCanvasComponent);
             this._previewManager = new PreviewManager(this.props.globalState.hostDocument.getElementById("preview-canvas") as HTMLCanvasElement, this.props.globalState);
+            (this.props.globalState as any)._previewManager = this._previewManager;
         }
 
         if (navigator.userAgent.indexOf("Mobile") !== -1) {
             ((this.props.globalState.hostDocument || document).querySelector(".blocker") as HTMLElement).style.visibility = "visible";
         }
+
+        this.props.globalState.onPopupClosedObservable.addOnce(() => {
+            this.componentWillUnmount();
+        });
 
         this.build();
     }
@@ -136,6 +141,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         if (this._previewManager) {
             this._previewManager.dispose();
+            this._previewManager = null as any;
         }
     }
 
