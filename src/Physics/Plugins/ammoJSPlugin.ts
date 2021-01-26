@@ -169,8 +169,8 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         let group = impostor.getParam("group");
         let mask = impostor.getParam("mask");
         if (group && mask) {
-            this._tmpAmmoConcreteContactResultCallback.set_m_collisionFilterGroup(AmmoJSPlugin.ALL_FILTER_FLAG);
-            this._tmpAmmoConcreteContactResultCallback.set_m_collisionFilterMask(AmmoJSPlugin.ALL_FILTER_FLAG);
+            this._tmpAmmoConcreteContactResultCallback.set_m_collisionFilterGroup(group);
+            this._tmpAmmoConcreteContactResultCallback.set_m_collisionFilterMask(mask);
         }
         this.world.contactTest(impostor.physicsBody, this._tmpAmmoConcreteContactResultCallback);
         return this._tmpContactCallbackResult;
@@ -183,8 +183,8 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         let group = impostorA.getParam("group");
         let mask = impostorA.getParam("mask");
         if (group && mask) {
-            this._tmpAmmoConcreteContactResultCallback.set_m_collisionFilterGroup(AmmoJSPlugin.ALL_FILTER_FLAG);
-            this._tmpAmmoConcreteContactResultCallback.set_m_collisionFilterMask(AmmoJSPlugin.ALL_FILTER_FLAG);
+            this._tmpAmmoConcreteContactResultCallback.set_m_collisionFilterGroup(group);
+            this._tmpAmmoConcreteContactResultCallback.set_m_collisionFilterMask(mask);
         }
         this.world.contactPairTest(impostorA.physicsBody, impostorB.physicsBody, this._tmpAmmoConcreteContactResultCallback);
         return this._tmpContactCallbackResult;
