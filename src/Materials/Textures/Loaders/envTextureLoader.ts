@@ -42,15 +42,21 @@ export class _ENVTextureLoader implements IInternalTextureLoader {
             texture.width = info.width;
             texture.height = info.width;
 
-            EnvironmentTextureTools.UploadEnvSpherical(texture, info);
-            EnvironmentTextureTools.UploadEnvLevelsAsync(texture, data, info).then(() => {
-                texture.isReady = true;
-                texture.onLoadedObservable.notifyObservers(texture);
-                texture.onLoadedObservable.clear();
-                if (onLoad) {
-                    onLoad();
-                }
-            });
+            try {
+                EnvironmentTextureTools.UploadEnvSpherical(texture, info);
+                EnvironmentTextureTools.UploadEnvLevelsAsync(texture, data, info).then(() => {
+                    texture.isReady = true;
+                    texture.onLoadedObservable.notifyObservers(texture);
+                    texture.onLoadedObservable.clear();
+                    if (onLoad) {
+                        onLoad();
+                    }
+                }, (reason) => {
+                    onError?.("Can not upload environment levels", reason);
+                });
+            } catch (e) {
+                onError?.("Can not upload environment file", e);
+            }
         }
         else if (onError) {
             onError("Can not parse the environment file", null);
