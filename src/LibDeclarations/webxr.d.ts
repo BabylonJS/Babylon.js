@@ -315,6 +315,9 @@ interface XRJointPose extends XRPose {
     radius: number | undefined;
 }
 
+// to be extended
+type XRHandJoint = string;
+
 interface XRHand extends Iterable<XRJointSpace> {
     readonly size: number;
 
