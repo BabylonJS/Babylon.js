@@ -148,7 +148,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         if ((<Mesh>mesh).morphTargetManager) {
             const morphTargetManager = (<Mesh>mesh).morphTargetManager;
-            
+
             if (morphTargetManager?.isUsingTextureForTargets && morphTargetManager.numInfluencers !== defines["NUM_MORPH_INFLUENCERS"]) {
                 defines.markAsAttributesDirty();
             }
