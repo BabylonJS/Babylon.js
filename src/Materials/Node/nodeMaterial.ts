@@ -708,11 +708,11 @@ export class NodeMaterial extends PushMaterial {
                     continue;
                 }
 
-                if (!subMesh._materialDefines) {
+                if (!subMesh.materialDefines) {
                     continue;
                 }
 
-                let defines = subMesh._materialDefines;
+                let defines = subMesh.materialDefines;
                 defines.markAllAsDirty();
                 defines.reset();
             }
@@ -1127,11 +1127,11 @@ export class NodeMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new NodeMaterialDefines();
+        if (!subMesh.materialDefines) {
+            subMesh.materialDefines = new NodeMaterialDefines();
         }
 
-        var defines = <NodeMaterialDefines>subMesh._materialDefines;
+        var defines = <NodeMaterialDefines>subMesh.materialDefines;
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }

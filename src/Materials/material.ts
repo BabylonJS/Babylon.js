@@ -20,6 +20,7 @@ import { IInspectable } from '../Misc/iInspectable';
 import { Plane } from '../Maths/math.plane';
 import { ShadowDepthWrapper } from './shadowDepthWrapper';
 import { MaterialHelper } from './materialHelper';
+import { ContextualEffect } from "../Legacy/legacy";
 
 declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
 declare type Mesh = import("../Meshes/mesh").Mesh;
@@ -617,7 +618,7 @@ export class Material implements IAnimatable {
      * @hidden
      * Stores the effects for the material
      */
-    public _effect: Nullable<Effect> = null;
+    private _effect: Nullable<Effect> = null;
 
     /**
      * Specifies if uniform buffers should be used
@@ -765,6 +766,16 @@ export class Material implements IAnimatable {
     }
 
     /**
+     * Sets the effect for this material
+     * @param effect effect to set
+     */
+    public setEffect(effect: Nullable<Effect>) {
+        if (this._effect === effect) {
+            return;
+        }
+        this._effect = effect;
+    }
+    /**
      * Returns the current scene
      * @returns a Scene
      */
@@ -898,7 +909,7 @@ export class Material implements IAnimatable {
     }
 
     /** @hidden */
-    public _preBind(effect?: Effect, overrideOrientation: Nullable<number> = null): boolean {
+    public _preBind(effect?: Effect | ContextualEffect, overrideOrientation: Nullable<number> = null): boolean {
         var engine = this._scene.getEngine();
 
         var orientation = (overrideOrientation == null) ? this.sideOrientation : overrideOrientation;
@@ -1118,8 +1129,8 @@ export class Material implements IAnimatable {
                 var allDone = true, lastError = null;
                 if (mesh.subMeshes) {
                     let tempSubMesh = new SubMesh(0, 0, 0, 0, 0, mesh, undefined, false, false);
-                    if (tempSubMesh._materialDefines) {
-                        tempSubMesh._materialDefines._renderId = -1;
+                    if (tempSubMesh.materialDefines) {
+                        tempSubMesh.materialDefines._renderId = -1;
                     }
                     if (!this.isReadyForSubMesh(mesh, tempSubMesh, localOptions.useInstances)) {
                         if (tempSubMesh.effect && tempSubMesh.effect.getCompilationError() && tempSubMesh.effect.allFallbacksProcessed()) {
@@ -1264,11 +1275,11 @@ export class Material implements IAnimatable {
                     continue;
                 }
 
-                if (!subMesh._materialDefines) {
+                if (!subMesh.materialDefines) {
                     continue;
                 }
 
-                func(subMesh._materialDefines);
+                func(subMesh.materialDefines);
             }
         }
     }
@@ -1438,9 +1449,9 @@ export class Material implements IAnimatable {
             var geometry = <Geometry>((<Mesh>mesh).geometry);
             if (this._storeEffectOnSubMeshes) {
                 for (var subMesh of mesh.subMeshes) {
-                    geometry._releaseVertexArrayObject(subMesh._materialEffect);
-                    if (forceDisposeEffect && subMesh._materialEffect) {
-                        subMesh._materialEffect.dispose();
+                    geometry._releaseVertexArrayObject(subMesh.mainEffect);
+                    if (forceDisposeEffect && subMesh.mainEffect) {
+                        subMesh.mainEffect.dispose();
                     }
                 }
             } else {

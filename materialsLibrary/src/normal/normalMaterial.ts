@@ -135,11 +135,11 @@ export class NormalMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new NormalMaterialDefines();
+        if (!subMesh.materialDefines) {
+            subMesh.materialDefines = new NormalMaterialDefines();
         }
 
-        var defines = <NormalMaterialDefines>subMesh._materialDefines;
+        var defines = <NormalMaterialDefines>subMesh.materialDefines;
         var scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
@@ -262,7 +262,7 @@ export class NormalMaterial extends PushMaterial {
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
-        var defines = <NormalMaterialDefines>subMesh._materialDefines;
+        var defines = <NormalMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }

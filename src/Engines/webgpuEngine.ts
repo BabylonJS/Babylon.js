@@ -11,7 +11,7 @@ import { _TimeToken } from "../Instrumentation/timeToken";
 import { Constants } from "./constants";
 import * as WebGPUConstants from './WebGPU/webgpuConstants';
 import { VertexBuffer } from "../Meshes/buffer";
-import { WebGPUPipelineContext, IWebGPURenderPipelineStageDescriptor, WebGPUBindGroupCacheNode } from './WebGPU/webgpuPipelineContext';
+import { WebGPUPipelineContext, IWebGPURenderPipelineStageDescriptor } from './WebGPU/webgpuPipelineContext';
 import { IPipelineContext } from './IPipelineContext';
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { WebGPUDataBuffer } from '../Meshes/WebGPU/webgpuDataBuffer';
@@ -42,6 +42,7 @@ import { WebGPUDepthCullingState } from "./WebGPU/webgpuDepthCullingState";
 
 import "../Shaders/clearQuad.vertex";
 import "../Shaders/clearQuad.fragment";
+import { ContextualEffect } from "../Materials/contextualEffect";
 
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
@@ -51,6 +52,21 @@ function assert(condition: any, msg?: string): asserts condition {
     if (!condition) {
         throw new Error(msg);
     }
+}
+
+/** @hidden */
+export class WebGPUBindGroupCacheNode {
+    public values: { [id: number]: WebGPUBindGroupCacheNode };
+    public bindGroups: GPUBindGroup[];
+
+    constructor() {
+        this.values = {};
+    }
+}
+
+/** @hidden */
+interface WebGPUEffectContext {
+    bindGroupsCache: WebGPUBindGroupCacheNode;
 }
 
 /**
@@ -185,8 +201,21 @@ export class WebGPUEngine extends Engine {
     private _mrtAttachments: number[];
     private _counters: {
         numBindGroupsCreation: number;
+        numEnableEffects: number;
+        numEnableContextualEffects: number;
     } = {
         numBindGroupsCreation: 0,
+        numEnableEffects: 0,
+        numEnableContextualEffects: 0,
+    };
+    public readonly countersLastFrame: {
+        numBindGroupsCreation: number;
+        numEnableEffects: number;
+        numEnableContextualEffects: number;
+    } = {
+        numBindGroupsCreation: 0,
+        numEnableEffects: 0,
+        numEnableContextualEffects: 0,
     };
 
     // Some of the internal state might change during the render pass.
@@ -214,6 +243,8 @@ export class WebGPUEngine extends Engine {
     // DrawCall Life Cycle
     // Effect is on the parent class
     // protected _currentEffect: Nullable<Effect> = null;
+    private _currentContextualEffect: ContextualEffect;
+    private _defaultContextualEffect: ContextualEffect;
     private _currentVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }> = null;
     private _currentOverrideVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }> = null;
     private _currentIndexBuffer: Nullable<DataBuffer> = null;
@@ -454,6 +485,10 @@ export class WebGPUEngine extends Engine {
                 this._textureHelper.setCommandEncoder(this._uploadEncoder);
 
                 this._initializeLimits();
+
+                this._defaultContextualEffect = new ContextualEffect(this, true);
+                (this._defaultContextualEffect.context as WebGPUEffectContext).bindGroupsCache = new WebGPUBindGroupCacheNode();
+        
                 this._initializeContextAndSwapChain();
                 this._initializeMainAttachments();
                 this.resize();
@@ -561,6 +596,7 @@ export class WebGPUEngine extends Engine {
             supportSwitchCaseInShader: true,
             supportSyncTextureRead: false,
             needsInvertingBitmap: false,
+            needsEffectContext: true,
             _collectUbosUpdatedInFrame: true,
         };
     }
@@ -1291,19 +1327,41 @@ export class WebGPUEngine extends Engine {
      * Activates an effect, mkaing it the current one (ie. the one used for rendering)
      * @param effect defines the effect to activate
      */
-    public enableEffect(effect: Nullable<Effect>): void {
-        if (!effect || effect === this._currentEffect && !this._forceEnableEffect) {
+    public enableEffect(effect: Nullable<Effect | ContextualEffect>): void {
+        if (!effect) {
             return;
         }
 
-        this._currentEffect = effect;
-        this._forceEnableEffect = false;
+        let isNewEffect = true;
 
-        if (effect.onBind) {
-            effect.onBind(effect);
+        if (!ContextualEffect.IsContextualEffect(effect)) {
+            isNewEffect = effect !== this._currentEffect;
+            this._currentContextualEffect = this._defaultContextualEffect;
+            this._currentContextualEffect.setEffect(effect, null, false);
+            //(this._currentContextualEffect.context as WebGPUEffectContext).bindGroupsCache.values = {};
+            this._counters.numEnableEffects++;
+        } else if (!effect.effect || effect === this._currentContextualEffect && !this._forceEnableEffect) {
+            return;
+        } else {
+            isNewEffect = effect.effect !== this._currentContextualEffect.effect;
+            const context = effect.context as WebGPUEffectContext;
+            if (!context.bindGroupsCache) {
+                context.bindGroupsCache = new WebGPUBindGroupCacheNode();
+            }
+            this._currentContextualEffect = effect;
+            this._counters.numEnableContextualEffects++;
         }
-        if (effect._onBindObservable) {
-            effect._onBindObservable.notifyObservers(effect);
+
+        this._currentEffect = this._currentContextualEffect.effect;
+        this._forceEnableEffect = isNewEffect || this._forceEnableEffect ? false : this._forceEnableEffect;
+
+        if (isNewEffect) {
+            if (this._currentEffect!.onBind) {
+                this._currentEffect!.onBind(this._currentEffect!);
+            }
+            if (this._currentEffect!._onBindObservable) {
+                this._currentEffect!._onBindObservable.notifyObservers(this._currentEffect!);
+            }
         }
     }
 
@@ -1821,7 +1879,7 @@ export class WebGPUEngine extends Engine {
 
             if (webgpuPipelineContext.textures[name]) {
                 if (webgpuPipelineContext.textures[name]!.texture !== internalTexture) {
-                    webgpuPipelineContext.bindGroupsCache.values = {}; // the bind groups need to be rebuilt (at least the bind group owning this texture, but it's easier to just have them all rebuilt)
+                    (this._currentContextualEffect.context as WebGPUEffectContext).bindGroupsCache.values = {}; // the bind groups need to be rebuilt (at least the bind group owning this texture, but it's easier to just have them all rebuilt)
                 }
                 webgpuPipelineContext.textures[name]!.texture = internalTexture!;
             }
@@ -1875,7 +1933,7 @@ export class WebGPUEngine extends Engine {
             const webgpuPipelineContext = this._currentEffect._pipelineContext as WebGPUPipelineContext;
             if (!texture) {
                 if (webgpuPipelineContext.textures[name] && webgpuPipelineContext.textures[name]!.texture) {
-                    webgpuPipelineContext.bindGroupsCache.values = {}; // the bind groups need to be rebuilt (at least the bind group owning this texture, but it's easier to just have them all rebuilt)
+                    (this._currentContextualEffect.context as WebGPUEffectContext).bindGroupsCache.values = {}; // the bind groups need to be rebuilt (at least the bind group owning this texture, but it's easier to just have them all rebuilt)
                 }
                 webgpuPipelineContext.textures[name] = null;
                 return false;
@@ -2757,7 +2815,13 @@ export class WebGPUEngine extends Engine {
             UniformBuffer._updatedUbosInFrame = {};
         }
 
+        this.countersLastFrame.numBindGroupsCreation = this._counters.numBindGroupsCreation;
+        this.countersLastFrame.numEnableEffects = this._counters.numEnableEffects;
+        this.countersLastFrame.numEnableContextualEffects = this._counters.numEnableContextualEffects;
         this._counters.numBindGroupsCreation = 0;
+        this._counters.numEnableEffects = 0;
+        this._counters.numEnableContextualEffects = 0;
+
         this._cacheRenderPipeline.endFrame();
 
         this._pendingDebugCommands.length = 0;
@@ -3424,7 +3488,7 @@ export class WebGPUEngine extends Engine {
             webgpuPipelineContext.uniformBuffer.update();
         }
 
-        let node: WebGPUBindGroupCacheNode = webgpuPipelineContext.bindGroupsCache;
+        let node: WebGPUBindGroupCacheNode = (this._currentContextualEffect.context as WebGPUEffectContext).bindGroupsCache;
         for (let i = 0; i < webgpuPipelineContext.shaderProcessingContext.uniformBufferNames.length; ++i) {
             const bufferName = webgpuPipelineContext.shaderProcessingContext.uniformBufferNames[i];
             const uboId = this._uniformsBuffers[bufferName].uniqueId;
