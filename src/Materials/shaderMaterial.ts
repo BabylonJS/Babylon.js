@@ -457,7 +457,8 @@ export class ShaderMaterial extends Material {
             return true;
         }
 
-        if (this._effect && (this._effect.defines.indexOf("#define INSTANCES") !== -1) !== useInstances) {
+        const effect = this.getEffect();
+        if (effect && (effect.defines.indexOf("#define INSTANCES") !== -1) !== useInstances) {
             return false;
         }
 
@@ -482,8 +483,9 @@ export class ShaderMaterial extends Material {
      * @returns true if ready, otherwise false
      */
     public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
-        if (this._effect && this.isFrozen) {
-            if (this._effect._wasPreviouslyReady) {
+        let effect = this.getEffect();
+        if (effect && this.isFrozen) {
+            if (effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -643,13 +645,13 @@ export class ShaderMaterial extends Material {
             shaderName = this.customShaderNameResolve(shaderName, uniforms, uniformBuffers, samplers, defines, attribs);
         }
 
-        var previousEffect = this._effect;
+        var previousEffect = effect;
         var join = defines.join("\n");
 
         if (this._cachedDefines !== join) {
             this._cachedDefines = join;
 
-            this._effect = engine.createEffect(shaderName, <IEffectCreationOptions>{
+            effect = engine.createEffect(shaderName, <IEffectCreationOptions>{
                 attributes: attribs,
                 uniformsNames: uniforms,
                 uniformBuffersNames: uniformBuffers,
@@ -661,22 +663,24 @@ export class ShaderMaterial extends Material {
                 indexParameters: { maxSimultaneousMorphTargets: numInfluencers }
             }, engine);
 
+            this.setEffect(effect);
+
             if (this._onEffectCreatedObservable) {
-                onCreatedEffectParameters.effect = this._effect;
+                onCreatedEffectParameters.effect = effect;
                 this._onEffectCreatedObservable.notifyObservers(onCreatedEffectParameters);
             }
         }
 
-        if (!this._effect?.isReady() ?? true) {
+        if (!effect?.isReady() ?? true) {
             return false;
         }
 
-        if (previousEffect !== this._effect) {
+        if (previousEffect !== effect) {
             scene.resetCachedMaterial();
         }
 
         this._renderId = scene.getRenderId();
-        this._effect._wasPreviouslyReady = true;
+        effect._wasPreviouslyReady = true;
 
         return true;
     }
@@ -689,7 +693,7 @@ export class ShaderMaterial extends Material {
     public bindOnlyWorldMatrix(world: Matrix, effectOverride?: Nullable<Effect>): void {
         var scene = this.getScene();
 
-        const effect = effectOverride ?? this._effect;
+        const effect = effectOverride ?? this.getEffect();
 
         if (!effect) {
             return;
@@ -730,7 +734,7 @@ export class ShaderMaterial extends Material {
         // Std values
         this.bindOnlyWorldMatrix(world, effectOverride);
 
-        const effect = effectOverride ?? this._effect;
+        const effect = effectOverride ?? this.getEffect();
 
         let mustRebind = this.getScene().getCachedMaterial() !== this;
 
@@ -863,11 +867,11 @@ export class ShaderMaterial extends Material {
             }
         }
 
-        const seffect = this._effect;
+        const seffect = this.getEffect();
 
-        this._effect = effect; // make sure the active effect is the right one if there are some observers for onBind that would need to get the current effect
+        this.setEffect(effect); // make sure the active effect is the right one if there are some observers for onBind that would need to get the current effect
         this._afterBind(mesh, effect);
-        this._effect = seffect;
+        this.setEffect(seffect);
     }
 
     protected _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null): void {

@@ -553,9 +553,10 @@ export class Constants {
     public static readonly PREPASS_ALBEDO_TEXTURE_TYPE = 7;
 
     /**
-     * Prefixes used by the engine for custom effects
+     * Prefixes used by the engine for sub mesh effects
      */
-    public static readonly CUSTOMEFFECT_PREFIX_SHADOWGENERATOR = "bjs_shadowgenerator_";
+    public static readonly SUBMESHEFFECT_MAINMATERIAL = "bjs_mainmaterial";
+    public static readonly SUBMESHEFFECT_SHADOWGENERATOR_PREFIX = "bjs_shadowgenerator_";
 
     /**
      * Constant used as key code for Alt key

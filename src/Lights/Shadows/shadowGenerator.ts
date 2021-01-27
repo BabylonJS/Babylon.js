@@ -840,7 +840,7 @@ export class ShadowGenerator implements IShadowGenerator {
         light._shadowGenerator = this;
         this.id = light.id;
 
-        this._nameForCustomEffect = Constants.CUSTOMEFFECT_PREFIX_SHADOWGENERATOR + ShadowGenerator._Counter++;
+        this._nameForCustomEffect = Constants.SUBMESHEFFECT_SHADOWGENERATOR_PREFIX + ShadowGenerator._Counter++;
 
         ShadowGenerator._SceneComponentInitialization(this._scene);
 
@@ -1111,7 +1111,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
             const shadowDepthWrapper = material.shadowDepthWrapper;
 
-            let effect = shadowDepthWrapper?.getEffect(subMesh, this) ?? subMesh._getCustomEffect(this._nameForCustomEffect, false)!.effect;
+            let effect = shadowDepthWrapper?.getEffect(subMesh, this) ?? subMesh._getEffect(this._nameForCustomEffect)!.effect!;
 
             engine.enableEffect(effect);
 
@@ -1340,9 +1340,10 @@ export class ShadowGenerator implements IShadowGenerator {
 
         this._prepareShadowDefines(subMesh, useInstances, defines, isTransparent);
 
-        const subMeshEffect = subMesh._getCustomEffect(this._nameForCustomEffect)!;
+        const subMeshEffect = subMesh._getEffect(this._nameForCustomEffect, true)!;
 
-        let { effect, defines: cachedDefines } = subMeshEffect;
+        let effect = subMeshEffect.effect!;
+        let cachedDefines = subMeshEffect.defines;
 
         if (shadowDepthWrapper) {
             if (!shadowDepthWrapper.isReadyForSubMesh(subMesh, defines, this, useInstances)) {
@@ -1520,8 +1521,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 }, engine);
             }
 
-            subMeshEffect.effect = effect;
-            subMeshEffect.defines = cachedDefines;
+            subMeshEffect.setEffect(effect, cachedDefines);
 
             if (!effect.isReady()) {
                 return false;

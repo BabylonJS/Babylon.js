@@ -34,6 +34,7 @@ import { PerformanceConfigurator } from './performanceConfigurator';
 import { EngineFeatures } from './engineFeatures';
 import { HardwareTextureWrapper } from '../Materials/Textures/hardwareTextureWrapper';
 import { WebGLHardwareTexture } from './WebGL/webGLHardwareTexture';
+import { ContextualEffect } from "../Materials/contextualEffect";
 
 declare type WebRequest = import("../Misc/webRequest").WebRequest;
 declare type LoadFileError = import("../Misc/fileTools").LoadFileError;
@@ -1079,6 +1080,7 @@ export class ThinEngine {
             supportSwitchCaseInShader: this._webGLVersion !== 1,
             supportSyncTextureRead: true,
             needsInvertingBitmap: true,
+            needsEffectContext: false,
             _collectUbosUpdatedInFrame: false,
         };
     }
@@ -2498,7 +2500,9 @@ export class ThinEngine {
      * Activates an effect, making it the current one (ie. the one used for rendering)
      * @param effect defines the effect to activate
      */
-    public enableEffect(effect: Nullable<Effect>): void {
+    public enableEffect(effect: Nullable<Effect | ContextualEffect>): void {
+        effect = effect !== null && ContextualEffect.IsContextualEffect(effect) ? effect.effect : effect; // get only the effect, we don't need a ContextualEffect in the WebGL engine
+
         if (!effect || effect === this._currentEffect) {
             return;
         }
