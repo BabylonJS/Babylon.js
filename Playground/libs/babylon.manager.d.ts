@@ -335,6 +335,12 @@ declare module BABYLON {
         static ComputeNavigationPath(start: BABYLON.Vector3, end: BABYLON.Vector3, closetPoint?: boolean): BABYLON.Vector3[];
         /** Animate movement along a navigation path. (Navigation Helper) */
         static MoveAlongNavigationPath(scene: BABYLON.Scene, agent: BABYLON.TransformNode, path: BABYLON.Vector3[], speed?: number, easing?: BABYLON.EasingFunction, callback?: () => void): BABYLON.Animation;
+        /** Creates a cylinder obstacle and add it to the navigation. (Navigation Helper) */
+        static AddNavigationCylinderObstacle(position: BABYLON.Vector3, radius: number, height: number): BABYLON.IObstacle;
+        /** Creates an oriented box obstacle and add it to the navigation. (Navigation Helper) */
+        static AddNavigationBoxObstacle(position: BABYLON.Vector3, extent: BABYLON.Vector3, angle: number): BABYLON.IObstacle;
+        /** Removes an obstacle created by addCylinderObstacle or addBoxObstacle. (Navigation Helper) */
+        static RemoveNavigationObstacle(obstacle: BABYLON.IObstacle): void;
         /** Global gamepad manager */
         static GamepadManager: BABYLON.GamepadManager;
         /** Global gamepad connect event handler */
@@ -1690,11 +1696,11 @@ declare module BABYLON {
         private static FPS;
         private static TIME;
         private static EXIT;
+        private static XZMIN;
         private _frametime;
         private _layercount;
         private _updatemode;
         private _hasrootmotion;
-        private _processmotion;
         private _initialtargetblending;
         private _hastransformhierarchy;
         private _leftfeetbottomheight;
@@ -1711,6 +1717,7 @@ declare module BABYLON {
         private _rootBoneWeight;
         private _rotationWeight;
         private _rootQuatWeight;
+        private _angularVelocity;
         private _positionHolder;
         private _rootBoneHolder;
         private _rotationHolder;
@@ -1724,8 +1731,14 @@ declare module BABYLON {
         private _lastMotionPosition;
         private _quatRotationDiff;
         private _quatRotateVector;
+        private _deltaPositionFixed;
+        private _deltaPositionMatrix;
         private _dirtyMotionMatrix;
         private _dirtyBlenderMatrix;
+        private transformForwardVector;
+        private transformRightVector;
+        private desiredForwardVector;
+        private desiredRightVector;
         private _targetPosition;
         private _targetRotation;
         private _targetScaling;
@@ -1746,8 +1759,6 @@ declare module BABYLON {
         moveWithCollisions: boolean;
         hasRootMotion(): boolean;
         getAnimationTime(): number;
-        getRootPosition(): BABYLON.Vector3;
-        getRootRotation(): BABYLON.Quaternion;
         getDeltaPosition(): BABYLON.Vector3;
         getDeltaRotation(): BABYLON.Quaternion;
         getRuntimeController(): string;
@@ -1790,13 +1801,12 @@ declare module BABYLON {
         getRootTransform(): BABYLON.TransformNode;
         getRigidbodyPhysics(): BABYLON.RigidbodyPhysics;
         getCharacterController(): BABYLON.CharacterController;
-        getRootMotionSpeed(): number;
         getRootMotionAngle(): number;
+        getRootMotionSpeed(): number;
         private awakeStateMachine;
         private lateStateMachine;
         private destroyStateMachine;
         private updateAnimationState;
-        private updateAnimationCurves;
         private updateAnimationTargets;
         private updateBlendableTargets;
         private finalizeAnimationTargets;
@@ -1876,6 +1886,8 @@ declare module BABYLON {
         transitions: BABYLON.ITransition[];
         behaviours: BABYLON.IBehaviour[];
         events: BABYLON.IAnimatorEvent[];
+        ccurves: BABYLON.IUnityCurve[];
+        tcurves: BABYLON.Animation[];
         constructor();
     }
     class TransitionCheck {
@@ -2600,14 +2612,10 @@ declare module BABYLON {
         getAngularVelocity(): BABYLON.Nullable<BABYLON.Vector3>;
         /** Sets entity angular velocity using physics impostor. */
         setAngularVelocity(velocity: BABYLON.Vector3): void;
-        /** sets the native physics world transform object using physics impostor body. (Advanved Use Only) */
-        /** Gets the native physics world transform object using physics impostor body. (Advanved Use Only) */
-        /** Sets the entity world transform position using physics impostor body. (Advanved Use Only) */
-        /** Gets the entity world transform position using physics impostor body. (Advanved Use Only) */
-        /** Gets the entity world transform position using physics impostor body. (Advanved Use Only) */
-        /** Sets the entity world transform position using physics impostor body. (Advanved Use Only) */
-        /** Gets the entity world transform rotation using physics impostor body. (Advanved Use Only) */
-        /** Gets the entity world transform rotation using physics impostor body. (Advanved Use Only) */
+        /** Gets the native physics world transform object using physics impostor body. (Ammo.btTransform) */
+        getWorldTransform(): any;
+        /** sets the native physics world transform object using physics impostor body. (Ammo.btTransform) */
+        setWorldTransform(btTransform: any): any;
         clearForces(): void;
         applyTorque(torque: BABYLON.Vector3): void;
         applyLocalTorque(torque: BABYLON.Vector3): void;
