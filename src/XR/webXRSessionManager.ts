@@ -238,8 +238,21 @@ export class WebXRSessionManager implements IDisposable {
             this._rttProvider = this._xrNavigator.xr.getNativeRenderTargetProvider(this.session, this._createRenderTargetTexture.bind(this));
         } else {
             // Create render target texture from xr's webgl render target
-            const rtt = this._createRenderTargetTexture(this.baseLayer!.framebufferWidth, this.baseLayer!.framebufferHeight, this.baseLayer!.framebuffer);
-            this._rttProvider = { getRenderTargetForEye: () => rtt };
+            let rtt: RenderTargetTexture, framebufferWidth: number, framebufferHeight: number, framebuffer: WebGLFramebuffer;
+            this._rttProvider = {
+                getRenderTargetForEye: () => {
+                    const baseLayer = this.baseLayer!;
+                    if (baseLayer.framebufferWidth !== framebufferWidth ||
+                        baseLayer.framebufferHeight !== framebufferHeight ||
+                        baseLayer.framebuffer !== framebuffer) {
+                        rtt = this._createRenderTargetTexture(baseLayer.framebufferWidth, baseLayer.framebufferHeight, baseLayer.framebuffer);
+                        framebufferWidth = baseLayer.framebufferWidth;
+                        framebufferHeight = baseLayer.framebufferHeight;
+                        framebuffer = baseLayer.framebuffer;
+                    }
+                    return rtt;
+                },
+            };
             engine.framebufferDimensionsObject = this.baseLayer;
         }
 
