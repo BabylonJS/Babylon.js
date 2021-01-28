@@ -80859,7 +80859,7 @@ declare module BABYLON {
          * Hand-parts definition (key is HandPart)
          */
         handPartsDefinition: {
-            [key: string]: number[];
+            [key: string]: string[];
         };
         /**
          * Observers will be triggered when the mesh for this hand was initialized.
@@ -83228,7 +83228,7 @@ interface XRSession {
      * canceling the callback using cancelAnimationFrame(). This method is comparable
      * to the Window.requestAnimationFrame() method.
      */
-    requestAnimationFrame: XRFrameRequestCallback;
+    requestAnimationFrame: (callback: XRFrameRequestCallback) => void;
     /**
      * Requests that a new XRReferenceSpace of the specified type be created.
      * Returns a promise which resolves with the XRReferenceSpace or
@@ -83356,10 +83356,15 @@ interface XRJointPose extends XRPose {
     radius: number | undefined;
 }
 
+// to be extended
+type XRHandJoint = string;
+
 interface XRHand extends Iterable<XRJointSpace> {
-    readonly length: number;
+    readonly size: number;
 
     [index: number]: XRJointSpace;
+
+    get(joint: XRHandJoint): XRJointSpace;
 
     readonly WRIST: number;
 
