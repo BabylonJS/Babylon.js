@@ -1,29 +1,22 @@
 import * as React from "react";
 import { GlobalState } from '../globalState';
 import { GUINode } from './guiNode';
-import * as dagre from 'dagre';
 import { Nullable } from 'babylonjs/types';
-
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
-
 import {Control} from 'babylonjs-gui/2D/controls/control';
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
 import { Matrix, Vector2, Vector3 } from "babylonjs/Maths/math.vector";
 import { Engine } from "babylonjs/Engines/engine";
 import { Scene } from "babylonjs/scene";
-import { Color3, Color4 } from "babylonjs/Maths/math.color";
-import { FreeCamera } from "babylonjs/Cameras/freeCamera";
+import { Color4 } from "babylonjs/Maths/math.color";
 import { ArcRotateCamera } from "babylonjs/Cameras/arcRotateCamera";
 import { HemisphericLight } from "babylonjs/Lights/hemisphericLight";
 import { Axis } from "babylonjs/Maths/math.axis";
-import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
-import { Texture } from "babylonjs/Materials/Textures/texture";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Plane } from "babylonjs/Maths/math.plane";
 import { PointerEventTypes, PointerInfoPre } from "babylonjs/Events/pointerEvents";
 import { EventState } from "babylonjs/Misc/observable";
 import { IWheelEvent } from "babylonjs/Events/deviceInputEvents";
-import { Camera } from "babylonjs";
 
 require("./workbenchCanvas.scss");
 
@@ -42,9 +35,6 @@ export const isFramePortData = (variableToCheck: any): variableToCheck is FrameP
 }
 
 export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps> {
-    private readonly MinZoom = 0.1;
-    private readonly MaxZoom = 4;
-
     private _hostCanvas: HTMLDivElement;
     private _gridCanvas: HTMLDivElement;
     private _selectionContainer: HTMLDivElement;
@@ -54,19 +44,14 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _guiNodes: GUINode[] = [];
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null
-    private _selectionStartX = 0;
-    private _selectionStartY = 0;
     private _x = 0;
     private _y = 0;
     private _zoom = 1;
     private _selectedGuiNodes: GUINode[] = [];
     private _gridSize = 20;
-    private _selectionBox: Nullable<HTMLDivElement> = null;    
-    private _frameCandidate: Nullable<HTMLDivElement> = null;
 
-    private _altKeyIsPressed = false;
     private _ctrlKeyIsPressed = false;
-    private _oldY = -1;
+
 
     public _frameIsMoving = false;
     public _isLoading = false;
@@ -167,21 +152,17 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                     } 
                     else {              
                         this._selectedGuiNodes = [selection];
-                    }
-                    
-                
+                    }              
                 } 
             }
         });
 
 
         this.props.globalState.hostDocument!.addEventListener("keyup", () => this.onKeyUp(), false);
-        this.props.globalState.hostDocument!.addEventListener("keydown", evt => {
-            this._altKeyIsPressed = evt.altKey;            
+        this.props.globalState.hostDocument!.addEventListener("keydown", evt => {         
             this._ctrlKeyIsPressed = evt.ctrlKey;
         }, false);
         this.props.globalState.hostDocument!.defaultView!.addEventListener("blur", () => {
-            this._altKeyIsPressed = false;
             this._ctrlKeyIsPressed = false;
         }, false);     
 
@@ -255,9 +236,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     onKeyUp() {        
-        this._altKeyIsPressed = false;
         this._ctrlKeyIsPressed = false;
-        this._oldY = -1;
     }
 
     findNodeFromGuiElement(guiControl: Control) {
@@ -299,61 +278,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }    
 
     onMove(evt: React.PointerEvent) {        
-        // Selection box
-        if (this._selectionBox) {
-            const rootRect = this.canvasContainer.getBoundingClientRect();      
 
-            const localX = evt.pageX - rootRect.left;
-            const localY = evt.pageY - rootRect.top;
-
-            if (localX > this._selectionStartX) {
-                this._selectionBox.style.left = `${this._selectionStartX / this.zoom}px`;
-                this._selectionBox.style.width = `${(localX - this._selectionStartX) / this.zoom}px`;
-            } else {
-                this._selectionBox.style.left = `${localX / this.zoom}px`;
-                this._selectionBox.style.width = `${(this._selectionStartX - localX) / this.zoom}px`;
-            }
-
-            if (localY > this._selectionStartY) {                
-                this._selectionBox.style.top = `${this._selectionStartY / this.zoom}px`;
-                this._selectionBox.style.height = `${(localY - this._selectionStartY) / this.zoom}px`;
-            } else {
-                this._selectionBox.style.top = `${localY / this.zoom}px`;
-                this._selectionBox.style.height = `${(this._selectionStartY - localY) / this.zoom}px`;
-            }
-            
-            this.props.globalState.onSelectionBoxMoved.notifyObservers(this._selectionBox.getBoundingClientRect());
-
-            return;
-        }
-
-        
-        // Zoom with mouse + alt
-        if (this._altKeyIsPressed && evt.buttons === 1) {
-            if (this._oldY < 0) {
-                this._oldY = evt.pageY;
-            }
-
-            let zoomDelta = (evt.pageY - this._oldY) / 10;
-            if (Math.abs(zoomDelta) > 5) {
-                const oldZoom = this.zoom;
-                this.zoom = Math.max(Math.min(this.MaxZoom, this.zoom + zoomDelta / 100), this.MinZoom);
-
-                const boundingRect = evt.currentTarget.getBoundingClientRect();
-                const clientWidth = boundingRect.width;
-                const widthDiff = clientWidth * this.zoom - clientWidth * oldZoom;
-                const clientX = evt.clientX - boundingRect.left;
-        
-                const xFactor = (clientX - this.x) / oldZoom / clientWidth;
-        
-                this.x = this.x - widthDiff * xFactor;
-
-                this._oldY = evt.pageY;      
-            }
-            return;
-        }   
-
-        // Move canvas and/or guiNodes
+        // Move or guiNodes
         if (this._mouseStartPointX != null && this._mouseStartPointY != null) {
 
             var x = this._mouseStartPointX;
@@ -364,11 +290,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 new Vector2( x, y)) ||  selected;
             });
 
-            if(selected) {
-                this._rootContainer.style.cursor = "move";
-                this.x += evt.clientX - this._mouseStartPointX;
-                this.y += evt.clientY - this._mouseStartPointY;
-            }
             this._mouseStartPointX = evt.clientX;
             this._mouseStartPointY = evt.clientY;
         }
@@ -378,22 +299,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._rootContainer.setPointerCapture(evt.pointerId);
 
         /*if (evt.currentTarget === this._hostCanvas && evt.ctrlKey) {
-            this._selectionBox = this.props.globalState.hostDocument.createElement("div");
-            this._selectionBox.classList.add("selection-box");
-            this._selectionContainer.appendChild(this._selectionBox);
-
-            const rootRect = this.canvasContainer.getBoundingClientRect();      
-            this._selectionStartX = (evt.pageX - rootRect.left);
-            this._selectionStartY = (evt.pageY - rootRect.top);
-            this._selectionBox.style.left = `${this._selectionStartX / this.zoom}px`;
-            this._selectionBox.style.top = `${this._selectionStartY / this.zoom}px`;
-            this._selectionBox.style.width = "0px";
-            this._selectionBox.style.height = "0px";
-            return;
         }*/
-        console.log('workbench click');
+
         if(!this.isOverGUINode) {
-            console.log('unclicked');
             this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         }
         
@@ -407,74 +315,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._mouseStartPointX = null;
         this._mouseStartPointY = null;
         this._rootContainer.releasePointerCapture(evt.pointerId);   
-        this._oldY = -1; 
-
-        if (this._selectionBox) {
-           this._selectionBox.parentElement!.removeChild(this._selectionBox);
-           this._selectionBox = null;
-        }
-
-        if (this._frameCandidate) {            
-            this._frameCandidate.parentElement!.removeChild(this._frameCandidate);
-            this._frameCandidate = null;
-        }
         this.isUp = true;
-        
-    }
-
-    onWheel(evt: React.WheelEvent) {
-        let delta = evt.deltaY < 0 ? 0.1 : -0.1;
-
-        let oldZoom = this.zoom;
-        this.zoom = Math.min(Math.max(this.MinZoom, this.zoom + delta * this.zoom), this.MaxZoom);
-
-        const boundingRect = evt.currentTarget.getBoundingClientRect();
-        const clientWidth = boundingRect.width;
-        const clientHeight = boundingRect.height;
-        const widthDiff = clientWidth * this.zoom - clientWidth * oldZoom;
-        const heightDiff = clientHeight * this.zoom - clientHeight * oldZoom;
-        const clientX = evt.clientX - boundingRect.left;
-        const clientY = evt.clientY - boundingRect.top;
-
-        const xFactor = (clientX - this.x) / oldZoom / clientWidth;
-        const yFactor = (clientY - this.y) / oldZoom / clientHeight;
-
-        this.x = this.x - widthDiff * xFactor;
-        this.y = this.y - heightDiff * yFactor;
-
-        evt.stopPropagation();
-    }
-
-    zoomToFit() {
-        // Get negative offset
-        let minX = 0;
-        let minY = 0;
-        this._guiNodes.forEach(node => {
-
-            if (node.x < minX) {
-                minX = node.x;
-            }
-            if (node.y < minY) {
-                minY = node.y;
-            }
-        });
-        // Restore to 0
-
-        this._guiNodes.forEach(node => {
-            node.x += -minX;
-            node.y += -minY;            
-            node.cleanAccumulation();
-        });
-
-        // Get correct zoom
-        const xFactor = this._rootContainer.clientWidth / this._rootContainer.scrollWidth;
-        const yFactor = this._rootContainer.clientHeight / this._rootContainer.scrollHeight;
-        const zoomFactor = xFactor < yFactor ? xFactor : yFactor;
-        
-
-        this.zoom = zoomFactor;
-        this.x = 0;
-        this.y = 0;
     }
 
     public createGUICanvas() {
@@ -510,8 +351,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         engine.runRenderLoop(() => {this.updateGUIs(); scene.render()});
     };
     
-    /** Add map-like controls to an ArcRotate camera.
-     */
+    //Add map-like controls to an ArcRotate camera
     addControls(scene: Scene, camera: ArcRotateCamera) {
         camera.inertia = 0.7;
         camera.lowerRadiusLimit = 10;
@@ -574,21 +414,18 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         });
     }
     
-    /** Get pos on plane.
-     */
+    //Get pos on plane
     getPosition(scene: Scene, camera: ArcRotateCamera, plane: Plane) {
         const ray = scene.createPickingRay(
             scene.pointerX, scene.pointerY, Matrix.Identity(), camera, false);
         const distance = ray.intersectsPlane(plane);
     
-        // not using this ray again, so modifying its vectors here is fine
+        //not using this ray again, so modifying its vectors here is fine
         return distance !== null ?
             ray.origin.addInPlace(ray.direction.scaleInPlace(distance)) : Vector3.Zero();
     }
     
-    /** Return offsets for inertial panning given initial and current
-     * pointer positions.
-     */
+    //Return offsets for inertial panning given initial and current pointer positions
     panning(newPos: Vector3, initialPos: Vector3, inertia: number, ref: Vector3) {
 
         const directionToZoomLocation = initialPos.subtract(newPos);
@@ -598,8 +435,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return ref;
     };
     
-    /** Get the wheel delta divided by the camera wheel precision.
-     */
+    //Get the wheel delta divided by the camera wheel precision
     zoomWheel(p: PointerInfoPre, e: EventState, camera: ArcRotateCamera) {
         const event = p.event as IWheelEvent;
         
@@ -614,8 +450,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return delta;
     }
     
-    /** Zoom to pointer position. Zoom amount determined by delta.
-     */
+    //Zoom to pointer position. Zoom amount determined by delta
     zooming(delta: number, scene: Scene, camera: ArcRotateCamera, plane :Plane, ref: Vector3) {
         let lr = camera.lowerRadiusLimit;
         let ur = camera.upperRadiusLimit;
@@ -648,8 +483,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         camera.inertialRadiusOffset += delta;
     }
     
-    /** Sets x y or z of passed in vector to zero if less than Epsilon.
-     */
+    //Sets x y or z of passed in vector to zero if less than Epsilon
     zeroIfClose(vec: Vector3) {
         if (Math.abs(vec.x) < BABYLON.Epsilon) {
             vec.x = 0;
@@ -672,7 +506,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     render() {
  
         return <canvas id="workbench-canvas" 
-        onWheel={evt => this.onWheel(evt)}
         onPointerMove={evt => this.onMove(evt)}
         onPointerDown={evt =>  this.onDown(evt)}   
         onPointerUp={evt =>  this.onUp(evt)} 

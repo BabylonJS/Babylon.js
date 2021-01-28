@@ -114,10 +114,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         return newNodes;
     }
 
-    zoomToFit() {
-        this._workbenchCanvas.zoomToFit();
-    }
-    
     showWaitScreen() {
         this.props.globalState.hostDocument.querySelector(".wait-screen")?.classList.remove("hidden");
     }
@@ -195,7 +191,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     emitNewBlock(event: React.DragEvent<HTMLDivElement>) {
         var data = event.dataTransfer.getData("babylonjs-gui-node") as string;
 
-        let guiElement = GUINodeTools.CreateControlFromString (data);
+        let guiElement = GUINodeTools.CreateControlFromString(data);
 
         let newGuiNode = this._workbenchCanvas.appendBlock(guiElement);
 

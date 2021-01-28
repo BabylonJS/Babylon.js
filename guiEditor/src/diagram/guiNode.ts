@@ -5,6 +5,7 @@ import { WorkbenchComponent, FramePortData } from "./workbench";
 import { Control } from "babylonjs-gui/2D/controls/control";
 import { Vector2 } from "babylonjs/Maths/math.vector";
 import { Container } from "babylonjs-gui/2D/controls/container";
+import { Button } from "babylonjs-gui/2D/controls/button";
 
 export class GUINode {
     private _x = 0;
@@ -106,6 +107,9 @@ export class GUINode {
         this._ownerCanvas = this._globalState.workbench;
         this.x = guiControl.leftInPixels;
         this.y = guiControl.topInPixels;
+        
+        this.disableProperties();
+
         guiControl.onPointerUpObservable.add((evt) => {
             this.clicked = false;
             console.log("up");
@@ -130,6 +134,13 @@ export class GUINode {
         });
 
         this._onSelectionBoxMovedObserver = this._globalState.onSelectionBoxMoved.add((rect1) => {});
+    }
+
+    disableProperties() {
+        if(this.guiControl.typeName === "Button") {
+            (this.guiControl as Button).pointerDownAnimation = () => null;
+            (this.guiControl as Button).pointerUpAnimation = () => null;
+        }
     }
 
     public cleanAccumulation(useCeil = false) {
