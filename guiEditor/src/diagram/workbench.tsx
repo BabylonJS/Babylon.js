@@ -8,11 +8,22 @@ import { DataStorage } from 'babylonjs/Misc/dataStorage';
 
 import {Control} from 'babylonjs-gui/2D/controls/control';
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
-import { Vector2, Vector3 } from "babylonjs/Maths/math.vector";
+import { Matrix, Vector2, Vector3 } from "babylonjs/Maths/math.vector";
 import { Engine } from "babylonjs/Engines/engine";
 import { Scene } from "babylonjs/scene";
-import { Color4 } from "babylonjs/Maths/math.color";
+import { Color3, Color4 } from "babylonjs/Maths/math.color";
 import { FreeCamera } from "babylonjs/Cameras/freeCamera";
+import { ArcRotateCamera } from "babylonjs/Cameras/arcRotateCamera";
+import { HemisphericLight } from "babylonjs/Lights/hemisphericLight";
+import { Axis } from "babylonjs/Maths/math.axis";
+import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+import { Texture } from "babylonjs/Materials/Textures/texture";
+import { Mesh } from "babylonjs/Meshes/mesh";
+import { Plane } from "babylonjs/Maths/math.plane";
+import { PointerEventTypes, PointerInfoPre } from "babylonjs/Events/pointerEvents";
+import { EventState } from "babylonjs/Misc/observable";
+import { IWheelEvent } from "babylonjs/Events/deviceInputEvents";
+import { Camera } from "babylonjs";
 
 require("./workbenchCanvas.scss");
 
@@ -272,46 +283,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     distributeGraph() {
         this.x = 0;
         this.y = 0;
-        this.zoom = 1;
-
-        let graph = new dagre.graphlib.Graph();
-        graph.setGraph({});
-        graph.setDefaultEdgeLabel(() => ({}));
-        graph.graph().rankdir = "LR";
-
-        // Build dagre graph
-        this._guiNodes.forEach(node => {
-
-
-            graph.setNode(node.id.toString(), {
-                id: node.id,
-                type: "node",
-                width: node.width,
-                height: node.height
-            });
-        });
-
-        // Distribute
-        dagre.layout(graph);
-
-        // Update graph
-        let dagreNodes = graph.nodes().map(node => graph.node(node));
-        dagreNodes.forEach((dagreNode: any) => {
-            if (!dagreNode) {
-                return;
-            }
-            if (dagreNode.type === "node") {
-                for (var node of this._guiNodes) {
-                    if (node.id === dagreNode.id) {
-                        node.x = dagreNode.x - dagreNode.width / 2;
-                        node.y = dagreNode.y - dagreNode.height / 2;
-                        node.cleanAccumulation();
-                        return;
-                    }
-                }
-                return;
-            }
-        });        
+        this.zoom = 1;    
     }
 
     componentDidMount() {
@@ -388,11 +360,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             var y = this._mouseStartPointY;
             let selected = false;
             this.selectedGuiNodes.forEach(element => {
-                selected = element._onMove(new Vector2(evt.clientX, evt.clientY), 
-                new Vector2( x, y)) || selected;
+                selected = element._onMove(new Vector2(evt.clientX, evt.clientY), //need to add zoom factor here.
+                new Vector2( x, y)) ||  selected;
             });
 
-            if(!selected) {
+            if(selected) {
                 this._rootContainer.style.cursor = "move";
                 this.x += evt.clientX - this._mouseStartPointX;
                 this.y += evt.clientY - this._mouseStartPointY;
@@ -443,11 +415,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }
 
         if (this._frameCandidate) {            
-
-
             this._frameCandidate.parentElement!.removeChild(this._frameCandidate);
             this._frameCandidate = null;
-
         }
         this.isUp = true;
         
@@ -508,9 +477,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.y = 0;
     }
 
-
-    public createGUICanvas()
-    {
+    public createGUICanvas() {
+        
         // Get the canvas element from the DOM.
         const canvas = document.getElementById("workbench-canvas") as HTMLCanvasElement;
 
@@ -520,29 +488,181 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         // Create our first scene.
         var scene = new Scene(engine);
         scene.clearColor = new Color4(0.2, 0.2, 0.3, 1.0);
+        var camera = new ArcRotateCamera(
+            "Camera", -Math.PI / 2, 0, 150, Vector3.Zero(), scene);
+        const light = new HemisphericLight(
+            "light1", Axis.Y, scene);
+        light.intensity = 0.9;
+    
+        let textureMesh = Mesh.CreateGround("earth", 150, 150, 10, scene);
 
-        // This creates and positions a free camera (non-mesh)
-        var camera = new FreeCamera("camera1", new Vector3(0, 5, -10), scene);
-
-        // This targets the camera to scene origin
-        camera.setTarget(Vector3.Zero());
-        
-        // This attaches the camera to the canvas
-        //camera.attachControl(true);
-        
-        // GUI
-        this.globalState.guiTexture = AdvancedDynamicTexture.CreateFullscreenUI("UI");
+        this.globalState.guiTexture = AdvancedDynamicTexture.CreateForMesh(textureMesh);
+        textureMesh.showBoundingBox = true;  
+        this.addControls(scene, camera);
+    
         scene.getEngine().onCanvasPointerOutObservable.clear();
         // Watch for browser/canvas resize events
         window.addEventListener("resize", function () {
         engine.resize();
         });
+
         this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(`Please note: This editor is still a work in progress. You may submit feedback to msDestiny14 on GitHub.`);
         engine.runRenderLoop(() => {this.updateGUIs(); scene.render()});
+    };
+    
+    /** Add map-like controls to an ArcRotate camera.
+     */
+    addControls(scene: Scene, camera: ArcRotateCamera) {
+        camera.inertia = 0.7;
+        camera.lowerRadiusLimit = 10;
+        camera.upperRadiusLimit = 1000;
+        camera.upperBetaLimit = Math.PI / 2 - 0.1;
+        camera.angularSensibilityX = camera.angularSensibilityY = 500;
+    
+        const plane =
+            Plane.FromPositionAndNormal(Vector3.Zero(), Axis.Y);
+        
+        const inertialPanning = Vector3.Zero();
+        
+        let initialPos = new Vector3(0,0,0);
+        const panningFn = () => {
+            const pos = this.getPosition(scene, camera, plane);
+            this.panning(pos, initialPos, camera.inertia, inertialPanning);
+        };
+    
+        const inertialPanningFn = () => {
+            if (inertialPanning.x !== 0 || inertialPanning.y !== 0 || inertialPanning.z !== 0) {
+                camera.target.addInPlace(inertialPanning);
+                inertialPanning.scaleInPlace(camera.inertia);
+                this.zeroIfClose(inertialPanning);
+            }
+        };
+    
+        const wheelPrecisionFn = () => {
+            camera.wheelPrecision = 1 / camera.radius * 1000;
+        };
+    
+        const zoomFn = (p: any,e:any) => {
+            const delta = this.zoomWheel(p,e,camera);
+            this.zooming(delta, scene, camera, plane, inertialPanning);
+        }
+        
+        const removeObservers = () => {
+            scene.onPointerObservable.removeCallback(panningFn);
+        }
+    
+        scene.onPointerObservable.add((p, e) => {
+            removeObservers();
+            if (p.event.button !== 0) {
+                initialPos = this.getPosition(scene, camera, plane);
+                scene.onPointerObservable.add(panningFn, BABYLON.PointerEventTypes.POINTERMOVE);
+            }
+        }, PointerEventTypes.POINTERDOWN);
+    
+        scene.onPointerObservable.add((p, e) => {
+            removeObservers();
+        }, PointerEventTypes.POINTERUP);
+    
+        scene.onPointerObservable.add(zoomFn, BABYLON.PointerEventTypes.POINTERWHEEL);
+    
+        scene.onBeforeRenderObservable.add(inertialPanningFn);
+        scene.onBeforeRenderObservable.add(wheelPrecisionFn);
+    
+        // stop context menu showing on canvas right click
+        scene.getEngine().getRenderingCanvas()?.addEventListener("contextmenu", (e) => {
+            e.preventDefault();
+        });
     }
     
-    updateGUIs()
-    {
+    /** Get pos on plane.
+     */
+    getPosition(scene: Scene, camera: ArcRotateCamera, plane: Plane) {
+        const ray = scene.createPickingRay(
+            scene.pointerX, scene.pointerY, Matrix.Identity(), camera, false);
+        const distance = ray.intersectsPlane(plane);
+    
+        // not using this ray again, so modifying its vectors here is fine
+        return distance !== null ?
+            ray.origin.addInPlace(ray.direction.scaleInPlace(distance)) : Vector3.Zero();
+    }
+    
+    /** Return offsets for inertial panning given initial and current
+     * pointer positions.
+     */
+    panning(newPos: Vector3, initialPos: Vector3, inertia: number, ref: Vector3) {
+
+        const directionToZoomLocation = initialPos.subtract(newPos);
+        const panningX = directionToZoomLocation.x * (1-inertia);
+        const panningZ = directionToZoomLocation.z * (1-inertia);
+        ref.copyFromFloats(panningX, 0, panningZ);
+        return ref;
+    };
+    
+    /** Get the wheel delta divided by the camera wheel precision.
+     */
+    zoomWheel(p: PointerInfoPre, e: EventState, camera: ArcRotateCamera) {
+        const event = p.event as IWheelEvent;
+        
+        event.preventDefault();
+        let delta = 0;
+        if (event.deltaY) {
+            delta = -event.deltaY;
+        } else if (event.detail) {
+            delta = -event.detail;
+        }
+        delta /= camera.wheelPrecision;
+        return delta;
+    }
+    
+    /** Zoom to pointer position. Zoom amount determined by delta.
+     */
+    zooming(delta: number, scene: Scene, camera: ArcRotateCamera, plane :Plane, ref: Vector3) {
+        let lr = camera.lowerRadiusLimit;
+        let ur = camera.upperRadiusLimit;
+        if(!lr || !ur){
+            return;
+        }
+        if (camera.radius - lr < 1 && delta > 0) {
+            return;
+        } else if (ur - camera.radius < 1 && delta < 0) {
+            return;
+        }
+        const inertiaComp = 1 - camera.inertia;
+        if (camera.radius - (camera.inertialRadiusOffset + delta) / inertiaComp <
+              lr) {
+            delta = (camera.radius - lr) * inertiaComp - camera.inertialRadiusOffset;
+        } else if (camera.radius - (camera.inertialRadiusOffset + delta) / inertiaComp >
+                   ur) {
+            delta = (camera.radius - ur) * inertiaComp - camera.inertialRadiusOffset;
+        }
+    
+        const zoomDistance = delta / inertiaComp;
+        const ratio = zoomDistance / camera.radius;
+        const vec = this.getPosition(scene, camera, plane);
+    
+        const directionToZoomLocation = vec.subtract(camera.target);
+        const offset = directionToZoomLocation.scale(ratio);
+        offset.scaleInPlace(inertiaComp);
+        ref.addInPlace(offset);
+    
+        camera.inertialRadiusOffset += delta;
+    }
+    
+    /** Sets x y or z of passed in vector to zero if less than Epsilon.
+     */
+    zeroIfClose(vec: Vector3) {
+        if (Math.abs(vec.x) < BABYLON.Epsilon) {
+            vec.x = 0;
+        }
+        if (Math.abs(vec.y) < BABYLON.Epsilon) {
+            vec.y = 0;
+        }
+        if (Math.abs(vec.z) < BABYLON.Epsilon) {
+            vec.z = 0;
+        }
+    }
+
+    updateGUIs() {
         this._guiNodes.forEach(element => {
             element.updateVisual();
             
