@@ -119,8 +119,12 @@ class TransmissionHelper {
         this._options = newOptions;
 
         // If size changes, recreate everything
-        if (newOptions.renderSize !== oldOptions.renderSize || newOptions.samples !== oldOptions.samples) {
+        if (newOptions.renderSize !== oldOptions.renderSize || !this._opaqueRenderTarget) {
             this._setupRenderTargets();
+        } else {
+            this._opaqueRenderTarget.samples = newOptions.samples;
+            this._opaqueRenderTarget.lodGenerationScale = newOptions.lodGenerationScale;
+            this._opaqueRenderTarget.lodGenerationOffset = newOptions.lodGenerationOffset;
         }
     }
 
