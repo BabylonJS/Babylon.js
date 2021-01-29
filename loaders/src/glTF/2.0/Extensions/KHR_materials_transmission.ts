@@ -206,7 +206,6 @@ class TransmissionHelper {
      * Setup the render targets according to the specified options.
      */
     private _setupRenderTargets(): void {
-
         this._opaqueRenderTarget = new RenderTargetTexture("opaqueSceneTexture", this._options.renderSize, this._scene, true);
         this._opaqueRenderTarget.renderList = this._opaqueMeshesCache;
         // this._opaqueRenderTarget.clearColor = new Color4(0.0, 0.0, 0.0, 0.0);
