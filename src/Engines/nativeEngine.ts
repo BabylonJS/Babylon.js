@@ -99,7 +99,7 @@ interface INativeEngine {
     getAttributes(shaderProgram: any, attributeNames: string[]): number[];
     setProgram(program: any): void;
 
-    setState(culling: boolean, zOffset: number, reverseSide: boolean): void;
+    setState(culling: boolean, zOffset: number, cullBackFaces: boolean, reverseSide: boolean): void;
     setZOffset(zOffset: number): void;
     getZOffset(): number;
     setDepthTest(enable: number): void;
@@ -1165,7 +1165,7 @@ export class NativeEngine extends Engine {
     }
 
     public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {
-        this._native.setState(culling, zOffset, reverseSide);
+        this._native.setState(culling, zOffset, this.cullBackFaces, reverseSide);
     }
 
     /**
