@@ -12,6 +12,7 @@ import { Mesh } from "babylonjs/Meshes/mesh";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { RenderTargetTexture } from "babylonjs/Materials/Textures/renderTargetTexture";
 import { Observable, Observer } from "babylonjs/Misc/observable";
+import { Constants } from "babylonjs/Engines/constants";
 
 interface ITransmissionHelperHolder {
     /**
@@ -40,6 +41,11 @@ interface ITransmissionHelperOptions {
      * Offset to apply when selecting the LOD level to sample the refraction texture (default: -4)
      */
     lodGenerationOffset: number;
+
+    /**
+     * Type of the refraction render target texture (default: TEXTURETYPE_UNSIGNED_INT)
+     */
+    renderTargetTextureType: number;
 }
 
 /**
@@ -56,6 +62,7 @@ class TransmissionHelper {
             samples: 4,
             lodGenerationScale: 1,
             lodGenerationOffset: -4,
+            renderTargetTextureType: Constants.TEXTURETYPE_UNSIGNED_INT
         };
     }
 
@@ -119,7 +126,7 @@ class TransmissionHelper {
         this._options = newOptions;
 
         // If size changes, recreate everything
-        if (newOptions.renderSize !== oldOptions.renderSize || !this._opaqueRenderTarget) {
+        if (newOptions.renderSize !== oldOptions.renderSize || newOptions.renderTargetTextureType !== oldOptions.renderTargetTextureType || !this._opaqueRenderTarget) {
             this._setupRenderTargets();
         } else {
             this._opaqueRenderTarget.samples = newOptions.samples;
@@ -210,7 +217,7 @@ class TransmissionHelper {
      * Setup the render targets according to the specified options.
      */
     private _setupRenderTargets(): void {
-        this._opaqueRenderTarget = new RenderTargetTexture("opaqueSceneTexture", this._options.renderSize, this._scene, true);
+        this._opaqueRenderTarget = new RenderTargetTexture("opaqueSceneTexture", this._options.renderSize, this._scene, true, undefined, this._options.renderTargetTextureType);
         this._opaqueRenderTarget.renderList = this._opaqueMeshesCache;
         // this._opaqueRenderTarget.clearColor = new Color4(0.0, 0.0, 0.0, 0.0);
         this._opaqueRenderTarget.gammaSpace = true;
