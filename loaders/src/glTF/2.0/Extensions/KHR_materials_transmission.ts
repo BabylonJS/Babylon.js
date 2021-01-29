@@ -22,9 +22,24 @@ interface ITransmissionHelperHolder {
 
 interface ITransmissionHelperOptions {
     /**
-     * The size of the render buffers
+     * The size of the render buffers (default: 1024)
      */
     renderSize: number;
+
+    /**
+     * The number of samples to use when generating the render target texture for opaque meshes (default: 4)
+     */
+    samples: number;
+
+    /**
+     * Scale to apply when selecting the LOD level to sample the refraction texture (default: 1)
+     */
+    lodGenerationScale: number;
+
+    /**
+     * Offset to apply when selecting the LOD level to sample the refraction texture (default: -4)
+     */
+    lodGenerationOffset: number;
 }
 
 /**
@@ -37,7 +52,10 @@ class TransmissionHelper {
      */
     private static _getDefaultOptions(): ITransmissionHelperOptions {
         return {
-            renderSize: 1024
+            renderSize: 1024,
+            samples: 4,
+            lodGenerationScale: 1,
+            lodGenerationOffset: -4,
         };
     }
 
@@ -100,7 +118,7 @@ class TransmissionHelper {
         this._options = newOptions;
 
         // If size changes, recreate everything
-        if (newOptions.renderSize !== oldOptions.renderSize) {
+        if (newOptions.renderSize !== oldOptions.renderSize || newOptions.samples !== oldOptions.samples) {
             this._setupRenderTargets();
         }
     }
@@ -209,23 +227,9 @@ class TransmissionHelper {
         this._opaqueRenderTarget.renderList = this._opaqueMeshesCache;
         // this._opaqueRenderTarget.clearColor = new Color4(0.0, 0.0, 0.0, 0.0);
         this._opaqueRenderTarget.gammaSpace = true;
-        this._opaqueRenderTarget.lodGenerationScale = 1;
-        this._opaqueRenderTarget.lodGenerationOffset = -4;
-        this._opaqueRenderTarget.samples = 4;
-
-        if (opaqueRTIndex >= 0) {
-            this._scene.customRenderTargets.splice(opaqueRTIndex, 0, this._opaqueRenderTarget);
-        } else {
-            opaqueRTIndex = this._scene.customRenderTargets.length;
-            this._scene.customRenderTargets.push(this._opaqueRenderTarget);
-        }
-
-        // If there are other layers, they should be included in the render of the opaque background.
-        if (this._scene.layers && this._opaqueRenderTarget) {
-            for (let layer of this._scene.layers) {
-                layer.renderTargetTextures.push(this._opaqueRenderTarget);
-            }
-        }
+        this._opaqueRenderTarget.lodGenerationScale = this._options.lodGenerationScale;
+        this._opaqueRenderTarget.lodGenerationOffset = this._options.lodGenerationOffset;
+        this._opaqueRenderTarget.samples = this._options.samples;
 
         this._transparentMeshesCache.forEach((mesh: AbstractMesh) => {
             if (this.shouldRenderAsTransmission(mesh.material) && mesh.material instanceof PBRMaterial) {
