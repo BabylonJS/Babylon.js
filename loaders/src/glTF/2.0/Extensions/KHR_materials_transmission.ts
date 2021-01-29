@@ -11,7 +11,7 @@ import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { RenderTargetTexture } from "babylonjs/Materials/Textures/renderTargetTexture";
-import { Observable } from "babylonjs/Misc/observable";
+import { Observable, Observer } from "babylonjs/Misc/observable";
 
 interface ITransmissionHelperHolder {
     /**
@@ -69,6 +69,7 @@ class TransmissionHelper {
     private _opaqueRenderTarget: Nullable<RenderTargetTexture> = null;
     private _opaqueMeshesCache: Mesh[] = [];
     private _transparentMeshesCache: Mesh[] = [];
+    private _materialObservers: { [id: string]: Nullable<Observer<AbstractMesh>> } = {};
 
     /**
      * This observable will be notified with any error during the creation of the environment,
@@ -139,7 +140,7 @@ class TransmissionHelper {
 
     private _addMesh(mesh: AbstractMesh): void {
         if (mesh instanceof Mesh) {
-            mesh.onMaterialChangedObservable.add(this.onMeshMaterialChanged.bind(this));
+            this._materialObservers[mesh.uniqueId] = mesh.onMaterialChangedObservable.add(this.onMeshMaterialChanged.bind(this));
             if (this.shouldRenderAsTransmission(mesh.material)) {
                 this._transparentMeshesCache.push(mesh);
             } else {
@@ -150,7 +151,8 @@ class TransmissionHelper {
 
     private _removeMesh(mesh: AbstractMesh): void {
         if (mesh instanceof Mesh) {
-            mesh.onMaterialChangedObservable.remove(this.onMeshMaterialChanged.bind(this));
+            mesh.onMaterialChangedObservable.remove(this._materialObservers[mesh.uniqueId]);
+            delete this._materialObservers[mesh.uniqueId];
             let idx = this._transparentMeshesCache.indexOf(mesh);
             if (idx !== -1) {
                 this._transparentMeshesCache.splice(idx, 1);
