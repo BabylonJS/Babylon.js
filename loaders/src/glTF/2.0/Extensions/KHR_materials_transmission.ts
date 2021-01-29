@@ -205,24 +205,6 @@ class TransmissionHelper {
      */
     private _setupRenderTargets(): void {
 
-        let opaqueRTIndex = -1;
-
-        // Remove any layers rendering to the opaque scene.
-        if (this._scene.layers && this._opaqueRenderTarget) {
-            for (let layer of this._scene.layers) {
-                const idx = layer.renderTargetTextures.indexOf(this._opaqueRenderTarget);
-                if (idx >= 0) {
-                    layer.renderTargetTextures.splice(idx, 1);
-                }
-            }
-        }
-
-        // Remove opaque render target
-        if (this._opaqueRenderTarget) {
-            opaqueRTIndex = this._scene.customRenderTargets.indexOf(this._opaqueRenderTarget);
-            this._opaqueRenderTarget.dispose();
-        }
-
         this._opaqueRenderTarget = new RenderTargetTexture("opaqueSceneTexture", this._options.renderSize, this._scene, true);
         this._opaqueRenderTarget.renderList = this._opaqueMeshesCache;
         // this._opaqueRenderTarget.clearColor = new Color4(0.0, 0.0, 0.0, 0.0);
@@ -232,8 +214,8 @@ class TransmissionHelper {
         this._opaqueRenderTarget.samples = this._options.samples;
 
         this._transparentMeshesCache.forEach((mesh: AbstractMesh) => {
-            if (this.shouldRenderAsTransmission(mesh.material) && mesh.material instanceof PBRMaterial) {
-                mesh.material.refractionTexture = this._opaqueRenderTarget;
+            if (this.shouldRenderAsTransmission(mesh.material)) {
+                (mesh.material as PBRMaterial).refractionTexture = this._opaqueRenderTarget;
             }
         });
     }
