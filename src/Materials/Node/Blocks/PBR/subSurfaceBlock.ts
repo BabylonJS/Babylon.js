@@ -229,8 +229,6 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
                 #ifdef SS_LINKREFRACTIONTOTRANSPARENCY
                     alpha = subSurfaceOut.alpha;
                 #endif
-            #elif defined(SS_TRANSLUCENCY)
-                surfaceAlbedo = subSurfaceOut.surfaceAlbedo;
             #endif
         #else
             subSurfaceOut.specularEnvironmentReflectance = specularEnvironmentReflectance;

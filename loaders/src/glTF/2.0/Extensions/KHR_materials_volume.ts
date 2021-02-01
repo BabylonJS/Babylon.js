@@ -52,7 +52,6 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
     /** @hidden */
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IMaterialsTransmission>(context, material, this.name, (extensionContext, extension) => {
-            console.log(extensionContext);
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialBasePropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
@@ -73,20 +72,17 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
             return Promise.resolve();
         }
 
-        // Since this extension models thin-surface transmission only, we must make IOR = 1.0
+        // IOR in this extension only affects interior.
         pbrMaterial.subSurface.volumeIndexOfRefraction = pbrMaterial.indexOfRefraction;
         const attenuationDistance = extension.attenuationDistance !== undefined ? extension.attenuationDistance : Number.MAX_VALUE;
         pbrMaterial.subSurface.tintColorAtDistance = attenuationDistance;
         if (extension.attenuationColor !== undefined && extension.attenuationColor.length == 3) {
-            pbrMaterial.subSurface.tintColor = new Color3(1.0, 1.0, 1.0);
             pbrMaterial.subSurface.tintColor.copyFromFloats(extension.attenuationColor[0], extension.attenuationColor[1], extension.attenuationColor[2]);
             pbrMaterial.subSurface.tintColor = pbrMaterial.subSurface.tintColor.toLinearSpace();
-        } else {
-            pbrMaterial.subSurface.tintColor = new Color3(1.0, 1.0, 1.0);
         }
 
         pbrMaterial.subSurface.minimumThickness = 0.0;
-        pbrMaterial.subSurface.maximumThickness = extension.thicknessFactor !== undefined ? extension.thicknessFactor : 1;
+        pbrMaterial.subSurface.maximumThickness = extension.thicknessFactor;
         if (extension.thicknessTexture) {
             return this._loader.loadTextureInfoAsync(context, extension.thicknessTexture)
                 .then((texture: BaseTexture) => {
