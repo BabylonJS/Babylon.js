@@ -2807,9 +2807,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public increaseVertices(numberPerEdge: number): void {
         var vertex_data = VertexData.ExtractFromMesh(this);
         var uvs = vertex_data.uvs;
-        var currentIndices = vertex_data.indices && !Array.isArray(vertex_data.indices) ? Array.from(vertex_data.indices) : vertex_data.indices;
-        var positions = vertex_data.positions && !Array.isArray(vertex_data.positions) ? Array.from(vertex_data.positions) : vertex_data.positions;
-        var normals = vertex_data.normals && !Array.isArray(vertex_data.normals) ? Array.from(vertex_data.normals) : vertex_data.normals;
+        var currentIndices = vertex_data.indices && !Array.isArray(vertex_data.indices) && Array.from ? Array.from(vertex_data.indices) : vertex_data.indices;
+        var positions = vertex_data.positions && !Array.isArray(vertex_data.positions) && Array.from ? Array.from(vertex_data.positions) : vertex_data.positions;
+        var normals = vertex_data.normals && !Array.isArray(vertex_data.normals) && Array.from ? Array.from(vertex_data.normals) : vertex_data.normals;
 
         if (!currentIndices || !positions || !normals || !uvs) {
             Logger.Warn("VertexData contains null entries");
