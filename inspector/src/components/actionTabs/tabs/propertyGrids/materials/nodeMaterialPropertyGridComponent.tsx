@@ -2,24 +2,24 @@ import * as React from "react";
 
 import { Observable } from "babylonjs/Misc/observable";
 import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial";
-
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LineContainerComponent } from "../../../lineContainerComponent";
+import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
 import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGridComponent";
-import { LockObject } from "../lockObject";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from '../../../../globalState';
-import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
-import { CheckBoxLineComponent } from '../../../lines/checkBoxLineComponent';
-import { FloatLineComponent } from '../../../lines/floatLineComponent';
-import { Color3LineComponent } from '../../../lines/color3LineComponent';
-import { Vector3LineComponent } from '../../../lines/vector3LineComponent';
-import { Vector4LineComponent } from '../../../lines/vector4LineComponent';
-import { Vector2LineComponent } from '../../../lines/vector2LineComponent';
+import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
+import { CheckBoxLineComponent } from '../../../../../sharedUiComponents/lines/checkBoxLineComponent';
+import { FloatLineComponent } from '../../../../../sharedUiComponents/lines/floatLineComponent';
+import { Color3LineComponent } from '../../../../../sharedUiComponents/lines/color3LineComponent';
+import { Vector3LineComponent } from '../../../../../sharedUiComponents/lines/vector3LineComponent';
+import { Vector4LineComponent } from '../../../../../sharedUiComponents/lines/vector4LineComponent';
+import { Vector2LineComponent } from '../../../../../sharedUiComponents/lines/vector2LineComponent';
 import { TextureLinkLineComponent } from '../../../lines/textureLinkLineComponent';
-import { SliderLineComponent } from '../../../lines/sliderLineComponent';
+import { SliderLineComponent } from '../../../../../sharedUiComponents/lines/sliderLineComponent';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
-import { Color4LineComponent } from '../../../lines/color4LineComponent';
+import { GradientPropertyTabComponent } from '../../gradientNodePropertyComponent';
+import { Color4LineComponent } from "../../../../../sharedUiComponents/lines/color4LineComponent";
 
 interface INodeMaterialPropertyGridComponentProps {
     globalState: GlobalState;
@@ -52,7 +52,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
         }
 
         return (
-            <LineContainerComponent globalState={this.props.globalState} title="TEXTURES">
+            <LineContainerComponent title="TEXTURES">
                 {
                     textureBlocks.map((textureBlock, i) => {
                         return (
@@ -118,6 +118,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 )
             }
+            
         return null;
     }
 
@@ -128,12 +129,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
             return a.name.localeCompare(b.name);
         });
 
-        if (configurableInputBlocks.length === 0) {
-            return null;
-        }
-
         let namedGroups: string[] = [];
-
         configurableInputBlocks.forEach(block => {
             if (!block.groupInInspector) {
                 return;
@@ -143,26 +139,45 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
                 namedGroups.push(block.groupInInspector);
             }
         });
-
         namedGroups.sort();
+        
+
+        let gradiantNodeMaterialBlocks = this.props.material.attachedBlocks.filter(block => {
+            return block.visibleInInspector && block.getClassName() === 'GradientBlock'
+        }).sort( (a, b) => {
+            return a.name.localeCompare(b.name);
+        });
+
+        let inputBlockContainer = configurableInputBlocks.length > 0 ?
+            <LineContainerComponent title="INPUTS"> {
+                configurableInputBlocks.filter(block => !block.groupInInspector).map(block => {
+                    return this.renderInputBlock(block);
+                })
+            }
+            </LineContainerComponent> : null;
 
         return (           
             <>
-                <LineContainerComponent globalState={this.props.globalState} title="INPUTS">
-                    {
-                        configurableInputBlocks.filter(block => !block.groupInInspector).map(block => {
-                            return this.renderInputBlock(block);
-                        })
-                    }           
-                </LineContainerComponent>
+                {inputBlockContainer}
                 {
                     namedGroups.map((name, i) => {
                         return (
-                            <LineContainerComponent key={"inputValue" + i} globalState={this.props.globalState} title={name.toUpperCase()}>
+                            <LineContainerComponent key={"inputValue" + i} title={name.toUpperCase()}>
                             {
                                 configurableInputBlocks.filter(block => block.groupInInspector === name).map(block => {
                                     return this.renderInputBlock(block);
                                 })
+                            }
+                            </LineContainerComponent>
+                        )
+                    })   
+                }
+                {
+                    gradiantNodeMaterialBlocks.map((block,i) => {
+                        return (
+                            <LineContainerComponent key={block.name +i} title={block.name.toUpperCase()}>
+                            {
+                                <GradientPropertyTabComponent globalState={this.props.globalState} block={block}/>
                             }
                             </LineContainerComponent>
                         )
@@ -178,7 +193,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
         return (
             <div className="pane">
                 <CommonMaterialPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} material={material} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent globalState={this.props.globalState} title="CONFIGURATION">
+                <LineContainerComponent title="CONFIGURATION">
                 <CheckBoxLineComponent label="Ignore alpha" target={material} propertyName="ignoreAlpha" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <ButtonLineComponent label="Node Material Editor" onClick={() => this.edit()} />
                 </LineContainerComponent>

@@ -1,6 +1,6 @@
 #version 300 es
 
-uniform sampler2D textureSampler;
+uniform sampler2D diffuseSampler;
 
 in vec2 vUV;
 in vec4 vColor;
@@ -17,7 +17,7 @@ out vec4 outFragColor;
 
 void main() {
 	#include<clipPlaneFragment> 
-	vec4 textureColor = texture(textureSampler, vUV);
+	vec4 textureColor = texture(diffuseSampler, vUV);
   	outFragColor = textureColor * vColor;
 
 	#ifdef BLENDMULTIPLYMODE

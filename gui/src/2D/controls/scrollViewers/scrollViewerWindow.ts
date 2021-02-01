@@ -301,8 +301,8 @@ export class _ScrollViewerWindow extends Container {
                 child._offsetTop(this._currentMeasure.top - child._currentMeasure.top);
             }
 
-            maxWidth = Math.max(maxWidth, child._currentMeasure.left - this._currentMeasure.left + child._currentMeasure.width);
-            maxHeight = Math.max(maxHeight, child._currentMeasure.top - this._currentMeasure.top + child._currentMeasure.height);
+            maxWidth = Math.max(maxWidth, child._currentMeasure.left - this._currentMeasure.left + child._currentMeasure.width + child.paddingRightInPixels);
+            maxHeight = Math.max(maxHeight, child._currentMeasure.top - this._currentMeasure.top + child._currentMeasure.height + child.paddingBottomInPixels);
         }
 
         if (this._currentMeasure.width !== maxWidth) {

@@ -47,6 +47,10 @@ export interface IMultiRenderTargetOptions {
      * Define the default type of the buffers we are creating
      */
     defaultType?: number;
+    /**
+     * Define the default type of the buffers we are creating
+     */
+    drawOnlyOnFirstAttachmentByDefault?: boolean;
 }
 
 /**
@@ -60,12 +64,14 @@ export class MultiRenderTarget extends RenderTargetTexture {
     private _internalTextures: InternalTexture[];
     private _textures: Texture[];
     private _multiRenderTargetOptions: IMultiRenderTargetOptions;
+    private _count: number;
+    private _drawOnlyOnFirstAttachmentByDefault: boolean;
 
     /**
      * Get if draw buffers are currently supported by the used hardware and browser.
      */
     public get isSupported(): boolean {
-        return this._engine.webGLVersion > 1 || this._engine.getCaps().drawBuffersExtension;
+        return this._engine?.getCaps().drawBuffersExtension ?? false;
     }
 
     /**
@@ -73,6 +79,13 @@ export class MultiRenderTarget extends RenderTargetTexture {
      */
     public get textures(): Texture[] {
         return this._textures;
+    }
+
+    /**
+     * Gets the number of textures in this MRT. This number can be different from `_textures.length` in case a depth texture is generated.
+     */
+    public get count(): number {
+        return this._count;
     }
 
     /**
@@ -122,32 +135,25 @@ export class MultiRenderTarget extends RenderTargetTexture {
         var generateMipMaps = options && options.generateMipMaps ? options.generateMipMaps : false;
         var generateDepthTexture = options && options.generateDepthTexture ? options.generateDepthTexture : false;
         var doNotChangeAspectRatio = !options || options.doNotChangeAspectRatio === undefined ? true : options.doNotChangeAspectRatio;
-
-        super(name, size, scene, generateMipMaps, doNotChangeAspectRatio);
-
-        this._engine = scene.getEngine();
+        var drawOnlyOnFirstAttachmentByDefault = options && options.drawOnlyOnFirstAttachmentByDefault ? options.drawOnlyOnFirstAttachmentByDefault : false;
+        super(name, size, scene, generateMipMaps, doNotChangeAspectRatio,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            true);
 
         if (!this.isSupported) {
             this.dispose();
             return;
         }
 
-        var types = [];
-        var samplingModes = [];
-
-        for (var i = 0; i < count; i++) {
-            if (options && options.types && options.types[i] !== undefined) {
-                types.push(options.types[i]);
-            } else {
-                types.push(options && options.defaultType ? options.defaultType : Constants.TEXTURETYPE_UNSIGNED_INT);
-            }
-
-            if (options && options.samplingModes && options.samplingModes[i] !== undefined) {
-                samplingModes.push(options.samplingModes[i]);
-            } else {
-                samplingModes.push(Texture.BILINEAR_SAMPLINGMODE);
-            }
-        }
+        var types: number[] = [];
+        var samplingModes: number[] = [];
+        this._initTypes(count, types, samplingModes, options);
 
         var generateDepthBuffer = !options || options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
         var generateStencilBuffer = !options || options.generateStencilBuffer === undefined ? false : options.generateStencilBuffer;
@@ -163,26 +169,59 @@ export class MultiRenderTarget extends RenderTargetTexture {
             textureCount: count
         };
 
-        this._createInternalTextures();
-        this._createTextures();
+        this._count = count;
+        this._drawOnlyOnFirstAttachmentByDefault = drawOnlyOnFirstAttachmentByDefault;
+
+        if (count > 0) {
+            this._createInternalTextures();
+            this._createTextures();
+        }
+    }
+
+    private _initTypes(count: number, types: number[], samplingModes: number[], options?: IMultiRenderTargetOptions) {
+        for (var i = 0; i < count; i++) {
+            if (options && options.types && options.types[i] !== undefined) {
+                types.push(options.types[i]);
+            } else {
+                types.push(options && options.defaultType ? options.defaultType : Constants.TEXTURETYPE_UNSIGNED_INT);
+            }
+
+            if (options && options.samplingModes && options.samplingModes[i] !== undefined) {
+                samplingModes.push(options.samplingModes[i]);
+            } else {
+                samplingModes.push(Texture.BILINEAR_SAMPLINGMODE);
+            }
+        }
     }
 
     /** @hidden */
-    public _rebuild(): void {
+    public _rebuild(forceFullRebuild: boolean = false): void {
+        if (this._count < 1) {
+            return;
+        }
+
         this.releaseInternalTextures();
         this._createInternalTextures();
+
+        if (forceFullRebuild) {
+            this._createTextures();
+        }
 
         for (var i = 0; i < this._internalTextures.length; i++) {
             var texture = this._textures[i];
             texture._texture = this._internalTextures[i];
         }
 
-        // Keeps references to frame buffer and stencil/depth buffer
-        this._texture = this._internalTextures[0];
+        if (this.samples !== 1) {
+            this._getEngine()!.updateMultipleRenderTargetTextureSampleCount(this._internalTextures, this.samples, !this._drawOnlyOnFirstAttachmentByDefault);
+        }
     }
 
     private _createInternalTextures(): void {
-        this._internalTextures = this._engine.createMultipleRenderTarget(this._size, this._multiRenderTargetOptions);
+        this._internalTextures = this._getEngine()!.createMultipleRenderTarget(this._size, this._multiRenderTargetOptions, !this._drawOnlyOnFirstAttachmentByDefault);
+
+        // Keeps references to frame buffer and stencil/depth buffer
+        this._texture = this._internalTextures[0];
     }
 
     private _createTextures(): void {
@@ -192,9 +231,21 @@ export class MultiRenderTarget extends RenderTargetTexture {
             texture._texture = this._internalTextures[i];
             this._textures.push(texture);
         }
+    }
 
-        // Keeps references to frame buffer and stencil/depth buffer
-        this._texture = this._internalTextures[0];
+    /**
+     * Replaces a texture within the MRT.
+     * @param texture The new texture to insert in the MRT
+     * @param index The index of the texture to replace
+     */
+    public replaceTexture(texture: Texture, index: number) {
+        if (texture._texture) {
+            this._textures[index] = texture;
+            this._internalTextures[index] = texture._texture;
+            if (index === 0) {
+                this._texture = this._internalTextures[index];
+            }
+        }
     }
 
     /**
@@ -209,18 +260,41 @@ export class MultiRenderTarget extends RenderTargetTexture {
             return;
         }
 
-        this._samples = this._engine.updateMultipleRenderTargetTextureSampleCount(this._internalTextures, value);
+        if (this._internalTextures) {
+            this._samples = this._getEngine()!.updateMultipleRenderTargetTextureSampleCount(this._internalTextures, value);
+        } else {
+            // In case samples are set with 0 textures created, we must save the desired samples value
+            this._samples = value;
+        }
     }
 
     /**
      * Resize all the textures in the multi render target.
-     * Be carrefull as it will recreate all the data in the new texture.
+     * Be careful as it will recreate all the data in the new texture.
      * @param size Define the new size
      */
     public resize(size: any) {
-        this.releaseInternalTextures();
         this._size = size;
-        this._createInternalTextures();
+        this._rebuild();
+    }
+
+    /**
+     * Changes the number of render targets in this MRT
+     * Be careful as it will recreate all the data in the new texture.
+     * @param count new texture count
+     * @param options Specifies texture types and sampling modes for new textures
+     */
+    public updateCount(count: number, options?: IMultiRenderTargetOptions) {
+        this._multiRenderTargetOptions.textureCount = count;
+        this._count = count;
+
+        const types: number[] = [];
+        const samplingModes: number[] = [];
+
+        this._initTypes(count, types, samplingModes, options);
+        this._multiRenderTargetOptions.types = types;
+        this._multiRenderTargetOptions.samplingModes = samplingModes;
+        this._rebuild(true);
     }
 
     protected unbindFrameBuffer(engine: Engine, faceIndex: number): void {

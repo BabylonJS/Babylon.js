@@ -1,4 +1,4 @@
-/** Defines the cross module used constants to avoid circular dependncies */
+/** Defines the cross module used constants to avoid circular dependencies */
 export class Constants {
     /** Defines that alpha blending is disabled */
     public static readonly ALPHA_DISABLE = 0;
@@ -74,16 +74,16 @@ export class Constants {
      */
     public static readonly ALPHA_EQUATION_DARKEN = 5;
 
-    /** Defines that the ressource is not delayed*/
+    /** Defines that the resource is not delayed*/
     public static readonly DELAYLOADSTATE_NONE = 0;
-    /** Defines that the ressource was successfully delay loaded */
+    /** Defines that the resource was successfully delay loaded */
     public static readonly DELAYLOADSTATE_LOADED = 1;
-    /** Defines that the ressource is currently delay loading */
+    /** Defines that the resource is currently delay loading */
     public static readonly DELAYLOADSTATE_LOADING = 2;
-    /** Defines that the ressource is delayed and has not started loading */
+    /** Defines that the resource is delayed and has not started loading */
     public static readonly DELAYLOADSTATE_NOTLOADED = 4;
 
-    // Depht or Stencil test Constants.
+    // Depth or Stencil test Constants.
     /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will never pass. i.e. Nothing will be drawn */
     public static readonly NEVER = 0x0200;
     /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn */
@@ -104,6 +104,8 @@ export class Constants {
     // Stencil Actions Constants.
     /** Passed to stencilOperation to specify that stencil value must be kept */
     public static readonly KEEP = 0x1E00;
+    /** Passed to stencilOperation to specify that stencil value must be zero */
+    public static readonly ZERO = 0x0000;
     /** Passed to stencilOperation to specify that stencil value must be replaced */
     public static readonly REPLACE = 0x1E01;
     /** Passed to stencilOperation to specify that stencil value must be incremented */
@@ -150,6 +152,26 @@ export class Constants {
     public static readonly TEXTUREFORMAT_RGB_INTEGER = 10;
     /** RGBA_INTEGER */
     public static readonly TEXTUREFORMAT_RGBA_INTEGER = 11;
+    /** BGRA */
+    public static readonly TEXTUREFORMAT_BGRA = 12;
+
+    /** Depth 24 bits + Stencil 8 bits */
+    public static readonly TEXTUREFORMAT_DEPTH24_STENCIL8 = 13;
+    /** Depth 32 bits float */
+    public static readonly TEXTUREFORMAT_DEPTH32_FLOAT = 14;
+
+    /** Compressed BC7 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM = 36492;
+    /** Compressed BC6 unsigned float */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT = 36495;
+    /** Compressed BC6 signed float */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT = 36494;
+    /** Compressed BC3 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5 = 33779;
+    /** Compressed BC2 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3 = 33778;
+    /** Compressed BC1 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1 = 33777;
 
     /** UNSIGNED_BYTE */
     public static readonly TEXTURETYPE_UNSIGNED_BYTE = 0;
@@ -241,6 +263,18 @@ export class Constants {
     /** Equirectangular Fixed Mirrored coordinates mode */
     public static readonly TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE = 9;
 
+    /** Offline (baking) quality for texture filtering */
+    public static readonly TEXTURE_FILTERING_QUALITY_OFFLINE = 4096;
+
+    /** High quality for texture filtering */
+    public static readonly TEXTURE_FILTERING_QUALITY_HIGH = 64;
+
+    /** Medium quality for texture filtering */
+    public static readonly TEXTURE_FILTERING_QUALITY_MEDIUM = 16;
+
+    /** Low quality for texture filtering */
+    public static readonly TEXTURE_FILTERING_QUALITY_LOW = 8;
+
     // Texture rescaling mode
     /** Defines that texture rescaling will use a floor to find the closer power of 2 size */
     public static readonly SCALEMODE_FLOOR = 1;
@@ -270,9 +304,13 @@ export class Constants {
      */
     public static readonly MATERIAL_MiscDirtyFlag = 16;
     /**
+     * The dirty prepass flag value
+     */
+    public static readonly MATERIAL_PrePassDirtyFlag = 32;
+    /**
      * The all dirty flag value
      */
-    public static readonly MATERIAL_AllDirtyFlag = 31;
+    public static readonly MATERIAL_AllDirtyFlag = 63;
 
     /**
      * Returns the triangle fill mode
@@ -323,88 +361,88 @@ export class Constants {
 
     /**
      * Nothing
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_NothingTrigger = 0;
     /**
      * On pick
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnPickTrigger = 1;
     /**
      * On left pick
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnLeftPickTrigger = 2;
     /**
      * On right pick
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnRightPickTrigger = 3;
     /**
      * On center pick
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnCenterPickTrigger = 4;
     /**
      * On pick down
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnPickDownTrigger = 5;
     /**
      * On double pick
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnDoublePickTrigger = 6;
     /**
      * On pick up
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnPickUpTrigger = 7;
     /**
      * On pick out.
      * This trigger will only be raised if you also declared a OnPickDown
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnPickOutTrigger = 16;
     /**
      * On long press
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnLongPressTrigger = 8;
     /**
      * On pointer over
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnPointerOverTrigger = 9;
     /**
      * On pointer out
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnPointerOutTrigger = 10;
     /**
      * On every frame
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnEveryFrameTrigger = 11;
     /**
      * On intersection enter
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnIntersectionEnterTrigger = 12;
     /**
      * On intersection exit
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnIntersectionExitTrigger = 13;
     /**
      * On key down
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnKeyDownTrigger = 14;
     /**
      * On key up
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnKeyUpTrigger = 15;
 
@@ -469,7 +507,83 @@ export class Constants {
      */
     public static readonly SCENELOADER_SUMMARY_LOGGING = 2;
     /**
-     * Detailled logging while loading
+     * Detailed logging while loading
      */
     public static readonly SCENELOADER_DETAILED_LOGGING = 3;
+
+    /**
+     * Constant used to retrieve the irradiance texture index in the textures array in the prepass
+     * using getIndex(Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE)
+     */
+    public static readonly PREPASS_IRRADIANCE_TEXTURE_TYPE = 0;
+    /**
+     * Constant used to retrieve the position texture index in the textures array in the prepass
+     * using getIndex(Constants.PREPASS_POSITION_TEXTURE_INDEX)
+     */
+    public static readonly PREPASS_POSITION_TEXTURE_TYPE = 1;
+    /**
+     * Constant used to retrieve the velocity texture index in the textures array in the prepass
+     * using getIndex(Constants.PREPASS_VELOCITY_TEXTURE_INDEX)
+     */
+    public static readonly PREPASS_VELOCITY_TEXTURE_TYPE = 2;
+    /**
+     * Constant used to retrieve the reflectivity texture index in the textures array in the prepass
+     * using the getIndex(Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE)
+     */
+    public static readonly PREPASS_REFLECTIVITY_TEXTURE_TYPE = 3;
+    /**
+     * Constant used to retrieve the lit color texture index in the textures array in the prepass
+     * using the getIndex(Constants.PREPASS_COLOR_TEXTURE_TYPE)
+     */
+    public static readonly PREPASS_COLOR_TEXTURE_TYPE = 4;
+    /**
+     * Constant used to retrieve depth index in the textures array in the prepass
+     * using the getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)
+     */
+    public static readonly PREPASS_DEPTH_TEXTURE_TYPE = 5;
+    /**
+     * Constant used to retrieve normal index in the textures array in the prepass
+     * using the getIndex(Constants.PREPASS_NORMAL_TEXTURE_TYPE)
+     */
+    public static readonly PREPASS_NORMAL_TEXTURE_TYPE = 6;
+    /**
+     * Constant used to retrieve albedo index in the textures array in the prepass
+     * using the getIndex(Constants.PREPASS_ALBEDO_TEXTURE_TYPE)
+     */
+    public static readonly PREPASS_ALBEDO_TEXTURE_TYPE = 7;
+
+    /**
+     * Prefixes used by the engine for custom effects
+     */
+    public static readonly CUSTOMEFFECT_PREFIX_SHADOWGENERATOR = "bjs_shadowgenerator_";
+
+    /**
+     * Constant used as key code for Alt key
+     */
+    public static readonly INPUT_ALT_KEY = 18;
+
+    /**
+     * Constant used as key code for Ctrl key
+     */
+    public static readonly INPUT_CTRL_KEY = 17;
+
+    /**
+     * Constant used as key code for Meta key (Left Win, Left Cmd)
+     */
+    public static readonly INPUT_META_KEY1 = 91;
+
+    /**
+     * Constant used as key code for Meta key (Right Win)
+     */
+    public static readonly INPUT_META_KEY2 = 92;
+
+    /**
+     * Constant used as key code for Meta key (Right Win, Right Cmd)
+     */
+    public static readonly INPUT_META_KEY3 = 93;
+
+    /**
+     * Constant used as key code for Shift key
+     */
+    public static readonly INPUT_SHIFT_KEY = 16;
 }

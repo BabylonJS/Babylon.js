@@ -17,13 +17,24 @@ declare module "./baseTexture" {
 Object.defineProperty(BaseTexture.prototype, "sphericalPolynomial", {
     get: function(this: BaseTexture) {
         if (this._texture) {
-            if (this._texture._sphericalPolynomial) {
+            if (this._texture._sphericalPolynomial || this._texture._sphericalPolynomialComputed) {
                 return this._texture._sphericalPolynomial;
             }
 
             if (this._texture.isReady) {
-                this._texture._sphericalPolynomial =
-                    CubeMapToSphericalPolynomialTools.ConvertCubeMapTextureToSphericalPolynomial(this);
+                if (!this._texture._sphericalPolynomialPromise) {
+                    this._texture._sphericalPolynomialPromise = CubeMapToSphericalPolynomialTools.ConvertCubeMapTextureToSphericalPolynomial(this);
+                    if (this._texture._sphericalPolynomialPromise === null) {
+                        this._texture._sphericalPolynomialComputed = true;
+                    } else {
+                        this._texture._sphericalPolynomialPromise.then((sphericalPolynomial) => {
+                            this._texture!._sphericalPolynomial = sphericalPolynomial;
+                            this._texture!._sphericalPolynomialComputed = true;
+                        });
+                    }
+                }
+
+                return null;
             }
         }
 

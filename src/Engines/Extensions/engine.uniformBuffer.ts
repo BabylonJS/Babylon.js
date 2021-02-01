@@ -9,7 +9,7 @@ declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
         /**
          * Create an uniform buffer
-         * @see http://doc.babylonjs.com/features/webgl2#uniform-buffer-objets
+         * @see https://doc.babylonjs.com/features/webgl2#uniform-buffer-objets
          * @param elements defines the content of the uniform buffer
          * @returns the webGL uniform buffer
          */
@@ -17,7 +17,7 @@ declare module "../../Engines/thinEngine" {
 
         /**
          * Create a dynamic uniform buffer
-         * @see http://doc.babylonjs.com/features/webgl2#uniform-buffer-objets
+         * @see https://doc.babylonjs.com/features/webgl2#uniform-buffer-objets
          * @param elements defines the content of the uniform buffer
          * @returns the webGL uniform buffer
          */
@@ -25,7 +25,7 @@ declare module "../../Engines/thinEngine" {
 
         /**
          * Update an existing uniform buffer
-         * @see http://doc.babylonjs.com/features/webgl2#uniform-buffer-objets
+         * @see https://doc.babylonjs.com/features/webgl2#uniform-buffer-objets
          * @param uniformBuffer defines the target uniform buffer
          * @param elements defines the content to update
          * @param offset defines the offset in the uniform buffer where update should start
@@ -43,8 +43,9 @@ declare module "../../Engines/thinEngine" {
          * Bind a buffer to the current webGL context at a given location
          * @param buffer defines the buffer to bind
          * @param location defines the index where to bind the buffer
+         * @param name Name of the uniform variable to bind
          */
-        bindUniformBufferBase(buffer: DataBuffer, location: number): void;
+        bindUniformBufferBase(buffer: DataBuffer, location: number, name: string): void;
 
          /**
           * Bind a specific block at a given index in a specific shader program
@@ -128,7 +129,7 @@ ThinEngine.prototype.bindUniformBuffer = function(buffer: Nullable<DataBuffer>):
     this._gl.bindBuffer(this._gl.UNIFORM_BUFFER, buffer ? buffer.underlyingResource : null);
 };
 
-ThinEngine.prototype.bindUniformBufferBase = function(buffer: DataBuffer, location: number): void {
+ThinEngine.prototype.bindUniformBufferBase = function(buffer: DataBuffer, location: number, name: string): void {
     this._gl.bindBufferBase(this._gl.UNIFORM_BUFFER, location, buffer ? buffer.underlyingResource : null);
 };
 

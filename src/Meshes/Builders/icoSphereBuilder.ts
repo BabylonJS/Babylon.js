@@ -226,7 +226,7 @@ VertexData.CreateIcoSphere = function(options: { radius?: number, radiusX?: numb
             normals.push(vertex_normal.x, vertex_normal.y, vertex_normal.z);
             uvs.push(uv_interp.x, uv_interp.y);
             // push each vertex has member of a face
-            // Same vertex can bleong to multiple face, it is pushed multiple time (duplicate vertex are present)
+            // Same vertex can belong to multiple face, it is pushed multiple time (duplicate vertex are present)
             indices.push(current_indice);
             current_indice++;
         };
@@ -273,7 +273,7 @@ export class IcoSphereBuilder {
      * Creates a sphere based upon an icosahedron with 20 triangular faces which can be subdivided
      * * The parameter `radius` sets the radius size (float) of the icosphere (default 1)
      * * You can set some different icosphere dimensions, for instance to build an ellipsoid, by using the parameters `radiusX`, `radiusY` and `radiusZ` (all by default have the same value of `radius`)
-     * * The parameter `subdivisions` sets the number of subdivisions (postive integer, default 4). The more subdivisions, the more faces on the icosphere whatever its size
+     * * The parameter `subdivisions` sets the number of subdivisions (positive integer, default 4). The more subdivisions, the more faces on the icosphere whatever its size
      * * The parameter `flat` (boolean, default true) gives each side its own normals. Set it to false to get a smooth continuous light reflection on the surface
      * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
      * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation

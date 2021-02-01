@@ -1,10 +1,11 @@
 import { Observable } from "../Misc/observable";
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Quaternion, Vector3 } from '../Maths/math.vector';
-import { Ray } from '../Culling/ray';
-import { Scene } from '../scene';
-import { WebXRAbstractMotionController } from './motionController/webXRAbstractMotionController';
-import { WebXRMotionControllerManager } from './motionController/webXRMotionControllerManager';
+import { Quaternion, Vector3 } from "../Maths/math.vector";
+import { Ray } from "../Culling/ray";
+import { Scene } from "../scene";
+import { WebXRAbstractMotionController } from "./motionController/webXRAbstractMotionController";
+import { WebXRMotionControllerManager } from "./motionController/webXRMotionControllerManager";
+import { Tools } from "../Misc/tools";
 
 let idCount = 0;
 
@@ -26,18 +27,23 @@ export interface IWebXRControllerOptions {
      * This can be used when creating your own profile or when testing different controllers
      */
     forceControllerProfile?: string;
+    /**
+     * Defines a rendering group ID for meshes that will be loaded.
+     * This is for the default controllers only.
+     */
+    renderingGroupId?: number;
 }
 
 /**
  * Represents an XR controller
  */
 export class WebXRInputSource {
-    private _tmpQuaternion = new Quaternion();
     private _tmpVector = new Vector3();
     private _uniqueId: string;
+    private _disposed = false;
 
     /**
-     * Represents the part of the controller that is held. This may not exist if the controller is the head mounted display itself, if thats the case only the pointer from the head will be availible
+     * Represents the part of the controller that is held. This may not exist if the controller is the head mounted display itself, if that's the case only the pointer from the head will be available
      */
     public grip?: AbstractMesh;
     /**
@@ -68,8 +74,8 @@ export class WebXRInputSource {
     public pointer: AbstractMesh;
 
     /**
-     * Creates the controller
-     * @see https://doc.babylonjs.com/how_to/webxr
+     * Creates the input source object
+     * @see https://doc.babylonjs.com/how_to/webxr_controllers_support
      * @param _scene the scene which the controller should be associated to
      * @param inputSource the underlying input source for the controller
      * @param _options options for this controller creation
@@ -78,7 +84,8 @@ export class WebXRInputSource {
         private _scene: Scene,
         /** The underlying input source for the controller  */
         public inputSource: XRInputSource,
-        private _options: IWebXRControllerOptions = {}) {
+        private _options: IWebXRControllerOptions = {}
+    ) {
         this._uniqueId = `controller-${idCount++}-${inputSource.targetRayMode}-${inputSource.handedness}`;
 
         this.pointer = new AbstractMesh(`${this._uniqueId}-pointer`, _scene);
@@ -89,22 +96,38 @@ export class WebXRInputSource {
             this.grip.rotationQuaternion = new Quaternion();
         }
 
+        this._tmpVector.set(0, 0, this._scene.useRightHandedSystem ? -1.0 : 1.0);
+
         // for now only load motion controllers if gamepad object available
         if (this.inputSource.gamepad) {
-            WebXRMotionControllerManager.GetMotionControllerWithXRInput(inputSource, _scene, this._options.forceControllerProfile).then((motionController) => {
-                this.motionController = motionController;
-                this.onMotionControllerInitObservable.notifyObservers(motionController);
-                // should the model be loaded?
-                if (!this._options.doNotLoadControllerMesh) {
-                    this.motionController.loadModel().then((success) => {
-                        if (success) {
-                            this.onMeshLoadedObservable.notifyObservers(this.motionController!.rootMesh!);
-                            this.motionController!.rootMesh!.parent = this.grip || this.pointer;
-                            this.motionController!.disableAnimation = !!this._options.disableMotionControllerAnimation;
-                        }
-                    });
+            WebXRMotionControllerManager.GetMotionControllerWithXRInput(inputSource, _scene, this._options.forceControllerProfile).then(
+                (motionController) => {
+                    this.motionController = motionController;
+                    this.onMotionControllerInitObservable.notifyObservers(motionController);
+                    // should the model be loaded?
+                    if (!this._options.doNotLoadControllerMesh) {
+                        this.motionController.loadModel().then((success) => {
+                            if (success && this.motionController && this.motionController.rootMesh) {
+                                if (this._options.renderingGroupId) {
+                                    // anything other than 0?
+                                    this.motionController.rootMesh.renderingGroupId = this._options.renderingGroupId;
+                                    this.motionController.rootMesh.getChildMeshes(false).forEach((mesh) => (mesh.renderingGroupId = this._options.renderingGroupId!));
+                                }
+                                this.onMeshLoadedObservable.notifyObservers(this.motionController.rootMesh);
+                                this.motionController.rootMesh.parent = this.grip || this.pointer;
+                                this.motionController.disableAnimation = !!this._options.disableMotionControllerAnimation;
+                            }
+                            // make sure to dispose is the controller is already disposed
+                            if (this._disposed) {
+                                this.motionController?.dispose();
+                            }
+                        });
+                    }
+                },
+                () => {
+                    Tools.Warn(`Could not find a matching motion controller for the registered input source`);
                 }
-            });
+            );
         }
     }
 
@@ -130,6 +153,7 @@ export class WebXRInputSource {
         this.onMeshLoadedObservable.clear();
         this.onDisposeObservable.notifyObservers(this);
         this.onDisposeObservable.clear();
+        this._disposed = true;
     }
 
     /**
@@ -139,12 +163,9 @@ export class WebXRInputSource {
      */
     public getWorldPointerRayToRef(result: Ray, gripIfAvailable: boolean = false) {
         const object = gripIfAvailable && this.grip ? this.grip : this.pointer;
-        let worldMatrix = object.computeWorldMatrix();
-        worldMatrix.decompose(undefined, this._tmpQuaternion, undefined);
-        this._tmpVector.set(0, 0, (this._scene.useRightHandedSystem ? -1.0 : 1.0));
-        this._tmpVector.rotateByQuaternionToRef(this._tmpQuaternion, this._tmpVector);
+        Vector3.TransformNormalToRef(this._tmpVector, object.getWorldMatrix(), result.direction);
+        result.direction.normalize();
         result.origin.copyFrom(object.absolutePosition);
-        result.direction.copyFrom(this._tmpVector);
         result.length = 1000;
     }
 
@@ -158,8 +179,10 @@ export class WebXRInputSource {
 
         // Update the pointer mesh
         if (pose) {
-            this.pointer.position.copyFrom(<any>(pose.transform.position));
-            this.pointer.rotationQuaternion!.copyFrom(<any>(pose.transform.orientation));
+            const pos = pose.transform.position;
+            this.pointer.position.set(pos.x, pos.y, pos.z);
+            const orientation = pose.transform.orientation;
+            this.pointer.rotationQuaternion!.set(orientation.x, orientation.y, orientation.z, orientation.w);
             if (!this._scene.useRightHandedSystem) {
                 this.pointer.position.z *= -1;
                 this.pointer.rotationQuaternion!.z *= -1;
@@ -171,8 +194,10 @@ export class WebXRInputSource {
         if (this.inputSource.gripSpace && this.grip) {
             let pose = xrFrame.getPose(this.inputSource.gripSpace, referenceSpace);
             if (pose) {
-                this.grip.position.copyFrom(<any>(pose.transform.position));
-                this.grip.rotationQuaternion!.copyFrom(<any>(pose.transform.orientation));
+                const pos = pose.transform.position;
+                const orientation = pose.transform.orientation;
+                this.grip.position.set(pos.x, pos.y, pos.z);
+                this.grip.rotationQuaternion!.set(orientation.x, orientation.y, orientation.z, orientation.w);
                 if (!this._scene.useRightHandedSystem) {
                     this.grip.position.z *= -1;
                     this.grip.rotationQuaternion!.z *= -1;

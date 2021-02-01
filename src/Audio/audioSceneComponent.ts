@@ -58,12 +58,12 @@ declare module "../scene" {
         _mainSoundTrack: SoundTrack;
         /**
          * The main sound track played by the scene.
-         * It cotains your primary collection of sounds.
+         * It contains your primary collection of sounds.
          */
         mainSoundTrack: SoundTrack;
         /**
          * The list of sound tracks added to the scene
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+         * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
          */
         soundTracks: Nullable<Array<SoundTrack>>;
 
@@ -76,19 +76,19 @@ declare module "../scene" {
 
         /**
          * Gets or sets if audio support is enabled
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+         * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
          */
         audioEnabled: boolean;
 
         /**
          * Gets or sets if audio will be output to headphones
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+         * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
          */
         headphone: boolean;
 
         /**
          * Gets or sets custom audio listener position provider
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+         * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
          */
         audioListenerPositionProvider: Nullable<() => Vector3>;
 
@@ -249,8 +249,11 @@ Object.defineProperty(Scene.prototype, "audioPositioningRefreshRate", {
  * in a given scene.
  */
 export class AudioSceneComponent implements ISceneSerializableComponent {
+    private static _CameraDirectionLH = new Vector3(0, 0, -1);
+    private static _CameraDirectionRH = new Vector3(0, 0, 1);
+
     /**
-     * The component name helpfull to identify the component in the list of scene components.
+     * The component name helpful to identify the component in the list of scene components.
      */
     public readonly name = SceneComponentConstants.NAME_AUDIO;
 
@@ -270,7 +273,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
 
     private _headphone = false;
     /**
-     * Gets whether audio is outputing to headphone or not.
+     * Gets whether audio is outputting to headphone or not.
      * Please use the according Switch methods to change output.
      */
     public get headphone(): boolean {
@@ -352,7 +355,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
         container.sounds.forEach((sound) => {
             sound.play();
             sound.autoplay = true;
-            this.scene.mainSoundTrack.AddSound(sound);
+            this.scene.mainSoundTrack.addSound(sound);
         });
     }
 
@@ -368,7 +371,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
         container.sounds.forEach((sound) => {
             sound.stop();
             sound.autoplay = false;
-            this.scene.mainSoundTrack.RemoveSound(sound);
+            this.scene.mainSoundTrack.removeSound(sound);
             if (dispose) {
                 sound.dispose();
             }
@@ -376,7 +379,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
     }
 
     /**
-     * Disposes the component and the associated ressources.
+     * Disposes the component and the associated resources.
      */
     public dispose(): void {
         const scene = this.scene;
@@ -493,6 +496,10 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
 
         var audioEngine = Engine.audioEngine;
 
+        if (!audioEngine) {
+            return;
+        }
+
         if (audioEngine.audioContext) {
             // A custom listener position provider was set
             // Use the users provided position instead of camera's
@@ -507,7 +514,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
             } else {
                 var listeningCamera: Nullable<Camera>;
 
-                if (scene.activeCameras.length > 0) {
+                if (scene.activeCameras && scene.activeCameras.length > 0) {
                     listeningCamera = scene.activeCameras[0];
                 } else {
                     listeningCamera = scene.activeCamera;
@@ -526,7 +533,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
                         listeningCamera = listeningCamera.rigCameras[0];
                     }
                     var mat = Matrix.Invert(listeningCamera.getViewMatrix());
-                    var cameraDirection = Vector3.TransformNormal(new Vector3(0, 0, -1), mat);
+                    var cameraDirection = Vector3.TransformNormal(scene.useRightHandedSystem ? AudioSceneComponent._CameraDirectionRH : AudioSceneComponent._CameraDirectionLH, mat);
                     cameraDirection.normalize();
                     // To avoid some errors on GearVR
                     if (!isNaN(cameraDirection.x) && !isNaN(cameraDirection.y) && !isNaN(cameraDirection.z)) {

@@ -226,7 +226,7 @@ export class SpriteMap implements ISpriteMap {
         let shaderString: string = Effect.ShadersStore["spriteMapPixelShader"];
 
         let layerSampleString: string;
-        if (this._scene.getEngine().webGLVersion === 1) {
+        if (!scene.getEngine()._features.supportSwitchCaseInShader) {
             layerSampleString = "";
             for (let i = 0; i < options.layerCount; i++) {
                 layerSampleString += `if (${i} == i) { frameID = texture2D(tileMaps[${i}], (tileID + 0.5) / stageSize, 0.).x; }`;
@@ -302,6 +302,8 @@ export class SpriteMap implements ISpriteMap {
         this._output = Mesh.CreatePlane(name + ":output", 1, scene, true);
         this._output.scaling.x = options.outputSize.x;
         this._output.scaling.y = options.outputSize.y;
+        this.position = options.outputPosition;
+        this.rotation = options.outputRotation;
 
         let obfunction = () => {
             this._time += this._scene.getEngine().getDeltaTime();

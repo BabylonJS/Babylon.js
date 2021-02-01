@@ -1,13 +1,13 @@
 import * as React from "react";
 import { GlobalState } from '../../../../globalState';
 import { IValueGradient, FactorGradient, ColorGradient, Color3Gradient } from 'babylonjs/Misc/gradients';
-import { LockObject } from '../lockObject';
-import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
+import { LockObject } from '../../../../../sharedUiComponents/tabs/propertyGrids/lockObject';
+import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
 import { FactorGradientStepGridComponent } from './factorGradientStepGridComponent';
 import { Nullable } from 'babylonjs/types';
 import { ColorGradientStepGridComponent } from './colorGradientStepGridComponent';
 import { Color4, Color3 } from 'babylonjs/Maths/math.color';
-import { LinkButtonComponent } from '../../../lines/linkButtonComponent';
+import { LinkButtonComponent } from '../../../../../sharedUiComponents/lines/linkButtonComponent';
 import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 
@@ -43,11 +43,6 @@ export class ValueGradientGridComponent extends React.Component<IValueGradientGr
         if (index > -1) {
             gradients.splice(index, 1);
             this.updateAndSync();
-
-            this.props.globalState.onCodeChangedObservable.notifyObservers({
-                object: this.props.host,
-                code: `TARGET.${this.props.codeRecorderPropertyName}.splice(${index}, 1);`
-            });
         }
     }
 
@@ -58,26 +53,14 @@ export class ValueGradientGridComponent extends React.Component<IValueGradientGr
             case GradientGridMode.Factor:
                 let newStep = new FactorGradient(1, 1, 1);
                 gradients.push(newStep);
-                this.props.globalState.onCodeChangedObservable.notifyObservers({
-                    object: this.props.host,
-                    code: `TARGET.${this.props.codeRecorderPropertyName}.push(new BABYLON.FactorGradient(1, 1, 1));`
-                });
                 break;
             case GradientGridMode.Color4:
                 let newStepColor = new ColorGradient(1, new Color4(1, 1, 1, 1), new Color4(1, 1, 1, 1));
                 gradients.push(newStepColor);
-                this.props.globalState.onCodeChangedObservable.notifyObservers({
-                    object: this.props.host,
-                    code: `TARGET.${this.props.codeRecorderPropertyName}.push(new BABYLON.ColorGradient(1, new BABYLON.Color4(1, 1, 1, 1), new BABYLON.Color4(1, 1, 1, 1)));`
-                });
                 break;    
             case GradientGridMode.Color3:
                 let newStepColor3 = new Color3Gradient(1, Color3.White());
                 gradients.push(newStepColor3);
-                this.props.globalState.onCodeChangedObservable.notifyObservers({
-                    object: this.props.host,
-                    code: `TARGET.${this.props.codeRecorderPropertyName}.push(new BABYLON.Color3Gradient(1, BABYLON.Color3.White()));`
-                });
                 break;              
         }
 
@@ -99,21 +82,6 @@ export class ValueGradientGridComponent extends React.Component<IValueGradientGr
 
             return -1;
         });
-
-        this.props.globalState.onCodeChangedObservable.notifyObservers({
-            object: this.props.host,
-            code: `TARGET.${this.props.codeRecorderPropertyName}.sort((a, b) => {
-                if (a.gradient === b.gradient) {
-                    return 0;
-                }
-    
-                if (a.gradient > b.gradient) {
-                    return 1;
-                }
-    
-                return -1;
-            });`
-        });        
 
         this.forceUpdate();
     }
@@ -137,11 +105,6 @@ export class ValueGradientGridComponent extends React.Component<IValueGradientGr
                             onIconClick={() => {
                                 gradients!.length = 0;
                                 this.updateAndSync();
-                    
-                                this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                    object: this.props.host,
-                                    code: `TARGET.${this.props.codeRecorderPropertyName}.length = 0;`
-                                });
                             }}
                             buttonLabel="Add new step" onClick={() => this.addNewStep()} />
                         {

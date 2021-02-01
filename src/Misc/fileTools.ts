@@ -8,8 +8,9 @@ import { FilesInputStore } from './filesInputStore';
 import { RetryStrategy } from './retryStrategy';
 import { BaseError } from './baseError';
 import { StringTools } from './stringTools';
-import { ThinEngine } from '../Engines/thinEngine';
 import { ShaderProcessor } from '../Engines/Processors/shaderProcessor';
+import { ThinEngine } from '../Engines/thinEngine';
+import { EngineStore } from '../Engines/engineStore';
 
 /** @ignore */
 export class LoadFileError extends BaseError {
@@ -155,9 +156,11 @@ export class FileTools {
             url = FileTools.PreprocessUrl(input);
         }
 
-        if (typeof Image === "undefined") {
+        const engine = EngineStore.LastCreatedEngine;
+
+        if (typeof Image === "undefined" || (engine?._features.forceBitmapOverHTMLImageElement ?? false)) {
             FileTools.LoadFile(url, (data) => {
-                createImageBitmap(new Blob([data], { type: mimeType })).then((imgBmp) => {
+                createImageBitmap(new Blob([data], { type: mimeType }), { premultiplyAlpha: "none" }).then((imgBmp) => {
                     onLoad(imgBmp);
                     if (usingObjectURL) {
                         URL.revokeObjectURL(url);
@@ -197,7 +200,8 @@ export class FileTools {
             img.removeEventListener("error", errorHandler);
 
             if (onError) {
-                onError("Error while trying to load image: " + input, err);
+                const inputText = input.toString();
+                onError("Error while trying to load image: " + (inputText.length < 32 ? inputText : inputText.slice(0, 32) + "..."), err);
             }
 
             if (usingObjectURL && img.src) {
@@ -468,7 +472,7 @@ export class FileTools {
      * @returns boolean
      */
     public static IsFileURL(): boolean {
-        return location.protocol === "file:";
+        return typeof location !== "undefined" && location.protocol === "file:";
     }
 }
 

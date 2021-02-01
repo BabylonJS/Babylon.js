@@ -13,7 +13,7 @@ const config = require("../../Config/config.js");
  */
 function prepareEs6DevPackages() {
     config.es6modules.forEach(moduleName => {
-        if (moduleName === "viewer") {
+        if (moduleName === "viewer" || moduleName === "sandbox") {
             // Do not publish locally as an es6 npm linked module
             return;
         }

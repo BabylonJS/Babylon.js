@@ -4,6 +4,8 @@ import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { PassPostProcess } from "../PostProcesses/passPostProcess";
 import { Constants } from "../Engines/constants";
 import { Scene } from "../scene";
+import { PostProcess } from '../PostProcesses/postProcess';
+import { Engine } from '../Engines/engine';
 
 /**
  * Class used to host texture specific utilities
@@ -72,4 +74,73 @@ export class TextureTools {
 
         return rtt;
     }
+
+    /**
+     * Apply a post process to a texture
+     * @param postProcessName name of the fragment post process
+     * @param internalTexture the texture to encode
+     * @param scene the scene hosting the texture
+     * @param type type of the output texture. If not provided, use the one from internalTexture
+     * @param samplingMode sampling mode to use to sample the source texture. If not provided, use the one from internalTexture
+     * @param format format of the output texture. If not provided, use the one from internalTexture
+     * @return a promise with the internalTexture having its texture replaced by the result of the processing
+     */
+    public static ApplyPostProcess(postProcessName: string, internalTexture: InternalTexture, scene: Scene, type?: number, samplingMode?: number, format?: number): Promise<InternalTexture> {
+        // Gets everything ready.
+        const engine = internalTexture.getEngine() as Engine;
+
+        internalTexture.isReady = false;
+
+        samplingMode = samplingMode ?? internalTexture.samplingMode;
+        type = type ?? internalTexture.type;
+        format = format ?? internalTexture.format;
+
+        if (type === -1) {
+            type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+        }
+
+        return new Promise((resolve) => {
+            // Create the post process
+            const postProcess = new PostProcess("postprocess", postProcessName, null, null, 1, null, samplingMode, engine,
+                false, undefined, type, undefined, null, false, format);
+
+            // Hold the output of the decoding.
+            const encodedTexture = engine.createRenderTargetTexture({ width: internalTexture.width, height: internalTexture.height }, {
+                generateDepthBuffer: false,
+                generateMipMaps: false,
+                generateStencilBuffer: false,
+                samplingMode,
+                type,
+                format
+            });
+
+            postProcess.getEffect().executeWhenCompiled(() => {
+                // PP Render Pass
+                postProcess.onApply = (effect) => {
+                    effect._bindTexture("textureSampler", internalTexture);
+                    effect.setFloat2("scale", 1, 1);
+                };
+                scene.postProcessManager.directRender([postProcess!], encodedTexture, true);
+
+                // Cleanup
+                engine.restoreDefaultFramebuffer();
+                engine._releaseTexture(internalTexture);
+                engine._releaseFramebufferObjects(encodedTexture);
+                if (postProcess) {
+                    postProcess.dispose();
+                }
+
+                // Internal Swap
+                encodedTexture._swapAndDie(internalTexture);
+
+                // Ready to get rolling again.
+                internalTexture.type = type!;
+                internalTexture.format = Constants.TEXTUREFORMAT_RGBA;
+                internalTexture.isReady = true;
+
+                resolve(internalTexture);
+            });
+        });
+    }
+
 }

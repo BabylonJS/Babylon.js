@@ -1,3 +1,5 @@
+uniform vec4 vEyePosition;
+
 uniform vec4 vDiffuseColor;
 #ifdef SPECULARTERM
 uniform vec4 vSpecularColor;
@@ -87,4 +89,8 @@ uniform vec2 vReflectionInfos;
     uniform vec4 reflectionRightColor;
     #endif
 
+#endif
+
+#ifdef DETAIL
+uniform vec4 vDetailInfos;
 #endif

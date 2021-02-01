@@ -43,6 +43,7 @@ class MixMaterialDefines extends MaterialDefines {
     public BonesPerMesh = 0;
     public INSTANCES = false;
     public MIXMAP2 = false;
+    public IMAGEPROCESSINGPOSTPROCESS = false;
 
     constructor() {
         super();
@@ -245,6 +246,8 @@ export class MixMaterial extends PushMaterial {
             if (defines.NUM_BONE_INFLUENCERS > 0) {
                 fallbacks.addCPUSkinningFallback(0, mesh);
             }
+
+            defines.IMAGEPROCESSINGPOSTPROCESS = scene.imageProcessingConfiguration.applyByPostProcess;
 
             //Attributes
             var attribs = [VertexBuffer.PositionKind];

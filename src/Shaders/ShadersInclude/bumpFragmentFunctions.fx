@@ -1,4 +1,4 @@
-﻿#if defined(BUMP)
+#if defined(BUMP)
 	#if BUMPDIRECTUV == 1
 		#define vBumpUV vMainUV1
 	#elif BUMPDIRECTUV == 2
@@ -12,6 +12,17 @@
 	{
 		return perturbNormal(cotangentFrame, texture2D(bumpSampler, uv).xyz, vBumpInfos.y);
 	}
+#endif
+
+#if defined(DETAIL)
+	#if DETAILDIRECTUV == 1
+		#define vDetailUV vMainUV1
+	#elif DETAILDIRECTUV == 2
+		#define vDetailUV vMainUV2
+	#else
+		varying vec2 vDetailUV;
+	#endif
+	uniform sampler2D detailSampler;
 #endif
 
 #if defined(BUMP)

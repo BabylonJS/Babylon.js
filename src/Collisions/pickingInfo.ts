@@ -36,10 +36,15 @@ export class PickingInfo {
     public bv = 0;
     /** The index of the face on the mesh that was picked, or the index of the Line if the picked Mesh is a LinesMesh */
     public faceId = -1;
+    /** The index of the face on the subMesh that was picked, or the index of the Line if the picked Mesh is a LinesMesh */
+    public subMeshFaceId = -1;
     /** Id of the the submesh that was picked */
     public subMeshId = 0;
     /** If a sprite was picked, this will be the sprite the pick collided with */
     public pickedSprite: Nullable<Sprite> = null;
+
+    /** If we are picking a mesh with thin instance, this will give you the picked thin instance */
+    public thinInstanceIndex = -1;
     /**
      * If a mesh was used to do the picking (eg. 6dof controller) this will be populated.
      */
@@ -50,10 +55,10 @@ export class PickingInfo {
     public ray: Nullable<Ray> = null;
 
     /**
-     * Gets the normal correspodning to the face the pick collided with
+     * Gets the normal corresponding to the face the pick collided with
      * @param useWorldCoordinates If the resulting normal should be relative to the world (default: false)
      * @param useVerticesNormals If the vertices normals should be used to calculate the normal instead of the normal map
-     * @returns The normal correspodning to the face the pick collided with
+     * @returns The normal corresponding to the face the pick collided with
      */
     public getNormal(useWorldCoordinates = false, useVerticesNormals = true): Nullable<Vector3> {
         if (!this.pickedMesh || !this.pickedMesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
@@ -115,8 +120,8 @@ export class PickingInfo {
     }
 
     /**
-     * Gets the texture coordinates of where the pick occured
-     * @returns the vector containing the coordnates of the texture
+     * Gets the texture coordinates of where the pick occurred
+     * @returns the vector containing the coordinates of the texture
      */
     public getTextureCoordinates(): Nullable<Vector2> {
         if (!this.pickedMesh || !this.pickedMesh.isVerticesDataPresent(VertexBuffer.UVKind)) {

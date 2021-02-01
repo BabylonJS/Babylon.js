@@ -17,6 +17,7 @@
     #endif
     };
 
+    #define pbr_inline
     void createReflectionCoords(
         const in vec3 vPositionW,
         const in vec3 normalW,
@@ -52,6 +53,8 @@
         #endif
     }
 
+    #define pbr_inline
+    #define inline
     void sampleReflectionTexture(
         const in float alphaG,
         const in vec3 vReflectionMicrosurfaceInfos,
@@ -78,6 +81,9 @@
             const in sampler2D reflectionSamplerLow,
             const in sampler2D reflectionSamplerHigh,
         #endif
+    #endif
+    #ifdef REALTIME_FILTERING
+        const in vec2 vReflectionFilteringInfo,
     #endif
         out vec4 environmentRadiance
     )
@@ -111,8 +117,11 @@
             #else
                 float requestedReflectionLOD = reflectionLOD;
             #endif
-
-            environmentRadiance = sampleReflectionLod(reflectionSampler, reflectionCoords, reflectionLOD);
+            #ifdef REALTIME_FILTERING
+                environmentRadiance = vec4(radiance(alphaG, reflectionSampler, reflectionCoords, vReflectionFilteringInfo), 1.0);
+            #else
+                environmentRadiance = sampleReflectionLod(reflectionSampler, reflectionCoords, reflectionLOD);
+            #endif
         #else
             float lodReflectionNormalized = saturate(reflectionLOD / log2(vReflectionMicrosurfaceInfos.x));
             float lodReflectionNormalizedDoubled = lodReflectionNormalized * 2.0;
@@ -146,6 +155,8 @@
         environmentRadiance.rgb *= vReflectionColor.rgb;
     }
 
+    #define pbr_inline
+    #define inline
     void reflectionBlock(
         const in vec3 vPositionW,
         const in vec3 normalW,
@@ -191,6 +202,9 @@
             const in sampler2D reflectionSamplerHigh,
         #endif
     #endif
+    #ifdef REALTIME_FILTERING
+        const in vec2 vReflectionFilteringInfo,
+    #endif
         out reflectionOutParams outParams
     )
     {
@@ -234,6 +248,9 @@
             reflectionSamplerLow,
             reflectionSamplerHigh,
         #endif
+        #ifdef REALTIME_FILTERING
+            vReflectionFilteringInfo,
+        #endif
             environmentRadiance
         );
 
@@ -254,8 +271,16 @@
                     irradianceVector.z *= -1.0;
                 #endif
 
-                environmentIrradiance = computeEnvironmentIrradiance(irradianceVector);
+                #ifdef INVERTCUBICMAP
+                    irradianceVector.y *= -1.0;
+                #endif
 
+                #if defined(REALTIME_FILTERING)
+                    environmentIrradiance = irradiance(reflectionSampler, irradianceVector, vReflectionFilteringInfo);
+                #else
+                    environmentIrradiance = computeEnvironmentIrradiance(irradianceVector);
+                #endif
+                
                 #ifdef SS_TRANSLUCENCY
                     outParams.irradianceVector = irradianceVector;
                 #endif
@@ -273,7 +298,6 @@
         #endif
 
         environmentIrradiance *= vReflectionColor.rgb;
-
         outParams.environmentRadiance = environmentRadiance;
         outParams.environmentIrradiance = environmentIrradiance;
         outParams.reflectionCoords = reflectionCoords;

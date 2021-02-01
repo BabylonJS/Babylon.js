@@ -220,7 +220,7 @@ export class TextureUtils {
             babylonTexture.gammaSpace = false;
 
             let internalTexture = new InternalTexture(scene.getEngine(), InternalTextureSource.CubeRaw);
-            let glTexture = internalTexture._webGLTexture;
+            let glTexture = internalTexture._hardwareTexture?.underlyingResource;
             //babylon properties
             internalTexture.isCube = true;
             internalTexture.generateMipMaps = false;
@@ -352,7 +352,7 @@ export class TextureUtils {
 
         let internalTexture = babylonTexture._texture;
         if (!internalTexture) { return; }
-        let glTexture = internalTexture._webGLTexture;
+        let glTexture = internalTexture._hardwareTexture?.underlyingResource;
         gl.bindTexture(target, glTexture);
 
         if (parameters.magFilter != null) { gl.texParameteri(target, gl.TEXTURE_MAG_FILTER, parameters.magFilter); }

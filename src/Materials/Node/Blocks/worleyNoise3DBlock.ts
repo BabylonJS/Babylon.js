@@ -240,7 +240,7 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
         return codeString;
     }
     /**
-     * Exposes the properties to the Seralize?
+     * Exposes the properties to the Serialize?
      */
     public serialize(): any {
         let serializationObject = super.serialize();
@@ -250,7 +250,7 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
         return serializationObject;
     }
     /**
-     * Exposes the properties to the deseralize?
+     * Exposes the properties to the deserialize?
      */
     public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);

@@ -37,7 +37,7 @@ export class DepthRenderer {
     public enabled = true;
 
     /**
-     * Specifiess that the depth renderer will only be used within
+     * Specifies that the depth renderer will only be used within
      * the camera it is created for.
      * This can help forcing its rendering during the camera processing.
      */
@@ -72,7 +72,7 @@ export class DepthRenderer {
         var engine = scene.getEngine();
 
         // Render target
-        var format = (this.isPacked || engine.webGLVersion === 1) ? Constants.TEXTUREFORMAT_RGBA : Constants.TEXTUREFORMAT_R;
+        var format = (this.isPacked || !engine._features.supportExtendedTextureFormats) ? Constants.TEXTUREFORMAT_RGBA : Constants.TEXTUREFORMAT_R;
         this._depthMap = new RenderTargetTexture("depthMap", { width: engine.getRenderWidth(), height: engine.getRenderHeight() }, this._scene, false, true, type,
             false, undefined, undefined, undefined, undefined,
             format);
@@ -92,19 +92,25 @@ export class DepthRenderer {
             engine.clear(this._clearColor, true, true, true);
         });
 
+        this._depthMap.onBeforeBindObservable.add(() => {
+            engine._debugPushGroup("depth renderer", 1);
+        });
+
+        this._depthMap.onAfterUnbindObservable.add(() => {
+            engine._debugPopGroup(1);
+        });
+
         // Custom render function
         var renderSubMesh = (subMesh: SubMesh): void => {
-            var ownerMesh = subMesh.getMesh();
-            var replacementMesh = ownerMesh._internalAbstractMeshDataInfo._actAsRegularMesh ? ownerMesh : null;
             var renderingMesh = subMesh.getRenderingMesh();
-            var effectiveMesh = replacementMesh ? replacementMesh : renderingMesh;
+            var effectiveMesh = subMesh.getEffectiveMesh();
             var scene = this._scene;
             var engine = scene.getEngine();
             let material = subMesh.getMaterial();
 
             effectiveMesh._internalAbstractMeshDataInfo._isActiveIntermediate = false;
 
-            if (!material) {
+            if (!material || effectiveMesh.infiniteDistance || material.disableDepthWrite || subMesh.verticesCount === 0 || subMesh._renderId === scene.getRenderId()) {
                 return;
             }
 
@@ -112,16 +118,18 @@ export class DepthRenderer {
             engine.setState(material.backFaceCulling, 0, false, scene.useRightHandedSystem);
 
             // Managing instances
-            var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!replacementMesh);
+            var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!subMesh.getReplacementMesh());
 
             if (batch.mustReturn) {
                 return;
             }
 
-            var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
+            var hardwareInstancedRendering = engine.getCaps().instancedArrays && (batch.visibleInstances[subMesh._id] !== null && batch.visibleInstances[subMesh._id] !== undefined || renderingMesh.hasThinInstances);
 
             var camera = this._camera || scene.activeCamera;
             if (this.isReady(subMesh, hardwareInstancedRendering) && camera) {
+                subMesh._renderId = scene.getRenderId();
+
                 engine.enableEffect(this._effect);
                 renderingMesh._bind(subMesh, this._effect, material.fillMode);
 
@@ -146,6 +154,9 @@ export class DepthRenderer {
 
                 // Morph targets
                 MaterialHelper.BindMorphTargetParameters(renderingMesh, this._effect);
+                if (renderingMesh.morphTargetManager && renderingMesh.morphTargetManager.isUsingTextureForTargets) {
+                    renderingMesh.morphTargetManager._bind(this._effect);
+                }
 
                 // Draw
                 renderingMesh._processRendering(effectiveMesh, subMesh, this._effect, material.fillMode, batch, hardwareInstancedRendering,
@@ -229,6 +240,10 @@ export class DepthRenderer {
                 defines.push("#define MORPHTARGETS");
                 defines.push("#define NUM_MORPH_INFLUENCERS " + numMorphInfluencers);
 
+                if (morphTargetManager.isUsingTextureForTargets) {
+                    defines.push("#define MORPHTARGETS_TEXTURE");
+                }
+
                 MaterialHelper.PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, numMorphInfluencers);
             }
         }
@@ -237,6 +252,9 @@ export class DepthRenderer {
         if (useInstances) {
             defines.push("#define INSTANCES");
             MaterialHelper.PushAttributesForInstances(attribs);
+            if (subMesh.getRenderingMesh().hasThinInstances) {
+                defines.push("#define THIN_INSTANCES");
+            }
         }
 
         // None linear depth
@@ -255,8 +273,8 @@ export class DepthRenderer {
             this._cachedDefines = join;
             this._effect = this._scene.getEngine().createEffect("depth",
                 attribs,
-                ["world", "mBones", "viewProjection", "diffuseMatrix", "depthValues", "morphTargetInfluences"],
-                ["diffuseSampler"], join,
+                ["world", "mBones", "viewProjection", "diffuseMatrix", "depthValues", "morphTargetInfluences", "morphTargetTextureInfo", "morphTargetTextureIndices"],
+                ["diffuseSampler", "morphTargets"], join,
                 undefined, undefined, undefined, { maxSimultaneousMorphTargets: numMorphInfluencers });
         }
 

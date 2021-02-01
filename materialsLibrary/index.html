@@ -56,11 +56,52 @@
 	<script src="test/addMix.js"></script>
 	
 	<script>
+    function createEngine(engineName, canvas) {
+        if (engineName === "webgpu") {
+            const glslangOptions = { 
+                jsPath: "../dist/preview%20release/glslang/glslang.js",
+                wasmPath: "../dist/preview%20release/glslang/glslang.wasm"
+            };
+
+            engine = new BABYLON.WebGPUEngine(canvas, {
+                deviceDescriptor: {
+                    extensions: [
+                        "texture-compression-bc",
+                        "timestamp-query",
+                        "pipeline-statistics-query",
+                        "depth-clamping",
+                        "depth24unorm-stencil8",
+                        "depth32float-stencil8"
+                    ]
+                },
+                antialiasing: true,
+            });
+            return new Promise((resolve) => {
+                engine.initAsync(glslangOptions).then(() => resolve(engine));
+            });
+        } else {
+            engine = new BABYLON.Engine(canvas, true, { disableWebGL2Support: engineName === "webgl1" ? true : false });
+            return Promise.resolve(engine);
+        }
+    }
+
 	var backgroundSkybox = null;
-	BABYLONDEVTOOLS.Loader.load(function() {
+	BABYLONDEVTOOLS.Loader.load(async function() {
 		if (BABYLON.Engine.isSupported()) {
-			var canvas = document.getElementById("renderCanvas");
-			var engine = new BABYLON.Engine(canvas, true);
+            var url = document.location.href;
+            var engineName = options.engine;
+            var canvas = document.getElementById("renderCanvas");
+            
+            var idx = url.indexOf("engine=");
+            if (idx >= 0) {
+                idx += 7;
+                const idx2 = url.substring(idx).search(/\W+/g);
+                engineName = url.substring(idx, idx + (idx2 >= 0 ? idx2 : url.length));
+            }
+
+            options.engine = engineName;
+
+			var engine = await createEngine(engineName, canvas);
 			BABYLONDEVTOOLS.Loader.debugShortcut(engine);
 
 			var divFps = document.getElementById("fps");
@@ -68,7 +109,7 @@
 			scene = new BABYLON.Scene(engine);
 
 			var camera = new BABYLON.ArcRotateCamera("Camera", Math.PI / 2, Math.PI / 6, 50, BABYLON.Vector3.Zero(), scene);
-			camera.attachControl(canvas, true);
+			camera.attachControl(true);
 			camera.minZ = 0.1;
 
 			// Lights
@@ -223,6 +264,18 @@
 				var currentMaterial = std;
 				sphere.material = std;				
 				sphere.receiveShadows = true;
+
+                gui.add(options, 'engine', { 'WebGL 1': 'webgl1', 'WebGL 2': 'webgl2', 'WebGPU': 'webgpu' }).onFinishChange(function () {
+                    const newEngine = options.engine;
+                    let url = document.location.href;
+                    const idx = url.indexOf("engine=");
+                    if (idx < 0) {
+                        url += "&engine=" + newEngine;
+                    } else {
+                        url = url.replace(/engine=\w+/g, "engine=" + newEngine);
+                    }
+                    document.location.href = url;
+                });
 
 				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain', 'pbr', 'pbrmetallicroughness', 'pbrspecularglossiness', 'fur', 'triPlanar', 'gradient', 'sky', 'grid', 'shadowOnly', 'cell', 'background', 'mix']).onFinishChange(function () {
 					water.enableRenderTargets(false);

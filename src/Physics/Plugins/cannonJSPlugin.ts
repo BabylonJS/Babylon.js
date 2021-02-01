@@ -8,13 +8,13 @@ import { PhysicsImpostor, IPhysicsEnabledObject } from "../../Physics/physicsImp
 import { PhysicsJoint, IMotorEnabledJoint, DistanceJointData, SpringJointData } from "../../Physics/physicsJoint";
 import { PhysicsEngine } from "../../Physics/physicsEngine";
 import { PhysicsRaycastResult } from "../physicsRaycastResult";
+import { TransformNode } from '../../Meshes/transformNode';
 
 //declare var require: any;
 declare var CANNON: any;
 
 /** @hidden */
 export class CannonJSPlugin implements IPhysicsEnginePlugin {
-
     public world: any;
     public name: string = "CannonJSPlugin";
     private _physicsMaterials = new Array();
@@ -22,6 +22,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
     private _cannonRaycastResult: any;
     private _raycastResult: PhysicsRaycastResult;
     private _physicsBodysToRemoveAfterStep = new Array<any>();
+    private _firstFrame = true;
     //See https://github.com/schteppe/CANNON.js/blob/gh-pages/demos/collisionFilter.html
     public BJSCANNON: any;
 
@@ -42,7 +43,8 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
     }
 
     public setGravity(gravity: Vector3): void {
-        this.world.gravity.copy(gravity);
+        const vec = gravity;
+        this.world.gravity.set(vec.x, vec.y, vec.z);
     }
 
     public setTimeStep(timeStep: number) {
@@ -53,7 +55,16 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
         return this._fixedTimeStep;
     }
 
-    public executeStep(delta: number): void {
+    public executeStep(delta: number, impostors: Array<PhysicsImpostor>): void {
+        // due to cannon's architecture, the first frame's before-step is skipped.
+        if (this._firstFrame) {
+            this._firstFrame = false;
+            for (const impostor of impostors) {
+                if (!(impostor.type == PhysicsImpostor.HeightmapImpostor || impostor.type === PhysicsImpostor.PlaneImpostor)) {
+                    impostor.beforeStep();
+                }
+            }
+        }
         this.world.step(this._useDeltaForWorldStep ? delta : this._fixedTimeStep);
         this._removeMarkedPhysicsBodiesFromWorld();
     }
@@ -97,7 +108,6 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
 
         //should a new body be created for this impostor?
         if (impostor.isBodyInitRequired()) {
-
             var shape = this._createShape(impostor);
 
             //unregister events, if body is being changed
@@ -111,7 +121,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
 
             var bodyCreationObject = {
                 mass: impostor.getParam("mass"),
-                material: material
+                material: material,
             };
             // A simple extend, in case native options were used.
             var nativeOptions = impostor.getParam("nativeOptions");
@@ -130,8 +140,9 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
             //try to keep the body moving in the right direction by taking old properties.
             //Should be tested!
             if (oldBody) {
-                ['force', 'torque', 'velocity', 'angularVelocity'].forEach(function(param) {
-                    impostor.physicsBody[param].copy(oldBody[param]);
+                ["force", "torque", "velocity", "angularVelocity"].forEach(function (param) {
+                    const vec = oldBody[param];
+                    impostor.physicsBody[param].set(vec.x, vec.y, vec.z);
                 });
             }
             this._processChildMeshes(impostor);
@@ -145,8 +156,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
         var meshChildren = mainImpostor.object.getChildMeshes ? mainImpostor.object.getChildMeshes(true) : [];
         let currentRotation: Nullable<Quaternion> = mainImpostor.object.rotationQuaternion;
         if (meshChildren.length) {
-            var processMesh = (localPosition: Vector3, mesh: AbstractMesh) => {
-
+            const processMesh = (mesh: AbstractMesh) => {
                 if (!currentRotation || !mesh.rotationQuaternion) {
                     return;
                 }
@@ -155,23 +165,25 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
                 if (childImpostor) {
                     var parent = childImpostor.parent;
                     if (parent !== mainImpostor) {
-                        var pPosition = mesh.position.clone();
-                        let localRotation = mesh.rotationQuaternion.multiply(Quaternion.Inverse(currentRotation));
+                        const pPosition = mesh.getAbsolutePosition().subtract((mesh.parent as TransformNode).getAbsolutePosition());
+                        const q = mesh.rotationQuaternion;
                         if (childImpostor.physicsBody) {
                             this.removePhysicsBody(childImpostor);
                             childImpostor.physicsBody = null;
                         }
                         childImpostor.parent = mainImpostor;
                         childImpostor.resetUpdateFlags();
-                        mainImpostor.physicsBody.addShape(this._createShape(childImpostor), new this.BJSCANNON.Vec3(pPosition.x, pPosition.y, pPosition.z), new this.BJSCANNON.Quaternion(localRotation.x, localRotation.y, localRotation.z, localRotation.w));
+                        mainImpostor.physicsBody.addShape(this._createShape(childImpostor), new this.BJSCANNON.Vec3(pPosition.x, pPosition.y, pPosition.z) , new this.BJSCANNON.Quaternion(q.x, q.y, q.z, q.w));
                         //Add the mass of the children.
                         mainImpostor.physicsBody.mass += childImpostor.getParam("mass");
                     }
                 }
                 currentRotation.multiplyInPlace(mesh.rotationQuaternion);
-                mesh.getChildMeshes(true).filter((m) => !!m.physicsImpostor).forEach(processMesh.bind(this, mesh.getAbsolutePosition()));
+                mesh.getChildMeshes(true)
+                    .filter((m) => !!m.physicsImpostor)
+                    .forEach(processMesh);
             };
-            meshChildren.filter((m) => !!m.physicsImpostor).forEach(processMesh.bind(this, mainImpostor.object.getAbsolutePosition()));
+            meshChildren.filter((m) => !!m.physicsImpostor).forEach(processMesh);
         }
     }
 
@@ -196,12 +208,12 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
         var jointData = impostorJoint.joint.jointData;
         //TODO - https://github.com/schteppe/this.BJSCANNON.js/blob/gh-pages/demos/collisionFilter.html
         var constraintData = {
-            pivotA: jointData.mainPivot ? new this.BJSCANNON.Vec3().copy(jointData.mainPivot) : null,
-            pivotB: jointData.connectedPivot ? new this.BJSCANNON.Vec3().copy(jointData.connectedPivot) : null,
-            axisA: jointData.mainAxis ? new this.BJSCANNON.Vec3().copy(jointData.mainAxis) : null,
-            axisB: jointData.connectedAxis ? new this.BJSCANNON.Vec3().copy(jointData.connectedAxis) : null,
+            pivotA: jointData.mainPivot ? new this.BJSCANNON.Vec3().set(jointData.mainPivot.x, jointData.mainPivot.y, jointData.mainPivot.z) : null,
+            pivotB: jointData.connectedPivot ? new this.BJSCANNON.Vec3().set(jointData.connectedPivot.x, jointData.connectedPivot.y, jointData.connectedPivot.z) : null,
+            axisA: jointData.mainAxis ? new this.BJSCANNON.Vec3().set(jointData.mainAxis.x, jointData.mainAxis.y, jointData.mainAxis.z) : null,
+            axisB: jointData.connectedAxis ? new this.BJSCANNON.Vec3().set(jointData.connectedAxis.x, jointData.connectedAxis.y, jointData.connectedAxis.z) : null,
             maxForce: jointData.nativeParams.maxForce,
-            collideConnected: !!jointData.collision
+            collideConnected: !!jointData.collision,
         };
         switch (impostorJoint.joint.type) {
             case PhysicsJoint.HingeJoint:
@@ -218,7 +230,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
                     stiffness: springData.stiffness,
                     damping: springData.damping,
                     localAnchorA: constraintData.pivotA,
-                    localAnchorB: constraintData.pivotB
+                    localAnchorB: constraintData.pivotB,
                 });
                 break;
             case PhysicsJoint.LockJoint:
@@ -237,9 +249,11 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
         if (impostorJoint.joint.type !== PhysicsJoint.SpringJoint) {
             this.world.addConstraint(constraint);
         } else {
-            (<SpringJointData>impostorJoint.joint.jointData).forceApplicationCallback = (<SpringJointData>impostorJoint.joint.jointData).forceApplicationCallback || function() {
-                constraint.applyForce();
-            };
+            (<SpringJointData>impostorJoint.joint.jointData).forceApplicationCallback =
+                (<SpringJointData>impostorJoint.joint.jointData).forceApplicationCallback ||
+                function () {
+                    constraint.applyForce();
+                };
             impostorJoint.mainImpostor.registerAfterPhysicsStep((<SpringJointData>impostorJoint.joint.jointData).forceApplicationCallback);
         }
     }
@@ -250,7 +264,6 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
         } else {
             impostorJoint.mainImpostor.unregisterAfterPhysicsStep((<SpringJointData>impostorJoint.joint.jointData).forceApplicationCallback);
         }
-
     }
 
     private _addMaterial(name: string, friction: number, restitution: number) {
@@ -321,7 +334,9 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
                 // should transform the vertex data to world coordinates!!
                 var rawVerts = object.getVerticesData ? object.getVerticesData(VertexBuffer.PositionKind) : [];
                 var rawFaces = object.getIndices ? object.getIndices() : [];
-                if (!rawVerts) { return; }
+                if (!rawVerts) {
+                    return;
+                }
                 // get only scale! so the object could transform correctly.
                 let oldPosition = object.position.clone();
                 let oldRotation = object.rotation && object.rotation.clone();
@@ -375,7 +390,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
     }
 
     private _createHeightmap(object: IPhysicsEnabledObject, pointDepth?: number) {
-        var pos = <FloatArray>(object.getVerticesData(VertexBuffer.PositionKind));
+        var pos = <FloatArray>object.getVerticesData(VertexBuffer.PositionKind);
         let transform = object.computeWorldMatrix(true);
         // convert rawVerts to object space
         var temp = new Array<number>();
@@ -393,11 +408,11 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
         var dim = Math.min(boundingInfo.boundingBox.extendSizeWorld.x, boundingInfo.boundingBox.extendSizeWorld.y);
         var minY = boundingInfo.boundingBox.extendSizeWorld.z;
 
-        var elementSize = dim * 2 / arraySize;
+        var elementSize = (dim * 2) / arraySize;
 
         for (var i = 0; i < pos.length; i = i + 3) {
-            var x = Math.round((pos[i + 0]) / elementSize + arraySize / 2);
-            var z = Math.round(((pos[i + 1]) / elementSize - arraySize / 2) * -1);
+            var x = Math.round(pos[i + 0] / elementSize + arraySize / 2);
+            var z = Math.round((pos[i + 1] / elementSize - arraySize / 2) * -1);
             var y = -pos[i + 2] + minY;
             if (!matrix[x]) {
                 matrix[x] = [];
@@ -425,13 +440,12 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
                         newValue = matrix[x][(z + loc++) % arraySize];
                     }
                     matrix[x][z] = newValue;
-
                 }
             }
         }
 
         var shape = new this.BJSCANNON.Heightfield(matrix, {
-            elementSize: elementSize
+            elementSize: elementSize,
         });
 
         //For future reference, needed for body transformation
@@ -451,8 +465,9 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
         //make sure it is updated...
         object.computeWorldMatrix && object.computeWorldMatrix(true);
         // The delta between the mesh position and the mesh bounding box center
-        let bInfo = object.getBoundingInfo();
-        if (!bInfo) { return; }
+        if (!object.getBoundingInfo()) {
+            return;
+        }
         var center = impostor.getObjectCenter();
         //m.getAbsolutePosition().subtract(m.getBoundingInfo().boundingBox.centerWorld)
         this._tmpDeltaPosition.copyFrom(object.getAbsolutePivotPoint().subtract(center));
@@ -490,13 +505,12 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
             if (oldPivot) {
                 // create a copy the pivot Matrix as it is modified in place
                 oldPivot = oldPivot.clone();
-            }
-            else {
+            } else {
                 oldPivot = Matrix.Identity();
             }
 
             //calculate the new center using a pivot (since this.BJSCANNON.js doesn't center height maps)
-            var p = Matrix.Translation(boundingInfo.boundingBox.extendSizeWorld.x, 0, -boundingInfo.boundingBox.extendSizeWorld.z);
+            const p = Matrix.Translation(boundingInfo.boundingBox.extendSizeWorld.x, 0, -boundingInfo.boundingBox.extendSizeWorld.z);
             mesh.setPreTransformMatrix(p);
             mesh.computeWorldMatrix(true);
 
@@ -514,25 +528,25 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
             mesh.computeWorldMatrix(true);
         } else if (impostor.type === PhysicsImpostor.MeshImpostor) {
             this._tmpDeltaPosition.copyFromFloats(0, 0, 0);
-            //this._tmpPosition.copyFrom(object.position);
         }
 
         impostor.setDeltaPosition(this._tmpDeltaPosition);
         //Now update the impostor object
-        impostor.physicsBody.position.copy(this._tmpPosition);
-        impostor.physicsBody.quaternion.copy(quaternion);
+        impostor.physicsBody.position.set(this._tmpPosition.x, this._tmpPosition.y, this._tmpPosition.z);
+        impostor.physicsBody.quaternion.set(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
     }
 
     public setTransformationFromPhysicsBody(impostor: PhysicsImpostor) {
-        impostor.object.position.copyFrom(impostor.physicsBody.position);
+        impostor.object.position.set(impostor.physicsBody.position.x, impostor.physicsBody.position.y, impostor.physicsBody.position.z);
         if (impostor.object.rotationQuaternion) {
-            impostor.object.rotationQuaternion.copyFrom(impostor.physicsBody.quaternion);
+            const q = impostor.physicsBody.quaternion;
+            impostor.object.rotationQuaternion.set(q.x, q.y, q.z, q.w);
         }
     }
 
     public setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion) {
-        impostor.physicsBody.position.copy(newPosition);
-        impostor.physicsBody.quaternion.copy(newRotation);
+        impostor.physicsBody.position.set(newPosition.x, newPosition.y, newPosition.z);
+        impostor.physicsBody.quaternion.set(newRotation.x, newRotation.y, newRotation.z, newRotation.w);
     }
 
     public isSupported(): boolean {
@@ -540,11 +554,11 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
     }
 
     public setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
-        impostor.physicsBody.velocity.copy(velocity);
+        impostor.physicsBody.velocity.set(velocity.x, velocity.y, velocity.z);
     }
 
     public setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
-        impostor.physicsBody.angularVelocity.copy(velocity);
+        impostor.physicsBody.angularVelocity.set(velocity.x, velocity.y, velocity.z);
     }
 
     public getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3> {
@@ -641,16 +655,13 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
         result.z = shape.halfExtents.z * 2;
     }
 
-    public dispose() {
-
-    }
+    public dispose() {}
 
     private _extendNamespace() {
-
         //this will force cannon to execute at least one step when using interpolation
         let step_tmp1 = new this.BJSCANNON.Vec3();
         let Engine = this.BJSCANNON;
-        this.BJSCANNON.World.prototype.step = function(dt: number, timeSinceLastCalled: number, maxSubSteps: number) {
+        this.BJSCANNON.World.prototype.step = function (dt: number, timeSinceLastCalled: number, maxSubSteps: number) {
             maxSubSteps = maxSubSteps || 10;
             timeSinceLastCalled = timeSinceLastCalled || 0;
             if (timeSinceLastCalled === 0) {
@@ -678,8 +689,8 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
                         interpvelo.scale(h_div_dt, interpvelo);
                         b.position.vadd(interpvelo, b.interpolatedPosition);
                     } else {
-                        b.interpolatedPosition.copy(b.position);
-                        b.interpolatedQuaternion.copy(b.quaternion);
+                        b.interpolatedPosition.set(b.position.x, b.position.y, b.position.z);
+                        b.interpolatedQuaternion.set(b.quaternion.x, b.quaternion.y, b.quaternion.z, b.quaternion.w);
                     }
                 }
             }
@@ -718,4 +729,6 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
     }
 }
 
-PhysicsEngine.DefaultPluginFactory = () => { return new CannonJSPlugin(); };
+PhysicsEngine.DefaultPluginFactory = () => {
+    return new CannonJSPlugin();
+};

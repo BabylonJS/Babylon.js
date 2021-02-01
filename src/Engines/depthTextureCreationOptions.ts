@@ -10,4 +10,6 @@ export class DepthTextureCreationOptions {
     comparisonFunction?: number;
     /** Specifies if the created texture is a cube texture */
     isCube?: boolean;
+    /** Specifies the sample count of the depth/stencil texture texture */
+    samples?: number;
 }

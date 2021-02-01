@@ -155,8 +155,8 @@ VertexData.CreateTiledPlane = function(options: { pattern?: number, tileSize?: n
             positions.push(halfWidth + adjustX, startY + offsetY + adjustY, 0);
             indices.push(index, index + 1, index + 3, index + 1, index + 2, index + 3);
             index += 4;
-            a = 0,
-                b = 1 - offsetY / tileHeight;
+            a = 0;
+            b = 1 - offsetY / tileHeight;
             c = offsetX / tileWidth;
             d = 1;
             uvPart = [a, b, c, b, c, d, a, d];
@@ -207,8 +207,8 @@ VertexData.CreateTiledPlane = function(options: { pattern?: number, tileSize?: n
             positions.push(halfWidth + adjustX, endY + adjustY, 0);
             indices.push(index, index + 1, index + 3, index + 1, index + 2, index + 3);
             index += 4;
-            a = 0,
-                b = 0;
+            a = 0;
+            b = 0;
             c = offsetX / tileWidth;
             d = offsetY / tileHeight;
             uvPart = [a, b, c, b, c, d, a, d];

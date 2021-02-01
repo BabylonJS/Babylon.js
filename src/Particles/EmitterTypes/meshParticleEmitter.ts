@@ -162,7 +162,7 @@ export class MeshParticleEmitter implements IParticleEmitterType {
 
     /**
      * Returns a string to use to update the GPU particles update shader
-     * @returns a string containng the defines string
+     * @returns a string containing the defines string
      */
     public getEffectDefines(): string {
         return "";
@@ -197,11 +197,11 @@ export class MeshParticleEmitter implements IParticleEmitterType {
      * @param serializationObject defines the JSON object
      * @param scene defines the hosting scene
      */
-    public parse(serializationObject: any, scene: Scene): void {
+    public parse(serializationObject: any, scene: Nullable<Scene>): void {
         Vector3.FromArrayToRef(serializationObject.direction1, 0, this.direction1);
         Vector3.FromArrayToRef(serializationObject.direction2, 0, this.direction2);
 
-        if (serializationObject.meshId) {
+        if (serializationObject.meshId && scene) {
             this.mesh = scene.getLastMeshByID(serializationObject.meshId);
         }
 

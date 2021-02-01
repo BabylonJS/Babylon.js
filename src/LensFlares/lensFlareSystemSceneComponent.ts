@@ -26,7 +26,7 @@ declare module "../abstractScene" {
     export interface AbstractScene {
         /**
          * The list of lens flare system added to the scene
-         * @see http://doc.babylonjs.com/how_to/how_to_use_lens_flares
+         * @see https://doc.babylonjs.com/how_to/how_to_use_lens_flares
          */
         lensFlareSystems: Array<LensFlareSystem>;
 
@@ -97,7 +97,7 @@ AbstractScene.prototype.addLensFlareSystem = function(newLensFlareSystem: LensFl
  */
 export class LensFlareSystemSceneComponent implements ISceneSerializableComponent {
     /**
-     * The component name helpfull to identify the component in the list of scene components.
+     * The component name helpful to identify the component in the list of scene components.
      */
     public readonly name = SceneComponentConstants.NAME_LENSFLARESYSTEM;
 
@@ -175,7 +175,7 @@ export class LensFlareSystemSceneComponent implements ISceneSerializableComponen
     }
 
     /**
-     * Disposes the component and the associated ressources.
+     * Disposes the component and the associated resources.
      */
     public dispose(): void {
         let lensFlareSystems = this.scene.lensFlareSystems;

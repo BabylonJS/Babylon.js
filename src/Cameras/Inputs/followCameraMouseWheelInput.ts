@@ -4,10 +4,12 @@ import { EventState, Observer } from "../../Misc/observable";
 import { FollowCamera } from "../../Cameras/followCamera";
 import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
+import { Tools } from '../../Misc/tools';
+import { IWheelEvent } from "../../Events/deviceInputEvents";
 
 /**
  * Manage the mouse wheel inputs to control a follow camera.
- * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
  */
 export class FollowCameraMouseWheelInput implements ICameraInput<FollowCamera> {
     /**
@@ -52,14 +54,14 @@ export class FollowCameraMouseWheelInput implements ICameraInput<FollowCamera> {
 
     /**
      * Attach the input controls to a specific dom element to get the input from.
-     * @param element Defines the element the controls should be listened from
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
+    public attachControl(noPreventDefault?: boolean): void {
+        noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         this._wheel = (p, s) => {
             // sanity check - this should be a PointerWheel event.
             if (p.type !== PointerEventTypes.POINTERWHEEL) { return; }
-            var event = <MouseWheelEvent>p.event;
+            var event = <IWheelEvent>p.event;
             var delta = 0;
 
             // Chrome, Safari: event.deltaY
@@ -72,7 +74,7 @@ export class FollowCameraMouseWheelInput implements ICameraInput<FollowCamera> {
                                 <number>(<unknown>this.axisControlHeight) +
                                 <number>(<unknown>this.axisControlRotation)) <= 1,
                                "wheelDeltaPercentage only usable when mouse wheel " +
-                               "controlls ONE axis. " +
+                               "controls ONE axis. " +
                                "Currently enabled: " +
                                "axisControlRadius: " + this.axisControlRadius +
                                ", axisControlHeightOffset: " + this.axisControlHeight +
@@ -117,10 +119,15 @@ export class FollowCameraMouseWheelInput implements ICameraInput<FollowCamera> {
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param element Defines the element to stop listening the inputs from
      */
-    public detachControl(element: Nullable<HTMLElement>): void {
-        if (this._observer && element) {
+    public detachControl(): void;
+
+    /**
+     * Detach the current controls from the specified dom element.
+     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     */
+    public detachControl(ignored?: any): void {
+        if (this._observer) {
             this.camera.getScene().onPointerObservable.remove(this._observer);
             this._observer = null;
             this._wheel = null;
@@ -128,7 +135,7 @@ export class FollowCameraMouseWheelInput implements ICameraInput<FollowCamera> {
     }
 
     /**
-     * Gets the class name of the current intput.
+     * Gets the class name of the current input.
      * @returns the class name
      */
     public getClassName(): string {

@@ -2,9 +2,11 @@
 // http://imanolfotia.com/blog/update/2017/03/11/ScreenSpaceReflections.html
 
 uniform sampler2D textureSampler;
+#ifdef SSR_SUPPORTED
+uniform sampler2D reflectivitySampler;
 uniform sampler2D normalSampler;
 uniform sampler2D positionSampler;
-uniform sampler2D reflectivitySampler;
+#endif
 
 uniform mat4 view;
 uniform mat4 projection;
@@ -17,6 +19,8 @@ uniform float reflectionSpecularFalloffExponent;
 
 // Varyings
 varying vec2 vUV;
+
+#ifdef SSR_SUPPORTED
 
 // Structs
 struct ReflectionInfo {
@@ -121,15 +125,17 @@ vec3 hash(vec3 a)
     a += dot(a, a.yxz + 19.19);
     return fract((a.xxy + a.yxx) * a.zyx);
 }
+#endif
 
 void main()
 {
     #ifdef SSR_SUPPORTED
         // Intensity
-        vec3 albedo = texture2D(textureSampler, vUV).rgb;
+        vec4 albedoFull = texture2D(textureSampler, vUV);
+        vec3 albedo = albedoFull.rgb;
         float spec = texture2D(reflectivitySampler, vUV).r;
         if (spec == 0.0) {
-            gl_FragColor = vec4(albedo, 1.0);
+            gl_FragColor = albedoFull;
             return;
         }
         
@@ -157,7 +163,7 @@ void main()
         float albedoMultiplier = 1.0 - reflectionMultiplier;
         vec3 SSR = info.color * fresnel;
 
-        gl_FragColor = vec4((albedo * albedoMultiplier) + (SSR * reflectionMultiplier), 1.0);
+        gl_FragColor = vec4((albedo * albedoMultiplier) + (SSR * reflectionMultiplier), albedoFull.a);
     #else
         gl_FragColor = texture2D(textureSampler, vUV);
     #endif

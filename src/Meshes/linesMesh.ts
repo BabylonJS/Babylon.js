@@ -79,7 +79,7 @@ export class LinesMesh extends Mesh {
 
         var defines: string[] = [];
         var options = {
-            attributes: [VertexBuffer.PositionKind, "world0", "world1", "world2", "world3"],
+            attributes: [VertexBuffer.PositionKind],
             uniforms: ["vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "world", "viewProjection"],
             needAlphaBlending: true,
             defines: defines
@@ -134,7 +134,7 @@ export class LinesMesh extends Mesh {
         scene.clipPlane5 ? this._addClipPlaneDefine("CLIPPLANE5") : this._removeClipPlaneDefine("CLIPPLANE5");
         scene.clipPlane6 ? this._addClipPlaneDefine("CLIPPLANE6") : this._removeClipPlaneDefine("CLIPPLANE6");
 
-        if (!this._colorShader.isReady()) {
+        if (!this._colorShader.isReady(this)) {
             return false;
         }
 
@@ -167,6 +167,10 @@ export class LinesMesh extends Mesh {
      */
     public get checkCollisions(): boolean {
         return false;
+    }
+
+    public set checkCollisions(value: boolean) {
+        // Just ignore it
     }
 
     /** @hidden */
@@ -229,7 +233,7 @@ export class LinesMesh extends Mesh {
 
     /**
      * Creates a new InstancedLinesMesh object from the mesh model.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_instances
+     * @see https://doc.babylonjs.com/how_to/how_to_use_instances
      * @param name defines the name of the new instance
      * @returns a new InstancedLinesMesh
      */
@@ -245,7 +249,7 @@ export class InstancedLinesMesh extends InstancedMesh {
     /**
      * The intersection Threshold is the margin applied when intersection a segment of the LinesMesh with a Ray.
      * This margin is expressed in world space coordinates, so its value may vary.
-     * Initilized with the intersectionThreshold value of the source LinesMesh
+     * Initialized with the intersectionThreshold value of the source LinesMesh
      */
     public intersectionThreshold: number;
 

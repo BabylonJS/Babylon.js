@@ -3,6 +3,9 @@ import { NodeMaterialBlock } from './nodeMaterialBlock';
 import { InputBlock } from './Blocks/Input/inputBlock';
 import { TextureBlock } from './Blocks/Dual/textureBlock';
 import { ReflectionTextureBaseBlock } from './Blocks/Dual/reflectionTextureBaseBlock';
+import { RefractionBlock } from './Blocks/PBR/refractionBlock';
+import { CurrentScreenBlock } from './Blocks/Dual/currentScreenBlock';
+import { ParticleTextureBlock } from './Blocks/Particle/particleTextureBlock';
 import { Scene } from '../../scene';
 
 /**
@@ -32,7 +35,7 @@ export class NodeMaterialBuildStateSharedData {
     /**
      * Input blocks
      */
-    public textureBlocks = new Array<TextureBlock | ReflectionTextureBaseBlock>();
+    public textureBlocks = new Array<TextureBlock | ReflectionTextureBaseBlock | RefractionBlock | CurrentScreenBlock | ParticleTextureBlock>();
 
     /**
      * Bindable blocks (Blocks that need to set data to the effect)
@@ -108,6 +111,11 @@ export class NodeMaterialBuildStateSharedData {
         notConnectedNonOptionalInputs: new Array<NodeMaterialConnectionPoint>()
     };
 
+    /**
+     * Is vertex program allowed to be empty?
+     */
+    public allowEmptyVertexProgram: boolean = false;
+
     /** Creates a new shared data */
     public constructor() {
         // Exclude usual attributes from free variable names
@@ -130,6 +138,7 @@ export class NodeMaterialBuildStateSharedData {
         this.variableNames["specularBase"] = 0;
         this.variableNames["worldPos"] = 0;
         this.variableNames["shadow"] = 0;
+        this.variableNames["view"] = 0;
 
         // Exclude known varyings
         this.variableNames["vTBN"] = 0;
@@ -151,7 +160,7 @@ export class NodeMaterialBuildStateSharedData {
     public emitErrors() {
         let errorMessage = "";
 
-        if (!this.checks.emitVertex) {
+        if (!this.checks.emitVertex && !this.allowEmptyVertexProgram) {
             errorMessage += "NodeMaterial does not have a vertex output. You need to at least add a block that generates a glPosition value.\r\n";
         }
         if (!this.checks.emitFragment) {

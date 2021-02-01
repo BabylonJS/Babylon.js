@@ -13,7 +13,7 @@ Node.AddNodeConstructor("AnaglyphFreeCamera", (name, scene, options) => {
 
 /**
  * Camera used to simulate anaglyphic rendering (based on FreeCamera)
- * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+ * @see https://doc.babylonjs.com/features/cameras#anaglyph-cameras
  */
 export class AnaglyphFreeCamera extends FreeCamera {
     /**

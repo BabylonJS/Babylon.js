@@ -9,6 +9,8 @@ import { AbstractMesh } from '../Meshes/abstractMesh';
 import { Node } from '../node';
 import { ShadowGenerator } from '../Lights/Shadows/shadowGenerator';
 import { GUID } from '../Misc/guid';
+import { NodeMaterial } from './Node/nodeMaterial';
+import { NodeMaterialSystemValues } from './Node/Enums/nodeMaterialSystemValues';
 
 /**
  * Options to be used when creating a shadow depth material
@@ -93,13 +95,51 @@ export class ShadowDepthWrapper {
 
         const prefix = baseMaterial.getClassName() === "NodeMaterial" ? "u_" : "";
 
-        this._matriceNames = {
-            "view": prefix + "view",
-            "projection": prefix + "projection",
-            "viewProjection": prefix + "viewProjection",
-            "worldView": prefix + "worldView",
-            "worldViewProjection": prefix + "worldViewProjection",
-        };
+        if (prefix) {
+            this._matriceNames = {
+                "world": prefix + "World",
+                "view": prefix + "View",
+                "projection": prefix + "Projection",
+                "viewProjection": prefix + "ViewProjection",
+                "worldView": prefix + "WorldxView",
+                "worldViewProjection": prefix + "WorldxViewxProjection",
+            };
+
+            const nodeMat = baseMaterial as NodeMaterial;
+            const inputBlocks = nodeMat.getInputBlocks();
+
+            for (let i = 0; i < inputBlocks.length; ++i) {
+                switch (inputBlocks[i]._systemValue) {
+                    case NodeMaterialSystemValues.World:
+                        this._matriceNames["world"] = inputBlocks[i].associatedVariableName;
+                        break;
+                    case NodeMaterialSystemValues.View:
+                        this._matriceNames["view"] = inputBlocks[i].associatedVariableName;
+                        break;
+                    case NodeMaterialSystemValues.Projection:
+                        this._matriceNames["projection"] = inputBlocks[i].associatedVariableName;
+                        break;
+                    case NodeMaterialSystemValues.ViewProjection:
+                        this._matriceNames["viewProjection"] = inputBlocks[i].associatedVariableName;
+                        break;
+                    case NodeMaterialSystemValues.WorldView:
+                        this._matriceNames["worldView"] = inputBlocks[i].associatedVariableName;
+                        break;
+                    case NodeMaterialSystemValues.WorldViewProjection:
+                        this._matriceNames["worldViewProjection"] = inputBlocks[i].associatedVariableName;
+                        break;
+                }
+            }
+        } else {
+            this._matriceNames = {
+                "world": prefix + "world",
+                "view": prefix + "view",
+                "projection": prefix + "projection",
+                "viewProjection": prefix + "viewProjection",
+                "worldView": prefix + "worldView",
+                "worldViewProjection": prefix + "worldViewProjection",
+            };
+        }
 
         // Register for onEffectCreated to store the effect of the base material when it is (re)generated. This effect will be used
         // to create the depth effect later on
@@ -198,11 +238,13 @@ export class ShadowDepthWrapper {
         params.depthDefines = join;
 
         // the depth effect is either out of date or has not been created yet
-        let vertexCode = origEffect.vertexSourceCode,
-            fragmentCode = origEffect.fragmentSourceCode;
+        let vertexCode = origEffect.rawVertexSourceCode,
+            fragmentCode = origEffect.rawFragmentSourceCode;
 
+        // vertex code
         const vertexNormalBiasCode = this._options && this._options.remappedVariables ? `#include<shadowMapVertexNormalBias>(${this._options.remappedVariables.join(",")})` : Effect.IncludesShadersStore["shadowMapVertexNormalBias"],
               vertexMetricCode = this._options && this._options.remappedVariables ? `#include<shadowMapVertexMetric>(${this._options.remappedVariables.join(",")})` : Effect.IncludesShadersStore["shadowMapVertexMetric"],
+              fragmentSoftTransparentShadow = this._options && this._options.remappedVariables ? `#include<shadowMapFragmentSoftTransparentShadow>(${this._options.remappedVariables.join(",")})` : Effect.IncludesShadersStore["shadowMapFragmentSoftTransparentShadow"],
               fragmentBlockCode = Effect.IncludesShadersStore["shadowMapFragment"];
 
         vertexCode = vertexCode.replace(/void\s+?main/g, Effect.IncludesShadersStore["shadowMapVertexDeclaration"] + "\r\nvoid main");
@@ -215,17 +257,34 @@ export class ShadowDepthWrapper {
         }
         vertexCode = vertexCode.replace(/#define SHADER_NAME.*?\n|out vec4 glFragColor;\n/g, "");
 
+        // fragment code
+        const hasLocationForSoftTransparentShadow = fragmentCode.indexOf("#define SHADOWDEPTH_SOFTTRANSPARENTSHADOW") >= 0 || fragmentCode.indexOf("#define CUSTOM_FRAGMENT_BEFORE_FOG") >= 0;
+        const hasLocationForFragment = fragmentCode.indexOf("#define SHADOWDEPTH_FRAGMENT") !== -1;
+
+        let fragmentCodeToInjectAtEnd = "";
+
+        if (!hasLocationForSoftTransparentShadow) {
+            fragmentCodeToInjectAtEnd = fragmentSoftTransparentShadow + "\r\n";
+        } else {
+            fragmentCode = fragmentCode.replace(/#define SHADOWDEPTH_SOFTTRANSPARENTSHADOW|#define CUSTOM_FRAGMENT_BEFORE_FOG/g, fragmentSoftTransparentShadow);
+        }
+
         fragmentCode = fragmentCode.replace(/void\s+?main/g, Effect.IncludesShadersStore["shadowMapFragmentDeclaration"] + "\r\nvoid main");
-        if (fragmentCode.indexOf("#define SHADOWDEPTH_FRAGMENT") !== -1) {
+
+        if (hasLocationForFragment) {
             fragmentCode = fragmentCode.replace(/#define SHADOWDEPTH_FRAGMENT/g, fragmentBlockCode);
         } else {
-            fragmentCode = fragmentCode.replace(/}\s*$/g, fragmentBlockCode + "\r\n}");
+            fragmentCodeToInjectAtEnd += fragmentBlockCode + "\r\n";
         }
+        if (fragmentCodeToInjectAtEnd) {
+            fragmentCode = fragmentCode.replace(/}\s*$/g, fragmentCodeToInjectAtEnd + "}");
+        }
+
         fragmentCode = fragmentCode.replace(/#define SHADER_NAME.*?\n|out vec4 glFragColor;\n/g, "");
 
         const uniforms = origEffect.getUniformNames().slice();
 
-        uniforms.push("biasAndScaleSM", "depthValuesSM", "lightDataSM");
+        uniforms.push("biasAndScaleSM", "depthValuesSM", "lightDataSM", "softTransparentShadowSM");
 
         params.depthEffect = this._scene.getEngine().createEffect({
             vertexSource: vertexCode,
@@ -237,7 +296,7 @@ export class ShadowDepthWrapper {
             uniformsNames: uniforms,
             uniformBuffersNames: origEffect.getUniformBuffersNames(),
             samplers: origEffect.getSamplers(),
-            defines: join + "\n" + origEffect.defines,
+            defines: join + "\n" + origEffect.defines.replace("#define SHADOWS", "").replace(/#define SHADOW\d/g, ""),
             indexParameters: origEffect.getIndexParameters(),
         }, this._scene.getEngine());
 

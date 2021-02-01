@@ -15,6 +15,7 @@ import { SubMesh } from '../../../../Meshes/subMesh';
 import { Effect } from '../../../effect';
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
 import { Scene } from '../../../../scene';
+import { Scalar } from '../../../../Maths/math.scalar';
 
 /**
  * Block used to implement the reflection module of the PBR material
@@ -30,10 +31,12 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     public _vReflectionMicrosurfaceInfosName: string;
     /** @hidden */
     public _vReflectionInfosName: string;
+    /** @hidden */
+    public _vReflectionFilteringInfoName: string;
     private _scene: Scene;
 
     /**
-     * The three properties below are set by the main PBR block prior to calling methods of this class.
+     * The properties below are set by the main PBR block prior to calling methods of this class.
      * This is to avoid having to add them as inputs here whereas they are already inputs of the main block, so already known.
      * It's less burden on the user side in the editor part.
     */
@@ -44,6 +47,8 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     public worldNormalConnectionPoint: NodeMaterialConnectionPoint;
     /** @hidden */
     public cameraPositionConnectionPoint: NodeMaterialConnectionPoint;
+    /** @hidden */
+    public viewConnectionPoint: NodeMaterialConnectionPoint;
 
     /**
      * Defines if the material uses spherical harmonics vs spherical polynomials for the
@@ -69,7 +74,6 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
 
         this.registerInput("position", NodeMaterialBlockConnectionPointTypes.Vector3, false, NodeMaterialBlockTargets.Vertex);
         this.registerInput("world", NodeMaterialBlockConnectionPointTypes.Matrix, false, NodeMaterialBlockTargets.Vertex);
-        this.registerInput("view", NodeMaterialBlockConnectionPointTypes.Matrix, false, NodeMaterialBlockTargets.Fragment);
         this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
 
         this.registerOutput("reflection", NodeMaterialBlockConnectionPointTypes.Object, NodeMaterialBlockTargets.Fragment,
@@ -123,14 +127,14 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
      * Gets the view input component
      */
     public get view(): NodeMaterialConnectionPoint {
-        return this._inputs[2];
+        return this.viewConnectionPoint;
     }
 
     /**
      * Gets the color input component
      */
     public get color(): NodeMaterialConnectionPoint {
-        return this._inputs[3];
+        return this._inputs[2];
     }
 
     /**
@@ -168,17 +172,19 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         const reflectionTexture = this._getTexture();
         const reflection = reflectionTexture && reflectionTexture.getTextureMatrix;
 
-        defines.setValue("REFLECTION", reflection);
+        defines.setValue("REFLECTION", reflection, true);
 
         if (!reflection) {
             return;
         }
 
-        defines.setValue(this._defineLODReflectionAlpha, reflectionTexture!.lodLevelInAlpha);
-        defines.setValue(this._defineLinearSpecularReflection, reflectionTexture!.linearSpecularLOD);
-        defines.setValue(this._defineOppositeZ, this._scene.useRightHandedSystem ? !reflectionTexture!.invertZ : reflectionTexture!.invertZ);
+        defines.setValue(this._defineLODReflectionAlpha, reflectionTexture!.lodLevelInAlpha, true);
+        defines.setValue(this._defineLinearSpecularReflection, reflectionTexture!.linearSpecularLOD, true);
+        defines.setValue(this._defineOppositeZ, this._scene.useRightHandedSystem ? !reflectionTexture!.invertZ : reflectionTexture!.invertZ, true);
 
-        defines.setValue("SPHERICAL_HARMONICS", this.useSphericalHarmonics);
+        defines.setValue("SPHERICAL_HARMONICS", this.useSphericalHarmonics, true);
+        defines.setValue("GAMMAREFLECTION", reflectionTexture!.gammaSpace, true);
+        defines.setValue("RGBDREFLECTION", reflectionTexture!.isRGBD, true);
 
         if (reflectionTexture && reflectionTexture.coordinatesMode !== Texture.SKYBOX_MODE) {
             if (reflectionTexture.isCube) {
@@ -209,7 +215,10 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
             effect.setTexture(this._2DSamplerName, reflectionTexture);
         }
 
-        effect.setFloat3(this._vReflectionMicrosurfaceInfosName, reflectionTexture.getSize().width, reflectionTexture.lodGenerationScale, reflectionTexture.lodGenerationOffset);
+        const width = reflectionTexture.getSize().width;
+
+        effect.setFloat3(this._vReflectionMicrosurfaceInfosName, width, reflectionTexture.lodGenerationScale, reflectionTexture.lodGenerationOffset);
+        effect.setFloat2(this._vReflectionFilteringInfoName, width, Scalar.Log2(width));
 
         const defines = subMesh._materialDefines as  NodeMaterialDefines;
 
@@ -264,7 +273,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
 
         this._vEnvironmentIrradianceName = state._getFreeVariableName("vEnvironmentIrradiance");
 
-        state._emitVaryingFromString(this._vEnvironmentIrradianceName, "vec3", "defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX");
+        state._emitVaryingFromString(this._vEnvironmentIrradianceName, "vec3", "defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)");
 
         state._emitUniformFromString("vSphericalL00", "vec3", "SPHERICAL_HARMONICS");
         state._emitUniformFromString("vSphericalL1_1", "vec3", "SPHERICAL_HARMONICS");
@@ -344,6 +353,10 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
 
         this._vReflectionInfosName = state._getFreeVariableName("vReflectionInfos");
 
+        this._vReflectionFilteringInfoName = state._getFreeVariableName("vReflectionFilteringInfo");
+
+        state._emitUniformFromString(this._vReflectionFilteringInfoName, "vec2");
+
         code += `#ifdef REFLECTION
             vec2 ${this._vReflectionInfosName} = vec2(1., 0.);
 
@@ -390,6 +403,9 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
                     ${this._2DSamplerName},
                 #endif
             #endif
+            #ifdef REALTIME_FILTERING
+                ${this._vReflectionFilteringInfoName},
+            #endif
                 reflectionOut
             );
         #endif\r\n`;
@@ -411,6 +427,9 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     protected _dumpPropertiesCode() {
         let codeString: string = super._dumpPropertiesCode();
 
+        if (this.texture) {
+            codeString += `${this._codeVariableName}.texture.gammaSpace = ${this.texture.gammaSpace};\r\n`;
+        }
         codeString += `${this._codeVariableName}.useSphericalHarmonics = ${this.useSphericalHarmonics};\r\n`;
         codeString += `${this._codeVariableName}.forceIrradianceInFragment = ${this.forceIrradianceInFragment};\r\n`;
 
@@ -422,6 +441,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
 
         serializationObject.useSphericalHarmonics = this.useSphericalHarmonics;
         serializationObject.forceIrradianceInFragment = this.forceIrradianceInFragment;
+        serializationObject.gammaSpace = this.texture?.gammaSpace ?? true;
 
         return serializationObject;
     }
@@ -431,6 +451,9 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
 
         this.useSphericalHarmonics = serializationObject.useSphericalHarmonics;
         this.forceIrradianceInFragment = serializationObject.forceIrradianceInFragment;
+        if (this.texture) {
+            this.texture.gammaSpace = serializationObject.gammaSpace;
+        }
     }
 }
 

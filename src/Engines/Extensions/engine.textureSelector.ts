@@ -62,7 +62,9 @@ function transformTextureUrl(this: Engine, url: string): string {
     }
 
     const lastDot = url.lastIndexOf('.');
-    return (lastDot > -1 ? url.substring(0, lastDot) : url) + this._textureFormatInUse;
+    const lastQuestionMark = url.lastIndexOf('?');
+    const querystring = lastQuestionMark > -1 ? url.substring(lastQuestionMark, url.length) : '';
+    return (lastDot > -1 ? url.substring(0, lastDot) : url) + this._textureFormatInUse + querystring;
 }
 
 Object.defineProperty(Engine.prototype, "texturesSupported", {
@@ -108,7 +110,7 @@ Engine.prototype.setTextureFormatToUse = function(formatsAvailable: Array<string
     }
     // actively set format to nothing, to allow this to be called more than once
     // and possibly fail the 2nd time
-    delete this._textureFormatInUse;
-    delete this._transformTextureUrl;
+    this._textureFormatInUse = "";
+    this._transformTextureUrl = null;
     return null;
 };

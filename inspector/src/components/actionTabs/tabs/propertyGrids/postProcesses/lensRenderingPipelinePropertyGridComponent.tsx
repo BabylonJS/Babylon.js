@@ -4,11 +4,11 @@ import { Observable } from "babylonjs/Misc/observable";
 import { LensRenderingPipeline } from "babylonjs/PostProcesses/RenderPipeline/Pipelines/lensRenderingPipeline";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LockObject } from "../lockObject";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { CommonRenderingPipelinePropertyGridComponent } from './commonRenderingPipelinePropertyGridComponent';
-import { SliderLineComponent } from '../../../lines/sliderLineComponent';
-import { LineContainerComponent } from '../../../lineContainerComponent';
-import { CheckBoxLineComponent } from '../../../lines/checkBoxLineComponent';
+import { SliderLineComponent } from '../../../../../sharedUiComponents/lines/sliderLineComponent';
+import { LineContainerComponent } from '../../../../../sharedUiComponents/lines/lineContainerComponent';
+import { CheckBoxLineComponent } from '../../../../../sharedUiComponents/lines/checkBoxLineComponent';
 import { GlobalState } from '../../../../globalState';
 
 interface ILenstRenderingPipelinePropertyGridComponentProps {
@@ -29,7 +29,7 @@ export class LensRenderingPipelinePropertyGridComponent extends React.Component<
         return (
             <div className="pane">
                 <CommonRenderingPipelinePropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} renderPipeline={renderPipeline} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent globalState={this.props.globalState} title="OPTIONS">
+                <LineContainerComponent title="OPTIONS">
                     <SliderLineComponent label="Edge blur" minimum={0} maximum={5} step={0.1} target={renderPipeline} propertyName="edgeBlur" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Edge distortion" minimum={0} maximum={5} step={0.1} target={renderPipeline} propertyName="edgeDistortion" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Grain amount" minimum={0} maximum={1} step={0.1} target={renderPipeline} propertyName="grainAmount" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -37,7 +37,7 @@ export class LensRenderingPipelinePropertyGridComponent extends React.Component<
                     <SliderLineComponent label="Darken out of focus" minimum={0} maximum={5} step={0.1} target={renderPipeline} propertyName="darkenOutOfFocus" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Blur noise" target={renderPipeline} propertyName="blurNoise" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="DEPTH OF FIELD">
+                <LineContainerComponent title="DEPTH OF FIELD">
                     <SliderLineComponent label="Aperture" minimum={0} maximum={10} step={0.1} target={renderPipeline} propertyName="dofAperture" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Distortion" minimum={0} maximum={10} step={0.1} target={renderPipeline} propertyName="dofDistortion" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Pentagon bokeh" target={renderPipeline} propertyName="pentagonBokeh" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

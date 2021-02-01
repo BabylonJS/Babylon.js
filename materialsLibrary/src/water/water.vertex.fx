@@ -61,6 +61,7 @@ uniform float time;
 uniform float windForce;
 uniform float waveHeight;
 uniform float waveSpeed;
+uniform float waveCount;
 
 // Water varyings
 varying vec3 vPosition;
@@ -125,9 +126,11 @@ void main(void) {
 	gl_PointSize = pointSize;
 #endif
 
+	float finalWaveCount = 1.0 / (waveCount * 0.5);
+
 	vec3 p = position;
-	float newY = (sin(((p.x / 0.05) + time * waveSpeed)) * waveHeight * windDirection.x * 5.0)
-			   + (cos(((p.z / 0.05) +  time * waveSpeed)) * waveHeight * windDirection.y * 5.0);
+	float newY = (sin(((p.x / finalWaveCount) + time * waveSpeed)) * waveHeight * windDirection.x * 5.0)
+			   + (cos(((p.z / finalWaveCount) +  time * waveSpeed)) * waveHeight * windDirection.y * 5.0);
 	p.y += abs(newY);
 	
 	gl_Position = viewProjection * finalWorld * vec4(p, 1.0);

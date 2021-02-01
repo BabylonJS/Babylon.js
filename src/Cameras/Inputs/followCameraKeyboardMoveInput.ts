@@ -6,10 +6,11 @@ import { Observer } from "../../Misc/observable";
 import { Engine } from "../../Engines/engine";
 import { KeyboardInfo, KeyboardEventTypes } from "../../Events/keyboardEvents";
 import { Scene } from "../../scene";
+import { Tools } from '../../Misc/tools';
 
 /**
  * Manage the keyboard inputs to control the movement of a follow camera.
- * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
  */
 export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera> {
     /**
@@ -136,10 +137,10 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
 
     /**
      * Attach the input controls to a specific dom element to get the input from.
-     * @param element Defines the element the controls should be listened from
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
+    public attachControl(noPreventDefault?: boolean): void {
+        noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         if (this._onCanvasBlurObserver) {
             return;
         }
@@ -203,9 +204,14 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param element Defines the element to stop listening the inputs from
      */
-    public detachControl(element: Nullable<HTMLElement>) {
+    public detachControl(): void;
+
+    /**
+     * Detach the current controls from the specified dom element.
+     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     */
+    public detachControl(ignored?: any): void {
         if (this._scene) {
             if (this._onKeyboardObserver) {
                 this._scene.onKeyboardObservable.remove(this._onKeyboardObserver);

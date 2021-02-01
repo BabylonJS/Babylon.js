@@ -32,11 +32,10 @@ import { ICollisionCoordinator } from "./Collisions/collisionCoordinator";
 import { PointerEventTypes, PointerInfoPre, PointerInfo } from "./Events/pointerEvents";
 import { KeyboardInfoPre, KeyboardInfo } from "./Events/keyboardEvents";
 import { ActionEvent } from "./Actions/actionEvent";
-import { PostProcess } from "./PostProcesses/postProcess";
 import { PostProcessManager } from "./PostProcesses/postProcessManager";
 import { IOfflineProvider } from "./Offline/IOfflineProvider";
 import { RenderingGroupInfo, RenderingManager, IRenderingManagerAutoClearSetup } from "./Rendering/renderingManager";
-import { ISceneComponent, ISceneSerializableComponent, Stage, SimpleStageAction, RenderTargetsStageAction, RenderTargetStageAction, MeshStageAction, EvaluateSubMeshStageAction, ActiveMeshStageAction, CameraStageAction, RenderingGroupStageAction, RenderingMeshStageAction, PointerMoveStageAction, PointerUpDownStageAction, CameraStageFrameBufferAction } from "./sceneComponent";
+import { ISceneComponent, ISceneSerializableComponent, Stage, SimpleStageAction, RenderTargetsStageAction, RenderTargetStageAction, MeshStageAction, EvaluateSubMeshStageAction, PreActiveMeshStageAction, CameraStageAction, RenderingGroupStageAction, RenderingMeshStageAction, PointerMoveStageAction, PointerUpDownStageAction, CameraStageFrameBufferAction } from "./sceneComponent";
 import { Engine } from "./Engines/engine";
 import { Node } from "./node";
 import { MorphTarget } from "./Morph/morphTarget";
@@ -55,6 +54,8 @@ import { Plane } from './Maths/math.plane';
 import { Frustum } from './Maths/math.frustum';
 import { UniqueIdGenerator } from './Misc/uniqueIdGenerator';
 import { FileTools, LoadFileError, RequestFileError, ReadFileError } from './Misc/fileTools';
+import { IClipPlanesHolder } from './Misc/interfaces/iClipPlanesHolder';
+import { IPointerEvent } from "./Events/deviceInputEvents";
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -63,6 +64,8 @@ declare type Animatable = import("./Animations/animatable").Animatable;
 declare type AnimationGroup = import("./Animations/animationGroup").AnimationGroup;
 declare type AnimationPropertiesOverride = import("./Animations/animationPropertiesOverride").AnimationPropertiesOverride;
 declare type Collider = import("./Collisions/collider").Collider;
+declare type WebGPUEngine = import("./Engines/webgpuEngine").WebGPUEngine;
+declare type PostProcess = import("./PostProcesses/postProcess").PostProcess;
 
 /**
  * Define an interface for all classes that will hold resources
@@ -100,9 +103,9 @@ export interface SceneOptions {
 
 /**
  * Represents a scene to be rendered by the engine.
- * @see http://doc.babylonjs.com/features/scene
+ * @see https://doc.babylonjs.com/features/scene
  */
-export class Scene extends AbstractScene implements IAnimatable {
+export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHolder {
     /** The fog is deactivated */
     public static readonly FOGMODE_NONE = 0;
     /** The fog density is following an exponential function */
@@ -114,12 +117,12 @@ export class Scene extends AbstractScene implements IAnimatable {
 
     /**
      * Gets or sets the minimum deltatime when deterministic lock step is enabled
-     * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
      */
     public static MinDeltaTime = 1.0;
     /**
      * Gets or sets the maximum deltatime when deterministic lock step is enabled
-     * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
      */
     public static MaxDeltaTime = 1000.0;
 
@@ -182,8 +185,6 @@ export class Scene extends AbstractScene implements IAnimatable {
      */
     public environmentBRDFTexture: BaseTexture;
 
-    /** @hidden */
-    protected _environmentTexture: Nullable<BaseTexture>;
     /**
      * Texture used in all pbr material as the reflection texture.
      * As in the majority of the scene they are the same (exception for multi room and so on),
@@ -593,9 +594,19 @@ export class Scene extends AbstractScene implements IAnimatable {
     public onNewMaterialAddedObservable = new Observable<Material>();
 
     /**
+    * An event triggered when a multi material is created
+    */
+   public onNewMultiMaterialAddedObservable = new Observable<MultiMaterial>();
+
+    /**
     * An event triggered when a material is removed
     */
     public onMaterialRemovedObservable = new Observable<Material>();
+
+    /**
+    * An event triggered when a multi material is removed
+    */
+    public onMultiMaterialRemovedObservable = new Observable<MultiMaterial>();
 
     /**
     * An event triggered when a texture is created
@@ -684,13 +695,13 @@ export class Scene extends AbstractScene implements IAnimatable {
     public pointerMovePredicate: (Mesh: AbstractMesh) => boolean;
 
     /** Callback called when a pointer move is detected */
-    public onPointerMove: (evt: PointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
+    public onPointerMove: (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
     /** Callback called when a pointer down is detected  */
-    public onPointerDown: (evt: PointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
+    public onPointerDown: (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
     /** Callback called when a pointer up is detected  */
-    public onPointerUp: (evt: PointerEvent, pickInfo: Nullable<PickingInfo>, type: PointerEventTypes) => void;
+    public onPointerUp: (evt: IPointerEvent, pickInfo: Nullable<PickingInfo>, type: PointerEventTypes) => void;
     /** Callback called when a pointer pick is detected */
-    public onPointerPick: (evt: PointerEvent, pickInfo: PickingInfo) => void;
+    public onPointerPick: (evt: IPointerEvent, pickInfo: PickingInfo) => void;
 
     /**
      * This observable event is triggered when any ponter event is triggered. It is registered during Scene.attachControl() and it is called BEFORE the 3D engine process anything (mesh/sprite picking for instance).
@@ -793,7 +804,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
     /**
      * Sets the step Id used by deterministic lock step
-     * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
      * @param newStepId defines the step Id
      */
     public setStepId(newStepId: number): void {
@@ -802,7 +813,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
     /**
      * Gets the step Id used by deterministic lock step
-     * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
      * @returns the step Id
      */
     public getStepId(): number {
@@ -811,7 +822,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
     /**
      * Gets the internal step used by deterministic lock step
-     * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
      * @returns the internal step
      */
     public getInternalStep(): number {
@@ -823,7 +834,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     private _fogEnabled = true;
     /**
     * Gets or sets a boolean indicating if fog is enabled on this scene
-    * @see http://doc.babylonjs.com/babylon101/environment#fog
+    * @see https://doc.babylonjs.com/babylon101/environment#fog
     * (Default is true)
     */
     public set fogEnabled(value: boolean) {
@@ -840,7 +851,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     private _fogMode = Scene.FOGMODE_NONE;
     /**
     * Gets or sets the fog mode to use
-    * @see http://doc.babylonjs.com/babylon101/environment#fog
+    * @see https://doc.babylonjs.com/babylon101/environment#fog
     * | mode | value |
     * | --- | --- |
     * | FOGMODE_NONE | 0 |
@@ -861,28 +872,35 @@ export class Scene extends AbstractScene implements IAnimatable {
 
     /**
     * Gets or sets the fog color to use
-    * @see http://doc.babylonjs.com/babylon101/environment#fog
+    * @see https://doc.babylonjs.com/babylon101/environment#fog
     * (Default is Color3(0.2, 0.2, 0.3))
     */
     public fogColor = new Color3(0.2, 0.2, 0.3);
     /**
     * Gets or sets the fog density to use
-    * @see http://doc.babylonjs.com/babylon101/environment#fog
+    * @see https://doc.babylonjs.com/babylon101/environment#fog
     * (Default is 0.1)
     */
     public fogDensity = 0.1;
     /**
     * Gets or sets the fog start distance to use
-    * @see http://doc.babylonjs.com/babylon101/environment#fog
+    * @see https://doc.babylonjs.com/babylon101/environment#fog
     * (Default is 0)
     */
     public fogStart = 0;
     /**
     * Gets or sets the fog end distance to use
-    * @see http://doc.babylonjs.com/babylon101/environment#fog
+    * @see https://doc.babylonjs.com/babylon101/environment#fog
     * (Default is 1000)
     */
     public fogEnd = 1000.0;
+
+    /**
+    * Flag indicating that the frame buffer binding is handled by another component
+    */
+    public get prePass(): boolean {
+        return !!this.prePassRenderer && this.prePassRenderer.defaultRT.enabled;
+    }
 
     // Lights
     private _shadowsEnabled = true;
@@ -917,7 +935,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     }
 
     /** All of the active cameras added to this scene. */
-    public activeCameras = new Array<Camera>();
+    public activeCameras: Nullable<Camera[]> = new Array<Camera>();
 
     /** @hidden */
     public _activeCamera: Nullable<Camera>;
@@ -1012,7 +1030,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     // Collisions
     /**
     * Gets or sets a boolean indicating if collisions are enabled on this scene
-    * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
+    * @see https://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
     */
     public collisionsEnabled = true;
 
@@ -1030,7 +1048,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
     /**
      * Defines the gravity applied to this scene (used only for collisions)
-     * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
+     * @see https://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
      */
     public gravity = new Vector3(0, -9.807, 0);
 
@@ -1039,10 +1057,6 @@ export class Scene extends AbstractScene implements IAnimatable {
     * Gets or sets a boolean indicating if postprocesses are enabled on this scene
     */
     public postProcessesEnabled = true;
-    /**
-     * The list of postprocesses added to the scene
-     */
-    public postProcesses = new Array<PostProcess>();
     /**
      * Gets the current postprocess manager
      */
@@ -1083,13 +1097,13 @@ export class Scene extends AbstractScene implements IAnimatable {
     // Offline support
     /**
      * Gets or sets the current offline provider to use to store scene data
-     * @see http://doc.babylonjs.com/how_to/caching_resources_in_indexeddb
+     * @see https://doc.babylonjs.com/how_to/caching_resources_in_indexeddb
      */
     public offlineProvider: IOfflineProvider;
 
     /**
      * Gets or sets the action manager associated with the scene
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions
     */
     public actionManager: AbstractActionManager;
 
@@ -1173,7 +1187,8 @@ export class Scene extends AbstractScene implements IAnimatable {
 
     /** @hidden */
     public _viewMatrix: Matrix;
-    private _projectionMatrix: Matrix;
+    /** @hidden */
+    public _projectionMatrix: Matrix;
     /** @hidden */
     public _forcedViewPosition: Nullable<Vector3>;
 
@@ -1274,6 +1289,11 @@ export class Scene extends AbstractScene implements IAnimatable {
     public _beforeClearStage = Stage.Create<SimpleStageAction>();
     /**
      * @hidden
+     * Defines the actions happening before clear the canvas.
+     */
+    public _beforeRenderTargetClearStage = Stage.Create<RenderTargetStageAction>();
+    /**
+     * @hidden
      * Defines the actions when collecting render targets for the frame.
      */
     public _gatherRenderTargetsStage = Stage.Create<RenderTargetsStageAction>();
@@ -1301,7 +1321,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @hidden
      * Defines the actions happening during the active mesh stage.
      */
-    public _activeMeshStage = Stage.Create<ActiveMeshStageAction>();
+    public _preActiveMeshStage = Stage.Create<PreActiveMeshStageAction>();
     /**
      * @hidden
      * Defines the actions happening during the per camera render target step.
@@ -1373,6 +1393,8 @@ export class Scene extends AbstractScene implements IAnimatable {
      */
     private geometriesByUniqueId: Nullable<{ [uniqueId: string]: number | undefined }> = null;
 
+    private _renderBundles: Nullable<GPURenderBundle[]> = null;
+
     /**
      * Creates a new Scene
      * @param engine defines the engine to use to render this scene
@@ -1430,7 +1452,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     }
 
     /**
-     * Gets a string idenfifying the name of the class
+     * Gets a string identifying the name of the class
      * @returns "Scene" string
      */
     public getClassName(): string {
@@ -1560,7 +1582,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
     /**
      * Gets the performance counter for total vertices
-     * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation
+     * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation
      */
     public get totalVerticesPerfCounter(): PerfCounter {
         return this._totalVertices;
@@ -1576,7 +1598,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
     /**
      * Gets the performance counter for active indices
-     * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation
+     * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation
      */
     public get totalActiveIndicesPerfCounter(): PerfCounter {
         return this._activeIndices;
@@ -1592,7 +1614,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
     /**
      * Gets the performance counter for active particles
-     * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation
+     * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation
      */
     public get activeParticlesPerfCounter(): PerfCounter {
         return this._activeParticles;
@@ -1608,7 +1630,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
     /**
      * Gets the performance counter for active bones
-     * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation
+     * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation
      */
     public get activeBonesPerfCounter(): PerfCounter {
         return this._activeBones;
@@ -1652,9 +1674,11 @@ export class Scene extends AbstractScene implements IAnimatable {
     }
 
     private _createUbo(): void {
-        this._sceneUbo = new UniformBuffer(this._engine, undefined, true);
+        this._sceneUbo = new UniformBuffer(this._engine, undefined, false, "scene");
         this._sceneUbo.addUniform("viewProjection", 16);
         this._sceneUbo.addUniform("view", 16);
+        this._sceneUbo.addUniform("projection", 16);
+        this._sceneUbo.addUniform("vEyePosition", 4);
     }
 
     /**
@@ -1757,7 +1781,7 @@ export class Scene extends AbstractScene implements IAnimatable {
                 return false;
             }
 
-            let hardwareInstancedRendering = mesh.getClassName() === "InstancedMesh" || mesh.getClassName() === "InstancedLinesMesh" || engine.getCaps().instancedArrays && (<Mesh>mesh).instances.length > 0;
+            let hardwareInstancedRendering = mesh.hasThinInstances || mesh.getClassName() === "InstancedMesh" || mesh.getClassName() === "InstancedLinesMesh" || engine.getCaps().instancedArrays && (<Mesh>mesh).instances.length > 0;
             // Is Ready For Mesh
             for (let step of this._isReadyForMeshStage) {
                 if (!step.action(mesh, hardwareInstancedRendering)) {
@@ -2021,7 +2045,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         } else if (this._sceneUbo.useUbo) {
             this._sceneUbo.updateMatrix("viewProjection", this._transformMatrix);
             this._sceneUbo.updateMatrix("view", this._viewMatrix);
-            this._sceneUbo.update();
+            this._sceneUbo.updateMatrix("projection", this._projectionMatrix);
         }
     }
 
@@ -2210,10 +2234,12 @@ export class Scene extends AbstractScene implements IAnimatable {
             }
         }
         // Remove from activeCameras
-        var index2 = this.activeCameras.indexOf(toRemove);
-        if (index2 !== -1) {
-            // Remove from the scene if mesh found
-            this.activeCameras.splice(index2, 1);
+        if (this.activeCameras) {
+            var index2 = this.activeCameras.indexOf(toRemove);
+            if (index2 !== -1) {
+                // Remove from the scene if mesh found
+                this.activeCameras.splice(index2, 1);
+            }
         }
         // Reset the activeCamera
         if (this.activeCamera === toRemove) {
@@ -2286,6 +2312,9 @@ export class Scene extends AbstractScene implements IAnimatable {
         if (index !== -1) {
             this.multiMaterials.splice(index, 1);
         }
+
+        this.onMultiMaterialRemovedObservable.notifyObservers(toRemove);
+
         return index;
     }
 
@@ -2446,6 +2475,7 @@ export class Scene extends AbstractScene implements IAnimatable {
             return;
         }
         this.multiMaterials.push(newMultiMaterial);
+        this.onNewMultiMaterialAddedObservable.notifyObservers(newMultiMaterial);
     }
 
     /**
@@ -2522,11 +2552,11 @@ export class Scene extends AbstractScene implements IAnimatable {
         }
 
         if (this.activeCamera) {
-            this.activeCamera.detachControl(canvas);
+            this.activeCamera.detachControl();
         }
         this.activeCamera = newCamera;
         if (attachControl) {
-            newCamera.attachControl(canvas);
+            newCamera.attachControl();
         }
     }
 
@@ -2866,10 +2896,12 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         if (index !== this.geometries.length - 1) {
             const lastGeometry = this.geometries[this.geometries.length - 1];
-            this.geometries[index] = lastGeometry;
-            if (this.geometriesByUniqueId) {
-                this.geometriesByUniqueId[lastGeometry.uniqueId] = index;
-                this.geometriesByUniqueId[geometry.uniqueId] = undefined;
+            if (lastGeometry) {
+                this.geometries[index] = lastGeometry;
+                if (this.geometriesByUniqueId) {
+                    this.geometriesByUniqueId[lastGeometry.uniqueId] = index;
+                    this.geometriesByUniqueId[geometry.uniqueId] = undefined;
+                }
             }
         }
 
@@ -3228,6 +3260,21 @@ export class Scene extends AbstractScene implements IAnimatable {
     }
 
     /**
+     * Gets a post process using a given name (if many are found, this function will pick the first one)
+     * @param name defines the name to search for
+     * @return the found post process or null if not found at all.
+     */
+    public getPostProcessByName(name: string): Nullable<PostProcess> {
+        for (let postProcessIndex = 0; postProcessIndex < this.postProcesses.length; ++postProcessIndex) {
+            const postProcess = this.postProcesses[postProcessIndex];
+            if (postProcess.name === name) {
+                return postProcess;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Gets a boolean indicating if the given mesh is active
      * @param mesh defines the mesh to look for
      * @returns true if the mesh is in the active list
@@ -3417,17 +3464,21 @@ export class Scene extends AbstractScene implements IAnimatable {
      */
     public getCollidingSubMeshCandidates: (mesh: AbstractMesh, collider: Collider) => ISmartArrayLike<SubMesh>;
 
-    private _activeMeshesFrozen = false;
+    /** @hidden */
+    public _activeMeshesFrozen = false;
     private _skipEvaluateActiveMeshesCompletely = false;
 
     /**
      * Use this function to stop evaluating active meshes. The current list will be keep alive between frames
      * @param skipEvaluateActiveMeshes defines an optional boolean indicating that the evaluate active meshes step must be completely skipped
+     * @param onSuccess optional success callback
+     * @param onError optional error callback
      * @returns the current scene
      */
-    public freezeActiveMeshes(skipEvaluateActiveMeshes = false): Scene {
+    public freezeActiveMeshes(skipEvaluateActiveMeshes = false, onSuccess?: () => void, onError?: (message: string) => void): Scene {
         this.executeWhenReady(() => {
             if (!this.activeCamera) {
+                onError && onError('No active camera found');
                 return;
             }
 
@@ -3442,6 +3493,7 @@ export class Scene extends AbstractScene implements IAnimatable {
             for (var index = 0; index < this._activeMeshes.length; index++) {
                 this._activeMeshes.data[index]._freeze();
             }
+            onSuccess && onSuccess();
         });
         return this;
     }
@@ -3478,6 +3530,13 @@ export class Scene extends AbstractScene implements IAnimatable {
                 }
             }
 
+            if (this._activeParticleSystems) {
+                const psLength = this._activeParticleSystems.length;
+                for (let i = 0; i < psLength; i++) {
+                    this._activeParticleSystems.data[i].animate();
+                }
+            }
+
             return;
         }
 
@@ -3505,6 +3564,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         const len = meshes.length;
         for (let i = 0; i < len; i++) {
             const mesh = meshes.data[i];
+            mesh._internalAbstractMeshDataInfo._currentLODIsUpToDate = false;
             if (mesh.isBlocked) {
                 continue;
             }
@@ -3524,6 +3584,8 @@ export class Scene extends AbstractScene implements IAnimatable {
 
             // Switch to current LOD
             let meshToRender = this.customLODSelector ? this.customLODSelector(mesh, this.activeCamera) : mesh.getLOD(this.activeCamera);
+            mesh._internalAbstractMeshDataInfo._currentLOD = meshToRender;
+            mesh._internalAbstractMeshDataInfo._currentLODIsUpToDate = true;
             if (meshToRender === undefined || meshToRender === null) {
                 continue;
             }
@@ -3541,6 +3603,10 @@ export class Scene extends AbstractScene implements IAnimatable {
 
                 if (meshToRender !== mesh) {
                     meshToRender._activate(this._renderId, false);
+                }
+
+                for (let step of this._preActiveMeshStage) {
+                    step.action(mesh);
                 }
 
                 if (mesh._activate(this._renderId, false)) {
@@ -3591,10 +3657,6 @@ export class Scene extends AbstractScene implements IAnimatable {
             if (!mesh.computeBonesUsingShaders) {
                 this._softwareSkinnedMeshes.pushNoDuplicate(<Mesh>mesh);
             }
-        }
-
-        for (let step of this._activeMeshStage) {
-            step.action(sourceMesh, mesh);
         }
 
         if (
@@ -3699,9 +3761,9 @@ export class Scene extends AbstractScene implements IAnimatable {
             step.action(this._renderTargets);
         }
 
+        let needRebind = false;
         if (this.renderTargetsEnabled) {
             this._intermediateRendering = true;
-            let needRebind = false;
 
             if (this._renderTargets.length > 0) {
                 Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);
@@ -3729,18 +3791,17 @@ export class Scene extends AbstractScene implements IAnimatable {
             if (this.activeCamera && this.activeCamera.outputRenderTarget) {
                 needRebind = true;
             }
+        }
 
-            // Restore framebuffer after rendering to targets
-            if (needRebind) {
-                this._bindFrameBuffer();
-            }
-
+        // Restore framebuffer after rendering to targets
+        if (needRebind && !this.prePass) {
+            this._bindFrameBuffer();
         }
 
         this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
 
         // Prepare Frame
-        if (this.postProcessManager && !camera._multiviewTexture) {
+        if (this.postProcessManager && !camera._multiviewTexture && !this.prePass) {
             this.postProcessManager._prepareFrame();
         }
 
@@ -3751,6 +3812,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         // Render
         this.onBeforeDrawPhaseObservable.notifyObservers(this);
+
         this._renderingManager.render(null, null, true, true);
         this.onAfterDrawPhaseObservable.notifyObservers(this);
 
@@ -3761,7 +3823,9 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         // Finalize frame
         if (this.postProcessManager && !camera._multiviewTexture) {
-            this.postProcessManager._finalizeFrame(camera.isIntermediate);
+            // if the camera has an output render target, render the post process to the render target
+            const texture = camera.outputRenderTarget ? camera.outputRenderTarget.getInternalTexture()! : undefined;
+            this.postProcessManager._finalizeFrame(camera.isIntermediate, texture);
         }
 
         // Reset some special arrays
@@ -3953,7 +4017,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         // Update Cameras
         if (updateCameras) {
-            if (this.activeCameras.length > 0) {
+            if (this.activeCameras && this.activeCameras.length > 0) {
                 for (var cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
                     let camera = this.activeCameras[cameraIndex];
                     camera.update();
@@ -3978,9 +4042,43 @@ export class Scene extends AbstractScene implements IAnimatable {
         // Before render
         this.onBeforeRenderObservable.notifyObservers(this);
 
+        var engine = this.getEngine();
+        if (engine.isWebGPU) {
+            const webgpuEngine = (engine as WebGPUEngine);
+            if (this._activeMeshesFrozen) {
+                if (this.activeCameras?.length) {
+                    for (let cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
+                        const camera = this.activeCameras[cameraIndex];
+                        this.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix());
+                    }
+                }
+                else {
+                    const camera = this.activeCamera!;
+                    this.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix());
+                }
+
+                if (this._renderBundles) {
+                    webgpuEngine.executeBundles(this._renderBundles);
+                    return;
+                }
+
+                webgpuEngine.startRecordBundle();
+                webgpuEngine.onEndFrameObservable.addOnce(() => {
+                    this._renderBundles = [ webgpuEngine.stopRecordBundle() ];
+                    // TODO. WEBGPU. Frame lost.
+                    // webgpuEngine.executeBundles(this._renderBundles);
+                });
+            }
+            else {
+                if (this._renderBundles) {
+                    this._renderBundles = null;
+                }
+            }
+        }
+
         // Customs render targets
         this.onBeforeRenderTargetsRenderObservable.notifyObservers(this);
-        var engine = this.getEngine();
+
         var currentActiveCamera = this.activeCamera;
         if (this.renderTargetsEnabled) {
             Tools.StartPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
@@ -4012,7 +4110,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         // Restore back buffer
         this.activeCamera = currentActiveCamera;
-        if (this._activeCamera && this._activeCamera.cameraRigMode !== Camera.RIG_MODE_CUSTOM) {
+        if (this._activeCamera && this._activeCamera.cameraRigMode !== Camera.RIG_MODE_CUSTOM && !this.prePass) {
             this._bindFrameBuffer();
         }
         this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
@@ -4023,7 +4121,10 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         // Clear
         if (this.autoClearDepthAndStencil || this.autoClear) {
-            this._engine.clear(this.clearColor, this.autoClear || this.forceWireframe || this.forcePointsCloud, this.autoClearDepthAndStencil, this.autoClearDepthAndStencil);
+            this._engine.clear(this.clearColor,
+                this.autoClear || this.forceWireframe || this.forcePointsCloud,
+                this.autoClearDepthAndStencil,
+                this.autoClearDepthAndStencil);
         }
 
         // Collects render targets from external components.
@@ -4032,7 +4133,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         }
 
         // Multi-cameras?
-        if (this.activeCameras.length > 0) {
+        if (this.activeCameras && this.activeCameras.length > 0) {
             for (var cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
                 if (cameraIndex > 0) {
                     this._engine.clear(null, false, true, true);
@@ -4108,6 +4209,8 @@ export class Scene extends AbstractScene implements IAnimatable {
      * Releases all held ressources
      */
     public dispose(): void {
+        this._renderBundles = null;
+
         this.beforeRender = null;
         this.afterRender = null;
 
@@ -4121,7 +4224,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         this._isReadyForMeshStage.clear();
         this._beforeEvaluateActiveMeshStage.clear();
         this._evaluateSubMeshStage.clear();
-        this._activeMeshStage.clear();
+        this._preActiveMeshStage.clear();
         this._cameraDrawRenderTargetStage.clear();
         this._beforeCameraDrawStage.clear();
         this._beforeRenderTargetDrawStage.clear();
@@ -4211,7 +4314,9 @@ export class Scene extends AbstractScene implements IAnimatable {
         this.onNewSkeletonAddedObservable.clear();
         this.onSkeletonRemovedObservable.clear();
         this.onNewMaterialAddedObservable.clear();
+        this.onNewMultiMaterialAddedObservable.clear();
         this.onMaterialRemovedObservable.clear();
+        this.onMultiMaterialRemovedObservable.clear();
         this.onNewTextureAddedObservable.clear();
         this.onTextureRemovedObservable.clear();
         this.onPrePointerObservable.clear();
@@ -4228,7 +4333,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         if (canvas) {
             var index;
             for (index = 0; index < this.cameras.length; index++) {
-                this.cameras[index].detachControl(canvas);
+                this.cameras[index].detachControl();
             }
         }
 
@@ -4279,6 +4384,11 @@ export class Scene extends AbstractScene implements IAnimatable {
         // Release textures
         while (this.textures.length) {
             this.textures[0].dispose();
+        }
+
+        // Release morph targets
+        while (this.morphTargetManagers.length) {
+            this.morphTargetManagers[0].dispose();
         }
 
         // Release UBO
@@ -4504,9 +4614,10 @@ export class Scene extends AbstractScene implements IAnimatable {
     /**
      * Force the value of meshUnderPointer
      * @param mesh defines the mesh to use
+     * @param pointerId optional pointer id when using more than one pointer
      */
-    public setPointerOverMesh(mesh: Nullable<AbstractMesh>): void {
-        this._inputManager.setPointerOverMesh(mesh);
+    public setPointerOverMesh(mesh: Nullable<AbstractMesh>, pointerId?: number): void {
+        this._inputManager.setPointerOverMesh(mesh, pointerId);
     }
 
     /**
@@ -4610,6 +4721,16 @@ export class Scene extends AbstractScene implements IAnimatable {
      */
     public getMaterialByTags(tagsQuery: string, forEach?: (material: Material) => void): Material[] {
         return this._getByTags(this.materials, tagsQuery, forEach).concat(this._getByTags(this.multiMaterials, tagsQuery, forEach));
+    }
+
+    /**
+     * Get a list of transform nodes by tags
+     * @param tagsQuery defines the tags query to use
+     * @param forEach defines a predicate used to filter results
+     * @returns an array of TransformNode
+     */
+    public getTransformNodesByTags(tagsQuery: string, forEach?: (transform: TransformNode) => void): TransformNode[] {
+        return this._getByTags(this.transformNodes, tagsQuery, forEach);
     }
 
     /**

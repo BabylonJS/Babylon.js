@@ -427,13 +427,22 @@ describe('Babylon Scene Loader', function() {
 
             BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader: BABYLON.GLTFFileLoader) => {
                 loader.useRangeRequests = true;
-                promises.push(loader.whenCompleteAsync());
+                loader.onExtensionLoadedObservable.add((extension) => {
+                    if (extension instanceof BABYLON.GLTF2.Loader.Extensions.MSFT_lod) {
+                        extension.onMaterialLODsLoadedObservable.add((indexLOD) => {
+                            expect(setRequestHeaderCalls, "setRequestHeaderCalls").to.have.ordered.members(expectedSetRequestHeaderCalls.slice(0, 3 + indexLOD));
+                        });
+                    }
+                });
+                promises.push(loader.whenCompleteAsync().then(() => {
+                    expect(setRequestHeaderCalls, "setRequestHeaderCalls").to.have.ordered.members(expectedSetRequestHeaderCalls);
+                    setRequestHeaderStub.restore();
+                    getResponseHeaderStub.restore();
+                }));
             });
 
             promises.push(BABYLON.SceneLoader.AppendAsync("/Playground/scenes/", "LevelOfDetail.glb", scene).then(() => {
-                expect(setRequestHeaderCalls, "setRequestHeaderCalls").to.have.ordered.members(expectedSetRequestHeaderCalls);
-                setRequestHeaderStub.restore();
-                getResponseHeaderStub.restore();
+                expect(setRequestHeaderCalls, "setRequestHeaderCalls").to.have.ordered.members(expectedSetRequestHeaderCalls.slice(0, 3));
             }));
 
             return Promise.all(promises);
@@ -677,5 +686,39 @@ describe('Babylon Scene Loader', function() {
             expect(scene.meshes.length).to.eq(0);
             expect(scene.lights.length).to.eq(0);
         });
+    });
+
+    describe('#ArgumentPermutations', () => {
+        it('Typical', () => {
+            return BABYLON.SceneLoader.LoadAsync("/Playground/scenes/Box/", "Box.gltf");
+        });
+
+        it('Single url', () => {
+            return BABYLON.SceneLoader.LoadAsync("/Playground/scenes/Box/Box.gltf");
+        });
+
+        it('Direct load', () => {
+            return BABYLON.Tools.LoadFileAsync("/Playground/scenes/Box/Box.gltf", false).then((gltf) => {
+                return BABYLON.SceneLoader.LoadAsync("/Playground/scenes/Box/", `data:${gltf}`);
+            });
+        });
+
+        it('File object', () => {
+            BABYLON.Tools.LoadFileAsync("/Playground/scenes/Box/Box.gltf").then((gltf) => {
+                return BABYLON.SceneLoader.LoadAsync("/Playground/scenes/Box/", new File([gltf], "Box.gltf"));
+            });
+        });
+
+        it('Files input', () => {
+            return Promise.all([
+                BABYLON.Tools.LoadFileAsync("/Playground/scenes/Box/Box.gltf", true),
+                BABYLON.Tools.LoadFileAsync("/Playground/scenes/Box/Box.bin", true)
+            ]).then(([gltf, bin]: [ArrayBuffer, ArrayBuffer]) => {
+                BABYLON.FilesInput.FilesToLoad["box.gltf"] = new File([gltf], "Box.gltf");
+                BABYLON.FilesInput.FilesToLoad["box.bin"] = new File([bin], "Box.bin");
+                return BABYLON.SceneLoader.LoadAsync("file:", "Box.gltf");
+            });
+        });
+
     });
 });

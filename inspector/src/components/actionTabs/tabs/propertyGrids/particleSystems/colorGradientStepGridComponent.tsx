@@ -3,11 +3,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { GlobalState } from '../../../../globalState';
 import { ColorGradient, Color3Gradient } from 'babylonjs/Misc/gradients';
-import { LockObject } from '../lockObject';
+import { LockObject } from '../../../../../sharedUiComponents/tabs/propertyGrids/lockObject';
 import { Color3, Color4 } from 'babylonjs/Maths/math.color';
 import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
 import { ParticleSystem } from 'babylonjs/Particles/particleSystem';
-import { ColorPickerLineComponent } from '../../../lines/colorPickerComponent';
+import { ColorPickerLineComponent } from '../../../../../sharedUiComponents/lines/colorPickerComponent';
 
 interface IColorGradientStepGridComponent {
     globalState: GlobalState;
@@ -33,18 +33,8 @@ export class ColorGradientStepGridComponent extends React.Component<IColorGradie
     updateColor1(color: string) {
         if (this.props.gradient instanceof ColorGradient) {
             this.props.gradient.color1 = Color4.FromHexString(color);
-            
-            this.props.globalState.onCodeChangedObservable.notifyObservers({
-                object: this.props.host,
-                code: `TARGET.${this.props.codeRecorderPropertyName}.color1 = BABYLON.Color4.FromHexString(${color});`
-            });              
         } else {
             this.props.gradient.color = Color3.FromHexString(color);
-
-            this.props.globalState.onCodeChangedObservable.notifyObservers({
-                object: this.props.host,
-                code: `TARGET.${this.props.codeRecorderPropertyName}.color = BABYLON.Color3.FromHexString(${color});`
-            });              
         }
 
         this.props.onUpdateGradient();
@@ -54,11 +44,6 @@ export class ColorGradientStepGridComponent extends React.Component<IColorGradie
     updateColor2(color: string) {
         if (this.props.gradient instanceof ColorGradient) {
             this.props.gradient.color2 = Color4.FromHexString(color);
-
-            this.props.globalState.onCodeChangedObservable.notifyObservers({
-                object: this.props.host,
-                code: `TARGET.${this.props.codeRecorderPropertyName}.color2 = BABYLON.Color4.FromHexString(${color});`
-            });              
         }
 
         this.props.onUpdateGradient();
@@ -69,11 +54,6 @@ export class ColorGradientStepGridComponent extends React.Component<IColorGradie
         this.props.gradient.gradient = gradient;
 
         this.setState({gradient: gradient});
-
-        this.props.globalState.onCodeChangedObservable.notifyObservers({
-            object: this.props.host,
-            code: `TARGET.${this.props.codeRecorderPropertyName}.gradient = ${gradient};`
-        });         
 
         this.props.onUpdateGradient();
     }
@@ -105,7 +85,7 @@ export class ColorGradientStepGridComponent extends React.Component<IColorGradie
                 <div className="color1">
                     <ColorPickerLineComponent value={gradient instanceof Color3Gradient ? gradient.color : gradient.color1} onColorChanged={color => {
                         this.updateColor1(color);
-                    }} disableAlpha={gradient instanceof Color3Gradient}/>
+                    }}/>
                 </div>
                 {
                     this.props.host instanceof ParticleSystem && gradient instanceof ColorGradient &&

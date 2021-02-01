@@ -1,8 +1,7 @@
 import { Observable } from "../Misc/observable";
-import { Nullable, IndicesArray, DataArray } from "../types";
+import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { InternalTexture } from "../Materials/Textures/internalTexture";
-import { IAudioEngine } from "../Audio/audioEngine";
 import { IOfflineProvider } from "../Offline/IOfflineProvider";
 import { ILoadingScreen } from "../Loading/loadingScreen";
 import { DomManagement } from "../Misc/domManagement";
@@ -22,6 +21,10 @@ import { WebGLDataBuffer } from '../Meshes/WebGL/webGLDataBuffer';
 import { Logger } from '../Misc/logger';
 
 import "./Extensions/engine.alpha";
+import "./Extensions/engine.readTexture";
+import "./Extensions/engine.dynamicBuffer";
+import { IAudioEngine } from '../Audio/Interfaces/IAudioEngine';
+import { IPointerEvent } from "../Events/deviceInputEvents";
 
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
@@ -81,13 +84,13 @@ export class Engine extends ThinEngine {
      */
     public static readonly ALPHA_SCREENMODE = Constants.ALPHA_SCREENMODE;
 
-    /** Defines that the ressource is not delayed*/
+    /** Defines that the resource is not delayed*/
     public static readonly DELAYLOADSTATE_NONE = Constants.DELAYLOADSTATE_NONE;
-    /** Defines that the ressource was successfully delay loaded */
+    /** Defines that the resource was successfully delay loaded */
     public static readonly DELAYLOADSTATE_LOADED = Constants.DELAYLOADSTATE_LOADED;
-    /** Defines that the ressource is currently delay loading */
+    /** Defines that the resource is currently delay loading */
     public static readonly DELAYLOADSTATE_LOADING = Constants.DELAYLOADSTATE_LOADING;
-    /** Defines that the ressource is delayed and has not started loading */
+    /** Defines that the resource is delayed and has not started loading */
     public static readonly DELAYLOADSTATE_NOTLOADED = Constants.DELAYLOADSTATE_NOTLOADED;
 
     // Depht or Stencil test Constants.
@@ -193,7 +196,7 @@ export class Engine extends ThinEngine {
     /** FLOAT_32_UNSIGNED_INT_24_8_REV */
     public static readonly TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV = Constants.TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV;
 
-    /** nearest is mag = nearest and min = nearest and mip = linear */
+    /** nearest is mag = nearest and min = nearest and mip = none */
     public static readonly TEXTURE_NEAREST_SAMPLINGMODE = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
     /** Bilinear is mag = linear and min = linear and mip = nearest */
     public static readonly TEXTURE_BILINEAR_SAMPLINGMODE = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
@@ -304,7 +307,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Method called to create the default loading screen.
-     * This can be overriden in your own app.
+     * This can be overridden in your own app.
      * @param canvas The rendering canvas element
      * @returns The loading screen
      */
@@ -369,7 +372,7 @@ export class Engine extends ThinEngine {
     /**
      * Observable event triggered each time the canvas receives pointerout event
      */
-    public onCanvasPointerOutObservable = new Observable<PointerEvent>();
+    public onCanvasPointerOutObservable = new Observable<IPointerEvent>();
 
     /**
      * Observable raised when the engine begins a new frame
@@ -392,13 +395,13 @@ export class Engine extends ThinEngine {
     public onBeforeShaderCompilationObservable = new Observable<Engine>();
 
     /**
-     * Observable raised when the engine has jsut compiled a shader
+     * Observable raised when the engine has just compiled a shader
      */
     public onAfterShaderCompilationObservable = new Observable<Engine>();
 
     /**
      * Gets the audio engine
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
      * @ignorenaming
      */
     public static audioEngine: IAudioEngine;
@@ -417,13 +420,12 @@ export class Engine extends ThinEngine {
 
     private _loadingScreen: ILoadingScreen;
     private _pointerLockRequested: boolean;
-    private _dummyFramebuffer: WebGLFramebuffer;
     private _rescalePostProcess: PostProcess;
 
     // Deterministic lockstepMaxSteps
-    private _deterministicLockstep: boolean = false;
-    private _lockstepMaxSteps: number = 4;
-    private _timeStep: number = 1 / 60;
+    protected _deterministicLockstep: boolean = false;
+    protected _lockstepMaxSteps: number = 4;
+    protected _timeStep: number = 1 / 60;
 
     protected get _supportsHardwareTextureRescaling() {
         return !!Engine._RescalePostProcessFactory;
@@ -447,7 +449,7 @@ export class Engine extends ThinEngine {
     private _performanceMonitor = new PerformanceMonitor();
     /**
      * Gets the performance monitor attached to this engine
-     * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#engineinstrumentation
+     * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#engineinstrumentation
      */
     public get performanceMonitor(): PerformanceMonitor {
         return this._performanceMonitor;
@@ -475,7 +477,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Creates a new engine
-     * @param canvasOrContext defines the canvas or WebGL context to use for rendering. If you provide a WebGL context, Babylon.js will not hook events on the canvas (like pointers, keyboards, etc...) so no event observables will be available. This is mostly used when Babylon.js is used as a plugin on a system which alreay used the WebGL context
+     * @param canvasOrContext defines the canvas or WebGL context to use for rendering. If you provide a WebGL context, Babylon.js will not hook events on the canvas (like pointers, keyboards, etc...) so no event observables will be available. This is mostly used when Babylon.js is used as a plugin on a system which already used the WebGL context
      * @param antialias defines enable antialiasing (default: false)
      * @param options defines further options to be sent to the getContext() function
      * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
@@ -483,58 +485,24 @@ export class Engine extends ThinEngine {
     constructor(canvasOrContext: Nullable<HTMLCanvasElement | WebGLRenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio: boolean = false) {
         super(canvasOrContext, antialias, options, adaptToDeviceRatio);
 
+        Engine.Instances.push(this);
+
         if (!canvasOrContext) {
             return;
         }
 
         options = this._creationOptions;
 
-        Engine.Instances.push(this);
-
         if ((<any>canvasOrContext).getContext) {
             let canvas = <HTMLCanvasElement>canvasOrContext;
 
-            this._onCanvasFocus = () => {
-                this.onCanvasFocusObservable.notifyObservers(this);
-            };
-
-            this._onCanvasBlur = () => {
-                this.onCanvasBlurObservable.notifyObservers(this);
-            };
-
-            canvas.addEventListener("focus", this._onCanvasFocus);
-            canvas.addEventListener("blur", this._onCanvasBlur);
-
-            this._onBlur = () => {
-                if (this.disablePerformanceMonitorInBackground) {
-                    this._performanceMonitor.disable();
-                }
-                this._windowIsBackground = true;
-            };
-
-            this._onFocus = () => {
-                if (this.disablePerformanceMonitorInBackground) {
-                    this._performanceMonitor.enable();
-                }
-                this._windowIsBackground = false;
-            };
-
-            this._onCanvasPointerOut = (ev) => {
-                this.onCanvasPointerOutObservable.notifyObservers(ev);
-            };
-
-            canvas.addEventListener("pointerout", this._onCanvasPointerOut);
+            this._sharedInit(canvas, !!options.doNotHandleTouchAction, options.audioEngine!);
 
             if (DomManagement.IsWindowObjectExist()) {
-                let hostWindow = this.getHostWindow()!;
-                hostWindow.addEventListener("blur", this._onBlur);
-                hostWindow.addEventListener("focus", this._onFocus);
-
-                let anyDoc = document as any;
+                const anyDoc = document as any;
 
                 // Fullscreen
                 this._onFullscreenChange = () => {
-
                     if (anyDoc.fullscreen !== undefined) {
                         this.isFullscreen = anyDoc.fullscreen;
                     } else if (anyDoc.mozFullScreen !== undefined) {
@@ -580,10 +548,6 @@ export class Engine extends ThinEngine {
 
             this.enableOfflineSupport = Engine.OfflineProviderFactory !== undefined;
 
-            if (!options.doNotHandleTouchAction) {
-                this._disableTouchAction();
-            }
-
             this._deterministicLockstep = !!options.deterministicLockstep;
             this._lockstepMaxSteps = options.lockstepMaxSteps || 0;
             this._timeStep = options.timeStep || 1 / 60;
@@ -594,6 +558,64 @@ export class Engine extends ThinEngine {
         this._prepareVRComponent();
         if (options.autoEnableWebVR) {
             this.initWebVR();
+        }
+    }
+
+    /**
+     * Shared initialization across engines types.
+     * @param canvas The canvas associated with this instance of the engine.
+     * @param doNotHandleTouchAction Defines that engine should ignore modifying touch action attribute and style
+     * @param audioEngine Defines if an audio engine should be created by default
+     */
+    protected _sharedInit(canvas: HTMLCanvasElement, doNotHandleTouchAction: boolean, audioEngine: boolean) {
+        super._sharedInit(canvas, doNotHandleTouchAction, audioEngine);
+
+        this._onCanvasFocus = () => {
+            this.onCanvasFocusObservable.notifyObservers(this);
+        };
+
+        this._onCanvasBlur = () => {
+            this.onCanvasBlurObservable.notifyObservers(this);
+        };
+
+        canvas.addEventListener("focus", this._onCanvasFocus);
+        canvas.addEventListener("blur", this._onCanvasBlur);
+
+        this._onBlur = () => {
+            if (this.disablePerformanceMonitorInBackground) {
+                this._performanceMonitor.disable();
+            }
+            this._windowIsBackground = true;
+        };
+
+        this._onFocus = () => {
+            if (this.disablePerformanceMonitorInBackground) {
+                this._performanceMonitor.enable();
+            }
+            this._windowIsBackground = false;
+        };
+
+        this._onCanvasPointerOut = (ev) => {
+            this.onCanvasPointerOutObservable.notifyObservers(ev);
+        };
+
+        if (DomManagement.IsWindowObjectExist()) {
+            const hostWindow = this.getHostWindow();
+            if (hostWindow) {
+                hostWindow.addEventListener("blur", this._onBlur);
+                hostWindow.addEventListener("focus", this._onFocus);
+            }
+        }
+
+        canvas.addEventListener("pointerout", this._onCanvasPointerOut);
+
+        if (!doNotHandleTouchAction) {
+            this._disableTouchAction();
+        }
+
+        // Create Audio Engine if needed.
+        if (!Engine.audioEngine && audioEngine && Engine.AudioEngineFactory) {
+            Engine.audioEngine = Engine.AudioEngineFactory(this.getRenderingCanvas());
         }
     }
 
@@ -618,7 +640,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Gets the client rect of the HTML canvas attached with the current webGL context
-     * @returns a client rectanglee
+     * @returns a client rectangle
      */
     public getRenderingCanvasClientRect(): Nullable<ClientRect> {
         if (!this._renderingCanvas) {
@@ -629,7 +651,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Gets the client rect of the HTML element used for events
-     * @returns a client rectanglee
+     * @returns a client rectangle
      */
     public getInputElementClientRect(): Nullable<ClientRect> {
         if (!this._renderingCanvas) {
@@ -640,7 +662,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Gets a boolean indicating that the engine is running in deterministic lock step mode
-     * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
      * @returns true if engine is in deterministic lock step mode
      */
     public isDeterministicLockStep(): boolean {
@@ -649,7 +671,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Gets the max steps when engine is running in deterministic lock step
-     * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
      * @returns the max steps
      */
     public getLockstepMaxSteps(): number {
@@ -725,6 +747,14 @@ export class Engine extends ThinEngine {
      */
     public getZOffset(): number {
         return this._depthCullingState.zOffset;
+    }
+
+    /**
+     * Gets a boolean indicating if depth testing is enabled
+     * @returns the current state
+     */
+    public getDepthBuffer(): boolean {
+        return this._depthCullingState.depthTest;
     }
 
     /**
@@ -923,28 +953,28 @@ export class Engine extends ThinEngine {
      * Sets the current depth function to GREATER
      */
     public setDepthFunctionToGreater(): void {
-        this._depthCullingState.depthFunc = this._gl.GREATER;
+        this._depthCullingState.depthFunc = Constants.GREATER;
     }
 
     /**
      * Sets the current depth function to GEQUAL
      */
     public setDepthFunctionToGreaterOrEqual(): void {
-        this._depthCullingState.depthFunc = this._gl.GEQUAL;
+        this._depthCullingState.depthFunc = Constants.GEQUAL;
     }
 
     /**
      * Sets the current depth function to LESS
      */
     public setDepthFunctionToLess(): void {
-        this._depthCullingState.depthFunc = this._gl.LESS;
+        this._depthCullingState.depthFunc = Constants.LESS;
     }
 
     /**
      * Sets the current depth function to LEQUAL
      */
     public setDepthFunctionToLessOrEqual(): void {
-        this._depthCullingState.depthFunc = this._gl.LEQUAL;
+        this._depthCullingState.depthFunc = Constants.LEQUAL;
     }
 
     private _cachedStencilBuffer: boolean;
@@ -1066,7 +1096,7 @@ export class Engine extends ThinEngine {
     /**
      * Call this function to leave webVR mode
      * Will do nothing if webVR is not supported or if there is no webVR device
-     * @see http://doc.babylonjs.com/how_to/webvr_camera
+     * @see https://doc.babylonjs.com/how_to/webvr_camera
      */
     public disableVR() {
         // Do nothing as the engine side effect will overload it
@@ -1131,8 +1161,9 @@ export class Engine extends ThinEngine {
      * @param channel The texture channel
      * @param uniform The uniform to set
      * @param texture The render target texture containing the depth stencil texture to apply
+     * @param name The texture name
      */
-    public setDepthStencilTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<RenderTargetTexture>): void {
+    public setDepthStencilTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<RenderTargetTexture>, name?: string): void {
         if (channel === undefined) {
             return;
         }
@@ -1142,10 +1173,10 @@ export class Engine extends ThinEngine {
         }
 
         if (!texture || !texture.depthStencilTexture) {
-            this._setTexture(channel, null);
+            this._setTexture(channel, null, undefined, undefined, name);
         }
         else {
-            this._setTexture(channel, texture, false, true);
+            this._setTexture(channel, texture, false, true, name);
         }
     }
 
@@ -1153,18 +1184,29 @@ export class Engine extends ThinEngine {
      * Sets a texture to the webGL context from a postprocess
      * @param channel defines the channel to use
      * @param postProcess defines the source postprocess
+     * @param name name of the channel
      */
-    public setTextureFromPostProcess(channel: number, postProcess: Nullable<PostProcess>): void {
-        this._bindTexture(channel, postProcess ? postProcess._textures.data[postProcess._currentRenderTextureInd] : null);
+    public setTextureFromPostProcess(channel: number, postProcess: Nullable<PostProcess>, name: string): void {
+        let postProcessInput = null;
+        if (postProcess) {
+            if (postProcess._textures.data[postProcess._currentRenderTextureInd]) {
+                postProcessInput = postProcess._textures.data[postProcess._currentRenderTextureInd];
+            } else if (postProcess._forcedOutputTexture) {
+                postProcessInput = postProcess._forcedOutputTexture;
+            }
+        }
+
+        this._bindTexture(channel, postProcessInput, name);
     }
 
     /**
      * Binds the output of the passed in post process to the texture channel specified
      * @param channel The channel the texture should be bound to
      * @param postProcess The post process which's output should be bound
+     * @param name name of the channel
      */
-    public setTextureFromPostProcessOutput(channel: number, postProcess: Nullable<PostProcess>): void {
-        this._bindTexture(channel, postProcess ? postProcess._outputTexture : null);
+    public setTextureFromPostProcessOutput(channel: number, postProcess: Nullable<PostProcess>, name: string): void {
+        this._bindTexture(channel, postProcess ? postProcess._outputTexture : null, name);
     }
 
     protected _rebuildBuffers(): void {
@@ -1290,7 +1332,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Enf the current frame
+     * End the current frame
      */
     public endFrame(): void {
         super.endFrame();
@@ -1299,26 +1341,34 @@ export class Engine extends ThinEngine {
         this.onEndFrameObservable.notifyObservers(this);
     }
 
-    public resize(): void {
+    /**
+     * Resize the view according to the canvas' size
+     * @param forceSetSize true to force setting the sizes of the underlying canvas
+     */
+    public resize(forceSetSize = false): void {
         // We're not resizing the size of the canvas while in VR mode & presenting
         if (this.isVRPresenting()) {
             return;
         }
 
-        super.resize();
+        super.resize(forceSetSize);
     }
 
     /**
      * Force a specific size of the canvas
      * @param width defines the new canvas' width
      * @param height defines the new canvas' height
+     * @param forceSetSize true to force setting the sizes of the underlying canvas
+     * @returns true if the size was changed
      */
-    public setSize(width: number, height: number): void {
+    public setSize(width: number, height: number, forceSetSize = false): boolean {
         if (!this._renderingCanvas) {
-            return;
+            return false;
         }
 
-        super.setSize(width, height);
+        if (!super.setSize(width, height, forceSetSize)) {
+            return false;
+        }
 
         if (this.scenes) {
             for (var index = 0; index < this.scenes.length; index++) {
@@ -1331,49 +1381,12 @@ export class Engine extends ThinEngine {
                 }
             }
 
-            if (this.onResizeObservable.hasObservers) {
+            if (this.onResizeObservable.hasObservers()) {
                 this.onResizeObservable.notifyObservers(this);
             }
         }
-    }
 
-    /**
-     * Updates a dynamic vertex buffer.
-     * @param vertexBuffer the vertex buffer to update
-     * @param data the data used to update the vertex buffer
-     * @param byteOffset the byte offset of the data
-     * @param byteLength the byte length of the data
-     */
-    public updateDynamicVertexBuffer(vertexBuffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void {
-        this.bindArrayBuffer(vertexBuffer);
-
-        if (byteOffset === undefined) {
-            byteOffset = 0;
-        }
-
-        const dataLength = (data as number[]).length || (data as ArrayBuffer).byteLength;
-
-        if (byteLength === undefined || byteLength >= dataLength && byteOffset === 0) {
-            if (data instanceof Array) {
-                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, byteOffset, new Float32Array(data));
-            } else {
-                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, byteOffset, <ArrayBuffer>data);
-            }
-        } else {
-            if (data instanceof Array) {
-                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(data).subarray(byteOffset, byteOffset + byteLength));
-            } else {
-                if (data instanceof ArrayBuffer) {
-                    data = new Uint8Array(data, byteOffset, byteLength);
-                } else {
-                    data = new Uint8Array(data.buffer, data.byteOffset + byteOffset, byteLength);
-                }
-
-                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, <ArrayBuffer>data);
-            }
-        }
-
-        this._resetVertexBufferBinding();
+        return true;
     }
 
     public _deletePipelineContext(pipelineContext: IPipelineContext): void {
@@ -1459,7 +1472,7 @@ export class Engine extends ThinEngine {
     /**
      * @hidden
      * Rescales a texture
-     * @param source input texutre
+     * @param source input texture
      * @param destination destination texture
      * @param scene scene to use to render the resize
      * @param internalFormat format to use when resizing
@@ -1558,31 +1571,8 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Update a dynamic index buffer
-     * @param indexBuffer defines the target index buffer
-     * @param indices defines the data to update
-     * @param offset defines the offset in the target index buffer where update should start
-     */
-    public updateDynamicIndexBuffer(indexBuffer: DataBuffer, indices: IndicesArray, offset: number = 0): void {
-        // Force cache update
-        this._currentBoundBuffer[this._gl.ELEMENT_ARRAY_BUFFER] = null;
-        this.bindIndexBuffer(indexBuffer);
-        var arrayBuffer;
-
-        if (indices instanceof Uint16Array || indices instanceof Uint32Array) {
-            arrayBuffer = indices;
-        } else {
-            arrayBuffer = indexBuffer.is32Bits ? new Uint32Array(indices) : new Uint16Array(indices);
-        }
-
-        this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, arrayBuffer, this._gl.DYNAMIC_DRAW);
-
-        this._resetIndexBufferBinding();
-    }
-
-    /**
      * Updates the sample count of a render target texture
-     * @see http://doc.babylonjs.com/features/webgl2#multisample-render-targets
+     * @see https://doc.babylonjs.com/features/webgl2#multisample-render-targets
      * @param texture defines the texture to update
      * @param samples defines the sample count to set
      * @returns the effective sample count (could be 0 if multisample render targets are not supported)
@@ -1697,7 +1687,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Creates a webGL buffer to use with instanciation
+     * Creates a webGL buffer to use with instantiation
      * @param capacity defines the size of the buffer
      * @returns the webGL buffer
      */
@@ -1717,14 +1707,14 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Delete a webGL buffer used with instanciation
+     * Delete a webGL buffer used with instantiation
      * @param buffer defines the webGL buffer to delete
      */
     public deleteInstancesBuffer(buffer: WebGLBuffer): void {
         this._gl.deleteBuffer(buffer);
     }
 
-    private _clientWaitAsync(sync: WebGLSync, flags = 0, interval_ms = 10) {
+    private _clientWaitAsync(sync: WebGLSync, flags = 0, interval_ms = 10): Promise<void> {
         let gl = <WebGL2RenderingContext>(this._gl as any);
         return new Promise((resolve, reject) => {
             let check = () => {
@@ -1776,49 +1766,6 @@ export class Engine extends ThinEngine {
         });
     }
 
-    /** @hidden */
-    public _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer: Nullable<ArrayBufferView> = null): ArrayBufferView {
-        let gl = this._gl;
-        if (!this._dummyFramebuffer) {
-            let dummy = gl.createFramebuffer();
-
-            if (!dummy) {
-                throw new Error("Unable to create dummy framebuffer");
-            }
-
-            this._dummyFramebuffer = dummy;
-        }
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this._dummyFramebuffer);
-
-        if (faceIndex > -1) {
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture._webGLTexture, level);
-        } else {
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture._webGLTexture, level);
-        }
-
-        let readType = (texture.type !== undefined) ? this._getWebGLTextureType(texture.type) : gl.UNSIGNED_BYTE;
-
-        switch (readType) {
-            case gl.UNSIGNED_BYTE:
-                if (!buffer) {
-                    buffer = new Uint8Array(4 * width * height);
-                }
-                readType = gl.UNSIGNED_BYTE;
-                break;
-            default:
-                if (!buffer) {
-                    buffer = new Float32Array(4 * width * height);
-                }
-                readType = gl.FLOAT;
-                break;
-        }
-
-        gl.readPixels(0, 0, width, height, gl.RGBA, readType, <DataView>buffer);
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this._currentFramebuffer);
-
-        return buffer;
-    }
-
     public dispose(): void {
         this.hideLoadingUI();
 
@@ -1842,10 +1789,6 @@ export class Engine extends ThinEngine {
         // Release audio engine
         if (Engine.Instances.length === 1 && Engine.audioEngine) {
             Engine.audioEngine.dispose();
-        }
-
-        if (this._dummyFramebuffer) {
-            this._gl.deleteFramebuffer(this._dummyFramebuffer);
         }
 
         //WebVR
@@ -1899,14 +1842,14 @@ export class Engine extends ThinEngine {
 
         this._renderingCanvas.setAttribute("touch-action", "none");
         this._renderingCanvas.style.touchAction = "none";
-        this._renderingCanvas.style.msTouchAction = "none";
+        (this._renderingCanvas.style as any).msTouchAction = "none";
     }
 
     // Loading screen
 
     /**
      * Display the loading screen
-     * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+     * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
      */
     public displayLoadingUI(): void {
         if (!DomManagement.IsWindowObjectExist()) {
@@ -1920,7 +1863,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Hide the loading screen
-     * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+     * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
      */
     public hideLoadingUI(): void {
         if (!DomManagement.IsWindowObjectExist()) {
@@ -1934,7 +1877,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Gets the current loading screen object
-     * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+     * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
      */
     public get loadingScreen(): ILoadingScreen {
         if (!this._loadingScreen && this._renderingCanvas) {
@@ -1945,7 +1888,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Sets the current loading screen object
-     * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+     * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
      */
     public set loadingScreen(loadingScreen: ILoadingScreen) {
         this._loadingScreen = loadingScreen;
@@ -1953,7 +1896,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Sets the current loading screen text
-     * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+     * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
      */
     public set loadingUIText(text: string) {
         this.loadingScreen.loadingUIText = text;
@@ -1961,7 +1904,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Sets the current loading screen background color
-     * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+     * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
      */
     public set loadingUIBackgroundColor(color: string) {
         this.loadingScreen.loadingUIBackgroundColor = color;

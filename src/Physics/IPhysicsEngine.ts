@@ -69,7 +69,7 @@ export interface IPhysicsEnginePlugin {
 
 /**
  * Interface used to define a physics engine
- * @see http://doc.babylonjs.com/how_to/using_the_physics_engine
+ * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
  */
 export interface IPhysicsEngine {
     /**
@@ -189,7 +189,7 @@ export interface IPhysicsEngine {
 
     /**
      * Called by the scene. No need to call it.
-     * @param delta defines the timespam between frames
+     * @param delta defines the timespan between frames
      */
     _step(delta: number): void;
 }

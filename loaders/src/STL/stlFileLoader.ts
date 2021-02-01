@@ -16,7 +16,8 @@ import { Scene } from "babylonjs/scene";
 export class STLFileLoader implements ISceneLoaderPlugin {
 
     /** @hidden */
-    public solidPattern = /solid (\S*)([\S\s]*)endsolid[ ]*(\S*)/g;
+    public solidPattern = /solid (\S*)([\S\s]*?)endsolid[ ]*(\S*)/g;
+
     /** @hidden */
     public facetsPattern = /facet([\s\S]*?)endfacet/g;
     /** @hidden */

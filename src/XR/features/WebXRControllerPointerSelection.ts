@@ -1,22 +1,26 @@
 import { WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
-import { WebXRSessionManager } from '../webXRSessionManager';
-import { AbstractMesh } from '../../Meshes/abstractMesh';
-import { Observer } from '../../Misc/observable';
-import { WebXRInput } from '../webXRInput';
-import { WebXRInputSource } from '../webXRInputSource';
-import { Scene } from '../../scene';
-import { WebXRControllerComponent } from '../motionController/webXRControllerComponent';
-import { Nullable } from '../../types';
-import { Vector3 } from '../../Maths/math.vector';
-import { Color3 } from '../../Maths/math.color';
-import { Axis } from '../../Maths/math.axis';
-import { StandardMaterial } from '../../Materials/standardMaterial';
-import { CylinderBuilder } from '../../Meshes/Builders/cylinderBuilder';
-import { TorusBuilder } from '../../Meshes/Builders/torusBuilder';
-import { Ray } from '../../Culling/ray';
-import { PickingInfo } from '../../Collisions/pickingInfo';
-import { WebXRAbstractFeature } from './WebXRAbstractFeature';
-import { UtilityLayerRenderer } from '../../Rendering/utilityLayerRenderer';
+import { WebXRSessionManager } from "../webXRSessionManager";
+import { AbstractMesh } from "../../Meshes/abstractMesh";
+import { Observer } from "../../Misc/observable";
+import { WebXRInput } from "../webXRInput";
+import { WebXRInputSource } from "../webXRInputSource";
+import { Scene } from "../../scene";
+import { WebXRControllerComponent } from "../motionController/webXRControllerComponent";
+import { Nullable } from "../../types";
+import { Matrix, Vector3 } from "../../Maths/math.vector";
+import { Color3 } from "../../Maths/math.color";
+import { Axis } from "../../Maths/math.axis";
+import { StandardMaterial } from "../../Materials/standardMaterial";
+import { CylinderBuilder } from "../../Meshes/Builders/cylinderBuilder";
+import { TorusBuilder } from "../../Meshes/Builders/torusBuilder";
+import { Ray } from "../../Culling/ray";
+import { PickingInfo } from "../../Collisions/pickingInfo";
+import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
+import { UtilityLayerRenderer } from "../../Rendering/utilityLayerRenderer";
+import { WebXRAbstractMotionController } from "../motionController/webXRAbstractMotionController";
+import { WebXRCamera } from "../webXRCamera";
+import { Node } from "../../node";
+import { Viewport } from "../../Maths/math.viewport";
 
 /**
  * Options interface for the pointer selection module
@@ -34,7 +38,7 @@ export interface IWebXRControllerPointerSelectionOptions {
      */
     disablePointerUpOnTouchOut: boolean;
     /**
-     * For gaze mode (time to select instead of press)
+     * For gaze mode for tracked-pointer / controllers (time to select instead of button press)
      */
     forceGazeMode: boolean;
     /**
@@ -62,24 +66,58 @@ export interface IWebXRControllerPointerSelectionOptions {
      */
     useUtilityLayer?: boolean;
     /**
+     * Optional WebXR camera to be used for gaze selection
+     */
+    gazeCamera?: WebXRCamera;
+    /**
      * the xr input to use with this pointer selection
      */
     xrInput: WebXRInput;
+
+    /**
+     * Should the scene pointerX and pointerY update be disabled
+     * This is required for fullscreen AR GUI, but might slow down other experiences.
+     * Disable in VR, if not needed.
+     * The first rig camera (left eye) will be used to calculate the projection
+     */
+    disableScenePointerVectorUpdate: boolean;
+
+    /**
+     * Enable pointer selection on all controllers instead of switching between them
+     */
+    enablePointerSelectionOnAllControllers?: boolean;
+
+    /**
+     * The preferred hand to give the pointer selection to. This will be prioritized when the controller initialize.
+     * If switch is enabled, it will still allow the user to switch between the different controllers
+     */
+    preferredHandedness?: XRHandedness;
+
+    /**
+     * Disable switching the pointer selection from one controller to the other.
+     * If the preferred hand is set it will be fixed on this hand, and if not it will be fixed on the first controller added to the scene
+     */
+    disableSwitchOnClick?: boolean;
+
+    /**
+     * The maximum distance of the pointer selection feature. Defaults to 100.
+     */
+    maxPointerDistance?: number;
 }
 
 /**
  * A module that will enable pointer selection for motion controllers of XR Input Sources
  */
 export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
-    private static _idCounter = 0;
+    private static _idCounter = 200;
 
     private _attachController = (xrController: WebXRInputSource) => {
         if (this._controllers[xrController.uniqueId]) {
             // already attached
             return;
         }
-        // only support tracker pointer
-        const { laserPointer, selectionMesh } = this._generateNewMeshPair(xrController);
+
+        const { laserPointer, selectionMesh } = this._generateNewMeshPair(xrController.pointer);
 
         // get two new meshes
         this._controllers[xrController.uniqueId] = {
@@ -89,8 +127,19 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             meshUnderPointer: null,
             pick: null,
             tmpRay: new Ray(new Vector3(), new Vector3()),
-            id: WebXRControllerPointerSelection._idCounter++
+            id: WebXRControllerPointerSelection._idCounter++,
         };
+
+        if (this._attachedController) {
+            if (!this._options.enablePointerSelectionOnAllControllers && this._options.preferredHandedness && xrController.inputSource.handedness === this._options.preferredHandedness) {
+                this._attachedController = xrController.uniqueId;
+            }
+        } else {
+            if (!this._options.enablePointerSelectionOnAllControllers) {
+                this._attachedController = xrController.uniqueId;
+            }
+        }
+
         switch (xrController.inputSource.targetRayMode) {
             case "tracked-pointer":
                 return this._attachTrackedPointerRayMode(xrController);
@@ -99,11 +148,12 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             case "screen":
                 return this._attachScreenRayMode(xrController);
         }
-    }
+    };
 
     private _controllers: {
         [controllerUniqueId: string]: {
-            xrController: WebXRInputSource;
+            xrController?: WebXRInputSource;
+            webXRCamera?: WebXRCamera;
             selectionComponent?: WebXRControllerComponent;
             onButtonChangedObserver?: Nullable<Observer<WebXRControllerComponent>>;
             onFrameObserver?: Nullable<Observer<XRFrame>>;
@@ -114,11 +164,13 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             id: number;
             tmpRay: Ray;
             // event support
-            eventListeners?: {[event in XREventType]?: ((event: XRInputSourceEvent) => void)};
+            eventListeners?: { [event in XREventType]?: (event: XRInputSourceEvent) => void };
         };
     } = {};
     private _scene: Scene;
     private _tmpVectorForPickCompare = new Vector3();
+
+    private _attachedController: string;
 
     /**
      * The module's name
@@ -154,7 +206,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
     /**
      * Default color of the laser pointer
      */
-    public lasterPointerDefaultColor: Color3 = new Color3(0.7, 0.7, 0.7);
+    public laserPointerDefaultColor: Color3 = new Color3(0.7, 0.7, 0.7);
     /**
      * default color of the selection ring
      */
@@ -199,6 +251,23 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         });
 
         this._scene.constantlyUpdateMeshUnderPointer = true;
+
+        if (this._options.gazeCamera) {
+            const webXRCamera = this._options.gazeCamera;
+
+            const { laserPointer, selectionMesh } = this._generateNewMeshPair(webXRCamera);
+
+            this._controllers["camera"] = {
+                webXRCamera,
+                laserPointer,
+                selectionMesh,
+                meshUnderPointer: null,
+                pick: null,
+                tmpRay: new Ray(new Vector3(), new Vector3()),
+                id: WebXRControllerPointerSelection._idCounter++,
+            };
+            this._attachGazeMode();
+        }
 
         return true;
     }
@@ -246,20 +315,58 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
         for (let i = 0; i < keys.length; ++i) {
             if (this._controllers[keys[i]].id === id) {
-                return this._controllers[keys[i]].xrController;
+                return this._controllers[keys[i]].xrController || null;
             }
         }
         return null;
     }
 
+    private _identityMatrix = Matrix.Identity();
+    private _screenCoordinatesRef = Vector3.Zero();
+    private _viewportRef = new Viewport(0, 0, 0, 0);
+
     protected _onXRFrame(_xrFrame: XRFrame) {
         Object.keys(this._controllers).forEach((id) => {
+            // only do this for the selected pointer
             const controllerData = this._controllers[id];
+            if (!this._options.enablePointerSelectionOnAllControllers && id !== this._attachedController) {
+                controllerData.selectionMesh.isVisible = false;
+                controllerData.laserPointer.isVisible = false;
+                controllerData.pick = null;
+                return;
+            }
+
+            controllerData.laserPointer.isVisible = this.displayLaserPointer;
+
+            let controllerGlobalPosition: Vector3;
 
             // Every frame check collisions/input
-            controllerData.xrController.getWorldPointerRayToRef(controllerData.tmpRay);
-            controllerData.pick = this._scene.pickWithRay(controllerData.tmpRay,
-                this._scene.pointerMovePredicate || this.raySelectionPredicate);
+            if (controllerData.xrController) {
+                controllerGlobalPosition = controllerData.xrController.pointer.position;
+                controllerData.xrController.getWorldPointerRayToRef(controllerData.tmpRay);
+            } else if (controllerData.webXRCamera) {
+                controllerGlobalPosition = controllerData.webXRCamera.position;
+                controllerData.webXRCamera.getForwardRayToRef(controllerData.tmpRay);
+            } else {
+                return;
+            }
+
+            if (this._options.maxPointerDistance) {
+                controllerData.tmpRay.length = this._options.maxPointerDistance;
+            }
+            // update pointerX and pointerY of the scene. Only if the flag is set to true!
+            if (!this._options.disableScenePointerVectorUpdate && controllerGlobalPosition) {
+                const scene = this._xrSessionManager.scene;
+                const camera = this._options.xrInput.xrCamera;
+                if (camera) {
+                    camera.viewport.toGlobalToRef(scene.getEngine().getRenderWidth(), scene.getEngine().getRenderHeight(), this._viewportRef);
+                    Vector3.ProjectToRef(controllerGlobalPosition, this._identityMatrix, scene.getTransformMatrix(), this._viewportRef, this._screenCoordinatesRef);
+
+                    scene.pointerX = this._screenCoordinatesRef.x;
+                    scene.pointerY = this._screenCoordinatesRef.y;
+                }
+            }
+            controllerData.pick = this._scene.pickWithRay(controllerData.tmpRay, this._scene.pointerMovePredicate || this.raySelectionPredicate);
 
             const pick = controllerData.pick;
 
@@ -287,29 +394,40 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 controllerData.meshUnderPointer = pick.pickedMesh;
             } else {
                 controllerData.selectionMesh.isVisible = false;
+                this._updatePointerDistance(controllerData.laserPointer, 1);
                 controllerData.meshUnderPointer = null;
             }
         });
     }
 
-    private _attachGazeMode(xrController: WebXRInputSource) {
-        const controllerData = this._controllers[xrController.uniqueId];
+    private _attachGazeMode(xrController?: WebXRInputSource) {
+        const controllerData = this._controllers[(xrController && xrController.uniqueId) || "camera"];
         // attached when touched, detaches when raised
         const timeToSelect = this._options.timeToSelect || 3000;
-        const sceneToRenderTo = this._options.useUtilityLayer ? (this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene) : this._scene;
+        const sceneToRenderTo = this._options.useUtilityLayer ? this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene : this._scene;
         let oldPick = new PickingInfo();
-        let discMesh = TorusBuilder.CreateTorus("selection", {
-            diameter: 0.0035 * 15,
-            thickness: 0.0025 * 6,
-            tessellation: 20
-        }, sceneToRenderTo);
+        let discMesh = TorusBuilder.CreateTorus(
+            "selection",
+            {
+                diameter: 0.0035 * 15,
+                thickness: 0.0025 * 6,
+                tessellation: 20,
+            },
+            sceneToRenderTo
+        );
         discMesh.isVisible = false;
         discMesh.isPickable = false;
         discMesh.parent = controllerData.selectionMesh;
         let timer = 0;
         let downTriggered = false;
+        const pointerEventInit: PointerEventInit = {
+            pointerId: controllerData.id,
+            pointerType: "xr",
+        };
         controllerData.onFrameObserver = this._xrSessionManager.onXRFrameObservable.add(() => {
-            if (!controllerData.pick) { return; }
+            if (!controllerData.pick) {
+                return;
+            }
             controllerData.laserPointer.material!.alpha = 0;
             discMesh.isVisible = false;
             if (controllerData.pick.hit) {
@@ -320,21 +438,21 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
                     timer += this._scene.getEngine().getDeltaTime();
                     if (timer >= timeToSelect) {
-                        this._scene.simulatePointerDown(controllerData.pick, { pointerId: controllerData.id });
+                        this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
                         downTriggered = true;
                         // pointer up right after down, if disable on touch out
                         if (this._options.disablePointerUpOnTouchOut) {
-                            this._scene.simulatePointerUp(controllerData.pick, { pointerId: controllerData.id });
+                            this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
                         }
                         discMesh.isVisible = false;
                     } else {
-                        const scaleFactor = 1 - (timer / timeToSelect);
+                        const scaleFactor = 1 - timer / timeToSelect;
                         discMesh.scaling.set(scaleFactor, scaleFactor, scaleFactor);
                     }
                 } else {
                     if (downTriggered) {
                         if (!this._options.disablePointerUpOnTouchOut) {
-                            this._scene.simulatePointerUp(controllerData.pick, { pointerId: controllerData.id });
+                            this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
                         }
                     }
                     downTriggered = false;
@@ -345,7 +463,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 timer = 0;
             }
 
-            this._scene.simulatePointerMove(controllerData.pick, { pointerId: controllerData.id });
+            this._scene.simulatePointerMove(controllerData.pick, pointerEventInit);
 
             oldPick = controllerData.pick;
         });
@@ -353,32 +471,40 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         if (this._options.renderingGroupId !== undefined) {
             discMesh.renderingGroupId = this._options.renderingGroupId;
         }
-        xrController.onDisposeObservable.addOnce(() => {
-            if (controllerData.pick && !this._options.disablePointerUpOnTouchOut && downTriggered) {
-                this._scene.simulatePointerUp(controllerData.pick, { pointerId: controllerData.id });
-            }
-            discMesh.dispose();
-        });
+        if (xrController) {
+            xrController.onDisposeObservable.addOnce(() => {
+                if (controllerData.pick && !this._options.disablePointerUpOnTouchOut && downTriggered) {
+                    this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
+                }
+                discMesh.dispose();
+            });
+        }
     }
 
     private _attachScreenRayMode(xrController: WebXRInputSource) {
         const controllerData = this._controllers[xrController.uniqueId];
         let downTriggered = false;
+        const pointerEventInit: PointerEventInit = {
+            pointerId: controllerData.id,
+            pointerType: "xr",
+        };
         controllerData.onFrameObserver = this._xrSessionManager.onXRFrameObservable.add(() => {
-            if (!controllerData.pick || (this._options.disablePointerUpOnTouchOut && downTriggered)) { return; }
+            if (!controllerData.pick || (this._options.disablePointerUpOnTouchOut && downTriggered)) {
+                return;
+            }
             if (!downTriggered) {
-                this._scene.simulatePointerDown(controllerData.pick, { pointerId: controllerData.id });
+                this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
                 downTriggered = true;
                 if (this._options.disablePointerUpOnTouchOut) {
-                    this._scene.simulatePointerUp(controllerData.pick, { pointerId: controllerData.id });
+                    this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
                 }
             } else {
-                this._scene.simulatePointerMove(controllerData.pick, { pointerId: controllerData.id });
+                this._scene.simulatePointerMove(controllerData.pick, pointerEventInit);
             }
         });
         xrController.onDisposeObservable.addOnce(() => {
             if (controllerData.pick && downTriggered && !this._options.disablePointerUpOnTouchOut) {
-                this._scene.simulatePointerUp(controllerData.pick, { pointerId: controllerData.id });
+                this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
             }
         });
     }
@@ -388,17 +514,20 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         if (this._options.forceGazeMode) {
             return this._attachGazeMode(xrController);
         }
+        const pointerEventInit: PointerEventInit = {
+            pointerId: controllerData.id,
+            pointerType: "xr",
+        };
         controllerData.onFrameObserver = this._xrSessionManager.onXRFrameObservable.add(() => {
-            controllerData.laserPointer.isVisible = this.displayLaserPointer;
             (<StandardMaterial>controllerData.laserPointer.material).disableLighting = this.disablePointerLighting;
             (<StandardMaterial>controllerData.selectionMesh.material).disableLighting = this.disableSelectionMeshLighting;
 
             if (controllerData.pick) {
-                this._scene.simulatePointerMove(controllerData.pick, { pointerId: controllerData.id });
+                this._scene.simulatePointerMove(controllerData.pick, pointerEventInit);
             }
         });
         if (xrController.inputSource.gamepad) {
-            xrController.onMotionControllerInitObservable.add((motionController) => {
+            const init = (motionController: WebXRAbstractMotionController) => {
                 if (this._options.overrideButtonId) {
                     controllerData.selectionComponent = motionController.getComponent(this._options.overrideButtonId);
                 }
@@ -410,44 +539,56 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                     if (component.changes.pressed) {
                         const pressed = component.changes.pressed.current;
                         if (controllerData.pick) {
-                            if (pressed) {
-                                this._scene.simulatePointerDown(controllerData.pick, { pointerId: controllerData.id });
-                                (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshPickedColor;
-                                (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerPickedColor;
+                            if (this._options.enablePointerSelectionOnAllControllers || xrController.uniqueId === this._attachedController) {
+                                if (pressed) {
+                                    this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
+                                    (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshPickedColor;
+                                    (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerPickedColor;
+                                } else {
+                                    this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
+                                    (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshDefaultColor;
+                                    (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerDefaultColor;
+                                }
                             } else {
-                                this._scene.simulatePointerUp(controllerData.pick, { pointerId: controllerData.id });
-                                (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshDefaultColor;
-                        (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.lasterPointerDefaultColor;
+                            }
+                        } else {
+                            if (pressed && !this._options.enablePointerSelectionOnAllControllers && !this._options.disableSwitchOnClick) {
+                                this._attachedController = xrController.uniqueId;
                             }
                         }
                     }
                 });
-            });
+            };
+            if (xrController.motionController) {
+                init(xrController.motionController);
+            } else {
+                xrController.onMotionControllerInitObservable.add(init);
+            }
         } else {
             // use the select and squeeze events
             const selectStartListener = (event: XRInputSourceEvent) => {
-                if (event.inputSource === controllerData.xrController.inputSource && controllerData.pick) {
-                    this._scene.simulatePointerDown(controllerData.pick, { pointerId: controllerData.id });
+                if (controllerData.xrController && event.inputSource === controllerData.xrController.inputSource && controllerData.pick) {
+                    this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
                     (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshPickedColor;
                     (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerPickedColor;
                 }
             };
 
             const selectEndListener = (event: XRInputSourceEvent) => {
-                if (event.inputSource === controllerData.xrController.inputSource && controllerData.pick) {
-                    this._scene.simulatePointerUp(controllerData.pick, { pointerId: controllerData.id });
+                if (controllerData.xrController && event.inputSource === controllerData.xrController.inputSource && controllerData.pick) {
+                    this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
                     (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshDefaultColor;
-                    (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.lasterPointerDefaultColor;
+                    (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerDefaultColor;
                 }
             };
 
             controllerData.eventListeners = {
                 selectend: selectEndListener,
-                selectstart: selectStartListener
+                selectstart: selectStartListener,
             };
 
-            this._xrSessionManager.session.addEventListener('selectstart', selectStartListener);
-            this._xrSessionManager.session.addEventListener('selectend', selectEndListener);
+            this._xrSessionManager.session.addEventListener("selectstart", selectStartListener);
+            this._xrSessionManager.session.addEventListener("selectend", selectEndListener);
         }
     }
 
@@ -463,7 +604,9 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
     private _detachController(xrControllerUniqueId: string) {
         const controllerData = this._controllers[xrControllerUniqueId];
-        if (!controllerData) { return; }
+        if (!controllerData) {
+            return;
+        }
         if (controllerData.selectionComponent) {
             if (controllerData.onButtonChangedObserver) {
                 controllerData.selectionComponent.onButtonStateChangedObservable.remove(controllerData.onButtonChangedObserver);
@@ -476,7 +619,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             Object.keys(controllerData.eventListeners).forEach((eventName: string) => {
                 const func = controllerData.eventListeners && controllerData.eventListeners[eventName as XREventType];
                 if (func) {
-                    this._xrSessionManager.session.removeEventListener(eventName, func);
+                    this._xrSessionManager.session.removeEventListener(eventName as XREventType, func);
                 }
             });
         }
@@ -484,20 +627,33 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         controllerData.laserPointer.dispose();
         // remove from the map
         delete this._controllers[xrControllerUniqueId];
+        if (this._attachedController === xrControllerUniqueId) {
+            // check for other controllers
+            const keys = Object.keys(this._controllers);
+            if (keys.length) {
+                this._attachedController = keys[0];
+            } else {
+                this._attachedController = "";
+            }
+        }
     }
 
-    private _generateNewMeshPair(xrController: WebXRInputSource) {
-        const sceneToRenderTo = this._options.useUtilityLayer ? (this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene) : this._scene;
-        const laserPointer = CylinderBuilder.CreateCylinder("laserPointer", {
-            height: 1,
-            diameterTop: 0.0002,
-            diameterBottom: 0.004,
-            tessellation: 20,
-            subdivisions: 1
-        }, sceneToRenderTo);
-        laserPointer.parent = xrController.pointer;
+    private _generateNewMeshPair(meshParent: Node) {
+        const sceneToRenderTo = this._options.useUtilityLayer ? this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene : this._scene;
+        const laserPointer = CylinderBuilder.CreateCylinder(
+            "laserPointer",
+            {
+                height: 1,
+                diameterTop: 0.0002,
+                diameterBottom: 0.004,
+                tessellation: 20,
+                subdivisions: 1,
+            },
+            sceneToRenderTo
+        );
+        laserPointer.parent = meshParent;
         let laserPointerMaterial = new StandardMaterial("laserPointerMat", sceneToRenderTo);
-        laserPointerMaterial.emissiveColor = this.lasterPointerDefaultColor;
+        laserPointerMaterial.emissiveColor = this.laserPointerDefaultColor;
         laserPointerMaterial.alpha = 0.7;
         laserPointer.material = laserPointerMaterial;
         laserPointer.rotation.x = Math.PI / 2;
@@ -505,11 +661,15 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         laserPointer.isPickable = false;
 
         // Create a gaze tracker for the  XR controller
-        const selectionMesh = TorusBuilder.CreateTorus("gazeTracker", {
-            diameter: 0.0035 * 3,
-            thickness: 0.0025 * 3,
-            tessellation: 20
-        }, sceneToRenderTo);
+        const selectionMesh = TorusBuilder.CreateTorus(
+            "gazeTracker",
+            {
+                diameter: 0.0035 * 3,
+                thickness: 0.0025 * 3,
+                tessellation: 20,
+            },
+            sceneToRenderTo
+        );
         selectionMesh.bakeCurrentTransformIntoVertices();
         selectionMesh.isPickable = false;
         selectionMesh.isVisible = false;
@@ -526,31 +686,52 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
         return {
             laserPointer,
-            selectionMesh
+            selectionMesh,
         };
     }
 
     private _pickingMoved(oldPick: PickingInfo, newPick: PickingInfo) {
-        if (!oldPick.hit || !newPick.hit) { return true; }
-        if (!oldPick.pickedMesh || !oldPick.pickedPoint || !newPick.pickedMesh || !newPick.pickedPoint) { return true; }
-        if (oldPick.pickedMesh !== newPick.pickedMesh) { return true; }
+        if (!oldPick.hit || !newPick.hit) {
+            return true;
+        }
+        if (!oldPick.pickedMesh || !oldPick.pickedPoint || !newPick.pickedMesh || !newPick.pickedPoint) {
+            return true;
+        }
+        if (oldPick.pickedMesh !== newPick.pickedMesh) {
+            return true;
+        }
         oldPick.pickedPoint?.subtractToRef(newPick.pickedPoint, this._tmpVectorForPickCompare);
         this._tmpVectorForPickCompare.set(Math.abs(this._tmpVectorForPickCompare.x), Math.abs(this._tmpVectorForPickCompare.y), Math.abs(this._tmpVectorForPickCompare.z));
         const delta = (this._options.gazeModePointerMovedFactor || 1) * 0.01 * newPick.distance;
         const length = this._tmpVectorForPickCompare.length();
-        console.log(delta, length, newPick.distance);
-        if (length > delta) { return true; }
+        if (length > delta) {
+            return true;
+        }
         return false;
     }
 
     private _updatePointerDistance(_laserPointer: AbstractMesh, distance: number = 100) {
         _laserPointer.scaling.y = distance;
         // a bit of distance from the controller
-        _laserPointer.position.z = (distance / 2) + 0.05;
+        if (this._scene.useRightHandedSystem) {
+            distance *= -1;
+        }
+        _laserPointer.position.z = distance / 2 + 0.05;
+    }
+
+    /** @hidden */
+    public get lasterPointerDefaultColor(): Color3 {
+        // here due to a typo
+        return this.laserPointerDefaultColor;
     }
 }
 
 //register the plugin
-WebXRFeaturesManager.AddWebXRFeature(WebXRControllerPointerSelection.Name, (xrSessionManager, options) => {
-    return () => new WebXRControllerPointerSelection(xrSessionManager, options);
-}, WebXRControllerPointerSelection.Version, true);
+WebXRFeaturesManager.AddWebXRFeature(
+    WebXRControllerPointerSelection.Name,
+    (xrSessionManager, options) => {
+        return () => new WebXRControllerPointerSelection(xrSessionManager, options);
+    },
+    WebXRControllerPointerSelection.Version,
+    true
+);

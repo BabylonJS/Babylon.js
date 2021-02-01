@@ -92,7 +92,7 @@ export class Vector2LineComponent extends React.Component<IVector2LineComponentP
         return (
             <div className="vector3Line">
                 <div className="firstLine">
-                    <div className="label">
+                    <div className="label" title={this.props.label}>
                         {this.props.label}
                     </div>
                     <div className="vector">

@@ -1,7 +1,7 @@
 import * as React from "react";
 import { PaneComponent, IPaneComponentProps } from "../paneComponent";
-import { LineContainerComponent } from "../lineContainerComponent";
-import { ButtonLineComponent } from "../lines/buttonLineComponent";
+import { LineContainerComponent } from "../../../sharedUiComponents/lines/lineContainerComponent";
+import { ButtonLineComponent } from "../../../sharedUiComponents/lines/buttonLineComponent";
 import { Node } from "babylonjs/node";
 import { Nullable } from "babylonjs/types";
 import { VideoRecorder } from "babylonjs/Misc/videoRecorder";
@@ -21,14 +21,16 @@ import { SceneLoaderAnimationGroupLoadingMode } from 'babylonjs/Loading/sceneLoa
 import { GLTFComponent } from "./tools/gltfComponent";
 
 import { GLTFData, GLTF2Export } from "babylonjs-serializers/glTF/2.0/index";
-import { FloatLineComponent } from '../lines/floatLineComponent';
+import { FloatLineComponent } from '../../../sharedUiComponents/lines/floatLineComponent';
 import { IScreenshotSize } from 'babylonjs/Misc/interfaces/screenshotSize';
-import { NumericInputComponent } from '../lines/numericInputComponent';
-import { CheckBoxLineComponent } from '../lines/checkBoxLineComponent';
-import { TextLineComponent } from '../lines/textLineComponent';
-import { FileMultipleButtonLineComponent } from '../lines/fileMultipleButtonLineComponent';
-import { OptionsLineComponent } from '../lines/optionsLineComponent';
-import { MessageLineComponent } from '../lines/messageLineComponent';
+import { NumericInputComponent } from '../../../sharedUiComponents/lines/numericInputComponent';
+import { CheckBoxLineComponent } from '../../../sharedUiComponents/lines/checkBoxLineComponent';
+import { TextLineComponent } from '../../../sharedUiComponents/lines/textLineComponent';
+import { FileMultipleButtonLineComponent } from '../../../sharedUiComponents/lines/fileMultipleButtonLineComponent';
+import { OptionsLineComponent } from '../../../sharedUiComponents/lines/optionsLineComponent';
+import { MessageLineComponent } from '../../../sharedUiComponents/lines/messageLineComponent';
+import { FileButtonLineComponent } from '../../../sharedUiComponents/lines/fileButtonLineComponent';
+import { IndentedTextLineComponent } from '../../../sharedUiComponents/lines/indentedTextLineComponent';
 
 const GIF = require('gif.js.optimized')
 
@@ -131,14 +133,14 @@ export class ToolsTabComponent extends PaneComponent {
         const engine = scene.getEngine();
 
         this._previousRenderingScale = engine.getHardwareScalingLevel();
-        engine.setHardwareScalingLevel(engine.getRenderWidth() / this._gifOptions.width | 0);
+        engine.setHardwareScalingLevel((engine.getRenderWidth() / this._gifOptions.width) ?? 1);
 
         let intervalId = setInterval(() => {
             if (!this._gifRecorder) {
                 clearInterval(intervalId);
                 return;
             }
-            this._gifRecorder.addFrame(engine.getRenderingCanvas(), {delay: this._gifOptions.frequency});
+            this._gifRecorder.addFrame(engine.getRenderingCanvas(), {delay: 0, copy: true});
         }, this._gifOptions.frequency);
                         
         this._gifRecorder.on('finished', (blob: Blob) =>{
@@ -255,12 +257,22 @@ export class ToolsTabComponent extends PaneComponent {
             });
     }
 
-    resetReplay() {
-        this.props.globalState.recorder.reset();
-    }
-
     exportReplay() {
         this.props.globalState.recorder.export();
+        this.forceUpdate();
+    }
+
+    startRecording() {
+        this.props.globalState.recorder.trackScene(this.props.scene);
+        this.forceUpdate();
+    }
+
+    applyDelta(file: File) {
+        Tools.ReadFile(file, (data) => {
+            this.props.globalState.recorder.applyDelta(data, this.props.scene);
+
+            this.forceUpdate();
+        });
     }
 
     render() {
@@ -281,11 +293,11 @@ export class ToolsTabComponent extends PaneComponent {
 
         return (
             <div className="pane">
-                <LineContainerComponent globalState={this.props.globalState} title="CAPTURE">
+                <LineContainerComponent title="CAPTURE">
                     <ButtonLineComponent label="Screenshot" onClick={() => this.captureScreenshot()} />
                     <ButtonLineComponent label={this.state.tag} onClick={() => this.recordVideo()} />
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="CAPTURE WITH RTT">
+                <LineContainerComponent title="CAPTURE WITH RTT">
                     <ButtonLineComponent label="Capture" onClick={() => this.captureRender()} />
                     <div className="vector3Line">
                         <FloatLineComponent label="Precision" target={this._screenShotSize} propertyName='precision' onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -302,7 +314,7 @@ export class ToolsTabComponent extends PaneComponent {
                         }      
                     </div>              
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="GIF">
+                <LineContainerComponent title="GIF">
                     {
                         this._crunchingGIF &&
                         <MessageLineComponent text="Creating the GIF file..." />
@@ -319,11 +331,22 @@ export class ToolsTabComponent extends PaneComponent {
                         </>
                     }
                 </LineContainerComponent>                
-                <LineContainerComponent globalState={this.props.globalState} title="REPLAY">
-                    <ButtonLineComponent label="Generate replay code" onClick={() => this.exportReplay()} />
-                    <ButtonLineComponent label="Reset" onClick={() => this.resetReplay()} />
+                <LineContainerComponent title="REPLAY">
+                    {
+                        !this.props.globalState.recorder.isRecording &&
+                        <ButtonLineComponent label="Start recording" onClick={() => this.startRecording()} />
+                    }
+                    {
+                        this.props.globalState.recorder.isRecording &&
+                        <IndentedTextLineComponent value={"Record in progress"}/>                        
+                    }
+                    {
+                        this.props.globalState.recorder.isRecording &&
+                        <ButtonLineComponent label="Generate delta file" onClick={() => this.exportReplay()} />
+                    }
+                    <FileButtonLineComponent label={`Apply delta file`} onClick={(file) => this.applyDelta(file)} accept=".json" />
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="SCENE IMPORT">
+                <LineContainerComponent title="SCENE IMPORT">
                     <FileMultipleButtonLineComponent label="Import animations" accept="gltf" onClick={(evt: any) => this.importAnimations(evt)} />
                     <CheckBoxLineComponent label="Overwrite animations" target={sceneImportDefaults} propertyName="overwriteAnimations" onSelect={value => {
                         sceneImportDefaults["overwriteAnimations"] = value;
@@ -334,7 +357,7 @@ export class ToolsTabComponent extends PaneComponent {
                         <OptionsLineComponent label="Animation merge mode" options={animationGroupLoadingModes} target={sceneImportDefaults} propertyName="animationGroupLoadingMode" />
                     }
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="SCENE EXPORT">
+                <LineContainerComponent title="SCENE EXPORT">
                     {
                         this._isExporting && 
                         <TextLineComponent label="Please wait..exporting" ignoreValue={true} />
@@ -345,7 +368,7 @@ export class ToolsTabComponent extends PaneComponent {
                             <ButtonLineComponent label="Export to GLB" onClick={() => this.exportGLTF()} />
                             <ButtonLineComponent label="Export to Babylon" onClick={() => this.exportBabylon()} />
                             {
-                                !scene.getEngine().premultipliedAlpha && scene.environmentTexture && (scene.environmentTexture as CubeTexture).isPrefiltered && scene.activeCamera &&
+                                !scene.getEngine().premultipliedAlpha && scene.environmentTexture && scene.environmentTexture._prefiltered && scene.activeCamera &&
                                 <ButtonLineComponent label="Generate .env texture" onClick={() => this.createEnvTexture()} />
                             }
                         </>

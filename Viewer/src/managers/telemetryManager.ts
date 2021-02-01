@@ -118,7 +118,6 @@ export class TelemetryManager {
      */
     public dispose() {
         this.onEventBroadcastedObservable.clear();
-        delete this.onEventBroadcastedObservable;
     }
 }
 

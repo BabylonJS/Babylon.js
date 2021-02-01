@@ -1,7 +1,7 @@
 import { IBufferView, AccessorType, AccessorComponentType, IAccessor } from "babylonjs-gltf2interface";
 
 import { FloatArray, Nullable } from "babylonjs/types";
-import { Vector3, Vector4, Quaternion } from "babylonjs/Maths/math.vector";
+import { Vector3, Vector4, Quaternion, Matrix } from "babylonjs/Maths/math.vector";
 
 /**
  * @hidden
@@ -191,6 +191,36 @@ export class _GLTFUtilities {
             tangent.x /= length;
             tangent.y /= length;
             tangent.z /= length;
+        }
+    }
+
+    public static _GetRightHandedMatrixFromRef(matrix: Matrix) {
+        const m = matrix.m;
+        Matrix.FromValuesToRef(
+            m[0], m[1], -m[2], m[3],
+            m[4], m[5], -m[6], m[7],
+            -m[8], m[9], m[10], m[11],
+            m[12], m[13], m[14], m[15],
+            matrix
+        );
+    }
+
+    public static _GetDataAccessorElementCount(accessorType: AccessorType) {
+        switch (accessorType) {
+            case AccessorType.MAT2:
+                return 4;
+            case AccessorType.MAT3:
+                return 9;
+            case AccessorType.MAT4:
+                return 16;
+            case AccessorType.SCALAR:
+                return 1;
+            case AccessorType.VEC2:
+                return 2;
+            case AccessorType.VEC3:
+                return 3;
+            case AccessorType.VEC4:
+                return 4;
         }
     }
 }

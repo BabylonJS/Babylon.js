@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { GlobalState } from '../../../../globalState';
 import { FactorGradient } from 'babylonjs/Misc/gradients';
-import { LockObject } from '../lockObject';
+import { LockObject } from '../../../../../sharedUiComponents/tabs/propertyGrids/lockObject';
 import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
 import { ParticleSystem } from 'babylonjs/Particles/particleSystem';
 
@@ -52,11 +52,6 @@ export class FactorGradientStepGridComponent extends React.Component<IFactorGrad
 
         this.props.gradient.factor1 = valueAsNumber;
 
-        this.props.globalState.onCodeChangedObservable.notifyObservers({
-            object: this.props.host,
-            code: `TARGET.${this.props.codeRecorderPropertyName}.factor1 = ${valueAsNumber};`
-        });                 
-
         this.props.onUpdateGradient();
         this.forceUpdate();
     }    
@@ -76,11 +71,6 @@ export class FactorGradientStepGridComponent extends React.Component<IFactorGrad
 
         this.props.gradient.factor2 = valueAsNumber;
 
-        this.props.globalState.onCodeChangedObservable.notifyObservers({
-            object: this.props.host,
-            code: `TARGET.${this.props.codeRecorderPropertyName}.factor2 = ${valueAsNumber};`
-        });         
-
         this.props.onUpdateGradient();
         this.forceUpdate();
     }   
@@ -89,11 +79,6 @@ export class FactorGradientStepGridComponent extends React.Component<IFactorGrad
         this.props.gradient.gradient = gradient;
 
         this.setState({gradient: gradient});
-
-        this.props.globalState.onCodeChangedObservable.notifyObservers({
-            object: this.props.host,
-            code: `TARGET.${this.props.codeRecorderPropertyName}.gradient = ${gradient};`
-        });         
 
         this.props.onUpdateGradient();
     }

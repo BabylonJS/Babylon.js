@@ -3,9 +3,12 @@ import { Matrix, Vector3, Vector2, Vector4 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Meshes/buffer";
 import { _DevTools } from '../Misc/devTools';
 import { Color4, Color3 } from '../Maths/math.color';
+import { Logger } from '../Misc/logger';
 
 declare type Geometry = import("../Meshes/geometry").Geometry;
 declare type Mesh = import("../Meshes/mesh").Mesh;
+
+import { ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
 
 /**
  * Define an interface for all classes that will get and set the data on vertices
@@ -171,6 +174,10 @@ export class VertexData {
      * @param kind the type of data that is being set, eg positions, colors etc
      */
     public set(data: FloatArray, kind: string) {
+        if (!data.length) {
+            Logger.Warn(`Setting vertex data kind '${kind}' with an empty array`);
+        }
+
         switch (kind) {
             case VertexBuffer.PositionKind:
                 this.positions = data;
@@ -400,7 +407,7 @@ export class VertexData {
      * @returns the VertexData
      */
     public transform(matrix: Matrix): VertexData {
-        var flip = matrix.m[0] * matrix.m[5] * matrix.m[10] < 0;
+        var flip = matrix.determinant() < 0;
         var transformed = Vector3.Zero();
         var index: number;
         if (this.positions) {
@@ -682,7 +689,7 @@ export class VertexData {
     /**
      * Extracts the vertexData from the geometry
      * @param geometry the geometry from which to extract the VertexData
-     * @param copyWhenShared defines if the VertexData must be cloned when the geometrty is shared between multiple meshes, optional, default false
+     * @param copyWhenShared defines if the VertexData must be cloned when the geometry is shared between multiple meshes, optional, default false
      * @param forceCopy indicating that the VertexData must be cloned, optional, default false
      * @returns the object VertexData associated to the passed mesh
      */
@@ -1036,6 +1043,23 @@ export class VertexData {
         throw _DevTools.WarnImport("polyhedronBuilder");
     }
 
+    //
+    /**
+     * Creates the VertexData for a Capsule, inspired from https://github.com/maximeq/three-js-capsule-geometry/blob/master/src/CapsuleBufferGeometry.js
+     * @param options an object used to set the following optional parameters for the capsule, required but can be empty
+     * @returns the VertexData of the Capsule
+     */
+    public static CreateCapsule(options: ICreateCapsuleOptions = {
+        orientation : Vector3.Up(),
+        subdivisions: 2,
+        tessellation: 16,
+        height: 1,
+        radius: 0.25,
+        capSubdivisions: 6
+    }): VertexData {
+        throw _DevTools.WarnImport("capsuleBuilder");
+    }
+
     // based on http://code.google.com/p/away3d/source/browse/trunk/fp10/Away3D/src/away3d/primitives/TorusKnot.as?spec=svn2473&r=2473
     /**
      * Creates the VertexData for a TorusKnot
@@ -1069,7 +1093,7 @@ export class VertexData {
       * * ratio : optional partitioning ratio / bounding box, required for facetPartitioning computation
       * * bInfo : optional bounding info, required for facetPartitioning computation
       * * bbSize : optional bounding box size data, required for facetPartitioning computation
-      * * subDiv : optional partitioning data about subdivsions on  each axis (int), required for facetPartitioning computation
+      * * subDiv : optional partitioning data about subdivisions on  each axis (int), required for facetPartitioning computation
       * * useRightHandedSystem: optional boolean to for right handed system computation
       * * depthSort : optional boolean to enable the facet depth sort computation
       * * distanceTo : optional Vector3 to compute the facet depth from this location
@@ -1132,8 +1156,8 @@ export class VertexData {
         let subSq = 0;
         if (computeFacetPartitioning && options && options.bbSize) {
             var ox = 0;                 // X partitioning index for facet position
-            var oy = 0;                 // Y partinioning index for facet position
-            var oz = 0;                 // Z partinioning index for facet position
+            var oy = 0;                 // Y partitioning index for facet position
+            var oz = 0;                 // Z partitioning index for facet position
             var b1x = 0;                // X partitioning index for facet v1 vertex
             var b1y = 0;                // Y partitioning index for facet v1 vertex
             var b1z = 0;                // z partitioning index for facet v1 vertex

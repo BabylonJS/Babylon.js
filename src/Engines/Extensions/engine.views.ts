@@ -123,7 +123,7 @@ Engine.prototype._renderViews = function() {
         if (camera) {
             scene = camera.getScene();
 
-            if (scene.activeCameras.length) {
+            if (scene.activeCameras && scene.activeCameras.length) {
                 continue;
             }
 
@@ -134,12 +134,15 @@ Engine.prototype._renderViews = function() {
         }
 
         // Set sizes
-        if (canvas.clientWidth && canvas.clientHeight) {
+        const dimsChanged =
+            canvas.clientWidth !== parent.width ||
+            canvas.clientHeight !== parent.height;
+        if (canvas.clientWidth && canvas.clientHeight && dimsChanged) {
             canvas.width = canvas.clientWidth;
             canvas.height = canvas.clientHeight;
             parent.width = canvas.clientWidth;
             parent.height = canvas.clientHeight;
-            this.resize();
+            this.resize(true);
         }
 
         if (!parent.width || !parent.height) {

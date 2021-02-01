@@ -95,6 +95,11 @@ class BackgroundMaterialDefines extends MaterialDefines implements IImageProcess
     public USEHIGHLIGHTANDSHADOWCOLORS = false;
 
     /**
+     * True if only shadows must be rendered
+     */
+    public BACKMAT_SHADOWONLY = false;
+
+    /**
      * True to add noise in order to reduce the banding effect.
      */
     public NOISE = false;
@@ -169,7 +174,7 @@ class BackgroundMaterialDefines extends MaterialDefines implements IImageProcess
 }
 
 /**
- * Background material used to create an efficient environement around your scene.
+ * Background material used to create an efficient environment around your scene.
  */
 export class BackgroundMaterial extends PushMaterial {
 
@@ -186,7 +191,7 @@ export class BackgroundMaterial extends PushMaterial {
     @serializeAsColor3()
     protected _primaryColor: Color3;
     /**
-     * Key light Color (multiply against the environement texture)
+     * Key light Color (multiply against the environment texture)
      */
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
     public primaryColor = Color3.White();
@@ -230,7 +235,7 @@ export class BackgroundMaterial extends PushMaterial {
     @serialize()
     protected _primaryColorHighlightLevel: float = 0;
     /**
-     * Defines the level of the highliights (highlight area of the reflection map) in order to help scaling the colors.
+     * Defines the level of the highlights (highlight area of the reflection map) in order to help scaling the colors.
      * The primary color is used at the level chosen to define what the white area would look.
      */
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
@@ -412,6 +417,14 @@ export class BackgroundMaterial extends PushMaterial {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public maxSimultaneousLights: int = 4;
 
+    @serialize()
+    private _shadowOnly: boolean = false;
+    /**
+     * Make the material only render shadows
+     */
+    @expandToProperty("_markAllSubMeshesAsLightsDirty")
+    public shadowOnly: boolean = false;
+
     /**
      * Default configuration related to image processing available in the Background Material.
      */
@@ -474,39 +487,39 @@ export class BackgroundMaterial extends PushMaterial {
     }
 
     /**
-     * Gets wether the color curves effect is enabled.
+     * Gets whether the color curves effect is enabled.
      */
     public get cameraColorCurvesEnabled(): boolean {
         return (<ImageProcessingConfiguration>this.imageProcessingConfiguration).colorCurvesEnabled;
     }
     /**
-     * Sets wether the color curves effect is enabled.
+     * Sets whether the color curves effect is enabled.
      */
     public set cameraColorCurvesEnabled(value: boolean) {
         (<ImageProcessingConfiguration>this.imageProcessingConfiguration).colorCurvesEnabled = value;
     }
 
     /**
-     * Gets wether the color grading effect is enabled.
+     * Gets whether the color grading effect is enabled.
      */
     public get cameraColorGradingEnabled(): boolean {
         return (<ImageProcessingConfiguration>this.imageProcessingConfiguration).colorGradingEnabled;
     }
     /**
-     * Gets wether the color grading effect is enabled.
+     * Gets whether the color grading effect is enabled.
      */
     public set cameraColorGradingEnabled(value: boolean) {
         (<ImageProcessingConfiguration>this.imageProcessingConfiguration).colorGradingEnabled = value;
     }
 
     /**
-     * Gets wether tonemapping is enabled or not.
+     * Gets whether tonemapping is enabled or not.
      */
     public get cameraToneMappingEnabled(): boolean {
         return this._imageProcessingConfiguration.toneMappingEnabled;
     }
     /**
-     * Sets wether tonemapping is enabled or not
+     * Sets whether tonemapping is enabled or not
      */
     public set cameraToneMappingEnabled(value: boolean) {
         this._imageProcessingConfiguration.toneMappingEnabled = value;
@@ -557,7 +570,7 @@ export class BackgroundMaterial extends PushMaterial {
     }
 
     /**
-     * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
+     * The color grading curves provide additional color adjustment that is applied after any color grading transform (3D LUT).
      * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
      * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
      * corresponding to low luminance, medium luminance, and high luminance areas respectively.
@@ -566,7 +579,7 @@ export class BackgroundMaterial extends PushMaterial {
         return (<ImageProcessingConfiguration>this.imageProcessingConfiguration).colorCurves;
     }
     /**
-     * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
+     * The color grading curves provide additional color adjustment that is applied after any color grading transform (3D LUT).
      * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
      * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
      * corresponding to low luminance, medium luminance, and high luminance areas respectively.
@@ -642,11 +655,11 @@ export class BackgroundMaterial extends PushMaterial {
      * @returns true if blending is enable
      */
     public needAlphaBlending(): boolean {
-        return ((this.alpha < 0) || (this._diffuseTexture != null && this._diffuseTexture.hasAlpha));
+        return (this.alpha < 1) || (this._diffuseTexture != null && this._diffuseTexture.hasAlpha) || this._shadowOnly;
     }
 
     /**
-     * Checks wether the material is ready to be rendered for a given mesh.
+     * Checks whether the material is ready to be rendered for a given mesh.
      * @param mesh The mesh to render
      * @param subMesh The submesh to check against
      * @param useInstances Specify wether or not the material is used with instances
@@ -799,6 +812,7 @@ export class BackgroundMaterial extends PushMaterial {
 
         if (defines._areLightsDirty) {
             defines.USEHIGHLIGHTANDSHADOWCOLORS = !this._useRGBColor && (this._primaryColorShadowLevel !== 0 || this._primaryColorHighlightLevel !== 0);
+            defines.BACKMAT_SHADOWONLY = this._shadowOnly;
         }
 
         if (defines._areImageProcessingDirty && this._imageProcessingConfiguration) {
@@ -813,7 +827,7 @@ export class BackgroundMaterial extends PushMaterial {
         MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
         // Values that need to be evaluated on every frame
-        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances, null, subMesh.getRenderingMesh().hasThinInstances);
 
         // Attribs
         if (MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, true, false)) {
@@ -899,7 +913,7 @@ export class BackgroundMaterial extends PushMaterial {
                     this.onCompiled(effect);
                 }
 
-                this.bindSceneUniformBuffer(effect, scene.getSceneUniformBuffer());
+                MaterialHelper.BindSceneUniformBuffer(effect, scene.getSceneUniformBuffer());
             };
 
             var join = defines.toString();
@@ -1135,9 +1149,9 @@ export class BackgroundMaterial extends PushMaterial {
             }
         }
 
-        this._uniformBuffer.update();
-
         this._afterBind(mesh, this._activeEffect);
+
+        this._uniformBuffer.update();
     }
 
     /**

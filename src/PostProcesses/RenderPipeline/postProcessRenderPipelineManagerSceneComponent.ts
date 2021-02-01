@@ -9,8 +9,8 @@ declare module "../../scene" {
 
         /**
          * Gets the postprocess render pipeline manager
-         * @see http://doc.babylonjs.com/how_to/how_to_use_postprocessrenderpipeline
-         * @see http://doc.babylonjs.com/how_to/using_default_rendering_pipeline
+         * @see https://doc.babylonjs.com/how_to/how_to_use_postprocessrenderpipeline
+         * @see https://doc.babylonjs.com/how_to/using_default_rendering_pipeline
          */
         readonly postProcessRenderPipelineManager: PostProcessRenderPipelineManager;
     }
@@ -39,7 +39,7 @@ Object.defineProperty(Scene.prototype, "postProcessRenderPipelineManager", {
  */
 export class PostProcessRenderPipelineManagerSceneComponent implements ISceneComponent {
     /**
-     * The component name helpfull to identify the component in the list of scene components.
+     * The component name helpful to identify the component in the list of scene components.
      */
     public readonly name = SceneComponentConstants.NAME_POSTPROCESSRENDERPIPELINEMANAGER;
 
@@ -74,7 +74,7 @@ export class PostProcessRenderPipelineManagerSceneComponent implements ISceneCom
     }
 
     /**
-     * Disposes the component and the associated ressources
+     * Disposes the component and the associated resources
      */
     public dispose(): void {
         if (this.scene._postProcessRenderPipelineManager) {

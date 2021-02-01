@@ -86,7 +86,7 @@ Object.defineProperty(Mesh.prototype, "renderOverlay", {
 });
 
 /**
- * This class is responsible to draw bothe outline/overlay of meshes.
+ * This class is responsible to draw the outline/overlay of meshes.
  * It should not be used directly but through the available method on mesh.
  */
 export class OutlineRenderer implements ISceneComponent {
@@ -141,7 +141,7 @@ export class OutlineRenderer implements ISceneComponent {
     }
 
     /**
-     * Disposes the component and the associated ressources.
+     * Disposes the component and the associated resources.
      */
     public dispose(): void {
         // Nothing to do here.
@@ -157,7 +157,7 @@ export class OutlineRenderer implements ISceneComponent {
         var scene = this.scene;
         var engine = scene.getEngine();
 
-        var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
+        var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null && batch.visibleInstances[subMesh._id] !== undefined || subMesh.getRenderingMesh().hasThinInstances);
 
         if (!this.isReady(subMesh, hardwareInstancedRendering)) {
             return;
@@ -183,10 +183,15 @@ export class OutlineRenderer implements ISceneComponent {
         this._effect.setFloat("offset", useOverlay ? 0 : renderingMesh.outlineWidth);
         this._effect.setColor4("color", useOverlay ? renderingMesh.overlayColor : renderingMesh.outlineColor, useOverlay ? renderingMesh.overlayAlpha : material.alpha);
         this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
+        this._effect.setMatrix("world", effectiveMesh.getWorldMatrix());
 
         // Bones
         if (renderingMesh.useBones && renderingMesh.computeBonesUsingShaders && renderingMesh.skeleton) {
             this._effect.setMatrices("mBones", renderingMesh.skeleton.getTransformMatrices(renderingMesh));
+        }
+
+        if (renderingMesh.morphTargetManager && renderingMesh.morphTargetManager.isUsingTextureForTargets) {
+            renderingMesh.morphTargetManager._bind(this._effect);
         }
 
         // Morph targets
@@ -213,8 +218,8 @@ export class OutlineRenderer implements ISceneComponent {
     /**
      * Returns whether or not the outline renderer is ready for a given submesh.
      * All the dependencies e.g. submeshes, texture, effect... mus be ready
-     * @param subMesh Defines the submesh to check readyness for
-     * @param useInstances Defines wheter wee are trying to render instances or not
+     * @param subMesh Defines the submesh to check readiness for
+     * @param useInstances Defines whether wee are trying to render instances or not
      * @returns true if ready otherwise false
      */
     public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
@@ -266,6 +271,10 @@ export class OutlineRenderer implements ISceneComponent {
                 defines.push("#define MORPHTARGETS");
                 defines.push("#define NUM_MORPH_INFLUENCERS " + numMorphInfluencers);
 
+                if (morphTargetManager.isUsingTextureForTargets) {
+                    defines.push("#define MORPHTARGETS_TEXTURE");
+                }
+
                 MaterialHelper.PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, numMorphInfluencers);
             }
         }
@@ -274,6 +283,9 @@ export class OutlineRenderer implements ISceneComponent {
         if (useInstances) {
             defines.push("#define INSTANCES");
             MaterialHelper.PushAttributesForInstances(attribs);
+            if (subMesh.getRenderingMesh().hasThinInstances) {
+                defines.push("#define THIN_INSTANCES");
+            }
         }
 
         // Get correct effect
@@ -282,8 +294,9 @@ export class OutlineRenderer implements ISceneComponent {
             this._cachedDefines = join;
             this._effect = this.scene.getEngine().createEffect("outline",
                 attribs,
-                ["world", "mBones", "viewProjection", "diffuseMatrix", "offset", "color", "logarithmicDepthConstant", "morphTargetInfluences"],
-                ["diffuseSampler"], join,
+                ["world", "mBones", "viewProjection", "diffuseMatrix", "offset", "color", "logarithmicDepthConstant",
+                "morphTargetInfluences", "morphTargetTextureInfo", "morphTargetTextureIndices"],
+                ["diffuseSampler", "morphTargets"], join,
                 undefined, undefined, undefined,
                 { maxSimultaneousMorphTargets: numMorphInfluencers });
         }
@@ -296,7 +309,7 @@ export class OutlineRenderer implements ISceneComponent {
         this._savedDepthWrite = this._engine.getDepthWrite();
         if (mesh.renderOutline) {
             var material = subMesh.getMaterial();
-            if (material && material.needAlphaBlending()) {
+            if (material && material.needAlphaBlendingForMesh(mesh)) {
                 this._engine.cacheStencilState();
                 // Draw only to stencil buffer for the original mesh
                 // The resulting stencil buffer will be used so the outline is not visible inside the mesh when the mesh is transparent
@@ -318,7 +331,7 @@ export class OutlineRenderer implements ISceneComponent {
             this.render(subMesh, batch);
             this._engine.setDepthWrite(this._savedDepthWrite);
 
-            if (material && material.needAlphaBlending()) {
+            if (material && material.needAlphaBlendingForMesh(mesh)) {
                 this._engine.restoreStencilState();
             }
         }

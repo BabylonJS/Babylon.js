@@ -38,6 +38,10 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
         this.state = { value: this._getValue(props) };
     }
 
+    setValue(value: string | number) {
+        this.setState({ value: value });
+    }
+
     shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: { value: number }) {
         if (this._localChange) {
             this._localChange = false;
@@ -85,7 +89,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
     render() {
         return (
             <div className="listLine">
-                <div className="label">
+                <div className="label" title={this.props.label}>
                     {this.props.label}
 
                 </div>
@@ -94,7 +98,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
                         {
                             this.props.options.map(option => {
                                 return (
-                                    <option key={option.label} value={option.value}>{option.label}</option>
+                                    <option key={option.label} value={option.value} title={option.label}>{option.label}</option>
                                 )
                             })
                         }

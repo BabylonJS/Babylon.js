@@ -253,7 +253,7 @@ export class SerializationHelper {
     /**
      * Static function used to serialized a specific entity
      * @param entity defines the entity to serialize
-     * @param serializationObject defines the optional target obecjt where serialization data will be stored
+     * @param serializationObject defines the optional target object where serialization data will be stored
      * @returns a JSON compatible object representing the serialization of the entity
      */
     public static Serialize<T>(entity: T, serializationObject?: any): any {
@@ -275,7 +275,7 @@ export class SerializationHelper {
             var propertyType = propertyDescriptor.type;
             var sourceProperty = (<any>entity)[property];
 
-            if (sourceProperty !== undefined && sourceProperty !== null) {
+            if (sourceProperty !== undefined && sourceProperty !== null && property !== "uniqueId") {
                 switch (propertyType) {
                     case 0:     // Value
                         serializationObject[targetPropertyName] = sourceProperty;
@@ -312,6 +312,7 @@ export class SerializationHelper {
                         break;
                     case 11:    // Camera reference
                         serializationObject[targetPropertyName] = (<Camera>sourceProperty).id;
+                        break;
                     case 12:    // Matrix
                         serializationObject[targetPropertyName] = (<Matrix>sourceProperty).asArray();
                         break;
@@ -350,7 +351,7 @@ export class SerializationHelper {
             var sourceProperty = source[propertyDescriptor.sourceName || property];
             var propertyType = propertyDescriptor.type;
 
-            if (sourceProperty !== undefined && sourceProperty !== null) {
+            if (sourceProperty !== undefined && sourceProperty !== null && property !== "uniqueId") {
                 var dest = <any>destination;
                 switch (propertyType) {
                     case 0:     // Value

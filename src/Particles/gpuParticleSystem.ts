@@ -6,24 +6,24 @@ import { Color4, Color3, TmpColors } from '../Maths/math.color';
 import { Scalar } from "../Maths/math.scalar";
 import { VertexBuffer } from "../Meshes/buffer";
 import { Buffer } from "../Meshes/buffer";
-import { AbstractMesh } from "../Meshes/abstractMesh";
 import { IParticleSystem } from "./IParticleSystem";
 import { BaseParticleSystem } from "./baseParticleSystem";
 import { ParticleSystem } from "./particleSystem";
-import { Engine } from "../Engines/engine";
 import { BoxParticleEmitter } from "../Particles/EmitterTypes/boxParticleEmitter";
-import { Scene, IDisposable } from "../scene";
+import { IDisposable } from "../scene";
 import { Effect, IEffectCreationOptions } from "../Materials/effect";
-import { Material } from "../Materials/material";
 import { MaterialHelper } from "../Materials/materialHelper";
 import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
-import { Texture } from "../Materials/Textures/texture";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { Constants } from "../Engines/constants";
 import { EngineStore } from "../Engines/engineStore";
-import { DeepCopier } from "../Misc/deepCopier";
 import { IAnimatable } from '../Animations/animatable.interface';
 import { CustomParticleEmitter } from './EmitterTypes/customParticleEmitter';
+import { ThinEngine } from '../Engines/thinEngine';
+
+declare type Scene = import("../scene").Scene;
+declare type Engine = import("../Engines/engine").Engine;
+declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 
 import "../Shaders/gpuUpdateParticles.fragment";
 import "../Shaders/gpuUpdateParticles.vertex";
@@ -58,8 +58,6 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     private _sourceBuffer: Buffer;
     private _targetBuffer: Buffer;
 
-    private _engine: Engine;
-
     private _currentRenderId = -1;
     private _started = false;
     private _stopped = false;
@@ -74,6 +72,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
     private _randomTextureSize: number;
     private _actualFrame = 0;
+    private _customEffect: { [blendMode: number] : Nullable<Effect> };
 
     private readonly _rawTextureWidth = 256;
 
@@ -84,13 +83,17 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         if (!EngineStore.LastCreatedEngine) {
             return false;
         }
-        return EngineStore.LastCreatedEngine.webGLVersion > 1;
+        return EngineStore.LastCreatedEngine.name === "WebGL" && EngineStore.LastCreatedEngine.version > 1;
     }
 
     /**
     * An event triggered when the system is disposed.
     */
-    public onDisposeObservable = new Observable<GPUParticleSystem>();
+    public onDisposeObservable = new Observable<IParticleSystem>();
+    /**
+    * An event triggered when the system is stopped
+    */
+    public onStoppedObservable = new Observable<IParticleSystem>();
 
     /**
      * Gets the maximum number of particles active at the same time.
@@ -124,6 +127,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      */
     public isLocal = false;
 
+    /** Gets or sets a matrix to use to compute projection */
+    public defaultProjectionMatrix: Matrix;
+
     /**
      * Is this system ready to be used/rendered
      * @return true if the system is ready
@@ -135,7 +141,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             return false;
         }
 
-        if (!this.emitter || !this._updateEffect.isReady() || !this._imageProcessingConfiguration.isReady() || !this._renderEffect.isReady() || !this.particleTexture || !this.particleTexture.isReady()) {
+        if (!this.emitter || !this._updateEffect.isReady() || this._imageProcessingConfiguration && !this._imageProcessingConfiguration.isReady() || !this._getEffect().isReady() || !this.particleTexture || !this.particleTexture.isReady()) {
             return false;
         }
 
@@ -193,8 +199,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._preWarmDone = false;
 
         // Animations
-        if (this.beginAnimationOnStart && this.animations && this.animations.length > 0) {
-            this.getScene().beginAnimation(this, this.beginAnimationFrom, this.beginAnimationTo, this.beginAnimationLoop);
+        if (this.beginAnimationOnStart && this.animations && this.animations.length > 0 && this._scene) {
+            this._scene.beginAnimation(this, this.beginAnimationFrom, this.beginAnimationTo, this.beginAnimationLoop);
         }
     }
 
@@ -202,6 +208,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * Stops the particle system.
      */
     public stop(): void {
+        if (this._stopped) {
+            return;
+        }
         this._stopped = true;
     }
 
@@ -221,6 +230,45 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      */
     public getClassName(): string {
         return "GPUParticleSystem";
+    }
+
+    /**
+     * Gets the custom effect used to render the particles
+     * @param blendMode Blend mode for which the effect should be retrieved
+     * @returns The effect
+     */
+    public getCustomEffect(blendMode: number = 0): Nullable<Effect> {
+        return this._customEffect[blendMode] ?? this._customEffect[0];
+    }
+
+    /**
+     * Sets the custom effect used to render the particles
+     * @param effect The effect to set
+     * @param blendMode Blend mode for which the effect should be set
+     */
+    public setCustomEffect(effect: Nullable<Effect>, blendMode: number = 0) {
+        this._customEffect[blendMode] = effect;
+    }
+
+    /** @hidden */
+    protected _onBeforeDrawParticlesObservable: Nullable<Observable<Nullable<Effect>>> = null;
+
+    /**
+     * Observable that will be called just before the particles are drawn
+     */
+    public get onBeforeDrawParticlesObservable(): Observable<Nullable<Effect>> {
+        if (!this._onBeforeDrawParticlesObservable) {
+            this._onBeforeDrawParticlesObservable = new Observable<Nullable<Effect>>();
+        }
+
+        return this._onBeforeDrawParticlesObservable;
+    }
+
+    /**
+     * Gets the name of the particle vertex shader
+     */
+    public get vertexShaderName(): string {
+        return "gpuRenderParticles";
     }
 
     private _colorGradientsTexture: RawTexture;
@@ -618,7 +666,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     /**
      * Not supported by GPUParticleSystem
      * Gets or sets a boolean indicating that ramp gradients must be used
-     * @see http://doc.babylonjs.com/babylon101/particles#ramp-gradients
+     * @see https://doc.babylonjs.com/babylon101/particles#ramp-gradients
      */
     public get useRampGradients(): boolean {
         //Not supported by GPUParticleSystem
@@ -658,22 +706,30 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
      * @param name The name of the particle system
      * @param options The options used to create the system
-     * @param scene The scene the particle system belongs to
+     * @param sceneOrEngine The scene the particle system belongs to or the engine to use if no scene
      * @param isAnimationSheetEnabled Must be true if using a spritesheet to animate the particles texture
+     * @param customEffect a custom effect used to change the way particles are rendered by default
      */
     constructor(name: string, options: Partial<{
         capacity: number,
         randomTextureSize: number
-    }>, scene: Scene, isAnimationSheetEnabled: boolean = false) {
+    }>, sceneOrEngine: Scene | ThinEngine, isAnimationSheetEnabled: boolean = false, customEffect: Nullable<Effect> = null) {
         super(name);
-        this._scene = scene || EngineStore.LastCreatedScene;
 
-        this.uniqueId = this._scene.getUniqueId();
+        if (!sceneOrEngine || sceneOrEngine.getClassName() === "Scene") {
+            this._scene = (sceneOrEngine as Scene) || EngineStore.LastCreatedScene;
+            this._engine = this._scene.getEngine();
+            this.uniqueId = this._scene.getUniqueId();
+            this._scene.particleSystems.push(this);
+        } else {
+            this._engine = (sceneOrEngine as ThinEngine);
+            this.defaultProjectionMatrix = Matrix.PerspectiveFovLH(0.8, 1, 0.1, 100);
+        }
+
+        this._customEffect = { 0: customEffect };
 
         // Setup the default processing configuration to the scene.
         this._attachImageProcessingConfiguration(null);
-
-        this._engine = this._scene.getEngine();
 
         if (!options.randomTextureSize) {
             delete options.randomTextureSize;
@@ -694,8 +750,6 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._activeCount = fullOptions.capacity;
         this._currentActiveCount = 0;
         this._isAnimationSheetEnabled = isAnimationSheetEnabled;
-
-        this._scene.particleSystems.push(this);
 
         this._updateEffectOptions = {
             attributes: ["position", "initialPosition", "age", "life", "seed", "size", "color", "direction", "initialDirection", "angle", "cellIndex", "cellStartOffset", "noiseCoordinates1", "noiseCoordinates2"],
@@ -724,9 +778,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             d.push(Math.random());
             d.push(Math.random());
         }
-        this._randomTexture = new RawTexture(new Float32Array(d), maxTextureSize, 1, Constants.TEXTUREFORMAT_RGBA, this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
-        this._randomTexture.wrapU = Texture.WRAP_ADDRESSMODE;
-        this._randomTexture.wrapV = Texture.WRAP_ADDRESSMODE;
+        this._randomTexture = new RawTexture(new Float32Array(d), maxTextureSize, 1, Constants.TEXTUREFORMAT_RGBA, sceneOrEngine, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
+        this._randomTexture.wrapU = Constants.TEXTURE_WRAP_ADDRESSMODE;
+        this._randomTexture.wrapV = Constants.TEXTURE_WRAP_ADDRESSMODE;
 
         d = [];
         for (var i = 0; i < maxTextureSize; ++i) {
@@ -735,9 +789,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             d.push(Math.random());
             d.push(Math.random());
         }
-        this._randomTexture2 = new RawTexture(new Float32Array(d), maxTextureSize, 1, Constants.TEXTUREFORMAT_RGBA, this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
-        this._randomTexture2.wrapU = Texture.WRAP_ADDRESSMODE;
-        this._randomTexture2.wrapV = Texture.WRAP_ADDRESSMODE;
+        this._randomTexture2 = new RawTexture(new Float32Array(d), maxTextureSize, 1, Constants.TEXTUREFORMAT_RGBA, sceneOrEngine, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
+        this._randomTexture2.wrapU = Constants.TEXTURE_WRAP_ADDRESSMODE;
+        this._randomTexture2.wrapV = Constants.TEXTURE_WRAP_ADDRESSMODE;
 
         this._randomTextureSize = maxTextureSize;
     }
@@ -862,7 +916,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         renderVertexBuffers["offset"] = spriteSource.createVertexBuffer("offset", 0, 2);
         renderVertexBuffers["uv"] = spriteSource.createVertexBuffer("uv", 2, 2);
 
-        let vao = this._engine.recordVertexArrayObject(renderVertexBuffers, null, this._renderEffect);
+        let vao = this._engine.recordVertexArrayObject(renderVertexBuffers, null, this._getEffect());
         this._engine.bindArrayBuffer(null);
 
         return vao;
@@ -873,7 +927,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             return;
         }
 
-        let engine = this._scene.getEngine();
+        let engine = this._engine;
         var data = new Array<float>();
 
         this._attributesStrideSize = 21;
@@ -1102,84 +1156,129 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
 
         this._updateEffectOptions.defines = defines;
-        this._updateEffect = new Effect("gpuUpdateParticles", this._updateEffectOptions, this._scene.getEngine());
+        this._updateEffect = new Effect("gpuUpdateParticles", this._updateEffectOptions, this._engine);
     }
 
-    /** @hidden */
-    public _recreateRenderEffect() {
-        let defines = "";
-        if (this._scene.clipPlane) {
-            defines = "\n#define CLIPPLANE";
-        }
-        if (this._scene.clipPlane2) {
-            defines = "\n#define CLIPPLANE2";
-        }
-        if (this._scene.clipPlane3) {
-            defines = "\n#define CLIPPLANE3";
-        }
-        if (this._scene.clipPlane4) {
-            defines = "\n#define CLIPPLANE4";
-        }
-        if (this._scene.clipPlane5) {
-            defines = "\n#define CLIPPLANE5";
-        }
-        if (this._scene.clipPlane6) {
-            defines = "\n#define CLIPPLANE6";
+    private _getEffect(): Effect {
+        return this.getCustomEffect() ?? this._renderEffect;
+    }
+
+    /**
+     * Fill the defines array according to the current settings of the particle system
+     * @param defines Array to be updated
+     * @param blendMode blend mode to take into account when updating the array
+     */
+    public fillDefines(defines: Array<string>, blendMode: number = 0) {
+        if (this._scene) {
+            if (this._scene.clipPlane) {
+                defines.push("#define CLIPPLANE");
+            }
+            if (this._scene.clipPlane2) {
+                defines.push("#define CLIPPLANE2");
+            }
+            if (this._scene.clipPlane3) {
+                defines.push("#define CLIPPLANE3");
+            }
+            if (this._scene.clipPlane4) {
+                defines.push("#define CLIPPLANE4");
+            }
+            if (this._scene.clipPlane5) {
+                defines.push("#define CLIPPLANE5");
+            }
+            if (this._scene.clipPlane6) {
+                defines.push("#define CLIPPLANE6");
+            }
         }
 
         if (this.blendMode === ParticleSystem.BLENDMODE_MULTIPLY) {
-            defines = "\n#define BLENDMULTIPLYMODE";
+            defines.push("#define BLENDMULTIPLYMODE");
         }
 
         if (this.isLocal) {
-            defines += "\n#define LOCAL";
+            defines.push("#define LOCAL");
         }
 
         if (this._isBillboardBased) {
-            defines += "\n#define BILLBOARD";
+            defines.push("#define BILLBOARD");
 
             switch (this.billboardMode) {
                 case ParticleSystem.BILLBOARDMODE_Y:
-                    defines += "\n#define BILLBOARDY";
+                    defines.push("#define BILLBOARDY");
                     break;
                 case ParticleSystem.BILLBOARDMODE_STRETCHED:
-                    defines += "\n#define BILLBOARDSTRETCHED";
+                    defines.push("#define BILLBOARDSTRETCHED");
                     break;
                 case ParticleSystem.BILLBOARDMODE_ALL:
+                    defines.push("#define BILLBOARDMODE_ALL");
+                    break;
                 default:
                     break;
             }
         }
 
         if (this._colorGradientsTexture) {
-            defines += "\n#define COLORGRADIENTS";
+            defines.push("#define COLORGRADIENTS");
         }
 
         if (this.isAnimationSheetEnabled) {
-            defines += "\n#define ANIMATESHEET";
+            defines.push("#define ANIMATESHEET");
         }
 
         if (this._imageProcessingConfiguration) {
             this._imageProcessingConfiguration.prepareDefines(this._imageProcessingConfigurationDefines);
-            defines += "\n" + this._imageProcessingConfigurationDefines.toString();
+            defines.push("" + this._imageProcessingConfigurationDefines.toString());
         }
+    }
 
-        if (this._renderEffect && this._renderEffect.defines === defines) {
-            return;
-        }
+    /**
+     * Fill the uniforms, attributes and samplers arrays according to the current settings of the particle system
+     * @param uniforms Uniforms array to fill
+     * @param attributes Attributes array to fill
+     * @param samplers Samplers array to fill
+     */
+    public fillUniformsAttributesAndSamplerNames(uniforms: Array<string>, attributes: Array<string>, samplers: Array<string>) {
+        attributes.push("position", "age", "life", "size", "color", "offset", "uv", "direction", "initialDirection", "angle", "cellIndex");
 
-        var uniforms = ["emitterWM", "worldOffset", "view", "projection", "colorDead", "invView", "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "sheetInfos", "translationPivot", "eyePosition"];
-        var samplers = ["textureSampler", "colorGradientSampler"];
+        uniforms.push("emitterWM", "worldOffset", "view", "projection", "colorDead", "invView", "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "sheetInfos", "translationPivot", "eyePosition");
 
-        if (ImageProcessingConfiguration) {
+        samplers.push("diffuseSampler", "colorGradientSampler");
+
+        if (this._imageProcessingConfiguration) {
             ImageProcessingConfiguration.PrepareUniforms(uniforms, this._imageProcessingConfigurationDefines);
             ImageProcessingConfiguration.PrepareSamplers(samplers, this._imageProcessingConfigurationDefines);
         }
+    }
+
+    /** @hidden */
+    public _recreateRenderEffect(): Effect {
+        const customEffect = this.getCustomEffect();
+
+        if (customEffect) {
+            return customEffect;
+        }
+
+        let defines: Array<string> = [];
+
+        this.fillDefines(defines);
+
+        var join = defines.join("\n");
+
+        if (this._renderEffect && this._renderEffect.defines === join) {
+            return this._renderEffect;
+        }
+
+        var attributes: Array<string> = [];
+        var uniforms: Array<string> = [];
+        var samplers: Array<string> = [];
+
+        this.fillUniformsAttributesAndSamplerNames(uniforms, attributes, samplers);
 
         this._renderEffect = new Effect("gpuRenderParticles",
-            ["position", "age", "life", "size", "color", "offset", "uv", "direction", "initialDirection", "angle", "cellIndex"],
+            attributes,
             uniforms,
-            samplers, this._scene.getEngine(), defines);
+            samplers, this._engine, join);
+
+        return this._renderEffect;
     }
 
     /**
@@ -1187,7 +1286,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @param preWarm defines if we are in the pre-warmimg phase
      */
     public animate(preWarm = false): void {
-        this._timeDelta = this.updateSpeed * (preWarm ? this.preWarmStepOffset : this._scene.getAnimationRatio());
+        this._timeDelta = this.updateSpeed * (preWarm ? this.preWarmStepOffset : this._scene?.getAnimationRatio() || 1);
         this._actualFrame += this._timeDelta;
 
         if (!this._stopped) {
@@ -1214,7 +1313,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             });
         }
 
-        (<any>this)[textureName] = RawTexture.CreateRTexture(data, this._rawTextureWidth, 1, this._scene, false, false, Texture.NEAREST_SAMPLINGMODE);
+        (<any>this)[textureName] = RawTexture.CreateRTexture(data, this._rawTextureWidth, 1, this._scene || this._engine, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
     }
 
     private _createSizeGradientTexture() {
@@ -1259,7 +1358,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         }
 
-        this._colorGradientsTexture = RawTexture.CreateRGBATexture(data, this._rawTextureWidth, 1, this._scene, false, false, Texture.NEAREST_SAMPLINGMODE);
+        this._colorGradientsTexture = RawTexture.CreateRGBATexture(data, this._rawTextureWidth, 1, this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
     }
 
     /**
@@ -1286,7 +1385,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             return 0;
         }
 
-        if (!preWarm) {
+        if (!preWarm && this._scene) {
             if (!this._preWarmDone && this.preWarmCycles) {
                 for (var index = 0; index < this.preWarmCycles; index++) {
                     this.animate(true);
@@ -1319,7 +1418,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         // Enable update effect
         this._engine.enableEffect(this._updateEffect);
-        this._engine.setState(false);
+        var engine = this._engine as Engine;
+        if (!engine.setState) {
+            throw new Error("GPU particles cannot work with a full Engine. ThinEngine is not supported");
+        }
 
         this._updateEffect.setFloat("currentCount", this._currentActiveCount);
         this._updateEffect.setFloat("timeDelta", this._timeDelta);
@@ -1387,52 +1489,61 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._engine.bindVertexArrayObject(this._updateVAO[this._targetIndex], null);
 
         // Update
-        this._engine.bindTransformFeedbackBuffer(this._targetBuffer.getBuffer());
-        this._engine.setRasterizerState(false);
-        this._engine.beginTransformFeedback(true);
-        this._engine.drawArraysType(Material.PointListDrawMode, 0, this._currentActiveCount);
-        this._engine.endTransformFeedback();
-        this._engine.setRasterizerState(true);
-        this._engine.bindTransformFeedbackBuffer(null);
+        engine.bindTransformFeedbackBuffer(this._targetBuffer.getBuffer());
+        engine.setRasterizerState(false);
+        engine.beginTransformFeedback(true);
+        engine.drawArraysType(Constants.MATERIAL_PointListDrawMode, 0, this._currentActiveCount);
+        engine.endTransformFeedback();
+        engine.setRasterizerState(true);
+        engine.bindTransformFeedbackBuffer(null);
 
         if (!preWarm) {
             // Enable render effect
-            this._engine.enableEffect(this._renderEffect);
-            let viewMatrix = this._scene.getViewMatrix();
-            this._renderEffect.setMatrix("view", viewMatrix);
-            this._renderEffect.setMatrix("projection", this._scene.getProjectionMatrix());
-            this._renderEffect.setTexture("textureSampler", this.particleTexture);
-            this._renderEffect.setVector2("translationPivot", this.translationPivot);
-            this._renderEffect.setVector3("worldOffset", this.worldOffset);
+            const effect = this._getEffect();
+
+            this._engine.enableEffect(effect);
+            let viewMatrix = this._scene?.getViewMatrix() || Matrix.IdentityReadOnly;
+            effect.setMatrix("view", viewMatrix);
+            effect.setMatrix("projection", this.defaultProjectionMatrix ?? this._scene!.getProjectionMatrix());
+            effect.setTexture("diffuseSampler", this.particleTexture);
+            effect.setVector2("translationPivot", this.translationPivot);
+            effect.setVector3("worldOffset", this.worldOffset);
             if (this.isLocal) {
-                this._renderEffect.setMatrix("emitterWM", emitterWM);
+                effect.setMatrix("emitterWM", emitterWM);
             }
             if (this._colorGradientsTexture) {
-                this._renderEffect.setTexture("colorGradientSampler", this._colorGradientsTexture);
+                effect.setTexture("colorGradientSampler", this._colorGradientsTexture);
             } else {
-                this._renderEffect.setDirectColor4("colorDead", this.colorDead);
+                effect.setDirectColor4("colorDead", this.colorDead);
             }
 
             if (this._isAnimationSheetEnabled && this.particleTexture) {
                 let baseSize = this.particleTexture.getBaseSize();
-                this._renderEffect.setFloat3("sheetInfos", this.spriteCellWidth / baseSize.width, this.spriteCellHeight / baseSize.height, baseSize.width / this.spriteCellWidth);
+                effect.setFloat3("sheetInfos", this.spriteCellWidth / baseSize.width, this.spriteCellHeight / baseSize.height, baseSize.width / this.spriteCellWidth);
             }
 
-            if (this._isBillboardBased) {
+            if (this._isBillboardBased && this._scene) {
                 var camera = this._scene.activeCamera!;
-                this._renderEffect.setVector3("eyePosition", camera.globalPosition);
+                effect.setVector3("eyePosition", camera.globalPosition);
             }
 
-            if (this._scene.clipPlane || this._scene.clipPlane2 || this._scene.clipPlane3 || this._scene.clipPlane4 || this._scene.clipPlane5 || this._scene.clipPlane6) {
+            const defines = effect.defines;
+
+            if (this._scene) {
+                if (this._scene.clipPlane || this._scene.clipPlane2 || this._scene.clipPlane3 || this._scene.clipPlane4 || this._scene.clipPlane5 || this._scene.clipPlane6) {
+                    MaterialHelper.BindClipPlane(effect, this._scene);
+                }
+            }
+
+            if (defines.indexOf("#define BILLBOARDMODE_ALL") >= 0) {
                 var invView = viewMatrix.clone();
                 invView.invert();
-                this._renderEffect.setMatrix("invView", invView);
-                MaterialHelper.BindClipPlane(this._renderEffect, this._scene);
+                effect.setMatrix("invView", invView);
             }
 
             // image processing
             if (this._imageProcessingConfiguration && !this._imageProcessingConfiguration.applyByPostProcess) {
-                this._imageProcessingConfiguration.bind(this._renderEffect);
+                this._imageProcessingConfiguration.bind(effect);
             }
 
             // Draw order
@@ -1452,14 +1563,18 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             }
 
             if (this.forceDepthWrite) {
-                this._engine.setDepthWrite(true);
+                engine.setDepthWrite(true);
             }
 
             // Bind source VAO
             this._engine.bindVertexArrayObject(this._renderVAO[this._targetIndex], null);
 
+            if (this._onBeforeDrawParticlesObservable) {
+                this._onBeforeDrawParticlesObservable.notifyObservers(effect);
+            }
+
             // Render
-            this._engine.drawArraysType(Material.TriangleFanDrawMode, 0, 4, this._currentActiveCount);
+            this._engine.drawArraysType(Constants.MATERIAL_TriangleFanDrawMode, 0, 4, this._currentActiveCount);
             this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
         }
         // Switch VAOs
@@ -1519,9 +1634,11 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @param disposeTexture defines if the particule texture must be disposed as well (true by default)
      */
     public dispose(disposeTexture = true): void {
-        var index = this._scene.particleSystems.indexOf(this);
-        if (index > -1) {
-            this._scene.particleSystems.splice(index, 1);
+        if (this._scene) {
+            var index = this._scene.particleSystems.indexOf(this);
+            if (index > -1) {
+                this._scene.particleSystems.splice(index, 1);
+            }
         }
 
         this._releaseBuffers();
@@ -1578,6 +1695,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
 
         // Callback
+        this.onStoppedObservable.clear();
         this.onDisposeObservable.notifyObservers(this);
         this.onDisposeObservable.clear();
     }
@@ -1588,82 +1706,19 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @returns the cloned particle system
      */
     public clone(name: string, newEmitter: any): GPUParticleSystem {
-        var result = new GPUParticleSystem(name, { capacity: this._capacity, randomTextureSize: this._randomTextureSize }, this._scene);
-
-        DeepCopier.DeepCopy(this, result, ["particles", "customShader", "noiseTexture", "particleTexture", "onDisposeObservable"]);
+        let serialization = this.serialize();
+        var result = GPUParticleSystem.Parse(serialization, this._scene || this._engine, this._rootUrl);
+        var custom = { ...this._customEffect };
+        result.name = name;
+        result._customEffect = custom;
 
         if (newEmitter === undefined) {
             newEmitter = this.emitter;
         }
 
         result.emitter = newEmitter;
-        if (this.particleTexture) {
-            result.particleTexture = new Texture(this.particleTexture.url, this._scene);
-        }
 
         result.noiseTexture = this.noiseTexture;
-
-        // Clone gradients
-        if (this._colorGradients) {
-            this._colorGradients.forEach((v) => {
-                result.addColorGradient(v.gradient, v.color1, v.color2);
-            });
-        }
-        if (this._dragGradients) {
-            this._dragGradients.forEach((v) => {
-                result.addDragGradient(v.gradient, v.factor1);
-            });
-        }
-        if (this._angularSpeedGradients) {
-            this._angularSpeedGradients.forEach((v) => {
-                result.addAngularSpeedGradient(v.gradient, v.factor1);
-            });
-        }
-        if (this._emitRateGradients) {
-            this._emitRateGradients.forEach((v) => {
-                result.addEmitRateGradient(v.gradient, v.factor1, v.factor2);
-            });
-        }
-        if (this._lifeTimeGradients) {
-            this._lifeTimeGradients.forEach((v) => {
-                result.addLifeTimeGradient(v.gradient, v.factor1, v.factor2);
-            });
-        }
-        if (this._limitVelocityGradients) {
-            this._limitVelocityGradients.forEach((v) => {
-                result.addLimitVelocityGradient(v.gradient, v.factor1);
-            });
-        }
-        if (this._sizeGradients) {
-            this._sizeGradients.forEach((v) => {
-                result.addSizeGradient(v.gradient, v.factor1);
-            });
-        }
-        if (this._startSizeGradients) {
-            this._startSizeGradients.forEach((v) => {
-                result.addStartSizeGradient(v.gradient, v.factor1, v.factor2);
-            });
-        }
-        if (this._velocityGradients) {
-            this._velocityGradients.forEach((v) => {
-                result.addVelocityGradient(v.gradient, v.factor1);
-            });
-        }
-        if (this._rampGradients) {
-            this._rampGradients.forEach((v) => {
-                result.addRampGradient(v.gradient, v.color);
-            });
-        }
-        if (this._colorRemapGradients) {
-            this._colorRemapGradients.forEach((v) => {
-                result.addColorRemapGradient(v.gradient, v.factor1, v.factor2!);
-            });
-        }
-        if (this._alphaRemapGradients) {
-            this._alphaRemapGradients.forEach((v) => {
-                result.addAlphaRemapGradient(v.gradient, v.factor1, v.factor2!);
-            });
-        }
 
         return result;
     }
@@ -1678,6 +1733,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         ParticleSystem._Serialize(serializationObject, this, serializeTexture);
         serializationObject.activeParticleCount = this.activeParticleCount;
+        serializationObject.randomTextureSize = this._randomTextureSize;
 
         return serializationObject;
     }
@@ -1685,19 +1741,20 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     /**
      * Parses a JSON object to create a GPU particle system.
      * @param parsedParticleSystem The JSON object to parse
-     * @param scene The scene to create the particle system in
+     * @param sceneOrEngine The scene or the engine to create the particle system in
      * @param rootUrl The root url to use to load external dependencies like texture
      * @param doNotStart Ignore the preventAutoStart attribute and does not start
      * @returns the parsed GPU particle system
      */
-    public static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string, doNotStart = false): GPUParticleSystem {
+    public static Parse(parsedParticleSystem: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart = false): GPUParticleSystem {
         var name = parsedParticleSystem.name;
-        var particleSystem = new GPUParticleSystem(name, { capacity: parsedParticleSystem.capacity, randomTextureSize: parsedParticleSystem.randomTextureSize }, scene);
+        var particleSystem = new GPUParticleSystem(name, { capacity: parsedParticleSystem.capacity, randomTextureSize: parsedParticleSystem.randomTextureSize }, sceneOrEngine);
+        particleSystem._rootUrl = rootUrl;
 
         if (parsedParticleSystem.activeParticleCount) {
             particleSystem.activeParticleCount = parsedParticleSystem.activeParticleCount;
         }
-        ParticleSystem._Parse(parsedParticleSystem, particleSystem, scene, rootUrl);
+        ParticleSystem._Parse(parsedParticleSystem, particleSystem, sceneOrEngine, rootUrl);
 
         // Auto start
         if (parsedParticleSystem.preventAutoStart) {

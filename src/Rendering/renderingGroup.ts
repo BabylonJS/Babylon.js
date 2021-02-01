@@ -1,4 +1,4 @@
-import { SmartArray } from "../Misc/smartArray";
+import { SmartArray, SmartArrayNoDuplicate } from "../Misc/smartArray";
 import { SubMesh } from "../Meshes/subMesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Nullable, DeepImmutable } from "../types";
@@ -36,7 +36,7 @@ export class RenderingGroup {
     private _renderTransparent: (subMeshes: SmartArray<SubMesh>) => void;
 
     /** @hidden */
-    public _edgesRenderers = new SmartArray<IEdgesRenderer>(16);
+    public _edgesRenderers = new SmartArrayNoDuplicate<IEdgesRenderer>(16);
 
     public onBeforeTransparentRendering: () => void;
 
@@ -149,6 +149,7 @@ export class RenderingGroup {
 
         // Transparent
         if (this._transparentSubMeshes.length !== 0) {
+            engine.setStencilBuffer(stencilState);
             this._renderTransparent(this._transparentSubMeshes);
             engine.setAlphaMode(Constants.ALPHA_DISABLE);
         }
@@ -368,7 +369,7 @@ export class RenderingGroup {
         mesh._renderingGroup = this;
 
         if (mesh._edgesRenderer && mesh._edgesRenderer.isEnabled) {
-            this._edgesRenderers.push(mesh._edgesRenderer);
+            this._edgesRenderers.pushNoDuplicate(mesh._edgesRenderer);
         }
     }
 

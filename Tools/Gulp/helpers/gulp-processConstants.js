@@ -2,13 +2,22 @@
 var through = require('through2');
 var PluginError = require('plugin-error');
 const fs = require('fs');
-const babylonConstants = require(__dirname + '/../../../dist/preview release/babylon.max').Constants;
+const constantModule = __dirname + '/../../../dist/preview release/babylon.max';
 
+let _babylonConstants = undefined;
+function getBabylonConstants() {
+    if (!_babylonConstants) {
+        _babylonConstants = require(constantModule).Constants;
+    }
+    return _babylonConstants;
+}
 
 /**
  * Replace all constants by their inlined values.
  */
 function processConstants(sourceCode) {
+    const babylonConstants = getBabylonConstants();
+
     var regexImport = /import { Constants } from .*;/g;
     sourceCode = sourceCode.replace(regexImport, "");
 
@@ -24,9 +33,13 @@ function processConstants(sourceCode) {
     }
 
     for (var constant of constantList) {
-        var value = babylonConstants[constant];
         var regex = new RegExp(`(?<![_0-9a-zA-Z])Constants\.${constant}(?![_0-9a-zA-Z])`, "g");
-        sourceCode = sourceCode.replace(regex, value);
+        var value = babylonConstants[constant];
+        if (typeof(value) === "string") {
+            sourceCode = sourceCode.replace(regex, "`" + value + "`");
+        } else  {
+            sourceCode = sourceCode.replace(regex, value);
+        }
     }
 
     return sourceCode;

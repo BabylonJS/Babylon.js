@@ -116,4 +116,6 @@ void main(void) {
     #endif
 #else    
 #endif
+
+#include<imageProcessingCompatibility>
 }

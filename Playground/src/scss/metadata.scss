@@ -1,0 +1,62 @@
+#metadata-editor-root {
+    grid-column: 1 / 3;
+    grid-row: 1 / 3;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+
+
+    #metadata-editor {
+
+        position: absolute;
+        top: 80px;
+        left: calc(50% - 205px);
+        width: 410px;
+        height: 390px;
+        padding-top: 15px;
+        -webkit-border-radius: 4px;
+        -moz-border-radius: 4px;
+        border-radius: 4px;
+        color: white;
+        font-size: 14px;
+        text-align: center;
+
+        .separator {
+            width: 350px;
+            border-bottom: 1px solid #999;
+            margin: auto;
+            margin-bottom: 10px;
+        }
+
+        textarea, input {
+            display: block;
+            width: 350px;
+            margin: auto;
+            margin-bottom: 20px;
+            padding: 5px;
+            resize: none;
+            border: 1px solid #999;
+            background: white;
+        }
+
+        textarea {
+            height: 65px;
+        }
+
+        .editor-buttons{
+            user-select: none;
+            div {
+                cursor: pointer;
+                display: inline-block;
+                width: 100px;
+                height: 30px;
+                padding-top: 10px;
+
+                &:hover {
+                    background: white;
+                    color: black;
+                }
+            }
+        }
+    }
+}

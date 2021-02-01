@@ -137,6 +137,14 @@
                         display: none;
                     }
                 }
+
+                .frame-comments.has-comments{
+                    .frame-comment-span{
+                        white-space: nowrap;
+                        text-overflow: ellipsis;
+                        overflow: hidden;
+                    }
+                }
             }
 
             .frame-box-border {                
