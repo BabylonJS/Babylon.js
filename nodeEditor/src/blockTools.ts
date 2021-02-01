@@ -16,6 +16,7 @@ import { VertexOutputBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/vertex
 import { FragmentOutputBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fragmentOutputBlock';
 import { NormalizeBlock } from 'babylonjs/Materials/Node/Blocks/normalizeBlock';
 import { AddBlock } from 'babylonjs/Materials/Node/Blocks/addBlock';
+import { ModBlock } from 'babylonjs/Materials/Node/Blocks/modBlock';
 import { ScaleBlock } from 'babylonjs/Materials/Node/Blocks/scaleBlock';
 import { TrigonometryBlock, TrigonometryBlockOperations } from 'babylonjs/Materials/Node/Blocks/trigonometryBlock';
 import { ClampBlock } from 'babylonjs/Materials/Node/Blocks/clampBlock';
@@ -64,11 +65,18 @@ import { ReflectBlock } from 'babylonjs/Materials/Node/Blocks/reflectBlock';
 import { DesaturateBlock } from 'babylonjs/Materials/Node/Blocks/desaturateBlock';
 import { PBRMetallicRoughnessBlock } from 'babylonjs/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock';
 import { SheenBlock } from 'babylonjs/Materials/Node/Blocks/PBR/sheenBlock';
-import { AmbientOcclusionBlock } from 'babylonjs/Materials/Node/Blocks/PBR/ambientOcclusionBlock';
-import { ReflectivityBlock } from 'babylonjs/Materials/Node/Blocks/PBR/reflectivityBlock';
 import { AnisotropyBlock } from 'babylonjs/Materials/Node/Blocks/PBR/anisotropyBlock';
 import { ReflectionBlock } from 'babylonjs/Materials/Node/Blocks/PBR/reflectionBlock';
 import { ClearCoatBlock } from 'babylonjs/Materials/Node/Blocks/PBR/clearCoatBlock';
+import { RefractionBlock } from 'babylonjs/Materials/Node/Blocks/PBR/refractionBlock';
+import { SubSurfaceBlock } from 'babylonjs/Materials/Node/Blocks/PBR/subSurfaceBlock';
+import { CurrentScreenBlock } from 'babylonjs/Materials/Node/Blocks/Dual/currentScreenBlock';
+import { ParticleTextureBlock } from 'babylonjs/Materials/Node/Blocks/Particle/particleTextureBlock';
+import { ParticleRampGradientBlock } from 'babylonjs/Materials/Node/Blocks/Particle/particleRampGradientBlock';
+import { ParticleBlendMultiplyBlock } from 'babylonjs/Materials/Node/Blocks/Particle/particleBlendMultiplyBlock';
+import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
+import { FragCoordBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fragCoordBlock';
+import { ScreenSizeBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/screenSizeBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
@@ -108,7 +116,7 @@ export class BlockTools {
             case "VectorSplitterBlock":
                 return new VectorSplitterBlock("VectorSplitter");
             case "TextureBlock":
-                return new TextureBlock("Texture");
+                return new TextureBlock("Texture", nodeMaterial.mode === NodeMaterialModes.Particle);
             case "ReflectionTextureBlock":
                 return new ReflectionTextureBlock("Reflection texture");
             case "LightBlock":
@@ -151,6 +159,8 @@ export class BlockTools {
                 return new DivideBlock("Divide");
             case "SubtractBlock":
                 return new SubtractBlock("Subtract");
+            case "ModBlock":
+                return new ModBlock("Mod");
             case "StepBlock":
                 return new StepBlock("Step");
             case "SmoothStepBlock":
@@ -339,6 +349,11 @@ export class BlockTools {
                 meshPosition.setAsAttribute("position");
                 return meshPosition;
             }
+            case "ScreenPositionBlock": {
+                let meshPosition = new InputBlock("position");
+                meshPosition.setAsAttribute("position2d");
+                return meshPosition;
+            }
             case "UVBlock": {
                 let meshUV = new InputBlock("uv");
                 meshUV.setAsAttribute("uv");
@@ -443,16 +458,48 @@ export class BlockTools {
                 return new PBRMetallicRoughnessBlock("PBRMetallicRoughness");
             case "SheenBlock":
                 return new SheenBlock("Sheen");
-            case "AmbientOcclusionBlock":
-                return new AmbientOcclusionBlock("AmbientOcclusion");
-            case "ReflectivityBlock":
-                return new ReflectivityBlock("Reflectivity");
             case "AnisotropyBlock":
                 return new AnisotropyBlock("Anisotropy");
             case "ReflectionBlock":
                 return new ReflectionBlock("Reflection");
             case "ClearCoatBlock":
                 return new ClearCoatBlock("ClearCoat");
+            case "RefractionBlock":
+                return new RefractionBlock("Refraction");
+            case "SubSurfaceBlock":
+                return new SubSurfaceBlock("SubSurface");
+            case "CurrentScreenBlock":
+                return new CurrentScreenBlock("CurrentScreen");
+            case "ParticleUVBlock": {
+                let uv = new InputBlock("uv");
+                uv.setAsAttribute("particle_uv");
+                return uv;
+            }
+            case "ParticleTextureBlock":
+                return new ParticleTextureBlock("ParticleTexture");
+            case "ParticleColorBlock": {
+                let color = new InputBlock("Color");
+                color.setAsAttribute("particle_color");
+                return color;
+            }
+            case "ParticleTextureMaskBlock": {
+                let u = new InputBlock("TextureMask");
+                u.setAsAttribute("particle_texturemask");
+                return u;
+            }
+            case "ParticlePositionWorldBlock": {
+                let pos = new InputBlock("PositionWorld");
+                pos.setAsAttribute("particle_positionw");
+                return pos;
+            }
+            case "ParticleRampGradientBlock":
+                return new ParticleRampGradientBlock("ParticleRampGradient");
+            case "ParticleBlendMultiplyBlock":
+                return new ParticleBlendMultiplyBlock("ParticleBlendMultiply");
+            case "FragCoordBlock":
+                return new FragCoordBlock("FragCoord");
+            case "ScreenSizeBlock":
+                return new ScreenSizeBlock("ScreenSize");
         }
 
         return null;
@@ -477,6 +524,9 @@ export class BlockTools {
                 break;
             case NodeMaterialBlockConnectionPointTypes.Matrix:
                 color = "#591990";
+                break;
+            case NodeMaterialBlockConnectionPointTypes.Object:
+                color = "#6174FA";
                 break;
         }
 

@@ -98,7 +98,7 @@ export class PBRBRDFConfiguration {
     }
 
     /**
-     * Instantiate a new istance of clear coat configuration.
+     * Instantiate a new instance of clear coat configuration.
      * @param markAllSubMeshesAsMiscDirty Callback to flag the material to dirty
      */
     constructor(markAllSubMeshesAsMiscDirty: () => void) {

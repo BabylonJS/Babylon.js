@@ -3,7 +3,7 @@ import { PaneComponent, IPaneComponentProps } from "../paneComponent";
 
 import { ArcRotateCamera } from "babylonjs/Cameras/arcRotateCamera";
 import { FreeCamera } from "babylonjs/Cameras/freeCamera";
-import { AnimationGroup } from "babylonjs/Animations/animationGroup";
+import { AnimationGroup, TargetedAnimation } from "babylonjs/Animations/animationGroup";
 import { Material } from "babylonjs/Materials/material";
 import { BackgroundMaterial } from "babylonjs/Materials/Background/backgroundMaterial";
 import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
@@ -30,11 +30,11 @@ import { MeshPropertyGridComponent } from "./propertyGrids/meshes/meshPropertyGr
 import { TransformNodePropertyGridComponent } from "./propertyGrids/meshes/transformNodePropertyGridComponent";
 import { BackgroundMaterialPropertyGridComponent } from "./propertyGrids/materials/backgroundMaterialPropertyGridComponent";
 import { Control } from "babylonjs-gui/2D/controls/control";
-import { ControlPropertyGridComponent } from "./propertyGrids/gui/controlPropertyGridComponent";
-import { TextBlockPropertyGridComponent } from "./propertyGrids/gui/textBlockPropertyGridComponent";
+import { ControlPropertyGridComponent } from "../../../sharedUiComponents/tabs/propertyGrids/gui/controlPropertyGridComponent";
+import { TextBlockPropertyGridComponent } from "../../../sharedUiComponents/tabs/propertyGrids/gui/textBlockPropertyGridComponent";
 import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
 import { InputText } from "babylonjs-gui/2D/controls/inputText";
-import { InputTextPropertyGridComponent } from "./propertyGrids/gui/inputTextPropertyGridComponent";
+import { InputTextPropertyGridComponent } from "../../../sharedUiComponents/tabs/propertyGrids/gui/inputTextPropertyGridComponent";
 
 import { ColorPicker } from "babylonjs-gui/2D/controls/colorpicker";
 import { Image } from "babylonjs-gui/2D/controls/image";
@@ -49,22 +49,22 @@ import { ScrollViewer } from "babylonjs-gui/2D/controls/scrollViewers/scrollView
 import { Grid } from "babylonjs-gui/2D/controls/grid";
 import { StackPanel } from "babylonjs-gui/2D/controls/stackPanel";
 
-import { ColorPickerPropertyGridComponent } from "./propertyGrids/gui/colorPickerPropertyGridComponent";
+import { ColorPickerPropertyGridComponent } from "../../../sharedUiComponents/tabs/propertyGrids/gui/colorPickerPropertyGridComponent";
 import { AnimationGroupGridComponent } from "./propertyGrids/animations/animationGroupPropertyGridComponent";
-import { LockObject } from "./propertyGrids/lockObject";
-import { ImagePropertyGridComponent } from "./propertyGrids/gui/imagePropertyGridComponent";
-import { SliderPropertyGridComponent } from "./propertyGrids/gui/sliderPropertyGridComponent";
-import { ImageBasedSliderPropertyGridComponent } from "./propertyGrids/gui/imageBasedSliderPropertyGridComponent";
-import { RectanglePropertyGridComponent } from "./propertyGrids/gui/rectanglePropertyGridComponent";
-import { EllipsePropertyGridComponent } from "./propertyGrids/gui/ellipsePropertyGridComponent";
-import { CheckboxPropertyGridComponent } from "./propertyGrids/gui/checkboxPropertyGridComponent";
-import { RadioButtonPropertyGridComponent } from "./propertyGrids/gui/radioButtonPropertyGridComponent";
-import { LinePropertyGridComponent } from "./propertyGrids/gui/linePropertyGridComponent";
-import { ScrollViewerPropertyGridComponent } from "./propertyGrids/gui/scrollViewerPropertyGridComponent";
-import { GridPropertyGridComponent } from "./propertyGrids/gui/gridPropertyGridComponent";
+import { LockObject } from "../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { ImagePropertyGridComponent } from "../../../sharedUiComponents/tabs/propertyGrids/gui/imagePropertyGridComponent";
+import { SliderPropertyGridComponent } from "../../../sharedUiComponents/tabs/propertyGrids/gui/sliderPropertyGridComponent";
+import { ImageBasedSliderPropertyGridComponent } from "../../../sharedUiComponents/tabs/propertyGrids/gui/imageBasedSliderPropertyGridComponent";
+import { RectanglePropertyGridComponent } from "../../../sharedUiComponents/tabs/propertyGrids/gui/rectanglePropertyGridComponent";
+import { EllipsePropertyGridComponent } from "../../../sharedUiComponents/tabs/propertyGrids/gui/ellipsePropertyGridComponent";
+import { CheckboxPropertyGridComponent } from "../../../sharedUiComponents/tabs/propertyGrids/gui/checkboxPropertyGridComponent";
+import { RadioButtonPropertyGridComponent } from "../../../sharedUiComponents/tabs/propertyGrids/gui/radioButtonPropertyGridComponent";
+import { LinePropertyGridComponent } from "../../../sharedUiComponents/tabs/propertyGrids/gui/linePropertyGridComponent";
+import { ScrollViewerPropertyGridComponent } from "../../../sharedUiComponents/tabs/propertyGrids/gui/scrollViewerPropertyGridComponent";
+import { GridPropertyGridComponent } from "../../../sharedUiComponents/tabs/propertyGrids/gui/gridPropertyGridComponent";
 import { PBRMetallicRoughnessMaterialPropertyGridComponent } from "./propertyGrids/materials/pbrMetallicRoughnessMaterialPropertyGridComponent";
 import { PBRSpecularGlossinessMaterialPropertyGridComponent } from "./propertyGrids/materials/pbrSpecularGlossinessMaterialPropertyGridComponent";
-import { StackPanelPropertyGridComponent } from "./propertyGrids/gui/stackPanelPropertyGridComponent";
+import { StackPanelPropertyGridComponent } from "../../../sharedUiComponents/tabs/propertyGrids/gui/stackPanelPropertyGridComponent";
 import { PostProcess } from 'babylonjs/PostProcesses/postProcess';
 import { PostProcessPropertyGridComponent } from './propertyGrids/postProcesses/postProcessPropertyGridComponent';
 import { RenderingPipelinePropertyGridComponent } from './propertyGrids/postProcesses/renderingPipelinePropertyGridComponent';
@@ -91,6 +91,15 @@ import { MultiMaterial } from 'babylonjs/Materials/multiMaterial';
 import { MultiMaterialPropertyGridComponent } from './propertyGrids/materials/multiMaterialPropertyGridComponent';
 import { ParticleSystemPropertyGridComponent } from './propertyGrids/particleSystems/particleSystemPropertyGridComponent';
 import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
+import { SpriteManagerPropertyGridComponent } from './propertyGrids/sprites/spriteManagerPropertyGridComponent';
+import { SpriteManager } from 'babylonjs/Sprites/spriteManager';
+import { SpritePropertyGridComponent } from './propertyGrids/sprites/spritePropertyGridComponent';
+import { Sprite } from 'babylonjs/Sprites/sprite';
+import { TargetedAnimationGridComponent } from './propertyGrids/animations/targetedAnimationPropertyGridComponent';
+import { FollowCamera } from 'babylonjs/Cameras/followCamera';
+import { FollowCameraPropertyGridComponent } from './propertyGrids/cameras/followCameraPropertyGridComponent';
+import { Sound } from 'babylonjs/Audio/sound';
+import { SoundPropertyGridComponent } from './propertyGrids/sounds/soundPropertyGridComponent';
 
 export class PropertyGridTabComponent extends PaneComponent {
     private _timerIntervalId: number;
@@ -137,6 +146,32 @@ export class PropertyGridTabComponent extends PaneComponent {
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
 
+            if (className === "Sound") {
+                const sound = entity as Sound;
+                return (<SoundPropertyGridComponent sound={sound}
+                    globalState={this.props.globalState}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className === "Sprite") {
+                const sprite = entity as Sprite;
+                return (<SpritePropertyGridComponent sprite={sprite}
+                    globalState={this.props.globalState}
+                    lockObject={this._lockObject}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className === "SpriteManager") {
+                const spriteManager = entity as SpriteManager;
+                return (<SpriteManagerPropertyGridComponent spriteManager={spriteManager}
+                    globalState={this.props.globalState}
+                    lockObject={this._lockObject}                    
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
             if (className.indexOf("Mesh") !== -1) {
                 const mesh = entity as Mesh;
                 if (mesh.getTotalVertices() > 0) {
@@ -170,6 +205,13 @@ export class PropertyGridTabComponent extends PaneComponent {
             if (className.indexOf("ArcRotateCamera") !== -1) {
                 const arcRotateCamera = entity as ArcRotateCamera;
                 return (<ArcRotateCameraPropertyGridComponent globalState={this.props.globalState} camera={arcRotateCamera}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className.indexOf("FollowCamera") !== -1) {
+                const followCamera = entity as FollowCamera;
+                return (<FollowCameraPropertyGridComponent globalState={this.props.globalState} camera={followCamera}
                     lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
@@ -298,6 +340,17 @@ export class PropertyGridTabComponent extends PaneComponent {
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
 
+            if (className === "TargetedAnimation") {
+                const targetedAnimation = entity as TargetedAnimation;
+                return (<TargetedAnimationGridComponent
+                    globalState={this.props.globalState}
+                    targetedAnimation={targetedAnimation}
+                    scene={this.props.scene}
+                    lockObject={this._lockObject}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }            
+
             if (className.indexOf("Material") !== -1) {
                 const material = entity as Material;
                 return (<MaterialPropertyGridComponent material={material}
@@ -381,7 +434,6 @@ export class PropertyGridTabComponent extends PaneComponent {
             if (className === "TextBlock") {
                 const textBlock = entity as TextBlock;
                 return (<TextBlockPropertyGridComponent textBlock={textBlock}
-                    globalState={this.props.globalState}
                     lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
@@ -389,7 +441,6 @@ export class PropertyGridTabComponent extends PaneComponent {
             if (className === "InputText") {
                 const inputText = entity as InputText;
                 return (<InputTextPropertyGridComponent inputText={inputText}
-                    globalState={this.props.globalState}
                     lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
@@ -397,7 +448,6 @@ export class PropertyGridTabComponent extends PaneComponent {
             if (className === "ColorPicker") {
                 const colorPicker = entity as ColorPicker;
                 return (<ColorPickerPropertyGridComponent colorPicker={colorPicker}
-                    globalState={this.props.globalState}
                     lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
@@ -405,7 +455,6 @@ export class PropertyGridTabComponent extends PaneComponent {
             if (className === "Image") {
                 const image = entity as Image;
                 return (<ImagePropertyGridComponent image={image}
-                    globalState={this.props.globalState}
                     lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
@@ -413,7 +462,6 @@ export class PropertyGridTabComponent extends PaneComponent {
             if (className === "Slider") {
                 const slider = entity as Slider;
                 return (<SliderPropertyGridComponent slider={slider}
-                    globalState={this.props.globalState}
                     lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
@@ -421,7 +469,6 @@ export class PropertyGridTabComponent extends PaneComponent {
             if (className === "ImageBasedSlider") {
                 const imageBasedSlider = entity as ImageBasedSlider;
                 return (<ImageBasedSliderPropertyGridComponent imageBasedSlider={imageBasedSlider}
-                    globalState={this.props.globalState}
                     lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
@@ -429,7 +476,6 @@ export class PropertyGridTabComponent extends PaneComponent {
             if (className === "Rectangle") {
                 const rectangle = entity as Rectangle;
                 return (<RectanglePropertyGridComponent rectangle={rectangle}
-                    globalState={this.props.globalState}
                     lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
@@ -437,7 +483,6 @@ export class PropertyGridTabComponent extends PaneComponent {
             if (className === "StackPanel") {
                 const stackPanel = entity as StackPanel;
                 return (<StackPanelPropertyGridComponent stackPanel={stackPanel}
-                    globalState={this.props.globalState}
                     lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
@@ -445,7 +490,6 @@ export class PropertyGridTabComponent extends PaneComponent {
             if (className === "Grid") {
                 const grid = entity as Grid;
                 return (<GridPropertyGridComponent grid={grid}
-                    globalState={this.props.globalState}
                     lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
@@ -453,7 +497,6 @@ export class PropertyGridTabComponent extends PaneComponent {
             if (className === "ScrollViewer") {
                 const scrollViewer = entity as ScrollViewer;
                 return (<ScrollViewerPropertyGridComponent scrollViewer={scrollViewer}
-                    globalState={this.props.globalState}
                     lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
@@ -461,7 +504,6 @@ export class PropertyGridTabComponent extends PaneComponent {
             if (className === "Ellipse") {
                 const ellipse = entity as Ellipse;
                 return (<EllipsePropertyGridComponent ellipse={ellipse}
-                    globalState={this.props.globalState}
                     lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
@@ -469,7 +511,6 @@ export class PropertyGridTabComponent extends PaneComponent {
             if (className === "Checkbox") {
                 const checkbox = entity as Checkbox;
                 return (<CheckboxPropertyGridComponent checkbox={checkbox}
-                    globalState={this.props.globalState}
                     lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
@@ -477,7 +518,6 @@ export class PropertyGridTabComponent extends PaneComponent {
             if (className === "RadioButton") {
                 const radioButton = entity as RadioButton;
                 return (<RadioButtonPropertyGridComponent radioButton={radioButton}
-                    globalState={this.props.globalState}
                     lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
@@ -485,7 +525,6 @@ export class PropertyGridTabComponent extends PaneComponent {
             if (className === "Line") {
                 const line = entity as Line;
                 return (<LinePropertyGridComponent line={line}
-                    globalState={this.props.globalState}
                     lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
@@ -493,7 +532,6 @@ export class PropertyGridTabComponent extends PaneComponent {
             if (entity._host) {
                 const control = entity as Control;
                 return (<ControlPropertyGridComponent control={control}
-                    globalState={this.props.globalState}
                     lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }

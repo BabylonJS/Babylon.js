@@ -24,6 +24,8 @@ class GridMaterialDefines extends MaterialDefines {
     public UV1 = false;
     public UV2 = false;
     public INSTANCES = false;
+    public THIN_INSTANCES = false;
+    public IMAGEPROCESSINGPOSTPROCESS = false;
 
     constructor() {
         super();
@@ -176,6 +178,8 @@ export class GridMaterial extends PushMaterial {
                 attribs.push(VertexBuffer.UV2Kind);
             }
 
+            defines.IMAGEPROCESSINGPOSTPROCESS = scene.imageProcessingConfiguration.applyByPostProcess;
+
             MaterialHelper.PrepareAttributesForInstances(attribs, defines);
 
             // Defines
@@ -216,7 +220,7 @@ export class GridMaterial extends PushMaterial {
         this._activeEffect = effect;
 
         // Matrices
-        if (!defines.INSTANCES) {
+        if (!defines.INSTANCES || defines.THIN_INSTANCE) {
             this.bindOnlyWorldMatrix(world);
         }
         this._activeEffect.setMatrix("view", scene.getViewMatrix());

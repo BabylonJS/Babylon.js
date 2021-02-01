@@ -4,23 +4,26 @@ import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { Observable } from "babylonjs/Misc/observable";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LineContainerComponent } from "../../../lineContainerComponent";
-import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
-import { Vector3LineComponent } from "../../../lines/vector3LineComponent";
-import { TextLineComponent } from "../../../lines/textLineComponent";
+import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
+import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
+import { Vector3LineComponent } from "../../../../../sharedUiComponents/lines/vector3LineComponent";
+import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
 import { QuaternionLineComponent } from "../../../lines/quaternionLineComponent";
-import { LockObject } from "../lockObject";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from '../../../../globalState';
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
-import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
-import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
+import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
+import { TextInputLineComponent } from '../../../../../sharedUiComponents/lines/textInputLineComponent';
 import { AnimationGridComponent } from '../animations/animationPropertyGridComponent';
+import { CommonPropertyGridComponent } from '../commonPropertyGridComponent';
+import { VariantsPropertyGridComponent } from '../variantsPropertyGridComponent';
+import { Mesh } from 'babylonjs/Meshes/mesh';
 
 interface ITransformNodePropertyGridComponentProps {
     globalState: GlobalState;
-    transformNode: TransformNode,
-    lockObject: LockObject,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    transformNode: TransformNode;
+    lockObject: LockObject;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class TransformNodePropertyGridComponent extends React.Component<ITransformNodePropertyGridComponentProps> {
@@ -36,22 +39,24 @@ export class TransformNodePropertyGridComponent extends React.Component<ITransfo
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={transformNode}
                     lockObject={this.props.lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
+                <LineContainerComponent title="GENERAL">
                     <TextLineComponent label="ID" value={transformNode.id} />
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={transformNode} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
+                    <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={transformNode} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <TextLineComponent label="Unique ID" value={transformNode.uniqueId.toString()} />
-                    <TextLineComponent label="Class" value={transformNode.getClassName()} />                    
+                    <TextLineComponent label="Class" value={transformNode.getClassName()} />
                     <CheckBoxLineComponent label="IsEnabled" isSelected={() => transformNode.isEnabled()} onSelect={(value) => transformNode.setEnabled(value)} />
                     {
                         transformNode.parent &&
-                        <TextLineComponent label="Parent" value={transformNode.parent.name} onLink={() => this.props.globalState.onSelectionChangedObservable.notifyObservers(transformNode.parent)}/>
-                    }        
+                        <TextLineComponent label="Parent" value={transformNode.parent.name} onLink={() => this.props.globalState.onSelectionChangedObservable.notifyObservers(transformNode.parent)} />
+                    }
                     <ButtonLineComponent label="Dispose" onClick={() => {
                         transformNode.dispose();
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-                    }} />              
+                    }} />
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="TRANSFORMATIONS">
+                <CommonPropertyGridComponent host={transformNode} lockObject={this.props.lockObject} globalState={this.props.globalState} />
+                <VariantsPropertyGridComponent host={transformNode as Mesh} lockObject={this.props.lockObject} globalState={this.props.globalState} />
+                <LineContainerComponent title="TRANSFORMATIONS">
                     <Vector3LineComponent label="Position" target={transformNode} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         !transformNode.rotationQuaternion &&

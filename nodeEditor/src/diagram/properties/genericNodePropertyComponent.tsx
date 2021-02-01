@@ -11,6 +11,7 @@ import { Vector2LineComponent } from '../../sharedComponents/vector2LineComponen
 import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { PropertyTypeForEdition, IPropertyDescriptionForEdition, IEditablePropertyListOption } from 'babylonjs/Materials/Node/nodeMaterialDecorator';
+import { NodeMaterialBlockTargets } from "babylonjs/Materials/Node/Enums/nodeMaterialBlockTargets";
 
 export class GenericPropertyComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
@@ -33,13 +34,40 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
     }
 
     render() {
+
+        var targetOptions = [
+            { label: "Neutral", value: NodeMaterialBlockTargets.Neutral },
+            { label: "Vertex", value: NodeMaterialBlockTargets.Vertex },
+            { label: "Fragment", value: NodeMaterialBlockTargets.Fragment },
+        ];
+
         return (
             <>
                 <LineContainerComponent title="GENERAL">
                     {
                         (!this.props.block.isInput || !(this.props.block as InputBlock).isAttribute) &&
                         <TextInputLineComponent globalState={this.props.globalState} label="Name" propertyName="name" target={this.props.block}
-                            onChange={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers()} />
+                            onChange={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers()}
+                            validator={ newName => 
+                            {if(!this.props.block.validateBlockName(newName)){ 
+                                this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(`"${newName}" is a reserved name, please choose another`);
+                                return false;
+                            }
+                            return true;
+                            }} />
+                    }
+                    {
+                        (this.props.block._originalTargetIsNeutral) &&
+                        <OptionsLineComponent label="Target" options={targetOptions} target={this.props.block} propertyName="target" onSelect={(value: any) => {
+                            this.forceUpdate();
+
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                        }} />
+                    }
+                    {
+                        (!this.props.block._originalTargetIsNeutral) &&
+                        <TextLineComponent label="Type" value={NodeMaterialBlockTargets[this.props.block.target]} />
                     }
                     <TextLineComponent label="Type" value={this.props.block.getClassName()} />
                     <TextInputLineComponent globalState={this.props.globalState} label="Comments" propertyName="comments" target={this.props.block}
@@ -103,7 +131,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                         );
                     } else {
                         components.push(
-                            <SliderLineComponent label={displayName} target={this.props.block} propertyName={propertyName} step={Math.abs((options.max as number) - (options.min as number)) / 100.0} minimum={Math.min(options.min as number, options.max as number)} maximum={options.max as number} onChange={() => this.forceRebuild(options.notifiers)}/>
+                            <SliderLineComponent label={displayName} target={this.props.block} globalState={this.props.globalState} propertyName={propertyName} step={Math.abs((options.max as number) - (options.min as number)) / 100.0} minimum={Math.min(options.min as number, options.max as number)} maximum={options.max as number} onChange={() => this.forceRebuild(options.notifiers)}/>
                         );
                     }
                     break;

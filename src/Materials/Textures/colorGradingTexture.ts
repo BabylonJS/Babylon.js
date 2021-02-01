@@ -30,19 +30,17 @@ export class ColorGradingTexture extends BaseTexture {
     private static _noneEmptyLineRegex = /\S+/;
 
     private _textureMatrix: Matrix;
-    private _engine: ThinEngine;
     private _onLoad: Nullable<() => void>;
 
     /**
      * Instantiates a ColorGradingTexture from the following parameters.
      *
-     * @param url The location of the color gradind data (currently only supporting 3dl)
+     * @param url The location of the color grading data (currently only supporting 3dl)
      * @param sceneOrEngine The scene or engine the texture will be used in
      * @param onLoad defines a callback triggered when the texture has been loaded
      */
     constructor(url: string, sceneOrEngine: Scene | ThinEngine, onLoad: Nullable<() => void> = null) {
-        const isScene = ColorGradingTexture._isScene(sceneOrEngine);
-        super(isScene ? (sceneOrEngine as Scene) : null);
+        super(sceneOrEngine);
 
         if (!url) {
             return;
@@ -56,22 +54,19 @@ export class ColorGradingTexture extends BaseTexture {
         this._texture = this._getFromCache(url, true);
 
         if (!this._texture) {
-            if (ColorGradingTexture._isScene(sceneOrEngine)) {
-                this._engine = sceneOrEngine.getEngine();
-
-                if (!sceneOrEngine.useDelayedTextureLoading) {
+            const scene = this.getScene();
+            if (scene) {
+                if (!scene.useDelayedTextureLoading) {
                     this.loadTexture();
                 } else {
                     this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
                 }
             }
             else {
-                this._engine = sceneOrEngine;
                 this.loadTexture();
             }
         }
         else {
-            this._engine = this._texture.getEngine();
             this._triggerOnLoad();
         }
     }
@@ -97,9 +92,9 @@ export class ColorGradingTexture extends BaseTexture {
      * Occurs when the file being loaded is a .3dl LUT file.
      */
     private load3dlTexture() {
-        var engine = this._engine as ThinEngine;
+        var engine = this._getEngine()!;
         var texture: InternalTexture;
-        if (engine.webGLVersion === 1) {
+        if (!engine._features.support3DTextures) {
             texture = engine.createRawTexture(null, 1, 1, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, null, Constants.TEXTURETYPE_UNSIGNED_INT);
         }
         else {
@@ -110,7 +105,7 @@ export class ColorGradingTexture extends BaseTexture {
         this._texture.isReady = false;
 
         this.isCube = false;
-        this.is3D = this._engine.webGLVersion > 1;
+        this.is3D = engine._features.support3DTextures;
         this.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         this.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         this.wrapR = Constants.TEXTURE_CLAMP_ADDRESSMODE;
@@ -220,7 +215,7 @@ export class ColorGradingTexture extends BaseTexture {
             scene._loadFile(this.url, callback);
         }
         else {
-            this._engine._loadFile(this.url, callback);
+            engine._loadFile(this.url, callback);
         }
 
         return this._texture;
@@ -236,10 +231,10 @@ export class ColorGradingTexture extends BaseTexture {
     }
 
     /**
-     * Clones the color gradind texture.
+     * Clones the color grading texture.
      */
     public clone(): ColorGradingTexture {
-        var newTexture = new ColorGradingTexture(this.url, <Scene>this.getScene());
+        var newTexture = new ColorGradingTexture(this.url, this.getScene() || this._getEngine()!);
 
         // Base texture
         newTexture.level = this.level;
@@ -268,7 +263,7 @@ export class ColorGradingTexture extends BaseTexture {
      * @param parsedTexture The texture information being parsedTexture
      * @param scene The scene to load the texture in
      * @param rootUrl The root url of the data assets to load
-     * @return A color gradind texture
+     * @return A color grading texture
      */
     public static Parse(parsedTexture: any, scene: Scene): Nullable<ColorGradingTexture> {
         var texture = null;
@@ -294,14 +289,6 @@ export class ColorGradingTexture extends BaseTexture {
         serializationObject.customType = "BABYLON.ColorGradingTexture";
 
         return serializationObject;
-    }
-
-    /**
-     * Returns true if the passed parameter is a scene object (can be use for typings)
-     * @param sceneOrEngine The object to test.
-     */
-    private static _isScene(sceneOrEngine: Scene | ThinEngine): sceneOrEngine is Scene {
-        return sceneOrEngine.getClassName() === "Scene";
     }
 }
 

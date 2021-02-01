@@ -12,8 +12,17 @@ void main(void)
 #include<clipPlaneFragment>
 
 #ifdef ALPHATEST
-    if (texture2D(diffuseSampler, vUV).a < 0.4)
+    float alphaFromAlphaTexture = texture2D(diffuseSampler, vUV).a;
+    if (alphaFromAlphaTexture < 0.4)
         discard;
+#endif
+
+#if SM_SOFTTRANSPARENTSHADOW == 1
+    #ifdef ALPHATEST
+        if ((bayerDither8(floor(mod(gl_FragCoord.xy, 8.0)))) / 64.0 >= softTransparentShadowSM * alphaFromAlphaTexture) discard;
+    #else
+        if ((bayerDither8(floor(mod(gl_FragCoord.xy, 8.0)))) / 64.0 >= softTransparentShadowSM) discard;
+    #endif
 #endif
 
 #include<shadowMapFragment>

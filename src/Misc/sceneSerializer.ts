@@ -6,6 +6,7 @@ import { Material } from "../Materials/material";
 import { Scene } from "../scene";
 import { Light } from "../Lights/light";
 import { SerializationHelper } from "./decorators";
+import { Texture } from "../Materials/Textures/texture";
 
 var serializedGeometries: Geometry[] = [];
 var serializeGeometry = (geometry: Geometry, serializationGeometries: any): any => {
@@ -110,11 +111,21 @@ export class SceneSerializer {
 
     /**
      * Serialize a scene into a JSON compatible object
+     * Note that if the current engine does not support synchronous texture reading (like WebGPU), you should use SerializeAsync instead
+     * as else you may not retrieve the proper base64 encoded texture data (when using the Texture.ForceSerializeBuffers flag)
      * @param scene defines the scene to serialize
      * @returns a JSON compatible object
      */
     public static Serialize(scene: Scene): any {
+        return SceneSerializer._Serialize(scene);
+    }
+
+    private static _Serialize(scene: Scene, checkSyncReadSupported = true): any {
         var serializationObject: any = {};
+
+        if (checkSyncReadSupported && !scene.getEngine()._features.supportSyncTextureRead && Texture.ForceSerializeBuffers) {
+            console.warn("The serialization object may not contain the proper base64 encoded texture data! You should use the SerializeAsync method instead.");
+        }
 
         SceneSerializer.ClearCache();
 
@@ -296,6 +307,12 @@ export class SceneSerializer {
             serializationObject.particleSystems.push(scene.particleSystems[index].serialize(false));
         }
 
+        // Post processes
+        serializationObject.postProcesses = [];
+        for (index = 0; index < scene.postProcesses.length; index++) {
+            serializationObject.postProcesses.push(scene.postProcesses[index].serialize());
+        }
+
         // Action Manager
         if (scene.actionManager) {
             serializationObject.actions = scene.actionManager.serialize("scene");
@@ -307,6 +324,45 @@ export class SceneSerializer {
         }
 
         return serializationObject;
+    }
+
+    /**
+     * Serialize a scene into a JSON compatible object
+     * @param scene defines the scene to serialize
+     * @returns a JSON promise compatible object
+     */
+    public static SerializeAsync(scene: Scene): Promise<any> {
+        const serializationObject = SceneSerializer._Serialize(scene, false);
+
+        const promises: Array<Promise<any>> = [];
+
+        this._CollectPromises(serializationObject, promises);
+
+        return Promise.all(promises).then(() => serializationObject);
+    }
+
+    private static _CollectPromises(obj: any, promises: Array<Promise<any>>): void  {
+        if (Array.isArray(obj)) {
+            for (let i = 0; i < obj.length; ++i) {
+                const o = obj[i];
+                if (o instanceof Promise) {
+                    promises.push(o.then((res: any) => obj[i] = res));
+                } else if (o instanceof Object || Array.isArray(o)) {
+                    this._CollectPromises(o, promises);
+                }
+            }
+        } else if (obj instanceof Object) {
+            for (const name in obj) {
+                if (obj.hasOwnProperty(name)) {
+                    const o = obj[name];
+                    if (o instanceof Promise) {
+                        promises.push(o.then((res: any) => obj[name] = res));
+                    } else if (o instanceof Object || Array.isArray(o)) {
+                        this._CollectPromises(o, promises);
+                    }
+                }
+            }
+        }
     }
 
     /**

@@ -5,6 +5,8 @@ import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { ShaderCodeInliner } from "babylonjs/Engines/Processors/shaderCodeInliner";
+import { ICustomShaderNameResolveOptions } from "babylonjs/Materials/material";
 
 export class ShaderAlebdoParts {
 
@@ -109,7 +111,18 @@ export class PBRCustomMaterial extends PBRMaterial {
         return arr;
     }
 
-    public Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines | string[], attributes?: string[]): string {
+    public Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines | string[], attributes?: string[], options?: ICustomShaderNameResolveOptions): string {
+        if (options) {
+            options.processFinalCode = (type: string, code: string) => {
+                if (type === "vertex") {
+                    return code;
+                }
+                const sci = new ShaderCodeInliner(code);
+                sci.inlineToken = "#define pbr_inline";
+                sci.processCode();
+                return sci.code;
+            };
+        }
 
         if (attributes && this._customAttributes && this._customAttributes.length > 0) {
             attributes.push(...this._customAttributes);
@@ -157,8 +170,11 @@ export class PBRCustomMaterial extends PBRMaterial {
             .replace('#define CUSTOM_FRAGMENT_BEFORE_LIGHTS', (this.CustomParts.Fragment_Before_Lights ? this.CustomParts.Fragment_Before_Lights : ""))
             .replace('#define CUSTOM_FRAGMENT_UPDATE_METALLICROUGHNESS', (this.CustomParts.Fragment_Custom_MetallicRoughness ? this.CustomParts.Fragment_Custom_MetallicRoughness : ""))
             .replace('#define CUSTOM_FRAGMENT_UPDATE_MICROSURFACE', (this.CustomParts.Fragment_Custom_MicroSurface ? this.CustomParts.Fragment_Custom_MicroSurface : ""))
-            .replace('#define CUSTOM_FRAGMENT_BEFORE_FOG', (this.CustomParts.Fragment_Before_Fog ? this.CustomParts.Fragment_Before_Fog : ""))
             .replace('#define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR', (this.CustomParts.Fragment_Before_FragColor ? this.CustomParts.Fragment_Before_FragColor : ""));
+
+        if (this.CustomParts.Fragment_Before_Fog) {
+            Effect.ShadersStore[name + "PixelShader"] = Effect.ShadersStore[name + "PixelShader"].replace('#define CUSTOM_FRAGMENT_BEFORE_FOG', this.CustomParts.Fragment_Before_Fog);
+        }
 
         this._isCreatedShader = true;
         this._createdShaderName = name;
@@ -173,6 +189,10 @@ export class PBRCustomMaterial extends PBRMaterial {
 
         this.FragmentShader = Effect.ShadersStore["pbrPixelShader"];
         this.VertexShader = Effect.ShadersStore["pbrVertexShader"];
+
+        this.FragmentShader = this.FragmentShader.replace(/#include<pbrBlockAlbedoOpacity>/g, Effect.IncludesShadersStore["pbrBlockAlbedoOpacity"]);
+        this.FragmentShader = this.FragmentShader.replace(/#include<pbrBlockReflectivity>/g, Effect.IncludesShadersStore["pbrBlockReflectivity"]);
+        this.FragmentShader = this.FragmentShader.replace(/#include<pbrBlockFinalColorComposition>/g, Effect.IncludesShadersStore["pbrBlockFinalColorComposition"]);
     }
 
     public AddUniform(name: string, kind: string, param: any): PBRCustomMaterial {
@@ -183,7 +203,7 @@ export class PBRCustomMaterial extends PBRMaterial {
             this._newUniformInstances = {};
         }
         if (param) {
-            if (kind.indexOf("sampler") == -1) {
+            if (kind.indexOf("sampler") != -1) {
                 (<any>this._newSamplerInstances)[kind + "-" + name] = param;
             }
             else {

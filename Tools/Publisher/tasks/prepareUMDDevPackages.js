@@ -13,6 +13,10 @@ const config = require("../../Config/config.js");
  */
 function prepareUMDDevPackages() {
     config.modules.forEach(moduleName => {
+        if (moduleName === "sandbox") {
+            // Do not publish apps
+            return;
+        }
         let module = config[moduleName];
 
         colorConsole.log("Prepare " + "UMDDev".magenta + " Package: " + moduleName.blue.bold);

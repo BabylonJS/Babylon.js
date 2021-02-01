@@ -60,7 +60,7 @@ export class NumericInputComponent extends React.Component<INumericInputComponen
             <div className="numeric">
                 {
                     this.props.label &&
-                    <div className="numeric-label">
+                    <div className="numeric-label" title={this.props.label}>
                         {`${this.props.label}: `}
                     </div>
                 }

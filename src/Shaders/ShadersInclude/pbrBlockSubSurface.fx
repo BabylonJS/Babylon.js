@@ -13,6 +13,7 @@ struct subSurfaceOutParams
 #endif
 #ifdef SS_TRANSLUCENCY
     vec3 transmittance;
+    float translucencyIntensity;
     #ifdef REFLECTION
         vec3 refractionIrradiance;
     #endif
@@ -25,15 +26,16 @@ struct subSurfaceOutParams
 };
 
 #ifdef SUBSURFACE
+    #define pbr_inline
+    #define inline
     void subSurfaceBlock(
+        const in vec3 vSubSurfaceIntensity,
         const in vec2 vThicknessParam,
         const in vec4 vTintColor,
         const in vec3 normalW,
         const in vec3 specularEnvironmentReflectance,
     #ifdef SS_THICKNESSANDMASK_TEXTURE
-        const in vec2 vThicknessUV,
-        const in vec2 uvOffset,
-        const in sampler2D thicknessSampler,
+        const in vec4 thicknessMap,
     #endif
     #ifdef REFLECTION
         #ifdef SS_TRANSLUCENCY
@@ -41,6 +43,10 @@ struct subSurfaceOutParams
             #ifdef USESPHERICALFROMREFLECTIONMAP
                 #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
                     const in vec3 irradianceVector_,
+                #endif
+                #if defined(REALTIME_FILTERING)
+                    const in samplerCube reflectionSampler,
+                    const in vec2 vReflectionFilteringInfo,
                 #endif
             #endif
             #ifdef USEIRRADIANCEMAP
@@ -88,6 +94,9 @@ struct subSurfaceOutParams
         #ifdef ANISOTROPIC
             const in anisotropicOutParams anisotropicOut,
         #endif
+        #ifdef REALTIME_FILTERING
+            const in vec2 vRefractionFilteringInfo,
+        #endif
     #endif
     #ifdef SS_TRANSLUCENCY
         const in vec3 vDiffusionDistance,
@@ -111,12 +120,8 @@ struct subSurfaceOutParams
     #ifdef SS_TRANSLUCENCY
         float translucencyIntensity = vSubSurfaceIntensity.y;
     #endif
-    #ifdef SS_SCATTERING
-        float scatteringIntensity = vSubSurfaceIntensity.z;
-    #endif
 
     #ifdef SS_THICKNESSANDMASK_TEXTURE
-        vec4 thicknessMap = texture2D(thicknessSampler, vThicknessUV + uvOffset);
         float thickness = thicknessMap.r * vThicknessParam.y + vThicknessParam.x;
 
         #if DEBUGMODE > 0
@@ -130,9 +135,13 @@ struct subSurfaceOutParams
             #ifdef SS_TRANSLUCENCY
                 translucencyIntensity *= thicknessMap.b;
             #endif
-            #ifdef SS_SCATTERING
-                scatteringIntensity *= thicknessMap.a;
+        #elif defined(SS_MASK_FROM_THICKNESS_TEXTURE_GLTF)
+            #ifdef SS_REFRACTION
+                refractionIntensity *= thicknessMap.r;
+            #elif defined(SS_TRANSLUCENCY)
+                translucencyIntensity *= thicknessMap.r;
             #endif
+            thickness = thicknessMap.g * vThicknessParam.y + vThicknessParam.x;
         #endif
     #else
         float thickness = vThicknessParam.y;
@@ -146,6 +155,7 @@ struct subSurfaceOutParams
         vec3 transmittance = transmittanceBRDF_Burley(vTintColor.rgb, vDiffusionDistance, thickness);
         transmittance *= translucencyIntensity;
         outParams.transmittance = transmittance;
+        outParams.translucencyIntensity = translucencyIntensity;
     #endif
 
     // _____________________________________________________________________________________
@@ -204,7 +214,11 @@ struct subSurfaceOutParams
                 float requestedRefractionLOD = refractionLOD;
             #endif
 
-            environmentRefraction = sampleRefractionLod(refractionSampler, refractionCoords, requestedRefractionLOD);
+            #ifdef REALTIME_FILTERING
+                environmentRefraction = vec4(radiance(alphaG, refractionSampler, refractionCoords, vRefractionFilteringInfo), 1.0);
+            #else
+                environmentRefraction = sampleRefractionLod(refractionSampler, refractionCoords, requestedRefractionLOD);
+            #endif
         #else
             float lodRefractionNormalized = saturate(refractionLOD / log2(vRefractionMicrosurfaceInfos.x));
             float lodRefractionNormalizedDoubled = lodRefractionNormalized * 2.0;
@@ -266,6 +280,11 @@ struct subSurfaceOutParams
             refractionTransmittance *= cocaLambert(volumeAlbedo, vThicknessParam.y);
         #endif
 
+        #ifdef SS_ALBEDOFORREFRACTIONTINT
+            // Tint the transmission with albedo.
+            environmentRefraction.rgb *= surfaceAlbedo.rgb;
+        #endif
+
         // Decrease Albedo Contribution
         outParams.surfaceAlbedo = surfaceAlbedo * (1. - refractionIntensity);
 
@@ -302,12 +321,19 @@ struct subSurfaceOutParams
             #ifdef REFLECTIONMAP_OPPOSITEZ
                 irradianceVector.z *= -1.0;
             #endif
+            #ifdef INVERTCUBICMAP
+                irradianceVector.y *= -1.0;
+            #endif
         #else
             vec3 irradianceVector = irradianceVector_;
         #endif
 
         #if defined(USESPHERICALFROMREFLECTIONMAP)
-            vec3 refractionIrradiance = computeEnvironmentIrradiance(-irradianceVector);
+            #if defined(REALTIME_FILTERING)
+                vec3 refractionIrradiance = irradiance(reflectionSampler, -irradianceVector, vReflectionFilteringInfo);
+            #else
+                vec3 refractionIrradiance = computeEnvironmentIrradiance(-irradianceVector);
+            #endif
         #elif defined(USEIRRADIANCEMAP)
             #ifdef REFLECTIONMAP_3D
                 vec3 irradianceCoords = irradianceVector;

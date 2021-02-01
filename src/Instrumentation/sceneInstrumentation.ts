@@ -6,7 +6,7 @@ import { Scene, IDisposable } from "../scene";
 import { PerfCounter } from '../Misc/perfCounter';
 /**
  * This class can be used to get instrumentation data from a Babylon engine
- * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#sceneinstrumentation
+ * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#sceneinstrumentation
  */
 export class SceneInstrumentation implements IDisposable {
     private _captureActiveMeshesEvaluationTime = false;
@@ -460,7 +460,7 @@ export class SceneInstrumentation implements IDisposable {
     /**
      * Instantiates a new scene instrumentation.
      * This class can be used to get instrumentation data from a Babylon engine
-     * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#sceneinstrumentation
+     * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#sceneinstrumentation
      * @param scene Defines the scene to instrument
      */
     public constructor(

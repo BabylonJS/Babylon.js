@@ -45,7 +45,7 @@ export class PBRAnisotropicConfiguration {
 
     /**
      * Defines if the effect is along the tangents, bitangents or in between.
-     * By default, the effect is "strectching" the highlights along the tangents.
+     * By default, the effect is "stretching" the highlights along the tangents.
      */
     @serializeAsVector2()
     public direction = new Vector2(1, 0);
@@ -69,7 +69,7 @@ export class PBRAnisotropicConfiguration {
     }
 
     /**
-     * Instantiate a new istance of anisotropy configuration.
+     * Instantiate a new instance of anisotropy configuration.
      * @param markAllSubMeshesAsTexturesDirty Callback to flag the material to dirty
      */
     constructor(markAllSubMeshesAsTexturesDirty: () => void) {
@@ -130,7 +130,7 @@ export class PBRAnisotropicConfiguration {
      * Binds the material data.
      * @param uniformBuffer defines the Uniform buffer to fill in.
      * @param scene defines the scene the material belongs to.
-     * @param isFrozen defines wether the material is frozen or not.
+     * @param isFrozen defines whether the material is frozen or not.
      */
     public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, isFrozen: boolean): void {
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {

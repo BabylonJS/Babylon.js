@@ -12,23 +12,24 @@ export class STLExport {
     * @param download triggers the automatic download of the file.
     * @param fileName changes the downloads fileName.
     * @param binary changes the STL to a binary type.
-	* @param isLittleEndian toggle for binary type exporter.
+    * @param isLittleEndian toggle for binary type exporter.
+    * @param doNotBakeTransform toggle if meshes transforms should be baked or not.
     * @returns the STL as UTF8 string
     */
-    public static CreateSTL(meshes: Mesh[], download: boolean= true, fileName: string= 'STL_Mesh', binary: boolean= false, isLittleEndian: boolean = true): any {
+    public static CreateSTL(meshes: Mesh[], download: boolean = true, fileName: string = 'stlmesh', binary: boolean = false, isLittleEndian: boolean = true, doNotBakeTransform: boolean = false): any {
 
         //Binary support adapted from https://gist.github.com/paulkaplan/6d5f0ab2c7e8fdc68a61
 
         let getFaceData = function(indices: any, vertices: any, i: number) {
             let id = [indices[i] * 3, indices[i + 1] * 3, indices[i + 2] * 3];
             let v = [
-                new Vector3(vertices[id[0]], vertices[id[0] + 1], vertices[id[0] + 2]),
-                new Vector3(vertices[id[1]], vertices[id[1] + 1], vertices[id[1] + 2]),
-                new Vector3(vertices[id[2]], vertices[id[2] + 1], vertices[id[2] + 2])
+                new Vector3(vertices[id[0]], vertices[id[0] + 2], vertices[id[0] + 1]),
+                new Vector3(vertices[id[1]], vertices[id[1] + 2], vertices[id[1] + 1]),
+                new Vector3(vertices[id[2]], vertices[id[2] + 2], vertices[id[2] + 1])
             ];
             let p1p2 = v[0].subtract(v[1]);
             let p3p2 = v[2].subtract(v[1]);
-            let n = (Vector3.Cross(p1p2, p3p2)).normalize();
+            let n = (Vector3.Cross(p3p2, p1p2)).normalize();
 
             return {v, n};
         };
@@ -53,7 +54,7 @@ export class STLExport {
             for (let i = 0; i < meshes.length; i++) {
                 let mesh = meshes[i];
                 let indices = mesh.getIndices();
-                faceCount += indices ? indices.length : 0;
+                faceCount += indices ? indices.length / 3 : 0;
             }
 
             let bufferSize = 84 + (50 * faceCount);
@@ -64,13 +65,15 @@ export class STLExport {
             data.setUint32(offset, faceCount, isLittleEndian);
             offset += 4;
 
-        }else {
-            data = 'solid exportedMesh\r\n';
+        } else {
+            data = 'solid stlmesh\r\n';
         }
 
         for (let i = 0; i < meshes.length; i++) {
             let mesh = meshes[i];
-            mesh.bakeCurrentTransformIntoVertices();
+            if (!doNotBakeTransform) {
+                mesh.bakeCurrentTransformIntoVertices();
+            }
             let vertices = mesh.getVerticesData(VertexBuffer.PositionKind) || [];
             let indices = mesh.getIndices() || [];
 
@@ -83,7 +86,7 @@ export class STLExport {
                     offset = writeVector(data, offset, fd.v[1], isLittleEndian);
                     offset = writeVector(data, offset, fd.v[2], isLittleEndian);
                     offset += 2;
-                }else {
+                } else {
                     data += 'facet normal ' + fd.n.x + ' ' + fd.n.y + ' ' + fd.n.z + '\r\n';
                     data += '\touter loop\r\n';
                     data += '\t\tvertex ' + fd.v[0].x + ' ' + fd.v[0].y + ' ' + fd.v[0].z + '\r\n';
@@ -97,17 +100,13 @@ export class STLExport {
         }
 
         if (!binary) {
-            data += 'endsolid exportedMesh';
+            data += 'endsolid stlmesh';
         }
 
         if (download) {
             let a = document.createElement('a');
             let blob = new Blob([data], {'type': 'application/octet-stream'});
             a.href = window.URL.createObjectURL(blob);
-
-            if (!fileName) {
-                fileName = "STL_Mesh";
-            }
             a.download = fileName + ".stl";
             a.click();
         }

@@ -81,7 +81,7 @@ vec3 computeCubicCoords(vec4 worldPos, vec3 worldNormal, vec3 eyePosition, mat4 
 
     coords = vec3(reflectionMatrix * vec4(coords, 0));
 
-    #ifdef INVERTCUBICMAP // This is not (yet) supported by Node Material
+    #ifdef INVERTCUBICMAP
         coords.y *= -1.0;
     #endif
 
@@ -99,7 +99,7 @@ vec3 computeCubicLocalCoords(vec4 worldPos, vec3 worldNormal, vec3 eyePosition, 
 
     coords = vec3(reflectionMatrix * vec4(coords, 0));
 
-    #ifdef INVERTCUBICMAP // This is not (yet) supported by Node Material
+    #ifdef INVERTCUBICMAP
         coords.y *= -1.0;
     #endif
 
@@ -113,7 +113,7 @@ vec3 computeProjectionCoords(vec4 worldPos, mat4 view, mat4 reflectionMatrix)
 
 vec3 computeSkyBoxCoords(vec3 positionW, mat4 reflectionMatrix)
 {
-	return vec3(reflectionMatrix * vec4(positionW, 0));
+	return vec3(reflectionMatrix * vec4(positionW, 1.));
 }
 
 #ifdef REFLECTION

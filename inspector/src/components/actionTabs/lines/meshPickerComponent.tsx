@@ -3,7 +3,7 @@ import { GlobalState } from '../../globalState';
 import { Observable } from 'babylonjs/Misc/observable';
 import { PropertyChangedEvent } from '../../propertyChangedEvent';
 import { Scene } from 'babylonjs/scene';
-import { OptionsLineComponent } from './optionsLineComponent';
+import { OptionsLineComponent } from '../../../sharedUiComponents/lines/optionsLineComponent';
 import { AbstractMesh } from 'babylonjs/Meshes/abstractMesh';
 
 
@@ -13,7 +13,6 @@ interface IMeshPickerComponentProps {
     property: string,
     scene: Scene,
     label: string,
-    replaySourceReplacement?: string,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
 
@@ -56,7 +55,7 @@ export class MeshPickerComponent extends React.Component<IMeshPickerComponentPro
 
                             if (this.props.onPropertyChangedObservable) {                   
                                 this.props.onPropertyChangedObservable.notifyObservers({
-                                    object: this.props.replaySourceReplacement ?? this.props.target,
+                                    object: this.props.target,
                                     property: this.props.property,
                                     value: this.props.target[this.props.property],
                                     initialValue: currentState

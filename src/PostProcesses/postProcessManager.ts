@@ -1,5 +1,4 @@
 import { Nullable } from "../types";
-import { Material } from "../Materials/material";
 import { InternalTexture } from "../Materials/Textures/internalTexture";
 import { PostProcess } from "./postProcess";
 import { VertexBuffer } from "../Meshes/buffer";
@@ -73,7 +72,7 @@ export class PostProcessManager {
     // Methods
     /**
      * Prepares a frame to be run through a post process.
-     * @param sourceTexture The input texture to the post procesess. (default: null)
+     * @param sourceTexture The input texture to the post processes. (default: null)
      * @param postProcesses An array of post processes to be run. (default: null)
      * @returns True if the post processes were able to be run.
      * @hidden
@@ -102,8 +101,9 @@ export class PostProcessManager {
      * @param forceFullscreenViewport force gl.viewport to be full screen eg. 0,0,textureWidth,textureHeight
      * @param faceIndex defines the face to render to if a cubemap is defined as the target
      * @param lodLevel defines which lod of the texture to render to
+     * @param doNotBindFrambuffer If set to true, assumes that the framebuffer has been bound previously
      */
-    public directRender(postProcesses: PostProcess[], targetTexture: Nullable<InternalTexture> = null, forceFullscreenViewport = false, faceIndex = 0, lodLevel = 0): void {
+    public directRender(postProcesses: PostProcess[], targetTexture: Nullable<InternalTexture> = null, forceFullscreenViewport = false, faceIndex = 0, lodLevel = 0, doNotBindFrambuffer = false): void {
         var engine = this._scene.getEngine();
 
         for (var index = 0; index < postProcesses.length; index++) {
@@ -112,9 +112,10 @@ export class PostProcessManager {
             } else {
                 if (targetTexture) {
                     engine.bindFramebuffer(targetTexture, faceIndex, undefined, undefined, forceFullscreenViewport, lodLevel);
-                } else {
+                } else if (!doNotBindFrambuffer) {
                     engine.restoreDefaultFramebuffer();
                 }
+                engine._debugInsertMarker(`post process ${postProcesses[index].name} output`);
             }
 
             var pp = postProcesses[index];
@@ -128,7 +129,7 @@ export class PostProcessManager {
                 engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
 
                 // Draw order
-                engine.drawElementsType(Material.TriangleFillMode, 0, 6);
+                engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, 6);
 
                 pp.onAfterRenderObservable.notifyObservers(effect);
             }
@@ -174,6 +175,7 @@ export class PostProcessManager {
                     engine.restoreDefaultFramebuffer();
                     pp._outputTexture = null;
                 }
+                engine._debugInsertMarker(`post process ${postProcesses[index].name} output`);
             }
 
             if (doNotPresent) {
@@ -190,7 +192,7 @@ export class PostProcessManager {
                 engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
 
                 // Draw order
-                engine.drawElementsType(Material.TriangleFillMode, 0, 6);
+                engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, 6);
 
                 pp.onAfterRenderObservable.notifyObservers(effect);
             }

@@ -1,11 +1,11 @@
 ﻿const float PI = 3.1415926535897932384626433832795;
+const float HALF_MIN = 5.96046448e-08; // Smallest positive half.
 
 const float LinearEncodePowerApprox = 2.2;
 const float GammaEncodePowerApprox = 1.0 / LinearEncodePowerApprox;
 const vec3 LuminanceEncodeApprox = vec3(0.2126, 0.7152, 0.0722);
 
 const float Epsilon = 0.0000001;
-
 #define saturate(x)         clamp(x, 0.0, 1.0)
 
 #define absEps(x)           abs(x) + Epsilon
@@ -41,6 +41,11 @@ mat3 inverseMat3(mat3 inMatrix) {
       return mat3(b01, (-a22 * a01 + a02 * a21), (a12 * a01 - a02 * a11),
               b11, (a22 * a00 - a02 * a20), (-a12 * a00 + a02 * a10),
               b21, (-a21 * a00 + a01 * a20), (a11 * a00 - a01 * a10)) / det;
+}
+
+float toLinearSpace(float color)
+{
+    return pow(color, LinearEncodePowerApprox);
 }
 
 vec3 toLinearSpace(vec3 color)
@@ -108,7 +113,7 @@ vec4 toRGBD(vec3 color) {
     // Helps with png quantization.
     rgb = toGammaSpace(rgb);
 
-    return vec4(rgb, D); 
+    return vec4(clamp(rgb, 0., 1.), D); 
 }
 
 vec3 fromRGBD(vec4 rgbd) {

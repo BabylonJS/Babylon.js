@@ -1,9 +1,12 @@
 import * as React from 'react';
 import { GlobalState } from '../../globalState';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { Color3 } from 'babylonjs/Maths/math.color';
 import { GradientBlockColorStep } from 'babylonjs/Materials/Node/Blocks/gradientBlock';
+import { ColorPickerLineComponent } from '../../sharedComponents/colorPickerComponent';
+import { FloatLineComponent } from '../../sharedComponents/floatLineComponent';
+
+const deleteButton = require('../../../imgs/delete.svg');
+const copyIcon: string = require('../../sharedComponents/copy.svg');
 
 interface IGradientStepComponentProps {
     globalState: GlobalState;
@@ -12,6 +15,7 @@ interface IGradientStepComponentProps {
     onDelete: () => void;
     onUpdateStep: () => void;
     onCheckForReOrder: () => void;
+    onCopy?: () => void;
 }
 
 export class GradientStepComponent extends React.Component<IGradientStepComponentProps, {gradient: number}> {
@@ -43,23 +47,40 @@ export class GradientStepComponent extends React.Component<IGradientStepComponen
 
     render() {
         let step = this.props.step;
-
+        
         return (
             <div className="gradient-step">
                 <div className="step">
                     {`#${this.props.lineIndex}`}
                 </div>
-                <input type="color" value={step.color.toHexString()} onChange={(evt) => this.updateColor(evt.target.value)} />
+                <div className="color">
+                    <ColorPickerLineComponent value={step.color} globalState={this.props.globalState} 
+                            onColorChanged={color => {
+                                    this.updateColor(color);
+                            }} 
+                    />  
+                </div>
                 <div className="step-value">
-                    {step.step.toFixed(2)}
+                    <FloatLineComponent globalState={this.props.globalState} smallUI={true} label="" target={step} propertyName="step"
+                    min={0} max={1}
+                    onEnter={ () => { 
+                            this.props.onUpdateStep();
+                            this.props.onCheckForReOrder();
+                            this.forceUpdate();
+                        }
+                    } 
+                    ></FloatLineComponent>
                 </div>
                 <div className="step-slider">
                     <input className="range" type="range" step={0.01} min={0} max={1.0} value={step.step}
                         onPointerUp={evt => this.onPointerUp()}
                         onChange={evt => this.updateStep(parseFloat(evt.target.value))} />
                 </div>
-                <div className="gradient-delete" onClick={() => this.props.onDelete()}>
-                    <FontAwesomeIcon icon={faTrash} />
+                <div className="gradient-copy" onClick={() => {if(this.props.onCopy) this.props.onCopy()}} title="Copy Step">
+                    <img className="img" src={copyIcon} />
+                </div>
+                <div className="gradient-delete" onClick={() => this.props.onDelete()} title={"Delete Step"}>
+                    <img className="img" src={deleteButton}/>
                 </div>
             </div>
         )

@@ -4,13 +4,13 @@ import { IDisposable, Scene } from "../scene";
 import { Camera } from "../Cameras/camera";
 import { WebXRSessionManager } from "./webXRSessionManager";
 import { WebXRCamera } from "./webXRCamera";
-import { WebXRState, WebXRRenderTarget } from './webXRTypes';
-import { WebXRFeaturesManager } from './webXRFeaturesManager';
-import { Logger } from '../Misc/logger';
+import { WebXRState, WebXRRenderTarget } from "./webXRTypes";
+import { WebXRFeaturesManager } from "./webXRFeaturesManager";
+import { Logger } from "../Misc/logger";
 
 /**
  * Base set of functionality needed to create an XR experience (WebXRSessionManager, Camera, StateManagement, etc.)
- * @see https://doc.babylonjs.com/how_to/webxr
+ * @see https://doc.babylonjs.com/how_to/webxr_experience_helpers
  */
 export class WebXRExperienceHelper implements IDisposable {
     private _nonVRCamera: Nullable<Camera> = null;
@@ -63,14 +63,17 @@ export class WebXRExperienceHelper implements IDisposable {
      */
     public static CreateAsync(scene: Scene): Promise<WebXRExperienceHelper> {
         var helper = new WebXRExperienceHelper(scene);
-        return helper.sessionManager.initializeAsync().then(() => {
-            helper._supported = true;
-            return helper;
-        }).catch((e) => {
-            helper._setState(WebXRState.NOT_IN_XR);
-            helper.dispose();
-            throw e;
-        });
+        return helper.sessionManager
+            .initializeAsync()
+            .then(() => {
+                helper._supported = true;
+                return helper;
+            })
+            .catch((e) => {
+                helper._setState(WebXRState.NOT_IN_XR);
+                helper.dispose();
+                throw e;
+            });
     }
 
     /**
@@ -91,33 +94,33 @@ export class WebXRExperienceHelper implements IDisposable {
      * @param sessionMode options for the XR session
      * @param referenceSpaceType frame of reference of the XR session
      * @param renderTarget the output canvas that will be used to enter XR mode
+     * @param sessionCreationOptions optional XRSessionInit object to init the session with
      * @returns promise that resolves after xr mode has entered
      */
-    public enterXRAsync(sessionMode: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget: WebXRRenderTarget = this.sessionManager.getWebXRRenderTarget()): Promise<WebXRSessionManager> {
+    public async enterXRAsync(sessionMode: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget: WebXRRenderTarget = this.sessionManager.getWebXRRenderTarget(), sessionCreationOptions: XRSessionInit = {}): Promise<WebXRSessionManager> {
         if (!this._supported) {
             throw "WebXR not supported in this browser or environment";
         }
         this._setState(WebXRState.ENTERING_XR);
-        let sessionCreationOptions: XRSessionInit = {
-            optionalFeatures: (referenceSpaceType !== "viewer" && referenceSpaceType !== "local") ? [referenceSpaceType] : []
-        };
+        if (referenceSpaceType !== "viewer" && referenceSpaceType !== "local") {
+            sessionCreationOptions.optionalFeatures = sessionCreationOptions.optionalFeatures || [];
+            sessionCreationOptions.optionalFeatures.push(referenceSpaceType);
+        }
+        sessionCreationOptions = await this.featuresManager._extendXRSessionInitObject(sessionCreationOptions);
         // we currently recommend "unbounded" space in AR (#7959)
         if (sessionMode === "immersive-ar" && referenceSpaceType !== "unbounded") {
             Logger.Warn("We recommend using 'unbounded' reference space type when using 'immersive-ar' session mode");
         }
         // make sure that the session mode is supported
-        return this.sessionManager.isSessionSupportedAsync(sessionMode).then((supported) => {
-            if (!supported) {
-                throw new Error(`Session mode "${sessionMode}" not supported in browser`);
-            }
-            return this.sessionManager.initializeSessionAsync(sessionMode, sessionCreationOptions);
-        }).then(() => {
-            return this.sessionManager.setReferenceSpaceTypeAsync(referenceSpaceType);
-        }).then(() => {
-            return renderTarget.initializeXRLayerAsync(this.sessionManager.session);
-        }).then(() => {
-            return this.sessionManager.updateRenderStateAsync({ depthFar: this.camera.maxZ, depthNear: this.camera.minZ, baseLayer: renderTarget.xrLayer! });
-        }).then(() => {
+        try {
+            await this.sessionManager.initializeSessionAsync(sessionMode, sessionCreationOptions);
+            await this.sessionManager.setReferenceSpaceTypeAsync(referenceSpaceType);
+            await renderTarget.initializeXRLayerAsync(this.sessionManager.session);
+            await this.sessionManager.updateRenderStateAsync({
+                depthFar: this.camera.maxZ,
+                depthNear: this.camera.minZ,
+                baseLayer: renderTarget.xrLayer!,
+            });
             // run the render loop
             this.sessionManager.runXRRenderLoop();
             // Cache pre xr scene settings
@@ -126,7 +129,7 @@ export class WebXRExperienceHelper implements IDisposable {
 
             this.scene.activeCamera = this.camera;
             // do not compensate when AR session is used
-            if (sessionMode !== 'immersive-ar') {
+            if (sessionMode !== "immersive-ar") {
                 this._nonXRToXRCamera();
             } else {
                 // Kept here, TODO - check if needed
@@ -143,7 +146,7 @@ export class WebXRExperienceHelper implements IDisposable {
                 // Restore scene settings
                 this.scene.autoClear = this._originalSceneAutoClear;
                 this.scene.activeCamera = this._nonVRCamera;
-                if (sessionMode !== 'immersive-ar' && this.camera.compensateOnFirstFrame) {
+                if (sessionMode !== "immersive-ar" && this.camera.compensateOnFirstFrame) {
                     if ((<any>this._nonVRCamera).setPosition) {
                         (<any>this._nonVRCamera).setPosition(this.camera.position);
                     } else {
@@ -158,14 +161,13 @@ export class WebXRExperienceHelper implements IDisposable {
             this.sessionManager.onXRFrameObservable.addOnce(() => {
                 this._setState(WebXRState.IN_XR);
             });
-
             return this.sessionManager;
-        }).catch((e: any) => {
+        } catch (e) {
             console.log(e);
             console.log(e.message);
             this._setState(WebXRState.NOT_IN_XR);
-            throw (e);
-        });
+            throw e;
+        }
     }
 
     /**

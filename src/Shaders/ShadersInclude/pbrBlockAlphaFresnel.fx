@@ -5,6 +5,7 @@
         float alpha;
     };
 
+    #define pbr_inline
     void alphaFresnelBlock(
         const in vec3 normalW,
         const in vec3 viewDirectionW,

@@ -19,7 +19,7 @@ export class MultiviewRenderTarget extends RenderTargetTexture {
         internalTexture.isMultiview = true;
         internalTexture.format = Constants.TEXTUREFORMAT_RGBA;
         this._texture = internalTexture;
-        this.samples = this._engine.getCaps().maxSamples || this.samples;
+        this.samples = this._getEngine()!.getCaps().maxSamples || this.samples;
     }
 
     /**

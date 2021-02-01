@@ -6,6 +6,7 @@ var cp = require('child_process');
 var path = require("path");
 var concat = require('gulp-concat');
 var minimist = require("minimist");
+var symlinkDir = require('symlink-dir');
 
 // Gulp Helpers
 var uncommentShaders = require('../helpers/gulp-removeShaderComments');
@@ -164,12 +165,30 @@ var processDTSFiles = function(libraries, settings, cb) {
 }
 
 /**
+ * Generate our required symlinked for the shared components.
+ */
+var generateSharedUiComponents = function(settings, done) {
+    if (!settings.build.sharedUiComponents) {
+        done();
+        return;
+    }
+
+    var sharedUiComponents = config.computed.sharedUiComponentsSrcPath;
+    var umdSharedUiComponents = path.resolve(settings.computed.mainDirectory, settings.build.sharedUiComponents);
+
+    symlinkDir(sharedUiComponents, umdSharedUiComponents).then(() => {
+        done();
+    });
+};
+
+/**
  * Dynamic module creation In Serie for WebPack leaks.
  */
 function buildExternalLibraries(settings, fast) {
     // Creates the required tasks.
     var tasks = [];
 
+    var sharedUiComponents = function(cb) { return generateSharedUiComponents(settings, cb); };
     var cleanup = function() { return cleanShaders(settings); };
     var shaders = function() { return buildShaders(settings); };
     var buildMin = function() { return buildExternalLibrariesMultiEntry(settings.libraries, settings, true) };
@@ -183,9 +202,9 @@ function buildExternalLibraries(settings, fast) {
     }
 
     if (fast) {
-        tasks.push(buildMax);
+        tasks.push(sharedUiComponents, buildMax);
     } else {
-        tasks.push(cleanup, shaders, buildMin, buildMax, buildAMDDTS, processDTS, ...appendLoseDTS);
+        tasks.push(sharedUiComponents, cleanup, shaders, buildMin, buildMax, buildAMDDTS, processDTS, ...appendLoseDTS);
     }
 
     return gulp.series.apply(this, tasks);

@@ -4,7 +4,8 @@ import { Tools } from "babylonjs/Misc/tools";
 
 import { Control } from "./control";
 import { Measure } from "../measure";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { _TypeStore } from "babylonjs/Misc/typeStore";
+import { serialize } from "babylonjs/Misc/decorators";
 
 /**
  * Class used to create 2D images
@@ -31,13 +32,19 @@ export class Image extends Control {
     private _cellHeight: number = 0;
     private _cellId: number = -1;
 
-    private _populateNinePatchSlicesFromImage = false;
     private _sliceLeft: number;
     private _sliceRight: number;
     private _sliceTop: number;
     private _sliceBottom: number;
 
+    private _populateNinePatchSlicesFromImage = false;
+
     private _detectPointerOnOpaqueOnly: boolean;
+
+    private _imageDataCache: {
+        data: Uint8ClampedArray | null;
+        key: string;
+    } = { data: null, key: "" };
 
     /**
      * Observable notified when the content is loaded
@@ -57,28 +64,10 @@ export class Image extends Control {
     }
 
     /**
-     * Gets or sets a boolean indicating if nine patch slices (left, top, right, bottom) should be read from image data
-     */
-    public get populateNinePatchSlicesFromImage(): boolean {
-        return this._populateNinePatchSlicesFromImage;
-    }
-
-    public set populateNinePatchSlicesFromImage(value: boolean) {
-        if (this._populateNinePatchSlicesFromImage === value) {
-            return;
-        }
-
-        this._populateNinePatchSlicesFromImage = value;
-
-        if (this._populateNinePatchSlicesFromImage && this._loaded) {
-            this._extractNinePatchSliceDataFromImage();
-        }
-    }
-
-    /**
      * Gets or sets a boolean indicating if pointers should only be validated on pixels with alpha > 0.
      * Beware using this as this will comsume more memory as the image has to be stored twice
      */
+    @serialize()
     public get detectPointerOnOpaqueOnly(): boolean {
         return this._detectPointerOnOpaqueOnly;
     }
@@ -94,6 +83,7 @@ export class Image extends Control {
     /**
      * Gets or sets the left value for slicing (9-patch)
      */
+    @serialize()
     public get sliceLeft(): number {
         return this._sliceLeft;
     }
@@ -111,6 +101,7 @@ export class Image extends Control {
     /**
      * Gets or sets the right value for slicing (9-patch)
      */
+    @serialize()
     public get sliceRight(): number {
         return this._sliceRight;
     }
@@ -128,6 +119,7 @@ export class Image extends Control {
     /**
      * Gets or sets the top value for slicing (9-patch)
      */
+    @serialize()
     public get sliceTop(): number {
         return this._sliceTop;
     }
@@ -145,6 +137,7 @@ export class Image extends Control {
     /**
      * Gets or sets the bottom value for slicing (9-patch)
      */
+    @serialize()
     public get sliceBottom(): number {
         return this._sliceBottom;
     }
@@ -162,6 +155,7 @@ export class Image extends Control {
     /**
      * Gets or sets the left coordinate in the source image
      */
+    @serialize()
     public get sourceLeft(): number {
         return this._sourceLeft;
     }
@@ -179,6 +173,7 @@ export class Image extends Control {
     /**
      * Gets or sets the top coordinate in the source image
      */
+    @serialize()
     public get sourceTop(): number {
         return this._sourceTop;
     }
@@ -196,6 +191,7 @@ export class Image extends Control {
     /**
      * Gets or sets the width to capture in the source image
      */
+    @serialize()
     public get sourceWidth(): number {
         return this._sourceWidth;
     }
@@ -213,6 +209,7 @@ export class Image extends Control {
     /**
      * Gets or sets the height to capture in the source image
      */
+    @serialize()
     public get sourceHeight(): number {
         return this._sourceHeight;
     }
@@ -227,6 +224,42 @@ export class Image extends Control {
         this._markAsDirty();
     }
 
+    /**
+     * Gets the image width
+     */
+    @serialize()
+    public get imageWidth(): number {
+        return this._imageWidth;
+    }
+
+    /**
+     * Gets the image height
+     */
+    @serialize()
+    public get imageHeight(): number {
+        return this._imageHeight;
+    }
+
+    /**
+    * Gets or sets a boolean indicating if nine patch slices (left, top, right, bottom) should be read from image data
+    */
+    @serialize()
+    public get populateNinePatchSlicesFromImage(): boolean {
+        return this._populateNinePatchSlicesFromImage;
+    }
+
+    public set populateNinePatchSlicesFromImage(value: boolean) {
+        if (this._populateNinePatchSlicesFromImage === value) {
+            return;
+        }
+
+        this._populateNinePatchSlicesFromImage = value;
+
+        if (this._populateNinePatchSlicesFromImage && this._loaded) {
+            this._extractNinePatchSliceDataFromImage();
+        }
+    }
+
     /** Indicates if the format of the image is SVG */
     public get isSVG(): boolean {
         return this._isSVG;
@@ -239,8 +272,9 @@ export class Image extends Control {
 
     /**
      * Gets or sets a boolean indicating if the image can force its container to adapt its size
-     * @see http://doc.babylonjs.com/how_to/gui#image
+     * @see https://doc.babylonjs.com/how_to/gui#image
      */
+    @serialize()
     public get autoScale(): boolean {
         return this._autoScale;
     }
@@ -258,6 +292,7 @@ export class Image extends Control {
     }
 
     /** Gets or sets the streching mode used by the image */
+    @serialize()
     public get stretch(): number {
         return this._stretch;
     }
@@ -274,9 +309,9 @@ export class Image extends Control {
 
     /** @hidden */
     public _rotate90(n: number, preserveProperties: boolean = false): Image {
-        let canvas = document.createElement('canvas');
+        let canvas = document.createElement("canvas");
 
-        const context = canvas.getContext('2d')!;
+        const context = canvas.getContext("2d")!;
         const width = this._domImage.width;
         const height = this._domImage.height;
 
@@ -284,7 +319,7 @@ export class Image extends Control {
         canvas.height = width;
 
         context.translate(canvas.width / 2, canvas.height / 2);
-        context.rotate(n * Math.PI / 2);
+        context.rotate((n * Math.PI) / 2);
 
         context.drawImage(this._domImage, 0, 0, width, height, -width / 2, -height / 2, width, height);
 
@@ -300,6 +335,8 @@ export class Image extends Control {
         }
 
         this._handleRotationForSVGImage(this, rotatedImage, n);
+
+        this._imageDataCache.data = null;
 
         return rotatedImage;
     }
@@ -355,50 +392,12 @@ export class Image extends Control {
         dstImage.sourceHeight = dstHeight;
     }
 
-    /**
-     * Gets or sets the internal DOM image used to render the control
-     */
-    public set domImage(value: HTMLImageElement) {
-        this._domImage = value;
-        this._loaded = false;
-
-        if (this._domImage.width) {
-            this._onImageLoaded();
-        } else {
-            this._domImage.onload = () => {
-                this._onImageLoaded();
-            };
-        }
-    }
-
-    public get domImage(): HTMLImageElement {
-        return this._domImage;
-    }
-
-    private _onImageLoaded(): void {
-        this._imageWidth = this._domImage.width;
-        this._imageHeight = this._domImage.height;
-        this._loaded = true;
-
-        if (this._populateNinePatchSlicesFromImage) {
-            this._extractNinePatchSliceDataFromImage();
-        }
-
-        if (this._autoScale) {
-            this.synchronizeSizeWithContent();
-        }
-
-        this.onImageLoadedObservable.notifyObservers(this);
-
-        this._markAsDirty();
-    }
-
     private _extractNinePatchSliceDataFromImage() {
         if (!this._workingCanvas) {
-            this._workingCanvas = document.createElement('canvas');
+            this._workingCanvas = document.createElement("canvas");
         }
         const canvas = this._workingCanvas;
-        const context = canvas.getContext('2d')!;
+        const context = canvas.getContext("2d")!;
         const width = this._domImage.width;
         const height = this._domImage.height;
 
@@ -444,6 +443,54 @@ export class Image extends Control {
     }
 
     /**
+     * Gets or sets the internal DOM image used to render the control
+     */
+    public set domImage(value: HTMLImageElement) {
+        this._domImage = value;
+        this._loaded = false;
+        this._imageDataCache.data = null;
+
+        if (this._domImage.width) {
+            this._onImageLoaded();
+        } else {
+            this._domImage.onload = () => {
+                this._onImageLoaded();
+            };
+        }
+    }
+
+    public get domImage(): HTMLImageElement {
+        return this._domImage;
+    }
+
+    private _onImageLoaded(): void {
+        this._imageDataCache.data = null;
+        this._imageWidth = this._domImage.width;
+        this._imageHeight = this._domImage.height;
+        this._loaded = true;
+
+        if (this._populateNinePatchSlicesFromImage) {
+            this._extractNinePatchSliceDataFromImage();
+        }
+
+        if (this._autoScale) {
+            this.synchronizeSizeWithContent();
+        }
+
+        this.onImageLoadedObservable.notifyObservers(this);
+
+        this._markAsDirty();
+    }
+
+    /**
+     * Gets the image source url
+     */
+    @serialize()
+    public get source() {
+        return this._source;
+    }
+
+    /**
      * Gets or sets image source url
      */
     public set source(value: Nullable<string>) {
@@ -453,6 +500,7 @@ export class Image extends Control {
 
         this._loaded = false;
         this._source = value;
+        this._imageDataCache.data = null;
 
         if (value) {
             value = this._svgCheck(value);
@@ -473,12 +521,12 @@ export class Image extends Control {
      * Checks for svg document with icon id present
      */
     private _svgCheck(value: string): string {
-        if (window.SVGSVGElement && (value.search(/.svg#/gi) !== -1) && (value.indexOf("#") === value.lastIndexOf("#"))) {
+        if (window.SVGSVGElement && value.search(/.svg#/gi) !== -1 && value.indexOf("#") === value.lastIndexOf("#")) {
             this._isSVG = true;
-            var svgsrc = value.split('#')[0];
-            var elemid = value.split('#')[1];
+            var svgsrc = value.split("#")[0];
+            var elemid = value.split("#")[1];
             // check if object alr exist in document
-            var svgExist = <HTMLObjectElement> document.body.querySelector('object[data="' + svgsrc + '"]');
+            var svgExist = <HTMLObjectElement>document.body.querySelector('object[data="' + svgsrc + '"]');
             if (svgExist) {
                 var svgDoc = svgExist.contentDocument;
                 // get viewbox width and height, get svg document width and height in px
@@ -486,7 +534,7 @@ export class Image extends Control {
                     var vb = svgDoc.documentElement.getAttribute("viewBox");
                     var docwidth = Number(svgDoc.documentElement.getAttribute("width"));
                     var docheight = Number(svgDoc.documentElement.getAttribute("height"));
-                    var elem = <SVGGraphicsElement> <unknown> svgDoc.getElementById(elemid);
+                    var elem = <SVGGraphicsElement>(<unknown>svgDoc.getElementById(elemid));
                     if (elem && vb && docwidth && docheight) {
                         this._getSVGAttribs(svgExist, elemid);
                         return value;
@@ -507,7 +555,7 @@ export class Image extends Control {
                 document.body.appendChild(svgImage);
                 // when the object has loaded, get the element attribs
                 svgImage.onload = () => {
-                    var svgobj = <HTMLObjectElement> document.body.querySelector('object[data="' + svgsrc + '"]');
+                    var svgobj = <HTMLObjectElement>document.body.querySelector('object[data="' + svgsrc + '"]');
                     if (svgobj) {
                         this._getSVGAttribs(svgobj, elemid);
                     }
@@ -521,7 +569,7 @@ export class Image extends Control {
 
     /**
      * Sets sourceLeft, sourceTop, sourceWidth, sourceHeight automatically
-	 * given external svg file and icon id
+     * given external svg file and icon id
      */
     private _getSVGAttribs(svgsrc: HTMLObjectElement, elemid: string) {
         var svgDoc = svgsrc.contentDocument;
@@ -550,8 +598,8 @@ export class Image extends Control {
                 // compute source coordinates and dimensions
                 this.sourceLeft = ((elem_matrix_a * elem_bbox.x + elem_matrix_e) * docwidth) / vb_width;
                 this.sourceTop = ((elem_matrix_d * elem_bbox.y + elem_matrix_f) * docheight) / vb_height;
-                this.sourceWidth = (elem_bbox.width * elem_matrix_a) * (docwidth / vb_width);
-                this.sourceHeight = (elem_bbox.height * elem_matrix_d) * (docheight / vb_height);
+                this.sourceWidth = elem_bbox.width * elem_matrix_a * (docwidth / vb_width);
+                this.sourceHeight = elem_bbox.height * elem_matrix_d * (docheight / vb_height);
                 this._svgAttributesComputationCompleted = true;
                 this.onSVGAttributesComputedObservable.notifyObservers(this);
             }
@@ -560,7 +608,7 @@ export class Image extends Control {
 
     /**
      * Gets or sets the cell width to use when animation sheet is enabled
-     * @see http://doc.babylonjs.com/how_to/gui#image
+     * @see https://doc.babylonjs.com/how_to/gui#image
      */
     get cellWidth(): number {
         return this._cellWidth;
@@ -576,7 +624,7 @@ export class Image extends Control {
 
     /**
      * Gets or sets the cell height to use when animation sheet is enabled
-     * @see http://doc.babylonjs.com/how_to/gui#image
+     * @see https://doc.babylonjs.com/how_to/gui#image
      */
     get cellHeight(): number {
         return this._cellHeight;
@@ -592,7 +640,7 @@ export class Image extends Control {
 
     /**
      * Gets or sets the cell id to use (this will turn on the animation sheet mode)
-     * @see http://doc.babylonjs.com/how_to/gui#image
+     * @see https://doc.babylonjs.com/how_to/gui#image
      */
     get cellId(): number {
         return this._cellId;
@@ -613,7 +661,6 @@ export class Image extends Control {
      */
     constructor(public name?: string, url: Nullable<string> = null) {
         super(name);
-
         this.source = url;
     }
 
@@ -632,16 +679,24 @@ export class Image extends Control {
             return true;
         }
 
-        const canvas = this._workingCanvas;
-        const context = canvas.getContext("2d")!;
         const width = this._currentMeasure.width | 0;
         const height = this._currentMeasure.height | 0;
-        const imageData = context.getImageData(0, 0, width, height).data;
+        const key = width + "_" + height;
+
+        let imageData = this._imageDataCache.data;
+
+        if (!imageData || this._imageDataCache.key !== key) {
+            const canvas = this._workingCanvas;
+            const context = canvas.getContext("2d")!;
+
+            this._imageDataCache.data = imageData = context.getImageData(0, 0, width, height).data;
+            this._imageDataCache.key = key;
+        }
 
         x = (x - this._currentMeasure.left) | 0;
         y = (y - this._currentMeasure.top) | 0;
 
-        const pickedPixel = imageData[(x + y * this._currentMeasure.width) * 4 + 3];
+        const pickedPixel = imageData[(x + y * width) * 4 + 3];
 
         return pickedPixel > 0;
     }
@@ -675,7 +730,8 @@ export class Image extends Control {
                     if (this._autoScale) {
                         this.synchronizeSizeWithContent();
                     }
-                    if (this.parent && this.parent.parent) { // Will update root size if root is not the top root
+                    if (this.parent && this.parent.parent) {
+                        // Will update root size if root is not the top root
                         this.parent.adaptWidthToChildren = true;
                         this.parent.adaptHeightToChildren = true;
                     }
@@ -692,7 +748,7 @@ export class Image extends Control {
         }
 
         if (!this._workingCanvas) {
-            this._workingCanvas = document.createElement('canvas');
+            this._workingCanvas = document.createElement("canvas");
         }
         const canvas = this._workingCanvas;
         const width = this._currentMeasure.width;
@@ -706,9 +762,7 @@ export class Image extends Control {
     }
 
     private _drawImage(context: CanvasRenderingContext2D, sx: number, sy: number, sw: number, sh: number, tx: number, ty: number, tw: number, th: number) {
-        context.drawImage(this._domImage,
-            sx, sy, sw, sh,
-            tx, ty, tw, th);
+        context.drawImage(this._domImage, sx, sy, sw, sh, tx, ty, tw, th);
 
         if (!this._detectPointerOnOpaqueOnly) {
             return;
@@ -717,9 +771,7 @@ export class Image extends Control {
         const canvas = this._workingCanvas!;
         context = canvas.getContext("2d")!;
 
-        context.drawImage(this._domImage,
-            sx, sy, sw, sh,
-            tx - this._currentMeasure.left, ty - this._currentMeasure.top, tw, th);
+        context.drawImage(this._domImage, sx, sy, sw, sh, tx - this._currentMeasure.left, ty - this._currentMeasure.top, tw, th);
     }
 
     public _draw(context: CanvasRenderingContext2D): void {
@@ -739,8 +791,7 @@ export class Image extends Control {
 
             width = this._sourceWidth ? this._sourceWidth : this._imageWidth;
             height = this._sourceHeight ? this._sourceHeight : this._imageHeight;
-        }
-        else {
+        } else {
             let rowCount = this._domImage.naturalWidth / this.cellWidth;
             let column = (this.cellId / rowCount) >> 0;
             let row = this.cellId % rowCount;
@@ -757,12 +808,10 @@ export class Image extends Control {
         if (this._loaded) {
             switch (this._stretch) {
                 case Image.STRETCH_NONE:
-                    this._drawImage(context, x, y, width, height,
-                        this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                    this._drawImage(context, x, y, width, height, this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
                     break;
                 case Image.STRETCH_FILL:
-                    this._drawImage(context, x, y, width, height,
-                        this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                    this._drawImage(context, x, y, width, height, this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
                     break;
                 case Image.STRETCH_UNIFORM:
                     var hRatio = this._currentMeasure.width / width;
@@ -771,12 +820,10 @@ export class Image extends Control {
                     var centerX = (this._currentMeasure.width - width * ratio) / 2;
                     var centerY = (this._currentMeasure.height - height * ratio) / 2;
 
-                    this._drawImage(context, x, y, width, height,
-                        this._currentMeasure.left + centerX, this._currentMeasure.top + centerY, width * ratio, height * ratio);
+                    this._drawImage(context, x, y, width, height, this._currentMeasure.left + centerX, this._currentMeasure.top + centerY, width * ratio, height * ratio);
                     break;
                 case Image.STRETCH_EXTEND:
-                    this._drawImage(context, x, y, width, height,
-                        this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                    this._drawImage(context, x, y, width, height, this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
                     break;
                 case Image.STRETCH_NINE_PATCH:
                     this._renderNinePatch(context);
@@ -787,56 +834,38 @@ export class Image extends Control {
         context.restore();
     }
 
-    private _renderCornerPatch(context: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, targetX: number, targetY: number): void {
-        this._drawImage(context, x, y, width, height, this._currentMeasure.left + targetX, this._currentMeasure.top + targetY, width, height);
-    }
-
     private _renderNinePatch(context: CanvasRenderingContext2D): void {
-        let height = this._imageHeight;
-        let leftWidth = this._sliceLeft;
-        let topHeight = this._sliceTop;
-        let bottomHeight = this._imageHeight - this._sliceBottom;
-        let rightWidth = this._imageWidth - this._sliceRight;
-        let left = 0;
-        let top = 0;
-
-        if (this._populateNinePatchSlicesFromImage) {
-            left = 1;
-            top = 1;
-            height -= 2;
-            leftWidth -= 1;
-            topHeight -= 1;
-            bottomHeight -= 1;
-            rightWidth -= 1;
-        }
-
+        const leftWidth = this._sliceLeft;
+        const topHeight = this._sliceTop;
+        const bottomHeight = this._imageHeight - this._sliceBottom;
+        const rightWidth = this._imageWidth - this._sliceRight;
         const centerWidth = this._sliceRight - this._sliceLeft;
-        const targetCenterWidth = this._currentMeasure.width - rightWidth - this.sliceLeft;
-        const targetTopHeight = this._currentMeasure.height - height + this._sliceBottom;
+        const centerHeight = this._sliceBottom - this._sliceTop;
+        const targetCenterWidth = (this._currentMeasure.width - rightWidth - leftWidth) + 2;
+        const targetCenterHeight = (this._currentMeasure.height - bottomHeight - topHeight) + 2;
+        const centerLeftOffset = this._currentMeasure.left + leftWidth - 1;
+        const centerTopOffset = this._currentMeasure.top + topHeight - 1;
+        const rightOffset = this._currentMeasure.left + this._currentMeasure.width - rightWidth;
+        const bottomOffset = this._currentMeasure.top + this._currentMeasure.height - bottomHeight;
 
-        // Corners
-        this._renderCornerPatch(context, left, top, leftWidth, topHeight, 0, 0);
-        this._renderCornerPatch(context, left, this._sliceBottom, leftWidth, height - this._sliceBottom, 0, targetTopHeight);
-
-        this._renderCornerPatch(context, this._sliceRight, top, rightWidth, topHeight, this._currentMeasure.width - rightWidth, 0);
-        this._renderCornerPatch(context, this._sliceRight, this._sliceBottom, rightWidth, height - this._sliceBottom, this._currentMeasure.width - rightWidth, targetTopHeight);
-
+        //Top Left
+        this._drawImage(context, 0, 0, leftWidth, topHeight, this._currentMeasure.left, this._currentMeasure.top, leftWidth, topHeight);
+        //Top
+        this._drawImage(context, this._sliceLeft, 0, centerWidth, topHeight, centerLeftOffset, this._currentMeasure.top, targetCenterWidth, topHeight);
+        //Top Right
+        this._drawImage(context, this.sliceRight, 0, rightWidth, topHeight, rightOffset, this._currentMeasure.top, rightWidth, topHeight);
+        //Left
+        this._drawImage(context, 0, this._sliceTop, leftWidth, centerHeight, this._currentMeasure.left, centerTopOffset, leftWidth, targetCenterHeight);
         // Center
-        this._drawImage(context, this._sliceLeft, this._sliceTop, centerWidth, this._sliceBottom - this._sliceTop,
-            this._currentMeasure.left + leftWidth, this._currentMeasure.top + topHeight, targetCenterWidth, targetTopHeight - topHeight);
-
-        // Borders
-        this._drawImage(context, left, this._sliceTop, leftWidth, this._sliceBottom - this._sliceTop,
-            this._currentMeasure.left, this._currentMeasure.top + topHeight, leftWidth, targetTopHeight - topHeight);
-
-        this._drawImage(context, this._sliceRight, this._sliceTop, leftWidth, this._sliceBottom - this._sliceTop,
-            this._currentMeasure.left + this._currentMeasure.width - rightWidth, this._currentMeasure.top + topHeight, leftWidth, targetTopHeight - topHeight);
-
-        this._drawImage(context, this._sliceLeft, top, centerWidth, topHeight,
-            this._currentMeasure.left + leftWidth, this._currentMeasure.top, targetCenterWidth, topHeight);
-
-        this._drawImage(context, this._sliceLeft, this._sliceBottom, centerWidth, bottomHeight,
-            this._currentMeasure.left + leftWidth, this._currentMeasure.top + targetTopHeight, targetCenterWidth, bottomHeight);
+        this._drawImage(context, this._sliceLeft, this._sliceTop, centerWidth, centerHeight, centerLeftOffset, centerTopOffset, targetCenterWidth, targetCenterHeight);
+        //Right
+        this._drawImage(context, this._sliceRight, this._sliceTop, rightWidth, centerHeight, rightOffset, centerTopOffset, rightWidth, targetCenterHeight);
+        //Bottom Left
+        this._drawImage(context, 0, this._sliceBottom, leftWidth, bottomHeight, this._currentMeasure.left, bottomOffset, leftWidth, bottomHeight);
+        //Bottom
+        this._drawImage(context, this.sliceLeft, this._sliceBottom, centerWidth, bottomHeight, centerLeftOffset, bottomOffset, targetCenterWidth, bottomHeight);
+        //Bottom Right
+        this._drawImage(context, this._sliceRight, this._sliceBottom, rightWidth, bottomHeight, rightOffset, bottomOffset, rightWidth, bottomHeight);
     }
 
     public dispose() {

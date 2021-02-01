@@ -1,23 +1,21 @@
 import * as React from "react";
 
 import { Observable } from "babylonjs/Misc/observable";
-
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LineContainerComponent } from "../../../lineContainerComponent";
-import { TextLineComponent } from "../../../lines/textLineComponent";
-import { LockObject } from "../lockObject";
+import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
+import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from '../../../../globalState';
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
 import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
-import { FloatLineComponent } from '../../../lines/floatLineComponent';
-import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
+import { FloatLineComponent } from '../../../../../sharedUiComponents/lines/floatLineComponent';
+import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
 import { TextureLinkLineComponent } from '../../../lines/textureLinkLineComponent';
-import { OptionsLineComponent } from '../../../lines/optionsLineComponent';
+import { OptionsLineComponent } from '../../../../../sharedUiComponents/lines/optionsLineComponent';
 import { ParticleSystem } from 'babylonjs/Particles/particleSystem';
-import { Color4LineComponent } from '../../../lines/color4LineComponent';
-import { Vector3LineComponent } from '../../../lines/vector3LineComponent';
-import { CheckBoxLineComponent } from '../../../lines/checkBoxLineComponent';
-import { SliderLineComponent } from '../../../lines/sliderLineComponent';
+import { Vector3LineComponent } from '../../../../../sharedUiComponents/lines/vector3LineComponent';
+import { CheckBoxLineComponent } from '../../../../../sharedUiComponents/lines/checkBoxLineComponent';
+import { SliderLineComponent } from '../../../../../sharedUiComponents/lines/sliderLineComponent';
 import { BoxParticleEmitter } from 'babylonjs/Particles/EmitterTypes/boxParticleEmitter';
 import { ConeParticleEmitter } from 'babylonjs/Particles/EmitterTypes/coneParticleEmitter';
 import { CylinderParticleEmitter } from 'babylonjs/Particles/EmitterTypes/cylinderParticleEmitter';
@@ -38,9 +36,10 @@ import { ValueGradientGridComponent, GradientGridMode } from './valueGradientGri
 import { Color3, Color4 } from 'babylonjs/Maths/math.color';
 import { GPUParticleSystem } from 'babylonjs/Particles/gpuParticleSystem';
 import { Tools } from 'babylonjs/Misc/tools';
-import { FileButtonLineComponent } from '../../../lines/fileButtonLineComponent';
-import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
+import { FileButtonLineComponent } from '../../../../../sharedUiComponents/lines/fileButtonLineComponent';
+import { TextInputLineComponent } from '../../../../../sharedUiComponents/lines/textInputLineComponent';
 import { ParticleHelper } from 'babylonjs/Particles/particleHelper';
+import { Color4LineComponent } from "../../../../../sharedUiComponents/lines/color4LineComponent";
 
 interface IParticleSystemPropertyGridComponentProps {
     globalState: GlobalState;
@@ -59,41 +58,40 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
 
     renderEmitter() {
         const system = this.props.system;
-        const replaySource = "particlesystem.particleEmitterType";
         switch(system.particleEmitterType?.getClassName()) {
             case "BoxParticleEmitter":
                 return (
-                    <BoxEmitterGridComponent replaySourceReplacement={replaySource}
+                    <BoxEmitterGridComponent 
                         globalState={this.props.globalState} emitter={system.particleEmitterType as BoxParticleEmitter} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                 );
             case "ConeParticleEmitter":
                 return (
-                    <ConeEmitterGridComponent replaySourceReplacement={replaySource}
+                    <ConeEmitterGridComponent 
                         globalState={this.props.globalState} emitter={system.particleEmitterType as ConeParticleEmitter} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                 );
             case "CylinderParticleEmitter":
                 return (
-                    <CylinderEmitterGridComponent replaySourceReplacement={replaySource}
+                    <CylinderEmitterGridComponent 
                         lockObject={this.props.lockObject} globalState={this.props.globalState} emitter={system.particleEmitterType as CylinderParticleEmitter} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                 );        
             case "HemisphericParticleEmitter":
                 return (
-                    <HemisphericEmitterGridComponent replaySourceReplacement={replaySource}
+                    <HemisphericEmitterGridComponent 
                         lockObject={this.props.lockObject} globalState={this.props.globalState} emitter={system.particleEmitterType as HemisphericParticleEmitter} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                 );  
             case "MeshParticleEmitter":
                 return (
-                    <MeshEmitterGridComponent replaySourceReplacement={replaySource} 
-                    lockObject={this.props.lockObject} scene={system.getScene()} globalState={this.props.globalState} emitter={system.particleEmitterType as MeshParticleEmitter} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
+                    <MeshEmitterGridComponent  
+                    lockObject={this.props.lockObject} scene={system.getScene()!} globalState={this.props.globalState} emitter={system.particleEmitterType as MeshParticleEmitter} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                 );                 
             case "PointParticleEmitter":
                 return (
-                    <PointEmitterGridComponent replaySourceReplacement={replaySource}
+                    <PointEmitterGridComponent 
                         lockObject={this.props.lockObject} globalState={this.props.globalState} emitter={system.particleEmitterType as PointParticleEmitter} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                 );  
             case "SphereParticleEmitter":
                 return (
-                    <SphereEmitterGridComponent replaySourceReplacement={replaySource}
+                    <SphereEmitterGridComponent 
                         lockObject={this.props.lockObject} globalState={this.props.globalState} emitter={system.particleEmitterType as SphereParticleEmitter} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                 );                                                                                                       
         }
@@ -166,6 +164,10 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
         const system = this.props.system;
         const scene = system.getScene();
 
+        if (!scene) {
+            return;
+        }
+
         Tools.ReadFile(file, (data) => {
             let decoder = new TextDecoder("utf-8");
             let jsonObject = JSON.parse(decoder.decode(data));
@@ -174,19 +176,19 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
             system.dispose();            
             this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
 
-            let newSystem = isGpu ? GPUParticleSystem.Parse(jsonObject, scene, "") : ParticleSystem.Parse(jsonObject, scene, "");
+            let newSystem = isGpu ? GPUParticleSystem.Parse(jsonObject, scene!, "") : ParticleSystem.Parse(jsonObject, scene!, "");
             this.props.globalState.onSelectionChangedObservable.notifyObservers(newSystem);
         }, undefined, true);
     }
 
     loadFromSnippet() {
         const system = this.props.system;
-        const scene = system.getScene();
+        const scene = system.getScene()!;
         let isGpu = system instanceof GPUParticleSystem;
 
         let snippedID = window.prompt("Please enter the snippet ID to use");
 
-        if (!snippedID) {
+        if (!snippedID || !scene) {
             return;
         }
         
@@ -209,7 +211,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
             if (xmlHttp.readyState == 4) {
                 if (xmlHttp.status == 200) {
                     var snippet = JSON.parse(xmlHttp.responseText);
-                    const oldId = system.snippetId ;
+                    const oldId = system.snippetId || "_BLANK";
                     system.snippetId = snippet.id;
                     if (snippet.version && snippet.version != "0") {
                         system.snippetId += "#" + snippet.version;
@@ -223,8 +225,8 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
 
                     if (windowAsAny.Playground && oldId) {
                         windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
-                            regex: new RegExp(oldId, "g"),
-                            replace: system.snippetId
+                            regex: new RegExp(`ParticleHelper.CreateFromSnippetAsync\\("${oldId}`, "g"),
+                            replace: `ParticleHelper.CreateFromSnippetAsync("${system.snippetId}`
                         });
                     }
 
@@ -273,7 +275,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
         ];
 
 
-        var meshEmitters = this.props.system.getScene().meshes.filter(m => !!m.name);
+        var meshEmitters = this.props.system.getScene()!.meshes.filter(m => !!m.name);
 
         var emitterOptions = [
             { label: "None", value: -1 },
@@ -291,7 +293,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={system}
                     lockObject={this.props.lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
+                <LineContainerComponent title="GENERAL">
                     <TextLineComponent label="ID" value={system.id} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={system} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                     <TextLineComponent label="Class" value={system.getClassName()} />  
@@ -308,18 +310,18 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                     <CheckBoxLineComponent label="Force depth write" target={system} propertyName="forceDepthWrite" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Update speed" target={system} propertyName="updateSpeed" minimum={0} maximum={0.1} decimalCount={3} step={0.001} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>                      
-                <LineContainerComponent globalState={this.props.globalState} title="COMMANDS">
+                <LineContainerComponent title="COMMANDS">
                     {this.renderControls()}
                     <ButtonLineComponent label={"Dispose"} onClick={() => {
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                         system.dispose();
                     }} />
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="FILE">
-                <FileButtonLineComponent label="Load" onClick={(file) => this.loadFromFile(file)} accept=".json" />
+                <LineContainerComponent title="FILE">
+                    <FileButtonLineComponent label="Load" onClick={(file) => this.loadFromFile(file)} accept=".json" />
                     <ButtonLineComponent label="Save" onClick={() => this.saveToFile()} />
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="SNIPPET">
+                <LineContainerComponent title="SNIPPET">
                     {
                         system.snippetId &&
                         <TextLineComponent label="Snippet ID" value={system.snippetId} />
@@ -327,7 +329,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                     <ButtonLineComponent label="Load from snippet server" onClick={() => this.loadFromSnippet()} />
                     <ButtonLineComponent label="Save to snippet server" onClick={() => this.saveToSnippet()} />
                 </LineContainerComponent>                
-                <LineContainerComponent globalState={this.props.globalState} title="EMITTER" closed={true}>
+                <LineContainerComponent title="EMITTER" closed={true}>
                 <OptionsLineComponent 
                         label="Emitter" 
                         options={emitterOptions} 
@@ -441,7 +443,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         this.renderEmitter()
                     }
                 </LineContainerComponent>       
-                <LineContainerComponent globalState={this.props.globalState} title="EMISSION" closed={true}>
+                <LineContainerComponent title="EMISSION" closed={true}>
                     <FloatLineComponent lockObject={this.props.lockObject} label="Rate" target={system} propertyName="emitRate" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         system instanceof ParticleSystem && 
@@ -450,10 +452,6 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                             docLink="https://doc.babylonjs.com/babylon101/particles#emit-rate-over-time"
                             onCreateRequired={() => {
                                 system.addEmitRateGradient(0, 50, 50);
-                                this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                    object: system,
-                                    code: `TARGET.addEmitRateGradient(0, 50, 50);`
-                                });
                             }}
                             mode={GradientGridMode.Factor}
                             host={system}    
@@ -467,10 +465,6 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         docLink="https://doc.babylonjs.com/babylon101/particles#velocity-over-time"
                         onCreateRequired={() => {
                             system.addVelocityGradient(0, 0.1, 0.1);
-                            this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                object: system,
-                                code: `TARGET.addVelocityGradient(0, 0.1, 0.1);`
-                            });                            
                         }}                        
                         mode={GradientGridMode.Factor}
                         host={system}    
@@ -481,10 +475,6 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         docLink="https://doc.babylonjs.com/babylon101/particles#limit-velocity-over-time"
                         onCreateRequired={() => {
                             system.addLimitVelocityGradient(0, 0.1, 0.1);
-                            this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                object: system,
-                                code: `TARGET.addLimitVelocityGradient(0, 0.1, 0.1);`
-                            });                             
                         }}           
                         mode={GradientGridMode.Factor}
                         host={system}    
@@ -495,17 +485,13 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         docLink="https://doc.babylonjs.com/babylon101/particles#drag-factor"
                         onCreateRequired={() => {
                             system.addDragGradient(0, 0.1, 0.1);
-                            this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                object: system,
-                                code: `TARGET.addDragGradient(0, 0.1, 0.1);`
-                            });                                
                         }}
                         host={system}    
                         codeRecorderPropertyName="getDragGradients()"                         
                         mode={GradientGridMode.Factor}                        
                         lockObject={this.props.lockObject}/>
                 </LineContainerComponent>                  
-                <LineContainerComponent globalState={this.props.globalState} title="SIZE" closed={true}>
+                <LineContainerComponent title="SIZE" closed={true}>
                     {
                         (!system.getSizeGradients() || system.getSizeGradients()?.length === 0)&& 
                         <>
@@ -524,10 +510,6 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                             docLink="https://doc.babylonjs.com/babylon101/particles#start-size-over-time"
                             onCreateRequired={() => {
                                 system.addStartSizeGradient(0, 1, 1);
-                                this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                    object: system,
-                                    code: `TARGET.addStartSizeGradient(0, 1, 1);`
-                                });                                
                             }}       
                             host={system}    
                             codeRecorderPropertyName="getStartSizeGradients()"
@@ -539,17 +521,13 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         docLink="https://doc.babylonjs.com/babylon101/particles#size"
                         onCreateRequired={() => {
                             system.addSizeGradient(0, 1, 1);
-                            this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                object: system,
-                                code: `TARGET.addSizeGradient(0, 1, 1);`
-                            });                             
                         }}
                         host={system}    
                         codeRecorderPropertyName="getSizeGradients()"                            
                         mode={GradientGridMode.Factor}                        
                         lockObject={this.props.lockObject}/>
                 </LineContainerComponent>          
-                <LineContainerComponent globalState={this.props.globalState} title="LIFETIME" closed={true}>
+                <LineContainerComponent title="LIFETIME" closed={true}>
                     <FloatLineComponent lockObject={this.props.lockObject} label="Min lifetime" target={system} propertyName="minLifeTime" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Max lifetime" target={system} propertyName="maxLifeTime" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Target stop duration" target={system} propertyName="targetStopDuration" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -560,10 +538,6 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                             docLink="https://doc.babylonjs.com/babylon101/particles#lifetime"
                             onCreateRequired={() => {
                                 system.addLifeTimeGradient(0, 1, 1);
-                                this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                    object: system,
-                                    code: `TARGET.addLifeTimeGradient(0, 1, 1);`
-                                });                               
                             }}
                             host={system}    
                             codeRecorderPropertyName="getLifeTimeGradients()"                          
@@ -571,7 +545,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                             lockObject={this.props.lockObject}/>
                     }                    
                 </LineContainerComponent>    
-                <LineContainerComponent globalState={this.props.globalState} title="COLORS" closed={true}>
+                <LineContainerComponent title="COLORS" closed={true}>
                     {
                         (!system.getColorGradients() || system.getColorGradients()?.length === 0) &&
                         <>
@@ -589,14 +563,6 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         onCreateRequired={() => {
                             system.addColorGradient(0, new Color4(0, 0, 0, 1), new Color4(0, 0, 0, 1));
                             system.addColorGradient(1, new Color4(1, 1, 1, 1), new Color4(1, 1, 1, 1));
-                            this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                object: system,
-                                code: `TARGET.addColorGradient(0, new BABYLON.Color4(0, 0, 0, 1), new BABYLON.Color4(0, 0, 0, 1));`
-                            });     
-                            this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                object: system,
-                                code: `TARGET.addColorGradient(1, new BABYLON.Color4(1, 1, 1, 1), new BABYLON.Color4(1, 1, 1, 1));`
-                            });                            
                         }}
                         host={system}    
                         codeRecorderPropertyName="getColorGradients()"                              
@@ -615,14 +581,6 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                                     onCreateRequired={() => {
                                         system.addRampGradient(0, Color3.White());
                                         system.addRampGradient(1, Color3.Black());
-                                        this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                            object: system,
-                                            code: `TARGET.addRampGradient(0, BABYLON.Color3.White());`
-                                        });          
-                                        this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                            object: system,
-                                            code: `TARGET.addRampGradient(1, BABYLON.Color3.Black());`
-                                        });                          
                                     }}
                                     mode={GradientGridMode.Color3}      
                                     host={system}    
@@ -634,10 +592,6 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                                     docLink="https://doc.babylonjs.com/babylon101/particles#ramp-gradients"
                                     onCreateRequired={() => {
                                         system.addColorRemapGradient(0, 1, 1);
-                                        this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                            object: system,
-                                            code: `TARGET.addColorRemapGradient(0, 1, 1);`
-                                        });
                                     }}
                                     host={system}    
                                     codeRecorderPropertyName="getColorRemapGradients()"      
@@ -648,10 +602,6 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                                     docLink="https://doc.babylonjs.com/babylon101/particles#ramp-gradients"
                                     onCreateRequired={() => {
                                         system.addAlphaRemapGradient(0, 1, 1);
-                                        this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                            object: system,
-                                            code: `TARGET.addAlphaRemapGradient(0, 1, 1);`
-                                        });                            
                                     }}
                                     host={system}    
                                     codeRecorderPropertyName="getAlphaRemapGradients()"                             
@@ -662,7 +612,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         </>
                     }                                   
                 </LineContainerComponent>                     
-                <LineContainerComponent globalState={this.props.globalState} title="ROTATION" closed={true}>
+                <LineContainerComponent title="ROTATION" closed={true}>
                     <FloatLineComponent lockObject={this.props.lockObject} label="Min angular speed" target={system} propertyName="minAngularSpeed" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Max angular speed" target={system} propertyName="maxAngularSpeed" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Min initial rotation" target={system} propertyName="minInitialRotation" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -672,17 +622,13 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         docLink="hhttps://doc.babylonjs.com/babylon101/particles#rotation"
                         onCreateRequired={() => {
                             system.addAngularSpeedGradient(0, 0.1, 0.1);
-                            this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                object: system,
-                                code: `TARGET.addAngularSpeedGradient(0, 0.1, 0.1);`
-                            });                               
                         }}                        
                         host={system}    
                         codeRecorderPropertyName="getAngularSpeedGradients()"    
                         mode={GradientGridMode.Factor}                        
                         lockObject={this.props.lockObject}/>                    
                 </LineContainerComponent>  
-                <LineContainerComponent globalState={this.props.globalState} title="SPRITESHEET" closed={true}>
+                <LineContainerComponent title="SPRITESHEET" closed={true}>
                     <CheckBoxLineComponent label="Animation sheet enabled" target={system} propertyName="isAnimationSheetEnabled" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent label="First sprite index" isInteger={true} target={system} propertyName="startSpriteCellID" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent label="Last sprite index" isInteger={true} target={system} propertyName="endSpriteCellID" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

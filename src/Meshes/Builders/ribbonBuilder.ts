@@ -25,7 +25,7 @@ VertexData.CreateRibbon = function(options: { pathArray: Vector3[][], closeArray
     var uvs: number[] = [];
 
     var us: number[][] = [];        		// us[path_id] = [uDist1, uDist2, uDist3 ... ] distances between points on path path_id
-    var vs: number[][] = [];        		// vs[i] = [vDist1, vDist2, vDist3, ... ] distances between points i of consecutives paths from pathArray
+    var vs: number[][] = [];        		// vs[i] = [vDist1, vDist2, vDist3, ... ] distances between points i of consecutive paths from pathArray
     var uTotalDistance: number[] = []; 		// uTotalDistance[p] : total distance of path p
     var vTotalDistance: number[] = []; 		//  vTotalDistance[i] : total distance between points i of first and last path from pathArray
     var minlg: number;          	        // minimal length among all paths from pathArray

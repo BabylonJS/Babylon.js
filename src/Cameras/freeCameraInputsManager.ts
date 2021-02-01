@@ -2,19 +2,24 @@ import { FreeCamera } from "./freeCamera";
 import { CameraInputsManager } from "./cameraInputsManager";
 import { FreeCameraKeyboardMoveInput } from "../Cameras/Inputs/freeCameraKeyboardMoveInput";
 import { FreeCameraMouseInput } from "../Cameras/Inputs/freeCameraMouseInput";
+import { FreeCameraMouseWheelInput } from "../Cameras/Inputs/freeCameraMouseWheelInput";
 import { FreeCameraTouchInput } from "../Cameras/Inputs/freeCameraTouchInput";
 import { Nullable } from '../types';
 
 /**
  * Default Inputs manager for the FreeCamera.
  * It groups all the default supported inputs for ease of use.
- * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
  */
 export class FreeCameraInputsManager extends CameraInputsManager<FreeCamera> {
     /**
      * @hidden
      */
     public _mouseInput: Nullable<FreeCameraMouseInput> = null;
+    /**
+     * @hidden
+     */
+    public _mouseWheelInput: Nullable<FreeCameraMouseWheelInput> = null;
     /**
      * Instantiates a new FreeCameraInputsManager.
      * @param camera Defines the camera the inputs belong to
@@ -52,6 +57,29 @@ export class FreeCameraInputsManager extends CameraInputsManager<FreeCamera> {
     removeMouse(): FreeCameraInputsManager {
         if (this._mouseInput) {
             this.remove(this._mouseInput);
+        }
+        return this;
+    }
+
+    /**
+     * Add mouse wheel input support to the input manager.
+     * @returns the current input manager
+     */
+    addMouseWheel(): FreeCameraInputsManager {
+        if (!this._mouseWheelInput) {
+            this._mouseWheelInput = new FreeCameraMouseWheelInput();
+            this.add(this._mouseWheelInput);
+        }
+        return this;
+    }
+
+    /**
+     * Removes the mouse wheel input support from the manager
+     * @returns the current input manager
+     */
+    removeMouseWheel(): FreeCameraInputsManager {
+        if (this._mouseWheelInput) {
+            this.remove(this._mouseWheelInput);
         }
         return this;
     }

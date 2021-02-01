@@ -5,6 +5,7 @@ import { Tools } from "../../Misc/tools";
 import { Camera } from "../../Cameras/camera";
 import { ICameraInput } from "../../Cameras/cameraInputsManager";
 import { PointerInfo, PointerEventTypes, PointerTouch } from "../../Events/pointerEvents";
+import { IPointerEvent } from "../../Events/deviceInputEvents";
 
 /**
  * Base class for Camera Pointer Inputs.
@@ -42,8 +43,10 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
      * @param element Defines the element the controls should be listened from
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
+    public attachControl(noPreventDefault?: boolean): void {
+        noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         var engine = this.camera.getEngine();
+        const element = engine.getInputElement();
         var previousPinchSquaredDistance = 0;
         var previousMultiTouchPanPosition: Nullable<PointerTouch> = null;
 
@@ -57,7 +60,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
         this._buttonsPressed = 0;
 
         this._pointerInput = (p, s) => {
-            var evt = <PointerEvent>p.event;
+            var evt = <IPointerEvent>p.event;
             let isTouch = evt.pointerType === "touch";
 
             if (engine.isInVRExclusivePointerMode) {
@@ -78,12 +81,12 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
             this._buttonsPressed = evt.buttons;
 
             if (engine.isPointerLock) {
-                var offsetX = evt.movementX ||
+                const offsetX = evt.movementX ||
                               evt.mozMovementX ||
                               evt.webkitMovementX ||
                               evt.msMovementX ||
                               0;
-                var offsetY = evt.movementY ||
+                const offsetY = evt.movementY ||
                               evt.mozMovementY ||
                               evt.webkitMovementY ||
                               evt.msMovementY ||
@@ -115,7 +118,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
 
                 if (!noPreventDefault) {
                     evt.preventDefault();
-                    element.focus();
+                    element && element.focus();
                 }
             } else if (p.type === PointerEventTypes.POINTERDOUBLETAP) {
                 this.onDoubleTap(evt.pointerType);
@@ -178,8 +181,8 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
 
                 // One button down
                 if (this.pointA && this.pointB === null) {
-                    var offsetX = evt.clientX - this.pointA.x;
-                    var offsetY = evt.clientY - this.pointA.y;
+                    const offsetX = evt.clientX - this.pointA.x;
+                    const offsetY = evt.clientY - this.pointA.y;
                     this.onTouch(this.pointA, offsetX, offsetY);
 
                     this.pointA.x = evt.clientX;
@@ -225,7 +228,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
             this.onLostFocus();
         };
 
-        element.addEventListener("contextmenu",
+        element && element.addEventListener("contextmenu",
             <EventListener>this.onContextMenu.bind(this), false);
 
         let hostWindow = this.camera.getScene().getEngine().getHostWindow();
@@ -239,9 +242,14 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param element Defines the element to stop listening the inputs from
      */
-    public detachControl(element: Nullable<HTMLElement>): void {
+    public detachControl(): void;
+
+    /**
+     * Detach the current controls from the specified dom element.
+     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     */
+    public detachControl(ignored?: any): void {
         if (this._onLostFocus) {
             let hostWindow = this.camera.getScene().getEngine().getHostWindow();
             if (hostWindow) {
@@ -251,12 +259,13 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
             }
         }
 
-        if (element && this._observer) {
+        if (this._observer) {
             this.camera.getScene().onPointerObservable.remove(this._observer);
             this._observer = null;
 
             if (this.onContextMenu) {
-                element.removeEventListener("contextmenu", <EventListener>this.onContextMenu);
+                const inputElement = this.camera.getScene().getEngine().getInputElement();
+                inputElement && inputElement.removeEventListener("contextmenu", <EventListener>this.onContextMenu);
             }
 
             this._onLostFocus = null;
@@ -326,7 +335,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
      * press.
      * Override this method to provide functionality.
      */
-    protected onButtonDown(evt: PointerEvent): void {
+    protected onButtonDown(evt: IPointerEvent): void {
     }
 
     /**
@@ -334,7 +343,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
      * release.
      * Override this method to provide functionality.
      */
-    protected onButtonUp(evt: PointerEvent): void {
+    protected onButtonUp(evt: IPointerEvent): void {
     }
 
     /**

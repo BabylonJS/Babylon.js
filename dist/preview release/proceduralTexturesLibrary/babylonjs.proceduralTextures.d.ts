@@ -198,6 +198,7 @@ declare module BABYLON {
         updateShaderUniforms(): void;
         render(useCameraPostProcess?: boolean): void;
         resize(size: any, generateMipMaps: any): void;
+        isReady(): boolean;
         get baseTexture(): BABYLON.Texture;
         set baseTexture(texture: BABYLON.Texture);
         /**

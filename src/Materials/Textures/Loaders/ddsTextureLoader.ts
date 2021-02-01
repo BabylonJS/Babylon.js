@@ -11,7 +11,7 @@ import { StringTools } from '../../../Misc/stringTools';
  */
 export class _DDSTextureLoader implements IInternalTextureLoader {
     /**
-     * Defines wether the loader supports cascade loading the different faces.
+     * Defines whether the loader supports cascade loading the different faces.
      */
     public readonly supportCascades = true;
 
@@ -76,7 +76,7 @@ export class _DDSTextureLoader implements IInternalTextureLoader {
                 engine.generateMipMapsForCubemap(texture, false);
             }
         }
-        engine._setCubeMapTextureParams(loadMipmap);
+        engine._setCubeMapTextureParams(texture, loadMipmap);
         texture.isReady = true;
         texture.onLoadedObservable.notifyObservers(texture);
         texture.onLoadedObservable.clear();

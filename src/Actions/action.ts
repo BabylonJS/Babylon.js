@@ -4,6 +4,7 @@ import { Color3, Color4 } from "../Maths/math.color";
 import { Condition } from "./condition";
 import { _TypeStore } from '../Misc/typeStore';
 import { AbstractActionManager } from './abstractActionManager';
+import { Nullable } from "../types";
 
 declare type Scene = import("../scene").Scene;
 declare type ActionManager = import("./actionManager").ActionManager;
@@ -54,7 +55,7 @@ export interface IAction {
      * Internal only - manager for action
      * @hidden
      */
-    _actionManager: AbstractActionManager;
+    _actionManager: Nullable<AbstractActionManager>;
 
     /**
      * Adds action to chain of actions, may be a DoNothingAction
@@ -67,7 +68,7 @@ export interface IAction {
 
 /**
  * The action to be carried out following a trigger
- * @see http://doc.babylonjs.com/how_to/how_to_use_actions#available-actions
+ * @see https://doc.babylonjs.com/how_to/how_to_use_actions#available-actions
  */
 export class Action implements IAction {
     /**
@@ -121,11 +122,19 @@ export class Action implements IAction {
     }
 
     /**
-     * Gets the trigger parameters
-     * @returns the trigger parameters
+     * Gets the trigger parameter
+     * @returns the trigger parameter
      */
     public getTriggerParameter(): any {
         return this._triggerParameter;
+    }
+
+    /**
+     * Sets the trigger parameter
+     * @param value defines the new trigger parameter
+     */
+    public setTriggerParameter(value: any) {
+        this._triggerParameter = value;
     }
 
     /**

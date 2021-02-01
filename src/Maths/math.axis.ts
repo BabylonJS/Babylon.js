@@ -19,3 +19,15 @@ export class Axis {
     /** Z axis */
     public static Z: Vector3 = new Vector3(0.0, 0.0, 1.0);
 }
+
+/**
+ * Defines cartesian components.
+ */
+export enum Coordinate {
+    /** X axis */
+    X,
+    /** Y axis */
+    Y,
+    /** Z axis */
+    Z
+}

@@ -10,10 +10,29 @@ import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPo
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
 import { _TypeStore } from '../../../../Misc/typeStore';
-import { Color3, Color4 } from '../../../../Maths/math';
+import { Color3, Color4, TmpColors } from '../../../../Maths/math';
 import { AnimatedInputBlockTypes } from './animatedInputBlockTypes';
 import { Observable } from '../../../../Misc/observable';
 import { MaterialHelper } from '../../../../Materials/materialHelper';
+
+const remapAttributeName: { [name: string]: string }  = {
+    "position2d": "position",
+    "particle_uv": "vUV",
+    "particle_color": "vColor",
+    "particle_texturemask": "textureMask",
+    "particle_positionw": "vPositionW",
+};
+
+const attributeInFragmentOnly: { [name: string]: boolean }  = {
+    "particle_uv": true,
+    "particle_color": true,
+    "particle_texturemask": true,
+    "particle_positionw": true,
+};
+
+const attributeAsUniform: { [name: string]: boolean }  = {
+    "particle_texturemask": true,
+};
 
 /**
  * Block used to expose an input value
@@ -41,9 +60,6 @@ export class InputBlock extends NodeMaterialBlock {
     /** @hidden */
     public _systemValue: Nullable<NodeMaterialSystemValues> = null;
 
-    /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
-    public visibleInInspector = false;
-
     /** Gets or sets a boolean indicating that the value of this input will not change after a build */
     public isConstant = false;
 
@@ -52,6 +68,12 @@ export class InputBlock extends NodeMaterialBlock {
 
     /** Gets an observable raised when the value is changed */
     public onValueChangedObservable = new Observable<InputBlock>();
+
+    /** Gets or sets a boolean indicating if content needs to be converted to gamma space (for color3/4 only) */
+    public convertToGammaSpace = false;
+
+    /** Gets or sets a boolean indicating if content needs to be converted to linear space (for color3/4 only) */
+    public convertToLinearSpace = false;
 
     /**
      * Gets or sets the connection point type (default is float)
@@ -91,10 +113,13 @@ export class InputBlock extends NodeMaterialBlock {
                     case "position":
                     case "normal":
                     case "tangent":
+                    case "particle_positionw":
                         this._type = NodeMaterialBlockConnectionPointTypes.Vector3;
                         return this._type;
                     case "uv":
                     case "uv2":
+                    case "position2d":
+                    case "particle_uv":
                         this._type = NodeMaterialBlockConnectionPointTypes.Vector2;
                         return this._type;
                     case "matricesIndices":
@@ -106,6 +131,8 @@ export class InputBlock extends NodeMaterialBlock {
                         this._type = NodeMaterialBlockConnectionPointTypes.Vector4;
                         return this._type;
                     case "color":
+                    case "particle_color":
+                    case "particle_texturemask":
                         this._type = NodeMaterialBlockConnectionPointTypes.Color4;
                         return this._type;
                 }
@@ -154,6 +181,18 @@ export class InputBlock extends NodeMaterialBlock {
     }
 
     /**
+    * Validates if a name is a reserve word.
+    * @param newName the new name to be given to the node.
+    * @returns false if the name is a reserve word, else true.
+    */
+    public validateBlockName(newName: string) {
+        if (!this.isAttribute) {
+            return super.validateBlockName(newName);
+        }
+        return true;
+    }
+
+    /**
      * Gets the output component
      */
     public get output(): NodeMaterialConnectionPoint {
@@ -166,10 +205,10 @@ export class InputBlock extends NodeMaterialBlock {
      * @returns the current connection point
      */
     public setAsAttribute(attributeName?: string): InputBlock {
+        this._mode = NodeMaterialBlockConnectionPointMode.Attribute;
         if (attributeName) {
             this.name = attributeName;
         }
-        this._mode = NodeMaterialBlockConnectionPointMode.Attribute;
         return this;
     }
 
@@ -384,12 +423,31 @@ export class InputBlock extends NodeMaterialBlock {
             case NodeMaterialBlockConnectionPointTypes.Vector4:
                 return `vec4(${this.value.x}, ${this.value.y}, ${this.value.z}, ${this.value.w})`;
             case NodeMaterialBlockConnectionPointTypes.Color3:
-                return `vec3(${this.value.r}, ${this.value.g}, ${this.value.b})`;
+                TmpColors.Color3[0].set(this.value.r, this.value.g, this.value.b);
+                if (this.convertToGammaSpace) {
+                    TmpColors.Color3[0].toGammaSpaceToRef(TmpColors.Color3[0]);
+                }
+                if (this.convertToLinearSpace) {
+                    TmpColors.Color3[0].toLinearSpaceToRef(TmpColors.Color3[0]);
+                }
+                return `vec3(${TmpColors.Color3[0].r}, ${TmpColors.Color3[0].g}, ${TmpColors.Color3[0].b})`;
             case NodeMaterialBlockConnectionPointTypes.Color4:
-                return `vec4(${this.value.r}, ${this.value.g}, ${this.value.b}, ${this.value.a})`;
+                TmpColors.Color4[0].set(this.value.r, this.value.g, this.value.b, this.value.a);
+                if (this.convertToGammaSpace) {
+                    TmpColors.Color4[0].toGammaSpaceToRef(TmpColors.Color4[0]);
+                }
+                if (this.convertToLinearSpace) {
+                    TmpColors.Color4[0].toLinearSpaceToRef(TmpColors.Color4[0]);
+                }
+                return `vec4(${TmpColors.Color4[0].r}, ${TmpColors.Color4[0].g}, ${TmpColors.Color4[0].b}, ${TmpColors.Color4[0].a})`;
         }
 
         return "";
+    }
+
+    /** @hidden */
+    public get _noContextSwitch(): boolean {
+        return attributeInFragmentOnly[this.name];
     }
 
     private _emit(state: NodeMaterialBuildState, define?: string) {
@@ -443,10 +501,18 @@ export class InputBlock extends NodeMaterialBlock {
 
         // Attribute
         if (this.isAttribute) {
-            this.associatedVariableName = this.name;
+            this.associatedVariableName = remapAttributeName[this.name] ?? this.name;
 
             if (this.target === NodeMaterialBlockTargets.Vertex && state._vertexState) { // Attribute for fragment need to be carried over by varyings
-                this._emit(state._vertexState, define);
+                if (attributeInFragmentOnly[this.name]) {
+                    if (attributeAsUniform[this.name]) {
+                        state._emitUniformFromString(this.associatedVariableName, state._getGLType(this.type), define);
+                    } else {
+                        state._emitVaryingFromString(this.associatedVariableName, state._getGLType(this.type), define);
+                    }
+                } else {
+                    this._emit(state._vertexState, define);
+                }
                 return;
             }
 
@@ -455,12 +521,21 @@ export class InputBlock extends NodeMaterialBlock {
             }
 
             state.attributes.push(this.associatedVariableName);
-            if (define) {
-                state._attributeDeclaration += this._emitDefine(define);
-            }
-            state._attributeDeclaration += `attribute ${state._getGLType(this.type)} ${this.associatedVariableName};\r\n`;
-            if (define) {
-                state._attributeDeclaration += `#endif\r\n`;
+
+            if (attributeInFragmentOnly[this.name]) {
+                if (attributeAsUniform[this.name]) {
+                    state._emitUniformFromString(this.associatedVariableName, state._getGLType(this.type), define);
+                } else {
+                    state._emitVaryingFromString(this.associatedVariableName, state._getGLType(this.type), define);
+                }
+            } else {
+                if (define) {
+                    state._attributeDeclaration += this._emitDefine(define);
+                }
+                state._attributeDeclaration += `attribute ${state._getGLType(this.type)} ${this.associatedVariableName};\r\n`;
+                if (define) {
+                    state._attributeDeclaration += `#endif\r\n`;
+                }
             }
         }
     }
@@ -508,7 +583,7 @@ export class InputBlock extends NodeMaterialBlock {
                     effect.setMatrix(variableName, scene.getTransformMatrix());
                     break;
                 case NodeMaterialSystemValues.CameraPosition:
-                    MaterialHelper.BindEyePosition(effect, scene, variableName);
+                    MaterialHelper.BindEyePosition(effect, scene, variableName, true);
                     break;
                 case NodeMaterialSystemValues.FogColor:
                     effect.setColor3(variableName, scene.fogColor);
@@ -533,10 +608,24 @@ export class InputBlock extends NodeMaterialBlock {
                 effect.setInt(variableName, value);
                 break;
             case NodeMaterialBlockConnectionPointTypes.Color3:
-                effect.setColor3(variableName, value);
+                TmpColors.Color3[0].set(this.value.r, this.value.g, this.value.b);
+                if (this.convertToGammaSpace) {
+                    TmpColors.Color3[0].toGammaSpaceToRef(TmpColors.Color3[0]);
+                }
+                if (this.convertToLinearSpace) {
+                    TmpColors.Color3[0].toLinearSpaceToRef(TmpColors.Color3[0]);
+                }
+                effect.setColor3(variableName, TmpColors.Color3[0]);
                 break;
             case NodeMaterialBlockConnectionPointTypes.Color4:
-                effect.setDirectColor4(variableName, value);
+                TmpColors.Color4[0].set(this.value.r, this.value.g, this.value.b, this.value.a);
+                if (this.convertToGammaSpace) {
+                    TmpColors.Color4[0].toGammaSpaceToRef(TmpColors.Color4[0]);
+                }
+                if (this.convertToLinearSpace) {
+                    TmpColors.Color4[0].toLinearSpaceToRef(TmpColors.Color4[0]);
+                }
+                effect.setDirectColor4(variableName, TmpColors.Color4[0]);
                 break;
             case NodeMaterialBlockConnectionPointTypes.Vector2:
                 effect.setVector2(variableName, value);
@@ -592,9 +681,21 @@ export class InputBlock extends NodeMaterialBlock {
                     break;
                 case NodeMaterialBlockConnectionPointTypes.Color3:
                     valueString = `new BABYLON.Color3(${this.value.r}, ${this.value.g}, ${this.value.b})`;
+                    if (this.convertToGammaSpace) {
+                        valueString += ".toGammaSpace()";
+                    }
+                    if (this.convertToLinearSpace) {
+                        valueString += ".toLinearSpace()";
+                    }
                     break;
                 case NodeMaterialBlockConnectionPointTypes.Color4:
                     valueString = `new BABYLON.Color4(${this.value.r}, ${this.value.g}, ${this.value.b}, ${this.value.a})`;
+                    if (this.convertToGammaSpace) {
+                        valueString += ".toGammaSpace()";
+                    }
+                    if (this.convertToLinearSpace) {
+                        valueString += ".toLinearSpace()";
+                    }
                     break;
                 case NodeMaterialBlockConnectionPointTypes.Matrix:
                     valueString = `BABYLON.Matrix.FromArray([${(this.value as Matrix).m}])`;
@@ -618,7 +719,6 @@ export class InputBlock extends NodeMaterialBlock {
             // Common Property "Type"
             codes.push(
                 `${variableName}.isConstant = ${this.isConstant}`,
-                `${variableName}.visibleInInspector = ${this.visibleInInspector}`
             );
 
             codes.push('');
@@ -641,13 +741,14 @@ export class InputBlock extends NodeMaterialBlock {
         serializationObject.mode = this._mode;
         serializationObject.systemValue = this._systemValue;
         serializationObject.animationType = this._animationType;
-        serializationObject.visibleInInspector = this.visibleInInspector;
         serializationObject.min = this.min;
         serializationObject.max = this.max;
         serializationObject.isBoolean = this.isBoolean;
         serializationObject.matrixMode = this.matrixMode;
         serializationObject.isConstant = this.isConstant;
         serializationObject.groupInInspector = this.groupInInspector;
+        serializationObject.convertToGammaSpace = this.convertToGammaSpace;
+        serializationObject.convertToLinearSpace = this.convertToLinearSpace;
 
         if (this._storedValue != null && this._mode === NodeMaterialBlockConnectionPointMode.Uniform) {
             if (this._storedValue.asArray) {
@@ -663,19 +764,21 @@ export class InputBlock extends NodeMaterialBlock {
     }
 
     public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+        this._mode = serializationObject.mode;
         super._deserialize(serializationObject, scene, rootUrl);
 
         this._type = serializationObject.type;
-        this._mode = serializationObject.mode;
+
         this._systemValue = serializationObject.systemValue || serializationObject.wellKnownValue;
         this._animationType = serializationObject.animationType;
-        this.visibleInInspector = serializationObject.visibleInInspector;
         this.min = serializationObject.min || 0;
         this.max = serializationObject.max || 0;
         this.isBoolean = !!serializationObject.isBoolean;
         this.matrixMode = serializationObject.matrixMode || 0;
         this.isConstant = !!serializationObject.isConstant;
         this.groupInInspector = serializationObject.groupInInspector || "";
+        this.convertToGammaSpace = !!serializationObject.convertToGammaSpace;
+        this.convertToLinearSpace = !!serializationObject.convertToLinearSpace;
 
         if (!serializationObject.valueType) {
             return;

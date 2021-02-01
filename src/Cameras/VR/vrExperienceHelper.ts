@@ -322,7 +322,7 @@ export class OnAfterEnteringVRObservableEvent {
 
 /**
  * Helps to quickly add VR support to an existing scene.
- * See http://doc.babylonjs.com/how_to/webvr_helper
+ * See https://doc.babylonjs.com/how_to/webvr_helper
  */
 export class VRExperienceHelper {
     private _scene: Scene;
@@ -474,12 +474,12 @@ export class VRExperienceHelper {
     private _raySelectionPredicate: (mesh: AbstractMesh) => boolean;
 
     /**
-     * To be optionaly changed by user to define custom ray selection
+     * To be optionally changed by user to define custom ray selection
      */
     public raySelectionPredicate: (mesh: AbstractMesh) => boolean;
 
     /**
-     * To be optionaly changed by user to define custom selection logic (after ray selection)
+     * To be optionally changed by user to define custom selection logic (after ray selection)
      */
     public meshSelectionPredicate: (mesh: AbstractMesh) => boolean;
 
@@ -516,7 +516,7 @@ export class VRExperienceHelper {
     /**
      * The mesh used to display where the user is selecting, this mesh will be cloned and set as the gazeTracker for the left and right controller
      * when set bakeCurrentTransformIntoVertices will be called on the mesh.
-     * See http://doc.babylonjs.com/resources/baking_transformations
+     * See https://doc.babylonjs.com/resources/baking_transformations
      */
     public get gazeTrackerMesh(): Mesh {
         return this._cameraGazer._gazeTracker;
@@ -787,7 +787,7 @@ export class VRExperienceHelper {
 
             this._scene.activeCamera = this._deviceOrientationCamera;
             if (this._inputElement) {
-                this._scene.activeCamera.attachControl(this._inputElement);
+                this._scene.activeCamera.attachControl();
             }
         } else {
             this._existingCamera = this._scene.activeCamera;
@@ -1180,7 +1180,7 @@ export class VRExperienceHelper {
         }
 
         if (this._scene.activeCamera && this._inputElement) {
-            this._scene.activeCamera.attachControl(this._inputElement);
+            this._scene.activeCamera.attachControl();
         }
 
         if (this._interactionsEnabled) {
@@ -1248,7 +1248,7 @@ export class VRExperienceHelper {
                 this._existingCamera.position = this._position;
                 this._scene.activeCamera = this._existingCamera;
                 if (this._inputElement) {
-                    this._scene.activeCamera.attachControl(this._inputElement);
+                    this._scene.activeCamera.attachControl();
                 }
 
                 // Restore angular sensibility

@@ -17,6 +17,7 @@ import { Constants } from '../../../../Engines/constants';
 import "../../../../Shaders/ShadersInclude/reflectionFunction";
 import { CubeTexture } from '../../../Textures/cubeTexture';
 import { Texture } from '../../../Textures/texture';
+import { Engine } from "../../../../Engines/engine";
 
 /**
  * Base block used to read a reflection texture from a sampler
@@ -55,13 +56,39 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
     protected _reflectionVectorName: string;
     /** @hidden */
     public _reflectionCoordsName: string;
-    protected _reflectionMatrixName: string;
+    /** @hidden */
+    public _reflectionMatrixName: string;
     protected _reflectionColorName: string;
 
+    protected _texture: Nullable<BaseTexture>;
     /**
      * Gets or sets the texture associated with the node
      */
-    public texture: Nullable<BaseTexture>;
+    public get texture(): Nullable<BaseTexture> {
+        return this._texture;
+    }
+
+    public set texture(texture: Nullable<BaseTexture>) {
+        if (this._texture === texture) {
+            return;
+        }
+
+        const scene = texture?.getScene() ?? Engine.LastCreatedScene;
+
+        if (!texture && scene) {
+            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+                return mat.hasTexture(this._texture!);
+            });
+        }
+
+        this._texture = texture;
+
+        if (texture && scene) {
+            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+                return mat.hasTexture(texture);
+            });
+        }
+    }
 
     /**
      * Create a new ReflectionTextureBaseBlock
@@ -134,7 +161,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
             worldInput.output.connectTo(this.world);
         }
 
-        if (!this.view.isConnected) {
+        if (this.view && !this.view.isConnected) {
             let viewInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.View);
 
             if (!viewInput) {
@@ -156,17 +183,18 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
             return;
         }
 
-        defines.setValue(this._define3DName, texture.isCube);
-        defines.setValue(this._defineLocalCubicName, (<any>texture).boundingBoxSize ? true : false);
-        defines.setValue(this._defineExplicitName, texture.coordinatesMode === Constants.TEXTURE_EXPLICIT_MODE);
-        defines.setValue(this._defineSkyboxName, texture.coordinatesMode === Constants.TEXTURE_SKYBOX_MODE);
-        defines.setValue(this._defineCubicName, texture.coordinatesMode === Constants.TEXTURE_CUBIC_MODE);
-        defines.setValue(this._defineSphericalName, texture.coordinatesMode === Constants.TEXTURE_SPHERICAL_MODE);
-        defines.setValue(this._definePlanarName, texture.coordinatesMode === Constants.TEXTURE_PLANAR_MODE);
-        defines.setValue(this._defineProjectionName, texture.coordinatesMode === Constants.TEXTURE_PROJECTION_MODE);
-        defines.setValue(this._defineEquirectangularName, texture.coordinatesMode === Constants.TEXTURE_EQUIRECTANGULAR_MODE);
-        defines.setValue(this._defineEquirectangularFixedName, texture.coordinatesMode === Constants.TEXTURE_FIXED_EQUIRECTANGULAR_MODE);
-        defines.setValue(this._defineMirroredEquirectangularFixedName, texture.coordinatesMode === Constants.TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE);
+        defines.setValue(this._define3DName, texture.isCube, true);
+        defines.setValue(this._defineLocalCubicName, (<any>texture).boundingBoxSize ? true : false, true);
+        defines.setValue(this._defineExplicitName, texture.coordinatesMode === Constants.TEXTURE_EXPLICIT_MODE, true);
+        defines.setValue(this._defineSkyboxName, texture.coordinatesMode === Constants.TEXTURE_SKYBOX_MODE, true);
+        defines.setValue(this._defineCubicName, texture.coordinatesMode === Constants.TEXTURE_CUBIC_MODE || texture.coordinatesMode === Constants.TEXTURE_INVCUBIC_MODE, true);
+        defines.setValue("INVERTCUBICMAP", texture.coordinatesMode === Constants.TEXTURE_INVCUBIC_MODE, true);
+        defines.setValue(this._defineSphericalName, texture.coordinatesMode === Constants.TEXTURE_SPHERICAL_MODE, true);
+        defines.setValue(this._definePlanarName, texture.coordinatesMode === Constants.TEXTURE_PLANAR_MODE, true);
+        defines.setValue(this._defineProjectionName, texture.coordinatesMode === Constants.TEXTURE_PROJECTION_MODE, true);
+        defines.setValue(this._defineEquirectangularName, texture.coordinatesMode === Constants.TEXTURE_EQUIRECTANGULAR_MODE, true);
+        defines.setValue(this._defineEquirectangularFixedName, texture.coordinatesMode === Constants.TEXTURE_FIXED_EQUIRECTANGULAR_MODE, true);
+        defines.setValue(this._defineMirroredEquirectangularFixedName, texture.coordinatesMode === Constants.TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE, true);
     }
 
     public isReady() {
@@ -426,9 +454,10 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         let codeString: string;
 
         if (this.texture.isCube) {
-            codeString = `${this._codeVariableName}.texture = new BABYLON.CubeTexture("${this.texture.name}");\r\n`;
+            const forcedExtension = (this.texture as CubeTexture).forcedExtension;
+            codeString = `${this._codeVariableName}.texture = new BABYLON.CubeTexture("${this.texture.name}", undefined, undefined, ${this.texture.noMipmap}, null, undefined, undefined, undefined, ${this.texture._prefiltered}, ${forcedExtension ? "\"" + forcedExtension + "\"" : "null"});\r\n`;
         } else {
-            codeString = `${this._codeVariableName}.texture = new BABYLON.Texture("${this.texture.name}");\r\n`;
+            codeString = `${this._codeVariableName}.texture = new BABYLON.Texture("${this.texture.name}", null);\r\n`;
         }
         codeString += `${this._codeVariableName}.texture.coordinatesMode = ${this.texture.coordinatesMode};\r\n`;
 
@@ -438,7 +467,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
     public serialize(): any {
         let serializationObject = super.serialize();
 
-        if (this.texture) {
+        if (this.texture && !this.texture.isRenderTarget) {
             serializationObject.texture = this.texture.serialize();
         }
 

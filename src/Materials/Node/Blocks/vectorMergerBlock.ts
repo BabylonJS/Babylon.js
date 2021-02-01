@@ -129,21 +129,21 @@ export class VectorMergerBlock extends NodeMaterialBlock {
         let v3Output = this._outputs[1];
         let v2Output = this._outputs[2];
 
-        if (xyInput.isConnected) {
-            if (v4Output.hasEndpoints) {
-                state.compilationString += this._declareOutput(v4Output, state) + ` = vec4(${xyInput.associatedVariableName}, ${zInput.isConnected ? this._writeVariable(zInput) : "0.0"}, ${wInput.isConnected ? this._writeVariable(wInput) : "0.0"});\r\n`;
-            } else if (v3Output.hasEndpoints) {
-                state.compilationString += this._declareOutput(v3Output, state) + ` = vec3(${xyInput.associatedVariableName}, ${zInput.isConnected ? this._writeVariable(zInput) : "0.0"});\r\n`;
-            } else if (v2Output.hasEndpoints) {
-                state.compilationString += this._declareOutput(v2Output, state) + ` = ${xyInput.associatedVariableName};\r\n`;
-            }
-        } else if (xyzInput.isConnected) {
+        if (xyzInput.isConnected) {
             if (v4Output.hasEndpoints) {
                 state.compilationString += this._declareOutput(v4Output, state) + ` = vec4(${xyzInput.associatedVariableName}, ${wInput.isConnected ? this._writeVariable(wInput) : "0.0"});\r\n`;
             } else if (v3Output.hasEndpoints) {
                 state.compilationString += this._declareOutput(v3Output, state) + ` = ${xyzInput.associatedVariableName};\r\n`;
             } else if (v2Output.hasEndpoints) {
                 state.compilationString += this._declareOutput(v2Output, state) + ` = ${xyzInput.associatedVariableName}.xy;\r\n`;
+            }
+        } else if (xyInput.isConnected) {
+            if (v4Output.hasEndpoints) {
+                state.compilationString += this._declareOutput(v4Output, state) + ` = vec4(${xyInput.associatedVariableName}, ${zInput.isConnected ? this._writeVariable(zInput) : "0.0"}, ${wInput.isConnected ? this._writeVariable(wInput) : "0.0"});\r\n`;
+            } else if (v3Output.hasEndpoints) {
+                state.compilationString += this._declareOutput(v3Output, state) + ` = vec3(${xyInput.associatedVariableName}, ${zInput.isConnected ? this._writeVariable(zInput) : "0.0"});\r\n`;
+            } else if (v2Output.hasEndpoints) {
+                state.compilationString += this._declareOutput(v2Output, state) + ` = ${xyInput.associatedVariableName};\r\n`;
             }
         } else {
             if (v4Output.hasEndpoints) {

@@ -31,8 +31,8 @@ export class WorkerPool implements IDisposable {
             workerInfo.worker.terminate();
         }
 
-        delete this._workerInfos;
-        delete this._pendingActions;
+        this._workerInfos = [];
+        this._pendingActions = [];
     }
 
     /**

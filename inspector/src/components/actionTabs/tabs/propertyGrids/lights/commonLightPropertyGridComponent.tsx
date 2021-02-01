@@ -2,14 +2,14 @@ import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 import { Light } from "babylonjs/Lights/light";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LineContainerComponent } from "../../../lineContainerComponent";
-import { FloatLineComponent } from "../../../lines/floatLineComponent";
-import { TextLineComponent } from "../../../lines/textLineComponent";
-import { LockObject } from "../lockObject";
+import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
+import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
+import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from '../../../../globalState';
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
-import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
-import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
+import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
+import { TextInputLineComponent } from '../../../../../sharedUiComponents/lines/textInputLineComponent';
 import { AnimationGridComponent } from '../animations/animationPropertyGridComponent';
 
 interface ICommonLightPropertyGridComponentProps {
@@ -32,7 +32,7 @@ export class CommonLightPropertyGridComponent extends React.Component<ICommonLig
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={light}
                     lockObject={this.props.lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
+                <LineContainerComponent title="GENERAL">
                     <TextLineComponent label="ID" value={light.id} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={light} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                     <TextLineComponent label="Unique ID" value={light.uniqueId.toString()} />

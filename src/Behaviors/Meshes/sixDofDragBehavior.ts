@@ -22,7 +22,7 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
     private _moving = false;
     private _startingOrientation = new Quaternion();
-    private _attachedElement: Nullable<HTMLElement> = null;
+    private _attachedToElement: boolean = false;
 
     /**
      * How much faster the object should move when the controller is moving towards it. This is useful to bring objects that are far away from the user to them faster. Set this to 0 to avoid any speed increase. (Default: 3)
@@ -53,6 +53,10 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
      */
     public onDragStartObservable = new Observable<{}>();
     /**
+     * Fires each time a drag happens
+     */
+    public onDragObservable = new Observable<void>();
+    /**
      *  Fires each time a drag ends (eg. mouse release after drag)
      */
     public onDragEndObservable = new Observable<{}>();
@@ -76,7 +80,7 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
     public init() { }
 
     /**
-     * In the case of multiplea active cameras, the cameraToUseForPointers should be used if set instead of active camera
+     * In the case of multiple active cameras, the cameraToUseForPointers should be used if set instead of active camera
      */
     private get _pointerCamera() {
         if (this._scene.cameraToUseForPointers) {
@@ -94,7 +98,7 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
         this._ownerNode = ownerNode;
         this._scene = this._ownerNode.getScene();
         if (!SixDofDragBehavior._virtualScene) {
-            SixDofDragBehavior._virtualScene = new Scene(this._scene.getEngine());
+            SixDofDragBehavior._virtualScene = new Scene(this._scene.getEngine(), {virtual: true});
             SixDofDragBehavior._virtualScene.detachControl();
             this._scene.getEngine().scenes.pop();
         }
@@ -144,13 +148,13 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
                     this.dragging = true;
                     this.currentDraggingPointerID = (<PointerEvent>pointerInfo.event).pointerId;
 
-                    // Detatch camera controls
+                    // Detach camera controls
                     if (this.detachCameraControls && this._pointerCamera && !this._pointerCamera.leftCamera) {
-                        if (this._pointerCamera.inputs.attachedElement) {
-                            this._attachedElement = this._pointerCamera.inputs.attachedElement;
-                            this._pointerCamera.detachControl(this._pointerCamera.inputs.attachedElement);
+                        if (this._pointerCamera.inputs.attachedToElement) {
+                            this._pointerCamera.detachControl();
+                            this._attachedToElement = true;
                         } else {
-                            this._attachedElement = null;
+                            this._attachedToElement = false;
                         }
                     }
                     PivotTools._RestorePivotPoint(pickedMesh);
@@ -165,8 +169,9 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
                     this._virtualOriginMesh.removeChild(this._virtualDragMesh);
 
                     // Reattach camera controls
-                    if (this.detachCameraControls && this._attachedElement && this._pointerCamera && !this._pointerCamera.leftCamera) {
-                        this._pointerCamera.attachControl(this._attachedElement, true);
+                    if (this.detachCameraControls && this._attachedToElement && this._pointerCamera && !this._pointerCamera.leftCamera) {
+                        this._pointerCamera.attachControl(true);
+                        this._attachedToElement = false;
                     }
                     this.onDragEndObservable.notifyObservers({});
                 }
@@ -238,6 +243,8 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
                     }
                 }
                 PivotTools._RestorePivotPoint(pickedMesh);
+
+                this.onDragObservable.notifyObservers();
             }
         });
     }
@@ -246,8 +253,9 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
      */
     public detach(): void {
         if (this._scene) {
-            if (this.detachCameraControls && this._attachedElement && this._pointerCamera && !this._pointerCamera.leftCamera) {
-                this._pointerCamera.attachControl(this._attachedElement, true);
+            if (this.detachCameraControls && this._attachedToElement && this._pointerCamera && !this._pointerCamera.leftCamera) {
+                this._pointerCamera.attachControl(true);
+                this._attachedToElement = false;
             }
             this._scene.onPointerObservable.remove(this._pointerObserver);
         }
@@ -261,6 +269,7 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
             this._virtualDragMesh.dispose();
         }
         this.onDragEndObservable.clear();
+        this.onDragObservable.clear();
         this.onDragStartObservable.clear();
     }
 }

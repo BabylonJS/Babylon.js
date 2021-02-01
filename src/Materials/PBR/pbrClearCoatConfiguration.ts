@@ -7,6 +7,7 @@ import { UniformBuffer } from "../../Materials/uniformBuffer";
 import { MaterialHelper } from "../../Materials/materialHelper";
 import { IAnimatable } from '../../Animations/animatable.interface';
 import { EffectFallbacks } from '../effectFallbacks';
+import { SubMesh } from '../../Meshes/subMesh';
 
 declare type Engine = import("../../Engines/engine").Engine;
 declare type Scene = import("../../scene").Scene;
@@ -18,9 +19,14 @@ export interface IMaterialClearCoatDefines {
     CLEARCOAT: boolean;
     CLEARCOAT_DEFAULTIOR: boolean;
     CLEARCOAT_TEXTURE: boolean;
+    CLEARCOAT_TEXTURE_ROUGHNESS: boolean;
     CLEARCOAT_TEXTUREDIRECTUV: number;
+    CLEARCOAT_TEXTURE_ROUGHNESSDIRECTUV: number;
     CLEARCOAT_BUMP: boolean;
     CLEARCOAT_BUMPDIRECTUV: number;
+    CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE: boolean;
+    CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL: boolean;
+    CLEARCOAT_REMAP_F0: boolean;
 
     CLEARCOAT_TINT: boolean;
     CLEARCOAT_TINT_TEXTURE: boolean;
@@ -37,8 +43,9 @@ export class PBRClearCoatConfiguration {
     /**
      * This defaults to 1.5 corresponding to a 0.04 f0 or a 4% reflectance at normal incidence
      * The default fits with a polyurethane material.
+     * @hidden
      */
-    private static readonly _DefaultIndexOfRefraction = 1.5;
+    public static readonly _DefaultIndexOfRefraction = 1.5;
 
     private _isEnabled = false;
     /**
@@ -73,11 +80,39 @@ export class PBRClearCoatConfiguration {
 
     private _texture: Nullable<BaseTexture> = null;
     /**
-     * Stores the clear coat values in a texture.
+     * Stores the clear coat values in a texture (red channel is intensity and green channel is roughness)
+     * If useRoughnessFromMainTexture is false, the green channel of texture is not used and the green channel of textureRoughness is used instead
+     * if textureRoughness is not empty, else no texture roughness is used
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public texture: Nullable<BaseTexture> = null;
+
+    private _useRoughnessFromMainTexture = true;
+    /**
+     * Indicates that the green channel of the texture property will be used for roughness (default: true)
+     * If false, the green channel from textureRoughness is used for roughness
+     */
+    @serialize()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public useRoughnessFromMainTexture = true;
+
+    private _textureRoughness: Nullable<BaseTexture> = null;
+    /**
+     * Stores the clear coat roughness in a texture (green channel)
+     * Not used if useRoughnessFromMainTexture is true
+     */
+    @serializeAsTexture()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public textureRoughness: Nullable<BaseTexture> = null;
+
+    private _remapF0OnInterfaceChange = true;
+    /**
+     * Defines if the F0 value should be remapped to account for the interface change in the material.
+     */
+    @serialize()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public remapF0OnInterfaceChange = true;
 
     private _bumpTexture: Nullable<BaseTexture> = null;
     /**
@@ -136,7 +171,7 @@ export class PBRClearCoatConfiguration {
     }
 
     /**
-     * Instantiate a new istance of clear coat configuration.
+     * Instantiate a new instance of clear coat configuration.
      * @param markAllSubMeshesAsTexturesDirty Callback to flag the material to dirty
      */
     constructor(markAllSubMeshesAsTexturesDirty: () => void) {
@@ -144,11 +179,11 @@ export class PBRClearCoatConfiguration {
     }
 
     /**
-     * Gets wehter the submesh is ready to be used or not.
+     * Gets whether the submesh is ready to be used or not.
      * @param defines the list of "defines" to update.
      * @param scene defines the scene the material belongs to.
      * @param engine defines the engine the material belongs to.
-     * @param disableBumpMap defines wether the material disables bump or not.
+     * @param disableBumpMap defines whether the material disables bump or not.
      * @returns - boolean indicating that the submesh is ready or not.
      */
     public isReadyForSubMesh(defines: IMaterialClearCoatDefines, scene: Scene, engine: Engine, disableBumpMap: boolean): boolean {
@@ -156,6 +191,12 @@ export class PBRClearCoatConfiguration {
             if (scene.texturesEnabled) {
                 if (this._texture && MaterialFlags.ClearCoatTextureEnabled) {
                     if (!this._texture.isReadyOrNotBlocking()) {
+                        return false;
+                    }
+                }
+
+                if (this._textureRoughness && MaterialFlags.ClearCoatTextureEnabled) {
+                    if (!this._textureRoughness.isReadyOrNotBlocking()) {
                         return false;
                     }
                 }
@@ -186,6 +227,9 @@ export class PBRClearCoatConfiguration {
     public prepareDefines(defines: IMaterialClearCoatDefines, scene: Scene): void {
         if (this._isEnabled) {
             defines.CLEARCOAT = true;
+            defines.CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE = this._useRoughnessFromMainTexture;
+            defines.CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL = this._texture !== null && this._texture._texture === this._textureRoughness?._texture && this._texture.checkTransformsAreIdentical(this._textureRoughness);
+            defines.CLEARCOAT_REMAP_F0 = this._remapF0OnInterfaceChange;
 
             if (defines._areTexturesDirty) {
                 if (scene.texturesEnabled) {
@@ -193,6 +237,12 @@ export class PBRClearCoatConfiguration {
                         MaterialHelper.PrepareDefinesForMergedUV(this._texture, defines, "CLEARCOAT_TEXTURE");
                     } else {
                         defines.CLEARCOAT_TEXTURE = false;
+                    }
+
+                    if (this._textureRoughness && MaterialFlags.ClearCoatTextureEnabled) {
+                        MaterialHelper.PrepareDefinesForMergedUV(this._textureRoughness, defines, "CLEARCOAT_TEXTURE_ROUGHNESS");
+                    } else {
+                        defines.CLEARCOAT_TEXTURE_ROUGHNESS = false;
                     }
 
                     if (this._bumpTexture && MaterialFlags.ClearCoatBumpTextureEnabled) {
@@ -222,9 +272,12 @@ export class PBRClearCoatConfiguration {
         else {
             defines.CLEARCOAT = false;
             defines.CLEARCOAT_TEXTURE = false;
+            defines.CLEARCOAT_TEXTURE_ROUGHNESS = false;
             defines.CLEARCOAT_BUMP = false;
             defines.CLEARCOAT_TINT = false;
             defines.CLEARCOAT_TINT_TEXTURE = false;
+            defines.CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE = false;
+            defines.CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL = false;
         }
     }
 
@@ -233,16 +286,29 @@ export class PBRClearCoatConfiguration {
      * @param uniformBuffer defines the Uniform buffer to fill in.
      * @param scene defines the scene the material belongs to.
      * @param engine defines the engine the material belongs to.
-     * @param disableBumpMap defines wether the material disables bump or not.
-     * @param isFrozen defines wether the material is frozen or not.
+     * @param disableBumpMap defines whether the material disables bump or not.
+     * @param isFrozen defines whether the material is frozen or not.
      * @param invertNormalMapX If sets to true, x component of normal map value will be inverted (x = 1.0 - x).
      * @param invertNormalMapY If sets to true, y component of normal map value will be inverted (y = 1.0 - y).
+     * @param subMesh the submesh to bind data for
      */
-    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, disableBumpMap: boolean, isFrozen: boolean, invertNormalMapX: boolean, invertNormalMapY: boolean): void {
+    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, disableBumpMap: boolean, isFrozen: boolean, invertNormalMapX: boolean, invertNormalMapY: boolean, subMesh?: SubMesh): void {
+        const defines = subMesh!._materialDefines as unknown as IMaterialClearCoatDefines;
+
+        const identicalTextures = defines.CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL;
+
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
-            if (this._texture && MaterialFlags.ClearCoatTextureEnabled) {
-                uniformBuffer.updateFloat2("vClearCoatInfos", this._texture.coordinatesIndex, this._texture.level);
-                MaterialHelper.BindTextureMatrix(this._texture, uniformBuffer, "clearCoat");
+            if (identicalTextures && MaterialFlags.ClearCoatTextureEnabled) {
+                uniformBuffer.updateFloat4("vClearCoatInfos", this._texture!.coordinatesIndex, this._texture!.level, -1, -1);
+                MaterialHelper.BindTextureMatrix(this._texture!, uniformBuffer, "clearCoat");
+            } else  if ((this._texture || this._textureRoughness) && MaterialFlags.ClearCoatTextureEnabled) {
+                uniformBuffer.updateFloat4("vClearCoatInfos", this._texture?.coordinatesIndex ?? 0, this._texture?.level ?? 0, this._textureRoughness?.coordinatesIndex ?? 0, this._textureRoughness?.level ?? 0);
+                if (this._texture) {
+                    MaterialHelper.BindTextureMatrix(this._texture, uniformBuffer, "clearCoat");
+                }
+                if (this._textureRoughness && !identicalTextures && !defines.CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE) {
+                    MaterialHelper.BindTextureMatrix(this._textureRoughness, uniformBuffer, "clearCoatRoughness");
+                }
             }
 
             if (this._bumpTexture && engine.getCaps().standardDerivatives && MaterialFlags.ClearCoatTextureEnabled && !disableBumpMap) {
@@ -287,6 +353,10 @@ export class PBRClearCoatConfiguration {
                 uniformBuffer.setTexture("clearCoatSampler", this._texture);
             }
 
+            if (this._textureRoughness && !identicalTextures && !defines.CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE && MaterialFlags.ClearCoatTextureEnabled) {
+                uniformBuffer.setTexture("clearCoatRoughnessSampler", this._textureRoughness);
+            }
+
             if (this._bumpTexture && engine.getCaps().standardDerivatives && MaterialFlags.ClearCoatBumpTextureEnabled && !disableBumpMap) {
                 uniformBuffer.setTexture("clearCoatBumpSampler", this._bumpTexture);
             }
@@ -304,6 +374,10 @@ export class PBRClearCoatConfiguration {
      */
     public hasTexture(texture: BaseTexture): boolean {
         if (this._texture === texture) {
+            return true;
+        }
+
+        if (this._textureRoughness === texture) {
             return true;
         }
 
@@ -327,6 +401,10 @@ export class PBRClearCoatConfiguration {
             activeTextures.push(this._texture);
         }
 
+        if (this._textureRoughness) {
+            activeTextures.push(this._textureRoughness);
+        }
+
         if (this._bumpTexture) {
             activeTextures.push(this._bumpTexture);
         }
@@ -345,6 +423,10 @@ export class PBRClearCoatConfiguration {
             animatables.push(this._texture);
         }
 
+        if (this._textureRoughness && this._textureRoughness.animations && this._textureRoughness.animations.length > 0) {
+            animatables.push(this._textureRoughness);
+        }
+
         if (this._bumpTexture && this._bumpTexture.animations && this._bumpTexture.animations.length > 0) {
             animatables.push(this._bumpTexture);
         }
@@ -360,17 +442,10 @@ export class PBRClearCoatConfiguration {
      */
     public dispose(forceDisposeTextures?: boolean): void {
         if (forceDisposeTextures) {
-            if (this._texture) {
-                this._texture.dispose();
-            }
-
-            if (this._bumpTexture) {
-                this._bumpTexture.dispose();
-            }
-
-            if (this._tintTexture) {
-                this._tintTexture.dispose();
-            }
+            this._texture?.dispose();
+            this._textureRoughness?.dispose();
+            this._bumpTexture?.dispose();
+            this._tintTexture?.dispose();
         }
     }
 
@@ -409,7 +484,7 @@ export class PBRClearCoatConfiguration {
     public static AddUniforms(uniforms: string[]): void {
         uniforms.push("vClearCoatTangentSpaceParams", "vClearCoatParams", "vClearCoatRefractionParams",
             "vClearCoatTintParams", "clearCoatColorAtDistance",
-            "clearCoatMatrix", "clearCoatBumpMatrix", "clearCoatTintMatrix",
+            "clearCoatMatrix", "clearCoatRoughnessMatrix", "clearCoatBumpMatrix", "clearCoatTintMatrix",
             "vClearCoatInfos", "vClearCoatBumpInfos", "vClearCoatTintInfos");
     }
 
@@ -418,7 +493,7 @@ export class PBRClearCoatConfiguration {
      * @param samplers defines the current sampler list.
      */
     public static AddSamplers(samplers: string[]): void {
-        samplers.push("clearCoatSampler", "clearCoatBumpSampler", "clearCoatTintSampler");
+        samplers.push("clearCoatSampler", "clearCoatRoughnessSampler", "clearCoatBumpSampler", "clearCoatTintSampler");
     }
 
     /**
@@ -428,8 +503,9 @@ export class PBRClearCoatConfiguration {
     public static PrepareUniformBuffer(uniformBuffer: UniformBuffer): void {
         uniformBuffer.addUniform("vClearCoatParams", 2);
         uniformBuffer.addUniform("vClearCoatRefractionParams", 4);
-        uniformBuffer.addUniform("vClearCoatInfos", 2);
+        uniformBuffer.addUniform("vClearCoatInfos", 4);
         uniformBuffer.addUniform("clearCoatMatrix", 16);
+        uniformBuffer.addUniform("clearCoatRoughnessMatrix", 16);
         uniformBuffer.addUniform("vClearCoatBumpInfos", 2);
         uniformBuffer.addUniform("vClearCoatTangentSpaceParams", 2);
         uniformBuffer.addUniform("clearCoatBumpMatrix", 16);

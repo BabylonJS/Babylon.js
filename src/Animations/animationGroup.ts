@@ -23,6 +23,14 @@ export class TargetedAnimation {
     public target: any;
 
     /**
+     * Returns the string "TargetedAnimation"
+     * @returns "TargetedAnimation"
+     */
+    public getClassName(): string {
+        return "TargetedAnimation";
+    }
+
+    /**
      * Serialize the object
      * @returns the JSON object representing the current entity
      */
@@ -192,9 +200,16 @@ export class AnimationGroup implements IDisposable {
     }
 
     /**
+     * Gets the list of target animations
+     */
+    public get children() {
+        return this._targetedAnimations;
+    }
+
+    /**
      * Instantiates a new Animation Group.
      * This helps managing several animations at once.
-     * @see http://doc.babylonjs.com/how_to/group
+     * @see https://doc.babylonjs.com/how_to/group
      * @param name Defines the name of the group
      * @param scene Defines the scene the group belongs to
      */
@@ -265,7 +280,7 @@ export class AnimationGroup implements IDisposable {
                 let newKey: IAnimationKey = {
                     frame: endFrame,
                     value: endKey.value,
-                    inTangent: endKey.outTangent,
+                    inTangent: endKey.inTangent,
                     outTangent: endKey.outTangent,
                     interpolation: endKey.interpolation
                 };
@@ -412,6 +427,9 @@ export class AnimationGroup implements IDisposable {
      */
     public reset(): AnimationGroup {
         if (!this._isStarted) {
+            this.play();
+            this.goToFrame(0);
+            this.stop();
             return this;
         }
 
@@ -465,7 +483,7 @@ export class AnimationGroup implements IDisposable {
      * Set animation weight for all animatables
      * @param weight defines the weight to use
      * @return the animationGroup
-     * @see http://doc.babylonjs.com/babylon101/animations#animation-weights
+     * @see https://doc.babylonjs.com/babylon101/animations#animation-weights
      */
     public setWeightForAllAnimatables(weight: number): AnimationGroup {
         for (var index = 0; index < this._animatables.length; index++) {
@@ -480,7 +498,7 @@ export class AnimationGroup implements IDisposable {
      * Synchronize and normalize all animatables with a source animatable
      * @param root defines the root animatable to synchronize with
      * @return the animationGroup
-     * @see http://doc.babylonjs.com/babylon101/animations#animation-weights
+     * @see https://doc.babylonjs.com/babylon101/animations#animation-weights
      */
     public syncAllAnimationsWith(root: Animatable): AnimationGroup {
         for (var index = 0; index < this._animatables.length; index++) {
@@ -548,7 +566,7 @@ export class AnimationGroup implements IDisposable {
      * Clone the current animation group and returns a copy
      * @param newName defines the name of the new group
      * @param targetConverter defines an optional function used to convert current animation targets to new ones
-     * @returns the new aniamtion group
+     * @returns the new animation group
      */
     public clone(newName: string, targetConverter?: (oldTarget: any) => any): AnimationGroup {
         let newGroup = new AnimationGroup(newName || this.name, this._scene);
@@ -649,7 +667,7 @@ export class AnimationGroup implements IDisposable {
     }
 
     /**
-     * Creates a detailled string about the object
+     * Creates a detailed string about the object
      * @param fullDetails defines if the output string will support multiple levels of logging within scene loading
      * @returns a string representing the object
      */

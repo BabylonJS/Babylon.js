@@ -11,6 +11,8 @@ import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import { TextBlock } from "../controls/textBlock";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { Color3 } from 'babylonjs/Maths/math.color';
+import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
+import { serialize } from 'babylonjs/Misc/decorators';
 
 /** Class used to create color pickers */
 export class ColorPicker extends Control {
@@ -39,6 +41,7 @@ export class ColorPicker extends Control {
     public onValueChangedObservable = new Observable<Color3>();
 
     /** Gets or sets the color of the color picker */
+    @serialize()
     public get value(): Color3 {
         return this._value;
     }
@@ -87,8 +90,9 @@ export class ColorPicker extends Control {
 
     /**
      * Gets or sets control width
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
+    @serialize()
     public get width(): string | number {
         return this._width.toString(this._host);
     }
@@ -106,8 +110,9 @@ export class ColorPicker extends Control {
 
     /**
      * Gets or sets control height
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
+    @serialize()
     public get height(): string | number {
         return this._height.toString(this._host);
     }
@@ -125,6 +130,7 @@ export class ColorPicker extends Control {
     }
 
     /** Gets or sets control size */
+    @serialize()
     public get size(): string | number {
         return this.width;
     }
@@ -381,8 +387,8 @@ export class ColorPicker extends Control {
         return false;
     }
 
-    public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean {
-        if (!super._onPointerDown(target, coordinates, pointerId, buttonIndex)) {
+    public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {
+        if (!super._onPointerDown(target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
         }
 
@@ -409,7 +415,7 @@ export class ColorPicker extends Control {
         return true;
     }
 
-    public _onPointerMove(target: Control, coordinates: Vector2, pointerId: number): void {
+    public _onPointerMove(target: Control, coordinates: Vector2, pointerId: number, pi: PointerInfoBase): void {
         // Only listen to pointer move events coming from the last pointer to click on the element (To support dual vr controller interaction)
         if (pointerId != this._lastPointerDownID) {
             return;
@@ -424,14 +430,19 @@ export class ColorPicker extends Control {
             this._updateValueFromPointer(x, y);
         }
 
-        super._onPointerMove(target, coordinates, pointerId);
+        super._onPointerMove(target, coordinates, pointerId, pi);
     }
 
-    public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void {
+    public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi: PointerInfoBase): void {
         this._pointerIsDown = false;
 
         delete this._host._capturingControl[pointerId];
-        super._onPointerUp(target, coordinates, pointerId, buttonIndex, notifyClick);
+        super._onPointerUp(target, coordinates, pointerId, buttonIndex, notifyClick, pi);
+    }
+
+    public _onCanvasBlur() {
+        this._forcePointerUp();
+        super._onCanvasBlur();
     }
 
     /**

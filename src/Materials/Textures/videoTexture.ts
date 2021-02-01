@@ -3,7 +3,6 @@ import { Tools } from "../../Misc/tools";
 import { Logger } from "../../Misc/logger";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
-import { Engine } from "../../Engines/engine";
 import { Texture } from "../../Materials/Textures/texture";
 
 import "../../Engines/Extensions/engine.videoTexture";
@@ -17,6 +16,11 @@ export interface VideoTextureSettings {
      * Applies `autoplay` to video, if specified
      */
     autoPlay?: boolean;
+
+    /**
+     * Applies `muted` to video, if specified
+     */
+    muted?: boolean;
 
     /**
      * Applies `loop` to video, if specified
@@ -53,7 +57,7 @@ export class VideoTexture extends Texture {
     private _onUserActionRequestedObservable: Nullable<Observable<Texture>> = null;
 
     /**
-     * Event triggerd when a dom action is required by the user to play the video.
+     * Event triggered when a dom action is required by the user to play the video.
      * This happens due to recent changes in browser policies preventing video to auto start.
      */
     public get onUserActionRequestedObservable(): Observable<Texture> {
@@ -64,7 +68,6 @@ export class VideoTexture extends Texture {
     }
 
     private _generateMipMaps: boolean;
-    private _engine: Engine;
     private _stillImageCaptured = false;
     private _displayingPosterTexture = false;
     private _settings: VideoTextureSettings;
@@ -100,7 +103,6 @@ export class VideoTexture extends Texture {
     ) {
         super(null, scene, !generateMipMaps, invertY);
 
-        this._engine = this.getScene()!.getEngine();
         this._generateMipMaps = generateMipMaps;
         this._initialSamplingMode = samplingMode;
         this.autoUpdateTexture = settings.autoUpdateTexture;
@@ -113,12 +115,14 @@ export class VideoTexture extends Texture {
         if (settings.poster) {
             this.video.poster = settings.poster;
         }
-
         if (settings.autoPlay !== undefined) {
             this.video.autoplay = settings.autoPlay;
         }
         if (settings.loop !== undefined) {
             this.video.loop = settings.loop;
+        }
+        if (settings.muted !== undefined) {
+            this.video.muted = settings.muted;
         }
 
         this.video.setAttribute("playsinline", "");
@@ -129,10 +133,14 @@ export class VideoTexture extends Texture {
         this._createInternalTextureOnEvent = (settings.poster && !settings.autoPlay) ? "play" : "canplay";
         this.video.addEventListener(this._createInternalTextureOnEvent, this._createInternalTexture);
 
+        if (settings.autoPlay) {
+            this.video.play();
+        }
+
         const videoHasEnoughData = (this.video.readyState >= this.video.HAVE_CURRENT_DATA);
         if (settings.poster &&
             (!settings.autoPlay || !videoHasEnoughData)) {
-            this._texture = this._engine.createTexture(settings.poster!, false, !this.invertY, scene);
+            this._texture = this._getEngine()!.createTexture(settings.poster!, false, !this.invertY, scene);
             this._displayingPosterTexture = true;
         }
         else if (videoHasEnoughData) {
@@ -183,7 +191,7 @@ export class VideoTexture extends Texture {
             }
         }
 
-        if (!this._engine.needPOTTextures ||
+        if (!this._getEngine()!.needPOTTextures ||
             (Tools.IsExponentOfTwo(this.video.videoWidth) && Tools.IsExponentOfTwo(this.video.videoHeight))) {
             this.wrapU = Texture.WRAP_ADDRESSMODE;
             this.wrapV = Texture.WRAP_ADDRESSMODE;
@@ -193,7 +201,7 @@ export class VideoTexture extends Texture {
             this._generateMipMaps = false;
         }
 
-        this._texture = this._engine.createDynamicTexture(
+        this._texture = this._getEngine()!.createDynamicTexture(
             this.video.videoWidth,
             this.video.videoHeight,
             this._generateMipMaps,
@@ -208,7 +216,6 @@ export class VideoTexture extends Texture {
             this.video.onplaying = () => {
                 this.video.muted = oldMuted;
                 this.video.onplaying = oldHandler;
-                this._texture!.isReady = true;
                 this._updateInternalTexture();
                 if (!error) {
                     this.video.pause();
@@ -232,7 +239,6 @@ export class VideoTexture extends Texture {
             }
             else {
                 this.video.onplaying = oldHandler;
-                this._texture.isReady = true;
                 this._updateInternalTexture();
                 if (this.onLoadObservable.hasObservers()) {
                     this.onLoadObservable.notifyObservers(this);
@@ -240,7 +246,6 @@ export class VideoTexture extends Texture {
             }
         }
         else {
-            this._texture.isReady = true;
             this._updateInternalTexture();
             if (this.onLoadObservable.hasObservers()) {
                 this.onLoadObservable.notifyObservers(this);
@@ -280,7 +285,7 @@ export class VideoTexture extends Texture {
 
     /**
      * Update Texture in `manual` mode. Does not do anything if not visible or paused.
-     * @param isVisible Visibility state, detected by user using `scene.getActiveMeshes()` or othervise.
+     * @param isVisible Visibility state, detected by user using `scene.getActiveMeshes()` or otherwise.
      */
     public updateTexture(isVisible: boolean): void {
         if (!isVisible) {
@@ -294,7 +299,7 @@ export class VideoTexture extends Texture {
     }
 
     protected _updateInternalTexture = (): void => {
-        if (this._texture == null || !this._texture.isReady) {
+        if (this._texture == null) {
             return;
         }
         if (this.video.readyState < this.video.HAVE_CURRENT_DATA) {
@@ -311,7 +316,7 @@ export class VideoTexture extends Texture {
 
         this._frameId = frameId;
 
-        this._engine.updateVideoTexture(this._texture, this.video, this._invertY);
+        this._getEngine()!.updateVideoTexture(this._texture, this.video, this._invertY);
     }
 
     /**
@@ -365,6 +370,17 @@ export class VideoTexture extends Texture {
      */
     public static CreateFromStreamAsync(scene: Scene, stream: MediaStream): Promise<VideoTexture> {
         var video = document.createElement("video");
+
+        if (scene.getEngine()._badOS) {
+            // Yes... I know and I hope to remove it soon...
+            document.body.appendChild(video);
+            video.style.transform = 'scale(0.0001, 0.0001)';
+            video.style.opacity = '0';
+            video.style.position = 'fixed';
+            video.style.bottom = '0px';
+            video.style.right = '0px';
+        }
+
         video.setAttribute('autoplay', '');
         video.setAttribute('muted', 'true');
         video.setAttribute('playsinline', '');

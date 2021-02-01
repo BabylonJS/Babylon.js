@@ -4,7 +4,7 @@ import { FreeCamera } from "../../Cameras/freeCamera";
 import { Quaternion } from "../../Maths/math.vector";
 import { Tools } from "../../Misc/tools";
 import { FreeCameraInputsManager } from "../../Cameras/freeCameraInputsManager";
-import { Observable } from '../../Misc/observable';
+import { Observable } from "../../Misc/observable";
 
 // Module augmentation to abstract orientation inputs from camera.
 declare module "../../Cameras/freeCameraInputsManager" {
@@ -25,7 +25,7 @@ declare module "../../Cameras/freeCameraInputsManager" {
  * Add orientation input support to the input manager.
  * @returns the current input manager
  */
-FreeCameraInputsManager.prototype.addDeviceOrientation = function(): FreeCameraInputsManager {
+FreeCameraInputsManager.prototype.addDeviceOrientation = function (): FreeCameraInputsManager {
     if (!this._deviceOrientationInput) {
         this._deviceOrientationInput = new FreeCameraDeviceOrientationInput();
         this.add(this._deviceOrientationInput);
@@ -37,7 +37,7 @@ FreeCameraInputsManager.prototype.addDeviceOrientation = function(): FreeCameraI
 /**
  * Takes information about the orientation of the device as reported by the deviceorientation event to orient the camera.
  * Screen rotation is taken into account.
- * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
  */
 export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera> {
     private _camera: FreeCamera;
@@ -56,7 +56,7 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
      * @param timeout amount of time in milliseconds to wait for a response from the sensor (default: infinite)
      * @returns a promise that will resolve on orientation change
      */
-    public static WaitForOrientationChangeAsync(timeout?: number) {
+    public static WaitForOrientationChangeAsync(timeout?: number): Promise<void> {
         return new Promise((res, rej) => {
             var gotValue = false;
             var eventHandler = () => {
@@ -75,10 +75,11 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
                 }, timeout);
             }
 
-            if (typeof(DeviceOrientationEvent) !== "undefined" && typeof (<any>DeviceOrientationEvent).requestPermission === 'function') {
-                (<any>DeviceOrientationEvent).requestPermission()
+            if (typeof DeviceOrientationEvent !== "undefined" && typeof (<any>DeviceOrientationEvent).requestPermission === "function") {
+                (<any>DeviceOrientationEvent)
+                    .requestPermission()
                     .then((response: string) => {
-                        if (response == 'granted') {
+                        if (response == "granted") {
                             window.addEventListener("deviceorientation", eventHandler);
                         } else {
                             Tools.Warn("Permission not granted.");
@@ -99,10 +100,10 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
     public _onDeviceOrientationChangedObservable = new Observable<void>();
     /**
      * Instantiates a new input
-     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
      */
     constructor() {
-        this._constantTranform = new Quaternion(- Math.sqrt(0.5), 0, 0, Math.sqrt(0.5));
+        this._constantTranform = new Quaternion(-Math.sqrt(0.5), 0, 0, Math.sqrt(0.5));
         this._orientationChanged();
     }
 
@@ -127,15 +128,11 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
 
     /**
      * Attach the input controls to a specific dom element to get the input from.
-     * @param element Defines the element the controls should be listened from
-     * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
-
+    public attachControl(): void {
         let hostWindow = this.camera.getScene().getEngine().getHostWindow();
 
         if (hostWindow) {
-
             const eventHandler = () => {
                 hostWindow!.addEventListener("orientationchange", this._orientationChanged);
                 hostWindow!.addEventListener("deviceorientation", this._deviceOrientation);
@@ -143,10 +140,11 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
                 //So this is needed.
                 this._orientationChanged();
             };
-            if (typeof(DeviceOrientationEvent) !== "undefined" && typeof (<any>DeviceOrientationEvent).requestPermission === 'function') {
-                (<any>DeviceOrientationEvent).requestPermission()
+            if (typeof DeviceOrientationEvent !== "undefined" && typeof (<any>DeviceOrientationEvent).requestPermission === "function") {
+                (<any>DeviceOrientationEvent)
+                    .requestPermission()
                     .then((response: string) => {
-                        if (response === 'granted') {
+                        if (response === "granted") {
                             eventHandler();
                         } else {
                             Tools.Warn("Permission not granted.");
@@ -162,10 +160,10 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
     }
 
     private _orientationChanged = () => {
-        this._screenOrientationAngle = (<any>window.orientation !== undefined ? +<any>window.orientation : ((<any>window.screen).orientation && ((<any>window.screen).orientation)['angle'] ? ((<any>window.screen).orientation).angle : 0));
+        this._screenOrientationAngle = <any>window.orientation !== undefined ? +(<any>window.orientation) : (<any>window.screen).orientation && (<any>window.screen).orientation["angle"] ? (<any>window.screen).orientation.angle : 0;
         this._screenOrientationAngle = -Tools.ToRadians(this._screenOrientationAngle / 2);
         this._screenQuaternion.copyFromFloats(0, Math.sin(this._screenOrientationAngle), 0, Math.cos(this._screenOrientationAngle));
-    }
+    };
 
     private _deviceOrientation = (evt: DeviceOrientationEvent) => {
         this._alpha = evt.alpha !== null ? evt.alpha : 0;
@@ -174,13 +172,18 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
         if (evt.alpha !== null) {
             this._onDeviceOrientationChangedObservable.notifyObservers();
         }
-    }
+    };
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param element Defines the element to stop listening the inputs from
      */
-    public detachControl(element: Nullable<HTMLElement>): void {
+    public detachControl(): void;
+
+    /**
+     * Detach the current controls from the specified dom element.
+     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     */
+    public detachControl(ignored?: any): void {
         window.removeEventListener("orientationchange", this._orientationChanged);
         window.removeEventListener("deviceorientation", this._deviceOrientation);
         this._alpha = 0;
@@ -193,7 +196,9 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
     public checkInputs(): void {
         //if no device orientation provided, don't update the rotation.
         //Only testing against alpha under the assumption thatnorientation will never be so exact when set.
-        if (!this._alpha) { return; }
+        if (!this._alpha) {
+            return;
+        }
         Quaternion.RotationYawPitchRollToRef(Tools.ToRadians(this._alpha), Tools.ToRadians(this._beta), -Tools.ToRadians(this._gamma), this.camera.rotationQuaternion);
         this._camera.rotationQuaternion.multiplyInPlace(this._screenQuaternion);
         this._camera.rotationQuaternion.multiplyInPlace(this._constantTranform);
@@ -203,7 +208,7 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
     }
 
     /**
-     * Gets the class name of the current intput.
+     * Gets the class name of the current input.
      * @returns the class name
      */
     public getClassName(): string {

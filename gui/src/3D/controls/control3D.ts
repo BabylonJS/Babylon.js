@@ -20,7 +20,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
     private _node: Nullable<TransformNode>;
     private _downCount = 0;
     private _enterCount = -1;
-    private _downPointerIds: { [id: number]: boolean } = {};
+    private _downPointerIds: { [id: number]: number } = {}; // Store number of pointer downs per ID, from near and far interactions
     private _isVisible = true;
 
     /** Gets or sets the control position  in world space */
@@ -106,7 +106,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
 
     /**
      * Gets the list of attached behaviors
-     * @see http://doc.babylonjs.com/features/behaviour
+     * @see https://doc.babylonjs.com/features/behaviour
      */
     public get behaviors(): Behavior<Control3D>[] {
         return this._behaviors;
@@ -114,7 +114,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
 
     /**
      * Attach a behavior to the control
-     * @see http://doc.babylonjs.com/features/behaviour
+     * @see https://doc.babylonjs.com/features/behaviour
      * @param behavior defines the behavior to attach
      * @returns the current control
      */
@@ -142,7 +142,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
 
     /**
      * Remove an attached behavior
-     * @see http://doc.babylonjs.com/features/behaviour
+     * @see https://doc.babylonjs.com/features/behaviour
      * @param behavior defines the behavior to attach
      * @returns the current control
      */
@@ -162,7 +162,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
     /**
      * Gets an attached behavior by name
      * @param name defines the name of the behavior to look for
-     * @see http://doc.babylonjs.com/features/behaviour
+     * @see https://doc.babylonjs.com/features/behaviour
      * @returns null if behavior was not found else the requested behavior
      */
     public getBehaviorByName(name: string): Nullable<Behavior<Control3D>> {
@@ -259,7 +259,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
             if (!this.node) {
                 return;
             }
-            this._node!.metadata = this; // Store the control on the metadata field in order to get it when picking
+            this._injectGUI3DMetadata(this._node!).control = this; // Store the control on the metadata field in order to get it when picking
             this._node!.position = this.position;
             this._node!.scaling = this.scaling;
 
@@ -270,6 +270,12 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
                 this._affectMaterial(mesh);
             }
         }
+    }
+
+    protected _injectGUI3DMetadata(node: TransformNode): any {
+        node.metadata = node.metadata ?? {};
+        node.metadata.GUI3D = node.metadata.GUI3D ?? {};
+        return node.metadata.GUI3D;
     }
 
     /**
@@ -300,15 +306,15 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
 
     /** @hidden */
     public _onPointerEnter(target: Control3D): boolean {
-        if (this._enterCount > 0) {
-            return false;
-        }
-
         if (this._enterCount === -1) { // -1 is for touch input, we are now sure we are with a mouse or pencil
             this._enterCount = 0;
         }
 
         this._enterCount++;
+
+        if (this._enterCount > 1) {
+            return false;
+        }
 
         this.onPointerEnterObservable.notifyObservers(this, -1, target, this);
 
@@ -321,6 +327,12 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
 
     /** @hidden */
     public _onPointerOut(target: Control3D): void {
+        this._enterCount--;
+
+        if (this._enterCount > 0) {
+            return;
+        }
+
         this._enterCount = 0;
 
         this.onPointerOutObservable.notifyObservers(this, -1, target, this);
@@ -332,14 +344,12 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
 
     /** @hidden */
     public _onPointerDown(target: Control3D, coordinates: Vector3, pointerId: number, buttonIndex: number): boolean {
-        if (this._downCount !== 0) {
-            this._downCount++;
+        this._downCount++;
+        this._downPointerIds[pointerId] = this._downPointerIds[pointerId] + 1 || 1;
+
+        if (this._downCount !== 1) {
             return false;
         }
-
-        this._downCount++;
-
-        this._downPointerIds[pointerId] = true;
 
         this.onPointerDownObservable.notifyObservers(new Vector3WithInfo(coordinates, buttonIndex), -1, target, this);
 
@@ -353,7 +363,11 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
     /** @hidden */
     public _onPointerUp(target: Control3D, coordinates: Vector3, pointerId: number, buttonIndex: number, notifyClick: boolean): void {
         this._downCount--;
-        delete this._downPointerIds[pointerId];
+        this._downPointerIds[pointerId]--;
+
+        if (this._downPointerIds[pointerId] <= 0) {
+            delete this._downPointerIds[pointerId];
+        }
 
         if (this._downCount < 0) {
             // Handle if forcePointerUp was called prior to this
@@ -414,7 +428,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
             return true;
         }
 
-        if (type === PointerEventTypes.POINTERUP) {
+        if (type === PointerEventTypes.POINTERUP || type === PointerEventTypes.POINTERDOUBLETAP) {
             if (this._host._lastControlDown[pointerId]) {
                 this._host._lastControlDown[pointerId]._onPointerUp(this, pickedPoint, pointerId, buttonIndex, true);
             }

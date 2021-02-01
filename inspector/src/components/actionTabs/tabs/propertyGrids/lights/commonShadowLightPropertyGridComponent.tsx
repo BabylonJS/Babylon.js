@@ -2,16 +2,16 @@ import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 import { IShadowLight } from "babylonjs/Lights/shadowLight";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LineContainerComponent } from "../../../lineContainerComponent";
-import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
-import { FloatLineComponent } from "../../../lines/floatLineComponent";
-import { LockObject } from "../lockObject";
+import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
+import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
+import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from '../../../../globalState';
-import { OptionsLineComponent } from '../../../lines/optionsLineComponent';
+import { OptionsLineComponent } from '../../../../../sharedUiComponents/lines/optionsLineComponent';
 import { ShadowGenerator } from 'babylonjs/Lights/Shadows/shadowGenerator';
 import { CascadedShadowGenerator } from 'babylonjs/Lights/Shadows/cascadedShadowGenerator';
-import { SliderLineComponent } from '../../../lines/sliderLineComponent';
-import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
+import { SliderLineComponent } from '../../../../../sharedUiComponents/lines/sliderLineComponent';
+import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
 import { DirectionalLight } from 'babylonjs/Lights/directionalLight';
 
 interface ICommonShadowLightPropertyGridComponentProps {
@@ -40,6 +40,7 @@ export class CommonShadowLightPropertyGridComponent extends React.Component<ICom
         let generator = internals.generatorType === 0 ? new ShadowGenerator(internals.mapSize, light) : new CascadedShadowGenerator(internals.mapSize, light as DirectionalLight);
 
         scene.meshes.forEach((m) => {
+            if (m.infiniteDistance) { return; }
             generator.addShadowCaster(m);
             if (!m.isAnInstance) {
                 m.receiveShadows = true;
@@ -118,7 +119,7 @@ export class CommonShadowLightPropertyGridComponent extends React.Component<ICom
 
         return (
             <div>
-                <LineContainerComponent globalState={this.props.globalState} title="SHADOWS">
+                <LineContainerComponent title="SHADOWS">
                     <CheckBoxLineComponent label="Shadows enabled" target={light} propertyName="shadowEnabled" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     { !csmGenerator && <>
                         <FloatLineComponent lockObject={this.props.lockObject} label="Shadows near plane" target={light} propertyName="shadowMinZ" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -127,7 +128,7 @@ export class CommonShadowLightPropertyGridComponent extends React.Component<ICom
                 </LineContainerComponent>
                 {
                     generator == null &&
-                    <LineContainerComponent globalState={this.props.globalState} title="SHADOW GENERATOR">
+                    <LineContainerComponent title="SHADOW GENERATOR">
                         <OptionsLineComponent label="Type" options={typeGeneratorOptions} target={internals} propertyName="generatorType" />
                         <OptionsLineComponent label="Map size" options={mapSizeOptions} target={internals} propertyName="mapSize" />
                         <ButtonLineComponent label="Create generator" onClick={() => this.createShadowGenerator()} />
@@ -135,7 +136,7 @@ export class CommonShadowLightPropertyGridComponent extends React.Component<ICom
                 }
                 {
                     generator !== null &&
-                    <LineContainerComponent globalState={this.props.globalState} title="SHADOW GENERATOR">
+                    <LineContainerComponent title="SHADOW GENERATOR">
                         <ButtonLineComponent label="Dispose generator" onClick={() => this.disposeShadowGenerator()} />
                         { csmGenerator && <>
                             <OptionsLineComponent label="Num cascades" options={numCascadesOptions} target={generator} propertyName="numCascades" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

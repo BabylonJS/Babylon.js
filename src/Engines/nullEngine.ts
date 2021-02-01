@@ -10,6 +10,7 @@ import { IPipelineContext } from './IPipelineContext';
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { IColor4Like, IViewportLike } from '../Maths/math.like';
 import { ISceneLike } from './thinEngine';
+import { PerformanceConfigurator } from './performanceConfigurator';
 
 declare const global: any;
 
@@ -42,6 +43,11 @@ export class NullEngineOptions {
      * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
      */
     public lockstepMaxSteps = 4;
+
+    /**
+     * Make the matrix computations to be performed in 64 bits instead of 32 bits. False by default
+     */
+    useHighPrecisionMatrix?: boolean;
 }
 
 /**
@@ -53,7 +59,7 @@ export class NullEngine extends Engine {
 
     /**
      * Gets a boolean indicating that the engine is running in deterministic lock step mode
-     * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
      * @returns true if engine is in deterministic lock step mode
      */
     public isDeterministicLockStep(): boolean {
@@ -62,7 +68,7 @@ export class NullEngine extends Engine {
 
     /**
      * Gets the max steps when engine is running in deterministic lock step
-     * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
      * @returns the max steps
      */
     public getLockstepMaxSteps(): number {
@@ -94,6 +100,8 @@ export class NullEngine extends Engine {
 
         this._options = options;
 
+        PerformanceConfigurator.SetMatrixPrecision(!!options.useHighPrecisionMatrix);
+
         // Init caps
         // We consider we are on a webgl1 capable device
 
@@ -113,6 +121,7 @@ export class NullEngine extends Engine {
             pvrtc: null,
             etc1: null,
             etc2: null,
+            bptc: null,
             maxAnisotropy: 0,
             uintIndices: false,
             fragmentDepthSupported: false,
@@ -131,7 +140,30 @@ export class NullEngine extends Engine {
             instancedArrays: false,
             canUseTimestampForTimerQuery: false,
             maxMSAASamples: 1,
-            blendMinMax: false
+            blendMinMax: false,
+            canUseGLInstanceID: false,
+            canUseGLVertexID: false
+        };
+
+        this._features = {
+            forceBitmapOverHTMLImageElement: false,
+            supportRenderAndCopyToLodForFloatTextures: false,
+            supportDepthStencilTexture: false,
+            supportShadowSamplers: false,
+            uniformBufferHardCheckMatrix: false,
+            allowTexturePrefiltering: false,
+            trackUbosInFrame: false,
+            supportCSM: false,
+            basisNeedsPOT: false,
+            support3DTextures: false,
+            needTypeSuffixInShaderConstants: false,
+            supportMSAA: false,
+            supportSSAO2: false,
+            supportExtendedTextureFormats: false,
+            supportSwitchCaseInShader: false,
+            supportSyncTextureRead: false,
+            needsInvertingBitmap: false,
+            _collectUbosUpdatedInFrame: false,
         };
 
         Logger.Log(`Babylon.js v${Engine.Version} - Null engine`);
@@ -253,7 +285,7 @@ export class NullEngine extends Engine {
     }
 
     /**
-     * Activates an effect, mkaing it the current one (ie. the one used for rendering)
+     * Activates an effect, making it the current one (ie. the one used for rendering)
      * @param effect defines the effect to activate
      */
     public enableEffect(effect: Effect): void {
@@ -281,128 +313,160 @@ export class NullEngine extends Engine {
      * Set the value of an uniform to an array of int32
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of int32 to store
+     * @returns true if value was set
      */
-    public setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void {
+    public setIntArray(uniform: WebGLUniformLocation, array: Int32Array): boolean {
+        return true;
     }
 
     /**
      * Set the value of an uniform to an array of int32 (stored as vec2)
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of int32 to store
+     * @returns true if value was set
      */
-    public setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): void {
+    public setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): boolean {
+        return true;
     }
 
     /**
      * Set the value of an uniform to an array of int32 (stored as vec3)
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of int32 to store
+     * @returns true if value was set
      */
-    public setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): void {
+    public setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): boolean {
+        return true;
     }
 
     /**
      * Set the value of an uniform to an array of int32 (stored as vec4)
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of int32 to store
+     * @returns true if value was set
      */
-    public setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): void {
+    public setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): boolean {
+        return true;
     }
 
     /**
      * Set the value of an uniform to an array of float32
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of float32 to store
+     * @returns true if value was set
      */
-    public setFloatArray(uniform: WebGLUniformLocation, array: Float32Array): void {
+    public setFloatArray(uniform: WebGLUniformLocation, array: Float32Array): boolean {
+        return true;
     }
 
     /**
      * Set the value of an uniform to an array of float32 (stored as vec2)
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of float32 to store
+     * @returns true if value was set
      */
-    public setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array): void {
+    public setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array): boolean {
+        return true;
     }
 
     /**
      * Set the value of an uniform to an array of float32 (stored as vec3)
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of float32 to store
+     * @returns true if value was set
      */
-    public setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array): void {
+    public setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array): boolean {
+        return true;
     }
 
     /**
      * Set the value of an uniform to an array of float32 (stored as vec4)
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of float32 to store
+     * @returns true if value was set
      */
-    public setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array): void {
+    public setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array): boolean {
+        return true;
     }
 
     /**
      * Set the value of an uniform to an array of number
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of number to store
+     * @returns true if value was set
      */
-    public setArray(uniform: WebGLUniformLocation, array: number[]): void {
+    public setArray(uniform: WebGLUniformLocation, array: number[]): boolean {
+        return true;
     }
 
     /**
      * Set the value of an uniform to an array of number (stored as vec2)
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of number to store
+     * @returns true if value was set
      */
-    public setArray2(uniform: WebGLUniformLocation, array: number[]): void {
+    public setArray2(uniform: WebGLUniformLocation, array: number[]): boolean {
+        return true;
     }
 
     /**
      * Set the value of an uniform to an array of number (stored as vec3)
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of number to store
+     * @returns true if value was set
      */
-    public setArray3(uniform: WebGLUniformLocation, array: number[]): void {
+    public setArray3(uniform: WebGLUniformLocation, array: number[]): boolean {
+        return true;
     }
 
     /**
      * Set the value of an uniform to an array of number (stored as vec4)
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of number to store
+     * @returns true if value was set
      */
-    public setArray4(uniform: WebGLUniformLocation, array: number[]): void {
+    public setArray4(uniform: WebGLUniformLocation, array: number[]): boolean {
+        return true;
     }
 
     /**
      * Set the value of an uniform to an array of float32 (stored as matrices)
      * @param uniform defines the webGL uniform location where to store the value
      * @param matrices defines the array of float32 to store
+     * @returns true if value was set
      */
-    public setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): void {
+    public setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): boolean {
+        return true;
     }
 
     /**
      * Set the value of an uniform to a matrix (3x3)
      * @param uniform defines the webGL uniform location where to store the value
      * @param matrix defines the Float32Array representing the 3x3 matrix to store
+     * @returns true if value was set
      */
-    public setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): void {
+    public setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): boolean {
+        return true;
     }
 
     /**
      * Set the value of an uniform to a matrix (2x2)
      * @param uniform defines the webGL uniform location where to store the value
      * @param matrix defines the Float32Array representing the 2x2 matrix to store
+     * @returns true if value was set
      */
-    public setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): void {
+    public setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): boolean {
+        return true;
     }
 
     /**
      * Set the value of an uniform to a number (float)
      * @param uniform defines the webGL uniform location where to store the value
      * @param value defines the float number to store
+     * @returns true if value was set
      */
-    public setFloat(uniform: WebGLUniformLocation, value: number): void {
+    public setFloat(uniform: WebGLUniformLocation, value: number): boolean {
+        return true;
     }
 
     /**
@@ -410,8 +474,10 @@ export class NullEngine extends Engine {
      * @param uniform defines the webGL uniform location where to store the value
      * @param x defines the 1st component of the value
      * @param y defines the 2nd component of the value
+     * @returns true if value was set
      */
-    public setFloat2(uniform: WebGLUniformLocation, x: number, y: number): void {
+    public setFloat2(uniform: WebGLUniformLocation, x: number, y: number): boolean {
+        return true;
     }
 
     /**
@@ -420,16 +486,20 @@ export class NullEngine extends Engine {
      * @param x defines the 1st component of the value
      * @param y defines the 2nd component of the value
      * @param z defines the 3rd component of the value
+     * @returns true if value was set
      */
-    public setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): void {
+    public setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): boolean {
+        return true;
     }
 
     /**
      * Set the value of an uniform to a boolean
      * @param uniform defines the webGL uniform location where to store the value
      * @param bool defines the boolean to store
+     * @returns true if value was set
      */
-    public setBool(uniform: WebGLUniformLocation, bool: number): void {
+    public setBool(uniform: WebGLUniformLocation, bool: number): boolean {
+        return true;
     }
 
     /**
@@ -439,15 +509,17 @@ export class NullEngine extends Engine {
      * @param y defines the 2nd component of the value
      * @param z defines the 3rd component of the value
      * @param w defines the 4th component of the value
+     * @returns true if value was set
      */
-    public setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void {
+    public setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): boolean {
+        return true;
     }
 
     /**
      * Sets the current alpha mode
      * @param mode defines the mode to use (one of the Engine.ALPHA_XXX)
      * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
-     * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
+     * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
      */
     public setAlphaMode(mode: number, noDepthWriteChange: boolean = false): void {
         if (this._alphaMode === mode) {
@@ -529,7 +601,7 @@ export class NullEngine extends Engine {
     }
 
     /** @hidden */
-    public _createTexture(): WebGLTexture {
+    protected _createTexture(): WebGLTexture {
         return {};
     }
 

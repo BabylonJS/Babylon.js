@@ -368,13 +368,18 @@ export class Collider {
             var distToCollision = t * this._velocity.length();
 
             if (!this.collisionFound || distToCollision < this._nearestDistance) {
-                if (!this.intersectionPoint) {
-                    this.intersectionPoint = this._collisionPoint.clone();
-                } else {
-                    this.intersectionPoint.copyFrom(this._collisionPoint);
+                // if collisionResponse is false, collision is not found but the collidedMesh is set anyway.
+                // onCollide observable are triggered if collideMesh is set
+                // this allow trigger volumes to be created.
+                if (hostMesh.collisionResponse) {
+                    if (!this.intersectionPoint) {
+                        this.intersectionPoint = this._collisionPoint.clone();
+                    } else {
+                        this.intersectionPoint.copyFrom(this._collisionPoint);
+                    }
+                    this._nearestDistance = distToCollision;
+                    this.collisionFound = true;
                 }
-                this._nearestDistance = distToCollision;
-                this.collisionFound = true;
                 this.collidedMesh = hostMesh;
             }
         }
@@ -382,12 +387,22 @@ export class Collider {
 
     /** @hidden */
     public _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: IndicesArray, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean, hostMesh: AbstractMesh): void {
-        for (var i = indexStart; i < indexEnd; i += 3) {
-            var p1 = pts[indices[i] - decal];
-            var p2 = pts[indices[i + 1] - decal];
-            var p3 = pts[indices[i + 2] - decal];
+        if (!indices || indices.length === 0) {
+            for (let i = 0; i < pts.length; i += 3) {
+                const p1 = pts[i];
+                const p2 = pts[i + 1];
+                const p3 = pts[i + 2];
 
-            this._testTriangle(i, trianglePlaneArray, p3, p2, p1, hasMaterial, hostMesh);
+                this._testTriangle(i, trianglePlaneArray, p3, p2, p1, hasMaterial, hostMesh);
+            }
+        } else {
+            for (let i = indexStart; i < indexEnd; i += 3) {
+                const p1 = pts[indices[i] - decal];
+                const p2 = pts[indices[i + 1] - decal];
+                const p3 = pts[indices[i + 2] - decal];
+
+                this._testTriangle(i, trianglePlaneArray, p3, p2, p1, hasMaterial, hostMesh);
+            }
         }
     }
 

@@ -2,7 +2,7 @@ import { Nullable } from "../types";
 import { Engine } from "../Engines/engine";
 /**
  * Interface used to present a loading screen while loading a scene
- * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+ * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
  */
 export interface ILoadingScreen {
     /**
@@ -26,7 +26,7 @@ export interface ILoadingScreen {
 
 /**
  * Class used for the default loading screen
- * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+ * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
  */
 export class DefaultLoadingScreen implements ILoadingScreen {
 
@@ -64,6 +64,11 @@ export class DefaultLoadingScreen implements ILoadingScreen {
         this._loadingDiv.style.opacity = "0";
         this._loadingDiv.style.transition = "opacity 1.5s ease";
         this._loadingDiv.style.pointerEvents = "none";
+        this._loadingDiv.style.display = "grid";
+        this._loadingDiv.style.gridTemplateRows = "100%";
+        this._loadingDiv.style.gridTemplateColumns = "100%";
+        this._loadingDiv.style.justifyItems = "center";
+        this._loadingDiv.style.alignItems = "center";
 
         // Loading text
         this._loadingTextDiv = document.createElement("div");
@@ -77,6 +82,7 @@ export class DefaultLoadingScreen implements ILoadingScreen {
         this._loadingTextDiv.style.fontSize = "14px";
         this._loadingTextDiv.style.color = "white";
         this._loadingTextDiv.style.textAlign = "center";
+        this._loadingTextDiv.style.zIndex = "1";
         this._loadingTextDiv.innerHTML = "Loading";
 
         this._loadingDiv.appendChild(this._loadingTextDiv);
@@ -108,11 +114,22 @@ export class DefaultLoadingScreen implements ILoadingScreen {
             imgBack.src = DefaultLoadingScreen.DefaultLogoUrl;
         }
 
+        imgBack.style.width = "150px";
+        imgBack.style.gridColumn = "1";
+        imgBack.style.gridRow = "1";
+        imgBack.style.top = "50%";
+        imgBack.style.left = "50%";
+        imgBack.style.transform = "translate(-50%, -50%)";
         imgBack.style.position = "absolute";
-        imgBack.style.left = "40%";
-        imgBack.style.top = "40%";
-        imgBack.style.width = "20%";
-        imgBack.style.height = "20%";
+
+        const imageSpinnerContainer = document.createElement("div");
+        imageSpinnerContainer.style.width = "300px";
+        imageSpinnerContainer.style.gridColumn = "1";
+        imageSpinnerContainer.style.gridRow = "1";
+        imageSpinnerContainer.style.top = "50%";
+        imageSpinnerContainer.style.left = "50%";
+        imageSpinnerContainer.style.transform = "translate(-50%, -50%)";
+        imageSpinnerContainer.style.position = "absolute";
 
         // Loading spinner
         var imgSpinner = new Image();
@@ -123,11 +140,6 @@ export class DefaultLoadingScreen implements ILoadingScreen {
             imgSpinner.src = DefaultLoadingScreen.DefaultSpinnerUrl;
         }
 
-        imgSpinner.style.position = "absolute";
-        imgSpinner.style.left = "30%";
-        imgSpinner.style.top = "30%";
-        imgSpinner.style.width = "40%";
-        imgSpinner.style.height = "40%";
         imgSpinner.style.animation = "spin1 0.75s infinite linear";
         imgSpinner.style.webkitAnimation = "spin1 0.75s infinite linear";
         imgSpinner.style.transformOrigin = "50% 50%";
@@ -148,8 +160,10 @@ export class DefaultLoadingScreen implements ILoadingScreen {
             imgSpinner.style.top = `calc(50% - ${loadingSize.h / 2}vh)`;
         }
 
+        imageSpinnerContainer.appendChild(imgSpinner);
+
         this._loadingDiv.appendChild(imgBack);
-        this._loadingDiv.appendChild(imgSpinner);
+        this._loadingDiv.appendChild(imageSpinnerContainer);
 
         this._resizeLoadingUI();
 

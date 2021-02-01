@@ -170,9 +170,9 @@ export class GamepadManager {
         }
 
         var newGamepad;
-        var dualShock: boolean = ((<string>gamepad.id).search("054c") !== -1);
+        var dualShock: boolean = ((<string>gamepad.id).search("054c") !== -1 && (<string>gamepad.id).search("0ce6") === -1);
         var xboxOne: boolean = ((<string>gamepad.id).search("Xbox One") !== -1);
-        if (xboxOne || (<string>gamepad.id).search("Xbox 360") !== -1 || (<string>gamepad.id).search("xinput") !== -1) {
+        if (xboxOne || (<string>gamepad.id).search("Xbox 360") !== -1 || (<string>gamepad.id).search("xinput") !== -1 || (<string>gamepad.id).search("045e") !== -1) {
             newGamepad = new Xbox360Pad(gamepad.id, gamepad.index, gamepad, xboxOne);
         }
         else if (dualShock) {

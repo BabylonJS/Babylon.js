@@ -5,10 +5,12 @@ import { Control } from "./control";
 import { Measure } from "../measure";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
+import { serialize } from 'babylonjs/Misc/decorators';
 
 /**
  * Root class for 2D containers
- * @see http://doc.babylonjs.com/how_to/gui#containers
+ * @see https://doc.babylonjs.com/how_to/gui#containers
  */
 export class Container extends Control {
     /** @hidden */
@@ -30,9 +32,11 @@ export class Container extends Control {
     /**
      * Gets or sets the number of layout cycles (a change involved by a control while evaluating the layout) allowed
      */
+    @serialize()
     public maxLayoutCycle = 3;
 
     /** Gets or sets a boolean indicating if the container should try to adapt to its children height */
+    @serialize()
     public get adaptHeightToChildren(): boolean {
         return this._adaptHeightToChildren;
     }
@@ -52,6 +56,7 @@ export class Container extends Control {
     }
 
     /** Gets or sets a boolean indicating if the container should try to adapt to its children width */
+    @serialize()
     public get adaptWidthToChildren(): boolean {
         return this._adaptWidthToChildren;
     }
@@ -71,6 +76,7 @@ export class Container extends Control {
     }
 
     /** Gets or sets background color */
+    @serialize()
     public get background(): string {
         return this._background;
     }
@@ -331,21 +337,23 @@ export class Container extends Control {
                     if (child._layout(this._measureForChildren, context)) {
 
                         if (this.adaptWidthToChildren && child._width.isPixel) {
-                            computedWidth = Math.max(computedWidth, child._currentMeasure.width);
+                            computedWidth = Math.max(computedWidth, child._currentMeasure.width + child.paddingLeftInPixels + child.paddingRightInPixels);
                         }
                         if (this.adaptHeightToChildren && child._height.isPixel) {
-                            computedHeight = Math.max(computedHeight, child._currentMeasure.height);
+                            computedHeight = Math.max(computedHeight, child._currentMeasure.height + child.paddingTopInPixels + child.paddingBottomInPixels);
                         }
                     }
                 }
 
                 if (this.adaptWidthToChildren && computedWidth >= 0) {
+                    computedWidth += this.paddingLeftInPixels + this.paddingRightInPixels;
                     if (this.width !== computedWidth + "px") {
                         this.width = computedWidth + "px";
                         this._rebuildLayout = true;
                     }
                 }
                 if (this.adaptHeightToChildren && computedHeight >= 0) {
+                    computedHeight += this.paddingTopInPixels + this.paddingBottomInPixels;
                     if (this.height !== computedHeight + "px") {
                         this.height = computedHeight + "px";
                         this._rebuildLayout = true;
@@ -416,7 +424,7 @@ export class Container extends Control {
     }
 
     /** @hidden */
-    public _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
+    public _processPicking(x: number, y: number, pi: PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
         if (!this._isEnabled || !this.isVisible || this.notRenderable) {
             return false;
         }
@@ -428,7 +436,7 @@ export class Container extends Control {
         // Checking backwards to pick closest first
         for (var index = this._children.length - 1; index >= 0; index--) {
             var child = this._children[index];
-            if (child._processPicking(x, y, type, pointerId, buttonIndex, deltaX, deltaY)) {
+            if (child._processPicking(x, y, pi, type, pointerId, buttonIndex, deltaX, deltaY)) {
                 if (child.hoverCursor) {
                     this._host._changeCursor(child.hoverCursor);
                 }
@@ -440,7 +448,7 @@ export class Container extends Control {
             return false;
         }
 
-        return this._processObservables(type, x, y, pointerId, buttonIndex, deltaX, deltaY);
+        return this._processObservables(type, x, y, pi, pointerId, buttonIndex, deltaX, deltaY);
     }
 
     /** @hidden */
@@ -450,12 +458,45 @@ export class Container extends Control {
         this._measureForChildren.copyFrom(this._currentMeasure);
     }
 
+     /**
+     * Serializes the current control
+     * @param serializationObject defined the JSON serialized object
+     */
+    public serialize(serializationObject: any) {
+        super.serialize(serializationObject);
+        if (!this.children.length) {
+            return;
+        }
+
+        serializationObject.children = [];
+
+        for (var child of this.children) {
+            let childSerializationObject = {};
+            child.serialize(childSerializationObject);
+            serializationObject.children.push(childSerializationObject);
+        }
+    }
+
     /** Releases associated resources */
     public dispose() {
         super.dispose();
 
         for (var index = this.children.length - 1; index >= 0; index--) {
             this.children[index].dispose();
+        }
+    }
+
+    /** @hidden */
+    public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
+        super._parseFromContent(serializedObject, host);
+        this._link(host);
+
+        if (!serializedObject.children) {
+            return;
+        }
+
+        for (var childData of serializedObject.children) {
+            this.addControl(Control.Parse(childData, host));
         }
     }
 }

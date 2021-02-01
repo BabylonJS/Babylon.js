@@ -63,7 +63,7 @@ export interface IEffectLayerOptions {
 /**
  * The effect layer Helps adding post process effect blended with the main pass.
  *
- * This can be for instance use to generate glow or higlight effects on the scene.
+ * This can be for instance use to generate glow or highlight effects on the scene.
  *
  * The effect layer class can not be used directly and is intented to inherited from to be
  * customized per effects.
@@ -125,6 +125,12 @@ export abstract class EffectLayer {
     }
 
     /**
+     * Specifies if the bounding boxes should be rendered normally or if they should undergo the effect of the layer
+     */
+    @serialize()
+    public disableBoundingBoxesFromEffectLayer = false;
+
+    /**
      * An event triggered when the effect layer has been disposed.
      */
     public onDisposeObservable = new Observable<EffectLayer>();
@@ -155,7 +161,7 @@ export abstract class EffectLayer {
     public onAfterComposeObservable = new Observable<EffectLayer>();
 
     /**
-     * An event triggered when the efffect layer changes its size.
+     * An event triggered when the effect layer changes its size.
      */
     public onSizeChangedObservable = new Observable<EffectLayer>();
 
@@ -202,7 +208,7 @@ export abstract class EffectLayer {
     public abstract isReady(subMesh: SubMesh, useInstances: boolean): boolean;
 
     /**
-     * Returns whether or nood the layer needs stencil enabled during the mesh rendering.
+     * Returns whether or not the layer needs stencil enabled during the mesh rendering.
      * @returns true if the effect requires stencil during the main canvas render pass.
      */
     public abstract needStencil(): boolean;
@@ -374,6 +380,19 @@ export abstract class EffectLayer {
         this._mainTexture.onClearObservable.add((engine: Engine) => {
             engine.clear(this.neutralColor, true, true, true);
         });
+
+        // Prevent package size in es6 (getBoundingBoxRenderer might not be present)
+        if (this._scene.getBoundingBoxRenderer) {
+            const boundingBoxRendererEnabled = this._scene.getBoundingBoxRenderer().enabled;
+
+            this._mainTexture.onBeforeBindObservable.add(() => {
+                this._scene.getBoundingBoxRenderer().enabled = !this.disableBoundingBoxesFromEffectLayer && boundingBoxRendererEnabled;
+            });
+
+            this._mainTexture.onAfterUnbindObservable.add(() => {
+                this._scene.getBoundingBoxRenderer().enabled = boundingBoxRendererEnabled;
+            });
+        }
     }
 
     /**
@@ -514,6 +533,9 @@ export abstract class EffectLayer {
                 defines.push("#define MORPHTARGETS");
                 morphInfluencers = manager.numInfluencers;
                 defines.push("#define NUM_MORPH_INFLUENCERS " + morphInfluencers);
+                if (manager.isUsingTextureForTargets) {
+                    defines.push("#define MORPHTARGETS_TEXTURE");
+                }
                 MaterialHelper.PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, morphInfluencers);
             }
         }
@@ -522,6 +544,9 @@ export abstract class EffectLayer {
         if (useInstances) {
             defines.push("#define INSTANCES");
             MaterialHelper.PushAttributesForInstances(attribs);
+            if (subMesh.getRenderingMesh().hasThinInstances) {
+                defines.push("#define THIN_INSTANCES");
+            }
         }
 
         this._addCustomEffectDefines(defines);
@@ -534,8 +559,9 @@ export abstract class EffectLayer {
                 attribs,
                 ["world", "mBones", "viewProjection",
                     "glowColor", "morphTargetInfluences", "boneTextureWidth",
-                    "diffuseMatrix", "emissiveMatrix", "opacityMatrix", "opacityIntensity"],
-                ["diffuseSampler", "emissiveSampler", "opacitySampler", "boneSampler"], join,
+                    "diffuseMatrix", "emissiveMatrix", "opacityMatrix", "opacityIntensity",
+                    "morphTargetTextureInfo", "morphTargetTextureIndices"],
+                ["diffuseSampler", "emissiveSampler", "opacitySampler", "boneSampler", "morphTargets"], join,
                 fallbacks, undefined, undefined, { maxSimultaneousMorphTargets: morphInfluencers });
         }
 
@@ -654,9 +680,9 @@ export abstract class EffectLayer {
 
         var material = subMesh.getMaterial();
         var ownerMesh = subMesh.getMesh();
-        var replacementMesh = ownerMesh._internalAbstractMeshDataInfo._actAsRegularMesh ? ownerMesh : null;
+        var replacementMesh = subMesh.getReplacementMesh();
         var renderingMesh = subMesh.getRenderingMesh();
-        var effectiveMesh = replacementMesh ? replacementMesh : renderingMesh;
+        var effectiveMesh = subMesh.getEffectiveMesh();
         var scene = this._scene;
         var engine = scene.getEngine();
 
@@ -672,7 +698,14 @@ export abstract class EffectLayer {
         }
 
         // Culling
-        engine.setState(material.backFaceCulling);
+        let sideOrientation = renderingMesh.overrideMaterialSideOrientation ?? material.sideOrientation;
+        const mainDeterminant = renderingMesh._getWorldMatrixDeterminant();
+        if (mainDeterminant < 0) {
+            sideOrientation = (sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation);
+        }
+
+        const reverse = sideOrientation === Material.ClockWiseSideOrientation;
+        engine.setState(material.backFaceCulling, material.zOffset, undefined, reverse);
 
         // Managing instances
         var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!replacementMesh);
@@ -685,7 +718,7 @@ export abstract class EffectLayer {
             return;
         }
 
-        var hardwareInstancedRendering = batch.hardwareInstancedRendering[subMesh._id];
+        var hardwareInstancedRendering = batch.hardwareInstancedRendering[subMesh._id] || renderingMesh.hasThinInstances;
 
         this._setEmissiveTextureAndColor(renderingMesh, subMesh, material);
 
@@ -699,6 +732,8 @@ export abstract class EffectLayer {
             renderingMesh._bind(subMesh, this._effectLayerMapGenerationEffect, Material.TriangleFillMode);
 
             this._effectLayerMapGenerationEffect.setMatrix("viewProjection", scene.getTransformMatrix());
+
+            this._effectLayerMapGenerationEffect.setMatrix("world", effectiveMesh.getWorldMatrix());
 
             this._effectLayerMapGenerationEffect.setFloat4("glowColor",
                 this._emissiveTextureAndColor.color.r,
@@ -756,6 +791,9 @@ export abstract class EffectLayer {
 
             // Morph targets
             MaterialHelper.BindMorphTargetParameters(renderingMesh, this._effectLayerMapGenerationEffect);
+            if (renderingMesh.morphTargetManager && renderingMesh.morphTargetManager.isUsingTextureForTargets) {
+                renderingMesh.morphTargetManager._bind(this._effectLayerMapGenerationEffect);
+            }
 
             // Alpha mode
             if (enableAlphaMode) {

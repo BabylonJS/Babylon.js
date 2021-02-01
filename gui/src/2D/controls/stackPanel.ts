@@ -4,6 +4,8 @@ import { Container } from "./container";
 import { Measure } from "../measure";
 import { Control } from "./control";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { serialize } from 'babylonjs/Misc/decorators';
+import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 
 /**
  * Class used to create a 2D stack panel container
@@ -17,9 +19,11 @@ export class StackPanel extends Container {
     /**
      * Gets or sets a boolean indicating that layou warnings should be ignored
      */
+    @serialize()
     public ignoreLayoutWarnings = false;
 
     /** Gets or sets a boolean indicating if the stack panel is vertical or horizontal*/
+    @serialize()
     public get isVertical(): boolean {
         return this._isVertical;
     }
@@ -37,6 +41,7 @@ export class StackPanel extends Container {
      * Gets or sets panel width.
      * This value should not be set when in horizontal mode as it will be computed automatically
      */
+    @serialize()
     public set width(value: string | number) {
         if (!this._doNotTrackManualChanges) {
             this._manualWidth = true;
@@ -59,6 +64,7 @@ export class StackPanel extends Container {
      * Gets or sets panel height.
      * This value should not be set when in vertical mode as it will be computed automatically
      */
+    @serialize()
     public set height(value: string | number) {
         if (!this._doNotTrackManualChanges) {
             this._manualHeight = true;
@@ -158,6 +164,9 @@ export class StackPanel extends Container {
             }
         }
 
+        stackWidth += this.paddingLeftInPixels + this.paddingRightInPixels;
+        stackHeight += this.paddingTopInPixels + this.paddingBottomInPixels;
+
         this._doNotTrackManualChanges = true;
 
         // Let stack panel width or height default to stackHeight and stackWidth if dimensions are not specified.
@@ -193,5 +202,24 @@ export class StackPanel extends Container {
 
         super._postMeasure();
     }
+
+    /**
+     * Serializes the current control
+     * @param serializationObject defined the JSON serialized object
+     */
+    public serialize(serializationObject: any) {
+        super.serialize(serializationObject);
+        serializationObject.manualWidth = this._manualWidth;
+        serializationObject.manualHeight = this._manualHeight;
+    }
+
+    /** @hidden */
+    public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
+        this._manualWidth = serializedObject.manualWidth;
+        this._manualHeight = serializedObject.manualHeight;
+
+        super._parseFromContent(serializedObject, host);
+    }
+
 }
 _TypeStore.RegisteredTypes["BABYLON.GUI.StackPanel"] = StackPanel;

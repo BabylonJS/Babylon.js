@@ -22,7 +22,7 @@ import { Viewport } from '../Maths/math.viewport';
 /**
  * This represents a Lens Flare System or the shiny effect created by the light reflection on the  camera lenses.
  * It is usually composed of several `lensFlare`.
- * @see http://doc.babylonjs.com/how_to/how_to_use_lens_flares
+ * @see https://doc.babylonjs.com/how_to/how_to_use_lens_flares
  */
 export class LensFlareSystem {
     /**
@@ -74,7 +74,7 @@ export class LensFlareSystem {
      * Instantiates a lens flare system.
      * This represents a Lens Flare System or the shiny effect created by the light reflection on the  camera lenses.
      * It is usually composed of several `lensFlare`.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_lens_flares
+     * @see https://doc.babylonjs.com/how_to/how_to_use_lens_flares
      * @param name Define the name of the lens flare system in the scene
      * @param emitter Define the source (the emitter) of the lens flares (it can be a camera, a light or a mesh).
      * @param scene Define the scene the lens flare system belongs to
@@ -196,7 +196,10 @@ export class LensFlareSystem {
             this._positionY += this.viewportBorder;
         }
 
-        if (position.z > 0) {
+        const rhs = this._scene.useRightHandedSystem;
+        const okZ = position.z > 0 && !rhs || position.z < 0 && rhs;
+
+        if (okZ) {
             if ((this._positionX > globalViewport.x) && (this._positionX < globalViewport.x + globalViewport.width)) {
                 if ((this._positionY > globalViewport.y) && (this._positionY < globalViewport.y + globalViewport.height)) {
                     return true;
@@ -373,7 +376,7 @@ export class LensFlareSystem {
     }
 
     /**
-     * Parse a lens flare system from a JSON repressentation
+     * Parse a lens flare system from a JSON representation
      * @param parsedLensFlareSystem Define the JSON to parse
      * @param scene Define the scene the parsed system should be instantiated in
      * @param rootUrl Define the rootUrl of the load sequence to easily find a load relative dependencies such as textures

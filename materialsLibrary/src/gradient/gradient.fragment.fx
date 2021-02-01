@@ -1,7 +1,7 @@
 ﻿precision highp float;
 
 // Constants
-uniform vec3 vEyePosition;
+uniform vec4 vEyePosition;
 
 // Gradient variables
 uniform vec4 topColor;
@@ -43,7 +43,7 @@ varying vec4 vColor;
 void main(void) {
 #include<clipPlaneFragment>
 
-	vec3 viewDirectionW = normalize(vEyePosition - vPositionW);
+	vec3 viewDirectionW = normalize(vEyePosition.xyz - vPositionW);
 
     float h = vPosition.y * scale + offset;
     float mysmoothness = clamp(smoothness, 0.01, max(smoothness, 10.));
@@ -99,4 +99,7 @@ void main(void) {
 #include<fogFragment>
 
 	gl_FragColor = color;
+
+#include<imageProcessingCompatibility>
+
 }

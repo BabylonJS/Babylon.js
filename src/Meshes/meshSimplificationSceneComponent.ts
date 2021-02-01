@@ -10,7 +10,7 @@ declare module "../scene" {
 
         /**
          * Gets or sets the simplification queue attached to the scene
-         * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
+         * @see https://doc.babylonjs.com/how_to/in-browser_mesh_simplification
          */
         simplificationQueue: SimplificationQueue;
     }
@@ -99,7 +99,7 @@ export class SimplicationQueueSceneComponent implements ISceneComponent {
     }
 
     /**
-     * Disposes the component and the associated ressources
+     * Disposes the component and the associated resources
      */
     public dispose(): void {
         // Nothing to do for this component

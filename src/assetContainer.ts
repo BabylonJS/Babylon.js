@@ -156,10 +156,14 @@ export class AssetContainer extends AbstractScene {
                                             convertionMap[material.uniqueId] = swap.uniqueId;
                                             storeMap[swap.uniqueId] = swap;
                                         }
+
+                                        multi.subMaterials = multi.subMaterials.map((m) => m && storeMap[convertionMap[m.uniqueId]]);
                                     }
                                 }
 
-                                mesh.material = storeMap[convertionMap[sourceMaterial.uniqueId]];
+                                if (mesh.getClassName() !== "InstancedMesh") {
+                                    mesh.material = storeMap[convertionMap[sourceMaterial.uniqueId]];
+                                }
                             } else {
                                 if (mesh.material.getClassName() === "MultiMaterial") {
                                     if (this.scene.multiMaterials.indexOf(mesh.material as MultiMaterial) === -1) {
@@ -454,6 +458,8 @@ export class AssetContainer extends AbstractScene {
                 this._moveAssets((<any>this.scene)[key], (<any>this)[key], (<any>keepAssets)[key]);
             }
         }
+
+        this.environmentTexture = this.scene.environmentTexture;
 
         this.removeAllFromScene();
     }

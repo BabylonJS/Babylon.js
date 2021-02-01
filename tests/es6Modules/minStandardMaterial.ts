@@ -20,7 +20,7 @@ var camera = new FreeCamera("camera1", new Vector3(0, 5, -10), scene);
 camera.setTarget(Vector3.Zero());
 
 // This attaches the camera to the canvas
-camera.attachControl(canvas, true);
+camera.attachControl(true);
 
 // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
 var light = new HemisphericLight("light1", new Vector3(0, 1, 0), scene);

@@ -10,6 +10,8 @@ import { NodePort } from '../nodePort';
 import { GraphNode } from '../graphNode';
 import { NodeLink } from '../nodeLink';
 import { FramePortData } from '../graphCanvas';
+import { CheckBoxLineComponent } from '../../sharedComponents/checkBoxLineComponent';
+import { TextLineComponent } from '../../sharedComponents/textLineComponent';
 
 export interface IFrameNodePortPropertyTabComponentProps {
     globalState: GlobalState
@@ -27,7 +29,20 @@ export class NodePortPropertyTabComponent extends React.Component<IFrameNodePort
         this.props.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
     }
 
+    toggleExposeOnFrame(value: boolean){
+        this.props.nodePort.exposedOnFrame = value;
+        this.props.globalState.onExposePortOnFrameObservable.notifyObservers(this.props.nodePort.node);
+    }
+
     render() {
+
+        let info =  this.props.nodePort.hasLabel() ?
+            <>
+            {this.props.nodePort.hasLabel() && <TextInputLineComponent globalState={this.props.globalState} label="Port Label" propertyName="portName" target={this.props.nodePort} />}
+            {this.props.nodePort.node.enclosingFrameId !== -1 && <CheckBoxLineComponent label= "Expose Port on Frame" target={this.props.nodePort} isSelected={() => this.props.nodePort.exposedOnFrame} onSelect={(value: boolean) => this.toggleExposeOnFrame(value)}  propertyName="exposedOnFrame" disabled={this.props.nodePort.disabled} />}
+            </> :
+            <TextLineComponent label="This node is a constant input node and cannot be exposed to the frame." value=" " ></TextLineComponent>
+
         return (
             <div id="propertyTab">
                 <div id="header">
@@ -37,9 +52,9 @@ export class NodePortPropertyTabComponent extends React.Component<IFrameNodePort
                 </div>
                 </div>
                 <div>
-                    <LineContainerComponent title="GENERAL">
-                        {this.props.nodePort.hasLabel() && <TextInputLineComponent globalState={this.props.globalState} label="Port Label" propertyName="portName" target={this.props.nodePort} />}
-                    </LineContainerComponent>
+                <LineContainerComponent title="GENERAL">
+                   {info}
+                </LineContainerComponent>
                 </div>
             </div>
         );

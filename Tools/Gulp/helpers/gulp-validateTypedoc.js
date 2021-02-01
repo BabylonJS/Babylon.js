@@ -221,7 +221,7 @@ Validate.prototype.validateTypedocNamespace = function(namespace) {
         containerNode = namespace.children[a];
 
         // Validate Sub Module
-        if (containerNode.kindString === "Module") {
+        if (containerNode.kindString === "Module" || containerNode.kindString === "Namespace") {
             this.validateTypedocNamespace(containerNode);
             continue;
         }

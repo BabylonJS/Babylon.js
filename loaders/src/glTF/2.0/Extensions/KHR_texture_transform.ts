@@ -5,15 +5,9 @@ import { Texture } from "babylonjs/Materials/Textures/texture";
 import { ITextureInfo } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
+import { IKHRTextureTransform } from 'babylonjs-gltf2interface';
 
 const NAME = "KHR_texture_transform";
-
-interface IKHRTextureTransform {
-    offset?: number[];
-    rotation?: number;
-    scale?: number[];
-    texCoord?: number;
-}
 
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_texture_transform)
@@ -39,7 +33,7 @@ export class KHR_texture_transform implements IGLTFLoaderExtension {
 
     /** @hidden */
     public dispose() {
-        delete this._loader;
+        (this._loader as any) = null;
     }
 
     /** @hidden */

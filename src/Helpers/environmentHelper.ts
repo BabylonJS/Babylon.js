@@ -185,7 +185,7 @@ interface ISceneSize {
 }
 
 /**
- * The Environment helper class can be used to add a fully featuread none expensive background to your scene.
+ * The Environment helper class can be used to add a fully featured none expensive background to your scene.
  * It includes by default a skybox and a ground relying on the BackgroundMaterial.
  * It also helps with the default setup of your imageProcessing configuration.
  */
@@ -579,10 +579,10 @@ export class EnvironmentHelper {
             return;
         }
 
-        const diffuseTexture = new Texture(this._options.groundTexture, this._scene, undefined, undefined, undefined, undefined, this._errorHandler);
-        diffuseTexture.gammaSpace = false;
-        diffuseTexture.hasAlpha = true;
-        this._groundMaterial.diffuseTexture = diffuseTexture;
+        this._groundTexture = new Texture(this._options.groundTexture, this._scene, undefined, undefined, undefined, undefined, this._errorHandler);
+        this._groundTexture.gammaSpace = false;
+        this._groundTexture.hasAlpha = true;
+        this._groundMaterial.diffuseTexture = this._groundTexture;
     }
 
     /**

@@ -4,11 +4,12 @@ import { EventState, Observer } from "../../Misc/observable";
 import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
-import { Scalar } from '../../Maths/math.scalar';
+import { Tools } from '../../Misc/tools';
+import { IWheelEvent } from "../../Events/deviceInputEvents";
 
 /**
  * Manage the mouse wheel inputs to control an arc rotate camera.
- * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
  */
 export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCamera> {
     /**
@@ -32,54 +33,32 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
     private _wheel: Nullable<(p: PointerInfo, s: EventState) => void>;
     private _observer: Nullable<Observer<PointerInfo>>;
 
-    private computeDeltaFromMouseWheelLegacyEvent(mouseWheelDelta: number, radius: number) {
-        var delta = 0;
-        var wheelDelta = (mouseWheelDelta * 0.01 * this.wheelDeltaPercentage) * radius;
-        if (mouseWheelDelta > 0) {
-            delta = wheelDelta / (1.0 + this.wheelDeltaPercentage);
-        } else {
-            delta = wheelDelta * (1.0 + this.wheelDeltaPercentage);
-        }
-        return delta;
-    }
     /**
      * Attach the input controls to a specific dom element to get the input from.
-     * @param element Defines the element the controls should be listened from
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
+    public attachControl(noPreventDefault?: boolean): void {
+        // was there a second variable defined?
+        noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         this._wheel = (p, s) => {
             //sanity check - this should be a PointerWheel event.
             if (p.type !== PointerEventTypes.POINTERWHEEL) { return; }
-            var event = <MouseWheelEvent>p.event;
-            var delta = 0;
-
-            let mouseWheelLegacyEvent = event as any;
+            const event = <IWheelEvent>p.event;
+            let delta = 0;
             let wheelDelta = 0;
 
-            if (mouseWheelLegacyEvent.wheelDelta) {
-                wheelDelta = mouseWheelLegacyEvent.wheelDelta;
-            } else {
-                wheelDelta = -(event.deltaY || event.detail) * 60;
+            // Using the inertia percentage, calculate the value needed to move based on set wheel delta percentage
+            if (this.wheelDeltaPercentage !== 0) {
+                wheelDelta = (event.deltaY > 0 ? -1 : 1) * this.camera.radius * this.wheelDeltaPercentage;
+                delta = wheelDelta * (this.camera.inertia === 1 ? 1 : (1 - this.camera.inertia));
             }
+            // If there's no percentage set, just handle using a value that emulates Chrome
+            else {
+                wheelDelta = (event.deltaY > 0 ? -100 : 100);
 
-            if (this.wheelDeltaPercentage) {
-                delta = this.computeDeltaFromMouseWheelLegacyEvent(wheelDelta, this.camera.radius);
-
-                // If zooming in, estimate the target radius and use that to compute the delta for inertia
-                // this will stop multiple scroll events zooming in from adding too much inertia
-                if (delta > 0) {
-                    var estimatedTargetRadius = this.camera.radius;
-                    var targetInertia = this.camera.inertialRadiusOffset + delta;
-                    for (var i = 0; i < 20 && Math.abs(targetInertia) > 0.001; i++) {
-                        estimatedTargetRadius -= targetInertia;
-                        targetInertia *= this.camera.inertia;
-                    }
-                    estimatedTargetRadius = Scalar.Clamp(estimatedTargetRadius, 0, Number.MAX_VALUE);
-                    delta = this.computeDeltaFromMouseWheelLegacyEvent(wheelDelta, estimatedTargetRadius);
+                if (this.wheelPrecision !== 0) {
+                    delta = wheelDelta / (this.wheelPrecision * 40);
                 }
-            } else {
-                delta = wheelDelta / (this.wheelPrecision * 40);
             }
 
             if (delta) {
@@ -98,10 +77,15 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param element Defines the element to stop listening the inputs from
      */
-    public detachControl(element: Nullable<HTMLElement>): void {
-        if (this._observer && element) {
+    public detachControl(): void;
+
+    /**
+     * Detach the current controls from the specified dom element.
+     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     */
+    public detachControl(ignored?: any): void {
+        if (this._observer) {
             this.camera.getScene().onPointerObservable.remove(this._observer);
             this._observer = null;
             this._wheel = null;
@@ -109,7 +93,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
     }
 
     /**
-     * Gets the class name of the current intput.
+     * Gets the class name of the current input.
      * @returns the class name
      */
     public getClassName(): string {

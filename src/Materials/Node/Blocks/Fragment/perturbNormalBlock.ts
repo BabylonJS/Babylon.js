@@ -17,7 +17,7 @@ import "../../../../Shaders/ShadersInclude/bumpFragmentFunctions";
 import "../../../../Shaders/ShadersInclude/bumpFragment";
 
 /**
- * Block used to pertub normals based on a normal map
+ * Block used to perturb normals based on a normal map
  */
 export class PerturbNormalBlock extends NodeMaterialBlock {
     private _tangentSpaceParameterName = "";
@@ -175,6 +175,8 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
                 { search: /vBumpInfos.y/g, replace: replaceForBumpInfos},
                 { search: /vTangentSpaceParams/g, replace: this._tangentSpaceParameterName},
                 { search: /vPositionW/g, replace: worldPosition.associatedVariableName + ".xyz"},
+                { search: /varying vec2 vBumpUV;/g, replace: ""},
+                { search: /uniform sampler2D bumpSampler;[\s\S]*?\}/g, replace: ""},
             ]
         });
 
