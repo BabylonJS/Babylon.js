@@ -60,9 +60,10 @@
 
 - Added GUI Editor project to master. ([msDestiny14](https://github.com/msDestiny14))
 - Moving GUI property tab components into GUIEditor. ([msDestiny14](https://github.com/msDestiny14))
-- Adding basic saving and loading funtionality. ([msDestiny14](https://github.com/msDestiny14))
-- Adding more GUI controls. ([msDestiny14](https://github.com/msDestiny14))
-- Adding snippet server from url functionality ([msDestiny14](https://github.com/msDestiny14))
+- Added basic saving and loading funtionality. ([msDestiny14](https://github.com/msDestiny14))
+- Added more GUI controls. ([msDestiny14](https://github.com/msDestiny14))
+- Added snippet server from url functionality ([msDestiny14](https://github.com/msDestiny14))
+- Added scrolling and zooming functionality([msDestiny14](https://github.com/msDestiny14))
 
 ### GUI
 

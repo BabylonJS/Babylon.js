@@ -35,39 +35,20 @@ export const isFramePortData = (variableToCheck: any): variableToCheck is FrameP
 }
 
 export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps> {
-    private _hostCanvas: HTMLDivElement;
     private _gridCanvas: HTMLDivElement;
-    private _selectionContainer: HTMLDivElement;
-    private _frameContainer: HTMLDivElement;
     private _svgCanvas: HTMLElement;
     private _rootContainer: HTMLDivElement;
     private _guiNodes: GUINode[] = [];
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null
-    private _x = 0;
-    private _y = 0;
     private _textureMesh: Mesh;
     private _scene: Scene;
-    private _zoom = 1;
     private _selectedGuiNodes: GUINode[] = [];
-    private _gridSize = 20;
-
     private _ctrlKeyIsPressed = false;
-
 
     public _frameIsMoving = false;
     public _isLoading = false;
     public isOverGUINode = false;
-
-    public get gridSize() {
-        return this._gridSize;
-    }
-
-    public set gridSize(value: number) {
-        this._gridSize = value;
-        
-        this.updateTransform();
-    }
 
     public get globalState(){
         return this.props.globalState;
@@ -77,62 +58,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return this._guiNodes;
     }
 
-    public get zoom() {
-        return this._zoom;
-    }
-
-    public set zoom(value: number) {
-        if (this._zoom === value) {
-            return;
-        }
-
-        this._zoom = value;
-        
-        this.updateTransform();
-    }    
-
-    public get x() {
-        return this._x;
-    }
-
-    public set x(value: number) {
-        this._x = value;
-        
-        this.updateTransform();
-    }
-
-    public get y() {
-        return this._y;
-    }
-
-    public set y(value: number) {
-        this._y = value;
-        
-        this.updateTransform();
-    }
-
     public get selectedGuiNodes() {
         return this._selectedGuiNodes;
-    }
-
-    public get canvasContainer() {
-        return this._gridCanvas;
-    }
-
-    public get hostCanvas() {
-        return this._hostCanvas;
-    }
-
-    public get svgCanvas() {
-        return this._svgCanvas;
-    }
-
-    public get selectionContainer() {
-        return this._selectionContainer;
-    }
-
-    public get frameContainer() {
-        return this._frameContainer;
     }
 
     constructor(props: IWorkbenchComponentProps) {
@@ -158,7 +85,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             }
         });
 
-
         this.props.globalState.hostDocument!.addEventListener("keyup", () => this.onKeyUp(), false);
         this.props.globalState.hostDocument!.addEventListener("keydown", evt => {         
             this._ctrlKeyIsPressed = evt.ctrlKey;
@@ -167,12 +93,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this._ctrlKeyIsPressed = false;
         }, false);     
 
-        // Store additional data to serialization object
-        this.props.globalState.storeEditorData = (editorData) => {
-            editorData.x = this.x;
-            editorData.y = this.y;
-            editorData.zoom = this.zoom;
-        }
         this.props.globalState.workbench = this;
     }
    
@@ -189,31 +109,19 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.globalState.guiTexture.parseContent(serializationObject);
         this.props.globalState.workbench.loadFromGuiTexture();
     }    
-    async loadFromSnippet(snippedID: string){
+    async loadFromSnippet(snippedID: string) {
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
         this.clearGuiTexture();
         await this.globalState.guiTexture.parseFromSnippetAsync(snippedID);
         this.props.globalState.workbench.loadFromGuiTexture();
     }
     
-    loadFromGuiTexture()
-    {
+    loadFromGuiTexture() {
         var children = this.globalState.guiTexture.getChildren();
         children[0].children.forEach(guiElement => {
             var newGuiNode = new GUINode(this.props.globalState, guiElement);
             this._guiNodes.push(newGuiNode);
         });
-    }
-
-    updateTransform() {
-        this._rootContainer.style.transform = `translate(${this._x}px, ${this._y}px) scale(${this._zoom})`;
-
-        if (DataStorage.ReadBoolean("ShowGrid", true)) {
-            this._hostCanvas.style.backgroundSize = `${this._gridSize * this._zoom}px ${this._gridSize * this._zoom}px`;
-            this._hostCanvas.style.backgroundPosition = `${this._x}px ${this._y}px`;
-        } else {
-            this._hostCanvas.style.backgroundSize = `0`;
-        }
     }
 
     onKeyUp() {        
@@ -245,22 +153,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return newGuiNode;
     }
 
-    distributeGraph() {
-        this.x = 0;
-        this.y = 0;
-        this.zoom = 1;    
-    }
-
     componentDidMount() {
         this._hostCanvas = this.props.globalState.hostDocument.getElementById("workbench-canvas") as HTMLDivElement;
         this._rootContainer = this.props.globalState.hostDocument.getElementById("workbench-container") as HTMLDivElement;
         this._gridCanvas = this.props.globalState.hostDocument.getElementById("workbench-canvas-container") as HTMLDivElement;
         this._svgCanvas = this.props.globalState.hostDocument.getElementById("workbench-svg-container") as HTMLElement;        
-        this._selectionContainer = this.props.globalState.hostDocument.getElementById("selection-container") as HTMLDivElement;   
-        this._frameContainer = this.props.globalState.hostDocument.getElementById("frame-container") as HTMLDivElement;        
-        
-        this.gridSize = DataStorage.ReadNumber("GridSize", 20);
-        this.updateTransform();
     }    
 
     onMove(evt: React.PointerEvent) {        
@@ -297,7 +194,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         return null;
     }
-
 
     onDown(evt: React.PointerEvent<HTMLElement>) {
         this._rootContainer.setPointerCapture(evt.pointerId);
