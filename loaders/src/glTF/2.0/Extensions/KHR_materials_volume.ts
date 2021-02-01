@@ -5,7 +5,6 @@ import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
-import { Color3 } from 'babylonjs/Maths/math.color';
 
 const NAME = "KHR_materials_volume";
 
