@@ -5854,7 +5854,7 @@ var Control = /** @class */ (function () {
         }
         var text = document.createElement("span");
         text.innerHTML = "Hg";
-        text.style.font = font;
+        text.setAttribute('style', "font: " + font + " !important");
         var block = document.createElement("div");
         block.style.display = "inline-block";
         block.style.width = "1px";
