@@ -46,6 +46,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _mouseStartPointY: Nullable<number> = null
     private _x = 0;
     private _y = 0;
+    private _textureMesh: Mesh;
+    private _scene: Scene;
     private _zoom = 1;
     private _selectedGuiNodes: GUINode[] = [];
     private _gridSize = 20;
@@ -136,7 +138,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     constructor(props: IWorkbenchComponentProps) {
         super(props);
         props.globalState.onSelectionChangedObservable.add(selection => {  
-            console.log(selection);
             this.selectedGuiNodes.forEach(element => {
                 element.isSelected = false;
             }); 
@@ -174,28 +175,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }
         this.props.globalState.workbench = this;
     }
-
-    public getGridPosition(position: number, useCeil = false) {
-        let gridSize = this.gridSize;
-		if (gridSize === 0) {
-			return position;
-        }
-        if (useCeil) {
-            return gridSize * Math.ceil(position / gridSize);    
-        }
-		return gridSize * Math.floor(position / gridSize);
-    }
-
-    public getGridPositionCeil(position: number) {
-        let gridSize = this.gridSize;
-		if (gridSize === 0) {
-			return position;
-		}
-		return gridSize * Math.ceil(position / gridSize);
-    }
-    
-    clearGuiTexture()
-    {
+   
+    clearGuiTexture() {
         while(this._guiNodes.length > 0) {
             this._guiNodes[this._guiNodes.length-1].dispose();
             this._guiNodes.pop();
@@ -254,6 +235,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     appendBlock(guiElement: Control) {
         var newGuiNode = new GUINode(this.props.globalState, guiElement);
+        let pos = this.getGroundPosition();
+        if(pos) {
+            newGuiNode._onMove( new Vector2(pos.x, pos.y), Vector2.Zero(), false );
+        }
+
         this._guiNodes.push(newGuiNode);
         this.globalState.guiTexture.addControl(guiElement);  
         return newGuiNode;
@@ -279,6 +265,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     onMove(evt: React.PointerEvent) {        
 
+        var pos = this.getGroundPosition();
+        console.log(pos);
         // Move or guiNodes
         if (this._mouseStartPointX != null && this._mouseStartPointY != null) {
 
@@ -286,27 +274,41 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             var y = this._mouseStartPointY;
             let selected = false;
             this.selectedGuiNodes.forEach(element => {
-                selected = element._onMove(new Vector2(evt.clientX, evt.clientY), //need to add zoom factor here.
-                new Vector2( x, y)) ||  selected;
+                //var zoom = this._camera.radius;
+
+                if(pos) {
+                    selected = element._onMove(new Vector2(pos.x, -pos.z), //need to add zoom factor here.
+                    new Vector2( x, y), false) ||  selected;
+                }
             });
 
-            this._mouseStartPointX = evt.clientX;
-            this._mouseStartPointY = evt.clientY;
+            this._mouseStartPointX = pos? pos.x : this._mouseStartPointX;
+            this._mouseStartPointY = pos? pos.z * -1 : this._mouseStartPointY; 
         }
     }
+
+    public getGroundPosition() {
+        var tex = this._textureMesh;
+        // Use a predicate to get position on the ground
+        var pickinfo = this._scene.pick(this._scene.pointerX, this._scene.pointerY, function (mesh) { return mesh == tex; });
+        if (pickinfo?.hit) {
+            return pickinfo.pickedPoint;
+        }
+
+        return null;
+    }
+
 
     onDown(evt: React.PointerEvent<HTMLElement>) {
         this._rootContainer.setPointerCapture(evt.pointerId);
 
-        /*if (evt.currentTarget === this._hostCanvas && evt.ctrlKey) {
-        }*/
-
         if(!this.isOverGUINode) {
             this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         }
-        
-        this._mouseStartPointX = evt.clientX;
-        this._mouseStartPointY = evt.clientY;   
+
+        var pos = this.getGroundPosition();
+        this._mouseStartPointX = pos? pos.x : this._mouseStartPointX;
+        this._mouseStartPointY = pos? -pos.z : this._mouseStartPointY; 
              
     }
 
@@ -327,35 +329,37 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         const engine = new Engine(canvas);
         
         // Create our first scene.
-        var scene = new Scene(engine);
-        scene.clearColor = new Color4(0.2, 0.2, 0.3, 1.0);
-        var camera = new ArcRotateCamera(
-            "Camera", -Math.PI / 2, 0, 150, Vector3.Zero(), scene);
+        this._scene = new Scene(engine);
+        this._scene.clearColor = new Color4(0.2, 0.2, 0.3, 1.0);
+        let camera = new ArcRotateCamera(
+            "Camera", -Math.PI / 2, 0, 1024, Vector3.Zero(), this._scene);
         const light = new HemisphericLight(
-            "light1", Axis.Y, scene);
+            "light1", Axis.Y, this._scene);
         light.intensity = 0.9;
     
-        let textureMesh = Mesh.CreateGround("earth", 150, 150, 10, scene);
+        let textureSize = 1200;
+        this._textureMesh = Mesh.CreateGround("earth", textureSize, textureSize, 1, this._scene);
 
-        this.globalState.guiTexture = AdvancedDynamicTexture.CreateForMesh(textureMesh);
-        textureMesh.showBoundingBox = true;  
-        this.addControls(scene, camera);
+        this.globalState.guiTexture = AdvancedDynamicTexture.CreateForMesh(this._textureMesh, textureSize, textureSize);
+        this._textureMesh.showBoundingBox = true;  
+        this.addControls(this._scene, camera);
     
-        scene.getEngine().onCanvasPointerOutObservable.clear();
+        this._scene.getEngine().onCanvasPointerOutObservable.clear();
+        
         // Watch for browser/canvas resize events
         window.addEventListener("resize", function () {
         engine.resize();
         });
 
         this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(`Please note: This editor is still a work in progress. You may submit feedback to msDestiny14 on GitHub.`);
-        engine.runRenderLoop(() => {this.updateGUIs(); scene.render()});
+        engine.runRenderLoop(() => {this.updateGUIs(); this._scene.render()});
     };
     
     //Add map-like controls to an ArcRotate camera
     addControls(scene: Scene, camera: ArcRotateCamera) {
         camera.inertia = 0.7;
         camera.lowerRadiusLimit = 10;
-        camera.upperRadiusLimit = 1000;
+        camera.upperRadiusLimit = 1500;
         camera.upperBetaLimit = Math.PI / 2 - 0.1;
         camera.angularSensibilityX = camera.angularSensibilityY = 500;
     
@@ -404,7 +408,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }, PointerEventTypes.POINTERUP);
     
         scene.onPointerObservable.add(zoomFn, BABYLON.PointerEventTypes.POINTERWHEEL);
-    
         scene.onBeforeRenderObservable.add(inertialPanningFn);
         scene.onBeforeRenderObservable.add(wheelPrecisionFn);
     
