@@ -118,6 +118,8 @@ export class Collider {
     private _nearestDistance: number;
 
     private _collisionMask = -1;
+    private _velocitySquaredLength: number;
+    private _nearestDistanceSquared: number;
 
     public get collisionMask(): number {
         return this._collisionMask;
@@ -138,7 +140,14 @@ export class Collider {
     /** @hidden */
     public _initialize(source: Vector3, dir: Vector3, e: number): void {
         this._velocity = dir;
-        Vector3.NormalizeToRef(dir, this._normalizedVelocity);
+        this._velocitySquaredLength = this._velocity.lengthSquared();
+        const len = Math.sqrt(this._velocitySquaredLength)
+        if (len === 0 || len === 1.0) {
+            this._normalizedVelocity.copyFromFloats(dir._x, dir._y, dir._z);
+        }
+        else {
+            dir.scaleToRef(1.0 / len, this._normalizedVelocity);
+        }
         this._basePoint = source;
 
         source.multiplyToRef(this._radius, this._basePointWorld);
@@ -261,9 +270,8 @@ export class Collider {
         }
 
         if (!found) {
-            var velocitySquaredLength = this._velocity.lengthSquared();
 
-            var a = velocitySquaredLength;
+            var a = this._velocitySquaredLength;
 
             this._basePoint.subtractToRef(p1, this._tempVector);
             var b = 2.0 * (Vector3.Dot(this._velocity, this._tempVector));
@@ -304,7 +312,7 @@ export class Collider {
             var edgeDotVelocity = Vector3.Dot(this._edge, this._velocity);
             var edgeDotBaseToVertex = Vector3.Dot(this._edge, this._baseToVertex);
 
-            a = edgeSquaredLength * (-velocitySquaredLength) + edgeDotVelocity * edgeDotVelocity;
+            a = edgeSquaredLength * (-this._velocitySquaredLength) + edgeDotVelocity * edgeDotVelocity;
             b = edgeSquaredLength * (2.0 * Vector3.Dot(this._velocity, this._baseToVertex)) - 2.0 * edgeDotVelocity * edgeDotBaseToVertex;
             c = edgeSquaredLength * (1.0 - this._baseToVertex.lengthSquared()) + edgeDotBaseToVertex * edgeDotBaseToVertex;
 
@@ -326,7 +334,7 @@ export class Collider {
             edgeDotVelocity = Vector3.Dot(this._edge, this._velocity);
             edgeDotBaseToVertex = Vector3.Dot(this._edge, this._baseToVertex);
 
-            a = edgeSquaredLength * (-velocitySquaredLength) + edgeDotVelocity * edgeDotVelocity;
+            a = edgeSquaredLength * (-this._velocitySquaredLength) + edgeDotVelocity * edgeDotVelocity;
             b = edgeSquaredLength * (2.0 * Vector3.Dot(this._velocity, this._baseToVertex)) - 2.0 * edgeDotVelocity * edgeDotBaseToVertex;
             c = edgeSquaredLength * (1.0 - this._baseToVertex.lengthSquared()) + edgeDotBaseToVertex * edgeDotBaseToVertex;
             lowestRoot = getLowestRoot(a, b, c, t);
@@ -347,8 +355,8 @@ export class Collider {
             edgeDotVelocity = Vector3.Dot(this._edge, this._velocity);
             edgeDotBaseToVertex = Vector3.Dot(this._edge, this._baseToVertex);
 
-            a = edgeSquaredLength * (-velocitySquaredLength) + edgeDotVelocity * edgeDotVelocity;
-            b = edgeSquaredLength * (2.0 * Vector3.Dot(this._velocity, this._baseToVertex)) - 2.0 * edgeDotVelocity * edgeDotBaseToVertex;
+            a = edgeSquaredLength * (-this._velocitySquaredLength) + edgeDotVelocity * edgeDotVelocity;
+            b = 2 * (edgeSquaredLength * Vector3.Dot(this._velocity, this._baseToVertex) - edgeDotVelocity * edgeDotBaseToVertex)
             c = edgeSquaredLength * (1.0 - this._baseToVertex.lengthSquared()) + edgeDotBaseToVertex * edgeDotBaseToVertex;
 
             lowestRoot = getLowestRoot(a, b, c, t);
@@ -365,9 +373,9 @@ export class Collider {
         }
 
         if (found) {
-            var distToCollision = t * this._velocity.length();
+            var distToCollisionSquared = t * this._velocitySquaredLength
 
-            if (!this.collisionFound || distToCollision < this._nearestDistance) {
+            if (!this.collisionFound || distToCollisionSquared < this._nearestDistanceSquared) {
                 // if collisionResponse is false, collision is not found but the collidedMesh is set anyway.
                 // onCollide observable are triggered if collideMesh is set
                 // this allow trigger volumes to be created.
@@ -377,7 +385,8 @@ export class Collider {
                     } else {
                         this.intersectionPoint.copyFrom(this._collisionPoint);
                     }
-                    this._nearestDistance = distToCollision;
+                    this._nearestDistanceSquared = distToCollisionSquared;
+                    this._nearestDistance = Math.sqrt(distToCollisionSquared);
                     this.collisionFound = true;
                 }
                 this.collidedMesh = hostMesh;
