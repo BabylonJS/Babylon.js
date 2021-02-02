@@ -69,6 +69,14 @@ export class SubMesh implements ICullable {
     }
 
     /**
+     * Gets associated contextual effect (possibly the effect override if defined)
+     */
+    public get contextualEffect(): ContextualEffect {
+        // @TODO handle effectOverride
+        return this._mainEffect;
+    }
+
+    /**
      * Gets associated main effect
      */
     public get mainEffect(): Nullable<Effect> {

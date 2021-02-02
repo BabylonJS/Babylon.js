@@ -19,15 +19,16 @@ import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTextur
 import { PostProcess } from "../../PostProcesses/postProcess";
 import { BlurPostProcess } from "../../PostProcesses/blurPostProcess";
 import { Constants } from "../../Engines/constants";
+import { Observable } from '../../Misc/observable';
+import { _DevTools } from '../../Misc/devTools';
+import { EffectFallbacks } from '../../Materials/effectFallbacks';
+import { RenderingManager } from '../../Rendering/renderingManager';
+import { ContextualEffect } from "../../Materials/contextualEffect";
 
 import "../../Shaders/shadowMap.fragment";
 import "../../Shaders/shadowMap.vertex";
 import "../../Shaders/depthBoxBlur.fragment";
 import "../../Shaders/ShadersInclude/shadowMapFragmentSoftTransparentShadow";
-import { Observable } from '../../Misc/observable';
-import { _DevTools } from '../../Misc/devTools';
-import { EffectFallbacks } from '../../Materials/effectFallbacks';
-import { RenderingManager } from '../../Rendering/renderingManager';
 
 const tmpMatrix = new Matrix(),
       tmpMatrix2 = new Matrix();
@@ -1111,9 +1112,10 @@ export class ShadowGenerator implements IShadowGenerator {
 
             const shadowDepthWrapper = material.shadowDepthWrapper;
 
-            let effect = shadowDepthWrapper?.getEffect(subMesh, this) ?? subMesh._getEffect(this._nameForCustomEffect)!.effect!;
+            let contextualEffect = shadowDepthWrapper?.getEffect(subMesh, this) ?? subMesh._getEffect(this._nameForCustomEffect)!;
+            let effect = ContextualEffect.GetEffect(contextualEffect)!;
 
-            engine.enableEffect(effect);
+            engine.enableEffect(contextualEffect);
 
             renderingMesh._bind(subMesh, effect, material.fillMode);
 
