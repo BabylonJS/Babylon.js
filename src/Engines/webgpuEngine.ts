@@ -473,7 +473,6 @@ export class WebGPUEngine extends Engine {
                 this._initializeLimits();
 
                 this._defaultContextualEffect = new ContextualEffect(this, true);
-                (this._defaultContextualEffect.context as WebGPUEffectContext).bindGroupsCache = new WebGPUBindGroupCacheNode();
                 this._currentContextualEffect = this._defaultContextualEffect;
         
                 this._initializeContextAndSwapChain();
@@ -1325,16 +1324,11 @@ export class WebGPUEngine extends Engine {
             isNewEffect = effect !== this._currentEffect;
             this._currentContextualEffect = this._defaultContextualEffect;
             this._currentContextualEffect.setEffect(effect, null, false);
-            (this._currentContextualEffect.context as WebGPUEffectContext).bindGroupsCache.values = {};
             this._counters.numEnableEffects++;
         } else if (!effect.effect || effect === this._currentContextualEffect && !this._forceEnableEffect) {
             return;
         } else {
             isNewEffect = effect.effect !== this._currentContextualEffect.effect;
-            const context = effect.context as WebGPUEffectContext;
-            if (!context.bindGroupsCache) {
-                context.bindGroupsCache = new WebGPUBindGroupCacheNode();
-            }
             this._currentContextualEffect = effect;
             this._counters.numEnableContextualEffects++;
         }
@@ -1866,7 +1860,7 @@ export class WebGPUEngine extends Engine {
             const effectContext = this._currentContextualEffect.context as WebGPUEffectContext;
 
             if (effectContext.textures && effectContext.textures[name]) {
-                if (effectContext.textures[name]!.texture !== internalTexture) {
+                if (effectContext.textures[name]!.texture !== internalTexture && effectContext.bindGroupsCache) {
                     effectContext.bindGroupsCache.values = {}; // the bind groups need to be rebuilt (at least the bind group owning this texture, but it's easier to just have them all rebuilt)
                 }
                 effectContext.textures[name]!.texture = internalTexture!;
@@ -1924,7 +1918,7 @@ export class WebGPUEngine extends Engine {
         if (this._currentEffect) {
             const effectContext = this._currentContextualEffect.context as WebGPUEffectContext;
             if (!texture) {
-                if (effectContext && effectContext.textures[name] && effectContext.textures[name]!.texture) {
+                if (effectContext.textures[name] && effectContext.textures[name]!.texture && effectContext.bindGroupsCache) {
                     effectContext.bindGroupsCache.values = {}; // the bind groups need to be rebuilt (at least the bind group owning this texture, but it's easier to just have them all rebuilt)
                 }
                 effectContext.textures[name] = null;
@@ -3482,6 +3476,9 @@ export class WebGPUEngine extends Engine {
         }
 
         let node: WebGPUBindGroupCacheNode = effectContext.bindGroupsCache;
+        if (!node) {
+            node = effectContext.bindGroupsCache = new WebGPUBindGroupCacheNode();
+        }
         for (let i = 0; i < webgpuPipelineContext.shaderProcessingContext.uniformBufferNames.length; ++i) {
             const bufferName = webgpuPipelineContext.shaderProcessingContext.uniformBufferNames[i];
             const uboId = this._uniformsBuffers[bufferName].uniqueId;
