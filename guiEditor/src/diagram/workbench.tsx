@@ -16,6 +16,7 @@ import { Plane } from "babylonjs/Maths/math.plane";
 import { PointerEventTypes, PointerInfoPre } from "babylonjs/Events/pointerEvents";
 import { EventState } from "babylonjs/Misc/observable";
 import { IWheelEvent } from "babylonjs/Events/deviceInputEvents";
+import { Epsilon } from "babylonjs/Maths/math.constants";
 
 require("./workbenchCanvas.scss");
 
@@ -94,13 +95,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         this.props.globalState.workbench = this;
     }
-
-    resizeGuiTexture(newValue: Vector2) {
-        this._textureMesh.scaling.x = newValue.x;
-        this._textureMesh.scaling.z = newValue.y;
-        this.globalState.guiTexture.scaleTo(newValue.x, newValue.y);
-        //needs a force refresh.
-    }
    
     clearGuiTexture() {
         while(this._guiNodes.length > 0) {
@@ -123,11 +117,20 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
     
     loadFromGuiTexture() {
+        let newSize = new Vector2(this.globalState.guiTexture.idealWidth, this.globalState.guiTexture.idealHeight);
+        this.resizeGuiTexture(newSize);
         var children = this.globalState.guiTexture.getChildren();
         children[0].children.forEach(guiElement => {
             var newGuiNode = new GUINode(this.props.globalState, guiElement);
             this._guiNodes.push(newGuiNode);
         });
+    }
+
+    resizeGuiTexture(newvalue: Vector2) {
+        this._textureMesh.scaling.x = newvalue.x;
+        this._textureMesh.scaling.z = newvalue.y;
+        this.globalState.guiTexture.scaleTo(newvalue.x, newvalue.y);
+        this.globalState.onResizeObservable.notifyObservers(newvalue);
     }
 
     onKeyUp() {        
@@ -300,7 +303,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             removeObservers();
             if (p.event.button !== 0) {
                 initialPos = this.getPosition(scene, camera, plane);
-                scene.onPointerObservable.add(panningFn, BABYLON.PointerEventTypes.POINTERMOVE);
+                scene.onPointerObservable.add(panningFn, PointerEventTypes.POINTERMOVE);
             }
         }, PointerEventTypes.POINTERDOWN);
     
@@ -308,7 +311,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             removeObservers();
         }, PointerEventTypes.POINTERUP);
     
-        scene.onPointerObservable.add(zoomFn, BABYLON.PointerEventTypes.POINTERWHEEL);
+        scene.onPointerObservable.add(zoomFn, PointerEventTypes.POINTERWHEEL);
         scene.onBeforeRenderObservable.add(inertialPanningFn);
         scene.onBeforeRenderObservable.add(wheelPrecisionFn);
     
@@ -389,13 +392,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     
     //Sets x y or z of passed in vector to zero if less than Epsilon
     zeroIfClose(vec: Vector3) {
-        if (Math.abs(vec.x) < BABYLON.Epsilon) {
+        if (Math.abs(vec.x) < Epsilon) {
             vec.x = 0;
         }
-        if (Math.abs(vec.y) < BABYLON.Epsilon) {
+        if (Math.abs(vec.y) < Epsilon) {
             vec.y = 0;
         }
-        if (Math.abs(vec.z) < BABYLON.Epsilon) {
+        if (Math.abs(vec.z) < Epsilon) {
             vec.z = 0;
         }
     }
