@@ -1716,7 +1716,7 @@ export class NativeEngine extends Engine {
                 });
             };
 
-            if (fromData) {
+            if (fromData && buffer) {
                 if (buffer instanceof ArrayBuffer) {
                     onload(new Uint8Array(buffer));
                 } else if (ArrayBuffer.isView(buffer)) {
@@ -2121,7 +2121,10 @@ export class NativeEngine extends Engine {
         if (!uniform) {
             return ;
         }
-        this._native.setTexture(uniform, texture._hardwareTexture?.underlyingResource);
+        if (texture && texture._hardwareTexture) {
+            const webGLTexture = texture._hardwareTexture.underlyingResource;
+            this._native.setTexture(uniform, webGLTexture);
+        }
     }
 
     protected _deleteBuffer(buffer: NativeDataBuffer): void {
