@@ -313,7 +313,7 @@ export class Collider {
             var edgeDotBaseToVertex = Vector3.Dot(this._edge, this._baseToVertex);
 
             a = edgeSquaredLength * (-this._velocitySquaredLength) + edgeDotVelocity * edgeDotVelocity;
-            b = edgeSquaredLength * (2.0 * Vector3.Dot(this._velocity, this._baseToVertex)) - 2.0 * edgeDotVelocity * edgeDotBaseToVertex;
+            b = 2 * (edgeSquaredLength * Vector3.Dot(this._velocity, this._baseToVertex) - edgeDotVelocity * edgeDotBaseToVertex);
             c = edgeSquaredLength * (1.0 - this._baseToVertex.lengthSquared()) + edgeDotBaseToVertex * edgeDotBaseToVertex;
 
             lowestRoot = getLowestRoot(a, b, c, t);
@@ -335,7 +335,7 @@ export class Collider {
             edgeDotBaseToVertex = Vector3.Dot(this._edge, this._baseToVertex);
 
             a = edgeSquaredLength * (-this._velocitySquaredLength) + edgeDotVelocity * edgeDotVelocity;
-            b = edgeSquaredLength * (2.0 * Vector3.Dot(this._velocity, this._baseToVertex)) - 2.0 * edgeDotVelocity * edgeDotBaseToVertex;
+            b = 2 * (edgeSquaredLength * Vector3.Dot(this._velocity, this._baseToVertex) - edgeDotVelocity * edgeDotBaseToVertex);
             c = edgeSquaredLength * (1.0 - this._baseToVertex.lengthSquared()) + edgeDotBaseToVertex * edgeDotBaseToVertex;
             lowestRoot = getLowestRoot(a, b, c, t);
             if (lowestRoot.found) {
@@ -356,7 +356,7 @@ export class Collider {
             edgeDotBaseToVertex = Vector3.Dot(this._edge, this._baseToVertex);
 
             a = edgeSquaredLength * (-this._velocitySquaredLength) + edgeDotVelocity * edgeDotVelocity;
-            b = 2 * (edgeSquaredLength * Vector3.Dot(this._velocity, this._baseToVertex) - edgeDotVelocity * edgeDotBaseToVertex)
+            b = 2 * (edgeSquaredLength * Vector3.Dot(this._velocity, this._baseToVertex) - edgeDotVelocity * edgeDotBaseToVertex);
             c = edgeSquaredLength * (1.0 - this._baseToVertex.lengthSquared()) + edgeDotBaseToVertex * edgeDotBaseToVertex;
 
             lowestRoot = getLowestRoot(a, b, c, t);
