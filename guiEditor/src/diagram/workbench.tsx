@@ -16,6 +16,7 @@ import { Plane } from "babylonjs/Maths/math.plane";
 import { PointerEventTypes, PointerInfoPre } from "babylonjs/Events/pointerEvents";
 import { EventState } from "babylonjs/Misc/observable";
 import { IWheelEvent } from "babylonjs/Events/deviceInputEvents";
+import { Epsilon } from "babylonjs/Maths/math.constants";
 
 require("./workbenchCanvas.scss");
 
@@ -292,7 +293,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             removeObservers();
             if (p.event.button !== 0) {
                 initialPos = this.getPosition(scene, camera, plane);
-                scene.onPointerObservable.add(panningFn, BABYLON.PointerEventTypes.POINTERMOVE);
+                scene.onPointerObservable.add(panningFn, PointerEventTypes.POINTERMOVE);
             }
         }, PointerEventTypes.POINTERDOWN);
     
@@ -300,7 +301,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             removeObservers();
         }, PointerEventTypes.POINTERUP);
     
-        scene.onPointerObservable.add(zoomFn, BABYLON.PointerEventTypes.POINTERWHEEL);
+        scene.onPointerObservable.add(zoomFn, PointerEventTypes.POINTERWHEEL);
         scene.onBeforeRenderObservable.add(inertialPanningFn);
         scene.onBeforeRenderObservable.add(wheelPrecisionFn);
     
@@ -381,13 +382,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     
     //Sets x y or z of passed in vector to zero if less than Epsilon
     zeroIfClose(vec: Vector3) {
-        if (Math.abs(vec.x) < BABYLON.Epsilon) {
+        if (Math.abs(vec.x) < Epsilon) {
             vec.x = 0;
         }
-        if (Math.abs(vec.y) < BABYLON.Epsilon) {
+        if (Math.abs(vec.y) < Epsilon) {
             vec.y = 0;
         }
-        if (Math.abs(vec.z) < BABYLON.Epsilon) {
+        if (Math.abs(vec.z) < Epsilon) {
             vec.z = 0;
         }
     }
