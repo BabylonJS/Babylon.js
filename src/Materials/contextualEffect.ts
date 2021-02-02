@@ -16,6 +16,10 @@ export class ContextualEffect {
         return (effect as Effect).getPipelineContext === undefined;
     }
 
+    public static GetEffect(effect: Effect | ContextualEffect): Nullable<Effect> {
+        return (effect as Effect).getPipelineContext === undefined ? (effect as ContextualEffect).effect : effect as Effect;
+    }
+
     constructor(engine: ThinEngine, createContext = false) {
         this._needsContext = engine._features.needsEffectContext;
         this._effect = null;
@@ -41,7 +45,7 @@ export class ContextualEffect {
         return this._context;
     }
 
-    public setEffect(effect: Nullable<Effect>, defines: Nullable<string | MaterialDefines>, createNewContext = true): void {
+    public setEffect(effect: Nullable<Effect>, defines?: Nullable<string | MaterialDefines>, createNewContext = true): void {
         if (this._effect === effect) {
             if (!effect) {
                 this._defines = null;
@@ -52,7 +56,9 @@ export class ContextualEffect {
             return;
         }
         this._effect = effect;
-        this._defines = defines;
+        if (defines !== undefined) {
+            this._defines = defines;
+        }
         if (createNewContext && this._needsContext) {
             this._context = {};
         }

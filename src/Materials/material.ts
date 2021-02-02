@@ -20,7 +20,7 @@ import { IInspectable } from '../Misc/iInspectable';
 import { Plane } from '../Maths/math.plane';
 import { ShadowDepthWrapper } from './shadowDepthWrapper';
 import { MaterialHelper } from './materialHelper';
-import { ContextualEffect } from "../Legacy/legacy";
+import { ContextualEffect } from "./contextualEffect";
 
 declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
 declare type Mesh = import("../Meshes/mesh").Mesh;
@@ -618,7 +618,7 @@ export class Material implements IAnimatable {
      * @hidden
      * Stores the effects for the material
      */
-    private _effect: Nullable<Effect> = null;
+    private _effect: Nullable<ContextualEffect> = null;
 
     /**
      * Specifies if uniform buffers should be used
@@ -762,6 +762,14 @@ export class Material implements IAnimatable {
      * @returns the effect associated with the material
      */
     public getEffect(): Nullable<Effect> {
+        return this._effect?.effect ?? null;
+    }
+
+    /**
+     * Returns the material contextual effect
+     * @returns the contextual effect associated with the material
+     */
+    public getContextualEffect(): Nullable<ContextualEffect> {
         return this._effect;
     }
 
@@ -770,10 +778,13 @@ export class Material implements IAnimatable {
      * @param effect effect to set
      */
     public setEffect(effect: Nullable<Effect>) {
-        if (this._effect === effect) {
+        if ((this._effect?.effect ?? null) === effect) {
             return;
         }
-        this._effect = effect;
+        if (!this._effect) {
+            this._effect = new ContextualEffect(this._scene.getEngine());
+        }
+        this._effect.setEffect(effect);
     }
     /**
      * Returns the current scene
@@ -1418,12 +1429,12 @@ export class Material implements IAnimatable {
         this._uniformBuffer.dispose();
 
         // Shader are kept in cache for further use but we can get rid of this by using forceDisposeEffect
-        if (forceDisposeEffect && this._effect) {
+        if (forceDisposeEffect && this._effect && this._effect.effect) {
             if (!this._storeEffectOnSubMeshes) {
-                this._effect.dispose();
+                this._effect.effect.dispose();
             }
 
-            this._effect = null;
+            this._effect.setEffect(null);
         }
 
         // Callback
@@ -1455,7 +1466,7 @@ export class Material implements IAnimatable {
                     }
                 }
             } else {
-                geometry._releaseVertexArrayObject(this._effect);
+                geometry._releaseVertexArrayObject(this._effect?.effect);
             }
         }
     }
