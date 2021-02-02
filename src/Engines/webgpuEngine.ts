@@ -39,10 +39,11 @@ import { WebGPUCacheRenderPipeline } from "./WebGPU/webgpuCacheRenderPipeline";
 import { WebGPUCacheRenderPipelineTree } from "./WebGPU/webgpuCacheRenderPipelineTree";
 import { WebGPUStencilState } from "./WebGPU/webgpuStencilState";
 import { WebGPUDepthCullingState } from "./WebGPU/webgpuDepthCullingState";
+import { ContextualEffect } from "../Materials/contextualEffect";
+import { WebGPUBindGroupCacheNode, WebGPUEffectContext } from "./WebGPU/webgpuEffectContext";
 
 import "../Shaders/clearQuad.vertex";
 import "../Shaders/clearQuad.fragment";
-import { ContextualEffect } from "../Materials/contextualEffect";
 
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
@@ -52,21 +53,6 @@ function assert(condition: any, msg?: string): asserts condition {
     if (!condition) {
         throw new Error(msg);
     }
-}
-
-/** @hidden */
-export class WebGPUBindGroupCacheNode {
-    public values: { [id: number]: WebGPUBindGroupCacheNode };
-    public bindGroups: GPUBindGroup[];
-
-    constructor() {
-        this.values = {};
-    }
-}
-
-/** @hidden */
-interface WebGPUEffectContext {
-    bindGroupsCache: WebGPUBindGroupCacheNode;
 }
 
 /**
@@ -488,6 +474,7 @@ export class WebGPUEngine extends Engine {
 
                 this._defaultContextualEffect = new ContextualEffect(this, true);
                 (this._defaultContextualEffect.context as WebGPUEffectContext).bindGroupsCache = new WebGPUBindGroupCacheNode();
+                this._currentContextualEffect = this._defaultContextualEffect;
         
                 this._initializeContextAndSwapChain();
                 this._initializeMainAttachments();
@@ -1338,7 +1325,7 @@ export class WebGPUEngine extends Engine {
             isNewEffect = effect !== this._currentEffect;
             this._currentContextualEffect = this._defaultContextualEffect;
             this._currentContextualEffect.setEffect(effect, null, false);
-            //(this._currentContextualEffect.context as WebGPUEffectContext).bindGroupsCache.values = {};
+            (this._currentContextualEffect.context as WebGPUEffectContext).bindGroupsCache.values = {};
             this._counters.numEnableEffects++;
         } else if (!effect.effect || effect === this._currentContextualEffect && !this._forceEnableEffect) {
             return;
@@ -1876,21 +1863,26 @@ export class WebGPUEngine extends Engine {
         baseName = baseName ?? name;
         if (this._currentEffect) {
             const webgpuPipelineContext = this._currentEffect._pipelineContext as WebGPUPipelineContext;
+            const effectContext = this._currentContextualEffect.context as WebGPUEffectContext;
 
-            if (webgpuPipelineContext.textures[name]) {
-                if (webgpuPipelineContext.textures[name]!.texture !== internalTexture) {
-                    (this._currentContextualEffect.context as WebGPUEffectContext).bindGroupsCache.values = {}; // the bind groups need to be rebuilt (at least the bind group owning this texture, but it's easier to just have them all rebuilt)
+            if (effectContext.textures && effectContext.textures[name]) {
+                if (effectContext.textures[name]!.texture !== internalTexture) {
+                    effectContext.bindGroupsCache.values = {}; // the bind groups need to be rebuilt (at least the bind group owning this texture, but it's easier to just have them all rebuilt)
                 }
-                webgpuPipelineContext.textures[name]!.texture = internalTexture!;
+                effectContext.textures[name]!.texture = internalTexture!;
             }
             else {
+                if (!effectContext.textures) {
+                    effectContext.textures = {};
+                    effectContext.samplers = {};
+                }
                 const availableSampler = webgpuPipelineContext.shaderProcessingContext.availableSamplers[baseName];
                 if (availableSampler) {
-                    webgpuPipelineContext.samplers[baseName] = {
+                    effectContext.samplers[baseName] = {
                         samplerBinding: availableSampler.sampler.bindingIndex,
                         firstTextureName: name,
                     };
-                    webgpuPipelineContext.textures[name] = {
+                    effectContext.textures[name] = {
                         textureBinding: availableSampler.textures[textureIndex].bindingIndex,
                         texture: internalTexture!,
                     };
@@ -1926,16 +1918,16 @@ export class WebGPUEngine extends Engine {
     protected _setTexture(channel: number, texture: Nullable<BaseTexture>, isPartOfTextureArray = false, depthStencilTexture = false, name = "", baseName?: string, textureIndex = 0): boolean {
         // name == baseName for a texture that is not part of a texture array
         // Else, name is something like 'myTexture0' / 'myTexture1' / ... and baseName is 'myTexture'
-        // baseName is used to look up the sampler in the WebGPUPipelineContext.samplers map
-        // name is used to look up the texture in the WebGPUPipelineContext.textures map
+        // baseName is used to look up the sampler in the effectContext.samplers map
+        // name is used to look up the texture in the effectContext.textures map
         baseName = baseName ?? name;
         if (this._currentEffect) {
-            const webgpuPipelineContext = this._currentEffect._pipelineContext as WebGPUPipelineContext;
+            const effectContext = this._currentContextualEffect.context as WebGPUEffectContext;
             if (!texture) {
-                if (webgpuPipelineContext.textures[name] && webgpuPipelineContext.textures[name]!.texture) {
-                    (this._currentContextualEffect.context as WebGPUEffectContext).bindGroupsCache.values = {}; // the bind groups need to be rebuilt (at least the bind group owning this texture, but it's easier to just have them all rebuilt)
+                if (effectContext && effectContext.textures[name] && effectContext.textures[name]!.texture) {
+                    effectContext.bindGroupsCache.values = {}; // the bind groups need to be rebuilt (at least the bind group owning this texture, but it's easier to just have them all rebuilt)
                 }
-                webgpuPipelineContext.textures[name] = null;
+                effectContext.textures[name] = null;
                 return false;
             }
 
@@ -3482,13 +3474,14 @@ export class WebGPUEngine extends Engine {
 
     private _getBindGroupsToRender(): GPUBindGroup[] {
         const webgpuPipelineContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
+        const effectContext = this._currentContextualEffect.context as WebGPUEffectContext;
 
         if (webgpuPipelineContext.uniformBuffer) {
             this.bindUniformBufferBase(webgpuPipelineContext.uniformBuffer.getBuffer()!, 0, "LeftOver");
             webgpuPipelineContext.uniformBuffer.update();
         }
 
-        let node: WebGPUBindGroupCacheNode = (this._currentContextualEffect.context as WebGPUEffectContext).bindGroupsCache;
+        let node: WebGPUBindGroupCacheNode = effectContext.bindGroupsCache;
         for (let i = 0; i < webgpuPipelineContext.shaderProcessingContext.uniformBufferNames.length; ++i) {
             const bufferName = webgpuPipelineContext.shaderProcessingContext.uniformBufferNames[i];
             const uboId = this._uniformsBuffers[bufferName].uniqueId;
@@ -3531,11 +3524,11 @@ export class WebGPUEngine extends Engine {
                 }
 
                 if (bindingDefinition.isSampler) {
-                    const bindingInfo = webgpuPipelineContext.samplers[bindingDefinition.name];
+                    const bindingInfo = effectContext.samplers?.[bindingDefinition.name];
                     if (bindingInfo) {
-                        const texture = webgpuPipelineContext.textures[bindingInfo.firstTextureName]?.texture;
+                        const texture = effectContext.textures?.[bindingInfo.firstTextureName]?.texture;
                         if (!texture) {
-                            Logger.Error(`Could not create the gpu sampler "${bindingDefinition.name}" because no texture can be looked up for the name "${bindingInfo.firstTextureName}". bindingInfo=${JSON.stringify(bindingInfo)}, webgpuPipelineContext.textures=${webgpuPipelineContext.textures}`, 50);
+                            Logger.Error(`Could not create the gpu sampler "${bindingDefinition.name}" because no texture can be looked up for the name "${bindingInfo.firstTextureName}". bindingInfo=${JSON.stringify(bindingInfo)}, effectContext.textures=${effectContext.textures}`, 50);
                             continue;
                         }
                         entries.push({
@@ -3543,10 +3536,10 @@ export class WebGPUEngine extends Engine {
                             resource: this._cacheSampler.getSampler(texture),
                         });
                     } else {
-                        Logger.Error(`Sampler "${bindingDefinition.name}" could not be bound. bindingDefinition=${JSON.stringify(bindingDefinition)}, webgpuPipelineContext.samplers=${JSON.stringify(webgpuPipelineContext.samplers)}`, 50);
+                        Logger.Error(`Sampler "${bindingDefinition.name}" could not be bound. bindingDefinition=${JSON.stringify(bindingDefinition)}, effectContext.samplers=${JSON.stringify(effectContext.samplers)}`, 50);
                     }
                 } else if (bindingDefinition.isTexture) {
-                    const bindingInfo = webgpuPipelineContext.textures[bindingDefinition.name];
+                    const bindingInfo = effectContext.textures?.[bindingDefinition.name];
                     if (bindingInfo) {
                         if (this.dbgSanityChecks && bindingInfo.texture === null) {
                             Logger.Error(`Trying to bind a null texture! bindingDefinition=${JSON.stringify(bindingDefinition)}, bindingInfo=${JSON.stringify(bindingInfo, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}`, 50);
@@ -3564,7 +3557,7 @@ export class WebGPUEngine extends Engine {
                             resource: hardwareTexture.view!,
                         });
                     } else {
-                        Logger.Error(`Texture "${bindingDefinition.name}" could not be bound. bindingDefinition=${JSON.stringify(bindingDefinition)}, webgpuPipelineContext.textures=${JSON.stringify(webgpuPipelineContext.textures, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}`, 50);
+                        Logger.Error(`Texture "${bindingDefinition.name}" could not be bound. bindingDefinition=${JSON.stringify(bindingDefinition)}, effectContext.textures=${JSON.stringify(effectContext.textures, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}`, 50);
                     }
                 } else {
                     const dataBuffer = this._uniformsBuffers[bindingDefinition.name];

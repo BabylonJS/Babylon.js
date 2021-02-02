@@ -1,7 +1,6 @@
 import { IPipelineContext } from '../IPipelineContext';
 import { Nullable } from '../../types';
 import { WebGPUEngine } from '../webgpuEngine';
-import { InternalTexture } from '../../Materials/Textures/internalTexture';
 import { Effect } from '../../Materials/effect';
 import { WebGPUShaderProcessingContext } from './webgpuShaderProcessingContext';
 import { UniformBuffer } from "../../Materials/uniformBuffer";
@@ -21,18 +20,6 @@ const _uniformSizes: { [type: string]: number } = {
     "mat3": 12,
     "mat4": 16
 };
-
-/** @hidden */
-export interface IWebGPUPipelineContextSamplerCache {
-    samplerBinding: number;
-    firstTextureName: string;
-}
-
-/** @hidden */
-export interface IWebGPUPipelineContextTextureCache {
-    textureBinding: number;
-    texture: InternalTexture;
-}
 
 /** @hidden */
 export interface IWebGPUPipelineContextVertexInputsCache {
@@ -66,9 +53,6 @@ export class WebGPUPipelineContext implements IPipelineContext {
     };
 
     public stages: Nullable<IWebGPURenderPipelineStageDescriptor>;
-
-    public samplers: { [name: string]: Nullable<IWebGPUPipelineContextSamplerCache> } = { };
-    public textures: { [name: string]: Nullable<IWebGPUPipelineContextTextureCache> } = { };
 
     public bindGroupLayouts: GPUBindGroupLayout[];
 
