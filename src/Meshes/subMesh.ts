@@ -28,23 +28,27 @@ export class SubMesh implements ICullable {
     public _effectOverride: Nullable<Effect> = null;
 
     private _effects: { [name: string]: ContextualEffect };
+    private _mainEffect: ContextualEffect; // same thing than _effects[Constants.SUBMESHEFFECT_MAINMATERIAL] but faster access
 
     /**
      * Gets material defines used by the effect associated to the sub mesh
      */
     public get materialDefines(): Nullable<MaterialDefines> {
-        return this._effects[Constants.SUBMESHEFFECT_MAINMATERIAL].defines as MaterialDefines;
+        return this._mainEffect.defines as MaterialDefines;
     }
 
     /**
      * Sets material defines used by the effect associated to the sub mesh
      */
     public set materialDefines(defines: Nullable<MaterialDefines>) {
-        this._effects[Constants.SUBMESHEFFECT_MAINMATERIAL].defines = defines;
+        this._mainEffect.defines = defines;
     }
 
     /** @hidden */
     public _getEffect(name: string, createIfNotExisting = false): ContextualEffect | undefined {
+        if (name === Constants.SUBMESHEFFECT_MAINMATERIAL) {
+            return this._mainEffect;
+        }
         let customEffect = this._effects[name];
         if (!customEffect && createIfNotExisting) {
             this._effects[name] = customEffect = new ContextualEffect(this._mesh.getScene().getEngine());
@@ -61,14 +65,14 @@ export class SubMesh implements ICullable {
      * Gets associated effect (possibly the effect override if defined)
      */
     public get effect(): Nullable<Effect> {
-        return this._effectOverride ?? this._effects[Constants.SUBMESHEFFECT_MAINMATERIAL].effect;
+        return this._effectOverride ?? this._mainEffect.effect;
     }
 
     /**
      * Gets associated main effect
      */
     public get mainEffect(): Nullable<Effect> {
-        return this._effects[Constants.SUBMESHEFFECT_MAINMATERIAL].effect;
+        return this._mainEffect.effect;
     }
 
     /**
@@ -77,7 +81,7 @@ export class SubMesh implements ICullable {
      * @param defines defines the set of defines used to compile this effect
      */
     public setEffect(effect: Nullable<Effect>, defines: Nullable<MaterialDefines> = null) {
-        this._effects[Constants.SUBMESHEFFECT_MAINMATERIAL].setEffect(effect, defines);
+        this._mainEffect.setEffect(effect, defines);
     }
 
     /** @hidden */
@@ -150,7 +154,8 @@ export class SubMesh implements ICullable {
         }
 
         this._effects = {};
-        this._effects[Constants.SUBMESHEFFECT_MAINMATERIAL] = new ContextualEffect(this._mesh.getScene().getEngine());
+        this._mainEffect = new ContextualEffect(this._mesh.getScene().getEngine());
+        this._effects[Constants.SUBMESHEFFECT_MAINMATERIAL] = this._mainEffect;
         this._trianglePlanes = [];
 
         this._id = mesh.subMeshes.length - 1;
@@ -239,7 +244,7 @@ export class SubMesh implements ICullable {
 
             if (this._currentMaterial !== effectiveMaterial) {
                 this._currentMaterial = effectiveMaterial;
-                this._effects[Constants.SUBMESHEFFECT_MAINMATERIAL].defines = null;
+                this._mainEffect.defines = null;
             }
 
             return effectiveMaterial;
