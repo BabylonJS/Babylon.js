@@ -2864,7 +2864,7 @@ export class WebGPUEngine extends Engine {
         this._commandBuffers[1] = this._renderTargetEncoder.finish();
         this._commandBuffers[2] = this._renderEncoder.finish();
 
-        this._device.defaultQueue.submit(this._commandBuffers);
+        this._device.queue.submit(this._commandBuffers);
 
         this._uploadEncoder = this._device.createCommandEncoder(this._uploadEncoderDescriptor);
         this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);

@@ -692,7 +692,7 @@ export class WebGPUTextureHelper {
         commandEncoder!.popDebugGroup();
 
         if (useOwnCommandEncoder) {
-            this._device.defaultQueue.submit([commandEncoder!.finish()]);
+            this._device.queue.submit([commandEncoder!.finish()]);
             commandEncoder = null as any;
         }
     }
@@ -824,7 +824,7 @@ export class WebGPUTextureHelper {
         commandEncoder!.popDebugGroup();
 
         if (useOwnCommandEncoder) {
-            this._device.defaultQueue.submit([commandEncoder!.finish()]);
+            this._device.queue.submit([commandEncoder!.finish()]);
             commandEncoder = null as any;
         }
     }
@@ -880,7 +880,7 @@ export class WebGPUTextureHelper {
         commandEncoder!.popDebugGroup();
 
         if (useOwnCommandEncoder) {
-            this._device.defaultQueue.submit([commandEncoder!.finish()]);
+            this._device.queue.submit([commandEncoder!.finish()]);
             commandEncoder = null as any;
         }
     }
@@ -1036,13 +1036,13 @@ export class WebGPUTextureHelper {
                 }, textureCopyView, textureExtent);
 
                 if (useOwnCommandEncoder) {
-                    this._device.defaultQueue.submit([commandEncoder!.finish()]);
+                    this._device.queue.submit([commandEncoder!.finish()]);
                     commandEncoder = null as any;
                 }
 
                 this._bufferManager.releaseBuffer(buffer);
             } else {
-                this._device.defaultQueue.writeTexture(textureCopyView, imageBitmap, {
+                this._device.queue.writeTexture(textureCopyView, imageBitmap, {
                     offset: 0,
                     bytesPerRow,
                     rowsPerImage: height,
@@ -1057,10 +1057,10 @@ export class WebGPUTextureHelper {
 
             if (invertY || premultiplyAlpha) {
                 createImageBitmap(imageBitmap, { imageOrientation: invertY ? "flipY" : "none", premultiplyAlpha: premultiplyAlpha ? "premultiply" : "none" }).then((imageBitmap) => {
-                    this._device.defaultQueue.copyImageBitmapToTexture({ imageBitmap }, textureCopyView, textureExtent);
+                    this._device.queue.copyImageBitmapToTexture({ imageBitmap }, textureCopyView, textureExtent);
                 });
             } else {
-                this._device.defaultQueue.copyImageBitmapToTexture({ imageBitmap }, textureCopyView, textureExtent);
+                this._device.queue.copyImageBitmapToTexture({ imageBitmap }, textureCopyView, textureExtent);
             }
         }
     }
@@ -1096,7 +1096,7 @@ export class WebGPUTextureHelper {
             depth: 1
         });
 
-        this._device.defaultQueue.submit([commandEncoder!.finish()]);
+        this._device.queue.submit([commandEncoder!.finish()]);
 
         const type = WebGPUTextureHelper._GetTextureTypeFromFormat(format);
         const floatFormat = type === Constants.TEXTURETYPE_FLOAT ? 2 : type === Constants.TEXTURETYPE_HALF_FLOAT ? 1 : 0;
