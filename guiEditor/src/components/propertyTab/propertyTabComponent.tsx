@@ -45,6 +45,8 @@ import { CheckboxPropertyGridComponent } from "../../sharedUiComponents/tabs/pro
 import { Control } from "babylonjs-gui/2D/controls/control";
 import { ControlPropertyGridComponent } from "../../sharedUiComponents/tabs/propertyGrids/gui/controlPropertyGridComponent";
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
+import { Vector2LineComponent } from "../../sharedUiComponents/lines/vector2LineComponent";
+import { Vector2 } from "babylonjs/Maths/math.vector";
 
 require("./propertyTab.scss");
 
@@ -54,6 +56,7 @@ interface IPropertyTabComponentProps {
 
 interface IPropertyTabComponentState {
     currentNode: Nullable<GUINode>;
+    textureSize: Vector2;
 }
 
 export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
@@ -63,7 +66,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     constructor(props: IPropertyTabComponentProps) {
         super(props);
 
-        this.state = { currentNode: null };
+        this.state = { currentNode: null, textureSize: new Vector2(1200, 1200) };
     }
 
     timerRefresh() {
@@ -71,7 +74,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             this.forceUpdate();
         }
     }
-
     componentDidMount() {
         this._timerIntervalId = window.setInterval(() => this.timerRefresh(), 500);
         this.props.globalState.onSelectionChangedObservable.add((selection) => {
@@ -80,6 +82,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             } else {
                 this.setState({ currentNode: null });
             }
+        });
+        this.props.globalState.onResizeObservable.add((newSize) => {
+            this.setState({ textureSize: newSize });
         });
 
         this._onBuiltObserver = this.props.globalState.onBuiltObservable.add(() => {
@@ -254,6 +259,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 </div>
             );
         }
+  
 
         return (
             <div id="propertyTab">
@@ -268,11 +274,17 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <ButtonLineComponent
                             label="Reset to default"
                             onClick={() => {
+                                
                                 this.props.globalState.onResetRequiredObservable.notifyObservers();
                             }}
                         />
                     </LineContainerComponent>
                     <LineContainerComponent title="OPTIONS">
+                        <Vector2LineComponent label="Texture Size" target={this.state} propertyName="textureSize" onChange={ newvalue => 
+                            {
+                                this.props.globalState.workbench.resizeGuiTexture(newvalue);
+                            }}> 
+                            </Vector2LineComponent>
                         <CheckBoxLineComponent
                             label="Show grid"
                             isSelected={() => DataStorage.ReadBoolean("ShowGrid", true)}

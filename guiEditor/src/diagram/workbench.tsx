@@ -94,6 +94,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         this.props.globalState.workbench = this;
     }
+
+    resizeGuiTexture(newValue: Vector2) {
+        this._textureMesh.scaling.x = newValue.x;
+        this._textureMesh.scaling.z = newValue.y;
+        this.globalState.guiTexture.scaleTo(newValue.x, newValue.y);
+        //needs a force refresh.
+    }
    
     clearGuiTexture() {
         while(this._guiNodes.length > 0) {
@@ -231,8 +238,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         light.intensity = 0.9;
     
         let textureSize = 1200;
-        this._textureMesh = Mesh.CreateGround("earth", textureSize, textureSize, 1, this._scene);
-
+        this._textureMesh = Mesh.CreateGround("earth", 1, 1, 1, this._scene);
+        this._textureMesh.scaling.x = textureSize;
+        this._textureMesh.scaling.z = textureSize;
         this.globalState.guiTexture = AdvancedDynamicTexture.CreateForMesh(this._textureMesh, textureSize, textureSize);
         this._textureMesh.showBoundingBox = true;  
         this.addControls(this._scene, camera);
