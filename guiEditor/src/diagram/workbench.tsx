@@ -2,7 +2,6 @@ import * as React from "react";
 import { GlobalState } from '../globalState';
 import { GUINode } from './guiNode';
 import { Nullable } from 'babylonjs/types';
-import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import {Control} from 'babylonjs-gui/2D/controls/control';
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
 import { Matrix, Vector2, Vector3 } from "babylonjs/Maths/math.vector";
@@ -154,7 +153,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     componentDidMount() {
-        this._hostCanvas = this.props.globalState.hostDocument.getElementById("workbench-canvas") as HTMLDivElement;
         this._rootContainer = this.props.globalState.hostDocument.getElementById("workbench-container") as HTMLDivElement;
         this._gridCanvas = this.props.globalState.hostDocument.getElementById("workbench-canvas-container") as HTMLDivElement;
         this._svgCanvas = this.props.globalState.hostDocument.getElementById("workbench-svg-container") as HTMLElement;        
@@ -163,7 +161,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     onMove(evt: React.PointerEvent) {        
 
         var pos = this.getGroundPosition();
-        console.log(pos);
         // Move or guiNodes
         if (this._mouseStartPointX != null && this._mouseStartPointY != null) {
 
