@@ -103,7 +103,7 @@ declare class GPUDevice extends EventTarget implements GPUObjectBase {
     //readonly features: GPUFeatureName[];
     readonly limits: Required<GPUAdapterLimits>;
 
-    defaultQueue: GPUQueue;
+    readonly queue: GPUQueue;
 
     destroy(): void;
 
@@ -119,8 +119,8 @@ declare class GPUDevice extends EventTarget implements GPUObjectBase {
 
     createComputePipeline(descriptor: GPUComputePipelineDescriptor): GPUComputePipeline;
     createRenderPipeline(descriptor: GPURenderPipelineDescriptor): GPURenderPipeline;
-    createReadyComputePipeline(descriptor: GPUComputePipelineDescriptor): Promise<GPUComputePipeline>;
-    createReadyRenderPipeline(descriptor: GPURenderPipelineDescriptor): Promise<GPURenderPipeline>;
+    createComputePipelineAsync(descriptor: GPUComputePipelineDescriptor): Promise<GPUComputePipeline>;
+    createRenderPipelineAsync(descriptor: GPURenderPipelineDescriptor): Promise<GPURenderPipeline>;
 
     createCommandEncoder(descriptor?: GPUCommandEncoderDescriptor): GPUCommandEncoder;
     createRenderBundleEncoder(descriptor: GPURenderBundleEncoderDescriptor): GPURenderBundleEncoder;
