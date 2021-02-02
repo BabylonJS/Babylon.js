@@ -276,9 +276,7 @@ export class GlowLayer extends EffectLayer {
             null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, textureType);
         this._horizontalBlurPostprocess1.width = blurTextureWidth;
         this._horizontalBlurPostprocess1.height = blurTextureHeight;
-        this._horizontalBlurPostprocess1.onApplyObservable.add((effect) => {
-            effect.setTexture("textureSampler", this._mainTexture);
-        });
+        this._horizontalBlurPostprocess1.inputTexture = this._mainTexture._texture!;
 
         this._verticalBlurPostprocess1 = new BlurPostProcess("GlowLayerVBP1", new Vector2(0, 1.0), this._options.blurKernelSize / 2, {
             width: blurTextureWidth,
@@ -293,9 +291,7 @@ export class GlowLayer extends EffectLayer {
             null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, textureType);
         this._horizontalBlurPostprocess2.width = blurTextureWidth2;
         this._horizontalBlurPostprocess2.height = blurTextureHeight2;
-        this._horizontalBlurPostprocess2.onApplyObservable.add((effect) => {
-            effect.setTexture("textureSampler", this._blurTexture1);
-        });
+        this._horizontalBlurPostprocess2.inputTexture = this._blurTexture1._texture!;
 
         this._verticalBlurPostprocess2 = new BlurPostProcess("GlowLayerVBP2", new Vector2(0, 1.0), this._options.blurKernelSize / 2, {
             width: blurTextureWidth2,
