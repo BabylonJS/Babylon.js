@@ -15,6 +15,7 @@ import "../Engines/Extensions/engine.renderTarget";
 import { NodeMaterial } from '../Materials/Node/nodeMaterial';
 import { serialize, serializeAsColor4, SerializationHelper } from '../Misc/decorators';
 import { _TypeStore } from '../Misc/typeStore';
+import { ContextualEffect } from "../Materials/contextualEffect";
 
 declare type Scene = import("../scene").Scene;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
@@ -187,6 +188,7 @@ export class PostProcess {
     */
     public _currentRenderTextureInd = 0;
     private _effect: Effect;
+    private _contextualEffect: ContextualEffect;
     private _samplers: string[];
     private _fragmentUrl: string;
     private _vertexUrl: string;
@@ -368,7 +370,7 @@ export class PostProcess {
         samplingMode: number = Constants.TEXTURE_NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, vertexUrl: string = "postprocess",
         indexParameters?: any, blockCompilation = false, textureFormat = Constants.TEXTUREFORMAT_RGBA) {
 
-                this.name = name;
+            this.name = name;
             if (camera != null) {
                 this._camera = camera;
                 this._scene = camera.getScene();
@@ -398,6 +400,7 @@ export class PostProcess {
             this._parameters.push("scale");
 
             this._indexParameters = indexParameters;
+            this._contextualEffect = new ContextualEffect(this._engine);
 
             if (!blockCompilation) {
                 this.updateEffect(defines);
@@ -477,6 +480,7 @@ export class PostProcess {
             onError,
             indexParameters || this._indexParameters
         );
+        this._contextualEffect.setEffect(this._effect);
     }
 
     /**
@@ -714,7 +718,7 @@ export class PostProcess {
         }
 
         // States
-        this._engine.enableEffect(this._effect);
+        this._engine.enableEffect(this._contextualEffect);
         this._engine.setState(false);
         this._engine.setDepthBuffer(false);
         this._engine.setDepthWrite(false);
