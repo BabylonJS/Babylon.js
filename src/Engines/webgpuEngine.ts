@@ -1325,7 +1325,7 @@ export class WebGPUEngine extends Engine {
             this._currentContextualEffect = this._defaultContextualEffect;
             this._currentContextualEffect.setEffect(effect, null, false);
             this._counters.numEnableEffects++;
-        } else if (!effect.effect || effect === this._currentContextualEffect && !this._forceEnableEffect) {
+        } else if (!effect.effect || effect === this._currentContextualEffect && effect.effect === this._currentEffect && !this._forceEnableEffect) {
             return;
         } else {
             isNewEffect = effect.effect !== this._currentContextualEffect.effect;
