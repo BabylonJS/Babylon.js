@@ -141,7 +141,7 @@ export class Collider {
     public _initialize(source: Vector3, dir: Vector3, e: number): void {
         this._velocity = dir;
         this._velocitySquaredLength = this._velocity.lengthSquared();
-        const len = Math.sqrt(this._velocitySquaredLength)
+        const len = Math.sqrt(this._velocitySquaredLength);
         if (len === 0 || len === 1.0) {
             this._normalizedVelocity.copyFromFloats(dir._x, dir._y, dir._z);
         }
@@ -373,7 +373,7 @@ export class Collider {
         }
 
         if (found) {
-            var distToCollisionSquared = t * this._velocitySquaredLength
+            var distToCollisionSquared = t * this._velocitySquaredLength;
 
             if (!this.collisionFound || distToCollisionSquared < this._nearestDistanceSquared) {
                 // if collisionResponse is false, collision is not found but the collidedMesh is set anyway.
