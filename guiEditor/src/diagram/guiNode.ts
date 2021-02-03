@@ -104,7 +104,7 @@ export class GUINode {
         this.x = guiControl.leftInPixels;
         this.y = guiControl.topInPixels;
         
-        this.disableProperties();
+        this.enableEditorProperties();
 
         guiControl.onPointerUpObservable.add((evt) => {
             this.clicked = false;
@@ -128,10 +128,18 @@ export class GUINode {
         this._onSelectionBoxMovedObserver = this._globalState.onSelectionBoxMoved.add((rect1) => {});
     }
 
-    disableProperties() {
-        if(this.guiControl.typeName === "Button") {
-            (this.guiControl as Button).pointerDownAnimation = () => null;
-            (this.guiControl as Button).pointerUpAnimation = () => null;
+    enableEditorProperties() {
+        switch (this.guiControl.typeName) {
+            case "Button":
+                (this.guiControl as Button).pointerDownAnimation = () => null;
+                (this.guiControl as Button).pointerUpAnimation = () => null;
+                break;
+            case "StackPanel":
+            case "Grid":
+                this.guiControl.isHighlighted = true;
+                break;
+            default:
+                break;
         }
     }
 

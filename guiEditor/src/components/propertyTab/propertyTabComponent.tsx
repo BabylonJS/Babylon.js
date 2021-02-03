@@ -271,16 +271,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     <LineContainerComponent title="GENERAL">
                         <TextLineComponent label="Version" value={Engine.Version} />
                         <TextLineComponent label="Help" value="doc.babylonjs.com" underline={true} onLink={() => window.open("https://doc.babylonjs.com", "_blank")} />
-                        <ButtonLineComponent
-                            label="Reset to default"
-                            onClick={() => {
-                                
-                                this.props.globalState.onResetRequiredObservable.notifyObservers();
-                            }}
-                        />
                     </LineContainerComponent>
                     <LineContainerComponent title="OPTIONS">
-                        <Vector2LineComponent label="Texture Size" target={this.state} propertyName="textureSize" onChange={ newvalue => 
+                        <Vector2LineComponent label="GUI Canvas Size" target={this.state} propertyName="textureSize" onChange={ newvalue => 
                             {
                                 this.props.globalState.workbench.resizeGuiTexture(newvalue);
                             }}> 
