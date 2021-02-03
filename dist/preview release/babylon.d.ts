@@ -7621,6 +7621,8 @@ declare module BABYLON {
         _initialPosition: Vector3;
         private _nearestDistance;
         private _collisionMask;
+        private _velocitySquaredLength;
+        private _nearestDistanceSquared;
         get collisionMask(): number;
         set collisionMask(mask: number);
         /**
