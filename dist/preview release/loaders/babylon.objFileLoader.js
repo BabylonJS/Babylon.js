@@ -505,7 +505,7 @@ var OBJFileLoader = /** @class */ (function () {
      */
     OBJFileLoader.prototype._loadMTL = function (url, rootUrl, onSuccess, onFailure) {
         //The complete path to the mtl file
-        var pathOfFile = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Tools"].BaseUrl + rootUrl + url;
+        var pathOfFile = rootUrl + url;
         // Loads through the babylon tools to allow fileInput search.
         babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Tools"].LoadFile(pathOfFile, onSuccess, undefined, undefined, false, function (request, exception) {
             onFailure(pathOfFile, exception);

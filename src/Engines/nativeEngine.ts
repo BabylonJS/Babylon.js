@@ -99,7 +99,7 @@ interface INativeEngine {
     getAttributes(shaderProgram: any, attributeNames: string[]): number[];
     setProgram(program: any): void;
 
-    setState(culling: boolean, zOffset: number, reverseSide: boolean): void;
+    setState(culling: boolean, zOffset: number, cullBackFaces: boolean, reverseSide: boolean): void;
     setZOffset(zOffset: number): void;
     getZOffset(): number;
     setDepthTest(enable: number): void;
@@ -1165,7 +1165,7 @@ export class NativeEngine extends Engine {
     }
 
     public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {
-        this._native.setState(culling, zOffset, reverseSide);
+        this._native.setState(culling, zOffset, this.cullBackFaces, reverseSide);
     }
 
     /**
@@ -1716,7 +1716,7 @@ export class NativeEngine extends Engine {
                 });
             };
 
-            if (fromData) {
+            if (fromData && buffer) {
                 if (buffer instanceof ArrayBuffer) {
                     onload(new Uint8Array(buffer));
                 } else if (ArrayBuffer.isView(buffer)) {
@@ -2121,7 +2121,10 @@ export class NativeEngine extends Engine {
         if (!uniform) {
             return ;
         }
-        this._native.setTexture(uniform, texture._hardwareTexture?.underlyingResource);
+        if (texture && texture._hardwareTexture) {
+            const webGLTexture = texture._hardwareTexture.underlyingResource;
+            this._native.setTexture(uniform, webGLTexture);
+        }
     }
 
     protected _deleteBuffer(buffer: NativeDataBuffer): void {

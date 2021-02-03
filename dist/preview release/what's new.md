@@ -20,6 +20,7 @@
 - Added onLoadObservable to the textureDome class(es) ([RaananW](https://github.com/RaananW))
 - Modified InputManager to use DeviceInputSystem ([PolygonalSun](https://github.com/PolygonalSun))
 - Added a [helper class](https://doc.babylonjs.com/typedoc/classes/babylon.debug.directionallightfrustumviewer) to display the frustum of a directional light ([Popov72](https://github.com/Popov72))
+- Improved collision detection performance ([ottoville](https://github.com/ottoville/))
 
 ### Engine
 
@@ -122,6 +123,8 @@
 - Fix issue when canvas loses focus while holding a pointer button ([PolygonalSun](https://github.com/PolygonalSun))
 - Fix issue where camera controls stay detached if PointerDragBehavior is disabled prematurely ([PolygonalSun](https://github.com/PolygonalSun))
 - Fix issue where Ammo contact collision callbacks don't trigger when using physics impostors with collision filter groups and masks ([gbz](https://github.com/regnaio))
+- Fix uncatchable exception that could be thrown when initializing the environment textures ([CoPrez](https://github.com/CoPrez))
+- Fix the triplanar material when the position of the mesh it is applied to is not (0,0,0) ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
