@@ -12,6 +12,7 @@ import { InputText } from "babylonjs-gui/2D/controls/inputText";
 import { InputPassword } from "babylonjs-gui/2D/controls/inputPassword";
 import { Grid } from "babylonjs-gui/2D/controls/grid";
 import { DisplayGrid } from "babylonjs-gui/2D/controls/displayGrid";
+import { StackPanel } from "babylonjs-gui";
 
 export class GUINodeTools {
     public static CreateControlFromString (data: string) {
@@ -45,6 +46,7 @@ export class GUINodeTools {
             case "Text":
                 element = new TextBlock("Textblock");
                 element.text = "My Text";
+                element.resizeToFit = true;
                 return element;
             case "ImageButton":
                 element = Button.CreateImageButton("Button", "Click Me", "https://playground.babylonjs.com/textures/grass.png");
@@ -72,11 +74,18 @@ export class GUINodeTools {
                 element.addColumnDefinition(100, true);
                 element.addRowDefinition(0.5);
                 element.addRowDefinition(0.5);
+                element.isHighlighted = true;
                 return element;
             case "DisplayGrid":
                 element = new DisplayGrid();
-                element.width = "200px";
-                element.height = "200px";
+                element.width = "100px";
+                element.height = "100px";
+                return element;
+            case "StackPanel":
+                element = new StackPanel();
+                element.width = "100px";
+                element.height = "100px";
+                element.isHighlighted = true;
                 return element;
             default:
                 element = Button.CreateSimpleButton("Button", "Click Me");

@@ -49,6 +49,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     public _frameIsMoving = false;
     public _isLoading = false;
     public isOverGUINode = false;
+    private _panning: boolean;
 
     public get globalState(){
         return this.props.globalState;
@@ -117,8 +118,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
     
     loadFromGuiTexture() {
-        let newSize = new Vector2(this.globalState.guiTexture.idealWidth, this.globalState.guiTexture.idealHeight);
-        this.resizeGuiTexture(newSize);
         var children = this.globalState.guiTexture.getChildren();
         children[0].children.forEach(guiElement => {
             var newGuiNode = new GUINode(this.props.globalState, guiElement);
@@ -130,6 +129,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._textureMesh.scaling.x = newvalue.x;
         this._textureMesh.scaling.z = newvalue.y;
         this.globalState.guiTexture.scaleTo(newvalue.x, newvalue.y);
+        this.globalState.guiTexture.markAsDirty();
         this.globalState.onResizeObservable.notifyObservers(newvalue);
     }
 
@@ -172,7 +172,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         var pos = this.getGroundPosition();
         // Move or guiNodes
-        if (this._mouseStartPointX != null && this._mouseStartPointY != null) {
+        if (this._mouseStartPointX != null && this._mouseStartPointY != null && !this._panning) {
 
             var x = this._mouseStartPointX;
             var y = this._mouseStartPointY;
@@ -304,6 +304,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             if (p.event.button !== 0) {
                 initialPos = this.getPosition(scene, camera, plane);
                 scene.onPointerObservable.add(panningFn, PointerEventTypes.POINTERMOVE);
+                this._panning = true;
+            }
+            else {
+                this._panning = false;
             }
         }, PointerEventTypes.POINTERDOWN);
     
