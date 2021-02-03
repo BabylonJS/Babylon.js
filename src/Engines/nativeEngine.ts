@@ -22,7 +22,7 @@ import { ThinEngine, ISceneLike } from './thinEngine';
 import { IWebRequest } from '../Misc/interfaces/iWebRequest';
 import { EngineStore } from './engineStore';
 import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
-import { WebGL2ShaderProcessor } from '../Engines/WebGL/webGL2ShaderProcessors';
+import { NativeShaderProcessor } from '../Engines/Native/nativeShaderProcessors';
 import { RenderTargetTextureSize } from '../Engines/Extensions/engine.renderTarget';
 import { DepthTextureCreationOptions } from '../Engines/depthTextureCreationOptions';
 
@@ -75,6 +75,8 @@ interface INativeEngine {
     readonly ALPHA_PREMULTIPLIED_PORTERDUFF: number;
     readonly ALPHA_INTERPOLATE: number;
     readonly ALPHA_SCREENMODE: number;
+
+    readonly homogeneousDepth: boolean;
 
     dispose(): void;
 
@@ -747,6 +749,7 @@ export class NativeEngine extends Engine {
     private readonly INVALID_HANDLE = 65535;
     private _boundBuffersVertexArray: any = null;
     private _currentDepthTest: number = this._native.DEPTH_TEST_LEQUAL;
+    public homogeneousDepth: boolean = this._native.homogeneousDepth;
 
     public getHardwareScalingLevel(): number {
         return this._native.getHardwareScalingLevel();
@@ -855,7 +858,7 @@ export class NativeEngine extends Engine {
         }
 
         // Shader processor
-        this._shaderProcessor = new WebGL2ShaderProcessor();
+        this._shaderProcessor = new NativeShaderProcessor();
     }
 
     public dispose(): void {
