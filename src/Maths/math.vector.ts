@@ -5185,16 +5185,16 @@ export class Matrix {
         // Next normalize the two inputted vectors and take the cross product to find the third orthonormal vector that defines the rotation.
         const forwardNorm = MathTmp.Vector3[0];
         const upNorm = MathTmp.Vector3[1];
-        const right = MathTmp.Vector3[2];
+        const left = MathTmp.Vector3[2];
         forward.normalizeToRef(forwardNorm);
         forwardNorm.scaleInPlace(-1);
         up.normalizeToRef(upNorm);
-        Vector3.CrossToRef(upNorm, forwardNorm, right);
-        right.normalize();
+        Vector3.CrossToRef(upNorm, forwardNorm, left);
+        left.normalize();
 
         // Generate the rotation matrix.
         Matrix.FromValuesToRef(
-            right._x, right._y, right._z, 0.0,
+            left._x, left._y, left._z, 0.0,
             upNorm._x, upNorm._y, upNorm._z, 0.0,
             forwardNorm._x, forwardNorm._y, forwardNorm._z, 0.0,
             0, 0, 0, 1.0,
