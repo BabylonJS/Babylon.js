@@ -1946,9 +1946,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         var contextualEffect: Nullable<ContextualEffect>;
         if (this._effectiveMaterial._storeEffectOnSubMeshes) {
-            contextualEffect = subMesh.contextualEffect;
+            contextualEffect = subMesh._contextualEffect;
         } else {
-            contextualEffect = this._effectiveMaterial.getContextualEffect();
+            contextualEffect = this._effectiveMaterial._getContextualEffect();
         }
 
         var effect = contextualEffect?.effect ?? null;
