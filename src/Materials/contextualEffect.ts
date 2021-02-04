@@ -25,7 +25,7 @@ export class ContextualEffect {
         this._effect = null;
         this._defines = null;
         if (createContext) {
-            this._context = {};
+            this.createNewContext();
         }
     }
 
@@ -45,6 +45,12 @@ export class ContextualEffect {
         return this._context;
     }
 
+    public createNewContext(): void {
+        if (this._needsContext) {
+            this._context = {};
+        }
+    }
+
     public setEffect(effect: Nullable<Effect>, defines?: Nullable<string | MaterialDefines>, createNewContext = true): void {
         if (this._effect === effect) {
             if (!effect) {
@@ -59,8 +65,8 @@ export class ContextualEffect {
         if (defines !== undefined) {
             this._defines = defines;
         }
-        if (createNewContext && this._needsContext) {
-            this._context = {};
+        if (createNewContext) {
+            this.createNewContext();
         }
     }
 }
