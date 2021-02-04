@@ -738,7 +738,9 @@ export class PostProcess {
         } else {
             source = this.inputTexture;
         }
-        this._effect._bindTexture("textureSampler", source);
+        if (source !== undefined) {
+            this._effect._bindTexture("textureSampler", source);
+        }
 
         // Parameters
         this._effect.setVector2("scale", this._scaleRatio);
