@@ -3580,6 +3580,28 @@ export class Quaternion {
     }
 
     /**
+     * Creates a new rotation value to orient an object to look at the given forward and up vectors.
+     * This function works in left handed mode
+     * @param forward Defines the forward direction of the desired quaternion.
+     * @param up  Defines the up direction of the desired quaternion.
+     * @returns A new quaternion oriented toward the specified forward and up.
+     */
+    public static FromLookDirectionLH(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Quaternion {
+        return Quaternion.FromRotationMatrix(Matrix.LookDirectionLH(forward, up));
+    }
+
+    /**
+     * Creates a new rotation value to orient an object to look at the given forward and up vectors.
+     * This function works in right handed mode
+     * @param forward Defines the forward direction of the desired quaternion.
+     * @param up  Defines the up direction of the desired quaternion.
+     * @returns A new quaternion oriented toward the specified forward and up.
+     */
+    public static FromLookDirectionRH(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Quaternion {
+        return Quaternion.FromRotationMatrix(Matrix.LookDirectionRH(forward, up));
+    }
+
+    /**
      * Interpolates between two quaternions
      * @param left defines first quaternion
      * @param right defines second quaternion
@@ -5130,6 +5152,97 @@ export class Matrix {
             xAxis._y, yAxis._y, zAxis._y, 0.0,
             xAxis._z, yAxis._z, zAxis._z, 0.0,
             ex, ey, ez, 1.0,
+            result
+        );
+    }
+
+    /**
+     * Gets a new rotation matrix used to rotate an entity so as it looks in the direction specified by forward from the eye position, the up Vector3 being oriented like "up".
+     * This function works in left handed mode
+     * @param forward defines the forward direction
+     * @param up defines the up vector for the entity
+     * @returns the new matrix
+     */
+    public static LookDirectionLH(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Matrix {
+        var result = new Matrix();
+        Matrix.LookDirectionLHToRef(forward, up, result);
+        return result;
+    }
+
+    /**
+     * Sets the given "result" Matrix to a rotation matrix used to rotate an entity so that it looks in the direction of forward, the up vector3 being oriented like "up".
+     * This function works in left handed mode
+     * @param forward defines the forward direction
+     * @param up defines the up vector for the entity
+     * @param result defines the target matrix
+     */
+    public static LookDirectionLHToRef(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, result: Matrix): void {
+        // First ensure that two vectors are valid and approximately orthogonal.
+        if (forward.length() < Epsilon || up.length() < Epsilon || Math.abs(Vector3.Dot(forward, up)) >= Epsilon) {
+            result.copyFrom(Matrix.IdentityReadOnly);
+        }
+
+        // Next normalize the two inputted vectors and take the cross product to find the third orthonormal vector (left) that defines the rotation.
+        const forwardNorm = MathTmp.Vector3[0];
+        const upNorm = MathTmp.Vector3[1];
+        const right = MathTmp.Vector3[2];
+        forward.normalizeToRef(forwardNorm);
+        up.normalizeToRef(upNorm);
+        Vector3.CrossToRef(upNorm, forwardNorm, right);
+        right.normalize();
+
+        // Generate the rotation matrix.
+        Matrix.FromValuesToRef(
+            right._x, right._y, right._z, 0.0,
+            upNorm._x, upNorm._y, upNorm._z, 0.0,
+            forwardNorm._x, forwardNorm._y, forwardNorm._z, 0.0,
+            0, 0, 0, 1.0,
+            result
+        );
+    }
+
+     /**
+     * Gets a new rotation matrix used to rotate an entity so as it looks in the direction specified by forward from the eye position, the up Vector3 being oriented like "up".
+     * This function works in right handed mode
+     * @param forward defines the forward direction
+     * @param up defines the up vector for the entity
+     * @returns the new matrix
+     */
+    public static LookDirectionRH(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Matrix {
+        var result = new Matrix();
+        Matrix.LookDirectionRHToRef(forward, up, result);
+        return result;
+    }
+
+    /**
+     * Sets the given "result" Matrix to a rotation matrix used to rotate an entity so that it looks in the direction of forward, the up vector3 being oriented like "up".
+     * This function works in right handed mode
+     * @param forward defines the forward direction
+     * @param up defines the up vector for the entity
+     * @param result defines the target matrix
+     */
+    public static LookDirectionRHToRef(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, result: Matrix): void {
+        // First ensure that two vectors are valid and approximately orthogonal.
+        if (forward.length() < Epsilon || up.length() < Epsilon || Math.abs(Vector3.Dot(forward, up)) >= Epsilon) {
+            result.copyFrom(Matrix.IdentityReadOnly);
+        }
+
+        // Next normalize the two inputted vectors and take the cross product to find the third orthonormal vector (left) that defines the rotation.
+        const forwardNorm = MathTmp.Vector3[0];
+        const upNorm = MathTmp.Vector3[1];
+        const right = MathTmp.Vector3[2];
+        forward.normalizeToRef(forwardNorm);
+        forwardNorm.scale(-1);
+        up.normalizeToRef(upNorm);
+        Vector3.CrossToRef(upNorm, forwardNorm, right);
+        right.normalize();
+
+        // Generate the rotation matrix.
+        Matrix.FromValuesToRef(
+            right._x, right._y, right._z, 0.0,
+            upNorm._x, upNorm._y, upNorm._z, 0.0,
+            forwardNorm._x, forwardNorm._y, forwardNorm._z, 0.0,
+            0, 0, 0, 1.0,
             result
         );
     }
