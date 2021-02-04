@@ -87,8 +87,12 @@ export class SubMesh implements ICullable {
      */
     public setEffect(effect: Nullable<Effect>, defines: Nullable<MaterialDefines> = null) {
         this._mainEffect.setEffect(effect, defines);
-        (this._materialEffect as any) = effect;
-        (this._materialDefines as any) = defines;
+        if (effect !== this._materialEffect) {
+            (this._materialEffect as any) = effect;
+            (this._materialDefines as any) = defines;
+        } else if (!effect) {
+            (this._materialDefines as any) = null;
+        }
     }
 
     /** @hidden */
