@@ -25,9 +25,9 @@ declare type TrianglePickingPredicate = import("../Culling/ray").TrianglePicking
  */
 export class SubMesh implements ICullable {
     /** @hidden */
-    public readonly _materialDefines: Nullable<MaterialDefines>; // fast access to _mainEffect.defines
+    public readonly _materialDefines: Nullable<MaterialDefines> = null; // fast access to _mainEffect.defines
     /** @hidden */
-    public readonly _materialEffect: Nullable<Effect>; // fast access to _mainEffect.effect
+    public readonly _materialEffect: Nullable<Effect> = null; // fast access to _mainEffect.effect
 
     /** @hidden */
     public _effectOverride: Nullable<Effect> = null;
