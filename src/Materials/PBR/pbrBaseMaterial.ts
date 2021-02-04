@@ -987,11 +987,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh.materialDefines) {
+        if (!subMesh._materialDefines) {
             subMesh.materialDefines = new PBRMaterialDefines();
         }
 
-        const defines = <PBRMaterialDefines>subMesh.materialDefines;
+        const defines = <PBRMaterialDefines>subMesh._materialDefines;
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }
@@ -1794,7 +1794,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
-        var defines = <PBRMaterialDefines>subMesh.materialDefines;
+        var defines = <PBRMaterialDefines>subMesh._materialDefines;
         if (!defines) {
             return;
         }

@@ -107,11 +107,11 @@ export class GradientMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh.materialDefines) {
+        if (!subMesh._materialDefines) {
             subMesh.materialDefines = new GradientMaterialDefines();
         }
 
-        var defines = <GradientMaterialDefines>subMesh.materialDefines;
+        var defines = <GradientMaterialDefines>subMesh._materialDefines;
         var scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
@@ -220,7 +220,7 @@ export class GradientMaterial extends PushMaterial {
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
-        var defines = <GradientMaterialDefines>subMesh.materialDefines;
+        var defines = <GradientMaterialDefines>subMesh._materialDefines;
         if (!defines) {
             return;
         }

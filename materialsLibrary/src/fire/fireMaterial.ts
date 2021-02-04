@@ -96,11 +96,11 @@ export class FireMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh.materialDefines) {
+        if (!subMesh._materialDefines) {
             subMesh.materialDefines = new FireMaterialDefines();
         }
 
-        var defines = <FireMaterialDefines>subMesh.materialDefines;
+        var defines = <FireMaterialDefines>subMesh._materialDefines;
         var scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
@@ -211,7 +211,7 @@ export class FireMaterial extends PushMaterial {
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
-        var defines = <FireMaterialDefines>subMesh.materialDefines;
+        var defines = <FireMaterialDefines>subMesh._materialDefines;
         if (!defines) {
             return;
         }

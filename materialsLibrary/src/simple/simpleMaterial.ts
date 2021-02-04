@@ -91,11 +91,11 @@ export class SimpleMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh.materialDefines) {
+        if (!subMesh._materialDefines) {
             subMesh.materialDefines = new SimpleMaterialDefines();
         }
 
-        var defines = <SimpleMaterialDefines>subMesh.materialDefines;
+        var defines = <SimpleMaterialDefines>subMesh._materialDefines;
         var scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
@@ -217,7 +217,7 @@ export class SimpleMaterial extends PushMaterial {
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
-        var defines = <SimpleMaterialDefines>subMesh.materialDefines;
+        var defines = <SimpleMaterialDefines>subMesh._materialDefines;
         if (!defines) {
             return;
         }

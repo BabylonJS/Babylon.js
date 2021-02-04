@@ -38,7 +38,7 @@ export class PushMaterial extends Material {
     }
 
     protected _isReadyForSubMesh(subMesh: SubMesh) {
-        const defines = subMesh.materialDefines;
+        const defines = subMesh._materialDefines;
         if (!this.checkReadyOnEveryCall && subMesh.effect && defines) {
             if (defines._renderId === this.getScene().getRenderId()) {
                     return true;
