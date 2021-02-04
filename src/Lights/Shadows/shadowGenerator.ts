@@ -1112,8 +1112,8 @@ export class ShadowGenerator implements IShadowGenerator {
 
             const shadowDepthWrapper = material.shadowDepthWrapper;
 
-            let contextualEffect = shadowDepthWrapper?.getEffect(subMesh, this) ?? subMesh._getEffect(this._nameForCustomEffect)!;
-            let effect = ContextualEffect.GetEffect(contextualEffect)!;
+            const contextualEffect = shadowDepthWrapper?.getEffect(subMesh, this) ?? subMesh._getEffect(this._nameForCustomEffect)!;
+            const effect = ContextualEffect.GetEffect(contextualEffect)!;
 
             engine.enableEffect(contextualEffect);
 
@@ -1342,16 +1342,16 @@ export class ShadowGenerator implements IShadowGenerator {
 
         this._prepareShadowDefines(subMesh, useInstances, defines, isTransparent);
 
-        const subMeshEffect = subMesh._getEffect(this._nameForCustomEffect, true)!;
-
-        let effect = subMeshEffect.effect!;
-        let cachedDefines = subMeshEffect.defines;
-
         if (shadowDepthWrapper) {
             if (!shadowDepthWrapper.isReadyForSubMesh(subMesh, defines, this, useInstances)) {
                 return false;
             }
         } else {
+            const subMeshEffect = subMesh._getEffect(this._nameForCustomEffect, true)!;
+
+            let effect = subMeshEffect.effect!;
+            let cachedDefines = subMeshEffect.defines;
+    
             var attribs = [VertexBuffer.PositionKind];
 
             var mesh = subMesh.getMesh();
