@@ -583,6 +583,7 @@ export class WebGPUEngine extends Engine {
             supportSyncTextureRead: false,
             needsInvertingBitmap: false,
             needsEffectContext: true,
+            disableSceneMaterialCache: true,
             _collectUbosUpdatedInFrame: true,
         };
     }
@@ -1860,10 +1861,22 @@ export class WebGPUEngine extends Engine {
             const effectContext = this._currentContextualEffect.context as WebGPUEffectContext;
 
             if (effectContext.textures && effectContext.textures[name]) {
-                if (effectContext.textures[name]!.texture !== internalTexture && effectContext.bindGroupsCache) {
-                    effectContext.bindGroupsCache.values = {}; // the bind groups need to be rebuilt (at least the bind group owning this texture, but it's easier to just have them all rebuilt)
+                const textureCache = effectContext.textures[name]!;
+                const curTexture = textureCache.texture;
+                if (curTexture !== internalTexture || (curTexture !== null && curTexture === internalTexture && 
+                    (textureCache.wrapU !== internalTexture._cachedWrapU || textureCache.wrapV !== internalTexture._cachedWrapV || textureCache.wrapR !== internalTexture._cachedWrapR ||
+                        textureCache.anisotropicFilteringLevel !== internalTexture._cachedAnisotropicFilteringLevel || textureCache.samplingMode !== internalTexture.samplingMode)))
+                {
+                    if (internalTexture) {
+                        textureCache.wrapU = internalTexture._cachedWrapU;
+                        textureCache.wrapV = internalTexture._cachedWrapV;
+                        textureCache.wrapR = internalTexture._cachedWrapR;
+                        textureCache.anisotropicFilteringLevel = internalTexture._cachedAnisotropicFilteringLevel;
+                        textureCache.samplingMode = internalTexture.samplingMode;
+                    }
+                    this._clearBindGroupsCache();
                 }
-                effectContext.textures[name]!.texture = internalTexture!;
+                textureCache.texture = internalTexture!;
             }
             else {
                 if (!effectContext.textures) {
@@ -1879,6 +1892,11 @@ export class WebGPUEngine extends Engine {
                     effectContext.textures[name] = {
                         textureBinding: availableSampler.textures[textureIndex].bindingIndex,
                         texture: internalTexture!,
+                        wrapU: internalTexture?._cachedWrapU ?? -1,
+                        wrapV: internalTexture?._cachedWrapV ?? -1,
+                        wrapR: internalTexture?._cachedWrapR ?? -1,
+                        anisotropicFilteringLevel: internalTexture?._cachedAnisotropicFilteringLevel ?? -1,
+                        samplingMode: internalTexture?.samplingMode ?? -1,
                     };
                 }
             }
@@ -1918,10 +1936,12 @@ export class WebGPUEngine extends Engine {
         if (this._currentEffect) {
             const effectContext = this._currentContextualEffect.context as WebGPUEffectContext;
             if (!texture) {
-                if (effectContext.textures[name] && effectContext.textures[name]!.texture && effectContext.bindGroupsCache) {
-                    effectContext.bindGroupsCache.values = {}; // the bind groups need to be rebuilt (at least the bind group owning this texture, but it's easier to just have them all rebuilt)
+                if (effectContext.textures) {
+                    if (effectContext.textures[name] && effectContext.textures[name]!.texture) {
+                        this._clearBindGroupsCache();
+                    }
+                    effectContext.textures[name] = null;
                 }
-                effectContext.textures[name] = null;
                 return false;
             }
 
@@ -1963,18 +1983,18 @@ export class WebGPUEngine extends Engine {
                     texture.wrapV = textureWrapMode;
                 }
 
-                internalTexture._cachedWrapU = texture.wrapU;
-                if (this._lastCachedWrapU !== texture.wrapU) {
+                if (internalTexture._cachedWrapU !== texture.wrapU) {
+                    internalTexture._cachedWrapU = texture.wrapU;
                     this._lastCachedWrapU = texture.wrapU;
                 }
 
-                internalTexture._cachedWrapV = texture.wrapV;
-                if (this._lastCachedWrapV !== texture.wrapV) {
+                if (internalTexture._cachedWrapV !== texture.wrapV) {
+                    internalTexture._cachedWrapV = texture.wrapV;
                     this._lastCachedWrapV = texture.wrapV;
                 }
 
-                internalTexture._cachedWrapR = texture.wrapR;
-                if (internalTexture.is3D && this._lastCachedWrapR !== texture.wrapR) {
+                if (internalTexture.is3D && internalTexture._cachedWrapR !== texture.wrapR) {
+                    internalTexture._cachedWrapR = texture.wrapR;
                     this._lastCachedWrapR = texture.wrapR;
                 }
 
@@ -1998,6 +2018,13 @@ export class WebGPUEngine extends Engine {
     public _setAnisotropicLevel(target: number, internalTexture: InternalTexture, anisotropicFilteringLevel: number) {
         if (internalTexture._cachedAnisotropicFilteringLevel !== anisotropicFilteringLevel) {
             internalTexture._cachedAnisotropicFilteringLevel = Math.min(anisotropicFilteringLevel, this._caps.maxAnisotropy);
+        }
+    }
+
+    private _clearBindGroupsCache(): void {
+        const effectContext = this._currentContextualEffect.context as WebGPUEffectContext;
+        if (effectContext.bindGroupsCache) {
+            effectContext.bindGroupsCache.values = {};
         }
     }
 
