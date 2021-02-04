@@ -100,6 +100,8 @@ import { FollowCamera } from 'babylonjs/Cameras/followCamera';
 import { FollowCameraPropertyGridComponent } from './propertyGrids/cameras/followCameraPropertyGridComponent';
 import { Sound } from 'babylonjs/Audio/sound';
 import { SoundPropertyGridComponent } from './propertyGrids/sounds/soundPropertyGridComponent';
+import { EffectLayer } from "babylonjs";
+import { LayerPropertyGridComponent } from "./propertyGrids/layers/layerPropertyGridComponent";
 
 export class PropertyGridTabComponent extends PaneComponent {
     private _timerIntervalId: number;
@@ -402,6 +404,14 @@ export class PropertyGridTabComponent extends PaneComponent {
             if (className.indexOf("PostProcess") !== -1) {
                 const postProcess = entity as PostProcess;
                 return (<PostProcessPropertyGridComponent postProcess={postProcess}
+                    globalState={this.props.globalState}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className.indexOf("Layer") !== -1) {
+                const layer = entity as EffectLayer;
+                return (<LayerPropertyGridComponent layer={layer}
                     globalState={this.props.globalState}
                     lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
