@@ -3583,7 +3583,7 @@ export class Quaternion {
      * Creates a new rotation value to orient an object to look towards the given forward direction, the up direction being oriented like "up".
      * This function works in left handed mode
      * @param forward Defines the forward direction of the desired quaternion.
-     * @param up  Defines the up direction of the desired quaternion.
+     * @param up Defines the up direction of the desired quaternion.
      * @returns A new quaternion oriented toward the specified forward and up.
      */
     public static FromLookDirectionLH(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Quaternion {
@@ -3594,7 +3594,7 @@ export class Quaternion {
      * Creates a new rotation value to orient an object to look towards the given forward direction, the up direction being oriented like "up".
      * This function works in right handed mode
      * @param forward Defines the forward direction of the desired quaternion.
-     * @param up  Defines the up direction of the desired quaternion.
+     * @param up Defines the up direction of the desired quaternion.
      * @returns A new quaternion oriented toward the specified forward and up.
      */
     public static FromLookDirectionRH(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Quaternion {
