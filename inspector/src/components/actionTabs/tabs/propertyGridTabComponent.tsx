@@ -100,8 +100,8 @@ import { FollowCamera } from 'babylonjs/Cameras/followCamera';
 import { FollowCameraPropertyGridComponent } from './propertyGrids/cameras/followCameraPropertyGridComponent';
 import { Sound } from 'babylonjs/Audio/sound';
 import { SoundPropertyGridComponent } from './propertyGrids/sounds/soundPropertyGridComponent';
-import { EffectLayer } from "babylonjs";
 import { LayerPropertyGridComponent } from "./propertyGrids/layers/layerPropertyGridComponent";
+import { EffectLayer } from "babylonjs/Layers/effectLayer";
 
 export class PropertyGridTabComponent extends PaneComponent {
     private _timerIntervalId: number;
