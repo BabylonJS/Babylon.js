@@ -47,6 +47,8 @@ import { ControlPropertyGridComponent } from "../../sharedUiComponents/tabs/prop
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
 import { Vector2LineComponent } from "../../sharedUiComponents/lines/vector2LineComponent";
 import { Vector2 } from "babylonjs/Maths/math.vector";
+import { GuiListComponent } from "../guiList/guiListComponent";
+import { Button } from "babylonjs-gui";
 
 require("./propertyTab.scss");
 
@@ -233,6 +235,20 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             case "Line": {
                 const line = this.state.currentNode?.guiControl as Line;
                 return <LinePropertyGridComponent line={line} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
+            }
+            case "Button": {
+                const control = this.state.currentNode?.guiControl as Control;
+                const button = this.state.currentNode?.guiControl as Button;
+                var buttonMenu = []; 
+                buttonMenu.push(<ControlPropertyGridComponent key="buttonMenu" control={control} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
+                if(button.textBlock) {
+                    buttonMenu.push(<TextBlockPropertyGridComponent key="textBlockMenu" textBlock={button.textBlock} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}/>);
+                }
+                if(button.image) {
+                    buttonMenu.push(<ImagePropertyGridComponent key="imageMenu" image={button.image} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
+                }
+            
+                return buttonMenu;
             }
         }
 
