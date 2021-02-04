@@ -1542,6 +1542,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 /**
  * A class to handle setting up the rendering of opaque objects to be shown through transmissive objects.
  */
@@ -1556,6 +1557,7 @@ var TransmissionHelper = /** @class */ (function () {
         this._opaqueRenderTarget = null;
         this._opaqueMeshesCache = [];
         this._transparentMeshesCache = [];
+        this._materialObservers = {};
         this._options = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, TransmissionHelper._getDefaultOptions()), options);
         this._scene = scene;
         this._scene._transmissionHelper = this;
@@ -1571,7 +1573,11 @@ var TransmissionHelper = /** @class */ (function () {
      */
     TransmissionHelper._getDefaultOptions = function () {
         return {
-            renderSize: 1024
+            renderSize: 1024,
+            samples: 4,
+            lodGenerationScale: 1,
+            lodGenerationOffset: -4,
+            renderTargetTextureType: babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_1__["Constants"].TEXTURETYPE_UNSIGNED_INT
         };
     };
     /**
@@ -1589,8 +1595,13 @@ var TransmissionHelper = /** @class */ (function () {
         var oldOptions = this._options;
         this._options = newOptions;
         // If size changes, recreate everything
-        if (newOptions.renderSize !== oldOptions.renderSize) {
+        if (newOptions.renderSize !== oldOptions.renderSize || newOptions.renderTargetTextureType !== oldOptions.renderTargetTextureType || !this._opaqueRenderTarget) {
             this._setupRenderTargets();
+        }
+        else {
+            this._opaqueRenderTarget.samples = newOptions.samples;
+            this._opaqueRenderTarget.lodGenerationScale = newOptions.lodGenerationScale;
+            this._opaqueRenderTarget.lodGenerationOffset = newOptions.lodGenerationOffset;
         }
     };
     TransmissionHelper.prototype.getOpaqueTarget = function () {
@@ -1607,7 +1618,7 @@ var TransmissionHelper = /** @class */ (function () {
     };
     TransmissionHelper.prototype._addMesh = function (mesh) {
         if (mesh instanceof babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_1__["Mesh"]) {
-            mesh.onMaterialChangedObservable.add(this.onMeshMaterialChanged.bind(this));
+            this._materialObservers[mesh.uniqueId] = mesh.onMaterialChangedObservable.add(this.onMeshMaterialChanged.bind(this));
             if (this.shouldRenderAsTransmission(mesh.material)) {
                 this._transparentMeshesCache.push(mesh);
             }
@@ -1618,7 +1629,8 @@ var TransmissionHelper = /** @class */ (function () {
     };
     TransmissionHelper.prototype._removeMesh = function (mesh) {
         if (mesh instanceof babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_1__["Mesh"]) {
-            mesh.onMaterialChangedObservable.remove(this.onMeshMaterialChanged.bind(this));
+            mesh.onMaterialChangedObservable.remove(this._materialObservers[mesh.uniqueId]);
+            delete this._materialObservers[mesh.uniqueId];
             var idx = this._transparentMeshesCache.indexOf(mesh);
             if (idx !== -1) {
                 this._transparentMeshesCache.splice(idx, 1);
@@ -1672,45 +1684,15 @@ var TransmissionHelper = /** @class */ (function () {
      */
     TransmissionHelper.prototype._setupRenderTargets = function () {
         var _this = this;
-        var opaqueRTIndex = -1;
-        // Remove any layers rendering to the opaque scene.
-        if (this._scene.layers && this._opaqueRenderTarget) {
-            for (var _i = 0, _a = this._scene.layers; _i < _a.length; _i++) {
-                var layer = _a[_i];
-                var idx = layer.renderTargetTextures.indexOf(this._opaqueRenderTarget);
-                if (idx >= 0) {
-                    layer.renderTargetTextures.splice(idx, 1);
-                }
-            }
-        }
-        // Remove opaque render target
-        if (this._opaqueRenderTarget) {
-            opaqueRTIndex = this._scene.customRenderTargets.indexOf(this._opaqueRenderTarget);
-            this._opaqueRenderTarget.dispose();
-        }
-        this._opaqueRenderTarget = new babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_1__["RenderTargetTexture"]("opaqueSceneTexture", this._options.renderSize, this._scene, true);
+        this._opaqueRenderTarget = new babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_1__["RenderTargetTexture"]("opaqueSceneTexture", this._options.renderSize, this._scene, true, undefined, this._options.renderTargetTextureType);
         this._opaqueRenderTarget.renderList = this._opaqueMeshesCache;
         // this._opaqueRenderTarget.clearColor = new Color4(0.0, 0.0, 0.0, 0.0);
         this._opaqueRenderTarget.gammaSpace = true;
-        this._opaqueRenderTarget.lodGenerationScale = 1;
-        this._opaqueRenderTarget.lodGenerationOffset = -4;
-        this._opaqueRenderTarget.samples = 4;
-        if (opaqueRTIndex >= 0) {
-            this._scene.customRenderTargets.splice(opaqueRTIndex, 0, this._opaqueRenderTarget);
-        }
-        else {
-            opaqueRTIndex = this._scene.customRenderTargets.length;
-            this._scene.customRenderTargets.push(this._opaqueRenderTarget);
-        }
-        // If there are other layers, they should be included in the render of the opaque background.
-        if (this._scene.layers && this._opaqueRenderTarget) {
-            for (var _b = 0, _c = this._scene.layers; _b < _c.length; _b++) {
-                var layer = _c[_b];
-                layer.renderTargetTextures.push(this._opaqueRenderTarget);
-            }
-        }
+        this._opaqueRenderTarget.lodGenerationScale = this._options.lodGenerationScale;
+        this._opaqueRenderTarget.lodGenerationOffset = this._options.lodGenerationOffset;
+        this._opaqueRenderTarget.samples = this._options.samples;
         this._transparentMeshesCache.forEach(function (mesh) {
-            if (_this.shouldRenderAsTransmission(mesh.material) && mesh.material instanceof babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_1__["PBRMaterial"]) {
+            if (_this.shouldRenderAsTransmission(mesh.material)) {
                 mesh.material.refractionTexture = _this._opaqueRenderTarget;
             }
         });
@@ -2450,7 +2432,6 @@ var MSFT_audio_emitter = /** @class */ (function () {
                     sound.maxDistance = emitter.maxDistance || 256;
                     sound.rolloffFactor = emitter.rolloffFactor || 1;
                     sound.distanceModel = emitter.distanceModel || 'exponential';
-                    sound._positionInEmitterSpace = true;
                 }));
             };
             var this_1 = this;

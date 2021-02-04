@@ -56692,22 +56692,22 @@ var ColorPicker = /** @class */ (function (_super) {
                         } }))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-rgb" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "red" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "R", min: 0, max: 255, value: this.state.color.r * 255 | 0, onChange: function (value) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "R", min: 0, max: 255, value: Math.round(this.state.color.r * 255), onChange: function (value) {
                             _this.state.color.r = value / 255.0;
                             _this.forceUpdate();
                         } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "green" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "G", min: 0, max: 255, value: this.state.color.g * 255 | 0, onChange: function (value) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "G", min: 0, max: 255, value: Math.round(this.state.color.g * 255), onChange: function (value) {
                             _this.state.color.g = value / 255.0;
                             _this.forceUpdate();
                         } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "blue" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "B", min: 0, max: 255, value: this.state.color.b * 255 | 0, onChange: function (value) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "B", min: 0, max: 255, value: Math.round(this.state.color.b * 255), onChange: function (value) {
                             _this.state.color.b = value / 255.0;
                             _this.forceUpdate();
                         } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "alpha" + (hasAlpha ? "" : " grayed") },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "A", min: 0, max: 255, value: this.state.alpha * 255 | 0, onChange: function (value) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "A", min: 0, max: 255, value: Math.round(this.state.alpha * 255), onChange: function (value) {
                             _this.setState({ alpha: value / 255.0 });
                             _this.forceUpdate();
                         } }))),
@@ -57770,7 +57770,7 @@ var SliderLineComponent = /** @class */ (function (_super) {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "sliderLine" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.margin ? "label withMargins" : "label", title: this.props.label }, this.props.label),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { smallUI: true, label: "", target: this.state, digits: this.props.decimalCount === undefined ? 4 : this.props.decimalCount, propertyName: "value", min: this.props.minimum, max: this.props.maximum, onEnter: function () {
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { isInteger: this.props.decimalCount === 0, smallUI: true, label: "", target: this.state, digits: this.props.decimalCount === undefined ? 4 : this.props.decimalCount, propertyName: "value", min: this.props.minimum, max: this.props.maximum, onEnter: function () {
                     var changed = _this.prepareDataToRead(_this.state.value);
                     _this.onChange(changed);
                 }, onChange: function (evt) { var changed = _this.prepareDataToRead(_this.state.value); _this.onChange(changed); } }),

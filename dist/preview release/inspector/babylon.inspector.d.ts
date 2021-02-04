@@ -2301,6 +2301,19 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface ILayerPropertyGridComponentProps {
+        globalState: GlobalState;
+        layer: BABYLON.EffectLayer;
+        extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class LayerPropertyGridComponent extends React.Component<ILayerPropertyGridComponentProps> {
+        constructor(props: ILayerPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     export class PropertyGridTabComponent extends PaneComponent {
         private _timerIntervalId;
         private _lockObject;
@@ -2697,6 +2710,17 @@ declare module INSPECTOR {
     }
     export class SoundTreeItemComponent extends React.Component<ISoundTreeItemComponentProps> {
         constructor(props: ISoundTreeItemComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IEffectLayerItemComponenttProps {
+        layer: BABYLON.EffectLayer;
+        extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
+        onClick: () => void;
+    }
+    export class EffectLayerItemComponent extends React.Component<IEffectLayerItemComponenttProps> {
+        constructor(props: IEffectLayerItemComponenttProps);
         render(): JSX.Element;
     }
 }

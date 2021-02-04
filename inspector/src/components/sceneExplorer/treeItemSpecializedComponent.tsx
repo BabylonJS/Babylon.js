@@ -39,6 +39,8 @@ import { Sprite } from 'babylonjs/Sprites/sprite';
 import { TargetedAnimationItemComponent } from './entities/targetedAnimationTreeItemComponent';
 import { Sound } from 'babylonjs/Audio/sound';
 import { SoundTreeItemComponent } from './entities/soundTreeItemComponent';
+import { EffectLayerItemComponent } from "./entities/effectLayerPipelineTreeItemComponent";
+import { EffectLayer } from "babylonjs/Layers/effectLayer";
 
 
 interface ITreeItemSpecializedComponentProps {
@@ -135,6 +137,10 @@ export class TreeItemSpecializedComponent extends React.Component<ITreeItemSpeci
 
             if (className.indexOf("PostProcess") !== -1) {
                 return (<PostProcessItemComponent extensibilityGroups={this.props.extensibilityGroups} postProcess={entity as PostProcess} onClick={() => this.onClick()} />);
+            }
+
+            if (className.indexOf("Layer") !== -1) {
+                return (<EffectLayerItemComponent extensibilityGroups={this.props.extensibilityGroups} layer={entity as EffectLayer} onClick={() => this.onClick()} />);
             }
 
             if (className.indexOf("Sound") !== -1) {

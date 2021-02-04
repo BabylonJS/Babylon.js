@@ -2858,6 +2858,26 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/sou
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/layers/layerPropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
+    import { GlobalState } from "babylonjs-inspector/components/globalState";
+    import { IExplorerExtensibilityGroup } from 'babylonjs/Debug/debugLayer';
+    import { EffectLayer } from "babylonjs/Layers/effectLayer";
+    interface ILayerPropertyGridComponentProps {
+        globalState: GlobalState;
+        layer: EffectLayer;
+        extensibilityGroups?: IExplorerExtensibilityGroup[];
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class LayerPropertyGridComponent extends React.Component<ILayerPropertyGridComponentProps> {
+        constructor(props: ILayerPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGridTabComponent" {
     import { PaneComponent, IPaneComponentProps } from "babylonjs-inspector/components/actionTabs/paneComponent";
     export class PropertyGridTabComponent extends PaneComponent {
@@ -3332,6 +3352,20 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/soundTreeI
     }
     export class SoundTreeItemComponent extends React.Component<ISoundTreeItemComponentProps> {
         constructor(props: ISoundTreeItemComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/sceneExplorer/entities/effectLayerPipelineTreeItemComponent" {
+    import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+    import * as React from 'react';
+    import { EffectLayer } from "babylonjs/Layers/effectLayer";
+    interface IEffectLayerItemComponenttProps {
+        layer: EffectLayer;
+        extensibilityGroups?: IExplorerExtensibilityGroup[];
+        onClick: () => void;
+    }
+    export class EffectLayerItemComponent extends React.Component<IEffectLayerItemComponenttProps> {
+        constructor(props: IEffectLayerItemComponenttProps);
         render(): JSX.Element;
     }
 }
@@ -7466,6 +7500,19 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface ILayerPropertyGridComponentProps {
+        globalState: GlobalState;
+        layer: BABYLON.EffectLayer;
+        extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class LayerPropertyGridComponent extends React.Component<ILayerPropertyGridComponentProps> {
+        constructor(props: ILayerPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     export class PropertyGridTabComponent extends PaneComponent {
         private _timerIntervalId;
         private _lockObject;
@@ -7862,6 +7909,17 @@ declare module INSPECTOR {
     }
     export class SoundTreeItemComponent extends React.Component<ISoundTreeItemComponentProps> {
         constructor(props: ISoundTreeItemComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IEffectLayerItemComponenttProps {
+        layer: BABYLON.EffectLayer;
+        extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
+        onClick: () => void;
+    }
+    export class EffectLayerItemComponent extends React.Component<IEffectLayerItemComponenttProps> {
+        constructor(props: IEffectLayerItemComponenttProps);
         render(): JSX.Element;
     }
 }

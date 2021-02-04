@@ -7621,6 +7621,8 @@ declare module BABYLON {
         _initialPosition: Vector3;
         private _nearestDistance;
         private _collisionMask;
+        private _velocitySquaredLength;
+        private _nearestDistanceSquared;
         get collisionMask(): number;
         set collisionMask(mask: number);
         /**
@@ -49184,8 +49186,6 @@ declare module BABYLON {
         private _startTime;
         private _startOffset;
         private _position;
-        /** @hidden */
-        _positionInEmitterSpace: boolean;
         private _localDirection;
         private _volume;
         private _isReadyToPlay;
@@ -49809,8 +49809,7 @@ declare module BABYLON {
      * in a given scene.
      */
     export class AudioSceneComponent implements ISceneSerializableComponent {
-        private static _CameraDirectionLH;
-        private static _CameraDirectionRH;
+        private static _CameraDirection;
         /**
          * The component name helpful to identify the component in the list of scene components.
          */
@@ -60975,6 +60974,12 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** @hidden */
+    export class NativeShaderProcessor extends WebGL2ShaderProcessor {
+        postProcessor(code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>, engine: ThinEngine): string;
+    }
+}
+declare module BABYLON {
     /**
      * Container for accessors for natively-stored mesh data buffers.
      */
@@ -61000,6 +61005,7 @@ declare module BABYLON {
         private readonly INVALID_HANDLE;
         private _boundBuffersVertexArray;
         private _currentDepthTest;
+        homogeneousDepth: boolean;
         getHardwareScalingLevel(): number;
         setHardwareScalingLevel(level: number): void;
         constructor();
@@ -80859,7 +80865,7 @@ declare module BABYLON {
          * Hand-parts definition (key is HandPart)
          */
         handPartsDefinition: {
-            [key: string]: number[];
+            [key: string]: string[];
         };
         /**
          * Observers will be triggered when the mesh for this hand was initialized.
@@ -83228,7 +83234,7 @@ interface XRSession {
      * canceling the callback using cancelAnimationFrame(). This method is comparable
      * to the Window.requestAnimationFrame() method.
      */
-    requestAnimationFrame: XRFrameRequestCallback;
+    requestAnimationFrame: (callback: XRFrameRequestCallback) => void;
     /**
      * Requests that a new XRReferenceSpace of the specified type be created.
      * Returns a promise which resolves with the XRReferenceSpace or
@@ -83356,10 +83362,15 @@ interface XRJointPose extends XRPose {
     radius: number | undefined;
 }
 
+// to be extended
+type XRHandJoint = string;
+
 interface XRHand extends Iterable<XRJointSpace> {
-    readonly length: number;
+    readonly size: number;
 
     [index: number]: XRJointSpace;
+
+    get(joint: XRHandJoint): XRJointSpace;
 
     readonly WRIST: number;
 
