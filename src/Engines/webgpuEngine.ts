@@ -1327,6 +1327,7 @@ export class WebGPUEngine extends Engine {
             isNewEffect = effect !== this._currentEffect;
             this._currentContextualEffect = this._defaultContextualEffect;
             this._currentContextualEffect.setEffect(effect, null, false);
+            this._currentContextualEffect.createNewContext();
             this._counters.numEnableEffects++;
             if (this.dbgLogIfNotContextualEffect) {
                 Logger.Warn(`enableEffect has been called with an Effect and not a ContextualEffect! effect.uniqueId=${effect.uniqueId}, effect.name=${effect.name}`, 10);
