@@ -57770,7 +57770,7 @@ var SliderLineComponent = /** @class */ (function (_super) {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "sliderLine" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.margin ? "label withMargins" : "label", title: this.props.label }, this.props.label),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { smallUI: true, label: "", target: this.state, digits: this.props.decimalCount === undefined ? 4 : this.props.decimalCount, propertyName: "value", min: this.props.minimum, max: this.props.maximum, onEnter: function () {
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { isInteger: this.props.decimalCount === 0, smallUI: true, label: "", target: this.state, digits: this.props.decimalCount === undefined ? 4 : this.props.decimalCount, propertyName: "value", min: this.props.minimum, max: this.props.maximum, onEnter: function () {
                     var changed = _this.prepareDataToRead(_this.state.value);
                     _this.onChange(changed);
                 }, onChange: function (evt) { var changed = _this.prepareDataToRead(_this.state.value); _this.onChange(changed); } }),
