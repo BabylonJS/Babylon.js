@@ -249,6 +249,8 @@ export class WebGPUEngine extends Engine {
     public dbgVerboseLogsForFirstFrames = false;
     /** @hidden */
     public dbgVerboseLogsNumFrames = 10;
+    /** @hidden */
+    public dbgLogIfNotContextualEffect = true;
 
     /**
      * Sets this to true to disable the cache for the samplers. You should do it only for testing purpose!
@@ -1326,6 +1328,9 @@ export class WebGPUEngine extends Engine {
             this._currentContextualEffect = this._defaultContextualEffect;
             this._currentContextualEffect.setEffect(effect, null, false);
             this._counters.numEnableEffects++;
+            if (this.dbgLogIfNotContextualEffect) {
+                Logger.Warn(`enableEffect has been called with an Effect and not a ContextualEffect! effect.uniqueId=${effect.uniqueId}, effect.name=${effect.name}`, 10);
+            }
         } else if (!effect.effect || effect === this._currentContextualEffect && effect.effect === this._currentEffect && !this._forceEnableEffect) {
             return;
         } else {
@@ -3552,7 +3557,7 @@ export class WebGPUEngine extends Engine {
                     if (bindingInfo) {
                         const texture = effectContext.textures?.[bindingInfo.firstTextureName]?.texture;
                         if (!texture) {
-                            Logger.Error(`Could not create the gpu sampler "${bindingDefinition.name}" because no texture can be looked up for the name "${bindingInfo.firstTextureName}". bindingInfo=${JSON.stringify(bindingInfo)}, effectContext.textures=${effectContext.textures}`, 50);
+                            Logger.Error(`Could not create the gpu sampler "${bindingDefinition.name}" because no texture can be looked up for the name "${bindingInfo.firstTextureName}". bindingInfo=${JSON.stringify(bindingInfo)}, effectContext=${JSON.stringify(effectContext, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}`, 50);
                             continue;
                         }
                         entries.push({
@@ -3560,7 +3565,7 @@ export class WebGPUEngine extends Engine {
                             resource: this._cacheSampler.getSampler(texture),
                         });
                     } else {
-                        Logger.Error(`Sampler "${bindingDefinition.name}" could not be bound. bindingDefinition=${JSON.stringify(bindingDefinition)}, effectContext.samplers=${JSON.stringify(effectContext.samplers)}`, 50);
+                        Logger.Error(`Sampler "${bindingDefinition.name}" could not be bound. bindingDefinition=${JSON.stringify(bindingDefinition)}, effectContext=${JSON.stringify(effectContext, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}`, 50);
                     }
                 } else if (bindingDefinition.isTexture) {
                     const bindingInfo = effectContext.textures?.[bindingDefinition.name];
@@ -3581,7 +3586,7 @@ export class WebGPUEngine extends Engine {
                             resource: hardwareTexture.view!,
                         });
                     } else {
-                        Logger.Error(`Texture "${bindingDefinition.name}" could not be bound. bindingDefinition=${JSON.stringify(bindingDefinition)}, effectContext.textures=${JSON.stringify(effectContext.textures, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}`, 50);
+                        Logger.Error(`Texture "${bindingDefinition.name}" could not be bound. bindingDefinition=${JSON.stringify(bindingDefinition)}, effectContext=${JSON.stringify(effectContext, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}`, 50);
                     }
                 } else {
                     const dataBuffer = this._uniformsBuffers[bindingDefinition.name];
@@ -3596,7 +3601,7 @@ export class WebGPUEngine extends Engine {
                             },
                         });
                     } else {
-                        Logger.Error(`UBO "${bindingDefinition.name}. bindingDefinition=${JSON.stringify(bindingDefinition)}, _uniformsBuffers=${JSON.stringify(this._uniformsBuffers)}`, 50);
+                        Logger.Error(`Can't find UBO "${bindingDefinition.name}". bindingDefinition=${JSON.stringify(bindingDefinition)}, _uniformsBuffers=${JSON.stringify(this._uniformsBuffers)}`, 50);
                     }
                 }
             }
