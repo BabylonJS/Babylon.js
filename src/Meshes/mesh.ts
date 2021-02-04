@@ -2810,14 +2810,18 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public increaseVertices(numberPerEdge: number): void {
         var vertex_data = VertexData.ExtractFromMesh(this);
         var uvs = vertex_data.uvs;
-        var currentIndices = vertex_data.indices;
-        var positions = vertex_data.positions;
-        var normals = vertex_data.normals;
+        var currentIndices = vertex_data.indices && !Array.isArray(vertex_data.indices) && Array.from ? Array.from(vertex_data.indices) : vertex_data.indices;
+        var positions = vertex_data.positions && !Array.isArray(vertex_data.positions) && Array.from ? Array.from(vertex_data.positions) : vertex_data.positions;
+        var normals = vertex_data.normals && !Array.isArray(vertex_data.normals) && Array.from ? Array.from(vertex_data.normals) : vertex_data.normals;
 
         if (!currentIndices || !positions || !normals || !uvs) {
             Logger.Warn("VertexData contains null entries");
         }
         else {
+            vertex_data.indices = currentIndices;
+            vertex_data.positions = positions;
+            vertex_data.normals = normals;
+
             var segments: number = numberPerEdge + 1; //segments per current facet edge, become sides of new facets
             var tempIndices: Array<Array<number>> = new Array();
             for (var i = 0; i < segments + 1; i++) {

@@ -214,7 +214,7 @@ struct clearcoatOutParams
             outParams.clearCoatNdotVRefract = absEps(dot(clearCoatNormalW, clearCoatVRefract));
         #endif
 
-        #if defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
+        #if defined(ENVIRONMENTBRDF) && (!defined(REFLECTIONMAP_SKYBOX) || defined(MS_BRDF_ENERGY_CONSERVATION))
             // BRDF Lookup
             vec3 environmentClearCoatBrdf = getBRDFLookup(clearCoatNdotV, clearCoatRoughness);
         #endif

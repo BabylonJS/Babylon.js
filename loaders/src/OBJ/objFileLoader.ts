@@ -202,7 +202,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      */
     private _loadMTL(url: string, rootUrl: string, onSuccess: (response: string | ArrayBuffer, responseUrl?: string) => any, onFailure: (pathOfFile: string, exception?: any) => void) {
         //The complete path to the mtl file
-        var pathOfFile = Tools.BaseUrl + rootUrl + url;
+        var pathOfFile = rootUrl + url;
 
         // Loads through the babylon tools to allow fileInput search.
         Tools.LoadFile(
