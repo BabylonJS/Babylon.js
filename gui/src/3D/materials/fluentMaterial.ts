@@ -139,12 +139,12 @@ export class FluentMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh.materialDefines) {
+        if (!subMesh._materialDefines) {
             subMesh.materialDefines = new FluentMaterialDefines();
         }
 
         var scene = this.getScene();
-        var defines = <FluentMaterialDefines>subMesh.materialDefines;
+        var defines = <FluentMaterialDefines>subMesh._materialDefines;
         if (!this.checkReadyOnEveryCall && subMesh.effect) {
             if (defines._renderId === scene.getRenderId()) {
                 return true;
@@ -224,7 +224,7 @@ export class FluentMaterial extends PushMaterial {
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
-        var defines = <FluentMaterialDefines>subMesh.materialDefines;
+        var defines = <FluentMaterialDefines>subMesh._materialDefines;
         if (!defines) {
             return;
         }

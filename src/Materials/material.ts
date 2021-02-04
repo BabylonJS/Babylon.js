@@ -1140,8 +1140,8 @@ export class Material implements IAnimatable {
                 var allDone = true, lastError = null;
                 if (mesh.subMeshes) {
                     let tempSubMesh = new SubMesh(0, 0, 0, 0, 0, mesh, undefined, false, false);
-                    if (tempSubMesh.materialDefines) {
-                        tempSubMesh.materialDefines._renderId = -1;
+                    if (tempSubMesh._materialDefines) {
+                        tempSubMesh._materialDefines._renderId = -1;
                     }
                     if (!this.isReadyForSubMesh(mesh, tempSubMesh, localOptions.useInstances)) {
                         if (tempSubMesh.effect && tempSubMesh.effect.getCompilationError() && tempSubMesh.effect.allFallbacksProcessed()) {
@@ -1286,11 +1286,11 @@ export class Material implements IAnimatable {
                     continue;
                 }
 
-                if (!subMesh.materialDefines) {
+                if (!subMesh._materialDefines) {
                     continue;
                 }
 
-                func(subMesh.materialDefines);
+                func(subMesh._materialDefines);
             }
         }
     }
@@ -1460,9 +1460,9 @@ export class Material implements IAnimatable {
             var geometry = <Geometry>((<Mesh>mesh).geometry);
             if (this._storeEffectOnSubMeshes) {
                 for (var subMesh of mesh.subMeshes) {
-                    geometry._releaseVertexArrayObject(subMesh.mainEffect);
-                    if (forceDisposeEffect && subMesh.mainEffect) {
-                        subMesh.mainEffect.dispose();
+                    geometry._releaseVertexArrayObject(subMesh._materialEffect);
+                    if (forceDisposeEffect && subMesh._materialEffect) {
+                        subMesh._materialEffect.dispose();
                     }
                 }
             } else {

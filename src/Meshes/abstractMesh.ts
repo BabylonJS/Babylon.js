@@ -899,8 +899,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         }
 
         for (var subMesh of this.subMeshes) {
-            if (subMesh.materialDefines) {
-                func(subMesh.materialDefines);
+            if (subMesh._materialDefines) {
+                func(subMesh._materialDefines);
             }
         }
     }

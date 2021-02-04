@@ -672,12 +672,12 @@ export class BackgroundMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh.materialDefines) {
+        if (!subMesh._materialDefines) {
             subMesh.materialDefines = new BackgroundMaterialDefines();
         }
 
         var scene = this.getScene();
-        var defines = <BackgroundMaterialDefines>subMesh.materialDefines;
+        var defines = <BackgroundMaterialDefines>subMesh._materialDefines;
 
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
@@ -1035,7 +1035,7 @@ export class BackgroundMaterial extends PushMaterial {
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
-        var defines = <BackgroundMaterialDefines>subMesh.materialDefines;
+        var defines = <BackgroundMaterialDefines>subMesh._materialDefines;
         if (!defines) {
             return;
         }

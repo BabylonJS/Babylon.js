@@ -25,6 +25,11 @@ declare type TrianglePickingPredicate = import("../Culling/ray").TrianglePicking
  */
 export class SubMesh implements ICullable {
     /** @hidden */
+    public readonly _materialDefines: Nullable<MaterialDefines>; // fast access to _mainEffect.defines
+    /** @hidden */
+    public readonly _materialEffect: Nullable<Effect>; // fast access to _mainEffect.effect
+
+    /** @hidden */
     public _effectOverride: Nullable<Effect> = null;
 
     private _effects: { [name: string]: ContextualEffect };
@@ -42,6 +47,7 @@ export class SubMesh implements ICullable {
      */
     public set materialDefines(defines: Nullable<MaterialDefines>) {
         this._mainEffect.defines = defines;
+        (this._materialDefines as any) = defines;
     }
 
     /** @hidden */
@@ -62,25 +68,18 @@ export class SubMesh implements ICullable {
     }
 
     /**
-     * Gets associated effect (possibly the effect override if defined)
+     * Gets associated (main) effect (possibly the effect override if defined)
      */
     public get effect(): Nullable<Effect> {
         return this._effectOverride ?? this._mainEffect.effect;
     }
 
     /**
-     * Gets associated contextual effect (possibly the effect override if defined)
+     * Gets associated (main) contextual effect (possibly the effect override if defined)
      */
     public get contextualEffect(): ContextualEffect {
         // @TODO handle effectOverride
         return this._mainEffect;
-    }
-
-    /**
-     * Gets associated main effect
-     */
-    public get mainEffect(): Nullable<Effect> {
-        return this._mainEffect.effect;
     }
 
     /**
@@ -90,6 +89,8 @@ export class SubMesh implements ICullable {
      */
     public setEffect(effect: Nullable<Effect>, defines: Nullable<MaterialDefines> = null) {
         this._mainEffect.setEffect(effect, defines);
+        (this._materialEffect as any) = effect;
+        (this._materialDefines as any) = defines;
     }
 
     /** @hidden */
