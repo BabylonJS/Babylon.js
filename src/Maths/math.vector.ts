@@ -3580,7 +3580,7 @@ export class Quaternion {
     }
 
     /**
-     * Creates a new rotation value to orient an object to look at the given forward and up vectors.
+     * Creates a new rotation value to orient an object to look towards the given forward direction, the up direction being oriented like "up".
      * This function works in left handed mode
      * @param forward Defines the forward direction of the desired quaternion.
      * @param up  Defines the up direction of the desired quaternion.
@@ -3591,7 +3591,7 @@ export class Quaternion {
     }
 
     /**
-     * Creates a new rotation value to orient an object to look at the given forward and up vectors.
+     * Creates a new rotation value to orient an object to look towards the given forward direction, the up direction being oriented like "up".
      * This function works in right handed mode
      * @param forward Defines the forward direction of the desired quaternion.
      * @param up  Defines the up direction of the desired quaternion.
@@ -5157,7 +5157,7 @@ export class Matrix {
     }
 
     /**
-     * Gets a new rotation matrix used to rotate an entity so as it looks in the direction specified by forward from the eye position, the up Vector3 being oriented like "up".
+     * Gets a new rotation matrix used to rotate an entity so as it looks in the direction specified by forward from the eye position, the up direction being oriented like "up".
      * This function works in left handed mode
      * @param forward defines the forward direction
      * @param up defines the up vector for the entity
@@ -5170,7 +5170,7 @@ export class Matrix {
     }
 
     /**
-     * Sets the given "result" Matrix to a rotation matrix used to rotate an entity so that it looks in the direction of forward, the up vector3 being oriented like "up".
+     * Sets the given "result" Matrix to a rotation matrix used to rotate an entity so that it looks in the direction of forward, the up direction being oriented like "up".
      * This function works in left handed mode
      * @param forward defines the forward direction
      * @param up defines the up vector for the entity
@@ -5182,7 +5182,7 @@ export class Matrix {
             result.copyFrom(Matrix.IdentityReadOnly);
         }
 
-        // Next normalize the two inputted vectors and take the cross product to find the third orthonormal vector (left) that defines the rotation.
+        // Next normalize the two inputted vectors and take the cross product to find the third orthonormal vector that defines the rotation.
         const forwardNorm = MathTmp.Vector3[0];
         const upNorm = MathTmp.Vector3[1];
         const right = MathTmp.Vector3[2];
@@ -5227,12 +5227,12 @@ export class Matrix {
             result.copyFrom(Matrix.IdentityReadOnly);
         }
 
-        // Next normalize the two inputted vectors and take the cross product to find the third orthonormal vector (left) that defines the rotation.
+        // Next normalize the two inputted vectors and take the cross product to find the third orthonormal vector that defines the rotation.
         const forwardNorm = MathTmp.Vector3[0];
+        forwardNorm.scaleInPlace(-1);
         const upNorm = MathTmp.Vector3[1];
         const right = MathTmp.Vector3[2];
         forward.normalizeToRef(forwardNorm);
-        forwardNorm.scale(-1);
         up.normalizeToRef(upNorm);
         Vector3.CrossToRef(upNorm, forwardNorm, right);
         right.normalize();
