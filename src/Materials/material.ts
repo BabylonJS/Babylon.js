@@ -765,11 +765,8 @@ export class Material implements IAnimatable {
         return this._effect?.effect ?? null;
     }
 
-    /**
-     * Returns the material contextual effect
-     * @returns the contextual effect associated with the material
-     */
-    public getContextualEffect(): Nullable<ContextualEffect> {
+    /** @hidden */
+    public _getContextualEffect(): Nullable<ContextualEffect> {
         return this._effect;
     }
 
