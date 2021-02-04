@@ -12,7 +12,6 @@ export class NativeShaderProcessor extends WebGL2ShaderProcessor {
 
         // Depending on API, depth range is [-1..1] or [0..1]
         // This is defined by homogeneousDepth in bgfx caps
-        // Flip Y + convert z range from [-1,1] to [0,1]
         if (!isFragment && !(<NativeEngine>engine).homogeneousDepth) {
             const lastClosingCurly = code.lastIndexOf("}");
             code = code.substring(0, lastClosingCurly);
