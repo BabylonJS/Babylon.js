@@ -824,6 +824,7 @@ export class NativeEngine extends Engine {
             supportSyncTextureRead: false,
             needsInvertingBitmap: true,
             needsEffectContext: false,
+            disableSceneMaterialCache: false,
             _collectUbosUpdatedInFrame: false,
         };
 
