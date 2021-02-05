@@ -3597,7 +3597,6 @@ export class Quaternion {
      * This function works in left handed mode
      * @param forward defines the forward direction - Must be normalized and orthogonal to up.
      * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
-     * @returns A new quaternion oriented toward the specified forward and up.
      */
     public static FromLookDirectionLHToRef(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, ref: Quaternion): void {
         var rotMat = MathTmp.Matrix[0];
@@ -3610,7 +3609,6 @@ export class Quaternion {
      * This function works in right handed mode
      * @param forward defines the forward direction - Must be normalized and orthogonal to up.
      * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
-     * @returns A new quaternion oriented toward the specified forward and up.
      */
     public static FromLookDirectionRH(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Quaternion {
         var quat = new Quaternion();
