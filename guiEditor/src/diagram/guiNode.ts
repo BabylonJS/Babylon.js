@@ -95,6 +95,10 @@ export class GUINode {
 
         if (value) {
             this._globalState.onSelectionChangedObservable.notifyObservers(this);
+            this.guiControl.isHighlighted = true;
+        }
+        else {
+            this.guiControl.isHighlighted = false;
         }
     }
 
