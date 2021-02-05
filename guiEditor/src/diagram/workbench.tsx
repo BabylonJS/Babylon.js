@@ -175,7 +175,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             var x = this._mouseStartPointX;
             var y = this._mouseStartPointY;
             let selected = false;
-            console.log(this.selectedGuiNodes);
             this.selectedGuiNodes.forEach(element => {
                 //var zoom = this._camera.radius;
 
