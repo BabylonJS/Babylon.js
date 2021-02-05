@@ -112,7 +112,7 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
             { label: "Rain", value: PreviewType.Rain },
             { label: "Smoke", value: PreviewType.Smoke },
             { label: "Load...", value: PreviewType.Custom + 1 }
-        ];
+        ]; 
 
         if (this.props.globalState.listOfCustomPreviewFiles.length > 0) {
             meshTypeOptions.splice(0, 0, {
@@ -146,22 +146,25 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
                         <input ref={this.filePickerRef} id="file-picker" type="file" onChange={(evt) => this.useCustomMesh(evt)} accept={accept}/>
                     </div>
                 </> }
-                { this.props.globalState.mode === NodeMaterialModes.Material && <>
-                    <div
-                        title="Turn-table animation"
-                        onClick={() => this.changeAnimation()} className="button" id="play-button">
-                        {this.props.globalState.rotatePreview ? <img src={pauseIcon} alt=""/> : <img src={playIcon} alt=""/>}
-                    </div>
-                    <div
-                    id="color-picker-button"
-                        title="Background color"
-                        className={"button align"}
-                        onClick={(_) => this.changeBackgroundClick()}
-                        >
-                        <img src={colorPicker} alt="" id="color-picker-image"/>
-                        <input ref={this.colorInputRef} id="color-picker" type="color" onChange={(evt) => this.changeBackground(evt.target.value)} />
-                    </div>
-                </> }
+                { 
+                    this.props.globalState.mode === NodeMaterialModes.Material && 
+                    <>
+                        <div
+                            title="Turn-table animation"
+                            onClick={() => this.changeAnimation()} className="button" id="play-button">
+                            {this.props.globalState.rotatePreview ? <img src={pauseIcon} alt=""/> : <img src={playIcon} alt=""/>}
+                        </div>
+                        <div
+                        id="color-picker-button"
+                            title="Background color"
+                            className={"button align"}
+                            onClick={(_) => this.changeBackgroundClick()}
+                            >
+                            <img src={colorPicker} alt="" id="color-picker-image"/>
+                            <input ref={this.colorInputRef} id="color-picker" type="color" onChange={(evt) => this.changeBackground(evt.target.value)} />
+                        </div>
+                    </> 
+                }
                 <div
                     title="Open preview in new window" id="preview-new-window"
                     onClick={() => this.onPopUp()} className="button">

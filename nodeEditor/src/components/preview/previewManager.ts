@@ -31,10 +31,12 @@ import { FileTools } from "babylonjs/Misc/fileTools";
 import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
 import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 import { Layer } from "babylonjs/Layers/layer";
+import { DataStorage } from "babylonjs/Misc/dataStorage";
 
 export class PreviewManager {
     private _nodeMaterial: NodeMaterial;
     private _onBuildObserver: Nullable<Observer<NodeMaterial>>;
+    
     private _onPreviewCommandActivatedObserver: Nullable<Observer<boolean>>;
     private _onAnimationCommandActivatedObserver: Nullable<Observer<void>>;
     private _onUpdateRequiredObserver: Nullable<Observer<void>>;
@@ -245,6 +247,7 @@ export class PreviewManager {
             case NodeMaterialModes.Particle: {
                 this._camera.radius = this._globalState.previewType === PreviewType.Explosion ? 50 : this._globalState.previewType === PreviewType.DefaultParticleSystem ? 6 : 20;
                 this._camera.upperRadiusLimit = 5000;
+                this._globalState.particleSystemBlendMode = this._particleSystem!.blendMode;
                 break;
             }
         }
@@ -333,6 +336,7 @@ export class PreviewManager {
                 switch (this._globalState.previewType) {
                     case PreviewType.DefaultParticleSystem:
                         this._particleSystem = ParticleHelper.CreateDefault(new Vector3(0, 0, 0), 500, this._scene);
+                        this._particleSystem.blendMode = DataStorage.ReadNumber("DefaultParticleSystemBlendMode", ParticleSystem.BLENDMODE_ONEONE);
                         this._particleSystem.start();
                         break;
                     case PreviewType.Bubbles:
@@ -346,7 +350,7 @@ export class PreviewManager {
                         this._particleSystem.maxEmitPower = 3.0;
                         this._particleSystem.createBoxEmitter(new Vector3(-1, 1, -1), new Vector3(1, 1, 1), new Vector3(-0.1, -0.1, -0.1), new Vector3(0.1, 0.1, 0.1));
                         this._particleSystem.emitRate = 100;
-                        this._particleSystem.blendMode = ParticleSystem.BLENDMODE_ONEONE;
+                        this._particleSystem.blendMode = DataStorage.ReadNumber("DefaultParticleSystemBlendMode", ParticleSystem.BLENDMODE_ONEONE);
                         this._particleSystem.color1 = new Color4(1, 1, 0, 1);
                         this._particleSystem.color2 = new Color4(1, 0.5, 0, 1);
                         this._particleSystem.gravity = new Vector3(0, -1.0, 0);
@@ -493,6 +497,8 @@ export class PreviewManager {
                         }
                     });
                     tempMaterial.createEffectForParticles(this._particleSystem!);
+
+                    this._particleSystem!.blendMode = this._globalState.particleSystemBlendMode;
 
                     if (this._material) {
                         this._material.dispose(false, true);

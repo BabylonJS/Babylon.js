@@ -23,76 +23,58 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-gui-editor/globalState";
     import { GUINode } from "babylonjs-gui-editor/diagram/guiNode";
+    import { Nullable } from 'babylonjs/types';
     import { Control } from 'babylonjs-gui/2D/controls/control';
+    import { Vector3 } from "babylonjs/Maths/math.vector";
+    import { Scene } from "babylonjs/scene";
+    import { ArcRotateCamera } from "babylonjs/Cameras/arcRotateCamera";
+    import { Plane } from "babylonjs/Maths/math.plane";
+    import { PointerInfo } from "babylonjs/Events/pointerEvents";
+    import { EventState } from "babylonjs/Misc/observable";
     export interface IWorkbenchComponentProps {
         globalState: GlobalState;
     }
     export type FramePortData = {};
     export const isFramePortData: (variableToCheck: any) => variableToCheck is FramePortData;
     export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps> {
-        private readonly MinZoom;
-        private readonly MaxZoom;
-        private _hostCanvas;
         private _gridCanvas;
-        private _selectionContainer;
-        private _frameContainer;
         private _svgCanvas;
         private _rootContainer;
         private _guiNodes;
         private _mouseStartPointX;
         private _mouseStartPointY;
-        private _selectionStartX;
-        private _selectionStartY;
-        private _x;
-        private _y;
-        private _zoom;
+        private _textureMesh;
+        private _scene;
         private _selectedGuiNodes;
-        private _gridSize;
-        private _selectionBox;
-        private _frameCandidate;
-        private _altKeyIsPressed;
         private _ctrlKeyIsPressed;
-        private _oldY;
         _frameIsMoving: boolean;
         _isLoading: boolean;
         isOverGUINode: boolean;
-        get gridSize(): number;
-        set gridSize(value: number);
         get globalState(): GlobalState;
         get nodes(): GUINode[];
-        get zoom(): number;
-        set zoom(value: number);
-        get x(): number;
-        set x(value: number);
-        get y(): number;
-        set y(value: number);
         get selectedGuiNodes(): GUINode[];
-        get canvasContainer(): HTMLDivElement;
-        get hostCanvas(): HTMLDivElement;
-        get svgCanvas(): HTMLElement;
-        get selectionContainer(): HTMLDivElement;
-        get frameContainer(): HTMLDivElement;
         constructor(props: IWorkbenchComponentProps);
-        getGridPosition(position: number, useCeil?: boolean): number;
-        getGridPositionCeil(position: number): number;
         clearGuiTexture(): void;
         loadFromJson(serializationObject: any): void;
         loadFromSnippet(snippedID: string): Promise<void>;
         loadFromGuiTexture(): void;
-        updateTransform(): void;
         onKeyUp(): void;
         findNodeFromGuiElement(guiControl: Control): GUINode;
         reset(): void;
         appendBlock(guiElement: Control): GUINode;
-        distributeGraph(): void;
         componentDidMount(): void;
         onMove(evt: React.PointerEvent): void;
+        getGroundPosition(): Nullable<Vector3>;
         onDown(evt: React.PointerEvent<HTMLElement>): void;
         isUp: boolean;
         onUp(evt: React.PointerEvent): void;
-        onWheel(evt: React.WheelEvent): void;
-        zoomToFit(): void;
         createGUICanvas(): void;
+        addControls(scene: Scene, camera: ArcRotateCamera): void;
+        getPosition(scene: Scene, camera: ArcRotateCamera, plane: Plane): Vector3;
+        panning(newPos: Vector3, initialPos: Vector3, inertia: number, ref: Vector3): Vector3;
+        zoomWheel(p: PointerInfo, e: EventState, camera: ArcRotateCamera): number;
+        zooming(delta: number, scene: Scene, camera: ArcRotateCamera, plane: Plane, ref: Vector3): void;
+        zeroIfClose(vec: Vector3): void;
         updateGUIs(): void;
         render(): JSX.Element;
     }
@@ -133,7 +115,7 @@ declare module "babylonjs-gui-editor/diagram/guiNode" {
         set enclosingFrameId(value: number);
         set isSelected(value: boolean);
         constructor(globalState: GlobalState, guiControl: Control);
-        cleanAccumulation(useCeil?: boolean): void;
+        disableProperties(): void;
         clicked: boolean;
         _onMove(evt: Vector2, startPos: Vector2, ignorClick?: boolean): boolean;
         updateVisual(): void;
@@ -174,7 +156,7 @@ declare module "babylonjs-gui-editor/globalState" {
         onLogRequiredObservable: Observable<LogEntry>;
         onErrorMessageDialogRequiredObservable: Observable<string>;
         onIsLoadingChanged: Observable<boolean>;
-        onSelectionBoxMoved: Observable<DOMRect | ClientRect>;
+        onSelectionBoxMoved: Observable<ClientRect | DOMRect>;
         onGuiNodeRemovalObservable: Observable<GUINode>;
         backgroundColor: Color4;
         blockKeyboardEvents: boolean;
@@ -931,35 +913,7 @@ declare module "babylonjs-gui-editor/guiNodeTools" {
     import { Grid } from "babylonjs-gui/2D/controls/grid";
     import { DisplayGrid } from "babylonjs-gui/2D/controls/displayGrid";
     export class GUINodeTools {
-        static CreateControlFromString(data: string): Grid | Slider | Line | TextBlock | InputText | ColorPicker | Image | Rectangle | Ellipse | Checkbox | DisplayGrid | VirtualKeyboard;
-    }
-}
-declare module "babylonjs-gui-editor/nodeLocationInfo" {
-    export interface INodeLocationInfo {
-        blockId: number;
-        x: number;
-        y: number;
-    }
-    export interface IFrameData {
-        x: number;
-        y: number;
-        width: number;
-        height: number;
-        color: number[];
-        name: string;
-        isCollapsed: boolean;
-        blocks: number[];
-        comments: string;
-    }
-    export interface IEditorData {
-        locations: INodeLocationInfo[];
-        x: number;
-        y: number;
-        zoom: number;
-        frames?: IFrameData[];
-        map?: {
-            [key: number]: number;
-        };
+        static CreateControlFromString(data: string): Rectangle | Grid | Slider | Line | TextBlock | InputText | ColorPicker | Image | Ellipse | Checkbox | DisplayGrid | VirtualKeyboard;
     }
 }
 declare module "babylonjs-gui-editor/sharedComponents/messageDialog" {
@@ -979,8 +933,6 @@ declare module "babylonjs-gui-editor/sharedComponents/messageDialog" {
 declare module "babylonjs-gui-editor/workbenchEditor" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-gui-editor/globalState";
-    import { Nullable } from "babylonjs/types";
-    import { IEditorData } from "babylonjs-gui-editor/nodeLocationInfo";
     import { GUINode } from "babylonjs-gui-editor/diagram/guiNode";
     interface IGraphEditorProps {
         globalState: GlobalState;
@@ -1000,10 +952,8 @@ declare module "babylonjs-gui-editor/workbenchEditor" {
         componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);
         pasteSelection(copiedNodes: GUINode[], currentX: number, currentY: number, selectNew?: boolean): GUINode[];
-        zoomToFit(): void;
         showWaitScreen(): void;
         hideWaitScreen(): void;
-        reOrganize(editorData?: Nullable<IEditorData>, isImportingAFrame?: boolean): void;
         onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
         onPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
         resizeColumns(evt: React.PointerEvent<HTMLDivElement>, forLeft?: boolean): void;
@@ -1013,7 +963,6 @@ declare module "babylonjs-gui-editor/workbenchEditor" {
         handleClosingPopUp: () => void;
         createPopupWindow: (title: string, windowVariableName: string, width?: number, height?: number) => Window | null;
         copyStyles: (sourceDoc: HTMLDocument, targetDoc: HTMLDocument) => void;
-        fixPopUpStyles: (document: Document) => void;
         render(): JSX.Element;
     }
 }
@@ -1051,6 +1000,34 @@ declare module "babylonjs-gui-editor/guiEditor" {
 }
 declare module "babylonjs-gui-editor/index" {
     export * from "babylonjs-gui-editor/guiEditor";
+}
+declare module "babylonjs-gui-editor/nodeLocationInfo" {
+    export interface INodeLocationInfo {
+        blockId: number;
+        x: number;
+        y: number;
+    }
+    export interface IFrameData {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+        color: number[];
+        name: string;
+        isCollapsed: boolean;
+        blocks: number[];
+        comments: string;
+    }
+    export interface IEditorData {
+        locations: INodeLocationInfo[];
+        x: number;
+        y: number;
+        zoom: number;
+        frames?: IFrameData[];
+        map?: {
+            [key: number]: number;
+        };
+    }
 }
 declare module "babylonjs-gui-editor/legacy/legacy" {
     export * from "babylonjs-gui-editor/index";
@@ -1537,69 +1514,44 @@ declare module GUIEDITOR {
     export type FramePortData = {};
     export const isFramePortData: (variableToCheck: any) => variableToCheck is FramePortData;
     export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps> {
-        private readonly MinZoom;
-        private readonly MaxZoom;
-        private _hostCanvas;
         private _gridCanvas;
-        private _selectionContainer;
-        private _frameContainer;
         private _svgCanvas;
         private _rootContainer;
         private _guiNodes;
         private _mouseStartPointX;
         private _mouseStartPointY;
-        private _selectionStartX;
-        private _selectionStartY;
-        private _x;
-        private _y;
-        private _zoom;
+        private _textureMesh;
+        private _scene;
         private _selectedGuiNodes;
-        private _gridSize;
-        private _selectionBox;
-        private _frameCandidate;
-        private _altKeyIsPressed;
         private _ctrlKeyIsPressed;
-        private _oldY;
         _frameIsMoving: boolean;
         _isLoading: boolean;
         isOverGUINode: boolean;
-        get gridSize(): number;
-        set gridSize(value: number);
         get globalState(): GlobalState;
         get nodes(): GUINode[];
-        get zoom(): number;
-        set zoom(value: number);
-        get x(): number;
-        set x(value: number);
-        get y(): number;
-        set y(value: number);
         get selectedGuiNodes(): GUINode[];
-        get canvasContainer(): HTMLDivElement;
-        get hostCanvas(): HTMLDivElement;
-        get svgCanvas(): HTMLElement;
-        get selectionContainer(): HTMLDivElement;
-        get frameContainer(): HTMLDivElement;
         constructor(props: IWorkbenchComponentProps);
-        getGridPosition(position: number, useCeil?: boolean): number;
-        getGridPositionCeil(position: number): number;
         clearGuiTexture(): void;
         loadFromJson(serializationObject: any): void;
         loadFromSnippet(snippedID: string): Promise<void>;
         loadFromGuiTexture(): void;
-        updateTransform(): void;
         onKeyUp(): void;
         findNodeFromGuiElement(guiControl: Control): GUINode;
         reset(): void;
         appendBlock(guiElement: Control): GUINode;
-        distributeGraph(): void;
         componentDidMount(): void;
         onMove(evt: React.PointerEvent): void;
+        getGroundPosition(): BABYLON.Nullable<BABYLON.Vector3>;
         onDown(evt: React.PointerEvent<HTMLElement>): void;
         isUp: boolean;
         onUp(evt: React.PointerEvent): void;
-        onWheel(evt: React.WheelEvent): void;
-        zoomToFit(): void;
         createGUICanvas(): void;
+        addControls(scene: BABYLON.Scene, camera: BABYLON.ArcRotateCamera): void;
+        getPosition(scene: BABYLON.Scene, camera: BABYLON.ArcRotateCamera, plane: BABYLON.Plane): BABYLON.Vector3;
+        panning(newPos: BABYLON.Vector3, initialPos: BABYLON.Vector3, inertia: number, ref: BABYLON.Vector3): BABYLON.Vector3;
+        zoomWheel(p: BABYLON.PointerInfo, e: BABYLON.EventState, camera: BABYLON.ArcRotateCamera): number;
+        zooming(delta: number, scene: BABYLON.Scene, camera: BABYLON.ArcRotateCamera, plane: BABYLON.Plane, ref: BABYLON.Vector3): void;
+        zeroIfClose(vec: BABYLON.Vector3): void;
         updateGUIs(): void;
         render(): JSX.Element;
     }
@@ -1637,7 +1589,7 @@ declare module GUIEDITOR {
         set enclosingFrameId(value: number);
         set isSelected(value: boolean);
         constructor(globalState: GlobalState, guiControl: Control);
-        cleanAccumulation(useCeil?: boolean): void;
+        disableProperties(): void;
         clicked: boolean;
         _onMove(evt: BABYLON.Vector2, startPos: BABYLON.Vector2, ignorClick?: boolean): boolean;
         updateVisual(): void;
@@ -1670,7 +1622,7 @@ declare module GUIEDITOR {
         onLogRequiredObservable: BABYLON.Observable<LogEntry>;
         onErrorMessageDialogRequiredObservable: BABYLON.Observable<string>;
         onIsLoadingChanged: BABYLON.Observable<boolean>;
-        onSelectionBoxMoved: BABYLON.Observable<DOMRect | ClientRect>;
+        onSelectionBoxMoved: BABYLON.Observable<ClientRect | DOMRect>;
         onGuiNodeRemovalObservable: BABYLON.Observable<GUINode>;
         backgroundColor: BABYLON.Color4;
         blockKeyboardEvents: boolean;
@@ -2294,35 +2246,7 @@ declare module GUIEDITOR {
 }
 declare module GUIEDITOR {
     export class GUINodeTools {
-        static CreateControlFromString(data: string): Grid | Slider | Line | TextBlock | InputText | ColorPicker | Image | Rectangle | Ellipse | Checkbox | DisplayGrid | VirtualKeyboard;
-    }
-}
-declare module GUIEDITOR {
-    export interface INodeLocationInfo {
-        blockId: number;
-        x: number;
-        y: number;
-    }
-    export interface IFrameData {
-        x: number;
-        y: number;
-        width: number;
-        height: number;
-        color: number[];
-        name: string;
-        isCollapsed: boolean;
-        blocks: number[];
-        comments: string;
-    }
-    export interface IEditorData {
-        locations: INodeLocationInfo[];
-        x: number;
-        y: number;
-        zoom: number;
-        frames?: IFrameData[];
-        map?: {
-            [key: number]: number;
-        };
+        static CreateControlFromString(data: string): Rectangle | Grid | Slider | Line | TextBlock | InputText | ColorPicker | Image | Ellipse | Checkbox | DisplayGrid | VirtualKeyboard;
     }
 }
 declare module GUIEDITOR {
@@ -2356,10 +2280,8 @@ declare module GUIEDITOR {
         componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);
         pasteSelection(copiedNodes: GUINode[], currentX: number, currentY: number, selectNew?: boolean): GUINode[];
-        zoomToFit(): void;
         showWaitScreen(): void;
         hideWaitScreen(): void;
-        reOrganize(editorData?: BABYLON.Nullable<IEditorData>, isImportingAFrame?: boolean): void;
         onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
         onPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
         resizeColumns(evt: React.PointerEvent<HTMLDivElement>, forLeft?: boolean): void;
@@ -2369,7 +2291,6 @@ declare module GUIEDITOR {
         handleClosingPopUp: () => void;
         createPopupWindow: (title: string, windowVariableName: string, width?: number, height?: number) => Window | null;
         copyStyles: (sourceDoc: HTMLDocument, targetDoc: HTMLDocument) => void;
-        fixPopUpStyles: (document: Document) => void;
         render(): JSX.Element;
     }
 }
@@ -2402,6 +2323,34 @@ declare module GUIEDITOR {
          * @param options defines the options to use to configure the gui editor
          */
         static Show(options: IGUIEditorOptions): void;
+    }
+}
+declare module GUIEDITOR {
+    export interface INodeLocationInfo {
+        blockId: number;
+        x: number;
+        y: number;
+    }
+    export interface IFrameData {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+        color: number[];
+        name: string;
+        isCollapsed: boolean;
+        blocks: number[];
+        comments: string;
+    }
+    export interface IEditorData {
+        locations: INodeLocationInfo[];
+        x: number;
+        y: number;
+        zoom: number;
+        frames?: IFrameData[];
+        map?: {
+            [key: number]: number;
+        };
     }
 }
 declare module GUIEDITOR {
