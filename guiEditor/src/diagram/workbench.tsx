@@ -66,9 +66,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     constructor(props: IWorkbenchComponentProps) {
         super(props);
         props.globalState.onSelectionChangedObservable.add(selection => {  
-            this.selectedGuiNodes.forEach(element => {
+            if(!this._ctrlKeyIsPressed && selection != null)
+            {
+                this.selectedGuiNodes.forEach(element => {
                 element.isSelected = false;
-            }); 
+                });
+            } 
             if (!selection) {
                 this._selectedGuiNodes = [];
             } 
@@ -152,11 +155,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     appendBlock(guiElement: Control) {
         var newGuiNode = new GUINode(this.props.globalState, guiElement);
-        let pos = this.getGroundPosition();
-        if(pos) {
-            newGuiNode._onMove( new Vector2(pos.x, pos.y), Vector2.Zero(), false );
-        }
-
         this._guiNodes.push(newGuiNode);
         this.globalState.guiTexture.addControl(guiElement);  
         return newGuiNode;
@@ -177,6 +175,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             var x = this._mouseStartPointX;
             var y = this._mouseStartPointY;
             let selected = false;
+            console.log(this.selectedGuiNodes);
             this.selectedGuiNodes.forEach(element => {
                 //var zoom = this._camera.radius;
 
