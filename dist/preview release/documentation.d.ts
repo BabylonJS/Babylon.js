@@ -49186,8 +49186,6 @@ declare module BABYLON {
         private _startTime;
         private _startOffset;
         private _position;
-        /** @hidden */
-        _positionInEmitterSpace: boolean;
         private _localDirection;
         private _volume;
         private _isReadyToPlay;
@@ -49811,8 +49809,7 @@ declare module BABYLON {
      * in a given scene.
      */
     export class AudioSceneComponent implements ISceneSerializableComponent {
-        private static _CameraDirectionLH;
-        private static _CameraDirectionRH;
+        private static _CameraDirection;
         /**
          * The component name helpful to identify the component in the list of scene components.
          */
@@ -60977,6 +60974,12 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** @hidden */
+    export class NativeShaderProcessor extends WebGL2ShaderProcessor {
+        postProcessor(code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>, engine: ThinEngine): string;
+    }
+}
+declare module BABYLON {
     /**
      * Container for accessors for natively-stored mesh data buffers.
      */
@@ -61002,6 +61005,7 @@ declare module BABYLON {
         private readonly INVALID_HANDLE;
         private _boundBuffersVertexArray;
         private _currentDepthTest;
+        homogeneousDepth: boolean;
         getHardwareScalingLevel(): number;
         setHardwareScalingLevel(level: number): void;
         constructor();
