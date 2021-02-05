@@ -3384,6 +3384,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         throw _DevTools.WarnImport("GroundMesh");
     }
 
+    /** @hidden */
+    public static _LinesMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
+        throw _DevTools.WarnImport("LinesMesh");
+    }
+
     /**
      * Returns a new Mesh object parsed from the source provided.
      * @param parsedMesh is the source
@@ -3394,7 +3399,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public static Parse(parsedMesh: any, scene: Scene, rootUrl: string): Mesh {
         var mesh: Mesh;
 
-        if (parsedMesh.type && parsedMesh.type === "GroundMesh") {
+        if (parsedMesh.type && parsedMesh.type === "LinesMesh") {
+            mesh = Mesh._LinesMeshParser(parsedMesh, scene);
+        } else if (parsedMesh.type && parsedMesh.type === "GroundMesh") {
             mesh = Mesh._GroundMeshParser(parsedMesh, scene);
         } else {
             mesh = new Mesh(parsedMesh.name, scene);
