@@ -5,6 +5,8 @@ import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { Observer } from 'babylonjs/Misc/observable';
 import { Nullable } from 'babylonjs/types';
 import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
+import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
+import { ParticleSystem } from "babylonjs/Particles/particleSystem";
 
 const doubleSided: string = require("./svgs/doubleSided.svg");
 const depthPass: string = require("./svgs/depthPass.svg");
@@ -51,7 +53,29 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
         this.forceUpdate();
     }
 
+    changeParticleSystemBlendMode(newOne: number) {
+        if (this.props.globalState.particleSystemBlendMode === newOne) {
+            return;
+        }
+
+        this.props.globalState.particleSystemBlendMode = newOne;
+        this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+
+        DataStorage.WriteNumber("DefaultParticleSystemBlendMode", newOne);
+
+        this.forceUpdate();
+    }
+
     render() {
+
+        var blendModeOptions = [
+            { label: "Add", value: ParticleSystem.BLENDMODE_ADD },
+            { label: "Multiply", value: ParticleSystem.BLENDMODE_MULTIPLY },
+            { label: "Multiply Add", value: ParticleSystem.BLENDMODE_MULTIPLYADD },
+            { label: "OneOne", value: ParticleSystem.BLENDMODE_ONEONE },
+            { label: "Standard", value: ParticleSystem.BLENDMODE_STANDARD },
+        ]; 
+                
         return (
             <>
                 <div id="preview" style={{height: this.props.width + "px"}}>
@@ -62,6 +86,17 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
                         </div>
                     }
                 </div>
+                { 
+                        this.props.globalState.mode === NodeMaterialModes.Particle && 
+                        <div id="preview-config-bar" className="extended">
+                            <OptionsLineComponent label="Blend mode" options={blendModeOptions} target={this.props.globalState}
+                                propertyName="particleSystemBlendMode"
+                                noDirectUpdate={true}
+                                onSelect={(value: any) => {
+                                    this.changeParticleSystemBlendMode(value);
+                                }} />
+                        </div>
+                    }
                 { this.props.globalState.mode === NodeMaterialModes.Material && <>
                     <div id="preview-config-bar">
                         <div
