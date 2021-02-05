@@ -57,7 +57,9 @@ export class GUINodeTools {
                 break;
             case "Image": 
                 element = new Image("Image", "https://playground.babylonjs.com/textures/grass.png");
-                break;
+                element.autoScale = true;
+                element.isPointerBlocker = true;
+                return element;
             case "InputText":
                 element = new InputText();
                 element.maxWidth = 0.6;

@@ -94,11 +94,7 @@ export class GUINode {
         this._isSelected = value;
 
         if (value) {
-            this._globalState.onSelectionChangedObservable.notifyObservers(this);
-            this.guiControl.isHighlighted = true;
-        }
-        else {
-            this.guiControl.isHighlighted = false;
+            this._globalState.onSelectionChangedObservable.notifyObservers(this);;
         }
     }
 
