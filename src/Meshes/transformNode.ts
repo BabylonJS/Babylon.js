@@ -1069,7 +1069,7 @@ export class TransformNode extends Node {
         // Parent
         if (parent && parent.getWorldMatrix) {
             if (force) {
-                parent.computeWorldMatrix();
+                parent.computeWorldMatrix(force);
             }
             if (useBillboardPath) {
                 if (this._transformToBoneReferal) {

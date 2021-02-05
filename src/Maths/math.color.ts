@@ -296,9 +296,9 @@ export class Color3 {
      * @returns a string containing the hexadecimal representation of the Color3 object
      */
     public toHexString(): string {
-        var intR = (this.r * 255) | 0;
-        var intG = (this.g * 255) | 0;
-        var intB = (this.b * 255) | 0;
+        var intR = Math.round(this.r * 255);
+        var intG = Math.round(this.g * 255);
+        var intB = Math.round(this.b * 255);
         return "#" + Scalar.ToHex(intR) + Scalar.ToHex(intG) + Scalar.ToHex(intB);
     }
 
@@ -861,15 +861,15 @@ export class Color4 {
      * @returns a string containing the hexadecimal representation of the Color4 object
      */
     public toHexString(returnAsColor3 = false): string {
-        var intR = (this.r * 255) | 0;
-        var intG = (this.g * 255) | 0;
-        var intB = (this.b * 255) | 0;
+        var intR = Math.round(this.r * 255);
+        var intG = Math.round(this.g * 255);
+        var intB = Math.round(this.b * 255);
 
         if (returnAsColor3) {
             return "#" + Scalar.ToHex(intR) + Scalar.ToHex(intG) + Scalar.ToHex(intB);
         }
 
-        var intA = (this.a * 255) | 0;
+        var intA = Math.round(this.a * 255);
         return "#" + Scalar.ToHex(intR) + Scalar.ToHex(intG) + Scalar.ToHex(intB) + Scalar.ToHex(intA);
     }
 

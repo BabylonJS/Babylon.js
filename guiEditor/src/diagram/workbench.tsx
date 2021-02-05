@@ -13,7 +13,7 @@ import { HemisphericLight } from "babylonjs/Lights/hemisphericLight";
 import { Axis } from "babylonjs/Maths/math.axis";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Plane } from "babylonjs/Maths/math.plane";
-import { PointerEventTypes, PointerInfoPre } from "babylonjs/Events/pointerEvents";
+import { PointerEventTypes, PointerInfo } from "babylonjs/Events/pointerEvents";
 import { EventState } from "babylonjs/Misc/observable";
 import { IWheelEvent } from "babylonjs/Events/deviceInputEvents";
 import { Epsilon } from "babylonjs/Maths/math.constants";
@@ -289,7 +289,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             camera.wheelPrecision = 1 / camera.radius * 1000;
         };
     
-        const zoomFn = (p: any,e:any) => {
+        const zoomFn = (p: PointerInfo, e: EventState) => {
             const delta = this.zoomWheel(p,e,camera);
             this.zooming(delta, scene, camera, plane, inertialPanning);
         }
@@ -298,7 +298,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             scene.onPointerObservable.removeCallback(panningFn);
         }
     
-        scene.onPointerObservable.add((p, e) => {
+        scene.onPointerObservable.add((p: PointerInfo, e: EventState) => {
             removeObservers();
             if (p.event.button !== 0) {
                 initialPos = this.getPosition(scene, camera, plane);
@@ -310,7 +310,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             }
         }, PointerEventTypes.POINTERDOWN);
     
-        scene.onPointerObservable.add((p, e) => {
+        scene.onPointerObservable.add((p: PointerInfo, e: EventState) => {
             removeObservers();
         }, PointerEventTypes.POINTERUP);
     
@@ -346,7 +346,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     };
     
     //Get the wheel delta divided by the camera wheel precision
-    zoomWheel(p: PointerInfoPre, e: EventState, camera: ArcRotateCamera) {
+    zoomWheel(p: PointerInfo, e: EventState, camera: ArcRotateCamera) {
         const event = p.event as IWheelEvent;
         
         event.preventDefault();
