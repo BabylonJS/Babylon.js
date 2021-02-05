@@ -29446,6 +29446,18 @@ declare module BABYLON {
          * @returns a new InstancedLinesMesh
          */
         createInstance(name: string): InstancedLinesMesh;
+        /**
+         * Serializes this ground mesh
+         * @param serializationObject object to write serialization to
+         */
+        serialize(serializationObject: any): void;
+        /**
+     * Parses a serialized ground mesh
+     * @param parsedMesh the serialized mesh
+     * @param scene the scene to create the ground mesh in
+     * @returns the created ground mesh
+     */
+        static Parse(parsedMesh: any, scene: Scene): LinesMesh;
     }
     /**
      * Creates an instance based on a source LinesMesh
@@ -34427,6 +34439,8 @@ declare module BABYLON {
         _syncGeometryWithMorphTargetManager(): void;
         /** @hidden */
         static _GroundMeshParser: (parsedMesh: any, scene: Scene) => Mesh;
+        /** @hidden */
+        static _LinesMeshParser: (parsedMesh: any, scene: Scene) => Mesh;
         /**
          * Returns a new Mesh object parsed from the source provided.
          * @param parsedMesh is the source
