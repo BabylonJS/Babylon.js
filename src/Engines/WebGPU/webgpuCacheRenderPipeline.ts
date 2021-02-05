@@ -814,30 +814,26 @@ export abstract class WebGPUCacheRenderPipeline {
                     visibility = visibility | WebGPUConstants.ShaderStage.Fragment;
                 }
 
+                const entry: GPUBindGroupLayoutEntry = {
+                    binding: j,
+                    visibility,
+                };
+                entries.push(entry);
+
                 if (bindingDefinition.isSampler) {
-                    entries.push({
-                        binding: j,
-                        visibility,
-                        type: bindingDefinition.isComparisonSampler ? WebGPUConstants.BindingType.ComparisonSampler : WebGPUConstants.BindingType.Sampler
-                    });
+                    entry.sampler = {
+                        type: bindingDefinition.isComparisonSampler ? WebGPUConstants.SamplerBindingType.Comparison : WebGPUConstants.SamplerBindingType.Filtering
+                    };
                 } else if (bindingDefinition.isTexture) {
-                    entries.push({
-                        binding: j,
-                        visibility,
-                        type: WebGPUConstants.BindingType.SampledTexture,
+                    entry.texture = {
+                        sampleType: bindingDefinition.sampleType,
                         viewDimension: bindingDefinition.textureDimension,
-                        textureComponentType: bindingDefinition.componentType,
-                        // TODO WEBGPU.
-                        // hasDynamicOffset?: boolean;
-                        // storageTextureFormat?: GPUTextureFormat;
-                        // minBufferBindingSize?: number;
-                    });
+                        multisampled: false,
+                    };
                 } else {
-                    entries.push({
-                        binding: j,
-                        visibility,
-                        type: WebGPUConstants.BindingType.UniformBuffer,
-                    });
+                    entry.buffer = {
+                        type: WebGPUConstants.BufferBindingType.Uniform,
+                    };
                 }
             }
 
@@ -854,8 +850,8 @@ export abstract class WebGPUCacheRenderPipeline {
         return this._device.createPipelineLayout({ bindGroupLayouts });
     }
 
-    private _getVertexInputDescriptor(effect: Effect, topology: GPUPrimitiveTopology): GPUVertexStateDescriptor {
-        const descriptors: GPUVertexBufferLayoutDescriptor[] = [];
+    private _getVertexInputDescriptor(effect: Effect, topology: GPUPrimitiveTopology): GPUVertexState {
+        const descriptors: GPUVertexBufferLayout[] = [];
         const webgpuPipelineContext = effect._pipelineContext as WebGPUPipelineContext;
         const attributes = webgpuPipelineContext.shaderProcessingContext.attributeNamesFromEffect;
         const locations = webgpuPipelineContext.shaderProcessingContext.attributeLocationsFromEffect;
@@ -868,14 +864,14 @@ export abstract class WebGPUCacheRenderPipeline {
                 vertexBuffer = this._emptyVertexBuffer;
             }
 
-            const attributeDescriptor: GPUVertexAttributeDescriptor = {
+            const attributeDescriptor: GPUVertexAttribute = {
                 shaderLocation: location,
                 offset: 0, // not available in WebGL
                 format: WebGPUCacheRenderPipeline._GetVertexInputDescriptorFormat(vertexBuffer),
             };
 
             // TODO WEBGPU. Factorize the one with the same underlying buffer.
-            const vertexBufferDescriptor: GPUVertexBufferLayoutDescriptor = {
+            const vertexBufferDescriptor: GPUVertexBufferLayout = {
                 arrayStride: vertexBuffer.byteStride,
                 stepMode: vertexBuffer.getIsInstanced() ? WebGPUConstants.InputStepMode.Instance : WebGPUConstants.InputStepMode.Vertex,
                 attributes: [attributeDescriptor]
@@ -884,7 +880,7 @@ export abstract class WebGPUCacheRenderPipeline {
             descriptors.push(vertexBufferDescriptor);
         }
 
-        const inputStateDescriptor: GPUVertexStateDescriptor = {
+        const inputStateDescriptor: GPUVertexState = {
             vertexBuffers: descriptors
         };
 
@@ -922,7 +918,7 @@ export abstract class WebGPUCacheRenderPipeline {
             });
         }
 
-        const stencilFrontBack: GPUStencilStateFaceDescriptor = {
+        const stencilFrontBack: GPUStencilStateFace = {
             compare: WebGPUCacheRenderPipeline._GetCompareFunction(this._stencilFrontCompare),
             depthFailOp: WebGPUCacheRenderPipeline._GetStencilOpFunction(this._stencilFrontDepthFailOp),
             failOp: WebGPUCacheRenderPipeline._GetStencilOpFunction(this._stencilFrontFailOp),

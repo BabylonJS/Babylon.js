@@ -2807,14 +2807,18 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public increaseVertices(numberPerEdge: number): void {
         var vertex_data = VertexData.ExtractFromMesh(this);
         var uvs = vertex_data.uvs;
-        var currentIndices = vertex_data.indices;
-        var positions = vertex_data.positions;
-        var normals = vertex_data.normals;
+        var currentIndices = vertex_data.indices && !Array.isArray(vertex_data.indices) && Array.from ? Array.from(vertex_data.indices) : vertex_data.indices;
+        var positions = vertex_data.positions && !Array.isArray(vertex_data.positions) && Array.from ? Array.from(vertex_data.positions) : vertex_data.positions;
+        var normals = vertex_data.normals && !Array.isArray(vertex_data.normals) && Array.from ? Array.from(vertex_data.normals) : vertex_data.normals;
 
         if (!currentIndices || !positions || !normals || !uvs) {
             Logger.Warn("VertexData contains null entries");
         }
         else {
+            vertex_data.indices = currentIndices;
+            vertex_data.positions = positions;
+            vertex_data.normals = normals;
+
             var segments: number = numberPerEdge + 1; //segments per current facet edge, become sides of new facets
             var tempIndices: Array<Array<number>> = new Array();
             for (var i = 0; i < segments + 1; i++) {
@@ -3380,6 +3384,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         throw _DevTools.WarnImport("GroundMesh");
     }
 
+    /** @hidden */
+    public static _LinesMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
+        throw _DevTools.WarnImport("LinesMesh");
+    }
+
     /**
      * Returns a new Mesh object parsed from the source provided.
      * @param parsedMesh is the source
@@ -3390,7 +3399,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public static Parse(parsedMesh: any, scene: Scene, rootUrl: string): Mesh {
         var mesh: Mesh;
 
-        if (parsedMesh.type && parsedMesh.type === "GroundMesh") {
+        if (parsedMesh.type && parsedMesh.type === "LinesMesh") {
+            mesh = Mesh._LinesMeshParser(parsedMesh, scene);
+        } else if (parsedMesh.type && parsedMesh.type === "GroundMesh") {
             mesh = Mesh._GroundMeshParser(parsedMesh, scene);
         } else {
             mesh = new Mesh(parsedMesh.name, scene);

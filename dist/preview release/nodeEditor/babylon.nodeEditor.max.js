@@ -62727,6 +62727,7 @@ var GlobalState = /** @class */ (function () {
         this.onCandidatePortSelectedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onImportFrameObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onGraphNodeRemovalObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onPopupClosedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onGridSizeChanged = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onExposePortOnFrameObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.listOfCustomPreviewFiles = [];
@@ -63144,13 +63145,18 @@ var GraphEditor = /** @class */ (function (_super) {
         return this.createNodeFromObject(newInputBlock);
     };
     GraphEditor.prototype.componentDidMount = function () {
+        var _this = this;
         if (this.props.globalState.hostDocument) {
             this._graphCanvas = this.refs["graphCanvas"];
             this._previewManager = new _components_preview_previewManager__WEBPACK_IMPORTED_MODULE_9__["PreviewManager"](this.props.globalState.hostDocument.getElementById("preview-canvas"), this.props.globalState);
+            this.props.globalState._previewManager = this._previewManager;
         }
         if (navigator.userAgent.indexOf("Mobile") !== -1) {
             (this.props.globalState.hostDocument || document).querySelector(".blocker").style.visibility = "visible";
         }
+        this.props.globalState.onPopupClosedObservable.addOnce(function () {
+            _this.componentWillUnmount();
+        });
         this.build();
     };
     GraphEditor.prototype.componentWillUnmount = function () {
@@ -63159,6 +63165,7 @@ var GraphEditor = /** @class */ (function (_super) {
         }
         if (this._previewManager) {
             this._previewManager.dispose();
+            this._previewManager = null;
         }
     };
     GraphEditor.prototype.reconnectNewNodes = function (nodeIndex, newNodes, sourceNodes, done) {
@@ -63632,6 +63639,9 @@ var NodeEditor = /** @class */ (function () {
             });
         }
         this._CurrentState = globalState;
+        globalState.hostWindow.addEventListener('beforeunload', function () {
+            globalState.onPopupClosedObservable.notifyObservers();
+        });
         // Close the popup window when the page is refreshed or scene is disposed
         var popupWindow = _src_sharedComponents_popup__WEBPACK_IMPORTED_MODULE_4__["Popup"]["node-editor"];
         if (globalState.nodeMaterial && popupWindow) {
@@ -66013,22 +66023,22 @@ var ColorPicker = /** @class */ (function (_super) {
                         } }))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-rgb" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "red" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "R", min: 0, max: 255, value: this.state.color.r * 255 | 0, onChange: function (value) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "R", min: 0, max: 255, value: Math.round(this.state.color.r * 255), onChange: function (value) {
                             _this.state.color.r = value / 255.0;
                             _this.forceUpdate();
                         } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "green" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "G", min: 0, max: 255, value: this.state.color.g * 255 | 0, onChange: function (value) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "G", min: 0, max: 255, value: Math.round(this.state.color.g * 255), onChange: function (value) {
                             _this.state.color.g = value / 255.0;
                             _this.forceUpdate();
                         } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "blue" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "B", min: 0, max: 255, value: this.state.color.b * 255 | 0, onChange: function (value) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "B", min: 0, max: 255, value: Math.round(this.state.color.b * 255), onChange: function (value) {
                             _this.state.color.b = value / 255.0;
                             _this.forceUpdate();
                         } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "alpha" + (hasAlpha ? "" : " grayed") },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "A", min: 0, max: 255, value: this.state.alpha * 255 | 0, onChange: function (value) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "A", min: 0, max: 255, value: Math.round(this.state.alpha * 255), onChange: function (value) {
                             _this.setState({ alpha: value / 255.0 });
                             _this.forceUpdate();
                         } }))),

@@ -55742,9 +55742,15 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         }
         return gridSize * Math.ceil(position / gridSize);
     };
+    WorkbenchComponent.prototype.clearGuiTexture = function () {
+        while (this._guiNodes.length > 0) {
+            this._guiNodes[this._guiNodes.length - 1].dispose();
+            this._guiNodes.pop();
+        }
+    };
     WorkbenchComponent.prototype.loadFromJson = function (serializationObject) {
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
-        this._guiNodes = [];
+        this.clearGuiTexture();
         this.globalState.guiTexture.parseContent(serializationObject);
         this.props.globalState.workbench.loadFromGuiTexture();
     };
@@ -55754,7 +55760,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                 switch (_a.label) {
                     case 0:
                         this.globalState.onSelectionChangedObservable.notifyObservers(null);
-                        this._guiNodes = [];
+                        this.clearGuiTexture();
                         return [4 /*yield*/, this.globalState.guiTexture.parseFromSnippetAsync(snippedID)];
                     case 1:
                         _a.sent();
@@ -56020,6 +56026,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         window.addEventListener("resize", function () {
             engine.resize();
         });
+        this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Please note: This editor is still a work in progress. You may submit feedback to msDestiny14 on GitHub.");
         engine.runRenderLoop(function () { _this.updateGUIs(); scene.render(); });
     };
     WorkbenchComponent.prototype.updateGUIs = function () {
@@ -56153,6 +56160,15 @@ var GUIEditor = /** @class */ (function () {
             if (popupWindow) {
                 popupWindow.close();
             }
+            if (options.currentSnippetToken) {
+                try {
+                    this._CurrentState.workbench.loadFromSnippet(options.currentSnippetToken);
+                }
+                catch (error) {
+                    //swallow and continue
+                }
+            }
+            return;
         }
         var hostElement = options.hostElement;
         if (!hostElement) {
@@ -56170,10 +56186,17 @@ var GUIEditor = /** @class */ (function () {
         // create the middle workbench canvas
         if (!globalState.guiTexture) {
             globalState.workbench.createGUICanvas();
+            if (options.currentSnippetToken) {
+                try {
+                    globalState.workbench.loadFromSnippet(options.currentSnippetToken);
+                }
+                catch (error) {
+                    //swallow and continue
+                }
+            }
         }
         if (options.customLoadObservable) {
             options.customLoadObservable.add(function (data) {
-                //TODO: Add deserilization here.
                 globalState.onResetRequiredObservable.notifyObservers();
                 globalState.onBuiltObservable.notifyObservers();
             });
@@ -56669,22 +56692,22 @@ var ColorPicker = /** @class */ (function (_super) {
                         } }))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-rgb" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "red" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "R", min: 0, max: 255, value: this.state.color.r * 255 | 0, onChange: function (value) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "R", min: 0, max: 255, value: Math.round(this.state.color.r * 255), onChange: function (value) {
                             _this.state.color.r = value / 255.0;
                             _this.forceUpdate();
                         } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "green" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "G", min: 0, max: 255, value: this.state.color.g * 255 | 0, onChange: function (value) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "G", min: 0, max: 255, value: Math.round(this.state.color.g * 255), onChange: function (value) {
                             _this.state.color.g = value / 255.0;
                             _this.forceUpdate();
                         } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "blue" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "B", min: 0, max: 255, value: this.state.color.b * 255 | 0, onChange: function (value) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "B", min: 0, max: 255, value: Math.round(this.state.color.b * 255), onChange: function (value) {
                             _this.state.color.b = value / 255.0;
                             _this.forceUpdate();
                         } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "alpha" + (hasAlpha ? "" : " grayed") },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "A", min: 0, max: 255, value: this.state.alpha * 255 | 0, onChange: function (value) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "A", min: 0, max: 255, value: Math.round(this.state.alpha * 255), onChange: function (value) {
                             _this.setState({ alpha: value / 255.0 });
                             _this.forceUpdate();
                         } }))),
@@ -57747,7 +57770,7 @@ var SliderLineComponent = /** @class */ (function (_super) {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "sliderLine" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.margin ? "label withMargins" : "label", title: this.props.label }, this.props.label),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { smallUI: true, label: "", target: this.state, digits: this.props.decimalCount === undefined ? 4 : this.props.decimalCount, propertyName: "value", min: this.props.minimum, max: this.props.maximum, onEnter: function () {
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { isInteger: this.props.decimalCount === 0, smallUI: true, label: "", target: this.state, digits: this.props.decimalCount === undefined ? 4 : this.props.decimalCount, propertyName: "value", min: this.props.minimum, max: this.props.maximum, onEnter: function () {
                     var changed = _this.prepareDataToRead(_this.state.value);
                     _this.onChange(changed);
                 }, onChange: function (evt) { var changed = _this.prepareDataToRead(_this.state.value); _this.onChange(changed); } }),

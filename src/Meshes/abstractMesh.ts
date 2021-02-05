@@ -90,6 +90,7 @@ class _InternalAbstractMeshDataInfo {
     public _actAsRegularMesh = false;
     public _currentLOD: Nullable<AbstractMesh> = null;
     public _currentLODIsUpToDate: boolean = false;
+    public _collisionRetryCount: number = 3;
 }
 
 /**
@@ -245,6 +246,13 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         this._internalAbstractMeshDataInfo._facetData.facetDepthSortFrom = location;
     }
 
+    /** number of collision detection tries. Change this value if not all colisions are detected and handled properly. */
+    public get collisionRetryCount(): number {
+        return this._internalAbstractMeshDataInfo._collisionRetryCount;
+    }
+    public set collisionRetryCount(retryCount: number) {
+        this._internalAbstractMeshDataInfo._collisionRetryCount = retryCount;
+    }
     /**
      * gets a boolean indicating if facetData is enabled
      * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata#what-is-a-mesh-facet
@@ -1458,7 +1466,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
         this._meshCollisionData._collider._radius = this.ellipsoid;
 
-        coordinator.getNewPosition(this._meshCollisionData._oldPositionForCollisions, displacement, this._meshCollisionData._collider, 3, this, this._onCollisionPositionChange, this.uniqueId);
+        coordinator.getNewPosition(this._meshCollisionData._oldPositionForCollisions, displacement, this._meshCollisionData._collider, this.collisionRetryCount, this, this._onCollisionPositionChange, this.uniqueId);
         return this;
     }
 

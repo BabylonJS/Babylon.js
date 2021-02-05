@@ -801,7 +801,7 @@ export class InputManager {
             }
         };
 
-        this._deviceInputSystem.onInputChanged = (deviceType, deviceSlot, inputIndex, previousState, currentState) => {
+        this._deviceInputSystem.onInputChanged = (deviceType, deviceSlot, inputIndex, previousState, currentState, eventData) => {
             let isKeyboardActive = this._deviceInputSystem.isDeviceAvailable(DeviceType.Keyboard);
 
             const altKey = (isKeyboardActive && this._deviceInputSystem.pollInput(DeviceType.Keyboard, 0, Constants.INPUT_ALT_KEY) === 1);
@@ -826,12 +826,15 @@ export class InputManager {
                 evt.key = String.fromCharCode(inputIndex);
                 evt.keyCode = inputIndex;
 
+                // If we have the actual event data, use that.  Otherwise, default to derived data.
+                let currentEvent = eventData || evt;
+
                 if (currentState === 1) {
-                    this._onKeyDown((evt as IKeyboardEvent));
+                    this._onKeyDown((currentEvent as IKeyboardEvent));
                 }
 
                 if (currentState === 0) {
-                    this._onKeyUp((evt as IKeyboardEvent));
+                    this._onKeyUp((currentEvent as IKeyboardEvent));
                 }
             }
 
@@ -860,21 +863,25 @@ export class InputManager {
                     evt.type = "pointerdown";
                     evt.button = (inputIndex - 2);
 
-                    this._onPointerDown((evt as IPointerEvent));
+                    let currentEvent = eventData || evt;
+
+                    this._onPointerDown((currentEvent as IPointerEvent));
                 }
 
                 if (attachUp && inputIndex >= PointerInput.LeftClick && inputIndex <= PointerInput.RightClick && currentState === 0) {   // Pointer Up
                     evt.type = "pointerup";
                     evt.button = (inputIndex - 2);
+                    let currentEvent = eventData || evt;
 
-                    this._onPointerUp((evt as IPointerEvent));
+                    this._onPointerUp((currentEvent as IPointerEvent));
                 }
 
                 if (attachMove) {
                     if (inputIndex === PointerInput.Horizontal || inputIndex === PointerInput.Vertical || inputIndex === PointerInput.DeltaHorizontal || inputIndex === PointerInput.DeltaVertical) {
                         evt.type = "pointermove";
+                        let currentEvent = eventData || evt;
 
-                        this._onPointerMove((evt as IPointerEvent));
+                        this._onPointerMove((currentEvent as IPointerEvent));
                     }
                     else if (inputIndex === PointerInput.MouseWheelX || inputIndex === PointerInput.MouseWheelY || inputIndex === PointerInput.MouseWheelZ) {
                         /*
@@ -894,7 +901,8 @@ export class InputManager {
 
                         // If we have a delta, use it.
                         if (deltaX !== 0 || deltaY !== 0 || deltaZ !== 0) {
-                            this._onPointerMove((evt as IWheelEvent));
+                            let currentEvent = eventData || evt;
+                            this._onPointerMove((currentEvent as IWheelEvent));
                         }
                     }
                 }

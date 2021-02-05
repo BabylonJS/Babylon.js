@@ -796,10 +796,6 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 Logger.Warn("No shape available for extruded mesh");
                 return new this.bjsAMMO.btCompoundShape();
             }
-            if ((vertexPositions!.length % (3 * pathVectors.length)) !== 0) {
-                Logger.Warn("Path does not match extrusion");
-                return new this.bjsAMMO.btCompoundShape();
-            }
             len = pathVectors.length;
             segments = len - 1;
             this._tmpAmmoVectorA.setValue(pathVectors[0].x, pathVectors[0].y, pathVectors[0].z);

@@ -1,5 +1,11 @@
 /** @hidden */
-export enum ExtensionName {
+export enum PowerPreference {
+    LowPower = "low-power",
+    HighPerformance = "high-performance"
+}
+
+/** @hidden */
+export enum FeatureName {
     DepthClamping = "depth-clamping",
     Depth24UnormStencil8 = "depth24unorm-stencil8",
     Depth32FloatStencil8 = "depth32float-stencil8",
@@ -7,118 +13,60 @@ export enum ExtensionName {
     TextureCompressionBC = "texture-compression-bc",
     TimestampQuery = "timestamp-query"
 }
+
 /** @hidden */
-export enum AddressMode {
-    ClampToEdge = "clamp-to-edge",
-    Repeat = "repeat",
-    MirrorRepeat = "mirror-repeat"
+export enum BufferUsage {
+    MapRead = 1,
+    MapWrite = 2,
+    CopySrc = 4,
+    CopyDst = 8,
+    Index = 16,
+    Vertex = 32,
+    Uniform = 64,
+    Storage = 128,
+    Indirect = 256,
+    QueryResolve = 512
 }
+
 /** @hidden */
-export enum BindingType {
-    UniformBuffer = "uniform-buffer",
-    StorageBuffer = "storage-buffer",
-    ReadonlyStorageBuffer = "readonly-storage-buffer",
-    Sampler = "sampler",
-    ComparisonSampler = "comparison-sampler",
-    SampledTexture = "sampled-texture",
-    ReadonlyStorageTexture = "readonly-storage-texture",
-    WriteonlyStorageTexture = "writeonly-storage-texture"
+export enum MapMode {
+    Read = 1,
+    Write = 2
 }
-/** @hidden */
-export enum BlendFactor {
-    Zero = "zero",
-    One = "one",
-    SrcColor = "src-color",
-    OneMinusSrcColor = "one-minus-src-color",
-    SrcAlpha = "src-alpha",
-    OneMinusSrcAlpha = "one-minus-src-alpha",
-    DstColor = "dst-color",
-    OneMinusDstColor = "one-minus-dst-color",
-    DstAlpha = "dst-alpha",
-    OneMinusDstAlpha = "one-minus-dst-alpha",
-    SrcAlphaSaturated = "src-alpha-saturated",
-    BlendColor = "blend-color",
-    OneMinusBlendColor = "one-minus-blend-color"
-}
-/** @hidden */
-export enum BlendOperation {
-    Add = "add",
-    Subtract = "subtract",
-    ReverseSubtract = "reverse-subtract",
-    Min = "min",
-    Max = "max"
-}
-/** @hidden */
-export enum CompareFunction {
-    Never = "never",
-    Less = "less",
-    Equal = "equal",
-    LessEqual = "less-equal",
-    Greater = "greater",
-    NotEqual = "not-equal",
-    GreaterEqual = "greater-equal",
-    Always = "always"
-}
-/** @hidden */
-export enum CullMode {
-    None = "none",
-    Front = "front",
-    Back = "back"
-}
-/** @hidden */
-export enum FilterMode {
-    Nearest = "nearest",
-    Linear = "linear"
-}
-/** @hidden */
-export enum FrontFace {
-    CCW = "ccw",
-    CW = "cw"
-}
-/** @hidden */
-export enum IndexFormat {
-    Uint16 = "uint16",
-    Uint32 = "uint32"
-}
-/** @hidden */
-export enum InputStepMode {
-    Vertex = "vertex",
-    Instance = "instance"
-}
-/** @hidden */
-export enum LoadOp {
-    Load = "load"
-}
-/** @hidden */
-export enum PrimitiveTopology {
-    PointList = "point-list",
-    LineList = "line-list",
-    LineStrip = "line-strip",
-    TriangleList = "triangle-list",
-    TriangleStrip = "triangle-strip"
-}
-/** @hidden */
-export enum StencilOperation {
-    Keep = "keep",
-    Zero = "zero",
-    Replace = "replace",
-    Invert = "invert",
-    IncrementClamp = "increment-clamp",
-    DecrementClamp = "decrement-clamp",
-    IncrementWrap = "increment-wrap",
-    DecrementWrap = "decrement-wrap"
-}
-/** @hidden */
-export enum StoreOp {
-    Store = "store",
-    Clear = "clear"
-}
+
 /** @hidden */
 export enum TextureDimension {
     E1d = "1d",
     E2d = "2d",
     E3d = "3d"
 }
+
+/** @hidden */
+export enum TextureUsage {
+    CopySrc = 1,
+    CopyDst = 2,
+    Sampled = 4,
+    Storage = 8,
+    OutputAttachment = 16
+}
+
+/** @hidden */
+export enum TextureViewDimension {
+    E1d = "1d",
+    E2d = "2d",
+    E2dArray = "2d-array",
+    Cube = "cube",
+    CubeArray = "cube-array",
+    E3d = "3d"
+}
+
+/** @hidden */
+export enum TextureAspect {
+    All = "all",
+    StencilOnly = "stencil-only",
+    DepthOnly = "depth-only"
+}
+
 /** @hidden */
 export enum TextureFormat {
     // 8-bit formats
@@ -198,23 +146,150 @@ export enum TextureFormat {
     // "depth32float-stencil8" feature
     Depth32FloatStencil8 = "depth32float-stencil8"
 }
+
 /** @hidden */
-export enum TextureComponentType {
+export enum AddressMode {
+    ClampToEdge = "clamp-to-edge",
+    Repeat = "repeat",
+    MirrorRepeat = "mirror-repeat"
+}
+
+/** @hidden */
+export enum FilterMode {
+    Nearest = "nearest",
+    Linear = "linear"
+}
+
+/** @hidden */
+export enum CompareFunction {
+    Never = "never",
+    Less = "less",
+    Equal = "equal",
+    LessEqual = "less-equal",
+    Greater = "greater",
+    NotEqual = "not-equal",
+    GreaterEqual = "greater-equal",
+    Always = "always"
+}
+
+/** @hidden */
+export enum ShaderStage {
+    Vertex = 1,
+    Fragment = 2,
+    Compute = 4
+}
+
+/** @hidden */
+export enum BufferBindingType {
+    Uniform = "uniform",
+    Storage = "storage",
+    ReadOnlyStorage = "read-only-storage"
+}
+
+/** @hidden */
+export enum SamplerBindingType {
+    Filtering = "filtering",
+    NonFiltering = "non-filtering",
+    Comparison = "comparison"
+}
+
+/** @hidden */
+export enum TextureSampleType {
     Float = "float",
+    UnfilterableFloat = "unfilterable-float",
+    Depth = "depth",
     Sint = "sint",
-    Uint = "uint",
-    // Texture is used with comparison sampling only.
-    DepthComparison = "depth-comparison"
+    Uint = "uint"
 }
+
 /** @hidden */
-export enum TextureViewDimension {
-    E1d = "1d",
-    E2d = "2d",
-    E2dArray = "2d-array",
-    Cube = "cube",
-    CubeArray = "cube-array",
-    E3d = "3d"
+export enum StorageTextureAccess {
+    ReadOnly = "read-only",
+    WriteOnly = "write-only"
 }
+
+/** @hidden */
+export enum CompilationMessageType {
+    Error = "error",
+    Warning = "warning",
+    Info = "info"
+}
+
+/** @hidden */
+export enum PrimitiveTopology {
+    PointList = "point-list",
+    LineList = "line-list",
+    LineStrip = "line-strip",
+    TriangleList = "triangle-list",
+    TriangleStrip = "triangle-strip"
+}
+
+/** @hidden */
+export enum FrontFace {
+    CCW = "ccw",
+    CW = "cw"
+}
+
+/** @hidden */
+export enum CullMode {
+    None = "none",
+    Front = "front",
+    Back = "back"
+}
+
+/** @hidden */
+export enum ColorWrite {
+    Red = 1,
+    Green = 2,
+    Blue = 4,
+    Alpha = 8,
+    All = 15
+}
+
+/** @hidden */
+export enum BlendFactor {
+    Zero = "zero",
+    One = "one",
+    SrcColor = "src-color",
+    OneMinusSrcColor = "one-minus-src-color",
+    SrcAlpha = "src-alpha",
+    OneMinusSrcAlpha = "one-minus-src-alpha",
+    DstColor = "dst-color",
+    OneMinusDstColor = "one-minus-dst-color",
+    DstAlpha = "dst-alpha",
+    OneMinusDstAlpha = "one-minus-dst-alpha",
+    SrcAlphaSaturated = "src-alpha-saturated",
+    BlendColor = "blend-color",
+    OneMinusBlendColor = "one-minus-blend-color"
+}
+
+/** @hidden */
+export enum BlendOperation {
+    Add = "add",
+    Subtract = "subtract",
+    ReverseSubtract = "reverse-subtract",
+    Min = "min",
+    Max = "max"
+}
+
+/** @hidden */
+export enum StencilOperation {
+    Keep = "keep",
+    Zero = "zero",
+    Replace = "replace",
+    Invert = "invert",
+    IncrementClamp = "increment-clamp",
+    DecrementClamp = "decrement-clamp",
+    IncrementWrap = "increment-wrap",
+    DecrementWrap = "decrement-wrap"
+}
+
+/** @hidden */
+export enum IndexFormat {
+    Uint16 = "uint16",
+    Uint32 = "uint32"
+}
+
 /** @hidden */
 export enum VertexFormat {
     Uchar2 = "uchar2",
@@ -248,59 +323,47 @@ export enum VertexFormat {
     Int3 = "int3",
     Int4 = "int4"
 }
+
 /** @hidden */
-export enum TextureAspect {
-    All = "all",
-    StencilOnly = "stencil-only",
-    DepthOnly = "depth-only"
+export enum InputStepMode {
+    Vertex = "vertex",
+    Instance = "instance"
 }
+
 /** @hidden */
-export enum CompilationMessageType {
-    Error = "error",
-    Warning = "warning",
-    Info = "info"
+export enum LoadOp {
+    Load = "load"
 }
+
+/** @hidden */
+export enum StoreOp {
+    Store = "store",
+    Clear = "clear"
+}
+
 /** @hidden */
 export enum QueryType {
-    Occlusion = "occlusion"
+    Occlusion = "occlusion",
+    PipelineStatistics = "pipeline-statistics",
+    Timestamp = "timestamp"
 }
+
 /** @hidden */
-export enum BufferUsage {
-    MapRead = 1,
-    MapWrite = 2,
-    CopySrc = 4,
-    CopyDst = 8,
-    Index = 16,
-    Vertex = 32,
-    Uniform = 64,
-    Storage = 128,
-    Indirect = 256,
-    QueryResolve = 512
+export enum PipelineStatisticName {
+    VertexShaderInvocations = "vertex-shader-invocations",
+    ClipperInvocations = "clipper-invocations",
+    ClipperPrimitivesOut = "clipper-primitives-out",
+    FragmentShaderInvocations = "fragment-shader-invocations",
+    ComputeShaderInvocations = "compute-shader-invocations"
 }
+
 /** @hidden */
-export enum ColorWrite {
-    Red = 1,
-    Green = 2,
-    Blue = 4,
-    Alpha = 8,
-    All = 15
+export enum DeviceLostReason {
+    Destroyed = "destroyed"
 }
+
 /** @hidden */
-export enum ShaderStage {
-    Vertex = 1,
-    Fragment = 2,
-    Compute = 4
-}
-/** @hidden */
-export enum TextureUsage {
-    CopySrc = 1,
-    CopyDst = 2,
-    Sampled = 4,
-    Storage = 8,
-    OutputAttachment = 16
-}
-/** @hidden */
-export enum MapMode {
-    Read = 1,
-    Write = 2
+export enum ErrorFilter {
+    OutOfMemory = "out-of-memory",
+    Validation = "validation"
 }
