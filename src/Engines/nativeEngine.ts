@@ -756,8 +756,8 @@ export class NativeEngine extends Engine {
         this._native.setHardwareScalingLevel(level);
     }
 
-    public constructor() {
-        super(null);
+    public constructor(config: any = {}) {
+        super(null, config.antialias, config.options, config.adaptToDeviceRatio);
 
         this._webGLVersion = 2;
         this.disableUniformBuffers = true;
@@ -853,6 +853,13 @@ export class NativeEngine extends Engine {
         if (typeof Blob === "undefined") {
             (window.Blob as any) = function() { };
         }
+
+        // Currently we do not fully configure the ThinEngine on construction of NativeEngine.
+        // Setup resolution scaling based on display settings.
+        console.log("NativeEngine: Window " + window.devicePixelRatio ? "does " : "does NOT " + "have devicePixelRatio!");
+        var devicePixelRatio = window ? (window.devicePixelRatio || 1.0) : 1.0;
+        this._hardwareScalingLevel = config.adaptToDeviceRatio ? 1.0 / Math.min(devicePixelRatio) : 1.0;
+        this.resize();
 
         // Shader processor
         this._shaderProcessor = new WebGL2ShaderProcessor();
