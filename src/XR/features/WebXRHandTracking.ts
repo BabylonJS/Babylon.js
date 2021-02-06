@@ -216,7 +216,7 @@ export class WebXRHand implements IDisposable {
      * Populate the HandPartsDefinition object.
      * This is called as a side effect since certain browsers don't have XRHand defined.
      */
-    private generateHandPartsDefinition(hand: XRHand) {
+    private generateHandPartsDefinition() {
         return {
             [HandPart.WRIST]: [XRHandJoint.wrist],
             [HandPart.THUMB]: [XRHandJoint["thumb-metacarpal"], XRHandJoint["thumb-phalanx-proximal"], XRHandJoint["thumb-phalanx-distal"], XRHandJoint["thumb-tip"]],
@@ -248,7 +248,7 @@ export class WebXRHand implements IDisposable {
         private _nearInteractionMesh?: Nullable<AbstractMesh>,
         private _leftHandedMeshes?: boolean
     ) {
-        this.handPartsDefinition = this.generateHandPartsDefinition(xrController.inputSource.hand!);
+        this.handPartsDefinition = this.generateHandPartsDefinition();
         this._scene = trackedMeshes[0].getScene();
         this.onHandMeshReadyObservable.add(() => {
             // check if we should use bones or transform nodes
@@ -370,9 +370,10 @@ export class WebXRHand implements IDisposable {
                 }
             }
         });
+
         // Update the invisible fingertip collidable
         if (this._nearInteractionMesh) {
-            const indexTipPose = this.trackedMeshes[hand.INDEX_PHALANX_TIP].position;
+            const indexTipPose = this.trackedMeshes[handJointReferenceArray.indexOf(XRHandJoint["index-finger-tip"])].position;
             this._nearInteractionMesh.position.set(indexTipPose.x, indexTipPose.y, indexTipPose.z);
         }
     }
