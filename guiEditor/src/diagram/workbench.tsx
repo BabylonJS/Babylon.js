@@ -49,6 +49,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     public _frameIsMoving = false;
     public _isLoading = false;
     public isOverGUINode = false;
+    private _panning: boolean;
 
     public get globalState(){
         return this.props.globalState;
@@ -65,9 +66,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     constructor(props: IWorkbenchComponentProps) {
         super(props);
         props.globalState.onSelectionChangedObservable.add(selection => {  
-            this.selectedGuiNodes.forEach(element => {
+            if(!this._ctrlKeyIsPressed && selection != null)
+            {
+                this.selectedGuiNodes.forEach(element => {
                 element.isSelected = false;
-            }); 
+                });
+            } 
             if (!selection) {
                 this._selectedGuiNodes = [];
             } 
@@ -124,6 +128,14 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         });
     }
 
+    resizeGuiTexture(newvalue: Vector2) {
+        this._textureMesh.scaling.x = newvalue.x;
+        this._textureMesh.scaling.z = newvalue.y;
+        this.globalState.guiTexture.scaleTo(newvalue.x, newvalue.y);
+        this.globalState.guiTexture.markAsDirty();
+        this.globalState.onResizeObservable.notifyObservers(newvalue);
+    }
+
     onKeyUp() {        
         this._ctrlKeyIsPressed = false;
     }
@@ -143,11 +155,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     appendBlock(guiElement: Control) {
         var newGuiNode = new GUINode(this.props.globalState, guiElement);
-        let pos = this.getGroundPosition();
-        if(pos) {
-            newGuiNode._onMove( new Vector2(pos.x, pos.y), Vector2.Zero(), false );
-        }
-
         this._guiNodes.push(newGuiNode);
         this.globalState.guiTexture.addControl(guiElement);  
         return newGuiNode;
@@ -163,7 +170,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         var pos = this.getGroundPosition();
         // Move or guiNodes
-        if (this._mouseStartPointX != null && this._mouseStartPointY != null) {
+        if (this._mouseStartPointX != null && this._mouseStartPointY != null && !this._panning) {
 
             var x = this._mouseStartPointX;
             var y = this._mouseStartPointY;
@@ -232,8 +239,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         light.intensity = 0.9;
     
         let textureSize = 1200;
-        this._textureMesh = Mesh.CreateGround("earth", textureSize, textureSize, 1, this._scene);
-
+        this._textureMesh = Mesh.CreateGround("earth", 1, 1, 1, this._scene);
+        this._textureMesh.scaling.x = textureSize;
+        this._textureMesh.scaling.z = textureSize;
         this.globalState.guiTexture = AdvancedDynamicTexture.CreateForMesh(this._textureMesh, textureSize, textureSize);
         this._textureMesh.showBoundingBox = true;  
         this.addControls(this._scene, camera);
@@ -294,6 +302,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             if (p.event.button !== 0) {
                 initialPos = this.getPosition(scene, camera, plane);
                 scene.onPointerObservable.add(panningFn, PointerEventTypes.POINTERMOVE);
+                this._panning = true;
+            }
+            else {
+                this._panning = false;
             }
         }, PointerEventTypes.POINTERDOWN);
     
