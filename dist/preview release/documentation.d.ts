@@ -4744,6 +4744,38 @@ declare module BABYLON {
          */
         static RotationQuaternionFromAxisToRef(axis1: DeepImmutable<Vector3>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>, ref: Quaternion): void;
         /**
+         * Creates a new rotation value to orient an object to look towards the given forward direction, the up direction being oriented like "up".
+         * This function works in left handed mode
+         * @param forward defines the forward direction - Must be normalized and orthogonal to up.
+         * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
+         * @returns A new quaternion oriented toward the specified forward and up.
+         */
+        static FromLookDirectionLH(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Quaternion;
+        /**
+        * Creates a new rotation value to orient an object to look towards the given forward direction with the up direction being oriented like "up", and stores it in the target quaternion.
+        * This function works in left handed mode
+        * @param forward defines the forward direction - Must be normalized and orthogonal to up.
+        * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
+        * @param ref defines the target quaternion.
+        */
+        static FromLookDirectionLHToRef(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, ref: Quaternion): void;
+        /**
+         * Creates a new rotation value to orient an object to look towards the given forward direction, the up direction being oriented like "up".
+         * This function works in right handed mode
+         * @param forward defines the forward direction - Must be normalized and orthogonal to up.
+         * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
+         * @returns A new quaternion oriented toward the specified forward and up.
+         */
+        static FromLookDirectionRH(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Quaternion;
+        /**
+         * Creates a new rotation value to orient an object to look towards the given forward direction with the up direction being oriented like "up", and stores it in the target quaternion.
+         * This function works in right handed mode
+         * @param forward defines the forward direction - Must be normalized and orthogonal to up.
+         * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
+         * @param ref defines the target quaternion.
+         */
+        static FromLookDirectionRHToRef(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, ref: Quaternion): void;
+        /**
          * Interpolates between two quaternions
          * @param left defines first quaternion
          * @param right defines second quaternion
@@ -5341,6 +5373,38 @@ declare module BABYLON {
          * @param result defines the target matrix
          */
         static LookAtRHToRef(eye: DeepImmutable<Vector3>, target: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, result: Matrix): void;
+        /**
+         * Gets a new rotation matrix used to rotate an entity so as it looks in the direction specified by forward from the eye position, the up direction being oriented like "up".
+         * This function works in left handed mode
+         * @param forward defines the forward direction - Must be normalized and orthogonal to up.
+         * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
+         * @returns the new matrix
+         */
+        static LookDirectionLH(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Matrix;
+        /**
+         * Sets the given "result" Matrix to a rotation matrix used to rotate an entity so that it looks in the direction of forward, the up direction being oriented like "up".
+         * This function works in left handed mode
+         * @param forward defines the forward direction - Must be normalized and orthogonal to up.
+         * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
+         * @param result defines the target matrix
+         */
+        static LookDirectionLHToRef(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, result: Matrix): void;
+        /**
+        * Gets a new rotation matrix used to rotate an entity so as it looks in the direction specified by forward from the eye position, the up Vector3 being oriented like "up".
+        * This function works in right handed mode
+        * @param forward defines the forward direction - Must be normalized and orthogonal to up.
+        * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
+        * @returns the new matrix
+        */
+        static LookDirectionRH(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Matrix;
+        /**
+         * Sets the given "result" Matrix to a rotation matrix used to rotate an entity so that it looks in the direction of forward, the up vector3 being oriented like "up".
+         * This function works in right handed mode
+         * @param forward defines the forward direction - Must be normalized and orthogonal to up.
+         * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
+         * @param result defines the target matrix
+         */
+        static LookDirectionRHToRef(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, result: Matrix): void;
         /**
          * Create a left-handed orthographic projection matrix
          * @param width defines the viewport width
@@ -83248,7 +83312,7 @@ interface XRSession {
      * canceling the callback using cancelAnimationFrame(). This method is comparable
      * to the Window.requestAnimationFrame() method.
      */
-    requestAnimationFrame: (callback: XRFrameRequestCallback) => void;
+    requestAnimationFrame: (callback: XRFrameRequestCallback) => number;
     /**
      * Requests that a new XRReferenceSpace of the specified type be created.
      * Returns a promise which resolves with the XRReferenceSpace or
