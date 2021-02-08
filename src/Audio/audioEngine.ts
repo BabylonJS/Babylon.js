@@ -5,6 +5,7 @@ import { Observable } from "../Misc/observable";
 import { Logger } from "../Misc/logger";
 import { Engine } from "../Engines/engine";
 import { IAudioEngine } from './Interfaces/IAudioEngine';
+import { DomManagement } from "../Misc/domManagement";
 
 // Sets the default audio engine to Babylon.js
 Engine.AudioEngineFactory = (hostElement: Nullable<HTMLElement>) => { return new AudioEngine(hostElement); };
@@ -94,6 +95,9 @@ export class AudioEngine implements IAudioEngine {
      * @param hostElement defines the host element where to display the mute icon if necessary
      */
     constructor(hostElement: Nullable<HTMLElement> = null) {
+        if (!DomManagement.IsWindowObjectExist()) {
+            return;
+        }
         if (typeof window.AudioContext !== 'undefined' || typeof window.webkitAudioContext !== 'undefined') {
             window.AudioContext = window.AudioContext || window.webkitAudioContext;
             this.canUseWebAudio = true;

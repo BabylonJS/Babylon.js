@@ -2134,7 +2134,7 @@ export class Control {
 
         var text = document.createElement("span");
         text.innerHTML = "Hg";
-        text.style.font = font;
+        text.setAttribute('style', `font: ${font} !important`);
 
         var block = document.createElement("div");
         block.style.display = "inline-block";

@@ -1601,11 +1601,13 @@ declare module "babylonjs-node-editor/globalState" {
         onCandidatePortSelectedObservable: Observable<Nullable<FrameNodePort | NodePort>>;
         onImportFrameObservable: Observable<any>;
         onGraphNodeRemovalObservable: Observable<GraphNode>;
+        onPopupClosedObservable: Observable<void>;
         onGetNodeFromBlock: (block: NodeMaterialBlock) => GraphNode;
         onGridSizeChanged: Observable<void>;
         onExposePortOnFrameObservable: Observable<GraphNode>;
         previewType: PreviewType;
         previewFile: File;
+        particleSystemBlendMode: number;
         listOfCustomPreviewFiles: File[];
         rotatePreview: boolean;
         backgroundColor: Color4;
@@ -1896,6 +1898,7 @@ declare module "babylonjs-node-editor/components/preview/previewAreaComponent" {
         componentWillUnmount(): void;
         changeBackFaceCulling(value: boolean): void;
         changeDepthPrePass(value: boolean): void;
+        changeParticleSystemBlendMode(newOne: number): void;
         render(): JSX.Element;
     }
 }
@@ -4237,11 +4240,13 @@ declare module NODEEDITOR {
         onCandidatePortSelectedObservable: BABYLON.Observable<BABYLON.Nullable<FrameNodePort | NodePort>>;
         onImportFrameObservable: BABYLON.Observable<any>;
         onGraphNodeRemovalObservable: BABYLON.Observable<GraphNode>;
+        onPopupClosedObservable: BABYLON.Observable<void>;
         onGetNodeFromBlock: (block: BABYLON.NodeMaterialBlock) => GraphNode;
         onGridSizeChanged: BABYLON.Observable<void>;
         onExposePortOnFrameObservable: BABYLON.Observable<GraphNode>;
         previewType: PreviewType;
         previewFile: File;
+        particleSystemBlendMode: number;
         listOfCustomPreviewFiles: File[];
         rotatePreview: boolean;
         backgroundColor: BABYLON.Color4;
@@ -4496,6 +4501,7 @@ declare module NODEEDITOR {
         componentWillUnmount(): void;
         changeBackFaceCulling(value: boolean): void;
         changeDepthPrePass(value: boolean): void;
+        changeParticleSystemBlendMode(newOne: number): void;
         render(): JSX.Element;
     }
 }

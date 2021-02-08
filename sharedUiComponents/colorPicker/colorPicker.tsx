@@ -179,25 +179,25 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
                 </div>
                 <div className="color-picker-rgb">
                     <div className="red">
-                        <ColorComponentEntry label="R" min={0} max={255} value={this.state.color.r * 255 | 0} onChange={value => {
+                        <ColorComponentEntry label="R" min={0} max={255} value={Math.round(this.state.color.r * 255)} onChange={value => {
                             this.state.color.r = value / 255.0;
                             this.forceUpdate();
                         }}/>
                     </div>   
                     <div className="green">
-                        <ColorComponentEntry label="G" min={0} max={255}  value={this.state.color.g * 255 | 0} onChange={value => {
+                        <ColorComponentEntry label="G" min={0} max={255}  value={Math.round(this.state.color.g * 255)} onChange={value => {
                             this.state.color.g = value / 255.0;
                             this.forceUpdate();
                         }}/>
                     </div>  
                     <div className="blue">
-                        <ColorComponentEntry label="B" min={0} max={255}  value={this.state.color.b * 255 | 0} onChange={value => {
+                        <ColorComponentEntry label="B" min={0} max={255}  value={Math.round(this.state.color.b * 255)} onChange={value => {
                             this.state.color.b = value / 255.0;
                             this.forceUpdate();
                         }}/>
                     </div>        
                     <div className={"alpha" + (hasAlpha ? "" : " grayed")}>
-                        <ColorComponentEntry label="A" min={0} max={255} value={this.state.alpha * 255 | 0} onChange={value => {
+                        <ColorComponentEntry label="A" min={0} max={255} value={Math.round(this.state.alpha * 255)} onChange={value => {
                                 this.setState({alpha: value / 255.0});
                                 this.forceUpdate();
                         }}/>

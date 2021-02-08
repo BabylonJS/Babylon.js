@@ -4744,6 +4744,38 @@ declare module BABYLON {
          */
         static RotationQuaternionFromAxisToRef(axis1: DeepImmutable<Vector3>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>, ref: Quaternion): void;
         /**
+         * Creates a new rotation value to orient an object to look towards the given forward direction, the up direction being oriented like "up".
+         * This function works in left handed mode
+         * @param forward defines the forward direction - Must be normalized and orthogonal to up.
+         * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
+         * @returns A new quaternion oriented toward the specified forward and up.
+         */
+        static FromLookDirectionLH(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Quaternion;
+        /**
+        * Creates a new rotation value to orient an object to look towards the given forward direction with the up direction being oriented like "up", and stores it in the target quaternion.
+        * This function works in left handed mode
+        * @param forward defines the forward direction - Must be normalized and orthogonal to up.
+        * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
+        * @param ref defines the target quaternion.
+        */
+        static FromLookDirectionLHToRef(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, ref: Quaternion): void;
+        /**
+         * Creates a new rotation value to orient an object to look towards the given forward direction, the up direction being oriented like "up".
+         * This function works in right handed mode
+         * @param forward defines the forward direction - Must be normalized and orthogonal to up.
+         * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
+         * @returns A new quaternion oriented toward the specified forward and up.
+         */
+        static FromLookDirectionRH(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Quaternion;
+        /**
+         * Creates a new rotation value to orient an object to look towards the given forward direction with the up direction being oriented like "up", and stores it in the target quaternion.
+         * This function works in right handed mode
+         * @param forward defines the forward direction - Must be normalized and orthogonal to up.
+         * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
+         * @param ref defines the target quaternion.
+         */
+        static FromLookDirectionRHToRef(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, ref: Quaternion): void;
+        /**
          * Interpolates between two quaternions
          * @param left defines first quaternion
          * @param right defines second quaternion
@@ -5341,6 +5373,38 @@ declare module BABYLON {
          * @param result defines the target matrix
          */
         static LookAtRHToRef(eye: DeepImmutable<Vector3>, target: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, result: Matrix): void;
+        /**
+         * Gets a new rotation matrix used to rotate an entity so as it looks in the direction specified by forward from the eye position, the up direction being oriented like "up".
+         * This function works in left handed mode
+         * @param forward defines the forward direction - Must be normalized and orthogonal to up.
+         * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
+         * @returns the new matrix
+         */
+        static LookDirectionLH(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Matrix;
+        /**
+         * Sets the given "result" Matrix to a rotation matrix used to rotate an entity so that it looks in the direction of forward, the up direction being oriented like "up".
+         * This function works in left handed mode
+         * @param forward defines the forward direction - Must be normalized and orthogonal to up.
+         * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
+         * @param result defines the target matrix
+         */
+        static LookDirectionLHToRef(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, result: Matrix): void;
+        /**
+        * Gets a new rotation matrix used to rotate an entity so as it looks in the direction specified by forward from the eye position, the up Vector3 being oriented like "up".
+        * This function works in right handed mode
+        * @param forward defines the forward direction - Must be normalized and orthogonal to up.
+        * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
+        * @returns the new matrix
+        */
+        static LookDirectionRH(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Matrix;
+        /**
+         * Sets the given "result" Matrix to a rotation matrix used to rotate an entity so that it looks in the direction of forward, the up vector3 being oriented like "up".
+         * This function works in right handed mode
+         * @param forward defines the forward direction - Must be normalized and orthogonal to up.
+         * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
+         * @param result defines the target matrix
+         */
+        static LookDirectionRHToRef(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, result: Matrix): void;
         /**
          * Create a left-handed orthographic projection matrix
          * @param width defines the viewport width
@@ -7621,6 +7685,8 @@ declare module BABYLON {
         _initialPosition: Vector3;
         private _nearestDistance;
         private _collisionMask;
+        private _velocitySquaredLength;
+        private _nearestDistanceSquared;
         get collisionMask(): number;
         set collisionMask(mask: number);
         /**
@@ -29444,6 +29510,18 @@ declare module BABYLON {
          * @returns a new InstancedLinesMesh
          */
         createInstance(name: string): InstancedLinesMesh;
+        /**
+         * Serializes this ground mesh
+         * @param serializationObject object to write serialization to
+         */
+        serialize(serializationObject: any): void;
+        /**
+     * Parses a serialized ground mesh
+     * @param parsedMesh the serialized mesh
+     * @param scene the scene to create the ground mesh in
+     * @returns the created ground mesh
+     */
+        static Parse(parsedMesh: any, scene: Scene): LinesMesh;
     }
     /**
      * Creates an instance based on a source LinesMesh
@@ -32179,6 +32257,7 @@ declare module BABYLON {
         private _activeTargets;
         private _scene;
         private _influences;
+        private _morphTargetTextureIndices;
         private _supportsNormals;
         private _supportsTangents;
         private _supportsUVs;
@@ -34424,6 +34503,8 @@ declare module BABYLON {
         _syncGeometryWithMorphTargetManager(): void;
         /** @hidden */
         static _GroundMeshParser: (parsedMesh: any, scene: Scene) => Mesh;
+        /** @hidden */
+        static _LinesMeshParser: (parsedMesh: any, scene: Scene) => Mesh;
         /**
          * Returns a new Mesh object parsed from the source provided.
          * @param parsedMesh is the source
@@ -36539,6 +36620,7 @@ declare module BABYLON {
         _actAsRegularMesh: boolean;
         _currentLOD: Nullable<AbstractMesh>;
         _currentLODIsUpToDate: boolean;
+        _collisionRetryCount: number;
     }
     /**
      * Class used to store all common mesh properties
@@ -36649,6 +36731,9 @@ declare module BABYLON {
          */
         get facetDepthSortFrom(): Vector3;
         set facetDepthSortFrom(location: Vector3);
+        /** number of collision detection tries. Change this value if not all colisions are detected and handled properly. */
+        get collisionRetryCount(): number;
+        set collisionRetryCount(retryCount: number);
         /**
          * gets a boolean indicating if facetData is enabled
          * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata#what-is-a-mesh-facet
@@ -44394,7 +44479,7 @@ declare module BABYLON {
         /**
          * Callback to be triggered when event driven input is updated
          */
-        onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>) => void;
+        onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>, eventData?: any) => void;
         private _inputs;
         private _gamepads;
         private _keyboardActive;
@@ -44402,10 +44487,12 @@ declare module BABYLON {
         private _elementToAttachTo;
         private _keyboardDownEvent;
         private _keyboardUpEvent;
+        private _keyboardBlurEvent;
         private _pointerMoveEvent;
         private _pointerDownEvent;
         private _pointerUpEvent;
         private _pointerWheelEvent;
+        private _pointerBlurEvent;
         private _wheelEventName;
         private _gamepadConnectedEvent;
         private _gamepadDisconnectedEvent;
@@ -44898,7 +44985,12 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
-    export enum ExtensionName {
+    export enum PowerPreference {
+        LowPower = "low-power",
+        HighPerformance = "high-performance"
+    }
+    /** @hidden */
+    export enum FeatureName {
         DepthClamping = "depth-clamping",
         Depth24UnormStencil8 = "depth24unorm-stencil8",
         Depth32FloatStencil8 = "depth32float-stencil8",
@@ -44907,116 +44999,51 @@ declare module BABYLON {
         TimestampQuery = "timestamp-query"
     }
     /** @hidden */
-    export enum AddressMode {
-        ClampToEdge = "clamp-to-edge",
-        Repeat = "repeat",
-        MirrorRepeat = "mirror-repeat"
+    export enum BufferUsage {
+        MapRead = 1,
+        MapWrite = 2,
+        CopySrc = 4,
+        CopyDst = 8,
+        Index = 16,
+        Vertex = 32,
+        Uniform = 64,
+        Storage = 128,
+        Indirect = 256,
+        QueryResolve = 512
     }
     /** @hidden */
-    export enum BindingType {
-        UniformBuffer = "uniform-buffer",
-        StorageBuffer = "storage-buffer",
-        ReadonlyStorageBuffer = "readonly-storage-buffer",
-        Sampler = "sampler",
-        ComparisonSampler = "comparison-sampler",
-        SampledTexture = "sampled-texture",
-        ReadonlyStorageTexture = "readonly-storage-texture",
-        WriteonlyStorageTexture = "writeonly-storage-texture"
-    }
-    /** @hidden */
-    export enum BlendFactor {
-        Zero = "zero",
-        One = "one",
-        SrcColor = "src-color",
-        OneMinusSrcColor = "one-minus-src-color",
-        SrcAlpha = "src-alpha",
-        OneMinusSrcAlpha = "one-minus-src-alpha",
-        DstColor = "dst-color",
-        OneMinusDstColor = "one-minus-dst-color",
-        DstAlpha = "dst-alpha",
-        OneMinusDstAlpha = "one-minus-dst-alpha",
-        SrcAlphaSaturated = "src-alpha-saturated",
-        BlendColor = "blend-color",
-        OneMinusBlendColor = "one-minus-blend-color"
-    }
-    /** @hidden */
-    export enum BlendOperation {
-        Add = "add",
-        Subtract = "subtract",
-        ReverseSubtract = "reverse-subtract",
-        Min = "min",
-        Max = "max"
-    }
-    /** @hidden */
-    export enum CompareFunction {
-        Never = "never",
-        Less = "less",
-        Equal = "equal",
-        LessEqual = "less-equal",
-        Greater = "greater",
-        NotEqual = "not-equal",
-        GreaterEqual = "greater-equal",
-        Always = "always"
-    }
-    /** @hidden */
-    export enum CullMode {
-        None = "none",
-        Front = "front",
-        Back = "back"
-    }
-    /** @hidden */
-    export enum FilterMode {
-        Nearest = "nearest",
-        Linear = "linear"
-    }
-    /** @hidden */
-    export enum FrontFace {
-        CCW = "ccw",
-        CW = "cw"
-    }
-    /** @hidden */
-    export enum IndexFormat {
-        Uint16 = "uint16",
-        Uint32 = "uint32"
-    }
-    /** @hidden */
-    export enum InputStepMode {
-        Vertex = "vertex",
-        Instance = "instance"
-    }
-    /** @hidden */
-    export enum LoadOp {
-        Load = "load"
-    }
-    /** @hidden */
-    export enum PrimitiveTopology {
-        PointList = "point-list",
-        LineList = "line-list",
-        LineStrip = "line-strip",
-        TriangleList = "triangle-list",
-        TriangleStrip = "triangle-strip"
-    }
-    /** @hidden */
-    export enum StencilOperation {
-        Keep = "keep",
-        Zero = "zero",
-        Replace = "replace",
-        Invert = "invert",
-        IncrementClamp = "increment-clamp",
-        DecrementClamp = "decrement-clamp",
-        IncrementWrap = "increment-wrap",
-        DecrementWrap = "decrement-wrap"
-    }
-    /** @hidden */
-    export enum StoreOp {
-        Store = "store",
-        Clear = "clear"
+    export enum MapMode {
+        Read = 1,
+        Write = 2
     }
     /** @hidden */
     export enum TextureDimension {
         E1d = "1d",
         E2d = "2d",
         E3d = "3d"
+    }
+    /** @hidden */
+    export enum TextureUsage {
+        CopySrc = 1,
+        CopyDst = 2,
+        Sampled = 4,
+        Storage = 8,
+        OutputAttachment = 16
+    }
+    /** @hidden */
+    export enum TextureViewDimension {
+        E1d = "1d",
+        E2d = "2d",
+        E2dArray = "2d-array",
+        Cube = "cube",
+        CubeArray = "cube-array",
+        E3d = "3d"
+    }
+    /** @hidden */
+    export enum TextureAspect {
+        All = "all",
+        StencilOnly = "stencil-only",
+        DepthOnly = "depth-only"
     }
     /** @hidden */
     export enum TextureFormat {
@@ -45079,20 +45106,130 @@ declare module BABYLON {
         Depth32FloatStencil8 = "depth32float-stencil8"
     }
     /** @hidden */
-    export enum TextureComponentType {
-        Float = "float",
-        Sint = "sint",
-        Uint = "uint",
-        DepthComparison = "depth-comparison"
+    export enum AddressMode {
+        ClampToEdge = "clamp-to-edge",
+        Repeat = "repeat",
+        MirrorRepeat = "mirror-repeat"
     }
     /** @hidden */
-    export enum TextureViewDimension {
-        E1d = "1d",
-        E2d = "2d",
-        E2dArray = "2d-array",
-        Cube = "cube",
-        CubeArray = "cube-array",
-        E3d = "3d"
+    export enum FilterMode {
+        Nearest = "nearest",
+        Linear = "linear"
+    }
+    /** @hidden */
+    export enum CompareFunction {
+        Never = "never",
+        Less = "less",
+        Equal = "equal",
+        LessEqual = "less-equal",
+        Greater = "greater",
+        NotEqual = "not-equal",
+        GreaterEqual = "greater-equal",
+        Always = "always"
+    }
+    /** @hidden */
+    export enum ShaderStage {
+        Vertex = 1,
+        Fragment = 2,
+        Compute = 4
+    }
+    /** @hidden */
+    export enum BufferBindingType {
+        Uniform = "uniform",
+        Storage = "storage",
+        ReadOnlyStorage = "read-only-storage"
+    }
+    /** @hidden */
+    export enum SamplerBindingType {
+        Filtering = "filtering",
+        NonFiltering = "non-filtering",
+        Comparison = "comparison"
+    }
+    /** @hidden */
+    export enum TextureSampleType {
+        Float = "float",
+        UnfilterableFloat = "unfilterable-float",
+        Depth = "depth",
+        Sint = "sint",
+        Uint = "uint"
+    }
+    /** @hidden */
+    export enum StorageTextureAccess {
+        ReadOnly = "read-only",
+        WriteOnly = "write-only"
+    }
+    /** @hidden */
+    export enum CompilationMessageType {
+        Error = "error",
+        Warning = "warning",
+        Info = "info"
+    }
+    /** @hidden */
+    export enum PrimitiveTopology {
+        PointList = "point-list",
+        LineList = "line-list",
+        LineStrip = "line-strip",
+        TriangleList = "triangle-list",
+        TriangleStrip = "triangle-strip"
+    }
+    /** @hidden */
+    export enum FrontFace {
+        CCW = "ccw",
+        CW = "cw"
+    }
+    /** @hidden */
+    export enum CullMode {
+        None = "none",
+        Front = "front",
+        Back = "back"
+    }
+    /** @hidden */
+    export enum ColorWrite {
+        Red = 1,
+        Green = 2,
+        Blue = 4,
+        Alpha = 8,
+        All = 15
+    }
+    /** @hidden */
+    export enum BlendFactor {
+        Zero = "zero",
+        One = "one",
+        SrcColor = "src-color",
+        OneMinusSrcColor = "one-minus-src-color",
+        SrcAlpha = "src-alpha",
+        OneMinusSrcAlpha = "one-minus-src-alpha",
+        DstColor = "dst-color",
+        OneMinusDstColor = "one-minus-dst-color",
+        DstAlpha = "dst-alpha",
+        OneMinusDstAlpha = "one-minus-dst-alpha",
+        SrcAlphaSaturated = "src-alpha-saturated",
+        BlendColor = "blend-color",
+        OneMinusBlendColor = "one-minus-blend-color"
+    }
+    /** @hidden */
+    export enum BlendOperation {
+        Add = "add",
+        Subtract = "subtract",
+        ReverseSubtract = "reverse-subtract",
+        Min = "min",
+        Max = "max"
+    }
+    /** @hidden */
+    export enum StencilOperation {
+        Keep = "keep",
+        Zero = "zero",
+        Replace = "replace",
+        Invert = "invert",
+        IncrementClamp = "increment-clamp",
+        DecrementClamp = "decrement-clamp",
+        IncrementWrap = "increment-wrap",
+        DecrementWrap = "decrement-wrap"
+    }
+    /** @hidden */
+    export enum IndexFormat {
+        Uint16 = "uint16",
+        Uint32 = "uint32"
     }
     /** @hidden */
     export enum VertexFormat {
@@ -45128,60 +45265,41 @@ declare module BABYLON {
         Int4 = "int4"
     }
     /** @hidden */
-    export enum TextureAspect {
-        All = "all",
-        StencilOnly = "stencil-only",
-        DepthOnly = "depth-only"
+    export enum InputStepMode {
+        Vertex = "vertex",
+        Instance = "instance"
     }
     /** @hidden */
-    export enum CompilationMessageType {
-        Error = "error",
-        Warning = "warning",
-        Info = "info"
+    export enum LoadOp {
+        Load = "load"
+    }
+    /** @hidden */
+    export enum StoreOp {
+        Store = "store",
+        Clear = "clear"
     }
     /** @hidden */
     export enum QueryType {
-        Occlusion = "occlusion"
+        Occlusion = "occlusion",
+        PipelineStatistics = "pipeline-statistics",
+        Timestamp = "timestamp"
     }
     /** @hidden */
-    export enum BufferUsage {
-        MapRead = 1,
-        MapWrite = 2,
-        CopySrc = 4,
-        CopyDst = 8,
-        Index = 16,
-        Vertex = 32,
-        Uniform = 64,
-        Storage = 128,
-        Indirect = 256,
-        QueryResolve = 512
+    export enum PipelineStatisticName {
+        VertexShaderInvocations = "vertex-shader-invocations",
+        ClipperInvocations = "clipper-invocations",
+        ClipperPrimitivesOut = "clipper-primitives-out",
+        FragmentShaderInvocations = "fragment-shader-invocations",
+        ComputeShaderInvocations = "compute-shader-invocations"
     }
     /** @hidden */
-    export enum ColorWrite {
-        Red = 1,
-        Green = 2,
-        Blue = 4,
-        Alpha = 8,
-        All = 15
+    export enum DeviceLostReason {
+        Destroyed = "destroyed"
     }
     /** @hidden */
-    export enum ShaderStage {
-        Vertex = 1,
-        Fragment = 2,
-        Compute = 4
-    }
-    /** @hidden */
-    export enum TextureUsage {
-        CopySrc = 1,
-        CopyDst = 2,
-        Sampled = 4,
-        Storage = 8,
-        OutputAttachment = 16
-    }
-    /** @hidden */
-    export enum MapMode {
-        Read = 1,
-        Write = 2
+    export enum ErrorFilter {
+        OutOfMemory = "out-of-memory",
+        Validation = "validation"
     }
 }
 declare module BABYLON {
@@ -45206,7 +45324,7 @@ declare module BABYLON {
         isSampler: boolean;
         isComparisonSampler?: boolean;
         isTexture: boolean;
-        componentType?: GPUTextureComponentType;
+        sampleType?: GPUTextureSampleType;
         textureDimension?: GPUTextureViewDimension;
     }
     /**
@@ -45274,8 +45392,8 @@ declare module BABYLON {
     }
     /** @hidden */
     export interface IWebGPURenderPipelineStageDescriptor {
-        vertexStage: GPUProgrammableStageDescriptor;
-        fragmentStage?: GPUProgrammableStageDescriptor;
+        vertexStage: GPUProgrammableStage;
+        fragmentStage?: GPUProgrammableStage;
     }
     /** @hidden */
     export class WebGPUBindGroupCacheNode {
@@ -49146,8 +49264,6 @@ declare module BABYLON {
         private _startTime;
         private _startOffset;
         private _position;
-        /** @hidden */
-        _positionInEmitterSpace: boolean;
         private _localDirection;
         private _volume;
         private _isReadyToPlay;
@@ -49771,8 +49887,7 @@ declare module BABYLON {
      * in a given scene.
      */
     export class AudioSceneComponent implements ISceneSerializableComponent {
-        private static _CameraDirectionLH;
-        private static _CameraDirectionRH;
+        private static _CameraDirection;
         /**
          * The component name helpful to identify the component in the list of scene components.
          */
@@ -50508,7 +50623,6 @@ declare module BABYLON {
         wheelDeltaPercentage: number;
         private _wheel;
         private _observer;
-        private computeDeltaFromMouseWheelLegacyEvent;
         /**
          * Attach the input controls to a specific dom element to get the input from.
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
@@ -54269,7 +54383,7 @@ declare module BABYLON {
          * @param format defines the texture format to use (default is Engine.TEXTUREFORMAT_RGBA)
          * @param invertY defines if the texture needs to be inverted on the y axis during loading
          */
-        constructor(name: string, options: any, scene: Scene | null | undefined, generateMipMaps: boolean, samplingMode?: number, format?: number, invertY?: boolean);
+        constructor(name: string, options: any, scene?: Nullable<Scene>, generateMipMaps?: boolean, samplingMode?: number, format?: number, invertY?: boolean);
         /**
          * Get the current class name of the texture useful for serialization or dynamic coding.
          * @returns "DynamicTexture"
@@ -58365,9 +58479,12 @@ declare module BABYLON {
         private _hoverMaterial;
         private _disableMaterial;
         private _gizmoMesh;
-        private _rotationCircle;
+        private _rotationDisplayPlane;
         private _dragging;
-        private static _CircleConstants;
+        private _angles;
+        private static _rotationGizmoVertexShader;
+        private static _rotationGizmoFragmentShader;
+        private _rotationShaderMaterial;
         /**
          * Creates a PlaneRotationGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -58381,9 +58498,6 @@ declare module BABYLON {
         /** Create Geometry for Gizmo */
         private _createGizmoMesh;
         protected _attachedNodeChanged(value: Nullable<Node>): void;
-        private setupRotationCircle;
-        private updateRotationPath;
-        private updateRotationCircle;
         /**
              * If the gizmo is enabled
              */
@@ -60938,6 +61052,12 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** @hidden */
+    export class NativeShaderProcessor extends WebGL2ShaderProcessor {
+        postProcessor(code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>, engine: ThinEngine): string;
+    }
+}
+declare module BABYLON {
     /**
      * Container for accessors for natively-stored mesh data buffers.
      */
@@ -60963,7 +61083,9 @@ declare module BABYLON {
         private readonly INVALID_HANDLE;
         private _boundBuffersVertexArray;
         private _currentDepthTest;
+        homogeneousDepth: boolean;
         getHardwareScalingLevel(): number;
+        setHardwareScalingLevel(level: number): void;
         constructor();
         dispose(): void;
         /**
@@ -70959,6 +71081,7 @@ declare module BABYLON {
          * * The parameter `normal` (Vector3, default `Vector3.Up`) sets the normal of the mesh where the decal is applied onto in World coordinates
          * * The parameter `size` (Vector3, default `(1, 1, 1)`) sets the decal scaling
          * * The parameter `angle` (float in radian, default 0) sets the angle to rotate the decal
+         * * The parameter `captureUVS` defines if we need to capture the uvs or compute them
          * @param name defines the name of the mesh
          * @param sourceMesh defines the mesh where the decal must be applied
          * @param options defines the options used to create the mesh
@@ -70971,6 +71094,7 @@ declare module BABYLON {
             normal?: Vector3;
             size?: Vector3;
             angle?: number;
+            captureUVS?: boolean;
         }): Mesh;
     }
 }
@@ -80819,7 +80943,7 @@ declare module BABYLON {
          * Hand-parts definition (key is HandPart)
          */
         handPartsDefinition: {
-            [key: string]: number[];
+            [key: string]: string[];
         };
         /**
          * Observers will be triggered when the mesh for this hand was initialized.
@@ -81652,42 +81776,85 @@ declare var WebGLVertexArrayObject: {
     new(): WebGLVertexArrayObject;
 };
 
+type GPUBufferDynamicOffset = number; /* unsigned long */
+type GPUStencilValue = number; /* unsigned long */
+type GPUSampleMask = number; /* unsigned long */
+type GPUDepthBias = number; /* long */
+type GPUSize64 = number; /* unsigned long long */
+type GPUIntegerCoordinate = number; /* unsigned long */
+type GPUIndex32 = number; /* unsigned long */
+type GPUSize32 = number; /* unsigned long */
+type GPUSignedOffset32 = number; /* long */
+
+interface GPUObjectBase {
+    label: string | undefined;
+}
+
+interface GPUObjectDescriptorBase {
+    label?: string;
+}
+
+interface GPUAdapterLimits {
+    readonly maxTextureDimension1D: GPUSize32;
+    readonly maxTextureDimension2D: GPUSize32;
+    readonly maxTextureDimension3D: GPUSize32;
+    readonly maxTextureArrayLayers: GPUSize32;
+    readonly maxBindGroups: GPUSize32;
+    readonly maxDynamicUniformBuffersPerPipelineLayout: GPUSize32;
+    readonly maxDynamicStorageBuffersPerPipelineLayout: GPUSize32;
+    readonly maxSampledTexturesPerShaderStage: GPUSize32;
+    readonly maxSamplersPerShaderStage: GPUSize32;
+    readonly maxStorageBuffersPerShaderStage: GPUSize32;
+    readonly maxStorageTexturesPerShaderStage: GPUSize32;
+    readonly maxUniformBuffersPerShaderStage: GPUSize32;
+    readonly maxUniformBufferBindingSize: GPUSize32;
+    readonly maxStorageBufferBindingSize: GPUSize32;
+    readonly maxVertexBuffers: GPUSize32;
+    readonly maxVertexAttributes: GPUSize32;
+    readonly maxVertexBufferArrayStride: GPUSize32;
+}
+
+interface GPUAdapterFeatures {
+    readonly GPUFeatureName: { [name: string]: void };
+}
+
 interface Navigator {
     readonly gpu: GPU | undefined;
 }
 
-interface GPUColorDict {
-    a: number;
-    b: number;
-    g: number;
-    r: number;
+interface WorkerNavigator {
+    readonly gpu: GPU | undefined;
 }
-type GPUColor = [number, number, number, number] | GPUColorDict;
 
-interface GPUOrigin2DDict {
-    x?: number;
-    y?: number;
+declare class GPU {
+    private __brand: void;
+    requestAdapter(options?: GPURequestAdapterOptions): Promise<GPUAdapter | null>;
 }
-type GPUOrigin2D = [number, number] | GPUOrigin2DDict;
 
-interface GPUOrigin3DDict {
-    x?: number;
-    y?: number;
-    z?: number;
+interface GPURequestAdapterOptions {
+    powerPreference?: GPUPowerPreference;
 }
-type GPUOrigin3D = [number, number, number] | GPUOrigin3DDict;
 
-interface GPUExtent3DDict {
-    width: number;
-    height: number;
-    depth: number;
+type GPUPowerPreference = "low-power" | "high-performance";
+
+// TODO WEBGPU: this class is not iso with the spec yet as of this writing Chrome does not expose features (should replace 'extensions'). See also GPUDeviceDescriptor, GPUFeatureName and GPUDevice
+declare class GPUAdapter {
+    // https://michalzalecki.com/nominal-typing-in-typescript/#approach-1-class-with-a-private-property
+    private __brand: void;
+    readonly name: string;
+    readonly extensions: GPUExtensionName[];
+    //readonly features: GPUAdapterFeatures;
+    readonly limits: Required<GPUAdapterLimits>;
+
+    requestDevice(descriptor?: GPUDeviceDescriptor): Promise<GPUDevice | null>;
 }
-type GPUExtent3D = [number, number, number] | GPUExtent3DDict;
 
-type GPUBindingResource =
-    | GPUSampler
-    | GPUTextureView
-    | GPUBufferBinding;
+interface GPUDeviceDescriptor extends GPUObjectDescriptorBase {
+    extensions?: GPUExtensionName[];
+    //nonGuaranteedFeatures?: GPUFeatureName[];
+    limits?: GPUAdapterLimits;
+    //nonGuaranteedLimits?: { [name: string]: GPUSize32 };
+}
 
 type GPUExtensionName =
     | "texture-compression-bc"
@@ -81696,73 +81863,129 @@ type GPUExtensionName =
     | "depth-clamping"
     | "depth24unorm-stencil8"
     | "depth32float-stencil8";
-type GPUAddressMode = "clamp-to-edge" | "repeat" | "mirror-repeat";
-type GPUBindingType =
-    | "uniform-buffer"
-    | "storage-buffer"
-    | "readonly-storage-buffer"
-    | "sampler"
-    | "comparison-sampler"
-    | "sampled-texture"
-    | "readonly-storage-texture"
-    | "writeonly-storage-texture";
-type GPUBlendFactor =
-    | "zero"
-    | "one"
-    | "src-color"
-    | "one-minus-src-color"
-    | "src-alpha"
-    | "one-minus-src-alpha"
-    | "dst-color"
-    | "one-minus-dst-color"
-    | "dst-alpha"
-    | "one-minus-dst-alpha"
-    | "src-alpha-saturated"
-    | "blend-color"
-    | "one-minus-blend-color";
-type GPUBlendOperation =
-    | "add"
-    | "subtract"
-    | "reverse-subtract"
-    | "min"
-    | "max";
-type GPUCompareFunction =
-    | "never"
-    | "less"
-    | "equal"
-    | "less-equal"
-    | "greater"
-    | "not-equal"
-    | "greater-equal"
-    | "always";
-type GPUCullMode = "none" | "front" | "back";
-type GPUFilterMode = "nearest" | "linear";
-type GPUFrontFace = "ccw" | "cw";
-type GPUIndexFormat = "uint16" | "uint32";
-type GPUInputStepMode = "vertex" | "instance";
-type GPULoadOp = "load";
-type GPUPrimitiveTopology =
-    | "point-list"
-    | "line-list"
-    | "line-strip"
-    | "triangle-list"
-    | "triangle-strip";
-type GPUStencilOperation =
-    | "keep"
-    | "zero"
-    | "replace"
-    | "invert"
-    | "increment-clamp"
-    | "decrement-clamp"
-    | "increment-wrap"
-    | "decrement-wrap";
-type GPUStoreOp = "store" | "clear";
+
+/*type GPUFeatureName =
+    | "depth-clamping",
+    | "depth24unorm-stencil8",
+    | "depth32float-stencil8",
+    | "pipeline-statistics-query",
+    | "texture-compression-bc",
+    | "timestamp-query",*/
+
+declare class GPUDevice extends EventTarget implements GPUObjectBase {
+    private __brand: void;
+    label: string | undefined;
+
+    readonly adapter: GPUAdapter;
+    readonly extensions: GPUExtensionName[];
+    //readonly features: GPUFeatureName[];
+    readonly limits: Required<GPUAdapterLimits>;
+
+    defaultQueue: GPUQueue;
+
+    destroy(): void;
+
+    createBuffer(descriptor: GPUBufferDescriptor): GPUBuffer;
+    createTexture(descriptor: GPUTextureDescriptor): GPUTexture;
+    createSampler(descriptor?: GPUSamplerDescriptor): GPUSampler;
+
+    createBindGroupLayout(descriptor: GPUBindGroupLayoutDescriptor): GPUBindGroupLayout;
+    createPipelineLayout(descriptor: GPUPipelineLayoutDescriptor): GPUPipelineLayout;
+    createBindGroup(descriptor: GPUBindGroupDescriptor): GPUBindGroup;
+
+    createShaderModule(descriptor: GPUShaderModuleDescriptor): GPUShaderModule;
+
+    createComputePipeline(descriptor: GPUComputePipelineDescriptor): GPUComputePipeline;
+    createRenderPipeline(descriptor: GPURenderPipelineDescriptor): GPURenderPipeline;
+    createReadyComputePipeline(descriptor: GPUComputePipelineDescriptor): Promise<GPUComputePipeline>;
+    createReadyRenderPipeline(descriptor: GPURenderPipelineDescriptor): Promise<GPURenderPipeline>;
+
+    createCommandEncoder(descriptor?: GPUCommandEncoderDescriptor): GPUCommandEncoder;
+    createRenderBundleEncoder(descriptor: GPURenderBundleEncoderDescriptor): GPURenderBundleEncoder;
+
+    createQuerySet(descriptor: GPUQuerySetDescriptor): GPUQuerySet;
+
+    readonly lost: Promise<GPUDeviceLostInfo>;
+    pushErrorScope(filter: GPUErrorFilter): void;
+    popErrorScope(): Promise<GPUError | undefined>;
+    onuncapturederror: Event | undefined;
+}
+
+declare class GPUBuffer implements GPUObjectBase {
+    private __brand: void;
+    label: string | undefined;
+
+    mapAsync(mode: GPUMapModeFlags, offset?: GPUSize64 /*default=0*/, size?: GPUSize64): Promise<void>;
+    getMappedRange(offset?: GPUSize64 /*default=0*/, size?: GPUSize64): ArrayBuffer;
+    unmap(): void;
+
+    destroy(): void;
+}
+
+interface GPUBufferDescriptor extends GPUObjectDescriptorBase {
+    size: GPUSize64;
+    usage: GPUBufferUsageFlags;
+    mappedAtCreation: boolean; /* default=false */
+}
+
+type GPUBufferUsageFlags = number;
+
+type GPUMapModeFlags = number;
+
+declare class GPUTexture implements GPUObjectBase {
+    private __brand: void;
+    label: string | undefined;
+
+    createView(descriptor?: GPUTextureViewDescriptor): GPUTextureView;
+    destroy(): void;
+}
+
+interface GPUTextureDescriptor extends GPUObjectDescriptorBase {
+    size: GPUExtent3D;
+    mipLevelCount?: GPUIntegerCoordinate; // default=1
+    sampleCount?: GPUSize32; // default=1
+    dimension?: GPUTextureDimension; // default="2d"
+    format: GPUTextureFormat;
+    usage: GPUTextureUsageFlags;
+}
+
 type GPUTextureDimension = "1d" | "2d" | "3d";
+
+type GPUTextureUsageFlags = number;
+
+declare class GPUTextureView implements GPUObjectBase {
+    private __brand: void;
+    label: string | undefined;
+}
+
+interface GPUTextureViewDescriptor extends GPUObjectDescriptorBase {
+    format?: GPUTextureFormat;
+    dimension?: GPUTextureViewDimension;
+    aspect?: GPUTextureAspect; // default=all
+    baseMipLevel?: GPUIntegerCoordinate;
+    mipLevelCount?: GPUIntegerCoordinate;
+    baseArrayLayer?: GPUIntegerCoordinate;
+    arrayLayerCount?: GPUIntegerCoordinate;
+}
+
+type GPUTextureViewDimension =
+    | "1d"
+    | "2d"
+    | "2d-array"
+    | "cube"
+    | "cube-array"
+    | "3d";
+
+type GPUTextureAspect = "all" | "stencil-only" | "depth-only";
+
 type GPUTextureFormat =
+    // 8-bit formats
     | "r8unorm"
     | "r8snorm"
     | "r8uint"
     | "r8sint"
+
+    // 16-bit formats
     | "r16uint"
     | "r16sint"
     | "r16float"
@@ -81770,6 +81993,8 @@ type GPUTextureFormat =
     | "rg8snorm"
     | "rg8uint"
     | "rg8sint"
+
+    // 32-bit formats
     | "r32uint"
     | "r32sint"
     | "r32float"
@@ -81783,23 +82008,33 @@ type GPUTextureFormat =
     | "rgba8sint"
     | "bgra8unorm"
     | "bgra8unorm-srgb"
+    // Packed 32-bit formats
     | "rgb9e5ufloat"
     | "rgb10a2unorm"
     | "rg11b10ufloat"
+
+    // 64-bit formats
     | "rg32uint"
     | "rg32sint"
     | "rg32float"
     | "rgba16uint"
     | "rgba16sint"
     | "rgba16float"
+
+    // 128-bit formats
     | "rgba32uint"
     | "rgba32sint"
     | "rgba32float"
+
+    // Depth and stencil formats
     | "stencil8"
     | "depth16unorm"
     | "depth24plus"
     | "depth24plus-stencil8"
     | "depth32float"
+
+    // BC compressed formats usable if "texture-compression-bc" is both
+    // supported by the device/user agent and enabled in requestDevice.
     | "bc1-rgba-unorm"
     | "bc1-rgba-unorm-srgb"
     | "bc2-rgba-unorm"
@@ -81814,16 +82049,309 @@ type GPUTextureFormat =
     | "bc6h-rgb-float"
     | "bc7-rgba-unorm"
     | "bc7-rgba-unorm-srgb"
+
+    // "depth24unorm-stencil8" feature
     | "depth24unorm-stencil8"
+
+    // "depth32float-stencil8" feature
     | "depth32float-stencil8";
-type GPUTextureComponentType = "float" | "sint" | "uint" | "depth-comparison";
-type GPUTextureViewDimension =
-    | "1d"
-    | "2d"
-    | "2d-array"
-    | "cube"
-    | "cube-array"
-    | "3d";
+
+declare class GPUSampler implements GPUObjectBase {
+    private __brand: void;
+    label: string | undefined;
+}
+
+interface GPUSamplerDescriptor extends GPUObjectDescriptorBase {
+    addressModeU?: GPUAddressMode; // default="clamp-to-edge"
+    addressModeV?: GPUAddressMode; // default="clamp-to-edge"
+    addressModeW?: GPUAddressMode; // default="clamp-to-edge"
+    magFilter?: GPUFilterMode; // default="nearest"
+    minFilter?: GPUFilterMode; // default="nearest"
+    mipmapFilter?: GPUFilterMode; // default="nearest"
+    lodMinClamp?: number; // default=0
+    lodMaxClamp?: number; // default=0xffffffff
+    compare?: GPUCompareFunction;
+    maxAnisotropy?: number; // default=1
+}
+
+type GPUAddressMode = "clamp-to-edge" | "repeat" | "mirror-repeat";
+
+type GPUFilterMode = "nearest" | "linear";
+
+type GPUCompareFunction =
+    | "never"
+    | "less"
+    | "equal"
+    | "less-equal"
+    | "greater"
+    | "not-equal"
+    | "greater-equal"
+    | "always";
+
+declare class GPUBindGroupLayout implements GPUObjectBase {
+    private __brand: void;
+    label: string | undefined;
+}
+
+interface GPUBindGroupLayoutDescriptor extends GPUObjectDescriptorBase {
+    entries: GPUBindGroupLayoutEntry[];
+}
+
+type GPUShaderStageFlags = number;
+
+interface GPUBindGroupLayoutEntry {
+    binding: GPUIndex32;
+    visibility: GPUShaderStageFlags;
+
+    buffer?: GPUBufferBindingLayout;
+    sampler?: GPUSamplerBindingLayout;
+    texture?: GPUTextureBindingLayout;
+    storageTexture?: GPUStorageTextureBindingLayout;
+}
+
+type GPUBufferBindingType = "uniform" | "storage" | "read-only-storage";
+
+interface GPUBufferBindingLayout {
+    type?: GPUBufferBindingType; /* default="uniform" */
+    hasDynamicOffset?: boolean; /* default=false */
+    minBindingSize?: GPUSize64; /* default=0 */
+}
+
+type GPUSamplerBindingType = "filtering" | "non-filtering" | "comparison";
+
+interface GPUSamplerBindingLayout {
+    type?: GPUSamplerBindingType; /* default="filtering" */
+}
+
+type GPUTextureSampleType =
+    | "float"
+    | "unfilterable-float"
+    | "depth"
+    | "sint"
+    | "uint";
+
+interface GPUTextureBindingLayout {
+    sampleType?: GPUTextureSampleType; /* default="float" */
+    viewDimension?: GPUTextureViewDimension; /* default="2d" */
+    multisampled?: boolean; /* default=false */
+}
+
+type GPUStorageTextureAccess = "read-only" | "write-only";
+
+interface GPUStorageTextureBindingLayout {
+    access: GPUStorageTextureAccess;
+    format: GPUTextureFormat;
+    viewDimension?: GPUTextureViewDimension; /* default="2d" */
+}
+
+declare class GPUBindGroup implements GPUObjectBase {
+    private __brand: void;
+    label: string | undefined;
+}
+
+interface GPUBindGroupDescriptor extends GPUObjectDescriptorBase {
+    layout: GPUBindGroupLayout;
+    entries: GPUBindGroupEntry[];
+}
+
+type GPUBindingResource =
+    | GPUSampler
+    | GPUTextureView
+    | GPUBufferBinding;
+
+interface GPUBindGroupEntry {
+    binding: GPUIndex32;
+    resource: GPUBindingResource;
+}
+
+interface GPUBufferBinding {
+    buffer: GPUBuffer;
+    offset?: GPUSize64; /* default=0 */
+    size?: GPUSize64;
+}
+
+declare class GPUPipelineLayout implements GPUObjectBase {
+    private __brand: void;
+    label: string | undefined;
+}
+
+interface GPUPipelineLayoutDescriptor extends GPUObjectDescriptorBase {
+    bindGroupLayouts: GPUBindGroupLayout[];
+}
+
+type GPUCompilationMessageType = "error" | "warning" | "info";
+
+interface GPUCompilationMessage {
+    readonly message: string;
+    readonly type: GPUCompilationMessageType;
+    readonly lineNum: number;
+    readonly linePos: number;
+}
+
+interface GPUCompilationInfo {
+    readonly messages: readonly GPUCompilationMessage[];
+}
+
+declare class GPUShaderModule implements GPUObjectBase {
+    private __brand: void;
+    label: string | undefined;
+
+    compilationInfo(): Promise<GPUCompilationInfo>;
+}
+
+interface GPUShaderModuleDescriptor extends GPUObjectDescriptorBase {
+    code: string | Uint32Array;
+    sourceMap?: object;
+}
+
+interface GPUPipelineDescriptorBase extends GPUObjectDescriptorBase {
+    layout?: GPUPipelineLayout;
+}
+
+interface GPUPipelineBase {
+    getBindGroupLayout(index: number): GPUBindGroupLayout;
+}
+
+interface GPUProgrammableStage {
+    module: GPUShaderModule;
+    entryPoint: string;
+}
+
+declare class GPUComputePipeline implements GPUObjectBase, GPUPipelineBase {
+    private __brand: void;
+    label: string | undefined;
+
+    getBindGroupLayout(index: number): GPUBindGroupLayout;
+}
+
+interface GPUComputePipelineDescriptor extends GPUPipelineDescriptorBase {
+    compute: GPUProgrammableStage;
+}
+
+declare class GPURenderPipeline implements GPUObjectBase, GPUPipelineBase {
+    private __brand: void;
+    label: string | undefined;
+
+    getBindGroupLayout(index: number): GPUBindGroupLayout;
+}
+
+interface GPURenderPipelineDescriptor2 extends GPUPipelineDescriptorBase {
+    vertex: GPUVertexState;
+    primitive?: GPUPrimitiveState;
+    depthStencil?: GPUDepthStencilState;
+    multisample?: GPUMultisampleState;
+    fragment?: GPUFragmentState;
+}
+
+type GPUPrimitiveTopology =
+    | "point-list"
+    | "line-list"
+    | "line-strip"
+    | "triangle-list"
+    | "triangle-strip";
+
+interface GPUPrimitiveState {
+    topology?: GPUPrimitiveTopology; /* default="triangle-list" */
+    stripIndexFormat?: GPUIndexFormat;
+    frontFace?: GPUFrontFace; /* default="ccw" */
+    cullMode?: GPUCullMode; /* default="none" */
+}
+
+type GPUFrontFace = "ccw" | "cw";
+
+type GPUCullMode = "none" | "front" | "back";
+
+interface GPUMultisampleState {
+    count?: GPUSize32; /* default=1 */
+    mask?: GPUSampleMask; /* default=0xFFFFFFFF */
+    alphaToCoverageEnabled?: boolean; /* default=false */
+}
+
+interface GPUFragmentState extends GPUProgrammableStage {
+    targets: GPUColorTargetState[];
+}
+
+interface GPUColorTargetState {
+    format: GPUTextureFormat;
+
+    blend?: GPUBlendState;
+    writeMask?: GPUColorWriteFlags; /* default=0xF - GPUColorWrite.ALL */
+}
+
+interface GPUBlendState {
+    color: GPUBlendComponent;
+    alpha: GPUBlendComponent;
+}
+
+type GPUColorWriteFlags = number;
+
+interface GPUBlendComponent {
+    srcFactor?: GPUBlendFactor; /* default="one" */
+    dstFactor?: GPUBlendFactor; /* default="zero" */
+    operation?: GPUBlendOperation; /* default="add" */
+}
+
+type GPUBlendFactor =
+    | "zero"
+    | "one"
+    | "src-color"
+    | "one-minus-src-color"
+    | "src-alpha"
+    | "one-minus-src-alpha"
+    | "dst-color"
+    | "one-minus-dst-color"
+    | "dst-alpha"
+    | "one-minus-dst-alpha"
+    | "src-alpha-saturated"
+    | "blend-color"
+    | "one-minus-blend-color";
+
+type GPUBlendOperation =
+    | "add"
+    | "subtract"
+    | "reverse-subtract"
+    | "min"
+    | "max";
+
+interface GPUDepthStencilState {
+    format: GPUTextureFormat;
+
+    depthWriteEnabled?: boolean; /* default=false */
+    depthCompare?: GPUCompareFunction; /* default="always" */
+
+    stencilFront?: GPUStencilStateFace;
+    stencilBack?: GPUStencilStateFace;
+
+    stencilReadMask?: GPUStencilValue; /* default=0xFFFFFFFF */
+    stencilWriteMask?: GPUStencilValue; /* default=0xFFFFFFFF */
+
+    depthBias?: GPUDepthBias; /* default=0 */
+    depthBiasSlopeScale?: number; /* default= 0 */
+    depthBiasClamp?: number; /* default=0 */
+
+    // Enable depth clamping (requires "depth-clamping" feature)
+    clampDepth?: boolean; /* default=false */
+}
+
+interface GPUStencilStateFace {
+    compare?: GPUCompareFunction; /* default="always" */
+    failOp?: GPUStencilOperation; /* default="keep" */
+    depthFailOp?: GPUStencilOperation; /* default="keep" */
+    passOp?: GPUStencilOperation; /* default="keep" */
+}
+
+type GPUStencilOperation =
+    | "keep"
+    | "zero"
+    | "replace"
+    | "invert"
+    | "increment-clamp"
+    | "decrement-clamp"
+    | "increment-wrap"
+    | "decrement-wrap";
+
+type GPUIndexFormat = "uint16" | "uint32";
+
 type GPUVertexFormat =
     | "uchar2"
     | "uchar4"
@@ -81856,300 +82384,23 @@ type GPUVertexFormat =
     | "int3"
     | "int4";
 
-type GPUTextureAspect = "all" | "stencil-only" | "depth-only";
+type GPUInputStepMode = "vertex" | "instance";
 
-type GPUBufferUsageFlags = number;
-
-type GPUColorWriteFlags = number;
-
-type GPUShaderStageFlags = number;
-
-type GPUTextureUsageFlags = number;
-
-type GPUMapModeFlags = number;
-
-interface GPUBindGroupEntry {
-    binding: number;
-    resource: GPUBindingResource;
+interface GPUVertexState {
+    indexFormat?: GPUIndexFormat; // TODO WEBGPU to be removed
+    vertexBuffers?: GPUVertexBufferLayout[]; // TODO WEBGPU to be renamed to buffers
 }
 
-interface GPUBindGroupDescriptor extends GPUObjectDescriptorBase {
-    layout: GPUBindGroupLayout;
-    entries: Iterable<GPUBindGroupEntry>;
+interface GPUVertexBufferLayout {
+    arrayStride: GPUSize64;
+    stepMode?: GPUInputStepMode; /* default="vertex" */
+    attributes: GPUVertexAttribute[];
 }
 
-interface GPUBindGroupLayoutEntry {
-    binding: number;
-    visibility: GPUShaderStageFlags;
-    type: GPUBindingType;
-    hasDynamicOffset?: boolean;
-    minBufferBindingSize?: number;
-    viewDimension?: GPUTextureViewDimension;
-    textureComponentType?: GPUTextureComponentType;
-    storageTextureFormat?: GPUTextureFormat;
-}
-
-interface GPUBindGroupLayoutDescriptor
-    extends GPUObjectDescriptorBase {
-    entries: Iterable<GPUBindGroupLayoutEntry>;
-}
-
-interface GPUBlendDescriptor {
-    dstFactor?: GPUBlendFactor;
-    operation?: GPUBlendOperation;
-    srcFactor?: GPUBlendFactor;
-}
-
-interface GPUColorStateDescriptor {
-    format: GPUTextureFormat;
-
-    alphaBlend?: GPUBlendDescriptor;
-    colorBlend?: GPUBlendDescriptor;
-    writeMask?: GPUColorWriteFlags;
-}
-
-interface GPUBufferBinding {
-    buffer: GPUBuffer;
-    offset?: number;
-    size?: number;
-}
-
-interface GPUTextureDataLayout {
-    offset?: number;
-    bytesPerRow: number;
-    rowsPerImage?: number;
-}
-
-interface GPUBufferCopyView extends GPUTextureDataLayout {
-    buffer: GPUBuffer;
-}
-
-interface GPUTextureCopyView {
-    texture: GPUTexture;
-    mipLevel?: number;
-    origin?: GPUOrigin3D;
-}
-
-interface GPUImageBitmapCopyView {
-    imageBitmap: ImageBitmap;
-    origin?: GPUOrigin2D;
-}
-
-interface GPUBufferDescriptor extends GPUObjectDescriptorBase {
-    size: number;
-    usage: GPUBufferUsageFlags;
-    mappedAtCreation?: boolean;
-}
-
-interface GPUCommandEncoderDescriptor extends GPUObjectDescriptorBase {
-    label?: string;
-
-    measureExecutionTime?: boolean;
-}
-
-interface GPUComputePipelineDescriptor
-    extends GPUPipelineDescriptorBase {
-    computeStage: GPUProgrammableStageDescriptor;
-}
-
-interface GPUDepthStencilStateDescriptor {
-    format: GPUTextureFormat;
-
-    depthWriteEnabled?: boolean;
-    depthCompare?: GPUCompareFunction;
-
-    stencilFront?: GPUStencilStateFaceDescriptor;
-    stencilBack?: GPUStencilStateFaceDescriptor;
-
-    stencilReadMask?: number;
-    stencilWriteMask?: number;
-}
-
-interface GPUDeviceDescriptor extends GPUObjectDescriptorBase {
-    extensions?: Iterable<GPUExtensionName>;
-    limits?: GPULimits;
-}
-
-interface GPUFenceDescriptor extends GPUObjectDescriptorBase {
-    initialValue?: number;
-    label?: string;
-    signalQueue?: GPUQueue;
-}
-
-interface GPUVertexAttributeDescriptor {
+interface GPUVertexAttribute {
     format: GPUVertexFormat;
-    offset: number;
-    shaderLocation: number;
-}
-
-interface GPUVertexBufferLayoutDescriptor {
-    arrayStride: number;
-    stepMode?: GPUInputStepMode;
-    attributes: Iterable<GPUVertexAttributeDescriptor>;
-}
-
-interface GPUVertexStateDescriptor {
-    indexFormat?: GPUIndexFormat;
-    vertexBuffers?: Iterable<GPUVertexBufferLayoutDescriptor>;
-}
-
-interface GPULimits {
-    maxBindGroups?: number;
-    maxDynamicUniformBuffersPerPipelineLayout?: number;
-    maxDynamicStorageBuffersPerPipelineLayout?: number;
-    maxSampledTexturesPerShaderStage?: number;
-    maxSamplersPerShaderStage?: number;
-    maxStorageBuffersPerShaderStage?: number;
-    maxStorageTexturesPerShaderStage?: number;
-    maxUniformBuffersPerShaderStage?: number;
-    maxUniformBufferBindingSize?: number;
-}
-
-interface GPUPipelineDescriptorBase {
-    label?: string;
-    layout?: GPUPipelineLayout;
-}
-
-interface GPUPipelineLayoutDescriptor extends GPUObjectDescriptorBase {
-    bindGroupLayouts: Iterable<GPUBindGroupLayout>;
-}
-
-interface GPUProgrammableStageDescriptor {
-    module: GPUShaderModule;
-    entryPoint: string;
-}
-
-interface GPURasterizationStateDescriptor {
-    frontFace?: GPUFrontFace;
-    cullMode?: GPUCullMode;
-    clampDepth?: boolean;
-    depthBias?: number;
-    depthBiasSlopeScale?: number;
-    depthBiasClamp?: number;
-}
-
-interface GPURenderPassColorAttachmentDescriptor {
-    attachment: GPUTextureView;
-    resolveTarget?: GPUTextureView;
-
-    loadValue: GPULoadOp | GPUColor;
-    storeOp?: GPUStoreOp;
-}
-
-interface GPURenderPassDepthStencilAttachmentDescriptor {
-    attachment: GPUTextureView;
-
-    depthLoadValue: GPULoadOp | number;
-    depthStoreOp: GPUStoreOp;
-    depthReadOnly?: boolean;
-
-    stencilLoadValue: GPULoadOp | number;
-    stencilStoreOp: GPUStoreOp;
-    stencilReadOnly?: boolean;
-}
-
-interface GPURenderPassDescriptor extends GPUObjectDescriptorBase {
-    colorAttachments: Iterable<GPURenderPassColorAttachmentDescriptor>;
-    depthStencilAttachment?: GPURenderPassDepthStencilAttachmentDescriptor;
-}
-
-interface GPURenderPipelineDescriptor
-    extends GPUPipelineDescriptorBase {
-    vertexStage: GPUProgrammableStageDescriptor;
-    fragmentStage?: GPUProgrammableStageDescriptor;
-
-    primitiveTopology: GPUPrimitiveTopology;
-    rasterizationState?: GPURasterizationStateDescriptor;
-    colorStates: Iterable<GPUColorStateDescriptor>;
-    depthStencilState?: GPUDepthStencilStateDescriptor;
-    vertexState?: GPUVertexStateDescriptor;
-
-    sampleCount?: number;
-    sampleMask?: number;
-    alphaToCoverageEnabled?: boolean;
-}
-
-interface GPUSamplerDescriptor extends GPUObjectDescriptorBase {
-    addressModeU?: GPUAddressMode;
-    addressModeV?: GPUAddressMode;
-    addressModeW?: GPUAddressMode;
-    magFilter?: GPUFilterMode;
-    minFilter?: GPUFilterMode;
-    mipmapFilter?: GPUFilterMode;
-    lodMinClamp?: number;
-    lodMaxClamp?: number;
-    compare?: GPUCompareFunction;
-    maxAnisotropy?: number;
-}
-
-interface GPUShaderModuleDescriptor extends GPUObjectDescriptorBase {
-    code: Uint32Array | string;
-    label?: string;
-
-    sourceMap?: object;
-}
-
-interface GPUStencilStateFaceDescriptor {
-    compare?: GPUCompareFunction;
-    depthFailOp?: GPUStencilOperation;
-    passOp?: GPUStencilOperation;
-    failOp?: GPUStencilOperation;
-}
-
-interface GPUSwapChainDescriptor extends GPUObjectDescriptorBase {
-    device: GPUDevice;
-    format: GPUTextureFormat;
-    usage?: GPUTextureUsageFlags;
-}
-
-interface GPUTextureDescriptor extends GPUObjectDescriptorBase {
-    size: GPUExtent3D;
-    mipLevelCount?: number;
-    sampleCount?: number;
-    dimension?: GPUTextureDimension;
-    format: GPUTextureFormat;
-    usage: GPUTextureUsageFlags;
-}
-
-interface GPUTextureViewDescriptor extends GPUObjectDescriptorBase {
-    format?: GPUTextureFormat;
-    dimension?: GPUTextureViewDimension;
-    aspect?: GPUTextureAspect;
-    baseArrayLayer?: number;
-    baseMipLevel?: number;
-    arrayLayerCount?: number;
-    mipLevelCount?: number;
-}
-
-declare class GPUAdapter {
-    // https://michalzalecki.com/nominal-typing-in-typescript/#approach-1-class-with-a-private-property
-    private __brand: void;
-    readonly name: string;
-    readonly extensions: GPUExtensionName[];
-    readonly limits: Required<GPULimits>;
-
-    requestDevice(descriptor?: GPUDeviceDescriptor): Promise<GPUDevice | null>;
-}
-
-declare class GPUBindGroup implements GPUObjectBase {
-    private __brand: void;
-    label: string | undefined;
-}
-
-declare class GPUBindGroupLayout implements GPUObjectBase {
-    private __brand: void;
-    label: string | undefined;
-}
-
-declare class GPUBuffer implements GPUObjectBase {
-    private __brand: void;
-    label: string | undefined;
-
-    destroy(): void;
-    unmap(): void;
-
-    mapAsync(mode: GPUMapModeFlags, offset?: number, size?: number): Promise<void>;
-    getMappedRange(offset?: number, size?: number): ArrayBuffer;
+    offset: GPUSize64;
+    shaderLocation: GPUIndex32;
 }
 
 declare class GPUCommandBuffer implements GPUObjectBase {
@@ -82159,22 +82410,22 @@ declare class GPUCommandBuffer implements GPUObjectBase {
     readonly executionTime: Promise<number>;
 }
 
-interface GPUCommandBufferDescriptor extends GPUObjectDescriptorBase { }
+interface GPUCommandBufferDescriptor extends GPUObjectDescriptorBase {
+}
 
 declare class GPUCommandEncoder implements GPUObjectBase {
     private __brand: void;
     label: string | undefined;
 
-    beginComputePass(
-        descriptor?: GPUComputePassDescriptor
-    ): GPUComputePassEncoder;
     beginRenderPass(descriptor: GPURenderPassDescriptor): GPURenderPassEncoder;
+    beginComputePass(descriptor?: GPUComputePassDescriptor): GPUComputePassEncoder;
+
     copyBufferToBuffer(
         source: GPUBuffer,
-        sourceOffset: number,
+        sourceOffset: GPUSize64,
         destination: GPUBuffer,
-        destinationOffset: number,
-        size: number
+        destinationOffset: GPUSize64,
+        size: GPUSize64
     ): void;
     copyBufferToTexture(
         source: GPUBufferCopyView,
@@ -82191,16 +82442,68 @@ declare class GPUCommandEncoder implements GPUObjectBase {
         destination: GPUTextureCopyView,
         copySize: GPUExtent3D
     ): void;
-    finish(descriptor?: GPUCommandBufferDescriptor): GPUCommandBuffer;
 
-    writeTimestamp(querySet: GPUQuerySet, queryIndex: number): void;
-
-    popDebugGroup(): void;
     pushDebugGroup(groupLabel: string): void;
+    popDebugGroup(): void;
     insertDebugMarker(markerLabel: string): void;
+
+    writeTimestamp(querySet: GPUQuerySet, queryIndex: GPUSize32): void;
+
+    resolveQuerySet(
+        querySet: GPUQuerySet,
+        firstQuery: GPUSize32,
+        queryCount: GPUSize32,
+        destination: GPUBuffer,
+        destinationOffse: GPUSize64
+    ): void;
+
+    finish(descriptor?: GPUCommandBufferDescriptor): GPUCommandBuffer;
 }
 
-interface GPUComputePassDescriptor extends GPUObjectDescriptorBase { }
+interface GPUCommandEncoderDescriptor extends GPUObjectDescriptorBase {
+    measureExecutionTime?: boolean; /* default=false */
+}
+
+interface GPUTextureDataLayout {
+    offset?: GPUSize64; /* default=0 */
+    bytesPerRow: GPUSize32;
+    rowsPerImage?: GPUSize32;
+}
+
+interface GPUBufferCopyView extends GPUTextureDataLayout {
+    buffer: GPUBuffer;
+}
+
+interface GPUTextureCopyView {
+    texture: GPUTexture;
+    mipLevel?: GPUIntegerCoordinate; /* default=0 */
+    origin?: GPUOrigin3D;
+    aspect?: GPUTextureAspect; /* default="all" */
+}
+
+interface GPUImageBitmapCopyView {
+    imageBitmap: ImageBitmap;
+    origin?: GPUOrigin2D;
+}
+
+interface GPUProgrammablePassEncoder {
+    setBindGroup(
+        index: GPUIndex32,
+        bindGroup: GPUBindGroup,
+        dynamicOffsets?: GPUBufferDynamicOffset[]
+    ): void;
+    setBindGroup(
+        index: GPUIndex32,
+        bindGroup: GPUBindGroup,
+        dynamicOffsetData: Uint32Array,
+        dynamicOffsetsDataStart: GPUSize64,
+        dynamicOffsetsDataLength: GPUSize32
+    ): void;
+
+    pushDebugGroup(groupLabel: string): void;
+    popDebugGroup(): void;
+    insertDebugMarker(markerLabel: string): void;
+}
 
 declare class GPUComputePassEncoder implements GPUObjectBase, GPUProgrammablePassEncoder {
     private __brand: void;
@@ -82209,166 +82512,243 @@ declare class GPUComputePassEncoder implements GPUObjectBase, GPUProgrammablePas
     setBindGroup(
         index: number,
         bindGroup: GPUBindGroup,
-        dynamicOffsets?: Iterable<number>
+        dynamicOffsets?: GPUBufferDynamicOffset[]
+    ): void;
+    setBindGroup(
+        index: GPUIndex32,
+        bindGroup: GPUBindGroup,
+        dynamicOffsetData: Uint32Array,
+        dynamicOffsetsDataStart: GPUSize64,
+        dynamicOffsetsDataLength: GPUSize32
     ): void;
 
-    popDebugGroup(): void;
     pushDebugGroup(groupLabel: string): void;
+    popDebugGroup(): void;
     insertDebugMarker(markerLabel: string): void;
 
     setPipeline(pipeline: GPUComputePipeline): void;
-    dispatch(x: number, y?: number, z?: number): void;
-    dispatchIndirect(indirectBuffer: GPUBuffer, indirectOffset: number): void;
+    dispatch(x: GPUSize32, y?: GPUSize32 /* default=1 */, z?: GPUSize32 /* default=1 */): void;
+    dispatchIndirect(indirectBuffer: GPUBuffer, indirectOffset: GPUSize64): void;
 
-    writeTimestamp(querySet: GPUQuerySet, queryIndex: number): void;
-    beginPipelineStatisticsQuery(querySet: GPUQuerySet, queryIndex: number): void;
-    endPipelineStatisticsQuery(querySet: GPUQuerySet, queryIndex: number): void;
+    beginPipelineStatisticsQuery(querySet: GPUQuerySet, queryIndex: GPUSize32): void;
+    endPipelineStatisticsQuery(): void;
+
+    writeTimestamp(querySet: GPUQuerySet, queryIndex: GPUSize32): void;
 
     endPass(): void;
 }
 
-declare class GPUComputePipeline implements GPUPipelineBase {
-    private __brand: void;
-    label: string | undefined;
-
-    getBindGroupLayout(index: number): GPUBindGroupLayout;
+interface GPUComputePassDescriptor extends GPUObjectDescriptorBase {
 }
 
-interface GPUObjectBase {
-    label: string | undefined;
-}
+interface GPURenderEncoderBase {
+    setPipeline(pipeline: GPURenderPipeline): void;
 
-interface GPUObjectDescriptorBase {
-    label?: string;
-}
+    setIndexBuffer(buffer: GPUBuffer, indexFormat: GPUIndexFormat, offset?: GPUSize64 /* default=0 */, size?: GPUSize64 /* default=0 */): void;
+    setVertexBuffer(slot: GPUIndex32, buffer: GPUBuffer, offset?: GPUSize64 /* default=0 */, size?: GPUSize64 /* default=0 */): void;
 
-// SwapChain / CanvasContext
-declare class GPUCanvasContext {
-    private __brand: void;
-    configureSwapChain(descriptor: GPUSwapChainDescriptor): GPUSwapChain;
-
-    getSwapChainPreferredFormat(device: GPUDevice): Promise<GPUTextureFormat>;
-}
-
-declare class GPUDevice extends EventTarget implements GPUObjectBase {
-    private __brand: void;
-    label: string | undefined;
-
-    readonly adapter: GPUAdapter;
-    readonly extensions: GPUExtensionName[];
-    readonly limits: Required<GPULimits>;
-
-    createBindGroup(descriptor: GPUBindGroupDescriptor): GPUBindGroup;
-    createBindGroupLayout(
-        descriptor: GPUBindGroupLayoutDescriptor
-    ): GPUBindGroupLayout;
-    createBuffer(descriptor: GPUBufferDescriptor): GPUBuffer;
-    createPipelineLayout(
-        descriptor: GPUPipelineLayoutDescriptor
-    ): GPUPipelineLayout;
-    createSampler(descriptor?: GPUSamplerDescriptor): GPUSampler;
-    createShaderModule(descriptor: GPUShaderModuleDescriptor): GPUShaderModule;
-    createTexture(descriptor: GPUTextureDescriptor): GPUTexture;
-
-    createComputePipeline(
-        descriptor: GPUComputePipelineDescriptor
-    ): GPUComputePipeline;
-    createRenderPipeline(
-        descriptor: GPURenderPipelineDescriptor
-    ): GPURenderPipeline;
-    createReadyComputePipeline(
-        descriptor: GPUComputePipelineDescriptor
-    ): Promise<GPUComputePipeline>;
-    createReadyRenderPipeline(
-        descriptor: GPURenderPipelineDescriptor
-    ): Promise<GPURenderPipeline>;
-
-    createCommandEncoder(
-        descriptor?: GPUCommandEncoderDescriptor
-    ): GPUCommandEncoder;
-    createRenderBundleEncoder(
-        descriptor: GPURenderBundleEncoderDescriptor
-    ): GPURenderBundleEncoder;
-
-    createQuerySet(descriptor: GPUQuerySetDescriptor): GPUQuerySet;
-
-    defaultQueue: GPUQueue;
-
-    pushErrorScope(filter: GPUErrorFilter): void;
-    popErrorScope(): Promise<GPUError | null>;
-    onuncapturederror: Event | undefined;
-    readonly lost: Promise<GPUDeviceLostInfo>;
-}
-
-declare class GPUFence implements GPUObjectBase {
-    private __brand: void;
-    label: string | undefined;
-
-    getCompletedValue(): number;
-    onCompletion(completionValue: number): Promise<void>;
-}
-
-interface GPUPipelineBase extends GPUObjectBase {
-    getBindGroupLayout(index: number): GPUBindGroupLayout;
-}
-
-declare class GPUPipelineLayout implements GPUObjectBase {
-    private __brand: void;
-    label: string | undefined;
-}
-
-interface GPUProgrammablePassEncoder {
-    setBindGroup(
-        index: number,
-        bindGroup: GPUBindGroup,
-        dynamicOffsets?: Iterable<number>
+    draw(
+        vertexCount: GPUSize32,
+        instanceCount?: GPUSize32, /* default=1 */
+        firstVertex?: GPUSize32, /* default=0 */
+        firstInstance?: GPUSize32 /* default=0 */
+    ): void;
+    drawIndexed(
+        indexCount: GPUSize32,
+        instanceCount?: GPUSize32, /* default=1 */
+        firstIndex?: GPUSize32, /* default=0 */
+        baseVertex?: GPUSignedOffset32, /* default=0 */
+        firstInstance?: GPUSize32 /* default=0 */
     ): void;
 
-    popDebugGroup(): void;
+    drawIndirect(indirectBuffer: GPUBuffer, indirectOffset: GPUSize64): void;
+    drawIndexedIndirect(indirectBuffer: GPUBuffer, indirectOffset: GPUSize64): void;
+}
+
+declare class GPURenderPassEncoder implements GPUObjectBase, GPUProgrammablePassEncoder, GPURenderEncoderBase {
+    private __brand: void;
+    label: string | undefined;
+
+    setBindGroup(
+        index: GPUIndex32,
+        bindGroup: GPUBindGroup,
+        dynamicOffsets?: GPUBufferDynamicOffset[]
+    ): void;
+    setBindGroup(
+        index: GPUIndex32,
+        bindGroup: GPUBindGroup,
+        dynamicOffsetData: Uint32Array,
+        dynamicOffsetsDataStart: GPUSize64,
+        dynamicOffsetsDataLength: GPUSize32
+    ): void;
+
     pushDebugGroup(groupLabel: string): void;
+    popDebugGroup(): void;
     insertDebugMarker(markerLabel: string): void;
+
+    setPipeline(pipeline: GPURenderPipeline): void;
+
+    setIndexBuffer(buffer: GPUBuffer, indexFormat: GPUIndexFormat, offset?: GPUSize64 /* default=0 */, size?: GPUSize64 /* default=0 */): void;
+    setVertexBuffer(slot: GPUIndex32, buffer: GPUBuffer, offset?: GPUSize64 /* default=0 */, size?: GPUSize64 /* default=0 */): void;
+
+    draw(
+        vertexCount: GPUSize32,
+        instanceCount?: GPUSize32, /* default=1 */
+        firstVertex?: GPUSize32, /* default=0 */
+        firstInstance?: GPUSize32 /* default=0 */
+    ): void;
+    drawIndexed(
+        indexCount: GPUSize32,
+        instanceCount?: GPUSize32, /* default=1 */
+        firstIndex?: GPUSize32, /* default=0 */
+        baseVertex?: GPUSignedOffset32, /* default=0 */
+        firstInstance?: GPUSize32 /* default=0 */
+    ): void;
+
+    drawIndirect(indirectBuffer: GPUBuffer, indirectOffset: GPUSize64): void;
+    drawIndexedIndirect(indirectBuffer: GPUBuffer, indirectOffset: GPUSize64): void;
+
+    setViewport(
+        x: number, y: number,
+        width: number, height: number,
+        minDepth: number, maxDepth: number
+    ): void;
+
+    setScissorRect(x: GPUIntegerCoordinate, y: GPUIntegerCoordinate, width: GPUIntegerCoordinate, height: GPUIntegerCoordinate): void;
+
+    setBlendColor(color: GPUColor): void;
+    setStencilReference(reference: GPUStencilValue): void;
+
+    beginOcclusionQuery(queryIndex: GPUSize32): void;
+    endOcclusionQuery(): void;
+
+    beginPipelineStatisticsQuery(querySet: GPUQuerySet, queryIndex: GPUSize32): void;
+    endPipelineStatisticsQuery(): void;
+
+    writeTimestamp(querySet: GPUQuerySet, queryIndex: GPUSize32): void;
+
+    executeBundles(bundles: GPURenderBundle[]): void;
+    endPass(): void;
+}
+
+interface GPURenderPassDescriptor extends GPUObjectDescriptorBase {
+    colorAttachments: GPURenderPassColorAttachment[];
+    depthStencilAttachment?: GPURenderPassDepthStencilAttachment;
+    occlusionQuerySet?: GPUQuerySet;
+}
+
+interface GPURenderPassColorAttachment {
+    attachment: GPUTextureView; // TODO: should be named view
+    resolveTarget?: GPUTextureView;
+
+    loadValue: GPULoadOp | GPUColor;
+    storeOp?: GPUStoreOp; /* default="store" */
+}
+
+interface GPURenderPassDepthStencilAttachment {
+    attachment: GPUTextureView; // TODO: should be named view
+
+    depthLoadValue: GPULoadOp | number;
+    depthStoreOp: GPUStoreOp;
+    depthReadOnly?: boolean; /* default=false */
+
+    stencilLoadValue: GPULoadOp | GPUStencilValue;
+    stencilStoreOp: GPUStoreOp;
+    stencilReadOnly?: boolean; /* default=false */
+}
+
+type GPULoadOp = "load";
+
+type GPUStoreOp = "store" | "clear";
+
+declare class GPURenderBundle implements GPUObjectBase {
+    private __brand: void;
+    label: string | undefined;
+}
+
+interface GPURenderBundleDescriptor extends GPUObjectDescriptorBase {
+}
+
+declare class GPURenderBundleEncoder implements GPUObjectBase, GPUProgrammablePassEncoder, GPURenderEncoderBase {
+    private __brand: void;
+    label: string | undefined;
+
+    setBindGroup(
+        index: GPUIndex32,
+        bindGroup: GPUBindGroup,
+        dynamicOffsets?: GPUBufferDynamicOffset[]
+    ): void;
+    setBindGroup(
+        index: GPUIndex32,
+        bindGroup: GPUBindGroup,
+        dynamicOffsetData: Uint32Array,
+        dynamicOffsetsDataStart: GPUSize64,
+        dynamicOffsetsDataLength: GPUSize32
+    ): void;
+
+    pushDebugGroup(groupLabel: string): void;
+    popDebugGroup(): void;
+    insertDebugMarker(markerLabel: string): void;
+
+    setPipeline(pipeline: GPURenderPipeline): void;
+
+    setIndexBuffer(buffer: GPUBuffer, indexFormat: GPUIndexFormat, offset?: GPUSize64 /* default=0 */, size?: GPUSize64 /* default=0 */): void;
+    setVertexBuffer(slot: GPUIndex32, buffer: GPUBuffer, offset?: GPUSize64 /* default=0 */, size?: GPUSize64 /* default=0 */): void;
+
+    draw(
+        vertexCount: GPUSize32,
+        instanceCount?: GPUSize32, /* default=1 */
+        firstVertex?: GPUSize32, /* default=0 */
+        firstInstance?: GPUSize32 /* default=0 */
+    ): void;
+    drawIndexed(
+        indexCount: GPUSize32,
+        instanceCount?: GPUSize32, /* default=1 */
+        firstIndex?: GPUSize32, /* default=0 */
+        baseVertex?: GPUSignedOffset32, /* default=0 */
+        firstInstance?: GPUSize32 /* default=0 */
+    ): void;
+
+    drawIndirect(indirectBuffer: GPUBuffer, indirectOffset: GPUSize64): void;
+    drawIndexedIndirect(indirectBuffer: GPUBuffer, indirectOffset: GPUSize64): void;
+
+    finish(descriptor?: GPURenderBundleDescriptor): GPURenderBundle;
+}
+
+interface GPURenderBundleEncoderDescriptor extends GPUObjectDescriptorBase {
+    colorFormats: GPUTextureFormat[];
+    depthStencilFormat?: GPUTextureFormat;
+    sampleCount?: GPUSize32; /* default=1 */
 }
 
 declare class GPUQueue implements GPUObjectBase {
     private __brand: void;
     label: string | undefined;
 
-    signal(fence: GPUFence, signalValue: number): void;
-    submit(commandBuffers: Iterable<GPUCommandBuffer>): void;
-    createFence(descriptor?: GPUFenceDescriptor): GPUFence;
+    submit(commandBuffers: GPUCommandBuffer[]): void;
 
-    writeBuffer(buffer: GPUBuffer,
-        bufferOffset: number,
-        data: BufferSource | ArrayBuffer,
-        dataOffset?: number,
-        size?: number): void;
-    writeTexture(destination: GPUTextureCopyView,
-        data: BufferSource | ArrayBuffer,
+    onSubmittedWorkDone(): Promise<void>;
+
+    writeBuffer(
+        buffer: GPUBuffer,
+        bufferOffset: GPUSize64,
+        data: BufferSource,
+        dataOffset?: GPUSize64, /* default=0 */
+        size?: GPUSize64
+    ): void;
+
+    writeTexture(
+        destination: GPUTextureCopyView,
+        data: BufferSource,
         dataLayout: GPUTextureDataLayout,
-        size: GPUExtent3D): void;
+        size: GPUExtent3D
+    ): void;
 
     copyImageBitmapToTexture(
         source: GPUImageBitmapCopyView,
         destination: GPUTextureCopyView,
         copySize: GPUExtent3D
     ): void;
-}
-
-type GPUQueryType =
-    | "occlusion"
-    | "timestamp"
-    | "pipeline-statistics";
-type GPUPipelineStatisticName =
-    | "vertex-shader-invocations"
-    | "clipper-invocations"
-    | "clipper-primitives-out"
-    | "fragment-shader-invocations"
-    | "compute-shader-invocations";
-
-interface GPUQuerySetDescriptor extends GPUObjectDescriptorBase {
-    type: GPUQueryType;
-    count: number;
-    pipelineStatistics?: Iterable<GPUPipelineStatisticName>;
 }
 
 declare class GPUQuerySet implements GPUObjectBase {
@@ -82378,187 +82758,33 @@ declare class GPUQuerySet implements GPUObjectBase {
     destroy(): void;
 }
 
-interface GPURenderEncoderBase {
-    setPipeline(pipeline: GPURenderPipeline): void;
-
-    setIndexBuffer(buffer: GPUBuffer, offset?: number, size?: number): void;
-    setIndexBuffer(buffer: GPUBuffer, indexFormat: GPUIndexFormat, offset?: number, size?: number): void;
-    setVertexBuffer(slot: number, buffer: GPUBuffer, offset?: number, size?: number): void;
-
-    draw(
-        vertexCount: number,
-        instanceCount?: number,
-        firstVertex?: number,
-        firstInstance?: number
-    ): void;
-    drawIndexed(
-        indexCount: number,
-        instanceCount?: number,
-        firstIndex?: number,
-        baseVertex?: number,
-        firstInstance?: number
-    ): void;
-
-    drawIndirect(indirectBuffer: GPUBuffer, indirectOffset: number): void;
-    drawIndexedIndirect(
-        indirectBuffer: GPUBuffer,
-        indirectOffset: number
-    ): void;
+interface GPUQuerySetDescriptor extends GPUObjectDescriptorBase {
+    type: GPUQueryType;
+    count: GPUSize32;
+    pipelineStatistics?: GPUPipelineStatisticName[];
 }
 
-declare class GPURenderPassEncoder implements GPUObjectBase, GPUProgrammablePassEncoder, GPURenderEncoderBase {
+type GPUQueryType = "occlusion" | "pipeline-statistics" | "timestamp";
+
+type GPUPipelineStatisticName =
+    | "vertex-shader-invocations"
+    | "clipper-invocations"
+    | "clipper-primitives-out"
+    | "fragment-shader-invocations"
+    | "compute-shader-invocations";
+
+declare class GPUCanvasContext {
     private __brand: void;
-    label: string | undefined;
 
-    setBindGroup(
-        index: number,
-        bindGroup: GPUBindGroup,
-        dynamicOffsets?: Iterable<number>
-    ): void;
+    configureSwapChain(descriptor: GPUSwapChainDescriptor): GPUSwapChain;
 
-    popDebugGroup(): void;
-    pushDebugGroup(groupLabel: string): void;
-    insertDebugMarker(markerLabel: string): void;
-
-    setPipeline(pipeline: GPURenderPipeline): void;
-
-    setIndexBuffer(buffer: GPUBuffer, offset?: number): void;
-    setIndexBuffer(buffer: GPUBuffer, indexFormat: GPUIndexFormat, offset?: number, size?: number): void;
-    setVertexBuffer(slot: number, buffer: GPUBuffer, offset?: number): void;
-
-    draw(
-        vertexCount: number,
-        instanceCount?: number,
-        firstVertex?: number,
-        firstInstance?: number
-    ): void;
-    drawIndexed(
-        indexCount: number,
-        instanceCount?: number,
-        firstIndex?: number,
-        baseVertex?: number,
-        firstInstance?: number
-    ): void;
-
-    drawIndirect(indirectBuffer: GPUBuffer, indirectOffset: number): void;
-    drawIndexedIndirect(
-        indirectBuffer: GPUBuffer,
-        indirectOffset: number
-    ): void;
-
-    setViewport(
-        x: number,
-        y: number,
-        width: number,
-        height: number,
-        minDepth: number,
-        maxDepth: number
-    ): void;
-    setScissorRect(x: number, y: number, width: number, height: number): void;
-
-    setBlendColor(color: GPUColor): void;
-    setStencilReference(reference: number): void;
-
-    writeTimestamp(querySet: GPUQuerySet, queryIndex: number): void;
-    beginOcclusionQuery(queryIndex: number): void;
-    endOcclusionQuery(): void;
-    beginPipelineStatisticsQuery(querySet: GPUQuerySet, queryIndex: number): void;
-    endPipelineStatisticsQuery(querySet: GPUQuerySet, queryIndex: number): void;
-
-    executeBundles(bundles: Iterable<GPURenderBundle>): void;
-    endPass(): void;
+    getSwapChainPreferredFormat(adapter: GPUAdapter): GPUTextureFormat;
 }
 
-interface GPURenderBundleDescriptor extends GPUObjectDescriptorBase { }
-
-declare class GPURenderBundle implements GPUObjectBase {
-    private __brand: void;
-    label: string | undefined;
-}
-
-declare class GPURenderBundleEncoder implements GPURenderEncoderBase {
-    private __brand: void;
-    label: string | undefined;
-
-    setBindGroup(
-        index: number,
-        bindGroup: GPUBindGroup,
-        dynamicOffsets?: Iterable<number>
-    ): void;
-
-    popDebugGroup(): void;
-    pushDebugGroup(groupLabel: string): void;
-    insertDebugMarker(markerLabel: string): void;
-
-    setPipeline(pipeline: GPURenderPipeline): void;
-
-    setIndexBuffer(buffer: GPUBuffer, offset?: number): void;
-    setIndexBuffer(buffer: GPUBuffer, indexFormat: GPUIndexFormat, offset?: number, size?: number): void;
-    setVertexBuffer(slot: number, buffer: GPUBuffer, offset?: number): void;
-
-    draw(
-        vertexCount: number,
-        instanceCount?: number,
-        firstVertex?: number,
-        firstInstance?: number
-    ): void;
-    drawIndexed(
-        indexCount: number,
-        instanceCount?: number,
-        firstIndex?: number,
-        baseVertex?: number,
-        firstInstance?: number
-    ): void;
-
-    drawIndirect(indirectBuffer: GPUBuffer, indirectOffset: number): void;
-    drawIndexedIndirect(
-        indirectBuffer: GPUBuffer,
-        indirectOffset: number
-    ): void;
-
-    finish(descriptor?: GPURenderBundleDescriptor): GPURenderBundle;
-}
-
-interface GPURenderBundleEncoderDescriptor
-    extends GPUObjectDescriptorBase {
-    colorFormats: Iterable<GPUTextureFormat>;
-    depthStencilFormat?: GPUTextureFormat;
-    sampleCount?: number;
-}
-
-declare class GPURenderPipeline implements GPUPipelineBase {
-    private __brand: void;
-    label: string | undefined;
-
-    getBindGroupLayout(index: number): GPUBindGroupLayout;
-}
-
-declare class GPUSampler implements GPUObjectBase {
-    private __brand: void;
-    label: string | undefined;
-}
-
-type GPUCompilationMessageType =
-    | "error"
-    | "warning"
-    | "info";
-
-interface GPUCompilationMessage {
-    readonly message: string;
-    readonly type: GPUCompilationMessageType;
-    readonly lineNum: number;
-    readonly linePos: number;
-}
-
-interface GPUCompilationInfo {
-    readonly messages: readonly GPUCompilationMessage[];
-}
-
-declare class GPUShaderModule implements GPUObjectBase {
-    private __brand: void;
-    label: string | undefined;
-
-    compilationInfo(): Promise<GPUCompilationInfo>;
+interface GPUSwapChainDescriptor extends GPUObjectDescriptorBase {
+    device: GPUDevice;
+    format: GPUTextureFormat;
+    usage?: GPUTextureUsageFlags; /* default=0x10 - GPUTextureUsage.RENDER_ATTACHMENT */
 }
 
 declare class GPUSwapChain implements GPUObjectBase {
@@ -82568,32 +82794,13 @@ declare class GPUSwapChain implements GPUObjectBase {
     getCurrentTexture(): GPUTexture;
 }
 
-declare class GPUTexture implements GPUObjectBase {
+type GPUDeviceLostReason = "destroyed";
+
+declare class GPUDeviceLostInfo {
     private __brand: void;
-    label: string | undefined;
-
-    createView(descriptor?: GPUTextureViewDescriptor): GPUTextureView;
-    destroy(): void;
+    readonly reason?: GPUDeviceLostReason;
+    readonly message: string;
 }
-
-declare class GPUTextureView implements GPUObjectBase {
-    private __brand: void;
-    label: string | undefined;
-}
-
-type GPUPowerPreference = "low-power" | "high-performance";
-interface GPURequestAdapterOptions {
-    powerPreference?: GPUPowerPreference;
-}
-
-declare class GPU {
-    private __brand: void;
-    requestAdapter(options?: GPURequestAdapterOptions): Promise<GPUAdapter | null>;
-}
-
-// ****************************************************************************
-// ERROR SCOPES
-// ****************************************************************************
 
 type GPUErrorFilter = "out-of-memory" | "validation";
 
@@ -82610,10 +82817,6 @@ declare class GPUValidationError {
 
 type GPUError = GPUOutOfMemoryError | GPUValidationError;
 
-// ****************************************************************************
-// TELEMETRY
-// ****************************************************************************
-
 declare class GPUUncapturedErrorEvent extends Event {
     private __brand: void;
     constructor(
@@ -82627,9 +82830,85 @@ interface GPUUncapturedErrorEventInit extends EventInit {
     error: GPUError;
 }
 
-declare class GPUDeviceLostInfo {
-    private __brand: void;
-    readonly message: string;
+interface GPUColorDict {
+    r: number;
+    g: number;
+    b: number;
+    a: number;
+}
+type GPUColor = [number, number, number, number] | GPUColorDict;
+
+interface GPUOrigin2DDict {
+    x?: GPUIntegerCoordinate; /* default=0 */
+    y?: GPUIntegerCoordinate; /* default=0 */
+}
+type GPUOrigin2D = [GPUIntegerCoordinate, GPUIntegerCoordinate] | GPUOrigin2DDict;
+
+interface GPUOrigin3DDict {
+    x?: GPUIntegerCoordinate; /* default=0 */
+    y?: GPUIntegerCoordinate; /* default=0 */
+    z?: GPUIntegerCoordinate; /* default=0 */
+}
+type GPUOrigin3D = [GPUIntegerCoordinate, GPUIntegerCoordinate, GPUIntegerCoordinate] | GPUOrigin3DDict;
+
+interface GPUExtent3DDict {
+    width?: GPUIntegerCoordinate; /* default=1 */
+    height?: GPUIntegerCoordinate; /* default=1 */
+    depth?: GPUIntegerCoordinate; /* default=1 */
+}
+type GPUExtent3D = [GPUIntegerCoordinate, GPUIntegerCoordinate, GPUIntegerCoordinate] | GPUExtent3DDict;
+
+// TODO WEBGPU: below to be removed when GPURenderPipelineDescriptor2 implemented by Chrome
+
+interface GPURenderPipelineDescriptor extends GPUPipelineDescriptorBase {
+    vertexStage: GPUProgrammableStage;
+    fragmentStage?: GPUProgrammableStage;
+
+    primitiveTopology: GPUPrimitiveTopology;
+    rasterizationState?: GPURasterizationStateDescriptor;
+    colorStates: GPUColorStateDescriptor[];
+    depthStencilState?: GPUDepthStencilStateDescriptor;
+    vertexState?: GPUVertexState;
+
+    sampleCount?: number;
+    sampleMask?: number;
+    alphaToCoverageEnabled?: boolean;
+}
+
+interface GPUBlendDescriptor {
+    dstFactor?: GPUBlendFactor;
+    operation?: GPUBlendOperation;
+    srcFactor?: GPUBlendFactor;
+}
+
+interface GPUColorStateDescriptor {
+    format: GPUTextureFormat;
+
+    alphaBlend?: GPUBlendDescriptor;
+    colorBlend?: GPUBlendDescriptor;
+    writeMask?: GPUColorWriteFlags;
+}
+
+interface GPUDepthStencilStateDescriptor {
+    format: GPUTextureFormat;
+
+    depthWriteEnabled?: boolean;
+    depthCompare?: GPUCompareFunction;
+
+    stencilFront?: GPUStencilStateFace;
+    stencilBack?: GPUStencilStateFace;
+
+    stencilReadMask?: number;
+    stencilWriteMask?: number;
+}
+
+interface GPURasterizationStateDescriptor {
+    frontFace?: GPUFrontFace;
+    cullMode?: GPUCullMode;
+    clampDepth?: boolean;
+    depthBias?: number;
+    depthBiasSlopeScale?: number;
+    depthBiasClamp?: number;
 }
 
 // Type definitions for WebVR API
@@ -83033,7 +83312,7 @@ interface XRSession {
      * canceling the callback using cancelAnimationFrame(). This method is comparable
      * to the Window.requestAnimationFrame() method.
      */
-    requestAnimationFrame: XRFrameRequestCallback;
+    requestAnimationFrame: (callback: XRFrameRequestCallback) => number;
     /**
      * Requests that a new XRReferenceSpace of the specified type be created.
      * Returns a promise which resolves with the XRReferenceSpace or
@@ -83161,10 +83440,15 @@ interface XRJointPose extends XRPose {
     radius: number | undefined;
 }
 
+// to be extended
+type XRHandJoint = string;
+
 interface XRHand extends Iterable<XRJointSpace> {
-    readonly length: number;
+    readonly size: number;
 
     [index: number]: XRJointSpace;
+
+    get(joint: XRHandJoint): XRJointSpace;
 
     readonly WRIST: number;
 

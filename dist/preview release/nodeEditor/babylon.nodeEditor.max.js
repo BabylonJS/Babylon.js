@@ -10113,7 +10113,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#node-editor-graph-root {\n  display: grid;\n  grid-template-rows: calc(100% - 120px) 120px;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  font: 14px \"acumin-pro\"; }\n\n.wait-screen {\n  display: grid;\n  justify-content: center;\n  align-content: center;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  opacity: 0.95;\n  color: white;\n  font: 24px \"acumin-pro\";\n  position: absolute;\n  top: 0;\n  left: 0; }\n  .wait-screen.hidden {\n    visibility: hidden; }\n\n#nodeList {\n  grid-row: 1 / span 2;\n  grid-column: 1; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 4;\n  cursor: ew-resize; }\n\n.diagram-container {\n  grid-row: 1;\n  grid-column: 3;\n  background: #5f5b60;\n  width: 100%;\n  height: 100%; }\n  .diagram-container .diagram {\n    display: none;\n    width: 100%;\n    height: 100%; }\n\n.right-panel {\n  grid-row: 1 / span 2;\n  grid-column: 5;\n  display: grid;\n  grid-template-rows: 1fr 40px auto 40px;\n  grid-template-columns: 100%;\n  height: 100%;\n  overflow-y: auto; }\n  .right-panel #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  .right-panel .button {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: auto;\n    width: calc(100% / 7);\n    cursor: pointer; }\n    .right-panel .button:hover {\n      background: #337ab7;\n      color: white;\n      opacity: 0.8; }\n    .right-panel .button.selected {\n      background: #337ab7;\n      color: white; }\n    .right-panel .button.align {\n      justify-content: stretch;\n      text-align: center; }\n  .right-panel #preview-mesh-bar {\n    grid-row: 2;\n    grid-column: 1;\n    display: grid;\n    grid-template-columns: auto 1fr 40px 40px 40px;\n    align-items: center;\n    font-size: 18px;\n    background-color: #555555; }\n    .right-panel #preview-mesh-bar #file-picker {\n      display: none; }\n    .right-panel #preview-mesh-bar .listLine {\n      grid-column: 1;\n      height: 40px;\n      display: grid;\n      grid-template-columns: 0px 1fr; }\n      .right-panel #preview-mesh-bar .listLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        font-size: 14px; }\n      .right-panel #preview-mesh-bar .listLine .options {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        margin-left: 5px; }\n        .right-panel #preview-mesh-bar .listLine .options select {\n          width: 115px; }\n    .right-panel #preview-mesh-bar .button {\n      color: #ffffff;\n      width: 40px;\n      height: 40px;\n      transform-origin: 50% 50%; }\n      .right-panel #preview-mesh-bar .button:active {\n        transform: scale(0.9); }\n      .right-panel #preview-mesh-bar .button:hover {\n        background: #3f3461; }\n      .right-panel #preview-mesh-bar .button.selected {\n        background: #9379e6; }\n      .right-panel #preview-mesh-bar .button img {\n        height: 40px;\n        width: 100%; }\n    .right-panel #preview-mesh-bar #play-button {\n      grid-column: 3; }\n    .right-panel #preview-mesh-bar #color-picker-button {\n      grid-column: 4;\n      display: grid;\n      grid-template-columns: 100%;\n      grid-template-rows: 100%; }\n      .right-panel #preview-mesh-bar #color-picker-button img {\n        height: 40px;\n        width: 30px; }\n      .right-panel #preview-mesh-bar #color-picker-button #color-picker-image {\n        padding-left: 5px;\n        padding-bottom: 38px; }\n      .right-panel #preview-mesh-bar #color-picker-button #color-picker {\n        transform: scale(0);\n        grid-column: 1;\n        grid-row: 1; }\n      .right-panel #preview-mesh-bar #color-picker-button #color-picker-label {\n        width: 100%;\n        background: transparent;\n        cursor: pointer; }\n    .right-panel #preview-mesh-bar #preview-new-window {\n      grid-column: 5; }\n    .right-panel #preview-mesh-bar select {\n      background-color: #a3a3a3;\n      color: #333333; }\n  .right-panel #preview-config-bar {\n    grid-row: 4;\n    grid-column: 1;\n    display: grid;\n    grid-template-columns: 40px 40px 40px 1fr 40px 40px;\n    color: white;\n    align-items: center;\n    font-size: 18px; }\n    .right-panel #preview-config-bar .button {\n      width: 40px;\n      grid-row: 1;\n      height: 40px;\n      transform-origin: 50% 50%; }\n      .right-panel #preview-config-bar .button:hover {\n        background: #3f3461; }\n      .right-panel #preview-config-bar .button.selected {\n        background: #9379e6; }\n      .right-panel #preview-config-bar .button:active {\n        transform: scale(0.9); }\n      .right-panel #preview-config-bar .button img {\n        height: auto;\n        width: 100%; }\n      .right-panel #preview-config-bar .button.back-face {\n        grid-column: 6; }\n      .right-panel #preview-config-bar .button.depth-pass {\n        grid-column: 5 / 6; }\n      .right-panel #preview-config-bar .button.hemispheric-light {\n        grid-column: 3 / 4; }\n      .right-panel #preview-config-bar .button.direction-light-1 {\n        grid-column: 2 / 3; }\n      .right-panel #preview-config-bar .button.direction-light-0 {\n        grid-column: 1 / 2; }\n  .right-panel #preview {\n    border-top: 1px solid #555555;\n    grid-row: 3;\n    grid-column: 1;\n    width: 100%;\n    display: grid;\n    outline: 0 !important;\n    user-select: none; }\n    .right-panel #preview #preview-canvas {\n      width: 100%;\n      height: 100%;\n      outline: 0 !important;\n      grid-row: 1;\n      grid-column: 1; }\n    .right-panel #preview .waitPanel {\n      width: 100%;\n      height: 100%;\n      grid-row: 1;\n      grid-column: 1;\n      color: white;\n      font-size: 18px;\n      align-content: center;\n      justify-content: center;\n      background: rgba(20, 20, 20, 0.95);\n      z-index: 10;\n      display: grid;\n      transition: opacity 250ms; }\n      .right-panel #preview .waitPanel.hidden {\n        opacity: 0;\n        pointer-events: none; }\n\n.blocker {\n  visibility: hidden;\n  position: absolute;\n  width: calc(100% - 40px);\n  height: 100%;\n  top: 0;\n  left: 0;\n  background: rgba(20, 20, 20, 0.95);\n  font-family: \"acumin-pro\";\n  color: white;\n  font-size: 24px;\n  display: grid;\n  align-content: center;\n  justify-content: center;\n  user-select: none;\n  padding: 20px;\n  text-align: center; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 3; }\n\n.dialog-container {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.6);\n  display: grid;\n  font-family: \"acumin-pro\";\n  top: 0; }\n  .dialog-container .dialog {\n    align-self: center;\n    justify-self: center;\n    min-height: 140px;\n    max-width: 400px;\n    border-radius: 10px;\n    background: white;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: calc(100% - 50px) 50px; }\n    .dialog-container .dialog .dialog-message {\n      grid-row: 1;\n      grid-column: 1;\n      margin-top: 20px;\n      padding: 10px;\n      font-size: 18px;\n      color: black; }\n    .dialog-container .dialog .dialog-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%;\n      color: white; }\n      .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n        cursor: pointer;\n        justify-self: center;\n        background: green;\n        min-width: 80px;\n        justify-content: center;\n        display: grid;\n        align-content: center;\n        align-self: center;\n        height: 35px;\n        border-radius: 10px; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n          opacity: 0.8; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n          background: red; }\n", ""]);
+exports.push([module.i, "#node-editor-graph-root {\n  display: grid;\n  grid-template-rows: calc(100% - 120px) 120px;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  font: 14px \"acumin-pro\"; }\n  #node-editor-graph-root .wait-screen {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: 100%;\n    width: 100%;\n    background: #464646;\n    opacity: 0.95;\n    color: white;\n    font: 24px \"acumin-pro\";\n    position: absolute;\n    top: 0;\n    left: 0; }\n    #node-editor-graph-root .wait-screen.hidden {\n      visibility: hidden; }\n  #node-editor-graph-root #nodeList {\n    grid-row: 1 / span 2;\n    grid-column: 1; }\n  #node-editor-graph-root #leftGrab {\n    grid-row: 1 / span 2;\n    grid-column: 2;\n    cursor: ew-resize; }\n  #node-editor-graph-root #rightGrab {\n    grid-row: 1 / span 2;\n    grid-column: 4;\n    cursor: ew-resize; }\n  #node-editor-graph-root .diagram-container {\n    grid-row: 1;\n    grid-column: 3;\n    background: #5f5b60;\n    width: 100%;\n    height: 100%; }\n    #node-editor-graph-root .diagram-container .diagram {\n      display: none;\n      width: 100%;\n      height: 100%; }\n  #node-editor-graph-root .right-panel {\n    grid-row: 1 / span 2;\n    grid-column: 5;\n    display: grid;\n    grid-template-rows: 1fr 40px auto 40px;\n    grid-template-columns: 100%;\n    height: 100%;\n    overflow-y: auto; }\n    #node-editor-graph-root .right-panel #propertyTab {\n      grid-row: 1;\n      grid-column: 1; }\n    #node-editor-graph-root .right-panel .button {\n      display: grid;\n      justify-content: center;\n      align-content: center;\n      height: auto;\n      width: calc(100% / 7);\n      cursor: pointer; }\n      #node-editor-graph-root .right-panel .button:hover {\n        background: #337ab7;\n        color: white;\n        opacity: 0.8; }\n      #node-editor-graph-root .right-panel .button.selected {\n        background: #337ab7;\n        color: white; }\n      #node-editor-graph-root .right-panel .button.align {\n        justify-content: stretch;\n        text-align: center; }\n    #node-editor-graph-root .right-panel #preview-mesh-bar {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-columns: auto 1fr 40px 40px 40px;\n      align-items: center;\n      font-size: 18px;\n      background-color: #555555; }\n      #node-editor-graph-root .right-panel #preview-mesh-bar #file-picker {\n        display: none; }\n      #node-editor-graph-root .right-panel #preview-mesh-bar .listLine {\n        grid-column: 1;\n        height: 40px;\n        display: grid;\n        grid-template-columns: 0px 1fr; }\n        #node-editor-graph-root .right-panel #preview-mesh-bar .listLine .label {\n          grid-column: 1;\n          display: flex;\n          align-items: center;\n          font-size: 14px; }\n        #node-editor-graph-root .right-panel #preview-mesh-bar .listLine .options {\n          grid-column: 2;\n          display: flex;\n          align-items: center;\n          margin-left: 5px; }\n          #node-editor-graph-root .right-panel #preview-mesh-bar .listLine .options select {\n            width: 115px; }\n      #node-editor-graph-root .right-panel #preview-mesh-bar .button {\n        color: #ffffff;\n        width: 40px;\n        height: 40px;\n        transform-origin: 50% 50%; }\n        #node-editor-graph-root .right-panel #preview-mesh-bar .button:active {\n          transform: scale(0.9); }\n        #node-editor-graph-root .right-panel #preview-mesh-bar .button:hover {\n          background: #3f3461; }\n        #node-editor-graph-root .right-panel #preview-mesh-bar .button.selected {\n          background: #9379e6; }\n        #node-editor-graph-root .right-panel #preview-mesh-bar .button img {\n          height: 40px;\n          width: 100%; }\n      #node-editor-graph-root .right-panel #preview-mesh-bar #play-button {\n        grid-column: 3; }\n      #node-editor-graph-root .right-panel #preview-mesh-bar #color-picker-button {\n        grid-column: 4;\n        display: grid;\n        grid-template-columns: 100%;\n        grid-template-rows: 100%; }\n        #node-editor-graph-root .right-panel #preview-mesh-bar #color-picker-button img {\n          height: 40px;\n          width: 30px; }\n        #node-editor-graph-root .right-panel #preview-mesh-bar #color-picker-button #color-picker-image {\n          padding-left: 5px;\n          padding-bottom: 38px; }\n        #node-editor-graph-root .right-panel #preview-mesh-bar #color-picker-button #color-picker {\n          transform: scale(0);\n          grid-column: 1;\n          grid-row: 1; }\n        #node-editor-graph-root .right-panel #preview-mesh-bar #color-picker-button #color-picker-label {\n          width: 100%;\n          background: transparent;\n          cursor: pointer; }\n      #node-editor-graph-root .right-panel #preview-mesh-bar #preview-new-window {\n        grid-column: 5; }\n      #node-editor-graph-root .right-panel #preview-mesh-bar select {\n        background-color: #a3a3a3;\n        color: #333333; }\n    #node-editor-graph-root .right-panel #preview-config-bar {\n      grid-row: 4;\n      grid-column: 1;\n      display: grid;\n      grid-template-columns: 40px 40px 40px 1fr 40px 40px;\n      color: white;\n      align-items: center;\n      font-size: 18px; }\n      #node-editor-graph-root .right-panel #preview-config-bar.extended {\n        grid-template-columns: 1fr; }\n      #node-editor-graph-root .right-panel #preview-config-bar .listLine {\n        padding-left: 5px;\n        height: 30px;\n        display: grid;\n        grid-template-columns: 1fr auto; }\n        #node-editor-graph-root .right-panel #preview-config-bar .listLine .label {\n          grid-column: 1;\n          display: flex;\n          align-items: center;\n          font-size: 14px; }\n        #node-editor-graph-root .right-panel #preview-config-bar .listLine .options {\n          grid-column: 2;\n          display: flex;\n          align-items: center;\n          margin-right: 5px; }\n          #node-editor-graph-root .right-panel #preview-config-bar .listLine .options select {\n            width: 115px; }\n      #node-editor-graph-root .right-panel #preview-config-bar .button {\n        width: 40px;\n        grid-row: 1;\n        height: 40px;\n        transform-origin: 50% 50%; }\n        #node-editor-graph-root .right-panel #preview-config-bar .button:hover {\n          background: #3f3461; }\n        #node-editor-graph-root .right-panel #preview-config-bar .button.selected {\n          background: #9379e6; }\n        #node-editor-graph-root .right-panel #preview-config-bar .button:active {\n          transform: scale(0.9); }\n        #node-editor-graph-root .right-panel #preview-config-bar .button img {\n          height: auto;\n          width: 100%; }\n        #node-editor-graph-root .right-panel #preview-config-bar .button.back-face {\n          grid-column: 6; }\n        #node-editor-graph-root .right-panel #preview-config-bar .button.depth-pass {\n          grid-column: 5 / 6; }\n        #node-editor-graph-root .right-panel #preview-config-bar .button.hemispheric-light {\n          grid-column: 3 / 4; }\n        #node-editor-graph-root .right-panel #preview-config-bar .button.direction-light-1 {\n          grid-column: 2 / 3; }\n        #node-editor-graph-root .right-panel #preview-config-bar .button.direction-light-0 {\n          grid-column: 1 / 2; }\n    #node-editor-graph-root .right-panel #preview {\n      border-top: 1px solid #555555;\n      grid-row: 3;\n      grid-column: 1;\n      width: 100%;\n      display: grid;\n      outline: 0 !important;\n      user-select: none;\n      overflow: hidden; }\n      #node-editor-graph-root .right-panel #preview #preview-canvas {\n        width: 100%;\n        height: 100%;\n        outline: 0 !important;\n        grid-row: 1;\n        grid-column: 1; }\n      #node-editor-graph-root .right-panel #preview .waitPanel {\n        width: 100%;\n        height: 100%;\n        grid-row: 1;\n        grid-column: 1;\n        color: white;\n        font-size: 18px;\n        align-content: center;\n        justify-content: center;\n        background: rgba(20, 20, 20, 0.95);\n        z-index: 10;\n        display: grid;\n        transition: opacity 250ms; }\n        #node-editor-graph-root .right-panel #preview .waitPanel.hidden {\n          opacity: 0;\n          pointer-events: none; }\n  #node-editor-graph-root .blocker {\n    visibility: hidden;\n    position: absolute;\n    width: calc(100% - 40px);\n    height: 100%;\n    top: 0;\n    left: 0;\n    background: rgba(20, 20, 20, 0.95);\n    font-family: \"acumin-pro\";\n    color: white;\n    font-size: 24px;\n    display: grid;\n    align-content: center;\n    justify-content: center;\n    user-select: none;\n    padding: 20px;\n    text-align: center; }\n  #node-editor-graph-root #log-console {\n    grid-row: 2;\n    grid-column: 3; }\n  #node-editor-graph-root .dialog-container {\n    position: absolute;\n    width: 100%;\n    height: 100%;\n    background: rgba(0, 0, 0, 0.6);\n    display: grid;\n    font-family: \"acumin-pro\";\n    top: 0; }\n    #node-editor-graph-root .dialog-container .dialog {\n      align-self: center;\n      justify-self: center;\n      min-height: 140px;\n      max-width: 400px;\n      border-radius: 10px;\n      background: white;\n      display: grid;\n      grid-template-columns: 100%;\n      grid-template-rows: calc(100% - 50px) 50px; }\n      #node-editor-graph-root .dialog-container .dialog .dialog-message {\n        grid-row: 1;\n        grid-column: 1;\n        margin-top: 20px;\n        padding: 10px;\n        font-size: 18px;\n        color: black; }\n      #node-editor-graph-root .dialog-container .dialog .dialog-buttons {\n        grid-row: 2;\n        grid-column: 1;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: 100%;\n        color: white; }\n        #node-editor-graph-root .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n          cursor: pointer;\n          justify-self: center;\n          background: green;\n          min-width: 80px;\n          justify-content: center;\n          display: grid;\n          align-content: center;\n          align-self: center;\n          height: 35px;\n          border-radius: 10px; }\n          #node-editor-graph-root .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n            opacity: 0.8; }\n          #node-editor-graph-root .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n            background: red; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -55849,6 +55849,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/dataStorage */ "babylonjs/Misc/dataStorage");
 /* harmony import */ var babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../sharedComponents/optionsLineComponent */ "./sharedComponents/optionsLineComponent.tsx");
+
+
 
 
 
@@ -55885,12 +55888,33 @@ var PreviewAreaComponent = /** @class */ (function (_super) {
         this.props.globalState.onDepthPrePassChanged.notifyObservers();
         this.forceUpdate();
     };
+    PreviewAreaComponent.prototype.changeParticleSystemBlendMode = function (newOne) {
+        if (this.props.globalState.particleSystemBlendMode === newOne) {
+            return;
+        }
+        this.props.globalState.particleSystemBlendMode = newOne;
+        this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+        babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].WriteNumber("DefaultParticleSystemBlendMode", newOne);
+        this.forceUpdate();
+    };
     PreviewAreaComponent.prototype.render = function () {
         var _this = this;
+        var blendModeOptions = [
+            { label: "Add", value: babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__["ParticleSystem"].BLENDMODE_ADD },
+            { label: "Multiply", value: babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__["ParticleSystem"].BLENDMODE_MULTIPLY },
+            { label: "Multiply Add", value: babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__["ParticleSystem"].BLENDMODE_MULTIPLYADD },
+            { label: "OneOne", value: babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__["ParticleSystem"].BLENDMODE_ONEONE },
+            { label: "Standard", value: babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__["ParticleSystem"].BLENDMODE_STANDARD },
+        ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "preview", style: { height: this.props.width + "px" } },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { id: "preview-canvas" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "waitPanel" + (this.state.isLoading ? "" : " hidden") }, "Please wait, loading...")),
+            this.props.globalState.mode === babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].Particle &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "preview-config-bar", className: "extended" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_3__["OptionsLineComponent"], { label: "Blend mode", options: blendModeOptions, target: this.props.globalState, propertyName: "particleSystemBlendMode", noDirectUpdate: true, onSelect: function (value) {
+                            _this.changeParticleSystemBlendMode(value);
+                        } })),
             this.props.globalState.mode === babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].Material && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "preview-config-bar" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Render without back face culling", onClick: function () { return _this.changeBackFaceCulling(!_this.props.globalState.backFaceCulling); }, className: "button back-face" + (!this.props.globalState.backFaceCulling ? " selected" : "") },
@@ -55940,6 +55964,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _previewType__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./previewType */ "./components/preview/previewType.ts");
 /* harmony import */ var _log_logComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../log/logComponent */ "./components/log/logComponent.tsx");
+
 
 
 
@@ -56123,6 +56148,7 @@ var PreviewManager = /** @class */ (function () {
             case babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].Particle: {
                 this._camera.radius = this._globalState.previewType === _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].Explosion ? 50 : this._globalState.previewType === _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].DefaultParticleSystem ? 6 : 20;
                 this._camera.upperRadiusLimit = 5000;
+                this._globalState.particleSystemBlendMode = this._particleSystem.blendMode;
                 break;
             }
         }
@@ -56211,6 +56237,7 @@ var PreviewManager = /** @class */ (function () {
                 switch (this._globalState.previewType) {
                     case _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].DefaultParticleSystem:
                         this._particleSystem = babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["ParticleHelper"].CreateDefault(new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"](0, 0, 0), 500, this._scene);
+                        this._particleSystem.blendMode = babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("DefaultParticleSystemBlendMode", babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["ParticleSystem"].BLENDMODE_ONEONE);
                         this._particleSystem.start();
                         break;
                     case _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].Bubbles:
@@ -56224,7 +56251,7 @@ var PreviewManager = /** @class */ (function () {
                         this._particleSystem.maxEmitPower = 3.0;
                         this._particleSystem.createBoxEmitter(new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"](-1, 1, -1), new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"](1, 1, 1), new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"](-0.1, -0.1, -0.1), new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"](0.1, 0.1, 0.1));
                         this._particleSystem.emitRate = 100;
-                        this._particleSystem.blendMode = babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["ParticleSystem"].BLENDMODE_ONEONE;
+                        this._particleSystem.blendMode = babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("DefaultParticleSystemBlendMode", babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["ParticleSystem"].BLENDMODE_ONEONE);
                         this._particleSystem.color1 = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Color4"](1, 1, 0, 1);
                         this._particleSystem.color2 = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Color4"](1, 0.5, 0, 1);
                         this._particleSystem.gravity = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"](0, -1.0, 0);
@@ -56351,6 +56378,7 @@ var PreviewManager = /** @class */ (function () {
                         }
                     });
                     tempMaterial_1.createEffectForParticles(this._particleSystem);
+                    this._particleSystem.blendMode = this._globalState.particleSystemBlendMode;
                     if (this._material) {
                         this._material.dispose(false, true);
                     }
@@ -56546,11 +56574,12 @@ var PreviewMeshControlComponent = /** @class */ (function (_super) {
                         display: "none"
                     }, title: "Preview with a custom mesh" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: this.filePickerRef, id: "file-picker", type: "file", onChange: function (evt) { return _this.useCustomMesh(evt); }, accept: accept }))),
-            this.props.globalState.mode === babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].Material && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Turn-table animation", onClick: function () { return _this.changeAnimation(); }, className: "button", id: "play-button" }, this.props.globalState.rotatePreview ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: pauseIcon, alt: "" }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: playIcon, alt: "" })),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "color-picker-button", title: "Background color", className: "button align", onClick: function (_) { return _this.changeBackgroundClick(); } },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: colorPicker, alt: "", id: "color-picker-image" }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: this.colorInputRef, id: "color-picker", type: "color", onChange: function (evt) { return _this.changeBackground(evt.target.value); } }))),
+            this.props.globalState.mode === babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].Material &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Turn-table animation", onClick: function () { return _this.changeAnimation(); }, className: "button", id: "play-button" }, this.props.globalState.rotatePreview ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: pauseIcon, alt: "" }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: playIcon, alt: "" })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "color-picker-button", title: "Background color", className: "button align", onClick: function (_) { return _this.changeBackgroundClick(); } },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: colorPicker, alt: "", id: "color-picker-image" }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: this.colorInputRef, id: "color-picker", type: "color", onChange: function (evt) { return _this.changeBackground(evt.target.value); } }))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Open preview in new window", id: "preview-new-window", onClick: function () { return _this.onPopUp(); }, className: "button" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: popUpIcon, alt: "" }))));
     };
@@ -62703,6 +62732,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 var GlobalState = /** @class */ (function () {
     function GlobalState() {
         this.onSelectionChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
@@ -62727,8 +62757,10 @@ var GlobalState = /** @class */ (function () {
         this.onCandidatePortSelectedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onImportFrameObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onGraphNodeRemovalObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onPopupClosedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onGridSizeChanged = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onExposePortOnFrameObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.particleSystemBlendMode = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["ParticleSystem"].BLENDMODE_ONEONE;
         this.listOfCustomPreviewFiles = [];
         this.blockKeyboardEvents = false;
         this.previewType = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("PreviewType", _components_preview_previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].Box);
@@ -63144,13 +63176,18 @@ var GraphEditor = /** @class */ (function (_super) {
         return this.createNodeFromObject(newInputBlock);
     };
     GraphEditor.prototype.componentDidMount = function () {
+        var _this = this;
         if (this.props.globalState.hostDocument) {
             this._graphCanvas = this.refs["graphCanvas"];
             this._previewManager = new _components_preview_previewManager__WEBPACK_IMPORTED_MODULE_9__["PreviewManager"](this.props.globalState.hostDocument.getElementById("preview-canvas"), this.props.globalState);
+            this.props.globalState._previewManager = this._previewManager;
         }
         if (navigator.userAgent.indexOf("Mobile") !== -1) {
             (this.props.globalState.hostDocument || document).querySelector(".blocker").style.visibility = "visible";
         }
+        this.props.globalState.onPopupClosedObservable.addOnce(function () {
+            _this.componentWillUnmount();
+        });
         this.build();
     };
     GraphEditor.prototype.componentWillUnmount = function () {
@@ -63159,6 +63196,7 @@ var GraphEditor = /** @class */ (function (_super) {
         }
         if (this._previewManager) {
             this._previewManager.dispose();
+            this._previewManager = null;
         }
     };
     GraphEditor.prototype.reconnectNewNodes = function (nodeIndex, newNodes, sourceNodes, done) {
@@ -63632,6 +63670,9 @@ var NodeEditor = /** @class */ (function () {
             });
         }
         this._CurrentState = globalState;
+        globalState.hostWindow.addEventListener('beforeunload', function () {
+            globalState.onPopupClosedObservable.notifyObservers();
+        });
         // Close the popup window when the page is refreshed or scene is disposed
         var popupWindow = _src_sharedComponents_popup__WEBPACK_IMPORTED_MODULE_4__["Popup"]["node-editor"];
         if (globalState.nodeMaterial && popupWindow) {
@@ -66013,22 +66054,22 @@ var ColorPicker = /** @class */ (function (_super) {
                         } }))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-rgb" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "red" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "R", min: 0, max: 255, value: this.state.color.r * 255 | 0, onChange: function (value) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "R", min: 0, max: 255, value: Math.round(this.state.color.r * 255), onChange: function (value) {
                             _this.state.color.r = value / 255.0;
                             _this.forceUpdate();
                         } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "green" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "G", min: 0, max: 255, value: this.state.color.g * 255 | 0, onChange: function (value) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "G", min: 0, max: 255, value: Math.round(this.state.color.g * 255), onChange: function (value) {
                             _this.state.color.g = value / 255.0;
                             _this.forceUpdate();
                         } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "blue" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "B", min: 0, max: 255, value: this.state.color.b * 255 | 0, onChange: function (value) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "B", min: 0, max: 255, value: Math.round(this.state.color.b * 255), onChange: function (value) {
                             _this.state.color.b = value / 255.0;
                             _this.forceUpdate();
                         } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "alpha" + (hasAlpha ? "" : " grayed") },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "A", min: 0, max: 255, value: this.state.alpha * 255 | 0, onChange: function (value) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "A", min: 0, max: 255, value: Math.round(this.state.alpha * 255), onChange: function (value) {
                             _this.setState({ alpha: value / 255.0 });
                             _this.forceUpdate();
                         } }))),
