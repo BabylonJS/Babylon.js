@@ -12,7 +12,7 @@ import { InputText } from "babylonjs-gui/2D/controls/inputText";
 import { InputPassword } from "babylonjs-gui/2D/controls/inputPassword";
 import { Grid } from "babylonjs-gui/2D/controls/grid";
 import { DisplayGrid } from "babylonjs-gui/2D/controls/displayGrid";
-import { StackPanel } from "babylonjs-gui";
+import { StackPanel } from "babylonjs-gui/2D/controls/stackPanel";
 
 export class GUINodeTools {
     public static CreateControlFromString (data: string) {

@@ -7,7 +7,7 @@ import { GUINode } from "./diagram/guiNode";
 import { WorkbenchComponent } from "./diagram/workbench";
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
 import { PropertyChangedEvent } from "./sharedUiComponents/propertyChangedEvent";
-import { Vector2 } from "babylonjs";
+import { Vector2 } from "babylonjs/Maths/math.vector";
 
 export class GlobalState {
     guiTexture: AdvancedDynamicTexture;
