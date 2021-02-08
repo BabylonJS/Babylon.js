@@ -187,7 +187,7 @@ interface XRSession {
      * canceling the callback using cancelAnimationFrame(). This method is comparable
      * to the Window.requestAnimationFrame() method.
      */
-    requestAnimationFrame: (callback: XRFrameRequestCallback) => void;
+    requestAnimationFrame: (callback: XRFrameRequestCallback) => number;
     /**
      * Requests that a new XRReferenceSpace of the specified type be created.
      * Returns a promise which resolves with the XRReferenceSpace or
