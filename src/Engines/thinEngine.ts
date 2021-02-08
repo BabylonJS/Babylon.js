@@ -332,6 +332,13 @@ export class ThinEngine {
     protected _renderingQueueLaunched = false;
     protected _activeRenderLoops = new Array<() => void>();
 
+    /**
+     * Gets the list of current active render loop functions
+     */
+    public get activeRenderLoops(): Array<() => void> {
+        return this._activeRenderLoops;
+    }
+
     // Lost context
     /**
      * Observable signaled when a context lost event is raised
