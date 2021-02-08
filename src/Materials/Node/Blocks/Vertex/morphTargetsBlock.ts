@@ -146,9 +146,18 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
     }
 
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+        if ((<Mesh>mesh).morphTargetManager) {
+            const morphTargetManager = (<Mesh>mesh).morphTargetManager;
+
+            if (morphTargetManager?.isUsingTextureForTargets && morphTargetManager.numInfluencers !== defines["NUM_MORPH_INFLUENCERS"]) {
+                defines.markAsAttributesDirty();
+            }
+        }
+
         if (!defines._areAttributesDirty) {
             return;
         }
+
         MaterialHelper.PrepareDefinesForMorphTargets(mesh, defines);
     }
 
@@ -182,13 +191,14 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         let injectionCode = "";
 
         if (manager?.isUsingTextureForTargets && repeatCount > 0) {
-            injectionCode += `float vertexID = float(gl_VertexID) * morphTargetTextureInfo.x;\r\n`;
+            injectionCode += `float vertexID;\r\n`;
         }
 
         for (var index = 0; index < repeatCount; index++) {
             injectionCode += `#ifdef MORPHTARGETS\r\n`;
             if (manager?.isUsingTextureForTargets) {
-                injectionCode += `${positionOutput.associatedVariableName} += (readVector3FromRawSampler(${index}., vertexID) - ${position.associatedVariableName}) * morphTargetInfluences[${index}];\r\n`;
+                injectionCode += `vertexID = float(gl_VertexID) * morphTargetTextureInfo.x;\r\n`;
+                injectionCode += `${positionOutput.associatedVariableName} += (readVector3FromRawSampler(${index}, vertexID) - ${position.associatedVariableName}) * morphTargetInfluences[${index}];\r\n`;
                 injectionCode += `vertexID += 1.0;\r\n`;
             } else {
                 injectionCode += `${positionOutput.associatedVariableName} += (position${index} - ${position.associatedVariableName}) * morphTargetInfluences[${index}];\r\n`;
@@ -197,7 +207,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
             if (hasNormals) {
                 injectionCode += `#ifdef MORPHTARGETS_NORMAL\r\n`;
                 if (manager?.isUsingTextureForTargets) {
-                    injectionCode += `${normalOutput.associatedVariableName} += (readVector3FromRawSampler(${index}., vertexID) - ${normal.associatedVariableName}) * morphTargetInfluences[${index}];\r\n`;
+                    injectionCode += `${normalOutput.associatedVariableName} += (readVector3FromRawSampler(${index}, vertexID) - ${normal.associatedVariableName}) * morphTargetInfluences[${index}];\r\n`;
                     injectionCode += `vertexID += 1.0;\r\n`;
                 } else {
                     injectionCode += `${normalOutput.associatedVariableName} += (normal${index} - ${normal.associatedVariableName}) * morphTargetInfluences[${index}];\r\n`;
@@ -208,7 +218,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
             if (hasUVs) {
                 injectionCode += `#ifdef MORPHTARGETS_UV\r\n`;
                 if (manager?.isUsingTextureForTargets) {
-                    injectionCode += `${uvOutput.associatedVariableName} += (readVector3FromRawSampler(${index}., vertexID).xy - ${uv.associatedVariableName}) * morphTargetInfluences[${index}];\r\n`;
+                    injectionCode += `${uvOutput.associatedVariableName} += (readVector3FromRawSampler(${index}, vertexID).xy - ${uv.associatedVariableName}) * morphTargetInfluences[${index}];\r\n`;
                     injectionCode += `vertexID += 1.0;\r\n`;
                 } else {
                     injectionCode += `${uvOutput.associatedVariableName}.xy += (uv_${index} - ${uv.associatedVariableName}.xy) * morphTargetInfluences[${index}];\r\n`;
@@ -219,15 +229,11 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
             if (hasTangents) {
                 injectionCode += `#ifdef MORPHTARGETS_TANGENT\r\n`;
                 if (manager?.isUsingTextureForTargets) {
-                    injectionCode += `${tangentOutput.associatedVariableName} += (readVector3FromRawSampler(${index}., vertexID) - ${tangent.associatedVariableName}) * morphTargetInfluences[${index}];\r\n`;
+                    injectionCode += `${tangentOutput.associatedVariableName} += (readVector3FromRawSampler(${index}, vertexID) - ${tangent.associatedVariableName}) * morphTargetInfluences[${index}];\r\n`;
                 } else {
                     injectionCode += `${tangentOutput.associatedVariableName}.xyz += (tangent${index} - ${tangent.associatedVariableName}.xyz) * morphTargetInfluences[${index}];\r\n`;
                 }
                 injectionCode += `#endif\r\n`;
-            }
-
-            if (manager?.isUsingTextureForTargets) {
-                injectionCode += `vertexID = float(gl_VertexID) * morphTargetTextureInfo.x;\r\n`;
             }
 
             injectionCode += `#endif\r\n`;
@@ -279,6 +285,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
 
         state.uniforms.push("morphTargetInfluences");
         state.uniforms.push("morphTargetTextureInfo");
+        state.uniforms.push("morphTargetTextureIndices");
         state.samplers.push("morphTargets");
 
         state._emitFunctionFromInclude("morphTargetsVertexGlobalDeclaration", comments);

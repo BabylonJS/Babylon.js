@@ -1297,7 +1297,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             "vSphericalL2_2", "vSphericalL2_1", "vSphericalL20", "vSphericalL21", "vSphericalL22",
             "vReflectionMicrosurfaceInfos",
             "vTangentSpaceParams", "boneTextureWidth",
-            "vDebugMode", "morphTargetTextureInfo"
+            "vDebugMode", "morphTargetTextureInfo", "morphTargetTextureIndices"
         ];
 
         var samplers = ["albedoSampler", "reflectivitySampler", "ambientSampler", "emissiveSampler",

@@ -11,7 +11,8 @@ import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { RenderTargetTexture } from "babylonjs/Materials/Textures/renderTargetTexture";
-import { Observable } from "babylonjs/Misc/observable";
+import { Observable, Observer } from "babylonjs/Misc/observable";
+import { Constants } from "babylonjs/Engines/constants";
 
 interface ITransmissionHelperHolder {
     /**
@@ -22,9 +23,29 @@ interface ITransmissionHelperHolder {
 
 interface ITransmissionHelperOptions {
     /**
-     * The size of the render buffers
+     * The size of the render buffers (default: 1024)
      */
     renderSize: number;
+
+    /**
+     * The number of samples to use when generating the render target texture for opaque meshes (default: 4)
+     */
+    samples: number;
+
+    /**
+     * Scale to apply when selecting the LOD level to sample the refraction texture (default: 1)
+     */
+    lodGenerationScale: number;
+
+    /**
+     * Offset to apply when selecting the LOD level to sample the refraction texture (default: -4)
+     */
+    lodGenerationOffset: number;
+
+    /**
+     * Type of the refraction render target texture (default: TEXTURETYPE_UNSIGNED_INT)
+     */
+    renderTargetTextureType: number;
 }
 
 /**
@@ -37,7 +58,11 @@ class TransmissionHelper {
      */
     private static _getDefaultOptions(): ITransmissionHelperOptions {
         return {
-            renderSize: 1024
+            renderSize: 1024,
+            samples: 4,
+            lodGenerationScale: 1,
+            lodGenerationOffset: -4,
+            renderTargetTextureType: Constants.TEXTURETYPE_UNSIGNED_INT
         };
     }
 
@@ -51,6 +76,7 @@ class TransmissionHelper {
     private _opaqueRenderTarget: Nullable<RenderTargetTexture> = null;
     private _opaqueMeshesCache: Mesh[] = [];
     private _transparentMeshesCache: Mesh[] = [];
+    private _materialObservers: { [id: string]: Nullable<Observer<AbstractMesh>> } = {};
 
     /**
      * This observable will be notified with any error during the creation of the environment,
@@ -100,8 +126,12 @@ class TransmissionHelper {
         this._options = newOptions;
 
         // If size changes, recreate everything
-        if (newOptions.renderSize !== oldOptions.renderSize) {
+        if (newOptions.renderSize !== oldOptions.renderSize || newOptions.renderTargetTextureType !== oldOptions.renderTargetTextureType || !this._opaqueRenderTarget) {
             this._setupRenderTargets();
+        } else {
+            this._opaqueRenderTarget.samples = newOptions.samples;
+            this._opaqueRenderTarget.lodGenerationScale = newOptions.lodGenerationScale;
+            this._opaqueRenderTarget.lodGenerationOffset = newOptions.lodGenerationOffset;
         }
     }
 
@@ -121,7 +151,7 @@ class TransmissionHelper {
 
     private _addMesh(mesh: AbstractMesh): void {
         if (mesh instanceof Mesh) {
-            mesh.onMaterialChangedObservable.add(this.onMeshMaterialChanged.bind(this));
+            this._materialObservers[mesh.uniqueId] = mesh.onMaterialChangedObservable.add(this.onMeshMaterialChanged.bind(this));
             if (this.shouldRenderAsTransmission(mesh.material)) {
                 this._transparentMeshesCache.push(mesh);
             } else {
@@ -132,7 +162,8 @@ class TransmissionHelper {
 
     private _removeMesh(mesh: AbstractMesh): void {
         if (mesh instanceof Mesh) {
-            mesh.onMaterialChangedObservable.remove(this.onMeshMaterialChanged.bind(this));
+            mesh.onMaterialChangedObservable.remove(this._materialObservers[mesh.uniqueId]);
+            delete this._materialObservers[mesh.uniqueId];
             let idx = this._transparentMeshesCache.indexOf(mesh);
             if (idx !== -1) {
                 this._transparentMeshesCache.splice(idx, 1);
@@ -186,50 +217,17 @@ class TransmissionHelper {
      * Setup the render targets according to the specified options.
      */
     private _setupRenderTargets(): void {
-
-        let opaqueRTIndex = -1;
-
-        // Remove any layers rendering to the opaque scene.
-        if (this._scene.layers && this._opaqueRenderTarget) {
-            for (let layer of this._scene.layers) {
-                const idx = layer.renderTargetTextures.indexOf(this._opaqueRenderTarget);
-                if (idx >= 0) {
-                    layer.renderTargetTextures.splice(idx, 1);
-                }
-            }
-        }
-
-        // Remove opaque render target
-        if (this._opaqueRenderTarget) {
-            opaqueRTIndex = this._scene.customRenderTargets.indexOf(this._opaqueRenderTarget);
-            this._opaqueRenderTarget.dispose();
-        }
-
-        this._opaqueRenderTarget = new RenderTargetTexture("opaqueSceneTexture", this._options.renderSize, this._scene, true);
+        this._opaqueRenderTarget = new RenderTargetTexture("opaqueSceneTexture", this._options.renderSize, this._scene, true, undefined, this._options.renderTargetTextureType);
         this._opaqueRenderTarget.renderList = this._opaqueMeshesCache;
         // this._opaqueRenderTarget.clearColor = new Color4(0.0, 0.0, 0.0, 0.0);
         this._opaqueRenderTarget.gammaSpace = true;
-        this._opaqueRenderTarget.lodGenerationScale = 1;
-        this._opaqueRenderTarget.lodGenerationOffset = -4;
-        this._opaqueRenderTarget.samples = 4;
-
-        if (opaqueRTIndex >= 0) {
-            this._scene.customRenderTargets.splice(opaqueRTIndex, 0, this._opaqueRenderTarget);
-        } else {
-            opaqueRTIndex = this._scene.customRenderTargets.length;
-            this._scene.customRenderTargets.push(this._opaqueRenderTarget);
-        }
-
-        // If there are other layers, they should be included in the render of the opaque background.
-        if (this._scene.layers && this._opaqueRenderTarget) {
-            for (let layer of this._scene.layers) {
-                layer.renderTargetTextures.push(this._opaqueRenderTarget);
-            }
-        }
+        this._opaqueRenderTarget.lodGenerationScale = this._options.lodGenerationScale;
+        this._opaqueRenderTarget.lodGenerationOffset = this._options.lodGenerationOffset;
+        this._opaqueRenderTarget.samples = this._options.samples;
 
         this._transparentMeshesCache.forEach((mesh: AbstractMesh) => {
-            if (this.shouldRenderAsTransmission(mesh.material) && mesh.material instanceof PBRMaterial) {
-                mesh.material.refractionTexture = this._opaqueRenderTarget;
+            if (this.shouldRenderAsTransmission(mesh.material)) {
+                (mesh.material as PBRMaterial).refractionTexture = this._opaqueRenderTarget;
             }
         });
     }

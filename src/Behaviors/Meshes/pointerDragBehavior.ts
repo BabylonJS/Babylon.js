@@ -187,6 +187,11 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
 
         this._pointerObserver = this._scene.onPointerObservable.add((pointerInfo, eventState) => {
             if (!this.enabled) {
+                // If behavior is disabled before releaseDrag is ever called, call it now.
+                if (this._attachedToElement) {
+                    this.releaseDrag();
+                }
+
                 return;
             }
 

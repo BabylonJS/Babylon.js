@@ -35,7 +35,7 @@ export function camelToKebab(str) {
 /**
  * This will extend an object with configuration values.
  * What it practically does it take the keys from the configuration and set them on the object.
- * I the configuration is a tree, it will traverse into the tree.
+ * If the configuration is a tree, it will traverse into the tree.
  * @param object the object to extend
  * @param config the configuration object that will extend the object
  */

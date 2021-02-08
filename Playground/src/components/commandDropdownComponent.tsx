@@ -57,7 +57,14 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                     <div className={"command-dropdown" + (this.state.isExpanded ? " activated" : "")} title={this.props.tooltip} 
                         onClick={() => {
                             this.props.globalState.OnNewDropdownButtonClicked.notifyObservers(this);
-                            this.setState({isExpanded: !this.state.isExpanded});
+                            let newState = !this.state.isExpanded;
+                            let pgHost = document.getElementById("embed-host");
+
+                            if (pgHost) {
+                                pgHost.style.zIndex = newState ? "0" : "10";
+                            }
+
+                            this.setState({isExpanded: newState});
                         }}>
                         {
                             this.props.icon &&

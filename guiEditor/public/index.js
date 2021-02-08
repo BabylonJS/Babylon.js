@@ -21,27 +21,9 @@ var checkHash = function () {
             cleanHash();
 
             previousHash = location.hash;
-
-            try {
-                var xmlHttp = new XMLHttpRequest();
-                xmlHttp.onreadystatechange = function () {
-                    if (xmlHttp.readyState == 4) {
-                        if (xmlHttp.status == 200) {
-                            
-                            //TODO: Implement
-                            //var snippet = JSON.parse(JSON.parse(xmlHttp.responseText).jsonPayload);
-                            showEditor();
-                        }
-                    }
-                }
-
-                var hash = location.hash.substr(1);
-                currentSnippetToken = hash.split("#")[0];
-                xmlHttp.open("GET", snippetUrl + "/" + hash.replace("#", "/"));
-                xmlHttp.send();
-            } catch (e) {
-
-            }
+            var hash = location.hash.substr(1);
+            currentSnippetToken = hash.split("#")[0];
+            showEditor();
         }
     }
 
@@ -55,6 +37,7 @@ var showEditor = function() {
     BABYLON.GuiEditor.Show({
         hostElement: hostElement,
         customLoadObservable: customLoadObservable,
+        currentSnippetToken: currentSnippetToken,
         customSave: {
             label: "Save as unique URL",
             action: (data) => {

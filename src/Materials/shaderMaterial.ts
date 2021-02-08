@@ -617,6 +617,8 @@ export class ShaderMaterial extends Material {
             if (numInfluencers > 0) {
                 uniforms = uniforms.slice();
                 uniforms.push("morphTargetInfluences");
+                uniforms.push("morphTargetTextureInfo");
+                uniforms.push("morphTargetTextureIndices");
             }
         } else {
             defines.push("#define NUM_MORPH_INFLUENCERS 0");

@@ -286,14 +286,6 @@ export class TextureBlock extends NodeMaterialBlock {
         this._defineName = state._getFreeDefineName("UVTRANSFORM");
         this._mainUVDefineName = "VMAIN" + uvInput.associatedVariableName.toUpperCase();
 
-        if (uvInput.connectedPoint!.ownerBlock.isInput) {
-            let uvInputOwnerBlock = uvInput.connectedPoint!.ownerBlock as InputBlock;
-
-            if (!uvInputOwnerBlock.isAttribute) {
-                state._emitUniformFromString(uvInput.associatedVariableName, "vec2");
-            }
-        }
-
         this._mainUVName = "vMain" + uvInput.associatedVariableName;
         this._transformedUVName = state._getFreeVariableName("transformedUV");
         this._textureTransformName = state._getFreeVariableName("textureTransform");

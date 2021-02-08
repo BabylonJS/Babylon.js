@@ -22,7 +22,7 @@ import { ThinEngine, ISceneLike } from './thinEngine';
 import { IWebRequest } from '../Misc/interfaces/iWebRequest';
 import { EngineStore } from './engineStore';
 import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
-import { WebGL2ShaderProcessor } from '../Engines/WebGL/webGL2ShaderProcessors';
+import { NativeShaderProcessor } from '../Engines/Native/nativeShaderProcessors';
 import { RenderTargetTextureSize } from '../Engines/Extensions/engine.renderTarget';
 import { DepthTextureCreationOptions } from '../Engines/depthTextureCreationOptions';
 
@@ -76,6 +76,8 @@ interface INativeEngine {
     readonly ALPHA_INTERPOLATE: number;
     readonly ALPHA_SCREENMODE: number;
 
+    readonly homogeneousDepth: boolean;
+
     dispose(): void;
 
     requestAnimationFrame(callback: () => void): void;
@@ -99,7 +101,7 @@ interface INativeEngine {
     getAttributes(shaderProgram: any, attributeNames: string[]): number[];
     setProgram(program: any): void;
 
-    setState(culling: boolean, zOffset: number, reverseSide: boolean): void;
+    setState(culling: boolean, zOffset: number, cullBackFaces: boolean, reverseSide: boolean): void;
     setZOffset(zOffset: number): void;
     getZOffset(): number;
     setDepthTest(enable: number): void;
@@ -154,6 +156,8 @@ interface INativeEngine {
 
     getRenderWidth(): number;
     getRenderHeight(): number;
+    getHardwareScalingLevel(): number;
+    setHardwareScalingLevel(level: number): void;
 
     setViewPort(x: number, y: number, width: number, height: number): void;
 }
@@ -745,9 +749,14 @@ export class NativeEngine extends Engine {
     private readonly INVALID_HANDLE = 65535;
     private _boundBuffersVertexArray: any = null;
     private _currentDepthTest: number = this._native.DEPTH_TEST_LEQUAL;
+    public homogeneousDepth: boolean = this._native.homogeneousDepth;
 
     public getHardwareScalingLevel(): number {
-        return 1.0;
+        return this._native.getHardwareScalingLevel();
+    }
+
+    public setHardwareScalingLevel(level: number): void {
+        this._native.setHardwareScalingLevel(level);
     }
 
     public constructor() {
@@ -849,7 +858,7 @@ export class NativeEngine extends Engine {
         }
 
         // Shader processor
-        this._shaderProcessor = new WebGL2ShaderProcessor();
+        this._shaderProcessor = new NativeShaderProcessor();
     }
 
     public dispose(): void {
@@ -1159,7 +1168,7 @@ export class NativeEngine extends Engine {
     }
 
     public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {
-        this._native.setState(culling, zOffset, reverseSide);
+        this._native.setState(culling, zOffset, this.cullBackFaces, reverseSide);
     }
 
     /**
@@ -1710,7 +1719,7 @@ export class NativeEngine extends Engine {
                 });
             };
 
-            if (fromData) {
+            if (fromData && buffer) {
                 if (buffer instanceof ArrayBuffer) {
                     onload(new Uint8Array(buffer));
                 } else if (ArrayBuffer.isView(buffer)) {
@@ -2115,7 +2124,10 @@ export class NativeEngine extends Engine {
         if (!uniform) {
             return ;
         }
-        this._native.setTexture(uniform, texture._hardwareTexture?.underlyingResource);
+        if (texture && texture._hardwareTexture) {
+            const webGLTexture = texture._hardwareTexture.underlyingResource;
+            this._native.setTexture(uniform, webGLTexture);
+        }
     }
 
     protected _deleteBuffer(buffer: NativeDataBuffer): void {
