@@ -47,7 +47,7 @@ import { ControlPropertyGridComponent } from "../../sharedUiComponents/tabs/prop
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
 import { Vector2LineComponent } from "../../sharedUiComponents/lines/vector2LineComponent";
 import { Vector2 } from "babylonjs/Maths/math.vector";
-import { Button } from "babylonjs-gui";
+import { Button } from "babylonjs-gui/2D/controls/button";
 
 require("./propertyTab.scss");
 
