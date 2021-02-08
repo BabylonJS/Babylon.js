@@ -334,6 +334,7 @@ export class ThinEngine {
 
     /**
      * Gets the list of current active render loop functions
+     * @returns an array with the current render loop functions
      */
     public get activeRenderLoops(): Array<() => void> {
         return this._activeRenderLoops;
