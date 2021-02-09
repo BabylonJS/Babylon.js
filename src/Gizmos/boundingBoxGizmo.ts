@@ -122,7 +122,6 @@ export class BoundingBoxGizmo extends Gizmo {
         }
     }
 
-
     /**
      * Gets the axis factor
      * @returns the Vector3 factor value
