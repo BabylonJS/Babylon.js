@@ -69,7 +69,7 @@ export class DepthRenderer {
 
         DepthRenderer._SceneComponentInitialization(this._scene);
 
-        this._nameForCtxWrapper = Constants.SUBMESHCTXWRAPPER_SHADOWGENERATOR_PREFIX + DepthRenderer._Counter++;
+        this._nameForCtxWrapper = Constants.SUBMESHCTXWRAPPER_DEPTHRENDERER_PREFIX + DepthRenderer._Counter++;
         this._camera = camera;
         var engine = scene.getEngine();
 
