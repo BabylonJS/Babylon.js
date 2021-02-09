@@ -36,6 +36,7 @@ import { HardwareTextureWrapper } from '../Materials/Textures/hardwareTextureWra
 import { WebGLHardwareTexture } from './WebGL/webGLHardwareTexture';
 import { ContextsWrapper } from "../Materials/contextsWrapper";
 import { IMaterialContext } from "./IMaterialContext";
+import { IDrawContext } from "./IDrawContext";
 
 declare type WebRequest = import("../Misc/webRequest").WebRequest;
 declare type LoadFileError = import("../Misc/fileTools").LoadFileError;
@@ -2332,6 +2333,14 @@ export class ThinEngine {
      * @returns the new context
      */
     public createMaterialContext(): IMaterialContext | undefined {
+        return undefined;
+    }
+
+    /**
+     * Creates a new draw context
+     * @returns the new context
+     */
+    public createDrawContext(): IDrawContext | undefined {
         return undefined;
     }
 

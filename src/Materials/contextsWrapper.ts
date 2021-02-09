@@ -1,3 +1,4 @@
+import { IDrawContext } from "../Engines";
 import { IMaterialContext } from "../Engines/IMaterialContext";
 import { Nullable } from "../types";
 
@@ -10,6 +11,7 @@ export class ContextsWrapper {
     public effect: Nullable<Effect>;
     public defines: Nullable<string | MaterialDefines>;
     public materialContext?: IMaterialContext;
+    public drawContext?: IDrawContext;
 
     public static IsContextualEffect(effect: Effect | ContextsWrapper): effect is ContextsWrapper {
         return (effect as Effect).getPipelineContext === undefined;
@@ -19,11 +21,11 @@ export class ContextsWrapper {
         return (effect as Effect).getPipelineContext === undefined ? (effect as ContextsWrapper).effect : effect as Effect;
     }
 
-    /** Note: if engine is passed in, a materialContext is automatically created */
-    constructor(engine?: ThinEngine) {
+    constructor(engine: ThinEngine, createMaterialContext = true) {
         this.effect = null;
         this.defines = null;
-        if (engine) {
+        this.drawContext = engine.createDrawContext();
+        if (createMaterialContext) {
             this.materialContext = engine.createMaterialContext();
         }
     }

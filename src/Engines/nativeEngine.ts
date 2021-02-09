@@ -26,6 +26,7 @@ import { NativeShaderProcessor } from '../Engines/Native/nativeShaderProcessors'
 import { RenderTargetTextureSize } from '../Engines/Extensions/engine.renderTarget';
 import { DepthTextureCreationOptions } from '../Engines/depthTextureCreationOptions';
 import { IMaterialContext } from "./IMaterialContext";
+import { IDrawContext } from "./IDrawContext";
 
 interface INativeEngine {
 
@@ -1053,6 +1054,10 @@ export class NativeEngine extends Engine {
     }
 
     public createMaterialContext(): IMaterialContext | undefined {
+        return undefined;
+    }
+
+    public createDrawContext(): IDrawContext | undefined {
         return undefined;
     }
 
