@@ -111,7 +111,7 @@ class _InternalMeshDataInfo {
     public _onBeforeBindObservable: Nullable<Observable<Mesh>>;
     public _onAfterRenderObservable: Nullable<Observable<Mesh>>;
     public _onBeforeDrawObservable: Nullable<Observable<Mesh>>;
-    public _onBetweenPassObservable: Nullable<Observable<Mesh>>;
+    public _onBetweenPassObservable: Nullable<Observable<SubMesh>>;
 
     public _areNormalsFrozen: boolean = false; // Will be used by ribbons mainly
     public _sourcePositions: Float32Array; // Will be used to save original positions when using software skinning
@@ -284,11 +284,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
-    * An event triggeredbetween rendering pass wneh using separateCullingPass = true
+    * An event triggeredbetween rendering pass when using separateCullingPass = true
     */
-   public get onBetweenPassObservable(): Observable<Mesh> {
+   public get onBetweenPassObservable(): Observable<SubMesh> {
     if (!this._internalMeshDataInfo._onBetweenPassObservable) {
-        this._internalMeshDataInfo._onBetweenPassObservable = new Observable<Mesh>();
+        this._internalMeshDataInfo._onBetweenPassObservable = new Observable<SubMesh>();
     }
 
     return this._internalMeshDataInfo._onBetweenPassObservable;
@@ -2011,7 +2011,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             engine.setState(true, this._effectiveMaterial.zOffset, false, reverse);
 
             if (this._internalMeshDataInfo._onBetweenPassObservable) {
-                this._internalMeshDataInfo._onBetweenPassObservable.notifyObservers(this);
+                this._internalMeshDataInfo._onBetweenPassObservable.notifyObservers(subMesh);
             }
         }
 
