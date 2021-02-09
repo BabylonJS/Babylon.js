@@ -1188,7 +1188,7 @@ export class NodeMaterial extends PushMaterial {
 
                 } else {
                     scene.resetCachedMaterial();
-                    subMesh.setEffect(effect, defines);
+                    subMesh.setEffect(effect, defines, this._materialContext);
                 }
             }
         }
@@ -1258,7 +1258,7 @@ export class NodeMaterial extends PushMaterial {
 
         if (mustRebind) {
             let sharedData = this._sharedData;
-            if (scene.getEngine()._features.disableSceneMaterialCache || effect && scene.getCachedEffect() !== effect) {
+            if (effect && scene.getCachedEffect() !== effect) {
                 // Bindable blocks
                 for (var block of sharedData.bindableBlocks) {
                     block.bind(effect, this, mesh, subMesh);

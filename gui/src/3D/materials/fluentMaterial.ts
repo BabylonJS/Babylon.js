@@ -207,7 +207,7 @@ export class FluentMaterial extends PushMaterial {
                     onCompiled: this.onCompiled,
                     onError: this.onError,
                     indexParameters: { maxSimultaneousLights: 4 }
-                }, engine), defines);
+                }, engine), defines, this._materialContext);
 
         }
 

@@ -1561,7 +1561,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @returns true if one parameter is not cached
      */
     public isCachedMaterialInvalid(material: Material, effect: Effect, visibility: number = 1) {
-        return this._engine._features.disableSceneMaterialCache || this._cachedEffect !== effect || this._cachedMaterial !== material || this._cachedVisibility !== visibility;
+        return this._cachedEffect !== effect || this._cachedMaterial !== material || this._cachedVisibility !== visibility;
     }
 
     /**

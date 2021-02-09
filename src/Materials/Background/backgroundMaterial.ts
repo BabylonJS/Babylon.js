@@ -927,7 +927,7 @@ export class BackgroundMaterial extends PushMaterial {
                 onCompiled: onCompiled,
                 onError: this.onError,
                 indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights }
-            }, engine), defines);
+            }, engine), defines, this._materialContext);
 
             this.buildUniformLayout();
         }

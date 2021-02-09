@@ -15,7 +15,7 @@ import "../Engines/Extensions/engine.renderTarget";
 import { NodeMaterial } from '../Materials/Node/nodeMaterial';
 import { serialize, serializeAsColor4, SerializationHelper } from '../Misc/decorators';
 import { _TypeStore } from '../Misc/typeStore';
-import { ContextualEffect } from "../Materials/contextualEffect";
+import { IMaterialContext } from "../Engines";
 
 declare type Scene = import("../scene").Scene;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
@@ -188,7 +188,7 @@ export class PostProcess {
     */
     public _currentRenderTextureInd = 0;
     private _effect: Effect;
-    private _contextualEffect: ContextualEffect;
+    private _materialContexts: { [id: number]: IMaterialContext | undefined } = {};
     private _samplers: string[];
     private _fragmentUrl: string;
     private _vertexUrl: string;
@@ -400,7 +400,7 @@ export class PostProcess {
             this._parameters.push("scale");
 
             this._indexParameters = indexParameters;
-            this._contextualEffect = new ContextualEffect(this._engine);
+            this._materialContexts[-1] = this._contextsWrapper.materialContext;
 
             if (!blockCompilation) {
                 this.updateEffect(defines);
@@ -717,8 +717,29 @@ export class PostProcess {
             return null;
         }
 
+        // Bind the output texture of the preivous post process as the input to this post process.
+        var source: InternalTexture;
+        if (this._shareOutputWithPostProcess) {
+            source = this._shareOutputWithPostProcess.inputTexture;
+        } else if (this._forcedOutputTexture) {
+            source = this._forcedOutputTexture;
+        } else {
+            source = this.inputTexture;
+        }
+
+        let materialContext = this._materialContexts[-1];
+        if (materialContext !== undefined) { // the underlying engine needs material contexts
+            // make sure each texture has its own material context, to avoid cache cleaning in WebGPU when calling this._effect._bindTexture below
+            const textureId = source?.uniqueId ?? -1;
+            materialContext = this._materialContexts[textureId];
+            if (materialContext === undefined) {
+                this._materialContexts[textureId] = materialContext = this._engine.createMaterialContext()!;
+            }
+        }
+
         // States
-        this._engine.enableEffect(this._contextualEffect);
+        this._contextsWrapper.materialContext = materialContext;
+        this._engine.enableEffect(this._contextsWrapper);
         this._engine.setState(false);
         this._engine.setDepthBuffer(false);
         this._engine.setDepthWrite(false);
@@ -729,15 +750,6 @@ export class PostProcess {
             this.getEngine().setAlphaConstants(this.alphaConstants.r, this.alphaConstants.g, this.alphaConstants.b, this.alphaConstants.a);
         }
 
-        // Bind the output texture of the preivous post process as the input to this post process.
-        var source: InternalTexture;
-        if (this._shareOutputWithPostProcess) {
-            source = this._shareOutputWithPostProcess.inputTexture;
-        } else if (this._forcedOutputTexture) {
-            source = this._forcedOutputTexture;
-        } else {
-            source = this.inputTexture;
-        }
         if (source !== undefined) {
             this._effect._bindTexture("textureSampler", source);
         }

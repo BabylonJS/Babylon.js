@@ -192,7 +192,7 @@ export class GridMaterial extends PushMaterial {
                 join,
                 undefined,
                 this.onCompiled,
-                this.onError), defines);
+                this.onError), defines, this._materialContext);
         }
 
         if (!subMesh.effect || !subMesh.effect.isReady()) {

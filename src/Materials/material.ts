@@ -618,7 +618,9 @@ export class Material implements IAnimatable {
      * @hidden
      * Stores the effects for the material
      */
-    private _effect: Nullable<ContextualEffect> = null;
+
+    protected _materialContext: IMaterialContext | undefined;
+
 
     /**
      * Specifies if uniform buffers should be used
@@ -674,6 +676,7 @@ export class Material implements IAnimatable {
 
         this.id = name || Tools.RandomId();
         this.uniqueId = this._scene.getUniqueId();
+        this._materialContext = this._scene.getEngine().createMaterialContext();
 
         if (this._scene.useRightHandedSystem) {
             this.sideOrientation = Material.ClockWiseSideOrientation;

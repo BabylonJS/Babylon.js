@@ -195,7 +195,7 @@ export class FireMaterial extends PushMaterial {
                     indexParameters: null,
                     maxSimultaneousLights: 4,
                     transformFeedbackVaryings: null
-                }, engine), defines);
+                }, engine), defines, this._materialContext);
         }
 
         if (!subMesh.effect || !subMesh.effect.isReady()) {

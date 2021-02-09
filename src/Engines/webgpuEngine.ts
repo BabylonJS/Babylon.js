@@ -39,8 +39,8 @@ import { WebGPUCacheRenderPipeline } from "./WebGPU/webgpuCacheRenderPipeline";
 import { WebGPUCacheRenderPipelineTree } from "./WebGPU/webgpuCacheRenderPipelineTree";
 import { WebGPUStencilState } from "./WebGPU/webgpuStencilState";
 import { WebGPUDepthCullingState } from "./WebGPU/webgpuDepthCullingState";
-import { ContextualEffect } from "../Materials/contextualEffect";
-import { WebGPUBindGroupCacheNode, WebGPUEffectContext } from "./WebGPU/webgpuEffectContext";
+import { ContextsWrapper } from "../Materials/contextsWrapper";
+import { WebGPUBindGroupCacheNode, WebGPUMaterialContext } from "./WebGPU/webgpuMaterialContext";
 
 import "../Shaders/clearQuad.vertex";
 import "../Shaders/clearQuad.fragment";
@@ -188,20 +188,20 @@ export class WebGPUEngine extends Engine {
     private _counters: {
         numBindGroupsCreation: number;
         numEnableEffects: number;
-        numEnableContextualEffects: number;
+        numEnableContextsWrapper: number;
     } = {
         numBindGroupsCreation: 0,
         numEnableEffects: 0,
-        numEnableContextualEffects: 0,
+        numEnableContextsWrapper: 0,
     };
     public readonly countersLastFrame: {
         numBindGroupsCreation: number;
         numEnableEffects: number;
-        numEnableContextualEffects: number;
+        numEnableContextsWrapper: number;
     } = {
         numBindGroupsCreation: 0,
         numEnableEffects: 0,
-        numEnableContextualEffects: 0,
+        numEnableContextsWrapper: 0,
     };
 
     // Some of the internal state might change during the render pass.
@@ -229,8 +229,8 @@ export class WebGPUEngine extends Engine {
     // DrawCall Life Cycle
     // Effect is on the parent class
     // protected _currentEffect: Nullable<Effect> = null;
-    private _currentContextualEffect: ContextualEffect;
-    private _defaultContextualEffect: ContextualEffect;
+    private _defaultMaterialContext: WebGPUMaterialContext;
+    private _currentMaterialContext: WebGPUMaterialContext;
     private _currentVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }> = null;
     private _currentOverrideVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }> = null;
     private _currentIndexBuffer: Nullable<DataBuffer> = null;
@@ -474,8 +474,8 @@ export class WebGPUEngine extends Engine {
 
                 this._initializeLimits();
 
-                this._defaultContextualEffect = new ContextualEffect(this, true);
-                this._currentContextualEffect = this._defaultContextualEffect;
+                this._defaultMaterialContext = this.createMaterialContext()!;
+                this._currentMaterialContext = this._defaultMaterialContext;
         
                 this._initializeContextAndSwapChain();
                 this._initializeMainAttachments();
@@ -584,8 +584,6 @@ export class WebGPUEngine extends Engine {
             supportSwitchCaseInShader: true,
             supportSyncTextureRead: false,
             needsInvertingBitmap: false,
-            needsEffectContext: true,
-            disableSceneMaterialCache: true,
             _collectUbosUpdatedInFrame: true,
         };
     }
@@ -1258,6 +1256,14 @@ export class WebGPUEngine extends Engine {
         return new WebGPUPipelineContext(shaderProcessingContext! as WebGPUShaderProcessingContext, this);
     }
 
+    /**
+     * Creates a new material context
+     * @returns the new context
+     */
+    public createMaterialContext(): WebGPUMaterialContext | undefined {
+        return new WebGPUMaterialContext();
+    }
+
     /** @hidden */
     public _preparePipelineContext(pipelineContext: IPipelineContext, vertexSourceCode: string, fragmentSourceCode: string, createAsRaw: boolean, rawVertexSourceCode: string, rawFragmentSourceCode: string,
         rebuildRebind: any,
@@ -1316,31 +1322,35 @@ export class WebGPUEngine extends Engine {
      * Activates an effect, mkaing it the current one (ie. the one used for rendering)
      * @param effect defines the effect to activate
      */
-    public enableEffect(effect: Nullable<Effect | ContextualEffect>): void {
+    public enableEffect(effect: Nullable<Effect | ContextsWrapper>): void {
         if (!effect) {
             return;
         }
 
         let isNewEffect = true;
 
-        if (!ContextualEffect.IsContextualEffect(effect)) {
+        if (!ContextsWrapper.IsContextualEffect(effect)) {
             isNewEffect = effect !== this._currentEffect;
-            this._currentContextualEffect = this._defaultContextualEffect;
-            this._currentContextualEffect.setEffect(effect, null, false);
-            this._currentContextualEffect.createNewContext();
+            this._currentEffect = effect;
+            this._currentMaterialContext = this._defaultMaterialContext;
+            this._currentMaterialContext.reset();
             this._counters.numEnableEffects++;
             if (this.dbgLogIfNotContextualEffect) {
-                Logger.Warn(`enableEffect has been called with an Effect and not a ContextualEffect! effect.uniqueId=${effect.uniqueId}, effect.name=${effect.name}`, 10);
+                Logger.Warn(`enableEffect has been called with an Effect and not a ContextualEffect! effect.uniqueId=${effect.uniqueId}, effect.name=${effect.name}, effect.name.vertex=${effect.name.vertex}, effect.name.fragment=${effect.name.fragment}`, 10);
             }
-        } else if (!effect.effect || effect === this._currentContextualEffect && effect.effect === this._currentEffect && !this._forceEnableEffect) {
+        } else if (!effect.effect || effect.effect === this._currentEffect && effect.materialContext === this._currentMaterialContext && !this._forceEnableEffect) {
             return;
         } else {
-            isNewEffect = effect.effect !== this._currentContextualEffect.effect;
-            this._currentContextualEffect = effect;
-            this._counters.numEnableContextualEffects++;
+            isNewEffect = effect.effect !== this._currentEffect;
+            this._currentEffect = effect.effect;
+            this._currentMaterialContext = effect.materialContext as WebGPUMaterialContext;
+            this._counters.numEnableContextsWrapper++;
+            if (!this._currentMaterialContext) {
+                console.error("contextsWrapper=", effect);
+                throw `Invalid call to enableEffect: the materialContext property is empty!`;
+            }
         }
 
-        this._currentEffect = this._currentContextualEffect.effect;
         this._forceEnableEffect = isNewEffect || this._forceEnableEffect ? false : this._forceEnableEffect;
 
         if (isNewEffect) {
@@ -1862,49 +1872,23 @@ export class WebGPUEngine extends Engine {
 
     private _setInternalTexture(name: string, internalTexture: Nullable<InternalTexture>, baseName?: string, textureIndex = 0): void {
         baseName = baseName ?? name;
-        if (this._currentEffect) {
+        if (this._currentEffect && !this._currentMaterialContext.textureCheckDirty(name, internalTexture)) {
             const webgpuPipelineContext = this._currentEffect._pipelineContext as WebGPUPipelineContext;
-            const effectContext = this._currentContextualEffect.context as WebGPUEffectContext;
-
-            if (effectContext.textures && effectContext.textures[name]) {
-                const textureCache = effectContext.textures[name]!;
-                const curTexture = textureCache.texture;
-                if (curTexture !== internalTexture || (curTexture !== null && curTexture === internalTexture && 
-                    (textureCache.wrapU !== internalTexture._cachedWrapU || textureCache.wrapV !== internalTexture._cachedWrapV || textureCache.wrapR !== internalTexture._cachedWrapR ||
-                        textureCache.anisotropicFilteringLevel !== internalTexture._cachedAnisotropicFilteringLevel || textureCache.samplingMode !== internalTexture.samplingMode)))
-                {
-                    if (internalTexture) {
-                        textureCache.wrapU = internalTexture._cachedWrapU;
-                        textureCache.wrapV = internalTexture._cachedWrapV;
-                        textureCache.wrapR = internalTexture._cachedWrapR;
-                        textureCache.anisotropicFilteringLevel = internalTexture._cachedAnisotropicFilteringLevel;
-                        textureCache.samplingMode = internalTexture.samplingMode;
-                    }
-                    this._clearBindGroupsCache();
-                }
-                textureCache.texture = internalTexture!;
-            }
-            else {
-                if (!effectContext.textures) {
-                    effectContext.textures = {};
-                    effectContext.samplers = {};
-                }
-                const availableSampler = webgpuPipelineContext.shaderProcessingContext.availableSamplers[baseName];
-                if (availableSampler) {
-                    effectContext.samplers[baseName] = {
-                        samplerBinding: availableSampler.sampler.bindingIndex,
-                        firstTextureName: name,
-                    };
-                    effectContext.textures[name] = {
-                        textureBinding: availableSampler.textures[textureIndex].bindingIndex,
-                        texture: internalTexture!,
-                        wrapU: internalTexture?._cachedWrapU ?? -1,
-                        wrapV: internalTexture?._cachedWrapV ?? -1,
-                        wrapR: internalTexture?._cachedWrapR ?? -1,
-                        anisotropicFilteringLevel: internalTexture?._cachedAnisotropicFilteringLevel ?? -1,
-                        samplingMode: internalTexture?.samplingMode ?? -1,
-                    };
-                }
+            const availableSampler = webgpuPipelineContext.shaderProcessingContext.availableSamplers[baseName];
+            if (availableSampler) {
+                this._currentMaterialContext.samplers[baseName] = {
+                    samplerBinding: availableSampler.sampler.bindingIndex,
+                    firstTextureName: name,
+                };
+                this._currentMaterialContext.textures[name] = {
+                    textureBinding: availableSampler.textures[textureIndex].bindingIndex,
+                    texture: internalTexture!,
+                    wrapU: internalTexture?._cachedWrapU ?? -1,
+                    wrapV: internalTexture?._cachedWrapV ?? -1,
+                    wrapR: internalTexture?._cachedWrapR ?? -1,
+                    anisotropicFilteringLevel: internalTexture?._cachedAnisotropicFilteringLevel ?? -1,
+                    samplingMode: internalTexture?.samplingMode ?? -1,
+                };
             }
         }
     }
@@ -1940,14 +1924,8 @@ export class WebGPUEngine extends Engine {
         // name is used to look up the texture in the effectContext.textures map
         baseName = baseName ?? name;
         if (this._currentEffect) {
-            const effectContext = this._currentContextualEffect.context as WebGPUEffectContext;
             if (!texture) {
-                if (effectContext.textures) {
-                    if (effectContext.textures[name] && effectContext.textures[name]!.texture) {
-                        this._clearBindGroupsCache();
-                    }
-                    effectContext.textures[name] = null;
-                }
+                this._currentMaterialContext.textureCheckDirty(name, null);
                 return false;
             }
 
@@ -2024,13 +2002,6 @@ export class WebGPUEngine extends Engine {
     public _setAnisotropicLevel(target: number, internalTexture: InternalTexture, anisotropicFilteringLevel: number) {
         if (internalTexture._cachedAnisotropicFilteringLevel !== anisotropicFilteringLevel) {
             internalTexture._cachedAnisotropicFilteringLevel = Math.min(anisotropicFilteringLevel, this._caps.maxAnisotropy);
-        }
-    }
-
-    private _clearBindGroupsCache(): void {
-        const effectContext = this._currentContextualEffect.context as WebGPUEffectContext;
-        if (effectContext.bindGroupsCache) {
-            effectContext.bindGroupsCache.values = {};
         }
     }
 
@@ -2836,10 +2807,10 @@ export class WebGPUEngine extends Engine {
 
         this.countersLastFrame.numBindGroupsCreation = this._counters.numBindGroupsCreation;
         this.countersLastFrame.numEnableEffects = this._counters.numEnableEffects;
-        this.countersLastFrame.numEnableContextualEffects = this._counters.numEnableContextualEffects;
+        this.countersLastFrame.numEnableContextsWrapper = this._counters.numEnableContextsWrapper;
         this._counters.numBindGroupsCreation = 0;
         this._counters.numEnableEffects = 0;
-        this._counters.numEnableContextualEffects = 0;
+        this._counters.numEnableContextsWrapper = 0;
 
         this._cacheRenderPipeline.endFrame();
 
@@ -3501,17 +3472,13 @@ export class WebGPUEngine extends Engine {
 
     private _getBindGroupsToRender(): GPUBindGroup[] {
         const webgpuPipelineContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
-        const effectContext = this._currentContextualEffect.context as WebGPUEffectContext;
 
         if (webgpuPipelineContext.uniformBuffer) {
             this.bindUniformBufferBase(webgpuPipelineContext.uniformBuffer.getBuffer()!, 0, "LeftOver");
             webgpuPipelineContext.uniformBuffer.update();
         }
 
-        let node: WebGPUBindGroupCacheNode = effectContext.bindGroupsCache;
-        if (!node) {
-            node = effectContext.bindGroupsCache = new WebGPUBindGroupCacheNode();
-        }
+        let node: WebGPUBindGroupCacheNode = this._currentMaterialContext.bindGroupsCache;
         for (let i = 0; i < webgpuPipelineContext.shaderProcessingContext.uniformBufferNames.length; ++i) {
             const bufferName = webgpuPipelineContext.shaderProcessingContext.uniformBufferNames[i];
             const uboId = this._uniformsBuffers[bufferName].uniqueId;
@@ -3554,11 +3521,11 @@ export class WebGPUEngine extends Engine {
                 }
 
                 if (bindingDefinition.isSampler) {
-                    const bindingInfo = effectContext.samplers?.[bindingDefinition.name];
+                    const bindingInfo = this._currentMaterialContext.samplers[bindingDefinition.name];
                     if (bindingInfo) {
-                        const texture = effectContext.textures?.[bindingInfo.firstTextureName]?.texture;
+                        const texture = this._currentMaterialContext.textures[bindingInfo.firstTextureName]?.texture;
                         if (!texture) {
-                            Logger.Error(`Could not create the gpu sampler "${bindingDefinition.name}" because no texture can be looked up for the name "${bindingInfo.firstTextureName}". bindingInfo=${JSON.stringify(bindingInfo)}, effectContext=${JSON.stringify(effectContext, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}`, 50);
+                            Logger.Error(`Could not create the gpu sampler "${bindingDefinition.name}" because no texture can be looked up for the name "${bindingInfo.firstTextureName}". bindingInfo=${JSON.stringify(bindingInfo)}, effectContext=${JSON.stringify(this._currentMaterialContext, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}`, 50);
                             continue;
                         }
                         entries.push({
@@ -3566,10 +3533,10 @@ export class WebGPUEngine extends Engine {
                             resource: this._cacheSampler.getSampler(texture),
                         });
                     } else {
-                        Logger.Error(`Sampler "${bindingDefinition.name}" could not be bound. bindingDefinition=${JSON.stringify(bindingDefinition)}, effectContext=${JSON.stringify(effectContext, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}`, 50);
+                        Logger.Error(`Sampler "${bindingDefinition.name}" could not be bound. bindingDefinition=${JSON.stringify(bindingDefinition)}, effectContext=${JSON.stringify(this._currentMaterialContext, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}`, 50);
                     }
                 } else if (bindingDefinition.isTexture) {
-                    const bindingInfo = effectContext.textures?.[bindingDefinition.name];
+                    const bindingInfo = this._currentMaterialContext.textures[bindingDefinition.name];
                     if (bindingInfo) {
                         if (this.dbgSanityChecks && bindingInfo.texture === null) {
                             Logger.Error(`Trying to bind a null texture! bindingDefinition=${JSON.stringify(bindingDefinition)}, bindingInfo=${JSON.stringify(bindingInfo, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}`, 50);
@@ -3587,7 +3554,7 @@ export class WebGPUEngine extends Engine {
                             resource: hardwareTexture.view!,
                         });
                     } else {
-                        Logger.Error(`Texture "${bindingDefinition.name}" could not be bound. bindingDefinition=${JSON.stringify(bindingDefinition)}, effectContext=${JSON.stringify(effectContext, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}`, 50);
+                        Logger.Error(`Texture "${bindingDefinition.name}" could not be bound. bindingDefinition=${JSON.stringify(bindingDefinition)}, effectContext=${JSON.stringify(this._currentMaterialContext, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}`, 50);
                     }
                 } else {
                     const dataBuffer = this._uniformsBuffers[bindingDefinition.name];

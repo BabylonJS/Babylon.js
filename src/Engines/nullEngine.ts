@@ -11,7 +11,7 @@ import { DataBuffer } from '../Meshes/dataBuffer';
 import { IColor4Like, IViewportLike } from '../Maths/math.like';
 import { ISceneLike } from './thinEngine';
 import { PerformanceConfigurator } from './performanceConfigurator';
-import { ContextualEffect } from "../Materials/contextualEffect";
+import { ContextsWrapper } from "../Materials/contextsWrapper";
 
 declare const global: any;
 
@@ -164,8 +164,6 @@ export class NullEngine extends Engine {
             supportSwitchCaseInShader: false,
             supportSyncTextureRead: false,
             needsInvertingBitmap: false,
-            needsEffectContext: false,
-            disableSceneMaterialCache: false,
             _collectUbosUpdatedInFrame: false,
         };
 
@@ -291,8 +289,8 @@ export class NullEngine extends Engine {
      * Activates an effect, making it the current one (ie. the one used for rendering)
      * @param effect defines the effect to activate
      */
-    public enableEffect(effect: Nullable<Effect | ContextualEffect>): void {
-        effect = effect !== null && ContextualEffect.IsContextualEffect(effect) ? effect.effect : effect; // get only the effect, we don't need a ContextualEffect in the WebGL engine
+    public enableEffect(effect: Nullable<Effect | ContextsWrapper>): void {
+        effect = effect !== null && ContextsWrapper.IsContextualEffect(effect) ? effect.effect : effect; // get only the effect, we don't need a ContextualEffect in the WebGL engine
 
         this._currentEffect = effect;
         if (!effect) {

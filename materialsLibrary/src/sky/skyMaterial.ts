@@ -222,7 +222,7 @@ export class SkyMaterial extends PushMaterial {
                     "cameraPosition", "cameraOffset", "up"
                 ],
                 [],
-                join, fallbacks, this.onCompiled, this.onError), defines);
+                join, fallbacks, this.onCompiled, this.onError), defines, this._materialContext);
         }
 
         if (!subMesh.effect || !subMesh.effect.isReady()) {
