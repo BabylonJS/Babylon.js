@@ -90,6 +90,45 @@ export class BoundingBoxGizmo extends Gizmo {
      * Relative bounding box pivot used when scaling the attached node. When null object with scale from the opposite corner. 0.5,0.5,0.5 for center and 0.5,0,0.5 for bottom (Default: null)
      */
     public scalePivot: Nullable<Vector3> = null;
+    /**
+     * Scale factor used for masking some axis
+     */
+    public _axisFactor = new Vector3(1, 1, 1);
+
+    public set axisFactor(factor: Vector3) {
+        this._axisFactor = factor;
+        // update scale cube visibility
+        var scaleBoxes = this._scaleBoxesParent.getChildMeshes();
+        var index = 0;
+        for (var i = 0; i < 3; i++) {
+            for (var j = 0; j < 3; j++) {
+                for (var k = 0; k < 3; k++) {
+                    let zeroAxisCount = ((i === 1) ? 1 : 0) + ((j === 1) ? 1 : 0) + ((k === 1) ? 1 : 0);
+                    if (zeroAxisCount === 1 || zeroAxisCount === 3) {
+                        continue;
+                    }
+                    if (scaleBoxes[index]) {
+                        let dragAxis = new Vector3(i - 1, j - 1, k - 1);
+                        dragAxis.multiplyInPlace(this._axisFactor);
+                        scaleBoxes[index].setEnabled(dragAxis.lengthSquared() > 0.0001);
+                    }
+                    index++;
+                }
+            }
+        }
+    }
+
+    public get axisFactor(): Vector3 {
+        return this._axisFactor;
+    }
+
+    public set scaleDragSpeed(value: number) {
+        this._scaleDragSpeed = value;
+    }
+
+    public get scaleDragSpeed(): number {
+        return this._scaleDragSpeed;
+    }
 
     /**
      * Mesh used as a pivot to rotate the attached node
@@ -290,6 +329,7 @@ export class BoundingBoxGizmo extends Gizmo {
                                 deltaScale.z *= Math.abs(dragAxis.z);
                             }
                             deltaScale.scaleInPlace(this._scaleDragSpeed);
+                            deltaScale.multiplyInPlace(this._axisFactor);
                             this.updateBoundingBox();
                             if (this.scalePivot) {
                                 this.attachedMesh.getWorldMatrix().getRotationMatrixToRef(this._tmpRotationMatrix);
