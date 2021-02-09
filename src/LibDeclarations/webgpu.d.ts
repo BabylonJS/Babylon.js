@@ -608,7 +608,7 @@ type GPUVertexFormat =
 
 type GPUInputStepMode = "vertex" | "instance";
 
-interface GPUVertexState {
+interface GPUVertexState { // TODO WEBGPU to be replaced by: interface GPUVertexState extends GPUProgrammableStage {
     indexFormat?: GPUIndexFormat; // TODO WEBGPU to be removed
     vertexBuffers?: GPUVertexBufferLayout[]; // TODO WEBGPU to be renamed to buffers
 }
