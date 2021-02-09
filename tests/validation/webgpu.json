@@ -98,7 +98,7 @@
         {
             "title": "custom handling of materials for render target pass",
             "renderCount": 30,
-            "playgroundId": "#FIVL25#1"
+            "playgroundId": "#FIVL25#2"
         },
         {
             "title": "dissolve effect with node material and glow layer",
@@ -123,7 +123,7 @@
         {
             "title": "depth renderer",
             "renderCount": 5,
-            "playgroundId": "#1PHYB0#86"
+            "playgroundId": "#1PHYB0#87"
         },
         {
             "title": "particle system with custom nme shader",
