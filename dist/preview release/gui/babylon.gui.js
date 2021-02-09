@@ -5854,7 +5854,7 @@ var Control = /** @class */ (function () {
         }
         var text = document.createElement("span");
         text.innerHTML = "Hg";
-        text.style.font = font;
+        text.setAttribute('style', "font: " + font + " !important");
         var block = document.createElement("div");
         block.style.display = "inline-block";
         block.style.width = "1px";
@@ -7835,12 +7835,6 @@ var Image = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], Image.prototype, "sourceHeight", null);
-    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
-        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
-    ], Image.prototype, "imageWidth", null);
-    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
-        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
-    ], Image.prototype, "imageHeight", null);
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], Image.prototype, "populateNinePatchSlicesFromImage", null);

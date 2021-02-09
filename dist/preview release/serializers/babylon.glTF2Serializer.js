@@ -1850,7 +1850,7 @@ var GLTFData = /** @class */ (function () {
             else if (endsWith(key, ".gltf")) {
                 mimeType = { type: "model/gltf+json" };
             }
-            else if (endsWith(key, ".jpeg" || false)) {
+            else if (endsWith(key, ".jpeg") || endsWith(key, ".jpg")) {
                 mimeType = { type: "image/jpeg" /* JPEG */ };
             }
             else if (endsWith(key, ".png")) {

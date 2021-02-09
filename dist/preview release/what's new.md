@@ -20,6 +20,8 @@
 - Added onLoadObservable to the textureDome class(es) ([RaananW](https://github.com/RaananW))
 - Modified InputManager to use DeviceInputSystem ([PolygonalSun](https://github.com/PolygonalSun))
 - Added a [helper class](https://doc.babylonjs.com/typedoc/classes/babylon.debug.directionallightfrustumviewer) to display the frustum of a directional light ([Popov72](https://github.com/Popov72))
+- Improved collision detection performance ([ottoville](https://github.com/ottoville/))
+- Added new helper functions for Quaternion.FromLookDirection and Matrix.LookDirection ([Alex-MSFT](https://github.com/Alex-MSFT))
 
 ### Engine
 
@@ -61,9 +63,11 @@
 
 - Added GUI Editor project to master. ([msDestiny14](https://github.com/msDestiny14))
 - Moving GUI property tab components into GUIEditor. ([msDestiny14](https://github.com/msDestiny14))
-- Adding basic saving and loading funtionality. ([msDestiny14](https://github.com/msDestiny14))
-- Adding more GUI controls. ([msDestiny14](https://github.com/msDestiny14))
-- Adding snippet server from url functionality ([msDestiny14](https://github.com/msDestiny14))
+- Added basic saving and loading funtionality. ([msDestiny14](https://github.com/msDestiny14))
+- Added more GUI controls. ([msDestiny14](https://github.com/msDestiny14))
+- Added snippet server from url functionality ([msDestiny14](https://github.com/msDestiny14))
+- Added scrolling and zooming functionality ([msDestiny14](https://github.com/msDestiny14))
+- Added resizable canvas ([msDestiny14](https://github.com/msDestiny14))
 
 ### GUI
 
@@ -83,6 +87,10 @@
 - better support for custom hand meshes ([RaananW](https://github.com/RaananW))
 - Allow disabling of the WebXRControllerPointerSelection feature as part of the WebXR Default Experience ([rgerd](https://github.com/rgerd))
 - Added two touch-enabled GUI controls, `TouchMeshButton3D` and `TouchHolographicButton`, added option on the WebXR hand tracking feature for enabling touch collisions ([rickfromwork](https://github.com/rickfromwork), [satyapoojasama](https://github.com/satyapoojasama))
+
+### Gizmos
+
+- Exposed `scaleDragSpeed` and added `axisFactor` for BoundingBoxGizmo ([CedricGuillemet](https://github.com/CedricGuillemet))
 
 ### Viewer
 
@@ -120,6 +128,10 @@
 - Fix crash when cloning material in `AssetContainer.instantiateModelsToScene` when mesh is an instanced mesh ([Popov72](https://github.com/Popov72))
 - Fix issue with NinePatch displaying half pixel gaps between slices on Firefox browsers. ([Pryme8](https://github.com/Pryme8))
 - Fix issue when canvas loses focus while holding a pointer button ([PolygonalSun](https://github.com/PolygonalSun))
+- Fix issue where camera controls stay detached if PointerDragBehavior is disabled prematurely ([PolygonalSun](https://github.com/PolygonalSun))
+- Fix uncatchable exception that could be thrown when initializing the environment textures ([CoPrez](https://github.com/CoPrez))
+- Fix the triplanar material when the position of the mesh it is applied to is not (0,0,0) ([Popov72](https://github.com/Popov72))
+- Fix bones serialization to include their ids. This allows to retrieve bones (animation groups, etc.) once the scene has been re-serialized ([julien-moreau](https://github.com/julien-moreau))
 
 ## Breaking changes
 

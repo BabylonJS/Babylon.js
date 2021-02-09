@@ -1319,11 +1319,13 @@ declare module NODEEDITOR {
         onCandidatePortSelectedObservable: BABYLON.Observable<BABYLON.Nullable<FrameNodePort | NodePort>>;
         onImportFrameObservable: BABYLON.Observable<any>;
         onGraphNodeRemovalObservable: BABYLON.Observable<GraphNode>;
+        onPopupClosedObservable: BABYLON.Observable<void>;
         onGetNodeFromBlock: (block: BABYLON.NodeMaterialBlock) => GraphNode;
         onGridSizeChanged: BABYLON.Observable<void>;
         onExposePortOnFrameObservable: BABYLON.Observable<GraphNode>;
         previewType: PreviewType;
         previewFile: File;
+        particleSystemBlendMode: number;
         listOfCustomPreviewFiles: File[];
         rotatePreview: boolean;
         backgroundColor: BABYLON.Color4;
@@ -1578,6 +1580,7 @@ declare module NODEEDITOR {
         componentWillUnmount(): void;
         changeBackFaceCulling(value: boolean): void;
         changeDepthPrePass(value: boolean): void;
+        changeParticleSystemBlendMode(newOne: number): void;
         render(): JSX.Element;
     }
 }

@@ -14,6 +14,7 @@ import { GraphFrame } from './diagram/graphFrame';
 import { FrameNodePort } from './diagram/frameNodePort';
 import { FramePortData } from './diagram/graphCanvas';
 import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
+import { ParticleSystem } from "babylonjs/Particles/particleSystem";
 
 export class GlobalState {
     nodeMaterial: NodeMaterial;
@@ -42,11 +43,13 @@ export class GlobalState {
     onCandidatePortSelectedObservable = new Observable<Nullable<NodePort | FrameNodePort>>();
     onImportFrameObservable = new Observable<any>();
     onGraphNodeRemovalObservable = new Observable<GraphNode>();
+    onPopupClosedObservable = new Observable<void>();
     onGetNodeFromBlock: (block: NodeMaterialBlock) => GraphNode;
     onGridSizeChanged = new Observable<void>();
     onExposePortOnFrameObservable = new Observable<GraphNode>();
     previewType: PreviewType;
     previewFile: File;
+    particleSystemBlendMode = ParticleSystem.BLENDMODE_ONEONE;
     listOfCustomPreviewFiles: File[] = [];
     rotatePreview: boolean;
     backgroundColor: Color4;

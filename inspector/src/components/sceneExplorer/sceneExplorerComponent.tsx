@@ -431,7 +431,11 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 }
                 <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups}
                     contextMenuItems={pipelineContextMenus}
-                    selectedEntity={this.state.selectedEntity} items={pipelines} label="Rendering pipelines" offset={1} filter={this.state.filter} />
+                    selectedEntity={this.state.selectedEntity} items={pipelines} label="Rendering pipelines" offset={1} filter={this.state.filter} />                               
+                {
+                    scene.effectLayers && scene.effectLayers.length > 0 &&
+                    <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.effectLayers} label="Effect layers" offset={1} filter={this.state.filter} />
+                }
                 <TreeItemComponent globalState={this.props.globalState}
                     contextMenuItems={particleSystemsContextMenus}
                     extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.particleSystems} label="Particle systems" offset={1} filter={this.state.filter} />

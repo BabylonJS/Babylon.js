@@ -35,7 +35,7 @@ export interface WebGPUBindingDescription {
     isComparisonSampler?: boolean;
 
     isTexture: boolean;
-    componentType?: GPUTextureComponentType;
+    sampleType?: GPUTextureSampleType;
     textureDimension?: GPUTextureViewDimension;
 }
 

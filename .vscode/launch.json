@@ -55,6 +55,19 @@
             ]
         },     
         {
+            "name": "Launch GUI Editor (Edge - Direct)",
+            "type": "edge",
+            "version": "dev",
+            "request": "launch",
+            "url": "http://localhost:1338/guiEditor/public/index-local.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis"
+            ]
+        },   
+        {
             "name": "Launch Viewer (Chrome)",
             "type": "chrome",
             "request": "launch",
