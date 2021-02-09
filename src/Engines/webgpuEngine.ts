@@ -329,6 +329,13 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
+     * True to be in compatibility mode, meaning rendering in the same way than OpenGL.
+     * Setting the property to false will improve performances, but can lead to rendering artifacts.
+     * See @TODO WEBGPU DOC PAGE
+     */
+    public compatibilityMode = true;
+
+    /**
      * Create a new instance of the gpu engine asynchronously
      * @param canvas Defines the canvas to use to display the result
      * @param options Defines the options passed to the engine to create the GPU context dependencies
@@ -3490,6 +3497,10 @@ export class WebGPUEngine extends Engine {
             webgpuPipelineContext.uniformBuffer.update();
         }
 
+        if (!this.compatibilityMode && this._currentDrawContext?.fastBindGroups) {
+            return this._currentDrawContext.fastBindGroups;
+        }
+
         let node: WebGPUBindGroupCacheNode = this._currentMaterialContext.bindGroupsCache;
         for (let i = 0; i < webgpuPipelineContext.shaderProcessingContext.uniformBufferNames.length; ++i) {
             const bufferName = webgpuPipelineContext.shaderProcessingContext.uniformBufferNames[i];
@@ -3508,6 +3519,10 @@ export class WebGPUEngine extends Engine {
         }
 
         bindGroups = [];
+
+        if (!this.compatibilityMode && this._currentDrawContext) {
+            this._currentDrawContext.fastBindGroups = bindGroups;
+        }
 
         node.bindGroups = bindGroups;
         this._counters.numBindGroupsCreation++;
@@ -3633,8 +3648,15 @@ export class WebGPUEngine extends Engine {
     private _setRenderPipeline(fillMode: number): void {
         const renderPass = this._bundleEncoder || this._getCurrentRenderPass();
 
-        const pipeline = this._cacheRenderPipeline.getRenderPipeline(fillMode, this._currentEffect!, this._currentRenderTarget ? this._currentRenderTarget.samples : this._mainPassSampleCount);
+        let pipeline = !this.compatibilityMode ? this._currentDrawContext?.fastRenderPipeline : null;
+        if (!pipeline) {
+            pipeline = this._cacheRenderPipeline.getRenderPipeline(fillMode, this._currentEffect!, this._currentRenderTarget ? this._currentRenderTarget.samples : this._mainPassSampleCount);
+        }
         renderPass.setPipeline(pipeline);
+
+        if (!this.compatibilityMode && this._currentDrawContext) {
+            this._currentDrawContext.fastRenderPipeline = pipeline;
+        }
 
         this._bindVertexInputs();
 
