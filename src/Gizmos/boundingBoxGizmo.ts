@@ -93,8 +93,12 @@ export class BoundingBoxGizmo extends Gizmo {
     /**
      * Scale factor used for masking some axis
      */
-    public _axisFactor = new Vector3(1, 1, 1);
+    private _axisFactor = new Vector3(1, 1, 1);
 
+    /**
+     * Sets the axis factor
+     * @param factor the Vector3 value
+     */
     public set axisFactor(factor: Vector3) {
         this._axisFactor = factor;
         // update scale cube visibility
@@ -118,14 +122,27 @@ export class BoundingBoxGizmo extends Gizmo {
         }
     }
 
+
+    /**
+     * Gets the axis factor
+     * @returns the Vector3 factor value
+     */
     public get axisFactor(): Vector3 {
         return this._axisFactor;
     }
 
+    /**
+     * Sets scale drag speed value
+     * @param value the new speed value
+     */
     public set scaleDragSpeed(value: number) {
         this._scaleDragSpeed = value;
     }
 
+    /**
+     * Gets scale drag speed
+     * @returns the scale speed number
+     */
     public get scaleDragSpeed(): number {
         return this._scaleDragSpeed;
     }
