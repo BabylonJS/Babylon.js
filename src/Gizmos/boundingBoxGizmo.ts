@@ -110,7 +110,7 @@ export class BoundingBoxGizmo extends Gizmo {
                     if (scaleBoxes[index]) {
                         let dragAxis = new Vector3(i - 1, j - 1, k - 1);
                         dragAxis.multiplyInPlace(this._axisFactor);
-                        scaleBoxes[index].setEnabled(dragAxis.lengthSquared() > 0.0001);
+                        scaleBoxes[index].setEnabled(dragAxis.lengthSquared() > Epsilon);
                     }
                     index++;
                 }
