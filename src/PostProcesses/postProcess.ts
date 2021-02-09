@@ -403,7 +403,7 @@ export class PostProcess {
 
             this._indexParameters = indexParameters;
             this._contextsWrapper = new ContextsWrapper(this._engine);
-            this._materialContexts[-1] = this._contextsWrapper.materialContext;
+            this._materialContexts[0] = this._contextsWrapper.materialContext;
 
             if (!blockCompilation) {
                 this.updateEffect(defines);
@@ -483,7 +483,7 @@ export class PostProcess {
             onError,
             indexParameters || this._indexParameters
         );
-        this._contextsWrapper.setEffect(this._effect);
+        this._contextsWrapper.effect = this._effect;
     }
 
     /**
@@ -730,10 +730,10 @@ export class PostProcess {
             source = this.inputTexture;
         }
 
-        let materialContext = this._materialContexts[-1];
+        let materialContext = this._materialContexts[0];
         if (materialContext !== undefined) { // the underlying engine needs material contexts
             // make sure each texture has its own material context, to avoid cache cleaning in WebGPU when calling this._effect._bindTexture below
-            const textureId = source?.uniqueId ?? -1;
+            const textureId = source?.uniqueId ?? 0;
             materialContext = this._materialContexts[textureId];
             if (materialContext === undefined) {
                 this._materialContexts[textureId] = materialContext = this._engine.createMaterialContext()!;
