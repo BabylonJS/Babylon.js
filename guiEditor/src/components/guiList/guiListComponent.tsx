@@ -41,7 +41,7 @@ export class GuiListComponent extends React.Component<IGuiListComponentProps, { 
         const allBlocks: any = {
             Buttons: ["TextButton", "ImageButton"],
             Controls: ["Slider", "Checkbox", "ColorPicker", "VirtualKeyboard"],
-            Containers: ["DisplayGrid", "Grid"],
+            Containers: ["DisplayGrid", "Grid", "StackPanel"],
             Shapes: ["Ellipse", "Image", "Line", "Rectangle"],
             Inputs: ["Text", "InputText", "InputPassword"],
         };
