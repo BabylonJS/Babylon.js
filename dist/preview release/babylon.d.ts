@@ -33822,9 +33822,9 @@ declare module BABYLON {
         */
         get onAfterRenderObservable(): Observable<Mesh>;
         /**
-        * An event triggeredbetween rendering pass wneh using separateCullingPass = true
+        * An event triggeredbetween rendering pass when using separateCullingPass = true
         */
-        get onBetweenPassObservable(): Observable<Mesh>;
+        get onBetweenPassObservable(): Observable<SubMesh>;
         /**
         * An event triggered before drawing the mesh
         */
@@ -40783,6 +40783,11 @@ declare module BABYLON {
         _videoTextureSupported: boolean;
         protected _renderingQueueLaunched: boolean;
         protected _activeRenderLoops: (() => void)[];
+        /**
+         * Gets the list of current active render loop functions
+         * @returns an array with the current render loop functions
+         */
+        get activeRenderLoops(): Array<() => void>;
         /**
          * Observable signaled when a context lost event is raised
          */
@@ -58877,6 +58882,30 @@ declare module BABYLON {
          * Relative bounding box pivot used when scaling the attached node. When null object with scale from the opposite corner. 0.5,0.5,0.5 for center and 0.5,0,0.5 for bottom (Default: null)
          */
         scalePivot: Nullable<Vector3>;
+        /**
+         * Scale factor used for masking some axis
+         */
+        private _axisFactor;
+        /**
+         * Sets the axis factor
+         * @param factor the Vector3 value
+         */
+        set axisFactor(factor: Vector3);
+        /**
+         * Gets the axis factor
+         * @returns the Vector3 factor value
+         */
+        get axisFactor(): Vector3;
+        /**
+         * Sets scale drag speed value
+         * @param value the new speed value
+         */
+        set scaleDragSpeed(value: number);
+        /**
+         * Gets scale drag speed
+         * @returns the scale speed number
+         */
+        get scaleDragSpeed(): number;
         /**
          * Mesh used as a pivot to rotate the attached node
          */
@@ -80929,7 +80958,7 @@ declare module BABYLON {
         /** the controller to which the hand correlates */
         readonly xrController: WebXRInputSource;
         /** the meshes to be used to track the hand joints */
-        readonly trackedMeshes: AbstractMesh[];
+        readonly trackedMeshes: Map<string, AbstractMesh>;
         private _handMesh?;
         private _rigMapping?;
         private _nearInteractionMesh?;
@@ -80968,7 +80997,7 @@ declare module BABYLON {
         /** the controller to which the hand correlates */
         xrController: WebXRInputSource, 
         /** the meshes to be used to track the hand joints */
-        trackedMeshes: AbstractMesh[], _handMesh?: AbstractMesh | undefined, _rigMapping?: string[] | undefined, disableDefaultHandMesh?: boolean, _nearInteractionMesh?: AbstractMesh | null | undefined, _leftHandedMeshes?: boolean | undefined);
+        trackedMeshes: Map<string, AbstractMesh>, _handMesh?: AbstractMesh | undefined, _rigMapping?: string[] | undefined, disableDefaultHandMesh?: boolean, _nearInteractionMesh?: AbstractMesh | null | undefined, _leftHandedMeshes?: boolean | undefined);
         /**
          * Get the hand mesh. It is possible that the hand mesh is not yet ready!
          */
