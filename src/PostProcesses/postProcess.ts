@@ -15,6 +15,7 @@ import "../Engines/Extensions/engine.renderTarget";
 import { NodeMaterial } from '../Materials/Node/nodeMaterial';
 import { serialize, serializeAsColor4, SerializationHelper } from '../Misc/decorators';
 import { _TypeStore } from '../Misc/typeStore';
+import { ContextsWrapper } from "../Materials/contextsWrapper";
 import { IMaterialContext } from "../Engines";
 
 declare type Scene = import("../scene").Scene;
@@ -188,6 +189,7 @@ export class PostProcess {
     */
     public _currentRenderTextureInd = 0;
     private _effect: Effect;
+    private _contextsWrapper: ContextsWrapper;
     private _materialContexts: { [id: number]: IMaterialContext | undefined } = {};
     private _samplers: string[];
     private _fragmentUrl: string;
@@ -400,6 +402,7 @@ export class PostProcess {
             this._parameters.push("scale");
 
             this._indexParameters = indexParameters;
+            this._contextsWrapper = new ContextsWrapper(this._engine);
             this._materialContexts[-1] = this._contextsWrapper.materialContext;
 
             if (!blockCompilation) {
@@ -480,7 +483,7 @@ export class PostProcess {
             onError,
             indexParameters || this._indexParameters
         );
-        this._contextualEffect.setEffect(this._effect);
+        this._contextsWrapper.setEffect(this._effect);
     }
 
     /**

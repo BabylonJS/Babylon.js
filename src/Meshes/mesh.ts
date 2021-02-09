@@ -36,7 +36,7 @@ import { Plane } from '../Maths/math.plane';
 import { TransformNode } from './transformNode';
 import { CanvasGenerator } from '../Misc/canvasGenerator';
 import { ICreateCapsuleOptions } from './Builders/capsuleBuilder';
-import { ContextualEffect } from "../Materials/contextualEffect";
+import { ContextsWrapper } from "../Materials/contextsWrapper";
 
 declare type LinesMesh = import("./linesMesh").LinesMesh;
 declare type InstancedMesh = import("./instancedMesh").InstancedMesh;
@@ -1944,20 +1944,20 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             engine.setAlphaMode(this._effectiveMaterial.alphaMode);
         }
 
-        var contextualEffect: Nullable<ContextualEffect>;
+        var contextsWrapper: Nullable<ContextsWrapper>;
         if (this._effectiveMaterial._storeEffectOnSubMeshes) {
-            contextualEffect = subMesh._contextualEffect;
+            contextsWrapper = subMesh._contextsWrapper;
         } else {
-            contextualEffect = this._effectiveMaterial._getContextualEffect();
+            contextsWrapper = this._effectiveMaterial._getContextsWrapper();
         }
 
-        var effect = contextualEffect?.effect ?? null;
+        var effect = contextsWrapper?.effect ?? null;
 
         for (let step of scene._beforeRenderingMeshStage) {
             step.action(this, subMesh, batch, effect);
         }
 
-        if (!contextualEffect || !effect) {
+        if (!contextsWrapper || !effect) {
             if (oldCamera) {
                 oldCamera.maxZ = oldCameraMaxZ;
                 scene.updateTransformMatrix(true);
@@ -1984,7 +1984,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             sideOrientation = instanceDataStorage.sideOrientation;
         }
 
-        var reverse = this._effectiveMaterial._preBind(contextualEffect, sideOrientation);
+        var reverse = this._effectiveMaterial._preBind(contextsWrapper, sideOrientation);
 
         if (this._effectiveMaterial.forceDepthWrite) {
             engine.setDepthWrite(true);

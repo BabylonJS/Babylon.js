@@ -9,7 +9,8 @@ import { Constants } from "../Engines/constants";
 import { DataBuffer } from './dataBuffer';
 import { extractMinAndMaxIndexed } from '../Maths/math.functions';
 import { Plane } from '../Maths/math.plane';
-import { ContextualEffect } from "../Materials/contextualEffect";
+import { ContextsWrapper } from "../Materials/contextsWrapper";
+import { IMaterialContext } from "../Engines";
 
 declare type Collider = import("../Collisions/collider").Collider;
 declare type Material = import("../Materials/material").Material;
@@ -25,73 +26,78 @@ declare type TrianglePickingPredicate = import("../Culling/ray").TrianglePicking
  */
 export class SubMesh implements ICullable {
     /** @hidden */
-    public readonly _materialDefines: Nullable<MaterialDefines> = null; // fast access to _mainEffect.defines
+    public readonly _materialDefines: Nullable<MaterialDefines> = null; // fast access to _mainContextsWrapper.defines
     /** @hidden */
-    public readonly _materialEffect: Nullable<Effect> = null; // fast access to _mainEffect.effect
+    public readonly _materialEffect: Nullable<Effect> = null; // fast access to _mainContextsWrapper.effect
 
     /** @hidden */
     public _effectOverride: Nullable<Effect> = null;
 
-    private _effects: { [name: string]: ContextualEffect };
-    private _mainEffect: ContextualEffect; // same thing than _effects[Constants.SUBMESHEFFECT_MAINMATERIAL] but faster access
+    private _contextsWrappers: { [name: string]: ContextsWrapper };
+    private _mainContextsWrapper: ContextsWrapper; // same thing than _contextsWrappers[Constants.SUBMESHEFFECT_MAINMATERIAL] but faster access
 
     /**
      * Gets material defines used by the effect associated to the sub mesh
      */
     public get materialDefines(): Nullable<MaterialDefines> {
-        return this._mainEffect.defines as MaterialDefines;
+        return this._mainContextsWrapper.defines as MaterialDefines;
     }
 
     /**
      * Sets material defines used by the effect associated to the sub mesh
      */
     public set materialDefines(defines: Nullable<MaterialDefines>) {
-        this._mainEffect.defines = defines;
+        this._mainContextsWrapper.defines = defines;
         (this._materialDefines as any) = defines;
     }
 
     /** @hidden */
-    public _getEffect(name: string, createIfNotExisting = false): ContextualEffect | undefined {
-        if (name === Constants.SUBMESHEFFECT_MAINMATERIAL) {
-            return this._mainEffect;
+    public _getContextsWrapper(name: string, createIfNotExisting = false): ContextsWrapper | undefined {
+        if (name === Constants.SUBMESHCTXWRAPPER_MAINMATERIAL) {
+            return this._mainContextsWrapper;
         }
-        let customEffect = this._effects[name];
+        let customEffect = this._contextsWrappers[name];
         if (!customEffect && createIfNotExisting) {
-            this._effects[name] = customEffect = new ContextualEffect(this._mesh.getScene().getEngine());
+            this._contextsWrappers[name] = customEffect = new ContextsWrapper(this._mesh.getScene().getEngine());
         }
         return customEffect;
     }
 
     /** @hidden */
     public _removeEffect(name: string) {
-        delete this._effects[name];
+        delete this._contextsWrappers[name];
     }
 
     /**
      * Gets associated (main) effect (possibly the effect override if defined)
      */
     public get effect(): Nullable<Effect> {
-        return this._effectOverride ?? this._mainEffect.effect;
+        return this._effectOverride ?? this._mainContextsWrapper.effect;
     }
 
     /** @hidden */
-    public get _contextualEffect(): ContextualEffect {
+    public get _contextsWrapper(): ContextsWrapper {
         // @TODO handle effectOverride
-        return this._mainEffect;
+        return this._mainContextsWrapper;
     }
 
     /**
      * Sets associated effect (effect used to render this submesh)
      * @param effect defines the effect to associate with
      * @param defines defines the set of defines used to compile this effect
+     * @param materialContext material context associated to the effect
      */
-    public setEffect(effect: Nullable<Effect>, defines: Nullable<MaterialDefines> = null) {
-        this._mainEffect.setEffect(effect, defines);
+    public setEffect(effect: Nullable<Effect>, defines: Nullable<MaterialDefines> = null, materialContext?: IMaterialContext) {
+        this._mainContextsWrapper.setEffect(effect, defines);
+        if (materialContext !== undefined) {
+            this._mainContextsWrapper.materialContext = materialContext;
+        }
         if (effect !== this._materialEffect) {
             (this._materialEffect as any) = effect;
             (this._materialDefines as any) = defines;
         } else if (!effect) {
             (this._materialDefines as any) = null;
+            this._mainContextsWrapper.materialContext = undefined;
         }
     }
 
@@ -164,9 +170,9 @@ export class SubMesh implements ICullable {
             mesh.subMeshes.push(this);
         }
 
-        this._effects = {};
-        this._mainEffect = new ContextualEffect(this._mesh.getScene().getEngine());
-        this._effects[Constants.SUBMESHEFFECT_MAINMATERIAL] = this._mainEffect;
+        this._contextsWrappers = {};
+        this._mainContextsWrapper = new ContextsWrapper();
+        this._contextsWrappers[Constants.SUBMESHCTXWRAPPER_MAINMATERIAL] = this._mainContextsWrapper;
         this._trianglePlanes = [];
 
         this._id = mesh.subMeshes.length - 1;
@@ -255,7 +261,7 @@ export class SubMesh implements ICullable {
 
             if (this._currentMaterial !== effectiveMaterial) {
                 this._currentMaterial = effectiveMaterial;
-                this._mainEffect.defines = null;
+                this._mainContextsWrapper.defines = null;
             }
 
             return effectiveMaterial;
