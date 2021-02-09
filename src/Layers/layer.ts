@@ -12,10 +12,11 @@ import { SceneComponentConstants } from "../sceneComponent";
 import { LayerSceneComponent } from "./layerSceneComponent";
 import { Constants } from "../Engines/constants";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { DataBuffer } from '../Meshes/dataBuffer';
+import { ContextsWrapper } from "../Materials/contextsWrapper";
 
 import "../Shaders/layer.fragment";
 import "../Shaders/layer.vertex";
-import { DataBuffer } from '../Meshes/dataBuffer';
 
 /**
  * This represents a full screen 2d layer.
@@ -80,6 +81,7 @@ export class Layer {
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
     private _indexBuffer: Nullable<DataBuffer>;
     private _effect: Effect;
+    private _contextsWrapper: ContextsWrapper;
     private _previousDefines: string;
 
     /**
@@ -167,6 +169,8 @@ export class Layer {
 
         var engine = this._scene.getEngine();
 
+        this._contextsWrapper = new ContextsWrapper(engine);
+
         // VBO
         var vertices = [];
         vertices.push(1, 1);
@@ -243,7 +247,8 @@ export class Layer {
         this.onBeforeRenderObservable.notifyObservers(this);
 
         // Render
-        engine.enableEffect(currentEffect);
+        this._contextsWrapper.effect = this._effect;
+        engine.enableEffect(this._contextsWrapper);
         engine.setState(false);
 
         // Texture
