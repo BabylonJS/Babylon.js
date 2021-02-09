@@ -18,6 +18,8 @@ import { _DevTools } from '../Misc/devTools';
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { Color3 } from '../Maths/math.color';
 import { Viewport } from '../Maths/math.viewport';
+import { ContextsWrapper } from "../Materials/contextsWrapper";
+import { IMaterialContext } from "../Engines/IMaterialContext";
 
 /**
  * This represents a Lens Flare System or the shiny effect created by the light reflection on the  camera lenses.
@@ -61,6 +63,8 @@ export class LensFlareSystem {
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
     private _indexBuffer: Nullable<DataBuffer>;
     private _effect: Effect;
+    private _contextsWrapper: ContextsWrapper;
+    private _materialContexts: { [id: number]: IMaterialContext | undefined } = {};
     private _positionX: number;
     private _positionY: number;
     private _isEnabled = true;
@@ -97,6 +101,9 @@ export class LensFlareSystem {
         this.meshesSelectionPredicate = (m) => <boolean>(scene.activeCamera && m.material && m.isVisible && m.isEnabled() && m.isBlocker && ((m.layerMask & scene.activeCamera.layerMask) != 0));
 
         var engine = scene.getEngine();
+
+        this._contextsWrapper = new ContextsWrapper(engine);
+        this._materialContexts[0] = this._contextsWrapper.materialContext;
 
         // VBO
         var vertices = [];
@@ -302,13 +309,7 @@ export class LensFlareSystem {
         var distX = centerX - this._positionX;
         var distY = centerY - this._positionY;
 
-        // Effects
-        engine.enableEffect(this._effect);
-        engine.setState(false);
-        engine.setDepthBuffer(false);
-
-        // VBOs
-        engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._effect);
+        this._contextsWrapper.effect = this._effect;
 
         // Flares
         for (var index = 0; index < this.lensFlares.length; index++) {
@@ -317,6 +318,26 @@ export class LensFlareSystem {
             if (flare.texture && !flare.texture.isReady()) {
                 continue;
             }
+
+            // Effects
+            let materialContext = this._materialContexts[0];
+            if (materialContext !== undefined) { // the underlying engine needs material contexts
+                // make sure each texture has its own material context, to avoid cache cleaning in WebGPU when calling this._effect.setTexture below
+                const textureId = flare.texture?._texture?.uniqueId ?? 0;
+                materialContext = this._materialContexts[textureId];
+                if (materialContext === undefined) {
+                    this._materialContexts[textureId] = materialContext = engine.createMaterialContext()!;
+                }
+            }
+
+            this._contextsWrapper.materialContext = materialContext;
+
+            engine.enableEffect(this._contextsWrapper);
+            engine.setState(false);
+            engine.setDepthBuffer(false);
+    
+            // VBOs
+            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._effect);
 
             engine.setAlphaMode(flare.alphaMode);
 
