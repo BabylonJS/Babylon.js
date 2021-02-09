@@ -66,7 +66,8 @@
 - Added basic saving and loading funtionality. ([msDestiny14](https://github.com/msDestiny14))
 - Added more GUI controls. ([msDestiny14](https://github.com/msDestiny14))
 - Added snippet server from url functionality ([msDestiny14](https://github.com/msDestiny14))
-- Added scrolling and zooming functionality([msDestiny14](https://github.com/msDestiny14))
+- Added scrolling and zooming functionality ([msDestiny14](https://github.com/msDestiny14))
+- Added resizable canvas ([msDestiny14](https://github.com/msDestiny14))
 
 ### GUI
 
@@ -86,6 +87,10 @@
 - better support for custom hand meshes ([RaananW](https://github.com/RaananW))
 - Allow disabling of the WebXRControllerPointerSelection feature as part of the WebXR Default Experience ([rgerd](https://github.com/rgerd))
 - Added two touch-enabled GUI controls, `TouchMeshButton3D` and `TouchHolographicButton`, added option on the WebXR hand tracking feature for enabling touch collisions ([rickfromwork](https://github.com/rickfromwork), [satyapoojasama](https://github.com/satyapoojasama))
+
+### Gizmos
+
+- Exposed `scaleDragSpeed` and added `axisFactor` for BoundingBoxGizmo ([CedricGuillemet](https://github.com/CedricGuillemet))
 
 ### Viewer
 
