@@ -27,7 +27,7 @@ import "../Shaders/glowMapGeneration.vertex";
 import { _DevTools } from '../Misc/devTools';
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { EffectFallbacks } from '../Materials/effectFallbacks';
-import { ContextualEffect } from "../Materials/contextualEffect";
+import { ContextsWrapper } from "../Materials/contextsWrapper";
 
 /**
  * Effect layer options. This helps customizing the behaviour
@@ -74,9 +74,9 @@ export abstract class EffectLayer {
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
     private _indexBuffer: Nullable<DataBuffer>;
     private _cachedDefines: string;
-    private _effectLayerMapGenerationEffect: ContextualEffect;
+    private _effectLayerMapGenerationEffect: ContextsWrapper;
     private _effectLayerOptions: IEffectLayerOptions;
-    private _mergeEffect: ContextualEffect;
+    private _mergeEffect: ContextsWrapper;
 
     protected _scene: Scene;
     protected _engine: Engine;
@@ -189,8 +189,8 @@ export abstract class EffectLayer {
         this._maxSize = this._engine.getCaps().maxTextureSize;
         this._scene.effectLayers.push(this);
 
-        this._effectLayerMapGenerationEffect = new ContextualEffect(this._engine);
-        this._mergeEffect = new ContextualEffect(this._engine);
+        this._effectLayerMapGenerationEffect = new ContextsWrapper(this._engine);
+        this._mergeEffect = new ContextsWrapper(this._engine);
 
         // Generate Buffers
         this._generateIndexBuffer();

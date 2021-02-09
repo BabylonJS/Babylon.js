@@ -21,4 +21,4 @@ export * from "./materialFlags";
 export * from "./Node/index";
 export * from "./effectRenderer";
 export * from "./shadowDepthWrapper";
-export * from "./contextualEffect";
+export * from "./contextsWrapper";

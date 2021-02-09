@@ -23,7 +23,7 @@ import { Observable } from '../../Misc/observable';
 import { _DevTools } from '../../Misc/devTools';
 import { EffectFallbacks } from '../../Materials/effectFallbacks';
 import { RenderingManager } from '../../Rendering/renderingManager';
-import { ContextualEffect } from "../../Materials/contextualEffect";
+import { ContextsWrapper } from "../../Materials/contextsWrapper";
 
 import "../../Shaders/shadowMap.fragment";
 import "../../Shaders/shadowMap.vertex";
@@ -805,7 +805,7 @@ export class ShadowGenerator implements IShadowGenerator {
     protected _textureType: number;
     protected _defaultTextureMatrix = Matrix.Identity();
     protected _storedUniqueId: Nullable<number>;
-    protected _nameForCustomEffect: string;
+    protected _nameForCtxWrapper: string;
 
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
@@ -841,7 +841,7 @@ export class ShadowGenerator implements IShadowGenerator {
         light._shadowGenerator = this;
         this.id = light.id;
 
-        this._nameForCustomEffect = Constants.SUBMESHEFFECT_SHADOWGENERATOR_PREFIX + ShadowGenerator._Counter++;
+        this._nameForCtxWrapper = Constants.SUBMESHCTXWRAPPER_SHADOWGENERATOR_PREFIX + ShadowGenerator._Counter++;
 
         ShadowGenerator._SceneComponentInitialization(this._scene);
 
@@ -919,7 +919,7 @@ export class ShadowGenerator implements IShadowGenerator {
         let engine = this._scene.getEngine();
 
         this._shadowMap.onBeforeBindObservable.add(() => {
-            engine._debugPushGroup(`shadow map generation for ${this._nameForCustomEffect}`, 1);
+            engine._debugPushGroup(`shadow map generation for ${this._nameForCtxWrapper}`, 1);
         });
 
         // Record Face Index before render.
@@ -1112,10 +1112,10 @@ export class ShadowGenerator implements IShadowGenerator {
 
             const shadowDepthWrapper = material.shadowDepthWrapper;
 
-            const contextualEffect = shadowDepthWrapper?.getEffect(subMesh, this) ?? subMesh._getEffect(this._nameForCustomEffect)!;
-            const effect = ContextualEffect.GetEffect(contextualEffect)!;
+            const contextsWrapper = shadowDepthWrapper?.getEffect(subMesh, this) ?? subMesh._getContextsWrapper(this._nameForCtxWrapper)!;
+            const effect = ContextsWrapper.GetEffect(contextsWrapper)!;
 
-            engine.enableEffect(contextualEffect);
+            engine.enableEffect(contextsWrapper);
 
             renderingMesh._bind(subMesh, effect, material.fillMode);
 
@@ -1347,7 +1347,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 return false;
             }
         } else {
-            const subMeshEffect = subMesh._getEffect(this._nameForCustomEffect, true)!;
+            const subMeshEffect = subMesh._getContextsWrapper(this._nameForCtxWrapper, true)!;
 
             let effect = subMeshEffect.effect!;
             let cachedDefines = subMeshEffect.defines;

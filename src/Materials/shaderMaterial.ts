@@ -663,7 +663,7 @@ export class ShaderMaterial extends Material {
                 indexParameters: { maxSimultaneousMorphTargets: numInfluencers }
             }, engine);
 
-            this.setEffect(effect);
+            this._effect = effect;
 
             if (this._onEffectCreatedObservable) {
                 onCreatedEffectParameters.effect = effect;
@@ -869,9 +869,9 @@ export class ShaderMaterial extends Material {
 
         const seffect = this.getEffect();
 
-        this.setEffect(effect); // make sure the active effect is the right one if there are some observers for onBind that would need to get the current effect
+        this._effect = effect; // make sure the active effect is the right one if there are some observers for onBind that would need to get the current effect
         this._afterBind(mesh, effect);
-        this.setEffect(seffect);
+        this._effect = seffect;
     }
 
     protected _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null): void {

@@ -20,7 +20,8 @@ import { IInspectable } from '../Misc/iInspectable';
 import { Plane } from '../Maths/math.plane';
 import { ShadowDepthWrapper } from './shadowDepthWrapper';
 import { MaterialHelper } from './materialHelper';
-import { ContextualEffect } from "./contextualEffect";
+import { IMaterialContext } from "../Engines";
+import { ContextsWrapper } from "./contextsWrapper";
 
 declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
 declare type Mesh = import("../Meshes/mesh").Mesh;
@@ -618,9 +619,16 @@ export class Material implements IAnimatable {
      * @hidden
      * Stores the effects for the material
      */
+    protected _effect: Nullable<Effect> = null;
 
     protected _materialContext: IMaterialContext | undefined;
 
+    private _contextsWrapper: ContextsWrapper;
+    /** @hidden */
+    public _getContextsWrapper(): ContextsWrapper {
+        this._contextsWrapper.effect = this._effect;
+        return this._contextsWrapper;
+    }
 
     /**
      * Specifies if uniform buffers should be used
@@ -677,6 +685,8 @@ export class Material implements IAnimatable {
         this.id = name || Tools.RandomId();
         this.uniqueId = this._scene.getUniqueId();
         this._materialContext = this._scene.getEngine().createMaterialContext();
+        this._contextsWrapper = new ContextsWrapper();
+        this._contextsWrapper.materialContext = this._materialContext;
 
         if (this._scene.useRightHandedSystem) {
             this.sideOrientation = Material.ClockWiseSideOrientation;
@@ -765,27 +775,9 @@ export class Material implements IAnimatable {
      * @returns the effect associated with the material
      */
     public getEffect(): Nullable<Effect> {
-        return this._effect?.effect ?? null;
-    }
-
-    /** @hidden */
-    public _getContextualEffect(): Nullable<ContextualEffect> {
         return this._effect;
     }
 
-    /**
-     * Sets the effect for this material
-     * @param effect effect to set
-     */
-    public setEffect(effect: Nullable<Effect>) {
-        if ((this._effect?.effect ?? null) === effect) {
-            return;
-        }
-        if (!this._effect) {
-            this._effect = new ContextualEffect(this._scene.getEngine());
-        }
-        this._effect.setEffect(effect);
-    }
     /**
      * Returns the current scene
      * @returns a Scene
@@ -920,13 +912,13 @@ export class Material implements IAnimatable {
     }
 
     /** @hidden */
-    public _preBind(effect?: Effect | ContextualEffect, overrideOrientation: Nullable<number> = null): boolean {
+    public _preBind(effect?: Effect | ContextsWrapper, overrideOrientation: Nullable<number> = null): boolean {
         var engine = this._scene.getEngine();
 
         var orientation = (overrideOrientation == null) ? this.sideOrientation : overrideOrientation;
         var reverse = orientation === Material.ClockWiseSideOrientation;
 
-        engine.enableEffect(effect ? effect : this._effect);
+        engine.enableEffect(effect ? effect : this._getContextsWrapper());
         engine.setState(this.backFaceCulling, this.zOffset, false, reverse);
 
         return reverse;
@@ -1429,12 +1421,12 @@ export class Material implements IAnimatable {
         this._uniformBuffer.dispose();
 
         // Shader are kept in cache for further use but we can get rid of this by using forceDisposeEffect
-        if (forceDisposeEffect && this._effect && this._effect.effect) {
+        if (forceDisposeEffect && this._effect) {
             if (!this._storeEffectOnSubMeshes) {
-                this._effect.effect.dispose();
+                this._effect.dispose();
             }
 
-            this._effect.setEffect(null);
+            this._effect = null;
         }
 
         // Callback
@@ -1466,7 +1458,7 @@ export class Material implements IAnimatable {
                     }
                 }
             } else {
-                geometry._releaseVertexArrayObject(this._effect?.effect);
+                geometry._releaseVertexArrayObject(this._effect);
             }
         }
     }
