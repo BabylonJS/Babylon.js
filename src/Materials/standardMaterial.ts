@@ -1288,7 +1288,7 @@ export class StandardMaterial extends PushMaterial {
                 } else {
                     this._rebuildInParallel = false;
                     scene.resetCachedMaterial();
-                    subMesh.setEffect(effect, defines);
+                    subMesh.setEffect(effect, defines, this._materialContext);
                     this.buildUniformLayout();
                 }
             }

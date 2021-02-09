@@ -25,6 +25,7 @@ import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
 import { NativeShaderProcessor } from '../Engines/Native/nativeShaderProcessors';
 import { RenderTargetTextureSize } from '../Engines/Extensions/engine.renderTarget';
 import { DepthTextureCreationOptions } from '../Engines/depthTextureCreationOptions';
+import { IMaterialContext } from "./IMaterialContext";
 
 interface INativeEngine {
 
@@ -826,8 +827,6 @@ export class NativeEngine extends Engine {
             supportSwitchCaseInShader: false,
             supportSyncTextureRead: false,
             needsInvertingBitmap: true,
-            needsEffectContext: false,
-            disableSceneMaterialCache: false,
             _collectUbosUpdatedInFrame: false,
         };
 
@@ -1051,6 +1050,10 @@ export class NativeEngine extends Engine {
 
     public createPipelineContext(): IPipelineContext {
         return new NativePipelineContext(this);
+    }
+
+    public createMaterialContext(): IMaterialContext | undefined {
+        return undefined;
     }
 
     public _preparePipelineContext(pipelineContext: IPipelineContext, vertexSourceCode: string, fragmentSourceCode: string, createAsRaw: boolean, rawVertexSourceCode: string, rawFragmentSourceCode: string, rebuildRebind: any, defines: Nullable<string>, transformFeedbackVaryings: Nullable<string[]>) {

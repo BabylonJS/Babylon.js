@@ -212,7 +212,7 @@ export class CellMaterial extends PushMaterial {
                     onCompiled: this.onCompiled,
                     onError: this.onError,
                     indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights - 1 }
-                }, engine), defines);
+                }, engine), defines, this._materialContext);
 
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {

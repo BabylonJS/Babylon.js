@@ -18,3 +18,4 @@ export * from "./Processors/shaderCodeInliner";
 export * from "./performanceConfigurator";
 export * from "./engineFeatures";
 export * from "./engineFactory";
+export * from "./IMaterialContext";

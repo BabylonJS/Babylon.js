@@ -201,7 +201,7 @@ export class SimpleMaterial extends PushMaterial {
                     onCompiled: this.onCompiled,
                     onError: this.onError,
                     indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights - 1 }
-                }, engine), defines);
+                }, engine), defines, this._materialContext);
 
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {

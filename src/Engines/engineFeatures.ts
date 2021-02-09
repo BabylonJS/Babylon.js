@@ -51,12 +51,6 @@ export interface EngineFeatures {
     /** Indicates that y should be inverted when dealing with bitmaps (notably in environment tools) */
     needsInvertingBitmap: boolean;
 
-    /** Indicates that the engine needs a context to be associated with each effect instance */
-    needsEffectContext: boolean;
-
-    /** Indicates that the scene cache [effect - material - visibility] should be disabled */
-    disableSceneMaterialCache: boolean;
-
     /** @hidden */
     _collectUbosUpdatedInFrame: boolean;
 }
