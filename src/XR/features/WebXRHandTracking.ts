@@ -241,7 +241,7 @@ export class WebXRHand implements IDisposable {
         /** the controller to which the hand correlates */
         public readonly xrController: WebXRInputSource,
         /** the meshes to be used to track the hand joints */
-        public readonly trackedMeshes: AbstractMesh[],
+        public readonly trackedMeshes: Map<string, AbstractMesh>,
         private _handMesh?: AbstractMesh,
         private _rigMapping?: string[],
         disableDefaultHandMesh?: boolean,
@@ -249,7 +249,7 @@ export class WebXRHand implements IDisposable {
         private _leftHandedMeshes?: boolean
     ) {
         this.handPartsDefinition = this.generateHandPartsDefinition();
-        this._scene = trackedMeshes[0].getScene();
+        this._scene = trackedMeshes.get("wrist")!.getScene();
         this.onHandMeshReadyObservable.add(() => {
             // check if we should use bones or transform nodes
             if (!this._rigMapping) {
@@ -317,8 +317,8 @@ export class WebXRHand implements IDisposable {
         if (!hand) {
             return;
         }
-        this.trackedMeshes.forEach((mesh, idx) => {
-            const xrJoint = hand.get(handJointReferenceArray[idx]);
+        this.trackedMeshes.forEach((mesh, name) => {
+            const xrJoint = hand.get(name);
             if (xrJoint) {
                 let pose = xrFrame.getJointPose!(xrJoint, referenceSpace);
                 if (!pose || !pose.transform) {
@@ -343,6 +343,7 @@ export class WebXRHand implements IDisposable {
 
                 // now check for the hand mesh
                 if (this._handMesh && this._rigMapping) {
+                    const idx = handJointReferenceArray.indexOf(name as XRHandJoint);
                     if (this._rigMapping[idx]) {
                         if (this._useBones) {
                             this._boneMapping[idx] = this._boneMapping[idx] || this._scene.getBoneByName(this._rigMapping[idx]);
@@ -372,8 +373,8 @@ export class WebXRHand implements IDisposable {
         });
 
         // Update the invisible fingertip collidable
-        if (this._nearInteractionMesh) {
-            const indexTipPose = this.trackedMeshes[handJointReferenceArray.indexOf(XRHandJoint["index-finger-tip"])].position;
+        if (this._nearInteractionMesh && this.trackedMeshes.has("index-finger-tip")) {
+            const indexTipPose = this.trackedMeshes.get("index-finger-tip")!.position;
             this._nearInteractionMesh.position.set(indexTipPose.x, indexTipPose.y, indexTipPose.z);
         }
     }
@@ -384,7 +385,7 @@ export class WebXRHand implements IDisposable {
      * @returns An array of meshes that correlate to the hand part requested
      */
     public getHandPartMeshes(part: HandPart): AbstractMesh[] {
-        return this.handPartsDefinition[part].map((idx) => this.trackedMeshes[handJointReferenceArray.indexOf(idx as XRHandJoint)]);
+        return this.handPartsDefinition[part].map((name) => this.trackedMeshes.get(name)!);
     }
 
     /**
@@ -621,7 +622,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
         }
 
         const hand = xrController.inputSource.hand;
-        const trackedMeshes: AbstractMesh[] = [];
+        const trackedMeshes = new Map();
         const originalMesh = this.options.jointMeshes?.sourceMesh || SphereBuilder.CreateSphere("jointParent", { diameter: 1 });
         originalMesh.scaling.set(0.01, 0.01, 0.01);
         originalMesh.isVisible = !!this.options.jointMeshes?.keepOriginalVisible;
@@ -646,7 +647,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
             if (this.options.jointMeshes?.invisible) {
                 newInstance.isVisible = false;
             }
-            trackedMeshes.push(newInstance);
+            trackedMeshes.set(handJointReferenceArray[i], newInstance);
         }
 
         let touchMesh: Nullable<AbstractMesh> = null;
