@@ -19,3 +19,4 @@ export * from "./performanceConfigurator";
 export * from "./engineFeatures";
 export * from "./engineFactory";
 export * from "./IMaterialContext";
+export * from "./IDrawContext";

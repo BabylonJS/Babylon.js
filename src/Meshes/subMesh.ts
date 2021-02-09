@@ -171,7 +171,7 @@ export class SubMesh implements ICullable {
         }
 
         this._contextsWrappers = {};
-        this._mainContextsWrapper = new ContextsWrapper();
+        this._mainContextsWrapper = new ContextsWrapper(this._mesh.getScene().getEngine(), false);
         this._contextsWrappers[Constants.SUBMESHCTXWRAPPER_MAINMATERIAL] = this._mainContextsWrapper;
         this._trianglePlanes = [];
 

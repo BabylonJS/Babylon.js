@@ -41,6 +41,7 @@ import { WebGPUStencilState } from "./WebGPU/webgpuStencilState";
 import { WebGPUDepthCullingState } from "./WebGPU/webgpuDepthCullingState";
 import { ContextsWrapper } from "../Materials/contextsWrapper";
 import { WebGPUBindGroupCacheNode, WebGPUMaterialContext } from "./WebGPU/webgpuMaterialContext";
+import { WebGPUDrawContext } from "./WebGPU/webgpuDrawContext";
 
 import "../Shaders/clearQuad.vertex";
 import "../Shaders/clearQuad.fragment";
@@ -231,6 +232,7 @@ export class WebGPUEngine extends Engine {
     // protected _currentEffect: Nullable<Effect> = null;
     private _defaultMaterialContext: WebGPUMaterialContext;
     private _currentMaterialContext: WebGPUMaterialContext;
+    private _currentDrawContext: WebGPUDrawContext | undefined;
     private _currentVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }> = null;
     private _currentOverrideVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }> = null;
     private _currentIndexBuffer: Nullable<DataBuffer> = null;
@@ -1264,6 +1266,14 @@ export class WebGPUEngine extends Engine {
         return new WebGPUMaterialContext();
     }
 
+    /**
+     * Creates a new draw context
+     * @returns the new context
+     */
+    public createDrawContext(): WebGPUDrawContext | undefined {
+        return new WebGPUDrawContext();
+    }
+
     /** @hidden */
     public _preparePipelineContext(pipelineContext: IPipelineContext, vertexSourceCode: string, fragmentSourceCode: string, createAsRaw: boolean, rawVertexSourceCode: string, rawFragmentSourceCode: string,
         rebuildRebind: any,
@@ -1334,16 +1344,18 @@ export class WebGPUEngine extends Engine {
             this._currentEffect = effect;
             this._currentMaterialContext = this._defaultMaterialContext;
             this._currentMaterialContext.reset();
+            this._currentDrawContext = undefined;
             this._counters.numEnableEffects++;
             if (this.dbgLogIfNotContextualEffect) {
                 Logger.Warn(`enableEffect has been called with an Effect and not a ContextualEffect! effect.uniqueId=${effect.uniqueId}, effect.name=${effect.name}, effect.name.vertex=${effect.name.vertex}, effect.name.fragment=${effect.name.fragment}`, 10);
             }
-        } else if (!effect.effect || effect.effect === this._currentEffect && effect.materialContext === this._currentMaterialContext && !this._forceEnableEffect) {
+        } else if (!effect.effect || effect.effect === this._currentEffect && effect.materialContext === this._currentMaterialContext && effect.drawContext === this._currentDrawContext && !this._forceEnableEffect) {
             return;
         } else {
             isNewEffect = effect.effect !== this._currentEffect;
             this._currentEffect = effect.effect;
             this._currentMaterialContext = effect.materialContext as WebGPUMaterialContext;
+            this._currentDrawContext = effect.drawContext as WebGPUDrawContext;
             this._counters.numEnableContextsWrapper++;
             if (!this._currentMaterialContext) {
                 console.error("contextsWrapper=", effect);

@@ -685,7 +685,7 @@ export class Material implements IAnimatable {
         this.id = name || Tools.RandomId();
         this.uniqueId = this._scene.getUniqueId();
         this._materialContext = this._scene.getEngine().createMaterialContext();
-        this._contextsWrapper = new ContextsWrapper();
+        this._contextsWrapper = new ContextsWrapper(this._scene.getEngine(), false);
         this._contextsWrapper.materialContext = this._materialContext;
 
         if (this._scene.useRightHandedSystem) {
