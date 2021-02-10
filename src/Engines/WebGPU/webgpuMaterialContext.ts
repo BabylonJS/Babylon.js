@@ -3,8 +3,8 @@ import { Nullable } from "../../types";
 import { IMaterialContext } from "../IMaterialContext";
 
 /** @hidden */
-export class WebGPUBindGroupCacheNode {
-    public values: { [id: number]: WebGPUBindGroupCacheNode };
+export class WebGPUMaterialContextBindGroupCacheNode {
+    public values: { [id: number]: WebGPUMaterialContextBindGroupCacheNode };
     public bindGroups: GPUBindGroup[];
 
     constructor() {
@@ -13,13 +13,13 @@ export class WebGPUBindGroupCacheNode {
 }
 
 /** @hidden */
-interface IWebGPUEffectContextSamplerCache {
+interface IWebGPUMaterialContextSamplerCache {
     samplerBinding: number;
     firstTextureName: string;
 }
 
 /** @hidden */
-interface IWebGPUEffectContextTextureCache {
+interface IWebGPUMaterialContextTextureCache {
     textureBinding: number;
     texture: InternalTexture;
     wrapU: Nullable<number>;
@@ -31,16 +31,16 @@ interface IWebGPUEffectContextTextureCache {
 
 /** @hidden */
 export class WebGPUMaterialContext implements IMaterialContext {
-    public samplers: { [name: string]: Nullable<IWebGPUEffectContextSamplerCache> };
+    public samplers: { [name: string]: Nullable<IWebGPUMaterialContextSamplerCache> };
 
-    public textures: { [name: string]: Nullable<IWebGPUEffectContextTextureCache> };
+    public textures: { [name: string]: Nullable<IWebGPUMaterialContextTextureCache> };
 
-    public bindGroupsCache: WebGPUBindGroupCacheNode;
+    public bindGroupsCache: WebGPUMaterialContextBindGroupCacheNode;
 
     constructor() {
         this.samplers = {};
         this.textures = {};
-        this.bindGroupsCache = new WebGPUBindGroupCacheNode();
+        this.bindGroupsCache = new WebGPUMaterialContextBindGroupCacheNode();
     }
 
     public reset(): void {

@@ -2518,7 +2518,7 @@ export class ThinEngine {
      * @param effect defines the effect to activate
      */
     public enableEffect(effect: Nullable<Effect | ContextsWrapper>): void {
-        effect = effect !== null && ContextsWrapper.IsContextualEffect(effect) ? effect.effect : effect; // get only the effect, we don't need a ContextualEffect in the WebGL engine
+        effect = effect !== null && ContextsWrapper.IsEffect(effect) ? effect : effect.effect; // get only the effect, we don't need a ContextsWrapper in the WebGL engine
 
         if (!effect || effect === this._currentEffect) {
             return;
