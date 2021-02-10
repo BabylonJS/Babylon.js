@@ -96,6 +96,10 @@
 
 - Fixed an issue with dual callback binding in case of a forced redraw ([#9608](https://github.com/BabylonJS/Babylon.js/issues/9608)) ([RaananW](https://github.com/RaananW))
 
+### Math
+
+- Faster scalar's WithinEpsilon with Math.abs ([nekochanoide](https://github.com/nekochanoide))
+
 ## Bugs
 
 - Fix issue with the Promise polyfill where a return value was expected from resolve() ([Deltakosh](https://github.com/deltakosh))
