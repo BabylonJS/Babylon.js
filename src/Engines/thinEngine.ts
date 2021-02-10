@@ -34,7 +34,7 @@ import { PerformanceConfigurator } from './performanceConfigurator';
 import { EngineFeatures } from './engineFeatures';
 import { HardwareTextureWrapper } from '../Materials/Textures/hardwareTextureWrapper';
 import { WebGLHardwareTexture } from './WebGL/webGLHardwareTexture';
-import { ContextsWrapper } from "../Materials/contextsWrapper";
+import { DrawWrapper } from "../Materials/drawWrapper";
 import { IMaterialContext } from "./IMaterialContext";
 import { IDrawContext } from "./IDrawContext";
 
@@ -2517,8 +2517,8 @@ export class ThinEngine {
      * Activates an effect, making it the current one (ie. the one used for rendering)
      * @param effect defines the effect to activate
      */
-    public enableEffect(effect: Nullable<Effect | ContextsWrapper>): void {
-        effect = effect !== null && ContextsWrapper.IsWrapper(effect) ? effect.effect : effect; // get only the effect, we don't need a Wrapper in the WebGL engine
+    public enableEffect(effect: Nullable<Effect | DrawWrapper>): void {
+        effect = effect !== null && DrawWrapper.IsWrapper(effect) ? effect.effect : effect; // get only the effect, we don't need a Wrapper in the WebGL engine
 
         if (!effect || effect === this._currentEffect) {
             return;

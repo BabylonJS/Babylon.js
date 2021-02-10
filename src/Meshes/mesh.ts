@@ -36,7 +36,7 @@ import { Plane } from '../Maths/math.plane';
 import { TransformNode } from './transformNode';
 import { CanvasGenerator } from '../Misc/canvasGenerator';
 import { ICreateCapsuleOptions } from './Builders/capsuleBuilder';
-import { ContextsWrapper } from "../Materials/contextsWrapper";
+import { DrawWrapper } from "../Materials/drawWrapper";
 
 declare type LinesMesh = import("./linesMesh").LinesMesh;
 declare type InstancedMesh = import("./instancedMesh").InstancedMesh;
@@ -1944,20 +1944,20 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             engine.setAlphaMode(this._effectiveMaterial.alphaMode);
         }
 
-        var contextsWrapper: Nullable<ContextsWrapper>;
+        var drawWrapper: Nullable<DrawWrapper>;
         if (this._effectiveMaterial._storeEffectOnSubMeshes) {
-            contextsWrapper = subMesh._contextsWrapper;
+            drawWrapper = subMesh._drawWrapper;
         } else {
-            contextsWrapper = this._effectiveMaterial._getContextsWrapper();
+            drawWrapper = this._effectiveMaterial._getDrawWrapper();
         }
 
-        var effect = contextsWrapper?.effect ?? null;
+        var effect = drawWrapper?.effect ?? null;
 
         for (let step of scene._beforeRenderingMeshStage) {
             step.action(this, subMesh, batch, effect);
         }
 
-        if (!contextsWrapper || !effect) {
+        if (!drawWrapper || !effect) {
             if (oldCamera) {
                 oldCamera.maxZ = oldCameraMaxZ;
                 scene.updateTransformMatrix(true);
@@ -1984,7 +1984,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             sideOrientation = instanceDataStorage.sideOrientation;
         }
 
-        var reverse = this._effectiveMaterial._preBind(contextsWrapper, sideOrientation);
+        var reverse = this._effectiveMaterial._preBind(drawWrapper, sideOrientation);
 
         if (this._effectiveMaterial.forceDepthWrite) {
             engine.setDepthWrite(true);

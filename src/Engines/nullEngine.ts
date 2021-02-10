@@ -11,7 +11,7 @@ import { DataBuffer } from '../Meshes/dataBuffer';
 import { IColor4Like, IViewportLike } from '../Maths/math.like';
 import { ISceneLike } from './thinEngine';
 import { PerformanceConfigurator } from './performanceConfigurator';
-import { ContextsWrapper } from "../Materials/contextsWrapper";
+import { DrawWrapper } from "../Materials/drawWrapper";
 
 declare const global: any;
 
@@ -289,8 +289,8 @@ export class NullEngine extends Engine {
      * Activates an effect, making it the current one (ie. the one used for rendering)
      * @param effect defines the effect to activate
      */
-    public enableEffect(effect: Nullable<Effect | ContextsWrapper>): void {
-        effect = effect !== null && ContextsWrapper.IsWrapper(effect) ? effect.effect : effect; // get only the effect, we don't need a Wrapper in the WebGL engine
+    public enableEffect(effect: Nullable<Effect | DrawWrapper>): void {
+        effect = effect !== null && DrawWrapper.IsWrapper(effect) ? effect.effect : effect; // get only the effect, we don't need a Wrapper in the WebGL engine
 
         this._currentEffect = effect;
         if (!effect) {

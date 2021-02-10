@@ -7,18 +7,18 @@ declare type Effect = import("./Effect").Effect;
 declare type MaterialDefines = import("./materialDefines").MaterialDefines;
 
 /** @hidden */
-export class ContextsWrapper {
+export class DrawWrapper {
     public effect: Nullable<Effect>;
     public defines: Nullable<string | MaterialDefines>;
     public materialContext?: IMaterialContext;
     public drawContext?: IDrawContext;
 
-    public static IsWrapper(effect: Effect | ContextsWrapper): effect is ContextsWrapper {
+    public static IsWrapper(effect: Effect | DrawWrapper): effect is DrawWrapper {
         return (effect as Effect).getPipelineContext === undefined;
     }
 
-    public static GetEffect(effect: Effect | ContextsWrapper): Nullable<Effect> {
-        return (effect as Effect).getPipelineContext === undefined ? (effect as ContextsWrapper).effect : effect as Effect;
+    public static GetEffect(effect: Effect | DrawWrapper): Nullable<Effect> {
+        return (effect as Effect).getPipelineContext === undefined ? (effect as DrawWrapper).effect : effect as Effect;
     }
 
     constructor(engine: ThinEngine, createMaterialContext = true) {

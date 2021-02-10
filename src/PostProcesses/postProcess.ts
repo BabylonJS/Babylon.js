@@ -15,7 +15,7 @@ import "../Engines/Extensions/engine.renderTarget";
 import { NodeMaterial } from '../Materials/Node/nodeMaterial';
 import { serialize, serializeAsColor4, SerializationHelper } from '../Misc/decorators';
 import { _TypeStore } from '../Misc/typeStore';
-import { ContextsWrapper } from "../Materials/contextsWrapper";
+import { DrawWrapper } from "../Materials/drawWrapper";
 import { IMaterialContext } from "../Engines";
 
 declare type Scene = import("../scene").Scene;
@@ -189,7 +189,7 @@ export class PostProcess {
     */
     public _currentRenderTextureInd = 0;
     private _effect: Effect;
-    private _contextsWrapper: ContextsWrapper;
+    private _drawWrapper: DrawWrapper;
     private _materialContexts: { [id: number]: IMaterialContext | undefined } = {};
     private _samplers: string[];
     private _fragmentUrl: string;
@@ -402,8 +402,8 @@ export class PostProcess {
             this._parameters.push("scale");
 
             this._indexParameters = indexParameters;
-            this._contextsWrapper = new ContextsWrapper(this._engine);
-            this._materialContexts[0] = this._contextsWrapper.materialContext;
+            this._drawWrapper = new DrawWrapper(this._engine);
+            this._materialContexts[0] = this._drawWrapper.materialContext;
 
             if (!blockCompilation) {
                 this.updateEffect(defines);
@@ -483,7 +483,7 @@ export class PostProcess {
             onError,
             indexParameters || this._indexParameters
         );
-        this._contextsWrapper.effect = this._effect;
+        this._drawWrapper.effect = this._effect;
     }
 
     /**
@@ -741,8 +741,8 @@ export class PostProcess {
         }
 
         // States
-        this._contextsWrapper.materialContext = materialContext;
-        this._engine.enableEffect(this._contextsWrapper);
+        this._drawWrapper.materialContext = materialContext;
+        this._engine.enableEffect(this._drawWrapper);
         this._engine.setState(false);
         this._engine.setDepthBuffer(false);
         this._engine.setDepthWrite(false);

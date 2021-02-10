@@ -10,7 +10,7 @@ import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { MaterialHelper } from "../Materials/materialHelper";
 import { Camera } from "../Cameras/camera";
 import { Constants } from "../Engines/constants";
-import { ContextsWrapper } from "../Materials/contextsWrapper";
+import { DrawWrapper } from "../Materials/drawWrapper";
 
 import "../Shaders/depth.fragment";
 import "../Shaders/depth.vertex";
@@ -132,10 +132,10 @@ export class DepthRenderer {
             if (this.isReady(subMesh, hardwareInstancedRendering) && camera) {
                 subMesh._renderId = scene.getRenderId();
 
-                const contextsWrapper = subMesh._getContextsWrapper(this._nameForCtxWrapper)!;
-                const effect = ContextsWrapper.GetEffect(contextsWrapper)!;
+                const drawWrapper = subMesh._getDrawWrapper(this._nameForCtxWrapper)!;
+                const effect = DrawWrapper.GetEffect(drawWrapper)!;
     
-                engine.enableEffect(contextsWrapper);
+                engine.enableEffect(drawWrapper);
 
                 renderingMesh._bind(subMesh, effect, material.fillMode);
 
@@ -205,7 +205,7 @@ export class DepthRenderer {
 
         var defines = [];
 
-        const subMeshEffect = subMesh._getContextsWrapper(this._nameForCtxWrapper, true)!;
+        const subMeshEffect = subMesh._getDrawWrapper(this._nameForCtxWrapper, true)!;
 
         let effect = subMeshEffect.effect!;
         let cachedDefines = subMeshEffect.defines;

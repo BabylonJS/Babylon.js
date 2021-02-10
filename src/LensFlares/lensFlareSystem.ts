@@ -18,7 +18,7 @@ import { _DevTools } from '../Misc/devTools';
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { Color3 } from '../Maths/math.color';
 import { Viewport } from '../Maths/math.viewport';
-import { ContextsWrapper } from "../Materials/contextsWrapper";
+import { DrawWrapper } from "../Materials/drawWrapper";
 import { IMaterialContext } from "../Engines/IMaterialContext";
 
 /**
@@ -63,7 +63,7 @@ export class LensFlareSystem {
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
     private _indexBuffer: Nullable<DataBuffer>;
     private _effect: Effect;
-    private _contextsWrapper: ContextsWrapper;
+    private _drawWrapper: DrawWrapper;
     private _materialContexts: { [id: number]: IMaterialContext | undefined } = {};
     private _positionX: number;
     private _positionY: number;
@@ -102,8 +102,8 @@ export class LensFlareSystem {
 
         var engine = scene.getEngine();
 
-        this._contextsWrapper = new ContextsWrapper(engine);
-        this._materialContexts[0] = this._contextsWrapper.materialContext;
+        this._drawWrapper = new DrawWrapper(engine);
+        this._materialContexts[0] = this._drawWrapper.materialContext;
 
         // VBO
         var vertices = [];
@@ -309,7 +309,7 @@ export class LensFlareSystem {
         var distX = centerX - this._positionX;
         var distY = centerY - this._positionY;
 
-        this._contextsWrapper.effect = this._effect;
+        this._drawWrapper.effect = this._effect;
 
         // Flares
         for (var index = 0; index < this.lensFlares.length; index++) {
@@ -330,9 +330,9 @@ export class LensFlareSystem {
                 }
             }
 
-            this._contextsWrapper.materialContext = materialContext;
+            this._drawWrapper.materialContext = materialContext;
 
-            engine.enableEffect(this._contextsWrapper);
+            engine.enableEffect(this._drawWrapper);
             engine.setState(false);
             engine.setDepthBuffer(false);
     

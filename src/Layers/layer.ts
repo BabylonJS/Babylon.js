@@ -13,7 +13,7 @@ import { LayerSceneComponent } from "./layerSceneComponent";
 import { Constants } from "../Engines/constants";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { DataBuffer } from '../Meshes/dataBuffer';
-import { ContextsWrapper } from "../Materials/contextsWrapper";
+import { DrawWrapper } from "../Materials/drawWrapper";
 
 import "../Shaders/layer.fragment";
 import "../Shaders/layer.vertex";
@@ -81,7 +81,7 @@ export class Layer {
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
     private _indexBuffer: Nullable<DataBuffer>;
     private _effect: Effect;
-    private _contextsWrapper: ContextsWrapper;
+    private _drawWrapper: DrawWrapper;
     private _previousDefines: string;
 
     /**
@@ -169,7 +169,7 @@ export class Layer {
 
         var engine = this._scene.getEngine();
 
-        this._contextsWrapper = new ContextsWrapper(engine);
+        this._drawWrapper = new DrawWrapper(engine);
 
         // VBO
         var vertices = [];
@@ -247,8 +247,8 @@ export class Layer {
         this.onBeforeRenderObservable.notifyObservers(this);
 
         // Render
-        this._contextsWrapper.effect = this._effect;
-        engine.enableEffect(this._contextsWrapper);
+        this._drawWrapper.effect = this._effect;
+        engine.enableEffect(this._drawWrapper);
         engine.setState(false);
 
         // Texture
