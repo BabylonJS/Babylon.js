@@ -5,7 +5,7 @@ export class WebGPUDrawContext implements IDrawContext {
     private static _Counter = 0;
 
     public fastRenderPipeline: GPURenderPipeline | undefined;
-    public fastBindGroups: GPUBindGroup[] | undefined;
+    public fastBindGroups: { [id: number]: GPUBindGroup[] } = {};
 
     public uniqueId: number;
 

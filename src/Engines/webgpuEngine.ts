@@ -3497,8 +3497,13 @@ export class WebGPUEngine extends Engine {
             webgpuPipelineContext.uniformBuffer.update();
         }
 
-        if (!this.compatibilityMode && this._currentDrawContext?.fastBindGroups) {
-            return this._currentDrawContext.fastBindGroups;
+        const sceneBufferId = this._uniformsBuffers?.["Scene"]?.uniqueId ?? 0;
+
+        if (!this.compatibilityMode && this._currentDrawContext) {
+            let bindGroups = this._currentDrawContext.fastBindGroups[sceneBufferId];
+            if (bindGroups) {
+                return bindGroups;
+            }
         }
 
         let node: WebGPUBindGroupCacheNode = this._currentMaterialContext.bindGroupsCache;
@@ -3521,7 +3526,7 @@ export class WebGPUEngine extends Engine {
         bindGroups = [];
 
         if (!this.compatibilityMode && this._currentDrawContext) {
-            this._currentDrawContext.fastBindGroups = bindGroups;
+            this._currentDrawContext.fastBindGroups[sceneBufferId] = bindGroups;
         }
 
         node.bindGroups = bindGroups;
