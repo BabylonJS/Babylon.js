@@ -290,7 +290,7 @@ export class NullEngine extends Engine {
      * @param effect defines the effect to activate
      */
     public enableEffect(effect: Nullable<Effect | ContextsWrapper>): void {
-        effect = effect !== null && ContextsWrapper.IsEffect(effect) ? effect : effect.effect; // get only the effect, we don't need a ContextsWrapper in the WebGL engine
+        effect = effect !== null && ContextsWrapper.IsWrapper(effect) ? effect.effect : effect; // get only the effect, we don't need a Wrapper in the WebGL engine
 
         this._currentEffect = effect;
         if (!effect) {

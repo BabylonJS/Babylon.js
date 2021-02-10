@@ -1348,7 +1348,7 @@ export class WebGPUEngine extends Engine {
 
         let isNewEffect = true;
 
-        if (ContextsWrapper.IsEffect(effect)) {
+        if (!ContextsWrapper.IsWrapper(effect)) {
             isNewEffect = effect !== this._currentEffect;
             this._currentEffect = effect;
             this._currentMaterialContext = this._defaultMaterialContext;
