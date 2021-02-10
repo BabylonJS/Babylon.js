@@ -23,6 +23,7 @@ import { NodeMaterial } from '../../Node/nodeMaterial';
 import { RenderTargetTextureSize } from '../../../Engines/Extensions/engine.renderTarget';
 import { EngineStore } from '../../../Engines/engineStore';
 import { Constants } from '../../../Engines/constants';
+import { ContextsWrapper } from "../../contextsWrapper";
 
 /**
  * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes calmpler' images.
@@ -68,6 +69,8 @@ export class ProceduralTexture extends Texture {
 
     /** @hidden **/
     public _effect: Effect;
+
+    private _contextsWrapper: ContextsWrapper;
 
     /** @hidden */
     public _textures: { [key: string]: Texture } = {};
@@ -136,6 +139,7 @@ export class ProceduralTexture extends Texture {
         this._size = size;
         this._textureType = textureType;
         this._generateMipMaps = generateMipMaps;
+        this._contextsWrapper = new ContextsWrapper(this._fullEngine);
 
         this.setFragment(fragment);
 
@@ -290,6 +294,7 @@ export class ProceduralTexture extends Texture {
                     this._fallbackTextureUsed = true;
                 }
             );
+            this._contextsWrapper.effect = this._effect;
         }
 
         return this._effect.isReady();
@@ -519,7 +524,7 @@ export class ProceduralTexture extends Texture {
         var engine = this._fullEngine;
 
         // Render
-        engine.enableEffect(this._effect);
+        engine.enableEffect(this._contextsWrapper);
         this.onBeforeGenerationObservable.notifyObservers(this);
         engine.setState(false);
 
