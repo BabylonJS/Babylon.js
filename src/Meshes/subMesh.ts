@@ -9,7 +9,7 @@ import { Constants } from "../Engines/constants";
 import { DataBuffer } from './dataBuffer';
 import { extractMinAndMaxIndexed } from '../Maths/math.functions';
 import { Plane } from '../Maths/math.plane';
-import { ContextsWrapper } from "../Materials/contextsWrapper";
+import { DrawWrapper } from "../Materials/drawWrapper";
 import { IMaterialContext } from "../Engines";
 
 declare type Collider = import("../Collisions/collider").Collider;
@@ -26,59 +26,59 @@ declare type TrianglePickingPredicate = import("../Culling/ray").TrianglePicking
  */
 export class SubMesh implements ICullable {
     /** @hidden */
-    public readonly _materialDefines: Nullable<MaterialDefines> = null; // fast access to _mainContextsWrapper.defines
+    public readonly _materialDefines: Nullable<MaterialDefines> = null; // fast access to _mainDrawWrapper.defines
     /** @hidden */
-    public readonly _materialEffect: Nullable<Effect> = null; // fast access to _mainContextsWrapper.effect
+    public readonly _materialEffect: Nullable<Effect> = null; // fast access to _mainDrawWrapper.effect
 
     /** @hidden */
     public _effectOverride: Nullable<Effect> = null;
 
-    private _contextsWrappers: { [name: string]: ContextsWrapper };
-    private _mainContextsWrapper: ContextsWrapper; // same thing than _contextsWrappers[Constants.SUBMESHEFFECT_MAINMATERIAL] but faster access
+    private _drawWrappers: { [name: string]: DrawWrapper };
+    private _mainDrawWrapper: DrawWrapper; // same thing than _drawWrappers[Constants.SUBMESHEFFECT_MAINMATERIAL] but faster access
 
     /**
      * Gets material defines used by the effect associated to the sub mesh
      */
     public get materialDefines(): Nullable<MaterialDefines> {
-        return this._mainContextsWrapper.defines as MaterialDefines;
+        return this._mainDrawWrapper.defines as MaterialDefines;
     }
 
     /**
      * Sets material defines used by the effect associated to the sub mesh
      */
     public set materialDefines(defines: Nullable<MaterialDefines>) {
-        this._mainContextsWrapper.defines = defines;
+        this._mainDrawWrapper.defines = defines;
         (this._materialDefines as any) = defines;
     }
 
     /** @hidden */
-    public _getContextsWrapper(name: string, createIfNotExisting = false): ContextsWrapper | undefined {
+    public _getDrawWrapper(name: string, createIfNotExisting = false): DrawWrapper | undefined {
         if (name === Constants.SUBMESHCTXWRAPPER_MAINMATERIAL) {
-            return this._mainContextsWrapper;
+            return this._mainDrawWrapper;
         }
-        let customEffect = this._contextsWrappers[name];
+        let customEffect = this._drawWrappers[name];
         if (!customEffect && createIfNotExisting) {
-            this._contextsWrappers[name] = customEffect = new ContextsWrapper(this._mesh.getScene().getEngine());
+            this._drawWrappers[name] = customEffect = new DrawWrapper(this._mesh.getScene().getEngine());
         }
         return customEffect;
     }
 
     /** @hidden */
     public _removeEffect(name: string) {
-        delete this._contextsWrappers[name];
+        delete this._drawWrappers[name];
     }
 
     /**
      * Gets associated (main) effect (possibly the effect override if defined)
      */
     public get effect(): Nullable<Effect> {
-        return this._effectOverride ?? this._mainContextsWrapper.effect;
+        return this._effectOverride ?? this._mainDrawWrapper.effect;
     }
 
     /** @hidden */
-    public get _contextsWrapper(): ContextsWrapper {
+    public get _drawWrapper(): DrawWrapper {
         // @TODO handle effectOverride
-        return this._mainContextsWrapper;
+        return this._mainDrawWrapper;
     }
 
     /**
@@ -88,16 +88,16 @@ export class SubMesh implements ICullable {
      * @param materialContext material context associated to the effect
      */
     public setEffect(effect: Nullable<Effect>, defines: Nullable<MaterialDefines> = null, materialContext?: IMaterialContext) {
-        this._mainContextsWrapper.setEffect(effect, defines);
+        this._mainDrawWrapper.setEffect(effect, defines);
         if (materialContext !== undefined) {
-            this._mainContextsWrapper.materialContext = materialContext;
+            this._mainDrawWrapper.materialContext = materialContext;
         }
         if (effect !== this._materialEffect) {
             (this._materialEffect as any) = effect;
             (this._materialDefines as any) = defines;
         } else if (!effect) {
             (this._materialDefines as any) = null;
-            this._mainContextsWrapper.materialContext = undefined;
+            this._mainDrawWrapper.materialContext = undefined;
         }
     }
 
@@ -170,9 +170,9 @@ export class SubMesh implements ICullable {
             mesh.subMeshes.push(this);
         }
 
-        this._contextsWrappers = {};
-        this._mainContextsWrapper = new ContextsWrapper(this._mesh.getScene().getEngine(), false);
-        this._contextsWrappers[Constants.SUBMESHCTXWRAPPER_MAINMATERIAL] = this._mainContextsWrapper;
+        this._drawWrappers = {};
+        this._mainDrawWrapper = new DrawWrapper(this._mesh.getScene().getEngine(), false);
+        this._drawWrappers[Constants.SUBMESHCTXWRAPPER_MAINMATERIAL] = this._mainDrawWrapper;
         this._trianglePlanes = [];
 
         this._id = mesh.subMeshes.length - 1;
@@ -261,7 +261,7 @@ export class SubMesh implements ICullable {
 
             if (this._currentMaterial !== effectiveMaterial) {
                 this._currentMaterial = effectiveMaterial;
-                this._mainContextsWrapper.defines = null;
+                this._mainDrawWrapper.defines = null;
             }
 
             return effectiveMaterial;

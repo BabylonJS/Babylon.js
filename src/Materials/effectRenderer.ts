@@ -8,7 +8,7 @@ import { Constants } from '../Engines/constants';
 import { Observable } from '../Misc/observable';
 import { Effect } from './effect';
 import { DataBuffer } from '../Meshes/dataBuffer';
-import { ContextsWrapper } from "./contextsWrapper";
+import { DrawWrapper } from "./drawWrapper";
 
 // Prevents ES6 Crash if not imported.
 import "../Shaders/postprocess.vertex";
@@ -85,7 +85,7 @@ export class EffectRenderer {
     public applyEffectWrapper(effectWrapper: EffectWrapper): void {
         this.engine.depthCullingState.depthTest = false;
         this.engine.stencilState.stencilTest = false;
-        this.engine.enableEffect(effectWrapper._contextsWrapper);
+        this.engine.enableEffect(effectWrapper._drawWrapper);
         this.bindBuffers(effectWrapper.effect);
         effectWrapper.onApplyObservable.notifyObservers({});
     }
@@ -216,7 +216,7 @@ export class EffectWrapper {
     public effect: Effect;
 
     /** @hidden */
-    public _contextsWrapper: ContextsWrapper;
+    public _drawWrapper: DrawWrapper;
 
     /**
      * Creates an effect to be renderer
@@ -280,8 +280,8 @@ export class EffectWrapper {
             );
         }
 
-        this._contextsWrapper = new ContextsWrapper(creationOptions.engine);
-        this._contextsWrapper.effect = this.effect;
+        this._drawWrapper = new DrawWrapper(creationOptions.engine);
+        this._drawWrapper.effect = this.effect;
     }
 
     /**

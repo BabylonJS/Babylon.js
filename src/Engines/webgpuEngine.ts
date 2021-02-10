@@ -39,7 +39,7 @@ import { WebGPUCacheRenderPipeline } from "./WebGPU/webgpuCacheRenderPipeline";
 import { WebGPUCacheRenderPipelineTree } from "./WebGPU/webgpuCacheRenderPipelineTree";
 import { WebGPUStencilState } from "./WebGPU/webgpuStencilState";
 import { WebGPUDepthCullingState } from "./WebGPU/webgpuDepthCullingState";
-import { ContextsWrapper } from "../Materials/contextsWrapper";
+import { DrawWrapper } from "../Materials/drawWrapper";
 import { WebGPUMaterialContextBindGroupCacheNode, WebGPUMaterialContext } from "./WebGPU/webgpuMaterialContext";
 import { WebGPUDrawContext } from "./WebGPU/webgpuDrawContext";
 
@@ -189,20 +189,20 @@ export class WebGPUEngine extends Engine {
     private _counters: {
         numBindGroupsCreation: number;
         numEnableEffects: number;
-        numEnableContextsWrapper: number;
+        numEnableDrawWrapper: number;
     } = {
         numBindGroupsCreation: 0,
         numEnableEffects: 0,
-        numEnableContextsWrapper: 0,
+        numEnableDrawWrapper: 0,
     };
     public readonly countersLastFrame: {
         numBindGroupsCreation: number;
         numEnableEffects: number;
-        numEnableContextsWrapper: number;
+        numEnableDrawWrapper: number;
     } = {
         numBindGroupsCreation: 0,
         numEnableEffects: 0,
-        numEnableContextsWrapper: 0,
+        numEnableDrawWrapper: 0,
     };
 
     // Some of the internal state might change during the render pass.
@@ -252,7 +252,7 @@ export class WebGPUEngine extends Engine {
     /** @hidden */
     public dbgVerboseLogsNumFrames = 10;
     /** @hidden */
-    public dbgLogIfNotContextsWrapperEffect = true;
+    public dbgLogIfNotDrawWrapper = true;
     /** @hidden */
     public dbgShowEmptyEnableEffectCalls = true;
 
@@ -1341,26 +1341,26 @@ export class WebGPUEngine extends Engine {
      * Activates an effect, mkaing it the current one (ie. the one used for rendering)
      * @param effect defines the effect to activate
      */
-    public enableEffect(effect: Nullable<Effect | ContextsWrapper>): void {
+    public enableEffect(effect: Nullable<Effect | DrawWrapper>): void {
         if (!effect) {
             return;
         }
 
         let isNewEffect = true;
 
-        if (!ContextsWrapper.IsWrapper(effect)) {
+        if (!DrawWrapper.IsWrapper(effect)) {
             isNewEffect = effect !== this._currentEffect;
             this._currentEffect = effect;
             this._currentMaterialContext = this._defaultMaterialContext;
             this._currentMaterialContext.reset();
             this._currentDrawContext = undefined;
             this._counters.numEnableEffects++;
-            if (this.dbgLogIfNotContextsWrapperEffect) {
-                Logger.Warn(`enableEffect has been called with an Effect and not a ContextsWrapper! effect.uniqueId=${effect.uniqueId}, effect.name=${effect.name}, effect.name.vertex=${effect.name.vertex}, effect.name.fragment=${effect.name.fragment}`, 10);
+            if (this.dbgLogIfNotDrawWrapper) {
+                Logger.Warn(`enableEffect has been called with an Effect and not a Wrapper! effect.uniqueId=${effect.uniqueId}, effect.name=${effect.name}, effect.name.vertex=${effect.name.vertex}, effect.name.fragment=${effect.name.fragment}`, 10);
             }
         } else if (!effect.effect || effect.effect === this._currentEffect && effect.materialContext === this._currentMaterialContext && effect.drawContext === this._currentDrawContext && !this._forceEnableEffect) {
             if (!effect.effect && this.dbgShowEmptyEnableEffectCalls) {
-                console.warn("Invalid call to enableEffect: the effect property is empty! contextsWrapper=", effect);
+                console.warn("Invalid call to enableEffect: the effect property is empty! drawWrapper=", effect);
             }
             return;
         } else {
@@ -1368,9 +1368,9 @@ export class WebGPUEngine extends Engine {
             this._currentEffect = effect.effect;
             this._currentMaterialContext = effect.materialContext as WebGPUMaterialContext;
             this._currentDrawContext = effect.drawContext as WebGPUDrawContext;
-            this._counters.numEnableContextsWrapper++;
+            this._counters.numEnableDrawWrapper++;
             if (!this._currentMaterialContext) {
-                console.error("contextsWrapper=", effect);
+                console.error("drawWrapper=", effect);
                 throw `Invalid call to enableEffect: the materialContext property is empty!`;
             }
         }
@@ -2831,10 +2831,10 @@ export class WebGPUEngine extends Engine {
 
         this.countersLastFrame.numBindGroupsCreation = this._counters.numBindGroupsCreation;
         this.countersLastFrame.numEnableEffects = this._counters.numEnableEffects;
-        this.countersLastFrame.numEnableContextsWrapper = this._counters.numEnableContextsWrapper;
+        this.countersLastFrame.numEnableDrawWrapper = this._counters.numEnableDrawWrapper;
         this._counters.numBindGroupsCreation = 0;
         this._counters.numEnableEffects = 0;
-        this._counters.numEnableContextsWrapper = 0;
+        this._counters.numEnableDrawWrapper = 0;
 
         this._cacheRenderPipeline.endFrame();
 

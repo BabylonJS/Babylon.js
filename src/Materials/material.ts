@@ -21,7 +21,7 @@ import { Plane } from '../Maths/math.plane';
 import { ShadowDepthWrapper } from './shadowDepthWrapper';
 import { MaterialHelper } from './materialHelper';
 import { IMaterialContext } from "../Engines";
-import { ContextsWrapper } from "./contextsWrapper";
+import { DrawWrapper } from "./drawWrapper";
 
 declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
 declare type Mesh = import("../Meshes/mesh").Mesh;
@@ -623,11 +623,11 @@ export class Material implements IAnimatable {
 
     protected _materialContext: IMaterialContext | undefined;
 
-    private _contextsWrapper: ContextsWrapper;
+    private _drawWrapper: DrawWrapper;
     /** @hidden */
-    public _getContextsWrapper(): ContextsWrapper {
-        this._contextsWrapper.effect = this._effect;
-        return this._contextsWrapper;
+    public _getDrawWrapper(): DrawWrapper {
+        this._drawWrapper.effect = this._effect;
+        return this._drawWrapper;
     }
 
     /**
@@ -685,8 +685,8 @@ export class Material implements IAnimatable {
         this.id = name || Tools.RandomId();
         this.uniqueId = this._scene.getUniqueId();
         this._materialContext = this._scene.getEngine().createMaterialContext();
-        this._contextsWrapper = new ContextsWrapper(this._scene.getEngine(), false);
-        this._contextsWrapper.materialContext = this._materialContext;
+        this._drawWrapper = new DrawWrapper(this._scene.getEngine(), false);
+        this._drawWrapper.materialContext = this._materialContext;
 
         if (this._scene.useRightHandedSystem) {
             this.sideOrientation = Material.ClockWiseSideOrientation;
@@ -912,13 +912,13 @@ export class Material implements IAnimatable {
     }
 
     /** @hidden */
-    public _preBind(effect?: Effect | ContextsWrapper, overrideOrientation: Nullable<number> = null): boolean {
+    public _preBind(effect?: Effect | DrawWrapper, overrideOrientation: Nullable<number> = null): boolean {
         var engine = this._scene.getEngine();
 
         var orientation = (overrideOrientation == null) ? this.sideOrientation : overrideOrientation;
         var reverse = orientation === Material.ClockWiseSideOrientation;
 
-        engine.enableEffect(effect ? effect : this._getContextsWrapper());
+        engine.enableEffect(effect ? effect : this._getDrawWrapper());
         engine.setState(this.backFaceCulling, this.zOffset, false, reverse);
 
         return reverse;

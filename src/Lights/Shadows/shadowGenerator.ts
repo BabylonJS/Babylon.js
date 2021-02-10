@@ -23,7 +23,7 @@ import { Observable } from '../../Misc/observable';
 import { _DevTools } from '../../Misc/devTools';
 import { EffectFallbacks } from '../../Materials/effectFallbacks';
 import { RenderingManager } from '../../Rendering/renderingManager';
-import { ContextsWrapper } from "../../Materials/contextsWrapper";
+import { DrawWrapper } from "../../Materials/drawWrapper";
 
 import "../../Shaders/shadowMap.fragment";
 import "../../Shaders/shadowMap.vertex";
@@ -1112,10 +1112,10 @@ export class ShadowGenerator implements IShadowGenerator {
 
             const shadowDepthWrapper = material.shadowDepthWrapper;
 
-            const contextsWrapper = shadowDepthWrapper?.getEffect(subMesh, this) ?? subMesh._getContextsWrapper(this._nameForCtxWrapper)!;
-            const effect = ContextsWrapper.GetEffect(contextsWrapper)!;
+            const drawWrapper = shadowDepthWrapper?.getEffect(subMesh, this) ?? subMesh._getDrawWrapper(this._nameForCtxWrapper)!;
+            const effect = DrawWrapper.GetEffect(drawWrapper)!;
 
-            engine.enableEffect(contextsWrapper);
+            engine.enableEffect(drawWrapper);
 
             renderingMesh._bind(subMesh, effect, material.fillMode);
 
@@ -1347,7 +1347,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 return false;
             }
         } else {
-            const subMeshEffect = subMesh._getContextsWrapper(this._nameForCtxWrapper, true)!;
+            const subMeshEffect = subMesh._getDrawWrapper(this._nameForCtxWrapper, true)!;
 
             let effect = subMeshEffect.effect!;
             let cachedDefines = subMeshEffect.defines;
