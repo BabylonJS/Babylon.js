@@ -16,8 +16,7 @@ export class Scalar {
      * @returns true if the absolute difference between a and b is lower than epsilon (default = 1.401298E-45)
      */
     public static WithinEpsilon(a: number, b: number, epsilon: number = 1.401298E-45): boolean {
-        var num = a - b;
-        return -epsilon <= num && num <= epsilon;
+        return Math.abs(a - b) <= epsilon;
     }
 
     /**
