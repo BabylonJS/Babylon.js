@@ -838,11 +838,15 @@ export class Sound {
                 }
                 this.isPlaying = false;
             } else if (Engine.audioEngine.audioContext && this._soundSource) {
-                var stopTime = time ? Engine.audioEngine.audioContext.currentTime + time : Engine.audioEngine.audioContext.currentTime;
+                var stopTime = time ? Engine.audioEngine.audioContext.currentTime + time : undefined;
                 this._soundSource.stop(stopTime);
-                this._soundSource.onended = () => {
+                if (stopTime === undefined) {
                     this.isPlaying = false;
-                };
+                } else {
+                    this._soundSource.onended = () => {
+                        this.isPlaying = false;
+                    };
+                }
                 if (!this.isPaused) {
                     this._startOffset = 0;
                 }
