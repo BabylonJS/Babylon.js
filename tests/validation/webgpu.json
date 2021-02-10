@@ -139,6 +139,10 @@
             "title": "particle system matrix like",
             "renderCount": 100,
             "playgroundId": "#WL44T7"
+        },
+        {
+            "title": "lens flare",
+            "playgroundId": "#KICG93"
         }
     ]
 }
