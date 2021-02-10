@@ -189,6 +189,7 @@ export class Control {
     }
 
     private _shadowBlur = 0;
+    private _previousShadowBlur = 0;
     /** Gets or sets a value indicating the amount of blur to use to render the shadow */
     @serialize()
     public get shadowBlur() {
@@ -199,6 +200,8 @@ export class Control {
         if (this._shadowBlur === value) {
             return;
         }
+
+        this._previousShadowBlur = this._shadowBlur;
 
         this._shadowBlur = value;
         this._markAsDirty();
@@ -1343,32 +1346,22 @@ export class Control {
             // the previous measure is used to properly clear a control that is scaled down
             Measure.CombineToRef(this._tmpMeasureA, this._prevCurrentMeasureTransformedIntoGlobalSpace, this._tmpMeasureA);
 
-            if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
-                // Expand rect based on shadows
-                var shadowOffsetX = this.shadowOffsetX;
-                var shadowOffsetY = this.shadowOffsetY;
-                var shadowBlur = this.shadowBlur;
+            // Expand rect based on shadows
+            var shadowOffsetX = this.shadowOffsetX;
+            var shadowOffsetY = this.shadowOffsetY;
+            var shadowBlur = Math.max(this._previousShadowBlur, this.shadowBlur);
 
-                var leftShadowOffset = Math.min(Math.min(shadowOffsetX, 0) - shadowBlur * 2, 0);
-                var rightShadowOffset = Math.max(Math.max(shadowOffsetX, 0) + shadowBlur * 2, 0);
-                var topShadowOffset = Math.min(Math.min(shadowOffsetY, 0) - shadowBlur * 2, 0);
-                var bottomShadowOffset = Math.max(Math.max(shadowOffsetY, 0) + shadowBlur * 2, 0);
+            var leftShadowOffset = Math.min(Math.min(shadowOffsetX, 0) - shadowBlur * 2, 0);
+            var rightShadowOffset = Math.max(Math.max(shadowOffsetX, 0) + shadowBlur * 2, 0);
+            var topShadowOffset = Math.min(Math.min(shadowOffsetY, 0) - shadowBlur * 2, 0);
+            var bottomShadowOffset = Math.max(Math.max(shadowOffsetY, 0) + shadowBlur * 2, 0);
 
-                this.host.invalidateRect(
-                    Math.floor(this._tmpMeasureA.left + leftShadowOffset),
-                    Math.floor(this._tmpMeasureA.top + topShadowOffset),
-                    Math.ceil(this._tmpMeasureA.left + this._tmpMeasureA.width + rightShadowOffset),
-                    Math.ceil(this._tmpMeasureA.top + this._tmpMeasureA.height + bottomShadowOffset),
-                );
-            } else {
-                this.host.invalidateRect(
-                    Math.floor(this._tmpMeasureA.left),
-                    Math.floor(this._tmpMeasureA.top),
-                    Math.ceil(this._tmpMeasureA.left + this._tmpMeasureA.width),
-                    Math.ceil(this._tmpMeasureA.top + this._tmpMeasureA.height),
-                );
-            }
-
+            this.host.invalidateRect(
+                Math.floor(this._tmpMeasureA.left + leftShadowOffset),
+                Math.floor(this._tmpMeasureA.top + topShadowOffset),
+                Math.ceil(this._tmpMeasureA.left + this._tmpMeasureA.width + rightShadowOffset),
+                Math.ceil(this._tmpMeasureA.top + this._tmpMeasureA.height + bottomShadowOffset),
+            );
         }
     }
 

@@ -48930,9 +48930,12 @@ declare module BABYLON {
          * Skeletons and animation groups will all be cloned
          * @param nameFunction defines an optional function used to get new names for clones
          * @param cloneMaterials defines an optional boolean that defines if materials must be cloned as well (false by default)
+         * @param options defines an optional list of options to control how to instanciate / clone models
          * @returns a list of rootNodes, skeletons and aniamtion groups that were duplicated
          */
-        instantiateModelsToScene(nameFunction?: (sourceName: string) => string, cloneMaterials?: boolean): InstantiatedEntries;
+        instantiateModelsToScene(nameFunction?: (sourceName: string) => string, cloneMaterials?: boolean, options?: {
+            doNotInstantiate: boolean;
+        }): InstantiatedEntries;
         /**
          * Adds all the assets from the container to the scene.
          */
