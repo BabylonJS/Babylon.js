@@ -250,6 +250,7 @@ export class ProceduralTexture extends Texture {
         var shaders;
 
         if (this.nodeMaterialSource) {
+            this._contextsWrapper.effect = this._effect;
             return this._effect.isReady();
         }
 
