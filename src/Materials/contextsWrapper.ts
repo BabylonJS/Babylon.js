@@ -13,8 +13,8 @@ export class ContextsWrapper {
     public materialContext?: IMaterialContext;
     public drawContext?: IDrawContext;
 
-    public static IsEffect(effect: Effect | ContextsWrapper): effect is Effect {
-        return (effect as Effect).getPipelineContext !== undefined;
+    public static IsWrapper(effect: Effect | ContextsWrapper): effect is ContextsWrapper {
+        return (effect as Effect).getPipelineContext === undefined;
     }
 
     public static GetEffect(effect: Effect | ContextsWrapper): Nullable<Effect> {
