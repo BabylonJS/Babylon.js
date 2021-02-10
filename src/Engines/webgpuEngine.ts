@@ -252,7 +252,9 @@ export class WebGPUEngine extends Engine {
     /** @hidden */
     public dbgVerboseLogsNumFrames = 10;
     /** @hidden */
-    public dbgLogIfNotContextualEffect = true;
+    public dbgLogIfNotContextsWrapperEffect = true;
+    /** @hidden */
+    public dbgShowEmptyEnableEffectCalls = true;
 
     /**
      * Sets this to true to disable the cache for the samplers. You should do it only for testing purpose!
@@ -1346,17 +1348,20 @@ export class WebGPUEngine extends Engine {
 
         let isNewEffect = true;
 
-        if (!ContextsWrapper.IsContextualEffect(effect)) {
+        if (ContextsWrapper.IsEffect(effect)) {
             isNewEffect = effect !== this._currentEffect;
             this._currentEffect = effect;
             this._currentMaterialContext = this._defaultMaterialContext;
             this._currentMaterialContext.reset();
             this._currentDrawContext = undefined;
             this._counters.numEnableEffects++;
-            if (this.dbgLogIfNotContextualEffect) {
-                Logger.Warn(`enableEffect has been called with an Effect and not a ContextualEffect! effect.uniqueId=${effect.uniqueId}, effect.name=${effect.name}, effect.name.vertex=${effect.name.vertex}, effect.name.fragment=${effect.name.fragment}`, 10);
+            if (this.dbgLogIfNotContextsWrapperEffect) {
+                Logger.Warn(`enableEffect has been called with an Effect and not a ContextsWrapper! effect.uniqueId=${effect.uniqueId}, effect.name=${effect.name}, effect.name.vertex=${effect.name.vertex}, effect.name.fragment=${effect.name.fragment}`, 10);
             }
         } else if (!effect.effect || effect.effect === this._currentEffect && effect.materialContext === this._currentMaterialContext && effect.drawContext === this._currentDrawContext && !this._forceEnableEffect) {
+            if (!effect.effect && this.dbgShowEmptyEnableEffectCalls) {
+                console.warn("Invalid call to enableEffect: the effect property is empty! contextsWrapper=", effect);
+            }
             return;
         } else {
             isNewEffect = effect.effect !== this._currentEffect;
