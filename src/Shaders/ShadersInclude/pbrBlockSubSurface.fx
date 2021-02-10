@@ -195,6 +195,10 @@ struct subSurfaceOutParams
             float refractionLOD = getLodFromAlphaG(vRefractionMicrosurfaceInfos.x, alphaG);
         #endif
 
+        // Scale refractionLOD with IOR so that an IOR of 1.0 results in no microfacet refraction and
+        // an IOR of 1.5 results in the default amount of microfacet refraction.
+        refractionLOD = mix(refractionLOD, 0.0, clamp(vRefractionInfos.y * 3.0 - 2.0, 0.0, 1.0));
+
         #ifdef LODBASEDMICROSFURACE
             // Apply environment convolution scale/offset filter tuning parameters to the mipmap LOD selection
             refractionLOD = refractionLOD * vRefractionMicrosurfaceInfos.y + vRefractionMicrosurfaceInfos.z;
