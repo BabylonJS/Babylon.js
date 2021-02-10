@@ -863,7 +863,7 @@ export class NodeMaterial extends PushMaterial {
             defines.toString(), result?.fallbacks, undefined);
 
         proceduralTexture.nodeMaterialSource = this;
-        proceduralTexture._effect = effect;
+        proceduralTexture._setEffect(effect);
 
         let buildId = this._buildId;
         proceduralTexture.onBeforeGenerationObservable.add(() => {
@@ -893,7 +893,7 @@ export class NodeMaterial extends PushMaterial {
                         this._fragmentCompilationState.samplers,
                         defines.toString(), result?.fallbacks, undefined);
 
-                    proceduralTexture._effect = effect;
+                    proceduralTexture._setEffect(effect);
                 });
             }
 

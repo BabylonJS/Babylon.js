@@ -23,7 +23,7 @@ import { NodeMaterial } from '../../Node/nodeMaterial';
 import { RenderTargetTextureSize } from '../../../Engines/Extensions/engine.renderTarget';
 import { EngineStore } from '../../../Engines/engineStore';
 import { Constants } from '../../../Engines/constants';
-import { ContextsWrapper } from "../../contextsWrapper";
+import { DrawWrapper } from "../../drawWrapper";
 
 /**
  * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes calmpler' images.
@@ -67,10 +67,7 @@ export class ProceduralTexture extends Texture {
     @serialize()
     public _generateMipMaps: boolean;
 
-    /** @hidden **/
-    public _effect: Effect;
-
-    private _contextsWrapper: ContextsWrapper;
+    private _drawWrapper: DrawWrapper;
 
     /** @hidden */
     public _textures: { [key: string]: Texture } = {};
@@ -139,7 +136,7 @@ export class ProceduralTexture extends Texture {
         this._size = size;
         this._textureType = textureType;
         this._generateMipMaps = generateMipMaps;
-        this._contextsWrapper = new ContextsWrapper(this._fullEngine);
+        this._drawWrapper = new DrawWrapper(this._fullEngine);
 
         this.setFragment(fragment);
 
@@ -170,7 +167,12 @@ export class ProceduralTexture extends Texture {
      * @returns The created effect corresponding the the postprocess.
      */
     public getEffect(): Effect {
-        return this._effect;
+        return this._drawWrapper.effect!;
+    }
+
+    /** @hidden **/
+    public _setEffect(effect: Effect) {
+        this._drawWrapper.effect = effect;
     }
 
     /**
@@ -231,10 +233,7 @@ export class ProceduralTexture extends Texture {
      * This can be called in case of context loss
      */
     public reset(): void {
-        if (this._effect === undefined) {
-            return;
-        }
-        this._effect.dispose();
+        this._drawWrapper.effect?.dispose();
     }
 
     protected _getDefines(): string {
@@ -250,8 +249,7 @@ export class ProceduralTexture extends Texture {
         var shaders;
 
         if (this.nodeMaterialSource) {
-            this._contextsWrapper.effect = this._effect;
-            return this._effect.isReady();
+            return this._drawWrapper.effect!.isReady();
         }
 
         if (!this._fragment) {
@@ -263,7 +261,7 @@ export class ProceduralTexture extends Texture {
         }
 
         let defines = this._getDefines();
-        if (this._effect && defines === this._cachedDefines && this._effect.isReady()) {
+        if (this._drawWrapper.effect && defines === this._cachedDefines && this._drawWrapper.effect.isReady()) {
             return true;
         }
 
@@ -277,7 +275,7 @@ export class ProceduralTexture extends Texture {
         if (this._cachedDefines !== defines) {
             this._cachedDefines = defines;
 
-            this._effect = engine.createEffect(shaders,
+            this._drawWrapper.effect = engine.createEffect(shaders,
                 [VertexBuffer.PositionKind],
                 this._uniforms,
                 this._samplers,
@@ -295,10 +293,9 @@ export class ProceduralTexture extends Texture {
                     this._fallbackTextureUsed = true;
                 }
             );
-            this._contextsWrapper.effect = this._effect;
         }
 
-        return this._effect.isReady();
+        return this._drawWrapper.effect!.isReady();
     }
 
     /**
@@ -525,55 +522,55 @@ export class ProceduralTexture extends Texture {
         var engine = this._fullEngine;
 
         // Render
-        engine.enableEffect(this._contextsWrapper);
+        engine.enableEffect(this._drawWrapper);
         this.onBeforeGenerationObservable.notifyObservers(this);
         engine.setState(false);
 
         if (!this.nodeMaterialSource) {
             // Texture
             for (var name in this._textures) {
-                this._effect.setTexture(name, this._textures[name]);
+                this._drawWrapper.effect!.setTexture(name, this._textures[name]);
             }
 
             // Float
             for (name in this._ints) {
-                this._effect.setInt(name, this._ints[name]);
+                this._drawWrapper.effect!.setInt(name, this._ints[name]);
             }
 
             // Float
             for (name in this._floats) {
-                this._effect.setFloat(name, this._floats[name]);
+                this._drawWrapper.effect!.setFloat(name, this._floats[name]);
             }
 
             // Floats
             for (name in this._floatsArrays) {
-                this._effect.setArray(name, this._floatsArrays[name]);
+                this._drawWrapper.effect!.setArray(name, this._floatsArrays[name]);
             }
 
             // Color3
             for (name in this._colors3) {
-                this._effect.setColor3(name, this._colors3[name]);
+                this._drawWrapper.effect!.setColor3(name, this._colors3[name]);
             }
 
             // Color4
             for (name in this._colors4) {
                 var color = this._colors4[name];
-                this._effect.setFloat4(name, color.r, color.g, color.b, color.a);
+                this._drawWrapper.effect!.setFloat4(name, color.r, color.g, color.b, color.a);
             }
 
             // Vector2
             for (name in this._vectors2) {
-                this._effect.setVector2(name, this._vectors2[name]);
+                this._drawWrapper.effect!.setVector2(name, this._vectors2[name]);
             }
 
             // Vector3
             for (name in this._vectors3) {
-                this._effect.setVector3(name, this._vectors3[name]);
+                this._drawWrapper.effect!.setVector3(name, this._vectors3[name]);
             }
 
             // Matrix
             for (name in this._matrices) {
-                this._effect.setMatrix(name, this._matrices[name]);
+                this._drawWrapper.effect!.setMatrix(name, this._matrices[name]);
             }
         }
 
@@ -588,9 +585,9 @@ export class ProceduralTexture extends Texture {
                 engine.bindFramebuffer(this._texture, face, undefined, undefined, true);
 
                 // VBOs
-                engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._effect);
+                engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._drawWrapper.effect!);
 
-                this._effect.setFloat("face", face);
+                this._drawWrapper.effect!.setFloat("face", face);
 
                 // Clear
                 if (this.autoClear) {
@@ -604,7 +601,7 @@ export class ProceduralTexture extends Texture {
             engine.bindFramebuffer(this._texture, 0, undefined, undefined, true);
 
             // VBOs
-            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._effect);
+            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._drawWrapper.effect!);
 
             // Clear
             if (this.autoClear) {
