@@ -5,7 +5,6 @@ import { Vector2 } from "../Maths/math.vector";
 import { Color4 } from '../Maths/math.color';
 import { EngineStore } from "../Engines/engineStore";
 import { VertexBuffer } from "../Meshes/buffer";
-import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { Texture } from "../Materials/Textures/texture";
 import { SceneComponentConstants } from "../sceneComponent";
@@ -80,7 +79,6 @@ export class Layer {
     private _scene: Scene;
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
     private _indexBuffer: Nullable<DataBuffer>;
-    private _effect: Effect;
     private _drawWrapper: DrawWrapper;
     private _previousDefines: string;
 
@@ -230,12 +228,12 @@ export class Layer {
 
         if (this._previousDefines !== defines) {
             this._previousDefines = defines;
-            this._effect = engine.createEffect("layer",
+            this._drawWrapper.effect = engine.createEffect("layer",
                 [VertexBuffer.PositionKind],
                 ["textureMatrix", "color", "scale", "offset"],
                 ["textureSampler"], defines);
         }
-        var currentEffect = this._effect;
+        var currentEffect = this._drawWrapper.effect;
 
         // Check
         if (!currentEffect || !currentEffect.isReady() || !this.texture || !this.texture.isReady()) {
@@ -247,7 +245,6 @@ export class Layer {
         this.onBeforeRenderObservable.notifyObservers(this);
 
         // Render
-        this._drawWrapper.effect = this._effect;
         engine.enableEffect(this._drawWrapper);
         engine.setState(false);
 

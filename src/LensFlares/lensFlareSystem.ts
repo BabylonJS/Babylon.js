@@ -7,7 +7,6 @@ import { EngineStore } from "../Engines/engineStore";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { VertexBuffer } from "../Meshes/buffer";
 import { Ray } from "../Culling/ray";
-import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { LensFlare } from "./lensFlare";
 import { Constants } from "../Engines/constants";
@@ -62,7 +61,6 @@ export class LensFlareSystem {
     private _emitter: any;
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
     private _indexBuffer: Nullable<DataBuffer>;
-    private _effect: Effect;
     private _drawWrapper: DrawWrapper;
     private _materialContexts: { [id: number]: IMaterialContext | undefined } = {};
     private _positionX: number;
@@ -127,7 +125,7 @@ export class LensFlareSystem {
         this._indexBuffer = engine.createIndexBuffer(indices);
 
         // Effects
-        this._effect = engine.createEffect("lensFlare",
+        this._drawWrapper.effect = engine.createEffect("lensFlare",
             [VertexBuffer.PositionKind],
             ["color", "viewportMatrix"],
             ["textureSampler"], "");
@@ -239,7 +237,7 @@ export class LensFlareSystem {
      * @hidden
      */
     public render(): boolean {
-        if (!this._effect.isReady() || !this._scene.activeCamera) {
+        if (!this._drawWrapper.effect!.isReady() || !this._scene.activeCamera) {
             return false;
         }
 
@@ -309,8 +307,6 @@ export class LensFlareSystem {
         var distX = centerX - this._positionX;
         var distY = centerY - this._positionY;
 
-        this._drawWrapper.effect = this._effect;
-
         // Flares
         for (var index = 0; index < this.lensFlares.length; index++) {
             var flare = this.lensFlares[index];
@@ -337,7 +333,7 @@ export class LensFlareSystem {
             engine.setDepthBuffer(false);
     
             // VBOs
-            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._effect);
+            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._drawWrapper.effect!);
 
             engine.setAlphaMode(flare.alphaMode);
 
@@ -355,13 +351,13 @@ export class LensFlareSystem {
                 0, 0, 1, 0,
                 cx, cy, 0, 1);
 
-            this._effect.setMatrix("viewportMatrix", viewportMatrix);
+            this._drawWrapper.effect!.setMatrix("viewportMatrix", viewportMatrix);
 
             // Texture
-            this._effect.setTexture("textureSampler", flare.texture);
+            this._drawWrapper.effect!.setTexture("textureSampler", flare.texture);
 
             // Color
-            this._effect.setFloat4("color", flare.color.r * intensity, flare.color.g * intensity, flare.color.b * intensity, 1.0);
+            this._drawWrapper.effect!.setFloat4("color", flare.color.r * intensity, flare.color.g * intensity, flare.color.b * intensity, 1.0);
 
             // Draw order
             engine.drawElementsType(Material.TriangleFillMode, 0, 6);
