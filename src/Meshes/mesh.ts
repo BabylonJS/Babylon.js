@@ -112,7 +112,7 @@ class _InternalMeshDataInfo {
     public _onBeforeBindObservable: Nullable<Observable<Mesh>>;
     public _onAfterRenderObservable: Nullable<Observable<Mesh>>;
     public _onBeforeDrawObservable: Nullable<Observable<Mesh>>;
-    public _onBetweenPassObservable: Nullable<Observable<Mesh>>;
+    public _onBetweenPassObservable: Nullable<Observable<SubMesh>>;
 
     public _areNormalsFrozen: boolean = false; // Will be used by ribbons mainly
     public _sourcePositions: Float32Array; // Will be used to save original positions when using software skinning
@@ -285,11 +285,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
-    * An event triggeredbetween rendering pass wneh using separateCullingPass = true
+    * An event triggeredbetween rendering pass when using separateCullingPass = true
     */
-   public get onBetweenPassObservable(): Observable<Mesh> {
+   public get onBetweenPassObservable(): Observable<SubMesh> {
     if (!this._internalMeshDataInfo._onBetweenPassObservable) {
-        this._internalMeshDataInfo._onBetweenPassObservable = new Observable<Mesh>();
+        this._internalMeshDataInfo._onBetweenPassObservable = new Observable<SubMesh>();
     }
 
     return this._internalMeshDataInfo._onBetweenPassObservable;
@@ -2014,7 +2014,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             engine.setState(true, this._effectiveMaterial.zOffset, false, reverse);
 
             if (this._internalMeshDataInfo._onBetweenPassObservable) {
-                this._internalMeshDataInfo._onBetweenPassObservable.notifyObservers(this);
+                this._internalMeshDataInfo._onBetweenPassObservable.notifyObservers(subMesh);
             }
         }
 
@@ -3387,6 +3387,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         throw _DevTools.WarnImport("GroundMesh");
     }
 
+    /** @hidden */
+    public static _LinesMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
+        throw _DevTools.WarnImport("LinesMesh");
+    }
+
     /**
      * Returns a new Mesh object parsed from the source provided.
      * @param parsedMesh is the source
@@ -3397,7 +3402,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public static Parse(parsedMesh: any, scene: Scene, rootUrl: string): Mesh {
         var mesh: Mesh;
 
-        if (parsedMesh.type && parsedMesh.type === "GroundMesh") {
+        if (parsedMesh.type && parsedMesh.type === "LinesMesh") {
+            mesh = Mesh._LinesMeshParser(parsedMesh, scene);
+        } else if (parsedMesh.type && parsedMesh.type === "GroundMesh") {
             mesh = Mesh._GroundMeshParser(parsedMesh, scene);
         } else {
             mesh = new Mesh(parsedMesh.name, scene);

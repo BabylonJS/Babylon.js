@@ -5,6 +5,7 @@ import { WorkbenchComponent, FramePortData } from "./workbench";
 import { Control } from "babylonjs-gui/2D/controls/control";
 import { Vector2 } from "babylonjs/Maths/math.vector";
 import { Container } from "babylonjs-gui/2D/controls/container";
+import { Button } from "babylonjs-gui/2D/controls/button";
 
 export class GUINode {
     private _x = 0;
@@ -47,8 +48,6 @@ export class GUINode {
             return;
         }
         this._x = value;
-
-        this._gridAlignedX = this._ownerCanvas.getGridPosition(value);
     }
 
     public get y() {
@@ -61,8 +60,6 @@ export class GUINode {
         }
 
         this._y = value;
-
-        this._gridAlignedY = this._ownerCanvas.getGridPosition(value);
     }
 
     public get width() {
@@ -97,7 +94,7 @@ export class GUINode {
         this._isSelected = value;
 
         if (value) {
-            this._globalState.onSelectionChangedObservable.notifyObservers(this);
+            this._globalState.onSelectionChangedObservable.notifyObservers(this);;
         }
     }
 
@@ -106,44 +103,51 @@ export class GUINode {
         this._ownerCanvas = this._globalState.workbench;
         this.x = guiControl.leftInPixels;
         this.y = guiControl.topInPixels;
+        
+        this.enableEditorProperties();
+
         guiControl.onPointerUpObservable.add((evt) => {
             this.clicked = false;
-            console.log("up");
         });
 
         guiControl.onPointerDownObservable.add((evt) => {
             if (!this._ownerCanvas.isUp) return;
             this.clicked = true;
             this.isSelected = true;
-            console.log("down");
             this._ownerCanvas.isUp = false;
         });
 
         guiControl.onPointerEnterObservable.add((evt) => {
             this._ownerCanvas.isOverGUINode = true;
-            console.log("in");
         });
 
         guiControl.onPointerOutObservable.add((evt) => {
             this._ownerCanvas.isOverGUINode = false;
-            console.log("out");
         });
 
         this._onSelectionBoxMovedObserver = this._globalState.onSelectionBoxMoved.add((rect1) => {});
     }
 
-    public cleanAccumulation(useCeil = false) {
-        this.x = this._ownerCanvas.getGridPosition(this.x, useCeil);
-        this.y = this._ownerCanvas.getGridPosition(this.y, useCeil);
+    enableEditorProperties() {
+        switch (this.guiControl.typeName) {
+            case "Button":
+                (this.guiControl as Button).pointerDownAnimation = () => null;
+                (this.guiControl as Button).pointerUpAnimation = () => null;
+                break;
+            case "StackPanel":
+            case "Grid":
+                this.guiControl.isHighlighted = true;
+                break;
+            default:
+                break;
+        }
     }
 
     public clicked: boolean;
     public _onMove(evt: Vector2, startPos: Vector2, ignorClick: boolean = false) {
         if (!this.clicked && !ignorClick) return false;
-        console.log("moving");
-
-        let newX = (evt.x - startPos.x) ;// / this._ownerCanvas.zoom;
-        let newY = (evt.y - startPos.y) ;// / this._ownerCanvas.zoom;
+        let newX = (evt.x - startPos.x);
+        let newY = (evt.y - startPos.y);
 
         this.x += newX;
         this.y += newY;
@@ -152,13 +156,17 @@ export class GUINode {
             child._onMove(evt, startPos, true);
         });
 
+        this.guiControl.leftInPixels = this.x;
+        this.guiControl.topInPixels = this.y;
+
         return true;
-        //evt.stopPropagation();
     }
 
     public updateVisual() {
-        this.guiControl.leftInPixels = this.x;
-        this.guiControl.topInPixels = this.y;
+        if(this.x != this.guiControl.leftInPixels || this.y != this.guiControl.topInPixels) {
+            this.x = this.guiControl.leftInPixels;
+            this.y = this.guiControl.topInPixels;
+        }
     }
 
     private _isContainer() {
