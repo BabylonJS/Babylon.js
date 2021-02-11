@@ -222,6 +222,17 @@ export class EdgesRenderer implements IEdgesRenderer {
     }
 
     /**
+     * Gets or sets the shader used to draw the lines
+     */
+    public get lineShader(): ShaderMaterial {
+        return this._lineShader;
+    }
+
+    public set lineShader(shader: ShaderMaterial) {
+        this._lineShader = shader;
+    }
+
+    /**
      * List of instances to render in case the source mesh has instances
      */
     public customInstances = new SmartArray<Matrix>(32);
