@@ -22,11 +22,11 @@ interface IWebGPUMaterialContextSamplerCache {
 interface IWebGPUMaterialContextTextureCache {
     textureBinding: number;
     texture: InternalTexture;
-    wrapU: Nullable<number>;
-    wrapV: Nullable<number>;
-    wrapR: Nullable<number>;
-    anisotropicFilteringLevel: Nullable<number>;
-    samplingMode: Nullable<number>;
+    wrapU?: Nullable<number>;
+    wrapV?: Nullable<number>;
+    wrapR?: Nullable<number>;
+    anisotropicFilteringLevel?: Nullable<number>;
+    samplingMode?: Nullable<number>;
 }
 
 /** @hidden */

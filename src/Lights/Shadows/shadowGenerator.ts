@@ -998,6 +998,7 @@ export class ShadowGenerator implements IShadowGenerator {
             this._kernelBlurXPostprocess = new BlurPostProcess(this._light.name + "KernelBlurX", new Vector2(1, 0), this.blurKernel, 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._textureType);
             this._kernelBlurXPostprocess.width = targetSize;
             this._kernelBlurXPostprocess.height = targetSize;
+            this._kernelBlurXPostprocess.inputTextureSetByExternalProcess = true;
             this._kernelBlurXPostprocess.onApplyObservable.add((effect) => {
                 effect.setTexture("textureSampler", this._shadowMap);
             });
@@ -1016,6 +1017,7 @@ export class ShadowGenerator implements IShadowGenerator {
         }
         else {
             this._boxBlurPostprocess = new PostProcess(this._light.name + "DepthBoxBlur", "depthBoxBlur", ["screenSize", "boxOffset"], [], 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, "#define OFFSET " + this._blurBoxOffset, this._textureType);
+            this._boxBlurPostprocess.inputTextureSetByExternalProcess = true;
             this._boxBlurPostprocess.onApplyObservable.add((effect) => {
                 effect.setFloat2("screenSize", targetSize, targetSize);
                 effect.setTexture("textureSampler", this._shadowMap);

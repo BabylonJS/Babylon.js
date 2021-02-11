@@ -1907,11 +1907,11 @@ export class WebGPUEngine extends Engine {
                 this._currentMaterialContext.textures[name] = {
                     textureBinding: availableSampler.textures[textureIndex].bindingIndex,
                     texture: internalTexture!,
-                    wrapU: internalTexture?._cachedWrapU ?? -1,
-                    wrapV: internalTexture?._cachedWrapV ?? -1,
-                    wrapR: internalTexture?._cachedWrapR ?? -1,
-                    anisotropicFilteringLevel: internalTexture?._cachedAnisotropicFilteringLevel ?? -1,
-                    samplingMode: internalTexture?.samplingMode ?? -1,
+                    wrapU: internalTexture?._cachedWrapU,
+                    wrapV: internalTexture?._cachedWrapV,
+                    wrapR: internalTexture?._cachedWrapR,
+                    anisotropicFilteringLevel: internalTexture?._cachedAnisotropicFilteringLevel,
+                    samplingMode: internalTexture?.samplingMode,
                 };
             }
         }
