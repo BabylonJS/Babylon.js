@@ -126,7 +126,7 @@ async function evaluate(test, resultCanvas, result, renderImage, waitRing, done)
             var info = engine.getGlInfo();
             var defaultErrorRatio = 2.5
 
-            if ((dontReportTestOutcome && !testRes) || compare(renderData, resultCanvas, test.threshold || 25, test.errorRatio || defaultErrorRatio)) {
+            if ((dontReportTestOutcome && !testRes) || !dontReportTestOutcome && compare(renderData, resultCanvas, test.threshold || 25, test.errorRatio || defaultErrorRatio)) {
                 result.classList.add("failed");
                 result.innerHTML = "×";
                 testRes = false;

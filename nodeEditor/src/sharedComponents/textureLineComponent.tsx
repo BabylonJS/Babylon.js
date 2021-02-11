@@ -97,6 +97,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
             { width: width, height: height },
             scene, false);
 
+        passPostProcess.inputTextureSetByExternalProcess = true;
         passPostProcess.onApply = function(effect) {
             effect.setTexture("textureSampler", texture);
         };
