@@ -314,6 +314,11 @@ export class PostProcess {
     }
 
     /**
+     * Instructs the post process that the input texture will be set by an external process (typically on the onApplyObservable observable) and that it should not set it itself
+     */
+    public inputTextureSetByExternalProcess: boolean = false;
+
+    /**
     * Since inputTexture should always be defined, if we previously manually set `inputTexture`,
     * the only way to unset it is to use this function to restore its internal state
     */
@@ -753,7 +758,7 @@ export class PostProcess {
             this.getEngine().setAlphaConstants(this.alphaConstants.r, this.alphaConstants.g, this.alphaConstants.b, this.alphaConstants.a);
         }
 
-        if (source !== undefined) {
+        if (!this.inputTextureSetByExternalProcess) {
             this._effect._bindTexture("textureSampler", source);
         }
 

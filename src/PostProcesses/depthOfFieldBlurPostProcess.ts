@@ -53,6 +53,9 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
 
         this.direction = direction;
 
+        if (imageToBlur != null) {
+            this.inputTextureSetByExternalProcess = true;
+        }
         this.onApplyObservable.add((effect: Effect) => {
             if (imageToBlur != null) {
                 effect.setTextureFromPostProcess("textureSampler", imageToBlur);
