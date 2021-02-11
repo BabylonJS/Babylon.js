@@ -480,7 +480,7 @@ export class DeviceInputSystem implements IDisposable {
                 const pointer = this._inputs[DeviceType.Touch];
 
                 for (let i = 0; i < pointer.length; i++) {
-                    if (pointer[i] && pointer[i][PointerInput.LeftClick] === 1) {
+                    if (pointer[i]?.[PointerInput.LeftClick] === 1) {
                         pointer[i][PointerInput.LeftClick] = 0;
 
                         if (this.onInputChanged) {
