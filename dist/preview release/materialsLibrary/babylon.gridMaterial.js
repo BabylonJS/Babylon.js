@@ -679,7 +679,7 @@ var GridMaterial = /** @class */ (function (_super) {
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], GridMaterial.prototype, "gridRatio", void 0);
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
-        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsColor3"])()
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsVector3"])()
     ], GridMaterial.prototype, "gridOffset", void 0);
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
