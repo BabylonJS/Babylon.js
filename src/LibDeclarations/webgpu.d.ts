@@ -1076,7 +1076,7 @@ type GPUOrigin3D = [GPUIntegerCoordinate, GPUIntegerCoordinate, GPUIntegerCoordi
 interface GPUExtent3DDict {
     width?: GPUIntegerCoordinate; /* default=1 */
     height?: GPUIntegerCoordinate; /* default=1 */
-    depth?: GPUIntegerCoordinate; /* default=1 */
+    depthOrArrayLayers?: GPUIntegerCoordinate; /* default=1 */
 }
 type GPUExtent3D = [GPUIntegerCoordinate, GPUIntegerCoordinate, GPUIntegerCoordinate] | GPUExtent3DDict;
 
