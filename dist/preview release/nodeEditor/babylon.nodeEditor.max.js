@@ -54914,11 +54914,14 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 var BlockTools = /** @class */ (function () {
     function BlockTools() {
     }
     BlockTools.GetBlockFromString = function (data, scene, nodeMaterial) {
         switch (data) {
+            case "MatrixBuilderBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["MatrixBuilderBlock"]("MatrixBuilder");
             case "DesaturateBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["DesaturateBlock"]("Desaturate");
             case "RefractBlock":
@@ -55631,7 +55634,7 @@ var NodeListComponent = /** @class */ (function (_super) {
             Math__Standard: ["AddBlock", "DivideBlock", "MaxBlock", "MinBlock", "ModBlock", "MultiplyBlock", "NegateBlock", "OneMinusBlock", "ReciprocalBlock", "ScaleBlock", "SignBlock", "SqrtBlock", "SubtractBlock"],
             Math__Scientific: ["AbsBlock", "ArcCosBlock", "ArcSinBlock", "ArcTanBlock", "ArcTan2Block", "CosBlock", "DegreesToRadiansBlock", "ExpBlock", "Exp2Block", "FractBlock", "LogBlock", "PowBlock", "RadiansToDegreesBlock", "SawToothWaveBlock", "SinBlock", "SquareWaveBlock", "TanBlock", "TriangleWaveBlock"],
             Math__Vector: ["CrossBlock", "DerivativeBlock", "DistanceBlock", "DotBlock", "FresnelBlock", "LengthBlock", "ReflectBlock", "RefractBlock", "Rotate2dBlock", "TransformBlock",],
-            Matrices: ["Matrix", "WorldMatrixBlock", "WorldViewMatrixBlock", "WorldViewProjectionMatrixBlock", "ViewMatrixBlock", "ViewProjectionMatrixBlock", "ProjectionMatrixBlock"],
+            Matrices: ["Matrix", "WorldMatrixBlock", "WorldViewMatrixBlock", "WorldViewProjectionMatrixBlock", "ViewMatrixBlock", "ViewProjectionMatrixBlock", "ProjectionMatrixBlock", "MatrixBuilderBlock"],
             Mesh: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "PerturbNormalBlock", "NormalBlendBlock", "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "WorldTangentBlock", "FrontFacingBlock"],
             Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock"],
             Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
@@ -55826,6 +55829,7 @@ var NodeListComponent = /** @class */ (function (_super) {
         "ParticlePositionWorldBlock": "The world position of the particle",
         "FragCoordBlock": "The gl_FragCoord predefined variable that contains the window relative coordinate (x, y, z, 1/w)",
         "ScreenSizeBlock": "The size (in pixels) of the screen window",
+        "MatrixBuilderBlock": "Converts 4 Vector4 into a matrix",
     };
     return NodeListComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
