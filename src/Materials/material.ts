@@ -619,14 +619,11 @@ export class Material implements IAnimatable {
      * @hidden
      * Stores the effects for the material
      */
-    protected _effect: Nullable<Effect> = null;
-
     protected _materialContext: IMaterialContext | undefined;
 
-    private _drawWrapper: DrawWrapper;
+    protected _drawWrapper: DrawWrapper;
     /** @hidden */
     public _getDrawWrapper(): DrawWrapper {
-        this._drawWrapper.effect = this._effect;
         return this._drawWrapper;
     }
 
@@ -775,7 +772,7 @@ export class Material implements IAnimatable {
      * @returns the effect associated with the material
      */
     public getEffect(): Nullable<Effect> {
-        return this._effect;
+        return this._drawWrapper.effect;
     }
 
     /**
@@ -1421,12 +1418,12 @@ export class Material implements IAnimatable {
         this._uniformBuffer.dispose();
 
         // Shader are kept in cache for further use but we can get rid of this by using forceDisposeEffect
-        if (forceDisposeEffect && this._effect) {
+        if (forceDisposeEffect && this._drawWrapper.effect) {
             if (!this._storeEffectOnSubMeshes) {
-                this._effect.dispose();
+                this._drawWrapper.effect.dispose();
             }
 
-            this._effect = null;
+            this._drawWrapper.effect = null;
         }
 
         // Callback
@@ -1458,7 +1455,7 @@ export class Material implements IAnimatable {
                     }
                 }
             } else {
-                geometry._releaseVertexArrayObject(this._effect);
+                geometry._releaseVertexArrayObject(this._drawWrapper.effect);
             }
         }
     }
