@@ -1,6 +1,6 @@
-declare module Recast {
-export class rcConfig {
-    new ();
+declare module "recast-detour" {
+  export class rcConfig {
+    new();
     width: number;
     height: number;
     tileSize: number;
@@ -20,38 +20,36 @@ export class rcConfig {
     maxVertsPerPoly: number;
     detailSampleDist: number;
     detailSampleMaxError: number;
-}
-export class Vec3 {
-    new ();
-    new (x: number, y: number, z: number);
+  }
+  export class Vec3 {
+    new();
+    new(x: number, y: number, z: number);
     x: number;
     y: number;
     z: number;
-}
-export class Triangle {
-    new ();
+  }
+  export class Triangle {
+    new();
     getPoint(n: number): Vec3;
-}
-export class DebugNavMesh {
-    new ();
+  }
+  export class DebugNavMesh {
+    new();
     getTriangleCount(): number;
     getTriangle(n: number): Triangle;
-}
-export class dtNavMesh {
-}
-export class dtObstacleRef {
-}
-export class NavmeshData {
-    new ();
+  }
+  export class dtNavMesh {}
+  export class dtObstacleRef {}
+  export class NavmeshData {
+    new();
     dataPointer: any;
     size: number;
-}
-export class NavPath {
+  }
+  export class NavPath {
     getPointCount(): number;
     getPoint(n: number): Vec3;
-}
-export class dtCrowdAgentParams {
-    new ();
+  }
+  export class dtCrowdAgentParams {
+    new();
     radius: number;
     height: number;
     maxAcceleration: number;
@@ -63,11 +61,17 @@ export class dtCrowdAgentParams {
     obstacleAvoidanceType: number;
     queryFilterType: number;
     userData: unknown;
-}
-export class NavMesh {
-    new ();
+  }
+  export class NavMesh {
+    new();
     destroy(): void;
-    build(positions: any, positionCount: number, indices: any, indexCount: number, config: rcConfig): void;
+    build(
+      positions: any,
+      positionCount: number,
+      indices: any,
+      indexCount: number,
+      config: rcConfig
+    ): void;
     buildFromNavmeshData(data: NavmeshData): void;
     getNavmeshData(): NavmeshData;
     freeNavmeshData(data: NavmeshData): void;
@@ -79,13 +83,17 @@ export class NavMesh {
     computePath(start: Vec3, end: Vec3): NavPath;
     setDefaultQueryExtent(extent: Vec3): void;
     getDefaultQueryExtent(): Vec3;
-    addCylinderObstacle(position: Vec3, radius: number, height: number): dtObstacleRef;
+    addCylinderObstacle(
+      position: Vec3,
+      radius: number,
+      height: number
+    ): dtObstacleRef;
     addBoxObstacle(position: Vec3, extent: Vec3, angle: number): dtObstacleRef;
     removeObstacle(obstacle: dtObstacleRef): void;
     update(): void;
-}
-export class Crowd {
-    new (maxAgents: number, maxAgentRadius: number, nav: dtNavMesh);
+  }
+  export class Crowd {
+    new(maxAgents: number, maxAgentRadius: number, nav: dtNavMesh);
     destroy(): void;
     addAgent(position: Vec3, params: dtCrowdAgentParams): number;
     removeAgent(idx: number): void;
@@ -102,5 +110,5 @@ export class Crowd {
     setDefaultQueryExtent(extent: Vec3): void;
     getDefaultQueryExtent(): Vec3;
     getCorners(idx: number): NavPath;
-}
+  }
 }

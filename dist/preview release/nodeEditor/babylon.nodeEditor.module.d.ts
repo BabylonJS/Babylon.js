@@ -1607,6 +1607,7 @@ declare module "babylonjs-node-editor/globalState" {
         onExposePortOnFrameObservable: Observable<GraphNode>;
         previewType: PreviewType;
         previewFile: File;
+        particleSystemBlendMode: number;
         listOfCustomPreviewFiles: File[];
         rotatePreview: boolean;
         backgroundColor: Color4;
@@ -1897,6 +1898,7 @@ declare module "babylonjs-node-editor/components/preview/previewAreaComponent" {
         componentWillUnmount(): void;
         changeBackFaceCulling(value: boolean): void;
         changeDepthPrePass(value: boolean): void;
+        changeParticleSystemBlendMode(newOne: number): void;
         render(): JSX.Element;
     }
 }
@@ -4244,6 +4246,7 @@ declare module NODEEDITOR {
         onExposePortOnFrameObservable: BABYLON.Observable<GraphNode>;
         previewType: PreviewType;
         previewFile: File;
+        particleSystemBlendMode: number;
         listOfCustomPreviewFiles: File[];
         rotatePreview: boolean;
         backgroundColor: BABYLON.Color4;
@@ -4498,6 +4501,7 @@ declare module NODEEDITOR {
         componentWillUnmount(): void;
         changeBackFaceCulling(value: boolean): void;
         changeDepthPrePass(value: boolean): void;
+        changeParticleSystemBlendMode(newOne: number): void;
         render(): JSX.Element;
     }
 }

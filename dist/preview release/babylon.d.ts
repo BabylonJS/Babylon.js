@@ -4744,6 +4744,38 @@ declare module BABYLON {
          */
         static RotationQuaternionFromAxisToRef(axis1: DeepImmutable<Vector3>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>, ref: Quaternion): void;
         /**
+         * Creates a new rotation value to orient an object to look towards the given forward direction, the up direction being oriented like "up".
+         * This function works in left handed mode
+         * @param forward defines the forward direction - Must be normalized and orthogonal to up.
+         * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
+         * @returns A new quaternion oriented toward the specified forward and up.
+         */
+        static FromLookDirectionLH(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Quaternion;
+        /**
+        * Creates a new rotation value to orient an object to look towards the given forward direction with the up direction being oriented like "up", and stores it in the target quaternion.
+        * This function works in left handed mode
+        * @param forward defines the forward direction - Must be normalized and orthogonal to up.
+        * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
+        * @param ref defines the target quaternion.
+        */
+        static FromLookDirectionLHToRef(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, ref: Quaternion): void;
+        /**
+         * Creates a new rotation value to orient an object to look towards the given forward direction, the up direction being oriented like "up".
+         * This function works in right handed mode
+         * @param forward defines the forward direction - Must be normalized and orthogonal to up.
+         * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
+         * @returns A new quaternion oriented toward the specified forward and up.
+         */
+        static FromLookDirectionRH(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Quaternion;
+        /**
+         * Creates a new rotation value to orient an object to look towards the given forward direction with the up direction being oriented like "up", and stores it in the target quaternion.
+         * This function works in right handed mode
+         * @param forward defines the forward direction - Must be normalized and orthogonal to up.
+         * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
+         * @param ref defines the target quaternion.
+         */
+        static FromLookDirectionRHToRef(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, ref: Quaternion): void;
+        /**
          * Interpolates between two quaternions
          * @param left defines first quaternion
          * @param right defines second quaternion
@@ -5341,6 +5373,38 @@ declare module BABYLON {
          * @param result defines the target matrix
          */
         static LookAtRHToRef(eye: DeepImmutable<Vector3>, target: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, result: Matrix): void;
+        /**
+         * Gets a new rotation matrix used to rotate an entity so as it looks in the direction specified by forward from the eye position, the up direction being oriented like "up".
+         * This function works in left handed mode
+         * @param forward defines the forward direction - Must be normalized and orthogonal to up.
+         * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
+         * @returns the new matrix
+         */
+        static LookDirectionLH(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Matrix;
+        /**
+         * Sets the given "result" Matrix to a rotation matrix used to rotate an entity so that it looks in the direction of forward, the up direction being oriented like "up".
+         * This function works in left handed mode
+         * @param forward defines the forward direction - Must be normalized and orthogonal to up.
+         * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
+         * @param result defines the target matrix
+         */
+        static LookDirectionLHToRef(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, result: Matrix): void;
+        /**
+        * Gets a new rotation matrix used to rotate an entity so as it looks in the direction specified by forward from the eye position, the up Vector3 being oriented like "up".
+        * This function works in right handed mode
+        * @param forward defines the forward direction - Must be normalized and orthogonal to up.
+        * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
+        * @returns the new matrix
+        */
+        static LookDirectionRH(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Matrix;
+        /**
+         * Sets the given "result" Matrix to a rotation matrix used to rotate an entity so that it looks in the direction of forward, the up vector3 being oriented like "up".
+         * This function works in right handed mode
+         * @param forward defines the forward direction - Must be normalized and orthogonal to up.
+         * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
+         * @param result defines the target matrix
+         */
+        static LookDirectionRHToRef(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, result: Matrix): void;
         /**
          * Create a left-handed orthographic projection matrix
          * @param width defines the viewport width
@@ -29446,6 +29510,18 @@ declare module BABYLON {
          * @returns a new InstancedLinesMesh
          */
         createInstance(name: string): InstancedLinesMesh;
+        /**
+         * Serializes this ground mesh
+         * @param serializationObject object to write serialization to
+         */
+        serialize(serializationObject: any): void;
+        /**
+     * Parses a serialized ground mesh
+     * @param parsedMesh the serialized mesh
+     * @param scene the scene to create the ground mesh in
+     * @returns the created ground mesh
+     */
+        static Parse(parsedMesh: any, scene: Scene): LinesMesh;
     }
     /**
      * Creates an instance based on a source LinesMesh
@@ -33746,9 +33822,9 @@ declare module BABYLON {
         */
         get onAfterRenderObservable(): Observable<Mesh>;
         /**
-        * An event triggeredbetween rendering pass wneh using separateCullingPass = true
+        * An event triggeredbetween rendering pass when using separateCullingPass = true
         */
-        get onBetweenPassObservable(): Observable<Mesh>;
+        get onBetweenPassObservable(): Observable<SubMesh>;
         /**
         * An event triggered before drawing the mesh
         */
@@ -34427,6 +34503,8 @@ declare module BABYLON {
         _syncGeometryWithMorphTargetManager(): void;
         /** @hidden */
         static _GroundMeshParser: (parsedMesh: any, scene: Scene) => Mesh;
+        /** @hidden */
+        static _LinesMeshParser: (parsedMesh: any, scene: Scene) => Mesh;
         /**
          * Returns a new Mesh object parsed from the source provided.
          * @param parsedMesh is the source
@@ -40705,6 +40783,11 @@ declare module BABYLON {
         _videoTextureSupported: boolean;
         protected _renderingQueueLaunched: boolean;
         protected _activeRenderLoops: (() => void)[];
+        /**
+         * Gets the list of current active render loop functions
+         * @returns an array with the current render loop functions
+         */
+        get activeRenderLoops(): Array<() => void>;
         /**
          * Observable signaled when a context lost event is raised
          */
@@ -48847,9 +48930,12 @@ declare module BABYLON {
          * Skeletons and animation groups will all be cloned
          * @param nameFunction defines an optional function used to get new names for clones
          * @param cloneMaterials defines an optional boolean that defines if materials must be cloned as well (false by default)
+         * @param options defines an optional list of options to control how to instanciate / clone models
          * @returns a list of rootNodes, skeletons and aniamtion groups that were duplicated
          */
-        instantiateModelsToScene(nameFunction?: (sourceName: string) => string, cloneMaterials?: boolean): InstantiatedEntries;
+        instantiateModelsToScene(nameFunction?: (sourceName: string) => string, cloneMaterials?: boolean, options?: {
+            doNotInstantiate: boolean;
+        }): InstantiatedEntries;
         /**
          * Adds all the assets from the container to the scene.
          */
@@ -58799,6 +58885,30 @@ declare module BABYLON {
          * Relative bounding box pivot used when scaling the attached node. When null object with scale from the opposite corner. 0.5,0.5,0.5 for center and 0.5,0,0.5 for bottom (Default: null)
          */
         scalePivot: Nullable<Vector3>;
+        /**
+         * Scale factor used for masking some axis
+         */
+        private _axisFactor;
+        /**
+         * Sets the axis factor
+         * @param factor the Vector3 value
+         */
+        set axisFactor(factor: Vector3);
+        /**
+         * Gets the axis factor
+         * @returns the Vector3 factor value
+         */
+        get axisFactor(): Vector3;
+        /**
+         * Sets scale drag speed value
+         * @param value the new speed value
+         */
+        set scaleDragSpeed(value: number);
+        /**
+         * Gets scale drag speed
+         * @returns the scale speed number
+         */
+        get scaleDragSpeed(): number;
         /**
          * Mesh used as a pivot to rotate the attached node
          */
@@ -80851,7 +80961,7 @@ declare module BABYLON {
         /** the controller to which the hand correlates */
         readonly xrController: WebXRInputSource;
         /** the meshes to be used to track the hand joints */
-        readonly trackedMeshes: AbstractMesh[];
+        readonly trackedMeshes: Map<string, AbstractMesh>;
         private _handMesh?;
         private _rigMapping?;
         private _nearInteractionMesh?;
@@ -80890,7 +81000,7 @@ declare module BABYLON {
         /** the controller to which the hand correlates */
         xrController: WebXRInputSource, 
         /** the meshes to be used to track the hand joints */
-        trackedMeshes: AbstractMesh[], _handMesh?: AbstractMesh | undefined, _rigMapping?: string[] | undefined, disableDefaultHandMesh?: boolean, _nearInteractionMesh?: AbstractMesh | null | undefined, _leftHandedMeshes?: boolean | undefined);
+        trackedMeshes: Map<string, AbstractMesh>, _handMesh?: AbstractMesh | undefined, _rigMapping?: string[] | undefined, disableDefaultHandMesh?: boolean, _nearInteractionMesh?: AbstractMesh | null | undefined, _leftHandedMeshes?: boolean | undefined);
         /**
          * Get the hand mesh. It is possible that the hand mesh is not yet ready!
          */
@@ -83234,7 +83344,7 @@ interface XRSession {
      * canceling the callback using cancelAnimationFrame(). This method is comparable
      * to the Window.requestAnimationFrame() method.
      */
-    requestAnimationFrame: (callback: XRFrameRequestCallback) => void;
+    requestAnimationFrame: (callback: XRFrameRequestCallback) => number;
     /**
      * Requests that a new XRReferenceSpace of the specified type be created.
      * Returns a promise which resolves with the XRReferenceSpace or
