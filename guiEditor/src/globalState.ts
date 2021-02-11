@@ -10,6 +10,7 @@ import { PropertyChangedEvent } from "./sharedUiComponents/propertyChangedEvent"
 import { Vector2 } from "babylonjs/Maths/math.vector";
 
 export class GlobalState {
+    [x: string]: any;
     guiTexture: AdvancedDynamicTexture;
     hostElement: HTMLElement;
     hostDocument: HTMLDocument;
