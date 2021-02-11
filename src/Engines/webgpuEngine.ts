@@ -619,7 +619,7 @@ export class WebGPUEngine extends Engine {
         this._mainTextureExtends = {
             width: this.getRenderWidth(),
             height: this.getRenderHeight(),
-            depth: 1
+            depthOrArrayLayers: 1
         };
 
         let mainColorAttachments: GPURenderPassColorAttachment[];

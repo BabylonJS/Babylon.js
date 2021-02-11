@@ -683,7 +683,7 @@ export class WebGPUTextureHelper {
             }, {
                 width,
                 height,
-                depth: 1,
+                depthOrArrayLayers: 1,
             }
         );
 
@@ -742,7 +742,7 @@ export class WebGPUTextureHelper {
         let textureSize = {
             width: imageBitmap.width,
             height: imageBitmap.height,
-            depth: layerCount,
+            depthOrArrayLayers: layerCount,
         };
 
         const mipLevelCount = hasMipmaps ? WebGPUTextureHelper.ComputeNumMipmapLevels(imageBitmap.width, imageBitmap.height) : 1;
@@ -788,7 +788,7 @@ export class WebGPUTextureHelper {
             size: {
                 width,
                 height,
-                depth: 6,
+                depthOrArrayLayers: 6,
             },
             dimension: WebGPUConstants.TextureDimension.E2d,
             format,
@@ -1004,7 +1004,7 @@ export class WebGPUTextureHelper {
         const textureExtent = {
             width: Math.ceil(width / blockInformation.width) * blockInformation.width,
             height: Math.ceil(height / blockInformation.height) * blockInformation.height,
-            depth: layers || 1
+            depthOrArrayLayers: layers || 1
         };
 
         if ((imageBitmap as Uint8Array).byteLength !== undefined) {
@@ -1093,7 +1093,7 @@ export class WebGPUTextureHelper {
         }, {
             width,
             height,
-            depth: 1
+            depthOrArrayLayers: 1
         });
 
         this._device.queue.submit([commandEncoder!.finish()]);
