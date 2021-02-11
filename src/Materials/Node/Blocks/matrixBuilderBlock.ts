@@ -93,8 +93,8 @@ export class MatrixBuilderBlock extends NodeMaterialBlock {
             let row3Input = new InputBlock("row3");
             row3Input.value = new Vector4(0, 0, 0, 1);
             row3Input.output.connectTo(this.row3);
-        }                        
-    }    
+        }
+    }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
