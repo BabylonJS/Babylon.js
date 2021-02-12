@@ -555,10 +555,10 @@ export class Constants {
     /**
      * Prefixes used by the engine for sub mesh draw wrappers
      */
-    public static readonly SUBMESHCTXWRAPPER_MAINMATERIAL = "bjs_mainmaterial";
-    public static readonly SUBMESHCTXWRAPPER_SHADOWGENERATOR_PREFIX = "bjs_shadowgenerator_";
-    public static readonly SUBMESHCTXWRAPPER_DEPTHRENDERER_PREFIX = "bjs_depthrenderer_";
-    public static readonly SUBMESHCTXWRAPPER_OUTLINERENDERER_PREFIX = "bjs_outlinerenderer_";
+    public static readonly SUBMESH_DRAWWRAPPER_MAINPASS = "bjs_mainpass";
+    public static readonly SUBMESH_DRAWWRAPPER_SHADOWGENERATOR_PREFIX = "bjs_shadowgenerator_";
+    public static readonly SUBMESH_DRAWWRAPPER_DEPTHRENDERER_PREFIX = "bjs_depthrenderer_";
+    public static readonly SUBMESH_DRAWWRAPPER_OUTLINERENDERER_PREFIX = "bjs_outlinerenderer_";
 
     /**
      * Constant used as key code for Alt key

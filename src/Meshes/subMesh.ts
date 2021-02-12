@@ -53,7 +53,7 @@ export class SubMesh implements ICullable {
 
     /** @hidden */
     public _getDrawWrapper(name: string, createIfNotExisting = false): DrawWrapper | undefined {
-        if (name === Constants.SUBMESHCTXWRAPPER_MAINMATERIAL) {
+        if (name === Constants.SUBMESH_DRAWWRAPPER_MAINPASS) {
             return this._mainDrawWrapper;
         }
         let customEffect = this._drawWrappers[name];
@@ -172,7 +172,7 @@ export class SubMesh implements ICullable {
 
         this._drawWrappers = {};
         this._mainDrawWrapper = new DrawWrapper(this._mesh.getScene().getEngine(), false);
-        this._drawWrappers[Constants.SUBMESHCTXWRAPPER_MAINMATERIAL] = this._mainDrawWrapper;
+        this._drawWrappers[Constants.SUBMESH_DRAWWRAPPER_MAINPASS] = this._mainDrawWrapper;
         this._trianglePlanes = [];
 
         this._id = mesh.subMeshes.length - 1;

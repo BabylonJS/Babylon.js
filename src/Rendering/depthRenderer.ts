@@ -25,7 +25,7 @@ export class DepthRenderer {
 
     private _scene: Scene;
     private _depthMap: RenderTargetTexture;
-    private _nameForCtxWrapper: string;
+    private _nameForDrawWrapper: string;
     private readonly _storeNonLinearDepth: boolean;
     private readonly _clearColor: Color4;
 
@@ -69,7 +69,7 @@ export class DepthRenderer {
 
         DepthRenderer._SceneComponentInitialization(this._scene);
 
-        this._nameForCtxWrapper = Constants.SUBMESHCTXWRAPPER_DEPTHRENDERER_PREFIX + DepthRenderer._Counter++;
+        this._nameForDrawWrapper = Constants.SUBMESH_DRAWWRAPPER_DEPTHRENDERER_PREFIX + DepthRenderer._Counter++;
         this._camera = camera;
         var engine = scene.getEngine();
 
@@ -132,7 +132,7 @@ export class DepthRenderer {
             if (this.isReady(subMesh, hardwareInstancedRendering) && camera) {
                 subMesh._renderId = scene.getRenderId();
 
-                const drawWrapper = subMesh._getDrawWrapper(this._nameForCtxWrapper)!;
+                const drawWrapper = subMesh._getDrawWrapper(this._nameForDrawWrapper)!;
                 const effect = DrawWrapper.GetEffect(drawWrapper)!;
     
                 engine.enableEffect(drawWrapper);
@@ -205,7 +205,7 @@ export class DepthRenderer {
 
         var defines = [];
 
-        const subMeshEffect = subMesh._getDrawWrapper(this._nameForCtxWrapper, true)!;
+        const subMeshEffect = subMesh._getDrawWrapper(this._nameForDrawWrapper, true)!;
 
         let effect = subMeshEffect.effect!;
         let cachedDefines = subMeshEffect.defines;

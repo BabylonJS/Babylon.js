@@ -123,7 +123,7 @@ export class OutlineRenderer implements ISceneComponent {
         this.scene = scene;
         this._engine = scene.getEngine();
         this.scene._addComponent(this);
-        this._nameForDrawWrapper = Constants.SUBMESHCTXWRAPPER_OUTLINERENDERER_PREFIX + OutlineRenderer._Counter++;
+        this._nameForDrawWrapper = Constants.SUBMESH_DRAWWRAPPER_OUTLINERENDERER_PREFIX + OutlineRenderer._Counter++;
     }
 
     /**
