@@ -805,7 +805,7 @@ export class ShadowGenerator implements IShadowGenerator {
     protected _textureType: number;
     protected _defaultTextureMatrix = Matrix.Identity();
     protected _storedUniqueId: Nullable<number>;
-    protected _nameForCtxWrapper: string;
+    protected _nameForDrawWrapper: string;
 
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
@@ -841,7 +841,7 @@ export class ShadowGenerator implements IShadowGenerator {
         light._shadowGenerator = this;
         this.id = light.id;
 
-        this._nameForCtxWrapper = Constants.SUBMESHCTXWRAPPER_SHADOWGENERATOR_PREFIX + ShadowGenerator._Counter++;
+        this._nameForDrawWrapper = Constants.SUBMESH_DRAWWRAPPER_SHADOWGENERATOR_PREFIX + ShadowGenerator._Counter++;
 
         ShadowGenerator._SceneComponentInitialization(this._scene);
 
@@ -919,7 +919,7 @@ export class ShadowGenerator implements IShadowGenerator {
         let engine = this._scene.getEngine();
 
         this._shadowMap.onBeforeBindObservable.add(() => {
-            engine._debugPushGroup(`shadow map generation for ${this._nameForCtxWrapper}`, 1);
+            engine._debugPushGroup(`shadow map generation for ${this._nameForDrawWrapper}`, 1);
         });
 
         // Record Face Index before render.
@@ -1114,7 +1114,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
             const shadowDepthWrapper = material.shadowDepthWrapper;
 
-            const drawWrapper = shadowDepthWrapper?.getEffect(subMesh, this) ?? subMesh._getDrawWrapper(this._nameForCtxWrapper)!;
+            const drawWrapper = shadowDepthWrapper?.getEffect(subMesh, this) ?? subMesh._getDrawWrapper(this._nameForDrawWrapper)!;
             const effect = DrawWrapper.GetEffect(drawWrapper)!;
 
             engine.enableEffect(drawWrapper);
@@ -1349,7 +1349,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 return false;
             }
         } else {
-            const subMeshEffect = subMesh._getDrawWrapper(this._nameForCtxWrapper, true)!;
+            const subMeshEffect = subMesh._getDrawWrapper(this._nameForDrawWrapper, true)!;
 
             let effect = subMeshEffect.effect!;
             let cachedDefines = subMeshEffect.defines;
