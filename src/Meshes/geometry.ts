@@ -280,7 +280,7 @@ export class Geometry implements IGetSetVerticesData {
                 this._totalVertices = totalVertices;
             } else {
                 if (data != null) {
-                    this._totalVertices = data.length / (buffer.byteStride / 4);
+                    this._totalVertices = data.length / (buffer.type === VertexBuffer.BYTE ? buffer.byteStride : buffer.byteStride / 4);
                 }
             }
 

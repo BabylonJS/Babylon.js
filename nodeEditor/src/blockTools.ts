@@ -77,10 +77,13 @@ import { ParticleBlendMultiplyBlock } from 'babylonjs/Materials/Node/Blocks/Part
 import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
 import { FragCoordBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fragCoordBlock';
 import { ScreenSizeBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/screenSizeBlock';
+import { MatrixBuilderBlock } from 'babylonjs/Materials/Node/Blocks/matrixBuilderBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
         switch (data) {
+            case "MatrixBuilderBlock":
+                return new MatrixBuilderBlock("MatrixBuilder");
             case "DesaturateBlock":
                 return new DesaturateBlock("Desaturate");
             case "RefractBlock":
