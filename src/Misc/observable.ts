@@ -13,7 +13,7 @@ export class EventState {
      * @param currentTarget defines the current target of the state
      */
     constructor(mask: number, skipNextObservers = false, target?: any, currentTarget?: any) {
-        this.initalize(mask, skipNextObservers, target, currentTarget);
+        this.initialize(mask, skipNextObservers, target, currentTarget);
     }
 
     /**
@@ -24,7 +24,7 @@ export class EventState {
      * @param currentTarget defines the current target of the state
      * @returns the current event state
      */
-    public initalize(mask: number, skipNextObservers = false, target?: any, currentTarget?: any): EventState {
+    public initialize(mask: number, skipNextObservers = false, target?: any, currentTarget?: any): EventState {
         this.mask = mask;
         this.skipNextObservers = skipNextObservers;
         this.target = target;

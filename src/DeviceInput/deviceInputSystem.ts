@@ -230,7 +230,7 @@ export class DeviceInputSystem implements IDisposable {
     private _addPointerDevice(deviceType: DeviceType, deviceSlot: number, currentX: number, currentY: number) {
         this._pointerActive = true;
         this._registerDevice(deviceType, deviceSlot, DeviceInputSystem._MAX_POINTER_INPUTS);
-        const pointer = this._inputs[deviceType][deviceSlot]; /* initalize our pointer position immediately after registration */
+        const pointer = this._inputs[deviceType][deviceSlot]; /* initialize our pointer position immediately after registration */
         pointer[0] = currentX;
         pointer[1] = currentY;
     }
