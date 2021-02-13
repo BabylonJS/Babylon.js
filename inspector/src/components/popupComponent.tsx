@@ -6,14 +6,15 @@ interface IPopupComponentProps {
     id: string;
     title: string;
     size: { width: number; height: number };
-    onOpen: (window: Window) => void;
+    onOpen?: (window: Window) => void;
     onClose: (window: Window) => void;
+    onResize?: () => void;
 }
 
 export class PopupComponent extends React.Component<IPopupComponentProps, { isComponentMounted: boolean; blockedByBrowser: boolean }> {
     private _container: HTMLDivElement | null;
     private _window: Window | null;
-    private _curveEditorHost: HTMLDivElement;
+    private _host: HTMLDivElement;
 
     constructor(props: IPopupComponentProps) {
         super(props);
@@ -41,18 +42,26 @@ export class PopupComponent extends React.Component<IPopupComponentProps, { isCo
         this._container = Inspector._CreatePopup(title, windowVariableName, size.width, size.height, true);
 
         if (this._container) {
-            this._curveEditorHost = this._container.ownerDocument!.createElement("div");
+            this._host = this._container.ownerDocument!.createElement("div");
 
-            this._curveEditorHost.id = "curve-editor-host";
-            this._curveEditorHost.style.width = "auto";
-            this._container.appendChild(this._curveEditorHost);
+            this._host.id = "host";
+            this._host.style.width = "auto";
+            this._container.appendChild(this._host);
         }
 
         this._window = (Inspector as any)[windowVariableName];
 
         if (this._window) {
-            onOpen(this._window);
+            if (onOpen) {
+                onOpen(this._window);
+            }
             this._window.addEventListener("beforeunload", () => this._window && onClose(this._window));
+            this._window.addEventListener("resize", () => {
+                    if (this.props.onResize) {
+                        this.props.onResize();
+                    }
+                }
+            );
         } else {
             if (!this._window) {
                 this.setState({ blockedByBrowser: true }, () => {
@@ -78,6 +87,6 @@ export class PopupComponent extends React.Component<IPopupComponentProps, { isCo
         if (!this.state.isComponentMounted || this._container === null) {
             return null;
         }
-        return ReactDOM.createPortal(this.props.children, this._curveEditorHost);
+        return ReactDOM.createPortal(this.props.children, this._host);
     }
 }

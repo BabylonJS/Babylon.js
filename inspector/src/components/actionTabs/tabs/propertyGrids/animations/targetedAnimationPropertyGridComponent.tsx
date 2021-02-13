@@ -11,6 +11,7 @@ import { GlobalState } from "../../../../globalState";
 import { TextInputLineComponent } from "../../../../../sharedUiComponents/lines/textInputLineComponent";
 import { AnimationGroup } from "babylonjs/Animations/animationGroup";
 import { AnimationCurveEditorComponent } from "./curveEditor/animationCurveEditorComponent";
+import { AnimationCurveEditorContext } from "./curveEditor/animationCurveEditorContext";
 
 interface ITargetedAnimationGridComponentProps {
     globalState: GlobalState;
@@ -61,13 +62,16 @@ export class TargetedAnimationGridComponent extends React.Component<ITargetedAni
     render() {
         const targetedAnimation = this.props.targetedAnimation;
 
+        let animationCurveEditorContext = new AnimationCurveEditorContext();
+        animationCurveEditorContext.title = (this.props.targetedAnimation.target as any).name || "";        
+
         return (
             <div className="pane">
                 <LineContainerComponent title="GENERAL">
                     <TextLineComponent label="Class" value={targetedAnimation.getClassName()} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={targetedAnimation.animation} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {targetedAnimation.target.name && <TextLineComponent label="Target" value={targetedAnimation.target.name} onLink={() => this.props.globalState.onSelectionChangedObservable.notifyObservers(targetedAnimation)} />}
-                    <AnimationCurveEditorComponent globalState={this.props.globalState}/>
+                    <AnimationCurveEditorComponent globalState={this.props.globalState} context={animationCurveEditorContext}/>
                     <ButtonLineComponent label="Dispose" onClick={this.deleteAnimation} />
                 </LineContainerComponent>
             </div>

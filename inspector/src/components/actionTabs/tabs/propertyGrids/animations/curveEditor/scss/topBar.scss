@@ -1,0 +1,22 @@
+#top-bar {
+    display:grid;
+    grid-template-columns: 40px 200px 75px 8px 75px 8px 40px 40px 40px 40px 40px 40px 40px 1fr 40px;
+    grid-template-rows: 100%;
+
+
+    #logo {
+        grid-row: 1;
+        grid-column: 1;
+    }
+
+    #parent-name {
+        grid-row: 1;
+        grid-column: 2;
+        font-family: 'acumin-pro-condensed';
+        font-size: 15pt;
+        color:white;
+        display: grid;
+        align-content: center;
+        padding-bottom: 5px;
+    }
+}
