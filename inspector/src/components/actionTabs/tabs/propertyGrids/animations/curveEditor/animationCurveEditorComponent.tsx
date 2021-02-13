@@ -37,6 +37,10 @@ export class AnimationCurveEditorComponent extends React.Component<
         this.setState({isOpen: false});
     }
 
+    shouldComponentUpdate(newProps: IAnimationCurveEditorComponentProps, newState: IAnimationCurveEditorComponentState) {
+        return newState.isOpen !== this.state.isOpen;
+    }
+
     public render() {
         return (
             <>
@@ -45,7 +49,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                     this.state.isOpen &&
                     <PopupComponent
                         id="curve-editor"
-                        title="Curve Animation Editor"
+                        title="Animation Curve Editor"
                         size={{ width: 1024, height: 512 }}
                         onResize={() => this.props.context.onHostWindowResized.notifyObservers()}
                         onClose={(window: Window) => this.onCloseAnimationCurveEditor(window)}

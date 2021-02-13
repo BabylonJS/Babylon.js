@@ -96,7 +96,7 @@ IAnimationCurveEditorSideBarComponentState
                         icon={editIcon} onClick={() => this._onEditAnimation()}/>   
 
                     <AnimationCurveEditorTextInputComponent 
-                        value={this.props.context.animations ? this.props.context.animations[0].framePerSecond + " fps" : "60 fps"}
+                        value={this.props.context.animations && this.props.context.animations.length ? this.props.context.animations[0].framePerSecond + " fps" : "60 fps"}
                         tooltip="Framerate"
                         id="framerate-animation"
                         globalState={this.props.globalState} context={this.props.context} />                    

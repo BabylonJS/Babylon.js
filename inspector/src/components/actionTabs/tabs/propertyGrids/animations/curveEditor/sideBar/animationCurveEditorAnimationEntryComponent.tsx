@@ -6,6 +6,7 @@ import { AnimationCurveEditorActionButtonComponent } from "../controls/animation
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
 import { AnimationCurveEditorAnimationSubEntryComponent } from "./animationCurveEditorAnimationSubEntryComponent";
+import { AnimationCurveEditorKeyPointComponent } from "../graph/animationCurveEditorKeyPoint";
 
 const gearIcon = require("../assets/animationOptionsIcon.svg");
 const deleteIcon = require("../assets/closeWindowIcon.svg");
@@ -21,7 +22,8 @@ interface IAnimationCurveEditorAnimationEntryComponentProps {
 }
 
 interface IAnimationCurveEditorAnimationEntryComponentState {
-    isExpanded: boolean
+    isExpanded: boolean;
+    isSelected: boolean;
 }
 
 export class AnimationCurveEditorAnimationEntryComponent extends React.Component<
@@ -29,14 +31,22 @@ IAnimationCurveEditorAnimationEntryComponentProps,
 IAnimationCurveEditorAnimationEntryComponentState
 > {
     private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
+    private _onActiveKeyPointChangedObserver: Nullable<Observer<Nullable<{keyPoint: AnimationCurveEditorKeyPointComponent, channel: string}>>>;
 
     constructor(props: IAnimationCurveEditorAnimationEntryComponentProps) {
         super(props);
 
-        this.state = { isExpanded: false };
+        this.state = { isExpanded: false, isSelected: false };
 
-        this._onActiveAnimationChangedObserver = props.context.onActiveAnimationChanged.add(animation => {
+        this._onActiveAnimationChangedObserver = props.context.onActiveAnimationChanged.add(() => {
+            if (this.props.animation !== this.props.context.activeAnimation) {
+                this.setState({isSelected: false});
+            }
             this.forceUpdate();
+        });
+
+        this._onActiveKeyPointChangedObserver = this.props.context.onActiveKeyPointChanged.add(data => {
+            this.setState({isSelected: this.props.animation.dataType === Animation.ANIMATIONTYPE_FLOAT && this.props.animation === this.props.context.activeAnimation})
         });
     }
 
@@ -52,17 +62,19 @@ IAnimationCurveEditorAnimationEntryComponentState
         if (this._onActiveAnimationChangedObserver) {
             this.props.context.onActiveAnimationChanged.remove(this._onActiveAnimationChangedObserver);
         }
+
+        if (this._onActiveKeyPointChangedObserver) {
+            this.props.context.onActiveKeyPointChanged.remove(this._onActiveKeyPointChangedObserver);
+        }
     }
 
     private _activate() {
-        if (this.props.animation.dataType !== Animation.ANIMATIONTYPE_FLOAT) {
-            this._expandOrCollapse();
+        if (this.props.animation === this.props.context.activeAnimation) {
             return;
         }
         
         this.props.context.onActiveKeyPointChanged.notifyObservers(null);
         this.props.context.activeAnimation = this.props.animation;
-        this.props.context.activeSubAnimation = "";
         this.props.context.onActiveAnimationChanged.notifyObservers();
     }
 
@@ -72,13 +84,12 @@ IAnimationCurveEditorAnimationEntryComponentState
 
     public render() {
         let isActive = this.props.animation === this.props.context.activeAnimation;        
-        let isSelected = isActive &&  !this.props.context.activeSubAnimation;
 
         return (
             <>
                 <div className={"animation-entry" + (isActive ? " isActive" : "")}>
                     {
-                        isSelected &&
+                        this.state.isSelected &&
                         <div className="animation-active-indicator">
                             <img src={selectedIcon}/>
                         </div>
