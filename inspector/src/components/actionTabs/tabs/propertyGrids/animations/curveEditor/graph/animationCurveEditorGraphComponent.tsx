@@ -69,6 +69,7 @@ IAnimationCurveEditorGraphComponentState
 
             this._currentAnimation = this.props.context.activeAnimation;
             this._computeSizes();
+            this._evaluateKeys();
             this.forceUpdate();
         });
     }
@@ -100,20 +101,29 @@ IAnimationCurveEditorGraphComponentState
                 this._curves.push(new AnimationCurveEditorCurve("#DB3E3E", animation)); 
             break;
             case Animation.ANIMATIONTYPE_VECTOR2:
-                this._curves.push(new AnimationCurveEditorCurve("#DB3E3E", animation)); 
-                this._curves.push(new AnimationCurveEditorCurve("#51E22D", animation)); 
+                this._curves.push(new AnimationCurveEditorCurve("#DB3E3E", animation, "x")); 
+                this._curves.push(new AnimationCurveEditorCurve("#51E22D", animation, "y")); 
             case Animation.ANIMATIONTYPE_VECTOR3:
+                this._curves.push(new AnimationCurveEditorCurve("#DB3E3E", animation, "x")); 
+                this._curves.push(new AnimationCurveEditorCurve("#51E22D", animation, "y")); 
+                this._curves.push(new AnimationCurveEditorCurve("#00A3FF", animation, "z")); 
+                break;
             case Animation.ANIMATIONTYPE_COLOR3:
-                this._curves.push(new AnimationCurveEditorCurve("#DB3E3E", animation)); 
-                this._curves.push(new AnimationCurveEditorCurve("#51E22D", animation)); 
-                this._curves.push(new AnimationCurveEditorCurve("#00A3FF", animation)); 
+                this._curves.push(new AnimationCurveEditorCurve("#DB3E3E", animation, "r")); 
+                this._curves.push(new AnimationCurveEditorCurve("#51E22D", animation, "g")); 
+                this._curves.push(new AnimationCurveEditorCurve("#00A3FF", animation, "b")); 
                 break;
             case Animation.ANIMATIONTYPE_QUATERNION:
+                this._curves.push(new AnimationCurveEditorCurve("#DB3E3E", animation, "x")); 
+                this._curves.push(new AnimationCurveEditorCurve("#51E22D", animation, "y")); 
+                this._curves.push(new AnimationCurveEditorCurve("#00A3FF", animation, "z")); 
+                this._curves.push(new AnimationCurveEditorCurve("#8700FF", animation, "w")); 
+                break;
             case Animation.ANIMATIONTYPE_COLOR4:
-                this._curves.push(new AnimationCurveEditorCurve("#DB3E3E", animation)); 
-                this._curves.push(new AnimationCurveEditorCurve("#51E22D", animation)); 
-                this._curves.push(new AnimationCurveEditorCurve("#00A3FF", animation)); 
-                this._curves.push(new AnimationCurveEditorCurve("#8700FF", animation)); 
+                this._curves.push(new AnimationCurveEditorCurve("#DB3E3E", animation, "r")); 
+                this._curves.push(new AnimationCurveEditorCurve("#51E22D", animation, "g")); 
+                this._curves.push(new AnimationCurveEditorCurve("#00A3FF", animation, "b")); 
+                this._curves.push(new AnimationCurveEditorCurve("#8700FF", animation, "a")); 
                 break;
         }
 
@@ -205,8 +215,16 @@ IAnimationCurveEditorGraphComponentState
         return ((x - this._minFrame) / (this._maxFrame - this._minFrame)) *  (this._graphAbsoluteWidth);
     }
 
+    private _invertX(x: number) {
+        return  (x / this._graphAbsoluteWidth) * (this._maxFrame - this._minFrame) +  this._minFrame;
+    }
+
     private _convertY(y: number) {
         return this._graphAbsoluteHeight - ((y - this._minValue) / (this._maxValue - this._minValue)) * this._graphAbsoluteHeight;
+    }
+
+    private _invertY(y: number) {
+        return ((this._graphAbsoluteHeight - y) / this._graphAbsoluteHeight) * (this._maxValue - this._minValue) + this._minValue;
     }
 
     private _buildYAxis() {
@@ -268,25 +286,29 @@ IAnimationCurveEditorGraphComponentState
     }
 
     private _dropKeyFrames(curveId: number) {
-        if (!this.props.context.activeAnimation) {
+        if (!this.props.context.activeAnimation || !this._curves || !this._curves.length) {
             return null;
         }
 
         if (curveId >= this._curves.length) {
             return null;
         }
+        let curve = this._curves[curveId];
 
-        return this._curves[curveId].keys.map(key => {
+        return curve.keys.map((key, i) => {
             let x = this._convertX(key.x);
             let y = this._convertY(key.y);
             return (
-               <AnimationCurveEditorKeyPointComponent x={x} y={y} context={this.props.context} scale={this._viewScale} channel={this._curves[curveId].color}/>
+               <AnimationCurveEditorKeyPointComponent 
+                    x={x} y={y} context={this.props.context} 
+                    scale={this._viewScale} 
+                    channel={curve.color}
+                    key={curveId + "-" + i}
+                    onFrameValueChanged={value => { curve.updateKeyFrame(i, this._invertX(value))}}
+                    onKeyValueChanged={value => { curve.updateKeyValue(i, this._invertY(value))}}
+                />
             );
         })
-    }
-
-    componentWillUpdate() {
-        this._evaluateKeys();
     }
 
     private _onPointerDown(evt: React.PointerEvent<HTMLDivElement>) {
