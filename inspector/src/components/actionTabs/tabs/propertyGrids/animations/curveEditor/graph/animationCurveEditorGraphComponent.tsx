@@ -22,8 +22,10 @@ IAnimationCurveEditorGraphComponentState
     private _viewHeight = 357;
     private _offsetX = 5;
     private _offsetY = 5;
+    
     private _graphOffsetX = 25;
-    private _graphOffsetY = 40;
+    private _graphAbsoluteWidth = 1000;
+    private _graphAbsoluteHeight = 1000;
 
     private _minValue: number;
     private _maxValue: number;
@@ -46,13 +48,8 @@ IAnimationCurveEditorGraphComponentState
                 return;
             }
 
-            let ratio = this._svgHost.current.clientWidth / this._svgHost.current.clientHeight;
-            //this._viewWidth = this._svgHost.current.clientWidth;
-            this._viewHeight = this._viewWidth  / ratio;
-     //       this._offsetX = this._viewWidth / 300;
-           // this._offsetY = this._viewHeight / 8;
-         //   this._graphOffsetX = this._offsetX * 5;
-
+            this._viewWidth = this._svgHost.current.clientWidth;
+            this._viewHeight = this._svgHost.current.clientHeight;
             this.forceUpdate();
         })
     }
@@ -179,22 +176,20 @@ IAnimationCurveEditorGraphComponentState
 
         let steps = [];
 
-        steps.push(this._minValue - offset);
-        for (var step = this._minValue; step <= this._maxValue; step += offset) {
+        for (var step = this._minValue - offset * 10; step <= this._maxValue + offset * 10; step += offset) {
             steps.push(step);
         }
-        steps.push(this._maxValue + offset);
 
         return (
             steps.map((s, i) => {
-                let y =  this._graphOffsetY + (this._viewHeight - this._graphOffsetY * 2) - ((s - this._minValue) / (this._maxValue - this._minValue)) *  (this._viewHeight - this._graphOffsetY * 2);
+                let y = this._graphAbsoluteHeight - ((s - this._minValue) / (this._maxValue - this._minValue)) * this._graphAbsoluteHeight;
                 return (
                     <>
                         <line
                             key={"line" + i}
-                            x1={this._graphOffsetX}
+                            x1={this._offsetX + this._graphOffsetX}
                             y1={y}
-                            x2={this._viewWidth}
+                            x2={(this._viewWidth - this._offsetX) * 2}
                             y2={y}
                             style={{
                                 stroke: "#333333",
@@ -203,9 +198,9 @@ IAnimationCurveEditorGraphComponentState
                         </line>
                         <text
                             key={"label" + i}
-                            x={0}
+                            x={this._offsetX}
                             y={y}
-                            dx="15px"
+                            dx="10px"
                             textAnchor="middle"
                             dy="3px"
                             style={{
@@ -229,8 +224,8 @@ IAnimationCurveEditorGraphComponentState
         }
 
         return this._curves[curveId].keys.map(key => {
-            let x = this._offsetX + this._graphOffsetX + ((key.x - this._minFrame) / (this._maxFrame - this._minFrame)) *  (this._viewWidth - this._graphOffsetX - this._offsetX * 2);
-            let y = this._graphOffsetY + (this._viewHeight - this._graphOffsetY * 2) - ((key.y - this._minValue) / (this._maxValue - this._minValue)) *  (this._viewHeight - this._graphOffsetY * 2);
+            let x = this._graphOffsetX + this._offsetX + ((key.x - this._minFrame) / (this._maxFrame - this._minFrame)) *  (this._graphAbsoluteWidth - this._graphOffsetX - this._offsetX * 2);
+            let y = this._graphAbsoluteHeight - ((key.y - this._minValue) / (this._maxValue - this._minValue)) * this._graphAbsoluteHeight;
             return (
                <AnimationCurveEditorKeyPointComponent x={x} y={y} context={this.props.context}/>
             );
@@ -247,7 +242,7 @@ IAnimationCurveEditorGraphComponentState
         }
 
         const scale = this.props.context.scale;
-        const viewBoxScaling = `-${this._offsetX} -${this._offsetY} ${Math.round(scale * (this._viewWidth + this._offsetX * 2))} ${Math.round(scale * (this._viewHeight + this._offsetY * 2))}`;
+        const viewBoxScaling = `-${this._offsetX} -${this._offsetY} ${Math.round(scale * this._viewWidth)} ${Math.round(scale * this._viewHeight)}`;
 
         return (
             <div id="graph">
