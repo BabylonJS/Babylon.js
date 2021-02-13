@@ -12,6 +12,8 @@ declare module BABYLON {
         static PauseRenderLoop: boolean;
         /** Returns a Promise that resolves after the specfied time */
         static WaitForSeconds: (seconds: number) => Promise<void>;
+        /** Gets the running status of the default audio context */
+        static IsAudioContextRunning(): boolean;
         /** Register handler that is triggered when the fonts have been loaded (engine.html) */
         static OnFontsReadyObservable: Observable<Engine>;
         /** Register handler that is triggered when then engine has been resized (engine.html) */
@@ -173,7 +175,9 @@ declare module BABYLON {
         /** Post data to server asynchronously */
         static PostDataToServerAsync(url: string, data: string | Document | Blob | ArrayBufferView | ArrayBuffer | FormData | URLSearchParams | ReadableStream<Uint8Array>, contentType?: string): Promise<number>;
         /** Shows the default page scene loader. */
-        static ShowDefaultLoader(show: boolean): void;
+        static ShowSceneLoader(): void;
+        /** Hides the default page scene loader. */
+        static HideSceneLoader(): void;
         /** Update the default page scene loader status. */
         static UpdateLoaderStatus(status: string, details: string, state: number): void;
         /** Gets all the created engine instances */
@@ -244,8 +248,8 @@ declare module BABYLON {
         static FindSceneCameraRig(transform: BABYLON.TransformNode): BABYLON.FreeCamera;
         /** Finds the specfied light rig in the scene. */
         static FindSceneLightRig(transform: BABYLON.TransformNode): BABYLON.Light;
-        /** Finds all transforms with the specified script component. */
-        static FindTransformsWithScript(scene: BABYLON.Scene, klass: string): BABYLON.TransformNode;
+        /** Finds the first transform with the specified script component. */
+        static FindTransformWithScript(scene: BABYLON.Scene, klass: string): BABYLON.TransformNode;
         /** Finds all transforms with the specified script component. */
         static FindAllTransformsWithScript(scene: BABYLON.Scene, klass: string): BABYLON.TransformNode[];
         /** Finds the specfied child transform in the scene. */
@@ -258,7 +262,7 @@ declare module BABYLON {
         static FindChildTransformWithScript(parent: BABYLON.TransformNode, klass: string, directDecendantsOnly?: boolean, predicate?: (node: BABYLON.Node) => boolean): BABYLON.TransformNode;
         /** Finds all child transforms with the specified script component. */
         static FindAllChildTransformsWithScript(parent: BABYLON.TransformNode, klass: string, directDecendantsOnly?: boolean, predicate?: (node: BABYLON.Node) => boolean): BABYLON.TransformNode[];
-        /** Searches all nodes for the instance of the specified script component. */
+        /** Searches all nodes for the first instance of the specified script component. */
         static SearchForScriptComponentByName<T extends BABYLON.ScriptComponent>(scene: BABYLON.Scene, klass: string): T;
         /** Searches all nodes for all instances of the specified script component. */
         static SearchForAllScriptComponentsByName<T extends BABYLON.ScriptComponent>(scene: BABYLON.Scene, klass: string): T[];
@@ -699,19 +703,21 @@ declare module BABYLON {
         getChildWithScript(klass: string, directDecendantsOnly?: boolean, predicate?: (node: BABYLON.Node) => boolean): BABYLON.TransformNode;
         /** Get all child transforms with the specified script component. */
         getChildrenWithScript(klass: string, directDecendantsOnly?: boolean, predicate?: (node: BABYLON.Node) => boolean): BABYLON.TransformNode[];
-        /** Register handler that is triggered after the scene has rendered and is ready to go */
-        registerOnSceneReady(func: (eventData: BABYLON.Scene, eventState: BABYLON.EventState) => void): void;
+        /** Register handler that is triggered after the script has started and is ready in the scene */
+        registerOnSceneReady(func: (eventData: BABYLON.Scene, eventState: BABYLON.EventState) => void): BABYLON.Observer<BABYLON.Scene>;
         /** Registers an on pick tricgger click action */
         registerOnClickAction(func: () => void): BABYLON.IAction;
         /** Unregisters an on pick tricgger click action */
         unregisterOnClickAction(action: BABYLON.IAction): boolean;
+        /** Sets the intersect mesh for trigger volume collision detection */
+        setTriggerIntersectMesh(mesh: BABYLON.AbstractMesh): void;
         /** Register handler that is triggered when the a volume has entered */
         onTriggerEnterObservable: Observable<AbstractMesh>;
         /** Register handler that is triggered when the a volume contact is active */
         onTriggerStayObservable: Observable<AbstractMesh>;
         /** Register handler that is triggered when the a volume contact has exited */
         onTriggerExitObservable: Observable<AbstractMesh>;
-        private triggerMesh;
+        private intersectMesh;
         private triggerVolumeList;
         useTriggerVolumePrecision: boolean;
         includeTriggerVolumeDescendants: boolean;
