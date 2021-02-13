@@ -9,7 +9,9 @@ const keySelected = require("../assets/keySelectedIcon.svg") as string;
 interface IAnimationCurveEditorKeyPointComponentProps {
     x: number;
     y: number;
+    scale: number;
     context: AnimationCurveEditorContext;
+    channel: string;
 }
 
 interface IAnimationCurveEditorKeyPointComponentState {
@@ -20,15 +22,15 @@ export class AnimationCurveEditorKeyPointComponent extends React.Component<
 IAnimationCurveEditorKeyPointComponentProps,
 IAnimationCurveEditorKeyPointComponentState
 > {    
-    private _onActiveKeyPointChangedObserver: Nullable<Observer<Nullable<AnimationCurveEditorKeyPointComponent>>>;
+    private _onActiveKeyPointChangedObserver: Nullable<Observer<Nullable<{keyPoint: AnimationCurveEditorKeyPointComponent, channel: string}>>>;
 
     constructor(props: IAnimationCurveEditorKeyPointComponentProps) {
         super(props);
 
         this.state = { isSelected: false };
 
-        this._onActiveKeyPointChangedObserver = this.props.context.onActiveKeyPointChanged.add(keyPoint => {
-            this.setState({isSelected: keyPoint === this});
+        this._onActiveKeyPointChangedObserver = this.props.context.onActiveKeyPointChanged.add(data => {
+            this.setState({isSelected: data?.keyPoint === this});
         });
     }
 
@@ -46,15 +48,18 @@ IAnimationCurveEditorKeyPointComponentState
                 x={this.props.x}
                 y={this.props.y}
                 onClick={() => {
-                    this.props.context.onActiveKeyPointChanged.notifyObservers(this);
+                    this.props.context.onActiveKeyPointChanged.notifyObservers({
+                        keyPoint: this,
+                        channel: this.props.channel
+                    });
                 }}
                 style={{ cursor: "pointer", overflow: "auto" }}
         >
             <image
-                x="-8"
-                y="-8"
-                width="16"
-                height="16"
+                x={`-${8 * this.props.scale}`}
+                y={`-${8 * this.props.scale}`}
+                width={`${16 * this.props.scale}`}
+                height={`${16 * this.props.scale}`}
                 href={svgImageIcon}
             />
         </svg>

@@ -2,16 +2,49 @@
     display: grid;
     grid-template-columns: 100%;
     grid-template-rows: 1fr 30px 10px 40px;
+    overflow: hidden;
 
     #graph {
         grid-column: 1;
         grid-row: 1;
         width: 100%;
         height: 100%;
+        min-width: 784px;
+        min-height: 357px;
         background: #111111;
+        display: grid;
+        grid-template-columns: 100%;
+        grid-template-rows: 100%;
+        overflow: hidden;
         
-        #svg-graph {
+        #svg-graph-grid {
+            grid-column: 1;
+            grid-row: 1;
             width: 100%;
+            height: 100%;            
+            pointer-events: none;
+
+            &:focus {
+                outline: none;
+            }
+        }
+
+        #dark-rectangle {
+            grid-column: 1;
+            grid-row: 1;
+            margin-left: 40px;
+            width: calc(100% - 40px);
+            height: 100%;
+            background: black;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        #svg-graph-curves {
+            grid-column: 1;
+            grid-row: 1;
+            margin-left: 40px;
+            width: calc(100% - 40px);
             height: 100%;
 
             &:focus {
