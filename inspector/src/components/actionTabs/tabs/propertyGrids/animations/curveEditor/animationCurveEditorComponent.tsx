@@ -4,11 +4,11 @@ import { GlobalState } from "../../../../../globalState";
 import { PopupComponent } from "../../../../../popupComponent";
 import { AnimationCurveEditorBottomBarComponent } from "./animationCurveEditorBottomBarComponent";
 import { AnimationCurveEditorContext } from "./animationCurveEditorContext";
-import { AnimationCurveEditorGraphComponent } from "./animationCurveEditorGraphComponent";
-import { AnimationCurveEditorSidebarComponent } from "./animationCurveEditorSidebarComponent";
 import { AnimationCurveEditorTopBarComponent } from "./animationCurveEditorTopBarComponent";
+import { AnimationCurveEditorCanvasComponent } from "./graph/animationCurveEditorCanvasComponent";
+import { AnimationCurveEditorSideBarComponent } from "./sideBar/animationCurveEditorSideBarComponent";
 
-require("./curveEditor.scss");
+require("./scss/curveEditor.scss");
 
 interface IAnimationCurveEditorComponentProps {
     globalState: GlobalState;
@@ -47,13 +47,13 @@ export class AnimationCurveEditorComponent extends React.Component<
                         id="curve-editor"
                         title="Curve Animation Editor"
                         size={{ width: 1024, height: 512 }}
-                        onOpen={(window: Window) => {}}
+                        onResize={() => this.props.context.onHostWindowResized.notifyObservers()}
                         onClose={(window: Window) => this.onCloseAnimationCurveEditor(window)}
                     >
                         <div id="curve-editor">
                             <AnimationCurveEditorTopBarComponent globalState={this.props.globalState} context={this.props.context}/>
-                            <AnimationCurveEditorSidebarComponent globalState={this.props.globalState} context={this.props.context}/>
-                            <AnimationCurveEditorGraphComponent globalState={this.props.globalState} context={this.props.context}/>
+                            <AnimationCurveEditorSideBarComponent globalState={this.props.globalState} context={this.props.context}/>
+                            <AnimationCurveEditorCanvasComponent globalState={this.props.globalState} context={this.props.context}/>
                             <AnimationCurveEditorBottomBarComponent globalState={this.props.globalState} context={this.props.context}/>
                         </div>
                     </PopupComponent>

@@ -19,6 +19,7 @@ import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floa
 import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
 import { IAnimatable } from "babylonjs/Animations/animatable.interface";
 import { AnimationCurveEditorComponent } from "./curveEditor/animationCurveEditorComponent";
+import { AnimationCurveEditorContext } from "./curveEditor/animationCurveEditorContext";
 
 interface IAnimationGridComponentProps {
     globalState: GlobalState;
@@ -35,6 +36,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
     private _onBeforeRenderObserver: Nullable<Observer<Scene>>;
     private _isPlaying = false;
     private timelineRef: React.RefObject<SliderLineComponent>;
+    private _animationCurveEditorContext: AnimationCurveEditorContext;
     private _animationControl = {
         from: 0,
         to: 0,
@@ -152,6 +154,12 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
 
         let animations = animatable.animations;
 
+        if (!this._animationCurveEditorContext) {
+            this._animationCurveEditorContext = new AnimationCurveEditorContext();
+            this._animationCurveEditorContext.title = (this.props.animatable as any).name || "";
+            this._animationCurveEditorContext.animations = animations;
+        }
+
         return (
             <div>
                 {this._ranges.length > 0 && (
@@ -184,7 +192,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                                     />
                                 );
                             })}
-                            <AnimationCurveEditorComponent globalState={this.props.globalState}/>
+                            <AnimationCurveEditorComponent globalState={this.props.globalState} context={this._animationCurveEditorContext}/>
                         </LineContainerComponent>
                         {animations.length > 0 && (
                             <LineContainerComponent
@@ -208,7 +216,13 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                                 />
                                 <CheckBoxLineComponent
                                     label="Loop"
-                                    onSelect={(value) => (this._animationControl.loop = value)}
+                                    onSelect={(value) => {
+                                        this._animationControl.loop = value;
+
+                                        animatablesForTarget.forEach(at => {
+                                            at.loopAnimation = value;
+                                        });
+                                    }}
                                     isSelected={() => this._animationControl.loop}
                                 />
                                 {this._isPlaying && (
