@@ -32,7 +32,7 @@ IAnimationCurveEditorTextInputComponentState
                 type="text"
                 title={this.props.tooltip}
                 className={"text-input" + (this.props.className ? " " + this.props.className : "")} 
-                value={this.props.value}
+                value={this.props.value || ""}
                 id={this.props.id}>
             </input>
         );

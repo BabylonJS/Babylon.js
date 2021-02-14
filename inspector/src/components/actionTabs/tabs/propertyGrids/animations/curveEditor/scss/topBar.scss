@@ -19,4 +19,9 @@
         align-content: center;
         padding-bottom: 5px;
     }
+
+    #frame-canvas {
+        grid-row: 1;
+        grid-column: 8;
+    }
 }

@@ -9,6 +9,9 @@ const keySelected = require("../assets/keySelectedIcon.svg") as string;
 interface IAnimationCurveEditorKeyPointComponentProps {
     x: number;
     y: number;
+    getPreviousX: () => Nullable<number>;
+    getNextX: () => Nullable<number>;
+    nextX?: number;
     scale: number;
     context: AnimationCurveEditorContext;
     channel: string;
@@ -76,6 +79,17 @@ IAnimationCurveEditorKeyPointComponentState
 
         let newX = this.state.x + (evt.nativeEvent.offsetX - this._sourcePointerX) * this.props.scale;
         let newY = this.state.y + (evt.nativeEvent.offsetY - this._sourcePointerY) * this.props.scale;
+        let previousX = this.props.getPreviousX();
+        let nextX = this.props.getNextX();
+
+
+        if (previousX !== null) {
+            newX = Math.max(previousX, newX);
+        }
+
+        if (nextX !== null) {
+            newX = Math.min(nextX, newX);
+        }
 
         this.props.onFrameValueChanged(newX);
         this.props.onKeyValueChanged(newY);
