@@ -355,6 +355,7 @@ IAnimationCurveEditorGraphComponentState
         this._sourcePointerX = evt.nativeEvent.offsetX;
         this._sourcePointerY = evt.nativeEvent.offsetY;
 
+
         this.forceUpdate();
     }
 
@@ -363,10 +364,21 @@ IAnimationCurveEditorGraphComponentState
         evt.currentTarget.releasePointerCapture(evt.pointerId);
     }
 
-    onWheel(evt: React.WheelEvent) {
+    private _onWheel(evt: React.WheelEvent) {
         let delta = evt.deltaY < 0 ? -0.05 : 0.05;
 
+        const oldScale = this._viewScale;
         this._viewScale = Math.min(Math.max(this._MinScale, this._viewScale + delta * this._viewScale), this._MaxScale);
+
+        const clientX = evt.nativeEvent.offsetX;
+        const clientY = evt.nativeEvent.offsetY;
+
+        const xDiff = clientX * oldScale - clientX * this._viewScale;
+        const yDiff = clientY * oldScale - clientY * this._viewScale;
+
+        this._offsetX -= xDiff;
+        this._offsetY -= yDiff;
+
         this.forceUpdate();
 
         evt.stopPropagation();
@@ -380,7 +392,7 @@ IAnimationCurveEditorGraphComponentState
         return (
             <div 
                 id="graph"                
-                onWheel={evt => this.onWheel(evt)}
+                onWheel={evt => this._onWheel(evt)}
                 onPointerDown={evt => this._onPointerDown(evt)}
                 onPointerMove={evt => this._onPointerMove(evt)}
                 onPointerUp={evt => this._onPointerUp(evt)}
