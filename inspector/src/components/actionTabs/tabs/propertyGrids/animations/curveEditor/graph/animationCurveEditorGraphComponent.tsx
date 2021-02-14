@@ -7,6 +7,7 @@ import { AnimationCurveEditorKeyPointComponent } from "./animationCurveEditorKey
 import { AnimationCurveEditorCurveComponent } from "./animationCurveEditorCurveComponent";
 import { Nullable } from "babylonjs/types";
 import { Vector2 } from "babylonjs/Maths/math.vector";
+import { IAnimationKey } from "babylonjs";
 
 interface IAnimationCurveEditorGraphComponentProps {
     globalState: GlobalState;
@@ -94,8 +95,7 @@ IAnimationCurveEditorGraphComponentState
         if (!this.props.context.activeAnimation) {
             return;
         }
-        let minValue = Number.MAX_VALUE;
-        let maxValue = -Number.MAX_VALUE;
+        
         let animation = this.props.context.activeAnimation;
         let keys = animation.getKeys();
 
@@ -132,13 +132,30 @@ IAnimationCurveEditorGraphComponentState
                 break;
         }
 
+        let values = this._extractValuesFromKeys(keys, animation.dataType, true);
+
+        this._minValue = values.min;
+        this._maxValue = values.max;
+
+        this._minFrame = keys[0].frame;
+        this._maxFrame = keys[keys.length - 1].frame;
+
+        this._frame();
+    }
+
+    private _extractValuesFromKeys(keys: IAnimationKey[], dataType: number, pushToCurves: boolean) {
+        let minValue = Number.MAX_VALUE;
+        let maxValue = -Number.MAX_VALUE;
+
         for (var key of keys) {
-            switch (animation.dataType) {
+            switch (dataType) {
                 case Animation.ANIMATIONTYPE_FLOAT:
                     minValue = Math.min(minValue, key.value);
                     maxValue = Math.max(maxValue, key.value);
 
-                    this._curves[0].keys.push(new Vector2(key.frame, key.value));
+                    if (pushToCurves) {
+                        this._curves[0].keys.push(new Vector2(key.frame, key.value));
+                    }
                     break;
                 case Animation.ANIMATIONTYPE_VECTOR2:
                     minValue = Math.min(minValue, key.value.x);
@@ -146,8 +163,10 @@ IAnimationCurveEditorGraphComponentState
                     maxValue = Math.max(maxValue, key.value.x);
                     maxValue = Math.max(maxValue, key.value.y);
 
-                    this._curves[0].keys.push(new Vector2(key.frame, key.value.x));
-                    this._curves[1].keys.push(new Vector2(key.frame, key.value.y));
+                    if (pushToCurves) {
+                        this._curves[0].keys.push(new Vector2(key.frame, key.value.x));
+                        this._curves[1].keys.push(new Vector2(key.frame, key.value.y));
+                    }
                     break;
                 case Animation.ANIMATIONTYPE_VECTOR3:
                     minValue = Math.min(minValue, key.value.x);
@@ -156,11 +175,12 @@ IAnimationCurveEditorGraphComponentState
                     maxValue = Math.max(maxValue, key.value.x);
                     maxValue = Math.max(maxValue, key.value.y);
                     maxValue = Math.max(maxValue, key.value.z);
-
-                    this._curves[0].keys.push(new Vector2(key.frame, key.value.x));
-                    this._curves[1].keys.push(new Vector2(key.frame, key.value.y));
-                    this._curves[2].keys.push(new Vector2(key.frame, key.value.z));
-
+                    
+                    if (pushToCurves) {
+                        this._curves[0].keys.push(new Vector2(key.frame, key.value.x));
+                        this._curves[1].keys.push(new Vector2(key.frame, key.value.y));
+                        this._curves[2].keys.push(new Vector2(key.frame, key.value.z));
+                    }
                     break;
                 case Animation.ANIMATIONTYPE_COLOR3:
                     minValue = Math.min(minValue, key.value.r);
@@ -170,10 +190,11 @@ IAnimationCurveEditorGraphComponentState
                     maxValue = Math.max(maxValue, key.value.g);
                     maxValue = Math.max(maxValue, key.value.b);
 
-                    this._curves[0].keys.push(new Vector2(key.frame, key.value.r));
-                    this._curves[1].keys.push(new Vector2(key.frame, key.value.g));
-                    this._curves[2].keys.push(new Vector2(key.frame, key.value.b));
-
+                    if (pushToCurves) {
+                        this._curves[0].keys.push(new Vector2(key.frame, key.value.r));
+                        this._curves[1].keys.push(new Vector2(key.frame, key.value.g));
+                        this._curves[2].keys.push(new Vector2(key.frame, key.value.b));
+                    }
                     break;                    
                 case Animation.ANIMATIONTYPE_QUATERNION:
                     minValue = Math.min(minValue, key.value.x);
@@ -184,11 +205,13 @@ IAnimationCurveEditorGraphComponentState
                     maxValue = Math.max(maxValue, key.value.y);
                     maxValue = Math.max(maxValue, key.value.z);
                     maxValue = Math.max(maxValue, key.value.w);
-
-                    this._curves[0].keys.push(new Vector2(key.frame, key.value.x));
-                    this._curves[1].keys.push(new Vector2(key.frame, key.value.y));
-                    this._curves[2].keys.push(new Vector2(key.frame, key.value.z));  
-                    this._curves[3].keys.push(new Vector2(key.frame, key.value.w));                        
+                    
+                    if (pushToCurves) {
+                        this._curves[0].keys.push(new Vector2(key.frame, key.value.x));
+                        this._curves[1].keys.push(new Vector2(key.frame, key.value.y));
+                        this._curves[2].keys.push(new Vector2(key.frame, key.value.z));  
+                        this._curves[3].keys.push(new Vector2(key.frame, key.value.w));     
+                    }                   
                     break;
                 case Animation.ANIMATIONTYPE_COLOR4:
                     minValue = Math.min(minValue, key.value.r);
@@ -199,22 +222,23 @@ IAnimationCurveEditorGraphComponentState
                     maxValue = Math.max(maxValue, key.value.g);
                     maxValue = Math.max(maxValue, key.value.b);
                     maxValue = Math.max(maxValue, key.value.a);
-
-                    this._curves[0].keys.push(new Vector2(key.frame, key.value.r));
-                    this._curves[1].keys.push(new Vector2(key.frame, key.value.g));
-                    this._curves[2].keys.push(new Vector2(key.frame, key.value.b));  
-                    this._curves[3].keys.push(new Vector2(key.frame, key.value.a));                        
+                    
+                    if (pushToCurves) {
+                        this._curves[0].keys.push(new Vector2(key.frame, key.value.r));
+                        this._curves[1].keys.push(new Vector2(key.frame, key.value.g));
+                        this._curves[2].keys.push(new Vector2(key.frame, key.value.b));  
+                        this._curves[3].keys.push(new Vector2(key.frame, key.value.a));                        
+                    }
                     break;                    
             }
         }
 
-        this._minValue = minValue;
-        this._maxValue = maxValue;
-
-        this._minFrame = keys[0].frame;
-        this._maxFrame = keys[keys.length - 1].frame;
-
-        this._frame();
+        return (
+            {
+                min: minValue,
+                max: maxValue
+            }
+        )
     }
 
     
@@ -293,11 +317,25 @@ IAnimationCurveEditorGraphComponentState
     }
 
     private _frame() {
+        if (!this._currentAnimation) {
+            return;
+        }
+
+        this.props.context.onActiveKeyPointChanged.notifyObservers(null);
+
         this._offsetX = 20;
         this._offsetY = 20;
 
-        const frameConvert = Math.abs(this._convertX(this._maxFrame) - this._convertX(this._minFrame)) + this._offsetX * 2;
-        const valueConvert = Math.abs(this._convertY(this._maxValue) - this._convertY(this._minValue)) + this._offsetY * 2;
+        let keys = this._currentAnimation.getKeys();
+        this._minFrame = keys[0].frame;
+        this._maxFrame = keys[keys.length - 1].frame;
+
+        let values = this._extractValuesFromKeys(keys, this._currentAnimation.dataType, false);
+        this._minValue = values.min;
+        this._maxValue = values.max;
+
+        const frameConvert = Math.abs(this._convertX(this._maxFrame ) - this._convertX(this._minFrame)) + this._offsetX * 2;
+        const valueConvert = Math.abs(this._convertY(this._minValue) - this._convertY(this._maxValue)) + this._offsetY * 2;
 
         let scaleWidth =  frameConvert/ this._viewCurveWidth;
         let scaleHeight = valueConvert / this._viewHeight;

@@ -49,8 +49,9 @@ IAnimationCurveEditorKeyPointComponentState
             this.props.context.onActiveKeyPointChanged.remove(this._onActiveKeyPointChangedObserver);
         }
     }
+
     shouldComponentUpdate(newProps: IAnimationCurveEditorKeyPointComponentProps, newState: IAnimationCurveEditorKeyPointComponentState) {
-        if (newProps.x !== this.props.x || newProps.y !== this.props.y) {
+        if (newProps !== this.props) {
             newState.x = newProps.x;
             newState.y = newProps.y;
         }

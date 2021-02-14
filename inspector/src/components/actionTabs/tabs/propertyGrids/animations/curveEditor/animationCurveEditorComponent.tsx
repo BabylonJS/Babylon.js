@@ -35,6 +35,8 @@ export class AnimationCurveEditorComponent extends React.Component<
             window.close();
         }
         this.setState({isOpen: false});
+        this.props.context.activeAnimation = null;
+        this.props.context.onActiveAnimationChanged.notifyObservers();
     }
 
     shouldComponentUpdate(newProps: IAnimationCurveEditorComponentProps, newState: IAnimationCurveEditorComponentState) {
