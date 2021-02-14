@@ -12,4 +12,6 @@ export class AnimationCurveEditorContext {
     onActiveAnimationChanged = new Observable<void>();
     onActiveKeyPointChanged = new Observable<Nullable<{keyPoint: AnimationCurveEditorKeyPointComponent, channel: string}>>();
     onHostWindowResized = new Observable<void>();
+
+    onFrameRequired = new Observable<void>();
 }

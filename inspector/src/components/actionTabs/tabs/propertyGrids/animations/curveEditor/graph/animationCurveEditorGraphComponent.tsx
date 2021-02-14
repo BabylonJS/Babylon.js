@@ -22,6 +22,8 @@ IAnimationCurveEditorGraphComponentState
 > {
     private readonly _MinScale = 0.1;
     private readonly _MaxScale = 4;
+    private readonly _GraphAbsoluteWidth = 788;
+    private readonly _GraphAbsoluteHeight = 357;
 
     private _viewWidth = 788;
     private _viewCurveWidth = 788;
@@ -31,8 +33,6 @@ IAnimationCurveEditorGraphComponentState
     private _offsetY = 0;
     
     private _graphOffsetX = 30;
-    private _graphAbsoluteWidth = 788;
-    private _graphAbsoluteHeight = 357;
 
     private _minValue: number;
     private _maxValue: number;
@@ -72,6 +72,11 @@ IAnimationCurveEditorGraphComponentState
             this._evaluateKeys();
             this.forceUpdate();
         });
+
+        this.props.context.onFrameRequired.add(() => {
+            this._frame();
+            this.forceUpdate();
+        })
     }
 
     private _computeSizes() {
@@ -208,23 +213,25 @@ IAnimationCurveEditorGraphComponentState
 
         this._minFrame = keys[0].frame;
         this._maxFrame = keys[keys.length - 1].frame;
+
+        this._frame();
     }
 
     
     private _convertX(x: number) {
-        return ((x - this._minFrame) / (this._maxFrame - this._minFrame)) *  (this._graphAbsoluteWidth);
+        return ((x - this._minFrame) / (this._maxFrame - this._minFrame)) *  (this._GraphAbsoluteWidth);
     }
 
     private _invertX(x: number) {
-        return  (x / this._graphAbsoluteWidth) * (this._maxFrame - this._minFrame) +  this._minFrame;
+        return  (x / this._GraphAbsoluteWidth) * (this._maxFrame - this._minFrame) +  this._minFrame;
     }
 
     private _convertY(y: number) {
-        return this._graphAbsoluteHeight - ((y - this._minValue) / (this._maxValue - this._minValue)) * this._graphAbsoluteHeight;
+        return this._GraphAbsoluteHeight - ((y - this._minValue) / (this._maxValue - this._minValue)) * this._GraphAbsoluteHeight;
     }
 
     private _invertY(y: number) {
-        return ((this._graphAbsoluteHeight - y) / this._graphAbsoluteHeight) * (this._maxValue - this._minValue) + this._minValue;
+        return ((this._GraphAbsoluteHeight - y) / this._GraphAbsoluteHeight) * (this._maxValue - this._minValue) + this._minValue;
     }
 
     private _buildYAxis() {
@@ -235,11 +242,11 @@ IAnimationCurveEditorGraphComponentState
         let stepCounts = 10;
         let range = this._maxValue - this._minValue;
         let offset = range / stepCounts;
-        let convertRatio = range / this._graphAbsoluteHeight;
+        let convertRatio = range / this._GraphAbsoluteHeight;
 
         let steps = [];
 
-        let startPosition = ((this._viewHeight  * this._viewScale) - this._graphAbsoluteHeight - this._offsetY) * convertRatio;
+        let startPosition = ((this._viewHeight  * this._viewScale) - this._GraphAbsoluteHeight - this._offsetY) * convertRatio;
         let start = this._minValue - ((startPosition / offset) | 0) * offset;
         let end = start + (this._viewHeight * this._viewScale )* convertRatio;
 
@@ -249,9 +256,9 @@ IAnimationCurveEditorGraphComponentState
 
         return (
             steps.map((s, i) => {
-                let y = this._graphAbsoluteHeight - ((s - this._minValue) / convertRatio);
+                let y = this._GraphAbsoluteHeight - ((s - this._minValue) / convertRatio);
                 return (
-                    <>
+                    <g key={"axis" + s}>
                         <line
                             key={"line" + s}
                             x1={this._graphOffsetX * this._viewScale}
@@ -279,10 +286,23 @@ IAnimationCurveEditorGraphComponentState
                         >
                             {s.toFixed(2)}
                         </text>
-                    </>
+                    </g>
                 )
             })
         )
+    }
+
+    private _frame() {
+        this._offsetX = 20;
+        this._offsetY = 20;
+
+        const frameConvert = Math.abs(this._convertX(this._maxFrame) - this._convertX(this._minFrame)) + this._offsetX * 2;
+        const valueConvert = Math.abs(this._convertY(this._maxValue) - this._convertY(this._minValue)) + this._offsetY * 2;
+
+        let scaleWidth =  frameConvert/ this._viewCurveWidth;
+        let scaleHeight = valueConvert / this._viewHeight;
+
+        this._viewScale = scaleWidth * this._viewHeight < valueConvert ? scaleHeight : scaleWidth;
     }
 
     private _dropKeyFrames(curveId: number) {
@@ -298,10 +318,13 @@ IAnimationCurveEditorGraphComponentState
         return curve.keys.map((key, i) => {
             let x = this._convertX(key.x);
             let y = this._convertY(key.y);
+
             return (
                <AnimationCurveEditorKeyPointComponent 
                     x={x} y={y} context={this.props.context} 
                     scale={this._viewScale} 
+                    getPreviousX={() => i > 0 ? this._convertX(curve.keys[i - 1].x) : null}
+                    getNextX={() => i < curve.keys.length - 1 ? this._convertX(curve.keys[i + 1].x) : null}
                     channel={curve.color}
                     key={curveId + "-" + i}
                     onFrameValueChanged={value => { curve.updateKeyFrame(i, this._invertX(value))}}
