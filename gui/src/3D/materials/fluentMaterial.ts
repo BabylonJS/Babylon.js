@@ -196,7 +196,7 @@ export class FluentMaterial extends PushMaterial {
             });
 
             var join = defines.toString();
-            subMesh.setEffect(scene.getEngine().createEffect(shaderName,
+            const effect = scene.getEngine().createEffect(shaderName,
                 <IEffectCreationOptions>{
                     attributes: attribs,
                     uniformsNames: uniforms,
@@ -207,7 +207,8 @@ export class FluentMaterial extends PushMaterial {
                     onCompiled: this.onCompiled,
                     onError: this.onError,
                     indexParameters: { maxSimultaneousLights: 4 }
-                }, engine), defines, this._materialContext);
+                }, engine);
+            subMesh.setEffect(effect, defines, this._getMaterialContext(effect.uniqueId));
 
         }
 

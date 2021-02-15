@@ -6,6 +6,7 @@ import { Mesh } from "../Meshes/mesh";
 import { Material } from "../Materials/material";
 import { Effect } from "../Materials/effect";
 import { SubMesh } from '../Meshes/subMesh';
+import { IMaterialContext } from "../Engines/IMaterialContext";
 /**
  * Base class of materials working in push mode in babylon JS
  * @hidden
@@ -15,6 +16,17 @@ export class PushMaterial extends Material {
     protected _activeEffect: Effect;
 
     protected _normalMatrix: Matrix = new Matrix();
+
+    private _materialContexts: { [id: number]: Nullable<IMaterialContext> } = {};
+
+    protected _getMaterialContext(effectId: number): IMaterialContext | undefined {
+        let context: Nullable<IMaterialContext> | undefined = this._materialContexts[effectId];
+        if (context === undefined) {
+            context = this._scene.getEngine().createMaterialContext();
+            this._materialContexts[effectId] = context ?? null;
+        }
+        return context === null ? undefined : context;
+    }
 
     constructor(name: string, scene: Scene) {
         super(name, scene);
