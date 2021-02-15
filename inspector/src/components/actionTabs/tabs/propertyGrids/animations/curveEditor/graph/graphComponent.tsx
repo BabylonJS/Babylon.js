@@ -21,7 +21,7 @@ export class GraphComponent extends React.Component<
 IGraphComponentProps,
 IGraphComponentState
 > {
-    private readonly _MinScale = 0.1;
+    private readonly _MinScale = 0.5;
     private readonly _MaxScale = 4;
     private readonly _GraphAbsoluteWidth = 788;
     private readonly _GraphAbsoluteHeight = 357;
@@ -61,7 +61,7 @@ IGraphComponentState
 
         this.props.context.onHostWindowResized.add(() => {
             this._computeSizes();
-        })
+        });
 
         this.props.context.onActiveAnimationChanged.add(() => {
             if (this._currentAnimation === this.props.context.activeAnimation) {
@@ -347,6 +347,9 @@ IGraphComponentState
         let scaleHeight = valueConvert / this._viewHeight;
 
         this._viewScale = scaleWidth * this._viewHeight < valueConvert ? scaleHeight : scaleWidth;
+
+        this.props.context.onGraphMoved.notifyObservers(this._offsetX);
+        this.props.context.onGraphScaled.notifyObservers(this._viewScale);
     }
 
     private _dropKeyFrames(curveId: number) {
@@ -405,6 +408,8 @@ IGraphComponentState
         this._sourcePointerX = evt.nativeEvent.offsetX;
         this._sourcePointerY = evt.nativeEvent.offsetY;
 
+        
+        this.props.context.onGraphMoved.notifyObservers(this._offsetX);
 
         this.forceUpdate();
     }
@@ -432,6 +437,9 @@ IGraphComponentState
         this.forceUpdate();
 
         evt.stopPropagation();
+
+        this.props.context.onGraphMoved.notifyObservers(this._offsetX);
+        this.props.context.onGraphScaled.notifyObservers(this._viewScale);
     }
 
     public render() {

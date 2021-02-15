@@ -55,7 +55,7 @@ IAnimationEntryComponentState
     }
 
     private _onDelete() {
-
+        this.props.context.onDeleteAnimation.notifyObservers(this.props.animation);
     }
 
     componentWillUnmount() {

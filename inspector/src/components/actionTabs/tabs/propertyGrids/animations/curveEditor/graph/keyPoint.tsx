@@ -65,6 +65,7 @@ IKeyPointComponentState
 
             if (isSelected) {
                 this.props.context.onFrameSet.notifyObservers(this.props.invertX(this.state.x));
+                this.props.context.onValueSet.notifyObservers(this.props.invertY(this.state.y));
             }
         });
 

@@ -22,4 +22,9 @@ export class Context {
     onValueManuallyEntered = new Observable<number>();
 
     onFrameRequired = new Observable<void>();
+
+    onDeleteAnimation = new Observable<Animation>();
+
+    onGraphMoved = new Observable<number>();
+    onGraphScaled = new Observable<number>();
 }

@@ -36,6 +36,20 @@ ISideBarComponentState
         super(props);
 
         this.state = { mode: Mode.Edit };
+
+        this.props.context.onDeleteAnimation.add(animationToDelete => {
+            if (this.props.context.activeAnimation === animationToDelete) {
+                this.props.context.activeAnimation = null;
+                this.props.context.onActiveAnimationChanged.notifyObservers();
+            }
+
+            let index = this.props.context.animations!.indexOf(animationToDelete);
+
+            if (index > -1) {
+                this.props.context.animations!.splice(index, 1);
+                this.forceUpdate();
+            }
+        });
     }
 
     private _onAddAnimation() {
@@ -96,7 +110,10 @@ ISideBarComponentState
                         icon={editIcon} onClick={() => this._onEditAnimation()}/>   
 
                     <TextInputComponent 
-                        value={this.props.context.animations && this.props.context.animations.length ? this.props.context.animations[0].framePerSecond + " fps" : "60 fps"}
+                        value={this.props.context.animations && this.props.context.animations.length ? this.props.context.animations[0].framePerSecond.toString() : "60"}
+                        complement=" fps"
+                        isNumber={true}
+                        onValueAsNumberChanged={value => this.props.context.animations?.forEach(anim => anim.framePerSecond = value)}
                         tooltip="Framerate"
                         id="framerate-animation"
                         globalState={this.props.globalState} context={this.props.context} />                    
