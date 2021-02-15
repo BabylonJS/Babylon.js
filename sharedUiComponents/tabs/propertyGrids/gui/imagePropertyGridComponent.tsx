@@ -8,6 +8,7 @@ import { Image } from "babylonjs-gui/2D/controls/image";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
 import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
+import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
 
 interface IImagePropertyGridComponentProps {
     image: Image,
@@ -35,6 +36,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
             <div className="pane">
                 <CommonControlPropertyGridComponent  lockObject={this.props.lockObject} control={image} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent title="IMAGE">
+                    <TextInputLineComponent lockObject={this.props.lockObject} label="Source" target={image} propertyName="source" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Source left" target={image} propertyName="sourceLeft" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Source top" target={image} propertyName="sourceTop" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Source width" target={image} propertyName="sourceWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

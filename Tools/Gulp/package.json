@@ -1,5 +1,5 @@
 {
-    "name": "babylonjs",
+    "name": "babylonjs-gulp",
     "version": "0.0.0",
     "description": "Babylon.js is a 3D engine based on webgl and javascript",
     "main": "",
