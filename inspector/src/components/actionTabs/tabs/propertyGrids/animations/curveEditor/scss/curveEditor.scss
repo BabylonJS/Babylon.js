@@ -48,6 +48,11 @@
         &.active {
             background: #111111;
         }
+
+        &:active {
+            transform-origin: 50% 50%;
+            transform: scale(0.96);
+        }
     }
 
     .push-button {
