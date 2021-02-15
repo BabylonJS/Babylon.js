@@ -201,7 +201,7 @@ export class CellMaterial extends PushMaterial {
                 defines: defines,
                 maxSimultaneousLights: this.maxSimultaneousLights
             });
-            subMesh.setEffect(scene.getEngine().createEffect(shaderName,
+            const effect = scene.getEngine().createEffect(shaderName,
                 <IEffectCreationOptions>{
                     attributes: attribs,
                     uniformsNames: uniforms,
@@ -212,7 +212,8 @@ export class CellMaterial extends PushMaterial {
                     onCompiled: this.onCompiled,
                     onError: this.onError,
                     indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights - 1 }
-                }, engine), defines, this._materialContext);
+                }, engine);
+            subMesh.setEffect(effect, defines, this._getMaterialContext(effect.uniqueId));
 
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {

@@ -250,7 +250,7 @@ export class TriPlanarMaterial extends PushMaterial {
                 maxSimultaneousLights: this.maxSimultaneousLights
             });
 
-            subMesh.setEffect(scene.getEngine().createEffect(shaderName,
+            const effect = scene.getEngine().createEffect(shaderName,
                 <IEffectCreationOptions>{
                     attributes: attribs,
                     uniformsNames: uniforms,
@@ -261,7 +261,8 @@ export class TriPlanarMaterial extends PushMaterial {
                     onCompiled: this.onCompiled,
                     onError: this.onError,
                     indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights }
-                }, engine), defines, this._materialContext);
+                }, engine);
+            subMesh.setEffect(effect, defines, this._getMaterialContext(effect.uniqueId));
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;

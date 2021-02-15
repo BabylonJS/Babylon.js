@@ -184,7 +184,7 @@ export class GridMaterial extends PushMaterial {
 
             // Defines
             var join = defines.toString();
-            subMesh.setEffect(scene.getEngine().createEffect("grid",
+            const effect = scene.getEngine().createEffect("grid",
                 attribs,
                 ["projection", "mainColor", "lineColor", "gridControl", "gridOffset", "vFogInfos", "vFogColor", "world", "view",
                     "opacityMatrix", "vOpacityInfos"],
@@ -192,7 +192,8 @@ export class GridMaterial extends PushMaterial {
                 join,
                 undefined,
                 this.onCompiled,
-                this.onError), defines, this._materialContext);
+                this.onError);
+            subMesh.setEffect(effect, defines, this._getMaterialContext(effect.uniqueId));
         }
 
         if (!subMesh.effect || !subMesh.effect.isReady()) {
