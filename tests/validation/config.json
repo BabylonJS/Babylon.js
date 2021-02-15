@@ -50,7 +50,8 @@
             "playgroundId": "#M5VQE9#20",
             "referenceImage": "node-material0.png",
             "renderCount": 5,
-            "excludeFromAutomaticTesting": true
+            "excludeFromAutomaticTesting": true,
+            "excludedEngines": ["webgpu"]
         },
         {
             "title": "Node material 1",
@@ -102,7 +103,8 @@
         {
             "title": "LOD + Billboards + Instances",
             "playgroundId": "#UAIZCS#0",
-            "referenceImage": "lodbillboardinstances.png"
+            "referenceImage": "lodbillboardinstances.png",
+            "excludedEngines": ["webgpu"]
         },
         {
             "title": "Nested BBG",
@@ -854,7 +856,8 @@
         {
             "title": "Instanced Bones",
             "playgroundId": "#2YLJ1L#2",
-            "referenceImage": "instancedBones.png"
+            "referenceImage": "instancedBones.png",
+            "excludedEngines": ["webgpu"]
         },
         {
             "title": "Thin Instances",
