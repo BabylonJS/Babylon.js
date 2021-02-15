@@ -20,6 +20,14 @@
         padding-bottom: 5px;
     }
 
+    #key-frame {
+        grid-row: 1;
+        grid-column: 3;
+        height: 24px;
+        display: grid;
+        align-self: center;
+    }
+
     #frame-canvas {
         grid-row: 1;
         grid-column: 8;
