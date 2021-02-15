@@ -1,10 +1,10 @@
 import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
-import { AnimationCurveEditorContext } from "../animationCurveEditorContext";
+import { Context } from "../Context";
 
-interface IAnimationCurveEditorTextInputComponentProps {
+interface ITextInputComponentProps {
     globalState: GlobalState;
-    context: AnimationCurveEditorContext;
+    context: Context;
     id?: string;
     className?: string;
     tooltip?: string;
@@ -13,17 +13,17 @@ interface IAnimationCurveEditorTextInputComponentProps {
     onValueAsNumberChanged?: (value: number) => void;
 }
 
-interface IAnimationCurveEditorTextInputComponentState {
+interface ITextInputComponentState {
     value: string;
 }
 
-export class AnimationCurveEditorTextInputComponent extends React.Component<
-IAnimationCurveEditorTextInputComponentProps,
-IAnimationCurveEditorTextInputComponentState
+export class TextInputComponent extends React.Component<
+ITextInputComponentProps,
+ITextInputComponentState
 > {
     private _lastKnownGoodValue: string;
 
-    constructor(props: IAnimationCurveEditorTextInputComponentProps) {
+    constructor(props: ITextInputComponentProps) {
         super(props);
 
         this.state = { value: this.props.value};
@@ -59,7 +59,7 @@ IAnimationCurveEditorTextInputComponentState
         }
     }
 
-    shouldComponentUpdate(newProps: IAnimationCurveEditorTextInputComponentProps, newState: IAnimationCurveEditorTextInputComponentState) {
+    shouldComponentUpdate(newProps: ITextInputComponentProps, newState: ITextInputComponentState) {
         if (newProps !== this.props) {
             newState.value = newProps.value;
         }

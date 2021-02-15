@@ -11,7 +11,7 @@ import { GlobalState } from "../../../../globalState";
 import { TextInputLineComponent } from "../../../../../sharedUiComponents/lines/textInputLineComponent";
 import { AnimationGroup } from "babylonjs/Animations/animationGroup";
 import { AnimationCurveEditorComponent } from "./curveEditor/animationCurveEditorComponent";
-import { AnimationCurveEditorContext } from "./curveEditor/animationCurveEditorContext";
+import { Context } from "./curveEditor/context";
 
 interface ITargetedAnimationGridComponentProps {
     globalState: GlobalState;
@@ -62,7 +62,7 @@ export class TargetedAnimationGridComponent extends React.Component<ITargetedAni
     render() {
         const targetedAnimation = this.props.targetedAnimation;
 
-        let animationCurveEditorContext = new AnimationCurveEditorContext();
+        let animationCurveEditorContext = new Context();
         animationCurveEditorContext.title = (this.props.targetedAnimation.target as any).name || "";        
 
         return (

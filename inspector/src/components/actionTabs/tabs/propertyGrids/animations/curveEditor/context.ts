@@ -1,16 +1,16 @@
 import { Nullable } from "babylonjs/types";
 import { Animation } from "babylonjs/Animations/animation";
 import { Observable } from "babylonjs/Misc/observable";
-import { AnimationCurveEditorKeyPointComponent } from "./graph/animationCurveEditorKeyPoint";
+import { KeyPointComponent } from "./graph/keyPoint";
 
-export class AnimationCurveEditorContext {
+export class Context {
     title: string;
     animations: Nullable<Animation[]>;
     activeAnimation: Nullable<Animation>;
-    activeKeyPoints: Nullable<AnimationCurveEditorKeyPointComponent[]>;
+    activeKeyPoints: Nullable<KeyPointComponent[]>;
 
     onActiveAnimationChanged = new Observable<void>();
-    onActiveKeyPointChanged = new Observable<Nullable<{keyPoint: AnimationCurveEditorKeyPointComponent, channel: string}>>();
+    onActiveKeyPointChanged = new Observable<Nullable<{keyPoint: KeyPointComponent, channel: string}>>();
     onHostWindowResized = new Observable<void>();
 
     onActiveKeyFrameChanged = new Observable<number>();

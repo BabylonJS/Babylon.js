@@ -1,15 +1,13 @@
 import { Vector2 } from "babylonjs/Maths/math.vector";
 import { Animation } from "babylonjs/Animations/animation";
-import { Nullable } from "babylonjs/types";
 import { Observable } from "babylonjs/Misc/observable";
 
-export class AnimationCurveEditorCurve {
+export class Curve {
     public keys = new Array<Vector2>(); 
     public animation: Animation;   
     public color: string;
     public onDataUpdatedObservable = new Observable<void>();
     public property?: string;
-    public siblings: Nullable<Array<AnimationCurveEditorCurve>>;
 
     public constructor(color: string, animation: Animation, property?: string) {
         this.color = color;

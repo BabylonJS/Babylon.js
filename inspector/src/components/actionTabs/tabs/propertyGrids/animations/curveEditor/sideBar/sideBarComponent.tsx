@@ -1,9 +1,9 @@
 import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
-import { AnimationCurveEditorActionButtonComponent } from "../controls/animationCurveEditorActionButtonComponent";
-import { AnimationCurveEditorContext } from "../animationCurveEditorContext";
-import { AnimationCurveEditorListComponent } from "./animationCurveEditorListComponent";
-import { AnimationCurveEditorTextInputComponent } from "../controls/animationCurveEditorTextInputComponent";
+import { ActionButtonComponent } from "../controls/actionButtonComponent";
+import { Context } from "../context";
+import { AnimationListComponent } from "./animationListComponent";
+import { TextInputComponent } from "../controls/textInputComponent";
 
 require("../scss/sideBar.scss");
 
@@ -12,12 +12,12 @@ const loadIcon = require("../assets/loadIcon.svg");
 const saveIcon = require("../assets/saveIcon.svg");
 const editIcon = require("../assets/editIcon.svg");
 
-interface IAnimationCurveEditorSideBarComponentProps {
+interface ISideBarComponentProps {
     globalState: GlobalState;
-    context: AnimationCurveEditorContext;
+    context: Context;
 }
 
-interface IAnimationCurveEditorSideBarComponentState {
+interface ISideBarComponentState {
     mode: Mode;
 }
 
@@ -28,11 +28,11 @@ enum Mode {
     Save
 }
 
-export class AnimationCurveEditorSideBarComponent extends React.Component<
-IAnimationCurveEditorSideBarComponentProps,
-IAnimationCurveEditorSideBarComponentState
+export class SideBarComponent extends React.Component<
+ISideBarComponentProps,
+ISideBarComponentState
 > {
-    constructor(props: IAnimationCurveEditorSideBarComponentProps) {
+    constructor(props: ISideBarComponentProps) {
         super(props);
 
         this.state = { mode: Mode.Edit };
@@ -74,28 +74,28 @@ IAnimationCurveEditorSideBarComponentState
         return (
             <div id="sideBar">
                 <div id="menu-bar">
-                    <AnimationCurveEditorActionButtonComponent 
+                    <ActionButtonComponent 
                         tooltip="Add new animation"
                         isActive={this.state.mode === Mode.Add}
                         id="add-animation" globalState={this.props.globalState} context={this.props.context} 
                         icon={addIcon} onClick={() => this._onAddAnimation()}/>
-                    <AnimationCurveEditorActionButtonComponent 
+                    <ActionButtonComponent 
                         tooltip="Load animations"
                         isActive={this.state.mode === Mode.Load}
                         id="load-animation" globalState={this.props.globalState} context={this.props.context} 
                         icon={loadIcon} onClick={() => this._onLoadAnimation()}/>
-                    <AnimationCurveEditorActionButtonComponent 
+                    <ActionButtonComponent 
                         tooltip="save current animations"
                         isActive={this.state.mode === Mode.Save}
                         id="save-animation" globalState={this.props.globalState} context={this.props.context} 
                         icon={saveIcon} onClick={() => this._onSaveAnimation()}/>
-                    <AnimationCurveEditorActionButtonComponent 
+                    <ActionButtonComponent 
                         tooltip="Edit animations"
                         isActive={this.state.mode === Mode.Edit}
                         id="edit-animation" globalState={this.props.globalState} context={this.props.context} 
                         icon={editIcon} onClick={() => this._onEditAnimation()}/>   
 
-                    <AnimationCurveEditorTextInputComponent 
+                    <TextInputComponent 
                         value={this.props.context.animations && this.props.context.animations.length ? this.props.context.animations[0].framePerSecond + " fps" : "60 fps"}
                         tooltip="Framerate"
                         id="framerate-animation"
@@ -103,7 +103,7 @@ IAnimationCurveEditorSideBarComponentState
                 </div>
                 {
                     this.state.mode === Mode.Edit &&
-                    <AnimationCurveEditorListComponent globalState={this.props.globalState} context={this.props.context} />
+                    <AnimationListComponent globalState={this.props.globalState} context={this.props.context} />
                 }
             </div>
         );
