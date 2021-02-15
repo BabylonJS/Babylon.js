@@ -1,14 +1,14 @@
 import { Observer } from "babylonjs/Misc/observable";
 import { Nullable } from "babylonjs/types";
 import * as React from "react";
-import { AnimationCurveEditorContext } from "../animationCurveEditorContext";
-import { AnimationCurveEditorCurve } from "./animationCurveEditorCurve";
+import { Context } from "../context";
+import { Curve } from "./curve";
 
 const keyInactive = require("../assets/keyInactiveIcon.svg") as string;
 const keySelected = require("../assets/keySelectedIcon.svg") as string;
 const keyActive = require("../assets/keyActiveIcon.svg") as string;
 
-interface IAnimationCurveEditorKeyPointComponentProps {
+interface IKeyPointComponentProps {
     x: number;
     y: number;
     getPreviousX: () => Nullable<number>;
@@ -20,14 +20,14 @@ interface IAnimationCurveEditorKeyPointComponentProps {
     nextX?: number;
     scale: number;
     keyId: number;
-    curve: AnimationCurveEditorCurve;
-    context: AnimationCurveEditorContext;
+    curve: Curve;
+    context: Context;
     channel: string;
     onFrameValueChanged: (value: number) => void;
     onKeyValueChanged: (value: number) => void;
 }
 
-interface IAnimationCurveEditorKeyPointComponentState {
+interface IKeyPointComponentState {
     selectedState: SelectionState;    
     x: number;
     y: number;
@@ -39,11 +39,11 @@ enum SelectionState {
     Siblings
 }
 
-export class AnimationCurveEditorKeyPointComponent extends React.Component<
-IAnimationCurveEditorKeyPointComponentProps,
-IAnimationCurveEditorKeyPointComponentState
+export class KeyPointComponent extends React.Component<
+IKeyPointComponentProps,
+IKeyPointComponentState
 > {    
-    private _onActiveKeyPointChangedObserver: Nullable<Observer<Nullable<{keyPoint: AnimationCurveEditorKeyPointComponent, channel: string}>>>;
+    private _onActiveKeyPointChangedObserver: Nullable<Observer<Nullable<{keyPoint: KeyPointComponent, channel: string}>>>;
     private _onActiveKeyFrameChangedObserver: Nullable<Observer<number>>;
     private _onFrameManuallyEnteredObserver: Nullable<Observer<number>>;
     private _onValueManuallyEnteredObserver: Nullable<Observer<number>>;
@@ -52,7 +52,7 @@ IAnimationCurveEditorKeyPointComponentState
     private _sourcePointerX: number;
     private _sourcePointerY: number;
 
-    constructor(props: IAnimationCurveEditorKeyPointComponentProps) {
+    constructor(props: IKeyPointComponentProps) {
         super(props);
 
         this.state = { selectedState: SelectionState.None, x: this.props.x, y: this.props.y };
@@ -129,7 +129,7 @@ IAnimationCurveEditorKeyPointComponentState
         }
     }
 
-    shouldComponentUpdate(newProps: IAnimationCurveEditorKeyPointComponentProps, newState: IAnimationCurveEditorKeyPointComponentState) {
+    shouldComponentUpdate(newProps: IKeyPointComponentProps, newState: IKeyPointComponentState) {
         if (newProps !== this.props) {
             newState.x = newProps.x;
             newState.y = newProps.y;

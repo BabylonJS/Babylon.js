@@ -1,29 +1,29 @@
 import * as React from "react";
 import { GlobalState } from "../../../../../globalState";
-import { AnimationCurveEditorContext } from "./animationCurveEditorContext";
-import { AnimationCurveEditorActionButtonComponent } from "./controls/animationCurveEditorActionButtonComponent";
-import { AnimationCurveEditorTextInputComponent } from "./controls/animationCurveEditorTextInputComponent";
+import { Context } from "./context";
+import { ActionButtonComponent } from "./controls/actionButtonComponent";
+import { TextInputComponent } from "./controls/textInputComponent";
 
 require("./scss/topBar.scss");
 
 const logoIcon = require("./assets/babylonLogo.svg");
 const frameIcon = require("./assets/frameIcon.svg");
 
-interface IAnimationCurveEditorTopBarComponentProps {
+interface ITopBarComponentProps {
     globalState: GlobalState;
-    context: AnimationCurveEditorContext;
+    context: Context;
 }
 
-interface IAnimationCurveEditorTopBarComponentState {
+interface ITopBarComponentState {
     keyFrameValue: string;
     keyValue: string;
 }
 
-export class AnimationCurveEditorTopBarComponent extends React.Component<
-IAnimationCurveEditorTopBarComponentProps,
-IAnimationCurveEditorTopBarComponentState
+export class TopBarComponent extends React.Component<
+ITopBarComponentProps,
+ITopBarComponentState
 > {
-    constructor(props: IAnimationCurveEditorTopBarComponentProps) {
+    constructor(props: ITopBarComponentProps) {
         super(props);
 
         this.state = {keyFrameValue: "", keyValue: "" };
@@ -52,21 +52,21 @@ IAnimationCurveEditorTopBarComponentState
                 <div id="parent-name">
                     {this.props.context.title}
                 </div>
-                <AnimationCurveEditorTextInputComponent 
+                <TextInputComponent 
                     isNumber={true}
                     value={this.state.keyFrameValue}
                     tooltip="Frame"
                     id="key-frame"
                     onValueAsNumberChanged={newValue => this.props.context.onFrameManuallyEntered.notifyObservers(newValue)}
                     globalState={this.props.globalState} context={this.props.context} />  
-                <AnimationCurveEditorTextInputComponent 
+                <TextInputComponent 
                     isNumber={true}
                     value={this.state.keyValue}
                     tooltip="Value"
                     id="key-value"
                     onValueAsNumberChanged={newValue => this.props.context.onValueManuallyEntered.notifyObservers(newValue)}
                     globalState={this.props.globalState} context={this.props.context} />                      
-                <AnimationCurveEditorActionButtonComponent 
+                <ActionButtonComponent 
                     tooltip="Frame canvas"
                     id="frame-canvas" globalState={this.props.globalState} context={this.props.context} 
                     icon={frameIcon} onClick={() => this.props.context.onFrameRequired.notifyObservers()}/>

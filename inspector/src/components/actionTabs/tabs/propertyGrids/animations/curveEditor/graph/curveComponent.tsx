@@ -1,27 +1,27 @@
 import { Observer } from "babylonjs/Misc/observable";
 import { Nullable } from "babylonjs/types";
 import * as React from "react";
-import { AnimationCurveEditorContext } from "../animationCurveEditorContext";
-import { AnimationCurveEditorCurve } from "./animationCurveEditorCurve";
+import { Context } from "../context";
+import { Curve } from "./curve";
 
-interface IAnimationCurveEditorCurveComponentProps {
-    curve: AnimationCurveEditorCurve;
+interface ICurveComponentProps {
+    curve: Curve;
     convertX:(x: number) => number;
     convertY:(x: number) => number;
-    context: AnimationCurveEditorContext;
+    context: Context;
 }
 
-interface IAnimationCurveEditorCurveComponentState {
+interface ICurveComponentState {
     isSelected: boolean;
 }
 
-export class AnimationCurveEditorCurveComponent extends React.Component<
-IAnimationCurveEditorCurveComponentProps,
-IAnimationCurveEditorCurveComponentState
+export class CurveComponent extends React.Component<
+ICurveComponentProps,
+ICurveComponentState
 > {    
     private _onDataUpdatedObserver: Nullable<Observer<void>>;
 
-    constructor(props: IAnimationCurveEditorCurveComponentProps) {
+    constructor(props: ICurveComponentProps) {
         super(props);
 
         this.state = { isSelected: false };
@@ -35,7 +35,7 @@ IAnimationCurveEditorCurveComponentState
         }
     }
 
-    shouldComponentUpdate(newProps: IAnimationCurveEditorCurveComponentProps) {
+    shouldComponentUpdate(newProps: ICurveComponentProps) {
         if (newProps.curve !== this.props.curve) {
             if (this._onDataUpdatedObserver) {
                 this.props.curve.onDataUpdatedObservable.remove(this._onDataUpdatedObserver);

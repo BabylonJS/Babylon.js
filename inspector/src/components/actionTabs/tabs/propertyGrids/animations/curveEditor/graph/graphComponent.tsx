@@ -1,25 +1,25 @@
 import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
-import { AnimationCurveEditorContext } from "../animationCurveEditorContext";
+import { Context } from "../context";
 import { Animation } from "babylonjs/Animations/animation";
-import { AnimationCurveEditorCurve } from "./animationCurveEditorCurve";
-import { AnimationCurveEditorKeyPointComponent } from "./animationCurveEditorKeyPoint";
-import { AnimationCurveEditorCurveComponent } from "./animationCurveEditorCurveComponent";
+import { Curve } from "./curve";
+import { KeyPointComponent } from "./keyPoint";
+import { CurveComponent } from "./curveComponent";
 import { Nullable } from "babylonjs/types";
 import { Vector2 } from "babylonjs/Maths/math.vector";
 import { IAnimationKey } from "babylonjs";
 
-interface IAnimationCurveEditorGraphComponentProps {
+interface IGraphComponentProps {
     globalState: GlobalState;
-    context: AnimationCurveEditorContext;
+    context: Context;
 }
 
-interface IAnimationCurveEditorGraphComponentState {
+interface IGraphComponentState {
 }
 
-export class AnimationCurveEditorGraphComponent extends React.Component<
-IAnimationCurveEditorGraphComponentProps,
-IAnimationCurveEditorGraphComponentState
+export class GraphComponent extends React.Component<
+IGraphComponentProps,
+IGraphComponentState
 > {
     private readonly _MinScale = 0.1;
     private readonly _MaxScale = 4;
@@ -41,7 +41,7 @@ IAnimationCurveEditorGraphComponentState
     private _maxFrame: number;
     private _svgHost: React.RefObject<SVGSVGElement>;
     private _svgHost2: React.RefObject<SVGSVGElement>;
-    private _curves: AnimationCurveEditorCurve[];
+    private _curves: Curve[];
 
     private _pointerIsDown: boolean;
     private _sourcePointerX: number;
@@ -49,7 +49,7 @@ IAnimationCurveEditorGraphComponentState
 
     private _currentAnimation: Nullable<Animation>;
 
-    constructor(props: IAnimationCurveEditorGraphComponentProps) {
+    constructor(props: IGraphComponentProps) {
         super(props);
 
         this.state = { };
@@ -103,32 +103,32 @@ IAnimationCurveEditorGraphComponentState
 
         switch (animation.dataType) {
             case Animation.ANIMATIONTYPE_FLOAT:
-                this._curves.push(new AnimationCurveEditorCurve("#DB3E3E", animation)); 
+                this._curves.push(new Curve("#DB3E3E", animation)); 
             break;
             case Animation.ANIMATIONTYPE_VECTOR2:
-                this._curves.push(new AnimationCurveEditorCurve("#DB3E3E", animation, "x")); 
-                this._curves.push(new AnimationCurveEditorCurve("#51E22D", animation, "y")); 
+                this._curves.push(new Curve("#DB3E3E", animation, "x")); 
+                this._curves.push(new Curve("#51E22D", animation, "y")); 
             case Animation.ANIMATIONTYPE_VECTOR3:
-                this._curves.push(new AnimationCurveEditorCurve("#DB3E3E", animation, "x")); 
-                this._curves.push(new AnimationCurveEditorCurve("#51E22D", animation, "y")); 
-                this._curves.push(new AnimationCurveEditorCurve("#00A3FF", animation, "z")); 
+                this._curves.push(new Curve("#DB3E3E", animation, "x")); 
+                this._curves.push(new Curve("#51E22D", animation, "y")); 
+                this._curves.push(new Curve("#00A3FF", animation, "z")); 
                 break;
             case Animation.ANIMATIONTYPE_COLOR3:
-                this._curves.push(new AnimationCurveEditorCurve("#DB3E3E", animation, "r")); 
-                this._curves.push(new AnimationCurveEditorCurve("#51E22D", animation, "g")); 
-                this._curves.push(new AnimationCurveEditorCurve("#00A3FF", animation, "b")); 
+                this._curves.push(new Curve("#DB3E3E", animation, "r")); 
+                this._curves.push(new Curve("#51E22D", animation, "g")); 
+                this._curves.push(new Curve("#00A3FF", animation, "b")); 
                 break;
             case Animation.ANIMATIONTYPE_QUATERNION:
-                this._curves.push(new AnimationCurveEditorCurve("#DB3E3E", animation, "x")); 
-                this._curves.push(new AnimationCurveEditorCurve("#51E22D", animation, "y")); 
-                this._curves.push(new AnimationCurveEditorCurve("#00A3FF", animation, "z")); 
-                this._curves.push(new AnimationCurveEditorCurve("#8700FF", animation, "w")); 
+                this._curves.push(new Curve("#DB3E3E", animation, "x")); 
+                this._curves.push(new Curve("#51E22D", animation, "y")); 
+                this._curves.push(new Curve("#00A3FF", animation, "z")); 
+                this._curves.push(new Curve("#8700FF", animation, "w")); 
                 break;
             case Animation.ANIMATIONTYPE_COLOR4:
-                this._curves.push(new AnimationCurveEditorCurve("#DB3E3E", animation, "r")); 
-                this._curves.push(new AnimationCurveEditorCurve("#51E22D", animation, "g")); 
-                this._curves.push(new AnimationCurveEditorCurve("#00A3FF", animation, "b")); 
-                this._curves.push(new AnimationCurveEditorCurve("#8700FF", animation, "a")); 
+                this._curves.push(new Curve("#DB3E3E", animation, "r")); 
+                this._curves.push(new Curve("#51E22D", animation, "g")); 
+                this._curves.push(new Curve("#00A3FF", animation, "b")); 
+                this._curves.push(new Curve("#8700FF", animation, "a")); 
                 break;
         }
 
@@ -364,7 +364,7 @@ IAnimationCurveEditorGraphComponentState
             let y = this._convertY(key.y);
 
             return (
-               <AnimationCurveEditorKeyPointComponent 
+               <KeyPointComponent 
                     x={x} y={y} context={this.props.context} 
                     scale={this._viewScale} 
                     getPreviousX={() => i > 0 ? this._convertX(curve.keys[i - 1].x) : null}
@@ -465,19 +465,19 @@ IAnimationCurveEditorGraphComponentState
                     >
                     {
                         this._curves !== undefined && this._curves.length > 0 &&
-                        <AnimationCurveEditorCurveComponent context={this.props.context} curve={this._curves[0]} convertX={x => this._convertX(x)} convertY={y => this._convertY(y)}/>
+                        <CurveComponent context={this.props.context} curve={this._curves[0]} convertX={x => this._convertX(x)} convertY={y => this._convertY(y)}/>
                     }
                     {
                         this._curves !== undefined && this._curves.length > 1 &&
-                        <AnimationCurveEditorCurveComponent context={this.props.context} curve={this._curves[1]} convertX={x => this._convertX(x)} convertY={y => this._convertY(y)}/>
+                        <CurveComponent context={this.props.context} curve={this._curves[1]} convertX={x => this._convertX(x)} convertY={y => this._convertY(y)}/>
                     }
                     {
                         this._curves !== undefined && this._curves.length > 2 &&
-                        <AnimationCurveEditorCurveComponent context={this.props.context} curve={this._curves[2]} convertX={x => this._convertX(x)} convertY={y => this._convertY(y)}/>
+                        <CurveComponent context={this.props.context} curve={this._curves[2]} convertX={x => this._convertX(x)} convertY={y => this._convertY(y)}/>
                     }
                     {
                         this._curves !== undefined && this._curves.length > 3 &&
-                        <AnimationCurveEditorCurveComponent context={this.props.context} curve={this._curves[3]} convertX={x => this._convertX(x)} convertY={y => this._convertY(y)}/>
+                        <CurveComponent context={this.props.context} curve={this._curves[3]} convertX={x => this._convertX(x)} convertY={y => this._convertY(y)}/>
                     }
                     {
                         this._dropKeyFrames(0)

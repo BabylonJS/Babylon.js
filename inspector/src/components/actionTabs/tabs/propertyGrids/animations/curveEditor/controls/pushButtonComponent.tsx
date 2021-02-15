@@ -1,10 +1,10 @@
 import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
-import { AnimationCurveEditorContext } from "../animationCurveEditorContext";
+import { Context } from "../Context";
 
-interface IAnimationCurveEditorPushButtonComponentProps {
+interface IPushButtonComponentProps {
     globalState: GlobalState;
-    context: AnimationCurveEditorContext;
+    context: Context;
     icon: string;
     id?: string;
     className?: string;
@@ -13,16 +13,16 @@ interface IAnimationCurveEditorPushButtonComponentProps {
     tooltip?: string;
 }
 
-interface IAnimationCurveEditorPushButtonComponentState {
+interface IPushButtonComponentState {
     isPushed: boolean;
 }
 
-export class AnimationCurveEditorPushButtonComponent extends React.Component<
-IAnimationCurveEditorPushButtonComponentProps,
-IAnimationCurveEditorPushButtonComponentState
+export class PushButtonComponent extends React.Component<
+IPushButtonComponentProps,
+IPushButtonComponentState
 > {
 
-    constructor(props: IAnimationCurveEditorPushButtonComponentProps) {
+    constructor(props: IPushButtonComponentProps) {
         super(props);
 
         this.state = { isPushed: !!this.props.isPushed};

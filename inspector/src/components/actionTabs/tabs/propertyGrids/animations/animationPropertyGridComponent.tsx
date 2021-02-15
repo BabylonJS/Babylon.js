@@ -19,7 +19,7 @@ import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floa
 import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
 import { IAnimatable } from "babylonjs/Animations/animatable.interface";
 import { AnimationCurveEditorComponent } from "./curveEditor/animationCurveEditorComponent";
-import { AnimationCurveEditorContext } from "./curveEditor/animationCurveEditorContext";
+import { Context } from "./curveEditor/context";
 
 interface IAnimationGridComponentProps {
     globalState: GlobalState;
@@ -36,7 +36,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
     private _onBeforeRenderObserver: Nullable<Observer<Scene>>;
     private _isPlaying = false;
     private timelineRef: React.RefObject<SliderLineComponent>;
-    private _animationCurveEditorContext: AnimationCurveEditorContext;
+    private _animationCurveEditorContext: Context;
     private _animationControl = {
         from: 0,
         to: 0,
@@ -155,7 +155,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
         let animations = animatable.animations;
 
         if (!this._animationCurveEditorContext) {
-            this._animationCurveEditorContext = new AnimationCurveEditorContext();
+            this._animationCurveEditorContext = new Context();
             this._animationCurveEditorContext.title = (this.props.animatable as any).name || "";
             this._animationCurveEditorContext.animations = animations;
         }

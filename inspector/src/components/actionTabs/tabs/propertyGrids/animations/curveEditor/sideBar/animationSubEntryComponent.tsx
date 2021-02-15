@@ -1,33 +1,33 @@
 import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
-import { AnimationCurveEditorContext } from "../animationCurveEditorContext";
+import { Context } from "../context";
 import { Animation } from "babylonjs/Animations/animation";
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
-import { AnimationCurveEditorKeyPointComponent } from "../graph/animationCurveEditorKeyPoint";
+import { KeyPointComponent } from "../graph/keyPoint";
 
 const selectedIcon = require("../assets/keySelectedIcon.svg");
 
-interface IAnimationCurveEditorAnimationSubEntryComponentProps {
+interface IAnimationSubEntryComponentProps {
     globalState: GlobalState;
-    context: AnimationCurveEditorContext;
+    context: Context;
     animation: Animation;
     color: string;
     subName: string;
 }
 
-interface IAnimationCurveEditorAnimationSubEntryComponentState {
+interface IAnimationSubEntryComponentState {
     isSelected: boolean;
 }
 
-export class AnimationCurveEditorAnimationSubEntryComponent extends React.Component<
-IAnimationCurveEditorAnimationSubEntryComponentProps,
-IAnimationCurveEditorAnimationSubEntryComponentState
+export class AnimationSubEntryComponent extends React.Component<
+IAnimationSubEntryComponentProps,
+IAnimationSubEntryComponentState
 > {
     private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
-    private _onActiveKeyPointChangedObserver: Nullable<Observer<Nullable<{keyPoint: AnimationCurveEditorKeyPointComponent, channel: string}>>>;
+    private _onActiveKeyPointChangedObserver: Nullable<Observer<Nullable<{keyPoint: KeyPointComponent, channel: string}>>>;
 
-    constructor(props: IAnimationCurveEditorAnimationSubEntryComponentProps) {
+    constructor(props: IAnimationSubEntryComponentProps) {
         super(props);
 
         this.state = { isSelected: false };

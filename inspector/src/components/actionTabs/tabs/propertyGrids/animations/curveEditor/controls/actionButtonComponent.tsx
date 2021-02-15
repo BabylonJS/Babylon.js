@@ -1,10 +1,10 @@
 import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
-import { AnimationCurveEditorContext } from "../animationCurveEditorContext";
+import { Context } from "../Context";
 
-interface IAnimationCurveEditorActionButtonComponentProps {
+interface IActionButtonComponentProps {
     globalState: GlobalState;
-    context: AnimationCurveEditorContext;
+    context: Context;
     icon: string;
     id?: string;
     className?: string;
@@ -13,15 +13,15 @@ interface IAnimationCurveEditorActionButtonComponentProps {
     tooltip?: string;
 }
 
-interface IAnimationCurveEditorActionButtonComponentState {
+interface IActionButtonComponentState {
 }
 
-export class AnimationCurveEditorActionButtonComponent extends React.Component<
-IAnimationCurveEditorActionButtonComponentProps,
-IAnimationCurveEditorActionButtonComponentState
+export class ActionButtonComponent extends React.Component<
+IActionButtonComponentProps,
+IActionButtonComponentState
 > {
 
-    constructor(props: IAnimationCurveEditorActionButtonComponentProps) {
+    constructor(props: IActionButtonComponentProps) {
         super(props);
 
         this.state = { };

@@ -1,12 +1,12 @@
 import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
-import { AnimationCurveEditorContext } from "../animationCurveEditorContext";
+import { Context } from "../context";
 import { Animation } from "babylonjs/Animations/animation";
-import { AnimationCurveEditorActionButtonComponent } from "../controls/animationCurveEditorActionButtonComponent";
+import { ActionButtonComponent } from "../controls/actionButtonComponent";
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
-import { AnimationCurveEditorAnimationSubEntryComponent } from "./animationCurveEditorAnimationSubEntryComponent";
-import { AnimationCurveEditorKeyPointComponent } from "../graph/animationCurveEditorKeyPoint";
+import { AnimationSubEntryComponent } from "./animationSubEntryComponent";
+import { KeyPointComponent } from "../graph/keyPoint";
 
 const gearIcon = require("../assets/animationOptionsIcon.svg");
 const deleteIcon = require("../assets/closeWindowIcon.svg");
@@ -15,25 +15,25 @@ const selectedIcon = require("../assets/keySelectedIcon.svg");
 const chevronIcon = require("../assets/animationTriangleIcon.svg");
 
 
-interface IAnimationCurveEditorAnimationEntryComponentProps {
+interface IAnimationEntryComponentProps {
     globalState: GlobalState;
-    context: AnimationCurveEditorContext;
+    context: Context;
     animation: Animation;
 }
 
-interface IAnimationCurveEditorAnimationEntryComponentState {
+interface IAnimationEntryComponentState {
     isExpanded: boolean;
     isSelected: boolean;
 }
 
-export class AnimationCurveEditorAnimationEntryComponent extends React.Component<
-IAnimationCurveEditorAnimationEntryComponentProps,
-IAnimationCurveEditorAnimationEntryComponentState
+export class AnimationEntryComponent extends React.Component<
+IAnimationEntryComponentProps,
+IAnimationEntryComponentState
 > {
     private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
-    private _onActiveKeyPointChangedObserver: Nullable<Observer<Nullable<{keyPoint: AnimationCurveEditorKeyPointComponent, channel: string}>>>;
+    private _onActiveKeyPointChangedObserver: Nullable<Observer<Nullable<{keyPoint: KeyPointComponent, channel: string}>>>;
 
-    constructor(props: IAnimationCurveEditorAnimationEntryComponentProps) {
+    constructor(props: IAnimationEntryComponentProps) {
         super(props);
 
         this.state = { isExpanded: false, isSelected: false };
@@ -107,21 +107,21 @@ IAnimationCurveEditorAnimationEntryComponentState
                         </div>      
                     }
                     <div className="animation-name" onClick={() => this._activate()}>{this.props.animation.name}</div>
-                    <AnimationCurveEditorActionButtonComponent className="animation-options" context={this.props.context} globalState={this.props.globalState} icon={gearIcon} onClick={() => this._onGear()} />
-                    <AnimationCurveEditorActionButtonComponent className="animation-delete" context={this.props.context} globalState={this.props.globalState} icon={deleteIcon} onClick={() => this._onDelete()} />
+                    <ActionButtonComponent className="animation-options" context={this.props.context} globalState={this.props.globalState} icon={gearIcon} onClick={() => this._onGear()} />
+                    <ActionButtonComponent className="animation-delete" context={this.props.context} globalState={this.props.globalState} icon={deleteIcon} onClick={() => this._onDelete()} />
                 </div>
                 {
                     this.state.isExpanded && this.props.animation.dataType !== Animation.ANIMATIONTYPE_COLOR3 &&
                     <>
-                        <AnimationCurveEditorAnimationSubEntryComponent 
+                        <AnimationSubEntryComponent 
                             globalState={this.props.globalState} context={this.props.context} animation={this.props.animation} 
                             color="#DB3E3E" subName="Red"
                             />
-                        <AnimationCurveEditorAnimationSubEntryComponent 
+                        <AnimationSubEntryComponent 
                             globalState={this.props.globalState} context={this.props.context} animation={this.props.animation} 
                             color="#51E22D" subName="Green"
                             />
-                        <AnimationCurveEditorAnimationSubEntryComponent 
+                        <AnimationSubEntryComponent 
                             globalState={this.props.globalState} context={this.props.context} animation={this.props.animation} 
                             color="#00A3FF" subName="Blue"
                             />                                                        
@@ -130,15 +130,15 @@ IAnimationCurveEditorAnimationEntryComponentState
                 {
                     this.state.isExpanded && this.props.animation.dataType !== Animation.ANIMATIONTYPE_VECTOR3 &&
                     <>
-                        <AnimationCurveEditorAnimationSubEntryComponent 
+                        <AnimationSubEntryComponent 
                             globalState={this.props.globalState} context={this.props.context} animation={this.props.animation} 
                             color="#DB3E3E" subName="X"
                             />
-                        <AnimationCurveEditorAnimationSubEntryComponent 
+                        <AnimationSubEntryComponent 
                             globalState={this.props.globalState} context={this.props.context} animation={this.props.animation} 
                             color="#51E22D" subName="Y"
                             />
-                        <AnimationCurveEditorAnimationSubEntryComponent 
+                        <AnimationSubEntryComponent 
                             globalState={this.props.globalState} context={this.props.context} animation={this.props.animation} 
                             color="#00A3FF" subName="Z"
                             />                                                        

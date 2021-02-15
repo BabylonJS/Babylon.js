@@ -2,17 +2,17 @@ import * as React from "react";
 import { ButtonLineComponent } from "../../../../../../sharedUiComponents/lines/buttonLineComponent";
 import { GlobalState } from "../../../../../globalState";
 import { PopupComponent } from "../../../../../popupComponent";
-import { AnimationCurveEditorBottomBarComponent } from "./animationCurveEditorBottomBarComponent";
-import { AnimationCurveEditorContext } from "./animationCurveEditorContext";
-import { AnimationCurveEditorTopBarComponent } from "./animationCurveEditorTopBarComponent";
-import { AnimationCurveEditorCanvasComponent } from "./graph/animationCurveEditorCanvasComponent";
-import { AnimationCurveEditorSideBarComponent } from "./sideBar/animationCurveEditorSideBarComponent";
+import { BottomBarComponent } from "./bottomBarComponent";
+import { Context } from "./context";
+import { TopBarComponent } from "./topBarComponent";
+import { CanvasComponent } from "./graph/canvasComponent";
+import { SideBarComponent } from "./sideBar/sideBarComponent";
 
 require("./scss/curveEditor.scss");
 
 interface IAnimationCurveEditorComponentProps {
     globalState: GlobalState;
-    context: AnimationCurveEditorContext;
+    context: Context;
 }
 
 interface IAnimationCurveEditorComponentState {
@@ -57,10 +57,10 @@ export class AnimationCurveEditorComponent extends React.Component<
                         onClose={(window: Window) => this.onCloseAnimationCurveEditor(window)}
                     >
                         <div id="curve-editor">
-                            <AnimationCurveEditorTopBarComponent globalState={this.props.globalState} context={this.props.context}/>
-                            <AnimationCurveEditorSideBarComponent globalState={this.props.globalState} context={this.props.context}/>
-                            <AnimationCurveEditorCanvasComponent globalState={this.props.globalState} context={this.props.context}/>
-                            <AnimationCurveEditorBottomBarComponent globalState={this.props.globalState} context={this.props.context}/>
+                            <TopBarComponent globalState={this.props.globalState} context={this.props.context}/>
+                            <SideBarComponent globalState={this.props.globalState} context={this.props.context}/>
+                            <CanvasComponent globalState={this.props.globalState} context={this.props.context}/>
+                            <BottomBarComponent globalState={this.props.globalState} context={this.props.context}/>
                         </div>
                     </PopupComponent>
         }
