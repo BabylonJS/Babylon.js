@@ -227,7 +227,6 @@ export class Image extends Control {
     /**
      * Gets the image width
      */
-    @serialize()
     public get imageWidth(): number {
         return this._imageWidth;
     }
@@ -235,7 +234,6 @@ export class Image extends Control {
     /**
      * Gets the image height
      */
-    @serialize()
     public get imageHeight(): number {
         return this._imageHeight;
     }

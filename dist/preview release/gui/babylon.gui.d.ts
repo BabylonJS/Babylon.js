@@ -826,6 +826,7 @@ declare module BABYLON.GUI {
         get shadowOffsetY(): number;
         set shadowOffsetY(value: number);
         private _shadowBlur;
+        private _previousShadowBlur;
         /** Gets or sets a value indicating the amount of blur to use to render the shadow */
         get shadowBlur(): number;
         set shadowBlur(value: number);

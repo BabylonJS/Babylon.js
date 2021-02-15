@@ -194,7 +194,6 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
                     sound.maxDistance = emitter.maxDistance || 256;
                     sound.rolloffFactor = emitter.rolloffFactor || 1;
                     sound.distanceModel = emitter.distanceModel || 'exponential';
-                    sound._positionInEmitterSpace = true;
                 }));
             }
 

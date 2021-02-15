@@ -146,6 +146,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         "ParticlePositionWorldBlock": "The world position of the particle",
         "FragCoordBlock": "The gl_FragCoord predefined variable that contains the window relative coordinate (x, y, z, 1/w)",
         "ScreenSizeBlock": "The size (in pixels) of the screen window",
+        "MatrixBuilderBlock": "Converts 4 Vector4 into a matrix",
     };
     
     private _customFrameList: {[key: string]: string};
@@ -231,7 +232,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Math__Standard: ["AddBlock", "DivideBlock", "MaxBlock", "MinBlock", "ModBlock", "MultiplyBlock", "NegateBlock", "OneMinusBlock", "ReciprocalBlock", "ScaleBlock", "SignBlock", "SqrtBlock", "SubtractBlock"],
             Math__Scientific: ["AbsBlock", "ArcCosBlock", "ArcSinBlock", "ArcTanBlock", "ArcTan2Block", "CosBlock", "DegreesToRadiansBlock", "ExpBlock", "Exp2Block", "FractBlock", "LogBlock", "PowBlock", "RadiansToDegreesBlock", "SawToothWaveBlock", "SinBlock", "SquareWaveBlock", "TanBlock", "TriangleWaveBlock"],
             Math__Vector: ["CrossBlock", "DerivativeBlock", "DistanceBlock", "DotBlock", "FresnelBlock", "LengthBlock", "ReflectBlock", "RefractBlock", "Rotate2dBlock", "TransformBlock", ],
-            Matrices: ["Matrix", "WorldMatrixBlock", "WorldViewMatrixBlock", "WorldViewProjectionMatrixBlock", "ViewMatrixBlock", "ViewProjectionMatrixBlock", "ProjectionMatrixBlock"],
+            Matrices: ["Matrix", "WorldMatrixBlock", "WorldViewMatrixBlock", "WorldViewProjectionMatrixBlock", "ViewMatrixBlock", "ViewProjectionMatrixBlock", "ProjectionMatrixBlock", "MatrixBuilderBlock"],
             Mesh: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "PerturbNormalBlock", "NormalBlendBlock" , "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "WorldTangentBlock", "FrontFacingBlock"],
             Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock"],
             Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
