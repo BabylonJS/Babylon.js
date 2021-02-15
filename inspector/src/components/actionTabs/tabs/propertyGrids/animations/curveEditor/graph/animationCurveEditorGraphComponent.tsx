@@ -278,6 +278,12 @@ IAnimationCurveEditorGraphComponentState
             steps.push(step);
         }
 
+        let precision = 2;
+
+        while (steps[0].toFixed(precision) === steps[1].toFixed(precision)) {
+            precision++;
+        }
+
         return (
             steps.map((s, i) => {
                 let y = this._GraphAbsoluteHeight - ((s - this._minValue) / convertRatio);
@@ -308,7 +314,7 @@ IAnimationCurveEditorGraphComponentState
                                 textAlign: "center",
                             }}
                         >
-                            {s.toFixed(2)}
+                            {s.toFixed(precision)}
                         </text>
                     </g>
                 )
@@ -364,9 +370,15 @@ IAnimationCurveEditorGraphComponentState
                     getPreviousX={() => i > 0 ? this._convertX(curve.keys[i - 1].x) : null}
                     getNextX={() => i < curve.keys.length - 1 ? this._convertX(curve.keys[i + 1].x) : null}
                     channel={curve.color}
+                    keyId={i}
+                    curve={curve}
                     key={curveId + "-" + i}
-                    onFrameValueChanged={value => { curve.updateKeyFrame(i, this._invertX(value))}}
-                    onKeyValueChanged={value => { curve.updateKeyValue(i, this._invertY(value))}}
+                    invertX={x => this._invertX(x)}
+                    invertY={y => this._invertY(y)}
+                    convertX={x => this._convertX(x)}
+                    convertY={y => this._convertY(y)}
+                    onFrameValueChanged={value => { curve.updateKeyFrame(i, value)}}
+                    onKeyValueChanged={value => { curve.updateKeyValue(i, value)}}
                 />
             );
         })

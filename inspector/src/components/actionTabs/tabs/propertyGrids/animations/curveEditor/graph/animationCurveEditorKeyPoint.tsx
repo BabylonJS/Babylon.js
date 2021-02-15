@@ -2,17 +2,25 @@ import { Observer } from "babylonjs/Misc/observable";
 import { Nullable } from "babylonjs/types";
 import * as React from "react";
 import { AnimationCurveEditorContext } from "../animationCurveEditorContext";
+import { AnimationCurveEditorCurve } from "./animationCurveEditorCurve";
 
 const keyInactive = require("../assets/keyInactiveIcon.svg") as string;
 const keySelected = require("../assets/keySelectedIcon.svg") as string;
+const keyActive = require("../assets/keyActiveIcon.svg") as string;
 
 interface IAnimationCurveEditorKeyPointComponentProps {
     x: number;
     y: number;
     getPreviousX: () => Nullable<number>;
     getNextX: () => Nullable<number>;
+    invertX:(x: number) => number;
+    invertY:(y: number) => number;
+    convertX:(x: number) => number;
+    convertY:(y: number) => number;
     nextX?: number;
     scale: number;
+    keyId: number;
+    curve: AnimationCurveEditorCurve;
     context: AnimationCurveEditorContext;
     channel: string;
     onFrameValueChanged: (value: number) => void;
@@ -20,9 +28,15 @@ interface IAnimationCurveEditorKeyPointComponentProps {
 }
 
 interface IAnimationCurveEditorKeyPointComponentState {
-    isSelected: boolean;    
+    selectedState: SelectionState;    
     x: number;
     y: number;
+}
+
+enum SelectionState {
+    None,
+    Selected,
+    Siblings
 }
 
 export class AnimationCurveEditorKeyPointComponent extends React.Component<
@@ -30,6 +44,9 @@ IAnimationCurveEditorKeyPointComponentProps,
 IAnimationCurveEditorKeyPointComponentState
 > {    
     private _onActiveKeyPointChangedObserver: Nullable<Observer<Nullable<{keyPoint: AnimationCurveEditorKeyPointComponent, channel: string}>>>;
+    private _onActiveKeyFrameChangedObserver: Nullable<Observer<number>>;
+    private _onFrameManuallyEnteredObserver: Nullable<Observer<number>>;
+
     private _pointerIsDown: boolean;
     private _sourcePointerX: number;
     private _sourcePointerY: number;
@@ -37,16 +54,68 @@ IAnimationCurveEditorKeyPointComponentState
     constructor(props: IAnimationCurveEditorKeyPointComponentProps) {
         super(props);
 
-        this.state = { isSelected: false, x: this.props.x, y: this.props.y };
+        this.state = { selectedState: SelectionState.None, x: this.props.x, y: this.props.y };
 
         this._onActiveKeyPointChangedObserver = this.props.context.onActiveKeyPointChanged.add(data => {
-            this.setState({isSelected: data?.keyPoint === this});
+            const isSelected = data?.keyPoint === this;
+
+            this.setState({selectedState: isSelected ? SelectionState.Selected : 
+                (data?.keyPoint.props.curve !== this.props.curve && data?.keyPoint.props.keyId === this.props.keyId ? SelectionState.Siblings : SelectionState.None)});
+
+            if (isSelected) {
+                this.props.context.onFrameSet.notifyObservers(this.props.invertX(this.state.x));
+            }
         });
+
+        this._onActiveKeyFrameChangedObserver = this.props.context.onActiveKeyFrameChanged.add(newFrameValue => {
+            if (this.state.selectedState !== SelectionState.Siblings) {
+                return;
+            }
+
+            this.setState({x: newFrameValue});
+            this.props.onFrameValueChanged(this.props.invertX(newFrameValue));
+        });
+
+        this._onFrameManuallyEnteredObserver = this.props.context.onFrameManuallyEntered.add(newValue => {
+            if (this.state.selectedState === SelectionState.None) {
+                return;
+            }
+
+            let newX = this.props.convertX(newValue);
+
+            // Checks
+            let storedX = newX;
+            let previousX = this.props.getPreviousX();
+            let nextX = this.props.getNextX();
+            if (previousX !== null) {
+                newX = Math.max(previousX, newX);
+            }
+    
+            if (nextX !== null) {
+                newX = Math.min(nextX, newX);
+            }
+
+            const frame = this.props.invertX(newX);
+            this.setState({x: newX});
+            this.props.onFrameValueChanged(frame);    
+            
+            if (storedX !== newX) {
+                this.props.context.onFrameSet.notifyObservers(frame)
+            }
+        })
     }
 
     componentWillUnmount() {
         if (this._onActiveKeyPointChangedObserver) {
             this.props.context.onActiveKeyPointChanged.remove(this._onActiveKeyPointChangedObserver);
+        }
+
+        if (this._onActiveKeyFrameChangedObserver) {
+            this.props.context.onActiveKeyFrameChanged.remove(this._onActiveKeyFrameChangedObserver);
+        }
+
+        if (this._onFrameManuallyEnteredObserver) {
+            this.props.context.onFrameManuallyEntered.remove(this._onFrameManuallyEnteredObserver);
         }
     }
 
@@ -92,11 +161,18 @@ IAnimationCurveEditorKeyPointComponentState
             newX = Math.min(nextX, newX);
         }
 
-        this.props.onFrameValueChanged(newX);
-        this.props.onKeyValueChanged(newY);
+        let frame = this.props.invertX(newX);
+        this.props.onFrameValueChanged(frame);
+        this.props.onKeyValueChanged(this.props.invertY(newY));
+
+        this.props.context.onFrameSet.notifyObservers(frame);
               
         this._sourcePointerX = evt.nativeEvent.offsetX;
         this._sourcePointerY = evt.nativeEvent.offsetY;
+
+        if (newX !== this.state.x) {
+            this.props.context.onActiveKeyFrameChanged.notifyObservers(newX);
+        }
 
         this.setState({x: newX, y: newY});
 
@@ -111,7 +187,7 @@ IAnimationCurveEditorKeyPointComponentState
     }
 
     public render() {
-        const svgImageIcon = this.state.isSelected ? keySelected : keyInactive;
+        const svgImageIcon = this.state.selectedState === SelectionState.Selected ? keySelected : (this.state.selectedState === SelectionState.Siblings ? keyActive : keyInactive);
 
         return (
             <svg
