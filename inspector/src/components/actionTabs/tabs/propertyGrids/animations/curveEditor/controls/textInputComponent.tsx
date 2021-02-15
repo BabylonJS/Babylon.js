@@ -10,11 +10,13 @@ interface ITextInputComponentProps {
     tooltip?: string;
     value: string;
     isNumber?: boolean;
+    complement?: string;
     onValueAsNumberChanged?: (value: number) => void;
 }
 
 interface ITextInputComponentState {
     value: string;
+    isFocused: boolean;
 }
 
 export class TextInputComponent extends React.Component<
@@ -26,7 +28,7 @@ ITextInputComponentState
     constructor(props: ITextInputComponentProps) {
         super(props);
 
-        this.state = { value: this.props.value};
+        this.state = { value: this.props.value, isFocused: false};
     }
 
     private _onChange(value: string) {
@@ -52,11 +54,18 @@ ITextInputComponentState
             let valueAsNumber = parseFloat(this.state.value);
 
             if (!isNaN(valueAsNumber)) {
-                this.setState({value: valueAsNumber.toString()});
+                this.setState({value: valueAsNumber.toString(), isFocused: false});
             } else {
-                this.setState({value: this._lastKnownGoodValue});
+                this.setState({value: this._lastKnownGoodValue, isFocused: false});
             }
+            return;
         }
+
+        this.setState({isFocused: false});
+    }
+
+    private _onFocus() {
+        this.setState({isFocused: true});
     }
 
     shouldComponentUpdate(newProps: ITextInputComponentProps, newState: ITextInputComponentState) {
@@ -72,10 +81,11 @@ ITextInputComponentState
             <input 
                 type="text"
                 title={this.props.tooltip}
+                onFocus={() => this._onFocus()}
                 onBlur={() => this._onBlur()}
                 className={"text-input" + (this.props.className ? " " + this.props.className : "")} 
-                onChange={evt => this._onChange(evt.target.value)}
-                value={this.state.value || ""}
+                onChange={evt => this._onChange(this.props.complement ? evt.target.value.replace(this.props.complement, "") : evt.target.value)}
+                value={(this.state.value || "") + (!this.state.isFocused && this.props.complement ? this.props.complement : "")}
                 id={this.props.id}>
             </input>
         );
