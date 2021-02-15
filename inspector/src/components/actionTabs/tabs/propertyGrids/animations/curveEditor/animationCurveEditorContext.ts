@@ -18,5 +18,8 @@ export class AnimationCurveEditorContext {
     onFrameSet = new Observable<number>();
     onFrameManuallyEntered = new Observable<number>();
 
+    onValueSet = new Observable<number>();
+    onValueManuallyEntered = new Observable<number>();
+
     onFrameRequired = new Observable<void>();
 }

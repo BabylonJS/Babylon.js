@@ -16,6 +16,7 @@ interface IAnimationCurveEditorTopBarComponentProps {
 
 interface IAnimationCurveEditorTopBarComponentState {
     keyFrameValue: string;
+    keyValue: string;
 }
 
 export class AnimationCurveEditorTopBarComponent extends React.Component<
@@ -25,18 +26,22 @@ IAnimationCurveEditorTopBarComponentState
     constructor(props: IAnimationCurveEditorTopBarComponentProps) {
         super(props);
 
-        this.state = {keyFrameValue: "" };
+        this.state = {keyFrameValue: "", keyValue: "" };
 
         this.props.context.onFrameSet.add(newFrameValue => {
             this.setState({keyFrameValue: newFrameValue.toFixed(2)});
         });
 
+        this.props.context.onValueSet.add(newValue => {
+            this.setState({keyValue: newValue.toFixed(2)});
+        });
+
         this.props.context.onActiveAnimationChanged.add(() => {
-            this.setState({keyFrameValue: ""});
+            this.setState({keyFrameValue: "", keyValue: ""});
         });
 
         this.props.context.onActiveKeyPointChanged.add(() => {
-            this.setState({keyFrameValue: ""});
+            this.setState({keyFrameValue: "", keyValue: ""});
         })
     }
 
@@ -54,6 +59,13 @@ IAnimationCurveEditorTopBarComponentState
                     id="key-frame"
                     onValueAsNumberChanged={newValue => this.props.context.onFrameManuallyEntered.notifyObservers(newValue)}
                     globalState={this.props.globalState} context={this.props.context} />  
+                <AnimationCurveEditorTextInputComponent 
+                    isNumber={true}
+                    value={this.state.keyValue}
+                    tooltip="Value"
+                    id="key-value"
+                    onValueAsNumberChanged={newValue => this.props.context.onValueManuallyEntered.notifyObservers(newValue)}
+                    globalState={this.props.globalState} context={this.props.context} />                      
                 <AnimationCurveEditorActionButtonComponent 
                     tooltip="Frame canvas"
                     id="frame-canvas" globalState={this.props.globalState} context={this.props.context} 

@@ -46,6 +46,7 @@ IAnimationCurveEditorKeyPointComponentState
     private _onActiveKeyPointChangedObserver: Nullable<Observer<Nullable<{keyPoint: AnimationCurveEditorKeyPointComponent, channel: string}>>>;
     private _onActiveKeyFrameChangedObserver: Nullable<Observer<number>>;
     private _onFrameManuallyEnteredObserver: Nullable<Observer<number>>;
+    private _onValueManuallyEnteredObserver: Nullable<Observer<number>>;
 
     private _pointerIsDown: boolean;
     private _sourcePointerX: number;
@@ -84,7 +85,6 @@ IAnimationCurveEditorKeyPointComponentState
             let newX = this.props.convertX(newValue);
 
             // Checks
-            let storedX = newX;
             let previousX = this.props.getPreviousX();
             let nextX = this.props.getNextX();
             if (previousX !== null) {
@@ -98,11 +98,17 @@ IAnimationCurveEditorKeyPointComponentState
             const frame = this.props.invertX(newX);
             this.setState({x: newX});
             this.props.onFrameValueChanged(frame);    
-            
-            if (storedX !== newX) {
-                this.props.context.onFrameSet.notifyObservers(frame)
+        });
+
+        this._onValueManuallyEnteredObserver = this.props.context.onValueManuallyEntered.add(newValue => {
+            if (this.state.selectedState !== SelectionState.Selected) {
+                return;
             }
-        })
+
+            let newY = this.props.convertY(newValue);
+            this.setState({y: newY});            
+            this.props.onKeyValueChanged(newValue);
+        });
     }
 
     componentWillUnmount() {
@@ -116,6 +122,10 @@ IAnimationCurveEditorKeyPointComponentState
 
         if (this._onFrameManuallyEnteredObserver) {
             this.props.context.onFrameManuallyEntered.remove(this._onFrameManuallyEnteredObserver);
+        }
+
+        if (this._onValueManuallyEnteredObserver) {
+            this.props.context.onValueManuallyEntered.remove(this._onValueManuallyEnteredObserver);
         }
     }
 
@@ -162,10 +172,13 @@ IAnimationCurveEditorKeyPointComponentState
         }
 
         let frame = this.props.invertX(newX);
+        let value = this.props.invertY(newY);
+
         this.props.onFrameValueChanged(frame);
-        this.props.onKeyValueChanged(this.props.invertY(newY));
+        this.props.onKeyValueChanged(value);
 
         this.props.context.onFrameSet.notifyObservers(frame);
+        this.props.context.onValueSet.notifyObservers(value);
               
         this._sourcePointerX = evt.nativeEvent.offsetX;
         this._sourcePointerY = evt.nativeEvent.offsetY;

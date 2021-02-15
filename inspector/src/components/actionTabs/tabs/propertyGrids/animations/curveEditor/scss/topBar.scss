@@ -28,6 +28,14 @@
         align-self: center;
     }
 
+    #key-value {
+        grid-row: 1;
+        grid-column: 5;
+        height: 24px;
+        display: grid;
+        align-self: center;
+    }
+
     #frame-canvas {
         grid-row: 1;
         grid-column: 8;
