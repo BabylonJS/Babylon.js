@@ -100,9 +100,9 @@ IFrameBarComponentState
                         <line
                             key={"line" + s}
                             x1={x}
-                            y1={5}
+                            y1={`${5 * this._viewScale}px`}
                             x2={x}
-                            y2={50}
+                            y2={`${30 * this._viewScale}px`}
                             style={{
                                 stroke: "#333333",
                                 strokeWidth: 0.5,
@@ -114,7 +114,7 @@ IFrameBarComponentState
                             y={0}
                             dx={`${7 * this._viewScale}px`}
                             textAnchor="middle"
-                            dy={`15px`}
+                            dy={`${15 * this._viewScale}px`}
                             style={{
                                 fontFamily:"acumin-pro-condensed",                                
                                 fontSize: `${10 * this._viewScale}px`,
@@ -132,7 +132,7 @@ IFrameBarComponentState
 
     public render() {
 
-        const viewBox = `${-this._offsetX} 0 ${Math.round(this._viewWidth * this._viewScale)} 30`;
+        const viewBox = `${-this._offsetX} 0 ${Math.round(this._viewWidth * this._viewScale)} ${Math.round(30 * this._viewScale)}`;
 
         return (
             <div id="frame-bar">
