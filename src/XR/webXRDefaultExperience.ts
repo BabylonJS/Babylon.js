@@ -161,7 +161,7 @@ export class WebXRDefaultExperience {
 
                 if (!options.disableDefaultUI) {
                     // Create ui for entering/exiting xr
-                    return result.enterExitUI.setHelper(result.baseExperience, result.renderTarget);
+                    return result.enterExitUI.setHelperAsync(result.baseExperience, result.renderTarget);
                 } else {
                     return;
                 }
