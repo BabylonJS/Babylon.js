@@ -260,6 +260,7 @@ export class Collider {
         if (!embeddedInPlane) {
             this._basePoint.subtractToRef(trianglePlane.normal, this._planeIntersectionPoint);
             this._velocity.scaleToRef(t0, this._tempVector);
+            this._velocitySquaredLength = this._velocity.lengthSquared();
             this._planeIntersectionPoint.addInPlace(this._tempVector);
 
             if (this._checkPointInTriangle(this._planeIntersectionPoint, p1, p2, p3, trianglePlane.normal)) {
@@ -270,7 +271,6 @@ export class Collider {
         }
 
         if (!found) {
-
             var a = this._velocitySquaredLength;
 
             this._basePoint.subtractToRef(p1, this._tempVector);
@@ -373,7 +373,7 @@ export class Collider {
         }
 
         if (found) {
-            var distToCollisionSquared = t * this._velocitySquaredLength;
+            var distToCollisionSquared = (t * Math.sqrt(this._velocitySquaredLength)) ** 2;
 
             if (!this.collisionFound || distToCollisionSquared < this._nearestDistanceSquared) {
                 // if collisionResponse is false, collision is not found but the collidedMesh is set anyway.
