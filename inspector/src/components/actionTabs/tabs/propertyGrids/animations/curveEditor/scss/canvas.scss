@@ -106,6 +106,7 @@
             display: grid;                
             grid-template-columns: 100%;
             grid-template-rows: 1fr 22px;
+            transform: translateX(-50%);
 
             #play-head-bar {
                 grid-row: 1;
@@ -124,7 +125,10 @@
                 border-radius: 50%;
                 background: #FFFFFF;
                 font-family: 'acumin-pro-condensed';
-                font-size: 10.5pt;
+                font-size: 8pt;
+                display: grid;
+                align-content: center;
+                justify-content: center;
                 color:#555555;
             }
         }
