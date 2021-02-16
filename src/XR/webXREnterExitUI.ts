@@ -64,7 +64,7 @@ export class WebXREnterExitUIOptions {
     requiredFeatures?: string[];
 
     /**
-     * If set, the `sessiongranted` event will not be registered. `sessiongranted` is used to move seemingly between WebXR experiences.
+     * If set, the `sessiongranted` event will not be registered. `sessiongranted` is used to move seamlessly between WebXR experiences.
      * If set to true the user will be forced to press the "enter XR" button even if sessiongranted event was triggered.
      * If not set and a sessiongranted event was triggered, the XR session will start automatically.
      */
