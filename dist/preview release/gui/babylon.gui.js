@@ -18305,7 +18305,7 @@ var TouchMeshButton3D = /** @class */ (function (_super) {
     TouchMeshButton3D.prototype._createNode = function (scene) {
         var _this = this;
         this._currentMesh.getChildMeshes().forEach(function (mesh) {
-            mesh.metadata = _this;
+            _this._injectGUI3DMetadata(mesh).control = _this;
         });
         return this._currentMesh;
     };
