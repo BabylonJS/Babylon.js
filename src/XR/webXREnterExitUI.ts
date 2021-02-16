@@ -64,6 +64,13 @@ export class WebXREnterExitUIOptions {
     requiredFeatures?: string[];
 
     /**
+     * If set, the `sessiongranted` event will not be registered. `sessiongranted` is used to move seemingly between WebXR experiences.
+     * If set to true the user will be forced to press the "enter XR" button even if sessiongranted event was triggered.
+     * If not set and a sessiongranted event was triggered, the XR session will start automatically.
+     */
+    ignoreSessionGrantedEvent?: boolean;
+
+    /**
      * If defined, this function will be executed if the UI encounters an error when entering XR
      */
     onError?: (error: any) => void;
@@ -74,6 +81,8 @@ export class WebXREnterExitUIOptions {
 export class WebXREnterExitUI implements IDisposable {
     private _activeButton: Nullable<WebXREnterExitUIButton> = null;
     private _buttons: Array<WebXREnterExitUIButton> = [];
+    private _helper: WebXRExperienceHelper;
+    private _renderTarget?: WebXRRenderTarget;
     /**
      * The HTML Div Element to which buttons are added.
      */
@@ -93,7 +102,7 @@ export class WebXREnterExitUI implements IDisposable {
      * @param scene babylon scene object to use
      * @param options (read-only) version of the options passed to this UI
      */
-    private constructor(
+    public constructor(
         private scene: Scene,
         /** version of the options passed to this UI */
         public options: WebXREnterExitUIOptions
@@ -102,11 +111,17 @@ export class WebXREnterExitUI implements IDisposable {
         this.overlay.classList.add("xr-button-overlay");
         this.overlay.style.cssText = "z-index:11;position: absolute; right: 20px;bottom: 50px;";
 
+        // prepare for session granted event
+        if (!options.ignoreSessionGrantedEvent) {
+            (navigator as any).xr.addEventListener("sessiongranted", this._onSessionGranted);
+        }
+
         // if served over HTTP, warn people.
         // Hopefully the browsers will catch up
         if (typeof window !== "undefined") {
             if (window.location && window.location.protocol === "http:") {
                 Tools.Warn("WebXR can only be served over HTTPS");
+                return;
             }
         }
 
@@ -149,55 +164,67 @@ export class WebXREnterExitUI implements IDisposable {
     }
 
     /**
+     * Set the helper to be used with this UI component.
+     * The UI is bound to an experience helper. If not provided the UI can still be used but the events should be registered by the developer.
+     *
+     * @param helper the experience helper to attach
+     * @param renderTarget an optional render target (in case it is created outside of the helper scope)
+     */
+    public async setHelper(helper: WebXRExperienceHelper, renderTarget?: WebXRRenderTarget) {
+        this._helper = helper;
+        this._renderTarget = renderTarget;
+        var supportedPromises = this._buttons.map((btn) => {
+            return helper.sessionManager.isSessionSupportedAsync(btn.sessionMode);
+        });
+        helper.onStateChangedObservable.add((state) => {
+            if (state == WebXRState.NOT_IN_XR) {
+                this._updateButtons(null);
+            }
+        });
+        const results = await Promise.all(supportedPromises);
+        results.forEach((supported, i) => {
+            if (supported) {
+                this.overlay.appendChild(this._buttons[i].element);
+                this._buttons[i].element.onclick = this._enterXRWithButtonIndex.bind(this, i);
+            } else {
+                Tools.Warn(`Session mode "${this._buttons[i].sessionMode}" not supported in browser`);
+            }
+        });
+    }
+
+    /**
      * Creates UI to allow the user to enter/exit XR mode
      * @param scene the scene to add the ui to
      * @param helper the xr experience helper to enter/exit xr with
      * @param options options to configure the UI
      * @returns the created ui
      */
-    public static CreateAsync(scene: Scene, helper: WebXRExperienceHelper, options: WebXREnterExitUIOptions): Promise<WebXREnterExitUI> {
+    public static async CreateAsync(scene: Scene, helper: WebXRExperienceHelper, options: WebXREnterExitUIOptions): Promise<WebXREnterExitUI> {
         var ui = new WebXREnterExitUI(scene, options);
-        var supportedPromises = ui._buttons.map((btn) => {
-            return helper.sessionManager.isSessionSupportedAsync(btn.sessionMode);
-        });
-        helper.onStateChangedObservable.add((state) => {
-            if (state == WebXRState.NOT_IN_XR) {
-                ui._updateButtons(null);
-            }
-        });
-        return Promise.all(supportedPromises).then((results) => {
-            results.forEach((supported, i) => {
-                if (supported) {
-                    ui.overlay.appendChild(ui._buttons[i].element);
-                    ui._buttons[i].element.onclick = async () => {
-                        if (helper.state == WebXRState.IN_XR) {
-                            await helper.exitXRAsync();
-                            ui._updateButtons(null);
-                        } else if (helper.state == WebXRState.NOT_IN_XR) {
-                            if (options.renderTarget) {
-                                try {
-                                    await helper.enterXRAsync(ui._buttons[i].sessionMode, ui._buttons[i].referenceSpaceType, options.renderTarget, { optionalFeatures: options.optionalFeatures, requiredFeatures: options.requiredFeatures });
-                                    ui._updateButtons(ui._buttons[i]);
-                                } catch (e) {
-                                    // make sure button is visible
-                                    ui._updateButtons(null);
-                                    const element = ui._buttons[i].element;
-                                    const prevTitle = element.title;
-                                    element.title = "Error entering XR session : " + prevTitle;
-                                    element.classList.add("xr-error");
-                                    if (options.onError) {
-                                        options.onError(e);
-                                    }
-                                }
-                            }
-                        }
-                    };
-                } else {
-                    Tools.Warn(`Session mode "${ui._buttons[i].sessionMode}" not supported in browser`);
+        await ui.setHelper(helper, options.renderTarget || undefined);
+        return ui;
+    }
+
+    private async _enterXRWithButtonIndex(idx: number = 0) {
+        if (this._helper.state == WebXRState.IN_XR) {
+            await this._helper.exitXRAsync();
+            this._updateButtons(null);
+        } else if (this._helper.state == WebXRState.NOT_IN_XR) {
+            try {
+                await this._helper.enterXRAsync(this._buttons[idx].sessionMode, this._buttons[idx].referenceSpaceType, this._renderTarget, { optionalFeatures: this.options.optionalFeatures, requiredFeatures: this.options.requiredFeatures });
+                this._updateButtons(this._buttons[idx]);
+            } catch (e) {
+                // make sure button is visible
+                this._updateButtons(null);
+                const element = this._buttons[idx].element;
+                const prevTitle = element.title;
+                element.title = "Error entering XR session : " + prevTitle;
+                element.classList.add("xr-error");
+                if (this.options.onError) {
+                    this.options.onError(e);
                 }
-            });
-            return ui;
-        });
+            }
+        }
     }
 
     /**
@@ -209,7 +236,29 @@ export class WebXREnterExitUI implements IDisposable {
             renderCanvas.parentNode.removeChild(this.overlay);
         }
         this.activeButtonChangedObservable.clear();
+        (navigator as any).xr.removeEventListener("sessiongranted", this._onSessionGranted);
     }
+
+    private _onSessionGranted = (evt: { session: XRSession }) => {
+        // This section is for future reference.
+        // As per specs, evt.session.mode should have the supported session mode, but no browser supports it for now.
+
+        // // check if the session granted is the same as the one requested
+        // const grantedMode = (evt.session as any).mode;
+        // if (grantedMode) {
+        //     this._buttons.some((btn, idx) => {
+        //         if (btn.sessionMode === grantedMode) {
+        //             this._enterXRWithButtonIndex(idx);
+        //             return true;
+        //         }
+        //         return false;
+        //     });
+        // } else
+
+        if (this._helper) {
+            this._enterXRWithButtonIndex(0);
+        }
+    };
 
     private _updateButtons(activeButton: Nullable<WebXREnterExitUIButton>) {
         this._activeButton = activeButton;
