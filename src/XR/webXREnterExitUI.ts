@@ -98,6 +98,7 @@ export class WebXREnterExitUI implements IDisposable {
     public activeButtonChangedObservable = new Observable<Nullable<WebXREnterExitUIButton>>();
 
     /**
+     * Construct a new EnterExit UI class
      *
      * @param scene babylon scene object to use
      * @param options (read-only) version of the options passed to this UI
@@ -169,8 +170,9 @@ export class WebXREnterExitUI implements IDisposable {
      *
      * @param helper the experience helper to attach
      * @param renderTarget an optional render target (in case it is created outside of the helper scope)
+     * @returns a promise that resolves when the ui is ready
      */
-    public async setHelper(helper: WebXRExperienceHelper, renderTarget?: WebXRRenderTarget) {
+    public async setHelperAsync(helper: WebXRExperienceHelper, renderTarget?: WebXRRenderTarget): Promise<void> {
         this._helper = helper;
         this._renderTarget = renderTarget;
         var supportedPromises = this._buttons.map((btn) => {
@@ -201,7 +203,7 @@ export class WebXREnterExitUI implements IDisposable {
      */
     public static async CreateAsync(scene: Scene, helper: WebXRExperienceHelper, options: WebXREnterExitUIOptions): Promise<WebXREnterExitUI> {
         var ui = new WebXREnterExitUI(scene, options);
-        await ui.setHelper(helper, options.renderTarget || undefined);
+        await ui.setHelperAsync(helper, options.renderTarget || undefined);
         return ui;
     }
 
