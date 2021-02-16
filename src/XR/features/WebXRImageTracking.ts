@@ -5,6 +5,7 @@ import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { Matrix } from "../../Maths/math.vector";
 import { Tools } from "../../Misc/tools";
 import { Nullable } from "../../types";
+import { EngineStore } from '../../Engines/engineStore';
 
 declare const XRImageTrackingResult: XRImageTrackingResult;
 
@@ -190,7 +191,8 @@ export class WebXRImageTracking extends WebXRAbstractFeature {
                         img.src = image.src;
                         img.onload = () => {
                             img.decode().then(() => {
-                                createImageBitmap(img).then((imageBitmap) => {
+                                const engine = EngineStore.LastCreatedEngine;
+                                engine?.createImageBitmap(img).then((imageBitmap) => {
                                     resolve(imageBitmap);
                                 });
                             });
