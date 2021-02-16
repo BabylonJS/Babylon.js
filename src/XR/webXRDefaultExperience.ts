@@ -105,6 +105,21 @@ export class WebXRDefaultExperience {
      */
     public static CreateAsync(scene: Scene, options: WebXRDefaultExperienceOptions = {}) {
         var result = new WebXRDefaultExperience();
+        // init the UI right after construction
+        if (!options.disableDefaultUI) {
+            const uiOptions: WebXREnterExitUIOptions = {
+                renderTarget: result.renderTarget,
+                ...(options.uiOptions || {}),
+            };
+            if (options.optionalFeatures) {
+                if (typeof options.optionalFeatures === "boolean") {
+                    uiOptions.optionalFeatures = ["hit-test", "anchors", "plane-detection", "hand-tracking"];
+                } else {
+                    uiOptions.optionalFeatures = options.optionalFeatures;
+                }
+            }
+            result.enterExitUI = new WebXREnterExitUI(scene, uiOptions);
+        }
 
         // Create base experience
         return WebXRExperienceHelper.CreateAsync(scene)
@@ -145,21 +160,8 @@ export class WebXRDefaultExperience {
                 result.renderTarget = result.baseExperience.sessionManager.getWebXRRenderTarget(options.outputCanvasOptions);
 
                 if (!options.disableDefaultUI) {
-                    const uiOptions: WebXREnterExitUIOptions = {
-                        renderTarget: result.renderTarget,
-                        ...(options.uiOptions || {}),
-                    };
-                    if (options.optionalFeatures) {
-                        if (typeof options.optionalFeatures === "boolean") {
-                            uiOptions.optionalFeatures = ["hit-test", "anchors", "plane-detection", "hand-tracking"];
-                        } else {
-                            uiOptions.optionalFeatures = options.optionalFeatures;
-                        }
-                    }
                     // Create ui for entering/exiting xr
-                    return WebXREnterExitUI.CreateAsync(scene, result.baseExperience, uiOptions).then((ui) => {
-                        result.enterExitUI = ui;
-                    });
+                    return result.enterExitUI.setHelperAsync(result.baseExperience, result.renderTarget);
                 } else {
                     return;
                 }
