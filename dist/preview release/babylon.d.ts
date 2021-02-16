@@ -2958,11 +2958,13 @@ declare module BABYLON {
         equalsWithEpsilon(otherVector: DeepImmutable<Vector2>, epsilon?: number): boolean;
         /**
          * Gets a new Vector2 from current Vector2 floored values
+         * eg (1.2, 2.31) returns (1, 2)
          * @returns a new Vector2
          */
         floor(): Vector2;
         /**
-         * Gets a new Vector2 from current Vector2 floored values
+         * Gets a new Vector2 from current Vector2 fractional values
+         * eg (1.2, 2.31) returns (0.2, 0.31)
          * @returns a new Vector2
          */
         fract(): Vector2;
