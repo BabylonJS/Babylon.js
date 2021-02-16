@@ -93,6 +93,7 @@ IGraphComponentState
 
     private _evaluateKeys() {
         if (!this.props.context.activeAnimation) {
+            this._curves = [];
             return;
         }
         

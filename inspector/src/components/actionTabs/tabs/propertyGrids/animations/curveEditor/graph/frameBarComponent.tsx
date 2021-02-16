@@ -69,7 +69,7 @@ IFrameBarComponentState
     }
 
     private _buildFrames() {
-        if (!this.props.context.activeAnimation) {
+        if (!this._currentAnimation) {
             return null;
         }
 
