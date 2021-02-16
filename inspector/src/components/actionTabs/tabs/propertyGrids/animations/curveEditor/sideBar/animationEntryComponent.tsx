@@ -111,7 +111,7 @@ IAnimationEntryComponentState
                     <ActionButtonComponent className="animation-delete" context={this.props.context} globalState={this.props.globalState} icon={deleteIcon} onClick={() => this._onDelete()} />
                 </div>
                 {
-                    this.state.isExpanded && this.props.animation.dataType !== Animation.ANIMATIONTYPE_COLOR3 &&
+                    this.state.isExpanded && this.props.animation.dataType === Animation.ANIMATIONTYPE_COLOR3 &&
                     <>
                         <AnimationSubEntryComponent 
                             globalState={this.props.globalState} context={this.props.context} animation={this.props.animation} 
@@ -128,7 +128,7 @@ IAnimationEntryComponentState
                     </>
                 }
                 {
-                    this.state.isExpanded && this.props.animation.dataType !== Animation.ANIMATIONTYPE_VECTOR3 &&
+                    this.state.isExpanded && this.props.animation.dataType === Animation.ANIMATIONTYPE_VECTOR3 &&
                     <>
                         <AnimationSubEntryComponent 
                             globalState={this.props.globalState} context={this.props.context} animation={this.props.animation} 
@@ -143,7 +143,20 @@ IAnimationEntryComponentState
                             color="#00A3FF" subName="Z"
                             />                                                        
                     </>
-                }                
+                }                       
+                {
+                    this.state.isExpanded && this.props.animation.dataType === Animation.ANIMATIONTYPE_VECTOR2 &&
+                    <>
+                        <AnimationSubEntryComponent 
+                            globalState={this.props.globalState} context={this.props.context} animation={this.props.animation} 
+                            color="#DB3E3E" subName="X"
+                            />
+                        <AnimationSubEntryComponent 
+                            globalState={this.props.globalState} context={this.props.context} animation={this.props.animation} 
+                            color="#51E22D" subName="Y"
+                            />                                                     
+                    </>
+                }           
             </>
         );
     }

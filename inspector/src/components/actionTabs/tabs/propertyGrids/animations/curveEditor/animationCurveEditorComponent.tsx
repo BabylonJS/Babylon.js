@@ -2,7 +2,7 @@ import * as React from "react";
 import { ButtonLineComponent } from "../../../../../../sharedUiComponents/lines/buttonLineComponent";
 import { GlobalState } from "../../../../../globalState";
 import { PopupComponent } from "../../../../../popupComponent";
-import { BottomBarComponent } from "./bottomBarComponent";
+import { BottomBarComponent } from "./bottomBar/bottomBarComponent";
 import { Context } from "./context";
 import { TopBarComponent } from "./topBarComponent";
 import { CanvasComponent } from "./graph/canvasComponent";

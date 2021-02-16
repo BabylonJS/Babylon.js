@@ -1,6 +1,9 @@
 import * as React from "react";
-import { GlobalState } from "../../../../../globalState";
-import { Context } from "./context";
+import { GlobalState } from "../../../../../../globalState";
+import { Context } from "../context";
+import { MediaPlayerComponent } from "./mediaPlayerComponent";
+
+require("../scss/bottomBar.scss");
 
 interface IBottomBarComponentProps {
     globalState: GlobalState;
@@ -24,6 +27,7 @@ IBottomBarComponentState
     public render() {
         return (
             <div id="bottom-bar">
+                <MediaPlayerComponent globalState={this.props.globalState} context={this.props.context} />
             </div>
         );
     }

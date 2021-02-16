@@ -3,6 +3,7 @@ import { GlobalState } from "../../../../../../globalState";
 import { Context } from "../context";
 import { FrameBarComponent } from "./frameBarComponent";
 import { GraphComponent } from "./graphComponent";
+import { PlayHeadComponent } from "./playHeadComponent";
 
 require("../scss/canvas.scss");
 
@@ -29,7 +30,8 @@ ICanvasComponentState
         return (
             <div id="canvas-zone">
                 <GraphComponent globalState={this.props.globalState} context={this.props.context}/>
-                <FrameBarComponent globalState={this.props.globalState} context={this.props.context}/>
+                <FrameBarComponent globalState={this.props.globalState} context={this.props.context}/>                
+                <PlayHeadComponent context={this.props.context} globalState={this.props.globalState}/>
             </div>
         );
     }

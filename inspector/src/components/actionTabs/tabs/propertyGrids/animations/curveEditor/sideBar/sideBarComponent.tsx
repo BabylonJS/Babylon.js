@@ -47,6 +47,7 @@ ISideBarComponentState
 
             if (index > -1) {
                 this.props.context.animations!.splice(index, 1);
+                this.props.context.play(this.props.context.forwardAnimation);
                 this.forceUpdate();
             }
         });
