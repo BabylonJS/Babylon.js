@@ -355,7 +355,7 @@ export class Vector2 {
 
     /**
      * Gets a new Vector2 from current Vector2 floored values
-     * eg (1.2, 2.31, 1.54) returns (1, 2, 1)
+     * eg (1.2, 2.31) returns (1, 2)
      * @returns a new Vector2
      */
     public floor(): Vector2 {
@@ -364,7 +364,7 @@ export class Vector2 {
 
     /**
      * Gets a new Vector2 from current Vector2 fractional values
-     * eg (1.2, 2.31, 1.54) returns (0.2, 0.31, 0.54)
+     * eg (1.2, 2.31) returns (0.2, 0.31)
      * @returns a new Vector2
      */
     public fract(): Vector2 {
