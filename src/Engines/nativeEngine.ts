@@ -143,6 +143,7 @@ interface INativeEngine {
     setTextureAnisotropicLevel(texture: WebGLTexture, value: number): void;
     setTexture(uniform: WebGLUniformLocation, texture: Nullable<WebGLTexture>): void;
     deleteTexture(texture: Nullable<WebGLTexture>): void;
+    createImageBitmap(image: any , sx: any, sy: any, sw: any, sh: any, options: Nullable<any>): ImageBitmap ;
 
     createFramebuffer(texture: WebGLTexture, width: number, height: number, format: number, samplingMode: number, generateStencilBuffer: boolean, generateDepthBuffer: boolean, generateMips: boolean): WebGLFramebuffer;
     deleteFramebuffer(framebuffer: WebGLFramebuffer): void;
@@ -1769,6 +1770,20 @@ export class NativeEngine extends Engine {
             this._native.deleteFramebuffer(texture._framebuffer);
             texture._framebuffer = null;
         }
+    }
+
+    /**
+     * Engine abstraction for createImageBitmap with Native implementation
+     */
+    public createImageBitmap(...args: any[]): Promise<ImageBitmap>
+    {
+        return new Promise((resolve, reject) => {
+            if (args.length <= 2) {
+                resolve(this._native.createImageBitmap(args[0], args[1], undefined, undefined, undefined, undefined));
+            } else {
+                resolve(this._native.createImageBitmap(args[0], args[1], args[2], args[3], args[4], args[5]));
+            }
+        });
     }
 
     /**

@@ -160,7 +160,7 @@ export class FileTools {
 
         if (typeof Image === "undefined" || (engine?._features.forceBitmapOverHTMLImageElement ?? false)) {
             FileTools.LoadFile(url, (data) => {
-                createImageBitmap(new Blob([data], { type: mimeType }), { premultiplyAlpha: "none" }).then((imgBmp) => {
+                engine?.createImageBitmap(new Blob([data], { type: mimeType }), { premultiplyAlpha: "none" }).then((imgBmp) => {
                     onLoad(imgBmp);
                     if (usingObjectURL) {
                         URL.revokeObjectURL(url);

@@ -291,6 +291,17 @@ export class Engine extends ThinEngine {
     }
 
     /**
+     * Engine abstraction for createImageBitmap
+     */
+    public createImageBitmap(...args: any[]): Promise<ImageBitmap> //image: ImageBitmapSource, options?: ImageBitmapOptions
+    {
+        if (args.length <= 2) {
+            return createImageBitmap(args[0], args[1]);
+        }
+        return createImageBitmap(args[0], args[1], args[2], args[3], args[4], args[5]);
+    }
+
+    /**
      * Will flag all materials in all scenes in all engines as dirty to trigger new shader compilation
      * @param flag defines which part of the materials must be marked as dirty
      * @param predicate defines a predicate used to filter which materials should be affected
