@@ -1047,7 +1047,7 @@
             "title": "Prepass SSAO + instanced bones",
             "renderCount": 50,
             "playgroundId": "#0K8EYN#197",
-            "excludedEngines": ["webgl1"],
+            "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "prepass-ssao-instanced-bones.png"
         },
         {
@@ -1061,14 +1061,14 @@
             "title": "Prepass + mirror, without postprocess",
             "renderCount": 10,
             "playgroundId": "#PIZ1GK#212",
-            "excludedEngines": ["webgl1"],
+            "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "prepass-mirror-without-pp.png"
         },
         {
             "title": "Prepass + mirror, with postprocesses",
             "renderCount": 10,
             "playgroundId": "#PIZ1GK#213",
-            "excludedEngines": ["webgl1"],
+            "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "prepass-mirror-with-pp.png"
         },
         {
