@@ -298,11 +298,7 @@ export class MorphTargetManager implements IDisposable {
             return;
         }
 
-        if (this.isUsingTextureForTargets) {
-            if (!this._vertexCount) {
-                return;
-            }
-
+        if (this.isUsingTextureForTargets && this._vertexCount) {
             this._textureVertexStride = 1;
 
             if (this._supportsNormals) {

@@ -478,13 +478,16 @@ export class DeviceInputSystem implements IDisposable {
             // Handle Active Touches
             if (this.isDeviceAvailable(DeviceType.Touch)) {
                 const pointer = this._inputs[DeviceType.Touch];
+
                 for (let i = 0; i < pointer.length; i++) {
-                    if (pointer[i][PointerInput.LeftClick] === 1) {
+                    if (pointer[i]?.[PointerInput.LeftClick] === 1) {
                         pointer[i][PointerInput.LeftClick] = 0;
 
                         if (this.onInputChanged) {
                             this.onInputChanged(DeviceType.Touch, i, PointerInput.LeftClick, 1, pointer[i][PointerInput.LeftClick]);
                         }
+
+                        this._unregisterDevice(DeviceType.Touch, i);
                     }
                 }
             }
