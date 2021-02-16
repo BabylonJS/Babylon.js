@@ -87,6 +87,7 @@
 - better support for custom hand meshes ([RaananW](https://github.com/RaananW))
 - Allow disabling of the WebXRControllerPointerSelection feature as part of the WebXR Default Experience ([rgerd](https://github.com/rgerd))
 - Added two touch-enabled GUI controls, `TouchMeshButton3D` and `TouchHolographicButton`, added option on the WebXR hand tracking feature for enabling touch collisions ([rickfromwork](https://github.com/rickfromwork), [satyapoojasama](https://github.com/satyapoojasama))
+- Added initial support for the `sessiongranted` event ([#9860](https://github.com/BabylonJS/Babylon.js/issues/9860)) ([RaananW](https://github.com/RaananW))
 
 ### Gizmos
 
