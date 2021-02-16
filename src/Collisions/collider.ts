@@ -260,7 +260,6 @@ export class Collider {
         if (!embeddedInPlane) {
             this._basePoint.subtractToRef(trianglePlane.normal, this._planeIntersectionPoint);
             this._velocity.scaleToRef(t0, this._tempVector);
-            this._velocitySquaredLength = this._velocity.lengthSquared();
             this._planeIntersectionPoint.addInPlace(this._tempVector);
 
             if (this._checkPointInTriangle(this._planeIntersectionPoint, p1, p2, p3, trianglePlane.normal)) {
