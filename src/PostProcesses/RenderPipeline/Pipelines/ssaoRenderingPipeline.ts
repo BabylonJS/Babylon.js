@@ -234,7 +234,6 @@ export class SSAORenderingPipeline extends PostProcessRenderPipeline {
             this._scene.getEngine(), false,
             "#define SAMPLES " + numSamples + "\n#define SSAO");
 
-        this._ssaoPostProcess.inputTextureSetByExternalProcess = true;
         this._ssaoPostProcess.onApply = (effect: Effect) => {
             if (this._firstUpdate) {
                 effect.setArray3("sampleSphere", sampleSphere);

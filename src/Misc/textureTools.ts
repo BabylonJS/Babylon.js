@@ -55,7 +55,6 @@ export class TextureTools {
 
         let passPostProcess = new PassPostProcess("pass", 1, null, useBilinearMode ? Texture.BILINEAR_SAMPLINGMODE : Texture.NEAREST_SAMPLINGMODE, engine, false, Constants.TEXTURETYPE_UNSIGNED_INT);
         passPostProcess.getEffect().executeWhenCompiled(() => {
-            passPostProcess.inputTextureSetByExternalProcess = true;
             passPostProcess.onApply = function(effect) {
                 effect.setTexture("textureSampler", texture);
             };
@@ -117,7 +116,6 @@ export class TextureTools {
 
             postProcess.getEffect().executeWhenCompiled(() => {
                 // PP Render Pass
-                postProcess.inputTextureSetByExternalProcess = true;
                 postProcess.onApply = (effect) => {
                     effect._bindTexture("textureSampler", internalTexture);
                     effect.setFloat2("scale", 1, 1);
