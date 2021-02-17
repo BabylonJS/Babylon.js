@@ -214,7 +214,7 @@ export class SkyMaterial extends PushMaterial {
             var shaderName = "sky";
 
             var join = defines.toString();
-            const effect = scene.getEngine().createEffect(shaderName,
+            subMesh.setEffect(scene.getEngine().createEffect(shaderName,
                 attribs,
                 ["world", "viewProjection", "view",
                     "vFogInfos", "vFogColor", "pointSize", "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6",
@@ -222,8 +222,7 @@ export class SkyMaterial extends PushMaterial {
                     "cameraPosition", "cameraOffset", "up"
                 ],
                 [],
-                join, fallbacks, this.onCompiled, this.onError);
-            subMesh.setEffect(effect, defines, this._materialContext);
+                join, fallbacks, this.onCompiled, this.onError), defines, this._materialContext);
         }
 
         if (!subMesh.effect || !subMesh.effect.isReady()) {

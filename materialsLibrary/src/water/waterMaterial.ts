@@ -468,7 +468,7 @@ export class WaterMaterial extends PushMaterial {
                 defines: defines,
                 maxSimultaneousLights: this.maxSimultaneousLights
             });
-            const effect = scene.getEngine().createEffect(shaderName,
+            subMesh.setEffect(scene.getEngine().createEffect(shaderName,
                 <IEffectCreationOptions>{
                     attributes: attribs,
                     uniformsNames: uniforms,
@@ -479,8 +479,7 @@ export class WaterMaterial extends PushMaterial {
                     onCompiled: this.onCompiled,
                     onError: this.onError,
                     indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights }
-                }, engine);
-            subMesh.setEffect(effect, defines, this._materialContext);
+                }, engine), defines, this._materialContext);
 
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {

@@ -172,7 +172,7 @@ export class FireMaterial extends PushMaterial {
             var shaderName = "fire";
 
             var join = defines.toString();
-            const effect = scene.getEngine().createEffect(shaderName,
+            subMesh.setEffect(scene.getEngine().createEffect(shaderName,
                 {
                     attributes: attribs,
                     uniformsNames: ["world", "view", "viewProjection", "vEyePosition",
@@ -195,8 +195,7 @@ export class FireMaterial extends PushMaterial {
                     indexParameters: null,
                     maxSimultaneousLights: 4,
                     transformFeedbackVaryings: null
-                }, engine);
-            subMesh.setEffect(effect, defines, this._materialContext);
+                }, engine), defines, this._materialContext);
         }
 
         if (!subMesh.effect || !subMesh.effect.isReady()) {
