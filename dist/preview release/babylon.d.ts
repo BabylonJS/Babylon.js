@@ -56992,6 +56992,12 @@ declare module BABYLON {
          */
         requiredFeatures?: string[];
         /**
+         * If set, the `sessiongranted` event will not be registered. `sessiongranted` is used to move seamlessly between WebXR experiences.
+         * If set to true the user will be forced to press the "enter XR" button even if sessiongranted event was triggered.
+         * If not set and a sessiongranted event was triggered, the XR session will start automatically.
+         */
+        ignoreSessionGrantedEvent?: boolean;
+        /**
          * If defined, this function will be executed if the UI encounters an error when entering XR
          */
         onError?: (error: any) => void;
@@ -57005,6 +57011,8 @@ declare module BABYLON {
         options: WebXREnterExitUIOptions;
         private _activeButton;
         private _buttons;
+        private _helper;
+        private _renderTarget?;
         /**
          * The HTML Div Element to which buttons are added.
          */
@@ -57018,11 +57026,23 @@ declare module BABYLON {
          */
         activeButtonChangedObservable: Observable<Nullable<WebXREnterExitUIButton>>;
         /**
+         * Construct a new EnterExit UI class
          *
          * @param scene babylon scene object to use
          * @param options (read-only) version of the options passed to this UI
          */
-        private constructor();
+        constructor(scene: Scene, 
+        /** version of the options passed to this UI */
+        options: WebXREnterExitUIOptions);
+        /**
+         * Set the helper to be used with this UI component.
+         * The UI is bound to an experience helper. If not provided the UI can still be used but the events should be registered by the developer.
+         *
+         * @param helper the experience helper to attach
+         * @param renderTarget an optional render target (in case it is created outside of the helper scope)
+         * @returns a promise that resolves when the ui is ready
+         */
+        setHelperAsync(helper: WebXRExperienceHelper, renderTarget?: WebXRRenderTarget): Promise<void>;
         /**
          * Creates UI to allow the user to enter/exit XR mode
          * @param scene the scene to add the ui to
@@ -57031,10 +57051,12 @@ declare module BABYLON {
          * @returns the created ui
          */
         static CreateAsync(scene: Scene, helper: WebXRExperienceHelper, options: WebXREnterExitUIOptions): Promise<WebXREnterExitUI>;
+        private _enterXRWithButtonIndex;
         /**
          * Disposes of the XR UI component
          */
         dispose(): void;
+        private _onSessionGranted;
         private _updateButtons;
     }
 }
@@ -74053,7 +74075,7 @@ declare module BABYLON {
             /**
              * Enables physics to the current scene
              * @param gravity defines the scene's gravity for the physics engine
-             * @param plugin defines the physics engine to be used. defaults to OimoJS.
+             * @param plugin defines the physics engine to be used. defaults to CannonJS.
              * @return a boolean indicating if the physics engine was initialized
              */
             enablePhysics(gravity: Nullable<Vector3>, plugin?: IPhysicsEnginePlugin): boolean;

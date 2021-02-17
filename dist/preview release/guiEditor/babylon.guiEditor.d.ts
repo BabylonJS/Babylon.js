@@ -151,17 +151,26 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
+    export interface ISelectedLineContainer {
+        selectedLineContainerTitles: Array<string>;
+        selectedLineContainerTitlesNoFocus: Array<string>;
+    }
+}
+declare module GUIEDITOR {
     interface ILineContainerComponentProps {
+        selection?: ISelectedLineContainer;
         title: string;
         children: any[] | any;
         closed?: boolean;
     }
     export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
         isExpanded: boolean;
+        isHighlighted: boolean;
     }> {
         constructor(props: ILineContainerComponentProps);
         switchExpandedState(): void;
         renderHeader(): JSX.Element;
+        componentDidMount(): void;
         render(): JSX.Element;
     }
 }
