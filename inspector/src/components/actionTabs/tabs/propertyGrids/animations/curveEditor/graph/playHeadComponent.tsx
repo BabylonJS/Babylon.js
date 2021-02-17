@@ -22,6 +22,7 @@ IPlayHeadComponentState
     private _playHeadCircle: React.RefObject<HTMLDivElement>;
     private _playHeadArea: React.RefObject<HTMLDivElement>;
     private _onBeforeRenderObserver: Nullable<Observer<Scene>>;
+    private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
     private _viewScale = 1;
     private _offsetX = 0;
     
@@ -34,7 +35,7 @@ IPlayHeadComponentState
         this._playHeadArea = React.createRef();
         this._playHeadCircle = React.createRef();
 
-        this.props.context.onActiveAnimationChanged.add(() => {
+        this._onActiveAnimationChangedObserver = this.props.context.onActiveAnimationChanged.add(() => {
             this.forceUpdate();
         });   
         
@@ -80,6 +81,10 @@ IPlayHeadComponentState
         if (this._onBeforeRenderObserver) {
             this.props.context.scene.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
             this._onBeforeRenderObserver = null;
+        }
+
+        if (this._onActiveAnimationChangedObserver) {
+            this.props.context.onActiveAnimationChanged.remove(this._onActiveAnimationChangedObserver);
         }
     }
 

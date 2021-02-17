@@ -1,3 +1,5 @@
+import { Observer } from "babylonjs/Misc/observable";
+import { Nullable } from "babylonjs/types";
 import * as React from "react";
 import { GlobalState } from "../../../../../globalState";
 import { Context } from "./context";
@@ -23,26 +25,46 @@ export class TopBarComponent extends React.Component<
 ITopBarComponentProps,
 ITopBarComponentState
 > {
+    private _onFrameSetObserver: Nullable<Observer<number>>;
+    private _onValueSetObserver: Nullable<Observer<number>>;
+    private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
+    private onActiveKeyPointChanged: Nullable<Observer<any>>;
+
     constructor(props: ITopBarComponentProps) {
         super(props);
 
         this.state = {keyFrameValue: "", keyValue: "" };
 
-        this.props.context.onFrameSet.add(newFrameValue => {
+        this._onFrameSetObserver = this.props.context.onFrameSet.add(newFrameValue => {
             this.setState({keyFrameValue: newFrameValue.toFixed(2)});
         });
 
-        this.props.context.onValueSet.add(newValue => {
+        this._onValueSetObserver = this.props.context.onValueSet.add(newValue => {
             this.setState({keyValue: newValue.toFixed(2)});
         });
 
-        this.props.context.onActiveAnimationChanged.add(() => {
+        this._onActiveAnimationChangedObserver = this.props.context.onActiveAnimationChanged.add(() => {
             this.setState({keyFrameValue: "", keyValue: ""});
         });
 
-        this.props.context.onActiveKeyPointChanged.add(() => {
+        this.onActiveKeyPointChanged = this.props.context.onActiveKeyPointChanged.add(() => {
             this.setState({keyFrameValue: "", keyValue: ""});
         })
+    }
+
+    componentWillUnmount() {
+        if (this._onFrameSetObserver) {
+            this.props.context.onFrameSet.remove(this._onFrameSetObserver);
+        }
+        if (this._onValueSetObserver) {
+            this.props.context.onValueSet.remove(this._onValueSetObserver);
+        }
+        if (this._onActiveAnimationChangedObserver) {
+            this.props.context.onActiveAnimationChanged.remove(this._onActiveAnimationChangedObserver);
+        }
+        if (this.onActiveKeyPointChanged) {
+            this.props.context.onActiveKeyPointChanged.remove(this.onActiveKeyPointChanged);
+        }
     }
 
     public render() {

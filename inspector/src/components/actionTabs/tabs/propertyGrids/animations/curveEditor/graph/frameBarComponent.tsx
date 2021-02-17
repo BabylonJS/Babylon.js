@@ -3,6 +3,7 @@ import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
 import { Context } from "../context";
 import { Animation } from "babylonjs/Animations/animation";
+import { Observer } from "babylonjs/Misc/observable";
 
 interface IFrameBarComponentProps {
     globalState: GlobalState;
@@ -27,6 +28,9 @@ IFrameBarComponentState
     
     private _currentAnimation: Nullable<Animation>;
 
+    
+    private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
+
     constructor(props: IFrameBarComponentProps) {
         super(props);
 
@@ -38,7 +42,7 @@ IFrameBarComponentState
             this._computeSizes();
         });
 
-        this.props.context.onActiveAnimationChanged.add(() => {
+        this._onActiveAnimationChangedObserver = this.props.context.onActiveAnimationChanged.add(() => {
             if (this._currentAnimation === this.props.context.activeAnimation) {
                 return;
             }
@@ -57,6 +61,12 @@ IFrameBarComponentState
             this._viewScale = scale;
             this.forceUpdate();
         });
+    }
+
+    componentWillUnmount() {
+        if (this._onActiveAnimationChangedObserver) {
+            this.props.context.onActiveAnimationChanged.remove(this._onActiveAnimationChangedObserver);
+        }
     }
 
     private _computeSizes() {

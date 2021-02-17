@@ -1,7 +1,6 @@
 import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
 import { Context } from "../context";
-import { ActionButtonComponent } from "../controls/actionButtonComponent";
 import { ControlButtonComponent } from "../controls/controlButtonComponent";
 
 const firstKeyIcon = require("../assets/animationLastKeyIcon.svg");
@@ -17,8 +16,10 @@ const nextKeyIcon = require("../assets/animationNextKeyIcon.svg");
 const nextKeyHoverIcon = require("../assets/animationNextKeyHoverIcon.svg");
 
 const startKeyIcon = require("../assets/animationStartIcon.svg");
+const startKeyHoverIcon = require("../assets/animationStartHoverIcon.svg");
 
 const endKeyIcon = require("../assets/animationEndIcon.svg");
+const endKeyHoverIcon = require("../assets/animationEndHoverIcon.svg");
 
 interface IMediaPlayerComponentProps {
     globalState: GlobalState;
@@ -66,12 +67,12 @@ IMediaPlayerComponentState
     public render() {
         return (
             <div id="media-player">
-                <ActionButtonComponent id="start-key" context={this.props.context} globalState={this.props.globalState} icon={startKeyIcon} onClick={() => this._onPrevKey()}/>
+                <ControlButtonComponent id="start-key" context={this.props.context} globalState={this.props.globalState} icon={startKeyIcon}  hoverIcon={startKeyHoverIcon} onClick={() => this._onPrevKey()}/>
                 <ControlButtonComponent id="first-key" context={this.props.context} globalState={this.props.globalState} icon={firstKeyIcon} hoverIcon={firstKeyHoverIcon} onClick={() => this._onFirstKey()}/>
                 <ControlButtonComponent id="rev-key" context={this.props.context} globalState={this.props.globalState} icon={revKeyIcon} hoverIcon={revKeyHoverIcon} onClick={() => this._onRewind()}/>
                 <ControlButtonComponent id="fwd-key" context={this.props.context} globalState={this.props.globalState} icon={fwdKeyIcon} hoverIcon={fwdKeyHoverIcon} onClick={() => this._onForward()}/>
                 <ControlButtonComponent id="next-key" context={this.props.context} globalState={this.props.globalState} icon={nextKeyIcon} hoverIcon={nextKeyHoverIcon} onClick={() => this._onNextKey()}/>
-                <ActionButtonComponent id="end-key" context={this.props.context} globalState={this.props.globalState} icon={endKeyIcon} onClick={() => this._onEndKey()}/>
+                <ControlButtonComponent id="end-key" context={this.props.context} globalState={this.props.globalState} icon={endKeyIcon}  hoverIcon={endKeyHoverIcon} onClick={() => this._onEndKey()}/>
             </div>
         );
     }
