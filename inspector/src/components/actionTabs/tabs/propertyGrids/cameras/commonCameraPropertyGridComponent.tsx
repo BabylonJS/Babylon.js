@@ -42,7 +42,7 @@ export class CommonCameraPropertyGridComponent extends React.Component<ICommonCa
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={camera}
                     lockObject={this.props.lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent title="GENERAL">
+                <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
                     <TextLineComponent label="ID" value={camera.id} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={camera} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                     <TextLineComponent label="Unique ID" value={camera.uniqueId.toString()} />
