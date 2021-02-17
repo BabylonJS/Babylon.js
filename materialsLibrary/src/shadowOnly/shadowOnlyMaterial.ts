@@ -188,7 +188,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
                 maxSimultaneousLights: 1
             });
 
-            const effect = scene.getEngine().createEffect(shaderName,
+            subMesh.setEffect(scene.getEngine().createEffect(shaderName,
                 <IEffectCreationOptions>{
                     attributes: attribs,
                     uniformsNames: uniforms,
@@ -199,8 +199,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
                     onCompiled: this.onCompiled,
                     onError: this.onError,
                     indexParameters: { maxSimultaneousLights: 1 }
-                }, engine);
-            subMesh.setEffect(effect, defines, this._materialContext);
+                }, engine), defines, this._materialContext);
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;
