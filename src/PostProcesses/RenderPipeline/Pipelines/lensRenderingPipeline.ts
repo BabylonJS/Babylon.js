@@ -432,7 +432,6 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
             null, Texture.TRILINEAR_SAMPLINGMODE,
             this._scene.getEngine(), false, this._dofPentagon ? "#define PENTAGON\n" : "");
 
-        this._highlightsPostProcess.inputTextureSetByExternalProcess = true;
         this._highlightsPostProcess.onApply = (effect: Effect) => {
             effect.setFloat('gain', this._highlightsGain);
             effect.setFloat('threshold', this._highlightsThreshold);
@@ -453,7 +452,6 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
             ratio, null, Texture.TRILINEAR_SAMPLINGMODE,
             this._scene.getEngine(), false);
 
-        this._depthOfFieldPostProcess.inputTextureSetByExternalProcess = true;
         this._depthOfFieldPostProcess.onApply = (effect: Effect) => {
 
             effect.setTexture("depthSampler", this._depthTexture);

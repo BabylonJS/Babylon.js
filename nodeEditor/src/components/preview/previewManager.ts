@@ -458,7 +458,6 @@ export class PreviewManager {
 
                     const currentScreen = tempMaterial.getBlockByPredicate((block) => block instanceof CurrentScreenBlock);
                     if (currentScreen && this._postprocess) {
-                        this._postprocess.inputTextureSetByExternalProcess = true;
                         this._postprocess.onApplyObservable.add((effect) => {
                             effect.setTexture("textureSampler", (currentScreen as CurrentScreenBlock).texture);
                         });

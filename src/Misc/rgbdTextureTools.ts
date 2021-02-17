@@ -65,7 +65,6 @@ export class RGBDTextureTools {
 
                 rgbdPostProcess.getEffect().executeWhenCompiled(() => {
                     // PP Render Pass
-                    rgbdPostProcess.inputTextureSetByExternalProcess = true;
                     rgbdPostProcess.onApply = (effect) => {
                         effect._bindTexture("textureSampler", internalTexture);
                         effect.setFloat2("scale", 1, 1);

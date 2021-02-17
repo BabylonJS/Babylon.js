@@ -373,7 +373,6 @@ export class EnvironmentTextureTools {
 
                     rgbdPostProcess!.getEffect().executeWhenCompiled(() => {
                         // Uncompress the data to a RTT
-                        rgbdPostProcess!.inputTextureSetByExternalProcess = true;
                         rgbdPostProcess!.onApply = (effect) => {
                             effect._bindTexture("textureSampler", tempTexture);
                             effect.setFloat2("scale", 1, engine._features.needsInvertingBitmap && (image instanceof ImageBitmap) ? -1 : 1);

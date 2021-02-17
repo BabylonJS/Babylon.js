@@ -16,7 +16,6 @@ import { NodeMaterial } from '../Materials/Node/nodeMaterial';
 import { serialize, serializeAsColor4, SerializationHelper } from '../Misc/decorators';
 import { _TypeStore } from '../Misc/typeStore';
 import { DrawWrapper } from "../Materials/drawWrapper";
-import { IMaterialContext } from "../Engines";
 
 declare type Scene = import("../scene").Scene;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
@@ -189,7 +188,6 @@ export class PostProcess {
     */
     public _currentRenderTextureInd = 0;
     private _drawWrapper: DrawWrapper;
-    private _materialContexts: { [id: number]: IMaterialContext | undefined } = {};
     private _samplers: string[];
     private _fragmentUrl: string;
     private _vertexUrl: string;
@@ -313,11 +311,6 @@ export class PostProcess {
     }
 
     /**
-     * Instructs the post process that the input texture will be set by an external process (typically on the onApplyObservable observable) and that it should not set it itself
-     */
-    public inputTextureSetByExternalProcess: boolean = false;
-
-    /**
     * Since inputTexture should always be defined, if we previously manually set `inputTexture`,
     * the only way to unset it is to use this function to restore its internal state
     */
@@ -407,7 +400,6 @@ export class PostProcess {
 
             this._indexParameters = indexParameters;
             this._drawWrapper = new DrawWrapper(this._engine);
-            this._materialContexts[0] = this._drawWrapper.materialContext;
 
             if (!blockCompilation) {
                 this.updateEffect(defines);
@@ -733,18 +725,7 @@ export class PostProcess {
             source = this.inputTexture;
         }
 
-        let materialContext = this._materialContexts[0];
-        if (materialContext !== undefined) { // the underlying engine needs material contexts
-            // make sure each texture has its own material context, to avoid cache cleaning in WebGPU when calling this._effect._bindTexture below
-            const textureId = source?.uniqueId ?? 0;
-            materialContext = this._materialContexts[textureId];
-            if (materialContext === undefined) {
-                this._materialContexts[textureId] = materialContext = this._engine.createMaterialContext()!;
-            }
-        }
-
         // States
-        this._drawWrapper.materialContext = materialContext;
         this._engine.enableEffect(this._drawWrapper);
         this._engine.setState(false);
         this._engine.setDepthBuffer(false);
@@ -756,9 +737,7 @@ export class PostProcess {
             this.getEngine().setAlphaConstants(this.alphaConstants.r, this.alphaConstants.g, this.alphaConstants.b, this.alphaConstants.a);
         }
 
-        if (!this.inputTextureSetByExternalProcess) {
-            this._drawWrapper.effect._bindTexture("textureSampler", source);
-        }
+        this._drawWrapper.effect._bindTexture("textureSampler", source);
 
         // Parameters
         this._drawWrapper.effect.setVector2("scale", this._scaleRatio);
