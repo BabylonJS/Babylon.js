@@ -196,7 +196,7 @@ export class FireMaterial extends PushMaterial {
                     maxSimultaneousLights: 4,
                     transformFeedbackVaryings: null
                 }, engine);
-            subMesh.setEffect(effect, defines, this._getMaterialContext(effect.uniqueId));
+            subMesh.setEffect(effect, defines, this._materialContext);
         }
 
         if (!subMesh.effect || !subMesh.effect.isReady()) {

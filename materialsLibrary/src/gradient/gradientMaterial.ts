@@ -206,7 +206,7 @@ export class GradientMaterial extends PushMaterial {
                     onError: this.onError,
                     indexParameters: { maxSimultaneousLights: 4 }
                 }, engine);
-            subMesh.setEffect(effect, defines, this._getMaterialContext(effect.uniqueId));
+            subMesh.setEffect(effect, defines, this._materialContext);
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;

@@ -1188,7 +1188,7 @@ export class NodeMaterial extends PushMaterial {
 
                 } else {
                     scene.resetCachedMaterial();
-                    subMesh.setEffect(effect, defines, this._getMaterialContext(effect.uniqueId));
+                    subMesh.setEffect(effect, defines, this._materialContext);
                 }
             }
         }

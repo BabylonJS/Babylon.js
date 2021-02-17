@@ -193,7 +193,7 @@ export class GridMaterial extends PushMaterial {
                 undefined,
                 this.onCompiled,
                 this.onError);
-            subMesh.setEffect(effect, defines, this._getMaterialContext(effect.uniqueId));
+            subMesh.setEffect(effect, defines, this._materialContext);
         }
 
         if (!subMesh.effect || !subMesh.effect.isReady()) {

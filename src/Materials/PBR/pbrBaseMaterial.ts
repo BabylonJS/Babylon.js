@@ -1126,7 +1126,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             } else {
                 this._rebuildInParallel = false;
                 scene.resetCachedMaterial();
-                subMesh.setEffect(effect, defines, this._getMaterialContext(effect.uniqueId));
+                subMesh.setEffect(effect, defines, this._materialContext);
                 this.buildUniformLayout();
             }
         }

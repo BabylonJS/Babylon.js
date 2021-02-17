@@ -200,7 +200,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
                     onError: this.onError,
                     indexParameters: { maxSimultaneousLights: 1 }
                 }, engine);
-            subMesh.setEffect(effect, defines, this._getMaterialContext(effect.uniqueId));
+            subMesh.setEffect(effect, defines, this._materialContext);
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;
