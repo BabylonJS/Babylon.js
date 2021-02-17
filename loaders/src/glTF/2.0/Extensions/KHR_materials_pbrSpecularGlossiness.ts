@@ -3,7 +3,7 @@ import { Color3 } from "babylonjs/Maths/math.color";
 import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
 import { Material } from "babylonjs/Materials/material";
 
-import { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
+import { IMaterial } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import { IKHRMaterialsPbrSpecularGlossiness } from 'babylonjs-gltf2interface';
