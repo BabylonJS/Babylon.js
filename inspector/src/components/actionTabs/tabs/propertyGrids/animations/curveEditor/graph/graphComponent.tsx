@@ -7,7 +7,8 @@ import { KeyPointComponent } from "./keyPoint";
 import { CurveComponent } from "./curveComponent";
 import { Nullable } from "babylonjs/types";
 import { Vector2 } from "babylonjs/Maths/math.vector";
-import { IAnimationKey } from "babylonjs";
+import { Observer } from "babylonjs/Misc/observable";
+import { IAnimationKey } from "babylonjs/Animations/animationKey";
 
 interface IGraphComponentProps {
     globalState: GlobalState;
@@ -48,6 +49,8 @@ IGraphComponentState
     private _sourcePointerY: number;
 
     private _currentAnimation: Nullable<Animation>;
+   
+    private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
 
     constructor(props: IGraphComponentProps) {
         super(props);
@@ -63,7 +66,7 @@ IGraphComponentState
             this._computeSizes();
         });
 
-        this.props.context.onActiveAnimationChanged.add(() => {
+        this._onActiveAnimationChangedObserver = this.props.context.onActiveAnimationChanged.add(() => {
             if (this._currentAnimation === this.props.context.activeAnimation) {
                 return;
             }
@@ -78,6 +81,12 @@ IGraphComponentState
             this._frame();
             this.forceUpdate();
         })
+    }
+
+    componentWillUnmount() {
+        if (this._onActiveAnimationChangedObserver) {
+            this.props.context.onActiveAnimationChanged.remove(this._onActiveAnimationChangedObserver);
+        }
     }
 
     private _computeSizes() {
