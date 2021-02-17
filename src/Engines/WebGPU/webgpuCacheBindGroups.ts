@@ -19,6 +19,7 @@ class WebGPUBindGroupCacheNode {
 export class WebGPUCacheBindGroups {
 
     private static _Cache: WebGPUBindGroupCacheNode = new WebGPUBindGroupCacheNode();
+    private static _CacheTextures: { [id: number]: WebGPUBindGroupCacheNode[] } = {};
 
     private _device: GPUDevice;
     private _cacheSampler: WebGPUCacheSampler;
@@ -53,6 +54,11 @@ export class WebGPUCacheBindGroups {
                 if (!nextNode) {
                     nextNode = new WebGPUBindGroupCacheNode();
                     node.values[textureId] = nextNode;
+                    let textureEntries = WebGPUCacheBindGroups._CacheTextures[textureId];
+                    if (!textureEntries) {
+                        textureEntries = WebGPUCacheBindGroups._CacheTextures[textureId] = [];
+                    }
+                    textureEntries.push(node);
                 }
                 node = nextNode;
             }
@@ -156,5 +162,15 @@ export class WebGPUCacheBindGroups {
         }
 
         return bindGroups;
+    }
+
+    public clearTextureEntries(textureId: number): void {
+        let textureEntries = WebGPUCacheBindGroups._CacheTextures[textureId];
+        if (textureEntries) {
+            for (let i = 0; i < textureEntries.length; ++i) {
+                delete textureEntries[i].values[textureId];
+            }
+            delete WebGPUCacheBindGroups._CacheTextures[textureId];
+        }
     }
 }

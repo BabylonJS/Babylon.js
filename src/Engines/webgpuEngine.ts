@@ -1289,7 +1289,7 @@ export class WebGPUEngine extends Engine {
      * @returns the new context
      */
     public createMaterialContext(): WebGPUMaterialContext | undefined {
-        return new WebGPUMaterialContext();
+        return new WebGPUMaterialContext(this._cacheBindGroups);
     }
 
     /**
