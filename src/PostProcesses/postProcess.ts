@@ -715,16 +715,6 @@ export class PostProcess {
             return null;
         }
 
-        // Bind the output texture of the preivous post process as the input to this post process.
-        var source: InternalTexture;
-        if (this._shareOutputWithPostProcess) {
-            source = this._shareOutputWithPostProcess.inputTexture;
-        } else if (this._forcedOutputTexture) {
-            source = this._forcedOutputTexture;
-        } else {
-            source = this.inputTexture;
-        }
-
         // States
         this._engine.enableEffect(this._drawWrapper);
         this._engine.setState(false);
@@ -735,6 +725,16 @@ export class PostProcess {
         this._engine.setAlphaMode(this.alphaMode);
         if (this.alphaConstants) {
             this.getEngine().setAlphaConstants(this.alphaConstants.r, this.alphaConstants.g, this.alphaConstants.b, this.alphaConstants.a);
+        }
+
+        // Bind the output texture of the preivous post process as the input to this post process.
+        var source: InternalTexture;
+        if (this._shareOutputWithPostProcess) {
+            source = this._shareOutputWithPostProcess.inputTexture;
+        } else if (this._forcedOutputTexture) {
+            source = this._forcedOutputTexture;
+        } else {
+            source = this.inputTexture;
         }
 
         this._drawWrapper.effect._bindTexture("textureSampler", source);
