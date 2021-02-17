@@ -18,7 +18,6 @@ import { DataBuffer } from '../Meshes/dataBuffer';
 import { Color3 } from '../Maths/math.color';
 import { Viewport } from '../Maths/math.viewport';
 import { DrawWrapper } from "../Materials/drawWrapper";
-import { IMaterialContext } from "../Engines/IMaterialContext";
 
 /**
  * This represents a Lens Flare System or the shiny effect created by the light reflection on the  camera lenses.
@@ -62,7 +61,6 @@ export class LensFlareSystem {
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
     private _indexBuffer: Nullable<DataBuffer>;
     private _drawWrapper: DrawWrapper;
-    private _materialContexts: { [id: number]: IMaterialContext | undefined } = {};
     private _positionX: number;
     private _positionY: number;
     private _isEnabled = true;
@@ -101,7 +99,6 @@ export class LensFlareSystem {
         var engine = scene.getEngine();
 
         this._drawWrapper = new DrawWrapper(engine);
-        this._materialContexts[0] = this._drawWrapper.materialContext;
 
         // VBO
         var vertices = [];
@@ -307,6 +304,14 @@ export class LensFlareSystem {
         var distX = centerX - this._positionX;
         var distY = centerY - this._positionY;
 
+        // Effects
+        engine.enableEffect(this._drawWrapper);
+        engine.setState(false);
+        engine.setDepthBuffer(false);
+
+        // VBOs
+        engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._drawWrapper.effect!);
+
         // Flares
         for (var index = 0; index < this.lensFlares.length; index++) {
             var flare = this.lensFlares[index];
@@ -314,26 +319,6 @@ export class LensFlareSystem {
             if (flare.texture && !flare.texture.isReady()) {
                 continue;
             }
-
-            // Effects
-            let materialContext = this._materialContexts[0];
-            if (materialContext !== undefined) { // the underlying engine needs material contexts
-                // make sure each texture has its own material context, to avoid cache cleaning in WebGPU when calling this._effect.setTexture below
-                const textureId = flare.texture?._texture?.uniqueId ?? 0;
-                materialContext = this._materialContexts[textureId];
-                if (materialContext === undefined) {
-                    this._materialContexts[textureId] = materialContext = engine.createMaterialContext()!;
-                }
-            }
-
-            this._drawWrapper.materialContext = materialContext;
-
-            engine.enableEffect(this._drawWrapper);
-            engine.setState(false);
-            engine.setDepthBuffer(false);
-    
-            // VBOs
-            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._drawWrapper.effect!);
 
             engine.setAlphaMode(flare.alphaMode);
 
