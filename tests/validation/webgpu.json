@@ -143,6 +143,11 @@
         {
             "title": "lens flare",
             "playgroundId": "#KICG93"
+        },
+        {
+            "title": "update sampler info",
+            "renderCount": 5,
+            "playgroundId": "#7GKK8E#20"
         }
     ]
 }
