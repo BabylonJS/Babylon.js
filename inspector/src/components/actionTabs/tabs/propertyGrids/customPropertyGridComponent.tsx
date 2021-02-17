@@ -72,7 +72,7 @@ export class CustomPropertyGridComponent extends React.Component<ICustomProperty
         }
 
         return (
-            <LineContainerComponent title="CUSTOM">
+            <LineContainerComponent title="CUSTOM" selection={this.props.globalState}>
                 {
                     inspectables.map(inspectable => {
                         return this.renderInspectable(inspectable);

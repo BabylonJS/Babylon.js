@@ -47,7 +47,7 @@ export class VariantsPropertyGridComponent extends React.Component<IVariantsProp
 
         return (
             <div>
-                <LineContainerComponent title="VARIANTS">             
+                <LineContainerComponent title="VARIANTS" selection={this.props.globalState}>             
                 <OptionsLineComponent
                     label="Active variant" options={options} noDirectUpdate={true}
                     target={this.props.host}

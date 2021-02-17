@@ -270,7 +270,6 @@ export class Collider {
         }
 
         if (!found) {
-
             var a = this._velocitySquaredLength;
 
             this._basePoint.subtractToRef(p1, this._tempVector);
@@ -373,7 +372,7 @@ export class Collider {
         }
 
         if (found) {
-            var distToCollisionSquared = t * this._velocitySquaredLength;
+            var distToCollisionSquared = t * t * this._velocitySquaredLength;
 
             if (!this.collisionFound || distToCollisionSquared < this._nearestDistanceSquared) {
                 // if collisionResponse is false, collision is not found but the collidedMesh is set anyway.
