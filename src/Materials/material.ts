@@ -20,6 +20,7 @@ import { IInspectable } from '../Misc/iInspectable';
 import { Plane } from '../Maths/math.plane';
 import { ShadowDepthWrapper } from './shadowDepthWrapper';
 import { MaterialHelper } from './materialHelper';
+import { IMaterialContext } from "../Engines";
 import { DrawWrapper } from "./drawWrapper";
 
 declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
@@ -614,6 +615,12 @@ export class Material implements IAnimatable {
         this.markAsDirty(Material.MiscDirtyFlag);
     }
 
+    /**
+     * @hidden
+     * Stores the effects for the material
+     */
+    protected _materialContext: IMaterialContext | undefined;
+
     protected _drawWrapper: DrawWrapper;
     /** @hidden */
     public _getDrawWrapper(): DrawWrapper {
@@ -628,7 +635,7 @@ export class Material implements IAnimatable {
     /**
      * Stores a reference to the scene
      */
-    protected _scene: Scene;
+    private _scene: Scene;
     private _needToBindSceneUbo: boolean;
 
     /**
@@ -674,7 +681,9 @@ export class Material implements IAnimatable {
 
         this.id = name || Tools.RandomId();
         this.uniqueId = this._scene.getUniqueId();
-        this._drawWrapper = new DrawWrapper(this._scene.getEngine());
+        this._materialContext = this._scene.getEngine().createMaterialContext();
+        this._drawWrapper = new DrawWrapper(this._scene.getEngine(), false);
+        this._drawWrapper.materialContext = this._materialContext;
 
         if (this._scene.useRightHandedSystem) {
             this.sideOrientation = Material.ClockWiseSideOrientation;

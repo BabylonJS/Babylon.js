@@ -928,7 +928,7 @@ export class BackgroundMaterial extends PushMaterial {
                 onError: this.onError,
                 indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights }
             }, engine);
-            subMesh.setEffect(effect, defines, this._getMaterialContext(effect.uniqueId));
+            subMesh.setEffect(effect, defines, this._materialContext);
 
             this.buildUniformLayout();
         }
