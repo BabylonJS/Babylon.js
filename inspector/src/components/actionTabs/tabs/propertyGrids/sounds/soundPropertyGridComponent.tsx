@@ -32,7 +32,7 @@ export class SoundPropertyGridComponent extends React.Component<ISoundPropertyGr
 
         return (
             <div className="pane">
-                <LineContainerComponent title="GENERAL">
+                <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
                     <TextLineComponent label="Class" value={sound.getClassName()} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={sound} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                     <TextLineComponent label="Status" value={sound.isPaused ? "Paused" : (sound.isPlaying ? "Playing" : "Stopped")}/>
@@ -57,7 +57,7 @@ export class SoundPropertyGridComponent extends React.Component<ISoundPropertyGr
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                     }} />                       */}
                 </LineContainerComponent>
-                <LineContainerComponent title="COMMANDS">
+                <LineContainerComponent title="COMMANDS" selection={this.props.globalState}>
                     {
                         sound.isPlaying &&
                         <ButtonLineComponent label="Pause" onClick={() => {

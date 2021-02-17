@@ -160,7 +160,7 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
 
         return (
             <div className="pane">
-                <LineContainerComponent title="GENERAL">
+                <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={spriteManager} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                     <TextLineComponent label="Unique ID" value={spriteManager.uniqueId.toString()} />
                     <TextLineComponent label="Capacity" value={spriteManager.capacity.toString()} />
@@ -171,11 +171,11 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
                     }
                     <ButtonLineComponent label="Dispose" onClick={() => this.disposeManager()} />
                 </LineContainerComponent>
-                <LineContainerComponent title="FILE">
+                <LineContainerComponent title="FILE" selection={this.props.globalState}>
                     <FileButtonLineComponent label="Load" onClick={(file) => this.loadFromFile(file)} accept=".json" />
                     <ButtonLineComponent label="Save" onClick={() => this.saveToFile()} />
                 </LineContainerComponent>                
-                <LineContainerComponent title="SNIPPET">
+                <LineContainerComponent title="SNIPPET" selection={this.props.globalState}>
                     {
                         spriteManager.snippetId &&
                         <TextLineComponent label="Snippet ID" value={spriteManager.snippetId} />
@@ -183,7 +183,7 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
                     <ButtonLineComponent label="Load from snippet server" onClick={() => this.loadFromSnippet()} />
                     <ButtonLineComponent label="Save to snippet server" onClick={() => this.saveToSnippet()} />
                 </LineContainerComponent>  
-                <LineContainerComponent title="PROPERTIES">
+                <LineContainerComponent title="PROPERTIES" selection={this.props.globalState}>
                     <CheckBoxLineComponent label="Pickable" target={spriteManager} propertyName="isPickable" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Fog enabled" target={spriteManager} propertyName="fogEnabled" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="No depth write" target={spriteManager} propertyName="disableDepthWrite" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -192,7 +192,7 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable} 
                         onSelect={(value) => this.setState({ blendMode: value })} />                                       
                 </LineContainerComponent>
-                <LineContainerComponent title="CELLS">
+                <LineContainerComponent title="CELLS" selection={this.props.globalState}>
                     <FloatLineComponent label="Cell width" isInteger={true} target={spriteManager} propertyName="cellWidth" min={0} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                     <FloatLineComponent label="Cell height" isInteger={true} target={spriteManager} propertyName="cellHeight" min={0} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                 </LineContainerComponent>

@@ -31,7 +31,7 @@ export class CommonPostProcessPropertyGridComponent extends React.Component<ICom
 
         return (
             <div>
-                <LineContainerComponent title="GENERAL">
+                <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
                     <TextLineComponent label="Class" value={postProcess.getClassName()} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={postProcess} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                     {
