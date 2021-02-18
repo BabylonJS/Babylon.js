@@ -16,7 +16,7 @@ export class Context {
     activeFrame: number;
     fromKey: number;
     toKey: number;
-    forwardAnimation: boolean;
+    forwardAnimation = true;
     isPlaying: boolean
 
     onActiveAnimationChanged = new Observable<void>();
@@ -38,6 +38,22 @@ export class Context {
     onGraphMoved = new Observable<number>();
     onGraphScaled = new Observable<number>();
 
+    onAnimationStateChanged = new Observable<void>();
+
+    public prepare() {        
+        this.isPlaying = false;
+        if (!this.animations || !this.animations.length) {
+            return;
+        }
+
+        let animation = this.animations[0];
+    
+        if (!animation || !animation.hasRunningRuntimeAnimations) {
+            return;
+        }
+        this.isPlaying = true;
+    }
+
     public play(forward: boolean) {
         this.isPlaying = true;
         this.scene.stopAnimation(this.target);
@@ -47,6 +63,15 @@ export class Context {
             this.scene.beginAnimation(this.target, this.toKey, this.fromKey, true);
         }
         this.forwardAnimation = forward;
+
+        this.onAnimationStateChanged.notifyObservers();
+    }
+
+    public stop() {
+        this.isPlaying = false;
+        this.scene.stopAnimation(this.target);
+    
+        this.onAnimationStateChanged.notifyObservers();
     }
 
     public moveToFrame(frame: number) {
@@ -71,7 +96,6 @@ export class Context {
             }
         }
 
-        this.isPlaying = false;
-        this.scene.stopAnimation(this.target);
+        this.stop();
     }
 }

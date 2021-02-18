@@ -39,10 +39,19 @@ export class AnimationCurveEditorComponent extends React.Component<
         this.props.context.onActiveAnimationChanged.notifyObservers();
     }
 
-    shouldComponentUpdate(newProps: IAnimationCurveEditorComponentProps, newState: IAnimationCurveEditorComponentState) {
-        return newState.isOpen !== this.state.isOpen;
-    }
+    shouldComponentUpdate(newProps: IAnimationCurveEditorComponentProps, newState: IAnimationCurveEditorComponentState) {               
+        if (newState.isOpen !== this.state.isOpen) {
 
+            if (newState.isOpen) {
+                this.props.context.prepare();
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+    
     public render() {
         return (
             <>
