@@ -13,9 +13,11 @@ export class Context {
     activeAnimation: Nullable<Animation>;
     activeKeyPoints: Nullable<KeyPointComponent[]>;
 
+    activeFrame: number;
     fromKey: number;
     toKey: number;
     forwardAnimation: boolean;
+    isPlaying: boolean
 
     onActiveAnimationChanged = new Observable<void>();
     onActiveKeyPointChanged = new Observable<Nullable<{keyPoint: KeyPointComponent, channel: string}>>();
@@ -37,6 +39,7 @@ export class Context {
     onGraphScaled = new Observable<number>();
 
     public play(forward: boolean) {
+        this.isPlaying = true;
         this.scene.stopAnimation(this.target);
         if (forward) {
             this.scene.beginAnimation(this.target, this.fromKey, this.toKey, true);
@@ -44,5 +47,31 @@ export class Context {
             this.scene.beginAnimation(this.target, this.toKey, this.fromKey, true);
         }
         this.forwardAnimation = forward;
+    }
+
+    public moveToFrame(frame: number) {
+        if (!this.animations || !this.animations.length) {
+            return;
+        }
+
+        this.activeFrame = frame;
+
+        if (!this.isPlaying) {
+            this.scene.beginAnimation(this.target, frame, frame, false);
+            return;
+        }
+
+        for (var animation of this.animations) {
+            if (!animation.hasRunningRuntimeAnimations) {
+                return;
+            }
+
+            for (var runtimeAnimation of animation.runtimeAnimations) {
+                runtimeAnimation.goToFrame(frame);
+            }
+        }
+
+        this.isPlaying = false;
+        this.scene.stopAnimation(this.target);
     }
 }
