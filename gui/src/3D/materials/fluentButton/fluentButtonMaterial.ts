@@ -24,13 +24,13 @@ import "./shaders/fluentButton.vertex";
 
 /** @hidden */
 class FluentButtonMaterialDefines extends MaterialDefines {
-    public Relative_Width = true;
-    public Enable_Fade = true;
-    public _needNormals = true;
-    public _needUVs = true;
+    public RELATIVE_WIDTH = true;
+    public ENABLE_FADE = true;
 
     constructor() {
         super();
+        this._needNormals = true;
+        this._needUVs = true;
         this.rebuild();
     }
 }
@@ -41,141 +41,141 @@ class FluentButtonMaterialDefines extends MaterialDefines {
 export class FluentButtonMaterial extends PushMaterial {
     // "Wireframe"
     @serialize()
-    public EdgeWidth = 0.04;
+    public edgeWidth = 0.04;
 
     @serializeAsColor4()
-    public EdgeColor = new Color4(0.592157, 0.592157, 0.592157, 1.0);
+    public edgeColor = new Color4(0.592157, 0.592157, 0.592157, 1.0);
 
     // "Proximity"
     @serialize()
-    public ProximityMaxIntensity = 0.45;
+    public proximityMaxIntensity = 0.45;
 
     @serialize()
-    public ProximityFarDistance = 0.16;
+    public proximityFarDistance = 0.16;
 
     @serialize()
-    public ProximityNearRadius = 1.5;
+    public proximityNearRadius = 1.5;
     
     @serialize()
-    public ProximityAnisotropy = 1;
+    public proximityAnisotropy = 1;
 
     // "Selection"
     @serialize()
-    public SelectionFuzz = 0.5;
+    public selectionFuzz = 0.5;
 
     @serialize()
-    public Selected = 0;
+    public selected = 0;
 
     @serialize()
-    public SelectionFade = 0;
+    public selectionFade = 0;
 
     @serialize()
-    public SelectionFadeSize = 0.3;
+    public selectionFadeSize = 0.3;
     
     @serialize()
-    public SelectedDistance = 0.08;
+    public selectedDistance = 0.08;
     
     @serialize()
-    public SelectedFadeLength = 0.08;
+    public selectedFadeLength = 0.08;
 
     // "Blob"
     @serialize()
-    public BlobEnable = true;
+    public blobEnable = true;
 
     @serializeAsVector3()
-    public BlobPosition = new Vector3(0.5, 0.0, -0.55);
+    public blobPosition = new Vector3(0.5, 0.0, -0.55);
     
     @serialize()
-    public BlobIntensity = 0.5;
+    public blobIntensity = 0.5;
 
     @serialize()
-    public BlobNearSize = 0.025;
+    public blobNearSize = 0.025;
 
     @serialize()
-    public BlobFarSize = 0.05;
+    public blobFarSize = 0.05;
 
     @serialize()
-    public BlobNearDistance = 0;
+    public blobNearDistance = 0;
 
     @serialize()
-    public BlobFarDistance = 0.08;
+    public blobFarDistance = 0.08;
 
     @serialize()
-    public BlobFadeLength = 0.08;
+    public blobFadeLength = 0.08;
 
     @serialize()
-    public BlobInnerFade = 0.01;
+    public blobInnerFade = 0.01;
 
     @serialize()
-    public BlobPulse = 0;
+    public blobPulse = 0;
 
     @serialize()
-    public BlobFade = 1;
+    public blobFade = 1;
 
     // "Blob 2"
     @serialize()
-    public BlobEnable2 = true;
+    public blobEnable2 = true;
 
     @serializeAsVector3()
-    public BlobPosition2 = new Vector3(10, 10.1, -0.6);
+    public blobPosition2 = new Vector3(10, 10.1, -0.6);
 
     @serialize()
-    public BlobNearSize2 = 0.025;
+    public blobNearSize2 = 0.025;
 
     @serialize()
-    public BlobInnerFade2 = 0.1;
+    public blobInnerFade2 = 0.1;
 
     @serialize()
-    public BlobPulse2 = 0;
+    public blobPulse2 = 0;
 
     @serialize()
-    public BlobFade2 = 1;
+    public blobFade2 = 1;
 
     // "Active Face"
     @serializeAsVector3()
-    public ActiveFaceDir = new Vector3(0, 0, -1);
+    public activeFaceDir = new Vector3(0, 0, -1);
 
     @serializeAsVector3()
-    public ActiveFaceUp = new Vector3(0, 1, 0);
+    public activeFaceUp = new Vector3(0, 1, 0);
 
     // "Hololens Edge Fade"
     @serialize()
-    public EnableFade = true;
+    public enableFade = true;
 
     @serialize()
-    public FadeWidth = 1.5;
+    public fadeWidth = 1.5;
 
     @serialize()
-    public SmoothActiveFace = true ? 1.0 : 0.0;
+    public smoothActiveFace = true ? 1.0 : 0.0;
 
     // "Debug"
     @serialize()
-    public ShowFrame = false;
+    public showFrame = false;
 
     // Global inputs
     @serialize()
-    public UseGlobalLeftIndex = true;
+    public useGlobalLeftIndex = true;
 
     @serialize()
-    public UseGlobalRightIndex = true;
+    public useGlobalRightIndex = true;
 
     @serializeAsVector3()
-    public GlobalLeftIndexTipPosition = Vector3.Zero();
+    public globalLeftIndexTipPosition = Vector3.Zero();
 
     @serializeAsVector3()
-    public GlobalRightIndexTipPosition = Vector3.Zero();
+    public globalRightIndexTipPosition = Vector3.Zero();
 
     @serializeAsVector3()
-    public GlobalLeftThumbTipPosition = Vector3.Zero();
+    public globalLeftThumbTipPosition = Vector3.Zero();
 
     @serializeAsVector3()
-    public GlobalRightThumbTipPosition = Vector3.Zero();
+    public globalRightThumbTipPosition = Vector3.Zero();
 
     @serialize()
-    public GlobalLeftIndexTipProximity = 0.0;
+    public globalLeftIndexTipProximity = 0.0;
 
     @serialize()
-    public GlobalRightIndexTipProximity = 0.0;
+    public globalRightIndexTipProximity = 0.0;
 
     private _blobDataTexture: Nullable<Texture>;
 
@@ -387,77 +387,77 @@ export class FluentButtonMaterial extends PushMaterial {
         }
 
         // "Wireframe"
-        this._activeEffect.setFloat("_Edge_Width_", this.EdgeWidth);
-        this._activeEffect.setColor4("_Edge_Color_", new Color3(this.EdgeColor.r, this.EdgeColor.g, this.EdgeColor.b), this.EdgeColor.a);
+        this._activeEffect.setFloat("_Edge_Width_", this.edgeWidth);
+        this._activeEffect.setColor4("_Edge_Color_", new Color3(this.edgeColor.r, this.edgeColor.g, this.edgeColor.b), this.edgeColor.a);
         //define _Relative_Width_ true;
 
         // "Proximity"
-        this._activeEffect.setFloat("_Proximity_Max_Intensity_", this.ProximityMaxIntensity);
-        this._activeEffect.setFloat("_Proximity_Far_Distance_", this.ProximityFarDistance);
-        this._activeEffect.setFloat("_Proximity_Near_Radius_", this.ProximityNearRadius);
-        this._activeEffect.setFloat("_Proximity_Anisotropy_", this.ProximityAnisotropy);
+        this._activeEffect.setFloat("_Proximity_Max_Intensity_", this.proximityMaxIntensity);
+        this._activeEffect.setFloat("_Proximity_Far_Distance_", this.proximityFarDistance);
+        this._activeEffect.setFloat("_Proximity_Near_Radius_", this.proximityNearRadius);
+        this._activeEffect.setFloat("_Proximity_Anisotropy_", this.proximityAnisotropy);
 
         // "Selection"
-        this._activeEffect.setFloat("_Selection_Fuzz_", this.SelectionFuzz);
-        this._activeEffect.setFloat("_Selected_", this.Selected);
-        this._activeEffect.setFloat("_Selection_Fade_", this.SelectionFade);
-        this._activeEffect.setFloat("_Selection_Fade_Size_", this.SelectionFadeSize);
-        this._activeEffect.setFloat("_Selected_Distance_", this.SelectedDistance);
-        this._activeEffect.setFloat("_Selected_Fade_Length_", this.SelectedFadeLength);
+        this._activeEffect.setFloat("_Selection_Fuzz_", this.selectionFuzz);
+        this._activeEffect.setFloat("_Selected_", this.selected);
+        this._activeEffect.setFloat("_Selection_Fade_", this.selectionFade);
+        this._activeEffect.setFloat("_Selection_Fade_Size_", this.selectionFadeSize);
+        this._activeEffect.setFloat("_Selected_Distance_", this.selectedDistance);
+        this._activeEffect.setFloat("_Selected_Fade_Length_", this.selectedFadeLength);
 
         // "Blob"
-        this._activeEffect.setFloat("_Blob_Enable_", this.BlobEnable ? 1.0 : 0.0);
-        this._activeEffect.setVector3("_Blob_Position_", this.BlobPosition);
-        this._activeEffect.setFloat("_Blob_Intensity_", this.BlobIntensity);
-        this._activeEffect.setFloat("_Blob_Near_Size_", this.BlobNearSize);
-        this._activeEffect.setFloat("_Blob_Far_Size_", this.BlobFarSize);
-        this._activeEffect.setFloat("_Blob_Near_Distance_", this.BlobNearDistance);
-        this._activeEffect.setFloat("_Blob_Far_Distance_", this.BlobFarDistance);
-        this._activeEffect.setFloat("_Blob_Fade_Length_", this.BlobFadeLength);
-        this._activeEffect.setFloat("_Blob_Inner_Fade_", this.BlobInnerFade);
-        this._activeEffect.setFloat("_Blob_Pulse_", this.BlobPulse);
-        this._activeEffect.setFloat("_Blob_Fade_", this.BlobFade);
+        this._activeEffect.setFloat("_Blob_Enable_", this.blobEnable ? 1.0 : 0.0);
+        this._activeEffect.setVector3("_Blob_Position_", this.blobPosition);
+        this._activeEffect.setFloat("_Blob_Intensity_", this.blobIntensity);
+        this._activeEffect.setFloat("_Blob_Near_Size_", this.blobNearSize);
+        this._activeEffect.setFloat("_Blob_Far_Size_", this.blobFarSize);
+        this._activeEffect.setFloat("_Blob_Near_Distance_", this.blobNearDistance);
+        this._activeEffect.setFloat("_Blob_Far_Distance_", this.blobFarDistance);
+        this._activeEffect.setFloat("_Blob_Fade_Length_", this.blobFadeLength);
+        this._activeEffect.setFloat("_Blob_Inner_Fade_", this.blobInnerFade);
+        this._activeEffect.setFloat("_Blob_Pulse_", this.blobPulse);
+        this._activeEffect.setFloat("_Blob_Fade_", this.blobFade);
 
         // "Blob 2"
-        this._activeEffect.setFloat("_Blob_Enable_2_", this.BlobEnable2 ? 1.0 : 0.0);
-        this._activeEffect.setVector3("_Blob_Position_2_", this.BlobPosition2);
-        this._activeEffect.setFloat("_Blob_Near_Size_2_", this.BlobNearSize2);
-        this._activeEffect.setFloat("_Blob_Inner_Fade_2_", this.BlobInnerFade2);
-        this._activeEffect.setFloat("_Blob_Pulse_2_", this.BlobPulse2);
-        this._activeEffect.setFloat("_Blob_Fade_2_", this.BlobFade2);
+        this._activeEffect.setFloat("_Blob_Enable_2_", this.blobEnable2 ? 1.0 : 0.0);
+        this._activeEffect.setVector3("_Blob_Position_2_", this.blobPosition2);
+        this._activeEffect.setFloat("_Blob_Near_Size_2_", this.blobNearSize2);
+        this._activeEffect.setFloat("_Blob_Inner_Fade_2_", this.blobInnerFade2);
+        this._activeEffect.setFloat("_Blob_Pulse_2_", this.blobPulse2);
+        this._activeEffect.setFloat("_Blob_Fade_2_", this.blobFade2);
 
         // "Active Face"
-        this._activeEffect.setVector3("_Active_Face_Dir_", this.ActiveFaceDir);
-        this._activeEffect.setVector3("_Active_Face_Up_", this.ActiveFaceUp);
+        this._activeEffect.setVector3("_Active_Face_Dir_", this.activeFaceDir);
+        this._activeEffect.setVector3("_Active_Face_Up_", this.activeFaceUp);
 
         // "Hololens Edge Fade"
         //define _Enable_Fade_ true;
-        this._activeEffect.setFloat("_Fade_Width_", this.FadeWidth);
-        this._activeEffect.setFloat("_Smooth_Active_Face_", this.SmoothActiveFace);
+        this._activeEffect.setFloat("_Fade_Width_", this.fadeWidth);
+        this._activeEffect.setFloat("_Smooth_Active_Face_", this.smoothActiveFace);
 
         // "Debug"
-        this._activeEffect.setFloat("_Show_Frame_", this.ShowFrame ? 1.0 : 0.0);
+        this._activeEffect.setFloat("_Show_Frame_", this.showFrame ? 1.0 : 0.0);
         this._activeEffect.setFloat("_Use_Blob_Texture_", this.UseBlobTexture ? 1.0 : 0.0);
 
         // Global inputs
-        this._activeEffect.setFloat("Use_Global_Left_Index", this.UseGlobalLeftIndex ? 1.0 : 0.0);
-        this._activeEffect.setFloat("Use_Global_Right_Index", this.UseGlobalRightIndex ? 1.0 : 0.0);
+        this._activeEffect.setFloat("Use_Global_Left_Index", this.useGlobalLeftIndex ? 1.0 : 0.0);
+        this._activeEffect.setFloat("Use_Global_Right_Index", this.useGlobalRightIndex ? 1.0 : 0.0);
 
         this._activeEffect.setVector4("Global_Left_Index_Tip_Position",
             new Vector4(
-                this.GlobalLeftIndexTipPosition.x,
-                this.GlobalLeftIndexTipPosition.y,
-                this.GlobalLeftIndexTipPosition.z,
+                this.globalLeftIndexTipPosition.x,
+                this.globalLeftIndexTipPosition.y,
+                this.globalLeftIndexTipPosition.z,
                 1.0));
         this._activeEffect.setVector4("Global_Right_Index_Tip_Position",
             new Vector4(
-                this.GlobalRightIndexTipPosition.x,
-                this.GlobalRightIndexTipPosition.y,
-                this.GlobalRightIndexTipPosition.z,
+                this.globalRightIndexTipPosition.x,
+                this.globalRightIndexTipPosition.y,
+                this.globalRightIndexTipPosition.z,
                 1.0));
 
-        this._activeEffect.setFloat("Global_Left_Index_Tip_Proximity", this.GlobalLeftIndexTipProximity);
-        this._activeEffect.setFloat("Global_Right_Index_Tip_Proximity", this.GlobalRightIndexTipProximity);
+        this._activeEffect.setFloat("Global_Left_Index_Tip_Proximity", this.globalLeftIndexTipProximity);
+        this._activeEffect.setFloat("Global_Right_Index_Tip_Proximity", this.globalRightIndexTipProximity);
 
         this._afterBind(mesh, this._activeEffect);
     }
@@ -467,7 +467,6 @@ export class FluentButtonMaterial extends PushMaterial {
     }
 
     public dispose(forceDisposeEffect?: boolean): void {
-
         super.dispose(forceDisposeEffect);
     }
 

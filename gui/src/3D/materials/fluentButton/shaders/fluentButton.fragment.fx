@@ -150,7 +150,7 @@ void To_XYZ_B46(
 void main()
 {
     float NotEdge_Q35;
-    #if Enable_Fade
+    #if ENABLE_FADE
       Holo_Edge_Fragment_B35(vColor,_Fade_Width_,NotEdge_Q35);
     #else
       NotEdge_Q35 = 1;
