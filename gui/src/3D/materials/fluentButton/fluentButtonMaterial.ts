@@ -3,6 +3,7 @@ import { serializeAsColor4, serializeAsVector3, serialize, SerializationHelper }
 import { Matrix, Vector3, Vector4 } from "babylonjs/Maths/math.vector";
 import { IAnimatable } from "babylonjs/Animations/animatable.interface";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+import { Texture } from "babylonjs/Materials/Textures/texture";
 import { MaterialDefines } from "babylonjs/Materials/materialDefines";
 import { MaterialHelper } from "babylonjs/Materials/materialHelper";
 import { IEffectCreationOptions } from "babylonjs/Materials/effect";
@@ -15,7 +16,7 @@ import { Scene } from "babylonjs/scene";
 import { _TypeStore } from "babylonjs/Misc/typeStore";
 import { Color3, Color4 } from "babylonjs/Maths/math.color";
 import { EffectFallbacks } from "babylonjs/Materials/effectFallbacks";
-import { Constants, Texture } from "babylonjs";
+import { Constants } from "babylonjs/Engines/constants";
 
 import { FluentGlowBlobTextureData } from "./fluentGlowBlob";
 

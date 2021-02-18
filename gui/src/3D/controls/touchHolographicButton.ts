@@ -9,7 +9,8 @@ import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
 import { FadeInOutBehavior } from "babylonjs/Behaviors/Meshes/fadeInOutBehavior";
 import { Scene } from "babylonjs/scene";
 
-import { FluentButtonMaterial, FluentButtonBuilder } from "../materials/fluentButton";
+import { FluentButtonMaterial } from "../materials/fluentButton/fluentButtonMaterial";
+import { FluentButtonBuilder } from "../materials/fluentButton/fluentButtonBuilder";
 import { StackPanel } from "../../2D/controls/stackPanel";
 import { Image } from "../../2D/controls/image";
 import { TextBlock } from "../../2D/controls/textBlock";
