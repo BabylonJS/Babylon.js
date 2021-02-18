@@ -1229,7 +1229,7 @@ export class StandardMaterial extends PushMaterial {
             DetailMapConfiguration.AddSamplers(samplers);
 
             PrePassConfiguration.AddUniforms(uniforms);
-            PrePassConfiguration.AddSamplers(uniforms);
+            PrePassConfiguration.AddSamplers(samplers);
 
             if (ImageProcessingConfiguration) {
                 ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
