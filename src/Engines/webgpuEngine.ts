@@ -190,20 +190,16 @@ export class WebGPUEngine extends Engine {
     private _mrtAttachments: number[];
     /** @hidden */
     public _counters: {
-        numBindGroupsCreation: number;
         numEnableEffects: number;
         numEnableDrawWrapper: number;
     } = {
-        numBindGroupsCreation: 0,
         numEnableEffects: 0,
         numEnableDrawWrapper: 0,
     };
     public readonly countersLastFrame: {
-        numBindGroupsCreation: number;
         numEnableEffects: number;
         numEnableDrawWrapper: number;
     } = {
-        numBindGroupsCreation: 0,
         numEnableEffects: 0,
         numEnableDrawWrapper: 0,
     };
@@ -2822,7 +2818,7 @@ export class WebGPUEngine extends Engine {
         if (this.dbgVerboseLogsForFirstFrames) {
             if ((this as any)._count === undefined) { (this as any)._count = 0; }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                console.log("frame #" + (this as any)._count + " - counters - numBindGroupsCreation=", this._counters.numBindGroupsCreation);
+                console.log("frame #" + (this as any)._count + " - counters");
             }
         }
 
@@ -2843,14 +2839,13 @@ export class WebGPUEngine extends Engine {
             UniformBuffer._updatedUbosInFrame = {};
         }
 
-        this.countersLastFrame.numBindGroupsCreation = this._counters.numBindGroupsCreation;
         this.countersLastFrame.numEnableEffects = this._counters.numEnableEffects;
         this.countersLastFrame.numEnableDrawWrapper = this._counters.numEnableDrawWrapper;
-        this._counters.numBindGroupsCreation = 0;
         this._counters.numEnableEffects = 0;
         this._counters.numEnableDrawWrapper = 0;
 
         this._cacheRenderPipeline.endFrame();
+        this._cacheBindGroups.endFrame();
 
         this._pendingDebugCommands.length = 0;
 

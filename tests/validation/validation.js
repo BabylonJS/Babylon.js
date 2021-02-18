@@ -105,8 +105,8 @@ async function evaluate(test, resultCanvas, result, renderImage, waitRing, done)
 
     var dontReportTestOutcome = false;
     if (config.qs && config.qs.checkresourcecreation && engine.countersLastFrame) {
-        if (engine.countersLastFrame.numBindGroupsCreation > 0 || engine.countersLastFrame.numEnableEffects > 0) {
-            console.warn(`check resource creation: numBindGroupsCreation=${engine.countersLastFrame.numBindGroupsCreation}, numEnableEffects=${engine.countersLastFrame.numEnableEffects}`);
+        if (BABYLON.WebGPUCacheBindGroups.NumBindGroupsCreatedLastFrame > 0 || engine.countersLastFrame.numEnableEffects > 0) {
+            console.warn(`check resource creation: numBindGroupsCreation=${BABYLON.WebGPUCacheBindGroups.NumBindGroupsCreatedLastFrame}, numEnableEffects=${engine.countersLastFrame.numEnableEffects}`);
             testRes = false;
         }
         dontReportTestOutcome = true;
