@@ -55,7 +55,7 @@ export class FluentButtonMaterial extends PushMaterial {
 
     @serialize()
     public proximityNearRadius = 1.5;
-    
+
     @serialize()
     public proximityAnisotropy = 1;
 
@@ -71,10 +71,10 @@ export class FluentButtonMaterial extends PushMaterial {
 
     @serialize()
     public selectionFadeSize = 0.3;
-    
+
     @serialize()
     public selectedDistance = 0.08;
-    
+
     @serialize()
     public selectedFadeLength = 0.08;
 
@@ -84,7 +84,7 @@ export class FluentButtonMaterial extends PushMaterial {
 
     @serializeAsVector3()
     public blobPosition = new Vector3(0.5, 0.0, -0.55);
-    
+
     @serialize()
     public blobIntensity = 0.5;
 
