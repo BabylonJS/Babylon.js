@@ -203,15 +203,15 @@ export class TouchHolographicButton extends TouchButton3D {
         this._shareMaterials = shareMaterials;
 
         this.pointerEnterAnimation = () => {
-            this._frontMaterial.BlobEnable = true;
+            this._frontMaterial.blobEnable = true;
         };
 
         this.pointerOutAnimation = () => {
-            this._frontMaterial.BlobEnable = false;
+            this._frontMaterial.blobEnable = false;
         };
 
         this._pointerHoverObserver = this.onPointerMoveObservable.add((hoverPosition: Vector3) => {
-            this._frontMaterial.GlobalLeftIndexTipPosition = hoverPosition;
+            this._frontMaterial.globalLeftIndexTipPosition = hoverPosition;
         });
     }
 
@@ -295,9 +295,9 @@ export class TouchHolographicButton extends TouchButton3D {
 
     private _createFrontMaterial(mesh: Mesh) {
         this._frontMaterial = new FluentButtonMaterial(this.name + "Front Material", mesh.getScene());
-        this._frontMaterial.BlobEnable = false;
-        this._frontMaterial.BlobEnable2 = false;
-        this._frontMaterial.UseGlobalLeftIndex = true;
+        this._frontMaterial.blobEnable = false;
+        this._frontMaterial.blobEnable2 = false;
+        this._frontMaterial.useGlobalLeftIndex = true;
     }
 
     private _createPlateMaterial(mesh: Mesh) {

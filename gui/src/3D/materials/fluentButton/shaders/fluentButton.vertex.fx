@@ -409,7 +409,7 @@ void main()
 
     // Relative_Scale (#57)
     float Relative_Scale_Q57;
-    #if Relative_Width
+    #if RELATIVE_WIDTH
       Relative_Scale_Q57 = length((world * vec4(vec3(0,1,0),0.0)).xyz);
     #else
       Relative_Scale_Q57 = 1.0;
