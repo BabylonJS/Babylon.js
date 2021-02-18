@@ -18,8 +18,13 @@ class WebGPUBindGroupCacheNode {
 /** @hidden */
 export class WebGPUCacheBindGroups {
 
+    public static NumBindGroupsCreatedTotal = 0;
+    public static NumBindGroupsCreatedLastFrame = 0;
+
     private static _Cache: WebGPUBindGroupCacheNode = new WebGPUBindGroupCacheNode();
     private static _CacheTextures: { [id: number]: WebGPUBindGroupCacheNode[] } = {};
+
+    private static _NumBindGroupsCreatedCurrentFrame = 0;
 
     private _device: GPUDevice;
     private _cacheSampler: WebGPUCacheSampler;
@@ -31,6 +36,11 @@ export class WebGPUCacheBindGroups {
         this._device = device;
         this._cacheSampler = cacheSampler;
         this._engine = engine;
+    }
+
+    public endFrame(): void {
+        WebGPUCacheBindGroups.NumBindGroupsCreatedLastFrame = WebGPUCacheBindGroups._NumBindGroupsCreatedCurrentFrame;
+        WebGPUCacheBindGroups._NumBindGroupsCreatedCurrentFrame = 0;
     }
 
     public getBindGroups(webgpuPipelineContext: WebGPUPipelineContext, materialContext: WebGPUMaterialContext, uniformsBuffers: { [name: string]: WebGPUDataBuffer }): GPUBindGroup[] {
@@ -76,7 +86,8 @@ export class WebGPUCacheBindGroups {
             node.bindGroups = bindGroups;
         }
 
-        this._engine._counters.numBindGroupsCreation++;
+        WebGPUCacheBindGroups.NumBindGroupsCreatedTotal++;
+        WebGPUCacheBindGroups._NumBindGroupsCreatedCurrentFrame++;
 
         const bindGroupLayouts = webgpuPipelineContext.bindGroupLayouts;
 
@@ -168,9 +179,28 @@ export class WebGPUCacheBindGroups {
         let textureEntries = WebGPUCacheBindGroups._CacheTextures[textureId];
         if (textureEntries) {
             for (let i = 0; i < textureEntries.length; ++i) {
+                const node = textureEntries[i];
+                this._clearTextureNode(node, textureId.toString());
                 delete textureEntries[i].values[textureId];
             }
             delete WebGPUCacheBindGroups._CacheTextures[textureId];
+        }
+    }
+
+    private _clearTextureNode(node: WebGPUBindGroupCacheNode, excludedId: string): void {
+        for (const id in node.values) {
+            if (id !== excludedId) {
+                this._clearTextureNode(node.values[id], excludedId);
+                const entries = WebGPUCacheBindGroups._CacheTextures[id];
+                if (entries) {
+                    for (let i = 0; i < entries.length; ++i) {
+                        if (entries[i] === node) {
+                            entries.splice(i, 1);
+                            break;
+                        }
+                    }
+                }
+            }
         }
     }
 }
