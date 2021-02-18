@@ -1775,6 +1775,8 @@ export class NativeEngine extends Engine {
 
     /**
      * Engine abstraction for createImageBitmap with Native implementation
+     * @param args parameters for createImageBitmap implementation
+     * @returns ImageBitmap
      */
     public createImageBitmap(...args: any[]): Promise<ImageBitmap>
     {
