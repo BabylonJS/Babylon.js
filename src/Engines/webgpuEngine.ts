@@ -39,7 +39,6 @@ import { WebGPUCacheRenderPipeline } from "./WebGPU/webgpuCacheRenderPipeline";
 import { WebGPUCacheRenderPipelineTree } from "./WebGPU/webgpuCacheRenderPipelineTree";
 import { WebGPUStencilState } from "./WebGPU/webgpuStencilState";
 import { WebGPUDepthCullingState } from "./WebGPU/webgpuDepthCullingState";
-import { EngineStore } from '../Engines/engineStore';
 
 import "../Shaders/clearQuad.vertex";
 import "../Shaders/clearQuad.fragment";
@@ -2031,8 +2030,7 @@ export class WebGPUEngine extends Engine {
             gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, width, height);
         }
 
-        const engine = EngineStore.LastCreatedEngine;
-        engine && engine.createImageBitmap(canvas).then((bitmap) => {
+        this.createImageBitmap(canvas).then((bitmap) => {
             this._textureHelper.updateTexture(bitmap, gpuTextureWrapper.underlyingResource!, width, height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, premulAlpha, 0, 0, this._uploadEncoder);
             if (texture.generateMipMaps) {
                 this._generateMipmaps(texture, this._uploadEncoder);
@@ -2086,8 +2084,7 @@ export class WebGPUEngine extends Engine {
             gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture);
         }
 
-        const engine = EngineStore.LastCreatedEngine;
-        engine && engine.createImageBitmap(video).then((bitmap) => {
+        this.createImageBitmap(video).then((bitmap) => {
             this._textureHelper.updateTexture(bitmap, gpuTextureWrapper.underlyingResource!, texture.width, texture.height, texture.depth, gpuTextureWrapper.format, 0, 0, !invertY, false, 0, 0, this._uploadEncoder);
             if (texture.generateMipMaps) {
                 this._generateMipmaps(texture, this._uploadEncoder);

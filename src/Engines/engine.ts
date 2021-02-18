@@ -25,6 +25,7 @@ import "./Extensions/engine.readTexture";
 import "./Extensions/engine.dynamicBuffer";
 import { IAudioEngine } from '../Audio/Interfaces/IAudioEngine';
 import { IPointerEvent } from "../Events/deviceInputEvents";
+import { CanvasGenerator } from '../Misc/canvasGenerator';
 
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
@@ -295,10 +296,30 @@ export class Engine extends ThinEngine {
      */
     public createImageBitmap(...args: any[]): Promise<ImageBitmap> //image: ImageBitmapSource, options?: ImageBitmapOptions
     {
-        if (args.length <= 2) {
-            return createImageBitmap(args[0], args[1]);
+        return createImageBitmap.apply(null, args);
+    }
+
+    /**
+     * Resize an image and returns the image data as an uint8array
+     * @param image image to resize
+     * @param bufferWidth destination buffer width
+     * @param bufferHeight destination buffer height
+     * @returns an uint8array containing RGBA values of bufferWidth * bufferHeight size
+     */
+    public resizeImageBitmap(image: HTMLImageElement | ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array {
+        var canvas = CanvasGenerator.CreateCanvas(bufferWidth, bufferHeight);
+        var context = canvas.getContext("2d");
+
+        if (!context) {
+            throw new Error("Unable to get 2d context for resizeImageBitmap");
         }
-        return createImageBitmap(args[0], args[1], args[2], args[3], args[4], args[5]);
+
+        context.drawImage(image, 0, 0);
+
+        // Create VertexData from map data
+        // Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949
+        var buffer = <Uint8Array>(<any>context.getImageData(0, 0, bufferWidth, bufferHeight).data);
+        return buffer;
     }
 
     /**
