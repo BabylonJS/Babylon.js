@@ -31,7 +31,7 @@ export class SubMesh implements ICullable {
     public readonly _materialEffect: Nullable<Effect> = null; // fast access to _mainDrawWrapper.effect
 
     /** @hidden */
-    public _effectOverride: Nullable<Effect> = null;
+    public _mainDrawWrapperOverride: Nullable<DrawWrapper> = null;
 
     private _drawWrappers: { [name: string]: DrawWrapper };
     private _mainDrawWrapper: DrawWrapper; // same thing than _drawWrappers[Constants.SUBMESHEFFECT_MAINMATERIAL] but faster access
@@ -40,14 +40,15 @@ export class SubMesh implements ICullable {
      * Gets material defines used by the effect associated to the sub mesh
      */
     public get materialDefines(): Nullable<MaterialDefines> {
-        return this._mainDrawWrapper.defines as MaterialDefines;
+        return (this._mainDrawWrapperOverride ?? this._mainDrawWrapper.defines) as MaterialDefines;
     }
 
     /**
      * Sets material defines used by the effect associated to the sub mesh
      */
     public set materialDefines(defines: Nullable<MaterialDefines>) {
-        this._mainDrawWrapper.defines = defines;
+        const drawWrapper = this._mainDrawWrapperOverride ?? this._mainDrawWrapper;
+        drawWrapper.defines = defines;
         (this._materialDefines as any) = defines;
     }
 
@@ -72,13 +73,12 @@ export class SubMesh implements ICullable {
      * Gets associated (main) effect (possibly the effect override if defined)
      */
     public get effect(): Nullable<Effect> {
-        return this._effectOverride ?? this._mainDrawWrapper.effect;
+        return this._mainDrawWrapperOverride?.effect ?? this._mainDrawWrapper.effect;
     }
 
     /** @hidden */
     public get _drawWrapper(): DrawWrapper {
-        // @TODO handle effectOverride
-        return this._mainDrawWrapper;
+        return this._mainDrawWrapperOverride ?? this._mainDrawWrapper;
     }
 
     /**
@@ -87,17 +87,18 @@ export class SubMesh implements ICullable {
      * @param defines defines the set of defines used to compile this effect
      * @param materialContext material context associated to the effect
      */
-    public setEffect(effect: Nullable<Effect>, defines: Nullable<MaterialDefines> = null, materialContext?: IMaterialContext) {
-        this._mainDrawWrapper.setEffect(effect, defines);
+    public setEffect(effect: Nullable<Effect>, defines: Nullable<string | MaterialDefines> = null, materialContext?: IMaterialContext) {
+        const drawWrapper = this._mainDrawWrapperOverride ?? this._mainDrawWrapper;
+        drawWrapper.setEffect(effect, defines);
         if (materialContext !== undefined) {
-            this._mainDrawWrapper.materialContext = materialContext;
+            drawWrapper.materialContext = materialContext;
         }
         if (effect !== this._materialEffect) {
             (this._materialEffect as any) = effect;
             (this._materialDefines as any) = defines;
         } else if (!effect) {
             (this._materialDefines as any) = null;
-            this._mainDrawWrapper.materialContext = undefined;
+            drawWrapper.materialContext = undefined;
         }
     }
 
