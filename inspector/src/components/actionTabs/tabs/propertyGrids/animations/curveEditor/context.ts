@@ -38,6 +38,10 @@ export class Context {
     onGraphMoved = new Observable<number>();
     onGraphScaled = new Observable<number>();
 
+    onRangeUpdated = new Observable<void>();
+
+    onMoveToFrameRequired = new Observable<number>();
+
     onAnimationStateChanged = new Observable<void>();
 
     public prepare() {        

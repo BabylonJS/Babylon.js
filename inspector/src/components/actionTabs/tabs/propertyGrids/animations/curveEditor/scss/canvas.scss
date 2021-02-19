@@ -63,6 +63,7 @@
         grid-template-rows: 100%;
         grid-template-columns: 100%;
         pointer-events: none;
+        user-select: none;
 
         #svg-range-frames {
             grid-column: 1;
@@ -131,6 +132,7 @@
         grid-template-columns: 100%;
         grid-template-rows: 1fr 22px;
         transform: translateX(-50%);
+        pointer-events: none;  
 
         #play-head-bar {
             grid-row: 1;
@@ -138,8 +140,7 @@
             justify-self: center;
             width: 1.5px;
             background: #ffffff;
-            height: 100%;   
-            pointer-events: none;       
+            height: 100%;        
         }
 
         #play-head-circle {
@@ -156,7 +157,6 @@
             justify-content: center;
             color:#555555;
             cursor: pointer;       
-            pointer-events: none;
         }            
     }
 }

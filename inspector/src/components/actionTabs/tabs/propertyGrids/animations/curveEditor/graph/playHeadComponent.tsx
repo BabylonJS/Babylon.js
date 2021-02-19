@@ -56,6 +56,11 @@ IPlayHeadComponentState
             }          
         });
 
+        this.props.context.onMoveToFrameRequired.add(frame => {
+            this.props.context.moveToFrame(frame);
+            this._moveHead(frame);
+        })
+
         this.props.context.onGraphMoved.add(x => {
             this._offsetX = x;
             this.forceUpdate();

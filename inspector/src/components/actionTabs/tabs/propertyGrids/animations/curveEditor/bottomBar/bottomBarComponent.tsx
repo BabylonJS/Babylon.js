@@ -2,6 +2,7 @@ import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
 import { Context } from "../context";
 import { MediaPlayerComponent } from "./mediaPlayerComponent";
+import { RangeSelectorComponent } from "./rangeSelectorComponent";
 
 require("../scss/bottomBar.scss");
 
@@ -28,6 +29,7 @@ IBottomBarComponentState
         return (
             <div id="bottom-bar">
                 <MediaPlayerComponent globalState={this.props.globalState} context={this.props.context} />
+                <RangeSelectorComponent globalState={this.props.globalState} context={this.props.context} />
             </div>
         );
     }

@@ -46,6 +46,14 @@ IRangeFrameBarComponentState
             this._computeSizes();
             this.forceUpdate();
         });
+
+        this.props.context.onFrameSet.add(() => {
+            this.forceUpdate();
+        });
+
+        this.props.context.onRangeUpdated.add(() => {
+            this.forceUpdate();
+        })
     }
 
     componentWillUnmount() {
@@ -63,6 +71,38 @@ IRangeFrameBarComponentState
         this.forceUpdate();
     }
 
+    private _dropKeyFrames() {
+        if (!this._currentAnimation) {
+            return null;
+        }
+
+        const from = this.props.context.fromKey;
+        const to = this.props.context.toKey;
+        let range = to - from;
+        let convertRatio = range / this._viewWidth;
+        
+        const keys = this._currentAnimation.getKeys();
+
+        return (
+            keys.map((k, i) => {
+                let x = (k.frame - from) / convertRatio;
+                return (
+                    <line
+                        key={"frame-line" + k.frame}
+                        x1={x}
+                        y1="0px"
+                        x2={x}
+                        y2="40px"
+                        style={{
+                            stroke: "#ffc017",
+                            strokeWidth: 0.5,
+                        }}>
+                    </line>
+                )
+            })
+        )
+    }
+
     private _buildFrames() {
         if (!this._currentAnimation) {
             return null;
@@ -78,12 +118,15 @@ IRangeFrameBarComponentState
 
         let steps = [];
 
-        let startPosition = this._offsetX * convertRatio;
-        let start = from - ((startPosition / offset) | 0) * offset;
+        let start = from;
         let end = start + range;
 
-        for (var step = start - offset; step <= end + offset; step += offset) {
+        for (var step = start; step <= end; step += offset) {
             steps.push(step);
+        }
+
+        if (steps[steps.length - 1] < end) {
+            steps.push(end);
         }
 
         return (
@@ -137,6 +180,9 @@ IRangeFrameBarComponentState
                     >
                     {
                         this._buildFrames()
+                    }
+                    {
+                        this._dropKeyFrames()
                     }
                 </svg>
             </div>
