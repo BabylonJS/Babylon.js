@@ -8,7 +8,6 @@ import { ShadowGenerator } from '../Lights/Shadows/shadowGenerator';
 import { GUID } from '../Misc/guid';
 import { NodeMaterial } from './Node/nodeMaterial';
 import { NodeMaterialSystemValues } from './Node/Enums/nodeMaterialSystemValues';
-import { Constants } from "../Engines/constants";
 
 /**
  * Options to be used when creating a shadow depth material
@@ -133,11 +132,22 @@ export class ShadowDepthWrapper {
      */
     public isReadyForSubMesh(subMesh: SubMesh, defines: string[], shadowGenerator: ShadowGenerator, useInstances: boolean): boolean {
         if (this.standalone) {
-            // will ensure the effect is (re)created for the base material
+            // will ensure the effect is (re)created for _baseMaterial in the "_standalone" wrapper slot
+            // (to avoid overwriting the data of the main slot - we need only the effect (in fact, the shader code)
+            // of _baseMaterial to be generated for the depth effect to be generated correctly by _makeEffect)
+            const drawWrapper = subMesh._getDrawWrapper(shadowGenerator._nameForDrawWrapper + "_standalone", true)!;
+            subMesh._setMainDrawWrapperOverride(drawWrapper);
+
             this._baseMaterial.isReadyForSubMesh(subMesh.getMesh(), subMesh, useInstances);
         }
 
-        return this._makeEffect(subMesh, defines, shadowGenerator)?.isReady() ?? false;
+        let res = this._makeEffect(subMesh, defines, shadowGenerator)?.isReady() ?? false;
+
+        if (this.standalone) {
+            subMesh._setMainDrawWrapperOverride(null);
+        }
+
+        return res;
     }
 
     /**
@@ -147,10 +157,10 @@ export class ShadowDepthWrapper {
     }
 
     private _makeEffect(subMesh: Nullable<SubMesh>, defines: string[], shadowGenerator: ShadowGenerator): Nullable<Effect> {
-        const mainDrawWrapper = subMesh?._getDrawWrapper(Constants.SUBMESH_DRAWWRAPPER_MAINPASS);
-        const origEffect = mainDrawWrapper?.effect;
+        const drawWrapper = subMesh?._drawWrapper;
+        const origEffect = drawWrapper?.effect;
 
-        if (!mainDrawWrapper || !origEffect) {
+        if (!drawWrapper || !origEffect) {
             return null;
         }
 

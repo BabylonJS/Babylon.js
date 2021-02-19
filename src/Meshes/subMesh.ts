@@ -30,17 +30,15 @@ export class SubMesh implements ICullable {
     /** @hidden */
     public readonly _materialEffect: Nullable<Effect> = null; // fast access to _mainDrawWrapper.effect
 
-    /** @hidden */
-    public _mainDrawWrapperOverride: Nullable<DrawWrapper> = null;
-
     private _drawWrappers: { [name: string]: DrawWrapper };
     private _mainDrawWrapper: DrawWrapper; // same thing than _drawWrappers[Constants.SUBMESHEFFECT_MAINMATERIAL] but faster access
+    private _mainDrawWrapperOverride: Nullable<DrawWrapper> = null;
 
     /**
      * Gets material defines used by the effect associated to the sub mesh
      */
     public get materialDefines(): Nullable<MaterialDefines> {
-        return (this._mainDrawWrapperOverride ?? this._mainDrawWrapper.defines) as MaterialDefines;
+        return this._mainDrawWrapperOverride ? this._mainDrawWrapperOverride.defines as MaterialDefines : this._mainDrawWrapper.defines as MaterialDefines;
     }
 
     /**
@@ -73,12 +71,20 @@ export class SubMesh implements ICullable {
      * Gets associated (main) effect (possibly the effect override if defined)
      */
     public get effect(): Nullable<Effect> {
-        return this._mainDrawWrapperOverride?.effect ?? this._mainDrawWrapper.effect;
+        return this._mainDrawWrapperOverride ? this._mainDrawWrapperOverride.effect : this._mainDrawWrapper.effect;
     }
 
     /** @hidden */
     public get _drawWrapper(): DrawWrapper {
         return this._mainDrawWrapperOverride ?? this._mainDrawWrapper;
+    }
+
+    /** @hidden */
+    public _setMainDrawWrapperOverride(wrapper: Nullable<DrawWrapper>): void {
+        this._mainDrawWrapperOverride = wrapper;
+        const drawWrapper = this._mainDrawWrapperOverride ?? this._mainDrawWrapper;
+        (this._materialEffect as any) = drawWrapper.effect;
+        (this._materialDefines as any) = drawWrapper.defines;
     }
 
     /**
