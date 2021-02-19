@@ -1,4 +1,5 @@
 import { Observable } from "babylonjs/Misc/observable";
+import { Vector3 } from "babylonjs/Maths/math.vector";
 import { Vector3WithInfo } from "../vector3WithInfo";
 
 import { TouchButton3D, ButtonState } from "./touchButton3D";
@@ -58,3 +59,4 @@ export class TouchToggleButton3D extends TouchButton3D {
     protected _getTypeName(): string {
         return "TouchToggleButton3D";
     }
+}
