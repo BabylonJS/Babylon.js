@@ -23,7 +23,6 @@ import { Observable } from '../../Misc/observable';
 import { _DevTools } from '../../Misc/devTools';
 import { EffectFallbacks } from '../../Materials/effectFallbacks';
 import { RenderingManager } from '../../Rendering/renderingManager';
-import { DrawWrapper } from "../../Materials/drawWrapper";
 
 import "../../Shaders/shadowMap.fragment";
 import "../../Shaders/shadowMap.vertex";
@@ -805,7 +804,8 @@ export class ShadowGenerator implements IShadowGenerator {
     protected _textureType: number;
     protected _defaultTextureMatrix = Matrix.Identity();
     protected _storedUniqueId: Nullable<number>;
-    protected _nameForDrawWrapper: string;
+    /** @hidden */
+    public _nameForDrawWrapper: string;
 
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
@@ -1112,8 +1112,8 @@ export class ShadowGenerator implements IShadowGenerator {
 
             const shadowDepthWrapper = material.shadowDepthWrapper;
 
-            const drawWrapper = shadowDepthWrapper?.getEffect(subMesh, this) ?? subMesh._getDrawWrapper(this._nameForDrawWrapper)!;
-            const effect = DrawWrapper.GetEffect(drawWrapper)!;
+            const drawWrapper = subMesh._getDrawWrapper(this._nameForDrawWrapper)!;
+            const effect = drawWrapper.effect!;
 
             engine.enableEffect(drawWrapper);
 
@@ -1139,13 +1139,13 @@ export class ShadowGenerator implements IShadowGenerator {
             }
 
             if (shadowDepthWrapper) {
-                subMesh._effectOverride = effect;
+                subMesh._mainDrawWrapperOverride = drawWrapper;
                 if (shadowDepthWrapper.standalone) {
                     shadowDepthWrapper.baseMaterial.bindForSubMesh(effectiveMesh.getWorldMatrix(), renderingMesh, subMesh);
                 } else {
                     material.bindForSubMesh(effectiveMesh.getWorldMatrix(), renderingMesh, subMesh);
                 }
-                subMesh._effectOverride = null;
+                subMesh._mainDrawWrapperOverride = null;
             } else {
                 effect.setMatrix("viewProjection", this.getTransformMatrix());
                 // Alpha test
@@ -1343,9 +1343,13 @@ export class ShadowGenerator implements IShadowGenerator {
         this._prepareShadowDefines(subMesh, useInstances, defines, isTransparent);
 
         if (shadowDepthWrapper) {
+            const drawWrapper = subMesh._getDrawWrapper(this._nameForDrawWrapper + "_STANDALONE", true)!;
+            subMesh._mainDrawWrapperOverride = drawWrapper;
             if (!shadowDepthWrapper.isReadyForSubMesh(subMesh, defines, this, useInstances)) {
+                subMesh._mainDrawWrapperOverride = null;
                 return false;
             }
+            subMesh._mainDrawWrapperOverride = null;
         } else {
             const subMeshEffect = subMesh._getDrawWrapper(this._nameForDrawWrapper, true)!;
 
