@@ -46,7 +46,10 @@ export class Context {
             return;
         }
 
-        let animation = this.animations[0];
+        const animation = this.animations[0];
+        const keys = animation.getKeys();
+        this.fromKey = keys[0].frame;
+        this.toKey = keys[keys.length - 1].frame;
     
         if (!animation || !animation.hasRunningRuntimeAnimations) {
             return;
