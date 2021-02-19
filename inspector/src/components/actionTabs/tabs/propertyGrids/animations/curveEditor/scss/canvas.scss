@@ -52,6 +52,26 @@
         }
     }
 
+    #range-frame-bar {
+        grid-column: 1;
+        grid-row: 4;
+        width: 100%;
+        height: 100%;
+        background: #222222;
+        pointer-events: none;
+        display: grid;
+        grid-template-rows: 100%;
+        grid-template-columns: 100%;
+        pointer-events: none;
+
+        #svg-range-frames {
+            grid-column: 1;
+            grid-row: 1;         
+            width: 100%;
+            height: 100%;  
+        }
+    }
+
     #frame-bar {
         grid-column: 1;
         grid-row: 2;
