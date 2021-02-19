@@ -10,14 +10,24 @@ import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { MaterialHelper } from "./materialHelper";
 import { Effect, IEffectCreationOptions } from "./effect";
-import { Material } from "./material";
+import { PushMaterial } from "./pushMaterial";
 import { _TypeStore } from '../Misc/typeStore';
 import { Color3, Color4 } from '../Maths/math.color';
 import { EffectFallbacks } from './effectFallbacks';
 import { WebRequest } from '../Misc/webRequest';
 import { Engine } from '../Engines/engine';
+import { MaterialDefines } from "./materialDefines";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
+
+class ShaderMaterialDefines extends MaterialDefines {
+    public DEFINES = "";
+
+    constructor() {
+        super();
+        this.rebuild();
+    }
+}
 
 /**
  * Defines the options associated with the creation of a shader material.
@@ -66,7 +76,7 @@ export interface IShaderMaterialOptions {
  *
  * @see https://doc.babylonjs.com/how_to/shader_material
  */
-export class ShaderMaterial extends Material {
+export class ShaderMaterial extends PushMaterial {
     private _shaderPath: any;
     private _options: IShaderMaterialOptions;
     private _textures: { [name: string]: BaseTexture } = {};
@@ -90,9 +100,7 @@ export class ShaderMaterial extends Material {
     private _vectors4Arrays: { [name: string]: number[] } = {};
     private _cachedWorldViewMatrix = new Matrix();
     private _cachedWorldViewProjectionMatrix = new Matrix();
-    private _renderId: number;
     private _multiview: boolean = false;
-    private _cachedDefines: string;
 
     /** Define the Url to load snippets */
     public static SnippetUrl = "https://snippet.babylonjs.com";
@@ -452,19 +460,6 @@ export class ShaderMaterial extends Material {
         return this;
     }
 
-    private _checkCache(mesh?: AbstractMesh, useInstances?: boolean): boolean {
-        if (!mesh) {
-            return true;
-        }
-
-        const effect = this.getEffect();
-        if (effect && (effect.defines.indexOf("#define INSTANCES") !== -1) !== useInstances) {
-            return false;
-        }
-
-        return true;
-    }
-
     /**
      * Specifies that the submesh is ready to be used
      * @param mesh defines the mesh to check
@@ -473,33 +468,24 @@ export class ShaderMaterial extends Material {
      * @returns a boolean indicating that the submesh is ready or not
      */
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
-        return this.isReady(mesh, useInstances);
-    }
-
-    /**
-     * Checks if the material is ready to render the requested mesh
-     * @param mesh Define the mesh to render
-     * @param useInstances Define whether or not the material is used with instances
-     * @returns true if ready, otherwise false
-     */
-    public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
-        let effect = this.getEffect();
-        if (effect && this.isFrozen) {
-            if (effect._wasPreviouslyReady) {
+        if (subMesh.effect && this.isFrozen) {
+            if (subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
 
-        var scene = this.getScene();
-        var engine = scene.getEngine();
-
-        if (!this.checkReadyOnEveryCall) {
-            if (this._renderId === scene.getRenderId()) {
-                if (this._checkCache(mesh, useInstances)) {
-                    return true;
-                }
-            }
+        if (!subMesh._materialDefines) {
+            subMesh.materialDefines = new ShaderMaterialDefines();
         }
+
+        var scene = this.getScene();
+        if (this._isReadyForSubMesh(subMesh)) {
+            return true;
+        }
+
+        var materialDefines = <ShaderMaterialDefines>subMesh._materialDefines;
+        var cachedDefines = materialDefines.DEFINES;
+        var engine = scene.getEngine();
 
         // Instances
         var defines = [];
@@ -645,12 +631,10 @@ export class ShaderMaterial extends Material {
             shaderName = this.customShaderNameResolve(shaderName, uniforms, uniformBuffers, samplers, defines, attribs);
         }
 
-        var previousEffect = effect;
+        var effect = subMesh.effect, previousEffect = effect;
         var join = defines.join("\n");
 
-        if (this._cachedDefines !== join) {
-            this._cachedDefines = join;
-
+        if (cachedDefines !== join) {
             effect = engine.createEffect(shaderName, <IEffectCreationOptions>{
                 attributes: attribs,
                 uniformsNames: uniforms,
@@ -663,7 +647,8 @@ export class ShaderMaterial extends Material {
                 indexParameters: { maxSimultaneousMorphTargets: numInfluencers }
             }, engine);
 
-            this._drawWrapper.effect = effect;
+            subMesh.setEffect(effect, materialDefines, this._materialContext);
+            (<ShaderMaterialDefines>subMesh.materialDefines).DEFINES = join;
 
             if (this._onEffectCreatedObservable) {
                 onCreatedEffectParameters.effect = effect;
@@ -679,7 +664,7 @@ export class ShaderMaterial extends Material {
             scene.resetCachedMaterial();
         }
 
-        this._renderId = scene.getRenderId();
+        materialDefines._renderId = scene.getRenderId();
         effect._wasPreviouslyReady = true;
 
         return true;
@@ -721,22 +706,18 @@ export class ShaderMaterial extends Material {
      * @param subMesh defines the submesh to bind the material to
      */
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
-        this.bind(world, mesh, subMesh._effectOverride);
-    }
+        var scene = this.getScene();
 
-    /**
-     * Binds the material to the mesh
-     * @param world defines the world transformation matrix
-     * @param mesh defines the mesh to bind the material to
-     * @param effectOverride - If provided, use this effect instead of internal effect
-     */
-    public bind(world: Matrix, mesh?: Mesh, effectOverride?: Nullable<Effect>): void {
+        var effect = subMesh.effect;
+        if (!effect) {
+            return;
+        }
+        this._activeEffect = effect;
+
         // Std values
-        this.bindOnlyWorldMatrix(world, effectOverride);
+        this.bindOnlyWorldMatrix(world);
 
-        const effect = effectOverride ?? this.getEffect();
-
-        let mustRebind = this.getScene().getCachedMaterial() !== this;
+        let mustRebind = this._mustRebind(scene, effect, mesh.visibility);
 
         if (effect && mustRebind) {
             if (this._options.uniforms.indexOf("view") !== -1) {
@@ -867,16 +848,7 @@ export class ShaderMaterial extends Material {
             }
         }
 
-        const seffect = this.getEffect();
-
-        this._drawWrapper.effect = effect; // make sure the active effect is the right one if there are some observers for onBind that would need to get the current effect
-        this._afterBind(mesh, effect);
-        this._drawWrapper.effect = seffect;
-    }
-
-    protected _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null): void {
-        super._afterBind(mesh, effect);
-        this.getScene()._cachedEffect = effect;
+        this._afterBind(mesh, this._activeEffect);
     }
 
     /**
