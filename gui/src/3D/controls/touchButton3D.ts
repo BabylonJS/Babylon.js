@@ -13,7 +13,8 @@ import { Button3D } from "./button3D";
 /**
  * Enum for Button States
  */
-enum ButtonState {
+/** @hidden */
+export enum ButtonState {
     /** None */
     None = 0,
     /** Pointer Entered */
@@ -226,8 +227,6 @@ export class TouchButton3D extends Button3D {
 
     // Updates the stored state of the button, and fire pointer events
     private _updateButtonState(id: number, newState: ButtonState, pointOnButton: Vector3) {
-        const dummyPointerId = 0;
-        const buttonIndex = 0; // Left click
         const buttonStateForId = this._activeInteractions.get(id) || ButtonState.None;
 
         // Take into account all inputs interacting with the button to avoid state flickering
@@ -250,30 +249,37 @@ export class TouchButton3D extends Button3D {
             newPushDepth = Math.max(newPushDepth, value);
         });
 
-        if (newPushDepth == ButtonState.Press) {
-            if (previousPushDepth == ButtonState.Hover) {
+        this._firePointerEvents(newPushDepth, previousPushDepth, pointOnButton);
+    }
+
+    protected _firePointerEvents(newButtonState: ButtonState, previousButtonState: ButtonState, pointOnButton: Vector3) {
+        const dummyPointerId = 0;
+        const buttonIndex = 0; // Left click
+
+        if (newButtonState == ButtonState.Press) {
+            if (previousButtonState == ButtonState.Hover) {
                 this._onPointerDown(this, pointOnButton, dummyPointerId, buttonIndex);
             }
-            else if (previousPushDepth == ButtonState.Press) {
+            else if (previousButtonState == ButtonState.Press) {
                 this._onPointerMove(this, pointOnButton);
             }
         }
-        else if (newPushDepth == ButtonState.Hover) {
-            if (previousPushDepth == ButtonState.None) {
+        else if (newButtonState == ButtonState.Hover) {
+            if (previousButtonState == ButtonState.None) {
                 this._onPointerEnter(this);
             }
-            else if (previousPushDepth == ButtonState.Press) {
+            else if (previousButtonState == ButtonState.Press) {
                 this._onPointerUp(this, pointOnButton, dummyPointerId, buttonIndex, false);
             }
             else {
                 this._onPointerMove(this, pointOnButton);
             }
         }
-        else if (newPushDepth == ButtonState.None) {
-            if (previousPushDepth == ButtonState.Hover) {
+        else if (newButtonState == ButtonState.None) {
+            if (previousButtonState == ButtonState.Hover) {
                 this._onPointerOut(this);
             }
-            else if (previousPushDepth == ButtonState.Press) {
+            else if (previousButtonState == ButtonState.Press) {
                 this._onPointerUp(this, pointOnButton, dummyPointerId, buttonIndex, false);
                 this._onPointerOut(this);
             }
