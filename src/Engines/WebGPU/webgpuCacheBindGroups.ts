@@ -114,7 +114,7 @@ export class WebGPUCacheBindGroups {
                     if (bindingInfo) {
                         const texture = materialContext.textures[bindingInfo.firstTextureName]?.texture;
                         if (!texture) {
-                            Logger.Error(`Could not create the gpu sampler "${bindingDefinition.name}" because no texture can be looked up for the name "${bindingInfo.firstTextureName}". bindingInfo=${JSON.stringify(bindingInfo)}, effectContext=${JSON.stringify(materialContext, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}`, 50);
+                            Logger.Error(`Could not create the gpu sampler "${bindingDefinition.name}" because no texture can be looked up for the name "${bindingInfo.firstTextureName}". bindingInfo=${JSON.stringify(bindingInfo)}, materialContext=${JSON.stringify(materialContext, (key: string, value: any) => key === 'texture' || key === '_cacheBindGroups' ? '<no dump>' : value)}`, 50);
                             continue;
                         }
                         entries.push({
@@ -122,7 +122,7 @@ export class WebGPUCacheBindGroups {
                             resource: this._cacheSampler.getSampler(texture),
                         });
                     } else {
-                        Logger.Error(`Sampler "${bindingDefinition.name}" could not be bound. bindingDefinition=${JSON.stringify(bindingDefinition)}, effectContext=${JSON.stringify(materialContext, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}`, 50);
+                        Logger.Error(`Sampler "${bindingDefinition.name}" could not be bound. bindingDefinition=${JSON.stringify(bindingDefinition)}, materialContext=${JSON.stringify(materialContext, (key: string, value: any) => key === 'texture' || key === '_cacheBindGroups' ? '<no dump>' : value)}`, 50);
                     }
                 } else if (bindingDefinition.isTexture) {
                     const bindingInfo = materialContext.textures[bindingDefinition.name];
@@ -143,7 +143,7 @@ export class WebGPUCacheBindGroups {
                             resource: hardwareTexture.view!,
                         });
                     } else {
-                        Logger.Error(`Texture "${bindingDefinition.name}" could not be bound. bindingDefinition=${JSON.stringify(bindingDefinition)}, effectContext=${JSON.stringify(materialContext, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}`, 50);
+                        Logger.Error(`Texture "${bindingDefinition.name}" could not be bound. bindingDefinition=${JSON.stringify(bindingDefinition)}, materialContext=${JSON.stringify(materialContext, (key: string, value: any) => key === 'texture' || key === '_cacheBindGroups' ? '<no dump>' : value)}`, 50);
                     }
                 } else {
                     const dataBuffer = uniformsBuffers[bindingDefinition.name];
