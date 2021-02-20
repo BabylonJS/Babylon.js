@@ -1,4 +1,8 @@
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { Mesh } from "babylonjs/Meshes/mesh";
 import { Observable } from "babylonjs/Misc/observable";
+import { Scene } from "babylonjs/scene";
+import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { Vector3 } from "babylonjs/Maths/math.vector";
 import { Vector3WithInfo } from "../vector3WithInfo";
 
@@ -25,9 +29,10 @@ export class TouchToggleButton3D extends TouchButton3D {
     /**
      * Creates a new button
      * @param name defines the control name
+     * @param collisionMesh defines the mesh to track near interactions with
      */
-    constructor(name?: string) {
-        super(name);
+    constructor(name?: string, collisionMesh?: Mesh) {
+        super(name, collisionMesh);
     }
 
     protected _firePointerEvents(newButtonState: ButtonState, previousButtonState: ButtonState, pointOnButton: Vector3) {
@@ -58,5 +63,14 @@ export class TouchToggleButton3D extends TouchButton3D {
 
     protected _getTypeName(): string {
         return "TouchToggleButton3D";
+    }
+
+    // Mesh association
+    protected _createNode(scene: Scene): TransformNode {
+        return super._createNode(scene);
+    }
+
+    protected _affectMaterial(mesh: AbstractMesh) {
+        super._affectMaterial(mesh);
     }
 }
