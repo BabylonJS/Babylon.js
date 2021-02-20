@@ -8,6 +8,9 @@ import { Vector3WithInfo } from "../vector3WithInfo";
 
 import { TouchButton3D, ButtonState } from "./touchButton3D";
 
+/**
+ * Class used as base class for touch-enabled toggleable buttons
+ */
 export class TouchToggleButton3D extends TouchButton3D {
     private _isPressed = false;
 
