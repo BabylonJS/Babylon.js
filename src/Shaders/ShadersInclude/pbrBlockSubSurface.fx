@@ -187,17 +187,18 @@ struct subSurfaceOutParams
             refractionCoords.y = 1.0 - refractionCoords.y;
         #endif
 
-        #ifdef SS_LODINREFRACTIONALPHA
-            float refractionLOD = getLodFromAlphaG(vRefractionMicrosurfaceInfos.x, alphaG, NdotVUnclamped);
-        #elif defined(SS_LINEARSPECULARREFRACTION)
-            float refractionLOD = getLinearLodFromRoughness(vRefractionMicrosurfaceInfos.x, roughness);
-        #else
-            float refractionLOD = getLodFromAlphaG(vRefractionMicrosurfaceInfos.x, alphaG);
-        #endif
-
-        // Scale refractionLOD with IOR so that an IOR of 1.0 results in no microfacet refraction and
+        // Scale roughness with IOR so that an IOR of 1.0 results in no microfacet refraction and
         // an IOR of 1.5 results in the default amount of microfacet refraction.
-        refractionLOD = mix(refractionLOD, 0.0, clamp(vRefractionInfos.y * 3.0 - 2.0, 0.0, 1.0));
+        #ifdef SS_LODINREFRACTIONALPHA
+            float refractionAlphaG = mix(alphaG, 0.0, clamp(vRefractionInfos.y * 3.0 - 2.0, 0.0, 1.0));
+            float refractionLOD = getLodFromAlphaG(vRefractionMicrosurfaceInfos.x, refractionAlphaG, NdotVUnclamped);
+        #elif defined(SS_LINEARSPECULARREFRACTION)
+            float refractionRoughness = mix(alphaG, 0.0, clamp(vRefractionInfos.y * 3.0 - 2.0, 0.0, 1.0));
+            float refractionLOD = getLinearLodFromRoughness(vRefractionMicrosurfaceInfos.x, refractionRoughness);
+        #else
+            float refractionAlphaG = mix(alphaG, 0.0, clamp(vRefractionInfos.y * 3.0 - 2.0, 0.0, 1.0));
+            float refractionLOD = getLodFromAlphaG(vRefractionMicrosurfaceInfos.x, refractionAlphaG);
+        #endif
 
         #ifdef LODBASEDMICROSFURACE
             // Apply environment convolution scale/offset filter tuning parameters to the mipmap LOD selection
