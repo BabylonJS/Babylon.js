@@ -675,6 +675,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
         if (this._hands[controllerId]) {
             this.onHandRemovedObservable.notifyObservers(this._hands[controllerId].handObject);
             this._hands[controllerId].handObject.dispose();
+            delete this._hands[controllerId];
         }
     }
 }

@@ -112,17 +112,26 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export interface ISelectedLineContainer {
+        selectedLineContainerTitles: Array<string>;
+        selectedLineContainerTitlesNoFocus: Array<string>;
+    }
+}
+declare module INSPECTOR {
     interface ILineContainerComponentProps {
+        selection?: ISelectedLineContainer;
         title: string;
         children: any[] | any;
         closed?: boolean;
     }
     export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
         isExpanded: boolean;
+        isHighlighted: boolean;
     }> {
         constructor(props: ILineContainerComponentProps);
         switchExpandedState(): void;
         renderHeader(): JSX.Element;
+        componentDidMount(): void;
         render(): JSX.Element;
     }
 }
