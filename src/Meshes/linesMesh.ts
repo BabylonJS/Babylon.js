@@ -182,7 +182,7 @@ export class LinesMesh extends Mesh {
         if (!this._geometry) {
             return this;
         }
-        const colorEffect = this._colorShader.getEffect();
+        const colorEffect = subMesh._materialEffect;
 
         // VBOs
         const indexToBind = this.isUnIndexed ? null : this._geometry.getIndexBuffer();
