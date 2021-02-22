@@ -470,6 +470,7 @@ export class ShaderMaterial extends PushMaterial {
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
         if (subMesh.effect && this.isFrozen) {
             if (subMesh.effect._wasPreviouslyReady) {
+                this._activeEffect = subMesh.effect;
                 return true;
             }
         }
@@ -480,6 +481,7 @@ export class ShaderMaterial extends PushMaterial {
 
         var scene = this.getScene();
         if (this._isReadyForSubMesh(subMesh)) {
+            this._activeEffect = subMesh.effect!;
             return true;
         }
 
@@ -655,6 +657,8 @@ export class ShaderMaterial extends PushMaterial {
                 this._onEffectCreatedObservable.notifyObservers(onCreatedEffectParameters);
             }
         }
+
+        this._activeEffect = subMesh.effect!;
 
         if (!effect?.isReady() ?? true) {
             return false;
