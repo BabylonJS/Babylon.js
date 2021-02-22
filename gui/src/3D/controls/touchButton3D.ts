@@ -230,9 +230,9 @@ export class TouchButton3D extends Button3D {
         const buttonStateForId = this._activeInteractions.get(id) || ButtonState.None;
 
         // Take into account all inputs interacting with the button to avoid state flickering
-        let previousPushDepth = 0;
+        let previousPushState = 0;
         this._activeInteractions.forEach(function(value, key) {
-            previousPushDepth = Math.max(previousPushDepth, value);
+            previousPushState = Math.max(previousPushState, value);
         });
 
         if (buttonStateForId != newState) {
@@ -244,12 +244,12 @@ export class TouchButton3D extends Button3D {
             }
         }
 
-        let newPushDepth = 0;
+        let newPushState = 0;
         this._activeInteractions.forEach(function(value, key) {
-            newPushDepth = Math.max(newPushDepth, value);
+            newPushState = Math.max(newPushState, value);
         });
 
-        this._firePointerEvents(newPushDepth, previousPushDepth, pointOnButton);
+        this._firePointerEvents(newPushState, previousPushState, pointOnButton);
     }
 
     protected _firePointerEvents(newButtonState: ButtonState, previousButtonState: ButtonState, pointOnButton: Vector3) {
