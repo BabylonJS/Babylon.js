@@ -44,6 +44,8 @@ export class Context {
 
     onAnimationStateChanged = new Observable<void>();
 
+    onDeleteKeyActiveKeyPoints = new Observable<void>();
+
     public prepare() {        
         this.isPlaying = false;
         if (!this.animations || !this.animations.length) {

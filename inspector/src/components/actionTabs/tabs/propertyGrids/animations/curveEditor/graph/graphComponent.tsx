@@ -80,7 +80,16 @@ IGraphComponentState
         this.props.context.onFrameRequired.add(() => {
             this._frame();
             this.forceUpdate();
-        })
+        });
+
+        this.props.context.onDeleteKeyActiveKeyPoints.add(() => {
+            if (!this._currentAnimation) {
+                return;
+            }
+
+            this.props.context.activeKeyPoints = [];
+            this.props.context.onActiveKeyPointChanged.notifyObservers(null);
+        });
     }
 
     componentWillUnmount() {

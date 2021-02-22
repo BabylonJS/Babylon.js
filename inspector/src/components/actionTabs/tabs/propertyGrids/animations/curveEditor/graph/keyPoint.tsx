@@ -140,6 +140,17 @@ IKeyPointComponentState
     }
 
     private _onPointerDown(evt: React.PointerEvent<SVGSVGElement>) {
+        if (!this.props.context.activeKeyPoints) {
+            this.props.context.activeKeyPoints = [];
+        }
+
+        let index = this.props.context.activeKeyPoints.indexOf(this);
+        if (index === -1) {            
+            this.props.context.activeKeyPoints.push(this);
+        } else {
+            this.props.context.activeKeyPoints.splice(index, 1);
+        }
+
         this.props.context.onActiveKeyPointChanged.notifyObservers({
             keyPoint: this,
             channel: this.props.channel
