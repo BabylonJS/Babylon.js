@@ -656,7 +656,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     }
 
     handleClosingPopUp = () => {
-        this._previewManager.dispose();
+        if (this._previewHost) {
+            this._previewManager.dispose();
+        }
         this._popUpWindow.close();
         this.setState({
             showPreviewPopUp: false
@@ -731,7 +733,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         parentControl.style.display = "grid";
         parentControl.style.gridTemplateRows = "40px auto";
         parentControl.id = 'node-editor-graph-root';
-        parentControl.className = 'right-panel';
+        parentControl.className = 'right-panel popup';
 
         popupWindow.document.body.appendChild(parentControl);
 
@@ -769,9 +771,12 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
             host.id = "PreviewAreaComponent-host";
             host.style.width = options.embedHostWidth || "auto";
+            host.style.height = "100%";
+            host.style.overflow = "hidden";
             host.style.display = "grid";
             host.style.gridRow = '2';
             host.style.gridTemplateRows = "auto 40px";
+            host.style.gridTemplateRows = "calc(100% - 40px) 40px";
 
             parentControl.appendChild(host);
 
