@@ -7,6 +7,7 @@ import { GUINode } from "./diagram/guiNode";
 import { WorkbenchComponent } from "./diagram/workbench";
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
 import { PropertyChangedEvent } from "./sharedUiComponents/propertyChangedEvent";
+import { Vector2 } from "babylonjs/Maths/math.vector";
 
 export class GlobalState {
     guiTexture: AdvancedDynamicTexture;
@@ -14,6 +15,7 @@ export class GlobalState {
     hostDocument: HTMLDocument;
     hostWindow: Window;
     onSelectionChangedObservable = new Observable<Nullable<GUINode>>();
+    onResizeObservable = new Observable<Vector2>();
     onRebuildRequiredObservable = new Observable<void>();
     onBuiltObservable = new Observable<void>();
     onResetRequiredObservable = new Observable<void>();
