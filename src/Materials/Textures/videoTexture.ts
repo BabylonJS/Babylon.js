@@ -161,6 +161,9 @@ export class VideoTexture extends Texture {
     }
 
     private _getVideo(src: string | string[] | HTMLVideoElement): HTMLVideoElement {
+        if ((<any>src).isNative) {
+            return <HTMLVideoElement>src;
+        }
         if (src instanceof HTMLVideoElement) {
             Tools.SetCorsBehavior(src.currentSrc, src);
             return src;
@@ -369,7 +372,7 @@ export class VideoTexture extends Texture {
      * @returns The created video texture as a promise
      */
     public static CreateFromStreamAsync(scene: Scene, stream: MediaStream): Promise<VideoTexture> {
-        var video = document.createElement("video");
+        var video = scene.getEngine().createVideoElement(stream);
 
         if (scene.getEngine()._badOS) {
             // Yes... I know and I hope to remove it soon...
