@@ -167,14 +167,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-alpha.9";
+        return "babylonjs@5.0.0-alpha.10";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-alpha.9";
+        return "5.0.0-alpha.10";
     }
 
     /**
@@ -331,6 +331,14 @@ export class ThinEngine {
 
     protected _renderingQueueLaunched = false;
     protected _activeRenderLoops = new Array<() => void>();
+
+    /**
+     * Gets the list of current active render loop functions
+     * @returns an array with the current render loop functions
+     */
+    public get activeRenderLoops(): Array<() => void> {
+        return this._activeRenderLoops;
+    }
 
     // Lost context
     /**
