@@ -26,6 +26,11 @@ import { NativeShaderProcessor } from '../Engines/Native/nativeShaderProcessors'
 import { RenderTargetTextureSize } from '../Engines/Extensions/engine.renderTarget';
 import { DepthTextureCreationOptions } from '../Engines/depthTextureCreationOptions';
 
+interface INativeCamera {
+    createVideo(): any;
+    updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void;
+}
+
 interface INativeEngine {
 
     readonly TEXTURE_NEAREST_NEAREST: number;
@@ -741,10 +746,11 @@ class NativeTexture extends InternalTexture {
 
 /** @hidden */
 declare var _native: any;
-
 /** @hidden */
 export class NativeEngine extends Engine {
     private readonly _native: INativeEngine = new _native.Engine();
+    private _nativeCamera: INativeCamera = _native.NativeCamera ? new _native.NativeCamera() : null;
+
     /** Defines the invalid handle returned by bgfx when resource creation goes wrong */
     private readonly INVALID_HANDLE = 65535;
     private _boundBuffersVertexArray: any = null;
@@ -1548,6 +1554,25 @@ export class NativeEngine extends Engine {
         // Loads a dummy 8x8 transparent png
         var imageData = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYSURBVChTY/z//z8DPsAEpXGC4aCAgQEAGGMDDWwwgqsAAAAASUVORK5CYII=';
         this.createTexture('data:my_image_name', true, invertY, null, Texture.BILINEAR_SAMPLINGMODE, undefined, undefined, imageData, texture, NativeEngine.TEXTUREFORMAT_RGBA, null, undefined);
+    }
+
+    public createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture {
+        return this.createRawTexture(new Uint8Array(width * height * 4), width, height, Constants.TEXTUREFORMAT_RGBA, false, false, samplingMode);
+    }
+
+    public createVideoElement(stream: MediaStream): any {
+        // create native object depending on stream. Only NativeCamera is supported for now.
+        if (this._nativeCamera) {
+            return this._nativeCamera.createVideo();
+        }
+        return null;
+    }
+
+    public updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void {
+        if (texture && texture._hardwareTexture && this._nativeCamera) {
+            var webGLTexture = texture._hardwareTexture.underlyingResource;
+            this._nativeCamera.updateVideoTexture(webGLTexture, video, invertY);
+        }
     }
 
     public createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
