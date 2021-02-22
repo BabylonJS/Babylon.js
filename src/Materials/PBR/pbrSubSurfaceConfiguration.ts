@@ -447,6 +447,7 @@ export class PBRSubSurfaceConfiguration {
      */
     public unbind(activeEffect: Effect): boolean {
         if (this._refractionTexture && this._refractionTexture.isRenderTarget) {
+            activeEffect.setTexture("refractionSampler", null);
             return true;
         }
 
