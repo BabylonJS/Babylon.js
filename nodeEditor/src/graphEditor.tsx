@@ -656,7 +656,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     }
 
     handleClosingPopUp = () => {
-        if (this._previewHost) {
+        if (this._previewManager) {
             this._previewManager.dispose();
         }
         this._popUpWindow.close();
