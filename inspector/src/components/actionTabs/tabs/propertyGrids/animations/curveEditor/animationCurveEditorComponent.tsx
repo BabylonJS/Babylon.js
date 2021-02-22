@@ -51,6 +51,16 @@ export class AnimationCurveEditorComponent extends React.Component<
 
         return false;
     }
+
+    private _onKeyUp(evt: KeyboardEvent) {
+        switch (evt.key) {
+            case "Delete":
+                if (this.props.context.activeKeyPoints?.length) {
+                    this.props.context.onDeleteKeyActiveKeyPoints.notifyObservers();
+                }
+                break;
+        }
+    }
     
     public render() {
         return (
@@ -64,6 +74,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                         size={{ width: 1024, height: 512 }}
                         onResize={() => this.props.context.onHostWindowResized.notifyObservers()}
                         onClose={(window: Window) => this.onCloseAnimationCurveEditor(window)}
+                        onKeyUp={evt => this._onKeyUp(evt)}
                     >
                         <div id="curve-editor">
                             <TopBarComponent globalState={this.props.globalState} context={this.props.context}/>

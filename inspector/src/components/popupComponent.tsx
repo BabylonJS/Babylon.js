@@ -9,6 +9,7 @@ interface IPopupComponentProps {
     onOpen?: (window: Window) => void;
     onClose: (window: Window) => void;
     onResize?: () => void;
+    onKeyUp?: (evt: KeyboardEvent) => void;
 }
 
 export class PopupComponent extends React.Component<IPopupComponentProps, { isComponentMounted: boolean; blockedByBrowser: boolean }> {
@@ -55,6 +56,11 @@ export class PopupComponent extends React.Component<IPopupComponentProps, { isCo
             if (onOpen) {
                 onOpen(this._window);
             }
+            this._window.addEventListener("keyup", evt => {
+                if (this.props.onKeyUp) {
+                    this.props.onKeyUp(evt);
+                }
+            });
             this._window.addEventListener("beforeunload", () => this._window && onClose(this._window));
             this._window.addEventListener("resize", () => {
                     if (this.props.onResize) {
