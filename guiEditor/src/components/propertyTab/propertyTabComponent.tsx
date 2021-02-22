@@ -48,6 +48,7 @@ import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture"
 import { Vector2LineComponent } from "../../sharedUiComponents/lines/vector2LineComponent";
 import { Vector2 } from "babylonjs/Maths/math.vector";
 import { Button } from "babylonjs-gui/2D/controls/button";
+import { ParentingPropertyGridComponent } from "../parentingPropertyGridComponent";
 
 require("./propertyTab.scss");
 
@@ -246,7 +247,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 if(button.image) {
                     buttonMenu.push(<ImagePropertyGridComponent key="imageMenu" image={button.image} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
                 }
-            
+                
                 return buttonMenu;
             }
         }
@@ -267,6 +268,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <div id="title">GUI EDITOR</div>
                     </div>
                     {this.renderProperties()}
+                        <ParentingPropertyGridComponent guiNode={this.state.currentNode} guiNodes={this.props.globalState.workbench.nodes} globalState={this.props.globalState}></ParentingPropertyGridComponent>
                         <ButtonLineComponent label="DELETE GUI" onClick={() => {
                            this.state.currentNode?.dispose();
                            this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
