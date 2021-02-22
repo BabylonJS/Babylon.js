@@ -48667,6 +48667,7 @@ declare module BABYLON {
         _animate(): void;
         /** Execute all animations (for a frame) */
         animate(): void;
+        private _clear;
         /**
          * Render the scene
          * @param updateCameras defines a boolean indicating if cameras must update according to their inputs (true by default)

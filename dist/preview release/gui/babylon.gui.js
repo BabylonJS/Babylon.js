@@ -1265,7 +1265,9 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         }
         this._cursorChanged = false;
         if (!this._rootContainer._processPicking(x, y, pi, type, pointerId, buttonIndex, deltaX, deltaY)) {
-            this._changeCursor("");
+            if (!scene.doNotHandleCursors) {
+                this._changeCursor("");
+            }
             if (type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERMOVE) {
                 if (this._lastControlOver[pointerId]) {
                     this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId], pi);
@@ -1273,7 +1275,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
                 }
             }
         }
-        if (!this._cursorChanged) {
+        if (!this._cursorChanged && !scene.doNotHandleCursors) {
             this._changeCursor("");
         }
         this._manageFocus();
