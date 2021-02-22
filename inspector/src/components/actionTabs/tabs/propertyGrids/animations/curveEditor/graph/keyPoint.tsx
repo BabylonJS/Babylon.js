@@ -172,21 +172,24 @@ IKeyPointComponentState
             newX = Math.min(nextX, newX);
         }
 
-        let frame = this.props.invertX(newX);
+        if (this.props.keyId !== 0) {
+            let frame = this.props.invertX(newX);
+            this.props.onFrameValueChanged(frame);
+            this.props.context.onFrameSet.notifyObservers(frame);
+
+            if (newX !== this.state.x) {
+                this.props.context.onActiveKeyFrameChanged.notifyObservers(newX);
+            }
+        } else {
+            newX = this.state.x;
+        }
+
         let value = this.props.invertY(newY);
-
-        this.props.onFrameValueChanged(frame);
         this.props.onKeyValueChanged(value);
-
-        this.props.context.onFrameSet.notifyObservers(frame);
         this.props.context.onValueSet.notifyObservers(value);
               
         this._sourcePointerX = evt.nativeEvent.offsetX;
         this._sourcePointerY = evt.nativeEvent.offsetY;
-
-        if (newX !== this.state.x) {
-            this.props.context.onActiveKeyFrameChanged.notifyObservers(newX);
-        }
 
         this.setState({x: newX, y: newY});
 

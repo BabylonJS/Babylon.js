@@ -37,6 +37,10 @@ IRangeSelectorComponentState
             this._computeSizes();
         });
 
+        this.props.context.onFrameSet.add(() => {
+            this.forceUpdate();
+        });
+
         this._updateLimits();
     }
 
