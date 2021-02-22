@@ -671,7 +671,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
 
         this._cursorChanged = false;
         if (!this._rootContainer._processPicking(x, y, pi, type, pointerId, buttonIndex, deltaX, deltaY)) {
-            if(!scene.doNotHandleCursors) {
+            if (!scene.doNotHandleCursors) {
                 this._changeCursor("");
             }
             if (type === PointerEventTypes.POINTERMOVE) {
