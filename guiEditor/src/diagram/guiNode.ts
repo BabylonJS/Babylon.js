@@ -22,6 +22,7 @@ export class GUINode {
     private _enclosingFrameId = -1;
 
     public children: GUINode[] = [];
+    public parent: Nullable<GUINode>;
 
     public get isVisible() {
         return this._isVisible;
@@ -154,7 +155,7 @@ export class GUINode {
 
         this.children.forEach((child) => {
             child._onMove(evt, startPos, true);
-        });
+        })
 
         this.guiControl.leftInPixels = this.x;
         this.guiControl.topInPixels = this.y;
@@ -169,7 +170,7 @@ export class GUINode {
         }
     }
 
-    private _isContainer() {
+    public isContainer() {
         switch (this.guiControl.typeName) {
             case "Button":
             case "StackPanel":
@@ -181,14 +182,23 @@ export class GUINode {
         }
     }
 
-    public addGui(childNode: GUINode) {
-        if (!this._isContainer) return;
+    public addChildGui(childNode: GUINode) {
+        if (!this.isContainer) return;
         this.children.push(childNode);
         (this.guiControl as Container).addControl(childNode.guiControl);
-
+        childNode.parent = this;
         //adjust the position to be relative
         //childNode.x = this.x - childNode.x;
         //childNode.y = this.y - childNode.y;
+    }
+
+    public removeChildGui(childNode: GUINode) {
+        if (!this.isContainer) return;
+        const index = this.children.findIndex(node => node === childNode);
+        childNode.parent = null;
+        this.children.splice(index, 1);
+        (this.guiControl as Container).removeControl(childNode.guiControl);
+
     }
 
     public dispose() {
