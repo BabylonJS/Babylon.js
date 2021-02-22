@@ -825,7 +825,7 @@ export class Animation {
             }
         }
 
-        for (var key = startKeyIndex; key < keys.length; key++) {
+        for (var key = startKeyIndex; key < keys.length - 1; key++) {
             var endKey = keys[key + 1];
 
             if (endKey.frame >= currentFrame) {

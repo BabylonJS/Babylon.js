@@ -52,7 +52,7 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
     protected _getModelLoadingConstraints(): boolean {
         const glbLoaded = SceneLoader.IsPluginForExtensionAvailable(".glb");
         if (!glbLoaded) {
-            Logger.Warn("glTF / glb loaded was not registered, using generic controller instead");
+            Logger.Warn("glTF / glb loader was not registered, using generic controller instead");
         }
         return glbLoaded;
     }
