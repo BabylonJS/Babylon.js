@@ -499,7 +499,7 @@ export class WebGPUEngine extends Engine {
 
                 this._defaultMaterialContext = this.createMaterialContext()!;
                 this._currentMaterialContext = this._defaultMaterialContext;
-        
+
                 this._initializeContextAndSwapChain();
                 this._initializeMainAttachments();
                 this.resize();

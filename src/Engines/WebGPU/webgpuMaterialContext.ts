@@ -38,7 +38,7 @@ export class WebGPUMaterialContext implements IMaterialContext {
         }
 
         const curTexture = textureCache.texture;
-        if (curTexture !== null && curTexture === internalTexture && 
+        if (curTexture !== null && curTexture === internalTexture &&
             (textureCache.wrapU !== internalTexture._cachedWrapU || textureCache.wrapV !== internalTexture._cachedWrapV || textureCache.wrapR !== internalTexture._cachedWrapR ||
                 textureCache.anisotropicFilteringLevel !== internalTexture._cachedAnisotropicFilteringLevel || textureCache.samplingMode !== internalTexture.samplingMode))
         {
