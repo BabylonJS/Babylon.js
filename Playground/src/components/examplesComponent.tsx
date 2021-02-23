@@ -7,21 +7,25 @@ interface IExamplesComponentProps {
     globalState: GlobalState;
 }
 
+interface ISample {
+    title: string;
+    doc: string;
+    icon: string;
+    PGID: string;
+    description: string;
+}
+
+interface IScript {
+    title: string;
+    samples: ISample[];
+}
+
 export class ExamplesComponent extends React.Component<IExamplesComponentProps, { filter: string }> {
     private _state = "removed";
     private _documentationRoot = "https://doc.babylonjs.com";
-    private _searchUrl = "https://babylonjs-newdocs.search.windows.net/indexes/playgrounds/docs?api-version=2020-06-30&$top=1000&main=true&api-key=820DCA4087091C0386B0F0A266710390&search=";
+    private _searchUrl = "https://babylonjs-newdocs.search.windows.net/indexes/playgrounds/docs?api-version=2020-06-30&$top=1000&api-key=820DCA4087091C0386B0F0A266710390&$filter=isMain%20eq%20true";
     private _rootRef: React.RefObject<HTMLDivElement>;
-    private _scripts: {
-        title: string;
-        samples: {
-            title: string;
-            doc: string;
-            icon: string;
-            PGID: string;
-            description: string;
-        }[];
-    }[];
+    private _scripts: IScript[];
 
     public constructor(props: IExamplesComponentProps) {
         super(props);
@@ -47,25 +51,13 @@ export class ExamplesComponent extends React.Component<IExamplesComponentProps, 
         });
     }
 
-    private async _fillScriptAsync(category: string) {
-        const response = await fetch(this._searchUrl + category);
+    private async _fillScriptAsync() {
+        const response = await fetch(this._searchUrl);
         if (!response.ok) {
             return;
         }
 
         let list = await response.json();
-        let sampleArray: {
-            title: string;
-            doc: string;
-            icon: string;
-            PGID: string;
-            description: string;
-        }[] = [];
-
-        let newScript = {
-            title: category,
-            samples: sampleArray
-        }
 
         for(var value of list.value) {
             let newSample = {
@@ -75,36 +67,29 @@ export class ExamplesComponent extends React.Component<IExamplesComponentProps, 
                 PGID: value.playgroundId,
                 description: value.description
             }
-            newScript.samples.push(newSample);
-        }
 
-        this._scripts.push(newScript);
+            let filter = this._scripts.filter(s => s.title === value.category);
+            let script: IScript;
+
+            if (filter && filter.length) {
+                script = filter[0];
+            } else {
+                script = {
+                    title: value.category,
+                    samples: []
+                };
+                this._scripts.push(script);
+            }
+
+            script.samples.push(newSample);
+        }
     }
 
     private async _loadScriptsAsync() {
 
         this._scripts = [];
 
-        await this._fillScriptAsync("Actions");
-        await this._fillScriptAsync("Animations");
-        await this._fillScriptAsync("Audio");
-        await this._fillScriptAsync("Cameras");
-        await this._fillScriptAsync("Collisions");
-        await this._fillScriptAsync("GUI");
-        await this._fillScriptAsync("Lights");
-        await this._fillScriptAsync("Loaders");
-        await this._fillScriptAsync("Materials");
-        await this._fillScriptAsync("Meshes");
-        await this._fillScriptAsync("Optimizations");
-        await this._fillScriptAsync("Particles");
-        await this._fillScriptAsync("Picking");
-        await this._fillScriptAsync("Post-processes");
-        await this._fillScriptAsync("Physics");
-        await this._fillScriptAsync("Pointers");
-        await this._fillScriptAsync("Shadows");
-        await this._fillScriptAsync("Textures");
-        await this._fillScriptAsync("XR");
-
+        await this._fillScriptAsync();
 
         // Sorting
         this._scripts.sort((a, b) => {
