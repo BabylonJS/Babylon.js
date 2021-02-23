@@ -60,7 +60,7 @@ export class ShadowDepthWrapper {
     private _baseMaterial: Material;
     private _onEffectCreatedObserver: Nullable<Observer<{ effect: Effect, subMesh: Nullable<SubMesh>}>>;
     private _subMeshToEffect: Map<Nullable<SubMesh>, Effect>;
-    private _subMeshToDepthEffect: MapMap<Nullable<SubMesh>, ShadowGenerator, { depthEffect: Nullable<DrawWrapper>, depthDefines: string, token: string }>; // key is (subMesh + shadowGenerator)
+    private _subMeshToDepthWrapper: MapMap<Nullable<SubMesh>, ShadowGenerator, { depthWrapper: Nullable<DrawWrapper>, depthDefines: string, token: string }>; // key is (subMesh + shadowGenerator)
     private _meshes: Map<AbstractMesh, Nullable<Observer<Node>>>;
 
     /** @hidden */
@@ -91,7 +91,7 @@ export class ShadowDepthWrapper {
         this._options = options;
 
         this._subMeshToEffect = new Map();
-        this._subMeshToDepthEffect = new MapMap();
+        this._subMeshToDepthWrapper = new MapMap();
         this._meshes = new Map();
 
         const prefix = baseMaterial.getClassName() === "NodeMaterial" ? "u_" : "";
@@ -156,7 +156,7 @@ export class ShadowDepthWrapper {
                             const subMesh = key.value;
                             if (subMesh?.getMesh() === mesh as AbstractMesh) {
                                 this._subMeshToEffect.delete(subMesh);
-                                this._subMeshToDepthEffect.mm.delete(subMesh);
+                                this._subMeshToDepthWrapper.mm.delete(subMesh);
                             }
                         }
                     })
@@ -164,7 +164,7 @@ export class ShadowDepthWrapper {
             }
 
             this._subMeshToEffect.set(params.subMesh, params.effect);
-            this._subMeshToDepthEffect.mm.delete(params.subMesh); // trigger a depth effect recreation
+            this._subMeshToDepthWrapper.mm.delete(params.subMesh); // trigger a depth effect recreation
         });
     }
 
@@ -175,7 +175,7 @@ export class ShadowDepthWrapper {
      * @returns the effect to use to generate the depth map for the subMesh + shadow generator specified
      */
     public getEffect(subMesh: Nullable<SubMesh>, shadowGenerator: ShadowGenerator): Nullable<DrawWrapper> {
-        return this._subMeshToDepthEffect.mm.get(subMesh)?.get(shadowGenerator)?.depthEffect ?? null;
+        return this._subMeshToDepthWrapper.mm.get(subMesh)?.get(shadowGenerator)?.depthWrapper ?? null;
     }
 
     /**
@@ -219,23 +219,23 @@ export class ShadowDepthWrapper {
             return null;
         }
 
-        let params = this._subMeshToDepthEffect.get(subMesh, shadowGenerator);
+        let params = this._subMeshToDepthWrapper.get(subMesh, shadowGenerator);
         if (!params) {
             params = {
-                depthEffect: new DrawWrapper(this._scene.getEngine()),
+                depthWrapper: new DrawWrapper(this._scene.getEngine()),
                 depthDefines: "",
                 token: GUID.RandomId()
             };
-            params.depthEffect!.defines = subMesh._materialDefines;
-            this._subMeshToDepthEffect.set(subMesh, shadowGenerator, params);
+            params.depthWrapper!.defines = subMesh._materialDefines;
+            this._subMeshToDepthWrapper.set(subMesh, shadowGenerator, params);
         }
 
         let join = defines.join("\n");
 
-        if (params.depthEffect!.effect) {
+        if (params.depthWrapper!.effect) {
             if (join === params.depthDefines) {
                 // we already created the depth effect and it is still up to date for this submesh + shadow generator
-                return params.depthEffect!.effect;
+                return params.depthWrapper!.effect;
             }
         }
 
@@ -290,7 +290,7 @@ export class ShadowDepthWrapper {
 
         uniforms.push("biasAndScaleSM", "depthValuesSM", "lightDataSM", "softTransparentShadowSM");
 
-        params.depthEffect!.effect = this._scene.getEngine().createEffect({
+        params.depthWrapper!.effect = this._scene.getEngine().createEffect({
             vertexSource: vertexCode,
             fragmentSource: fragmentCode,
             vertexToken: params.token,
@@ -304,6 +304,6 @@ export class ShadowDepthWrapper {
             indexParameters: origEffect.getIndexParameters(),
         }, this._scene.getEngine());
 
-        return params.depthEffect!.effect;
+        return params.depthWrapper!.effect;
     }
 }
