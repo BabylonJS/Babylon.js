@@ -1781,14 +1781,16 @@ export class NativeEngine extends Engine {
     public createImageBitmap(...args: any[]): Promise<ImageBitmap>
     {
         return new Promise((resolve, reject) => {
-            const image = this._native.createImageBitmap(args);
-            if (image) {
-                resolve(image);
-            } else if (reject) {
-                reject();
-            } else {
-                throw new Error(`Unsupported data for createImageBitmap.`);
+            if (args.length && Array.isArray(args[0]) && args[0].length) {
+                const image = this._native.createImageBitmap(args[0][0]);
+                if (image) {
+                    resolve(image);
+                } else if (reject) {
+                    reject();
+                }
+                return;
             }
+            throw new Error(`Unsupported data for createImageBitmap.`);
         });
     }
 
