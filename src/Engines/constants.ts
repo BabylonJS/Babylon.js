@@ -555,9 +555,14 @@ export class Constants {
     /**
      * Prefixes used by the engine for sub mesh draw wrappers
      */
+
+    /** @hidden */
     public static readonly SUBMESH_DRAWWRAPPER_MAINPASS = "bjs_mainpass";
+    /** @hidden */
     public static readonly SUBMESH_DRAWWRAPPER_SHADOWGENERATOR_PREFIX = "bjs_shadowgenerator_";
+    /** @hidden */
     public static readonly SUBMESH_DRAWWRAPPER_DEPTHRENDERER_PREFIX = "bjs_depthrenderer_";
+    /** @hidden */
     public static readonly SUBMESH_DRAWWRAPPER_OUTLINERENDERER_PREFIX = "bjs_outlinerenderer_";
 
     /**

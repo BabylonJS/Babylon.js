@@ -196,6 +196,9 @@ export class WebGPUEngine extends Engine {
         numEnableEffects: 0,
         numEnableDrawWrapper: 0,
     };
+    /**
+     * Counters from last frame
+     */
     public readonly countersLastFrame: {
         numEnableEffects: number;
         numEnableDrawWrapper: number;
@@ -1128,6 +1131,12 @@ export class WebGPUEngine extends Engine {
     //                              UBO
     //------------------------------------------------------------------------------
 
+    /**
+     * Create an uniform buffer
+     * @see https://doc.babylonjs.com/features/webgl2#uniform-buffer-objets
+     * @param elements defines the content of the uniform buffer
+     * @returns the webGL uniform buffer
+     */
     public createUniformBuffer(elements: FloatArray): DataBuffer {
         let view: Float32Array;
         if (elements instanceof Array) {
@@ -1141,10 +1150,24 @@ export class WebGPUEngine extends Engine {
         return dataBuffer;
     }
 
+    /**
+     * Create a dynamic uniform buffer
+     * @see https://doc.babylonjs.com/features/webgl2#uniform-buffer-objets
+     * @param elements defines the content of the uniform buffer
+     * @returns the webGL uniform buffer
+     */
     public createDynamicUniformBuffer(elements: FloatArray): DataBuffer {
         return this.createUniformBuffer(elements);
     }
 
+    /**
+     * Update an existing uniform buffer
+     * @see https://doc.babylonjs.com/features/webgl2#uniform-buffer-objets
+     * @param uniformBuffer defines the target uniform buffer
+     * @param elements defines the content to update
+     * @param offset defines the offset in the uniform buffer where update should start
+     * @param count defines the size of the data to update
+     */
     public updateUniformBuffer(uniformBuffer: DataBuffer, elements: FloatArray, offset?: number, count?: number): void {
         if (offset === undefined) {
             offset = 0;
@@ -1170,6 +1193,12 @@ export class WebGPUEngine extends Engine {
         this._bufferManager.setSubData(dataBuffer, offset, view, 0, count);
     }
 
+    /**
+     * Bind a buffer to the current webGL context at a given location
+     * @param buffer defines the buffer to bind
+     * @param location defines the index where to bind the buffer
+     * @param name Name of the uniform variable to bind
+     */
     public bindUniformBufferBase(buffer: DataBuffer, location: number, name: string): void {
         this._uniformsBuffers[name] = buffer as WebGPUDataBuffer;
     }
