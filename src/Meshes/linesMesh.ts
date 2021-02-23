@@ -182,11 +182,15 @@ export class LinesMesh extends Mesh {
         if (!this._geometry) {
             return this;
         }
-        const colorEffect = subMesh._materialEffect;
+        const colorEffect = this._colorShader.getEffect();
 
         // VBOs
         const indexToBind = this.isUnIndexed ? null : this._geometry.getIndexBuffer();
-        this._geometry._bind(colorEffect, indexToBind);
+        if (!this._userInstancedBuffersStorage) {
+            this._geometry._bind(colorEffect, indexToBind);
+        } else {
+            this._geometry._bind(colorEffect, indexToBind, this._userInstancedBuffersStorage.vertexBuffers, this._userInstancedBuffersStorage.vertexArrayObjects);
+        }
 
         // Color
         if (!this.useVertexColor) {
