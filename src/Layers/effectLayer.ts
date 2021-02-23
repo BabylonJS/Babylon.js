@@ -74,9 +74,9 @@ export abstract class EffectLayer {
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
     private _indexBuffer: Nullable<DataBuffer>;
     private _cachedDefines: string;
-    private _effectLayerMapGenerationEffect: DrawWrapper;
+    private _effectLayerMapGenerationDrawWrapper: DrawWrapper;
     private _effectLayerOptions: IEffectLayerOptions;
-    private _mergeEffect: DrawWrapper;
+    private _mergeDrawWrapper: DrawWrapper;
 
     protected _scene: Scene;
     protected _engine: Engine;
@@ -189,8 +189,8 @@ export abstract class EffectLayer {
         this._maxSize = this._engine.getCaps().maxTextureSize;
         this._scene.effectLayers.push(this);
 
-        this._effectLayerMapGenerationEffect = new DrawWrapper(this._engine);
-        this._mergeEffect = new DrawWrapper(this._engine);
+        this._effectLayerMapGenerationDrawWrapper = new DrawWrapper(this._engine);
+        this._mergeDrawWrapper = new DrawWrapper(this._engine);
 
         // Generate Buffers
         this._generateIndexBuffer();
@@ -270,7 +270,7 @@ export abstract class EffectLayer {
         this._setMainTextureSize();
         this._createMainTexture();
         this._createTextureAndPostProcesses();
-        this._mergeEffect.setEffect(this._createMergeEffect());
+        this._mergeDrawWrapper.setEffect(this._createMergeEffect());
     }
 
     /**
@@ -559,7 +559,7 @@ export abstract class EffectLayer {
         var join = defines.join("\n");
         if (this._cachedDefines !== join) {
             this._cachedDefines = join;
-            this._effectLayerMapGenerationEffect.setEffect(this._scene.getEngine().createEffect("glowMapGeneration",
+            this._effectLayerMapGenerationDrawWrapper.setEffect(this._scene.getEngine().createEffect("glowMapGeneration",
                 attribs,
                 ["world", "mBones", "viewProjection",
                     "glowColor", "morphTargetInfluences", "boneTextureWidth",
@@ -570,14 +570,14 @@ export abstract class EffectLayer {
             );
         }
 
-        return this._effectLayerMapGenerationEffect.effect!.isReady();
+        return this._effectLayerMapGenerationDrawWrapper.effect!.isReady();
     }
 
     /**
      * Renders the glowing part of the scene by blending the blurred glowing meshes on top of the rendered scene.
      */
     public render(): void {
-        var currentEffect = this._mergeEffect;
+        var currentEffect = this._mergeDrawWrapper;
 
         // Check
         if (!currentEffect.effect!.isReady()) {
@@ -733,9 +733,9 @@ export abstract class EffectLayer {
             renderingMesh.render(subMesh, hardwareInstancedRendering, replacementMesh || undefined);
         }
         else if (this._isReady(subMesh, hardwareInstancedRendering, this._emissiveTextureAndColor.texture)) {
-            const effect = this._effectLayerMapGenerationEffect.effect!;
+            const effect = this._effectLayerMapGenerationDrawWrapper.effect!;
 
-            engine.enableEffect(this._effectLayerMapGenerationEffect);
+            engine.enableEffect(this._effectLayerMapGenerationDrawWrapper);
             renderingMesh._bind(subMesh, effect, Material.TriangleFillMode);
 
             effect.setMatrix("viewProjection", scene.getTransformMatrix());
