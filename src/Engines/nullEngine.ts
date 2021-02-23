@@ -292,7 +292,7 @@ export class NullEngine extends Engine {
     public enableEffect(effect: Nullable<Effect | DrawWrapper>): void {
         effect = effect !== null && DrawWrapper.IsWrapper(effect) ? effect.effect : effect; // get only the effect, we don't need a Wrapper in the WebGL engine
 
-        this._currentEffect = effect;
+        this._currentEffect = effect as Nullable<Effect>;
         if (!effect) {
             return;
         }
