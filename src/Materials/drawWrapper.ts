@@ -1,4 +1,4 @@
-import { IDrawContext } from "../Engines";
+import { IDrawContext } from "../Engines/IDrawContext";
 import { IMaterialContext } from "../Engines/IMaterialContext";
 import { Nullable } from "../types";
 
