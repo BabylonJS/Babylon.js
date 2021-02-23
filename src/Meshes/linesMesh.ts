@@ -40,6 +40,7 @@ export class LinesMesh extends Mesh {
     public intersectionThreshold: number;
 
     private _colorShader: ShaderMaterial;
+    private _customShader: Nullable<ShaderMaterial>;
 
     private color4: Color4;
 
@@ -103,28 +104,41 @@ export class LinesMesh extends Mesh {
         }
 
         this._colorShader = new ShaderMaterial("colorShader", this.getScene(), "color", options);
+        this._customShader = null;
     }
 
     private _addClipPlaneDefine(label: string) {
         const define = "#define " + label;
-        let index = this._colorShader.options.defines.indexOf(define);
+        const colorShaderIndex = this._colorShader.options.defines.indexOf(define);
+        if (colorShaderIndex === -1) {
+            this._colorShader.options.defines.push(define);
+        }
 
-        if (index !== -1) {
+        if (!this._customShader) {
             return;
         }
 
-        this._colorShader.options.defines.push(define);
+        const customShaderIndex = this._customShader.options.defines.indexOf(define);
+        if (customShaderIndex === -1) {
+            this._customShader.options.defines.push(define);
+        }
     }
 
     private _removeClipPlaneDefine(label: string) {
         const define = "#define " + label;
-        let index = this._colorShader.options.defines.indexOf(define);
+        const colorShaderIndex = this._colorShader.options.defines.indexOf(define);
+        if (colorShaderIndex === -1) {
+            this._colorShader.options.defines.splice(colorShaderIndex, 1);
+        }
 
-        if (index === -1) {
+        if (!this._customShader) {
             return;
         }
 
-        this._colorShader.options.defines.splice(index, 1);
+        const customShaderIndex = this._customShader.options.defines.indexOf(define);
+        if (customShaderIndex === -1) {
+            this._customShader.options.defines.push(define);
+        }
     }
 
     public isReady() {
@@ -138,7 +152,11 @@ export class LinesMesh extends Mesh {
         scene.clipPlane5 ? this._addClipPlaneDefine("CLIPPLANE5") : this._removeClipPlaneDefine("CLIPPLANE5");
         scene.clipPlane6 ? this._addClipPlaneDefine("CLIPPLANE6") : this._removeClipPlaneDefine("CLIPPLANE6");
 
-        if (!this._colorShader.isReady(this)) {
+        if (this._customShader && !this._customShader.isReady(this)) {
+            return false;
+        }
+
+        if (!this._customShader && !this._colorShader.isReady(this)) {
             return false;
         }
 
@@ -153,17 +171,33 @@ export class LinesMesh extends Mesh {
     }
 
     /**
-     * @hidden
+     * Reverts to default line color shader material
+     * @param dispose defines if custom material should be disposed (default: true)
      */
-    public get material(): Material {
-        return this._colorShader;
+    public resetMaterial(dispose: boolean = true) {
+        if (!this._customShader) {
+            return;
+        }
+
+        if (dispose) {
+            this._customShader.dispose(false, false, true);
+        }
+
+        this._customShader = null;
     }
 
     /**
      * @hidden
      */
-    public set material(value: Material) {
-        // Do nothing
+    public get material(): ShaderMaterial {
+        return this._customShader ? this._customShader : this._colorShader;
+    }
+
+    /**
+     * @hidden
+     */
+    public set material(value: ShaderMaterial) {
+        this._customShader = value;
     }
 
     /**
@@ -182,7 +216,7 @@ export class LinesMesh extends Mesh {
         if (!this._geometry) {
             return this;
         }
-        const colorEffect = this._colorShader.getEffect();
+        const colorEffect = this._customShader ? this._customShader.getEffect() : this._colorShader.getEffect();
 
         // VBOs
         const indexToBind = this.isUnIndexed ? null : this._geometry.getIndexBuffer();
@@ -197,6 +231,9 @@ export class LinesMesh extends Mesh {
             const { r, g, b } = this.color;
             this.color4.set(r, g, b, this.alpha);
             this._colorShader.setColor4("color", this.color4);
+            if (this._customShader) {
+                this._customShader.setColor4("color", this.color4);
+            }
         }
 
         // Clip planes
@@ -229,6 +266,9 @@ export class LinesMesh extends Mesh {
      */
     public dispose(doNotRecurse?: boolean): void {
         this._colorShader.dispose(false, false, true);
+        if (this._customShader) {
+            this._customShader.dispose(false, false, true);
+        }
         super.dispose(doNotRecurse);
     }
 
