@@ -2958,11 +2958,13 @@ declare module BABYLON {
         equalsWithEpsilon(otherVector: DeepImmutable<Vector2>, epsilon?: number): boolean;
         /**
          * Gets a new Vector2 from current Vector2 floored values
+         * eg (1.2, 2.31) returns (1, 2)
          * @returns a new Vector2
          */
         floor(): Vector2;
         /**
-         * Gets a new Vector2 from current Vector2 floored values
+         * Gets a new Vector2 from current Vector2 fractional values
+         * eg (1.2, 2.31) returns (0.2, 0.31)
          * @returns a new Vector2
          */
         fract(): Vector2;
@@ -38335,6 +38337,12 @@ declare module BABYLON {
          */
         _getKeyValue(value: any): any;
         /**
+         * Evaluate the animation value at a given frame
+         * @param currentFrame defines the frame where we want to evaluate the animation
+         * @returns the animation value
+         */
+        evaluate(currentFrame: number): any;
+        /**
          * @hidden Internal use only
          */
         _interpolate(currentFrame: number, state: _IAnimationState): any;
@@ -48665,6 +48673,7 @@ declare module BABYLON {
         _animate(): void;
         /** Execute all animations (for a frame) */
         animate(): void;
+        private _clear;
         /**
          * Render the scene
          * @param updateCameras defines a boolean indicating if cameras must update according to their inputs (true by default)
@@ -56990,6 +56999,12 @@ declare module BABYLON {
          */
         requiredFeatures?: string[];
         /**
+         * If set, the `sessiongranted` event will not be registered. `sessiongranted` is used to move seamlessly between WebXR experiences.
+         * If set to true the user will be forced to press the "enter XR" button even if sessiongranted event was triggered.
+         * If not set and a sessiongranted event was triggered, the XR session will start automatically.
+         */
+        ignoreSessionGrantedEvent?: boolean;
+        /**
          * If defined, this function will be executed if the UI encounters an error when entering XR
          */
         onError?: (error: any) => void;
@@ -57003,6 +57018,8 @@ declare module BABYLON {
         options: WebXREnterExitUIOptions;
         private _activeButton;
         private _buttons;
+        private _helper;
+        private _renderTarget?;
         /**
          * The HTML Div Element to which buttons are added.
          */
@@ -57016,11 +57033,23 @@ declare module BABYLON {
          */
         activeButtonChangedObservable: Observable<Nullable<WebXREnterExitUIButton>>;
         /**
+         * Construct a new EnterExit UI class
          *
          * @param scene babylon scene object to use
          * @param options (read-only) version of the options passed to this UI
          */
-        private constructor();
+        constructor(scene: Scene, 
+        /** version of the options passed to this UI */
+        options: WebXREnterExitUIOptions);
+        /**
+         * Set the helper to be used with this UI component.
+         * The UI is bound to an experience helper. If not provided the UI can still be used but the events should be registered by the developer.
+         *
+         * @param helper the experience helper to attach
+         * @param renderTarget an optional render target (in case it is created outside of the helper scope)
+         * @returns a promise that resolves when the ui is ready
+         */
+        setHelperAsync(helper: WebXRExperienceHelper, renderTarget?: WebXRRenderTarget): Promise<void>;
         /**
          * Creates UI to allow the user to enter/exit XR mode
          * @param scene the scene to add the ui to
@@ -57029,10 +57058,12 @@ declare module BABYLON {
          * @returns the created ui
          */
         static CreateAsync(scene: Scene, helper: WebXRExperienceHelper, options: WebXREnterExitUIOptions): Promise<WebXREnterExitUI>;
+        private _enterXRWithButtonIndex;
         /**
          * Disposes of the XR UI component
          */
         dispose(): void;
+        private _onSessionGranted;
         private _updateButtons;
     }
 }
@@ -74051,7 +74082,7 @@ declare module BABYLON {
             /**
              * Enables physics to the current scene
              * @param gravity defines the scene's gravity for the physics engine
-             * @param plugin defines the physics engine to be used. defaults to OimoJS.
+             * @param plugin defines the physics engine to be used. defaults to CannonJS.
              * @return a boolean indicating if the physics engine was initialized
              */
             enablePhysics(gravity: Nullable<Vector3>, plugin?: IPhysicsEnginePlugin): boolean;
