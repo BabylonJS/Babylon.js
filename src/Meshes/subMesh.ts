@@ -80,6 +80,11 @@ export class SubMesh implements ICullable {
     }
 
     /** @hidden */
+    public get _drawWrapperOverride(): Nullable<DrawWrapper> {
+        return this._mainDrawWrapperOverride;
+    }
+
+    /** @hidden */
     public _setMainDrawWrapperOverride(wrapper: Nullable<DrawWrapper>): void {
         this._mainDrawWrapperOverride = wrapper;
         const drawWrapper = this._mainDrawWrapperOverride ?? this._mainDrawWrapper;

@@ -12,7 +12,6 @@ export class DrawWrapper {
     public defines: Nullable<string | MaterialDefines>;
     public materialContext?: IMaterialContext;
     public drawContext?: IDrawContext;
-    public userData: any;
 
     public static IsWrapper(effect: Effect | DrawWrapper): effect is DrawWrapper {
         return (effect as Effect).getPipelineContext === undefined;

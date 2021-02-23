@@ -23,6 +23,7 @@ import { Observable } from '../../Misc/observable';
 import { _DevTools } from '../../Misc/devTools';
 import { EffectFallbacks } from '../../Materials/effectFallbacks';
 import { RenderingManager } from '../../Rendering/renderingManager';
+import { DrawWrapper } from "../../Materials/drawWrapper";
 
 import "../../Shaders/shadowMap.fragment";
 import "../../Shaders/shadowMap.vertex";
@@ -1112,8 +1113,8 @@ export class ShadowGenerator implements IShadowGenerator {
 
             const shadowDepthWrapper = material.shadowDepthWrapper;
 
-            const drawWrapper = subMesh._getDrawWrapper(this._nameForDrawWrapper)!;
-            const effect = drawWrapper.effect!;
+            const drawWrapper = shadowDepthWrapper?.getEffect(subMesh, this) ?? subMesh._getDrawWrapper(this._nameForDrawWrapper)!;
+            const effect = DrawWrapper.GetEffect(drawWrapper)!;
 
             engine.enableEffect(drawWrapper);
 
