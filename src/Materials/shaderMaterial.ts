@@ -473,7 +473,7 @@ export class ShaderMaterial extends Material {
      * @returns a boolean indicating that the submesh is ready or not
      */
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
-        return this.isReady(mesh, useInstances);
+        return this.isReady(mesh, useInstances, subMesh);
     }
 
     /**
