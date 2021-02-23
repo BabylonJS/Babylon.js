@@ -1352,7 +1352,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
             let effect = subMeshEffect.effect!;
             let cachedDefines = subMeshEffect.defines;
-    
+
             var attribs = [VertexBuffer.PositionKind];
 
             var mesh = subMesh.getMesh();

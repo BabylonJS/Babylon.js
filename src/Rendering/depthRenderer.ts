@@ -134,7 +134,7 @@ export class DepthRenderer {
 
                 const drawWrapper = subMesh._getDrawWrapper(this._nameForDrawWrapper)!;
                 const effect = DrawWrapper.GetEffect(drawWrapper)!;
-    
+
                 engine.enableEffect(drawWrapper);
 
                 renderingMesh._bind(subMesh, effect, material.fillMode);
