@@ -189,7 +189,9 @@ export class ShadowDepthWrapper {
     public isReadyForSubMesh(subMesh: SubMesh, defines: string[], shadowGenerator: ShadowGenerator, useInstances: boolean): boolean {
         if (this.standalone) {
             // will ensure the effect is (re)created for the base material
-            this._baseMaterial.isReadyForSubMesh(subMesh.getMesh(), subMesh, useInstances);
+            if (!this._baseMaterial.isReadyForSubMesh(subMesh.getMesh(), subMesh, useInstances)) {
+                return false;
+            }
         }
 
         return this._makeEffect(subMesh, defines, shadowGenerator)?.isReady() ?? false;
