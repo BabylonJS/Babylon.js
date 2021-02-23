@@ -806,7 +806,7 @@ export class Animation {
 
     /**
      * Evaluate the animation value at a given frame
-     * @param currentFrame 
+     * @param currentFrame defines the frame where we want to evaluate the animation
      * @returns the animation value
      */
     public evaluate(currentFrame: number) {
@@ -814,7 +814,7 @@ export class Animation {
             key: 0,
             repeatCount: 0,
             loopMode: Animation.ANIMATIONLOOPMODE_CONSTANT
-        })
+        });
     }
 
     /**

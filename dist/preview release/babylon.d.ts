@@ -38337,6 +38337,12 @@ declare module BABYLON {
          */
         _getKeyValue(value: any): any;
         /**
+         * Evaluate the animation value at a given frame
+         * @param currentFrame defines the frame where we want to evaluate the animation
+         * @returns the animation value
+         */
+        evaluate(currentFrame: number): any;
+        /**
          * @hidden Internal use only
          */
         _interpolate(currentFrame: number, state: _IAnimationState): any;
