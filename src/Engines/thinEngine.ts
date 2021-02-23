@@ -2532,6 +2532,8 @@ export class ThinEngine {
             return;
         }
 
+        effect = effect as Effect;
+
         // Use program
         this.bindSamplers(effect);
 

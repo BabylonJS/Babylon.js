@@ -3,7 +3,7 @@ import { IMaterialContext } from "../Engines/IMaterialContext";
 import { Nullable } from "../types";
 
 declare type ThinEngine = import("../Engines/thinEngine").ThinEngine;
-declare type Effect = import("./Effect").Effect;
+declare type Effect = import("./effect").Effect;
 declare type MaterialDefines = import("./materialDefines").MaterialDefines;
 
 /** @hidden */
