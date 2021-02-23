@@ -30,7 +30,7 @@ export class LayerPropertyGridComponent extends React.Component<ILayerPropertyGr
 
         return (
             <div className="pane">
-                <LineContainerComponent title="GENERAL">
+                <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
                     <TextLineComponent label="Class" value={layer.getClassName()} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={layer} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                     <SliderLineComponent label="Intensity" 
