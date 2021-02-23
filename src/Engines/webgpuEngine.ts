@@ -243,9 +243,7 @@ export class WebGPUEngine extends Engine {
     /** @hidden */
     public dbgShowShaderCode = false;
     /** @hidden */
-    public dbgSanityChecks = false;
-    /** @hidden */
-    public dbgGenerateLogs = false;
+    public dbgSanityChecks = true;
     /** @hidden */
     public dbgVerboseLogsForFirstFrames = false;
     /** @hidden */
@@ -346,6 +344,7 @@ export class WebGPUEngine extends Engine {
      * True to be in compatibility mode, meaning rendering in the same way than OpenGL.
      * Setting the property to false will improve performances, but can lead to rendering artifacts.
      * See @TODO WEBGPU DOC PAGE
+     * @hidden
      */
     public compatibilityMode = true;
 
@@ -622,9 +621,6 @@ export class WebGPUEngine extends Engine {
         this._colorFormat = this._options.swapChainFormat!;
         this._mainRenderPassWrapper.colorAttachmentGPUTextures = [new WebGPUHardwareTexture()];
         this._mainRenderPassWrapper.colorAttachmentGPUTextures[0].format = this._colorFormat;
-        if (this.dbgGenerateLogs) {
-            console.log("Swap chain preferred format:", this._context.getSwapChainPreferredFormat(this._adapter));
-        }
     }
 
     // Set default values as WebGL with depth and stencil attachment for the broadest Compat.
