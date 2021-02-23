@@ -20,7 +20,7 @@ import { IInspectable } from '../Misc/iInspectable';
 import { Plane } from '../Maths/math.plane';
 import { ShadowDepthWrapper } from './shadowDepthWrapper';
 import { MaterialHelper } from './materialHelper';
-import { IMaterialContext } from "../Engines";
+import { IMaterialContext } from "../Engines/IMaterialContext";
 import { DrawWrapper } from "./drawWrapper";
 
 declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
