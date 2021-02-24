@@ -405,6 +405,14 @@ export class DeviceInputSystem implements IDisposable {
             const deviceType = (evt.pointerType === "mouse") ? DeviceType.Mouse : DeviceType.Touch;
             const deviceSlot = (evt.pointerType === "mouse") ? 0 : evt.pointerId;
 
+            if (!this._inputs[deviceType]) {
+                this._inputs[deviceType] = [];
+            }
+
+            if (!this._inputs[deviceType][deviceSlot]) {
+                this._addPointerDevice(deviceType, deviceSlot, evt.clientX, evt.clientY);
+            }
+
             const pointer = this._inputs[deviceType][deviceSlot];
             if (pointer) {
                 const previousHorizontal = pointer[PointerInput.Horizontal];
