@@ -239,15 +239,15 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             case "Button": {
                 const control = this.state.currentNode?.guiControl as Control;
                 const button = this.state.currentNode?.guiControl as Button;
-                var buttonMenu = []; 
+                var buttonMenu = [];
                 buttonMenu.push(<ControlPropertyGridComponent key="buttonMenu" control={control} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
-                if(button.textBlock) {
-                    buttonMenu.push(<TextBlockPropertyGridComponent key="textBlockMenu" textBlock={button.textBlock} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}/>);
+                if (button.textBlock) {
+                    buttonMenu.push(<TextBlockPropertyGridComponent key="textBlockMenu" textBlock={button.textBlock} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
                 }
-                if(button.image) {
+                if (button.image) {
                     buttonMenu.push(<ImagePropertyGridComponent key="imageMenu" image={button.image} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />);
                 }
-                
+
                 return buttonMenu;
             }
         }
@@ -263,20 +263,22 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         if (this.state.currentNode) {
             return (
                 <div id="propertyTab">
-                    <div id="header" >
+                    <div id="header">
                         <img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
                         <div id="title">GUI EDITOR</div>
                     </div>
                     {this.renderProperties()}
-                        <ParentingPropertyGridComponent guiNode={this.state.currentNode} guiNodes={this.props.globalState.workbench.nodes} globalState={this.props.globalState}></ParentingPropertyGridComponent>
-                        <ButtonLineComponent label="DELETE GUI" onClick={() => {
-                           this.state.currentNode?.dispose();
-                           this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-                        }} />
+                    <ParentingPropertyGridComponent guiNode={this.state.currentNode} guiNodes={this.props.globalState.workbench.nodes} globalState={this.props.globalState}></ParentingPropertyGridComponent>
+                    <ButtonLineComponent
+                        label="DELETE GUI"
+                        onClick={() => {
+                            this.state.currentNode?.dispose();
+                            this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                        }}
+                    />
                 </div>
             );
         }
-  
 
         return (
             <div id="propertyTab">
@@ -290,11 +292,14 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <TextLineComponent label="Help" value="doc.babylonjs.com" underline={true} onLink={() => window.open("https://doc.babylonjs.com", "_blank")} />
                     </LineContainerComponent>
                     <LineContainerComponent title="OPTIONS">
-                        <Vector2LineComponent label="GUI Canvas Size" target={this.state} propertyName="textureSize" onChange={ newvalue => 
-                            {
+                        <Vector2LineComponent
+                            label="GUI Canvas Size"
+                            target={this.state}
+                            propertyName="textureSize"
+                            onChange={(newvalue) => {
                                 this.props.globalState.workbench.resizeGuiTexture(newvalue);
-                            }}> 
-                            </Vector2LineComponent>
+                            }}
+                        ></Vector2LineComponent>
                         <CheckBoxLineComponent
                             label="Show grid"
                             isSelected={() => DataStorage.ReadBoolean("ShowGrid", true)}
