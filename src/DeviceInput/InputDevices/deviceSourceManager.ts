@@ -171,7 +171,9 @@ export class DeviceSourceManager implements IDisposable {
      * @param deviceSlot "Slot" or index that device is referenced in
      */
     private _removeDevice(deviceType: DeviceType, deviceSlot: number) {
-        delete this._devices[deviceType][deviceSlot];
+        if (this._devices[deviceType]?.[deviceSlot]) {
+            delete this._devices[deviceType][deviceSlot];
+        }
         this._updateFirstDevices(deviceType);
     }
 
