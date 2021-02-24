@@ -68,6 +68,7 @@
 - Added snippet server from url functionality ([msDestiny14](https://github.com/msDestiny14))
 - Added scrolling and zooming functionality ([msDestiny14](https://github.com/msDestiny14))
 - Added resizable canvas ([msDestiny14](https://github.com/msDestiny14))
+- Added parenting system ([msDestiny14](https://github.com/msDestiny14))
 
 ### GUI
 
