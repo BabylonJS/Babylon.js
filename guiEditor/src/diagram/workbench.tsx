@@ -160,6 +160,14 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return newGuiNode;
     }
 
+
+    removeBlock(guiNode: Nullable<GUINode>) {
+        if(guiNode === null) return;
+        const index = this._guiNodes.findIndex(node => node === guiNode);
+        this._guiNodes.splice(index, 1);
+        this.globalState.guiTexture.removeControl(guiNode.guiControl);  
+    }
+
     componentDidMount() {
         this._rootContainer = this.props.globalState.hostDocument.getElementById("workbench-container") as HTMLDivElement;
         this._gridCanvas = this.props.globalState.hostDocument.getElementById("workbench-canvas-container") as HTMLDivElement;
@@ -202,7 +210,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     onDown(evt: React.PointerEvent<HTMLElement>) {
         this._rootContainer.setPointerCapture(evt.pointerId);
-
+ 
         if(!this.isOverGUINode) {
             this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         }
