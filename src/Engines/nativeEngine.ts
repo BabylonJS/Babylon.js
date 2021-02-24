@@ -143,7 +143,7 @@ interface INativeEngine {
     setTextureAnisotropicLevel(texture: WebGLTexture, value: number): void;
     setTexture(uniform: WebGLUniformLocation, texture: Nullable<WebGLTexture>): void;
     deleteTexture(texture: Nullable<WebGLTexture>): void;
-    createImageBitmap(parameters: any): ImageBitmap;
+    createImageBitmap(data: ArrayBufferView): ImageBitmap;
     resizeImageBitmap(image: ImageBitmap, bufferWidth: number, bufferHeight: number) : Uint8Array;
 
     createFramebuffer(texture: WebGLTexture, width: number, height: number, format: number, samplingMode: number, generateStencilBuffer: boolean, generateDepthBuffer: boolean, generateMips: boolean): WebGLFramebuffer;
@@ -1785,12 +1785,10 @@ export class NativeEngine extends Engine {
                 const image = this._native.createImageBitmap(args[0][0]);
                 if (image) {
                     resolve(image);
-                } else if (reject) {
-                    reject();
+                    return;
                 }
-                return;
             }
-            throw new Error(`Unsupported data for createImageBitmap.`);
+            reject(`Unsupported data for createImageBitmap.`);
         });
     }
 
