@@ -14034,13 +14034,13 @@ declare module BABYLON {
          * @param name defines the name of the input to look for
          * @returns the input or null if not found
          */
-        getInputByName(name: string): Nullable<NodeMaterialConnectionPoint>;
+        getInputByName(name: string): NodeMaterialConnectionPoint | null;
         /**
          * Find an output by its name
          * @param name defines the name of the output to look for
          * @returns the output or null if not found
          */
-        getOutputByName(name: string): Nullable<NodeMaterialConnectionPoint>;
+        getOutputByName(name: string): NodeMaterialConnectionPoint | null;
         /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
         visibleInInspector: boolean;
         /** Gets or sets a boolean indicating that this input can be edited from a collapsed frame*/
@@ -14098,19 +14098,19 @@ declare module BABYLON {
          * @param forOutput defines an optional connection point to check compatibility with
          * @returns the first available input or null
          */
-        getFirstAvailableInput(forOutput?: Nullable<NodeMaterialConnectionPoint>): Nullable<NodeMaterialConnectionPoint>;
+        getFirstAvailableInput(forOutput?: Nullable<NodeMaterialConnectionPoint>): NodeMaterialConnectionPoint | null;
         /**
          * Will return the first available output e.g. the first one which is not yet connected and not a varying
          * @param forBlock defines an optional block to check compatibility with
          * @returns the first available input or null
          */
-        getFirstAvailableOutput(forBlock?: Nullable<NodeMaterialBlock>): Nullable<NodeMaterialConnectionPoint>;
+        getFirstAvailableOutput(forBlock?: Nullable<NodeMaterialBlock>): NodeMaterialConnectionPoint | null;
         /**
          * Gets the sibling of the given output
          * @param current defines the current output
          * @returns the next output in the list or null
          */
-        getSiblingOutput(current: NodeMaterialConnectionPoint): Nullable<NodeMaterialConnectionPoint>;
+        getSiblingOutput(current: NodeMaterialConnectionPoint): NodeMaterialConnectionPoint | null;
         /**
          * Connect current block with another block
          * @param other defines the block to connect with
@@ -14204,7 +14204,7 @@ declare module BABYLON {
          * @param rootUrl defines the root URL to use to load textures and relative dependencies
          * @returns a copy of the current block
          */
-        clone(scene: Scene, rootUrl?: string): Nullable<NodeMaterialBlock>;
+        clone(scene: Scene, rootUrl?: string): NodeMaterialBlock | null;
         /**
          * Serializes this block in a JSON representation
          * @returns the serialized block object
@@ -18373,13 +18373,13 @@ declare module BABYLON {
          * @param name defines the name of the block to retrieve
          * @returns the required block or null if not found
          */
-        getBlockByName(name: string): Nullable<NodeMaterialBlock>;
+        getBlockByName(name: string): NodeMaterialBlock | null;
         /**
          * Get a block by its name
          * @param predicate defines the predicate used to find the good candidate
          * @returns the required block or null if not found
          */
-        getBlockByPredicate(predicate: (block: NodeMaterialBlock) => boolean): Nullable<NodeMaterialBlock>;
+        getBlockByPredicate(predicate: (block: NodeMaterialBlock) => boolean): NodeMaterialBlock | null;
         /**
          * Get an input block by its name
          * @param predicate defines the predicate used to find the good candidate
@@ -26201,9 +26201,9 @@ declare module BABYLON {
         /** defines if the animation must loop (default is false)  */
         loopAnimation: boolean;
         /** defines a callback to call when animation ends if it is not looping */
-        onAnimationEnd?: (() => void) | null | undefined;
+        onAnimationEnd?: Nullable<() => void> | undefined;
         /** defines a callback to call when animation loops */
-        onAnimationLoop?: (() => void) | null | undefined;
+        onAnimationLoop?: Nullable<() => void> | undefined;
         /** defines whether the animation should be evaluated additively */
         isAdditive: boolean;
         private _localDelayOffset;
@@ -26273,9 +26273,9 @@ declare module BABYLON {
         /** defines if the animation must loop (default is false)  */
         loopAnimation?: boolean, speedRatio?: number, 
         /** defines a callback to call when animation ends if it is not looping */
-        onAnimationEnd?: (() => void) | null | undefined, animations?: Animation[], 
+        onAnimationEnd?: Nullable<() => void> | undefined, animations?: Animation[], 
         /** defines a callback to call when animation loops */
-        onAnimationLoop?: (() => void) | null | undefined, 
+        onAnimationLoop?: Nullable<() => void> | undefined, 
         /** defines whether the animation should be evaluated additively */
         isAdditive?: boolean);
         /**
@@ -27082,7 +27082,7 @@ declare module BABYLON {
          * @param mesh The mesh that this bone is attached to
          * @param result The vector3 that the world direction will be copied to
          */
-        getDirectionToRef(localAxis: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
+        getDirectionToRef(localAxis: Vector3, mesh: Nullable<AbstractMesh> | undefined, result: Vector3): void;
         /**
          * Get the euler rotation of the bone in local or world space
          * @param space The space that the rotation should be in
@@ -27096,7 +27096,7 @@ declare module BABYLON {
          * @param mesh The mesh that this bone is attached to.  This is only used in world space
          * @param result The vector3 that the rotation should be copied to
          */
-        getRotationToRef(space: Space | undefined, mesh: AbstractMesh | null | undefined, result: Vector3): void;
+        getRotationToRef(space: Space | undefined, mesh: Nullable<AbstractMesh> | undefined, result: Vector3): void;
         /**
          * Get the quaternion rotation of the bone in either local or world space
          * @param space The space that the rotation should be in
@@ -27110,7 +27110,7 @@ declare module BABYLON {
          * @param mesh The mesh that this bone is attached to.  This is only used in world space
          * @param result The quaternion that the rotation should be copied to
          */
-        getRotationQuaternionToRef(space: Space | undefined, mesh: AbstractMesh | null | undefined, result: Quaternion): void;
+        getRotationQuaternionToRef(space: Space | undefined, mesh: Nullable<AbstractMesh> | undefined, result: Quaternion): void;
         /**
          * Get the rotation matrix of the bone in local or world space
          * @param space The space that the rotation should be in
@@ -27138,7 +27138,7 @@ declare module BABYLON {
          * @param mesh The mesh that this bone is attached to
          * @param result The vector3 that the world position should be copied to
          */
-        getAbsolutePositionFromLocalToRef(position: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
+        getAbsolutePositionFromLocalToRef(position: Vector3, mesh: Nullable<AbstractMesh> | undefined, result: Vector3): void;
         /**
          * Get the local position of a point that is in world space
          * @param position The world position
@@ -27152,7 +27152,7 @@ declare module BABYLON {
          * @param mesh The mesh that this bone is attached to
          * @param result The vector3 that the local position should be copied to
          */
-        getLocalPositionFromAbsoluteToRef(position: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
+        getLocalPositionFromAbsoluteToRef(position: Vector3, mesh: Nullable<AbstractMesh> | undefined, result: Vector3): void;
         /**
          * Set the current local matrix as the restPose for this bone.
          */
@@ -40414,7 +40414,7 @@ declare module BABYLON {
         private _webGLTexture;
         private _context;
         get underlyingResource(): Nullable<WebGLTexture>;
-        constructor(existingTexture: WebGLTexture | null | undefined, context: WebGLRenderingContext);
+        constructor(existingTexture: Nullable<WebGLTexture> | undefined, context: WebGLRenderingContext);
         setUsage(textureSource: number, generateMipMaps: boolean, isCube: boolean, width: number, height: number): void;
         set(hardwareTexture: WebGLTexture): void;
         reset(): void;
@@ -41592,7 +41592,7 @@ declare module BABYLON {
         protected _createTexture(): WebGLTexture;
         /** @hidden */
         _createHardwareTexture(): HardwareTextureWrapper;
-        protected _createTextureBase(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number | undefined, onLoad: (() => void) | null | undefined, onError: ((message: string, exception: any) => void) | null | undefined, prepareTexture: (texture: InternalTexture, extension: string, scene: Nullable<ISceneLike>, img: HTMLImageElement | ImageBitmap | {
+        protected _createTextureBase(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number | undefined, onLoad: Nullable<() => void> | undefined, onError: Nullable<(message: string, exception: any) => void> | undefined, prepareTexture: (texture: InternalTexture, extension: string, scene: Nullable<ISceneLike>, img: HTMLImageElement | ImageBitmap | {
             width: number;
             height: number;
         }, invertY: boolean, noMipmap: boolean, isCompressed: boolean, processFunction: (width: number, height: number, img: HTMLImageElement | ImageBitmap | {
@@ -43390,7 +43390,7 @@ declare module BABYLON {
         deleteInstancesBuffer(buffer: WebGLBuffer): void;
         private _clientWaitAsync;
         /** @hidden */
-        _readPixelsAsync(x: number, y: number, w: number, h: number, format: number, type: number, outputBuffer: ArrayBufferView): Nullable<Promise<ArrayBufferView>>;
+        _readPixelsAsync(x: number, y: number, w: number, h: number, format: number, type: number, outputBuffer: ArrayBufferView): Promise<ArrayBufferView> | null;
         dispose(): void;
         private _disableTouchAction;
         /**
@@ -48980,7 +48980,7 @@ declare module BABYLON {
          * @param targetConverter defines a function used to convert animation targets from the asset container to the scene (default: search node by name)
          * @returns an array of the new AnimationGroup added to the scene (empty array if none)
          */
-        mergeAnimationsTo(scene: Scene | null | undefined, animatables: Animatable[], targetConverter?: Nullable<(target: any) => Nullable<Node>>): AnimationGroup[];
+        mergeAnimationsTo(scene: Nullable<Scene> | undefined, animatables: Animatable[], targetConverter?: Nullable<(target: any) => Nullable<Node>>): AnimationGroup[];
     }
 }
 declare module BABYLON {
@@ -56185,7 +56185,7 @@ declare module BABYLON {
         /**
          * Backwards compatibility due to a deeply-integrated typo
          */
-        get handness(): XREye;
+        get handness(): MotionControllerHandedness;
         /**
          * Pulse (vibrate) this controller
          * If the controller does not support pulses, this function will fail silently and return Promise<false> directly after called
@@ -81076,7 +81076,7 @@ declare module BABYLON {
         /** the controller to which the hand correlates */
         xrController: WebXRInputSource, 
         /** the meshes to be used to track the hand joints */
-        trackedMeshes: Map<string, AbstractMesh>, _handMesh?: AbstractMesh | undefined, _rigMapping?: string[] | undefined, disableDefaultHandMesh?: boolean, _nearInteractionMesh?: AbstractMesh | null | undefined, _leftHandedMeshes?: boolean | undefined);
+        trackedMeshes: Map<string, AbstractMesh>, _handMesh?: AbstractMesh | undefined, _rigMapping?: string[] | undefined, disableDefaultHandMesh?: boolean, _nearInteractionMesh?: Nullable<AbstractMesh> | undefined, _leftHandedMeshes?: boolean | undefined);
         /**
          * Get the hand mesh. It is possible that the hand mesh is not yet ready!
          */
