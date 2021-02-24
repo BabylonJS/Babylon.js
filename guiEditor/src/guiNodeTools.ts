@@ -61,15 +61,15 @@ export class GUINodeTools {
                 element.isPointerBlocker = true;
                 return element;
             case "InputText":
-                element = new InputText();
+                element = new InputText("InputText");
                 element.maxWidth = 0.6;
                 element.text = "Click Me";
                 break;
             case "InputPassword":
-                element = new InputPassword();
+                element = new InputPassword("InputPassword");
                 break;
             case "Grid":
-                element = new Grid();
+                element = new Grid("Grid");
                 element.addColumnDefinition(100, true);
                 element.addColumnDefinition(0.5);
                 element.addColumnDefinition(0.5);
@@ -79,12 +79,12 @@ export class GUINodeTools {
                 element.isHighlighted = true;
                 return element;
             case "DisplayGrid":
-                element = new DisplayGrid();
+                element = new DisplayGrid("DisplayGrid");
                 element.width = "100px";
                 element.height = "100px";
                 return element;
             case "StackPanel":
-                element = new StackPanel();
+                element = new StackPanel("StackPanel");
                 element.width = "100px";
                 element.height = "100px";
                 element.isHighlighted = true;
