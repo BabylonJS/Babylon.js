@@ -95,7 +95,7 @@ export class GUINode {
         this._isSelected = value;
 
         if (value) {
-            this._globalState.onSelectionChangedObservable.notifyObservers(this);;
+            this._globalState.onSelectionChangedObservable.notifyObservers(this);
         }
     }
 
@@ -104,7 +104,7 @@ export class GUINode {
         this._ownerCanvas = this._globalState.workbench;
         this.x = guiControl.leftInPixels;
         this.y = guiControl.topInPixels;
-        
+
         this.enableEditorProperties();
 
         guiControl.onPointerUpObservable.add((evt) => {
@@ -128,8 +128,8 @@ export class GUINode {
 
         this._onSelectionBoxMovedObserver = this._globalState.onSelectionBoxMoved.add((rect1) => {});
 
-        if(this.isContainer()) {
-            (this.guiControl as Container).children.forEach(childControl => {
+        if (this.isContainer()) {
+            (this.guiControl as Container).children.forEach((childControl) => {
                 var newGuiNode = new GUINode(this._globalState, childControl);
                 this.addChildGui(newGuiNode);
             });
@@ -154,8 +154,8 @@ export class GUINode {
     public clicked: boolean;
     public _onMove(evt: Vector2, startPos: Vector2, ignorClick: boolean = false) {
         if (!this.clicked && !ignorClick) return false;
-        let newX = (evt.x - startPos.x);
-        let newY = (evt.y - startPos.y);
+        let newX = evt.x - startPos.x;
+        let newY = evt.y - startPos.y;
 
         this.x += newX;
         this.y += newY;
@@ -167,7 +167,7 @@ export class GUINode {
     }
 
     public updateVisual() {
-        if((this.x != this.guiControl.leftInPixels || this.y != this.guiControl.topInPixels) && this.parent == null) {
+        if (this.x != this.guiControl.leftInPixels || this.y != this.guiControl.topInPixels) {
             this.x = this.guiControl.leftInPixels;
             this.y = this.guiControl.topInPixels;
         }
@@ -196,15 +196,14 @@ export class GUINode {
     public removeChildGui(childNode: GUINode) {
         if (!this.isContainer) return;
         childNode.parent = null;
-        const index = this.children.findIndex(node => node === childNode);
+        const index = this.children.findIndex((node) => node === childNode);
         this.children.splice(index, 1);
         (this.guiControl as Container).removeControl(childNode.guiControl);
         this._ownerCanvas.globalState.guiTexture.addControl(childNode.guiControl);
     }
 
     public dispose() {
-        // notify frame observers that this node is being deleted
-        if(this.parent === null) {
+        if (this.parent === null) {
             this._ownerCanvas.removeBlock(this);
         }
 
@@ -222,7 +221,7 @@ export class GUINode {
             this._globalState.onSelectionBoxMoved.remove(this._onSelectionBoxMovedObserver);
         }
 
-        this.children.forEach(element => {
+        this.children.forEach((element) => {
             element.dispose();
         });
         this.guiControl.dispose();
