@@ -250,7 +250,7 @@ export class MorphTargetManager implements IDisposable {
         this._supportsUVs = true;
         this._vertexCount = 0;
 
-        if (!this._morphTargetTextureIndices || this._morphTargetTextureIndices.length !== this._targets.length) {
+        if (!this._morphTargetTextureIndices || this._morphTargetTextureIndices.length !== this._targets.length && this.optimizeInfluencers) {
             this._morphTargetTextureIndices = new Float32Array(this._targets.length);
         }
 
