@@ -9803,7 +9803,7 @@ declare module BABYLON {
         _computeLocalCameraSpeed(): number;
         /**
          * Defines the target the camera should look at.
-         * @param target Defines the new target as a Vector or a mesh
+         * @param target Defines the new target as a Vector
          */
         setTarget(target: Vector3): void;
         /**
@@ -52625,6 +52625,11 @@ declare module BABYLON {
         radius: number, 
         /** Define the camera target (the mesh it should follow) */
         target: Nullable<AbstractMesh>, scene: Scene);
+        /**
+         * Sets the mesh to follow with this camera.
+         * @param target the target to follow
+         */
+        setMeshTarget(target: Nullable<AbstractMesh>): void;
         private _follow;
         /** @hidden */
         _checkInputs(): void;
