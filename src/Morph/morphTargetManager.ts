@@ -31,7 +31,7 @@ export class MorphTargetManager implements IDisposable {
     private _uniqueId = 0;
     private _tempInfluences = new Array<number>();
     private _canUseTextureForTargets = false;
-    
+
     /** @hidden */
     public _targetStoreTexture: Nullable<RawTexture2DArray>;
 

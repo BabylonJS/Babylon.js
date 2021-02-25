@@ -32278,6 +32278,10 @@ declare module BABYLON {
         /** @hidden */
         _targetStoreTexture: Nullable<RawTexture2DArray>;
         /**
+         * Gets or sets a boolean indicating if influencers must be optimized (eg. recompiling the shader if less influencers are used)
+         */
+        optimizeInfluencers: boolean;
+        /**
          * Gets or sets a boolean indicating if normals must be morphed
          */
         enableNormalMorphing: boolean;
