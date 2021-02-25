@@ -174,6 +174,7 @@ export class DeviceSourceManager implements IDisposable {
         if (this._devices[deviceType]?.[deviceSlot]) {
             delete this._devices[deviceType][deviceSlot];
         }
+        // Even if we don't delete a device, we should still check for the first device as things may have gotten out of sync.
         this._updateFirstDevices(deviceType);
     }
 
@@ -194,10 +195,12 @@ export class DeviceSourceManager implements IDisposable {
             case DeviceType.Generic:
                 const devices = this._devices[type];
                 delete this._firstDevice[type];
-                for (let i = 0; i < devices.length; i++) {
-                    if (devices[i]) {
-                        this._firstDevice[type] = i;
-                        break;
+                if (devices) {
+                    for (let i = 0; i < devices.length; i++) {
+                        if (devices[i]) {
+                            this._firstDevice[type] = i;
+                            break;
+                        }
                     }
                 }
                 break;
