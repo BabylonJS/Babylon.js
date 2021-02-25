@@ -270,7 +270,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     {this.renderProperties()}
                     <ParentingPropertyGridComponent guiNode={this.state.currentNode} guiNodes={this.props.globalState.workbench.nodes} globalState={this.props.globalState}></ParentingPropertyGridComponent>
                     <ButtonLineComponent
-                        label="DELETE GUI"
+                        label="REMOVE ELEMENT"
                         onClick={() => {
                             this.state.currentNode?.dispose();
                             this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
