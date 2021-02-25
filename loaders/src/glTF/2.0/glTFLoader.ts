@@ -959,7 +959,6 @@ export class GLTFLoader implements IGLTFLoader {
         const targetNames = mesh.extras ? mesh.extras.targetNames : null;
 
         babylonMesh.morphTargetManager = new MorphTargetManager(babylonMesh.getScene());
-        babylonMesh.morphTargetManager.optimizeInfluencers = false;
         for (let index = 0; index < primitive.targets.length; index++) {
             const weight = node.weights ? node.weights[index] : mesh.weights ? mesh.weights[index] : 0;
             const name = targetNames ? targetNames[index] : `morphTarget${index}`;
