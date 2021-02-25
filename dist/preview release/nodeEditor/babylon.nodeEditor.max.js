@@ -57358,7 +57358,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
             return false;
         }
         var keepGraph = false;
-        if (!force && this.props.globalState.hostDocument.defaultView.confirm('Do you want to keep your current graph ?')) {
+        if (!force && this.props.globalState.hostDocument.defaultView.confirm('Do you want to keep your current graph (Hit cancel to get a new one) ?')) {
             keepGraph = true;
         }
         if (force) {

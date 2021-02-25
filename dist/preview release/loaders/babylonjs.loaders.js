@@ -7709,7 +7709,6 @@ var GLTFLoader = /** @class */ (function () {
         }
         var targetNames = mesh.extras ? mesh.extras.targetNames : null;
         babylonMesh.morphTargetManager = new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["MorphTargetManager"](babylonMesh.getScene());
-        babylonMesh.morphTargetManager.optimizeInfluencers = false;
         for (var index = 0; index < primitive.targets.length; index++) {
             var weight = node.weights ? node.weights[index] : mesh.weights ? mesh.weights[index] : 0;
             var name_4 = targetNames ? targetNames[index] : "morphTarget" + index;
