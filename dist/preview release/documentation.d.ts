@@ -40752,6 +40752,10 @@ declare module BABYLON {
          * Gets or sets a boolean indicating that uniform buffers must be disabled even if they are supported
          */
         disableUniformBuffers: boolean;
+        /**
+        * An event triggered when the engine is disposed.
+        */
+        readonly onDisposeObservable: Observable<ThinEngine>;
         private _frameId;
         /**
          * Gets the current frame id
@@ -54770,6 +54774,7 @@ declare module BABYLON {
     export class WebXRSessionManager implements IDisposable {
         /** The scene which the session should be created for */
         scene: Scene;
+        private _engine;
         private _referenceSpace;
         private _rttProvider;
         private _sessionEnded;
@@ -54844,9 +54849,9 @@ declare module BABYLON {
         /**
          * Gets the correct render target texture to be rendered this frame for this eye
          * @param eye the eye for which to get the render target
-         * @returns the render target for the specified eye
+         * @returns the render target for the specified eye or null if not available
          */
-        getRenderTargetTextureForEye(eye: XREye): RenderTargetTexture;
+        getRenderTargetTextureForEye(eye: XREye): Nullable<RenderTargetTexture>;
         /**
          * Creates a WebXRRenderTarget object for the XR session
          * @param onStateChangedObservable optional, mechanism for enabling/disabling XR rendering canvas, used only on Web
