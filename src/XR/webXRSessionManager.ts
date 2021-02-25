@@ -180,7 +180,7 @@ export class WebXRSessionManager implements IDisposable {
             this.session.addEventListener("end", () => {
                 this._sessionEnded = true;
 
-                // Remove render target texture and notify frame observers
+                // Remove render target texture
                 this._rttProvider = null;
 
                 if (this._engine) {
@@ -195,6 +195,7 @@ export class WebXRSessionManager implements IDisposable {
                     this._engine._renderLoop();
                 }
 
+                // Notify frame observers
                 this.onXRSessionEnded.notifyObservers(null);
             }, { once: true });
 
