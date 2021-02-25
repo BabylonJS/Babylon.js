@@ -270,7 +270,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         }
         let keepGraph = false;
 
-        if (!force && this.props.globalState.hostDocument.defaultView!.confirm('Do you want to keep your current graph ?')) {
+        if (!force && this.props.globalState.hostDocument.defaultView!.confirm('Do you want to keep your current graph (Hit cancel to get a new one) ?')) {
             keepGraph = true;
         }
 
