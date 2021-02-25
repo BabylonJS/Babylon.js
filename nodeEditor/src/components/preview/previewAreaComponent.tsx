@@ -22,6 +22,7 @@ interface IPreviewAreaComponentProps {
 export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentProps, {isLoading: boolean}> {
     private _onIsLoadingChangedObserver: Nullable<Observer<boolean>>;
     private _onResetRequiredObserver: Nullable<Observer<void>>;
+    private _onResetPreviewRequiredObserver: Nullable<Observer<void>>;
 
     constructor(props: IPreviewAreaComponentProps) {
         super(props);
@@ -32,11 +33,16 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
         this._onResetRequiredObserver = this.props.globalState.onResetRequiredObservable.add(() => {
             this.forceUpdate();
         });
+
+        this._onResetPreviewRequiredObserver = this.props.globalState.onResetPreviewRequiredObservable.add(() => {
+            this.forceUpdate();
+        });
     }
 
     componentWillUnmount() {
         this.props.globalState.onIsLoadingChanged.remove(this._onIsLoadingChangedObserver);
         this.props.globalState.onResetRequiredObservable.remove(this._onResetRequiredObserver);
+        this.props.globalState.onResetPreviewRequiredObservable.remove(this._onResetPreviewRequiredObserver);
     }
 
     changeBackFaceCulling(value: boolean) {
