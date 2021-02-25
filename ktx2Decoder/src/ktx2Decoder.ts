@@ -225,7 +225,7 @@ export class KTX2Decoder {
                     })
                     .catch((reason) => {
                         decodedData.errors = decodedData.errors ?? "";
-                        decodedData.errors += reason + "\n";
+                        decodedData.errors += reason + "\n" + reason.stack + "\n";
                         return null;
                     });
 
