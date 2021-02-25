@@ -266,6 +266,11 @@ export class ThinEngine {
      */
     public disableUniformBuffers = false;
 
+    /**
+    * An event triggered when the engine is disposed.
+    */
+   public readonly onDisposeObservable = new Observable<ThinEngine>();
+
     private _frameId = 0;
     /**
      * Gets the current frame id
@@ -4137,6 +4142,9 @@ export class ThinEngine {
         for (let request of this._activeRequests) {
             request.abort();
         }
+
+        this.onDisposeObservable.notifyObservers(this);
+        this.onDisposeObservable.clear();
     }
 
     /**
