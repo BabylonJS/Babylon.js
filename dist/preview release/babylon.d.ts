@@ -9803,7 +9803,7 @@ declare module BABYLON {
         _computeLocalCameraSpeed(): number;
         /**
          * Defines the target the camera should look at.
-         * @param target Defines the new target as a Vector or a mesh
+         * @param target Defines the new target as a Vector
          */
         setTarget(target: Vector3): void;
         /**
@@ -32278,6 +32278,10 @@ declare module BABYLON {
         /** @hidden */
         _targetStoreTexture: Nullable<RawTexture2DArray>;
         /**
+         * Gets or sets a boolean indicating if influencers must be optimized (eg. recompiling the shader if less influencers are used)
+         */
+        optimizeInfluencers: boolean;
+        /**
          * Gets or sets a boolean indicating if normals must be morphed
          */
         enableNormalMorphing: boolean;
@@ -40752,6 +40756,10 @@ declare module BABYLON {
          * Gets or sets a boolean indicating that uniform buffers must be disabled even if they are supported
          */
         disableUniformBuffers: boolean;
+        /**
+        * An event triggered when the engine is disposed.
+        */
+        readonly onDisposeObservable: Observable<ThinEngine>;
         private _frameId;
         /**
          * Gets the current frame id
@@ -52617,6 +52625,11 @@ declare module BABYLON {
         radius: number, 
         /** Define the camera target (the mesh it should follow) */
         target: Nullable<AbstractMesh>, scene: Scene);
+        /**
+         * Sets the mesh to follow with this camera.
+         * @param target the target to follow
+         */
+        setMeshTarget(target: Nullable<AbstractMesh>): void;
         private _follow;
         /** @hidden */
         _checkInputs(): void;
@@ -54770,6 +54783,7 @@ declare module BABYLON {
     export class WebXRSessionManager implements IDisposable {
         /** The scene which the session should be created for */
         scene: Scene;
+        private _engine;
         private _referenceSpace;
         private _rttProvider;
         private _sessionEnded;
@@ -54844,9 +54858,9 @@ declare module BABYLON {
         /**
          * Gets the correct render target texture to be rendered this frame for this eye
          * @param eye the eye for which to get the render target
-         * @returns the render target for the specified eye
+         * @returns the render target for the specified eye or null if not available
          */
-        getRenderTargetTextureForEye(eye: XREye): RenderTargetTexture;
+        getRenderTargetTextureForEye(eye: XREye): Nullable<RenderTargetTexture>;
         /**
          * Creates a WebXRRenderTarget object for the XR session
          * @param onStateChangedObservable optional, mechanism for enabling/disabling XR rendering canvas, used only on Web
