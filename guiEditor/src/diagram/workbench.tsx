@@ -103,6 +103,26 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.props.globalState.workbench = this;
     }
 
+    componentWillUnmount() {
+        if (this.props.globalState.hostDocument) {
+            this.props.globalState.hostDocument!.removeEventListener("keyup", () => this.onKeyUp(), false);
+            this.props.globalState.hostDocument!.removeEventListener(
+                "keydown",
+                (evt) => {
+                    this._ctrlKeyIsPressed = evt.ctrlKey;
+                },
+                false
+            );
+            this.props.globalState.hostDocument!.defaultView!.removeEventListener(
+                "blur",
+                () => {
+                    this._ctrlKeyIsPressed = false;
+                },
+                false
+            );
+        }
+    }
+
     clearGuiTexture() {
         while (this._guiNodes.length > 0) {
             this._guiNodes[this._guiNodes.length - 1].dispose();
@@ -244,7 +264,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         // Create our first scene.
         this._scene = new Scene(engine);
         this._scene.clearColor = new Color4(0.2, 0.2, 0.3, 1.0);
-        let camera = new ArcRotateCamera("Camera", -Math.PI / 2, 0, 1024, Vector3.Zero(), this._scene);
+        const camera = new ArcRotateCamera("Camera", -Math.PI / 2, 0, 1024, Vector3.Zero(), this._scene);
         const light = new HemisphericLight("light1", Axis.Y, this._scene);
         light.intensity = 0.9;
 
