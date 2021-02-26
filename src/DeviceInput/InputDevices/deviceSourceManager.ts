@@ -193,8 +193,8 @@ export class DeviceSourceManager implements IDisposable {
             case DeviceType.Xbox:
             case DeviceType.Switch:
             case DeviceType.Generic:
-                const devices = this._devices[type];
                 delete this._firstDevice[type];
+                const devices = this._devices[type];
                 if (devices) {
                     for (let i = 0; i < devices.length; i++) {
                         if (devices[i]) {
