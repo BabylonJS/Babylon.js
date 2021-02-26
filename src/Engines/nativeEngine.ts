@@ -1774,18 +1774,21 @@ export class NativeEngine extends Engine {
     }
 
     /**
-     * Engine abstraction for createImageBitmap with Native implementation
-     * @param args parameters for createImageBitmap implementation
+     * Engine abstraction for createImageBitmap
+     * @param image source for image
+     * @param options An object that sets options for the image's extraction.
      * @returns ImageBitmap
      */
-    public createImageBitmap(...args: any[]): Promise<ImageBitmap>
-    {
+    public createImageBitmap(image: ImageBitmapSource, options?: ImageBitmapOptions): Promise<ImageBitmap> {
         return new Promise((resolve, reject) => {
-            if (args.length && Array.isArray(args[0]) && args[0].length) {
-                const image = this._native.createImageBitmap(args[0][0]);
-                if (image) {
-                    resolve(image);
-                    return;
+            if (Array.isArray(image)) {
+                const arr = <Array<ArrayBufferView>>image;
+                if (arr.length) {
+                    const image = this._native.createImageBitmap(arr[0]);
+                    if (image) {
+                        resolve(image);
+                        return;
+                    }
                 }
             }
             reject(`Unsupported data for createImageBitmap.`);
