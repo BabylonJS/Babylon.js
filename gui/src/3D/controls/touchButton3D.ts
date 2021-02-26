@@ -96,7 +96,7 @@ export class TouchButton3D extends Button3D {
         }
 
         this._collisionMesh = collisionMesh;
-        this._collisionMesh.metadata = this;
+        this._injectGUI3DMetadata(this._collisionMesh).control = this;
 
         this.collidableFrontDirection = collisionMesh.forward;
 
@@ -226,39 +226,27 @@ export class TouchButton3D extends Button3D {
     }
 
     // Updates the stored state of the button, and fire pointer events
-    private _updateButtonState(id: number, newState: ButtonState, pointOnButton: Vector3) {
-        const buttonStateForId = this._activeInteractions.get(id) || ButtonState.None;
-
-        // Take into account all inputs interacting with the button to avoid state flickering
-        let previousPushState = 0;
-        this._activeInteractions.forEach(function(value, key) {
-            previousPushState = Math.max(previousPushState, value);
-        });
+    private _updateButtonState(uniqueId: number, newState: ButtonState, pointOnButton: Vector3) {
+        const buttonStateForId = this._activeInteractions.get(uniqueId) || ButtonState.None;
 
         if (buttonStateForId != newState) {
             if (newState == ButtonState.None) {
-                this._activeInteractions.delete(id);
+                this._activeInteractions.delete(uniqueId);
             }
             else {
-                this._activeInteractions.set(id, newState);
+                this._activeInteractions.set(uniqueId, newState);
             }
         }
 
-        let newPushState = 0;
-        this._activeInteractions.forEach(function(value, key) {
-            newPushState = Math.max(newPushState, value);
-        });
-
-        this._firePointerEvents(newPushState, previousPushState, pointOnButton);
+        this._firePointerEvents(uniqueId, newState, buttonStateForId, pointOnButton);
     }
 
-    protected _firePointerEvents(newButtonState: ButtonState, previousButtonState: ButtonState, pointOnButton: Vector3) {
-        const dummyPointerId = 0;
+    private _firePointerEvents(pointerId: number, newButtonState: ButtonState, previousButtonState: ButtonState, pointOnButton: Vector3) {
         const buttonIndex = 0; // Left click
 
         if (newButtonState == ButtonState.Press) {
             if (previousButtonState == ButtonState.Hover) {
-                this._onPointerDown(this, pointOnButton, dummyPointerId, buttonIndex);
+                this._onPointerDown(this, pointOnButton, pointerId, buttonIndex);
             }
             else if (previousButtonState == ButtonState.Press) {
                 this._onPointerMove(this, pointOnButton);
@@ -269,7 +257,7 @@ export class TouchButton3D extends Button3D {
                 this._onPointerEnter(this);
             }
             else if (previousButtonState == ButtonState.Press) {
-                this._onPointerUp(this, pointOnButton, dummyPointerId, buttonIndex, false);
+                this._onPointerUp(this, pointOnButton, pointerId, buttonIndex, false);
             }
             else {
                 this._onPointerMove(this, pointOnButton);
@@ -280,7 +268,7 @@ export class TouchButton3D extends Button3D {
                 this._onPointerOut(this);
             }
             else if (previousButtonState == ButtonState.Press) {
-                this._onPointerUp(this, pointOnButton, dummyPointerId, buttonIndex, false);
+                this._onPointerUp(this, pointOnButton, pointerId, buttonIndex, false);
                 this._onPointerOut(this);
             }
         }
@@ -288,19 +276,16 @@ export class TouchButton3D extends Button3D {
 
     // Decides whether to change button state based on the planar depth of the input source
     /** @hidden */
-    public _collisionCheckForStateChange(mesh: AbstractMesh) {
+    public _collisionCheckForStateChange(meshPos: Vector3, uniqueId: number, forceExit = false) {
         if (this._collidableInitialized) {
             this._updateDistanceOffsets();
 
-            const collidablePosition = mesh.getAbsolutePosition();
-            const inRange = this._isPrimedForInteraction(collidablePosition);
-
-            const uniqueId = mesh.uniqueId;
+            const inRange = this._isPrimedForInteraction(meshPos);
 
             let activeInteraction = this._activeInteractions.get(uniqueId);
-            if (inRange) {
-                const pointOnButton = this._getPointOnButton(collidablePosition);
-                const heightFromCenter = this._getHeightFromButtonCenter(collidablePosition);
+            if (inRange && !forceExit) {
+                const pointOnButton = this._getPointOnButton(meshPos);
+                const heightFromCenter = this._getHeightFromButtonCenter(meshPos);
                 const flickerDelta = 0.003;
 
                 this._lastTouchPoint = pointOnButton;
