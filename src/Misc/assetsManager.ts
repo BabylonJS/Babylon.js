@@ -668,7 +668,11 @@ export class CubeTextureAssetTask extends AbstractAssetTask implements ITextureA
         /**
          * Defines the explicit list of files (undefined by default)
          */
-        public files?: string[]) {
+        public files?: string[],
+        /**
+         * Defines the prefiltered texture option (default is false)
+         */
+        public prefiltered?: boolean) {
         super(name);
     }
 
@@ -688,7 +692,7 @@ export class CubeTextureAssetTask extends AbstractAssetTask implements ITextureA
             onError(message, exception);
         };
 
-        this.texture = new CubeTexture(this.url, scene, this.extensions, this.noMipmap, this.files, onload, onerror);
+        this.texture = new CubeTexture(this.url, scene, this.extensions, this.noMipmap, this.files, onload, onerror, undefined, this.prefiltered);
     }
 }
 
@@ -1011,10 +1015,11 @@ export class AssetsManager {
      * @param extensions defines the extension to use to load the cube map (can be null)
      * @param noMipmap defines if the texture must not receive mipmaps (false by default)
      * @param files defines the list of files to load (can be null)
+     * @param prefiltered defines the prefiltered texture option (default is false)
      * @returns a new CubeTextureAssetTask object
      */
-    public addCubeTextureTask(taskName: string, url: string, extensions?: string[], noMipmap?: boolean, files?: string[]): CubeTextureAssetTask {
-        var task = new CubeTextureAssetTask(taskName, url, extensions, noMipmap, files);
+    public addCubeTextureTask(taskName: string, url: string, extensions?: string[], noMipmap?: boolean, files?: string[], prefiltered?: boolean): CubeTextureAssetTask {
+        var task = new CubeTextureAssetTask(taskName, url, extensions, noMipmap, files, prefiltered);
         this._tasks.push(task);
 
         return task;

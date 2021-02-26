@@ -268,17 +268,17 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         if (this.props.globalState.mode === value) {
             return false;
         }
+        let keepGraph = false;
 
-        if (!force && !this.props.globalState.hostDocument.defaultView!.confirm('Are your sure? You will lose your current changes (if any) if they are not saved!')) {
-            this._modeSelect.current?.setValue(this.props.globalState.mode);
-            return false;
+        if (!force && this.props.globalState.hostDocument.defaultView!.confirm('Do you want to keep your current graph (Hit cancel to get a new one) ?')) {
+            keepGraph = true;
         }
 
         if (force) {
             this._modeSelect.current?.setValue(value);
         }
 
-        if (loadDefault) {
+        if (loadDefault && !keepGraph) {
             switch (value) {
                 case NodeMaterialModes.Material:
                     this.props.globalState.nodeMaterial!.setToDefault();
@@ -311,7 +311,11 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
         this.props.globalState.mode = value as NodeMaterialModes;
 
-        this.props.globalState.onResetRequiredObservable.notifyObservers();
+        if (!keepGraph) {
+            this.props.globalState.onResetRequiredObservable.notifyObservers();
+        } else {
+            this.props.globalState.onResetPreviewRequiredObservable.notifyObservers();
+        }
 
         return true;
     }
