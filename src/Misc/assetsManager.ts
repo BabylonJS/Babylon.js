@@ -670,7 +670,7 @@ export class CubeTextureAssetTask extends AbstractAssetTask implements ITextureA
          */
         public files?: string[],
         /**
-         * Defines the prefiltered option (default is false)
+         * Defines the prefiltered texture option (default is false)
          */
         public prefiltered?: boolean) {
         super(name);
@@ -1015,6 +1015,7 @@ export class AssetsManager {
      * @param extensions defines the extension to use to load the cube map (can be null)
      * @param noMipmap defines if the texture must not receive mipmaps (false by default)
      * @param files defines the list of files to load (can be null)
+     * @param prefiltered defines the prefiltered texture option (default is false)
      * @returns a new CubeTextureAssetTask object
      */
     public addCubeTextureTask(taskName: string, url: string, extensions?: string[], noMipmap?: boolean, files?: string[], prefiltered?: boolean): CubeTextureAssetTask {
