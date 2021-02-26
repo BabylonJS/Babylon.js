@@ -4,7 +4,7 @@ import { IMatrixLike, IVector3Like, IVector4Like, IColor3Like } from "../Maths/m
 import { Effect } from "./effect";
 import { ThinTexture } from "../Materials/Textures/thinTexture";
 import { DataBuffer } from '../Meshes/dataBuffer';
-import { ThinEngine } from "../Engines";
+import { ThinEngine } from "../Engines/thinEngine";
 
 import "../Engines/Extensions/engine.uniformBuffer";
 
