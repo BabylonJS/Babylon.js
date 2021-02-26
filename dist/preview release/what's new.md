@@ -35,6 +35,7 @@
 - Update glTF validator to `2.0.0-dev.3.3`. ([bghgary](https://github.com/bghgary))
 - Added support for KHR_xmp_json_ld for glTF loader. ([Sebavan](https://github.com/sebavan/), [bghgary](https://github.com/bghgary))
 - Added a `OptimizeNormals` option to the OBJ loader to smooth lighting ([Popov72](https://github.com/Popov72))
+- Added a `Prefiltered` option to the CubeTextureAssetTask ([MackeyK24](https://github.com/MackeyK24))
 
 ### Navigation
 
@@ -69,6 +70,7 @@
 - Added scrolling and zooming functionality ([msDestiny14](https://github.com/msDestiny14))
 - Added resizable canvas ([msDestiny14](https://github.com/msDestiny14))
 - Added parenting system ([msDestiny14](https://github.com/msDestiny14))
+- Added ability to change zorder ([msDestiny14](https://github.com/msDestiny14))
 
 ### GUI
 
@@ -105,6 +107,7 @@
 
 ## Bugs
 
+- Fix CubeTexture extension detection when rootUrl has a query string ([civa86](https://github.com/civa86))
 - Fix issue with the Promise polyfill where a return value was expected from resolve() ([Deltakosh](https://github.com/deltakosh))
 - Fix ArcRotateCamera panning with axis decomposition ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Fix an issue with keyboard control (re)attachment. ([#9411](https://github.com/BabylonJS/Babylon.js/issues/9411)) ([RaananW](https://github.com/RaananW))
@@ -133,6 +136,8 @@
 - Fix for DualSense gamepads being incorrectly read as DualShock gamepads ([PolygonalSun](https://github.com/PolygonalSun))
 - Fix for warning in chrome about passive wheel events ([#9777](https://github.com/BabylonJS/Babylon.js/pull/9777)) ([kaliatech](https://github.com/kaliatech))
 - Fix crash when cloning material in `AssetContainer.instantiateModelsToScene` when mesh is an instanced mesh ([Popov72](https://github.com/Popov72))
+- Fix Normalized quaternion when updating the node components ([CedricGuillemet](https://github.com/CedricGuillemet))
+- Fix update absolute position before use in PointerDragBehavior ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Fix issue with NinePatch displaying half pixel gaps between slices on Firefox browsers. ([Pryme8](https://github.com/Pryme8))
 - Fix issue when canvas loses focus while holding a pointer button ([PolygonalSun](https://github.com/PolygonalSun))
 - Fix issue where camera controls stay detached if PointerDragBehavior is disabled prematurely ([PolygonalSun](https://github.com/PolygonalSun))
@@ -141,6 +146,7 @@
 - Fix bones serialization to include their ids. This allows to retrieve bones (animation groups, etc.) once the scene has been re-serialized ([julien-moreau](https://github.com/julien-moreau))
 - Fix an issue with hand-detachment when using hand tracking in WebXR ([#9882](https://github.com/BabylonJS/Babylon.js/issues/9882)) ([RaananW](https://github.com/RaananW))
 - Fix issue with cursor and 'doNotHandleCursors' on GUI ([msDestiny14](https://github.com/msDestiny14))
+- Fix thin instances + animated bones not rendered in the depth renderer ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 

@@ -1545,7 +1545,7 @@ declare module "babylonjs-node-editor/diagram/graphNode" {
         set isSelected(value: boolean);
         constructor(block: NodeMaterialBlock, globalState: GlobalState);
         isOverlappingFrame(frame: GraphFrame): boolean;
-        getPortForConnectionPoint(point: NodeMaterialConnectionPoint): Nullable<NodePort>;
+        getPortForConnectionPoint(point: NodeMaterialConnectionPoint): NodePort | null;
         getLinksForConnectionPoint(point: NodeMaterialConnectionPoint): NodeLink[];
         private _refreshFrames;
         _refreshLinks(): void;
@@ -1584,6 +1584,7 @@ declare module "babylonjs-node-editor/globalState" {
         onRebuildRequiredObservable: Observable<void>;
         onBuiltObservable: Observable<void>;
         onResetRequiredObservable: Observable<void>;
+        onResetPreviewRequiredObservable: Observable<void>;
         onUpdateRequiredObservable: Observable<void>;
         onZoomToFitRequiredObservable: Observable<void>;
         onReOrganizedRequiredObservable: Observable<void>;
@@ -1872,6 +1873,7 @@ declare module "babylonjs-node-editor/components/preview/previewMeshControlCompo
         private colorInputRef;
         private filePickerRef;
         private _onResetRequiredObserver;
+        private _onResetPreviewRequiredObserver;
         constructor(props: IPreviewMeshControlComponent);
         componentWillUnmount(): void;
         changeMeshType(newOne: PreviewType): void;
@@ -1895,6 +1897,7 @@ declare module "babylonjs-node-editor/components/preview/previewAreaComponent" {
     }> {
         private _onIsLoadingChangedObserver;
         private _onResetRequiredObserver;
+        private _onResetPreviewRequiredObserver;
         constructor(props: IPreviewAreaComponentProps);
         componentWillUnmount(): void;
         changeBackFaceCulling(value: boolean): void;
@@ -4209,7 +4212,7 @@ declare module NODEEDITOR {
         set isSelected(value: boolean);
         constructor(block: BABYLON.NodeMaterialBlock, globalState: GlobalState);
         isOverlappingFrame(frame: GraphFrame): boolean;
-        getPortForConnectionPoint(point: BABYLON.NodeMaterialConnectionPoint): BABYLON.Nullable<NodePort>;
+        getPortForConnectionPoint(point: BABYLON.NodeMaterialConnectionPoint): NodePort | null;
         getLinksForConnectionPoint(point: BABYLON.NodeMaterialConnectionPoint): NodeLink[];
         private _refreshFrames;
         _refreshLinks(): void;
@@ -4233,6 +4236,7 @@ declare module NODEEDITOR {
         onRebuildRequiredObservable: BABYLON.Observable<void>;
         onBuiltObservable: BABYLON.Observable<void>;
         onResetRequiredObservable: BABYLON.Observable<void>;
+        onResetPreviewRequiredObservable: BABYLON.Observable<void>;
         onUpdateRequiredObservable: BABYLON.Observable<void>;
         onZoomToFitRequiredObservable: BABYLON.Observable<void>;
         onReOrganizedRequiredObservable: BABYLON.Observable<void>;
@@ -4487,6 +4491,7 @@ declare module NODEEDITOR {
         private colorInputRef;
         private filePickerRef;
         private _onResetRequiredObserver;
+        private _onResetPreviewRequiredObserver;
         constructor(props: IPreviewMeshControlComponent);
         componentWillUnmount(): void;
         changeMeshType(newOne: PreviewType): void;
@@ -4508,6 +4513,7 @@ declare module NODEEDITOR {
     }> {
         private _onIsLoadingChangedObserver;
         private _onResetRequiredObserver;
+        private _onResetPreviewRequiredObserver;
         constructor(props: IPreviewAreaComponentProps);
         componentWillUnmount(): void;
         changeBackFaceCulling(value: boolean): void;
