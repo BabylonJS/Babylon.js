@@ -1,12 +1,10 @@
 import { Logger } from "../Misc/logger";
 import { Nullable, FloatArray } from "../types";
-import { Matrix, Vector3, Vector4 } from "../Maths/math.vector";
-import { Engine } from "../Engines/engine";
+import { IMatrixLike, IVector3Like, IVector4Like, IColor3Like } from "../Maths/math.like";
 import { Effect } from "./effect";
-import { BaseTexture } from "../Materials/Textures/baseTexture";
+import { ThinTexture } from "../Materials/Textures/thinTexture";
 import { DataBuffer } from '../Meshes/dataBuffer';
-import { Color3 } from '../Maths/math.color';
-import { IMatrixLike } from '../Maths/math.like';
+import { ThinEngine } from "../Engines";
 
 import "../Engines/Extensions/engine.uniformBuffer";
 
@@ -24,7 +22,7 @@ export class UniformBuffer {
     /** @hidden */
     public static _updatedUbosInFrame: { [name: string]: number } = {};
 
-    private _engine: Engine;
+    private _engine: ThinEngine;
     private _buffer: Nullable<DataBuffer>;
     private _buffers : Array<DataBuffer>;
     private _bufferIndex: number;
@@ -133,28 +131,28 @@ export class UniformBuffer {
      * This is dynamic to allow compat with webgl 1 and 2.
      * You will need to pass the name of the uniform as well as the value.
      */
-    public updateVector3: (name: string, vector: Vector3) => void;
+    public updateVector3: (name: string, vector: IVector3Like) => void;
 
     /**
      * Lambda to Update vec4 of float from a Vector in a uniform buffer.
      * This is dynamic to allow compat with webgl 1 and 2.
      * You will need to pass the name of the uniform as well as the value.
      */
-    public updateVector4: (name: string, vector: Vector4) => void;
+    public updateVector4: (name: string, vector: IVector4Like) => void;
 
     /**
      * Lambda to Update vec3 of float from a Color in a uniform buffer.
      * This is dynamic to allow compat with webgl 1 and 2.
      * You will need to pass the name of the uniform as well as the value.
      */
-    public updateColor3: (name: string, color: Color3, suffix?: string) => void;
+    public updateColor3: (name: string, color: IColor3Like, suffix?: string) => void;
 
     /**
      * Lambda to Update vec4 of float from a Color in a uniform buffer.
      * This is dynamic to allow compat with webgl 1 and 2.
      * You will need to pass the name of the uniform as well as the value.
      */
-    public updateColor4: (name: string, color: Color3, alpha: number, suffix?: string) => void;
+    public updateColor4: (name: string, color: IColor3Like, alpha: number, suffix?: string) => void;
 
     /**
      * Lambda to Update a int a uniform buffer.
@@ -198,7 +196,7 @@ export class UniformBuffer {
      * @param dynamic Define if the buffer is updatable
      * @param name to assign to the buffer (debugging purpose)
      */
-    constructor(engine: Engine, data?: number[], dynamic?: boolean, name?: string) {
+    constructor(engine: ThinEngine, data?: number[], dynamic?: boolean, name?: string) {
         this._engine = engine;
         this._noUBO = !engine.supportsUniformBuffers;
         this._dynamic = dynamic;
@@ -412,7 +410,7 @@ export class UniformBuffer {
      * @param name Name of the uniform, as used in the uniform block in the shader.
      * @param mat A 4x4 matrix.
      */
-    public addMatrix(name: string, mat: Matrix) {
+    public addMatrix(name: string, mat: IMatrixLike) {
         this.addUniform(name, Array.prototype.slice.call(mat.toArray()));
     }
 
@@ -444,9 +442,8 @@ export class UniformBuffer {
      * @param name Name of the uniform, as used in the uniform block in the shader.
      * @param color Define the vec3 from a Color
      */
-    public addColor3(name: string, color: Color3) {
-        var temp = new Array<number>();
-        color.toArray(temp);
+    public addColor3(name: string, color: IColor3Like) {
+        var temp = [color.r, color.g, color.b];
         this.addUniform(name, temp);
     }
 
@@ -456,10 +453,8 @@ export class UniformBuffer {
      * @param color Define the rgb components from a Color
      * @param alpha Define the a component of the vec4
      */
-    public addColor4(name: string, color: Color3, alpha: number) {
-        var temp = new Array<number>();
-        color.toArray(temp);
-        temp.push(alpha);
+    public addColor4(name: string, color: IColor3Like, alpha: number) {
+        var temp = [color.r, color.g, color.b, alpha];
         this.addUniform(name, temp);
     }
 
@@ -468,9 +463,8 @@ export class UniformBuffer {
      * @param name Name of the uniform, as used in the uniform block in the shader.
      * @param vector Define the vec3 components from a Vector
      */
-    public addVector3(name: string, vector: Vector3) {
-        var temp = new Array<number>();
-        vector.toArray(temp);
+    public addVector3(name: string, vector: IVector3Like) {
+        var temp = [vector.x, vector.y, vector.z];
         this.addUniform(name, temp);
     }
 
@@ -840,39 +834,48 @@ export class UniformBuffer {
         this.updateUniform(name, mat, mat.length);
     }
 
-    private _updateVector3ForEffect(name: string, vector: Vector3) {
+    private _updateVector3ForEffect(name: string, vector: IVector3Like) {
         this._currentEffect.setVector3(name, vector);
     }
 
-    private _updateVector3ForUniform(name: string, vector: Vector3) {
-        vector.toArray(UniformBuffer._tempBuffer);
+    private _updateVector3ForUniform(name: string, vector: IVector3Like) {
+        UniformBuffer._tempBuffer[0] = vector.x;
+        UniformBuffer._tempBuffer[1] = vector.y;
+        UniformBuffer._tempBuffer[2] = vector.z;
         this.updateUniform(name, UniformBuffer._tempBuffer, 3);
     }
 
-    private _updateVector4ForEffect(name: string, vector: Vector4) {
+    private _updateVector4ForEffect(name: string, vector: IVector4Like) {
         this._currentEffect.setVector4(name, vector);
     }
 
-    private _updateVector4ForUniform(name: string, vector: Vector4) {
-        vector.toArray(UniformBuffer._tempBuffer);
+    private _updateVector4ForUniform(name: string, vector: IVector4Like) {
+        UniformBuffer._tempBuffer[0] = vector.x;
+        UniformBuffer._tempBuffer[1] = vector.y;
+        UniformBuffer._tempBuffer[2] = vector.z;
+        UniformBuffer._tempBuffer[3] = vector.w;
         this.updateUniform(name, UniformBuffer._tempBuffer, 4);
     }
 
-    private _updateColor3ForEffect(name: string, color: Color3, suffix = "") {
+    private _updateColor3ForEffect(name: string, color: IColor3Like, suffix = "") {
         this._currentEffect.setColor3(name + suffix, color);
     }
 
-    private _updateColor3ForUniform(name: string, color: Color3) {
-        color.toArray(UniformBuffer._tempBuffer);
+    private _updateColor3ForUniform(name: string, color: IColor3Like) {
+        UniformBuffer._tempBuffer[0] = color.r;
+        UniformBuffer._tempBuffer[1] = color.g;
+        UniformBuffer._tempBuffer[2] = color.b;
         this.updateUniform(name, UniformBuffer._tempBuffer, 3);
     }
 
-    private _updateColor4ForEffect(name: string, color: Color3, alpha: number, suffix = "") {
+    private _updateColor4ForEffect(name: string, color: IColor3Like, alpha: number, suffix = "") {
         this._currentEffect.setColor4(name + suffix, color, alpha);
     }
 
-    private _updateColor4ForUniform(name: string, color: Color3, alpha: number) {
-        color.toArray(UniformBuffer._tempBuffer);
+    private _updateColor4ForUniform(name: string, color: IColor3Like, alpha: number) {
+        UniformBuffer._tempBuffer[0] = color.r;
+        UniformBuffer._tempBuffer[1] = color.g;
+        UniformBuffer._tempBuffer[2] = color.b;
         UniformBuffer._tempBuffer[3] = alpha;
         this.updateUniform(name, UniformBuffer._tempBuffer, 4);
     }
@@ -924,7 +927,7 @@ export class UniformBuffer {
      * @param name Define the name of the sampler.
      * @param texture Define the texture to set in the sampler
      */
-    public setTexture(name: string, texture: Nullable<BaseTexture>) {
+    public setTexture(name: string, texture: Nullable<ThinTexture>) {
         this._currentEffect.setTexture(name, texture);
     }
 
