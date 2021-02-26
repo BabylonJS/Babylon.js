@@ -151,13 +151,13 @@ export class DepthRenderer {
                 // Bones
                 if (renderingMesh.useBones && renderingMesh.computeBonesUsingShaders && renderingMesh.skeleton) {
                     const skeleton = renderingMesh.skeleton;
-    
+
                     if (skeleton.isUsingTextureForMatrices) {
                         const boneTexture = skeleton.getTransformMatrixTexture(renderingMesh);
                         if (!boneTexture) {
                             return;
                         }
-    
+
                         this._effect.setTexture("boneSampler", boneTexture);
                         this._effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
                     } else {
