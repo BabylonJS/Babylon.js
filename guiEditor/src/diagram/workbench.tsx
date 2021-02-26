@@ -85,44 +85,16 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         });
 
         this.props.globalState.hostDocument!.addEventListener("keyup", () => this.onKeyUp(), false);
-        this.props.globalState.hostDocument!.addEventListener(
-            "keydown",
-            (evt) => {
-                this._ctrlKeyIsPressed = evt.ctrlKey;
-            },
-            false
-        );
-        this.props.globalState.hostDocument!.defaultView!.addEventListener(
-            "blur",
-            () => {
-                this._ctrlKeyIsPressed = false;
-            },
-            false
-        );
-
+        this.props.globalState.hostDocument!.addEventListener("keydown", (evt) => this.onKeyDown(evt), false);
+        this.props.globalState.hostDocument!.defaultView!.addEventListener("blur", () => this.onKeyUp(), false);
         this.props.globalState.workbench = this;
     }
 
     componentWillUnmount() {
         if (this.props.globalState.hostDocument) {
             this.props.globalState.hostDocument!.removeEventListener("keyup", () => this.onKeyUp(), false);
-            this.props.globalState.hostDocument!.removeEventListener(
-                "keydown",
-                (evt) => {
-                    this._ctrlKeyIsPressed = evt.ctrlKey;
-                },
-                false
-            );
-            this.props.globalState.hostDocument!.defaultView!.removeEventListener(
-                "blur",
-                () => {
-                    this._ctrlKeyIsPressed = false;
-                },
-                false
-            );
         }
     }
-
     clearGuiTexture() {
         while (this._guiNodes.length > 0) {
             this._guiNodes[this._guiNodes.length - 1].dispose();
@@ -161,6 +133,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     onKeyUp() {
         this._ctrlKeyIsPressed = false;
+    }
+    
+    onKeyDown(evt: KeyboardEvent) {
+        this._ctrlKeyIsPressed = evt.ctrlKey;
     }
 
     findNodeFromGuiElement(guiControl: Control) {
