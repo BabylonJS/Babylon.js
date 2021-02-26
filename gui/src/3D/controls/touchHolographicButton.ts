@@ -10,7 +10,6 @@ import { FadeInOutBehavior } from "babylonjs/Behaviors/Meshes/fadeInOutBehavior"
 import { Scene } from "babylonjs/scene";
 
 import { FluentButtonMaterial } from "../materials/fluentButton/fluentButtonMaterial";
-import { FluentButtonBuilder } from "../materials/fluentButton/fluentButtonBuilder";
 import { StackPanel } from "../../2D/controls/stackPanel";
 import { Image } from "../../2D/controls/image";
 import { TextBlock } from "../../2D/controls/textBlock";
@@ -19,14 +18,25 @@ import { Control3D } from "./control3D";
 import { Color3 } from "babylonjs/Maths/math.color";
 
 import { TouchButton3D } from "./touchButton3D";
+import { AbstractMesh } from "babylonjs/Meshes/index";
+import { SceneLoader } from "babylonjs/Loading/sceneLoader";
 
 /**
  * Class used to create a holographic button in 3D
  */
 export class TouchHolographicButton extends TouchButton3D {
+    /**
+     * Base Url for the button model.
+     */
+    public static MODEL_BASE_URL: string = 'https://assets.babylonjs.com/meshes/MRTK/';
+    /**
+     * File name for the button model.
+     */
+    public static MODEL_FILENAME: string = 'mrtk-fluent-button.glb';
+
     private _backPlate: Mesh;
     private _textPlate: Mesh;
-    private _frontPlate: Mesh;
+    private _frontPlate: AbstractMesh;
     private _text: string;
     private _imageUrl: string;
     private _shareMaterials = true;
@@ -245,59 +255,74 @@ export class TouchHolographicButton extends TouchButton3D {
             panel.addControl(text);
         }
 
-        if (this._frontPlate) {
+        // HACK: Temporary fix for BabylonNative while we wait for the polyfill.
+        if (!!document.createElement)
+        {
             this.content = panel;
         }
     }
 
     // Mesh association
     protected _createNode(scene: Scene): TransformNode {
-        this._frontPlate = FluentButtonBuilder.CreateFluentButton(`${this.name}FrontMesh`, {}, scene);
-        this._frontPlate.isPickable = false;
-
-        this._backPlate = BoxBuilder.CreateBox(this.name + "BackMesh", {
-            width: 1.0,
-            height: 1.0,
-            depth: 0.08
-        }, scene);
-
-        this._backPlate.parent = this._frontPlate;
-        this._backPlate.position.z = 0.5 - 0.08;
-        this._backPlate.isPickable = false;
-
-        this._textPlate = <Mesh>super._createNode(scene);
-        this._textPlate.parent = this._frontPlate;
-        this._textPlate.position.z = 0;
-        this._textPlate.isPickable = false;
-
-        const collisionMesh = BoxBuilder.CreateBox(this.name + "CollisionMesh", {
+        const collisionMesh = BoxBuilder.CreateBox(this.name ?? "TouchHolographicButton", {
             width: 1.0,
             height: 1.0,
             depth: 1.0,
         }, scene);
         collisionMesh.isPickable = true;
         collisionMesh.isVisible = false;
-        collisionMesh.parent = this._frontPlate;
+        collisionMesh.scaling = new Vector3(0.032, 0.032, 0.016);
+
+        SceneLoader.ImportMeshAsync(
+            undefined,
+            TouchHolographicButton.MODEL_BASE_URL,
+            TouchHolographicButton.MODEL_FILENAME,
+            scene)
+            .then(result => {
+                var importedFrontPlate = result.meshes[1];
+                importedFrontPlate.name = `${this.name}_frontPlate`;
+                importedFrontPlate.isPickable = false;
+                importedFrontPlate.parent = collisionMesh;
+                if (!!this._frontMaterial)
+                    importedFrontPlate.material = this._frontMaterial;
+                this._frontPlate = importedFrontPlate;
+            });
+
+        const backPlateDepth = 0.04;
+        this._backPlate = BoxBuilder.CreateBox(this.name + "BackMesh", {
+            width: 1.0,
+            height: 1.0,
+            depth: backPlateDepth
+        }, scene);
+
+        this._backPlate.parent = collisionMesh;
+        this._backPlate.position.z = 0.5 - backPlateDepth / 2;
+        this._backPlate.isPickable = false;
+
+        this._textPlate = <Mesh>super._createNode(scene);
+        this._textPlate.parent = collisionMesh;
+        this._textPlate.position.z = 0;
+        this._textPlate.isPickable = false;
 
         this.collisionMesh = collisionMesh;
         this.collidableFrontDirection = this._backPlate.forward.negate(); // Mesh is facing the wrong way
 
-        return this._frontPlate;
+        return collisionMesh;
     }
 
     protected _applyFacade(facadeTexture: AdvancedDynamicTexture) {
         this._plateMaterial.emissiveTexture = facadeTexture;
         this._plateMaterial.opacityTexture = facadeTexture;
+        this._plateMaterial.diffuseColor = new Color3(0.4, 0.4, 0.4);
     }
 
     private _createBackMaterial(mesh: Mesh) {
         this._backMaterial = new StandardMaterial(this.name + "Back Material", mesh.getScene());
+        this._backMaterial.diffuseColor = new Color3(0.5, 0.5, 0.5);
     }
 
     private _createFrontMaterial(mesh: Mesh) {
         this._frontMaterial = new FluentButtonMaterial(this.name + "Front Material", mesh.getScene());
-        this._frontMaterial.blobEnable = false;
-        this._frontMaterial.blobEnable2 = false;
         this._frontMaterial.useGlobalLeftIndex = true;
     }
 
@@ -330,8 +355,9 @@ export class TouchHolographicButton extends TouchButton3D {
 
         this._createPlateMaterial(mesh);
         this._backPlate.material = this._backMaterial;
-        this._frontPlate.material = this._frontMaterial;
         this._textPlate.material = this._plateMaterial;
+        if (!!this._frontPlate)
+            this._frontPlate.material = this._frontMaterial;
 
         this._rebuildContent();
     }
