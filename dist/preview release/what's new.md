@@ -144,6 +144,7 @@
 - Fix bones serialization to include their ids. This allows to retrieve bones (animation groups, etc.) once the scene has been re-serialized ([julien-moreau](https://github.com/julien-moreau))
 - Fix an issue with hand-detachment when using hand tracking in WebXR ([#9882](https://github.com/BabylonJS/Babylon.js/issues/9882)) ([RaananW](https://github.com/RaananW))
 - Fix issue with cursor and 'doNotHandleCursors' on GUI ([msDestiny14](https://github.com/msDestiny14))
+- Fix thin instances + animated bones not rendered in the depth renderer ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
