@@ -18,8 +18,6 @@ import { Color3, Color4 } from "babylonjs/Maths/math.color";
 import { EffectFallbacks } from "babylonjs/Materials/effectFallbacks";
 import { Constants } from "babylonjs/Engines/constants";
 
-import { FluentGlowBlobTextureData } from "./fluentGlowBlob";
-
 import "./shaders/fluentButton.fragment";
 import "./shaders/fluentButton.vertex";
 
@@ -40,6 +38,8 @@ class FluentButtonMaterialDefines extends MaterialDefines {
  * Class used to render square buttons with fluent desgin
  */
 export class FluentButtonMaterial extends PushMaterial {
+    public static BLOB_TEXTURE_URL = "https://assets.babylonjs.com/meshes/MRTK/mrtk-fluent-button-blob.png";
+
     // "Wireframe"
     @serialize()
     public edgeWidth = 0.04;
@@ -153,6 +153,9 @@ export class FluentButtonMaterial extends PushMaterial {
     @serialize()
     public showFrame = false;
 
+    @serialize()
+    public useBlobTexture = true;
+
     // Global inputs
     @serialize()
     public useGlobalLeftIndex = true;
@@ -178,22 +181,15 @@ export class FluentButtonMaterial extends PushMaterial {
     @serialize()
     public globalRightIndexTipProximity = 0.0;
 
-    private _blobDataTexture: Nullable<Texture>;
+    private _blobTexture: Texture;
 
-    constructor(name: string, scene: Scene, public UseBlobTexture = true) {
+    constructor(name: string, scene: Scene) {
         super(name, scene);
         this.alphaMode = Constants.ALPHA_ADD;
         this.disableDepthWrite = true;
         this.backFaceCulling = false;
 
-        this._blobDataTexture = this.UseBlobTexture
-            ? Texture.CreateFromBase64String(
-                FluentGlowBlobTextureData,
-                "fluentBlobTexture",
-                scene,
-                true, true,
-                Texture.NEAREST_SAMPLINGMODE)
-            : null;
+        this._blobTexture = new Texture(FluentButtonMaterial.BLOB_TEXTURE_URL, scene, true, false, Texture.NEAREST_SAMPLINGMODE);
     }
 
     public needAlphaBlending(): boolean {
@@ -383,9 +379,7 @@ export class FluentButtonMaterial extends PushMaterial {
         this._activeEffect.setVector3("cameraPosition", scene.activeCamera!.position);
 
         // "Blob Texture"
-        if (this._blobDataTexture != null) {
-            this._activeEffect.setTexture("_Blob_Texture_", this._blobDataTexture);
-        }
+        this._activeEffect.setTexture("_Blob_Texture_", this._blobTexture);
 
         // "Wireframe"
         this._activeEffect.setFloat("_Edge_Width_", this.edgeWidth);
@@ -438,7 +432,7 @@ export class FluentButtonMaterial extends PushMaterial {
 
         // "Debug"
         this._activeEffect.setFloat("_Show_Frame_", this.showFrame ? 1.0 : 0.0);
-        this._activeEffect.setFloat("_Use_Blob_Texture_", this.UseBlobTexture ? 1.0 : 0.0);
+        this._activeEffect.setFloat("_Use_Blob_Texture_", this.useBlobTexture ? 1.0 : 0.0);
 
         // Global inputs
         this._activeEffect.setFloat("Use_Global_Left_Index", this.useGlobalLeftIndex ? 1.0 : 0.0);

@@ -153,7 +153,7 @@ void main()
     #if ENABLE_FADE
       Holo_Edge_Fragment_B35(vColor,_Fade_Width_,NotEdge_Q35);
     #else
-      NotEdge_Q35 = 1;
+      NotEdge_Q35 = 1.0;
     #endif
 
     // vec4 Blob_Color_Q39;
