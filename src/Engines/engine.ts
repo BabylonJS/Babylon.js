@@ -293,12 +293,12 @@ export class Engine extends ThinEngine {
 
     /**
      * Engine abstraction for createImageBitmap
-     * @param args parameters for createImageBitmap implementation
+     * @param image source for image
+     * @param options An object that sets options for the image's extraction.
      * @returns ImageBitmap
      */
-    public createImageBitmap(...args: any[]): Promise<ImageBitmap>
-    {
-        return createImageBitmap.apply(null, args);
+    public createImageBitmap(image: ImageBitmapSource, options?: ImageBitmapOptions): Promise<ImageBitmap> {
+        return createImageBitmap(image, options);
     }
 
     /**
