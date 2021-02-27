@@ -23,7 +23,6 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
     private colorInputRef: React.RefObject<HTMLInputElement>;
     private filePickerRef: React.RefObject<HTMLInputElement>;
     private _onResetRequiredObserver: Nullable<Observer<void>>;
-    private _onResetPreviewRequiredObserver: Nullable<Observer<void>>;
 
     constructor(props: IPreviewMeshControlComponent) {
         super(props);
@@ -33,15 +32,10 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
         this._onResetRequiredObserver = this.props.globalState.onResetRequiredObservable.add(() => {
             this.forceUpdate();
         });
-        
-        this._onResetPreviewRequiredObserver = this.props.globalState.onResetPreviewRequiredObservable.add(() => {
-            this.forceUpdate();
-        });
     }
 
     componentWillUnmount() {
         this.props.globalState.onResetRequiredObservable.remove(this._onResetRequiredObserver);
-        this.props.globalState.onResetPreviewRequiredObservable.remove(this._onResetPreviewRequiredObserver);
     }
 
     changeMeshType(newOne: PreviewType) {
