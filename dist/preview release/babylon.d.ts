@@ -18340,9 +18340,10 @@ declare module BABYLON {
          */
         _mode: NodeMaterialModes;
         /**
-         * Gets the mode property
+         * Gets or sets the mode property
          */
         get mode(): NodeMaterialModes;
+        set mode(value: NodeMaterialModes);
         /**
          * A free comment about the material
          */
@@ -58531,6 +58532,15 @@ declare module BABYLON {
         onSnapObservable: Observable<{
             snapDistance: number;
         }>;
+        /**
+         * The maximum angle between the camera and the rotation allowed for interaction
+         * If a rotation plane appears 'flat', a lower value allows interaction.
+         */
+        static MaxDragAngle: number;
+        /**
+         * Acumulated relative angle value for rotation on the axis. Reset to 0 when a dragStart occurs
+         */
+        angle: number;
         private _isEnabled;
         private _parent;
         private _coloredMaterial;

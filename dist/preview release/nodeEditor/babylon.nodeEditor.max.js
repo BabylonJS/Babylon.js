@@ -55885,15 +55885,11 @@ var PreviewAreaComponent = /** @class */ (function (_super) {
         _this._onResetRequiredObserver = _this.props.globalState.onResetRequiredObservable.add(function () {
             _this.forceUpdate();
         });
-        _this._onResetPreviewRequiredObserver = _this.props.globalState.onResetPreviewRequiredObservable.add(function () {
-            _this.forceUpdate();
-        });
         return _this;
     }
     PreviewAreaComponent.prototype.componentWillUnmount = function () {
         this.props.globalState.onIsLoadingChanged.remove(this._onIsLoadingChangedObserver);
         this.props.globalState.onResetRequiredObservable.remove(this._onResetRequiredObserver);
-        this.props.globalState.onResetPreviewRequiredObservable.remove(this._onResetPreviewRequiredObserver);
     };
     PreviewAreaComponent.prototype.changeBackFaceCulling = function (value) {
         this.props.globalState.backFaceCulling = value;
@@ -56500,14 +56496,10 @@ var PreviewMeshControlComponent = /** @class */ (function (_super) {
         _this._onResetRequiredObserver = _this.props.globalState.onResetRequiredObservable.add(function () {
             _this.forceUpdate();
         });
-        _this._onResetPreviewRequiredObserver = _this.props.globalState.onResetPreviewRequiredObservable.add(function () {
-            _this.forceUpdate();
-        });
         return _this;
     }
     PreviewMeshControlComponent.prototype.componentWillUnmount = function () {
         this.props.globalState.onResetRequiredObservable.remove(this._onResetRequiredObserver);
-        this.props.globalState.onResetPreviewRequiredObservable.remove(this._onResetPreviewRequiredObserver);
     };
     PreviewMeshControlComponent.prototype.changeMeshType = function (newOne) {
         if (this.props.globalState.previewType === newOne) {
@@ -57351,20 +57343,20 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         });
     };
     PropertyTabComponent.prototype.changeMode = function (value, force, loadDefault) {
-        var _a;
+        var _a, _b;
         if (force === void 0) { force = false; }
         if (loadDefault === void 0) { loadDefault = true; }
         if (this.props.globalState.mode === value) {
             return false;
         }
-        var keepGraph = false;
-        if (!force && this.props.globalState.hostDocument.defaultView.confirm('Do you want to keep your current graph (Hit cancel to get a new one) ?')) {
-            keepGraph = true;
+        if (!force && !this.props.globalState.hostDocument.defaultView.confirm('Are your sure? You will lose your current changes (if any) if they are not saved!')) {
+            (_a = this._modeSelect.current) === null || _a === void 0 ? void 0 : _a.setValue(this.props.globalState.mode);
+            return false;
         }
         if (force) {
-            (_a = this._modeSelect.current) === null || _a === void 0 ? void 0 : _a.setValue(value);
+            (_b = this._modeSelect.current) === null || _b === void 0 ? void 0 : _b.setValue(value);
         }
-        if (loadDefault && !keepGraph) {
+        if (loadDefault) {
             switch (value) {
                 case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].Material:
                     this.props.globalState.nodeMaterial.setToDefault();
@@ -57392,12 +57384,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         this.props.globalState.previewFile = undefined;
         babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["DataStorage"].WriteNumber("PreviewType", this.props.globalState.previewType);
         this.props.globalState.mode = value;
-        if (!keepGraph) {
-            this.props.globalState.onResetRequiredObservable.notifyObservers();
-        }
-        else {
-            this.props.globalState.onResetPreviewRequiredObservable.notifyObservers();
-        }
+        this.props.globalState.onResetRequiredObservable.notifyObservers();
         return true;
     };
     PropertyTabComponent.prototype.render = function () {
@@ -62767,7 +62754,6 @@ var GlobalState = /** @class */ (function () {
         this.onRebuildRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onBuiltObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onResetRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onResetPreviewRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onUpdateRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onZoomToFitRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onReOrganizedRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
