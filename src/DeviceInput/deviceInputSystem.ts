@@ -405,7 +405,7 @@ export class DeviceInputSystem implements IDisposable {
             const deviceType = (evt.pointerType === "mouse") ? DeviceType.Mouse : DeviceType.Touch;
             const deviceSlot = (evt.pointerType === "mouse") ? 0 : evt.pointerId;
 
-            const pointer = this._inputs[deviceType][deviceSlot];
+            const pointer = this._inputs[deviceType]?.[deviceSlot];
             if (pointer) {
                 const previousHorizontal = pointer[PointerInput.Horizontal];
                 const previousVertical = pointer[PointerInput.Vertical];
@@ -424,12 +424,12 @@ export class DeviceInputSystem implements IDisposable {
                     }
                     this.onInputChanged(deviceType, deviceSlot, evt.button + 2, previousButton, pointer[evt.button + 2], evt);
                 }
-            }
-            // We don't want to unregister the mouse because we may miss input data when a mouse is moving after a click
-            if (evt.pointerType !== "mouse") {
-                this._unregisterDevice(deviceType, deviceSlot);
-            }
 
+                // We don't want to unregister the mouse because we may miss input data when a mouse is moving after a click
+                if (evt.pointerType !== "mouse") {
+                    this._unregisterDevice(deviceType, deviceSlot);
+                }
+            }
         });
 
         // Set Wheel Event Name, code originally from scene.inputManager
