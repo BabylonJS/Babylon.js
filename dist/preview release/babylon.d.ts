@@ -46171,9 +46171,6 @@ declare module BABYLON {
         private _cacheSampler;
         private _cacheRenderPipeline;
         private _emptyVertexBuffer;
-        private _lastCachedWrapU;
-        private _lastCachedWrapV;
-        private _lastCachedWrapR;
         private _mrtAttachments;
         private _counters;
         private _mainTexture;
