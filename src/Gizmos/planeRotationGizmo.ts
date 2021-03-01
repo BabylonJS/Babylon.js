@@ -36,6 +36,17 @@ export class PlaneRotationGizmo extends Gizmo {
      */
     public onSnapObservable = new Observable<{ snapDistance: number }>();
 
+    /**
+     * The maximum angle between the camera and the rotation allowed for interaction
+     * If a rotation plane appears 'flat', a lower value allows interaction.
+     */
+    public static MaxDragAngle: number = Math.PI * 9 / 20;
+
+    /**
+     * Acumulated relative angle value for rotation on the axis. Reset to 0 when a dragStart occurs
+     */
+    public angle: number = 0;
+
     private _isEnabled: boolean = true;
     private _parent: Nullable<RotationGizmo> = null;
     private _coloredMaterial: StandardMaterial;
@@ -144,7 +155,7 @@ export class PlaneRotationGizmo extends Gizmo {
         // Add drag behavior to handle events when the gizmo is dragged
         this.dragBehavior = new PointerDragBehavior({ dragPlaneNormal: planeNormal });
         this.dragBehavior.moveAttached = false;
-        this.dragBehavior.maxDragAngle = Math.PI * 9 / 20;
+        this.dragBehavior.maxDragAngle = PlaneRotationGizmo.MaxDragAngle;
         this.dragBehavior._useAlternatePickedPointAboveMaxDragAngle = true;
         this._rootMesh.addBehavior(this.dragBehavior);
 
@@ -169,6 +180,7 @@ export class PlaneRotationGizmo extends Gizmo {
                 this._dragging = true;
                 lastDragPosition.copyFrom(e.dragPlanePoint);
                 this._rotationShaderMaterial.setVector3("angles", this._angles);
+                this.angle = 0;
             }
         });
 
@@ -256,6 +268,7 @@ export class PlaneRotationGizmo extends Gizmo {
                     this.onSnapObservable.notifyObservers(tmpSnapEvent);
                 }
                 this._angles.y += angle;
+                this.angle += angle;
                 this._rotationShaderMaterial.setVector3("angles", this._angles);
                 this._matrixChanged();
             }
@@ -278,6 +291,8 @@ export class PlaneRotationGizmo extends Gizmo {
             if (this._customMeshSet) {
                 return;
             }
+            // updating here the maxangle because ondragstart is too late (value already used) and the updated value is not taken into account
+            this.dragBehavior.maxDragAngle = PlaneRotationGizmo.MaxDragAngle;
             this._isHovered = !!(cache.colliderMeshes.indexOf(<Mesh>pointerInfo?.pickInfo?.pickedMesh) != -1);
             if (!this._parent) {
                 var material = this._isHovered || this._dragging ? this._hoverMaterial : this._coloredMaterial;
