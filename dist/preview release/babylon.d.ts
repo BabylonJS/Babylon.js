@@ -68,7 +68,7 @@ declare module BABYLON {
          * @param currentTarget defines the current target of the state
          * @returns the current event state
          */
-        initalize(mask: number, skipNextObservers?: boolean, target?: any, currentTarget?: any): EventState;
+        initialize(mask: number, skipNextObservers?: boolean, target?: any, currentTarget?: any): EventState;
         /**
          * An Observer can set this property to true to prevent subsequent observers of being notified
          */
@@ -2958,11 +2958,13 @@ declare module BABYLON {
         equalsWithEpsilon(otherVector: DeepImmutable<Vector2>, epsilon?: number): boolean;
         /**
          * Gets a new Vector2 from current Vector2 floored values
+         * eg (1.2, 2.31) returns (1, 2)
          * @returns a new Vector2
          */
         floor(): Vector2;
         /**
-         * Gets a new Vector2 from current Vector2 floored values
+         * Gets a new Vector2 from current Vector2 fractional values
+         * eg (1.2, 2.31) returns (0.2, 0.31)
          * @returns a new Vector2
          */
         fract(): Vector2;
@@ -7864,331 +7866,6 @@ declare module BABYLON {
     };
 }
 declare module BABYLON {
-    /**
-     * Class used to manipulate GUIDs
-     */
-    export class GUID {
-        /**
-         * Implementation from http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript/2117523#answer-2117523
-         * Be aware Math.random() could cause collisions, but:
-         * "All but 6 of the 128 bits of the ID are randomly generated, which means that for any two ids, there's a 1 in 2^^122 (or 5.3x10^^36) chance they'll collide"
-         * @returns a pseudo random id
-         */
-        static RandomId(): string;
-    }
-}
-declare module BABYLON {
-    /**
-     * Base class of all the textures in babylon.
-     * It groups all the common properties the materials, post process, lights... might need
-     * in order to make a correct use of the texture.
-     */
-    export class BaseTexture extends ThinTexture implements IAnimatable {
-        /**
-         * Default anisotropic filtering level for the application.
-         * It is set to 4 as a good tradeoff between perf and quality.
-         */
-        static DEFAULT_ANISOTROPIC_FILTERING_LEVEL: number;
-        /**
-         * Gets or sets the unique id of the texture
-         */
-        uniqueId: number;
-        /**
-         * Define the name of the texture.
-         */
-        name: string;
-        /**
-         * Gets or sets an object used to store user defined information.
-         */
-        metadata: any;
-        /**
-         * For internal use only. Please do not use.
-         */
-        reservedDataStore: any;
-        private _hasAlpha;
-        /**
-         * Define if the texture is having a usable alpha value (can be use for transparency or glossiness for instance).
-         */
-        set hasAlpha(value: boolean);
-        get hasAlpha(): boolean;
-        /**
-         * Defines if the alpha value should be determined via the rgb values.
-         * If true the luminance of the pixel might be used to find the corresponding alpha value.
-         */
-        getAlphaFromRGB: boolean;
-        /**
-         * Intensity or strength of the texture.
-         * It is commonly used by materials to fine tune the intensity of the texture
-         */
-        level: number;
-        /**
-         * Define the UV channel to use starting from 0 and defaulting to 0.
-         * This is part of the texture as textures usually maps to one uv set.
-         */
-        coordinatesIndex: number;
-        protected _coordinatesMode: number;
-        /**
-        * How a texture is mapped.
-        *
-        * | Value | Type                                | Description |
-        * | ----- | ----------------------------------- | ----------- |
-        * | 0     | EXPLICIT_MODE                       |             |
-        * | 1     | SPHERICAL_MODE                      |             |
-        * | 2     | PLANAR_MODE                         |             |
-        * | 3     | CUBIC_MODE                          |             |
-        * | 4     | PROJECTION_MODE                     |             |
-        * | 5     | SKYBOX_MODE                         |             |
-        * | 6     | INVCUBIC_MODE                       |             |
-        * | 7     | EQUIRECTANGULAR_MODE                |             |
-        * | 8     | FIXED_EQUIRECTANGULAR_MODE          |             |
-        * | 9     | FIXED_EQUIRECTANGULAR_MIRRORED_MODE |             |
-        */
-        set coordinatesMode(value: number);
-        get coordinatesMode(): number;
-        /**
-         * | Value | Type               | Description |
-         * | ----- | ------------------ | ----------- |
-         * | 0     | CLAMP_ADDRESSMODE  |             |
-         * | 1     | WRAP_ADDRESSMODE   |             |
-         * | 2     | MIRROR_ADDRESSMODE |             |
-         */
-        get wrapU(): number;
-        set wrapU(value: number);
-        /**
-         * | Value | Type               | Description |
-         * | ----- | ------------------ | ----------- |
-         * | 0     | CLAMP_ADDRESSMODE  |             |
-         * | 1     | WRAP_ADDRESSMODE   |             |
-         * | 2     | MIRROR_ADDRESSMODE |             |
-         */
-        get wrapV(): number;
-        set wrapV(value: number);
-        /**
-        * | Value | Type               | Description |
-        * | ----- | ------------------ | ----------- |
-        * | 0     | CLAMP_ADDRESSMODE  |             |
-        * | 1     | WRAP_ADDRESSMODE   |             |
-        * | 2     | MIRROR_ADDRESSMODE |             |
-        */
-        wrapR: number;
-        /**
-         * With compliant hardware and browser (supporting anisotropic filtering)
-         * this defines the level of anisotropic filtering in the texture.
-         * The higher the better but the slower. This defaults to 4 as it seems to be the best tradeoff.
-         */
-        anisotropicFilteringLevel: number;
-        private _isCube;
-        /**
-         * Define if the texture is a cube texture or if false a 2d texture.
-         */
-        get isCube(): boolean;
-        set isCube(value: boolean);
-        /**
-         * Define if the texture is a 3d texture (webgl 2) or if false a 2d texture.
-         */
-        get is3D(): boolean;
-        set is3D(value: boolean);
-        /**
-         * Define if the texture is a 2d array texture (webgl 2) or if false a 2d texture.
-         */
-        get is2DArray(): boolean;
-        set is2DArray(value: boolean);
-        private _gammaSpace;
-        /**
-         * Define if the texture contains data in gamma space (most of the png/jpg aside bump).
-         * HDR texture are usually stored in linear space.
-         * This only impacts the PBR and Background materials
-         */
-        get gammaSpace(): boolean;
-        set gammaSpace(gamma: boolean);
-        /**
-         * Gets or sets whether or not the texture contains RGBD data.
-         */
-        get isRGBD(): boolean;
-        set isRGBD(value: boolean);
-        /**
-         * Is Z inverted in the texture (useful in a cube texture).
-         */
-        invertZ: boolean;
-        /**
-         * Are mip maps generated for this texture or not.
-         */
-        get noMipmap(): boolean;
-        /**
-         * @hidden
-         */
-        lodLevelInAlpha: boolean;
-        /**
-         * With prefiltered texture, defined the offset used during the prefiltering steps.
-         */
-        get lodGenerationOffset(): number;
-        set lodGenerationOffset(value: number);
-        /**
-         * With prefiltered texture, defined the scale used during the prefiltering steps.
-         */
-        get lodGenerationScale(): number;
-        set lodGenerationScale(value: number);
-        /**
-         * With prefiltered texture, defined if the specular generation is based on a linear ramp.
-         * By default we are using a log2 of the linear roughness helping to keep a better resolution for
-         * average roughness values.
-         */
-        get linearSpecularLOD(): boolean;
-        set linearSpecularLOD(value: boolean);
-        /**
-         * In case a better definition than spherical harmonics is required for the diffuse part of the environment.
-         * You can set the irradiance texture to rely on a texture instead of the spherical approach.
-         * This texture need to have the same characteristics than its parent (Cube vs 2d, coordinates mode, Gamma/Linear, RGBD).
-         */
-        get irradianceTexture(): Nullable<BaseTexture>;
-        set irradianceTexture(value: Nullable<BaseTexture>);
-        /**
-         * Define if the texture is a render target.
-         */
-        isRenderTarget: boolean;
-        /**
-         * Define the unique id of the texture in the scene.
-         */
-        get uid(): string;
-        /** @hidden */
-        _prefiltered: boolean;
-        /**
-         * Return a string representation of the texture.
-         * @returns the texture as a string
-         */
-        toString(): string;
-        /**
-         * Get the class name of the texture.
-         * @returns "BaseTexture"
-         */
-        getClassName(): string;
-        /**
-         * Define the list of animation attached to the texture.
-         */
-        animations: Animation[];
-        /**
-        * An event triggered when the texture is disposed.
-        */
-        onDisposeObservable: Observable<BaseTexture>;
-        private _onDisposeObserver;
-        /**
-         * Callback triggered when the texture has been disposed.
-         * Kept for back compatibility, you can use the onDisposeObservable instead.
-         */
-        set onDispose(callback: () => void);
-        protected _scene: Nullable<Scene>;
-        /** @hidden */
-        _texture: Nullable<InternalTexture>;
-        private _uid;
-        /**
-         * Define if the texture is preventing a material to render or not.
-         * If not and the texture is not ready, the engine will use a default black texture instead.
-         */
-        get isBlocking(): boolean;
-        /**
-         * Instantiates a new BaseTexture.
-         * Base class of all the textures in babylon.
-         * It groups all the common properties the materials, post process, lights... might need
-         * in order to make a correct use of the texture.
-         * @param sceneOrEngine Define the scene or engine the texture belongs to
-         */
-        constructor(sceneOrEngine: Nullable<Scene | ThinEngine>);
-        /**
-         * Get the scene the texture belongs to.
-         * @returns the scene or null if undefined
-         */
-        getScene(): Nullable<Scene>;
-        /** @hidden */
-        protected _getEngine(): Nullable<ThinEngine>;
-        /**
-         * Checks if the texture has the same transform matrix than another texture
-         * @param texture texture to check against
-         * @returns true if the transforms are the same, else false
-         */
-        checkTransformsAreIdentical(texture: Nullable<BaseTexture>): boolean;
-        /**
-         * Get the texture transform matrix used to offset tile the texture for instance.
-         * @returns the transformation matrix
-         */
-        getTextureMatrix(): Matrix;
-        /**
-         * Get the texture reflection matrix used to rotate/transform the reflection.
-         * @returns the reflection matrix
-         */
-        getReflectionTextureMatrix(): Matrix;
-        /**
-         * Get if the texture is ready to be consumed (either it is ready or it is not blocking)
-         * @returns true if ready or not blocking
-         */
-        isReadyOrNotBlocking(): boolean;
-        /**
-         * Scales the texture if is `canRescale()`
-         * @param ratio the resize factor we want to use to rescale
-         */
-        scale(ratio: number): void;
-        /**
-         * Get if the texture can rescale.
-         */
-        get canRescale(): boolean;
-        /** @hidden */
-        _getFromCache(url: Nullable<string>, noMipmap: boolean, sampling?: number, invertY?: boolean): Nullable<InternalTexture>;
-        /** @hidden */
-        _rebuild(): void;
-        /**
-         * Clones the texture.
-         * @returns the cloned texture
-         */
-        clone(): Nullable<BaseTexture>;
-        /**
-         * Get the texture underlying type (INT, FLOAT...)
-         */
-        get textureType(): number;
-        /**
-         * Get the texture underlying format (RGB, RGBA...)
-         */
-        get textureFormat(): number;
-        /**
-         * Indicates that textures need to be re-calculated for all materials
-         */
-        protected _markAllSubMeshesAsTexturesDirty(): void;
-        /**
-         * Reads the pixels stored in the webgl texture and returns them as an ArrayBuffer.
-         * This will returns an RGBA array buffer containing either in values (0-255) or
-         * float values (0-1) depending of the underlying buffer type.
-         * @param faceIndex defines the face of the texture to read (in case of cube texture)
-         * @param level defines the LOD level of the texture to read (in case of Mip Maps)
-         * @param buffer defines a user defined buffer to fill with data (can be null)
-         * @param flushRenderer true to flush the renderer from the pending commands before reading the pixels
-         * @returns The Array buffer promise containing the pixels data.
-         */
-        readPixels(faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean): Nullable<Promise<ArrayBufferView>>;
-        /** @hidden */
-        _readPixelsSync(faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean): Nullable<ArrayBufferView>;
-        /** @hidden */
-        get _lodTextureHigh(): Nullable<BaseTexture>;
-        /** @hidden */
-        get _lodTextureMid(): Nullable<BaseTexture>;
-        /** @hidden */
-        get _lodTextureLow(): Nullable<BaseTexture>;
-        /**
-         * Dispose the texture and release its associated resources.
-         */
-        dispose(): void;
-        /**
-         * Serialize the texture into a JSON representation that can be parsed later on.
-         * @returns the JSON representation of the texture
-         */
-        serialize(): any;
-        /**
-         * Helper function to be called back once a list of texture contains only ready textures.
-         * @param textures Define the list of textures to wait for
-         * @param callback Define the callback triggered once the entire list will be ready
-         */
-        static WhenAllReady(textures: BaseTexture[], callback: () => void): void;
-        private static _isScene;
-    }
-}
-declare module BABYLON {
     /** @hidden */
     export class WebGLDataBuffer extends DataBuffer {
         private _buffer;
@@ -8567,25 +8244,25 @@ declare module BABYLON {
          * This is dynamic to allow compat with webgl 1 and 2.
          * You will need to pass the name of the uniform as well as the value.
          */
-        updateVector3: (name: string, vector: Vector3) => void;
+        updateVector3: (name: string, vector: IVector3Like) => void;
         /**
          * Lambda to Update vec4 of float from a Vector in a uniform buffer.
          * This is dynamic to allow compat with webgl 1 and 2.
          * You will need to pass the name of the uniform as well as the value.
          */
-        updateVector4: (name: string, vector: Vector4) => void;
+        updateVector4: (name: string, vector: IVector4Like) => void;
         /**
          * Lambda to Update vec3 of float from a Color in a uniform buffer.
          * This is dynamic to allow compat with webgl 1 and 2.
          * You will need to pass the name of the uniform as well as the value.
          */
-        updateColor3: (name: string, color: Color3, suffix?: string) => void;
+        updateColor3: (name: string, color: IColor3Like, suffix?: string) => void;
         /**
          * Lambda to Update vec4 of float from a Color in a uniform buffer.
          * This is dynamic to allow compat with webgl 1 and 2.
          * You will need to pass the name of the uniform as well as the value.
          */
-        updateColor4: (name: string, color: Color3, alpha: number, suffix?: string) => void;
+        updateColor4: (name: string, color: IColor3Like, alpha: number, suffix?: string) => void;
         /**
          * Lambda to Update a int a uniform buffer.
          * This is dynamic to allow compat with webgl 1 and 2.
@@ -8624,7 +8301,7 @@ declare module BABYLON {
          * @param dynamic Define if the buffer is updatable
          * @param name to assign to the buffer (debugging purpose)
          */
-        constructor(engine: Engine, data?: number[], dynamic?: boolean, name?: string);
+        constructor(engine: ThinEngine, data?: number[], dynamic?: boolean, name?: string);
         /**
          * Indicates if the buffer is using the WebGL2 UBO implementation,
          * or just falling back on setUniformXXX calls.
@@ -8672,7 +8349,7 @@ declare module BABYLON {
          * @param name Name of the uniform, as used in the uniform block in the shader.
          * @param mat A 4x4 matrix.
          */
-        addMatrix(name: string, mat: Matrix): void;
+        addMatrix(name: string, mat: IMatrixLike): void;
         /**
          * Adds a vec2 to the uniform buffer.
          * @param name Name of the uniform, as used in the uniform block in the shader.
@@ -8693,20 +8370,20 @@ declare module BABYLON {
          * @param name Name of the uniform, as used in the uniform block in the shader.
          * @param color Define the vec3 from a Color
          */
-        addColor3(name: string, color: Color3): void;
+        addColor3(name: string, color: IColor3Like): void;
         /**
          * Adds a vec4 to the uniform buffer.
          * @param name Name of the uniform, as used in the uniform block in the shader.
          * @param color Define the rgb components from a Color
          * @param alpha Define the a component of the vec4
          */
-        addColor4(name: string, color: Color3, alpha: number): void;
+        addColor4(name: string, color: IColor3Like, alpha: number): void;
         /**
          * Adds a vec3 to the uniform buffer.
          * @param name Name of the uniform, as used in the uniform block in the shader.
          * @param vector Define the vec3 components from a Vector
          */
-        addVector3(name: string, vector: Vector3): void;
+        addVector3(name: string, vector: IVector3Like): void;
         /**
          * Adds a Matrix 3x3 to the uniform buffer.
          * @param name Name of the uniform, as used in the uniform block in the shader.
@@ -8796,7 +8473,7 @@ declare module BABYLON {
          * @param name Define the name of the sampler.
          * @param texture Define the texture to set in the sampler
          */
-        setTexture(name: string, texture: Nullable<BaseTexture>): void;
+        setTexture(name: string, texture: Nullable<ThinTexture>): void;
         /**
          * Directly updates the value of the uniform in the cache AND on the GPU.
          * @param uniformName Define the name of the uniform, as used in the uniform block in the shader.
@@ -8813,6 +8490,331 @@ declare module BABYLON {
          * Disposes the uniform buffer.
          */
         dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to manipulate GUIDs
+     */
+    export class GUID {
+        /**
+         * Implementation from http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript/2117523#answer-2117523
+         * Be aware Math.random() could cause collisions, but:
+         * "All but 6 of the 128 bits of the ID are randomly generated, which means that for any two ids, there's a 1 in 2^^122 (or 5.3x10^^36) chance they'll collide"
+         * @returns a pseudo random id
+         */
+        static RandomId(): string;
+    }
+}
+declare module BABYLON {
+    /**
+     * Base class of all the textures in babylon.
+     * It groups all the common properties the materials, post process, lights... might need
+     * in order to make a correct use of the texture.
+     */
+    export class BaseTexture extends ThinTexture implements IAnimatable {
+        /**
+         * Default anisotropic filtering level for the application.
+         * It is set to 4 as a good tradeoff between perf and quality.
+         */
+        static DEFAULT_ANISOTROPIC_FILTERING_LEVEL: number;
+        /**
+         * Gets or sets the unique id of the texture
+         */
+        uniqueId: number;
+        /**
+         * Define the name of the texture.
+         */
+        name: string;
+        /**
+         * Gets or sets an object used to store user defined information.
+         */
+        metadata: any;
+        /**
+         * For internal use only. Please do not use.
+         */
+        reservedDataStore: any;
+        private _hasAlpha;
+        /**
+         * Define if the texture is having a usable alpha value (can be use for transparency or glossiness for instance).
+         */
+        set hasAlpha(value: boolean);
+        get hasAlpha(): boolean;
+        /**
+         * Defines if the alpha value should be determined via the rgb values.
+         * If true the luminance of the pixel might be used to find the corresponding alpha value.
+         */
+        getAlphaFromRGB: boolean;
+        /**
+         * Intensity or strength of the texture.
+         * It is commonly used by materials to fine tune the intensity of the texture
+         */
+        level: number;
+        /**
+         * Define the UV channel to use starting from 0 and defaulting to 0.
+         * This is part of the texture as textures usually maps to one uv set.
+         */
+        coordinatesIndex: number;
+        protected _coordinatesMode: number;
+        /**
+        * How a texture is mapped.
+        *
+        * | Value | Type                                | Description |
+        * | ----- | ----------------------------------- | ----------- |
+        * | 0     | EXPLICIT_MODE                       |             |
+        * | 1     | SPHERICAL_MODE                      |             |
+        * | 2     | PLANAR_MODE                         |             |
+        * | 3     | CUBIC_MODE                          |             |
+        * | 4     | PROJECTION_MODE                     |             |
+        * | 5     | SKYBOX_MODE                         |             |
+        * | 6     | INVCUBIC_MODE                       |             |
+        * | 7     | EQUIRECTANGULAR_MODE                |             |
+        * | 8     | FIXED_EQUIRECTANGULAR_MODE          |             |
+        * | 9     | FIXED_EQUIRECTANGULAR_MIRRORED_MODE |             |
+        */
+        set coordinatesMode(value: number);
+        get coordinatesMode(): number;
+        /**
+         * | Value | Type               | Description |
+         * | ----- | ------------------ | ----------- |
+         * | 0     | CLAMP_ADDRESSMODE  |             |
+         * | 1     | WRAP_ADDRESSMODE   |             |
+         * | 2     | MIRROR_ADDRESSMODE |             |
+         */
+        get wrapU(): number;
+        set wrapU(value: number);
+        /**
+         * | Value | Type               | Description |
+         * | ----- | ------------------ | ----------- |
+         * | 0     | CLAMP_ADDRESSMODE  |             |
+         * | 1     | WRAP_ADDRESSMODE   |             |
+         * | 2     | MIRROR_ADDRESSMODE |             |
+         */
+        get wrapV(): number;
+        set wrapV(value: number);
+        /**
+        * | Value | Type               | Description |
+        * | ----- | ------------------ | ----------- |
+        * | 0     | CLAMP_ADDRESSMODE  |             |
+        * | 1     | WRAP_ADDRESSMODE   |             |
+        * | 2     | MIRROR_ADDRESSMODE |             |
+        */
+        wrapR: number;
+        /**
+         * With compliant hardware and browser (supporting anisotropic filtering)
+         * this defines the level of anisotropic filtering in the texture.
+         * The higher the better but the slower. This defaults to 4 as it seems to be the best tradeoff.
+         */
+        anisotropicFilteringLevel: number;
+        private _isCube;
+        /**
+         * Define if the texture is a cube texture or if false a 2d texture.
+         */
+        get isCube(): boolean;
+        set isCube(value: boolean);
+        /**
+         * Define if the texture is a 3d texture (webgl 2) or if false a 2d texture.
+         */
+        get is3D(): boolean;
+        set is3D(value: boolean);
+        /**
+         * Define if the texture is a 2d array texture (webgl 2) or if false a 2d texture.
+         */
+        get is2DArray(): boolean;
+        set is2DArray(value: boolean);
+        private _gammaSpace;
+        /**
+         * Define if the texture contains data in gamma space (most of the png/jpg aside bump).
+         * HDR texture are usually stored in linear space.
+         * This only impacts the PBR and Background materials
+         */
+        get gammaSpace(): boolean;
+        set gammaSpace(gamma: boolean);
+        /**
+         * Gets or sets whether or not the texture contains RGBD data.
+         */
+        get isRGBD(): boolean;
+        set isRGBD(value: boolean);
+        /**
+         * Is Z inverted in the texture (useful in a cube texture).
+         */
+        invertZ: boolean;
+        /**
+         * Are mip maps generated for this texture or not.
+         */
+        get noMipmap(): boolean;
+        /**
+         * @hidden
+         */
+        lodLevelInAlpha: boolean;
+        /**
+         * With prefiltered texture, defined the offset used during the prefiltering steps.
+         */
+        get lodGenerationOffset(): number;
+        set lodGenerationOffset(value: number);
+        /**
+         * With prefiltered texture, defined the scale used during the prefiltering steps.
+         */
+        get lodGenerationScale(): number;
+        set lodGenerationScale(value: number);
+        /**
+         * With prefiltered texture, defined if the specular generation is based on a linear ramp.
+         * By default we are using a log2 of the linear roughness helping to keep a better resolution for
+         * average roughness values.
+         */
+        get linearSpecularLOD(): boolean;
+        set linearSpecularLOD(value: boolean);
+        /**
+         * In case a better definition than spherical harmonics is required for the diffuse part of the environment.
+         * You can set the irradiance texture to rely on a texture instead of the spherical approach.
+         * This texture need to have the same characteristics than its parent (Cube vs 2d, coordinates mode, Gamma/Linear, RGBD).
+         */
+        get irradianceTexture(): Nullable<BaseTexture>;
+        set irradianceTexture(value: Nullable<BaseTexture>);
+        /**
+         * Define if the texture is a render target.
+         */
+        isRenderTarget: boolean;
+        /**
+         * Define the unique id of the texture in the scene.
+         */
+        get uid(): string;
+        /** @hidden */
+        _prefiltered: boolean;
+        /**
+         * Return a string representation of the texture.
+         * @returns the texture as a string
+         */
+        toString(): string;
+        /**
+         * Get the class name of the texture.
+         * @returns "BaseTexture"
+         */
+        getClassName(): string;
+        /**
+         * Define the list of animation attached to the texture.
+         */
+        animations: Animation[];
+        /**
+        * An event triggered when the texture is disposed.
+        */
+        onDisposeObservable: Observable<BaseTexture>;
+        private _onDisposeObserver;
+        /**
+         * Callback triggered when the texture has been disposed.
+         * Kept for back compatibility, you can use the onDisposeObservable instead.
+         */
+        set onDispose(callback: () => void);
+        protected _scene: Nullable<Scene>;
+        /** @hidden */
+        _texture: Nullable<InternalTexture>;
+        private _uid;
+        /**
+         * Define if the texture is preventing a material to render or not.
+         * If not and the texture is not ready, the engine will use a default black texture instead.
+         */
+        get isBlocking(): boolean;
+        /**
+         * Instantiates a new BaseTexture.
+         * Base class of all the textures in babylon.
+         * It groups all the common properties the materials, post process, lights... might need
+         * in order to make a correct use of the texture.
+         * @param sceneOrEngine Define the scene or engine the texture belongs to
+         */
+        constructor(sceneOrEngine: Nullable<Scene | ThinEngine>);
+        /**
+         * Get the scene the texture belongs to.
+         * @returns the scene or null if undefined
+         */
+        getScene(): Nullable<Scene>;
+        /** @hidden */
+        protected _getEngine(): Nullable<ThinEngine>;
+        /**
+         * Checks if the texture has the same transform matrix than another texture
+         * @param texture texture to check against
+         * @returns true if the transforms are the same, else false
+         */
+        checkTransformsAreIdentical(texture: Nullable<BaseTexture>): boolean;
+        /**
+         * Get the texture transform matrix used to offset tile the texture for instance.
+         * @returns the transformation matrix
+         */
+        getTextureMatrix(): Matrix;
+        /**
+         * Get the texture reflection matrix used to rotate/transform the reflection.
+         * @returns the reflection matrix
+         */
+        getReflectionTextureMatrix(): Matrix;
+        /**
+         * Get if the texture is ready to be consumed (either it is ready or it is not blocking)
+         * @returns true if ready or not blocking
+         */
+        isReadyOrNotBlocking(): boolean;
+        /**
+         * Scales the texture if is `canRescale()`
+         * @param ratio the resize factor we want to use to rescale
+         */
+        scale(ratio: number): void;
+        /**
+         * Get if the texture can rescale.
+         */
+        get canRescale(): boolean;
+        /** @hidden */
+        _getFromCache(url: Nullable<string>, noMipmap: boolean, sampling?: number, invertY?: boolean): Nullable<InternalTexture>;
+        /** @hidden */
+        _rebuild(): void;
+        /**
+         * Clones the texture.
+         * @returns the cloned texture
+         */
+        clone(): Nullable<BaseTexture>;
+        /**
+         * Get the texture underlying type (INT, FLOAT...)
+         */
+        get textureType(): number;
+        /**
+         * Get the texture underlying format (RGB, RGBA...)
+         */
+        get textureFormat(): number;
+        /**
+         * Indicates that textures need to be re-calculated for all materials
+         */
+        protected _markAllSubMeshesAsTexturesDirty(): void;
+        /**
+         * Reads the pixels stored in the webgl texture and returns them as an ArrayBuffer.
+         * This will returns an RGBA array buffer containing either in values (0-255) or
+         * float values (0-1) depending of the underlying buffer type.
+         * @param faceIndex defines the face of the texture to read (in case of cube texture)
+         * @param level defines the LOD level of the texture to read (in case of Mip Maps)
+         * @param buffer defines a user defined buffer to fill with data (can be null)
+         * @param flushRenderer true to flush the renderer from the pending commands before reading the pixels
+         * @returns The Array buffer promise containing the pixels data.
+         */
+        readPixels(faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean): Nullable<Promise<ArrayBufferView>>;
+        /** @hidden */
+        _readPixelsSync(faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean): Nullable<ArrayBufferView>;
+        /** @hidden */
+        get _lodTextureHigh(): Nullable<BaseTexture>;
+        /** @hidden */
+        get _lodTextureMid(): Nullable<BaseTexture>;
+        /** @hidden */
+        get _lodTextureLow(): Nullable<BaseTexture>;
+        /**
+         * Dispose the texture and release its associated resources.
+         */
+        dispose(): void;
+        /**
+         * Serialize the texture into a JSON representation that can be parsed later on.
+         * @returns the JSON representation of the texture
+         */
+        serialize(): any;
+        /**
+         * Helper function to be called back once a list of texture contains only ready textures.
+         * @param textures Define the list of textures to wait for
+         * @param callback Define the callback triggered once the entire list will be ready
+         */
+        static WhenAllReady(textures: BaseTexture[], callback: () => void): void;
+        private static _isScene;
     }
 }
 declare module BABYLON {
@@ -9801,7 +9803,7 @@ declare module BABYLON {
         _computeLocalCameraSpeed(): number;
         /**
          * Defines the target the camera should look at.
-         * @param target Defines the new target as a Vector or a mesh
+         * @param target Defines the new target as a Vector
          */
         setTarget(target: Vector3): void;
         /**
@@ -14032,13 +14034,13 @@ declare module BABYLON {
          * @param name defines the name of the input to look for
          * @returns the input or null if not found
          */
-        getInputByName(name: string): Nullable<NodeMaterialConnectionPoint>;
+        getInputByName(name: string): NodeMaterialConnectionPoint | null;
         /**
          * Find an output by its name
          * @param name defines the name of the output to look for
          * @returns the output or null if not found
          */
-        getOutputByName(name: string): Nullable<NodeMaterialConnectionPoint>;
+        getOutputByName(name: string): NodeMaterialConnectionPoint | null;
         /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
         visibleInInspector: boolean;
         /** Gets or sets a boolean indicating that this input can be edited from a collapsed frame*/
@@ -14096,19 +14098,19 @@ declare module BABYLON {
          * @param forOutput defines an optional connection point to check compatibility with
          * @returns the first available input or null
          */
-        getFirstAvailableInput(forOutput?: Nullable<NodeMaterialConnectionPoint>): Nullable<NodeMaterialConnectionPoint>;
+        getFirstAvailableInput(forOutput?: Nullable<NodeMaterialConnectionPoint>): NodeMaterialConnectionPoint | null;
         /**
          * Will return the first available output e.g. the first one which is not yet connected and not a varying
          * @param forBlock defines an optional block to check compatibility with
          * @returns the first available input or null
          */
-        getFirstAvailableOutput(forBlock?: Nullable<NodeMaterialBlock>): Nullable<NodeMaterialConnectionPoint>;
+        getFirstAvailableOutput(forBlock?: Nullable<NodeMaterialBlock>): NodeMaterialConnectionPoint | null;
         /**
          * Gets the sibling of the given output
          * @param current defines the current output
          * @returns the next output in the list or null
          */
-        getSiblingOutput(current: NodeMaterialConnectionPoint): Nullable<NodeMaterialConnectionPoint>;
+        getSiblingOutput(current: NodeMaterialConnectionPoint): NodeMaterialConnectionPoint | null;
         /**
          * Connect current block with another block
          * @param other defines the block to connect with
@@ -14202,7 +14204,7 @@ declare module BABYLON {
          * @param rootUrl defines the root URL to use to load textures and relative dependencies
          * @returns a copy of the current block
          */
-        clone(scene: Scene, rootUrl?: string): Nullable<NodeMaterialBlock>;
+        clone(scene: Scene, rootUrl?: string): NodeMaterialBlock | null;
         /**
          * Serializes this block in a JSON representation
          * @returns the serialized block object
@@ -18338,9 +18340,10 @@ declare module BABYLON {
          */
         _mode: NodeMaterialModes;
         /**
-         * Gets the mode property
+         * Gets or sets the mode property
          */
         get mode(): NodeMaterialModes;
+        set mode(value: NodeMaterialModes);
         /**
          * A free comment about the material
          */
@@ -18371,13 +18374,13 @@ declare module BABYLON {
          * @param name defines the name of the block to retrieve
          * @returns the required block or null if not found
          */
-        getBlockByName(name: string): Nullable<NodeMaterialBlock>;
+        getBlockByName(name: string): NodeMaterialBlock | null;
         /**
          * Get a block by its name
          * @param predicate defines the predicate used to find the good candidate
          * @returns the required block or null if not found
          */
-        getBlockByPredicate(predicate: (block: NodeMaterialBlock) => boolean): Nullable<NodeMaterialBlock>;
+        getBlockByPredicate(predicate: (block: NodeMaterialBlock) => boolean): NodeMaterialBlock | null;
         /**
          * Get an input block by its name
          * @param predicate defines the predicate used to find the good candidate
@@ -26199,9 +26202,9 @@ declare module BABYLON {
         /** defines if the animation must loop (default is false)  */
         loopAnimation: boolean;
         /** defines a callback to call when animation ends if it is not looping */
-        onAnimationEnd?: (() => void) | null | undefined;
+        onAnimationEnd?: Nullable<() => void> | undefined;
         /** defines a callback to call when animation loops */
-        onAnimationLoop?: (() => void) | null | undefined;
+        onAnimationLoop?: Nullable<() => void> | undefined;
         /** defines whether the animation should be evaluated additively */
         isAdditive: boolean;
         private _localDelayOffset;
@@ -26271,9 +26274,9 @@ declare module BABYLON {
         /** defines if the animation must loop (default is false)  */
         loopAnimation?: boolean, speedRatio?: number, 
         /** defines a callback to call when animation ends if it is not looping */
-        onAnimationEnd?: (() => void) | null | undefined, animations?: Animation[], 
+        onAnimationEnd?: Nullable<() => void> | undefined, animations?: Animation[], 
         /** defines a callback to call when animation loops */
-        onAnimationLoop?: (() => void) | null | undefined, 
+        onAnimationLoop?: Nullable<() => void> | undefined, 
         /** defines whether the animation should be evaluated additively */
         isAdditive?: boolean);
         /**
@@ -27080,7 +27083,7 @@ declare module BABYLON {
          * @param mesh The mesh that this bone is attached to
          * @param result The vector3 that the world direction will be copied to
          */
-        getDirectionToRef(localAxis: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
+        getDirectionToRef(localAxis: Vector3, mesh: Nullable<AbstractMesh> | undefined, result: Vector3): void;
         /**
          * Get the euler rotation of the bone in local or world space
          * @param space The space that the rotation should be in
@@ -27094,7 +27097,7 @@ declare module BABYLON {
          * @param mesh The mesh that this bone is attached to.  This is only used in world space
          * @param result The vector3 that the rotation should be copied to
          */
-        getRotationToRef(space: Space | undefined, mesh: AbstractMesh | null | undefined, result: Vector3): void;
+        getRotationToRef(space: Space | undefined, mesh: Nullable<AbstractMesh> | undefined, result: Vector3): void;
         /**
          * Get the quaternion rotation of the bone in either local or world space
          * @param space The space that the rotation should be in
@@ -27108,7 +27111,7 @@ declare module BABYLON {
          * @param mesh The mesh that this bone is attached to.  This is only used in world space
          * @param result The quaternion that the rotation should be copied to
          */
-        getRotationQuaternionToRef(space: Space | undefined, mesh: AbstractMesh | null | undefined, result: Quaternion): void;
+        getRotationQuaternionToRef(space: Space | undefined, mesh: Nullable<AbstractMesh> | undefined, result: Quaternion): void;
         /**
          * Get the rotation matrix of the bone in local or world space
          * @param space The space that the rotation should be in
@@ -27136,7 +27139,7 @@ declare module BABYLON {
          * @param mesh The mesh that this bone is attached to
          * @param result The vector3 that the world position should be copied to
          */
-        getAbsolutePositionFromLocalToRef(position: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
+        getAbsolutePositionFromLocalToRef(position: Vector3, mesh: Nullable<AbstractMesh> | undefined, result: Vector3): void;
         /**
          * Get the local position of a point that is in world space
          * @param position The world position
@@ -27150,7 +27153,7 @@ declare module BABYLON {
          * @param mesh The mesh that this bone is attached to
          * @param result The vector3 that the local position should be copied to
          */
-        getLocalPositionFromAbsoluteToRef(position: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
+        getLocalPositionFromAbsoluteToRef(position: Vector3, mesh: Nullable<AbstractMesh> | undefined, result: Vector3): void;
         /**
          * Set the current local matrix as the restPose for this bone.
          */
@@ -29682,6 +29685,11 @@ declare module BABYLON {
         get linesNormals(): Immutable<Array<number>>;
         /** Gets the indices generated by the edge renderer */
         get linesIndices(): Immutable<Array<number>>;
+        /**
+         * Gets or sets the shader used to draw the lines
+         */
+        get lineShader(): ShaderMaterial;
+        set lineShader(shader: ShaderMaterial);
         /**
          * List of instances to render in case the source mesh has instances
          */
@@ -32270,6 +32278,10 @@ declare module BABYLON {
         private _canUseTextureForTargets;
         /** @hidden */
         _targetStoreTexture: Nullable<RawTexture2DArray>;
+        /**
+         * Gets or sets a boolean indicating if influencers must be optimized (eg. recompiling the shader if less influencers are used)
+         */
+        optimizeInfluencers: boolean;
         /**
          * Gets or sets a boolean indicating if normals must be morphed
          */
@@ -38330,6 +38342,12 @@ declare module BABYLON {
          */
         _getKeyValue(value: any): any;
         /**
+         * Evaluate the animation value at a given frame
+         * @param currentFrame defines the frame where we want to evaluate the animation
+         * @returns the animation value
+         */
+        evaluate(currentFrame: number): any;
+        /**
          * @hidden Internal use only
          */
         _interpolate(currentFrame: number, state: _IAnimationState): any;
@@ -40401,7 +40419,7 @@ declare module BABYLON {
         private _webGLTexture;
         private _context;
         get underlyingResource(): Nullable<WebGLTexture>;
-        constructor(existingTexture: WebGLTexture | null | undefined, context: WebGLRenderingContext);
+        constructor(existingTexture: Nullable<WebGLTexture> | undefined, context: WebGLRenderingContext);
         setUsage(textureSource: number, generateMipMaps: boolean, isCube: boolean, width: number, height: number): void;
         set(hardwareTexture: WebGLTexture): void;
         reset(): void;
@@ -40739,6 +40757,10 @@ declare module BABYLON {
          * Gets or sets a boolean indicating that uniform buffers must be disabled even if they are supported
          */
         disableUniformBuffers: boolean;
+        /**
+        * An event triggered when the engine is disposed.
+        */
+        readonly onDisposeObservable: Observable<ThinEngine>;
         private _frameId;
         /**
          * Gets the current frame id
@@ -41579,7 +41601,7 @@ declare module BABYLON {
         protected _createTexture(): WebGLTexture;
         /** @hidden */
         _createHardwareTexture(): HardwareTextureWrapper;
-        protected _createTextureBase(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number | undefined, onLoad: (() => void) | null | undefined, onError: ((message: string, exception: any) => void) | null | undefined, prepareTexture: (texture: InternalTexture, extension: string, scene: Nullable<ISceneLike>, img: HTMLImageElement | ImageBitmap | {
+        protected _createTextureBase(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number | undefined, onLoad: Nullable<() => void> | undefined, onError: Nullable<(message: string, exception: any) => void> | undefined, prepareTexture: (texture: InternalTexture, extension: string, scene: Nullable<ISceneLike>, img: HTMLImageElement | ImageBitmap | {
             width: number;
             height: number;
         }, invertY: boolean, noMipmap: boolean, isCompressed: boolean, processFunction: (width: number, height: number, img: HTMLImageElement | ImageBitmap | {
@@ -43377,7 +43399,7 @@ declare module BABYLON {
         deleteInstancesBuffer(buffer: WebGLBuffer): void;
         private _clientWaitAsync;
         /** @hidden */
-        _readPixelsAsync(x: number, y: number, w: number, h: number, format: number, type: number, outputBuffer: ArrayBufferView): Nullable<Promise<ArrayBufferView>>;
+        _readPixelsAsync(x: number, y: number, w: number, h: number, format: number, type: number, outputBuffer: ArrayBufferView): Promise<ArrayBufferView> | null;
         dispose(): void;
         private _disableTouchAction;
         /**
@@ -48660,6 +48682,7 @@ declare module BABYLON {
         _animate(): void;
         /** Execute all animations (for a frame) */
         animate(): void;
+        private _clear;
         /**
          * Render the scene
          * @param updateCameras defines a boolean indicating if cameras must update according to their inputs (true by default)
@@ -48930,9 +48953,12 @@ declare module BABYLON {
          * Skeletons and animation groups will all be cloned
          * @param nameFunction defines an optional function used to get new names for clones
          * @param cloneMaterials defines an optional boolean that defines if materials must be cloned as well (false by default)
+         * @param options defines an optional list of options to control how to instanciate / clone models
          * @returns a list of rootNodes, skeletons and aniamtion groups that were duplicated
          */
-        instantiateModelsToScene(nameFunction?: (sourceName: string) => string, cloneMaterials?: boolean): InstantiatedEntries;
+        instantiateModelsToScene(nameFunction?: (sourceName: string) => string, cloneMaterials?: boolean, options?: {
+            doNotInstantiate: boolean;
+        }): InstantiatedEntries;
         /**
          * Adds all the assets from the container to the scene.
          */
@@ -48963,7 +48989,7 @@ declare module BABYLON {
          * @param targetConverter defines a function used to convert animation targets from the asset container to the scene (default: search node by name)
          * @returns an array of the new AnimationGroup added to the scene (empty array if none)
          */
-        mergeAnimationsTo(scene: Scene | null | undefined, animatables: Animatable[], targetConverter?: Nullable<(target: any) => Nullable<Node>>): AnimationGroup[];
+        mergeAnimationsTo(scene: Nullable<Scene> | undefined, animatables: Animatable[], targetConverter?: Nullable<(target: any) => Nullable<Node>>): AnimationGroup[];
     }
 }
 declare module BABYLON {
@@ -52600,6 +52626,11 @@ declare module BABYLON {
         radius: number, 
         /** Define the camera target (the mesh it should follow) */
         target: Nullable<AbstractMesh>, scene: Scene);
+        /**
+         * Sets the mesh to follow with this camera.
+         * @param target the target to follow
+         */
+        setMeshTarget(target: Nullable<AbstractMesh>): void;
         private _follow;
         /** @hidden */
         _checkInputs(): void;
@@ -54753,6 +54784,7 @@ declare module BABYLON {
     export class WebXRSessionManager implements IDisposable {
         /** The scene which the session should be created for */
         scene: Scene;
+        private _engine;
         private _referenceSpace;
         private _rttProvider;
         private _sessionEnded;
@@ -54827,9 +54859,9 @@ declare module BABYLON {
         /**
          * Gets the correct render target texture to be rendered this frame for this eye
          * @param eye the eye for which to get the render target
-         * @returns the render target for the specified eye
+         * @returns the render target for the specified eye or null if not available
          */
-        getRenderTargetTextureForEye(eye: XREye): RenderTargetTexture;
+        getRenderTargetTextureForEye(eye: XREye): Nullable<RenderTargetTexture>;
         /**
          * Creates a WebXRRenderTarget object for the XR session
          * @param onStateChangedObservable optional, mechanism for enabling/disabling XR rendering canvas, used only on Web
@@ -56168,7 +56200,7 @@ declare module BABYLON {
         /**
          * Backwards compatibility due to a deeply-integrated typo
          */
-        get handness(): XREye;
+        get handness(): MotionControllerHandedness;
         /**
          * Pulse (vibrate) this controller
          * If the controller does not support pulses, this function will fail silently and return Promise<false> directly after called
@@ -56982,6 +57014,12 @@ declare module BABYLON {
          */
         requiredFeatures?: string[];
         /**
+         * If set, the `sessiongranted` event will not be registered. `sessiongranted` is used to move seamlessly between WebXR experiences.
+         * If set to true the user will be forced to press the "enter XR" button even if sessiongranted event was triggered.
+         * If not set and a sessiongranted event was triggered, the XR session will start automatically.
+         */
+        ignoreSessionGrantedEvent?: boolean;
+        /**
          * If defined, this function will be executed if the UI encounters an error when entering XR
          */
         onError?: (error: any) => void;
@@ -56995,6 +57033,8 @@ declare module BABYLON {
         options: WebXREnterExitUIOptions;
         private _activeButton;
         private _buttons;
+        private _helper;
+        private _renderTarget?;
         /**
          * The HTML Div Element to which buttons are added.
          */
@@ -57008,11 +57048,23 @@ declare module BABYLON {
          */
         activeButtonChangedObservable: Observable<Nullable<WebXREnterExitUIButton>>;
         /**
+         * Construct a new EnterExit UI class
          *
          * @param scene babylon scene object to use
          * @param options (read-only) version of the options passed to this UI
          */
-        private constructor();
+        constructor(scene: Scene, 
+        /** version of the options passed to this UI */
+        options: WebXREnterExitUIOptions);
+        /**
+         * Set the helper to be used with this UI component.
+         * The UI is bound to an experience helper. If not provided the UI can still be used but the events should be registered by the developer.
+         *
+         * @param helper the experience helper to attach
+         * @param renderTarget an optional render target (in case it is created outside of the helper scope)
+         * @returns a promise that resolves when the ui is ready
+         */
+        setHelperAsync(helper: WebXRExperienceHelper, renderTarget?: WebXRRenderTarget): Promise<void>;
         /**
          * Creates UI to allow the user to enter/exit XR mode
          * @param scene the scene to add the ui to
@@ -57021,10 +57073,12 @@ declare module BABYLON {
          * @returns the created ui
          */
         static CreateAsync(scene: Scene, helper: WebXRExperienceHelper, options: WebXREnterExitUIOptions): Promise<WebXREnterExitUI>;
+        private _enterXRWithButtonIndex;
         /**
          * Disposes of the XR UI component
          */
         dispose(): void;
+        private _onSessionGranted;
         private _updateButtons;
     }
 }
@@ -58478,6 +58532,15 @@ declare module BABYLON {
         onSnapObservable: Observable<{
             snapDistance: number;
         }>;
+        /**
+         * The maximum angle between the camera and the rotation allowed for interaction
+         * If a rotation plane appears 'flat', a lower value allows interaction.
+         */
+        static MaxDragAngle: number;
+        /**
+         * Acumulated relative angle value for rotation on the axis. Reset to 0 when a dragStart occurs
+         */
+        angle: number;
         private _isEnabled;
         private _parent;
         private _coloredMaterial;
@@ -62961,6 +63024,7 @@ declare module BABYLON {
             halfDomeMode?: boolean;
             crossEyeMode?: boolean;
             generateMipMaps?: boolean;
+            mesh?: Mesh;
         }, scene: Scene, onError?: Nullable<(message?: string, exception?: any) => void>);
         protected abstract _initTexture(urlsOrElement: string | string[] | HTMLElement, scene: Scene, options: any): T;
         protected _changeTextureMode(value: number): void;
@@ -70432,6 +70496,45 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Block used to build a matrix from 4 Vector4
+     */
+    export class MatrixBuilderBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new MatrixBuilder
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the row0 vector
+         */
+        get row0(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the row1 vector
+         */
+        get row1(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the row2 vector
+         */
+        get row2(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the row3 vector
+         */
+        get row3(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        get output(): NodeMaterialConnectionPoint;
+        autoConfigure(material: NodeMaterial): void;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
      * Configuration for Draco compression
      */
     export interface IDracoCompressionConfiguration {
@@ -74003,7 +74106,7 @@ declare module BABYLON {
             /**
              * Enables physics to the current scene
              * @param gravity defines the scene's gravity for the physics engine
-             * @param plugin defines the physics engine to be used. defaults to OimoJS.
+             * @param plugin defines the physics engine to be used. defaults to CannonJS.
              * @return a boolean indicating if the physics engine was initialized
              */
             enablePhysics(gravity: Nullable<Vector3>, plugin?: IPhysicsEnginePlugin): boolean;
@@ -78609,6 +78712,10 @@ declare module BABYLON {
          */
         files?: string[] | undefined;
         /**
+         * Defines the prefiltered texture option (default is false)
+         */
+        prefiltered?: boolean | undefined;
+        /**
          * Gets the loaded texture
          */
         texture: CubeTexture;
@@ -78648,7 +78755,11 @@ declare module BABYLON {
         /**
          * Defines the explicit list of files (undefined by default)
          */
-        files?: string[] | undefined);
+        files?: string[] | undefined, 
+        /**
+         * Defines the prefiltered texture option (default is false)
+         */
+        prefiltered?: boolean | undefined);
         /**
          * Execute the current task
          * @param scene defines the scene where you want your assets to be loaded
@@ -78940,9 +79051,10 @@ declare module BABYLON {
          * @param extensions defines the extension to use to load the cube map (can be null)
          * @param noMipmap defines if the texture must not receive mipmaps (false by default)
          * @param files defines the list of files to load (can be null)
+         * @param prefiltered defines the prefiltered texture option (default is false)
          * @returns a new CubeTextureAssetTask object
          */
-        addCubeTextureTask(taskName: string, url: string, extensions?: string[], noMipmap?: boolean, files?: string[]): CubeTextureAssetTask;
+        addCubeTextureTask(taskName: string, url: string, extensions?: string[], noMipmap?: boolean, files?: string[], prefiltered?: boolean): CubeTextureAssetTask;
         /**
          *
          * Add a HDRCubeTextureAssetTask to the list of active tasks
@@ -80997,7 +81109,7 @@ declare module BABYLON {
         /** the controller to which the hand correlates */
         xrController: WebXRInputSource, 
         /** the meshes to be used to track the hand joints */
-        trackedMeshes: Map<string, AbstractMesh>, _handMesh?: AbstractMesh | undefined, _rigMapping?: string[] | undefined, disableDefaultHandMesh?: boolean, _nearInteractionMesh?: AbstractMesh | null | undefined, _leftHandedMeshes?: boolean | undefined);
+        trackedMeshes: Map<string, AbstractMesh>, _handMesh?: AbstractMesh | undefined, _rigMapping?: string[] | undefined, disableDefaultHandMesh?: boolean, _nearInteractionMesh?: Nullable<AbstractMesh> | undefined, _leftHandedMeshes?: boolean | undefined);
         /**
          * Get the hand mesh. It is possible that the hand mesh is not yet ready!
          */

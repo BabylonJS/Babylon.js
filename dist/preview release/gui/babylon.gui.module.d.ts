@@ -862,6 +862,7 @@ declare module "babylonjs-gui/2D/controls/control" {
         get shadowOffsetY(): number;
         set shadowOffsetY(value: number);
         private _shadowBlur;
+        private _previousShadowBlur;
         /** Gets or sets a value indicating the amount of blur to use to render the shadow */
         get shadowBlur(): number;
         set shadowBlur(value: number);
@@ -4061,10 +4062,21 @@ declare module "babylonjs-gui/3D/controls/button3D" {
 declare module "babylonjs-gui/3D/controls/touchButton3D" {
     import { Vector3 } from "babylonjs/Maths/math.vector";
     import { Mesh } from "babylonjs/Meshes/mesh";
-    import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
     import { TransformNode } from "babylonjs/Meshes/transformNode";
     import { Scene } from "babylonjs/scene";
     import { Button3D } from "babylonjs-gui/3D/controls/button3D";
+    /**
+     * Enum for Button States
+     */
+    /** @hidden */
+    export enum ButtonState {
+        /** None */
+        None = 0,
+        /** Pointer Entered */
+        Hover = 1,
+        /** Pointer Down */
+        Press = 2
+    }
     /**
      * Class used to create a touchable button in 3D
      */
@@ -4105,8 +4117,9 @@ declare module "babylonjs-gui/3D/controls/touchButton3D" {
         private _getHeightFromButtonCenter;
         private _getDistanceOffPlane;
         private _updateButtonState;
+        private _firePointerEvents;
         /** @hidden */
-        _collisionCheckForStateChange(mesh: AbstractMesh): void;
+        _collisionCheckForStateChange(meshPos: Vector3, uniqueId: number, forceExit?: boolean): void;
         protected _getTypeName(): string;
         protected _createNode(scene: Scene): TransformNode;
         /**
@@ -4136,6 +4149,8 @@ declare module "babylonjs-gui/3D/gui3DManager" {
         private _pointerObserver;
         private _pointerOutObserver;
         private _touchableButtons;
+        private _touchIds;
+        private static _touchIdCounter;
         /** @hidden */
         _lastPickedControl: Control3D;
         /** @hidden */
@@ -4870,6 +4885,43 @@ declare module "babylonjs-gui/3D/controls/touchHolographicButton" {
         dispose(): void;
     }
 }
+declare module "babylonjs-gui/3D/controls/touchToggleButton3D" {
+    import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+    import { Mesh } from "babylonjs/Meshes/mesh";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { Scene } from "babylonjs/scene";
+    import { TransformNode } from "babylonjs/Meshes/transformNode";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
+    import { TouchButton3D } from "babylonjs-gui/3D/controls/touchButton3D";
+    /**
+     * Class used as base class for touch-enabled toggleable buttons
+     */
+    export class TouchToggleButton3D extends TouchButton3D {
+        private _isPressed;
+        /**
+         * An event triggered when the button is toggled on
+         */
+        onToggleOnObservable: Observable<Vector3>;
+        /**
+         * An event triggered when the button is toggled off
+         */
+        onToggleOffObservable: Observable<Vector3>;
+        /**
+         * Creates a new button
+         * @param name defines the control name
+         * @param collisionMesh defines the mesh to track near interactions with
+         */
+        constructor(name?: string, collisionMesh?: Mesh);
+        private _onToggle;
+        protected _getTypeName(): string;
+        protected _createNode(scene: Scene): TransformNode;
+        protected _affectMaterial(mesh: AbstractMesh): void;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
+    }
+}
 declare module "babylonjs-gui/3D/controls/index" {
     export * from "babylonjs-gui/3D/controls/abstractButton3D";
     export * from "babylonjs-gui/3D/controls/button3D";
@@ -4885,6 +4937,7 @@ declare module "babylonjs-gui/3D/controls/index" {
     export * from "babylonjs-gui/3D/controls/touchButton3D";
     export * from "babylonjs-gui/3D/controls/touchMeshButton3D";
     export * from "babylonjs-gui/3D/controls/touchHolographicButton";
+    export * from "babylonjs-gui/3D/controls/touchToggleButton3D";
     export * from "babylonjs-gui/3D/controls/volumeBasedPanel";
 }
 declare module "babylonjs-gui/3D/materials/index" {
@@ -5734,6 +5787,7 @@ declare module BABYLON.GUI {
         get shadowOffsetY(): number;
         set shadowOffsetY(value: number);
         private _shadowBlur;
+        private _previousShadowBlur;
         /** Gets or sets a value indicating the amount of blur to use to render the shadow */
         get shadowBlur(): number;
         set shadowBlur(value: number);
@@ -8740,6 +8794,18 @@ declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
     /**
+     * Enum for Button States
+     */
+    /** @hidden */
+    export enum ButtonState {
+        /** None */
+        None = 0,
+        /** Pointer Entered */
+        Hover = 1,
+        /** Pointer Down */
+        Press = 2
+    }
+    /**
      * Class used to create a touchable button in 3D
      */
     export class TouchButton3D extends Button3D {
@@ -8779,8 +8845,9 @@ declare module BABYLON.GUI {
         private _getHeightFromButtonCenter;
         private _getDistanceOffPlane;
         private _updateButtonState;
+        private _firePointerEvents;
         /** @hidden */
-        _collisionCheckForStateChange(mesh: BABYLON.AbstractMesh): void;
+        _collisionCheckForStateChange(meshPos: BABYLON.Vector3, uniqueId: number, forceExit?: boolean): void;
         protected _getTypeName(): string;
         protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
         /**
@@ -8802,6 +8869,8 @@ declare module BABYLON.GUI {
         private _pointerObserver;
         private _pointerOutObserver;
         private _touchableButtons;
+        private _touchIds;
+        private static _touchIdCounter;
         /** @hidden */
         _lastPickedControl: Control3D;
         /** @hidden */
@@ -9458,6 +9527,36 @@ declare module BABYLON.GUI {
         private _createFrontMaterial;
         private _createPlateMaterial;
         protected _affectMaterial(mesh: BABYLON.Mesh): void;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used as base class for touch-enabled toggleable buttons
+     */
+    export class TouchToggleButton3D extends TouchButton3D {
+        private _isPressed;
+        /**
+         * An event triggered when the button is toggled on
+         */
+        onToggleOnObservable: BABYLON.Observable<BABYLON.Vector3>;
+        /**
+         * An event triggered when the button is toggled off
+         */
+        onToggleOffObservable: BABYLON.Observable<BABYLON.Vector3>;
+        /**
+         * Creates a new button
+         * @param name defines the control name
+         * @param collisionMesh defines the mesh to track near interactions with
+         */
+        constructor(name?: string, collisionMesh?: BABYLON.Mesh);
+        private _onToggle;
+        protected _getTypeName(): string;
+        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
+        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
         /**
          * Releases all associated resources
          */

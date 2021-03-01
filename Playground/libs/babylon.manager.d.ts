@@ -10,8 +10,16 @@ declare module BABYLON {
         static get Copyright(): string;
         /** Pauses the main page render loop */
         static PauseRenderLoop: boolean;
+        /** Set the preload auto update progress flag */
+        static AutoUpdateProgress: boolean;
         /** Returns a Promise that resolves after the specfied time */
         static WaitForSeconds: (seconds: number) => Promise<void>;
+        /** Set the preloader progress event handler */
+        static OnPreloaderProgress: (remainingCount: number, totalCount: number, lastFinishedTask: BABYLON.AbstractAssetTask) => void;
+        /** Set the preloader complete event handler */
+        static OnPreloaderComplete: (tasks: BABYLON.AbstractAssetTask[]) => void;
+        /** Gets the running status of the default audio context */
+        static IsAudioContextRunning(): boolean;
         /** Register handler that is triggered when the fonts have been loaded (engine.html) */
         static OnFontsReadyObservable: Observable<Engine>;
         /** Register handler that is triggered when then engine has been resized (engine.html) */
@@ -45,7 +53,7 @@ declare module BABYLON {
         /** Retrieve data object from the window state cache */
         static GetWindowState<T>(name: string): T;
         /** Post a safe message to top or local window */
-        static PostWindowMessage(message: any, targetOrigin: string, transfer?: Transferable[]): void;
+        static PostWindowMessage(msg: any, targetOrigin: string, transfer?: Transferable[]): void;
         private static SceneParsingEnabled;
         /** Enable scene loader parsing plugin */
         static EnableSceneParsing(enabled: boolean): void;
@@ -173,7 +181,9 @@ declare module BABYLON {
         /** Post data to server asynchronously */
         static PostDataToServerAsync(url: string, data: string | Document | Blob | ArrayBufferView | ArrayBuffer | FormData | URLSearchParams | ReadableStream<Uint8Array>, contentType?: string): Promise<number>;
         /** Shows the default page scene loader. */
-        static ShowDefaultLoader(show: boolean): void;
+        static ShowSceneLoader(): void;
+        /** Hides the default page scene loader. */
+        static HideSceneLoader(): void;
         /** Update the default page scene loader status. */
         static UpdateLoaderStatus(status: string, details: string, state: number): void;
         /** Gets all the created engine instances */
@@ -223,7 +233,7 @@ declare module BABYLON {
         /** Get all materials with name. (Uses starts with text searching) */
         static GetAllMaterialsWithName(scene: BABYLON.Scene, name: string): BABYLON.Material[];
         /** Instantiate the specified prefab asset hierarchy into the scene. (Cloned Hierarchy) */
-        static InstantiatePrefab(container: BABYLON.AssetContainer, prefabName: string, newName: string, makeNewMaterials?: boolean, cloneAnimations?: boolean): BABYLON.TransformNode;
+        static InstantiatePrefab(container: BABYLON.AssetContainer, prefabName: string, newName: string, makeNewMaterials?: boolean, cloneAnimations?: boolean, assetsManager?: BABYLON.AssetsManager): BABYLON.TransformNode;
         /** Clones the specified transform node asset into the scene. (Transform Node) */
         static CloneTransformNode(container: BABYLON.AssetContainer, nodeName: string, cloneName: string): BABYLON.TransformNode;
         /** Clones the specified abstract mesh asset into the scene. (Abtract Mesh) */
@@ -244,8 +254,8 @@ declare module BABYLON {
         static FindSceneCameraRig(transform: BABYLON.TransformNode): BABYLON.FreeCamera;
         /** Finds the specfied light rig in the scene. */
         static FindSceneLightRig(transform: BABYLON.TransformNode): BABYLON.Light;
-        /** Finds all transforms with the specified script component. */
-        static FindTransformsWithScript(scene: BABYLON.Scene, klass: string): BABYLON.TransformNode;
+        /** Finds the first transform with the specified script component. */
+        static FindTransformWithScript(scene: BABYLON.Scene, klass: string): BABYLON.TransformNode;
         /** Finds all transforms with the specified script component. */
         static FindAllTransformsWithScript(scene: BABYLON.Scene, klass: string): BABYLON.TransformNode[];
         /** Finds the specfied child transform in the scene. */
@@ -258,7 +268,7 @@ declare module BABYLON {
         static FindChildTransformWithScript(parent: BABYLON.TransformNode, klass: string, directDecendantsOnly?: boolean, predicate?: (node: BABYLON.Node) => boolean): BABYLON.TransformNode;
         /** Finds all child transforms with the specified script component. */
         static FindAllChildTransformsWithScript(parent: BABYLON.TransformNode, klass: string, directDecendantsOnly?: boolean, predicate?: (node: BABYLON.Node) => boolean): BABYLON.TransformNode[];
-        /** Searches all nodes for the instance of the specified script component. */
+        /** Searches all nodes for the first instance of the specified script component. */
         static SearchForScriptComponentByName<T extends BABYLON.ScriptComponent>(scene: BABYLON.Scene, klass: string): T;
         /** Searches all nodes for all instances of the specified script component. */
         static SearchForAllScriptComponentsByName<T extends BABYLON.ScriptComponent>(scene: BABYLON.Scene, klass: string): T[];
@@ -611,7 +621,7 @@ declare module BABYLON {
         /** Parse the scene component metadata. Note: Internal use only */
         parseSceneComponents(entity: BABYLON.TransformNode): void;
         /** Post process pending scene components. Note: Internal use only */
-        postProcessSceneComponents(): void;
+        postProcessSceneComponents(preloadList: Array<BABYLON.ScriptComponent>): void;
         private static DoParseSceneComponents;
         private static DoProcessPendingScripts;
         private static DoProcessPendingShadows;
@@ -699,19 +709,21 @@ declare module BABYLON {
         getChildWithScript(klass: string, directDecendantsOnly?: boolean, predicate?: (node: BABYLON.Node) => boolean): BABYLON.TransformNode;
         /** Get all child transforms with the specified script component. */
         getChildrenWithScript(klass: string, directDecendantsOnly?: boolean, predicate?: (node: BABYLON.Node) => boolean): BABYLON.TransformNode[];
-        /** Register handler that is triggered after the scene has rendered and is ready to go */
-        registerOnSceneReady(func: (eventData: BABYLON.Scene, eventState: BABYLON.EventState) => void): void;
+        /** Register handler that is triggered after the script has started and is ready in the scene */
+        registerOnSceneReady(func: (eventData: BABYLON.Scene, eventState: BABYLON.EventState) => void): BABYLON.Observer<BABYLON.Scene>;
         /** Registers an on pick tricgger click action */
         registerOnClickAction(func: () => void): BABYLON.IAction;
         /** Unregisters an on pick tricgger click action */
         unregisterOnClickAction(action: BABYLON.IAction): boolean;
+        /** Sets the intersect mesh for trigger volume collision detection */
+        setTriggerIntersectMesh(mesh: BABYLON.AbstractMesh): void;
         /** Register handler that is triggered when the a volume has entered */
         onTriggerEnterObservable: Observable<AbstractMesh>;
         /** Register handler that is triggered when the a volume contact is active */
         onTriggerStayObservable: Observable<AbstractMesh>;
         /** Register handler that is triggered when the a volume contact has exited */
         onTriggerExitObservable: Observable<AbstractMesh>;
-        private triggerMesh;
+        private intersectMesh;
         private triggerVolumeList;
         useTriggerVolumePrecision: boolean;
         includeTriggerVolumeDescendants: boolean;
@@ -1195,6 +1207,12 @@ declare module BABYLON {
         a: number;
     }
     /**
+     * Asset Preloader Interface (https://doc.babylonjs.com/divingDeeper/importers/assetManager)
+     */
+    interface IAssetPreloader {
+        addPreloaderTasks(assetsManager: BABYLON.AssetsManager): void;
+    }
+    /**
      * Trigger Volume State
      * @class TriggerVolume - All rights reserved (c) 2020 Mackey Kinard
      */
@@ -1522,7 +1540,7 @@ declare module BABYLON {
         /** Get all loaded scene transform nodes. */
         static GetSceneTransforms(scene: BABYLON.Scene): BABYLON.TransformNode[];
         /** Parse scene component metadata. */
-        static ParseSceneComponents(scene: BABYLON.Scene, transforms: BABYLON.TransformNode[]): void;
+        static ParseSceneComponents(scene: BABYLON.Scene, transforms: BABYLON.TransformNode[], preloadList: Array<BABYLON.ScriptComponent>): void;
         /**
          * Gets the specified asset container mesh.
          * @param container defines the asset container
@@ -1612,9 +1630,11 @@ declare class CVTOOLS_unity_metadata implements BABYLON.GLTF2.IGLTFLoaderExtensi
     private _masterList;
     private _detailList;
     private _shaderList;
+    private _preloadList;
     private _materialMap;
     private _lightmapMap;
     private _reflectionMap;
+    private _assetsManager;
     private _activeMeshes;
     private _parseScene;
     private _leftHanded;

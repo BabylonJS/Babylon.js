@@ -826,6 +826,7 @@ declare module BABYLON.GUI {
         get shadowOffsetY(): number;
         set shadowOffsetY(value: number);
         private _shadowBlur;
+        private _previousShadowBlur;
         /** Gets or sets a value indicating the amount of blur to use to render the shadow */
         get shadowBlur(): number;
         set shadowBlur(value: number);
@@ -3832,6 +3833,18 @@ declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
     /**
+     * Enum for Button States
+     */
+    /** @hidden */
+    export enum ButtonState {
+        /** None */
+        None = 0,
+        /** Pointer Entered */
+        Hover = 1,
+        /** Pointer Down */
+        Press = 2
+    }
+    /**
      * Class used to create a touchable button in 3D
      */
     export class TouchButton3D extends Button3D {
@@ -3871,8 +3884,9 @@ declare module BABYLON.GUI {
         private _getHeightFromButtonCenter;
         private _getDistanceOffPlane;
         private _updateButtonState;
+        private _firePointerEvents;
         /** @hidden */
-        _collisionCheckForStateChange(mesh: BABYLON.AbstractMesh): void;
+        _collisionCheckForStateChange(meshPos: BABYLON.Vector3, uniqueId: number, forceExit?: boolean): void;
         protected _getTypeName(): string;
         protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
         /**
@@ -3894,6 +3908,8 @@ declare module BABYLON.GUI {
         private _pointerObserver;
         private _pointerOutObserver;
         private _touchableButtons;
+        private _touchIds;
+        private static _touchIdCounter;
         /** @hidden */
         _lastPickedControl: Control3D;
         /** @hidden */
@@ -4550,6 +4566,36 @@ declare module BABYLON.GUI {
         private _createFrontMaterial;
         private _createPlateMaterial;
         protected _affectMaterial(mesh: BABYLON.Mesh): void;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used as base class for touch-enabled toggleable buttons
+     */
+    export class TouchToggleButton3D extends TouchButton3D {
+        private _isPressed;
+        /**
+         * An event triggered when the button is toggled on
+         */
+        onToggleOnObservable: BABYLON.Observable<BABYLON.Vector3>;
+        /**
+         * An event triggered when the button is toggled off
+         */
+        onToggleOffObservable: BABYLON.Observable<BABYLON.Vector3>;
+        /**
+         * Creates a new button
+         * @param name defines the control name
+         * @param collisionMesh defines the mesh to track near interactions with
+         */
+        constructor(name?: string, collisionMesh?: BABYLON.Mesh);
+        private _onToggle;
+        protected _getTypeName(): string;
+        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
+        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
         /**
          * Releases all associated resources
          */

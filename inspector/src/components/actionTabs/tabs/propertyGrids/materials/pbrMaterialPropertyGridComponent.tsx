@@ -38,7 +38,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
         const material = this.props.material;
 
         return (
-            <LineContainerComponent title="CHANNELS">
+            <LineContainerComponent title="CHANNELS" selection={this.props.globalState}>
                 <TextureLinkLineComponent label="Albedo" texture={material.albedoTexture} propertyName="albedoTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
                 <TextureLinkLineComponent label="Metallic Roughness" texture={material.metallicTexture} propertyName="metallicTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
                 <TextureLinkLineComponent label="Reflection" texture={material.reflectionTexture} propertyName="reflectionTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
@@ -141,7 +141,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
             <div className="pane">
                 <CommonMaterialPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} material={material} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 {this.renderTextures(this._onDebugSelectionChangeObservable)}
-                <LineContainerComponent title="LIGHTING & COLORS">
+                <LineContainerComponent title="LIGHTING & COLORS" selection={this.props.globalState}>
                     <Color3LineComponent label="Albedo" target={material} propertyName="albedoColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} isLinear={true}/>
                     <Color3LineComponent label="Reflectivity" target={material} propertyName="reflectivityColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} isLinear={true} />
                     <SliderLineComponent label="Micro-surface" target={material} propertyName="microSurface" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -149,7 +149,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     <Color3LineComponent label="Ambient" target={material} propertyName="ambientColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} isLinear={true} />
                     <CheckBoxLineComponent label="Use physical light falloff" target={material} propertyName="usePhysicalLightFalloff" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
-                <LineContainerComponent title="METALLIC WORKFLOW">
+                <LineContainerComponent title="METALLIC WORKFLOW" selection={this.props.globalState}>
                     <SliderLineComponent label="Metallic" target={material} propertyName="metallic" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Roughness" target={material} propertyName="roughness" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Index of Refraction" target={material} propertyName="indexOfRefraction" minimum={1} maximum={3} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -157,7 +157,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     <Color3LineComponent label="Reflectance Color" target={material} propertyName="metallicReflectanceColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} isLinear={true} />
                     <TextureLinkLineComponent label="Reflectance Texture" texture={material.metallicReflectanceTexture} onTextureCreated={(texture) => material.metallicReflectanceTexture = texture} onTextureRemoved={() => material.metallicReflectanceTexture = null} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable} />
                 </LineContainerComponent>
-                <LineContainerComponent title="CLEAR COAT">
+                <LineContainerComponent title="CLEAR COAT" selection={this.props.globalState}>
                     <CheckBoxLineComponent label="Enabled" target={material.clearCoat} propertyName="isEnabled"
                         onValueChanged={() => this.forceUpdate()}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -196,7 +196,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         </div>
                     }
                 </LineContainerComponent>
-                <LineContainerComponent title="ANISOTROPIC">
+                <LineContainerComponent title="ANISOTROPIC" selection={this.props.globalState}>
                     <CheckBoxLineComponent label="Enabled" target={material.anisotropy} propertyName="isEnabled"
                         onValueChanged={() => this.forceUpdate()}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -209,7 +209,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         </div>
                     }
                 </LineContainerComponent>
-                <LineContainerComponent title="SHEEN">
+                <LineContainerComponent title="SHEEN" selection={this.props.globalState}>
                     <CheckBoxLineComponent label="Enabled" target={material.sheen} propertyName="isEnabled"
                         onValueChanged={() => this.forceUpdate()}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -230,7 +230,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         </div>
                     }
                 </LineContainerComponent>
-                <LineContainerComponent title="SUBSURFACE">
+                <LineContainerComponent title="SUBSURFACE" selection={this.props.globalState}>
                     <TextureLinkLineComponent label="Thickness" texture={material.subSurface.thicknessTexture} onTextureCreated={(texture) => material.subSurface.thicknessTexture = texture} onTextureRemoved={() => material.subSurface.thicknessTexture = null} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable} />
                     <SliderLineComponent label="Min Thickness" target={material.subSurface} propertyName="minimumThickness" minimum={0} maximum={10} step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Max Thickness" target={material.subSurface} propertyName="maximumThickness" minimum={0} maximum={10} step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -271,7 +271,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         </div>
                     }
                 </LineContainerComponent>
-                <LineContainerComponent title="LEVELS" closed={true}>
+                <LineContainerComponent title="LEVELS" closed={true} selection={this.props.globalState}>
                     <SliderLineComponent label="Environment" target={material} propertyName="environmentIntensity" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Specular" target={material} propertyName="specularIntensity" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Emissive" target={material} propertyName="emissiveIntensity" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -323,7 +323,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         <SliderLineComponent label="Detailmap roughness" target={material.detailMap} propertyName="roughnessBlendLevel" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     </> }
                 </LineContainerComponent>
-                <LineContainerComponent title="RENDERING" closed={true}>
+                <LineContainerComponent title="RENDERING" closed={true} selection={this.props.globalState}>
                     <CheckBoxLineComponent label="Alpha from albedo" target={material} propertyName="useAlphaFromAlbedoTexture" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Ambient in grayscale" target={material} propertyName="useAmbientInGrayScale" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Radiance over alpha" target={material} propertyName="useRadianceOverAlpha" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -333,11 +333,11 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     <CheckBoxLineComponent label="Realtime Filtering" target={material} propertyName="realTimeFiltering" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <OptionsLineComponent allowNullValue={true} label="Realtime Filtering quality" options={realTimeFilteringQualityOptions} target={material} propertyName="realTimeFilteringQuality" onPropertyChangedObservable={this.props.onPropertyChangedObservable}  />
                 </LineContainerComponent>
-                <LineContainerComponent title="NORMAL MAP" closed={true}>
+                <LineContainerComponent title="NORMAL MAP" closed={true} selection={this.props.globalState}>
                     <CheckBoxLineComponent label="Invert X axis" target={material} propertyName="invertNormalMapX" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Invert Y axis" target={material} propertyName="invertNormalMapY" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
-                <LineContainerComponent title="ADVANCED" closed={true}>
+                <LineContainerComponent title="ADVANCED" closed={true} selection={this.props.globalState}>
                     <CheckBoxLineComponent label="Energy Conservation" target={material.brdf} propertyName="useEnergyConservation"
                         onValueChanged={() => this.forceUpdate()}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -348,7 +348,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     <CheckBoxLineComponent label="Horizon occlusion " target={material} propertyName="useHorizonOcclusion" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Unlit" target={material} propertyName="unlit" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
-                <LineContainerComponent title="DEBUG" closed={true}>
+                <LineContainerComponent title="DEBUG" closed={true} selection={this.props.globalState}>
                     <OptionsLineComponent label="Debug mode" options={debugMode} target={material} propertyName="debugMode" />
                     <SliderLineComponent label="Split position" target={material} propertyName="debugLimit" minimum={-1} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Output factor" target={material} propertyName="debugFactor" minimum={0} maximum={5} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
