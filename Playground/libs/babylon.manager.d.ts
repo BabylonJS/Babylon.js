@@ -658,8 +658,6 @@ declare module BABYLON {
         private _registeredClassname;
         private _lateUpdateObserver;
         private _fixedUpdateObserver;
-        /** Gets the script ready state */
-        isReady(): boolean;
         /** Gets the current scene object */
         get scene(): BABYLON.Scene;
         /** Gets the transform node entity */
@@ -669,8 +667,10 @@ declare module BABYLON {
         protected setProperty(name: string, propertyValue: any): void;
         /** Gets the script component property bag value */
         protected getProperty<T>(name: string, defaultValue?: T): T;
-        /** Gets the registered script component class name */
+        /** Gets the script component class name */
         getClassName(): string;
+        /** Gets the script component ready state */
+        getReadyState(): boolean;
         /** Get the current time in seconds */
         getTime(): number;
         /** Get the total game time in seconds */
