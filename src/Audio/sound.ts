@@ -866,6 +866,7 @@ export class Sound {
                 } else {
                     this._streamingSource.disconnect();
                 }
+                this.isPlaying = false;
             } else if (Engine.audioEngine.audioContext) {
                 this.stop(0);
                 this._startOffset += Engine.audioEngine.audioContext.currentTime - this._startTime;

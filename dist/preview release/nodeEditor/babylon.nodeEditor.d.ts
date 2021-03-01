@@ -1277,7 +1277,7 @@ declare module NODEEDITOR {
         set isSelected(value: boolean);
         constructor(block: BABYLON.NodeMaterialBlock, globalState: GlobalState);
         isOverlappingFrame(frame: GraphFrame): boolean;
-        getPortForConnectionPoint(point: BABYLON.NodeMaterialConnectionPoint): BABYLON.Nullable<NodePort>;
+        getPortForConnectionPoint(point: BABYLON.NodeMaterialConnectionPoint): NodePort | null;
         getLinksForConnectionPoint(point: BABYLON.NodeMaterialConnectionPoint): NodeLink[];
         private _refreshFrames;
         _refreshLinks(): void;

@@ -100,7 +100,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /*!***********************************************************!*\
   !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
   \***********************************************************/
-/*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
+/*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -119,6 +119,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__read", function() { return __read; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__spread", function() { return __spread; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__spreadArrays", function() { return __spreadArrays; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__spreadArray", function() { return __spreadArray; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__await", function() { return __await; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__asyncGenerator", function() { return __asyncGenerator; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__asyncDelegator", function() { return __asyncDelegator; });
@@ -152,6 +153,8 @@ var extendStatics = function(d, b) {
 };
 
 function __extends(d, b) {
+    if (typeof b !== "function" && b !== null)
+        throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
     extendStatics(d, b);
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -274,19 +277,27 @@ function __read(o, n) {
     return ar;
 }
 
+/** @deprecated */
 function __spread() {
     for (var ar = [], i = 0; i < arguments.length; i++)
         ar = ar.concat(__read(arguments[i]));
     return ar;
 }
 
+/** @deprecated */
 function __spreadArrays() {
     for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
     for (var r = Array(s), k = 0, i = 0; i < il; i++)
         for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
             r[k] = a[j];
     return r;
-};
+}
+
+function __spreadArray(to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
+}
 
 function __await(v) {
     return this instanceof __await ? (this.v = v, this) : new __await(v);
@@ -13875,7 +13886,7 @@ var TextWrapper = /** @class */ (function () {
         this._text = this._text.slice(0, idxStart) + (insertTxt ? insertTxt : "") + this._text.slice(idxEnd);
         if (this._characters) {
             var newCharacters = insertTxt ? Array.from(insertTxt) : [];
-            (_a = this._characters).splice.apply(_a, Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArrays"])([idxStart, idxEnd - idxStart], newCharacters));
+            (_a = this._characters).splice.apply(_a, Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])([idxStart, idxEnd - idxStart], newCharacters));
         }
     };
     TextWrapper.prototype.charAt = function (idx) {
@@ -17013,7 +17024,7 @@ var HolographicButton = /** @class */ (function (_super) {
 /*!******************************!*\
   !*** ./3D/controls/index.ts ***!
   \******************************/
-/*! exports provided: AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, SpherePanel, StackPanel3D, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, VolumeBasedPanel */
+/*! exports provided: AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, SpherePanel, StackPanel3D, ButtonState, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchToggleButton3D, VolumeBasedPanel */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -17052,6 +17063,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "StackPanel3D", function() { return _stackPanel3D__WEBPACK_IMPORTED_MODULE_10__["StackPanel3D"]; });
 
 /* harmony import */ var _touchButton3D__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./touchButton3D */ "./3D/controls/touchButton3D.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ButtonState", function() { return _touchButton3D__WEBPACK_IMPORTED_MODULE_11__["ButtonState"]; });
+
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchButton3D", function() { return _touchButton3D__WEBPACK_IMPORTED_MODULE_11__["TouchButton3D"]; });
 
 /* harmony import */ var _touchMeshButton3D__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./touchMeshButton3D */ "./3D/controls/touchMeshButton3D.ts");
@@ -17060,8 +17073,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _touchHolographicButton__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./touchHolographicButton */ "./3D/controls/touchHolographicButton.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchHolographicButton", function() { return _touchHolographicButton__WEBPACK_IMPORTED_MODULE_13__["TouchHolographicButton"]; });
 
-/* harmony import */ var _volumeBasedPanel__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./volumeBasedPanel */ "./3D/controls/volumeBasedPanel.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "VolumeBasedPanel", function() { return _volumeBasedPanel__WEBPACK_IMPORTED_MODULE_14__["VolumeBasedPanel"]; });
+/* harmony import */ var _touchToggleButton3D__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./touchToggleButton3D */ "./3D/controls/touchToggleButton3D.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchToggleButton3D", function() { return _touchToggleButton3D__WEBPACK_IMPORTED_MODULE_14__["TouchToggleButton3D"]; });
+
+/* harmony import */ var _volumeBasedPanel__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./volumeBasedPanel */ "./3D/controls/volumeBasedPanel.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "VolumeBasedPanel", function() { return _volumeBasedPanel__WEBPACK_IMPORTED_MODULE_15__["VolumeBasedPanel"]; });
+
 
 
 
@@ -17556,11 +17573,12 @@ var StackPanel3D = /** @class */ (function (_super) {
 /*!**************************************!*\
   !*** ./3D/controls/touchButton3D.ts ***!
   \**************************************/
-/*! exports provided: TouchButton3D */
+/*! exports provided: ButtonState, TouchButton3D */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ButtonState", function() { return ButtonState; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TouchButton3D", function() { return TouchButton3D; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/perfCounter");
@@ -17574,6 +17592,7 @@ __webpack_require__.r(__webpack_exports__);
 /**
  * Enum for Button States
  */
+/** @hidden */
 var ButtonState;
 (function (ButtonState) {
     /** None */
@@ -17643,7 +17662,7 @@ var TouchButton3D = /** @class */ (function (_super) {
                 collisionMesh.setParent(this.mesh);
             }
             this._collisionMesh = collisionMesh;
-            this._collisionMesh.metadata = this;
+            this._injectGUI3DMetadata(this._collisionMesh).control = this;
             this.collidableFrontDirection = collisionMesh.forward;
             this._collidableInitialized = true;
         },
@@ -17748,68 +17767,60 @@ var TouchButton3D = /** @class */ (function (_super) {
         return abc - d;
     };
     // Updates the stored state of the button, and fire pointer events
-    TouchButton3D.prototype._updateButtonState = function (id, newState, pointOnButton) {
-        var dummyPointerId = 0;
-        var buttonIndex = 0; // Left click
-        var buttonStateForId = this._activeInteractions.get(id) || ButtonState.None;
-        // Take into account all inputs interacting with the button to avoid state flickering
-        var previousPushDepth = 0;
-        this._activeInteractions.forEach(function (value, key) {
-            previousPushDepth = Math.max(previousPushDepth, value);
-        });
+    TouchButton3D.prototype._updateButtonState = function (uniqueId, newState, pointOnButton) {
+        var buttonStateForId = this._activeInteractions.get(uniqueId) || ButtonState.None;
         if (buttonStateForId != newState) {
             if (newState == ButtonState.None) {
-                this._activeInteractions.delete(id);
+                this._activeInteractions.delete(uniqueId);
             }
             else {
-                this._activeInteractions.set(id, newState);
+                this._activeInteractions.set(uniqueId, newState);
             }
         }
-        var newPushDepth = 0;
-        this._activeInteractions.forEach(function (value, key) {
-            newPushDepth = Math.max(newPushDepth, value);
-        });
-        if (newPushDepth == ButtonState.Press) {
-            if (previousPushDepth == ButtonState.Hover) {
-                this._onPointerDown(this, pointOnButton, dummyPointerId, buttonIndex);
+        this._firePointerEvents(uniqueId, newState, buttonStateForId, pointOnButton);
+    };
+    TouchButton3D.prototype._firePointerEvents = function (pointerId, newButtonState, previousButtonState, pointOnButton) {
+        var buttonIndex = 0; // Left click
+        if (newButtonState == ButtonState.Press) {
+            if (previousButtonState == ButtonState.Hover) {
+                this._onPointerDown(this, pointOnButton, pointerId, buttonIndex);
             }
-            else if (previousPushDepth == ButtonState.Press) {
+            else if (previousButtonState == ButtonState.Press) {
                 this._onPointerMove(this, pointOnButton);
             }
         }
-        else if (newPushDepth == ButtonState.Hover) {
-            if (previousPushDepth == ButtonState.None) {
+        else if (newButtonState == ButtonState.Hover) {
+            if (previousButtonState == ButtonState.None) {
                 this._onPointerEnter(this);
             }
-            else if (previousPushDepth == ButtonState.Press) {
-                this._onPointerUp(this, pointOnButton, dummyPointerId, buttonIndex, false);
+            else if (previousButtonState == ButtonState.Press) {
+                this._onPointerUp(this, pointOnButton, pointerId, buttonIndex, false);
             }
             else {
                 this._onPointerMove(this, pointOnButton);
             }
         }
-        else if (newPushDepth == ButtonState.None) {
-            if (previousPushDepth == ButtonState.Hover) {
+        else if (newButtonState == ButtonState.None) {
+            if (previousButtonState == ButtonState.Hover) {
                 this._onPointerOut(this);
             }
-            else if (previousPushDepth == ButtonState.Press) {
-                this._onPointerUp(this, pointOnButton, dummyPointerId, buttonIndex, false);
+            else if (previousButtonState == ButtonState.Press) {
+                this._onPointerUp(this, pointOnButton, pointerId, buttonIndex, false);
                 this._onPointerOut(this);
             }
         }
     };
     // Decides whether to change button state based on the planar depth of the input source
     /** @hidden */
-    TouchButton3D.prototype._collisionCheckForStateChange = function (mesh) {
+    TouchButton3D.prototype._collisionCheckForStateChange = function (meshPos, uniqueId, forceExit) {
+        if (forceExit === void 0) { forceExit = false; }
         if (this._collidableInitialized) {
             this._updateDistanceOffsets();
-            var collidablePosition = mesh.getAbsolutePosition();
-            var inRange = this._isPrimedForInteraction(collidablePosition);
-            var uniqueId = mesh.uniqueId;
+            var inRange = this._isPrimedForInteraction(meshPos);
             var activeInteraction = this._activeInteractions.get(uniqueId);
-            if (inRange) {
-                var pointOnButton = this._getPointOnButton(collidablePosition);
-                var heightFromCenter_1 = this._getHeightFromButtonCenter(collidablePosition);
+            if (inRange && !forceExit) {
+                var pointOnButton = this._getPointOnButton(meshPos);
+                var heightFromCenter_1 = this._getHeightFromButtonCenter(meshPos);
                 var flickerDelta_1 = 0.003;
                 this._lastTouchPoint = pointOnButton;
                 var isGreater = function (compareHeight) {
@@ -17833,6 +17844,9 @@ var TouchButton3D = /** @class */ (function (_super) {
                         else if (isLower(this._frontOffset)) {
                             this._updateButtonState(uniqueId, ButtonState.Press, pointOnButton);
                         }
+                        else {
+                            this._updateButtonState(uniqueId, ButtonState.Hover, pointOnButton);
+                        }
                         break;
                     case ButtonState.Press:
                         if (isGreater(this._frontOffset)) {
@@ -17840,6 +17854,9 @@ var TouchButton3D = /** @class */ (function (_super) {
                         }
                         else if (isLower(this._pushThroughBackOffset)) {
                             this._updateButtonState(uniqueId, ButtonState.None, pointOnButton);
+                        }
+                        else {
+                            this._updateButtonState(uniqueId, ButtonState.Press, pointOnButton);
                         }
                         break;
                 }
@@ -18320,6 +18337,83 @@ var TouchMeshButton3D = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./3D/controls/touchToggleButton3D.ts":
+/*!********************************************!*\
+  !*** ./3D/controls/touchToggleButton3D.ts ***!
+  \********************************************/
+/*! exports provided: TouchToggleButton3D */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TouchToggleButton3D", function() { return TouchToggleButton3D; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/perfCounter");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _touchButton3D__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./touchButton3D */ "./3D/controls/touchButton3D.ts");
+
+
+
+/**
+ * Class used as base class for touch-enabled toggleable buttons
+ */
+var TouchToggleButton3D = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TouchToggleButton3D, _super);
+    /**
+     * Creates a new button
+     * @param name defines the control name
+     * @param collisionMesh defines the mesh to track near interactions with
+     */
+    function TouchToggleButton3D(name, collisionMesh) {
+        var _this = _super.call(this, name, collisionMesh) || this;
+        _this._isPressed = false;
+        /**
+         * An event triggered when the button is toggled on
+         */
+        _this.onToggleOnObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        /**
+         * An event triggered when the button is toggled off
+         */
+        _this.onToggleOffObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        _this.onPointerUpObservable.add(function (posVecWithInfo) {
+            _this._onToggle(posVecWithInfo);
+        });
+        return _this;
+    }
+    TouchToggleButton3D.prototype._onToggle = function (position) {
+        this._isPressed = !this._isPressed;
+        if (this._isPressed) {
+            this.onToggleOnObservable.notifyObservers(position);
+        }
+        else {
+            this.onToggleOffObservable.notifyObservers(position);
+        }
+    };
+    TouchToggleButton3D.prototype._getTypeName = function () {
+        return "TouchToggleButton3D";
+    };
+    // Mesh association
+    TouchToggleButton3D.prototype._createNode = function (scene) {
+        return _super.prototype._createNode.call(this, scene);
+    };
+    TouchToggleButton3D.prototype._affectMaterial = function (mesh) {
+        _super.prototype._affectMaterial.call(this, mesh);
+    };
+    /**
+     * Releases all associated resources
+     */
+    TouchToggleButton3D.prototype.dispose = function () {
+        this.onToggleOnObservable.clear();
+        this.onToggleOffObservable.clear();
+        _super.prototype.dispose.call(this);
+    };
+    return TouchToggleButton3D;
+}(_touchButton3D__WEBPACK_IMPORTED_MODULE_2__["TouchButton3D"]));
+
+
+
+/***/ }),
+
 /***/ "./3D/controls/volumeBasedPanel.ts":
 /*!*****************************************!*\
   !*** ./3D/controls/volumeBasedPanel.ts ***!
@@ -18546,6 +18640,7 @@ var GUI3DManager = /** @class */ (function () {
     function GUI3DManager(scene) {
         var _this = this;
         this._touchableButtons = new Set();
+        this._touchIds = new Map();
         /** @hidden */
         this._lastControlOver = {};
         /** @hidden */
@@ -18563,9 +18658,32 @@ var GUI3DManager = /** @class */ (function () {
             var utilityLayerScene = _this._utilityLayer ? _this._utilityLayer.utilityLayerScene : null;
             if (utilityLayerScene) {
                 var touchMeshes_1 = utilityLayerScene.getMeshesByTags("touchEnabled");
+                // Remove stale meshes
+                _this._touchIds.forEach(function (uniqueId, controllerName) {
+                    var objectExists = false;
+                    touchMeshes_1.forEach(function (mesh) {
+                        if (mesh.name === controllerName) {
+                            objectExists = true;
+                        }
+                    });
+                    if (!objectExists) {
+                        _this._touchableButtons.forEach(function (button) {
+                            button._collisionCheckForStateChange(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Zero(), uniqueId, true);
+                        });
+                        _this._touchIds.delete(controllerName);
+                    }
+                });
+                // Add new meshes
+                touchMeshes_1.forEach(function (mesh) {
+                    var controllerName = mesh.name;
+                    if (!_this._touchIds.has(controllerName)) {
+                        _this._touchIds.set(controllerName, GUI3DManager._touchIdCounter++);
+                    }
+                });
                 _this._touchableButtons.forEach(function (button) {
                     touchMeshes_1.forEach(function (mesh) {
-                        button._collisionCheckForStateChange(mesh);
+                        var uniqueId = _this._touchIds.get(mesh.name);
+                        button._collisionCheckForStateChange(mesh.getAbsolutePosition(), uniqueId);
                     });
                 });
             }
@@ -18759,6 +18877,7 @@ var GUI3DManager = /** @class */ (function () {
             this._utilityLayer.dispose();
         }
     };
+    GUI3DManager._touchIdCounter = 300;
     return GUI3DManager;
 }());
 
@@ -18770,7 +18889,7 @@ var GUI3DManager = /** @class */ (function () {
 /*!*********************!*\
   !*** ./3D/index.ts ***!
   \*********************/
-/*! exports provided: AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, SpherePanel, StackPanel3D, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, VolumeBasedPanel, FluentMaterialDefines, FluentMaterial, GUI3DManager, Vector3WithInfo */
+/*! exports provided: AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, SpherePanel, StackPanel3D, ButtonState, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchToggleButton3D, VolumeBasedPanel, FluentMaterialDefines, FluentMaterial, GUI3DManager, Vector3WithInfo */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -18798,11 +18917,15 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "StackPanel3D", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["StackPanel3D"]; });
 
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ButtonState", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["ButtonState"]; });
+
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchButton3D", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["TouchButton3D"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchMeshButton3D", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["TouchMeshButton3D"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchHolographicButton", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["TouchHolographicButton"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchToggleButton3D", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["TouchToggleButton3D"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "VolumeBasedPanel", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["VolumeBasedPanel"]; });
 
@@ -19231,7 +19354,7 @@ var Vector3WithInfo = /** @class */ (function (_super) {
 /*!******************!*\
   !*** ./index.ts ***!
   \******************/
-/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, FocusableButton, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, TextWrapper, ToggleButton, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, SpherePanel, StackPanel3D, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, VolumeBasedPanel, FluentMaterialDefines, FluentMaterial, GUI3DManager, Vector3WithInfo */
+/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, FocusableButton, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, TextWrapper, ToggleButton, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, SpherePanel, StackPanel3D, ButtonState, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchToggleButton3D, VolumeBasedPanel, FluentMaterialDefines, FluentMaterial, GUI3DManager, Vector3WithInfo */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -19348,11 +19471,15 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "StackPanel3D", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["StackPanel3D"]; });
 
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ButtonState", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["ButtonState"]; });
+
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchButton3D", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["TouchButton3D"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchMeshButton3D", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["TouchMeshButton3D"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchHolographicButton", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["TouchHolographicButton"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchToggleButton3D", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["TouchToggleButton3D"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "VolumeBasedPanel", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["VolumeBasedPanel"]; });
 
@@ -19374,7 +19501,7 @@ __webpack_require__.r(__webpack_exports__);
 /*!**************************!*\
   !*** ./legacy/legacy.ts ***!
   \**************************/
-/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, FocusableButton, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, TextWrapper, ToggleButton, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, SpherePanel, StackPanel3D, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, VolumeBasedPanel, FluentMaterialDefines, FluentMaterial, GUI3DManager, Vector3WithInfo */
+/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, FocusableButton, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, TextWrapper, ToggleButton, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, SpherePanel, StackPanel3D, ButtonState, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchToggleButton3D, VolumeBasedPanel, FluentMaterialDefines, FluentMaterial, GUI3DManager, Vector3WithInfo */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -19490,11 +19617,15 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "StackPanel3D", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["StackPanel3D"]; });
 
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ButtonState", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["ButtonState"]; });
+
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchButton3D", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["TouchButton3D"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchMeshButton3D", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["TouchMeshButton3D"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchHolographicButton", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["TouchHolographicButton"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchToggleButton3D", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["TouchToggleButton3D"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "VolumeBasedPanel", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["VolumeBasedPanel"]; });
 
