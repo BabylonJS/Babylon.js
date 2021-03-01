@@ -38,148 +38,232 @@ class FluentButtonMaterialDefines extends MaterialDefines {
  * Class used to render square buttons with fluent desgin
  */
 export class FluentButtonMaterial extends PushMaterial {
+    /**
+     * URL pointing to the texture used to define the coloring for the fluent blob effect.
+     */
     public static BLOB_TEXTURE_URL = "https://assets.babylonjs.com/meshes/MRTK/mrtk-fluent-button-blob.png";
 
-    // "Wireframe"
+    /**
+     * Gets or sets the width of the glowing edge, relative to the scale of the button.
+     * (Default is 4% of the height).
+     */
     @serialize()
     public edgeWidth = 0.04;
 
+    /**
+     * Gets or sets the color of the glowing edge.
+     */
     @serializeAsColor4()
     public edgeColor = new Color4(0.592157, 0.592157, 0.592157, 1.0);
 
-    // "Proximity"
+    /**
+     * Gets or sets the maximum intensity of the proximity light.
+     */
     @serialize()
     public proximityMaxIntensity = 0.45;
 
+    /**
+     * Gets or sets the maximum distance for the proximity light (Default is 16mm).
+     */
     @serialize()
     public proximityFarDistance = 0.16;
 
+    /**
+     * Gets or sets the radius of the proximity light when near to the surface.
+     */
     @serialize()
     public proximityNearRadius = 1.5;
 
+    /**
+     * Gets or sets the anisotropy of the proximity light.
+     */
     @serialize()
     public proximityAnisotropy = 1;
 
-    // "Selection"
+    /**
+     * Gets or sets the amount of fuzzing in the selection focus.
+     */
     @serialize()
     public selectionFuzz = 0.5;
 
+    /**
+     * Gets or sets an override value to display the button as selected.
+     */
     @serialize()
     public selected = 0;
 
+    /**
+     * Gets or sets a value to manually fade the blob size.
+     */
     @serialize()
     public selectionFade = 0;
 
+    /**
+     * Gets or sets a value to manually shrink the blob size as it fades (see selectionFade).
+     */
     @serialize()
     public selectionFadeSize = 0.3;
 
+    /**
+     * Gets or sets the distance from the button the cursor should be for the button
+     * to appear selected (Default is 8cm).
+     */
     @serialize()
     public selectedDistance = 0.08;
 
+    /**
+     * Gets or sets the fall-off distance for the selection fade (Default is 8cm).
+     */
     @serialize()
     public selectedFadeLength = 0.08;
 
-    // "Blob"
-    @serialize()
-    public blobEnable = true;
-
-    @serializeAsVector3()
-    public blobPosition = new Vector3(0.5, 0.0, -0.55);
-
+    /**
+     * Gets or sets the intensity of the luminous blob (Ranges 0-1, default is 0.5).
+     */
     @serialize()
     public blobIntensity = 0.5;
 
-    @serialize()
-    public blobNearSize = 0.025;
-
+    /**
+     * The size of the blob when the pointer is at the blobFarDistance (Default is 5cm).
+     */
     @serialize()
     public blobFarSize = 0.05;
 
+    /**
+     * The distance at which the pointer is considered near. See [left|right]BlobNearSize. (Default is 0cm).
+     */
     @serialize()
     public blobNearDistance = 0;
 
+    /**
+     * The distance at which the pointer is considered far. See [left|right]BlobFarSize. (Default is 8cm).
+     */
     @serialize()
     public blobFarDistance = 0.08;
 
+    /**
+     * The distance over which the blob intensity fades from full to none (Default is 8cm).
+     */
     @serialize()
     public blobFadeLength = 0.08;
 
+    /**
+     * Gets or sets whether the blob corresponding to the left index finger is enabled.
+     */
     @serialize()
-    public blobInnerFade = 0.01;
+    public leftBlobEnable = true;
 
+    /**
+     * Gets or sets the size of the left blob when the left pointer is considered near. See blobNearDistance. (Default is 2.5cm).
+     */
     @serialize()
-    public blobPulse = 0;
+    public leftBlobNearSize = 0.025;
 
+    /**
+     * Gets or sets the progress of the pulse animation on the left blob (Ranges 0-1).
+     */
     @serialize()
-    public blobFade = 1;
+    public leftBlobPulse = 0;
 
-    // "Blob 2"
+    /**
+     * Gets or sets the fade factor on the left blob.
+     */
     @serialize()
-    public blobEnable2 = true;
+    public leftBlobFade = 1;
 
-    @serializeAsVector3()
-    public blobPosition2 = new Vector3(10, 10.1, -0.6);
-
+    /**
+     * Gets or sets the inner fade on the left blob;
+     */
     @serialize()
-    public blobNearSize2 = 0.025;
+    public leftBlobInnerFade = 0.01;
 
+    /**
+     * Gets or sets whether the blob corresponding to the right index finger is enabled.
+     */
     @serialize()
-    public blobInnerFade2 = 0.1;
+    public rightBlobEnable = true;
 
+    /**
+     * Gets or sets the size of the right blob when the right pointer is considered near. See blobNearDistance. (Default is 2.5cm).
+     */
     @serialize()
-    public blobPulse2 = 0;
+    public rightBlobNearSize = 0.025;
 
+    /**
+     * Gets or sets the progress of the pulse animation on the right blob (Ranges 0-1).
+     */
     @serialize()
-    public blobFade2 = 1;
+    public rightBlobPulse = 0;
 
-    // "Active Face"
+    /**
+     * Gets or sets the fade factor on the right blob.
+     */
+    @serialize()
+    public rightBlobFade = 1;
+
+    /**
+     * Gets or sets the inner fade on the right blob;
+     */
+    @serialize()
+    public rightBlobInnerFade = 0.01;
+
+    /**
+     * Gets or sets the direction of the active face before the world transform is applied.
+     * This should almost always be set to -z.
+     */
     @serializeAsVector3()
     public activeFaceDir = new Vector3(0, 0, -1);
 
+    /**
+     * Gets or sets the button's up direction before the world transform is applied.
+     * This should almost always be set to +y.
+     */
     @serializeAsVector3()
     public activeFaceUp = new Vector3(0, 1, 0);
 
-    // "Hololens Edge Fade"
+    /**
+     * Gets or sets whether the edge fade effect is enabled.
+     */
     @serialize()
     public enableFade = true;
 
+    /**
+     * Gets or sets a value corresponding to the width of the edge fade effect (Default 1.5).
+     */
     @serialize()
     public fadeWidth = 1.5;
 
+    /**
+     * Gets or sets whether the active face is smoothly interpolated.
+     */
     @serialize()
-    public smoothActiveFace = true ? 1.0 : 0.0;
+    public smoothActiveFace = true;
 
-    // "Debug"
+    /**
+     * Gets or sets whether the frame of the fluent button model is visible.
+     * This is usually only enabled for debugging purposes.
+     */
     @serialize()
     public showFrame = false;
 
+    /**
+     * Gets or sets whether the blob color texture is used for the proximity
+     * light effect. This is usually only disabled for debugging purposes.
+     */
     @serialize()
     public useBlobTexture = true;
 
-    // Global inputs
-    @serialize()
-    public useGlobalLeftIndex = true;
-
-    @serialize()
-    public useGlobalRightIndex = true;
-
+    /**
+     * Gets or sets the world-space position of the tip of the left index finger.
+     */
     @serializeAsVector3()
     public globalLeftIndexTipPosition = Vector3.Zero();
 
+    /**
+     * Gets or sets the world-space position of the tip of the right index finger.
+     */
     @serializeAsVector3()
     public globalRightIndexTipPosition = Vector3.Zero();
-
-    @serializeAsVector3()
-    public globalLeftThumbTipPosition = Vector3.Zero();
-
-    @serializeAsVector3()
-    public globalRightThumbTipPosition = Vector3.Zero();
-
-    @serialize()
-    public globalLeftIndexTipProximity = 0.0;
-
-    @serialize()
-    public globalRightIndexTipProximity = 0.0;
 
     private _blobTexture: Texture;
 
@@ -401,25 +485,23 @@ export class FluentButtonMaterial extends PushMaterial {
         this._activeEffect.setFloat("_Selected_Fade_Length_", this.selectedFadeLength);
 
         // "Blob"
-        this._activeEffect.setFloat("_Blob_Enable_", this.blobEnable ? 1.0 : 0.0);
-        this._activeEffect.setVector3("_Blob_Position_", this.blobPosition);
+        this._activeEffect.setFloat("_Blob_Enable_", this.leftBlobEnable ? 1.0 : 0.0);
         this._activeEffect.setFloat("_Blob_Intensity_", this.blobIntensity);
-        this._activeEffect.setFloat("_Blob_Near_Size_", this.blobNearSize);
+        this._activeEffect.setFloat("_Blob_Near_Size_", this.leftBlobNearSize);
         this._activeEffect.setFloat("_Blob_Far_Size_", this.blobFarSize);
         this._activeEffect.setFloat("_Blob_Near_Distance_", this.blobNearDistance);
         this._activeEffect.setFloat("_Blob_Far_Distance_", this.blobFarDistance);
         this._activeEffect.setFloat("_Blob_Fade_Length_", this.blobFadeLength);
-        this._activeEffect.setFloat("_Blob_Inner_Fade_", this.blobInnerFade);
-        this._activeEffect.setFloat("_Blob_Pulse_", this.blobPulse);
-        this._activeEffect.setFloat("_Blob_Fade_", this.blobFade);
+        this._activeEffect.setFloat("_Blob_Inner_Fade_", this.leftBlobInnerFade);
+        this._activeEffect.setFloat("_Blob_Pulse_", this.leftBlobPulse);
+        this._activeEffect.setFloat("_Blob_Fade_", this.leftBlobFade);
 
         // "Blob 2"
-        this._activeEffect.setFloat("_Blob_Enable_2_", this.blobEnable2 ? 1.0 : 0.0);
-        this._activeEffect.setVector3("_Blob_Position_2_", this.blobPosition2);
-        this._activeEffect.setFloat("_Blob_Near_Size_2_", this.blobNearSize2);
-        this._activeEffect.setFloat("_Blob_Inner_Fade_2_", this.blobInnerFade2);
-        this._activeEffect.setFloat("_Blob_Pulse_2_", this.blobPulse2);
-        this._activeEffect.setFloat("_Blob_Fade_2_", this.blobFade2);
+        this._activeEffect.setFloat("_Blob_Enable_2_", this.rightBlobEnable ? 1.0 : 0.0);
+        this._activeEffect.setFloat("_Blob_Near_Size_2_", this.rightBlobNearSize);
+        this._activeEffect.setFloat("_Blob_Inner_Fade_2_", this.rightBlobInnerFade);
+        this._activeEffect.setFloat("_Blob_Pulse_2_", this.rightBlobPulse);
+        this._activeEffect.setFloat("_Blob_Fade_2_", this.rightBlobFade);
 
         // "Active Face"
         this._activeEffect.setVector3("_Active_Face_Dir_", this.activeFaceDir);
@@ -428,15 +510,15 @@ export class FluentButtonMaterial extends PushMaterial {
         // "Hololens Edge Fade"
         //define _Enable_Fade_ true;
         this._activeEffect.setFloat("_Fade_Width_", this.fadeWidth);
-        this._activeEffect.setFloat("_Smooth_Active_Face_", this.smoothActiveFace);
+        this._activeEffect.setFloat("_Smooth_Active_Face_", this.smoothActiveFace ? 1.0 : 0.0);
 
         // "Debug"
         this._activeEffect.setFloat("_Show_Frame_", this.showFrame ? 1.0 : 0.0);
         this._activeEffect.setFloat("_Use_Blob_Texture_", this.useBlobTexture ? 1.0 : 0.0);
 
         // Global inputs
-        this._activeEffect.setFloat("Use_Global_Left_Index", this.useGlobalLeftIndex ? 1.0 : 0.0);
-        this._activeEffect.setFloat("Use_Global_Right_Index", this.useGlobalRightIndex ? 1.0 : 0.0);
+        this._activeEffect.setFloat("Use_Global_Left_Index", 1.0);
+        this._activeEffect.setFloat("Use_Global_Right_Index", 1.0);
 
         this._activeEffect.setVector4("Global_Left_Index_Tip_Position",
             new Vector4(
@@ -451,12 +533,13 @@ export class FluentButtonMaterial extends PushMaterial {
                 this.globalRightIndexTipPosition.z,
                 1.0));
 
-        this._activeEffect.setFloat("Global_Left_Index_Tip_Proximity", this.globalLeftIndexTipProximity);
-        this._activeEffect.setFloat("Global_Right_Index_Tip_Proximity", this.globalRightIndexTipProximity);
-
         this._afterBind(mesh, this._activeEffect);
     }
 
+    /**
+     * Get the list of animatables in the material.
+     * @returns the list of animatables object used in the material
+     */
     public getAnimatables(): IAnimatable[] {
         return [];
     }
