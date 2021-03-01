@@ -12,14 +12,10 @@ declare module BABYLON {
         static PauseRenderLoop: boolean;
         /** Set the preload auto update progress flag */
         static AutoUpdateProgress: boolean;
+        /** Gets the running status of the default audio context */
+        static HasAudioContext(): boolean;
         /** Returns a Promise that resolves after the specfied time */
         static WaitForSeconds: (seconds: number) => Promise<void>;
-        /** Set the preloader progress event handler */
-        static OnPreloaderProgress: (remainingCount: number, totalCount: number, lastFinishedTask: BABYLON.AbstractAssetTask) => void;
-        /** Set the preloader complete event handler */
-        static OnPreloaderComplete: (tasks: BABYLON.AbstractAssetTask[]) => void;
-        /** Gets the running status of the default audio context */
-        static IsAudioContextRunning(): boolean;
         /** Register handler that is triggered when the fonts have been loaded (engine.html) */
         static OnFontsReadyObservable: Observable<Engine>;
         /** Register handler that is triggered when then engine has been resized (engine.html) */
@@ -649,6 +645,7 @@ declare module BABYLON {
         private _late;
         private _after;
         private _fixed;
+        private _ready;
         private _lateUpdate;
         private _properties;
         private _awoken;
@@ -709,8 +706,6 @@ declare module BABYLON {
         getChildWithScript(klass: string, directDecendantsOnly?: boolean, predicate?: (node: BABYLON.Node) => boolean): BABYLON.TransformNode;
         /** Get all child transforms with the specified script component. */
         getChildrenWithScript(klass: string, directDecendantsOnly?: boolean, predicate?: (node: BABYLON.Node) => boolean): BABYLON.TransformNode[];
-        /** Register handler that is triggered after the script has started and is ready in the scene */
-        registerOnSceneReady(func: (eventData: BABYLON.Scene, eventState: BABYLON.EventState) => void): BABYLON.Observer<BABYLON.Scene>;
         /** Registers an on pick tricgger click action */
         registerOnClickAction(func: () => void): BABYLON.IAction;
         /** Unregisters an on pick tricgger click action */
@@ -738,6 +733,7 @@ declare module BABYLON {
         private static LateInstance;
         private static AfterInstance;
         private static FixedInstance;
+        private static ReadyInstance;
         private static DestroyInstance;
         private static ParseAutoProperties;
         private static UnpackObjectProperty;
@@ -1306,6 +1302,10 @@ declare module BABYLON {
         private static TempQuaternion;
         private static PrintElement;
         private static LoadingState;
+        static OnPreloaderProgress: (remainingCount: number, totalCount: number, lastFinishedTask: BABYLON.AbstractAssetTask) => void;
+        static OnPreloaderComplete: (tasks: BABYLON.AbstractAssetTask[]) => void;
+        static IsLastSceneExecuteReady: boolean;
+        static OnLastSceneExecuteReady: BABYLON.Observable<BABYLON.Scene>;
         static IsLayerMasked(mask: number, layer: number): boolean;
         static GetLoadingState(): number;
         static Approximately(a: number, b: number): boolean;
@@ -1625,6 +1625,7 @@ declare class CVTOOLS_unity_metadata implements BABYLON.GLTF2.IGLTFLoaderExtensi
     private static LastRootUrl;
     private static LastParseScene;
     private static LastBabylonScene;
+    private static LastAssetsManager;
     private _loader;
     private _parserList;
     private _masterList;
@@ -1633,13 +1634,14 @@ declare class CVTOOLS_unity_metadata implements BABYLON.GLTF2.IGLTFLoaderExtensi
     private _preloadList;
     private _materialMap;
     private _lightmapMap;
-    private _reflectionMap;
-    private _assetsManager;
     private _activeMeshes;
     private _parseScene;
     private _leftHanded;
     private _disposeRoot;
     private _sceneParsed;
+    private _preWarmTime;
+    private _postWarmTime;
+    private _hideLoader;
     private _rootUrl;
     /** @hidden */
     constructor(loader: BABYLON.GLTF2.GLTFLoader);
@@ -1653,13 +1655,13 @@ declare class CVTOOLS_unity_metadata implements BABYLON.GLTF2.IGLTFLoaderExtensi
     onReady(): void;
     private _processActiveMeshes;
     private _processUnityMeshes;
+    private _processPreloadTimeout;
     /** @hidden */
     loadNodeAsync(context: string, node: BABYLON.GLTF2.INode, assign: (babylonMesh: BABYLON.TransformNode) => void): BABYLON.Nullable<Promise<BABYLON.TransformNode>>;
     /** @hidden */
     loadMaterialPropertiesAsync(context: string, material: BABYLON.GLTF2.IMaterial, babylonMaterial: BABYLON.Material): BABYLON.Nullable<Promise<void>>;
-    private _getCachedLightmapByIndex;
     private _getCachedMaterialByIndex;
-    private _getCachedCubemapByUrl;
+    private _getCachedLightmapByIndex;
     /** @hidden */
     createMaterial(context: string, material: BABYLON.GLTF2.IMaterial, babylonDrawMode: number): BABYLON.Nullable<BABYLON.Material>;
     /** @hidden */
