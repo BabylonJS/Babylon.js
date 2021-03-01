@@ -49,7 +49,7 @@ export class WebXRManagedOutputCanvasOptions {
  */
 export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
     private _canvas: Nullable<HTMLCanvasElement> = null;
-    private _engine: ThinEngine;
+    private _engine: Nullable<ThinEngine> = null;
     private _originalCanvasSize: {
         width: number;
         height: number;
@@ -76,6 +76,10 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
      */
     constructor(_xrSessionManager: WebXRSessionManager, private _options: WebXRManagedOutputCanvasOptions = WebXRManagedOutputCanvasOptions.GetDefaults()) {
         this._engine = _xrSessionManager.scene.getEngine();
+        this._engine.onDisposeObservable.addOnce(() => {
+            this._engine = null;
+        });
+
         if (!_options.canvasElement) {
             const canvas = document.createElement("canvas");
             canvas.style.cssText = this._options.newCanvasCssStyle || "position:absolute; bottom:0px;right:0px;";
@@ -136,7 +140,7 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
     }
 
     private _addCanvas() {
-        if (this._canvas && this._canvas !== this._engine.getRenderingCanvas()) {
+        if (this._canvas && this._engine && this._canvas !== this._engine.getRenderingCanvas()) {
             document.body.appendChild(this._canvas);
         }
         if (this.xrLayer) {
@@ -149,14 +153,14 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
     }
 
     private _removeCanvas() {
-        if (this._canvas && document.body.contains(this._canvas) && this._canvas !== this._engine.getRenderingCanvas()) {
+        if (this._canvas && this._engine && document.body.contains(this._canvas) && this._canvas !== this._engine.getRenderingCanvas()) {
             document.body.removeChild(this._canvas);
         }
         this._setCanvasSize(false);
     }
 
     private _setCanvasSize(init: boolean = true, xrLayer = this.xrLayer) {
-        if (!this._canvas) {
+        if (!this._canvas || !this._engine) {
             return;
         }
         if (init) {

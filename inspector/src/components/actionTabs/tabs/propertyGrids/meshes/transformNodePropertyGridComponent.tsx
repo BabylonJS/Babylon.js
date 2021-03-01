@@ -39,7 +39,7 @@ export class TransformNodePropertyGridComponent extends React.Component<ITransfo
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={transformNode}
                     lockObject={this.props.lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent title="GENERAL">
+                <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
                     <TextLineComponent label="ID" value={transformNode.id} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={transformNode} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <TextLineComponent label="Unique ID" value={transformNode.uniqueId.toString()} />
@@ -56,7 +56,7 @@ export class TransformNodePropertyGridComponent extends React.Component<ITransfo
                 </LineContainerComponent>
                 <CommonPropertyGridComponent host={transformNode} lockObject={this.props.lockObject} globalState={this.props.globalState} />
                 <VariantsPropertyGridComponent host={transformNode as Mesh} lockObject={this.props.lockObject} globalState={this.props.globalState} />
-                <LineContainerComponent title="TRANSFORMATIONS">
+                <LineContainerComponent title="TRANSFORMATIONS" selection={this.props.globalState}>
                     <Vector3LineComponent label="Position" target={transformNode} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         !transformNode.rotationQuaternion &&
