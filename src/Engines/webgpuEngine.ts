@@ -2492,7 +2492,7 @@ export class WebGPUEngine extends Engine {
             texture._textureArray = textures;
             texture._cachedWrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
             texture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
-    
+
             this._internalTexturesCache.push(texture);
 
             this._textureHelper.createGPUTextureForInternalTexture(texture);
