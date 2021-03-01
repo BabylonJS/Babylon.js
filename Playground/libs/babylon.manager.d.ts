@@ -1096,6 +1096,7 @@ declare module BABYLON {
         static PointerAngularSensibility: number;
         static PointerWheelDeadZone: number;
         static PointerMouseDeadZone: number;
+        static PointerMouseInverted: boolean;
         static UseArrowKeyRotation: boolean;
         static UseCanvasElement: boolean;
     }
