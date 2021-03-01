@@ -8,6 +8,8 @@ declare module BABYLON {
         static get Version(): string;
         /** Gets the toolkit framework copyright notice */
         static get Copyright(): string;
+        /** Set the allow user input flag */
+        static EnableUserInput: boolean;
         /** Pauses the main page render loop */
         static PauseRenderLoop: boolean;
         /** Set the preload auto update progress flag */
@@ -355,8 +357,8 @@ declare module BABYLON {
         static GamepadConnected: (pad: BABYLON.Gamepad, state: BABYLON.EventState) => void;
         /** Global gamepad disconnect event handler */
         static GamepadDisconnected: (pad: BABYLON.Gamepad, state: BABYLON.EventState) => void;
-        /** Enable user input state in the scene. */
-        static EnableUserInput(scene: BABYLON.Scene, options?: {
+        /** Configure user input state in the scene. */
+        static ConfigureUserInput(scene: BABYLON.Scene, options?: {
             pointerLock?: boolean;
             preventDefault?: boolean;
             useCapture?: boolean;
