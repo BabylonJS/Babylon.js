@@ -654,9 +654,12 @@ declare module BABYLON {
         private _started;
         private _scene;
         private _transform;
+        private _scriptReady;
         private _registeredClassname;
         private _lateUpdateObserver;
         private _fixedUpdateObserver;
+        /** Gets the script ready state */
+        isReady(): boolean;
         /** Gets the current scene object */
         get scene(): BABYLON.Scene;
         /** Gets the transform node entity */
