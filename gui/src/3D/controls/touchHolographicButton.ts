@@ -8,7 +8,6 @@ import { PlaneBuilder } from "babylonjs/Meshes/Builders/planeBuilder";
 import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
 import { FadeInOutBehavior } from "babylonjs/Behaviors/Meshes/fadeInOutBehavior";
 import { Scene } from "babylonjs/scene";
-
 import { FluentButtonMaterial } from "../materials/fluentButton/fluentButtonMaterial";
 import { StackPanel } from "../../2D/controls/stackPanel";
 import { Image } from "../../2D/controls/image";
@@ -16,9 +15,8 @@ import { TextBlock } from "../../2D/controls/textBlock";
 import { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
 import { Control3D } from "./control3D";
 import { Color3 } from "babylonjs/Maths/math.color";
-
 import { TouchButton3D } from "./touchButton3D";
-import { AbstractMesh } from "babylonjs/Meshes/index";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SceneLoader } from "babylonjs/Loading/sceneLoader";
 
 /**
@@ -214,11 +212,13 @@ export class TouchHolographicButton extends TouchButton3D {
         this._shareMaterials = shareMaterials;
 
         this.pointerEnterAnimation = () => {
-            this._frontMaterial.blobEnable = true;
+            this._frontMaterial.leftBlobEnable = true;
+            this._frontMaterial.rightBlobEnable = true;
         };
 
         this.pointerOutAnimation = () => {
-            this._frontMaterial.blobEnable = false;
+            this._frontMaterial.leftBlobEnable = false;
+            this._frontMaterial.rightBlobEnable = false;
         };
 
         this._pointerHoverObserver = this.onPointerMoveObservable.add((hoverPosition: Vector3) => {
@@ -278,13 +278,14 @@ export class TouchHolographicButton extends TouchButton3D {
             TouchHolographicButton.MODEL_BASE_URL,
             TouchHolographicButton.MODEL_FILENAME,
             scene)
-            .then(result => {
+            .then((result) => {
                 var importedFrontPlate = result.meshes[1];
                 importedFrontPlate.name = `${this.name}_frontPlate`;
                 importedFrontPlate.isPickable = false;
                 importedFrontPlate.parent = collisionMesh;
-                if (!!this._frontMaterial)
+                if (!!this._frontMaterial) {
                     importedFrontPlate.material = this._frontMaterial;
+                }
                 this._frontPlate = importedFrontPlate;
             });
 
@@ -323,7 +324,6 @@ export class TouchHolographicButton extends TouchButton3D {
 
     private _createFrontMaterial(mesh: Mesh) {
         this._frontMaterial = new FluentButtonMaterial(this.name + "Front Material", mesh.getScene());
-        this._frontMaterial.useGlobalLeftIndex = true;
     }
 
     private _createPlateMaterial(mesh: Mesh) {
@@ -356,8 +356,9 @@ export class TouchHolographicButton extends TouchButton3D {
         this._createPlateMaterial(mesh);
         this._backPlate.material = this._backMaterial;
         this._textPlate.material = this._plateMaterial;
-        if (!!this._frontPlate)
+        if (!!this._frontPlate) {
             this._frontPlate.material = this._frontMaterial;
+        }
 
         this._rebuildContent();
     }
