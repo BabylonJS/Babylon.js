@@ -780,7 +780,7 @@ export class WebGPUEngine extends Engine {
             this._viewportsCurrent[index].w = w;
             this._viewportsCurrent[index].h = h;
 
-            renderPass.setViewport(x, y, w, h, 0, 1);
+            renderPass.setViewport(Math.floor(x), Math.floor(y), Math.floor(w), Math.floor(h), 0, 1);
 
             if (this.dbgVerboseLogsForFirstFrames) {
                 if ((this as any)._count === undefined) { (this as any)._count = 0; }
