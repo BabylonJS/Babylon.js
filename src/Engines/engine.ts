@@ -1914,7 +1914,7 @@ export class Engine extends ThinEngine {
      * creates and returns a new video element
      * @returns video element
      */
-    public createVideoElement(stream: MediaStream): any {
+    public createVideoElement(constraints: MediaTrackConstraints): any {
         return document.createElement("video");
     }
 
