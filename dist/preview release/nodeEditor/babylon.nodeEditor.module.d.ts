@@ -1545,7 +1545,7 @@ declare module "babylonjs-node-editor/diagram/graphNode" {
         set isSelected(value: boolean);
         constructor(block: NodeMaterialBlock, globalState: GlobalState);
         isOverlappingFrame(frame: GraphFrame): boolean;
-        getPortForConnectionPoint(point: NodeMaterialConnectionPoint): Nullable<NodePort>;
+        getPortForConnectionPoint(point: NodeMaterialConnectionPoint): NodePort | null;
         getLinksForConnectionPoint(point: NodeMaterialConnectionPoint): NodeLink[];
         private _refreshFrames;
         _refreshLinks(): void;
@@ -2353,6 +2353,12 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/hexLineComponent"
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-node-editor/sharedUiComponents/lines/iSelectedLineContainer" {
+    export interface ISelectedLineContainer {
+        selectedLineContainerTitles: Array<string>;
+        selectedLineContainerTitlesNoFocus: Array<string>;
+    }
+}
 declare module "babylonjs-node-editor/sharedUiComponents/lines/iconButtonLineComponent" {
     import * as React from 'react';
     export interface IIconButtonLineComponentProps {
@@ -2385,17 +2391,21 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/indentedTextLineC
 }
 declare module "babylonjs-node-editor/sharedUiComponents/lines/lineContainerComponent" {
     import * as React from "react";
+    import { ISelectedLineContainer } from "babylonjs-node-editor/sharedUiComponents/lines/iSelectedLineContainer";
     interface ILineContainerComponentProps {
+        selection?: ISelectedLineContainer;
         title: string;
         children: any[] | any;
         closed?: boolean;
     }
     export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
         isExpanded: boolean;
+        isHighlighted: boolean;
     }> {
         constructor(props: ILineContainerComponentProps);
         switchExpandedState(): void;
         renderHeader(): JSX.Element;
+        componentDidMount(): void;
         render(): JSX.Element;
     }
 }
@@ -4199,7 +4209,7 @@ declare module NODEEDITOR {
         set isSelected(value: boolean);
         constructor(block: BABYLON.NodeMaterialBlock, globalState: GlobalState);
         isOverlappingFrame(frame: GraphFrame): boolean;
-        getPortForConnectionPoint(point: BABYLON.NodeMaterialConnectionPoint): BABYLON.Nullable<NodePort>;
+        getPortForConnectionPoint(point: BABYLON.NodeMaterialConnectionPoint): NodePort | null;
         getLinksForConnectionPoint(point: BABYLON.NodeMaterialConnectionPoint): NodeLink[];
         private _refreshFrames;
         _refreshLinks(): void;
@@ -4912,6 +4922,12 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export interface ISelectedLineContainer {
+        selectedLineContainerTitles: Array<string>;
+        selectedLineContainerTitlesNoFocus: Array<string>;
+    }
+}
+declare module NODEEDITOR {
     export interface IIconButtonLineComponentProps {
         icon: string;
         onClick: () => void;
@@ -4941,16 +4957,19 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     interface ILineContainerComponentProps {
+        selection?: ISelectedLineContainer;
         title: string;
         children: any[] | any;
         closed?: boolean;
     }
     export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
         isExpanded: boolean;
+        isHighlighted: boolean;
     }> {
         constructor(props: ILineContainerComponentProps);
         switchExpandedState(): void;
         renderHeader(): JSX.Element;
+        componentDidMount(): void;
         render(): JSX.Element;
     }
 }

@@ -293,11 +293,11 @@ export class ToolsTabComponent extends PaneComponent {
 
         return (
             <div className="pane">
-                <LineContainerComponent title="CAPTURE">
+                <LineContainerComponent title="CAPTURE" selection={this.props.globalState}>
                     <ButtonLineComponent label="Screenshot" onClick={() => this.captureScreenshot()} />
                     <ButtonLineComponent label={this.state.tag} onClick={() => this.recordVideo()} />
                 </LineContainerComponent>
-                <LineContainerComponent title="CAPTURE WITH RTT">
+                <LineContainerComponent title="CAPTURE WITH RTT" selection={this.props.globalState}>
                     <ButtonLineComponent label="Capture" onClick={() => this.captureRender()} />
                     <div className="vector3Line">
                         <FloatLineComponent label="Precision" target={this._screenShotSize} propertyName='precision' onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -314,7 +314,7 @@ export class ToolsTabComponent extends PaneComponent {
                         }      
                     </div>              
                 </LineContainerComponent>
-                <LineContainerComponent title="GIF">
+                <LineContainerComponent title="GIF" selection={this.props.globalState}>
                     {
                         this._crunchingGIF &&
                         <MessageLineComponent text="Creating the GIF file..." />
@@ -331,7 +331,7 @@ export class ToolsTabComponent extends PaneComponent {
                         </>
                     }
                 </LineContainerComponent>                
-                <LineContainerComponent title="REPLAY">
+                <LineContainerComponent title="REPLAY" selection={this.props.globalState}>
                     {
                         !this.props.globalState.recorder.isRecording &&
                         <ButtonLineComponent label="Start recording" onClick={() => this.startRecording()} />
@@ -346,7 +346,7 @@ export class ToolsTabComponent extends PaneComponent {
                     }
                     <FileButtonLineComponent label={`Apply delta file`} onClick={(file) => this.applyDelta(file)} accept=".json" />
                 </LineContainerComponent>
-                <LineContainerComponent title="SCENE IMPORT">
+                <LineContainerComponent title="SCENE IMPORT" selection={this.props.globalState}>
                     <FileMultipleButtonLineComponent label="Import animations" accept="gltf" onClick={(evt: any) => this.importAnimations(evt)} />
                     <CheckBoxLineComponent label="Overwrite animations" target={sceneImportDefaults} propertyName="overwriteAnimations" onSelect={value => {
                         sceneImportDefaults["overwriteAnimations"] = value;
@@ -357,7 +357,7 @@ export class ToolsTabComponent extends PaneComponent {
                         <OptionsLineComponent label="Animation merge mode" options={animationGroupLoadingModes} target={sceneImportDefaults} propertyName="animationGroupLoadingMode" />
                     }
                 </LineContainerComponent>
-                <LineContainerComponent title="SCENE EXPORT">
+                <LineContainerComponent title="SCENE EXPORT" selection={this.props.globalState}>
                     {
                         this._isExporting && 
                         <TextLineComponent label="Please wait..exporting" ignoreValue={true} />
