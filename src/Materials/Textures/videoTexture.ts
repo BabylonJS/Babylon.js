@@ -369,6 +369,7 @@ export class VideoTexture extends Texture {
      * Creates a video texture straight from a stream.
      * @param scene Define the scene the texture should be created in
      * @param stream Define the stream the texture should be created from
+     * @param constraints video constraints
      * @returns The created video texture as a promise
      */
     public static CreateFromStreamAsync(scene: Scene, stream: MediaStream, constraints: any): Promise<VideoTexture> {

@@ -1912,6 +1912,7 @@ export class Engine extends ThinEngine {
 
     /**
      * creates and returns a new video element
+     * @param constraints video constraints
      * @returns video element
      */
     public createVideoElement(constraints: MediaTrackConstraints): any {
