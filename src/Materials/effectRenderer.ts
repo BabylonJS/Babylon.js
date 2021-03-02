@@ -213,7 +213,13 @@ export class EffectWrapper {
     /**
      * The underlying effect
      */
-    public effect: Effect;
+    public get effect(): Effect {
+        return this._drawWrapper.effect!;
+    }
+
+    public set effect(effect: Effect) {
+        this._drawWrapper.effect = effect;
+    }
 
     /** @hidden */
     public _drawWrapper: DrawWrapper;
