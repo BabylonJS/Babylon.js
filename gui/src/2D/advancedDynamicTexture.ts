@@ -671,7 +671,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
 
         this._cursorChanged = false;
         if (!this._rootContainer._processPicking(x, y, pi, type, pointerId, buttonIndex, deltaX, deltaY)) {
-            this._changeCursor("");
+            if (!scene.doNotHandleCursors) {
+                this._changeCursor("");
+            }
             if (type === PointerEventTypes.POINTERMOVE) {
                 if (this._lastControlOver[pointerId]) {
                     this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId], pi);
@@ -680,7 +682,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             }
         }
 
-        if (!this._cursorChanged) {
+        if (!this._cursorChanged && !scene.doNotHandleCursors) {
             this._changeCursor("");
         }
         this._manageFocus();

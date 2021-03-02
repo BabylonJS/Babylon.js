@@ -171,7 +171,10 @@ export class DeviceSourceManager implements IDisposable {
      * @param deviceSlot "Slot" or index that device is referenced in
      */
     private _removeDevice(deviceType: DeviceType, deviceSlot: number) {
-        delete this._devices[deviceType][deviceSlot];
+        if (this._devices[deviceType]?.[deviceSlot]) {
+            delete this._devices[deviceType][deviceSlot];
+        }
+        // Even if we don't delete a device, we should still check for the first device as things may have gotten out of sync.
         this._updateFirstDevices(deviceType);
     }
 
@@ -190,12 +193,14 @@ export class DeviceSourceManager implements IDisposable {
             case DeviceType.Xbox:
             case DeviceType.Switch:
             case DeviceType.Generic:
-                const devices = this._devices[type];
                 delete this._firstDevice[type];
-                for (let i = 0; i < devices.length; i++) {
-                    if (devices[i]) {
-                        this._firstDevice[type] = i;
-                        break;
+                const devices = this._devices[type];
+                if (devices) {
+                    for (let i = 0; i < devices.length; i++) {
+                        if (devices[i]) {
+                            this._firstDevice[type] = i;
+                            break;
+                        }
                     }
                 }
                 break;

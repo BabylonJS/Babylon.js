@@ -258,6 +258,7 @@ export class Gizmo implements IDisposable {
 
                 if (targetCamera.rotationQuaternion) {
                     targetCamera.rotationQuaternion.copyFrom(this._tempQuaternion);
+                    targetCamera.rotationQuaternion.normalize();
                 }
             }
 
@@ -276,6 +277,7 @@ export class Gizmo implements IDisposable {
             if (!transform.billboardMode) {
                 if (transform.rotationQuaternion) {
                     transform.rotationQuaternion.copyFrom(this._tempQuaternion);
+                    transform.rotationQuaternion.normalize();
                 } else {
                     transform.rotation = this._tempQuaternion.toEulerAngles();
                 }
