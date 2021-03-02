@@ -25,6 +25,8 @@ export class GUI3DManager implements IDisposable {
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
     private _pointerOutObserver: Nullable<Observer<number>>;
     private _touchableButtons = new Set<TouchButton3D>();
+    private _touchIds = new Map<string, number>();
+    private static _touchIdCounter = 300;
     /** @hidden */
     public _lastPickedControl: Control3D;
     /** @hidden */
@@ -160,10 +162,35 @@ export class GUI3DManager implements IDisposable {
         let utilityLayerScene = this._utilityLayer ? this._utilityLayer.utilityLayerScene : null;
         if (utilityLayerScene) {
             const touchMeshes = utilityLayerScene.getMeshesByTags("touchEnabled");
+            // Remove stale meshes
+            this._touchIds.forEach((uniqueId, controllerName) => {
+                let objectExists = false;
+                touchMeshes.forEach((mesh) => {
+                    if (mesh.name === controllerName) {
+                        objectExists = true;
+                    }
+                });
 
-            this._touchableButtons.forEach(function (button: TouchButton3D) {
-                touchMeshes.forEach(function (mesh: AbstractMesh) {
-                    button._collisionCheckForStateChange(mesh);
+                if (!objectExists) {
+                    this._touchableButtons.forEach((button) => {
+                        button._collisionCheckForStateChange(Vector3.Zero(), uniqueId, true);
+                    });
+                    this._touchIds.delete(controllerName);
+                }
+            });
+
+            // Add new meshes
+            touchMeshes.forEach((mesh) => {
+                let controllerName = mesh.name;
+                if (!this._touchIds.has(controllerName)) {
+                    this._touchIds.set(controllerName, GUI3DManager._touchIdCounter++);
+                }
+            });
+
+            this._touchableButtons.forEach((button) => {
+                touchMeshes.forEach((mesh) => {
+                    let uniqueId = this._touchIds.get(mesh.name)!;
+                    button._collisionCheckForStateChange(mesh.getAbsolutePosition(), uniqueId);
                 });
             });
         }

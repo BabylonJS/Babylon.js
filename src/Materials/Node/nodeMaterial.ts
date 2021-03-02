@@ -255,10 +255,14 @@ export class NodeMaterial extends PushMaterial {
     public _mode: NodeMaterialModes = NodeMaterialModes.Material;
 
     /**
-     * Gets the mode property
+     * Gets or sets the mode property
      */
     public get mode(): NodeMaterialModes {
         return this._mode;
+    }
+
+    public set mode(value: NodeMaterialModes) {
+        this._mode = value;
     }
 
     /**
