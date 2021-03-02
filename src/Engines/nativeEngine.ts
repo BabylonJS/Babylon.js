@@ -27,7 +27,7 @@ import { RenderTargetTextureSize } from '../Engines/Extensions/engine.renderTarg
 import { DepthTextureCreationOptions } from '../Engines/depthTextureCreationOptions';
 
 interface INativeCamera {
-    createVideo(): any;
+    createVideo(constraints: MediaTrackConstraints): any;
     updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void;
 }
 
@@ -1560,10 +1560,10 @@ export class NativeEngine extends Engine {
         return this.createRawTexture(new Uint8Array(width * height * 4), width, height, Constants.TEXTUREFORMAT_RGBA, false, false, samplingMode);
     }
 
-    public createVideoElement(stream: MediaStream): any {
+    public createVideoElement(constraints: MediaTrackConstraints): any {
         // create native object depending on stream. Only NativeCamera is supported for now.
         if (this._nativeCamera) {
-            return this._nativeCamera.createVideo();
+            return this._nativeCamera.createVideo(constraints);
         }
         return null;
     }
