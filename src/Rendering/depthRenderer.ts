@@ -134,6 +134,7 @@ export class DepthRenderer {
                 renderingMesh._bind(subMesh, this._effect, material.fillMode);
 
                 this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
+                this._effect.setMatrix("world", effectiveMesh.getWorldMatrix());
 
                 this._effect.setFloat2("depthValues", camera.minZ, camera.minZ + camera.maxZ);
 
@@ -149,7 +150,19 @@ export class DepthRenderer {
 
                 // Bones
                 if (renderingMesh.useBones && renderingMesh.computeBonesUsingShaders && renderingMesh.skeleton) {
-                    this._effect.setMatrices("mBones", renderingMesh.skeleton.getTransformMatrices(renderingMesh));
+                    const skeleton = renderingMesh.skeleton;
+
+                    if (skeleton.isUsingTextureForMatrices) {
+                        const boneTexture = skeleton.getTransformMatrixTexture(renderingMesh);
+                        if (!boneTexture) {
+                            return;
+                        }
+
+                        this._effect.setTexture("boneSampler", boneTexture);
+                        this._effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
+                    } else {
+                        this._effect.setMatrices("mBones", skeleton.getTransformMatrices((renderingMesh)));
+                    }
                 }
 
                 // Morph targets

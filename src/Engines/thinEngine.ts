@@ -167,14 +167,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-alpha.10";
+        return "babylonjs@5.0.0-alpha.12";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-alpha.10";
+        return "5.0.0-alpha.12";
     }
 
     /**
@@ -265,6 +265,11 @@ export class ThinEngine {
      * Gets or sets a boolean indicating that uniform buffers must be disabled even if they are supported
      */
     public disableUniformBuffers = false;
+
+    /**
+    * An event triggered when the engine is disposed.
+    */
+   public readonly onDisposeObservable = new Observable<ThinEngine>();
 
     private _frameId = 0;
     /**
@@ -4137,6 +4142,9 @@ export class ThinEngine {
         for (let request of this._activeRequests) {
             request.abort();
         }
+
+        this.onDisposeObservable.notifyObservers(this);
+        this.onDisposeObservable.clear();
     }
 
     /**

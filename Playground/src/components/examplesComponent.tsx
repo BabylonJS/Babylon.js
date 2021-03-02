@@ -7,23 +7,29 @@ interface IExamplesComponentProps {
     globalState: GlobalState;
 }
 
+interface ISample {
+    title: string;
+    doc: string;
+    icon: string;
+    PGID: string;
+    description: string;
+}
+
+interface IScript {
+    title: string;
+    samples: ISample[];
+}
+
 export class ExamplesComponent extends React.Component<IExamplesComponentProps, { filter: string }> {
     private _state = "removed";
+    private _documentationRoot = "https://doc.babylonjs.com";
+    private _searchUrl = "https://babylonjs-newdocs.search.windows.net/indexes/playgrounds/docs?api-version=2020-06-30&$top=1000&api-key=820DCA4087091C0386B0F0A266710390&$filter=isMain%20eq%20true";
     private _rootRef: React.RefObject<HTMLDivElement>;
-    private _scripts: {
-        title: string;
-        samples: {
-            title: string;
-            doc: string;
-            icon: string;
-            PGID: string;
-            description: string;
-        }[];
-    }[];
+    private _scripts: IScript[];
 
     public constructor(props: IExamplesComponentProps) {
         super(props);
-        this._loadScripts();
+        this._loadScriptsAsync();
 
         this.state = { filter: "" };
         this._rootRef = React.createRef();
@@ -45,42 +51,65 @@ export class ExamplesComponent extends React.Component<IExamplesComponentProps, 
         });
     }
 
-    private _loadScripts() {
-        var xhr = new XMLHttpRequest();
-
-        if (this.props.globalState.language === "JS") {
-            xhr.open("GET", "https://raw.githubusercontent.com/BabylonJS/Documentation/master/examples/list.json", true);
-        } else {
-            xhr.open("GET", "https://raw.githubusercontent.com/BabylonJS/Documentation/master/examples/list_ts.json", true);
+    private async _fillScriptAsync() {
+        const response = await fetch(this._searchUrl);
+        if (!response.ok) {
+            return;
         }
 
-        xhr.onreadystatechange = () => {
-            if (xhr.readyState === 4) {
-                if (xhr.status === 200) {
-                    this._scripts = JSON.parse(xhr.response)["examples"];
+        let list = await response.json();
 
-                    this._scripts.sort((a, b) => {
-                        if (a.title < b.title) {
-                            return -1;
-                        }
-                        return 1;
-                    });
-
-                    this._scripts.forEach((s) => {
-                        s.samples.sort((a, b) => {
-                            if (a.title < b.title) {
-                                return -1;
-                            }
-                            return 1;
-                        });
-                    });
-
-                    this.forceUpdate();
-                }
+        for(var value of list.value) {
+            let newSample = {
+                title: value.title,
+                doc: this._documentationRoot + value.documentationPage,
+                icon: this._documentationRoot + value.imageUrl,
+                PGID: value.playgroundId,
+                description: value.description
             }
-        };
 
-        xhr.send(null);
+            let filter = this._scripts.filter(s => s.title === value.category);
+            let script: IScript;
+
+            if (filter && filter.length) {
+                script = filter[0];
+            } else {
+                script = {
+                    title: value.category,
+                    samples: []
+                };
+                this._scripts.push(script);
+            }
+
+            script.samples.push(newSample);
+        }
+    }
+
+    private async _loadScriptsAsync() {
+
+        this._scripts = [];
+
+        await this._fillScriptAsync();
+
+        // Sorting
+        this._scripts.sort((a, b) => {
+            if (a.title < b.title) {
+                return -1;
+            }
+            return 1;
+        });
+
+        this._scripts.forEach((s) => {
+            s.samples.sort((a, b) => {
+                if (a.title < b.title) {
+                    return -1;
+                }
+                return 1;
+            });
+        });
+
+        // Update
+        this.forceUpdate();
     }
 
     private _onLoadPG(id: string) {
@@ -123,9 +152,9 @@ export class ExamplesComponent extends React.Component<IExamplesComponentProps, 
                         return (
                             <div key={s.title} className="example-category">
                                 <div className="example-category-title">{s.title}</div>
-                                {active.map((ss) => {
+                                {active.map((ss, i) => {
                                     return (
-                                        <div className="example" key={ss.title} onClick={() => this._onLoadPG(ss.PGID)}>
+                                        <div className="example" key={ss.title + i} onClick={() => this._onLoadPG(ss.PGID)}>
                                             <img src={ss.icon.replace("icons", "https://doc.babylonjs.com/examples/icons")} />
                                             <div className="example-title">{ss.title}</div>
                                             <div className="example-description">{ss.description}</div>
