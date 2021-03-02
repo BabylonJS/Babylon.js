@@ -7866,331 +7866,6 @@ declare module BABYLON {
     };
 }
 declare module BABYLON {
-    /**
-     * Class used to manipulate GUIDs
-     */
-    export class GUID {
-        /**
-         * Implementation from http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript/2117523#answer-2117523
-         * Be aware Math.random() could cause collisions, but:
-         * "All but 6 of the 128 bits of the ID are randomly generated, which means that for any two ids, there's a 1 in 2^^122 (or 5.3x10^^36) chance they'll collide"
-         * @returns a pseudo random id
-         */
-        static RandomId(): string;
-    }
-}
-declare module BABYLON {
-    /**
-     * Base class of all the textures in babylon.
-     * It groups all the common properties the materials, post process, lights... might need
-     * in order to make a correct use of the texture.
-     */
-    export class BaseTexture extends ThinTexture implements IAnimatable {
-        /**
-         * Default anisotropic filtering level for the application.
-         * It is set to 4 as a good tradeoff between perf and quality.
-         */
-        static DEFAULT_ANISOTROPIC_FILTERING_LEVEL: number;
-        /**
-         * Gets or sets the unique id of the texture
-         */
-        uniqueId: number;
-        /**
-         * Define the name of the texture.
-         */
-        name: string;
-        /**
-         * Gets or sets an object used to store user defined information.
-         */
-        metadata: any;
-        /**
-         * For internal use only. Please do not use.
-         */
-        reservedDataStore: any;
-        private _hasAlpha;
-        /**
-         * Define if the texture is having a usable alpha value (can be use for transparency or glossiness for instance).
-         */
-        set hasAlpha(value: boolean);
-        get hasAlpha(): boolean;
-        /**
-         * Defines if the alpha value should be determined via the rgb values.
-         * If true the luminance of the pixel might be used to find the corresponding alpha value.
-         */
-        getAlphaFromRGB: boolean;
-        /**
-         * Intensity or strength of the texture.
-         * It is commonly used by materials to fine tune the intensity of the texture
-         */
-        level: number;
-        /**
-         * Define the UV channel to use starting from 0 and defaulting to 0.
-         * This is part of the texture as textures usually maps to one uv set.
-         */
-        coordinatesIndex: number;
-        protected _coordinatesMode: number;
-        /**
-        * How a texture is mapped.
-        *
-        * | Value | Type                                | Description |
-        * | ----- | ----------------------------------- | ----------- |
-        * | 0     | EXPLICIT_MODE                       |             |
-        * | 1     | SPHERICAL_MODE                      |             |
-        * | 2     | PLANAR_MODE                         |             |
-        * | 3     | CUBIC_MODE                          |             |
-        * | 4     | PROJECTION_MODE                     |             |
-        * | 5     | SKYBOX_MODE                         |             |
-        * | 6     | INVCUBIC_MODE                       |             |
-        * | 7     | EQUIRECTANGULAR_MODE                |             |
-        * | 8     | FIXED_EQUIRECTANGULAR_MODE          |             |
-        * | 9     | FIXED_EQUIRECTANGULAR_MIRRORED_MODE |             |
-        */
-        set coordinatesMode(value: number);
-        get coordinatesMode(): number;
-        /**
-         * | Value | Type               | Description |
-         * | ----- | ------------------ | ----------- |
-         * | 0     | CLAMP_ADDRESSMODE  |             |
-         * | 1     | WRAP_ADDRESSMODE   |             |
-         * | 2     | MIRROR_ADDRESSMODE |             |
-         */
-        get wrapU(): number;
-        set wrapU(value: number);
-        /**
-         * | Value | Type               | Description |
-         * | ----- | ------------------ | ----------- |
-         * | 0     | CLAMP_ADDRESSMODE  |             |
-         * | 1     | WRAP_ADDRESSMODE   |             |
-         * | 2     | MIRROR_ADDRESSMODE |             |
-         */
-        get wrapV(): number;
-        set wrapV(value: number);
-        /**
-        * | Value | Type               | Description |
-        * | ----- | ------------------ | ----------- |
-        * | 0     | CLAMP_ADDRESSMODE  |             |
-        * | 1     | WRAP_ADDRESSMODE   |             |
-        * | 2     | MIRROR_ADDRESSMODE |             |
-        */
-        wrapR: number;
-        /**
-         * With compliant hardware and browser (supporting anisotropic filtering)
-         * this defines the level of anisotropic filtering in the texture.
-         * The higher the better but the slower. This defaults to 4 as it seems to be the best tradeoff.
-         */
-        anisotropicFilteringLevel: number;
-        private _isCube;
-        /**
-         * Define if the texture is a cube texture or if false a 2d texture.
-         */
-        get isCube(): boolean;
-        set isCube(value: boolean);
-        /**
-         * Define if the texture is a 3d texture (webgl 2) or if false a 2d texture.
-         */
-        get is3D(): boolean;
-        set is3D(value: boolean);
-        /**
-         * Define if the texture is a 2d array texture (webgl 2) or if false a 2d texture.
-         */
-        get is2DArray(): boolean;
-        set is2DArray(value: boolean);
-        private _gammaSpace;
-        /**
-         * Define if the texture contains data in gamma space (most of the png/jpg aside bump).
-         * HDR texture are usually stored in linear space.
-         * This only impacts the PBR and Background materials
-         */
-        get gammaSpace(): boolean;
-        set gammaSpace(gamma: boolean);
-        /**
-         * Gets or sets whether or not the texture contains RGBD data.
-         */
-        get isRGBD(): boolean;
-        set isRGBD(value: boolean);
-        /**
-         * Is Z inverted in the texture (useful in a cube texture).
-         */
-        invertZ: boolean;
-        /**
-         * Are mip maps generated for this texture or not.
-         */
-        get noMipmap(): boolean;
-        /**
-         * @hidden
-         */
-        lodLevelInAlpha: boolean;
-        /**
-         * With prefiltered texture, defined the offset used during the prefiltering steps.
-         */
-        get lodGenerationOffset(): number;
-        set lodGenerationOffset(value: number);
-        /**
-         * With prefiltered texture, defined the scale used during the prefiltering steps.
-         */
-        get lodGenerationScale(): number;
-        set lodGenerationScale(value: number);
-        /**
-         * With prefiltered texture, defined if the specular generation is based on a linear ramp.
-         * By default we are using a log2 of the linear roughness helping to keep a better resolution for
-         * average roughness values.
-         */
-        get linearSpecularLOD(): boolean;
-        set linearSpecularLOD(value: boolean);
-        /**
-         * In case a better definition than spherical harmonics is required for the diffuse part of the environment.
-         * You can set the irradiance texture to rely on a texture instead of the spherical approach.
-         * This texture need to have the same characteristics than its parent (Cube vs 2d, coordinates mode, Gamma/Linear, RGBD).
-         */
-        get irradianceTexture(): Nullable<BaseTexture>;
-        set irradianceTexture(value: Nullable<BaseTexture>);
-        /**
-         * Define if the texture is a render target.
-         */
-        isRenderTarget: boolean;
-        /**
-         * Define the unique id of the texture in the scene.
-         */
-        get uid(): string;
-        /** @hidden */
-        _prefiltered: boolean;
-        /**
-         * Return a string representation of the texture.
-         * @returns the texture as a string
-         */
-        toString(): string;
-        /**
-         * Get the class name of the texture.
-         * @returns "BaseTexture"
-         */
-        getClassName(): string;
-        /**
-         * Define the list of animation attached to the texture.
-         */
-        animations: Animation[];
-        /**
-        * An event triggered when the texture is disposed.
-        */
-        onDisposeObservable: Observable<BaseTexture>;
-        private _onDisposeObserver;
-        /**
-         * Callback triggered when the texture has been disposed.
-         * Kept for back compatibility, you can use the onDisposeObservable instead.
-         */
-        set onDispose(callback: () => void);
-        protected _scene: Nullable<Scene>;
-        /** @hidden */
-        _texture: Nullable<InternalTexture>;
-        private _uid;
-        /**
-         * Define if the texture is preventing a material to render or not.
-         * If not and the texture is not ready, the engine will use a default black texture instead.
-         */
-        get isBlocking(): boolean;
-        /**
-         * Instantiates a new BaseTexture.
-         * Base class of all the textures in babylon.
-         * It groups all the common properties the materials, post process, lights... might need
-         * in order to make a correct use of the texture.
-         * @param sceneOrEngine Define the scene or engine the texture belongs to
-         */
-        constructor(sceneOrEngine: Nullable<Scene | ThinEngine>);
-        /**
-         * Get the scene the texture belongs to.
-         * @returns the scene or null if undefined
-         */
-        getScene(): Nullable<Scene>;
-        /** @hidden */
-        protected _getEngine(): Nullable<ThinEngine>;
-        /**
-         * Checks if the texture has the same transform matrix than another texture
-         * @param texture texture to check against
-         * @returns true if the transforms are the same, else false
-         */
-        checkTransformsAreIdentical(texture: Nullable<BaseTexture>): boolean;
-        /**
-         * Get the texture transform matrix used to offset tile the texture for instance.
-         * @returns the transformation matrix
-         */
-        getTextureMatrix(): Matrix;
-        /**
-         * Get the texture reflection matrix used to rotate/transform the reflection.
-         * @returns the reflection matrix
-         */
-        getReflectionTextureMatrix(): Matrix;
-        /**
-         * Get if the texture is ready to be consumed (either it is ready or it is not blocking)
-         * @returns true if ready or not blocking
-         */
-        isReadyOrNotBlocking(): boolean;
-        /**
-         * Scales the texture if is `canRescale()`
-         * @param ratio the resize factor we want to use to rescale
-         */
-        scale(ratio: number): void;
-        /**
-         * Get if the texture can rescale.
-         */
-        get canRescale(): boolean;
-        /** @hidden */
-        _getFromCache(url: Nullable<string>, noMipmap: boolean, sampling?: number, invertY?: boolean): Nullable<InternalTexture>;
-        /** @hidden */
-        _rebuild(): void;
-        /**
-         * Clones the texture.
-         * @returns the cloned texture
-         */
-        clone(): Nullable<BaseTexture>;
-        /**
-         * Get the texture underlying type (INT, FLOAT...)
-         */
-        get textureType(): number;
-        /**
-         * Get the texture underlying format (RGB, RGBA...)
-         */
-        get textureFormat(): number;
-        /**
-         * Indicates that textures need to be re-calculated for all materials
-         */
-        protected _markAllSubMeshesAsTexturesDirty(): void;
-        /**
-         * Reads the pixels stored in the webgl texture and returns them as an ArrayBuffer.
-         * This will returns an RGBA array buffer containing either in values (0-255) or
-         * float values (0-1) depending of the underlying buffer type.
-         * @param faceIndex defines the face of the texture to read (in case of cube texture)
-         * @param level defines the LOD level of the texture to read (in case of Mip Maps)
-         * @param buffer defines a user defined buffer to fill with data (can be null)
-         * @param flushRenderer true to flush the renderer from the pending commands before reading the pixels
-         * @returns The Array buffer promise containing the pixels data.
-         */
-        readPixels(faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean): Nullable<Promise<ArrayBufferView>>;
-        /** @hidden */
-        _readPixelsSync(faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean): Nullable<ArrayBufferView>;
-        /** @hidden */
-        get _lodTextureHigh(): Nullable<BaseTexture>;
-        /** @hidden */
-        get _lodTextureMid(): Nullable<BaseTexture>;
-        /** @hidden */
-        get _lodTextureLow(): Nullable<BaseTexture>;
-        /**
-         * Dispose the texture and release its associated resources.
-         */
-        dispose(): void;
-        /**
-         * Serialize the texture into a JSON representation that can be parsed later on.
-         * @returns the JSON representation of the texture
-         */
-        serialize(): any;
-        /**
-         * Helper function to be called back once a list of texture contains only ready textures.
-         * @param textures Define the list of textures to wait for
-         * @param callback Define the callback triggered once the entire list will be ready
-         */
-        static WhenAllReady(textures: BaseTexture[], callback: () => void): void;
-        private static _isScene;
-    }
-}
-declare module BABYLON {
     /** @hidden */
     export class WebGLDataBuffer extends DataBuffer {
         private _buffer;
@@ -8569,25 +8244,25 @@ declare module BABYLON {
          * This is dynamic to allow compat with webgl 1 and 2.
          * You will need to pass the name of the uniform as well as the value.
          */
-        updateVector3: (name: string, vector: Vector3) => void;
+        updateVector3: (name: string, vector: IVector3Like) => void;
         /**
          * Lambda to Update vec4 of float from a Vector in a uniform buffer.
          * This is dynamic to allow compat with webgl 1 and 2.
          * You will need to pass the name of the uniform as well as the value.
          */
-        updateVector4: (name: string, vector: Vector4) => void;
+        updateVector4: (name: string, vector: IVector4Like) => void;
         /**
          * Lambda to Update vec3 of float from a Color in a uniform buffer.
          * This is dynamic to allow compat with webgl 1 and 2.
          * You will need to pass the name of the uniform as well as the value.
          */
-        updateColor3: (name: string, color: Color3, suffix?: string) => void;
+        updateColor3: (name: string, color: IColor3Like, suffix?: string) => void;
         /**
          * Lambda to Update vec4 of float from a Color in a uniform buffer.
          * This is dynamic to allow compat with webgl 1 and 2.
          * You will need to pass the name of the uniform as well as the value.
          */
-        updateColor4: (name: string, color: Color3, alpha: number, suffix?: string) => void;
+        updateColor4: (name: string, color: IColor3Like, alpha: number, suffix?: string) => void;
         /**
          * Lambda to Update a int a uniform buffer.
          * This is dynamic to allow compat with webgl 1 and 2.
@@ -8626,7 +8301,7 @@ declare module BABYLON {
          * @param dynamic Define if the buffer is updatable
          * @param name to assign to the buffer (debugging purpose)
          */
-        constructor(engine: Engine, data?: number[], dynamic?: boolean, name?: string);
+        constructor(engine: ThinEngine, data?: number[], dynamic?: boolean, name?: string);
         /**
          * Indicates if the buffer is using the WebGL2 UBO implementation,
          * or just falling back on setUniformXXX calls.
@@ -8674,7 +8349,7 @@ declare module BABYLON {
          * @param name Name of the uniform, as used in the uniform block in the shader.
          * @param mat A 4x4 matrix.
          */
-        addMatrix(name: string, mat: Matrix): void;
+        addMatrix(name: string, mat: IMatrixLike): void;
         /**
          * Adds a vec2 to the uniform buffer.
          * @param name Name of the uniform, as used in the uniform block in the shader.
@@ -8695,20 +8370,20 @@ declare module BABYLON {
          * @param name Name of the uniform, as used in the uniform block in the shader.
          * @param color Define the vec3 from a Color
          */
-        addColor3(name: string, color: Color3): void;
+        addColor3(name: string, color: IColor3Like): void;
         /**
          * Adds a vec4 to the uniform buffer.
          * @param name Name of the uniform, as used in the uniform block in the shader.
          * @param color Define the rgb components from a Color
          * @param alpha Define the a component of the vec4
          */
-        addColor4(name: string, color: Color3, alpha: number): void;
+        addColor4(name: string, color: IColor3Like, alpha: number): void;
         /**
          * Adds a vec3 to the uniform buffer.
          * @param name Name of the uniform, as used in the uniform block in the shader.
          * @param vector Define the vec3 components from a Vector
          */
-        addVector3(name: string, vector: Vector3): void;
+        addVector3(name: string, vector: IVector3Like): void;
         /**
          * Adds a Matrix 3x3 to the uniform buffer.
          * @param name Name of the uniform, as used in the uniform block in the shader.
@@ -8798,7 +8473,7 @@ declare module BABYLON {
          * @param name Define the name of the sampler.
          * @param texture Define the texture to set in the sampler
          */
-        setTexture(name: string, texture: Nullable<BaseTexture>): void;
+        setTexture(name: string, texture: Nullable<ThinTexture>): void;
         /**
          * Directly updates the value of the uniform in the cache AND on the GPU.
          * @param uniformName Define the name of the uniform, as used in the uniform block in the shader.
@@ -8815,6 +8490,331 @@ declare module BABYLON {
          * Disposes the uniform buffer.
          */
         dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to manipulate GUIDs
+     */
+    export class GUID {
+        /**
+         * Implementation from http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript/2117523#answer-2117523
+         * Be aware Math.random() could cause collisions, but:
+         * "All but 6 of the 128 bits of the ID are randomly generated, which means that for any two ids, there's a 1 in 2^^122 (or 5.3x10^^36) chance they'll collide"
+         * @returns a pseudo random id
+         */
+        static RandomId(): string;
+    }
+}
+declare module BABYLON {
+    /**
+     * Base class of all the textures in babylon.
+     * It groups all the common properties the materials, post process, lights... might need
+     * in order to make a correct use of the texture.
+     */
+    export class BaseTexture extends ThinTexture implements IAnimatable {
+        /**
+         * Default anisotropic filtering level for the application.
+         * It is set to 4 as a good tradeoff between perf and quality.
+         */
+        static DEFAULT_ANISOTROPIC_FILTERING_LEVEL: number;
+        /**
+         * Gets or sets the unique id of the texture
+         */
+        uniqueId: number;
+        /**
+         * Define the name of the texture.
+         */
+        name: string;
+        /**
+         * Gets or sets an object used to store user defined information.
+         */
+        metadata: any;
+        /**
+         * For internal use only. Please do not use.
+         */
+        reservedDataStore: any;
+        private _hasAlpha;
+        /**
+         * Define if the texture is having a usable alpha value (can be use for transparency or glossiness for instance).
+         */
+        set hasAlpha(value: boolean);
+        get hasAlpha(): boolean;
+        /**
+         * Defines if the alpha value should be determined via the rgb values.
+         * If true the luminance of the pixel might be used to find the corresponding alpha value.
+         */
+        getAlphaFromRGB: boolean;
+        /**
+         * Intensity or strength of the texture.
+         * It is commonly used by materials to fine tune the intensity of the texture
+         */
+        level: number;
+        /**
+         * Define the UV channel to use starting from 0 and defaulting to 0.
+         * This is part of the texture as textures usually maps to one uv set.
+         */
+        coordinatesIndex: number;
+        protected _coordinatesMode: number;
+        /**
+        * How a texture is mapped.
+        *
+        * | Value | Type                                | Description |
+        * | ----- | ----------------------------------- | ----------- |
+        * | 0     | EXPLICIT_MODE                       |             |
+        * | 1     | SPHERICAL_MODE                      |             |
+        * | 2     | PLANAR_MODE                         |             |
+        * | 3     | CUBIC_MODE                          |             |
+        * | 4     | PROJECTION_MODE                     |             |
+        * | 5     | SKYBOX_MODE                         |             |
+        * | 6     | INVCUBIC_MODE                       |             |
+        * | 7     | EQUIRECTANGULAR_MODE                |             |
+        * | 8     | FIXED_EQUIRECTANGULAR_MODE          |             |
+        * | 9     | FIXED_EQUIRECTANGULAR_MIRRORED_MODE |             |
+        */
+        set coordinatesMode(value: number);
+        get coordinatesMode(): number;
+        /**
+         * | Value | Type               | Description |
+         * | ----- | ------------------ | ----------- |
+         * | 0     | CLAMP_ADDRESSMODE  |             |
+         * | 1     | WRAP_ADDRESSMODE   |             |
+         * | 2     | MIRROR_ADDRESSMODE |             |
+         */
+        get wrapU(): number;
+        set wrapU(value: number);
+        /**
+         * | Value | Type               | Description |
+         * | ----- | ------------------ | ----------- |
+         * | 0     | CLAMP_ADDRESSMODE  |             |
+         * | 1     | WRAP_ADDRESSMODE   |             |
+         * | 2     | MIRROR_ADDRESSMODE |             |
+         */
+        get wrapV(): number;
+        set wrapV(value: number);
+        /**
+        * | Value | Type               | Description |
+        * | ----- | ------------------ | ----------- |
+        * | 0     | CLAMP_ADDRESSMODE  |             |
+        * | 1     | WRAP_ADDRESSMODE   |             |
+        * | 2     | MIRROR_ADDRESSMODE |             |
+        */
+        wrapR: number;
+        /**
+         * With compliant hardware and browser (supporting anisotropic filtering)
+         * this defines the level of anisotropic filtering in the texture.
+         * The higher the better but the slower. This defaults to 4 as it seems to be the best tradeoff.
+         */
+        anisotropicFilteringLevel: number;
+        private _isCube;
+        /**
+         * Define if the texture is a cube texture or if false a 2d texture.
+         */
+        get isCube(): boolean;
+        set isCube(value: boolean);
+        /**
+         * Define if the texture is a 3d texture (webgl 2) or if false a 2d texture.
+         */
+        get is3D(): boolean;
+        set is3D(value: boolean);
+        /**
+         * Define if the texture is a 2d array texture (webgl 2) or if false a 2d texture.
+         */
+        get is2DArray(): boolean;
+        set is2DArray(value: boolean);
+        private _gammaSpace;
+        /**
+         * Define if the texture contains data in gamma space (most of the png/jpg aside bump).
+         * HDR texture are usually stored in linear space.
+         * This only impacts the PBR and Background materials
+         */
+        get gammaSpace(): boolean;
+        set gammaSpace(gamma: boolean);
+        /**
+         * Gets or sets whether or not the texture contains RGBD data.
+         */
+        get isRGBD(): boolean;
+        set isRGBD(value: boolean);
+        /**
+         * Is Z inverted in the texture (useful in a cube texture).
+         */
+        invertZ: boolean;
+        /**
+         * Are mip maps generated for this texture or not.
+         */
+        get noMipmap(): boolean;
+        /**
+         * @hidden
+         */
+        lodLevelInAlpha: boolean;
+        /**
+         * With prefiltered texture, defined the offset used during the prefiltering steps.
+         */
+        get lodGenerationOffset(): number;
+        set lodGenerationOffset(value: number);
+        /**
+         * With prefiltered texture, defined the scale used during the prefiltering steps.
+         */
+        get lodGenerationScale(): number;
+        set lodGenerationScale(value: number);
+        /**
+         * With prefiltered texture, defined if the specular generation is based on a linear ramp.
+         * By default we are using a log2 of the linear roughness helping to keep a better resolution for
+         * average roughness values.
+         */
+        get linearSpecularLOD(): boolean;
+        set linearSpecularLOD(value: boolean);
+        /**
+         * In case a better definition than spherical harmonics is required for the diffuse part of the environment.
+         * You can set the irradiance texture to rely on a texture instead of the spherical approach.
+         * This texture need to have the same characteristics than its parent (Cube vs 2d, coordinates mode, Gamma/Linear, RGBD).
+         */
+        get irradianceTexture(): Nullable<BaseTexture>;
+        set irradianceTexture(value: Nullable<BaseTexture>);
+        /**
+         * Define if the texture is a render target.
+         */
+        isRenderTarget: boolean;
+        /**
+         * Define the unique id of the texture in the scene.
+         */
+        get uid(): string;
+        /** @hidden */
+        _prefiltered: boolean;
+        /**
+         * Return a string representation of the texture.
+         * @returns the texture as a string
+         */
+        toString(): string;
+        /**
+         * Get the class name of the texture.
+         * @returns "BaseTexture"
+         */
+        getClassName(): string;
+        /**
+         * Define the list of animation attached to the texture.
+         */
+        animations: Animation[];
+        /**
+        * An event triggered when the texture is disposed.
+        */
+        onDisposeObservable: Observable<BaseTexture>;
+        private _onDisposeObserver;
+        /**
+         * Callback triggered when the texture has been disposed.
+         * Kept for back compatibility, you can use the onDisposeObservable instead.
+         */
+        set onDispose(callback: () => void);
+        protected _scene: Nullable<Scene>;
+        /** @hidden */
+        _texture: Nullable<InternalTexture>;
+        private _uid;
+        /**
+         * Define if the texture is preventing a material to render or not.
+         * If not and the texture is not ready, the engine will use a default black texture instead.
+         */
+        get isBlocking(): boolean;
+        /**
+         * Instantiates a new BaseTexture.
+         * Base class of all the textures in babylon.
+         * It groups all the common properties the materials, post process, lights... might need
+         * in order to make a correct use of the texture.
+         * @param sceneOrEngine Define the scene or engine the texture belongs to
+         */
+        constructor(sceneOrEngine: Nullable<Scene | ThinEngine>);
+        /**
+         * Get the scene the texture belongs to.
+         * @returns the scene or null if undefined
+         */
+        getScene(): Nullable<Scene>;
+        /** @hidden */
+        protected _getEngine(): Nullable<ThinEngine>;
+        /**
+         * Checks if the texture has the same transform matrix than another texture
+         * @param texture texture to check against
+         * @returns true if the transforms are the same, else false
+         */
+        checkTransformsAreIdentical(texture: Nullable<BaseTexture>): boolean;
+        /**
+         * Get the texture transform matrix used to offset tile the texture for instance.
+         * @returns the transformation matrix
+         */
+        getTextureMatrix(): Matrix;
+        /**
+         * Get the texture reflection matrix used to rotate/transform the reflection.
+         * @returns the reflection matrix
+         */
+        getReflectionTextureMatrix(): Matrix;
+        /**
+         * Get if the texture is ready to be consumed (either it is ready or it is not blocking)
+         * @returns true if ready or not blocking
+         */
+        isReadyOrNotBlocking(): boolean;
+        /**
+         * Scales the texture if is `canRescale()`
+         * @param ratio the resize factor we want to use to rescale
+         */
+        scale(ratio: number): void;
+        /**
+         * Get if the texture can rescale.
+         */
+        get canRescale(): boolean;
+        /** @hidden */
+        _getFromCache(url: Nullable<string>, noMipmap: boolean, sampling?: number, invertY?: boolean): Nullable<InternalTexture>;
+        /** @hidden */
+        _rebuild(): void;
+        /**
+         * Clones the texture.
+         * @returns the cloned texture
+         */
+        clone(): Nullable<BaseTexture>;
+        /**
+         * Get the texture underlying type (INT, FLOAT...)
+         */
+        get textureType(): number;
+        /**
+         * Get the texture underlying format (RGB, RGBA...)
+         */
+        get textureFormat(): number;
+        /**
+         * Indicates that textures need to be re-calculated for all materials
+         */
+        protected _markAllSubMeshesAsTexturesDirty(): void;
+        /**
+         * Reads the pixels stored in the webgl texture and returns them as an ArrayBuffer.
+         * This will returns an RGBA array buffer containing either in values (0-255) or
+         * float values (0-1) depending of the underlying buffer type.
+         * @param faceIndex defines the face of the texture to read (in case of cube texture)
+         * @param level defines the LOD level of the texture to read (in case of Mip Maps)
+         * @param buffer defines a user defined buffer to fill with data (can be null)
+         * @param flushRenderer true to flush the renderer from the pending commands before reading the pixels
+         * @returns The Array buffer promise containing the pixels data.
+         */
+        readPixels(faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean): Nullable<Promise<ArrayBufferView>>;
+        /** @hidden */
+        _readPixelsSync(faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean): Nullable<ArrayBufferView>;
+        /** @hidden */
+        get _lodTextureHigh(): Nullable<BaseTexture>;
+        /** @hidden */
+        get _lodTextureMid(): Nullable<BaseTexture>;
+        /** @hidden */
+        get _lodTextureLow(): Nullable<BaseTexture>;
+        /**
+         * Dispose the texture and release its associated resources.
+         */
+        dispose(): void;
+        /**
+         * Serialize the texture into a JSON representation that can be parsed later on.
+         * @returns the JSON representation of the texture
+         */
+        serialize(): any;
+        /**
+         * Helper function to be called back once a list of texture contains only ready textures.
+         * @param textures Define the list of textures to wait for
+         * @param callback Define the callback triggered once the entire list will be ready
+         */
+        static WhenAllReady(textures: BaseTexture[], callback: () => void): void;
+        private static _isScene;
     }
 }
 declare module BABYLON {
@@ -18340,9 +18340,10 @@ declare module BABYLON {
          */
         _mode: NodeMaterialModes;
         /**
-         * Gets the mode property
+         * Gets or sets the mode property
          */
         get mode(): NodeMaterialModes;
+        set mode(value: NodeMaterialModes);
         /**
          * A free comment about the material
          */
@@ -46170,9 +46171,6 @@ declare module BABYLON {
         private _cacheSampler;
         private _cacheRenderPipeline;
         private _emptyVertexBuffer;
-        private _lastCachedWrapU;
-        private _lastCachedWrapV;
-        private _lastCachedWrapR;
         private _mrtAttachments;
         private _counters;
         private _mainTexture;
@@ -58531,6 +58529,15 @@ declare module BABYLON {
         onSnapObservable: Observable<{
             snapDistance: number;
         }>;
+        /**
+         * The maximum angle between the camera and the rotation allowed for interaction
+         * If a rotation plane appears 'flat', a lower value allows interaction.
+         */
+        static MaxDragAngle: number;
+        /**
+         * Acumulated relative angle value for rotation on the axis. Reset to 0 when a dragStart occurs
+         */
+        angle: number;
         private _isEnabled;
         private _parent;
         private _coloredMaterial;
@@ -78702,6 +78709,10 @@ declare module BABYLON {
          */
         files?: string[] | undefined;
         /**
+         * Defines the prefiltered texture option (default is false)
+         */
+        prefiltered?: boolean | undefined;
+        /**
          * Gets the loaded texture
          */
         texture: CubeTexture;
@@ -78741,7 +78752,11 @@ declare module BABYLON {
         /**
          * Defines the explicit list of files (undefined by default)
          */
-        files?: string[] | undefined);
+        files?: string[] | undefined, 
+        /**
+         * Defines the prefiltered texture option (default is false)
+         */
+        prefiltered?: boolean | undefined);
         /**
          * Execute the current task
          * @param scene defines the scene where you want your assets to be loaded
@@ -79033,9 +79048,10 @@ declare module BABYLON {
          * @param extensions defines the extension to use to load the cube map (can be null)
          * @param noMipmap defines if the texture must not receive mipmaps (false by default)
          * @param files defines the list of files to load (can be null)
+         * @param prefiltered defines the prefiltered texture option (default is false)
          * @returns a new CubeTextureAssetTask object
          */
-        addCubeTextureTask(taskName: string, url: string, extensions?: string[], noMipmap?: boolean, files?: string[]): CubeTextureAssetTask;
+        addCubeTextureTask(taskName: string, url: string, extensions?: string[], noMipmap?: boolean, files?: string[], prefiltered?: boolean): CubeTextureAssetTask;
         /**
          *
          * Add a HDRCubeTextureAssetTask to the list of active tasks
@@ -87541,6 +87557,18 @@ declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
     /**
+     * Enum for Button States
+     */
+    /** @hidden */
+    export enum ButtonState {
+        /** None */
+        None = 0,
+        /** Pointer Entered */
+        Hover = 1,
+        /** Pointer Down */
+        Press = 2
+    }
+    /**
      * Class used to create a touchable button in 3D
      */
     export class TouchButton3D extends Button3D {
@@ -87580,8 +87608,9 @@ declare module BABYLON.GUI {
         private _getHeightFromButtonCenter;
         private _getDistanceOffPlane;
         private _updateButtonState;
+        private _firePointerEvents;
         /** @hidden */
-        _collisionCheckForStateChange(mesh: BABYLON.AbstractMesh): void;
+        _collisionCheckForStateChange(meshPos: BABYLON.Vector3, uniqueId: number, forceExit?: boolean): void;
         protected _getTypeName(): string;
         protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
         /**
@@ -87603,6 +87632,8 @@ declare module BABYLON.GUI {
         private _pointerObserver;
         private _pointerOutObserver;
         private _touchableButtons;
+        private _touchIds;
+        private static _touchIdCounter;
         /** @hidden */
         _lastPickedControl: Control3D;
         /** @hidden */
@@ -88259,6 +88290,36 @@ declare module BABYLON.GUI {
         private _createFrontMaterial;
         private _createPlateMaterial;
         protected _affectMaterial(mesh: BABYLON.Mesh): void;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used as base class for touch-enabled toggleable buttons
+     */
+    export class TouchToggleButton3D extends TouchButton3D {
+        private _isPressed;
+        /**
+         * An event triggered when the button is toggled on
+         */
+        onToggleOnObservable: BABYLON.Observable<BABYLON.Vector3>;
+        /**
+         * An event triggered when the button is toggled off
+         */
+        onToggleOffObservable: BABYLON.Observable<BABYLON.Vector3>;
+        /**
+         * Creates a new button
+         * @param name defines the control name
+         * @param collisionMesh defines the mesh to track near interactions with
+         */
+        constructor(name?: string, collisionMesh?: BABYLON.Mesh);
+        private _onToggle;
+        protected _getTypeName(): string;
+        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
+        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
         /**
          * Releases all associated resources
          */
