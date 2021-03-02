@@ -165,30 +165,37 @@ export class ScreenshotTools {
             scene.activeCamera = camera;
         }
 
-        scene.render();
+        scene.render(); // make sure the scene is ready to be rendered in the RTT with the right list of active meshes (which depends on the camera, that may have been changed above)
 
         // At this point size can be a number, or an object (according to engine.prototype.createRenderTargetTexture method)
         var texture = new RenderTargetTexture("screenShot", targetTextureSize, scene, false, false, Constants.TEXTURETYPE_UNSIGNED_INT, false, Texture.NEAREST_SAMPLINGMODE, undefined, enableStencilBuffer, undefined, undefined, undefined, samples);
         texture.renderList = null;
         texture.samples = samples;
         texture.renderSprites = renderSprites;
+
         engine.onEndFrameObservable.addOnce(() => {
             texture.readPixels(undefined, undefined, undefined, false)!.then((data) => {
                 Tools.DumpData(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true);
                 texture.dispose();
-
-                if (previousCamera) {
-                    scene.activeCamera = previousCamera;
-                }
-                scene.activeCameras = previousCameras;
-                camera.getProjectionMatrix(true); // Force cache refresh;
             });
         });
 
         const renderToTexture = () => {
+            // render the RTT
             scene.incrementRenderId();
             scene.resetCachedMaterial();
             texture.render(true);
+
+            // re-render the scene after the camera has been reset to the original camera to avoid a flicker that could occur
+            // if the camera used for the RTT rendering stays in effect for the next frame (and if that camera was different from the original camera)
+            scene.incrementRenderId();
+            scene.resetCachedMaterial();
+            if (previousCamera) {
+                scene.activeCamera = previousCamera;
+            }
+            scene.activeCameras = previousCameras;
+            camera.getProjectionMatrix(true); // Force cache refresh;
+            scene.render();
         };
 
         if (antialiasing) {
