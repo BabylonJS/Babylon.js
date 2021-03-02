@@ -4125,6 +4125,19 @@ export class Matrix {
     }
 
     /**
+     * Switch transform matrix handedness (invert z). Note that this is an in-place operation.
+     * @returns this matrix
+     */
+    public switchHandedness(): Matrix {
+        this._m[2] *= -1;
+        this._m[6] *= -1;
+        this._m[8] *= -1;
+        this._m[9] *= -1;
+        this._m[14] *= -1;
+        return this;
+    }
+
+    /**
      * Copy the current matrix from the given one
      * @param other defines the source matrix
      * @returns the current updated matrix
