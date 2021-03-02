@@ -584,76 +584,76 @@ export abstract class WebGPUCacheRenderPipeline {
                 switch (size) {
                     case 1:
                     case 2:
-                        return normalized ? WebGPUConstants.VertexFormat.Char2Norm : WebGPUConstants.VertexFormat.Char2;
+                        return normalized ? WebGPUConstants.VertexFormat.Snorm8x2 : WebGPUConstants.VertexFormat.Sint8x2;
                     case 3:
                     case 4:
-                        return normalized ? WebGPUConstants.VertexFormat.Char4Norm : WebGPUConstants.VertexFormat.Char4;
+                        return normalized ? WebGPUConstants.VertexFormat.Snorm8x4 : WebGPUConstants.VertexFormat.Sint8x4;
                 }
                 break;
             case VertexBuffer.UNSIGNED_BYTE:
                 switch (size) {
                     case 1:
                     case 2:
-                        return normalized ? WebGPUConstants.VertexFormat.Uchar2Norm : WebGPUConstants.VertexFormat.Uchar2;
+                        return normalized ? WebGPUConstants.VertexFormat.Unorm8x2 : WebGPUConstants.VertexFormat.Uint8x2;
                     case 3:
                     case 4:
-                        return normalized ? WebGPUConstants.VertexFormat.Uchar4Norm : WebGPUConstants.VertexFormat.Uchar4;
+                        return normalized ? WebGPUConstants.VertexFormat.Unorm8x4 : WebGPUConstants.VertexFormat.Uint8x4;
                 }
                 break;
             case VertexBuffer.SHORT:
                 switch (size) {
                     case 1:
                     case 2:
-                        return normalized ? WebGPUConstants.VertexFormat.Short2Norm : WebGPUConstants.VertexFormat.Short2;
+                        return normalized ? WebGPUConstants.VertexFormat.Snorm16x2 : WebGPUConstants.VertexFormat.Sint16x2;
                     case 3:
                     case 4:
-                        return normalized ? WebGPUConstants.VertexFormat.Short4Norm : WebGPUConstants.VertexFormat.Short4;
+                        return normalized ? WebGPUConstants.VertexFormat.Snorm16x4 : WebGPUConstants.VertexFormat.Sint16x4;
                 }
                 break;
             case VertexBuffer.UNSIGNED_SHORT:
                 switch (size) {
                     case 1:
                     case 2:
-                        return normalized ? WebGPUConstants.VertexFormat.Ushort2Norm : WebGPUConstants.VertexFormat.Ushort2;
+                        return normalized ? WebGPUConstants.VertexFormat.Unorm16x2 : WebGPUConstants.VertexFormat.Uint16x2;
                     case 3:
                     case 4:
-                        return normalized ? WebGPUConstants.VertexFormat.Ushort4Norm : WebGPUConstants.VertexFormat.Ushort4;
+                        return normalized ? WebGPUConstants.VertexFormat.Unorm16x4 : WebGPUConstants.VertexFormat.Uint16x4;
                 }
                 break;
             case VertexBuffer.INT:
                 switch (size) {
                     case 1:
-                        return WebGPUConstants.VertexFormat.Int;
+                        return WebGPUConstants.VertexFormat.Sint32;
                     case 2:
-                        return WebGPUConstants.VertexFormat.Int2;
+                        return WebGPUConstants.VertexFormat.Sint32x2;
                     case 3:
-                        return WebGPUConstants.VertexFormat.Int3;
+                        return WebGPUConstants.VertexFormat.Sint32x3;
                     case 4:
-                        return WebGPUConstants.VertexFormat.Int4;
+                        return WebGPUConstants.VertexFormat.Sint32x4;
                 }
                 break;
             case VertexBuffer.UNSIGNED_INT:
                 switch (size) {
                     case 1:
-                        return WebGPUConstants.VertexFormat.Uint;
+                        return WebGPUConstants.VertexFormat.Uint32;
                     case 2:
-                        return WebGPUConstants.VertexFormat.Uint2;
+                        return WebGPUConstants.VertexFormat.Uint32x2;
                     case 3:
-                        return WebGPUConstants.VertexFormat.Uint3;
+                        return WebGPUConstants.VertexFormat.Uint32x3;
                     case 4:
-                        return WebGPUConstants.VertexFormat.Uint4;
+                        return WebGPUConstants.VertexFormat.Uint32x4;
                 }
                 break;
             case VertexBuffer.FLOAT:
                 switch (size) {
                     case 1:
-                        return WebGPUConstants.VertexFormat.Float;
+                        return WebGPUConstants.VertexFormat.Float32;
                     case 2:
-                        return WebGPUConstants.VertexFormat.Float2;
+                        return WebGPUConstants.VertexFormat.Float32x2;
                     case 3:
-                        return WebGPUConstants.VertexFormat.Float3;
+                        return WebGPUConstants.VertexFormat.Float32x3;
                     case 4:
-                        return WebGPUConstants.VertexFormat.Float4;
+                        return WebGPUConstants.VertexFormat.Float32x4;
                 }
                 break;
         }
