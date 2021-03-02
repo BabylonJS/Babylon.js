@@ -38,10 +38,6 @@ IRangeFrameBarComponentState
         });
 
         this._onActiveAnimationChangedObserver = this.props.context.onActiveAnimationChanged.add(() => {
-            if (this._currentAnimation === this.props.context.activeAnimation) {
-                return;
-            }
-
             this._currentAnimation = this.props.context.activeAnimation;
             this._computeSizes();
             this.forceUpdate();

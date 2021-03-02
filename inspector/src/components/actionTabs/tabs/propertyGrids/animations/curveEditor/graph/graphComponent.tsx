@@ -82,13 +82,38 @@ IGraphComponentState
             this.forceUpdate();
         });
 
-        this.props.context.onDeleteKeyActiveKeyPoints.add(() => {
-            if (!this._currentAnimation) {
+        this.props.context.onDeleteKeyActiveKeyPoints.add(() => { // Delete keypoint
+            if (!this._currentAnimation || !this.props.context.activeKeyPoints) {
                 return;
             }
 
+            let keys = this._currentAnimation.getKeys()
+            let newKeys = keys.slice(0);
+            let deletedFrame: Nullable<number> = null;
+
+            for (var keyPoint of this.props.context.activeKeyPoints) {
+                let key = keys[keyPoint.props.keyId];
+
+                let keyIndex = newKeys.indexOf(key);
+                if (keyIndex > -1) {
+                    newKeys.splice(keyIndex, 1);
+
+                    if (deletedFrame === null) {
+                        deletedFrame = key.frame;
+                    }
+                }
+            }
+
+            this.props.context.stop();
+            this._currentAnimation.setKeys(newKeys);
+            if (deletedFrame !== null) {
+                this.props.context.moveToFrame(deletedFrame)
+            }
+
             this.props.context.activeKeyPoints = [];
-            this.props.context.onActiveKeyPointChanged.notifyObservers(null);
+            this._currentAnimation = null;
+
+            this.props.context.onActiveAnimationChanged.notifyObservers();
         });
     }
 
@@ -262,7 +287,13 @@ IGraphComponentState
 
     
     private _convertX(x: number) {
-        return ((x - this._minFrame) / (this._maxFrame - this._minFrame)) *  (this._GraphAbsoluteWidth);
+        let diff = this._maxFrame - this._minFrame;
+
+        if (diff === 0) {
+            diff = 1;
+        }
+
+        return ((x - this._minFrame) / diff) *  (this._GraphAbsoluteWidth);
     }
 
     private _invertX(x: number) {
@@ -270,7 +301,13 @@ IGraphComponentState
     }
 
     private _convertY(y: number) {
-        return this._GraphAbsoluteHeight - ((y - this._minValue) / (this._maxValue - this._minValue)) * this._GraphAbsoluteHeight;
+        let diff = this._maxValue - this._minValue;
+
+        if (diff === 0) {
+            diff = 1;
+        }
+
+        return this._GraphAbsoluteHeight - ((y - this._minValue) / diff) * this._GraphAbsoluteHeight;
     }
 
     private _invertY(y: number) {
@@ -283,7 +320,7 @@ IGraphComponentState
         }
 
         let stepCounts = 10;
-        let range = this._maxValue - this._minValue;
+        let range = this._maxValue !== this._minValue ? this._maxValue - this._minValue : 1;
         let offset = range / stepCounts;
         let convertRatio = range / this._GraphAbsoluteHeight;
 
@@ -360,7 +397,7 @@ IGraphComponentState
         this._maxValue = values.max;
 
         const frameConvert = Math.abs(this._convertX(this._maxFrame ) - this._convertX(this._minFrame)) + this._offsetX * 2;
-        const valueConvert = Math.abs(this._convertY(this._minValue) - this._convertY(this._maxValue)) + this._offsetY * 2;
+        const valueConvert = this._minValue !== this._maxValue ? Math.abs(this._convertY(this._minValue) - this._convertY(this._maxValue)) + this._offsetY * 2 : 1;
 
         let scaleWidth =  frameConvert/ this._viewCurveWidth;
         let scaleHeight = valueConvert / this._viewHeight;
