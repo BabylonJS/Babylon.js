@@ -67,7 +67,7 @@ export class TargetedAnimationGridComponent extends React.Component<ITargetedAni
 
         return (
             <div className="pane">
-                <LineContainerComponent title="GENERAL">
+                <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
                     <TextLineComponent label="Class" value={targetedAnimation.getClassName()} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={targetedAnimation.animation} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {targetedAnimation.target.name && <TextLineComponent label="Target" value={targetedAnimation.target.name} onLink={() => this.props.globalState.onSelectionChangedObservable.notifyObservers(targetedAnimation)} />}

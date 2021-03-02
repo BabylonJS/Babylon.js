@@ -36,6 +36,11 @@ export class MorphTargetManager implements IDisposable {
     public _targetStoreTexture: Nullable<RawTexture2DArray>;
 
     /**
+     * Gets or sets a boolean indicating if influencers must be optimized (eg. recompiling the shader if less influencers are used)
+     */
+    public optimizeInfluencers = true;
+
+    /**
      * Gets or sets a boolean indicating if normals must be morphed
      */
     public enableNormalMorphing = true;
@@ -252,7 +257,7 @@ export class MorphTargetManager implements IDisposable {
         var targetIndex = -1;
         for (var target of this._targets) {
             targetIndex++;
-            if (target.influence === 0) {
+            if (target.influence === 0 && this.optimizeInfluencers) {
                 continue;
             }
 

@@ -99,7 +99,7 @@ export class WebXRInputSource {
         this._tmpVector.set(0, 0, this._scene.useRightHandedSystem ? -1.0 : 1.0);
 
         // for now only load motion controllers if gamepad object available
-        if (this.inputSource.gamepad) {
+        if (this.inputSource.gamepad && this.inputSource.targetRayMode === 'tracked-pointer') {
             WebXRMotionControllerManager.GetMotionControllerWithXRInput(inputSource, _scene, this._options.forceControllerProfile).then(
                 (motionController) => {
                     this.motionController = motionController;

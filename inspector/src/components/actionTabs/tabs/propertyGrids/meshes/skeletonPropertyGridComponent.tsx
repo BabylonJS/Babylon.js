@@ -168,7 +168,7 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
         let displayOptions;
         if(this._skeletonViewerDisplayOptions.displayMode > SkeletonViewer.DISPLAY_LINES){
             displayOptions = 
-            (<LineContainerComponent title="DISPLAY OPTIONS">
+            (<LineContainerComponent title="DISPLAY OPTIONS" selection={this.props.globalState}>
                 <FloatLineComponent label="sphereBaseSize" target={this._skeletonViewerDisplayOptions} propertyName='sphereBaseSize' onPropertyChangedObservable={this.props.onPropertyChangedObservable} onChange={(value)=>{this.changeDisplayOptions('sphereBaseSize', value)}}/>
                 <FloatLineComponent label="sphereScaleUnit" target={this._skeletonViewerDisplayOptions} propertyName='sphereScaleUnit' onPropertyChangedObservable={this.props.onPropertyChangedObservable} onChange={(value)=>{this.changeDisplayOptions('sphereScaleUnit', value)}}/>
                 <FloatLineComponent label="sphereFactor" target={this._skeletonViewerDisplayOptions} propertyName='sphereFactor' onPropertyChangedObservable={this.props.onPropertyChangedObservable} onChange={(value)=>{this.changeDisplayOptions('sphereFactor', value)}}/>
@@ -184,7 +184,7 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={skeleton}
                     lockObject={this.props.lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />                    
-                <LineContainerComponent title="GENERAL">
+                <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
                     <TextLineComponent label="ID" value={skeleton.id} />
                     <TextLineComponent label="Bone count" value={skeleton.bones.length.toString()} />
                     {
@@ -193,7 +193,7 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
                     }                        
                     <CheckBoxLineComponent label="Use texture to store matrices" target={skeleton} propertyName="useTextureToStoreBoneMatrices" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     
-                    <LineContainerComponent title="DEBUG">                        
+                    <LineContainerComponent title="DEBUG" selection={this.props.globalState}>                        
                         <CheckBoxLineComponent label="Enabled" isSelected={() => this._skeletonViewersEnabled} onSelect={() => this.switchSkeletonViewers()} />
                         <OptionsLineComponent label="displayMode" options={debugModeOptions} target={this._skeletonViewerDisplayOptions} propertyName="displayMode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={() => this.changeDisplayMode()} />
                         {displayOptions}                   

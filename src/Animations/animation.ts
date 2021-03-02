@@ -805,6 +805,19 @@ export class Animation {
     }
 
     /**
+     * Evaluate the animation value at a given frame
+     * @param currentFrame defines the frame where we want to evaluate the animation
+     * @returns the animation value
+     */
+    public evaluate(currentFrame: number) {
+        return this._interpolate(currentFrame, {
+            key: 0,
+            repeatCount: 0,
+            loopMode: Animation.ANIMATIONLOOPMODE_CONSTANT
+        });
+    }
+
+    /**
      * @hidden Internal use only
      */
     public _interpolate(currentFrame: number, state: _IAnimationState): any {

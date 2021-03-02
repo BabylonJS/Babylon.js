@@ -146,21 +146,21 @@ export class SpritePropertyGridComponent extends React.Component<ISpriteProperty
 
         return (
             <div className="pane">
-                <LineContainerComponent title="GENERAL">
+                <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={sprite} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                     <TextLineComponent label="Unique ID" value={sprite.uniqueId.toString()} />
                     <TextLineComponent label="Link to manager" value={manager.name} onLink={() => this.onManagerLink()} />
                     <CheckBoxLineComponent label="Visible" target={sprite} propertyName="isVisible" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <ButtonLineComponent label="Dispose" onClick={() => this.disposeSprite()} />
                 </LineContainerComponent>
-                <LineContainerComponent title="PROPERTIES">
+                <LineContainerComponent title="PROPERTIES" selection={this.props.globalState}>
                     <Vector3LineComponent label="Position" target={sprite} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Pickable" target={sprite} propertyName="isPickable" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Use alpha for picking" target={sprite} propertyName="useAlphaForPicking" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Color4LineComponent label="Color" target={sprite} propertyName="color" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent useEuler={this.props.globalState.onlyUseEulers} label="Angle" target={sprite} propertyName="angle" minimum={0} maximum={2 * Math.PI} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
-                <LineContainerComponent title="CELL">
+                <LineContainerComponent title="CELL" selection={this.props.globalState}>
                     <canvas ref={this.canvasRef} className="preview" style={{
                         margin: "auto",
                         marginTop: "4px",
@@ -174,11 +174,11 @@ export class SpritePropertyGridComponent extends React.Component<ISpriteProperty
                     <CheckBoxLineComponent label="Invert U axis" target={sprite} propertyName="invertU" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Invert V axis" target={sprite} propertyName="invertV" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
-                <LineContainerComponent title="SCALE">
+                <LineContainerComponent title="SCALE" selection={this.props.globalState}>
                     <FloatLineComponent label="Width" lockObject={this.props.lockObject} target={sprite} propertyName="width" min={0} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                     <FloatLineComponent label="Height" lockObject={this.props.lockObject} target={sprite} propertyName="height" min={0} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                 </LineContainerComponent>
-                <LineContainerComponent title="ANIMATION">
+                <LineContainerComponent title="ANIMATION" selection={this.props.globalState}>
                     <FloatLineComponent label="Start cell" isInteger={true} lockObject={this.props.lockObject} target={sprite} propertyName="fromIndex" min={0} max={maxCellCount} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                     <FloatLineComponent label="End cell" isInteger={true} lockObject={this.props.lockObject} target={sprite} propertyName="toIndex" min={0} max={maxCellCount} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                     <CheckBoxLineComponent label="Loop" target={sprite} propertyName="loopAnimation" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
