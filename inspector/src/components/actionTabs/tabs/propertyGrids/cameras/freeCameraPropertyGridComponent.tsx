@@ -28,16 +28,16 @@ export class FreeCameraPropertyGridComponent extends React.Component<IFreeCamera
         return (
             <div className="pane">
                 <CommonCameraPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} camera={camera} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent title="TRANSFORMS">
+                <LineContainerComponent title="TRANSFORMS" selection={this.props.globalState}>
                     <Vector3LineComponent label="Target" target={camera} propertyName="target" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Vector3LineComponent label="Position" target={camera} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Vector3LineComponent label="Rotation" noSlider={true} useEuler={this.props.globalState.onlyUseEulers} target={camera} propertyName="rotation" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
-                <LineContainerComponent title="CONTROLS" closed={true}>
+                <LineContainerComponent title="CONTROLS" closed={true} selection={this.props.globalState}>
                     <FloatLineComponent lockObject={this.props.lockObject} label="Angular sensitivity" target={camera} propertyName="angularSensibility" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Speed" target={camera} propertyName="speed" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
-                <LineContainerComponent title="COLLISIONS" closed={true}>
+                <LineContainerComponent title="COLLISIONS" closed={true} selection={this.props.globalState}>
                     <CheckBoxLineComponent label="Check collisions" target={camera} propertyName="checkCollisions" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Apply gravity" target={camera} propertyName="applyGravity" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Vector3LineComponent label="Ellipsoid" target={camera} propertyName="ellipsoid" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
