@@ -12,6 +12,8 @@ export class EngineView {
     target: HTMLCanvasElement;
     /** Defines an optional camera used to render the view (will use active camera else) */
     camera?: Camera;
+    /** Indicates if the destination view canvas should be cleared before copying the parent canvas. Can help if the scene clear color has alpha < 1 */
+    clearBeforeCopy?: boolean;
 }
 
 declare module "../../Engines/engine" {
@@ -35,9 +37,10 @@ declare module "../../Engines/engine" {
          * Register a new child canvas
          * @param canvas defines the canvas to register
          * @param camera defines an optional camera to use with this canvas (it will overwrite the scene.camera for this view)
+         * @param clearBeforeCopy Indicates if the destination view canvas should be cleared before copying the parent canvas. Can help if the scene clear color has alpha < 1
          * @returns the associated view
          */
-        registerView(canvas: HTMLCanvasElement, camera?: Camera): EngineView;
+        registerView(canvas: HTMLCanvasElement, camera?: Camera, clearBeforeCopy?: boolean): EngineView;
 
         /**
          * Remove a registered child canvas
@@ -52,7 +55,7 @@ Engine.prototype.getInputElement = function(): Nullable<HTMLElement> {
     return this.inputElement || this.getRenderingCanvas();
 };
 
-Engine.prototype.registerView = function(canvas: HTMLCanvasElement, camera?: Camera): EngineView {
+Engine.prototype.registerView = function(canvas: HTMLCanvasElement, camera?: Camera, clearBeforeCopy?: boolean): EngineView {
     if (!this.views) {
         this.views = [];
     }
@@ -69,7 +72,7 @@ Engine.prototype.registerView = function(canvas: HTMLCanvasElement, camera?: Cam
         canvas.height = masterCanvas.height;
     }
 
-    let newView = {target: canvas, camera: camera};
+    let newView = {target: canvas, camera, clearBeforeCopy};
     this.views.push(newView);
 
     if (camera) {
@@ -153,6 +156,9 @@ Engine.prototype._renderViews = function() {
         this._renderFrame();
 
         // Copy to target
+        if (view.clearBeforeCopy) {
+            context.clearRect(0, 0, parent.width, parent.height);
+        }
         context.drawImage(parent, 0, 0);
 
         // Restore
