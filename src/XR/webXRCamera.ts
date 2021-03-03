@@ -278,11 +278,20 @@ export class WebXRCamera extends FreeCamera {
             transformMat.invert();
 
             if (!this._scene.useRightHandedSystem) {
-                transformMat.switchHandedness();
+                transformMat.toggleModelMatrixHandInPlace();
             }
 
             transformMat.decompose(undefined, this._referenceQuaternion, this._referencedPosition);
-            const transform = new XRRigidTransform(this._referencedPosition, this._referenceQuaternion);
+            const transform = new XRRigidTransform({
+                x: this._referencedPosition.x,
+                y: this._referencedPosition.y,
+                z: this._referencedPosition.z
+            }, {
+                x: this._referenceQuaternion.x,
+                y: this._referenceQuaternion.y,
+                z: this._referenceQuaternion.z,
+                w: this._referenceQuaternion.w
+            });
             this._xrSessionManager.referenceSpace = this._xrSessionManager.referenceSpace.getOffsetReferenceSpace(transform);
         }
     }
