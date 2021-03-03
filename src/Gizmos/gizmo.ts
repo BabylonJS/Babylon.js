@@ -14,6 +14,7 @@ import { TransformNode } from '../Meshes/transformNode';
 import { StandardMaterial } from '../Materials/standardMaterial';
 import { PointerEventTypes, PointerInfo } from '../Events/pointerEvents';
 import { LinesMesh } from '../Meshes/linesMesh';
+import { BabylonFileLoaderConfiguration } from "../Loading";
 
 /**
  * Cache built by each axis. Used for managing state between all elements of gizmo for enhanced UI
@@ -42,7 +43,7 @@ export class Gizmo implements IDisposable {
     public _rootMesh: Mesh;
     private _attachedMesh: Nullable<AbstractMesh> = null;
     private _attachedNode: Nullable<Node> = null;
-
+    private _customRotationQuaternion: Nullable<Quaternion> = null;
     /**
      * Ratio for the scale of the gizmo (Default: 1)
      */
@@ -167,6 +168,14 @@ export class Gizmo implements IDisposable {
     }
 
     /**
+     * update customRotationQuaternion
+     * @param customRotationQuaternion Quaternion that defines the gizmo‘s pose
+     */
+    public setCustomRotationQuaternion(customRotationQuaternion: Nullable<Quaternion>) {
+        this._customRotationQuaternion = customRotationQuaternion;
+    }
+
+    /**
      * Updates the gizmo to match the attached mesh's position/rotation
      */
     protected _update() {
@@ -188,7 +197,7 @@ export class Gizmo implements IDisposable {
                 effectiveNode.getWorldMatrix().decompose(undefined, this._rootMesh.rotationQuaternion!);
             }
             else {
-                this._rootMesh.rotationQuaternion!.set(0, 0, 0, 1);
+                this._rootMesh.rotationQuaternion!.copyFrom(this._customRotationQuaternion || new Quaternion(0, 0, 0, 1));
             }
 
             // Scale
