@@ -1670,7 +1670,6 @@ declare class CVTOOLS_unity_metadata implements BABYLON.GLTF2.IGLTFLoaderExtensi
     private _processActiveMeshes;
     private _processUnityMeshes;
     private _processPreloadTimeout;
-    private _processCubeMapDownloaders;
     /** @hidden */
     loadNodeAsync(context: string, node: BABYLON.GLTF2.INode, assign: (babylonMesh: BABYLON.TransformNode) => void): BABYLON.Nullable<Promise<BABYLON.TransformNode>>;
     /** @hidden */
