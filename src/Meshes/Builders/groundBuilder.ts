@@ -8,7 +8,6 @@ import { Tools } from "../../Misc/tools";
 import { Nullable } from '../../types';
 import { EngineStore } from '../../Engines/engineStore';
 import { Epsilon } from '../../Maths/math.constants';
-import { CanvasGenerator } from '../../Misc/canvasGenerator';
 
 VertexData.CreateGround = function(options: { width?: number, height?: number, subdivisions?: number, subdivisionsX?: number, subdivisionsY?: number }): VertexData {
     var indices = [];
@@ -387,23 +386,12 @@ export class GroundBuilder {
             var bufferWidth = img.width;
             var bufferHeight = img.height;
 
-            // Getting height map data
-            var canvas = CanvasGenerator.CreateCanvas(bufferWidth, bufferHeight);
-            var context = canvas.getContext("2d");
-
-            if (!context) {
-                throw new Error("Unable to get 2d context for CreateGroundFromHeightMap");
-            }
-
             if (scene!.isDisposed) {
                 return;
             }
 
-            context.drawImage(img, 0, 0);
+            var buffer = <Uint8Array>(scene?.getEngine().resizeImageBitmap(img, bufferWidth, bufferHeight));
 
-            // Create VertexData from map data
-            // Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949
-            var buffer = <Uint8Array>(<any>context.getImageData(0, 0, bufferWidth, bufferHeight).data);
             var vertexData = VertexData.CreateGroundFromHeightMap({
                 width: width, height: height,
                 subdivisions: subdivisions,

@@ -46171,9 +46171,6 @@ declare module BABYLON {
         private _cacheSampler;
         private _cacheRenderPipeline;
         private _emptyVertexBuffer;
-        private _lastCachedWrapU;
-        private _lastCachedWrapV;
-        private _lastCachedWrapR;
         private _mrtAttachments;
         private _counters;
         private _mainTexture;
@@ -60949,6 +60946,8 @@ declare module BABYLON {
         target: HTMLCanvasElement;
         /** Defines an optional camera used to render the view (will use active camera else) */
         camera?: Camera;
+        /** Indicates if the destination view canvas should be cleared before copying the parent canvas. Can help if the scene clear color has alpha < 1 */
+        clearBeforeCopy?: boolean;
     }
         interface Engine {
             /**
@@ -60966,9 +60965,10 @@ declare module BABYLON {
              * Register a new child canvas
              * @param canvas defines the canvas to register
              * @param camera defines an optional camera to use with this canvas (it will overwrite the scene.camera for this view)
+             * @param clearBeforeCopy Indicates if the destination view canvas should be cleared before copying the parent canvas. Can help if the scene clear color has alpha < 1
              * @returns the associated view
              */
-            registerView(canvas: HTMLCanvasElement, camera?: Camera): EngineView;
+            registerView(canvas: HTMLCanvasElement, camera?: Camera, clearBeforeCopy?: boolean): EngineView;
             /**
              * Remove a registered child canvas
              * @param canvas defines the canvas to remove
