@@ -166,9 +166,9 @@ export class WebGPUEngine extends Engine {
     private _options: WebGPUEngineOptions;
     private _glslang: any = null;
     private _adapter: GPUAdapter;
-    private _adapterSupportedExtensions: GPUExtensionName[];
+    private _adapterSupportedExtensions: GPUFeatureName[];
     private _device: GPUDevice;
-    private _deviceEnabledExtensions: GPUExtensionName[];
+    private _deviceEnabledExtensions: GPUFeatureName[];
     private _context: GPUCanvasContext;
     private _swapChain: GPUSwapChain;
     private _swapChainTexture: GPUTexture;
@@ -272,12 +272,12 @@ export class WebGPUEngine extends Engine {
     }
 
     /** Gets the supported extensions by the WebGPU adapter */
-    public get supportedExtensions(): Immutable<GPUExtensionName[]> {
+    public get supportedExtensions(): Immutable<GPUFeatureName[]> {
         return this._adapterSupportedExtensions;
     }
 
     /** Gets the currently enabled extensions on the WebGPU device */
-    public get enabledExtensions(): Immutable<GPUExtensionName[]> {
+    public get enabledExtensions(): Immutable<GPUFeatureName[]> {
         return this._deviceEnabledExtensions;
     }
 
@@ -392,12 +392,12 @@ export class WebGPUEngine extends Engine {
             })
             .then((adapter: GPUAdapter | null) => {
                 this._adapter = adapter!;
-                this._adapterSupportedExtensions = this._adapter.extensions.slice(0);
+                this._adapterSupportedExtensions = this._adapter.features.slice(0);
 
                 const deviceDescriptor = this._options.deviceDescriptor;
 
-                if (deviceDescriptor?.extensions) {
-                    const requestedExtensions = deviceDescriptor.extensions;
+                if (deviceDescriptor?.nonGuaranteedFeatures) {
+                    const requestedExtensions = deviceDescriptor.nonGuaranteedFeatures;
                     const validExtensions = [];
 
                     const iterator = requestedExtensions[Symbol.iterator]();
@@ -411,14 +411,14 @@ export class WebGPUEngine extends Engine {
                         }
                     }
 
-                    deviceDescriptor.extensions = validExtensions;
+                    deviceDescriptor.nonGuaranteedFeatures = validExtensions;
                 }
 
                 return this._adapter.requestDevice(this._options.deviceDescriptor);
             })
             .then((device: GPUDevice | null) => {
                 this._device = device!;
-                this._deviceEnabledExtensions = this._device.extensions.slice(0);
+                this._deviceEnabledExtensions = this._device.features.slice(0);
             })
             .then(() => {
                 this._bufferManager = new WebGPUBufferManager(this._device);
