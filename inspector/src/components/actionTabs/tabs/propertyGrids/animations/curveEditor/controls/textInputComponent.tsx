@@ -1,6 +1,6 @@
 import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
-import { Context } from "../Context";
+import { Context } from "../context";
 
 interface ITextInputComponentProps {
     globalState: GlobalState;
