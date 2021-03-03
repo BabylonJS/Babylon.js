@@ -1,4 +1,4 @@
-import { Vector3, Matrix, Quaternion } from "../Maths/math.vector";
+import { Vector3, Matrix, Quaternion, TmpVectors } from "../Maths/math.vector";
 import { Scene } from "../scene";
 import { Camera } from "../Cameras/camera";
 import { FreeCamera } from "../Cameras/freeCamera";
@@ -13,11 +13,11 @@ import { WebXRTrackingState } from "./webXRTypes";
  * @see https://doc.babylonjs.com/how_to/webxr_camera
  */
 export class WebXRCamera extends FreeCamera {
+    private static _ScaleReadOnly = Vector3.One();
+
     private _firstFrame = false;
     private _referenceQuaternion: Quaternion = Quaternion.Identity();
     private _referencedPosition: Vector3 = new Vector3();
-    private _xrInvPositionCache: Vector3 = new Vector3();
-    private _xrInvQuaternionCache = Quaternion.Identity();
     private _trackingState: WebXRTrackingState = WebXRTrackingState.NOT_TRACKING;
 
     /**
@@ -268,63 +268,31 @@ export class WebXRCamera extends FreeCamera {
     private _updateReferenceSpace() {
         // were position & rotation updated OUTSIDE of the xr update loop
         if (!this.position.equals(this._referencedPosition) || !this.rotationQuaternion.equals(this._referenceQuaternion)) {
-            this.position.subtractToRef(this._referencedPosition, this._referencedPosition);
-            this._referenceQuaternion.conjugateInPlace();
-            this._referenceQuaternion.multiplyToRef(this.rotationQuaternion, this._referenceQuaternion);
-            this._updateReferenceSpaceOffset(this._referencedPosition, this._referenceQuaternion.normalize());
-        }
-    }
+            const referencedMat = TmpVectors.Matrix[0];
+            const poseMat = TmpVectors.Matrix[1];
+            const transformMat = TmpVectors.Matrix[2];
 
-    private _updateReferenceSpaceOffset(positionOffset: Vector3, rotationOffset?: Quaternion, ignoreHeight: boolean = false) {
-        if (!this._xrSessionManager.referenceSpace || !this._xrSessionManager.currentFrame) {
-            return;
-        }
-        // Compute the origin offset based on player position/orientation.
-        this._xrInvPositionCache.copyFrom(positionOffset);
-        if (rotationOffset) {
-            this._xrInvQuaternionCache.copyFrom(rotationOffset);
-        } else {
-            this._xrInvQuaternionCache.copyFromFloats(0, 0, 0, 1);
-        }
+            Matrix.ComposeToRef(WebXRCamera._ScaleReadOnly, this._referenceQuaternion, this._referencedPosition, referencedMat);
+            Matrix.ComposeToRef(WebXRCamera._ScaleReadOnly, this.rotationQuaternion, this.position, poseMat);
+            referencedMat.invert().multiplyToRef(poseMat, transformMat);
+            transformMat.invert();
 
-        // right handed system
-        if (!this._scene.useRightHandedSystem) {
-            this._xrInvPositionCache.z *= -1;
-            this._xrInvQuaternionCache.z *= -1;
-            this._xrInvQuaternionCache.w *= -1;
-        }
-
-        this._xrInvPositionCache.negateInPlace();
-        this._xrInvQuaternionCache.conjugateInPlace();
-        // transform point according to rotation with pivot
-        this._xrInvPositionCache.rotateByQuaternionToRef(this._xrInvQuaternionCache, this._xrInvPositionCache);
-        if (ignoreHeight) {
-            this._xrInvPositionCache.y = 0;
-        }
-        const transform = new XRRigidTransform({ x: this._xrInvPositionCache.x, y: this._xrInvPositionCache.y, z: this._xrInvPositionCache.z }, { x: this._xrInvQuaternionCache.x, y: this._xrInvQuaternionCache.y, z: this._xrInvQuaternionCache.z, w: this._xrInvQuaternionCache.w });
-        // Update offset reference to use a new originOffset with the teleported
-        // player position and orientation.
-        // This new offset needs to be applied to the base ref space.
-        const referenceSpace = this._xrSessionManager.referenceSpace.getOffsetReferenceSpace(transform);
-
-        const pose = this._xrSessionManager.currentFrame && this._xrSessionManager.currentFrame.getViewerPose(referenceSpace);
-
-        if (pose) {
-            const pos = new Vector3(pose.transform.position.x, pose.transform.position.y, pose.transform.position.z);
             if (!this._scene.useRightHandedSystem) {
-                pos.z *= -1;
+                transformMat.toggleModelMatrixHandInPlace();
             }
-            this.position.subtractToRef(pos, pos);
-            if (!this._scene.useRightHandedSystem) {
-                pos.z *= -1;
-            }
-            pos.negateInPlace();
 
-            const transform2 = new XRRigidTransform({ x: pos.x, y: pos.y, z: pos.z });
-            // Update offset reference to use a new originOffset with the teleported
-            // player position and orientation.
-            // This new offset needs to be applied to the base ref space.
-            this._xrSessionManager.referenceSpace = referenceSpace.getOffsetReferenceSpace(transform2);
+            transformMat.decompose(undefined, this._referenceQuaternion, this._referencedPosition);
+            const transform = new XRRigidTransform({
+                x: this._referencedPosition.x,
+                y: this._referencedPosition.y,
+                z: this._referencedPosition.z
+            }, {
+                x: this._referenceQuaternion.x,
+                y: this._referenceQuaternion.y,
+                z: this._referenceQuaternion.z,
+                w: this._referenceQuaternion.w
+            });
+            this._xrSessionManager.referenceSpace = this._xrSessionManager.referenceSpace.getOffsetReferenceSpace(transform);
         }
     }
 }

@@ -752,6 +752,7 @@ export class WebGPUEngine extends Engine {
     //                              Dynamic WebGPU States
     //------------------------------------------------------------------------------
 
+    // index 0 is for main render pass, 1 for RTT render pass
     private _viewportsCurrent: Array<{ x: number, y: number, w: number, h: number }> = [{ x: 0, y: 0, w: 0, h: 0 }, { x: 0, y: 0, w: 0, h: 0 }];
 
     private _resetCurrentViewport(index: number) {
@@ -759,6 +760,13 @@ export class WebGPUEngine extends Engine {
         this._viewportsCurrent[index].y = 0;
         this._viewportsCurrent[index].w = 0;
         this._viewportsCurrent[index].h = 0;
+
+        if (index === 1) {
+            this._viewportCached.x = 0;
+            this._viewportCached.y = 0;
+            this._viewportCached.z = 0;
+            this._viewportCached.w = 0;
+        }
     }
 
     private _applyViewport(renderPass: GPURenderPassEncoder): void {
@@ -2003,7 +2011,7 @@ export class WebGPUEngine extends Engine {
             gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, width, height);
         }
 
-        createImageBitmap(canvas).then((bitmap) => {
+        this.createImageBitmap(canvas).then((bitmap) => {
             this._textureHelper.updateTexture(bitmap, gpuTextureWrapper.underlyingResource!, width, height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, premulAlpha, 0, 0, this._uploadEncoder);
             if (texture.generateMipMaps) {
                 this._generateMipmaps(texture, this._uploadEncoder);
@@ -2057,7 +2065,7 @@ export class WebGPUEngine extends Engine {
             gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture);
         }
 
-        createImageBitmap(video).then((bitmap) => {
+        this.createImageBitmap(video).then((bitmap) => {
             this._textureHelper.updateTexture(bitmap, gpuTextureWrapper.underlyingResource!, texture.width, texture.height, texture.depth, gpuTextureWrapper.format, 0, 0, !invertY, false, 0, 0, this._uploadEncoder);
             if (texture.generateMipMaps) {
                 this._generateMipmaps(texture, this._uploadEncoder);
