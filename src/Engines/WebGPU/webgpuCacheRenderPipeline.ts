@@ -31,6 +31,7 @@ const textureFormatToIndex: { [name: string]: number } = {
     "r8snorm": 2,
     "r8uint": 3,
     "r8sint": 4,
+
     "r16uint": 5,
     "r16sint": 6,
     "r16float": 7,
@@ -38,6 +39,7 @@ const textureFormatToIndex: { [name: string]: number } = {
     "rg8snorm": 9,
     "rg8uint": 10,
     "rg8sint": 11,
+
     "r32uint": 12,
     "r32sint": 13,
     "r32float": 14,
@@ -51,23 +53,28 @@ const textureFormatToIndex: { [name: string]: number } = {
     "rgba8sint": 22,
     "bgra8unorm": 23,
     "bgra8unorm-srgb": 24,
+
     "rgb9e5ufloat": 25,
     "rgb10a2unorm": 26,
     "rg11b10ufloat": 27,
+
     "rg32uint": 28,
     "rg32sint": 29,
     "rg32float": 30,
     "rgba16uint": 31,
     "rgba16sint": 32,
     "rgba16float": 33,
+
     "rgba32uint": 34,
     "rgba32sint": 35,
     "rgba32float": 36,
+
     "stencil8": 37,
     "depth16unorm": 38,
     "depth24plus": 39,
     "depth24plus-stencil8": 40,
     "depth32float": 41,
+
     "bc1-rgba-unorm": 42,
     "bc1-rgba-unorm-srgb": 43,
     "bc2-rgba-unorm": 44,
@@ -82,7 +89,9 @@ const textureFormatToIndex: { [name: string]: number } = {
     "bc6h-rgb-float": 53,
     "bc7-rgba-unorm": 54,
     "bc7-rgba-unorm-srgb": 55,
+
     "depth24unorm-stencil8": 56,
+
     "depth32float-stencil8": 57,
 };
 
@@ -330,23 +339,28 @@ export abstract class WebGPUCacheRenderPipeline {
             // so we can encode 5 texture formats in 32 bits
             throw "Can't handle more than 10 attachments for a MRT in cache render pipeline!";
         }
-        let bits: number[] = [0, 0], indexBits = 0, mask = 0;
-        this._mrtFormats.length = attachments.length;
+        let bits: number[] = [0, 0], indexBits = 0, mask = 0, numRT = 0;
         for (let i = 0; i < attachments.length; ++i) {
             const index = attachments[i];
+            if (index === 0) {
+                continue;
+            }
+
             const texture = textureArray[index - 1];
             const gpuWrapper = texture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
 
-            this._mrtFormats[i] = gpuWrapper?.format ?? this._webgpuColorFormat;
+            this._mrtFormats[numRT] = gpuWrapper?.format ?? this._webgpuColorFormat;
 
-            bits[indexBits] += textureFormatToIndex[this._mrtFormats[i]] << mask;
+            bits[indexBits] += textureFormatToIndex[this._mrtFormats[numRT]] << mask;
             mask += 6;
+            numRT++;
 
             if (mask >= 32) {
                 mask = 0;
                 indexBits++;
             }
         }
+        this._mrtFormats.length = numRT;
         if (this._mrtAttachments1 !== bits[0] || this._mrtAttachments2 !== bits[1]) {
             this._mrtAttachments1 = bits[0];
             this._mrtAttachments2 = bits[1];

@@ -486,7 +486,7 @@ export class Animation {
      */
     public get hasRunningRuntimeAnimations(): boolean {
         for (var runtimeAnimation of this._runtimeAnimations) {
-            if (!runtimeAnimation.isStopped) {
+            if (!runtimeAnimation.isStopped()) {
                 return true;
             }
         }

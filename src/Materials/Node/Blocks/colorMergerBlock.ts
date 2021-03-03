@@ -91,6 +91,13 @@ export class ColorMergerBlock extends NodeMaterialBlock {
         return this.rgbOut;
     }
 
+    protected _inputRename(name: string) {
+        if (name === "rgb ") {
+            return "rgbIn";
+        }
+        return name;
+    }
+
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 

@@ -14508,6 +14508,7 @@ declare module BABYLON {
          * @deprecated Please use xyzOut instead.
          */
         get xyz(): NodeMaterialConnectionPoint;
+        protected _inputRename(name: string): string;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
@@ -68849,6 +68850,7 @@ declare module BABYLON {
          * @deprecated Please use rgbOut instead.
          */
         get rgb(): NodeMaterialConnectionPoint;
+        protected _inputRename(name: string): string;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
