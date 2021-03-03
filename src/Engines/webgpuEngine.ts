@@ -179,9 +179,6 @@ export class WebGPUEngine extends Engine {
     private _cacheSampler: WebGPUCacheSampler;
     private _cacheRenderPipeline: WebGPUCacheRenderPipeline;
     private _emptyVertexBuffer: VertexBuffer;
-    private _lastCachedWrapU: number;
-    private _lastCachedWrapV: number;
-    private _lastCachedWrapR: number;
     private _mrtAttachments: number[];
     private _counters: {
         numBindGroupsCreation: number;
@@ -755,6 +752,7 @@ export class WebGPUEngine extends Engine {
     //                              Dynamic WebGPU States
     //------------------------------------------------------------------------------
 
+    // index 0 is for main render pass, 1 for RTT render pass
     private _viewportsCurrent: Array<{ x: number, y: number, w: number, h: number }> = [{ x: 0, y: 0, w: 0, h: 0 }, { x: 0, y: 0, w: 0, h: 0 }];
 
     private _resetCurrentViewport(index: number) {
@@ -762,6 +760,13 @@ export class WebGPUEngine extends Engine {
         this._viewportsCurrent[index].y = 0;
         this._viewportsCurrent[index].w = 0;
         this._viewportsCurrent[index].h = 0;
+
+        if (index === 1) {
+            this._viewportCached.x = 0;
+            this._viewportCached.y = 0;
+            this._viewportCached.z = 0;
+            this._viewportCached.w = 0;
+        }
     }
 
     private _applyViewport(renderPass: GPURenderPassEncoder): void {
@@ -780,7 +785,7 @@ export class WebGPUEngine extends Engine {
             this._viewportsCurrent[index].w = w;
             this._viewportsCurrent[index].h = h;
 
-            renderPass.setViewport(x, y, w, h, 0, 1);
+            renderPass.setViewport(Math.floor(x), Math.floor(y), Math.floor(w), Math.floor(h), 0, 1);
 
             if (this.dbgVerboseLogsForFirstFrames) {
                 if ((this as any)._count === undefined) { (this as any)._count = 0; }
@@ -1555,6 +1560,8 @@ export class WebGPUEngine extends Engine {
         if (!this._doNotHandleContextLost) {
             texture._bufferViewArray = data;
         }
+        texture._cachedWrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+        texture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
 
         this._textureHelper.createGPUTextureForInternalTexture(texture);
 
@@ -1780,15 +1787,12 @@ export class WebGPUEngine extends Engine {
     public updateTextureWrappingMode(texture: InternalTexture, wrapU: Nullable<number>, wrapV: Nullable<number> = null, wrapR: Nullable<number> = null): void {
         if (wrapU !== null) {
             texture._cachedWrapU = wrapU;
-            this._lastCachedWrapU = wrapU;
         }
         if (wrapV !== null) {
             texture._cachedWrapV = wrapV;
-            this._lastCachedWrapV = wrapV;
         }
         if ((texture.is2DArray || texture.is3D) && (wrapR !== null)) {
             texture._cachedWrapR = wrapR;
-            this._lastCachedWrapR = wrapR;
         }
     }
 
@@ -1920,18 +1924,9 @@ export class WebGPUEngine extends Engine {
                 }
 
                 internalTexture._cachedWrapU = texture.wrapU;
-                if (this._lastCachedWrapU !== texture.wrapU) {
-                    this._lastCachedWrapU = texture.wrapU;
-                }
-
                 internalTexture._cachedWrapV = texture.wrapV;
-                if (this._lastCachedWrapV !== texture.wrapV) {
-                    this._lastCachedWrapV = texture.wrapV;
-                }
-
-                internalTexture._cachedWrapR = texture.wrapR;
-                if (internalTexture.is3D && this._lastCachedWrapR !== texture.wrapR) {
-                    this._lastCachedWrapR = texture.wrapR;
+                if (internalTexture.is3D) {
+                    internalTexture._cachedWrapR = texture.wrapR;
                 }
 
                 this._setAnisotropicLevel(0, internalTexture, texture.anisotropicFilteringLevel);
@@ -1961,20 +1956,6 @@ export class WebGPUEngine extends Engine {
     public _bindTexture(channel: number, texture: InternalTexture, name: string): void {
         if (channel === undefined) {
             return;
-        }
-
-        if (texture) {
-            if (this._lastCachedWrapU !== null) {
-                texture._cachedWrapU = this._lastCachedWrapU;
-            }
-
-            if (this._lastCachedWrapV !== null) {
-                texture._cachedWrapV = this._lastCachedWrapV;
-            }
-
-            if (this._lastCachedWrapR !== null) {
-                texture._cachedWrapR = this._lastCachedWrapR;
-            }
         }
 
         this._setInternalTexture(name, texture);
@@ -2030,7 +2011,7 @@ export class WebGPUEngine extends Engine {
             gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, width, height);
         }
 
-        createImageBitmap(canvas).then((bitmap) => {
+        this.createImageBitmap(canvas).then((bitmap) => {
             this._textureHelper.updateTexture(bitmap, gpuTextureWrapper.underlyingResource!, width, height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, premulAlpha, 0, 0, this._uploadEncoder);
             if (texture.generateMipMaps) {
                 this._generateMipmaps(texture, this._uploadEncoder);
@@ -2084,7 +2065,7 @@ export class WebGPUEngine extends Engine {
             gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture);
         }
 
-        createImageBitmap(video).then((bitmap) => {
+        this.createImageBitmap(video).then((bitmap) => {
             this._textureHelper.updateTexture(bitmap, gpuTextureWrapper.underlyingResource!, texture.width, texture.height, texture.depth, gpuTextureWrapper.format, 0, 0, !invertY, false, 0, 0, this._uploadEncoder);
             if (texture.generateMipMaps) {
                 this._generateMipmaps(texture, this._uploadEncoder);
@@ -2393,6 +2374,8 @@ export class WebGPUEngine extends Engine {
         texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
         texture._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
         texture.is2DArray = layers > 0;
+        texture._cachedWrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+        texture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
 
         this._internalTexturesCache.push(texture);
 
@@ -2515,6 +2498,8 @@ export class WebGPUEngine extends Engine {
             texture._generateStencilBuffer = generateStencilBuffer ? true : false;
             texture._attachments = attachments;
             texture._textureArray = textures;
+            texture._cachedWrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+            texture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
 
             this._internalTexturesCache.push(texture);
 
@@ -2613,6 +2598,8 @@ export class WebGPUEngine extends Engine {
         internalTexture.samplingMode = bilinearFiltering ? Constants.TEXTURE_BILINEAR_SAMPLINGMODE : Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         internalTexture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
         internalTexture._comparisonFunction = comparisonFunction;
+        internalTexture._cachedWrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+        internalTexture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
     }
 
     /** @hidden */
@@ -2892,7 +2879,7 @@ export class WebGPUEngine extends Engine {
         if (this.dbgVerboseLogsForFirstFrames) {
             if ((this as any)._count === undefined) { (this as any)._count = 0; }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                console.log("frame #" + (this as any)._count + " - render target begin pass - internalTexture.uniqueId=", internalTexture.uniqueId, this._rttRenderPassWrapper.renderPassDescriptor);
+                console.log("frame #" + (this as any)._count + " - render target begin pass - internalTexture.uniqueId=", internalTexture.uniqueId, "width=", internalTexture.width, "height=", internalTexture.height, this._rttRenderPassWrapper.renderPassDescriptor);
             }
         }
 

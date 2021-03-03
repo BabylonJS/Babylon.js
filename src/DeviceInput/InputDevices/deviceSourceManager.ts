@@ -53,7 +53,9 @@ export class DeviceSourceManager implements IDisposable {
      */
     public readonly onDeviceConnectedObservable = new Observable<DeviceSource<DeviceType>>((observer) => {
         this.getDevices().forEach((device) => {
-            this.onDeviceConnectedObservable.notifyObserver(observer, device);
+            if (device) {
+                this.onDeviceConnectedObservable.notifyObserver(observer, device);
+            }
         });
     });
 
