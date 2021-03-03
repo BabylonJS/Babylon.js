@@ -573,7 +573,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                                         // rotate in the right direction positive is right
                                         controllerData.teleportationState.rotating = true;
                                         const rotation = this.rotationAngle * (axesData.x > 0 ? 1 : -1) * (this._xrSessionManager.scene.useRightHandedSystem ? -1 : 1);
-                                        this._options.xrInput.xrCamera.rotationQuaternion.multiplyInPlace(Quaternion.FromEulerAngles(0, rotation, 0));
+                                        Quaternion.FromEulerAngles(0, rotation, 0).multiplyToRef(this._options.xrInput.xrCamera.rotationQuaternion, this._options.xrInput.xrCamera.rotationQuaternion);
                                     }
                                 } else {
                                     if (this._currentTeleportationControllerId === controllerData.xrController.uniqueId) {
@@ -834,7 +834,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
             this._options.xrInput.xrCamera.onBeforeCameraTeleport.notifyObservers(this._options.xrInput.xrCamera.position);
             this._options.xrInput.xrCamera.position.copyFrom(this._options.teleportationTargetMesh.position);
             this._options.xrInput.xrCamera.position.y += height;
-            this._options.xrInput.xrCamera.rotationQuaternion.multiplyInPlace(Quaternion.FromEulerAngles(0, controllerData.teleportationState.currentRotation - (this._xrSessionManager.scene.useRightHandedSystem ? Math.PI : 0), 0));
+            Quaternion.FromEulerAngles(0, controllerData.teleportationState.currentRotation - (this._xrSessionManager.scene.useRightHandedSystem ? Math.PI : 0), 0).multiplyToRef(this._options.xrInput.xrCamera.rotationQuaternion, this._options.xrInput.xrCamera.rotationQuaternion);
             this._options.xrInput.xrCamera.onAfterCameraTeleport.notifyObservers(this._options.xrInput.xrCamera.position);
         }
     }

@@ -148,6 +148,7 @@
 - Fix issue with cursor and 'doNotHandleCursors' on GUI ([msDestiny14](https://github.com/msDestiny14))
 - Fix issue with multi-views when using a transparent scene clear color ([Popov72](https://github.com/Popov72))
 - Fix thin instances + animated bones not rendered in the depth renderer ([Popov72](https://github.com/Popov72))
+- Fix issue with WebXR teleportation logic which would cause positional headlocking on teleporation frames ([syntheticmagus](https://github.com/syntheticmagus))
 
 ## Breaking changes
 
