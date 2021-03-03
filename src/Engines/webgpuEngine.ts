@@ -887,29 +887,10 @@ export class WebGPUEngine extends Engine {
             if (this._currentRenderPass) {
                 this._endRenderTargetRenderPass();
             }
-            this._startRenderTargetRenderPass(this._currentRenderTarget!, backBuffer ? color : null, backBuffer ? color : null, depth, stencil);
+            this._startRenderTargetRenderPass(this._currentRenderTarget!, backBuffer ? color : null, depth, stencil);
         } else {
             this._startMainRenderPass(true, backBuffer ? color : null, depth, stencil);
         }
-    }
-
-    /**
-     * Clears a list of attachments
-     * @param attachments list of the attachments
-     * @param colorMain clear color for the main attachment (the first one)
-     * @param colorOthers clear color for the other attachments
-     * @param clearDepth true to clear the depth buffer. Used only for the first attachment
-     * @param clearStencil true to clear the stencil buffer. Used only for the first attachment
-     */
-    public clearAttachments(attachments: number[], colorMain: Nullable<IColor4Like>, colorOthers: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean): void {
-        if (attachments.length === 0 || !this._currentRenderTarget) {
-            return;
-        }
-
-        if (this._currentRenderPass) {
-            this._endRenderTargetRenderPass();
-        }
-        this._startRenderTargetRenderPass(this._currentRenderTarget!, colorMain, colorOthers, clearDepth, clearStencil);
     }
 
     //------------------------------------------------------------------------------
@@ -2797,7 +2778,7 @@ export class WebGPUEngine extends Engine {
 
         // restart the render pass
         if (currentPassType === 1) {
-            this._startRenderTargetRenderPass(this._currentRenderTarget!, null, null, false, false);
+            this._startRenderTargetRenderPass(this._currentRenderTarget!, null, false, false);
         } else if (currentPassType === 2) {
             this._startMainRenderPass(false);
         }
@@ -2807,7 +2788,7 @@ export class WebGPUEngine extends Engine {
     //                              Render Pass
     //------------------------------------------------------------------------------
 
-    private _startRenderTargetRenderPass(internalTexture: InternalTexture, clearColorMain: Nullable<IColor4Like>, clearColorOtherAttachments: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean) {
+    private _startRenderTargetRenderPass(internalTexture: InternalTexture, clearColorMain: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean) {
         const gpuWrapper = internalTexture._hardwareTexture as WebGPUHardwareTexture;
         const gpuTexture = gpuWrapper.underlyingResource!;
 
@@ -2823,8 +2804,19 @@ export class WebGPUEngine extends Engine {
 
         if (internalTexture._attachments && internalTexture._textureArray) {
             // multi render targets
-            for (let i = 0; i < internalTexture._attachments.length; ++i) {
-                const index = internalTexture._attachments[i];
+            // We bind a texture only if this._mrtAttachments[i] !== 0
+            // It does work in the current state of Babylon (because we use _mrtAttachments only to include/exclude
+            // some textures from the clearing process) but it is not iso with WebGL!
+            // We should instead bind all textures but "disable" the textures for which this._mrtAttachments[i] == 0
+            // but it's not possible to do that in WebGPU (at least not as of 2021/03/03).
+            if (!this._mrtAttachments || this._mrtAttachments.length === 0) {
+                this._mrtAttachments = internalTexture._attachments;
+            }
+            for (let i = 0; i < this._mrtAttachments.length; ++i) {
+                const index = this._mrtAttachments[i];
+                if (index === 0) {
+                    continue;
+                }
                 const mrtTexture = internalTexture._textureArray[index - 1];
                 const gpuMRTWrapper = mrtTexture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
                 const gpuMRTTexture = gpuMRTWrapper?.underlyingResource;
@@ -2836,7 +2828,7 @@ export class WebGPUEngine extends Engine {
                     const gpuMSAATexture = gpuMRTWrapper.msaaTexture;
                     const colorTextureView = gpuMRTTexture.createView(viewDescriptor);
                     const colorMSAATextureView = gpuMSAATexture?.createView(viewDescriptor);
-                    const clearColor = i === 0 ? (clearColorMain ? clearColorMain : WebGPUConstants.LoadOp.Load) : (clearColorOtherAttachments ? clearColorOtherAttachments : WebGPUConstants.LoadOp.Load);
+                    const clearColor = clearColorMain !== null ? clearColorMain : WebGPUConstants.LoadOp.Load;
 
                     colorAttachments.push({
                         attachment: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
@@ -2846,7 +2838,6 @@ export class WebGPUEngine extends Engine {
                     });
                 }
             }
-            this._mrtAttachments = internalTexture._attachments;
             this._cacheRenderPipeline.setMRTAttachments(this._mrtAttachments, internalTexture._textureArray);
         } else {
             // single render target
@@ -2911,7 +2902,7 @@ export class WebGPUEngine extends Engine {
     private _getCurrentRenderPass(): GPURenderPassEncoder {
         if (this._currentRenderTarget && !this._currentRenderPass) {
             // delayed creation of the render target pass, but we now need to create it as we are requested the render pass
-            this._startRenderTargetRenderPass(this._currentRenderTarget, null, null, false, false);
+            this._startRenderTargetRenderPass(this._currentRenderTarget, null, false, false);
         } else if (!this._currentRenderPass) {
             this._startMainRenderPass(false);
         }
@@ -3081,7 +3072,11 @@ export class WebGPUEngine extends Engine {
      * @param attachments index of attachments
      */
     public bindAttachments(attachments: number[]): void {
-        // nothing to do, this is done automatically in the _startRenderTargetRenderPass function
+        if (attachments.length === 0 || !this._currentRenderTarget) {
+            return;
+        }
+
+        this._mrtAttachments = attachments;
     }
 
     /**
@@ -3175,7 +3170,7 @@ export class WebGPUEngine extends Engine {
      */
     public unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
         // TODO WEBGPU remove the assert debugging code
-        assert(this._currentRenderTarget === null || (this._currentRenderTarget !== null && texture === this._currentRenderTarget), "unBindFramebuffer - the texture we want to unbind is not the same than the currentRenderTarget! texture=" + texture + ", this._currentRenderTarget=" + this._currentRenderTarget);
+        assert(this._currentRenderTarget === null || (this._currentRenderTarget !== null && texture === this._currentRenderTarget), "unBindFramebuffer - the texture we want to unbind is not the same than the currentRenderTarget! texture id=" + texture.uniqueId + ", this._currentRenderTarget id=" + this._currentRenderTarget?.uniqueId);
 
         const saveCRT = this._currentRenderTarget;
 
