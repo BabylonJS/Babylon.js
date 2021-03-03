@@ -8,6 +8,7 @@ import { WorkbenchComponent } from "./diagram/workbench";
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
 import { PropertyChangedEvent } from "./sharedUiComponents/propertyChangedEvent";
 import { Vector2 } from "babylonjs/Maths/math.vector";
+import { Scene } from "babylonjs/scene";
 
 export class GlobalState {
     [x: string]: any;
@@ -27,6 +28,7 @@ export class GlobalState {
     onIsLoadingChanged = new Observable<boolean>();
     onSelectionBoxMoved = new Observable<ClientRect | DOMRect>();
     onGuiNodeRemovalObservable = new Observable<GUINode>();
+    onNewSceneObservable = new Observable<Nullable<Scene>>();
     backgroundColor: Color4;
     blockKeyboardEvents = false;
     controlCamera: boolean;
