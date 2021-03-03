@@ -22,7 +22,6 @@ export class SceneExplorerFilterComponent extends React.Component<ISceneExplorer
     }
 
     render() {
-
         return (
             <div className="filter">
                 <input type="text" placeholder="Filter" onChange={(evt) => this.props.onFilter(evt.target.value)} />
@@ -44,7 +43,7 @@ interface ISceneExplorerComponentProps {
     onClose?: () => void;
 }
 
-export class SceneExplorerComponent extends React.Component<ISceneExplorerComponentProps, { filter: Nullable<string>, selectedEntity: any, scene: Nullable<Scene> }> {
+export class SceneExplorerComponent extends React.Component<ISceneExplorerComponentProps, { filter: Nullable<string>; selectedEntity: any; scene: Nullable<Scene> }> {
     private _onSelectionChangeObserver: Nullable<Observer<any>>;
     private _onNewSceneObserver: Nullable<Observer<Scene>>;
     private sceneExplorerRef: React.RefObject<Resizable>;
@@ -56,14 +55,14 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
     constructor(props: ISceneExplorerComponentProps) {
         super(props);
 
-        this.state = { filter: null, selectedEntity: null, scene: this.props.scene? this.props.scene : null};
+        this.state = { filter: null, selectedEntity: null, scene: this.props.scene ? this.props.scene : null };
 
         this.sceneMutationFunc = this.processMutation.bind(this);
 
         this.sceneExplorerRef = React.createRef();
         this._onNewSceneObserver = this.props.globalState.onNewSceneObservable.add((scene: Nullable<Scene>) => {
             this.setState({
-                scene
+                scene,
             });
         });
     }
@@ -78,14 +77,14 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
 
     componentDidMount() {
         this._onSelectionChangeObserver = this.props.globalState.onSelectionChangedObservable.add((entity) => {
-            if (this.state.selectedEntity !== entity) {
-                this.setState({ selectedEntity: entity });
+            if (this.state.selectedEntity !== entity?.guiControl) {
+                this.setState({ selectedEntity: entity?.guiControl });
             }
         });
 
-        /*this._onSelectionRenamedObserver = this.props.globalState.onSelectionRenamedObservable.add(() => {
+        this.props.globalState.onSelectionChangedObservable.add(() => {
             this.forceUpdate();
-        });*/
+        });
     }
 
     componentWillUnmount() {
@@ -96,7 +95,6 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         /*if (this._onNewSceneObserver) {
             this.props.globalState.onNewSceneObservable.remove(this._onNewSceneObserver?);
         }*/
-        const scene = this.state.scene;
 
     }
 
@@ -104,7 +102,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         this.setState({ filter: filter });
     }
 
-    findSiblings(parent: any, items: any[], target: any, goNext: boolean, data: { previousOne?: any, found?: boolean }): boolean {
+    findSiblings(parent: any, items: any[], target: any, goNext: boolean, data: { previousOne?: any; found?: boolean }): boolean {
         if (!items) {
             return false;
         }
@@ -116,7 +114,8 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         }
 
         for (var item of sortedItems) {
-            if (item === target) { // found the current selection!
+            if (item === target) {
+                // found the current selection!
                 data.found = true;
                 if (!goNext) {
                     if (data.previousOne) {
@@ -140,7 +139,6 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         }
 
         return false;
-
     }
 
     processKeys(keyEvent: React.KeyboardEvent<HTMLDivElement>) {
@@ -152,26 +150,31 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         let search = false;
         let goNext = false;
 
-        if (keyEvent.keyCode === 38) { // up
+        if (keyEvent.keyCode === 38) {
+            // up
             search = true;
-        } else if (keyEvent.keyCode === 40) { // down
+        } else if (keyEvent.keyCode === 40) {
+            // down
             goNext = true;
             search = true;
-        } else if (keyEvent.keyCode === 13 || keyEvent.keyCode === 39) { // enter or right
+        } else if (keyEvent.keyCode === 13 || keyEvent.keyCode === 39) {
+            // enter or right
             var reservedDataStore = this.state.selectedEntity.reservedDataStore;
             if (reservedDataStore && reservedDataStore.setExpandedState) {
                 reservedDataStore.setExpandedState(true);
             }
             keyEvent.preventDefault();
             return;
-        } else if (keyEvent.keyCode === 37) { // left
+        } else if (keyEvent.keyCode === 37) {
+            // left
             var reservedDataStore = this.state.selectedEntity.reservedDataStore;
             if (reservedDataStore && reservedDataStore.setExpandedState) {
                 reservedDataStore.setExpandedState(false);
             }
             keyEvent.preventDefault();
             return;
-        } else if (keyEvent.keyCode === 46) { // delete
+        } else if (keyEvent.keyCode === 46) {
+            // delete
             this.state.selectedEntity.dispose();
         }
 
@@ -180,16 +183,14 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         }
 
         keyEvent.preventDefault();
-        if(scene)
-        {
-        let data = {};
-        if (!this.findSiblings(null, scene.rootNodes, this.state.selectedEntity, goNext, data)) {
-            if (!this.findSiblings(null, scene.materials, this.state.selectedEntity, goNext, data)) {
-                this.findSiblings(null, scene.textures, this.state.selectedEntity, goNext, data);
+        if (scene) {
+            let data = {};
+            if (!this.findSiblings(null, scene.rootNodes, this.state.selectedEntity, goNext, data)) {
+                if (!this.findSiblings(null, scene.materials, this.state.selectedEntity, goNext, data)) {
+                    this.findSiblings(null, scene.textures, this.state.selectedEntity, goNext, data);
+                }
             }
         }
-    }
-
     }
 
     renderContent() {
@@ -202,7 +203,6 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         let guiElements = scene.textures.filter((t) => t.getClassName() === "AdvancedDynamicTexture");
         //let textures = scene.textures.filter((t) => t.getClassName() !== "AdvancedDynamicTexture");
 
-        
         /*const getUniqueName = (name: string) : string => {
             let idSubscript = 1;
             while (scene.getMaterialByID(name)) {
@@ -215,14 +215,10 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 <SceneTreeItemComponent globalState={this.props.globalState}
                 extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} scene={scene} onRefresh={() => this.forceUpdate()} onSelectionChangedObservable={this.props.globalState.onSelectionChangedObservable} />
         */
-        
-     
+
         return (
-            <div id="tree" onContextMenu={(e) => e.preventDefault()}>       
-                {
-                    guiElements && guiElements.length > 0 &&
-                    <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={guiElements} label="GUI" offset={1} filter={this.state.filter} />
-                }
+            <div id="tree" onContextMenu={(e) => e.preventDefault()}>
+                {guiElements && guiElements.length > 0 && <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={guiElements} label="GUI" offset={1} filter={this.state.filter} />}
             </div>
         );
     }
@@ -244,40 +240,11 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
     }
 
     render() {
-
-        //return (<div></div>);
-        //f (this.props.popupMode) {
-            return (
-                <div id="sceneExplorer" tabIndex={0} onKeyDown={(keyEvent) => this.processKeys(keyEvent)}>
-                    {
-                        !this.props.noHeader &&
-                        <HeaderComponent title="SCENE EXPLORER" noClose={this.props.noClose} noExpand={this.props.noExpand} noCommands={this.props.noCommands} onClose={() => this.onClose()} onPopup={() => this.onPopup()} />
-                    }
-                    {this.renderContent()}
-                </div>
-            );
-        //}
-
-        if (this._once) {
-            this._once = false;
-            // A bit hacky but no other way to force the initial width to 300px and not auto
-            setTimeout(() => {
-                const element = document.getElementById("sceneExplorer");
-                if (!element) {
-                    return;
-                }
-                element.style.width = "300px";
-            }, 150);
-        }
-
         return (
-            <Resizable tabIndex={-1} id="sceneExplorer" ref={this.sceneExplorerRef} size={{ height: "100%" }} minWidth={300} maxWidth={600} minHeight="100%" enable={{ top: false, right: true, bottom: false, left: false, topRight: false, bottomRight: false, bottomLeft: false, topLeft: false }} onKeyDown={(keyEvent) => this.processKeys(keyEvent)}>
-                {
-                    !this.props.noHeader &&
-                    <HeaderComponent title="SCENE EXPLORER" noClose={this.props.noClose} noExpand={this.props.noExpand} noCommands={this.props.noCommands} onClose={() => this.onClose()} onPopup={() => this.onPopup()} />
-                }
+            <div id="sceneExplorer" tabIndex={0} onKeyDown={(keyEvent) => this.processKeys(keyEvent)}>
+                {!this.props.noHeader && <HeaderComponent title="SCENE EXPLORER" noClose={this.props.noClose} noExpand={this.props.noExpand} noCommands={this.props.noCommands} onClose={() => this.onClose()} onPopup={() => this.onPopup()} />}
                 {this.renderContent()}
-            </Resizable>
+            </div>
         );
     }
 }
