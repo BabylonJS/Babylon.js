@@ -43,7 +43,6 @@ export class Gizmo implements IDisposable {
     private _attachedMesh: Nullable<AbstractMesh> = null;
     private _attachedNode: Nullable<Node> = null;
     private _customRotationQuaternion: Nullable<Quaternion> = null;
-
     /**
      * Ratio for the scale of the gizmo (Default: 1)
      */
