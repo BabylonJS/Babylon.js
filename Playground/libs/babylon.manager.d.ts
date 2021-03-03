@@ -1623,6 +1623,12 @@ declare const CVTOOLS_HAND = "CVTOOLS_left_handed";
  * @class CVTOOLS_unity_metadata - All rights reserved (c) 2020 Mackey Kinard
  * [Specification](https://github.com/MackeyK24/glTF/tree/master/extensions/2.0/Vendor/CVTOOLS_unity_metadata)
  */
+declare class CubeTextureLoader {
+    texture: BABYLON.CubeTexture;
+    material: BABYLON.Material;
+    extension: string;
+    prefiltered: boolean;
+}
 declare class CVTOOLS_unity_metadata implements BABYLON.GLTF2.IGLTFLoaderExtension {
     /** The name of this extension. */
     readonly name = "CVTOOLS_unity_metadata";
@@ -1640,6 +1646,7 @@ declare class CVTOOLS_unity_metadata implements BABYLON.GLTF2.IGLTFLoaderExtensi
     private _preloadList;
     private _materialMap;
     private _lightmapMap;
+    private _reflectionMap;
     private _activeMeshes;
     private _parseScene;
     private _leftHanded;
@@ -1657,19 +1664,24 @@ declare class CVTOOLS_unity_metadata implements BABYLON.GLTF2.IGLTFLoaderExtensi
     onLoading(): void;
     /** @hidden */
     loadSceneAsync(context: string, scene: BABYLON.GLTF2.IScene): BABYLON.Nullable<Promise<void>>;
+    private loadSceneExAsync;
     /** @hidden */
     onReady(): void;
     private _processActiveMeshes;
     private _processUnityMeshes;
     private _processPreloadTimeout;
+    private _processCubeMapDownloaders;
     /** @hidden */
     loadNodeAsync(context: string, node: BABYLON.GLTF2.INode, assign: (babylonMesh: BABYLON.TransformNode) => void): BABYLON.Nullable<Promise<BABYLON.TransformNode>>;
     /** @hidden */
     loadMaterialPropertiesAsync(context: string, material: BABYLON.GLTF2.IMaterial, babylonMaterial: BABYLON.Material): BABYLON.Nullable<Promise<void>>;
     private _getCachedMaterialByIndex;
     private _getCachedLightmapByIndex;
+    private _getCachedCubemapInfoByUrl;
     /** @hidden */
     createMaterial(context: string, material: BABYLON.GLTF2.IMaterial, babylonDrawMode: number): BABYLON.Nullable<BABYLON.Material>;
+    /** @hidden */
+    loadDataUrlAsync(context: string, uri: string): Promise<ArrayBufferView>;
     /** @hidden */
     _loadSkinAsync(context: string, node: BABYLON.GLTF2.INode, skin: BABYLON.GLTF2.ISkin): Promise<void>;
     /** @hidden */
