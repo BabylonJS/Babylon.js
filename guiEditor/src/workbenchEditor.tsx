@@ -10,6 +10,7 @@ import { WorkbenchComponent } from "./diagram/workbench";
 import { GUINode } from "./diagram/guiNode";
 import { _TypeStore } from "babylonjs/Misc/typeStore";
 import { MessageDialogComponent } from "./sharedComponents/messageDialog";
+import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorerComponent";
 
 require("./main.scss");
 
@@ -277,7 +278,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                     <GuiListComponent globalState={this.props.globalState} />
 
                     <div id="leftGrab" onPointerDown={(evt) => this.onPointerDown(evt)} onPointerUp={(evt) => this.onPointerUp(evt)} onPointerMove={(evt) => this.resizeColumns(evt)}></div>
-
+                    <SceneExplorerComponent globalState={this.props.globalState}></SceneExplorerComponent>
                     {/* The gui workbench diagram */}
                     <div
                         className="diagram-container"

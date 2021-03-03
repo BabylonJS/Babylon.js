@@ -4,12 +4,9 @@ import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
 import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
 import { Scene } from "babylonjs/scene";
-import { EngineStore } from "babylonjs/Engines/engineStore";
-
 import { TreeItemComponent } from "./treeItemComponent";
 import Resizable from "re-resizable";
 import { HeaderComponent } from "../headerComponent";
-import { SceneTreeItemComponent } from "./entities/sceneTreeItemComponent";
 import { Tools } from "../../tools";
 import { GlobalState } from "../../globalState";
 
@@ -35,7 +32,7 @@ export class SceneExplorerFilterComponent extends React.Component<ISceneExplorer
 }
 
 interface ISceneExplorerComponentProps {
-    scene: Scene;
+    scene?: Scene;
     noCommands?: boolean;
     noHeader?: boolean;
     noExpand?: boolean;
@@ -47,27 +44,24 @@ interface ISceneExplorerComponentProps {
     onClose?: () => void;
 }
 
-export class SceneExplorerComponent extends React.Component<ISceneExplorerComponentProps, { filter: Nullable<string>, selectedEntity: any, scene: Scene }> {
+export class SceneExplorerComponent extends React.Component<ISceneExplorerComponentProps, { filter: Nullable<string>, selectedEntity: any, scene: Nullable<Scene> }> {
     private _onSelectionChangeObserver: Nullable<Observer<any>>;
-    private _onSelectionRenamedObserver: Nullable<Observer<void>>;
-    private _onNewSceneAddedObserver: Nullable<Observer<Scene>>;
     private _onNewSceneObserver: Nullable<Observer<Scene>>;
     private sceneExplorerRef: React.RefObject<Resizable>;
 
     private _once = true;
-    private _hooked = false;
 
     private sceneMutationFunc: () => void;
 
     constructor(props: ISceneExplorerComponentProps) {
         super(props);
 
-        this.state = { filter: null, selectedEntity: null, scene: this.props.scene };
+        this.state = { filter: null, selectedEntity: null, scene: this.props.scene? this.props.scene : null};
 
         this.sceneMutationFunc = this.processMutation.bind(this);
 
         this.sceneExplorerRef = React.createRef();
-        this._onNewSceneObserver = this.props.globalState.onNewSceneObservable.add((scene: Scene) => {
+        this._onNewSceneObserver = this.props.globalState.onNewSceneObservable.add((scene: Nullable<Scene>) => {
             this.setState({
                 scene
             });
@@ -89,9 +83,9 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             }
         });
 
-        this._onSelectionRenamedObserver = this.props.globalState.onSelectionRenamedObservable.add(() => {
+        /*this._onSelectionRenamedObserver = this.props.globalState.onSelectionRenamedObservable.add(() => {
             this.forceUpdate();
-        });
+        });*/
     }
 
     componentWillUnmount() {
@@ -99,35 +93,11 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             this.props.globalState.onSelectionChangedObservable.remove(this._onSelectionChangeObserver);
         }
 
-        if (this._onSelectionRenamedObserver) {
-            this.props.globalState.onSelectionRenamedObservable.remove(this._onSelectionRenamedObserver);
-        }
-
-        if (this._onNewSceneAddedObserver) {
-            EngineStore.LastCreatedEngine!.onNewSceneAddedObservable.remove(this._onNewSceneAddedObserver);
-        }
-
-        if (this._onNewSceneObserver) {
-            this.props.globalState.onNewSceneObservable.remove(this._onNewSceneObserver);
-        }
-
+        /*if (this._onNewSceneObserver) {
+            this.props.globalState.onNewSceneObservable.remove(this._onNewSceneObserver?);
+        }*/
         const scene = this.state.scene;
 
-        scene.onNewSkeletonAddedObservable.removeCallback(this.sceneMutationFunc);
-        scene.onNewCameraAddedObservable.removeCallback(this.sceneMutationFunc);
-        scene.onNewLightAddedObservable.removeCallback(this.sceneMutationFunc);
-        scene.onNewMaterialAddedObservable.removeCallback(this.sceneMutationFunc);
-        scene.onNewMeshAddedObservable.removeCallback(this.sceneMutationFunc);
-        scene.onNewTextureAddedObservable.removeCallback(this.sceneMutationFunc);
-        scene.onNewTransformNodeAddedObservable.removeCallback(this.sceneMutationFunc);
-
-        scene.onSkeletonRemovedObservable.removeCallback(this.sceneMutationFunc);
-        scene.onMeshRemovedObservable.removeCallback(this.sceneMutationFunc);
-        scene.onCameraRemovedObservable.removeCallback(this.sceneMutationFunc);
-        scene.onLightRemovedObservable.removeCallback(this.sceneMutationFunc);
-        scene.onMaterialRemovedObservable.removeCallback(this.sceneMutationFunc);
-        scene.onTransformNodeRemovedObservable.removeCallback(this.sceneMutationFunc);
-        scene.onTextureRemovedObservable.removeCallback(this.sceneMutationFunc);
     }
 
     filterContent(filter: string) {
@@ -210,13 +180,15 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         }
 
         keyEvent.preventDefault();
-
+        if(scene)
+        {
         let data = {};
         if (!this.findSiblings(null, scene.rootNodes, this.state.selectedEntity, goNext, data)) {
             if (!this.findSiblings(null, scene.materials, this.state.selectedEntity, goNext, data)) {
                 this.findSiblings(null, scene.textures, this.state.selectedEntity, goNext, data);
             }
         }
+    }
 
     }
 
@@ -224,31 +196,11 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         const scene = this.state.scene;
 
         if (!scene) {
-            this._onNewSceneAddedObserver = EngineStore.LastCreatedEngine!.onNewSceneAddedObservable.addOnce((scene) => this.setState({ scene: scene }));
             return null;
         }
 
-        if (!this._hooked) {
-            this._hooked = true;
-            scene.onNewSkeletonAddedObservable.add(this.sceneMutationFunc);
-            scene.onNewCameraAddedObservable.add(this.sceneMutationFunc);
-            scene.onNewLightAddedObservable.add(this.sceneMutationFunc);
-            scene.onNewMaterialAddedObservable.add(this.sceneMutationFunc);
-            scene.onNewMeshAddedObservable.add(this.sceneMutationFunc);
-            scene.onNewTextureAddedObservable.add(this.sceneMutationFunc);
-            scene.onNewTransformNodeAddedObservable.add(this.sceneMutationFunc);
-
-            scene.onSkeletonRemovedObservable.add(this.sceneMutationFunc);
-            scene.onMeshRemovedObservable.add(this.sceneMutationFunc);
-            scene.onCameraRemovedObservable.add(this.sceneMutationFunc);
-            scene.onLightRemovedObservable.add(this.sceneMutationFunc);
-            scene.onMaterialRemovedObservable.add(this.sceneMutationFunc);
-            scene.onTransformNodeRemovedObservable.add(this.sceneMutationFunc);
-            scene.onTextureRemovedObservable.add(this.sceneMutationFunc);
-        }
-
         let guiElements = scene.textures.filter((t) => t.getClassName() === "AdvancedDynamicTexture");
-        let textures = scene.textures.filter((t) => t.getClassName() !== "AdvancedDynamicTexture");
+        //let textures = scene.textures.filter((t) => t.getClassName() !== "AdvancedDynamicTexture");
 
         
         /*const getUniqueName = (name: string) : string => {
@@ -264,7 +216,6 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} scene={scene} onRefresh={() => this.forceUpdate()} onSelectionChangedObservable={this.props.globalState.onSelectionChangedObservable} />
         */
         
-        //return (<div></div>);
      
         return (
             <div id="tree" onContextMenu={(e) => e.preventDefault()}>       
@@ -293,6 +244,8 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
     }
 
     render() {
+
+        //return (<div></div>);
         //f (this.props.popupMode) {
             return (
                 <div id="sceneExplorer" tabIndex={0} onKeyDown={(keyEvent) => this.processKeys(keyEvent)}>
