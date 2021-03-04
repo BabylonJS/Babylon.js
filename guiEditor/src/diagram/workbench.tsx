@@ -37,7 +37,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _gridCanvas: HTMLDivElement;
     private _svgCanvas: HTMLElement;
     private _rootContainer: HTMLDivElement;
-    private _guiNodes: Control[] = [];
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null
     private _textureMesh: Mesh;
@@ -55,7 +54,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     public get nodes() {
-        return this._guiNodes;
+        return this.globalState.guiTexture.getChildren()[0].children;
     }
 
     public get selectedGuiNodes() {
@@ -99,34 +98,23 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.props.globalState.workbench = this;
     }
    
-    clearGuiTexture() {
-        while(this._guiNodes.length > 0) {
-            this._guiNodes[this._guiNodes.length-1].dispose();
-            this._guiNodes.pop();
-        }
-    }
-
     loadFromJson(serializationObject: any) {
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
-        this.clearGuiTexture();
         this.globalState.guiTexture.parseContent(serializationObject);
-        this.props.globalState.workbench.loadFromGuiTexture();
     }
 
     async loadFromSnippet(snippedID: string) {
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
-        this.clearGuiTexture();
         await this.globalState.guiTexture.parseFromSnippetAsync(snippedID);
-        this.props.globalState.workbench.loadFromGuiTexture();
     }
     
-    loadFromGuiTexture() {
+    /*loadFromGuiTexture() {
         var children = this.globalState.guiTexture.getChildren();
         children[0].children.forEach(guiElement => {
             var newGuiNode = this.createNewGuiNode(guiElement);
             this._guiNodes.push(newGuiNode);
         });
-    }
+    }*/
 
     resizeGuiTexture(newvalue: Vector2) {
         this._textureMesh.scaling.x = newvalue.x;
@@ -141,21 +129,16 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     findNodeFromGuiElement(guiControl: Control) {
-       return this._guiNodes.filter(n => n === guiControl)[0];
+       return this.nodes.filter(n => n === guiControl)[0];
     }
 
     reset() {
-        for (var node of this._guiNodes) {
-            node.dispose();
-        }
-        this._guiNodes = [];
         this._gridCanvas.innerHTML = "";
         this._svgCanvas.innerHTML = "";
     }
 
     appendBlock(guiElement: Control) {
         var newGuiNode = this.createNewGuiNode(guiElement);
-        this._guiNodes.push(newGuiNode);
         this.globalState.guiTexture.addControl(guiElement);  
         return newGuiNode;
     }
