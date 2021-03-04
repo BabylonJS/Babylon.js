@@ -112,7 +112,7 @@ export class LinesMesh extends Mesh {
 
     private _addClipPlaneDefine(label: string) {
         if (!this._isShaderMaterial(this._lineMaterial)) {
-            return
+            return;
         }
 
         const define = "#define " + label;
