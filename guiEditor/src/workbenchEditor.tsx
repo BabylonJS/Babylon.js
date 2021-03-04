@@ -7,9 +7,9 @@ import { LogComponent } from "./components/log/logComponent";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
 import { GUINodeTools } from "./guiNodeTools";
 import { WorkbenchComponent } from "./diagram/workbench";
-import { GUINode } from "./diagram/guiNode";
 import { _TypeStore } from "babylonjs/Misc/typeStore";
 import { MessageDialogComponent } from "./sharedComponents/messageDialog";
+import { Control } from "babylonjs-gui";
 
 require("./main.scss");
 
@@ -76,9 +76,9 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                         return;
                     }
 
-                    let selectedItem = selectedItems[0] as GUINode;
+                    let selectedItem = selectedItems[0] as Control;
 
-                    if (!selectedItem.guiControl) {
+                    if (!selectedItem) {
                         return;
                     }
                 } else if (evt.key === "v") {
@@ -89,10 +89,10 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         );
     }
 
-    pasteSelection(copiedNodes: GUINode[], currentX: number, currentY: number, selectNew = false) {
+    pasteSelection(copiedNodes: Control[], currentX: number, currentY: number, selectNew = false) {
         //let originalNode: Nullable<GUINode> = null;
 
-        let newNodes: GUINode[] = [];
+        let newNodes: Control[] = [];
 
         // Copy to prevent recursive side effects while creating nodes.
         copiedNodes = copiedNodes.slice();
@@ -102,7 +102,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
 
         // Create new nodes
         for (var node of copiedNodes) {
-            let block = node.guiControl;
+            let block = node;
 
             if (!block) {
                 continue;
