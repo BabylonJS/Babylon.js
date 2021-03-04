@@ -27,6 +27,7 @@ export class LinesMesh extends Mesh {
      * Color of the line (Default: White)
      */
     public color = new Color3(1, 1, 1);
+
     /**
      * Alpha of the line (Default: 1)
      */
@@ -113,9 +114,9 @@ export class LinesMesh extends Mesh {
         if (!this._isShaderMaterial(this._lineMaterial)) {
             return
         }
-        const define = "#define " + label;
 
-        let index = this._lineMaterial.options.defines.indexOf(define);
+        const define = "#define " + label;
+        const index = this._lineMaterial.options.defines.indexOf(define);
         if (index !== -1) {
             return;
         }
@@ -129,8 +130,7 @@ export class LinesMesh extends Mesh {
         }
 
         const define = "#define " + label;
-        let index = this._lineMaterial.options.defines.indexOf(define);
-
+        const index = this._lineMaterial.options.defines.indexOf(define);
         if (index === -1) {
             return;
         }
