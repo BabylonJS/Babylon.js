@@ -267,7 +267,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <div id="title">GUI EDITOR</div>
                     </div>
                     {this.renderProperties()}
-                    <ParentingPropertyGridComponent guiNode={this.state.currentNode} guiNodes={this.props.globalState.workbench.nodes} globalState={this.props.globalState}></ParentingPropertyGridComponent>
+                    <ParentingPropertyGridComponent guiNode={this.state.currentNode} guiNodes={this.props.globalState.guiTexture.getChildren()[0].children} globalState={this.props.globalState}></ParentingPropertyGridComponent>
                     <ButtonLineComponent
                         label="REMOVE ELEMENT"
                         onClick={() => {
