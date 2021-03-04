@@ -18,8 +18,8 @@ import { Nullable } from "babylonjs/types";
 import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
 import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
 import { IAnimatable } from "babylonjs/Animations/animatable.interface";
-// import { AnimationCurveEditorComponent } from "../animations/animationCurveEditorComponent";
-// import { PopupComponent } from "../../../../popupComponent";
+import { AnimationCurveEditorComponent } from "./curveEditor/animationCurveEditorComponent";
+import { Context } from "./curveEditor/context";
 
 interface IAnimationGridComponentProps {
     globalState: GlobalState;
@@ -36,7 +36,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
     private _onBeforeRenderObserver: Nullable<Observer<Scene>>;
     private _isPlaying = false;
     private timelineRef: React.RefObject<SliderLineComponent>;
-    // private _isCurveEditorOpen = false;
+    private _animationCurveEditorContext: Context;
     private _animationControl = {
         from: 0,
         to: 0,
@@ -136,17 +136,6 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
         }
     }
 
-    // onOpenAnimationCurveEditor() {
-    //     this._isCurveEditorOpen = true;
-    // }
-
-    // onCloseAnimationCurveEditor(window: Window | null) {
-    //     this._isCurveEditorOpen = false;
-    //     if (window !== null) {
-    //         window.close();
-    //     }
-    // }
-
     render() {
         const animatable = this.props.animatable;
         const animatableAsAny = this.props.animatable as any;
@@ -164,6 +153,14 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
         }
 
         let animations = animatable.animations;
+
+        if (!this._animationCurveEditorContext) {
+            this._animationCurveEditorContext = new Context();
+            this._animationCurveEditorContext.title = (this.props.animatable as any).name || "";
+            this._animationCurveEditorContext.animations = animations;
+            this._animationCurveEditorContext.target = this.props.animatable;
+            this._animationCurveEditorContext.scene = this.props.scene;
+        }
 
         return (
             <div>
@@ -186,9 +183,9 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                 {animations && (
                     <>
                         <LineContainerComponent title="ANIMATIONS" selection={this.props.globalState}>
-                            <TextLineComponent label="Count" value={animations.length.toString()} />
-                            {/* <ButtonLineComponent label="Edit" onClick={() => this.onOpenAnimationCurveEditor()} />
-                            {animations.map((anim, i) => {
+                            <TextLineComponent label="Count" value={animations.length.toString()} />                            
+                            {
+                            animations.map((anim, i) => {
                                 return (
                                     <TextLineComponent
                                         key={anim.targetProperty + i}
@@ -197,24 +194,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                                     />
                                 );
                             })}
-
-                            {this._isCurveEditorOpen && (
-                                <PopupComponent
-                                    id="curve-editor"
-                                    title="Curve Animation Editor"
-                                    size={{ width: 1024, height: 512 }}
-                                    onOpen={(window: Window) => {}}
-                                    onClose={(window: Window) => this.onCloseAnimationCurveEditor(window)}
-                                >
-                                    <AnimationCurveEditorComponent
-                                        scene={this.props.scene}
-                                        entity={animatableAsAny}
-                                        lockObject={this.props.lockObject}
-                                        playOrPause={() => this.playOrPause()}
-                                        globalState={this.props.globalState}
-                                    />
-                                </PopupComponent>
-                            )} */}
+                            <AnimationCurveEditorComponent globalState={this.props.globalState} context={this._animationCurveEditorContext}/>
                         </LineContainerComponent>
                         {animations.length > 0 && (
                             <LineContainerComponent
@@ -239,7 +219,13 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                                 />
                                 <CheckBoxLineComponent
                                     label="Loop"
-                                    onSelect={(value) => (this._animationControl.loop = value)}
+                                    onSelect={(value) => {
+                                        this._animationControl.loop = value;
+
+                                        animatablesForTarget.forEach(at => {
+                                            at.loopAnimation = value;
+                                        });
+                                    }}
                                     isSelected={() => this._animationControl.loop}
                                 />
                                 {this._isPlaying && (

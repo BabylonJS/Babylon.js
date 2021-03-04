@@ -27,6 +27,7 @@ import { HardwareTextureWrapper } from '../../Materials/Textures/hardwareTexture
 import { BaseTexture } from '../../Materials/Textures/baseTexture';
 import { WebGPUHardwareTexture } from './webgpuHardwareTexture';
 import { IColor4Like } from '../../Maths/math.like';
+import { EngineStore } from '../engineStore';
 
 // TODO WEBGPU improve mipmap generation by not using the OutputAttachment flag
 // see https://github.com/toji/web-texture-tool/tree/main/src
@@ -1056,7 +1057,8 @@ export class WebGPUTextureHelper {
             imageBitmap = imageBitmap as ImageBitmap;
 
             if (invertY || premultiplyAlpha) {
-                createImageBitmap(imageBitmap, { imageOrientation: invertY ? "flipY" : "none", premultiplyAlpha: premultiplyAlpha ? "premultiply" : "none" }).then((imageBitmap) => {
+                const engine = EngineStore.LastCreatedEngine;
+                engine && engine.createImageBitmap(imageBitmap, { imageOrientation: invertY ? "flipY" : "none", premultiplyAlpha: premultiplyAlpha ? "premultiply" : "none" }).then((imageBitmap) => {
                     this._device.defaultQueue.copyImageBitmapToTexture({ imageBitmap }, textureCopyView, textureExtent);
                 });
             } else {

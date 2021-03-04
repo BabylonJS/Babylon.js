@@ -128,12 +128,12 @@ export class GUI3DManager implements IDisposable {
             return false;
         }
 
-        let control = <Control3D>(pickingInfo.pickedMesh!.metadata?.GUI3D?.control);
         if (pickingInfo.pickedPoint) {
             this.onPickedPointChangedObservable.notifyObservers(pickingInfo.pickedPoint);
         }
 
-        if (!control._processObservables(pi.type, pickingInfo.pickedPoint!, pointerId, buttonIndex)) {
+        const control = <Control3D>(pickingInfo.pickedMesh!.metadata?.GUI3D?.control);
+        if (!!control && !control._processObservables(pi.type, pickingInfo.pickedPoint!, pointerId, buttonIndex)) {
 
             if (pi.type === PointerEventTypes.POINTERMOVE) {
                 if (this._lastControlOver[pointerId]) {

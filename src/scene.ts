@@ -3473,9 +3473,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param skipEvaluateActiveMeshes defines an optional boolean indicating that the evaluate active meshes step must be completely skipped
      * @param onSuccess optional success callback
      * @param onError optional error callback
+     * @param freezeMeshes defines if meshes should be frozen (true by default)
      * @returns the current scene
      */
-    public freezeActiveMeshes(skipEvaluateActiveMeshes = false, onSuccess?: () => void, onError?: (message: string) => void): Scene {
+    public freezeActiveMeshes(skipEvaluateActiveMeshes = false, onSuccess?: () => void, onError?: (message: string) => void, freezeMeshes = true): Scene {
         this.executeWhenReady(() => {
             if (!this.activeCamera) {
                 onError && onError('No active camera found');
@@ -3490,8 +3491,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this._activeMeshesFrozen = true;
             this._skipEvaluateActiveMeshesCompletely = skipEvaluateActiveMeshes;
 
-            for (var index = 0; index < this._activeMeshes.length; index++) {
-                this._activeMeshes.data[index]._freeze();
+            if (freezeMeshes) {
+                for (var index = 0; index < this._activeMeshes.length; index++) {
+                    this._activeMeshes.data[index]._freeze();
+                }
             }
             onSuccess && onSuccess();
         });

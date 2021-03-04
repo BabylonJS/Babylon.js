@@ -14508,6 +14508,7 @@ declare module BABYLON {
          * @deprecated Please use xyzOut instead.
          */
         get xyz(): NodeMaterialConnectionPoint;
+        protected _inputRename(name: string): string;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
@@ -18675,15 +18676,6 @@ declare module BABYLON {
              * when the frame buffer associated is not the canvas frame buffer
              */
             restoreSingleAttachmentForRenderTarget(): void;
-            /**
-             * Clears a list of attachments
-             * @param attachments list of the attachments
-             * @param colorMain clear color for the main attachment (the first one)
-             * @param colorOthers clear color for the other attachments
-             * @param clearDepth true to clear the depth buffer. Used only for the first attachment
-             * @param clearStencil true to clear the stencil buffer. Used only for the first attachment
-             */
-            clearAttachments(attachments: number[], colorMain: Nullable<IColor4Like>, colorOthers: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean): void;
         }
 }
 declare module BABYLON {
@@ -42845,6 +42837,21 @@ declare module BABYLON {
          */
         static get LastCreatedScene(): Nullable<Scene>;
         /**
+         * Engine abstraction for createImageBitmap
+         * @param image source for image
+         * @param options An object that sets options for the image's extraction.
+         * @returns ImageBitmap
+         */
+        createImageBitmap(image: ImageBitmapSource, options?: ImageBitmapOptions): Promise<ImageBitmap>;
+        /**
+         * Resize an image and returns the image data as an uint8array
+         * @param image image to resize
+         * @param bufferWidth destination buffer width
+         * @param bufferHeight destination buffer height
+         * @returns an uint8array containing RGBA values of bufferWidth * bufferHeight size
+         */
+        resizeImageBitmap(image: HTMLImageElement | ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array;
+        /**
          * Will flag all materials in all scenes in all engines as dirty to trigger new shader compilation
          * @param flag defines which part of the materials must be marked as dirty
          * @param predicate defines a predicate used to filter which materials should be affected
@@ -45260,36 +45267,36 @@ declare module BABYLON {
     }
     /** @hidden */
     export enum VertexFormat {
-        Uchar2 = "uchar2",
-        Uchar4 = "uchar4",
-        Char2 = "char2",
-        Char4 = "char4",
-        Uchar2Norm = "uchar2norm",
-        Uchar4Norm = "uchar4norm",
-        Char2Norm = "char2norm",
-        Char4Norm = "char4norm",
-        Ushort2 = "ushort2",
-        Ushort4 = "ushort4",
-        Short2 = "short2",
-        Short4 = "short4",
-        Ushort2Norm = "ushort2norm",
-        Ushort4Norm = "ushort4norm",
-        Short2Norm = "short2norm",
-        Short4Norm = "short4norm",
-        Half2 = "half2",
-        Half4 = "half4",
-        Float = "float",
-        Float2 = "float2",
-        Float3 = "float3",
-        Float4 = "float4",
-        Uint = "uint",
-        Uint2 = "uint2",
-        Uint3 = "uint3",
-        Uint4 = "uint4",
-        Int = "int",
-        Int2 = "int2",
-        Int3 = "int3",
-        Int4 = "int4"
+        Uint8x2 = "uint8x2",
+        Uint8x4 = "uint8x4",
+        Sint8x2 = "sint8x2",
+        Sint8x4 = "sint8x4",
+        Unorm8x2 = "unorm8x2",
+        Unorm8x4 = "unorm8x4",
+        Snorm8x2 = "snorm8x2",
+        Snorm8x4 = "snorm8x4",
+        Uint16x2 = "uint16x2",
+        Uint16x4 = "uint16x4",
+        Sint16x2 = "sint16x2",
+        Sint16x4 = "sint16x4",
+        Unorm16x2 = "unorm16x2",
+        Unorm16x4 = "unorm16x4",
+        Snorm16x2 = "snorm16x2",
+        Snorm16x4 = "snorm16x4",
+        Float16x2 = "float16x2",
+        Float16x4 = "float16x4",
+        Float32 = "float32",
+        Float32x2 = "float32x2",
+        Float32x3 = "float32x3",
+        Float32x4 = "float32x4",
+        Uint32 = "uint32",
+        Uint32x2 = "uint32x2",
+        Uint32x3 = "uint32x3",
+        Uint32x4 = "uint32x4",
+        Sint32 = "sint32",
+        Sint32x2 = "sint32x2",
+        Sint32x3 = "sint32x3",
+        Sint32x4 = "sint32x4"
     }
     /** @hidden */
     export enum InputStepMode {
@@ -46222,9 +46229,9 @@ declare module BABYLON {
          */
         get supportsUniformBuffers(): boolean;
         /** Gets the supported extensions by the WebGPU adapter */
-        get supportedExtensions(): Immutable<GPUExtensionName[]>;
+        get supportedExtensions(): Immutable<GPUFeatureName[]>;
         /** Gets the currently enabled extensions on the WebGPU device */
-        get enabledExtensions(): Immutable<GPUExtensionName[]>;
+        get enabledExtensions(): Immutable<GPUFeatureName[]>;
         /**
          * Returns the name of the engine
          */
@@ -46316,15 +46323,6 @@ declare module BABYLON {
          * @param stencil defines if the stencil buffer must be cleared
          */
         clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil?: boolean): void;
-        /**
-         * Clears a list of attachments
-         * @param attachments list of the attachments
-         * @param colorMain clear color for the main attachment (the first one)
-         * @param colorOthers clear color for the other attachments
-         * @param clearDepth true to clear the depth buffer. Used only for the first attachment
-         * @param clearStencil true to clear the stencil buffer. Used only for the first attachment
-         */
-        clearAttachments(attachments: number[], colorMain: Nullable<IColor4Like>, colorOthers: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean): void;
         /**
          * Creates a vertex buffer
          * @param data the data for the vertex buffer
@@ -48647,9 +48645,10 @@ declare module BABYLON {
          * @param skipEvaluateActiveMeshes defines an optional boolean indicating that the evaluate active meshes step must be completely skipped
          * @param onSuccess optional success callback
          * @param onError optional error callback
+         * @param freezeMeshes defines if meshes should be frozen (true by default)
          * @returns the current scene
          */
-        freezeActiveMeshes(skipEvaluateActiveMeshes?: boolean, onSuccess?: () => void, onError?: (message: string) => void): Scene;
+        freezeActiveMeshes(skipEvaluateActiveMeshes?: boolean, onSuccess?: () => void, onError?: (message: string) => void, freezeMeshes?: boolean): Scene;
         /**
          * Use this function to restart evaluating active meshes on every frame
          * @returns the current scene
@@ -54925,11 +54924,10 @@ declare module BABYLON {
      */
     export class WebXRCamera extends FreeCamera {
         private _xrSessionManager;
+        private static _ScaleReadOnly;
         private _firstFrame;
         private _referenceQuaternion;
         private _referencedPosition;
-        private _xrInvPositionCache;
-        private _xrInvQuaternionCache;
         private _trackingState;
         /**
          * Observable raised before camera teleportation
@@ -54983,7 +54981,6 @@ declare module BABYLON {
         private _updateFromXRSession;
         private _updateNumberOfRigCameras;
         private _updateReferenceSpace;
-        private _updateReferenceSpaceOffset;
     }
 }
 declare module BABYLON {
@@ -60946,6 +60943,8 @@ declare module BABYLON {
         target: HTMLCanvasElement;
         /** Defines an optional camera used to render the view (will use active camera else) */
         camera?: Camera;
+        /** Indicates if the destination view canvas should be cleared before copying the parent canvas. Can help if the scene clear color has alpha < 1 */
+        clearBeforeCopy?: boolean;
     }
         interface Engine {
             /**
@@ -60963,9 +60962,10 @@ declare module BABYLON {
              * Register a new child canvas
              * @param canvas defines the canvas to register
              * @param camera defines an optional camera to use with this canvas (it will overwrite the scene.camera for this view)
+             * @param clearBeforeCopy Indicates if the destination view canvas should be cleared before copying the parent canvas. Can help if the scene clear color has alpha < 1
              * @returns the associated view
              */
-            registerView(canvas: HTMLCanvasElement, camera?: Camera): EngineView;
+            registerView(canvas: HTMLCanvasElement, camera?: Camera, clearBeforeCopy?: boolean): EngineView;
             /**
              * Remove a registered child canvas
              * @param canvas defines the canvas to remove
@@ -61371,6 +61371,21 @@ declare module BABYLON {
         createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string, loaderOptions?: any): InternalTexture;
         _createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions): NativeTexture;
         _releaseFramebufferObjects(texture: InternalTexture): void;
+        /**
+         * Engine abstraction for createImageBitmap
+         * @param image source for image
+         * @param options An object that sets options for the image's extraction.
+         * @returns ImageBitmap
+         */
+        createImageBitmap(image: ImageBitmapSource, options?: ImageBitmapOptions): Promise<ImageBitmap>;
+        /**
+         * Resize an image and returns the image data as an uint8array
+         * @param image image to resize
+         * @param bufferWidth destination buffer width
+         * @param bufferHeight destination buffer height
+         * @returns an uint8array containing RGBA values of bufferWidth * bufferHeight size
+         */
+        resizeImageBitmap(image: ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array;
         /**
          * Creates a cube texture
          * @param rootUrl defines the url where the files to load is located
@@ -68817,6 +68832,7 @@ declare module BABYLON {
          * @deprecated Please use rgbOut instead.
          */
         get rgb(): NodeMaterialConnectionPoint;
+        protected _inputRename(name: string): string;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
@@ -81975,12 +81991,12 @@ interface GPURequestAdapterOptions {
 
 type GPUPowerPreference = "low-power" | "high-performance";
 
-// TODO WEBGPU: this class is not iso with the spec yet as of this writing Chrome does not expose features (should replace 'extensions'). See also GPUDeviceDescriptor, GPUFeatureName and GPUDevice
+// TODO WEBGPU: this class is not iso with the spec yet as of this writing Chrome does not expose features as GPUAdapterFeatures but as GPUFeatureName[]
 declare class GPUAdapter {
     // https://michalzalecki.com/nominal-typing-in-typescript/#approach-1-class-with-a-private-property
     private __brand: void;
     readonly name: string;
-    readonly extensions: GPUExtensionName[];
+    readonly features: GPUFeatureName[];
     //readonly features: GPUAdapterFeatures;
     readonly limits: Required<GPUAdapterLimits>;
 
@@ -81988,35 +82004,24 @@ declare class GPUAdapter {
 }
 
 interface GPUDeviceDescriptor extends GPUObjectDescriptorBase {
-    extensions?: GPUExtensionName[];
-    //nonGuaranteedFeatures?: GPUFeatureName[];
-    limits?: GPUAdapterLimits;
-    //nonGuaranteedLimits?: { [name: string]: GPUSize32 };
+    nonGuaranteedFeatures?: GPUFeatureName[];
+    nonGuaranteedLimits?: { [name: string]: GPUSize32 };
 }
 
-type GPUExtensionName =
-    | "texture-compression-bc"
-    | "timestamp-query"
-    | "pipeline-statistics-query"
+type GPUFeatureName =
     | "depth-clamping"
     | "depth24unorm-stencil8"
-    | "depth32float-stencil8";
-
-/*type GPUFeatureName =
-    | "depth-clamping",
-    | "depth24unorm-stencil8",
-    | "depth32float-stencil8",
-    | "pipeline-statistics-query",
-    | "texture-compression-bc",
-    | "timestamp-query",*/
+    | "depth32float-stencil8"
+    | "pipeline-statistics-query"
+    | "texture-compression-bc"
+    | "timestamp-query";
 
 declare class GPUDevice extends EventTarget implements GPUObjectBase {
     private __brand: void;
     label: string | undefined;
 
     readonly adapter: GPUAdapter;
-    readonly extensions: GPUExtensionName[];
-    //readonly features: GPUFeatureName[];
+    readonly features: GPUFeatureName[];
     readonly limits: Required<GPUAdapterLimits>;
 
     defaultQueue: GPUQueue;
@@ -82491,36 +82496,36 @@ type GPUStencilOperation =
 type GPUIndexFormat = "uint16" | "uint32";
 
 type GPUVertexFormat =
-    | "uchar2"
-    | "uchar4"
-    | "char2"
-    | "char4"
-    | "uchar2norm"
-    | "uchar4norm"
-    | "char2norm"
-    | "char4norm"
-    | "ushort2"
-    | "ushort4"
-    | "short2"
-    | "short4"
-    | "ushort2norm"
-    | "ushort4norm"
-    | "short2norm"
-    | "short4norm"
-    | "half2"
-    | "half4"
-    | "float"
-    | "float2"
-    | "float3"
-    | "float4"
-    | "uint"
-    | "uint2"
-    | "uint3"
-    | "uint4"
-    | "int"
-    | "int2"
-    | "int3"
-    | "int4";
+    | "uint8x2"
+    | "uint8x4"
+    | "sint8x2"
+    | "sint8x4"
+    | "unorm8x2"
+    | "unorm8x4"
+    | "snorm8x2"
+    | "snorm8x4"
+    | "uint16x2"
+    | "uint16x4"
+    | "sint16x2"
+    | "sint16x4"
+    | "unorm16x2"
+    | "unorm16x4"
+    | "snorm16x2"
+    | "snorm16x4"
+    | "float16x2"
+    | "float16x4"
+    | "float32"
+    | "float32x2"
+    | "float32x3"
+    | "float32x4"
+    | "uint32"
+    | "uint32x2"
+    | "uint32x3"
+    | "uint32x4"
+    | "sint32"
+    | "sint32x2"
+    | "sint32x3"
+    | "sint32x4";
 
 type GPUInputStepMode = "vertex" | "instance";
 
@@ -88220,10 +88225,210 @@ declare module BABYLON.GUI {
     }
 }
 declare module BABYLON.GUI {
+    /** @hidden */
+    export var fluentButtonPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON.GUI {
+    /** @hidden */
+    export var fluentButtonVertexShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to render square buttons with fluent desgin
+     */
+    export class FluentButtonMaterial extends BABYLON.PushMaterial {
+        /**
+         * URL pointing to the texture used to define the coloring for the fluent blob effect.
+         */
+        static BLOB_TEXTURE_URL: string;
+        /**
+         * Gets or sets the width of the glowing edge, relative to the scale of the button.
+         * (Default is 4% of the height).
+         */
+        edgeWidth: number;
+        /**
+         * Gets or sets the color of the glowing edge.
+         */
+        edgeColor: BABYLON.Color4;
+        /**
+         * Gets or sets the maximum intensity of the proximity light.
+         */
+        proximityMaxIntensity: number;
+        /**
+         * Gets or sets the maximum distance for the proximity light (Default is 16mm).
+         */
+        proximityFarDistance: number;
+        /**
+         * Gets or sets the radius of the proximity light when near to the surface.
+         */
+        proximityNearRadius: number;
+        /**
+         * Gets or sets the anisotropy of the proximity light.
+         */
+        proximityAnisotropy: number;
+        /**
+         * Gets or sets the amount of fuzzing in the selection focus.
+         */
+        selectionFuzz: number;
+        /**
+         * Gets or sets an override value to display the button as selected.
+         */
+        selected: number;
+        /**
+         * Gets or sets a value to manually fade the blob size.
+         */
+        selectionFade: number;
+        /**
+         * Gets or sets a value to manually shrink the blob size as it fades (see selectionFade).
+         */
+        selectionFadeSize: number;
+        /**
+         * Gets or sets the distance from the button the cursor should be for the button
+         * to appear selected (Default is 8cm).
+         */
+        selectedDistance: number;
+        /**
+         * Gets or sets the fall-off distance for the selection fade (Default is 8cm).
+         */
+        selectedFadeLength: number;
+        /**
+         * Gets or sets the intensity of the luminous blob (Ranges 0-1, default is 0.5).
+         */
+        blobIntensity: number;
+        /**
+         * The size of the blob when the pointer is at the blobFarDistance (Default is 5cm).
+         */
+        blobFarSize: number;
+        /**
+         * The distance at which the pointer is considered near. See [left|right]BlobNearSize. (Default is 0cm).
+         */
+        blobNearDistance: number;
+        /**
+         * The distance at which the pointer is considered far. See [left|right]BlobFarSize. (Default is 8cm).
+         */
+        blobFarDistance: number;
+        /**
+         * The distance over which the blob intensity fades from full to none (Default is 8cm).
+         */
+        blobFadeLength: number;
+        /**
+         * Gets or sets whether the blob corresponding to the left index finger is enabled.
+         */
+        leftBlobEnable: boolean;
+        /**
+         * Gets or sets the size of the left blob when the left pointer is considered near. See blobNearDistance. (Default is 2.5cm).
+         */
+        leftBlobNearSize: number;
+        /**
+         * Gets or sets the progress of the pulse animation on the left blob (Ranges 0-1).
+         */
+        leftBlobPulse: number;
+        /**
+         * Gets or sets the fade factor on the left blob.
+         */
+        leftBlobFade: number;
+        /**
+         * Gets or sets the inner fade on the left blob;
+         */
+        leftBlobInnerFade: number;
+        /**
+         * Gets or sets whether the blob corresponding to the right index finger is enabled.
+         */
+        rightBlobEnable: boolean;
+        /**
+         * Gets or sets the size of the right blob when the right pointer is considered near. See blobNearDistance. (Default is 2.5cm).
+         */
+        rightBlobNearSize: number;
+        /**
+         * Gets or sets the progress of the pulse animation on the right blob (Ranges 0-1).
+         */
+        rightBlobPulse: number;
+        /**
+         * Gets or sets the fade factor on the right blob.
+         */
+        rightBlobFade: number;
+        /**
+         * Gets or sets the inner fade on the right blob;
+         */
+        rightBlobInnerFade: number;
+        /**
+         * Gets or sets the direction of the active face before the world transform is applied.
+         * This should almost always be set to -z.
+         */
+        activeFaceDir: BABYLON.Vector3;
+        /**
+         * Gets or sets the button's up direction before the world transform is applied.
+         * This should almost always be set to +y.
+         */
+        activeFaceUp: BABYLON.Vector3;
+        /**
+         * Gets or sets whether the edge fade effect is enabled.
+         */
+        enableFade: boolean;
+        /**
+         * Gets or sets a value corresponding to the width of the edge fade effect (Default 1.5).
+         */
+        fadeWidth: number;
+        /**
+         * Gets or sets whether the active face is smoothly interpolated.
+         */
+        smoothActiveFace: boolean;
+        /**
+         * Gets or sets whether the frame of the fluent button model is visible.
+         * This is usually only enabled for debugging purposes.
+         */
+        showFrame: boolean;
+        /**
+         * Gets or sets whether the blob color texture is used for the proximity
+         * light effect. This is usually only disabled for debugging purposes.
+         */
+        useBlobTexture: boolean;
+        /**
+         * Gets or sets the world-space position of the tip of the left index finger.
+         */
+        globalLeftIndexTipPosition: BABYLON.Vector3;
+        /**
+         * Gets or sets the world-space position of the tip of the right index finger.
+         */
+        globalRightIndexTipPosition: BABYLON.Vector3;
+        private _blobTexture;
+        constructor(name: string, scene: BABYLON.Scene);
+        needAlphaBlending(): boolean;
+        needAlphaTesting(): boolean;
+        getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
+        isReadyForSubMesh(mesh: BABYLON.AbstractMesh, subMesh: BABYLON.SubMesh, useInstances?: boolean): boolean;
+        bindForSubMesh(world: BABYLON.Matrix, mesh: BABYLON.Mesh, subMesh: BABYLON.SubMesh): void;
+        /**
+         * Get the list of animatables in the material.
+         * @returns the list of animatables object used in the material
+         */
+        getAnimatables(): BABYLON.IAnimatable[];
+        dispose(forceDisposeEffect?: boolean): void;
+        clone(name: string): FluentButtonMaterial;
+        serialize(): any;
+        getClassName(): string;
+        static Parse(source: any, scene: BABYLON.Scene, rootUrl: string): FluentButtonMaterial;
+    }
+}
+declare module BABYLON.GUI {
     /**
      * Class used to create a holographic button in 3D
      */
     export class TouchHolographicButton extends TouchButton3D {
+        /**
+         * Base Url for the button model.
+         */
+        static MODEL_BASE_URL: string;
+        /**
+         * File name for the button model.
+         */
+        static MODEL_FILENAME: string;
         private _backPlate;
         private _textPlate;
         private _frontPlate;
@@ -88234,6 +88439,7 @@ declare module BABYLON.GUI {
         private _backMaterial;
         private _plateMaterial;
         private _pickedPointObserver;
+        private _pointerHoverObserver;
         private _tooltipFade;
         private _tooltipTextBlock;
         private _tooltipTexture;
@@ -88264,11 +88470,11 @@ declare module BABYLON.GUI {
         /**
          * Gets the back material used by this button
          */
-        get backMaterial(): FluentMaterial;
+        get backMaterial(): BABYLON.StandardMaterial;
         /**
          * Gets the front material used by this button
          */
-        get frontMaterial(): FluentMaterial;
+        get frontMaterial(): FluentButtonMaterial;
         /**
          * Gets the plate material used by this button
          */
