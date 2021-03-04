@@ -17,8 +17,6 @@ import { EventState } from "babylonjs/Misc/observable";
 import { IWheelEvent } from "babylonjs/Events/deviceInputEvents";
 import { Epsilon } from "babylonjs/Maths/math.constants";
 import { Button } from "babylonjs-gui/2D/controls/button";
-import { Container } from "babylonjs-gui/2D/controls/container";
-
 require("./workbenchCanvas.scss");
 
 export interface IWorkbenchComponentProps {
@@ -215,23 +213,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         guiControl.topInPixels += newY;
 
         return true;
-    }
-
-    private _isContainer(guiControl: Control) {
-        switch (guiControl.typeName) {
-            case "Button":
-            case "StackPanel":
-            case "Rectangle":
-            case "Ellipse":
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    public addGui(childNode: Control, parentNode: Control) {
-        if (!this._isContainer) return;
-        (parentNode as Container).addControl(childNode);
     }
 
     componentDidMount() {
