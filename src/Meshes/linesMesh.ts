@@ -176,7 +176,7 @@ export class LinesMesh extends Mesh {
      * @hidden
      */
     public set material(value: Material) {
-        this._lineMaterial = value
+        this._lineMaterial = value;
     }
 
     /**
