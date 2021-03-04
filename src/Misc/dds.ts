@@ -756,6 +756,8 @@ ThinEngine.prototype.createPrefilteredCubeTexture = function(rootUrl: string, sc
             glTextureFromLod.width = Math.pow(2, Math.max(Scalar.Log2(width) - mipmapIndex, 0));
             glTextureFromLod.height = glTextureFromLod.width;
             glTextureFromLod.isCube = true;
+            glTextureFromLod._cachedWrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+            glTextureFromLod._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, glTextureFromLod, true);
 
             glTextureFromLod.samplingMode = Constants.TEXTURE_LINEAR_LINEAR;

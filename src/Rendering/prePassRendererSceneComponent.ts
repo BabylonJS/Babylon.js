@@ -121,9 +121,6 @@ export class PrePassRendererSceneComponent implements ISceneComponent {
 
     private _beforeRenderTargetDraw(renderTarget: RenderTargetTexture, faceIndex?: number, layer?: number) {
         if (this.scene.prePassRenderer) {
-            if (!renderTarget._prePassRenderTarget) {
-                renderTarget._prePassRenderTarget = this.scene.prePassRenderer._createRenderTarget(renderTarget.name + "_prePassRTT", renderTarget);
-            }
             this.scene.prePassRenderer._setRenderTarget(renderTarget._prePassRenderTarget);
             this.scene.prePassRenderer._beforeDraw(undefined, faceIndex, layer);
         }
@@ -137,6 +134,9 @@ export class PrePassRendererSceneComponent implements ISceneComponent {
 
     private _beforeRenderTargetClearStage(renderTarget: RenderTargetTexture, faceIndex?: number, layer?: number) {
         if (this.scene.prePassRenderer) {
+            if (!renderTarget._prePassRenderTarget) {
+                renderTarget._prePassRenderTarget = this.scene.prePassRenderer._createRenderTarget(renderTarget.name + "_prePassRTT", renderTarget);
+            }
             this.scene.prePassRenderer._setRenderTarget(renderTarget._prePassRenderTarget);
             this.scene.prePassRenderer._clear();
         }

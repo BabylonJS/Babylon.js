@@ -52,7 +52,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
         }
 
         return (
-            <LineContainerComponent title="TEXTURES">
+            <LineContainerComponent title="TEXTURES" selection={this.props.globalState}>
                 {
                     textureBlocks.map((textureBlock, i) => {
                         return (
@@ -149,7 +149,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
         });
 
         let inputBlockContainer = configurableInputBlocks.length > 0 ?
-            <LineContainerComponent title="INPUTS"> {
+            <LineContainerComponent title="INPUTS" selection={this.props.globalState}> {
                 configurableInputBlocks.filter(block => !block.groupInInspector).map(block => {
                     return this.renderInputBlock(block);
                 })
@@ -162,7 +162,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
                 {
                     namedGroups.map((name, i) => {
                         return (
-                            <LineContainerComponent key={"inputValue" + i} title={name.toUpperCase()}>
+                            <LineContainerComponent key={"inputValue" + i} title={name.toUpperCase()} selection={this.props.globalState}>
                             {
                                 configurableInputBlocks.filter(block => block.groupInInspector === name).map(block => {
                                     return this.renderInputBlock(block);
@@ -175,7 +175,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
                 {
                     gradiantNodeMaterialBlocks.map((block,i) => {
                         return (
-                            <LineContainerComponent key={block.name +i} title={block.name.toUpperCase()}>
+                            <LineContainerComponent key={block.name +i} title={block.name.toUpperCase()} selection={this.props.globalState}>
                             {
                                 <GradientPropertyTabComponent globalState={this.props.globalState} block={block}/>
                             }
@@ -193,7 +193,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
         return (
             <div className="pane">
                 <CommonMaterialPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} material={material} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent title="CONFIGURATION">
+                <LineContainerComponent title="CONFIGURATION" selection={this.props.globalState}>
                 <CheckBoxLineComponent label="Ignore alpha" target={material} propertyName="ignoreAlpha" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <ButtonLineComponent label="Node Material Editor" onClick={() => this.edit()} />
                 </LineContainerComponent>

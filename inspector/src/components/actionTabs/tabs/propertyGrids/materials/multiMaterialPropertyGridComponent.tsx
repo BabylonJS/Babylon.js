@@ -36,7 +36,7 @@ export class MultiMaterialPropertyGridComponent extends React.Component<IMultiMa
         const material = this.props.material;
 
         return (
-            <LineContainerComponent title="CHILDREN">
+            <LineContainerComponent title="CHILDREN" selection={this.props.globalState}>
                 {
                     material.subMaterials.map((mat, i) => {
                         if (mat) {

@@ -145,6 +145,8 @@ interface INativeEngine {
     setTextureAnisotropicLevel(texture: WebGLTexture, value: number): void;
     setTexture(uniform: WebGLUniformLocation, texture: Nullable<WebGLTexture>): void;
     deleteTexture(texture: Nullable<WebGLTexture>): void;
+    createImageBitmap(data: ArrayBufferView): ImageBitmap;
+    resizeImageBitmap(image: ImageBitmap, bufferWidth: number, bufferHeight: number) : Uint8Array;
 
     createFramebuffer(texture: WebGLTexture, width: number, height: number, format: number, samplingMode: number, generateStencilBuffer: boolean, generateDepthBuffer: boolean, generateMips: boolean): WebGLFramebuffer;
     deleteFramebuffer(framebuffer: WebGLFramebuffer): void;
@@ -856,7 +858,7 @@ export class NativeEngine extends Engine {
         }
 
         if (typeof Blob === "undefined") {
-            (window.Blob as any) = function() { };
+            (window.Blob as any) = function(v: any) { return v; };
         }
 
         // Shader processor
@@ -1779,6 +1781,39 @@ export class NativeEngine extends Engine {
             this._native.deleteFramebuffer(texture._framebuffer);
             texture._framebuffer = null;
         }
+    }
+
+    /**
+     * Engine abstraction for createImageBitmap
+     * @param image source for image
+     * @param options An object that sets options for the image's extraction.
+     * @returns ImageBitmap
+     */
+    public createImageBitmap(image: ImageBitmapSource, options?: ImageBitmapOptions): Promise<ImageBitmap> {
+        return new Promise((resolve, reject) => {
+            if (Array.isArray(image)) {
+                const arr = <Array<ArrayBufferView>>image;
+                if (arr.length) {
+                    const image = this._native.createImageBitmap(arr[0]);
+                    if (image) {
+                        resolve(image);
+                        return;
+                    }
+                }
+            }
+            reject(`Unsupported data for createImageBitmap.`);
+        });
+    }
+
+    /**
+     * Resize an image and returns the image data as an uint8array
+     * @param image image to resize
+     * @param bufferWidth destination buffer width
+     * @param bufferHeight destination buffer height
+     * @returns an uint8array containing RGBA values of bufferWidth * bufferHeight size
+     */
+    public resizeImageBitmap(image: ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array {
+        return this._native.resizeImageBitmap(image, bufferWidth, bufferHeight);
     }
 
     /**

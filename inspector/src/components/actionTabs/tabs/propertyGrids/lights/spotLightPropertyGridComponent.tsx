@@ -29,7 +29,7 @@ export class SpotLightPropertyGridComponent extends React.Component<ISpotLightPr
         return (
             <div className="pane">
                 <CommonLightPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} light={light} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent title="SETUP">
+                <LineContainerComponent title="SETUP" selection={this.props.globalState}>
                     <Color3LineComponent label="Diffuse" target={light} propertyName="diffuse" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Color3LineComponent label="Specular" target={light} propertyName="specular" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Vector3LineComponent label="Position" target={light} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
