@@ -142,7 +142,7 @@ export class LinesMesh extends Mesh {
         const scene = this.getScene();
 
         // Clip planes
-        if (!this._isShaderMaterial(this._lineMaterial)) {
+        if (this._isShaderMaterial(this._lineMaterial)) {
             scene.clipPlane ? this._addClipPlaneDefine("CLIPPLANE") : this._removeClipPlaneDefine("CLIPPLANE");
             scene.clipPlane2 ? this._addClipPlaneDefine("CLIPPLANE2") : this._removeClipPlaneDefine("CLIPPLANE2");
             scene.clipPlane3 ? this._addClipPlaneDefine("CLIPPLANE3") : this._removeClipPlaneDefine("CLIPPLANE3");
