@@ -1,12 +1,14 @@
 import * as React from "react";
-import { GUINode } from "../diagram/guiNode";
 import { OptionsLineComponent } from "../sharedUiComponents/lines/optionsLineComponent";
 import { LineContainerComponent } from "../sharedUiComponents/lines/lineContainerComponent";
 import { GlobalState } from "../globalState";
+import { Control } from "babylonjs-gui/2D/controls/control";
+import { Container } from "babylonjs-gui/2D/controls/container";
+
 
 interface IParentingPropertyGridComponentProps {
-    guiNode: GUINode;
-    guiNodes: GUINode[];
+    guiNode: Control;
+    guiNodes: Control[];
     globalState: GlobalState;
 }
 
@@ -15,13 +17,37 @@ export class ParentingPropertyGridComponent extends React.Component<IParentingPr
         super(props);
     }
     public parentIndex: number = 0;
+
+    private _isContainer(guiControl: Control) {
+        switch (guiControl.typeName) {
+            case "Button":
+            case "StackPanel":
+            case "Rectangle":
+            case "Ellipse":
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    
+    public addChildGui(childNode: Control, parentNode: Control) {
+        this.props.globalState.guiTexture.removeControl(childNode);
+        (parentNode as Container).addControl(childNode);
+    }
+
+    public removeChildGui(childNode: Control, parentNode: Control) {
+        (parentNode as Container).removeControl(childNode);
+        this.props.globalState.guiTexture.addControl(childNode);
+    }
+
     render() {
         var parentOptions = [{ label: "None", value: 0 }];
-        var containerNodes: GUINode[] = [];
+        var containerNodes: Control[] = [];
 
         this.props.guiNodes.forEach((node) => {
-            if (node.isContainer() && node != this.props.guiNode) {
-                var name = node.guiControl.name ? node.guiControl.name : "";
+            if (this._isContainer(node) && node != this.props.guiNode) {
+                var name = node.name ? node.name : "";
                 parentOptions.push({ label: name, value: parentOptions.length });
                 containerNodes.push(node);
             }
@@ -48,11 +74,11 @@ export class ParentingPropertyGridComponent extends React.Component<IParentingPr
                         onSelect={(value: any) => {
                             this.parentIndex = value;
                             if (this.props.guiNode.parent) {
-                                this.props.guiNode.parent.removeChildGui(this.props.guiNode);
+                                this.removeChildGui(this.props.guiNode, this.props.guiNode.parent);
                             }
                             if (value != 0) {
                                 var parent = containerNodes[value - 1];
-                                parent.addChildGui(this.props.guiNode);
+                                this.addChildGui(this.props.guiNode,parent);
                             }
                             this.forceUpdate();
                         }}
