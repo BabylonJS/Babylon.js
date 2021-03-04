@@ -532,7 +532,7 @@ export class EnvironmentTextureTools {
                 let promise: Promise<void>;
 
                 if (typeof Image === "undefined" || engine._features.forceBitmapOverHTMLImageElement) {
-                    promise = createImageBitmap(blob, { premultiplyAlpha: "none" }).then((img) => {
+                    promise = engine.createImageBitmap(blob, { premultiplyAlpha: "none" }).then((img) => {
                         return this._OnImageReadyAsync(img, engine, expandTexture, rgbdPostProcess, url, face, i, generateNonLODTextures, lodTextures, cubeRtt, texture);
                     });
                 } else {

@@ -1039,7 +1039,7 @@
         {
             "title": "Prepass SSAO + instances",
             "renderCount": 10,
-            "playgroundId": "#YB006J#355",
+            "playgroundId": "#YB006J#383",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-instances.png"
         },

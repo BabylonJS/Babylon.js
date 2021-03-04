@@ -259,9 +259,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
             if (!this.node) {
                 return;
             }
-            this._injectGUI3DMetadata(this._node!).control = this; // Store the control on the metadata field in order to get it when picking
-            this._node!.position = this.position;
-            this._node!.scaling = this.scaling;
+            this._injectGUI3DMetadata(this.node).control = this; // Store the control on the metadata field in order to get it when picking
 
             let mesh = this.mesh;
             if (mesh) {

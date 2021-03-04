@@ -276,6 +276,14 @@ export class ArcFollowCamera extends TargetCamera {
         target: Nullable<AbstractMesh>,
         scene: Scene) {
         super(name, Vector3.Zero(), scene);
+        this.setMeshTarget(target);
+    }
+
+    /**
+     * Sets the mesh to follow with this camera.
+     * @param target the target to follow
+     */
+    public setMeshTarget(target: Nullable<AbstractMesh>) {
         this._meshTarget = target;
         this._follow();
     }
