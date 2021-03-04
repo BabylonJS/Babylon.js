@@ -167,10 +167,15 @@ export class Gizmo implements IDisposable {
     }
 
     /**
-     * update customRotationQuaternion
-     * @param customRotationQuaternion Quaternion that defines the gizmo‘s pose
+     * poseture that the gizmo will be display
+     * * When set null, default value will be used (Quaternion(0, 0, 0, 1))
      */
-    public setCustomRotationQuaternion(customRotationQuaternion: Nullable<Quaternion>) {
+
+    public get customRotationQuaternion(): Nullable<Quaternion> {
+        return this._customRotationQuaternion;
+    }
+
+    public set customRotationQuaternion(customRotationQuaternion: Nullable<Quaternion>) {
         this._customRotationQuaternion = customRotationQuaternion;
     }
 
@@ -196,7 +201,7 @@ export class Gizmo implements IDisposable {
                 effectiveNode.getWorldMatrix().decompose(undefined, this._rootMesh.rotationQuaternion!);
             }
             else {
-                this._rootMesh.rotationQuaternion!.copyFrom(this._customRotationQuaternion || new Quaternion(0, 0, 0, 1));
+                this._customRotationQuaternion ? (this._rootMesh.rotationQuaternion!.copyFrom(this._customRotationQuaternion)) : (this._rootMesh.rotationQuaternion!.set(0, 0, 0, 1));
             }
 
             // Scale
