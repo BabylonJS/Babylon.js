@@ -18676,15 +18676,6 @@ declare module BABYLON {
              * when the frame buffer associated is not the canvas frame buffer
              */
             restoreSingleAttachmentForRenderTarget(): void;
-            /**
-             * Clears a list of attachments
-             * @param attachments list of the attachments
-             * @param colorMain clear color for the main attachment (the first one)
-             * @param colorOthers clear color for the other attachments
-             * @param clearDepth true to clear the depth buffer. Used only for the first attachment
-             * @param clearStencil true to clear the stencil buffer. Used only for the first attachment
-             */
-            clearAttachments(attachments: number[], colorMain: Nullable<IColor4Like>, colorOthers: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean): void;
         }
 }
 declare module BABYLON {
@@ -46238,9 +46229,9 @@ declare module BABYLON {
          */
         get supportsUniformBuffers(): boolean;
         /** Gets the supported extensions by the WebGPU adapter */
-        get supportedExtensions(): Immutable<GPUExtensionName[]>;
+        get supportedExtensions(): Immutable<GPUFeatureName[]>;
         /** Gets the currently enabled extensions on the WebGPU device */
-        get enabledExtensions(): Immutable<GPUExtensionName[]>;
+        get enabledExtensions(): Immutable<GPUFeatureName[]>;
         /**
          * Returns the name of the engine
          */
@@ -46332,15 +46323,6 @@ declare module BABYLON {
          * @param stencil defines if the stencil buffer must be cleared
          */
         clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil?: boolean): void;
-        /**
-         * Clears a list of attachments
-         * @param attachments list of the attachments
-         * @param colorMain clear color for the main attachment (the first one)
-         * @param colorOthers clear color for the other attachments
-         * @param clearDepth true to clear the depth buffer. Used only for the first attachment
-         * @param clearStencil true to clear the stencil buffer. Used only for the first attachment
-         */
-        clearAttachments(attachments: number[], colorMain: Nullable<IColor4Like>, colorOthers: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean): void;
         /**
          * Creates a vertex buffer
          * @param data the data for the vertex buffer
@@ -82009,12 +81991,12 @@ interface GPURequestAdapterOptions {
 
 type GPUPowerPreference = "low-power" | "high-performance";
 
-// TODO WEBGPU: this class is not iso with the spec yet as of this writing Chrome does not expose features (should replace 'extensions'). See also GPUDeviceDescriptor, GPUFeatureName and GPUDevice
+// TODO WEBGPU: this class is not iso with the spec yet as of this writing Chrome does not expose features as GPUAdapterFeatures but as GPUFeatureName[]
 declare class GPUAdapter {
     // https://michalzalecki.com/nominal-typing-in-typescript/#approach-1-class-with-a-private-property
     private __brand: void;
     readonly name: string;
-    readonly extensions: GPUExtensionName[];
+    readonly features: GPUFeatureName[];
     //readonly features: GPUAdapterFeatures;
     readonly limits: Required<GPUAdapterLimits>;
 
@@ -82022,35 +82004,24 @@ declare class GPUAdapter {
 }
 
 interface GPUDeviceDescriptor extends GPUObjectDescriptorBase {
-    extensions?: GPUExtensionName[];
-    //nonGuaranteedFeatures?: GPUFeatureName[];
-    limits?: GPUAdapterLimits;
-    //nonGuaranteedLimits?: { [name: string]: GPUSize32 };
+    nonGuaranteedFeatures?: GPUFeatureName[];
+    nonGuaranteedLimits?: { [name: string]: GPUSize32 };
 }
 
-type GPUExtensionName =
-    | "texture-compression-bc"
-    | "timestamp-query"
-    | "pipeline-statistics-query"
+type GPUFeatureName =
     | "depth-clamping"
     | "depth24unorm-stencil8"
-    | "depth32float-stencil8";
-
-/*type GPUFeatureName =
-    | "depth-clamping",
-    | "depth24unorm-stencil8",
-    | "depth32float-stencil8",
-    | "pipeline-statistics-query",
-    | "texture-compression-bc",
-    | "timestamp-query",*/
+    | "depth32float-stencil8"
+    | "pipeline-statistics-query"
+    | "texture-compression-bc"
+    | "timestamp-query";
 
 declare class GPUDevice extends EventTarget implements GPUObjectBase {
     private __brand: void;
     label: string | undefined;
 
     readonly adapter: GPUAdapter;
-    readonly extensions: GPUExtensionName[];
-    //readonly features: GPUFeatureName[];
+    readonly features: GPUFeatureName[];
     readonly limits: Required<GPUAdapterLimits>;
 
     defaultQueue: GPUQueue;
