@@ -865,6 +865,23 @@ export class WebGPUEngine extends Engine {
         this._resetCurrentScissor(1);
     }
 
+    private _stencilRefsCurrent: Array<number> = [-1, -1];
+
+    private _resetCurrentStencilRef(index: number): void {
+        this._stencilRefsCurrent[index] = -1;
+    }
+
+    private _applyStencilRef(renderPass: GPURenderPassEncoder, force = false): void {
+        const index = renderPass === this._mainRenderPassWrapper.renderPass ? 0 : 1;
+
+        const stencilRef = this._stencilState.stencilFuncRef;
+
+        if (stencilRef !== this._stencilRefsCurrent[index] || force) {
+            this._stencilRefsCurrent[index] = stencilRef;
+            renderPass.setStencilReference(stencilRef);
+        }
+    }
+
     /**
      * Clear the current render buffer or the current render target (if any is set up)
      * @param color defines the color to use
@@ -2968,6 +2985,7 @@ export class WebGPUEngine extends Engine {
 
         this._resetCurrentViewport(1);
         this._resetCurrentScissor(1);
+        this._resetCurrentStencilRef(1);
     }
 
     private _endRenderTargetRenderPass() {
@@ -2982,6 +3000,7 @@ export class WebGPUEngine extends Engine {
             this._debugPopGroup(1);
             this._resetCurrentViewport(1);
             this._resetCurrentScissor(1);
+            this._resetCurrentStencilRef(1);
             this._currentRenderPass = null;
             this._rttRenderPassWrapper.reset();
         }
@@ -3058,6 +3077,7 @@ export class WebGPUEngine extends Engine {
             this._debugPopGroup(0);
             this._resetCurrentViewport(0);
             this._resetCurrentScissor(0);
+            this._resetCurrentStencilRef(0);
             if (this._mainRenderPassWrapper.renderPass === this._currentRenderPass) {
                 this._currentRenderPass = null;
             }
@@ -3581,11 +3601,6 @@ export class WebGPUEngine extends Engine {
         const bindGroups = this._getBindGroupsToRender();
         this._setRenderBindGroups(bindGroups);
 
-        // TODO WEBGPU add dirty mechanism as for _alphaState._blendConstants
-        if (this._stencilState.stencilTest && renderPass !== this._bundleEncoder) {
-            this._getCurrentRenderPass().setStencilReference(this._stencilState.stencilFuncRef);
-        }
-
         // TODO WebGPU add back the dirty mechanism, but we need to distinguish between the main render pass and the RTT pass (if any)
         if (this._alphaState.alphaBlend /* && this._alphaState._isBlendConstantsDirty*/ && renderPass !== this._bundleEncoder) {
             this._getCurrentRenderPass().setBlendColor(this._alphaState._blendConstants as any);
@@ -3594,6 +3609,9 @@ export class WebGPUEngine extends Engine {
         if (renderPass !== this._bundleEncoder) {
             this._applyViewport(renderPass as GPURenderPassEncoder);
             this._applyScissor(renderPass as GPURenderPassEncoder);
+            if (this._stencilState.stencilTest) {
+                this._applyStencilRef(renderPass as GPURenderPassEncoder);
+            }
         }
     }
 
