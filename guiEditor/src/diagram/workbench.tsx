@@ -166,10 +166,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         guiControl.onPointerUpObservable.add((evt) => {
             this.clicked = false;
+
         });
 
         guiControl.onPointerDownObservable.add((evt) => {
             if (!this.isUp) return;
+            this.isSelected(true, guiControl);
             this.isUp = false;
         });
 
@@ -205,7 +207,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     public clicked: boolean;
 
     public _onMove(guiControl: Control, evt: Vector2, startPos: Vector2, ignorClick: boolean = false) {
-        if (!this.clicked && !ignorClick) return false;
+        //if (!this.clicked && !ignorClick) return false;
         let newX = (evt.x - startPos.x);
         let newY = (evt.y - startPos.y);
 
