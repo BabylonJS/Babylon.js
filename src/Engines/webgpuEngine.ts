@@ -1018,7 +1018,7 @@ export class WebGPUEngine extends Engine {
                 binding: 0,
                 resource: {
                     buffer: buffer.underlyingResource,
-                }, 
+                },
             }],
         });
 
@@ -1031,7 +1031,7 @@ export class WebGPUEngine extends Engine {
 
         if (this._stencilState.stencilTest) {
             this._applyStencilRef(renderPass, true);
-        }        
+        }
         this._bufferManager.releaseBuffer(buffer);
     }
 
