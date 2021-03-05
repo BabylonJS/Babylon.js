@@ -297,7 +297,7 @@ export class FluentButtonMaterial extends PushMaterial {
         }
 
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new FluentButtonMaterialDefines();
+            subMesh.materialDefines = new FluentButtonMaterialDefines();
         }
 
         var defines = <FluentButtonMaterialDefines>subMesh._materialDefines;

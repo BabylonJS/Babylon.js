@@ -98,7 +98,7 @@
         {
             "title": "custom handling of materials for render target pass",
             "renderCount": 30,
-            "playgroundId": "#FIVL25"
+            "playgroundId": "#FIVL25#3"
         },
         {
             "title": "dissolve effect with node material and glow layer",
@@ -139,6 +139,15 @@
             "title": "particle system matrix like",
             "renderCount": 100,
             "playgroundId": "#WL44T7"
+        },
+        {
+            "title": "lens flare",
+            "playgroundId": "#KICG93"
+        },
+        {
+            "title": "update sampler info",
+            "renderCount": 5,
+            "playgroundId": "#7GKK8E#20"
         }
     ]
 }

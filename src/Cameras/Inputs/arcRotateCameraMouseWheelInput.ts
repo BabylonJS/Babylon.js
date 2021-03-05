@@ -46,18 +46,21 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
             const event = <IWheelEvent>p.event;
             let delta = 0;
             let wheelDelta = 0;
+            let currentDelta = event.deltaY || (event.wheelDelta ?  -event.wheelDelta : 0);
 
-            // Using the inertia percentage, calculate the value needed to move based on set wheel delta percentage
-            if (this.wheelDeltaPercentage !== 0) {
-                wheelDelta = (event.deltaY > 0 ? -1 : 1) * this.camera.radius * this.wheelDeltaPercentage;
-                delta = wheelDelta * (this.camera.inertia === 1 ? 1 : (1 - this.camera.inertia));
-            }
-            // If there's no percentage set, just handle using a value that emulates Chrome
-            else {
-                wheelDelta = (event.deltaY > 0 ? -100 : 100);
+            if (currentDelta !== 0) {
+                // Using the inertia percentage, calculate the value needed to move based on set wheel delta percentage
+                if (this.wheelDeltaPercentage !== 0) {
+                    wheelDelta = (currentDelta > 0 ? -1 : 1) * this.camera.radius * this.wheelDeltaPercentage;
+                    delta = wheelDelta * (this.camera.inertia === 1 ? 1 : (1 - this.camera.inertia));
+                }
+                // If there's no percentage set, just handle using a value that emulates Chrome
+                else {
+                    wheelDelta = (currentDelta > 0 ? -100 : 100);
 
-                if (this.wheelPrecision !== 0) {
-                    delta = wheelDelta / (this.wheelPrecision * 40);
+                    if (this.wheelPrecision !== 0) {
+                        delta = wheelDelta / (this.wheelPrecision * 40);
+                    }
                 }
             }
 
