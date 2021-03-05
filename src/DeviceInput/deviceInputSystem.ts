@@ -131,7 +131,9 @@ export class DeviceInputSystem implements IDisposable {
             throw `Unable to find device ${DeviceType[deviceType]}`;
         }
 
-        this._updateDevice(deviceType, deviceSlot, inputIndex);
+        if (deviceType >= DeviceType.Xbox && deviceType <= DeviceType.Switch && navigator.getGamepads) {
+            this._updateDevice(deviceType, deviceSlot, inputIndex);
+        }
 
         if (device[inputIndex] === undefined) {
             throw `Unable to find input ${inputIndex} for device ${DeviceType[deviceType]} in slot ${deviceSlot}`;
@@ -190,11 +192,13 @@ export class DeviceInputSystem implements IDisposable {
      * Currently handles gamepads and mouse
      */
     private _checkForConnectedDevices() {
-        const gamepads = navigator.getGamepads();
+        if (navigator.getGamepads) {
+            const gamepads = navigator.getGamepads();
 
-        for (const gamepad of gamepads) {
-            if (gamepad) {
-                this._addGamePad(gamepad);
+            for (const gamepad of gamepads) {
+                if (gamepad) {
+                    this._addGamePad(gamepad);
+                }
             }
         }
 
@@ -513,9 +517,15 @@ export class DeviceInputSystem implements IDisposable {
                 let previousWheelScrollY = pointer[PointerInput.MouseWheelY];
                 let previousWheelScrollZ = pointer[PointerInput.MouseWheelZ];
 
-                pointer[PointerInput.MouseWheelX] = evt.deltaX;
-                pointer[PointerInput.MouseWheelY] = evt.deltaY;
-                pointer[PointerInput.MouseWheelZ] = evt.deltaZ;
+                if (evt.deltaX) {
+                    pointer[PointerInput.MouseWheelX] = evt.deltaX;
+                }
+                if (evt.deltaY) {
+                    pointer[PointerInput.MouseWheelY] = evt.deltaY;
+                }
+                if (evt.deltaX) {
+                    pointer[PointerInput.MouseWheelZ] = evt.deltaZ;
+                }
 
                 if (this.onInputChanged) {
                     if (evt.deltaX !== 0) {
