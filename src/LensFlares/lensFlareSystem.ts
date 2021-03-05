@@ -7,7 +7,6 @@ import { EngineStore } from "../Engines/engineStore";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { VertexBuffer } from "../Meshes/buffer";
 import { Ray } from "../Culling/ray";
-import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { LensFlare } from "./lensFlare";
 import { Constants } from "../Engines/constants";
@@ -18,6 +17,7 @@ import { _DevTools } from '../Misc/devTools';
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { Color3 } from '../Maths/math.color';
 import { Viewport } from '../Maths/math.viewport';
+import { DrawWrapper } from "../Materials/drawWrapper";
 
 /**
  * This represents a Lens Flare System or the shiny effect created by the light reflection on the  camera lenses.
@@ -60,7 +60,7 @@ export class LensFlareSystem {
     private _emitter: any;
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
     private _indexBuffer: Nullable<DataBuffer>;
-    private _effect: Effect;
+    private _drawWrapper: DrawWrapper;
     private _positionX: number;
     private _positionY: number;
     private _isEnabled = true;
@@ -98,6 +98,8 @@ export class LensFlareSystem {
 
         var engine = scene.getEngine();
 
+        this._drawWrapper = new DrawWrapper(engine);
+
         // VBO
         var vertices = [];
         vertices.push(1, 1);
@@ -120,7 +122,7 @@ export class LensFlareSystem {
         this._indexBuffer = engine.createIndexBuffer(indices);
 
         // Effects
-        this._effect = engine.createEffect("lensFlare",
+        this._drawWrapper.effect = engine.createEffect("lensFlare",
             [VertexBuffer.PositionKind],
             ["color", "viewportMatrix"],
             ["textureSampler"], "");
@@ -232,7 +234,7 @@ export class LensFlareSystem {
      * @hidden
      */
     public render(): boolean {
-        if (!this._effect.isReady() || !this._scene.activeCamera) {
+        if (!this._drawWrapper.effect!.isReady() || !this._scene.activeCamera) {
             return false;
         }
 
@@ -303,12 +305,12 @@ export class LensFlareSystem {
         var distY = centerY - this._positionY;
 
         // Effects
-        engine.enableEffect(this._effect);
+        engine.enableEffect(this._drawWrapper);
         engine.setState(false);
         engine.setDepthBuffer(false);
 
         // VBOs
-        engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._effect);
+        engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._drawWrapper.effect!);
 
         // Flares
         for (var index = 0; index < this.lensFlares.length; index++) {
@@ -334,13 +336,13 @@ export class LensFlareSystem {
                 0, 0, 1, 0,
                 cx, cy, 0, 1);
 
-            this._effect.setMatrix("viewportMatrix", viewportMatrix);
+            this._drawWrapper.effect!.setMatrix("viewportMatrix", viewportMatrix);
 
             // Texture
-            this._effect.setTexture("textureSampler", flare.texture);
+            this._drawWrapper.effect!.setTexture("textureSampler", flare.texture);
 
             // Color
-            this._effect.setFloat4("color", flare.color.r * intensity, flare.color.g * intensity, flare.color.b * intensity, 1.0);
+            this._drawWrapper.effect!.setFloat4("color", flare.color.r * intensity, flare.color.g * intensity, flare.color.b * intensity, 1.0);
 
             // Draw order
             engine.drawElementsType(Material.TriangleFillMode, 0, 6);
