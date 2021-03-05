@@ -276,9 +276,9 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                 >
                     {/* Node creation menu */}
                     <GuiListComponent globalState={this.props.globalState} />
-                    <SceneExplorerComponent globalState={this.props.globalState}></SceneExplorerComponent>
-                    <div id="leftGrab" onPointerDown={(evt) => this.onPointerDown(evt)} onPointerUp={(evt) => this.onPointerUp(evt)} onPointerMove={(evt) => this.resizeColumns(evt)}></div>
 
+                    <div id="leftGrab" onPointerDown={(evt) => this.onPointerDown(evt)} onPointerUp={(evt) => this.onPointerUp(evt)} onPointerMove={(evt) => this.resizeColumns(evt)}></div>
+                    <SceneExplorerComponent globalState={this.props.globalState}></SceneExplorerComponent>
                     {/* The gui workbench diagram */}
                     <div
                         className="diagram-container"
