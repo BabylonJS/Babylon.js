@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/@fortawesome/fontawesome-svg-core/index.es.js":
-/*!**************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
-  \**************************************************************************************/
+/*!********************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
+  \********************************************************************************************/
 /*! exports provided: icon, noAuto, config, toHtml, layer, text, counter, library, dom, parse, findIconDefinition */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -116,10 +116,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "dom", function() { return dom; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "parse", function() { return parse; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "findIconDefinition", function() { return findIconDefinition; });
-/*!
- * Font Awesome Free 5.15.0 by @fontawesome - https://fontawesome.com
- * License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
- */
 function _typeof(obj) {
   if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
     _typeof = function (obj) {
@@ -302,7 +298,6 @@ var PREFIX_TO_STYLE = {
   'fal': 'light',
   'fad': 'duotone',
   'fab': 'brands',
-  'fak': 'kit',
   'fa': 'solid'
 };
 var STYLE_TO_PREFIX = {
@@ -310,12 +305,10 @@ var STYLE_TO_PREFIX = {
   'regular': 'far',
   'light': 'fal',
   'duotone': 'fad',
-  'brands': 'fab',
-  'kit': 'fak'
+  'brands': 'fab'
 };
 var LAYERS_TEXT_CLASSNAME = 'fa-layers-text';
-var FONT_FAMILY_PATTERN = /Font Awesome ([5 ]*)(Solid|Regular|Light|Duotone|Brands|Free|Pro|Kit).*/; // TODO: do we need to handle font-weight for kit SVG pseudo-elements?
-
+var FONT_FAMILY_PATTERN = /Font Awesome 5 (Solid|Regular|Light|Duotone|Brands|Free|Pro)/;
 var FONT_WEIGHT_TO_PREFIX = {
   '900': 'fas',
   '400': 'far',
@@ -1056,12 +1049,9 @@ function makeInlineSvgAbstract(params) {
       width = _ref.width,
       height = _ref.height;
 
-  var isUploadedIcon = prefix === 'fak';
-  var widthClass = isUploadedIcon ? '' : "fa-w-".concat(Math.ceil(width / height * 16));
+  var widthClass = "fa-w-".concat(Math.ceil(width / height * 16));
   var attrClass = [config.replacementClass, iconName ? "".concat(config.familyPrefix, "-").concat(iconName) : '', widthClass].filter(function (c) {
     return extra.classes.indexOf(c) === -1;
-  }).filter(function (c) {
-    return c !== '' || !!c;
   }).concat(extra.classes).join(' ');
   var content = {
     children: [],
@@ -1074,9 +1064,6 @@ function makeInlineSvgAbstract(params) {
       'viewBox': "0 0 ".concat(width, " ").concat(height)
     })
   };
-  var uploadedIconWidthStyle = isUploadedIcon && !~extra.classes.indexOf('fa-fw') ? {
-    width: "".concat(width / height * 16 * 0.0625, "em")
-  } : {};
 
   if (watchable) {
     content.attributes[DATA_FA_I2SVG] = '';
@@ -1098,7 +1085,7 @@ function makeInlineSvgAbstract(params) {
     maskId: maskId,
     transform: transform,
     symbol: symbol,
-    styles: _objectSpread({}, uploadedIconWidthStyle, extra.styles)
+    styles: extra.styles
   });
 
   var _ref2 = mask.found && main.found ? makeIconMasking(args) : makeIconStandard(args),
@@ -1214,7 +1201,7 @@ var p = config.measurePerformance && PERFORMANCE && PERFORMANCE.mark && PERFORMA
   mark: noop$1,
   measure: noop$1
 };
-var preamble = "FA \"5.15.0\"";
+var preamble = "FA \"5.13.0\"";
 
 var begin = function begin(name) {
   p.mark("".concat(preamble, " ").concat(name, " begins"));
@@ -1290,35 +1277,6 @@ function toHex(unicode) {
   }
 
   return result;
-}
-function codePointAt(string, index) {
-  /*! https://mths.be/codepointat v0.2.0 by @mathias */
-  var size = string.length;
-  var first = string.charCodeAt(index);
-  var second;
-
-  if (first >= 0xD800 && first <= 0xDBFF && size > index + 1) {
-    second = string.charCodeAt(index + 1);
-
-    if (second >= 0xDC00 && second <= 0xDFFF) {
-      return (first - 0xD800) * 0x400 + second - 0xDC00 + 0x10000;
-    }
-  }
-
-  return first;
-}
-/**
- * Used to check that the character is between the E000..F8FF private unicode
- * range
- */
-
-function isPrivateUnicode(iconName) {
-  if (iconName.length !== 1) {
-    return false;
-  } else {
-    var cp = codePointAt(iconName, 0);
-    return cp >= 57344 && cp <= 63743;
-  }
 }
 
 function defineIcons(prefix, icons) {
@@ -1429,7 +1387,7 @@ function getCanonicalIcon(values) {
 
     if (styles$1[cls]) {
       acc.prefix = cls;
-    } else if (config.autoFetchSvg && Object.keys(PREFIX_TO_STYLE).indexOf(cls) > -1) {
+    } else if (config.autoFetchSvg && ['fas', 'far', 'fal', 'fad', 'fab', 'fa'].indexOf(cls) > -1) {
       acc.prefix = cls;
     } else if (iconName) {
       var shim = acc.prefix === 'fa' ? byOldName(iconName) : {};
@@ -1491,7 +1449,7 @@ var mutators = {
     }).join('\n');
 
     if (node.parentNode && node.outerHTML) {
-      node.outerHTML = newOuterHTML + (config.keepOriginalSource && node.tagName.toLowerCase() !== 'svg' ? "<!-- ".concat(node.outerHTML, " Font Awesome fontawesome.com -->") : '');
+      node.outerHTML = newOuterHTML + (config.keepOriginalSource && node.tagName.toLowerCase() !== 'svg' ? "<!-- ".concat(node.outerHTML, " -->") : '');
     } else if (node.parentNode) {
       var newNode = document.createElement('span');
       node.parentNode.replaceChild(newNode, node);
@@ -1898,27 +1856,6 @@ var missing = {
 };
 
 var styles$2 = namespace.styles;
-function resolveCustomIconVersion() {
-  var kitConfig = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-  var iconName = arguments.length > 1 ? arguments[1] : undefined;
-
-  if (iconName && isPrivateUnicode(iconName)) {
-    if (kitConfig && kitConfig.iconUploads) {
-      var iconUploads = kitConfig.iconUploads;
-      var descriptiveIconName = Object.keys(iconUploads).find(function (key) {
-        return iconUploads[key] && iconUploads[key].u && iconUploads[key].u === toHex(iconName);
-      });
-
-      if (descriptiveIconName) {
-        return iconUploads[descriptiveIconName].v;
-      }
-    }
-  } else {
-    if (kitConfig && kitConfig.iconUploads && kitConfig.iconUploads[iconName] && kitConfig.iconUploads[iconName].v) {
-      return kitConfig.iconUploads[iconName].v;
-    }
-  }
-}
 function asFoundIcon(icon) {
   var width = icon[0];
   var height = icon[1];
@@ -1981,11 +1918,11 @@ function findIcon(iconName, prefix) {
       var icon = styles$2[prefix][iconName];
       return resolve(asFoundIcon(icon));
     }
-    var kitToken = null;
-    var iconVersion = resolveCustomIconVersion(WINDOW.FontAwesomeKitConfig, iconName);
 
-    if (WINDOW.FontAwesomeKitConfig && WINDOW.FontAwesomeKitConfig.token) {
-      kitToken = WINDOW.FontAwesomeKitConfig.token;
+    var headers = {};
+
+    if (_typeof(WINDOW.FontAwesomeKitConfig) === 'object' && typeof window.FontAwesomeKitConfig.token === 'string') {
+      headers['fa-kit-token'] = WINDOW.FontAwesomeKitConfig.token;
     }
 
     if (iconName && prefix && !config.showMissingIcons) {
@@ -2176,10 +2113,8 @@ function replaceForPosition(node, position) {
       node.removeChild(alreadyProcessedPseudoElement);
       return resolve();
     } else if (fontFamily && content !== 'none' && content !== '') {
-      var _content = styles.getPropertyValue('content');
-
-      var prefix = ~['Solid', 'Regular', 'Light', 'Duotone', 'Brands', 'Kit'].indexOf(fontFamily[2]) ? STYLE_TO_PREFIX[fontFamily[2].toLowerCase()] : FONT_WEIGHT_TO_PREFIX[fontWeight];
-      var hexValue = toHex(_content.length === 3 ? _content.substr(1, 1) : _content);
+      var prefix = ~['Solid', 'Regular', 'Light', 'Duotone', 'Brands'].indexOf(fontFamily[1]) ? STYLE_TO_PREFIX[fontFamily[1].toLowerCase()] : FONT_WEIGHT_TO_PREFIX[fontWeight];
+      var hexValue = toHex(content.length === 3 ? content.substr(1, 1) : content);
       var iconName = byUnicode(prefix, hexValue);
       var iconIdentifier = iconName; // Only convert the pseudo element in this :before/:after position into an icon if we haven't
       // already done so with the same prefix and iconName
@@ -2613,10 +2548,10 @@ var autoReplace = function autoReplace() {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js":
-/*!**************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
-  \**************************************************************************************/
-/*! exports provided: fas, prefix, faAd, faAddressBook, faAddressCard, faAdjust, faAirFreshener, faAlignCenter, faAlignJustify, faAlignLeft, faAlignRight, faAllergies, faAmbulance, faAmericanSignLanguageInterpreting, faAnchor, faAngleDoubleDown, faAngleDoubleLeft, faAngleDoubleRight, faAngleDoubleUp, faAngleDown, faAngleLeft, faAngleRight, faAngleUp, faAngry, faAnkh, faAppleAlt, faArchive, faArchway, faArrowAltCircleDown, faArrowAltCircleLeft, faArrowAltCircleRight, faArrowAltCircleUp, faArrowCircleDown, faArrowCircleLeft, faArrowCircleRight, faArrowCircleUp, faArrowDown, faArrowLeft, faArrowRight, faArrowUp, faArrowsAlt, faArrowsAltH, faArrowsAltV, faAssistiveListeningSystems, faAsterisk, faAt, faAtlas, faAtom, faAudioDescription, faAward, faBaby, faBabyCarriage, faBackspace, faBackward, faBacon, faBacteria, faBacterium, faBahai, faBalanceScale, faBalanceScaleLeft, faBalanceScaleRight, faBan, faBandAid, faBarcode, faBars, faBaseballBall, faBasketballBall, faBath, faBatteryEmpty, faBatteryFull, faBatteryHalf, faBatteryQuarter, faBatteryThreeQuarters, faBed, faBeer, faBell, faBellSlash, faBezierCurve, faBible, faBicycle, faBiking, faBinoculars, faBiohazard, faBirthdayCake, faBlender, faBlenderPhone, faBlind, faBlog, faBold, faBolt, faBomb, faBone, faBong, faBook, faBookDead, faBookMedical, faBookOpen, faBookReader, faBookmark, faBorderAll, faBorderNone, faBorderStyle, faBowlingBall, faBox, faBoxOpen, faBoxTissue, faBoxes, faBraille, faBrain, faBreadSlice, faBriefcase, faBriefcaseMedical, faBroadcastTower, faBroom, faBrush, faBug, faBuilding, faBullhorn, faBullseye, faBurn, faBus, faBusAlt, faBusinessTime, faCalculator, faCalendar, faCalendarAlt, faCalendarCheck, faCalendarDay, faCalendarMinus, faCalendarPlus, faCalendarTimes, faCalendarWeek, faCamera, faCameraRetro, faCampground, faCandyCane, faCannabis, faCapsules, faCar, faCarAlt, faCarBattery, faCarCrash, faCarSide, faCaravan, faCaretDown, faCaretLeft, faCaretRight, faCaretSquareDown, faCaretSquareLeft, faCaretSquareRight, faCaretSquareUp, faCaretUp, faCarrot, faCartArrowDown, faCartPlus, faCashRegister, faCat, faCertificate, faChair, faChalkboard, faChalkboardTeacher, faChargingStation, faChartArea, faChartBar, faChartLine, faChartPie, faCheck, faCheckCircle, faCheckDouble, faCheckSquare, faCheese, faChess, faChessBishop, faChessBoard, faChessKing, faChessKnight, faChessPawn, faChessQueen, faChessRook, faChevronCircleDown, faChevronCircleLeft, faChevronCircleRight, faChevronCircleUp, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faChild, faChurch, faCircle, faCircleNotch, faCity, faClinicMedical, faClipboard, faClipboardCheck, faClipboardList, faClock, faClone, faClosedCaptioning, faCloud, faCloudDownloadAlt, faCloudMeatball, faCloudMoon, faCloudMoonRain, faCloudRain, faCloudShowersHeavy, faCloudSun, faCloudSunRain, faCloudUploadAlt, faCocktail, faCode, faCodeBranch, faCoffee, faCog, faCogs, faCoins, faColumns, faComment, faCommentAlt, faCommentDollar, faCommentDots, faCommentMedical, faCommentSlash, faComments, faCommentsDollar, faCompactDisc, faCompass, faCompress, faCompressAlt, faCompressArrowsAlt, faConciergeBell, faCookie, faCookieBite, faCopy, faCopyright, faCouch, faCreditCard, faCrop, faCropAlt, faCross, faCrosshairs, faCrow, faCrown, faCrutch, faCube, faCubes, faCut, faDatabase, faDeaf, faDemocrat, faDesktop, faDharmachakra, faDiagnoses, faDice, faDiceD20, faDiceD6, faDiceFive, faDiceFour, faDiceOne, faDiceSix, faDiceThree, faDiceTwo, faDigitalTachograph, faDirections, faDisease, faDivide, faDizzy, faDna, faDog, faDollarSign, faDolly, faDollyFlatbed, faDonate, faDoorClosed, faDoorOpen, faDotCircle, faDove, faDownload, faDraftingCompass, faDragon, faDrawPolygon, faDrum, faDrumSteelpan, faDrumstickBite, faDumbbell, faDumpster, faDumpsterFire, faDungeon, faEdit, faEgg, faEject, faEllipsisH, faEllipsisV, faEnvelope, faEnvelopeOpen, faEnvelopeOpenText, faEnvelopeSquare, faEquals, faEraser, faEthernet, faEuroSign, faExchangeAlt, faExclamation, faExclamationCircle, faExclamationTriangle, faExpand, faExpandAlt, faExpandArrowsAlt, faExternalLinkAlt, faExternalLinkSquareAlt, faEye, faEyeDropper, faEyeSlash, faFan, faFastBackward, faFastForward, faFaucet, faFax, faFeather, faFeatherAlt, faFemale, faFighterJet, faFile, faFileAlt, faFileArchive, faFileAudio, faFileCode, faFileContract, faFileCsv, faFileDownload, faFileExcel, faFileExport, faFileImage, faFileImport, faFileInvoice, faFileInvoiceDollar, faFileMedical, faFileMedicalAlt, faFilePdf, faFilePowerpoint, faFilePrescription, faFileSignature, faFileUpload, faFileVideo, faFileWord, faFill, faFillDrip, faFilm, faFilter, faFingerprint, faFire, faFireAlt, faFireExtinguisher, faFirstAid, faFish, faFistRaised, faFlag, faFlagCheckered, faFlagUsa, faFlask, faFlushed, faFolder, faFolderMinus, faFolderOpen, faFolderPlus, faFont, faFontAwesomeLogoFull, faFootballBall, faForward, faFrog, faFrown, faFrownOpen, faFunnelDollar, faFutbol, faGamepad, faGasPump, faGavel, faGem, faGenderless, faGhost, faGift, faGifts, faGlassCheers, faGlassMartini, faGlassMartiniAlt, faGlassWhiskey, faGlasses, faGlobe, faGlobeAfrica, faGlobeAmericas, faGlobeAsia, faGlobeEurope, faGolfBall, faGopuram, faGraduationCap, faGreaterThan, faGreaterThanEqual, faGrimace, faGrin, faGrinAlt, faGrinBeam, faGrinBeamSweat, faGrinHearts, faGrinSquint, faGrinSquintTears, faGrinStars, faGrinTears, faGrinTongue, faGrinTongueSquint, faGrinTongueWink, faGrinWink, faGripHorizontal, faGripLines, faGripLinesVertical, faGripVertical, faGuitar, faHSquare, faHamburger, faHammer, faHamsa, faHandHolding, faHandHoldingHeart, faHandHoldingMedical, faHandHoldingUsd, faHandHoldingWater, faHandLizard, faHandMiddleFinger, faHandPaper, faHandPeace, faHandPointDown, faHandPointLeft, faHandPointRight, faHandPointUp, faHandPointer, faHandRock, faHandScissors, faHandSparkles, faHandSpock, faHands, faHandsHelping, faHandsWash, faHandshake, faHandshakeAltSlash, faHandshakeSlash, faHanukiah, faHardHat, faHashtag, faHatCowboy, faHatCowboySide, faHatWizard, faHdd, faHeadSideCough, faHeadSideCoughSlash, faHeadSideMask, faHeadSideVirus, faHeading, faHeadphones, faHeadphonesAlt, faHeadset, faHeart, faHeartBroken, faHeartbeat, faHelicopter, faHighlighter, faHiking, faHippo, faHistory, faHockeyPuck, faHollyBerry, faHome, faHorse, faHorseHead, faHospital, faHospitalAlt, faHospitalSymbol, faHospitalUser, faHotTub, faHotdog, faHotel, faHourglass, faHourglassEnd, faHourglassHalf, faHourglassStart, faHouseDamage, faHouseUser, faHryvnia, faICursor, faIceCream, faIcicles, faIcons, faIdBadge, faIdCard, faIdCardAlt, faIgloo, faImage, faImages, faInbox, faIndent, faIndustry, faInfinity, faInfo, faInfoCircle, faItalic, faJedi, faJoint, faJournalWhills, faKaaba, faKey, faKeyboard, faKhanda, faKiss, faKissBeam, faKissWinkHeart, faKiwiBird, faLandmark, faLanguage, faLaptop, faLaptopCode, faLaptopHouse, faLaptopMedical, faLaugh, faLaughBeam, faLaughSquint, faLaughWink, faLayerGroup, faLeaf, faLemon, faLessThan, faLessThanEqual, faLevelDownAlt, faLevelUpAlt, faLifeRing, faLightbulb, faLink, faLiraSign, faList, faListAlt, faListOl, faListUl, faLocationArrow, faLock, faLockOpen, faLongArrowAltDown, faLongArrowAltLeft, faLongArrowAltRight, faLongArrowAltUp, faLowVision, faLuggageCart, faLungs, faLungsVirus, faMagic, faMagnet, faMailBulk, faMale, faMap, faMapMarked, faMapMarkedAlt, faMapMarker, faMapMarkerAlt, faMapPin, faMapSigns, faMarker, faMars, faMarsDouble, faMarsStroke, faMarsStrokeH, faMarsStrokeV, faMask, faMedal, faMedkit, faMeh, faMehBlank, faMehRollingEyes, faMemory, faMenorah, faMercury, faMeteor, faMicrochip, faMicrophone, faMicrophoneAlt, faMicrophoneAltSlash, faMicrophoneSlash, faMicroscope, faMinus, faMinusCircle, faMinusSquare, faMitten, faMobile, faMobileAlt, faMoneyBill, faMoneyBillAlt, faMoneyBillWave, faMoneyBillWaveAlt, faMoneyCheck, faMoneyCheckAlt, faMonument, faMoon, faMortarPestle, faMosque, faMotorcycle, faMountain, faMouse, faMousePointer, faMugHot, faMusic, faNetworkWired, faNeuter, faNewspaper, faNotEqual, faNotesMedical, faObjectGroup, faObjectUngroup, faOilCan, faOm, faOtter, faOutdent, faPager, faPaintBrush, faPaintRoller, faPalette, faPallet, faPaperPlane, faPaperclip, faParachuteBox, faParagraph, faParking, faPassport, faPastafarianism, faPaste, faPause, faPauseCircle, faPaw, faPeace, faPen, faPenAlt, faPenFancy, faPenNib, faPenSquare, faPencilAlt, faPencilRuler, faPeopleArrows, faPeopleCarry, faPepperHot, faPercent, faPercentage, faPersonBooth, faPhone, faPhoneAlt, faPhoneSlash, faPhoneSquare, faPhoneSquareAlt, faPhoneVolume, faPhotoVideo, faPiggyBank, faPills, faPizzaSlice, faPlaceOfWorship, faPlane, faPlaneArrival, faPlaneDeparture, faPlaneSlash, faPlay, faPlayCircle, faPlug, faPlus, faPlusCircle, faPlusSquare, faPodcast, faPoll, faPollH, faPoo, faPooStorm, faPoop, faPortrait, faPoundSign, faPowerOff, faPray, faPrayingHands, faPrescription, faPrescriptionBottle, faPrescriptionBottleAlt, faPrint, faProcedures, faProjectDiagram, faPumpMedical, faPumpSoap, faPuzzlePiece, faQrcode, faQuestion, faQuestionCircle, faQuidditch, faQuoteLeft, faQuoteRight, faQuran, faRadiation, faRadiationAlt, faRainbow, faRandom, faReceipt, faRecordVinyl, faRecycle, faRedo, faRedoAlt, faRegistered, faRemoveFormat, faReply, faReplyAll, faRepublican, faRestroom, faRetweet, faRibbon, faRing, faRoad, faRobot, faRocket, faRoute, faRss, faRssSquare, faRubleSign, faRuler, faRulerCombined, faRulerHorizontal, faRulerVertical, faRunning, faRupeeSign, faSadCry, faSadTear, faSatellite, faSatelliteDish, faSave, faSchool, faScrewdriver, faScroll, faSdCard, faSearch, faSearchDollar, faSearchLocation, faSearchMinus, faSearchPlus, faSeedling, faServer, faShapes, faShare, faShareAlt, faShareAltSquare, faShareSquare, faShekelSign, faShieldAlt, faShieldVirus, faShip, faShippingFast, faShoePrints, faShoppingBag, faShoppingBasket, faShoppingCart, faShower, faShuttleVan, faSign, faSignInAlt, faSignLanguage, faSignOutAlt, faSignal, faSignature, faSimCard, faSink, faSitemap, faSkating, faSkiing, faSkiingNordic, faSkull, faSkullCrossbones, faSlash, faSleigh, faSlidersH, faSmile, faSmileBeam, faSmileWink, faSmog, faSmoking, faSmokingBan, faSms, faSnowboarding, faSnowflake, faSnowman, faSnowplow, faSoap, faSocks, faSolarPanel, faSort, faSortAlphaDown, faSortAlphaDownAlt, faSortAlphaUp, faSortAlphaUpAlt, faSortAmountDown, faSortAmountDownAlt, faSortAmountUp, faSortAmountUpAlt, faSortDown, faSortNumericDown, faSortNumericDownAlt, faSortNumericUp, faSortNumericUpAlt, faSortUp, faSpa, faSpaceShuttle, faSpellCheck, faSpider, faSpinner, faSplotch, faSprayCan, faSquare, faSquareFull, faSquareRootAlt, faStamp, faStar, faStarAndCrescent, faStarHalf, faStarHalfAlt, faStarOfDavid, faStarOfLife, faStepBackward, faStepForward, faStethoscope, faStickyNote, faStop, faStopCircle, faStopwatch, faStopwatch20, faStore, faStoreAlt, faStoreAltSlash, faStoreSlash, faStream, faStreetView, faStrikethrough, faStroopwafel, faSubscript, faSubway, faSuitcase, faSuitcaseRolling, faSun, faSuperscript, faSurprise, faSwatchbook, faSwimmer, faSwimmingPool, faSynagogue, faSync, faSyncAlt, faSyringe, faTable, faTableTennis, faTablet, faTabletAlt, faTablets, faTachometerAlt, faTag, faTags, faTape, faTasks, faTaxi, faTeeth, faTeethOpen, faTemperatureHigh, faTemperatureLow, faTenge, faTerminal, faTextHeight, faTextWidth, faTh, faThLarge, faThList, faTheaterMasks, faThermometer, faThermometerEmpty, faThermometerFull, faThermometerHalf, faThermometerQuarter, faThermometerThreeQuarters, faThumbsDown, faThumbsUp, faThumbtack, faTicketAlt, faTimes, faTimesCircle, faTint, faTintSlash, faTired, faToggleOff, faToggleOn, faToilet, faToiletPaper, faToiletPaperSlash, faToolbox, faTools, faTooth, faTorah, faToriiGate, faTractor, faTrademark, faTrafficLight, faTrailer, faTrain, faTram, faTransgender, faTransgenderAlt, faTrash, faTrashAlt, faTrashRestore, faTrashRestoreAlt, faTree, faTrophy, faTruck, faTruckLoading, faTruckMonster, faTruckMoving, faTruckPickup, faTshirt, faTty, faTv, faUmbrella, faUmbrellaBeach, faUnderline, faUndo, faUndoAlt, faUniversalAccess, faUniversity, faUnlink, faUnlock, faUnlockAlt, faUpload, faUser, faUserAlt, faUserAltSlash, faUserAstronaut, faUserCheck, faUserCircle, faUserClock, faUserCog, faUserEdit, faUserFriends, faUserGraduate, faUserInjured, faUserLock, faUserMd, faUserMinus, faUserNinja, faUserNurse, faUserPlus, faUserSecret, faUserShield, faUserSlash, faUserTag, faUserTie, faUserTimes, faUsers, faUsersCog, faUsersSlash, faUtensilSpoon, faUtensils, faVectorSquare, faVenus, faVenusDouble, faVenusMars, faVial, faVials, faVideo, faVideoSlash, faVihara, faVirus, faVirusSlash, faViruses, faVoicemail, faVolleyballBall, faVolumeDown, faVolumeMute, faVolumeOff, faVolumeUp, faVoteYea, faVrCardboard, faWalking, faWallet, faWarehouse, faWater, faWaveSquare, faWeight, faWeightHanging, faWheelchair, faWifi, faWind, faWindowClose, faWindowMaximize, faWindowMinimize, faWindowRestore, faWineBottle, faWineGlass, faWineGlassAlt, faWonSign, faWrench, faXRay, faYenSign, faYinYang */
+/*!********************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
+  \********************************************************************************************/
+/*! exports provided: fas, prefix, faAd, faAddressBook, faAddressCard, faAdjust, faAirFreshener, faAlignCenter, faAlignJustify, faAlignLeft, faAlignRight, faAllergies, faAmbulance, faAmericanSignLanguageInterpreting, faAnchor, faAngleDoubleDown, faAngleDoubleLeft, faAngleDoubleRight, faAngleDoubleUp, faAngleDown, faAngleLeft, faAngleRight, faAngleUp, faAngry, faAnkh, faAppleAlt, faArchive, faArchway, faArrowAltCircleDown, faArrowAltCircleLeft, faArrowAltCircleRight, faArrowAltCircleUp, faArrowCircleDown, faArrowCircleLeft, faArrowCircleRight, faArrowCircleUp, faArrowDown, faArrowLeft, faArrowRight, faArrowUp, faArrowsAlt, faArrowsAltH, faArrowsAltV, faAssistiveListeningSystems, faAsterisk, faAt, faAtlas, faAtom, faAudioDescription, faAward, faBaby, faBabyCarriage, faBackspace, faBackward, faBacon, faBahai, faBalanceScale, faBalanceScaleLeft, faBalanceScaleRight, faBan, faBandAid, faBarcode, faBars, faBaseballBall, faBasketballBall, faBath, faBatteryEmpty, faBatteryFull, faBatteryHalf, faBatteryQuarter, faBatteryThreeQuarters, faBed, faBeer, faBell, faBellSlash, faBezierCurve, faBible, faBicycle, faBiking, faBinoculars, faBiohazard, faBirthdayCake, faBlender, faBlenderPhone, faBlind, faBlog, faBold, faBolt, faBomb, faBone, faBong, faBook, faBookDead, faBookMedical, faBookOpen, faBookReader, faBookmark, faBorderAll, faBorderNone, faBorderStyle, faBowlingBall, faBox, faBoxOpen, faBoxTissue, faBoxes, faBraille, faBrain, faBreadSlice, faBriefcase, faBriefcaseMedical, faBroadcastTower, faBroom, faBrush, faBug, faBuilding, faBullhorn, faBullseye, faBurn, faBus, faBusAlt, faBusinessTime, faCalculator, faCalendar, faCalendarAlt, faCalendarCheck, faCalendarDay, faCalendarMinus, faCalendarPlus, faCalendarTimes, faCalendarWeek, faCamera, faCameraRetro, faCampground, faCandyCane, faCannabis, faCapsules, faCar, faCarAlt, faCarBattery, faCarCrash, faCarSide, faCaravan, faCaretDown, faCaretLeft, faCaretRight, faCaretSquareDown, faCaretSquareLeft, faCaretSquareRight, faCaretSquareUp, faCaretUp, faCarrot, faCartArrowDown, faCartPlus, faCashRegister, faCat, faCertificate, faChair, faChalkboard, faChalkboardTeacher, faChargingStation, faChartArea, faChartBar, faChartLine, faChartPie, faCheck, faCheckCircle, faCheckDouble, faCheckSquare, faCheese, faChess, faChessBishop, faChessBoard, faChessKing, faChessKnight, faChessPawn, faChessQueen, faChessRook, faChevronCircleDown, faChevronCircleLeft, faChevronCircleRight, faChevronCircleUp, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faChild, faChurch, faCircle, faCircleNotch, faCity, faClinicMedical, faClipboard, faClipboardCheck, faClipboardList, faClock, faClone, faClosedCaptioning, faCloud, faCloudDownloadAlt, faCloudMeatball, faCloudMoon, faCloudMoonRain, faCloudRain, faCloudShowersHeavy, faCloudSun, faCloudSunRain, faCloudUploadAlt, faCocktail, faCode, faCodeBranch, faCoffee, faCog, faCogs, faCoins, faColumns, faComment, faCommentAlt, faCommentDollar, faCommentDots, faCommentMedical, faCommentSlash, faComments, faCommentsDollar, faCompactDisc, faCompass, faCompress, faCompressAlt, faCompressArrowsAlt, faConciergeBell, faCookie, faCookieBite, faCopy, faCopyright, faCouch, faCreditCard, faCrop, faCropAlt, faCross, faCrosshairs, faCrow, faCrown, faCrutch, faCube, faCubes, faCut, faDatabase, faDeaf, faDemocrat, faDesktop, faDharmachakra, faDiagnoses, faDice, faDiceD20, faDiceD6, faDiceFive, faDiceFour, faDiceOne, faDiceSix, faDiceThree, faDiceTwo, faDigitalTachograph, faDirections, faDisease, faDivide, faDizzy, faDna, faDog, faDollarSign, faDolly, faDollyFlatbed, faDonate, faDoorClosed, faDoorOpen, faDotCircle, faDove, faDownload, faDraftingCompass, faDragon, faDrawPolygon, faDrum, faDrumSteelpan, faDrumstickBite, faDumbbell, faDumpster, faDumpsterFire, faDungeon, faEdit, faEgg, faEject, faEllipsisH, faEllipsisV, faEnvelope, faEnvelopeOpen, faEnvelopeOpenText, faEnvelopeSquare, faEquals, faEraser, faEthernet, faEuroSign, faExchangeAlt, faExclamation, faExclamationCircle, faExclamationTriangle, faExpand, faExpandAlt, faExpandArrowsAlt, faExternalLinkAlt, faExternalLinkSquareAlt, faEye, faEyeDropper, faEyeSlash, faFan, faFastBackward, faFastForward, faFaucet, faFax, faFeather, faFeatherAlt, faFemale, faFighterJet, faFile, faFileAlt, faFileArchive, faFileAudio, faFileCode, faFileContract, faFileCsv, faFileDownload, faFileExcel, faFileExport, faFileImage, faFileImport, faFileInvoice, faFileInvoiceDollar, faFileMedical, faFileMedicalAlt, faFilePdf, faFilePowerpoint, faFilePrescription, faFileSignature, faFileUpload, faFileVideo, faFileWord, faFill, faFillDrip, faFilm, faFilter, faFingerprint, faFire, faFireAlt, faFireExtinguisher, faFirstAid, faFish, faFistRaised, faFlag, faFlagCheckered, faFlagUsa, faFlask, faFlushed, faFolder, faFolderMinus, faFolderOpen, faFolderPlus, faFont, faFontAwesomeLogoFull, faFootballBall, faForward, faFrog, faFrown, faFrownOpen, faFunnelDollar, faFutbol, faGamepad, faGasPump, faGavel, faGem, faGenderless, faGhost, faGift, faGifts, faGlassCheers, faGlassMartini, faGlassMartiniAlt, faGlassWhiskey, faGlasses, faGlobe, faGlobeAfrica, faGlobeAmericas, faGlobeAsia, faGlobeEurope, faGolfBall, faGopuram, faGraduationCap, faGreaterThan, faGreaterThanEqual, faGrimace, faGrin, faGrinAlt, faGrinBeam, faGrinBeamSweat, faGrinHearts, faGrinSquint, faGrinSquintTears, faGrinStars, faGrinTears, faGrinTongue, faGrinTongueSquint, faGrinTongueWink, faGrinWink, faGripHorizontal, faGripLines, faGripLinesVertical, faGripVertical, faGuitar, faHSquare, faHamburger, faHammer, faHamsa, faHandHolding, faHandHoldingHeart, faHandHoldingMedical, faHandHoldingUsd, faHandHoldingWater, faHandLizard, faHandMiddleFinger, faHandPaper, faHandPeace, faHandPointDown, faHandPointLeft, faHandPointRight, faHandPointUp, faHandPointer, faHandRock, faHandScissors, faHandSparkles, faHandSpock, faHands, faHandsHelping, faHandsWash, faHandshake, faHandshakeAltSlash, faHandshakeSlash, faHanukiah, faHardHat, faHashtag, faHatCowboy, faHatCowboySide, faHatWizard, faHdd, faHeadSideCough, faHeadSideCoughSlash, faHeadSideMask, faHeadSideVirus, faHeading, faHeadphones, faHeadphonesAlt, faHeadset, faHeart, faHeartBroken, faHeartbeat, faHelicopter, faHighlighter, faHiking, faHippo, faHistory, faHockeyPuck, faHollyBerry, faHome, faHorse, faHorseHead, faHospital, faHospitalAlt, faHospitalSymbol, faHospitalUser, faHotTub, faHotdog, faHotel, faHourglass, faHourglassEnd, faHourglassHalf, faHourglassStart, faHouseDamage, faHouseUser, faHryvnia, faICursor, faIceCream, faIcicles, faIcons, faIdBadge, faIdCard, faIdCardAlt, faIgloo, faImage, faImages, faInbox, faIndent, faIndustry, faInfinity, faInfo, faInfoCircle, faItalic, faJedi, faJoint, faJournalWhills, faKaaba, faKey, faKeyboard, faKhanda, faKiss, faKissBeam, faKissWinkHeart, faKiwiBird, faLandmark, faLanguage, faLaptop, faLaptopCode, faLaptopHouse, faLaptopMedical, faLaugh, faLaughBeam, faLaughSquint, faLaughWink, faLayerGroup, faLeaf, faLemon, faLessThan, faLessThanEqual, faLevelDownAlt, faLevelUpAlt, faLifeRing, faLightbulb, faLink, faLiraSign, faList, faListAlt, faListOl, faListUl, faLocationArrow, faLock, faLockOpen, faLongArrowAltDown, faLongArrowAltLeft, faLongArrowAltRight, faLongArrowAltUp, faLowVision, faLuggageCart, faLungs, faLungsVirus, faMagic, faMagnet, faMailBulk, faMale, faMap, faMapMarked, faMapMarkedAlt, faMapMarker, faMapMarkerAlt, faMapPin, faMapSigns, faMarker, faMars, faMarsDouble, faMarsStroke, faMarsStrokeH, faMarsStrokeV, faMask, faMedal, faMedkit, faMeh, faMehBlank, faMehRollingEyes, faMemory, faMenorah, faMercury, faMeteor, faMicrochip, faMicrophone, faMicrophoneAlt, faMicrophoneAltSlash, faMicrophoneSlash, faMicroscope, faMinus, faMinusCircle, faMinusSquare, faMitten, faMobile, faMobileAlt, faMoneyBill, faMoneyBillAlt, faMoneyBillWave, faMoneyBillWaveAlt, faMoneyCheck, faMoneyCheckAlt, faMonument, faMoon, faMortarPestle, faMosque, faMotorcycle, faMountain, faMouse, faMousePointer, faMugHot, faMusic, faNetworkWired, faNeuter, faNewspaper, faNotEqual, faNotesMedical, faObjectGroup, faObjectUngroup, faOilCan, faOm, faOtter, faOutdent, faPager, faPaintBrush, faPaintRoller, faPalette, faPallet, faPaperPlane, faPaperclip, faParachuteBox, faParagraph, faParking, faPassport, faPastafarianism, faPaste, faPause, faPauseCircle, faPaw, faPeace, faPen, faPenAlt, faPenFancy, faPenNib, faPenSquare, faPencilAlt, faPencilRuler, faPeopleArrows, faPeopleCarry, faPepperHot, faPercent, faPercentage, faPersonBooth, faPhone, faPhoneAlt, faPhoneSlash, faPhoneSquare, faPhoneSquareAlt, faPhoneVolume, faPhotoVideo, faPiggyBank, faPills, faPizzaSlice, faPlaceOfWorship, faPlane, faPlaneArrival, faPlaneDeparture, faPlaneSlash, faPlay, faPlayCircle, faPlug, faPlus, faPlusCircle, faPlusSquare, faPodcast, faPoll, faPollH, faPoo, faPooStorm, faPoop, faPortrait, faPoundSign, faPowerOff, faPray, faPrayingHands, faPrescription, faPrescriptionBottle, faPrescriptionBottleAlt, faPrint, faProcedures, faProjectDiagram, faPumpMedical, faPumpSoap, faPuzzlePiece, faQrcode, faQuestion, faQuestionCircle, faQuidditch, faQuoteLeft, faQuoteRight, faQuran, faRadiation, faRadiationAlt, faRainbow, faRandom, faReceipt, faRecordVinyl, faRecycle, faRedo, faRedoAlt, faRegistered, faRemoveFormat, faReply, faReplyAll, faRepublican, faRestroom, faRetweet, faRibbon, faRing, faRoad, faRobot, faRocket, faRoute, faRss, faRssSquare, faRubleSign, faRuler, faRulerCombined, faRulerHorizontal, faRulerVertical, faRunning, faRupeeSign, faSadCry, faSadTear, faSatellite, faSatelliteDish, faSave, faSchool, faScrewdriver, faScroll, faSdCard, faSearch, faSearchDollar, faSearchLocation, faSearchMinus, faSearchPlus, faSeedling, faServer, faShapes, faShare, faShareAlt, faShareAltSquare, faShareSquare, faShekelSign, faShieldAlt, faShieldVirus, faShip, faShippingFast, faShoePrints, faShoppingBag, faShoppingBasket, faShoppingCart, faShower, faShuttleVan, faSign, faSignInAlt, faSignLanguage, faSignOutAlt, faSignal, faSignature, faSimCard, faSitemap, faSkating, faSkiing, faSkiingNordic, faSkull, faSkullCrossbones, faSlash, faSleigh, faSlidersH, faSmile, faSmileBeam, faSmileWink, faSmog, faSmoking, faSmokingBan, faSms, faSnowboarding, faSnowflake, faSnowman, faSnowplow, faSoap, faSocks, faSolarPanel, faSort, faSortAlphaDown, faSortAlphaDownAlt, faSortAlphaUp, faSortAlphaUpAlt, faSortAmountDown, faSortAmountDownAlt, faSortAmountUp, faSortAmountUpAlt, faSortDown, faSortNumericDown, faSortNumericDownAlt, faSortNumericUp, faSortNumericUpAlt, faSortUp, faSpa, faSpaceShuttle, faSpellCheck, faSpider, faSpinner, faSplotch, faSprayCan, faSquare, faSquareFull, faSquareRootAlt, faStamp, faStar, faStarAndCrescent, faStarHalf, faStarHalfAlt, faStarOfDavid, faStarOfLife, faStepBackward, faStepForward, faStethoscope, faStickyNote, faStop, faStopCircle, faStopwatch, faStopwatch20, faStore, faStoreAlt, faStoreAltSlash, faStoreSlash, faStream, faStreetView, faStrikethrough, faStroopwafel, faSubscript, faSubway, faSuitcase, faSuitcaseRolling, faSun, faSuperscript, faSurprise, faSwatchbook, faSwimmer, faSwimmingPool, faSynagogue, faSync, faSyncAlt, faSyringe, faTable, faTableTennis, faTablet, faTabletAlt, faTablets, faTachometerAlt, faTag, faTags, faTape, faTasks, faTaxi, faTeeth, faTeethOpen, faTemperatureHigh, faTemperatureLow, faTenge, faTerminal, faTextHeight, faTextWidth, faTh, faThLarge, faThList, faTheaterMasks, faThermometer, faThermometerEmpty, faThermometerFull, faThermometerHalf, faThermometerQuarter, faThermometerThreeQuarters, faThumbsDown, faThumbsUp, faThumbtack, faTicketAlt, faTimes, faTimesCircle, faTint, faTintSlash, faTired, faToggleOff, faToggleOn, faToilet, faToiletPaper, faToiletPaperSlash, faToolbox, faTools, faTooth, faTorah, faToriiGate, faTractor, faTrademark, faTrafficLight, faTrailer, faTrain, faTram, faTransgender, faTransgenderAlt, faTrash, faTrashAlt, faTrashRestore, faTrashRestoreAlt, faTree, faTrophy, faTruck, faTruckLoading, faTruckMonster, faTruckMoving, faTruckPickup, faTshirt, faTty, faTv, faUmbrella, faUmbrellaBeach, faUnderline, faUndo, faUndoAlt, faUniversalAccess, faUniversity, faUnlink, faUnlock, faUnlockAlt, faUpload, faUser, faUserAlt, faUserAltSlash, faUserAstronaut, faUserCheck, faUserCircle, faUserClock, faUserCog, faUserEdit, faUserFriends, faUserGraduate, faUserInjured, faUserLock, faUserMd, faUserMinus, faUserNinja, faUserNurse, faUserPlus, faUserSecret, faUserShield, faUserSlash, faUserTag, faUserTie, faUserTimes, faUsers, faUsersCog, faUtensilSpoon, faUtensils, faVectorSquare, faVenus, faVenusDouble, faVenusMars, faVial, faVials, faVideo, faVideoSlash, faVihara, faVirus, faVirusSlash, faViruses, faVoicemail, faVolleyballBall, faVolumeDown, faVolumeMute, faVolumeOff, faVolumeUp, faVoteYea, faVrCardboard, faWalking, faWallet, faWarehouse, faWater, faWaveSquare, faWeight, faWeightHanging, faWheelchair, faWifi, faWind, faWindowClose, faWindowMaximize, faWindowMinimize, faWindowRestore, faWineBottle, faWineGlass, faWineGlassAlt, faWonSign, faWrench, faXRay, faYenSign, faYinYang */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2676,8 +2611,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faBackspace", function() { return faBackspace; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faBackward", function() { return faBackward; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faBacon", function() { return faBacon; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faBacteria", function() { return faBacteria; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faBacterium", function() { return faBacterium; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faBahai", function() { return faBahai; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faBalanceScale", function() { return faBalanceScale; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faBalanceScaleLeft", function() { return faBalanceScaleLeft; });
@@ -3385,7 +3318,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faSignal", function() { return faSignal; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faSignature", function() { return faSignature; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faSimCard", function() { return faSimCard; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faSink", function() { return faSink; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faSitemap", function() { return faSitemap; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faSkating", function() { return faSkating; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faSkiing", function() { return faSkiing; });
@@ -3578,7 +3510,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faUserTimes", function() { return faUserTimes; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faUsers", function() { return faUsers; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faUsersCog", function() { return faUsersCog; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faUsersSlash", function() { return faUsersSlash; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faUtensilSpoon", function() { return faUtensilSpoon; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faUtensils", function() { return faUtensils; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faVectorSquare", function() { return faVectorSquare; });
@@ -3888,16 +3819,6 @@ var faBacon = {
   prefix: 'fas',
   iconName: 'bacon',
   icon: [576, 512, [], "f7e5", "M218.92 336.39c34.89-34.89 44.2-59.7 54.05-86 10.61-28.29 21.59-57.54 61.37-97.34s69.05-50.77 97.35-61.38c23.88-9 46.64-17.68 76.79-45.37L470.81 8.91a31 31 0 0 0-40.18-2.83c-13.64 10.1-25.15 14.39-41 20.3C247 79.52 209.26 191.29 200.65 214.1c-29.75 78.83-89.55 94.68-98.72 98.09-24.86 9.26-54.73 20.38-91.07 50.36C-3 374-3.63 395 9.07 407.61l35.76 35.51C80 410.52 107 400.15 133 390.39c26.27-9.84 51.06-19.12 85.92-54zm348-232l-35.75-35.51c-35.19 32.63-62.18 43-88.25 52.79-26.26 9.85-51.06 19.16-85.95 54s-44.19 59.69-54 86C292.33 290 281.34 319.22 241.55 359s-69 50.73-97.3 61.32c-23.86 9-46.61 17.66-76.72 45.33l37.68 37.43a31 31 0 0 0 40.18 2.82c13.6-10.06 25.09-14.34 40.94-20.24 142.2-53 180-164.1 188.94-187.69C405 219.18 464.8 203.3 474 199.86c24.87-9.27 54.74-20.4 91.11-50.41 13.89-11.4 14.52-32.45 1.82-45.05z"]
-};
-var faBacteria = {
-  prefix: 'fas',
-  iconName: 'bacteria',
-  icon: [640, 512, [], "f959", "M272.35,226.4A17.71,17.71,0,0,0,281.46,203l-4-9.08a121.29,121.29,0,0,1,12.36-3.08A83.34,83.34,0,0,0,323.57,177l10,9a17.76,17.76,0,1,0,23.92-26.27l-9.72-8.76a83.12,83.12,0,0,0,11.65-48.18l11.85-3.51a17.73,17.73,0,1,0-10.15-34l-11.34,3.36a84,84,0,0,0-36.38-35.57l2.84-10.85a17.8,17.8,0,0,0-34.47-8.93l-2.82,10.78a83.25,83.25,0,0,0-16.74,1.1C250.83,27,240,30.22,229.1,33.39l-3.38-9.46a17.8,17.8,0,0,0-33.56,11.89l3.49,9.8a286.74,286.74,0,0,0-43.94,23.57l-6.32-8.43a17.9,17.9,0,0,0-24.94-3.6A17.69,17.69,0,0,0,116.84,82l6.45,8.61a286.59,286.59,0,0,0-34.95,35.33l-8.82-6.42a17.84,17.84,0,0,0-24.89,3.86,17.66,17.66,0,0,0,3.88,24.77l8.88,6.47a286.6,286.6,0,0,0-23,43.91l-10.48-3.59a17.73,17.73,0,1,0-11.59,33.52L32.67,232c-2.79,10-5.79,19.84-7.52,30.22a83.16,83.16,0,0,0-.82,19l-11.58,3.43a17.73,17.73,0,1,0,10.13,34l11.27-3.33a83.51,83.51,0,0,0,36.39,35.43l-2.88,11.06a17.81,17.81,0,0,0,34.48,8.92l2.87-11c1,0,2.07.26,3.1.26a83.39,83.39,0,0,0,45.65-13.88l8.59,8.8a17.77,17.77,0,0,0,25.56-24.7l-9.14-9.37a83.41,83.41,0,0,0,12.08-31.05,119.08,119.08,0,0,1,3.87-15.53l9,4.22a17.74,17.74,0,1,0,15.15-32.09l-8.8-4.11c.67-1,1.2-2.08,1.9-3.05a119.89,119.89,0,0,1,7.87-9.41,121.73,121.73,0,0,1,11.65-11.4,119.49,119.49,0,0,1,9.94-7.82c1.12-.77,2.32-1.42,3.47-2.15l3.92,8.85a17.86,17.86,0,0,0,16.32,10.58A18.14,18.14,0,0,0,272.35,226.4ZM128,256a32,32,0,1,1,32-32A32,32,0,0,1,128,256Zm80-96a16,16,0,1,1,16-16A16,16,0,0,1,208,160Zm431.26,45.3a17.79,17.79,0,0,0-17.06-12.69,17.55,17.55,0,0,0-5.08.74l-11.27,3.33a83.61,83.61,0,0,0-36.39-35.43l2.88-11.06a17.81,17.81,0,0,0-34.48-8.91l-2.87,11c-1,0-2.07-.26-3.1-.26a83.32,83.32,0,0,0-45.65,13.89l-8.59-8.81a17.77,17.77,0,0,0-25.56,24.7l9.14,9.37a83.28,83.28,0,0,0-12.08,31.06,119.34,119.34,0,0,1-3.87,15.52l-9-4.22a17.74,17.74,0,1,0-15.15,32.09l8.8,4.11c-.67,1-1.2,2.08-1.89,3.05a117.71,117.71,0,0,1-7.94,9.47,119,119,0,0,1-11.57,11.33,121.59,121.59,0,0,1-10,7.83c-1.12.77-2.32,1.42-3.47,2.15l-3.92-8.85a17.86,17.86,0,0,0-16.32-10.58,18.14,18.14,0,0,0-7.18,1.5A17.71,17.71,0,0,0,358.54,309l4,9.08a118.71,118.71,0,0,1-12.36,3.08,83.34,83.34,0,0,0-33.77,13.9l-10-9a17.77,17.77,0,1,0-23.92,26.28l9.72,8.75a83.12,83.12,0,0,0-11.65,48.18l-11.86,3.51a17.73,17.73,0,1,0,10.16,34l11.34-3.36A84,84,0,0,0,326.61,479l-2.84,10.85a17.8,17.8,0,0,0,34.47,8.93L361.06,488a83.3,83.3,0,0,0,16.74-1.1c11.37-1.89,22.24-5.07,33.1-8.24l3.38,9.46a17.8,17.8,0,0,0,33.56-11.89l-3.49-9.79a287.66,287.66,0,0,0,43.94-23.58l6.32,8.43a17.88,17.88,0,0,0,24.93,3.6A17.67,17.67,0,0,0,523.16,430l-6.45-8.61a287.37,287.37,0,0,0,34.95-35.34l8.82,6.42a17.76,17.76,0,1,0,21-28.63l-8.88-6.46a287.17,287.17,0,0,0,23-43.92l10.48,3.59a17.73,17.73,0,1,0,11.59-33.52L607.33,280c2.79-10,5.79-19.84,7.52-30.21a83.27,83.27,0,0,0,.82-19.05l11.58-3.43A17.7,17.7,0,0,0,639.26,205.3ZM416,416a32,32,0,1,1,32-32A32,32,0,0,1,416,416Z"]
-};
-var faBacterium = {
-  prefix: 'fas',
-  iconName: 'bacterium',
-  icon: [512, 512, [], "f95a", "M511,102.93A23.76,23.76,0,0,0,481.47,87l-15.12,4.48a111.85,111.85,0,0,0-48.5-47.42l3.79-14.47a23.74,23.74,0,0,0-46-11.91l-3.76,14.37a111.94,111.94,0,0,0-22.33,1.47,386.74,386.74,0,0,0-44.33,10.41l-4.3-12a23.74,23.74,0,0,0-44.75,15.85l4.3,12.05a383.4,383.4,0,0,0-58.69,31.83l-8-10.63a23.85,23.85,0,0,0-33.24-4.8,23.57,23.57,0,0,0-4.83,33.09l8,10.63a386.14,386.14,0,0,0-46.7,47.44l-11-8a23.68,23.68,0,1,0-28,38.17l11.09,8.06a383.45,383.45,0,0,0-30.92,58.75l-12.93-4.43a23.65,23.65,0,1,0-15.47,44.69l13,4.48a385.81,385.81,0,0,0-9.3,40.53A111.58,111.58,0,0,0,32.44,375L17,379.56a23.64,23.64,0,0,0,13.51,45.31l15-4.44a111.49,111.49,0,0,0,48.53,47.24l-3.85,14.75a23.66,23.66,0,0,0,17,28.83,24.7,24.7,0,0,0,6,.75,23.73,23.73,0,0,0,23-17.7L140,479.67c1.37.05,2.77.35,4.13.35A111.22,111.22,0,0,0,205,461.5l11.45,11.74a23.7,23.7,0,0,0,34.08-32.93l-12.19-12.5a111,111,0,0,0,16.11-41.4,158.69,158.69,0,0,1,5.16-20.71l12,5.64a23.66,23.66,0,1,0,20.19-42.79l-11.72-5.49c.89-1.32,1.59-2.77,2.52-4.06a157.86,157.86,0,0,1,10.46-12.49,159.5,159.5,0,0,1,15.59-15.28,162.18,162.18,0,0,1,13.23-10.4c1.5-1,3.1-1.89,4.63-2.87l5.23,11.8a23.74,23.74,0,0,0,43.48-19.08l-5.36-12.11a158.87,158.87,0,0,1,16.49-4.1,111,111,0,0,0,45-18.54l13.33,12a23.69,23.69,0,1,0,31.88-35l-12.94-11.67A110.83,110.83,0,0,0,479.21,137L495,132.32A23.61,23.61,0,0,0,511,102.93ZM160,368a48,48,0,1,1,48-48A48,48,0,0,1,160,368Zm80-136a24,24,0,1,1,24-24A24,24,0,0,1,240,232Z"]
 };
 var faBahai = {
   prefix: 'fas',
@@ -7434,11 +7355,6 @@ var faSimCard = {
   iconName: 'sim-card',
   icon: [384, 512, [], "f7c4", "M0 64v384c0 35.3 28.7 64 64 64h256c35.3 0 64-28.7 64-64V128L256 0H64C28.7 0 0 28.7 0 64zm224 192h-64v-64h64v64zm96 0h-64v-64h32c17.7 0 32 14.3 32 32v32zm-64 128h64v32c0 17.7-14.3 32-32 32h-32v-64zm-96 0h64v64h-64v-64zm-96 0h64v64H96c-17.7 0-32-14.3-32-32v-32zm0-96h256v64H64v-64zm0-64c0-17.7 14.3-32 32-32h32v64H64v-32z"]
 };
-var faSink = {
-  prefix: 'fas',
-  iconName: 'sink',
-  icon: [512, 512, [], "f96d", "M32,416a96,96,0,0,0,96,96H384a96,96,0,0,0,96-96V384H32ZM496,288H400V256h64a16,16,0,0,0,16-16V224a16,16,0,0,0-16-16H384a32,32,0,0,0-32,32v48H288V96a32,32,0,0,1,64,0v16a16,16,0,0,0,16,16h32a16,16,0,0,0,16-16V96A96.16,96.16,0,0,0,300.87,1.86C255.29,10.71,224,53.36,224,99.79V288H160V240a32,32,0,0,0-32-32H48a16,16,0,0,0-16,16v16a16,16,0,0,0,16,16h64v32H16A16,16,0,0,0,0,304v32a16,16,0,0,0,16,16H496a16,16,0,0,0,16-16V304A16,16,0,0,0,496,288Z"]
-};
 var faSitemap = {
   prefix: 'fas',
   iconName: 'sitemap',
@@ -8399,11 +8315,6 @@ var faUsersCog = {
   iconName: 'users-cog',
   icon: [640, 512, [], "f509", "M610.5 341.3c2.6-14.1 2.6-28.5 0-42.6l25.8-14.9c3-1.7 4.3-5.2 3.3-8.5-6.7-21.6-18.2-41.2-33.2-57.4-2.3-2.5-6-3.1-9-1.4l-25.8 14.9c-10.9-9.3-23.4-16.5-36.9-21.3v-29.8c0-3.4-2.4-6.4-5.7-7.1-22.3-5-45-4.8-66.2 0-3.3.7-5.7 3.7-5.7 7.1v29.8c-13.5 4.8-26 12-36.9 21.3l-25.8-14.9c-2.9-1.7-6.7-1.1-9 1.4-15 16.2-26.5 35.8-33.2 57.4-1 3.3.4 6.8 3.3 8.5l25.8 14.9c-2.6 14.1-2.6 28.5 0 42.6l-25.8 14.9c-3 1.7-4.3 5.2-3.3 8.5 6.7 21.6 18.2 41.1 33.2 57.4 2.3 2.5 6 3.1 9 1.4l25.8-14.9c10.9 9.3 23.4 16.5 36.9 21.3v29.8c0 3.4 2.4 6.4 5.7 7.1 22.3 5 45 4.8 66.2 0 3.3-.7 5.7-3.7 5.7-7.1v-29.8c13.5-4.8 26-12 36.9-21.3l25.8 14.9c2.9 1.7 6.7 1.1 9-1.4 15-16.2 26.5-35.8 33.2-57.4 1-3.3-.4-6.8-3.3-8.5l-25.8-14.9zM496 368.5c-26.8 0-48.5-21.8-48.5-48.5s21.8-48.5 48.5-48.5 48.5 21.8 48.5 48.5-21.7 48.5-48.5 48.5zM96 224c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm224 32c1.9 0 3.7-.5 5.6-.6 8.3-21.7 20.5-42.1 36.3-59.2 7.4-8 17.9-12.6 28.9-12.6 6.9 0 13.7 1.8 19.6 5.3l7.9 4.6c.8-.5 1.6-.9 2.4-1.4 7-14.6 11.2-30.8 11.2-48 0-61.9-50.1-112-112-112S208 82.1 208 144c0 61.9 50.1 112 112 112zm105.2 194.5c-2.3-1.2-4.6-2.6-6.8-3.9-8.2 4.8-15.3 9.8-27.5 9.8-10.9 0-21.4-4.6-28.9-12.6-18.3-19.8-32.3-43.9-40.2-69.6-10.7-34.5 24.9-49.7 25.8-50.3-.1-2.6-.1-5.2 0-7.8l-7.9-4.6c-3.8-2.2-7-5-9.8-8.1-3.3.2-6.5.6-9.8.6-24.6 0-47.6-6-68.5-16h-8.3C179.6 288 128 339.6 128 403.2V432c0 26.5 21.5 48 48 48h255.4c-3.7-6-6.2-12.8-6.2-20.3v-9.2zM173.1 274.6C161.5 263.1 145.6 256 128 256H64c-35.3 0-64 28.7-64 64v32c0 17.7 14.3 32 32 32h65.9c6.3-47.4 34.9-87.3 75.2-109.4z"]
 };
-var faUsersSlash = {
-  prefix: 'fas',
-  iconName: 'users-slash',
-  icon: [640, 512, [], "f973", "M132.65,212.32,36.21,137.78A63.4,63.4,0,0,0,32,160a63.84,63.84,0,0,0,100.65,52.32Zm40.44,62.28A63.79,63.79,0,0,0,128,256H64A64.06,64.06,0,0,0,0,320v32a32,32,0,0,0,32,32H97.91A146.62,146.62,0,0,1,173.09,274.6ZM544,224a64,64,0,1,0-64-64A64.06,64.06,0,0,0,544,224ZM500.56,355.11a114.24,114.24,0,0,0-84.47-65.28L361,247.23c41.46-16.3,71-55.92,71-103.23A111.93,111.93,0,0,0,320,32c-57.14,0-103.69,42.83-110.6,98.08L45.46,3.38A16,16,0,0,0,23,6.19L3.37,31.46A16,16,0,0,0,6.18,53.91L594.53,508.63A16,16,0,0,0,617,505.82l19.64-25.27a16,16,0,0,0-2.81-22.45ZM128,403.21V432a48,48,0,0,0,48,48H464a47.45,47.45,0,0,0,12.57-1.87L232,289.13C173.74,294.83,128,343.42,128,403.21ZM576,256H512a63.79,63.79,0,0,0-45.09,18.6A146.29,146.29,0,0,1,542,384h66a32,32,0,0,0,32-32V320A64.06,64.06,0,0,0,576,256Z"]
-};
 var faUtensilSpoon = {
   prefix: 'fas',
   iconName: 'utensil-spoon',
@@ -8678,8 +8589,6 @@ var _iconsCache = {
   faBackspace: faBackspace,
   faBackward: faBackward,
   faBacon: faBacon,
-  faBacteria: faBacteria,
-  faBacterium: faBacterium,
   faBahai: faBahai,
   faBalanceScale: faBalanceScale,
   faBalanceScaleLeft: faBalanceScaleLeft,
@@ -9387,7 +9296,6 @@ var _iconsCache = {
   faSignal: faSignal,
   faSignature: faSignature,
   faSimCard: faSimCard,
-  faSink: faSink,
   faSitemap: faSitemap,
   faSkating: faSkating,
   faSkiing: faSkiing,
@@ -9580,7 +9488,6 @@ var _iconsCache = {
   faUserTimes: faUserTimes,
   faUsers: faUsers,
   faUsersCog: faUsersCog,
-  faUsersSlash: faUsersSlash,
   faUtensilSpoon: faUtensilSpoon,
   faUtensils: faUtensils,
   faVectorSquare: faVectorSquare,
@@ -9633,9 +9540,9 @@ var _iconsCache = {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/react-fontawesome/index.es.js":
-/*!***********************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
-  \***********************************************************************************/
+/*!*****************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
+  \*****************************************************************************************/
 /*! exports provided: FontAwesomeIcon */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -9794,7 +9701,7 @@ function classList(props) {
     'fa-li': listItem,
     'fa-flip-horizontal': flip === 'horizontal' || flip === 'both',
     'fa-flip-vertical': flip === 'vertical' || flip === 'both'
-  }, _defineProperty(_classes, "fa-".concat(size), typeof size !== 'undefined' && size !== null), _defineProperty(_classes, "fa-rotate-".concat(rotation), typeof rotation !== 'undefined' && rotation !== null && rotation !== 0), _defineProperty(_classes, "fa-pull-".concat(pull), typeof pull !== 'undefined' && pull !== null), _defineProperty(_classes, 'fa-swap-opacity', props.swapOpacity), _classes); // map over all the keys in the classes object
+  }, _defineProperty(_classes, "fa-".concat(size), typeof size !== 'undefined' && size !== null), _defineProperty(_classes, "fa-rotate-".concat(rotation), typeof rotation !== 'undefined' && rotation !== null), _defineProperty(_classes, "fa-pull-".concat(pull), typeof pull !== 'undefined' && pull !== null), _defineProperty(_classes, 'fa-swap-opacity', props.swapOpacity), _classes); // map over all the keys in the classes object
   // return an array of the keys where the value for the key is not null
 
   return Object.keys(classes).map(function (key) {
@@ -9996,7 +9903,7 @@ FontAwesomeIcon.propTypes = {
   listItem: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.bool,
   pull: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.oneOf(['right', 'left']),
   pulse: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.bool,
-  rotation: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.oneOf([0, 90, 180, 270]),
+  rotation: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.oneOf([90, 180, 270]),
   size: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.oneOf(['lg', 'xs', 'sm', '1x', '2x', '3x', '4x', '5x', '6x', '7x', '8x', '9x', '10x']),
   spin: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.bool,
   symbol: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.oneOfType([prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.bool, prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.string]),
@@ -10031,9 +9938,9 @@ var convertCurry = convert.bind(null, react__WEBPACK_IMPORTED_MODULE_2___default
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/guiList/guiList.scss":
-/*!**********************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/guiList/guiList.scss ***!
-  \**********************************************************************************************************************************************************/
+/*!**********************************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/guiList/guiList.scss ***!
+  \**********************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10049,9 +9956,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/log/log.scss":
-/*!**************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/log/log.scss ***!
-  \**************************************************************************************************************************************************/
+/*!**************************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/log/log.scss ***!
+  \**************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10067,9 +9974,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/propertyTab/propertyTab.scss":
-/*!******************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/propertyTab/propertyTab.scss ***!
-  \******************************************************************************************************************************************************************/
+/*!******************************************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/propertyTab/propertyTab.scss ***!
+  \******************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10085,9 +9992,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./diagram/workbenchCanvas.scss":
-/*!*******************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./diagram/workbenchCanvas.scss ***!
-  \*******************************************************************************************************************************************************/
+/*!*******************************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./diagram/workbenchCanvas.scss ***!
+  \*******************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10103,9 +10010,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./main.scss":
-/*!************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./main.scss ***!
-  \************************************************************************************************************************************/
+/*!************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./main.scss ***!
+  \************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10121,9 +10028,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss":
-/*!**************************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss ***!
-  \**************************************************************************************************************************************************************************/
+/*!**************************************************************************************************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss ***!
+  \**************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10139,9 +10046,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/runtime/api.js":
-/*!***********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/runtime/api.js ***!
-  \***********************************************************************/
+/*!*****************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/dist/runtime/api.js ***!
+  \*****************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10244,9 +10151,9 @@ function toComment(sourceMap) {
 /***/ }),
 
 /***/ "../../node_modules/object-assign/index.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/object-assign/index.js ***!
-  \***************************************************************/
+/*!*********************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/object-assign/index.js ***!
+  \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10346,9 +10253,9 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 /***/ }),
 
 /***/ "../../node_modules/process/browser.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/process/browser.js ***!
-  \***********************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/process/browser.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -10541,9 +10448,9 @@ process.umask = function() { return 0; };
 /***/ }),
 
 /***/ "../../node_modules/prop-types/checkPropTypes.js":
-/*!*********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
-  \*********************************************************************/
+/*!***************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
+  \***************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10655,9 +10562,9 @@ module.exports = checkPropTypes;
 /***/ }),
 
 /***/ "../../node_modules/prop-types/factoryWithTypeCheckers.js":
-/*!******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
-  \******************************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11258,9 +11165,9 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
 /***/ }),
 
 /***/ "../../node_modules/prop-types/index.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/prop-types/index.js ***!
-  \************************************************************/
+/*!******************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/prop-types/index.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11284,9 +11191,9 @@ if (true) {
 /***/ }),
 
 /***/ "../../node_modules/prop-types/lib/ReactPropTypesSecret.js":
-/*!*******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
-  \*******************************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11308,9 +11215,9 @@ module.exports = ReactPropTypesSecret;
 /***/ }),
 
 /***/ "../../node_modules/react-dom/cjs/react-dom.development.js":
-/*!*******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
-  \*******************************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36332,9 +36239,9 @@ exports.version = ReactVersion;
 /***/ }),
 
 /***/ "../../node_modules/react-dom/index.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-dom/index.js ***!
-  \***********************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-dom/index.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36377,9 +36284,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/react-is/cjs/react-is.development.js":
-/*!*****************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-is/cjs/react-is.development.js ***!
-  \*****************************************************************************/
+/*!***********************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-is/cjs/react-is.development.js ***!
+  \***********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36570,9 +36477,9 @@ exports.typeOf = typeOf;
 /***/ }),
 
 /***/ "../../node_modules/react-is/index.js":
-/*!**********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-is/index.js ***!
-  \**********************************************************/
+/*!****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-is/index.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36587,9 +36494,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/react/cjs/react.development.js":
-/*!***********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react/cjs/react.development.js ***!
-  \***********************************************************************/
+/*!*****************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react/cjs/react.development.js ***!
+  \*****************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -38511,9 +38418,9 @@ exports.version = ReactVersion;
 /***/ }),
 
 /***/ "../../node_modules/react/index.js":
-/*!*******************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react/index.js ***!
-  \*******************************************************/
+/*!*************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/react/index.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -38528,9 +38435,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/scheduler/cjs/scheduler-tracing.development.js":
-/*!***************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
-  \***************************************************************************************/
+/*!*********************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
+  \*********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -38889,9 +38796,9 @@ exports.unstable_wrap = unstable_wrap;
 /***/ }),
 
 /***/ "../../node_modules/scheduler/cjs/scheduler.development.js":
-/*!*******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
-  \*******************************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -39759,9 +39666,9 @@ exports.unstable_wrapCallback = unstable_wrapCallback;
 /***/ }),
 
 /***/ "../../node_modules/scheduler/index.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/scheduler/index.js ***!
-  \***********************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/scheduler/index.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -39776,9 +39683,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/scheduler/tracing.js":
-/*!*************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/scheduler/tracing.js ***!
-  \*************************************************************/
+/*!*******************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/scheduler/tracing.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -39793,9 +39700,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/setimmediate/setImmediate.js":
-/*!*********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/setimmediate/setImmediate.js ***!
-  \*********************************************************************/
+/*!***************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/setimmediate/setImmediate.js ***!
+  \***************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -39991,9 +39898,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js":
-/*!**********************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js ***!
-  \**********************************************************************************************/
+/*!****************************************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js ***!
+  \****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -40271,9 +40178,9 @@ module.exports = function (list, options) {
 /***/ }),
 
 /***/ "../../node_modules/timers-browserify/main.js":
-/*!******************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/timers-browserify/main.js ***!
-  \******************************************************************/
+/*!************************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/timers-browserify/main.js ***!
+  \************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -40346,9 +40253,9 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
 /***/ }),
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \***********************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \*****************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -40852,6 +40759,91 @@ var LogComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./components/parentingPropertyGridComponent.tsx":
+/*!*******************************************************!*\
+  !*** ./components/parentingPropertyGridComponent.tsx ***!
+  \*******************************************************/
+/*! exports provided: ParentingPropertyGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ParentingPropertyGridComponent", function() { return ParentingPropertyGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../sharedUiComponents/lines/optionsLineComponent */ "./sharedUiComponents/lines/optionsLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../sharedUiComponents/lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
+
+
+
+
+var ParentingPropertyGridComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ParentingPropertyGridComponent, _super);
+    function ParentingPropertyGridComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this.parentIndex = 0;
+        return _this;
+    }
+    ParentingPropertyGridComponent.prototype._isContainer = function (guiControl) {
+        switch (guiControl.typeName) {
+            case "Button":
+            case "StackPanel":
+            case "Rectangle":
+            case "Ellipse":
+                return true;
+            default:
+                return false;
+        }
+    };
+    ParentingPropertyGridComponent.prototype.addChildGui = function (childNode, parentNode) {
+        this.props.globalState.guiTexture.removeControl(childNode);
+        parentNode.addControl(childNode);
+    };
+    ParentingPropertyGridComponent.prototype.removeChildGui = function (childNode, parentNode) {
+        parentNode.removeControl(childNode);
+        this.props.globalState.guiTexture.addControl(childNode);
+    };
+    ParentingPropertyGridComponent.prototype.render = function () {
+        var _this = this;
+        var parentOptions = [{ label: "None", value: 0 }];
+        var containerNodes = [];
+        this.props.guiNodes.forEach(function (node) {
+            if (_this._isContainer(node) && node != _this.props.guiNode) {
+                var name = node.name ? node.name : "";
+                parentOptions.push({ label: name, value: parentOptions.length });
+                containerNodes.push(node);
+            }
+        });
+        var parent = this.props.guiNode.parent;
+        if (parent) {
+            for (var i = 0; i < containerNodes.length; ++i) {
+                if (parent == containerNodes[i]) {
+                    this.parentIndex = i + 1;
+                }
+            }
+        }
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "PARENTING" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_2__["OptionsLineComponent"], { label: "Parent Container", options: parentOptions, target: this, propertyName: "parentIndex", noDirectUpdate: true, onSelect: function (value) {
+                        _this.parentIndex = value;
+                        if (_this.props.guiNode.parent) {
+                            _this.removeChildGui(_this.props.guiNode, _this.props.guiNode.parent);
+                        }
+                        if (value != 0) {
+                            var parent = containerNodes[value - 1];
+                            _this.addChildGui(_this.props.guiNode, parent);
+                        }
+                        _this.forceUpdate();
+                    } }))));
+    };
+    return ParentingPropertyGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
 /***/ "./components/propertyTab/propertyTab.scss":
 /*!*************************************************!*\
   !*** ./components/propertyTab/propertyTab.scss ***!
@@ -40900,28 +40892,29 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_5__);
 /* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
-/* harmony import */ var _diagram_guiNode__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../diagram/guiNode */ "./diagram/guiNode.ts");
-/* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
-/* harmony import */ var _sharedUiComponents_stringTools__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../sharedUiComponents/stringTools */ "./sharedUiComponents/stringTools.ts");
-/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_lockObject__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/lockObject */ "./sharedUiComponents/tabs/propertyGrids/lockObject.ts");
-/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_sliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/sliderPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/sliderPropertyGridComponent.tsx");
-/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_linePropertyGridComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/linePropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/linePropertyGridComponent.tsx");
-/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_radioButtonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/radioButtonPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/radioButtonPropertyGridComponent.tsx");
-/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_textBlockPropertyGridComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/textBlockPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/textBlockPropertyGridComponent.tsx");
-/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_inputTextPropertyGridComponent__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/inputTextPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/inputTextPropertyGridComponent.tsx");
-/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_colorPickerPropertyGridComponent__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/colorPickerPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/colorPickerPropertyGridComponent.tsx");
-/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_imagePropertyGridComponent__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/imagePropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/imagePropertyGridComponent.tsx");
-/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_imageBasedSliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/imageBasedSliderPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/imageBasedSliderPropertyGridComponent.tsx");
-/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_rectanglePropertyGridComponent__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/rectanglePropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/rectanglePropertyGridComponent.tsx");
-/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_stackPanelPropertyGridComponent__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/stackPanelPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/stackPanelPropertyGridComponent.tsx");
-/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_gridPropertyGridComponent__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/gridPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/gridPropertyGridComponent.tsx");
-/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_scrollViewerPropertyGridComponent__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/scrollViewerPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/scrollViewerPropertyGridComponent.tsx");
-/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_ellipsePropertyGridComponent__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/ellipsePropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/ellipsePropertyGridComponent.tsx");
-/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_checkboxPropertyGridComponent__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/checkboxPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/checkboxPropertyGridComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_stringTools__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../sharedUiComponents/stringTools */ "./sharedUiComponents/stringTools.ts");
+/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_lockObject__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/lockObject */ "./sharedUiComponents/tabs/propertyGrids/lockObject.ts");
+/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_sliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/sliderPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/sliderPropertyGridComponent.tsx");
+/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_linePropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/linePropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/linePropertyGridComponent.tsx");
+/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_radioButtonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/radioButtonPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/radioButtonPropertyGridComponent.tsx");
+/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_textBlockPropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/textBlockPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/textBlockPropertyGridComponent.tsx");
+/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_inputTextPropertyGridComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/inputTextPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/inputTextPropertyGridComponent.tsx");
+/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_colorPickerPropertyGridComponent__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/colorPickerPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/colorPickerPropertyGridComponent.tsx");
+/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_imagePropertyGridComponent__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/imagePropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/imagePropertyGridComponent.tsx");
+/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_imageBasedSliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/imageBasedSliderPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/imageBasedSliderPropertyGridComponent.tsx");
+/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_rectanglePropertyGridComponent__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/rectanglePropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/rectanglePropertyGridComponent.tsx");
+/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_stackPanelPropertyGridComponent__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/stackPanelPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/stackPanelPropertyGridComponent.tsx");
+/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_gridPropertyGridComponent__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/gridPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/gridPropertyGridComponent.tsx");
+/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_scrollViewerPropertyGridComponent__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/scrollViewerPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/scrollViewerPropertyGridComponent.tsx");
+/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_ellipsePropertyGridComponent__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/ellipsePropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/ellipsePropertyGridComponent.tsx");
+/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_checkboxPropertyGridComponent__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/checkboxPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/checkboxPropertyGridComponent.tsx");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/button");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_24___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_24__);
 /* harmony import */ var _sharedUiComponents_tabs_propertyGrids_gui_controlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/gui/controlPropertyGridComponent */ "./sharedUiComponents/tabs/propertyGrids/gui/controlPropertyGridComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_advancedDynamicTexture__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! babylonjs-gui/2D/advancedDynamicTexture */ "babylonjs-gui/2D/controls/button");
-/* harmony import */ var babylonjs_gui_2D_advancedDynamicTexture__WEBPACK_IMPORTED_MODULE_26___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_advancedDynamicTexture__WEBPACK_IMPORTED_MODULE_26__);
-/* harmony import */ var _sharedUiComponents_lines_vector2LineComponent__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ../../sharedUiComponents/lines/vector2LineComponent */ "./sharedUiComponents/lines/vector2LineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_vector2LineComponent__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! ../../sharedUiComponents/lines/vector2LineComponent */ "./sharedUiComponents/lines/vector2LineComponent.tsx");
+/* harmony import */ var _parentingPropertyGridComponent__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ../parentingPropertyGridComponent */ "./components/parentingPropertyGridComponent.tsx");
+
 
 
 
@@ -40958,7 +40951,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PropertyTabComponent, _super);
     function PropertyTabComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this._lockObject = new _sharedUiComponents_tabs_propertyGrids_lockObject__WEBPACK_IMPORTED_MODULE_10__["LockObject"]();
+        _this._lockObject = new _sharedUiComponents_tabs_propertyGrids_lockObject__WEBPACK_IMPORTED_MODULE_9__["LockObject"]();
         _this.state = { currentNode: null, textureSize: new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_5__["Vector2"](1200, 1200) };
         return _this;
     }
@@ -40971,7 +40964,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         var _this = this;
         this._timerIntervalId = window.setInterval(function () { return _this.timerRefresh(); }, 500);
         this.props.globalState.onSelectionChangedObservable.add(function (selection) {
-            if (selection instanceof _diagram_guiNode__WEBPACK_IMPORTED_MODULE_7__["GUINode"]) {
+            if (selection instanceof babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_24__["Control"]) {
                 _this.setState({ currentNode: selection });
             }
             else {
@@ -40999,7 +40992,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
     };
     PropertyTabComponent.prototype.save = function () {
         var json = JSON.stringify(this.props.globalState.guiTexture.serializeContent());
-        _sharedUiComponents_stringTools__WEBPACK_IMPORTED_MODULE_9__["StringTools"].DownloadAsFile(this.props.globalState.hostDocument, json, "guiTexture.json");
+        _sharedUiComponents_stringTools__WEBPACK_IMPORTED_MODULE_8__["StringTools"].DownloadAsFile(this.props.globalState.hostDocument, json, "guiTexture.json");
     };
     PropertyTabComponent.prototype.saveToSnippetServer = function () {
         var _this = this;
@@ -41033,7 +41026,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 }
             }
         };
-        xmlHttp.open("POST", babylonjs_gui_2D_advancedDynamicTexture__WEBPACK_IMPORTED_MODULE_26__["AdvancedDynamicTexture"].SnippetUrl + (adt.snippetId ? "/" + adt.snippetId : ""), true);
+        xmlHttp.open("POST", babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_24__["AdvancedDynamicTexture"].SnippetUrl + (adt.snippetId ? "/" + adt.snippetId : ""), true);
         xmlHttp.setRequestHeader("Content-Type", "application/json");
         var dataToSend = {
             payload: JSON.stringify({
@@ -41053,81 +41046,81 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         this.props.globalState.workbench.loadFromSnippet(snippedID);
     };
     PropertyTabComponent.prototype.renderProperties = function () {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t;
-        var className = (_a = this.state.currentNode) === null || _a === void 0 ? void 0 : _a.guiControl.getClassName();
+        var _a;
+        var className = (_a = this.state.currentNode) === null || _a === void 0 ? void 0 : _a.getClassName();
         switch (className) {
             case "TextBlock": {
-                var textBlock = (_b = this.state.currentNode) === null || _b === void 0 ? void 0 : _b.guiControl;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_textBlockPropertyGridComponent__WEBPACK_IMPORTED_MODULE_14__["TextBlockPropertyGridComponent"], { textBlock: textBlock, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                var textBlock = this.state.currentNode;
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_textBlockPropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__["TextBlockPropertyGridComponent"], { textBlock: textBlock, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
             }
             case "InputText": {
-                var inputText = (_c = this.state.currentNode) === null || _c === void 0 ? void 0 : _c.guiControl;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_inputTextPropertyGridComponent__WEBPACK_IMPORTED_MODULE_15__["InputTextPropertyGridComponent"], { inputText: inputText, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                var inputText = this.state.currentNode;
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_inputTextPropertyGridComponent__WEBPACK_IMPORTED_MODULE_14__["InputTextPropertyGridComponent"], { inputText: inputText, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
             }
             case "ColorPicker": {
-                var colorPicker = (_d = this.state.currentNode) === null || _d === void 0 ? void 0 : _d.guiControl;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_colorPickerPropertyGridComponent__WEBPACK_IMPORTED_MODULE_16__["ColorPickerPropertyGridComponent"], { colorPicker: colorPicker, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                var colorPicker = this.state.currentNode;
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_colorPickerPropertyGridComponent__WEBPACK_IMPORTED_MODULE_15__["ColorPickerPropertyGridComponent"], { colorPicker: colorPicker, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
             }
             case "Image": {
-                var image = (_e = this.state.currentNode) === null || _e === void 0 ? void 0 : _e.guiControl;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_imagePropertyGridComponent__WEBPACK_IMPORTED_MODULE_17__["ImagePropertyGridComponent"], { image: image, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                var image = this.state.currentNode;
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_imagePropertyGridComponent__WEBPACK_IMPORTED_MODULE_16__["ImagePropertyGridComponent"], { image: image, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
             }
             case "Slider": {
-                var slider = (_f = this.state.currentNode) === null || _f === void 0 ? void 0 : _f.guiControl;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_sliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__["SliderPropertyGridComponent"], { slider: slider, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                var slider = this.state.currentNode;
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_sliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_10__["SliderPropertyGridComponent"], { slider: slider, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
             }
             case "ImageBasedSlider": {
-                var imageBasedSlider = (_g = this.state.currentNode) === null || _g === void 0 ? void 0 : _g.guiControl;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_imageBasedSliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_18__["ImageBasedSliderPropertyGridComponent"], { imageBasedSlider: imageBasedSlider, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                var imageBasedSlider = this.state.currentNode;
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_imageBasedSliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_17__["ImageBasedSliderPropertyGridComponent"], { imageBasedSlider: imageBasedSlider, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
             }
             case "Rectangle": {
-                var rectangle = (_h = this.state.currentNode) === null || _h === void 0 ? void 0 : _h.guiControl;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_rectanglePropertyGridComponent__WEBPACK_IMPORTED_MODULE_19__["RectanglePropertyGridComponent"], { rectangle: rectangle, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                var rectangle = this.state.currentNode;
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_rectanglePropertyGridComponent__WEBPACK_IMPORTED_MODULE_18__["RectanglePropertyGridComponent"], { rectangle: rectangle, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
             }
             case "StackPanel": {
-                var stackPanel = (_j = this.state.currentNode) === null || _j === void 0 ? void 0 : _j.guiControl;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_stackPanelPropertyGridComponent__WEBPACK_IMPORTED_MODULE_20__["StackPanelPropertyGridComponent"], { stackPanel: stackPanel, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                var stackPanel = this.state.currentNode;
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_stackPanelPropertyGridComponent__WEBPACK_IMPORTED_MODULE_19__["StackPanelPropertyGridComponent"], { stackPanel: stackPanel, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
             }
             case "Grid": {
-                var grid = (_k = this.state.currentNode) === null || _k === void 0 ? void 0 : _k.guiControl;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_gridPropertyGridComponent__WEBPACK_IMPORTED_MODULE_21__["GridPropertyGridComponent"], { grid: grid, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                var grid = this.state.currentNode;
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_gridPropertyGridComponent__WEBPACK_IMPORTED_MODULE_20__["GridPropertyGridComponent"], { grid: grid, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
             }
             case "ScrollViewer": {
-                var scrollViewer = (_l = this.state.currentNode) === null || _l === void 0 ? void 0 : _l.guiControl;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_scrollViewerPropertyGridComponent__WEBPACK_IMPORTED_MODULE_22__["ScrollViewerPropertyGridComponent"], { scrollViewer: scrollViewer, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                var scrollViewer = this.state.currentNode;
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_scrollViewerPropertyGridComponent__WEBPACK_IMPORTED_MODULE_21__["ScrollViewerPropertyGridComponent"], { scrollViewer: scrollViewer, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
             }
             case "Ellipse": {
-                var ellipse = (_m = this.state.currentNode) === null || _m === void 0 ? void 0 : _m.guiControl;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_ellipsePropertyGridComponent__WEBPACK_IMPORTED_MODULE_23__["EllipsePropertyGridComponent"], { ellipse: ellipse, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                var ellipse = this.state.currentNode;
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_ellipsePropertyGridComponent__WEBPACK_IMPORTED_MODULE_22__["EllipsePropertyGridComponent"], { ellipse: ellipse, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
             }
             case "Checkbox": {
-                var checkbox = (_o = this.state.currentNode) === null || _o === void 0 ? void 0 : _o.guiControl;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_checkboxPropertyGridComponent__WEBPACK_IMPORTED_MODULE_24__["CheckboxPropertyGridComponent"], { checkbox: checkbox, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                var checkbox = this.state.currentNode;
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_checkboxPropertyGridComponent__WEBPACK_IMPORTED_MODULE_23__["CheckboxPropertyGridComponent"], { checkbox: checkbox, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
             }
             case "RadioButton": {
-                var radioButton = (_p = this.state.currentNode) === null || _p === void 0 ? void 0 : _p.guiControl;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_radioButtonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__["RadioButtonPropertyGridComponent"], { radioButton: radioButton, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                var radioButton = this.state.currentNode;
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_radioButtonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_12__["RadioButtonPropertyGridComponent"], { radioButton: radioButton, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
             }
             case "Line": {
-                var line = (_q = this.state.currentNode) === null || _q === void 0 ? void 0 : _q.guiControl;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_linePropertyGridComponent__WEBPACK_IMPORTED_MODULE_12__["LinePropertyGridComponent"], { line: line, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                var line = this.state.currentNode;
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_linePropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__["LinePropertyGridComponent"], { line: line, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
             }
             case "Button": {
-                var control = (_r = this.state.currentNode) === null || _r === void 0 ? void 0 : _r.guiControl;
-                var button = (_s = this.state.currentNode) === null || _s === void 0 ? void 0 : _s.guiControl;
+                var control = this.state.currentNode;
+                var button = this.state.currentNode;
                 var buttonMenu = [];
                 buttonMenu.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_controlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_25__["ControlPropertyGridComponent"], { key: "buttonMenu", control: control, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
                 if (button.textBlock) {
-                    buttonMenu.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_textBlockPropertyGridComponent__WEBPACK_IMPORTED_MODULE_14__["TextBlockPropertyGridComponent"], { key: "textBlockMenu", textBlock: button.textBlock, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
+                    buttonMenu.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_textBlockPropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__["TextBlockPropertyGridComponent"], { key: "textBlockMenu", textBlock: button.textBlock, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
                 }
                 if (button.image) {
-                    buttonMenu.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_imagePropertyGridComponent__WEBPACK_IMPORTED_MODULE_17__["ImagePropertyGridComponent"], { key: "imageMenu", image: button.image, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
+                    buttonMenu.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_imagePropertyGridComponent__WEBPACK_IMPORTED_MODULE_16__["ImagePropertyGridComponent"], { key: "imageMenu", image: button.image, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
                 }
                 return buttonMenu;
             }
         }
         if (className !== "") {
-            var control = (_t = this.state.currentNode) === null || _t === void 0 ? void 0 : _t.guiControl;
+            var control = this.state.currentNode;
             return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_tabs_propertyGrids_gui_controlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_25__["ControlPropertyGridComponent"], { control: control, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
         }
         return null;
@@ -41140,7 +41133,8 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { id: "logo", src: "https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "title" }, "GUI EDITOR")),
                 this.renderProperties(),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "DELETE GUI", onClick: function () {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_parentingPropertyGridComponent__WEBPACK_IMPORTED_MODULE_27__["ParentingPropertyGridComponent"], { guiNode: this.state.currentNode, guiNodes: this.props.globalState.guiTexture.getChildren()[0].children, globalState: this.props.globalState }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "REMOVE ELEMENT", onClick: function () {
                         var _a;
                         (_a = _this.state.currentNode) === null || _a === void 0 ? void 0 : _a.dispose();
                         _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
@@ -41152,10 +41146,10 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "title" }, "GUI EDITOR")),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "GENERAL" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextLineComponent"], { label: "Version", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_5__["Engine"].Version }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextLineComponent"], { label: "Help", value: "doc.babylonjs.com", underline: true, onLink: function () { return window.open("https://doc.babylonjs.com", "_blank"); } })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextLineComponent"], { label: "Version", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_5__["Engine"].Version }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextLineComponent"], { label: "Help", value: "doc.babylonjs.com", underline: true, onLink: function () { return window.open("https://doc.babylonjs.com", "_blank"); } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "OPTIONS" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_vector2LineComponent__WEBPACK_IMPORTED_MODULE_27__["Vector2LineComponent"], { label: "GUI Canvas Size", target: this.state, propertyName: "textureSize", onChange: function (newvalue) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_vector2LineComponent__WEBPACK_IMPORTED_MODULE_26__["Vector2LineComponent"], { label: "GUI Canvas Size", target: this.state, propertyName: "textureSize", onChange: function (newvalue) {
                             _this.props.globalState.workbench.resizeGuiTexture(newvalue);
                         } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Show grid", isSelected: function () { return babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_5__["DataStorage"].ReadBoolean("ShowGrid", true); }, onSelect: function (value) {
@@ -41179,228 +41173,6 @@ var PropertyTabComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
-/***/ "./diagram/guiNode.ts":
-/*!****************************!*\
-  !*** ./diagram/guiNode.ts ***!
-  \****************************/
-/*! exports provided: GUINode */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GUINode", function() { return GUINode; });
-var GUINode = /** @class */ (function () {
-    function GUINode(globalState, guiControl) {
-        var _this = this;
-        this.guiControl = guiControl;
-        this._x = 0;
-        this._y = 0;
-        this._gridAlignedX = 0;
-        this._gridAlignedY = 0;
-        this._isVisible = true;
-        this._enclosingFrameId = -1;
-        this.children = [];
-        this._globalState = globalState;
-        this._ownerCanvas = this._globalState.workbench;
-        this.x = guiControl.leftInPixels;
-        this.y = guiControl.topInPixels;
-        this.enableEditorProperties();
-        guiControl.onPointerUpObservable.add(function (evt) {
-            _this.clicked = false;
-        });
-        guiControl.onPointerDownObservable.add(function (evt) {
-            if (!_this._ownerCanvas.isUp)
-                return;
-            _this.clicked = true;
-            _this.isSelected = true;
-            _this._ownerCanvas.isUp = false;
-        });
-        guiControl.onPointerEnterObservable.add(function (evt) {
-            _this._ownerCanvas.isOverGUINode = true;
-        });
-        guiControl.onPointerOutObservable.add(function (evt) {
-            _this._ownerCanvas.isOverGUINode = false;
-        });
-        this._onSelectionBoxMovedObserver = this._globalState.onSelectionBoxMoved.add(function (rect1) { });
-    }
-    Object.defineProperty(GUINode.prototype, "isVisible", {
-        get: function () {
-            return this._isVisible;
-        },
-        set: function (value) {
-            this._isVisible = value;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(GUINode.prototype, "gridAlignedX", {
-        get: function () {
-            return this._gridAlignedX;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(GUINode.prototype, "gridAlignedY", {
-        get: function () {
-            return this._gridAlignedY;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(GUINode.prototype, "x", {
-        get: function () {
-            return this._x;
-        },
-        set: function (value) {
-            if (this._x === value) {
-                return;
-            }
-            this._x = value;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(GUINode.prototype, "y", {
-        get: function () {
-            return this._y;
-        },
-        set: function (value) {
-            if (this._y === value) {
-                return;
-            }
-            this._y = value;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(GUINode.prototype, "width", {
-        get: function () {
-            return this.guiControl.widthInPixels;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(GUINode.prototype, "height", {
-        get: function () {
-            return this.guiControl.heightInPixels;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(GUINode.prototype, "id", {
-        get: function () {
-            return this.guiControl.uniqueId;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(GUINode.prototype, "name", {
-        get: function () {
-            return this.guiControl.name;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(GUINode.prototype, "isSelected", {
-        get: function () {
-            return this._isSelected;
-        },
-        set: function (value) {
-            this._isSelected = value;
-            if (value) {
-                this._globalState.onSelectionChangedObservable.notifyObservers(this);
-                ;
-            }
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(GUINode.prototype, "enclosingFrameId", {
-        get: function () {
-            return this._enclosingFrameId;
-        },
-        set: function (value) {
-            this._enclosingFrameId = value;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    GUINode.prototype.enableEditorProperties = function () {
-        switch (this.guiControl.typeName) {
-            case "Button":
-                this.guiControl.pointerDownAnimation = function () { return null; };
-                this.guiControl.pointerUpAnimation = function () { return null; };
-                break;
-            case "StackPanel":
-            case "Grid":
-                this.guiControl.isHighlighted = true;
-                break;
-            default:
-                break;
-        }
-    };
-    GUINode.prototype._onMove = function (evt, startPos, ignorClick) {
-        if (ignorClick === void 0) { ignorClick = false; }
-        if (!this.clicked && !ignorClick)
-            return false;
-        var newX = (evt.x - startPos.x);
-        var newY = (evt.y - startPos.y);
-        this.x += newX;
-        this.y += newY;
-        this.children.forEach(function (child) {
-            child._onMove(evt, startPos, true);
-        });
-        this.guiControl.leftInPixels = this.x;
-        this.guiControl.topInPixels = this.y;
-        return true;
-    };
-    GUINode.prototype.updateVisual = function () {
-        if (this.x != this.guiControl.leftInPixels || this.y != this.guiControl.topInPixels) {
-            this.x = this.guiControl.leftInPixels;
-            this.y = this.guiControl.topInPixels;
-        }
-    };
-    GUINode.prototype._isContainer = function () {
-        switch (this.guiControl.typeName) {
-            case "Button":
-            case "StackPanel":
-            case "Rectangle":
-            case "Ellipse":
-                return true;
-            default:
-                return false;
-        }
-    };
-    GUINode.prototype.addGui = function (childNode) {
-        if (!this._isContainer)
-            return;
-        this.children.push(childNode);
-        this.guiControl.addControl(childNode.guiControl);
-        //adjust the position to be relative
-        //childNode.x = this.x - childNode.x;
-        //childNode.y = this.y - childNode.y;
-    };
-    GUINode.prototype.dispose = function () {
-        // notify frame observers that this node is being deleted
-        this._globalState.onGuiNodeRemovalObservable.notifyObservers(this);
-        if (this._onSelectionChangedObserver) {
-            this._globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
-        }
-        if (this._onUpdateRequiredObserver) {
-            this._globalState.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
-        }
-        if (this._onSelectionBoxMovedObserver) {
-            this._globalState.onSelectionBoxMoved.remove(this._onSelectionBoxMovedObserver);
-        }
-        this.guiControl.dispose();
-    };
-    return GUINode;
-}());
-
-
-
-/***/ }),
-
 /***/ "./diagram/workbench.tsx":
 /*!*******************************!*\
   !*** ./diagram/workbench.tsx ***!
@@ -41415,11 +41187,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _guiNode__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./guiNode */ "./diagram/guiNode.ts");
-/* harmony import */ var babylonjs_gui_2D_advancedDynamicTexture__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/advancedDynamicTexture */ "babylonjs-gui/2D/controls/button");
-/* harmony import */ var babylonjs_gui_2D_advancedDynamicTexture__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_advancedDynamicTexture__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/button");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__);
 
 
 
@@ -41447,7 +41218,6 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(WorkbenchComponent, _super);
     function WorkbenchComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this._guiNodes = [];
         _this._mouseStartPointX = null;
         _this._mouseStartPointY = null;
         _this._selectedGuiNodes = [];
@@ -41457,16 +41227,11 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         _this.isOverGUINode = false;
         _this.isUp = true;
         props.globalState.onSelectionChangedObservable.add(function (selection) {
-            if (!_this._ctrlKeyIsPressed && selection != null) {
-                _this.selectedGuiNodes.forEach(function (element) {
-                    element.isSelected = false;
-                });
-            }
             if (!selection) {
                 _this._selectedGuiNodes = [];
             }
             else {
-                if (selection instanceof _guiNode__WEBPACK_IMPORTED_MODULE_2__["GUINode"]) {
+                if (selection instanceof babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_2__["Control"]) {
                     if (_this._ctrlKeyIsPressed) {
                         if (_this._selectedGuiNodes.indexOf(selection) === -1) {
                             _this._selectedGuiNodes.push(selection);
@@ -41497,7 +41262,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     });
     Object.defineProperty(WorkbenchComponent.prototype, "nodes", {
         get: function () {
-            return this._guiNodes;
+            return this.globalState.guiTexture.getChildren()[0].children;
         },
         enumerable: false,
         configurable: true
@@ -41509,17 +41274,9 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
-    WorkbenchComponent.prototype.clearGuiTexture = function () {
-        while (this._guiNodes.length > 0) {
-            this._guiNodes[this._guiNodes.length - 1].dispose();
-            this._guiNodes.pop();
-        }
-    };
     WorkbenchComponent.prototype.loadFromJson = function (serializationObject) {
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
-        this.clearGuiTexture();
         this.globalState.guiTexture.parseContent(serializationObject);
-        this.props.globalState.workbench.loadFromGuiTexture();
     };
     WorkbenchComponent.prototype.loadFromSnippet = function (snippedID) {
         return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function () {
@@ -41527,22 +41284,12 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                 switch (_a.label) {
                     case 0:
                         this.globalState.onSelectionChangedObservable.notifyObservers(null);
-                        this.clearGuiTexture();
                         return [4 /*yield*/, this.globalState.guiTexture.parseFromSnippetAsync(snippedID)];
                     case 1:
                         _a.sent();
-                        this.props.globalState.workbench.loadFromGuiTexture();
                         return [2 /*return*/];
                 }
             });
-        });
-    };
-    WorkbenchComponent.prototype.loadFromGuiTexture = function () {
-        var _this = this;
-        var children = this.globalState.guiTexture.getChildren();
-        children[0].children.forEach(function (guiElement) {
-            var newGuiNode = new _guiNode__WEBPACK_IMPORTED_MODULE_2__["GUINode"](_this.props.globalState, guiElement);
-            _this._guiNodes.push(newGuiNode);
         });
     };
     WorkbenchComponent.prototype.resizeGuiTexture = function (newvalue) {
@@ -41556,22 +41303,62 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         this._ctrlKeyIsPressed = false;
     };
     WorkbenchComponent.prototype.findNodeFromGuiElement = function (guiControl) {
-        return this._guiNodes.filter(function (n) { return n.guiControl === guiControl; })[0];
+        return this.nodes.filter(function (n) { return n === guiControl; })[0];
     };
     WorkbenchComponent.prototype.reset = function () {
-        for (var _i = 0, _a = this._guiNodes; _i < _a.length; _i++) {
-            var node = _a[_i];
-            node.dispose();
-        }
-        this._guiNodes = [];
         this._gridCanvas.innerHTML = "";
         this._svgCanvas.innerHTML = "";
     };
     WorkbenchComponent.prototype.appendBlock = function (guiElement) {
-        var newGuiNode = new _guiNode__WEBPACK_IMPORTED_MODULE_2__["GUINode"](this.props.globalState, guiElement);
-        this._guiNodes.push(newGuiNode);
+        var newGuiNode = this.createNewGuiNode(guiElement);
         this.globalState.guiTexture.addControl(guiElement);
         return newGuiNode;
+    };
+    WorkbenchComponent.prototype.createNewGuiNode = function (guiControl) {
+        var _this = this;
+        this.enableEditorProperties(guiControl);
+        guiControl.onPointerUpObservable.add(function (evt) {
+            _this.clicked = false;
+        });
+        guiControl.onPointerDownObservable.add(function (evt) {
+            if (!_this.isUp)
+                return;
+            _this.isSelected(true, guiControl);
+            _this.isUp = false;
+        });
+        guiControl.onPointerEnterObservable.add(function (evt) {
+            _this.isOverGUINode = true;
+        });
+        guiControl.onPointerOutObservable.add(function (evt) {
+            _this.isOverGUINode = false;
+        });
+        return guiControl;
+    };
+    WorkbenchComponent.prototype.enableEditorProperties = function (guiControl) {
+        switch (guiControl.typeName) {
+            case "Button":
+                guiControl.pointerDownAnimation = function () { return null; };
+                guiControl.pointerUpAnimation = function () { return null; };
+                break;
+            case "StackPanel":
+            case "Grid":
+                guiControl.isHighlighted = true;
+                break;
+            default:
+                break;
+        }
+    };
+    WorkbenchComponent.prototype.isSelected = function (value, guiNode) {
+        this.globalState.onSelectionChangedObservable.notifyObservers(guiNode);
+    };
+    WorkbenchComponent.prototype._onMove = function (guiControl, evt, startPos, ignorClick) {
+        if (ignorClick === void 0) { ignorClick = false; }
+        //if (!this.clicked && !ignorClick) return false;
+        var newX = evt.x - startPos.x;
+        var newY = evt.y - startPos.y;
+        guiControl.leftInPixels += newX;
+        guiControl.topInPixels += newY;
+        return true;
     };
     WorkbenchComponent.prototype.componentDidMount = function () {
         this._rootContainer = this.props.globalState.hostDocument.getElementById("workbench-container");
@@ -41579,6 +41366,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         this._svgCanvas = this.props.globalState.hostDocument.getElementById("workbench-svg-container");
     };
     WorkbenchComponent.prototype.onMove = function (evt) {
+        var _this = this;
         var pos = this.getGroundPosition();
         // Move or guiNodes
         if (this._mouseStartPointX != null && this._mouseStartPointY != null && !this._panning) {
@@ -41588,8 +41376,9 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             this.selectedGuiNodes.forEach(function (element) {
                 //var zoom = this._camera.radius;
                 if (pos) {
-                    selected_1 = element._onMove(new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector2"](pos.x, -pos.z), //need to add zoom factor here.
-                    new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector2"](x, y), false) || selected_1;
+                    selected_1 =
+                        _this._onMove(element, new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Vector2"](pos.x, -pos.z), //need to add zoom factor here.
+                        new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Vector2"](x, y), false) || selected_1;
                 }
             });
             this._mouseStartPointX = pos ? pos.x : this._mouseStartPointX;
@@ -41599,7 +41388,9 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     WorkbenchComponent.prototype.getGroundPosition = function () {
         var tex = this._textureMesh;
         // Use a predicate to get position on the ground
-        var pickinfo = this._scene.pick(this._scene.pointerX, this._scene.pointerY, function (mesh) { return mesh == tex; });
+        var pickinfo = this._scene.pick(this._scene.pointerX, this._scene.pointerY, function (mesh) {
+            return mesh == tex;
+        });
         if (pickinfo === null || pickinfo === void 0 ? void 0 : pickinfo.hit) {
             return pickinfo.pickedPoint;
         }
@@ -41625,18 +41416,18 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         // Get the canvas element from the DOM.
         var canvas = document.getElementById("workbench-canvas");
         // Associate a Babylon Engine to it.
-        var engine = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Engine"](canvas);
+        var engine = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Engine"](canvas);
         // Create our first scene.
-        this._scene = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Scene"](engine);
-        this._scene.clearColor = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Color4"](0.2, 0.2, 0.3, 1.0);
-        var camera = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["ArcRotateCamera"]("Camera", -Math.PI / 2, 0, 1024, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector3"].Zero(), this._scene);
-        var light = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["HemisphericLight"]("light1", babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Axis"].Y, this._scene);
+        this._scene = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Scene"](engine);
+        this._scene.clearColor = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Color4"](0.2, 0.2, 0.3, 1.0);
+        var camera = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["ArcRotateCamera"]("Camera", -Math.PI / 2, 0, 1024, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Vector3"].Zero(), this._scene);
+        var light = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["HemisphericLight"]("light1", babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Axis"].Y, this._scene);
         light.intensity = 0.9;
         var textureSize = 1200;
-        this._textureMesh = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Mesh"].CreateGround("earth", 1, 1, 1, this._scene);
+        this._textureMesh = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Mesh"].CreateGround("earth", 1, 1, 1, this._scene);
         this._textureMesh.scaling.x = textureSize;
         this._textureMesh.scaling.z = textureSize;
-        this.globalState.guiTexture = babylonjs_gui_2D_advancedDynamicTexture__WEBPACK_IMPORTED_MODULE_3__["AdvancedDynamicTexture"].CreateForMesh(this._textureMesh, textureSize, textureSize);
+        this.globalState.guiTexture = babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_2__["AdvancedDynamicTexture"].CreateForMesh(this._textureMesh, textureSize, textureSize);
         this._textureMesh.showBoundingBox = true;
         this.addControls(this._scene, camera);
         this._scene.getEngine().onCanvasPointerOutObservable.clear();
@@ -41645,9 +41436,10 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             engine.resize();
         });
         this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Please note: This editor is still a work in progress. You may submit feedback to msDestiny14 on GitHub.");
-        engine.runRenderLoop(function () { _this.updateGUIs(); _this._scene.render(); });
+        engine.runRenderLoop(function () {
+            _this._scene.render();
+        });
     };
-    ;
     //Add map-like controls to an ArcRotate camera
     WorkbenchComponent.prototype.addControls = function (scene, camera) {
         var _this = this;
@@ -41657,9 +41449,9 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         camera.upperRadiusLimit = 1500;
         camera.upperBetaLimit = Math.PI / 2 - 0.1;
         camera.angularSensibilityX = camera.angularSensibilityY = 500;
-        var plane = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Plane"].FromPositionAndNormal(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector3"].Zero(), babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Axis"].Y);
-        var inertialPanning = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector3"].Zero();
-        var initialPos = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector3"](0, 0, 0);
+        var plane = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Plane"].FromPositionAndNormal(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Vector3"].Zero(), babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Axis"].Y);
+        var inertialPanning = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Vector3"].Zero();
+        var initialPos = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Vector3"](0, 0, 0);
         var panningFn = function () {
             var pos = _this.getPosition(scene, camera, plane);
             _this.panning(pos, initialPos, camera.inertia, inertialPanning);
@@ -41672,7 +41464,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             }
         };
         var wheelPrecisionFn = function () {
-            camera.wheelPrecision = 1 / camera.radius * 1000;
+            camera.wheelPrecision = (1 / camera.radius) * 1000;
         };
         var zoomFn = function (p, e) {
             var delta = _this.zoomWheel(p, e, camera);
@@ -41685,31 +41477,32 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             removeObservers();
             if (p.event.button !== 0) {
                 initialPos = _this.getPosition(scene, camera, plane);
-                scene.onPointerObservable.add(panningFn, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["PointerEventTypes"].POINTERMOVE);
+                scene.onPointerObservable.add(panningFn, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["PointerEventTypes"].POINTERMOVE);
                 _this._panning = true;
             }
             else {
                 _this._panning = false;
             }
-        }, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["PointerEventTypes"].POINTERDOWN);
+        }, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["PointerEventTypes"].POINTERDOWN);
         scene.onPointerObservable.add(function (p, e) {
             removeObservers();
-        }, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["PointerEventTypes"].POINTERUP);
-        scene.onPointerObservable.add(zoomFn, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["PointerEventTypes"].POINTERWHEEL);
+        }, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["PointerEventTypes"].POINTERUP);
+        scene.onPointerObservable.add(zoomFn, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["PointerEventTypes"].POINTERWHEEL);
         scene.onBeforeRenderObservable.add(inertialPanningFn);
         scene.onBeforeRenderObservable.add(wheelPrecisionFn);
         // stop context menu showing on canvas right click
-        (_a = scene.getEngine().getRenderingCanvas()) === null || _a === void 0 ? void 0 : _a.addEventListener("contextmenu", function (e) {
+        (_a = scene
+            .getEngine()
+            .getRenderingCanvas()) === null || _a === void 0 ? void 0 : _a.addEventListener("contextmenu", function (e) {
             e.preventDefault();
         });
     };
     //Get pos on plane
     WorkbenchComponent.prototype.getPosition = function (scene, camera, plane) {
-        var ray = scene.createPickingRay(scene.pointerX, scene.pointerY, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Matrix"].Identity(), camera, false);
+        var ray = scene.createPickingRay(scene.pointerX, scene.pointerY, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Matrix"].Identity(), camera, false);
         var distance = ray.intersectsPlane(plane);
         //not using this ray again, so modifying its vectors here is fine
-        return distance !== null ?
-            ray.origin.addInPlace(ray.direction.scaleInPlace(distance)) : babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector3"].Zero();
+        return distance !== null ? ray.origin.addInPlace(ray.direction.scaleInPlace(distance)) : babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Vector3"].Zero();
     };
     //Return offsets for inertial panning given initial and current pointer positions
     WorkbenchComponent.prototype.panning = function (newPos, initialPos, inertia, ref) {
@@ -41719,7 +41512,6 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         ref.copyFromFloats(panningX, 0, panningZ);
         return ref;
     };
-    ;
     //Get the wheel delta divided by the camera wheel precision
     WorkbenchComponent.prototype.zoomWheel = function (p, e, camera) {
         var event = p.event;
@@ -41748,12 +41540,10 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             return;
         }
         var inertiaComp = 1 - camera.inertia;
-        if (camera.radius - (camera.inertialRadiusOffset + delta) / inertiaComp <
-            lr) {
+        if (camera.radius - (camera.inertialRadiusOffset + delta) / inertiaComp < lr) {
             delta = (camera.radius - lr) * inertiaComp - camera.inertialRadiusOffset;
         }
-        else if (camera.radius - (camera.inertialRadiusOffset + delta) / inertiaComp >
-            ur) {
+        else if (camera.radius - (camera.inertialRadiusOffset + delta) / inertiaComp > ur) {
             delta = (camera.radius - ur) * inertiaComp - camera.inertialRadiusOffset;
         }
         var zoomDistance = delta / inertiaComp;
@@ -41767,29 +41557,24 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     };
     //Sets x y or z of passed in vector to zero if less than Epsilon
     WorkbenchComponent.prototype.zeroIfClose = function (vec) {
-        if (Math.abs(vec.x) < babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Epsilon"]) {
+        if (Math.abs(vec.x) < babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Epsilon"]) {
             vec.x = 0;
         }
-        if (Math.abs(vec.y) < babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Epsilon"]) {
+        if (Math.abs(vec.y) < babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Epsilon"]) {
             vec.y = 0;
         }
-        if (Math.abs(vec.z) < babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Epsilon"]) {
+        if (Math.abs(vec.z) < babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_3__["Epsilon"]) {
             vec.z = 0;
         }
     };
-    WorkbenchComponent.prototype.updateGUIs = function () {
-        this._guiNodes.forEach(function (element) {
-            element.updateVisual();
-        });
-    };
     WorkbenchComponent.prototype.render = function () {
         var _this = this;
-        return react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { id: "workbench-canvas", onPointerMove: function (evt) { return _this.onMove(evt); }, onPointerDown: function (evt) { return _this.onDown(evt); }, onPointerUp: function (evt) { return _this.onUp(evt); } },
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { id: "workbench-canvas", onPointerMove: function (evt) { return _this.onMove(evt); }, onPointerDown: function (evt) { return _this.onDown(evt); }, onPointerUp: function (evt) { return _this.onUp(evt); } },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "workbench-container" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "workbench-canvas-container" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "frame-container" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { id: "workbench-svg-container" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "selection-container" })));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "selection-container" }))));
     };
     return WorkbenchComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -42046,15 +41831,15 @@ var GUINodeTools = /** @class */ (function () {
                 element.isPointerBlocker = true;
                 return element;
             case "InputText":
-                element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["InputText"]();
+                element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["InputText"]("InputText");
                 element.maxWidth = 0.6;
                 element.text = "Click Me";
                 break;
             case "InputPassword":
-                element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["InputPassword"]();
+                element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["InputPassword"]("InputPassword");
                 break;
             case "Grid":
-                element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["Grid"]();
+                element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["Grid"]("Grid");
                 element.addColumnDefinition(100, true);
                 element.addColumnDefinition(0.5);
                 element.addColumnDefinition(0.5);
@@ -42064,12 +41849,12 @@ var GUINodeTools = /** @class */ (function () {
                 element.isHighlighted = true;
                 return element;
             case "DisplayGrid":
-                element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["DisplayGrid"]();
+                element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["DisplayGrid"]("DisplayGrid");
                 element.width = "100px";
                 element.height = "100px";
                 return element;
             case "StackPanel":
-                element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["StackPanel"]();
+                element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["StackPanel"]("StackPanel");
                 element.width = "100px";
                 element.height = "100px";
                 element.isHighlighted = true;
@@ -44931,7 +44716,7 @@ var WorkbenchEditor = /** @class */ (function (_super) {
                     return;
                 }
                 var selectedItem = selectedItems[0];
-                if (!selectedItem.guiControl) {
+                if (!selectedItem) {
                     return;
                 }
             }
@@ -44965,7 +44750,7 @@ var WorkbenchEditor = /** @class */ (function (_super) {
         // Create new nodes
         for (var _i = 0, copiedNodes_1 = copiedNodes; _i < copiedNodes_1.length; _i++) {
             var node = copiedNodes_1[_i];
-            var block = node.guiControl;
+            var block = node;
             if (!block) {
                 continue;
             }
