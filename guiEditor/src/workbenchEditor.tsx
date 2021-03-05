@@ -9,11 +9,8 @@ import { GUINodeTools } from "./guiNodeTools";
 import { WorkbenchComponent } from "./diagram/workbench";
 import { _TypeStore } from "babylonjs/Misc/typeStore";
 import { MessageDialogComponent } from "./sharedComponents/messageDialog";
-<<<<<<< HEAD
 import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorerComponent";
-=======
 import { Control } from "babylonjs-gui/2D/controls/control";
->>>>>>> efa6865e0fc2b061030b777f8032560e312c0531
 
 require("./main.scss");
 
