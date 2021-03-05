@@ -92,7 +92,7 @@ export class SimpleMaterial extends PushMaterial {
         }
 
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new SimpleMaterialDefines();
+            subMesh.materialDefines = new SimpleMaterialDefines();
         }
 
         var defines = <SimpleMaterialDefines>subMesh._materialDefines;
@@ -201,7 +201,7 @@ export class SimpleMaterial extends PushMaterial {
                     onCompiled: this.onCompiled,
                     onError: this.onError,
                     indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights - 1 }
-                }, engine), defines);
+                }, engine), defines, this._materialContext);
 
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {

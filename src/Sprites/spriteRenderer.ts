@@ -4,7 +4,7 @@ import { IMatrixLike } from '../Maths/math.like';
 import { ThinEngine } from "../Engines/thinEngine";
 import { DataBuffer } from "../Meshes/dataBuffer";
 import { Buffer, VertexBuffer } from "../Meshes/buffer";
-import { Effect } from "../Materials/effect";
+import { DrawWrapper } from "../Materials/drawWrapper";
 import { ThinSprite } from './thinSprite';
 import { ISize } from '../Maths/math.size';
 
@@ -84,8 +84,8 @@ export class SpriteRenderer {
     private _vertexBuffers: { [key: string]: VertexBuffer } = {};
     private _spriteBuffer: Nullable<Buffer>;
     private _indexBuffer: DataBuffer;
-    private _effectBase: Effect;
-    private _effectFog: Effect;
+    private _drawWrapperBase: DrawWrapper;
+    private _drawWrapperFog: DrawWrapper;
     private _vertexArrayObject: WebGLVertexArrayObject;
 
     /**
@@ -108,6 +108,8 @@ export class SpriteRenderer {
         this._useInstancing = engine.getCaps().instancedArrays;
         this._useVAO = engine.getCaps().vertexArrayObject && !engine.disableVertexArrayObjects;
         this._scene = scene;
+        this._drawWrapperBase = new DrawWrapper(engine);
+        this._drawWrapperFog = new DrawWrapper(engine);
 
         if (!this._useInstancing) {
             const indices = [];
@@ -159,13 +161,13 @@ export class SpriteRenderer {
         this._vertexBuffers[VertexBuffer.ColorKind] = colors;
 
         // Effects
-        this._effectBase = this._engine.createEffect("sprites",
+        this._drawWrapperBase.effect = this._engine.createEffect("sprites",
             [VertexBuffer.PositionKind, "options", "offsets", "inverts", "cellInfo", VertexBuffer.ColorKind],
             ["view", "projection", "textureInfos", "alphaTest"],
             ["diffuseSampler"], "");
 
         if (this._scene) {
-            this._effectFog = this._scene.getEngine().createEffect("sprites",
+            this._drawWrapperFog.effect = this._scene.getEngine().createEffect("sprites",
                 [VertexBuffer.PositionKind, "options", "offsets", "inverts", "cellInfo", VertexBuffer.ColorKind],
                 ["view", "projection", "textureInfos", "alphaTest", "vFogInfos", "vFogColor"],
                 ["diffuseSampler"], "#define FOG");
@@ -185,12 +187,14 @@ export class SpriteRenderer {
             return;
         }
 
-        let effect = this._effectBase;
+        let drawWrapper = this._drawWrapperBase;
         let shouldRenderFog = false;
         if (this.fogEnabled && this._scene && this._scene.fogEnabled && this._scene.fogMode !== 0) {
-            effect = this._effectFog;
+            drawWrapper = this._drawWrapperFog;
             shouldRenderFog = true;
         }
+
+        const effect = drawWrapper.effect!;
 
         // Check
         if (!effect.isReady()) {
@@ -238,7 +242,7 @@ export class SpriteRenderer {
         }
 
         // Render
-        engine.enableEffect(effect);
+        engine.enableEffect(drawWrapper);
 
         effect.setTexture("diffuseSampler", this.texture);
         effect.setMatrix("view", viewMatrix);
