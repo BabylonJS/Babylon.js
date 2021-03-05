@@ -1196,6 +1196,13 @@
             "playgroundId": "#12MKMN#7",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-msaa.png"
+        },
+        {
+            "title": "Scissor test",
+            "renderCount": 10,
+            "playgroundId": "#W7E7CF#12",
+            "excludedEngines": ["webgl1"],
+            "referenceImage": "scissor-test.png"
         }
     ]
 }
