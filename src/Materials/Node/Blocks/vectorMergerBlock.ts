@@ -115,6 +115,16 @@ export class VectorMergerBlock extends NodeMaterialBlock {
         return this.xyzOut;
     }
 
+    protected _inputRename(name: string) {
+        if (name === "xyz ") {
+            return "xyzIn";
+        }
+        if (name === "xy ") {
+            return "xyIn";
+        }
+        return name;
+    }
+
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
