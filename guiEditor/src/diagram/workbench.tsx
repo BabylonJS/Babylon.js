@@ -268,7 +268,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         light.intensity = 0.9;
 
         let textureSize = 1200;
-        this._textureMesh = Mesh.CreateGround("earth", 1, 1, 1, this._scene);
+        this._textureMesh = Mesh.CreateGround("GuiCanvas", 1, 1, 1, this._scene);
         this._textureMesh.scaling.x = textureSize;
         this._textureMesh.scaling.z = textureSize;
         this.globalState.guiTexture = AdvancedDynamicTexture.CreateForMesh(this._textureMesh, textureSize, textureSize);
