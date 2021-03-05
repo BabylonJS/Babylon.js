@@ -17,6 +17,7 @@ import { EventState } from "babylonjs/Misc/observable";
 import { IWheelEvent } from "babylonjs/Events/deviceInputEvents";
 import { Epsilon } from "babylonjs/Maths/math.constants";
 import { Button } from "babylonjs-gui/2D/controls/button";
+import { Container } from "babylonjs-gui/2D/controls/container";
 require("./workbenchCanvas.scss");
 
 export interface IWorkbenchComponentProps {
@@ -99,11 +100,20 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     loadFromJson(serializationObject: any) {
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
         this.globalState.guiTexture.parseContent(serializationObject);
+        this.loadToEditor();
     }
 
     async loadFromSnippet(snippedID: string) {
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
         await this.globalState.guiTexture.parseFromSnippetAsync(snippedID);
+        this.loadToEditor();
+    }
+
+    loadToEditor(){
+        var children = this.globalState.guiTexture.getChildren();
+        children[0].children.forEach(guiElement => {
+            this.createNewGuiNode(guiElement);
+        });
     }
 
     resizeGuiTexture(newvalue: Vector2) {
@@ -133,6 +143,18 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return newGuiNode;
     }
 
+    public isContainer(guiControl: Control) {
+        switch (guiControl.typeName) {
+            case "Button":
+            case "StackPanel":
+            case "Rectangle":
+            case "Ellipse":
+                return true;
+            default:
+                return false;
+        }
+    }
+
     createNewGuiNode(guiControl: Control) {
         this.enableEditorProperties(guiControl);
 
@@ -153,6 +175,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         guiControl.onPointerOutObservable.add((evt) => {
             this.isOverGUINode = false;
         });
+
+        if(this.isContainer(guiControl))
+        {
+            (guiControl as Container).children.forEach(child => {
+                this.createNewGuiNode(child);
+            });
+        }
         return guiControl;
     }
 
