@@ -9,6 +9,8 @@ import { Constants } from "../Engines/constants";
 import { DataBuffer } from './dataBuffer';
 import { extractMinAndMaxIndexed } from '../Maths/math.functions';
 import { Plane } from '../Maths/math.plane';
+import { DrawWrapper } from "../Materials/drawWrapper";
+import { IMaterialContext } from "../Engines/IMaterialContext";
 
 declare type Collider = import("../Collisions/collider").Collider;
 declare type Material = import("../Materials/material").Material;
@@ -19,78 +21,96 @@ declare type Mesh = import("./mesh").Mesh;
 declare type Ray = import("../Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("../Culling/ray").TrianglePickingPredicate;
 
-/** @hidden */
-export interface ICustomEffect {
-    effect: Effect;
-    defines: string;
-}
-
 /**
  * Defines a subdivision inside a mesh
  */
 export class SubMesh implements ICullable {
     /** @hidden */
-    public _materialDefines: Nullable<MaterialDefines> = null;
+    public readonly _materialDefines: Nullable<MaterialDefines> = null; // fast access to _mainDrawWrapper.defines
     /** @hidden */
-    public _materialEffect: Nullable<Effect> = null;
-    /** @hidden */
-    public _effectOverride: Nullable<Effect> = null;
+    public readonly _materialEffect: Nullable<Effect> = null; // fast access to _mainDrawWrapper.effect
 
-    private _customEffects: { [name: string]: Nullable<ICustomEffect> };
+    private _drawWrappers: { [name: string]: DrawWrapper };
+    private _mainDrawWrapper: DrawWrapper; // same thing than _drawWrappers[Constants.SUBMESHEFFECT_MAINMATERIAL] but faster access
+    private _mainDrawWrapperOverride: Nullable<DrawWrapper> = null;
 
     /**
      * Gets material defines used by the effect associated to the sub mesh
      */
     public get materialDefines(): Nullable<MaterialDefines> {
-        return this._materialDefines;
+        return this._mainDrawWrapperOverride ? this._mainDrawWrapperOverride.defines as MaterialDefines : this._mainDrawWrapper.defines as MaterialDefines;
     }
 
     /**
      * Sets material defines used by the effect associated to the sub mesh
      */
     public set materialDefines(defines: Nullable<MaterialDefines>) {
-        this._materialDefines = defines;
+        const drawWrapper = this._mainDrawWrapperOverride ?? this._mainDrawWrapper;
+        drawWrapper.defines = defines;
+        (this._materialDefines as any) = defines;
     }
 
     /** @hidden */
-    public _getCustomEffect(name: string, createIfNotExisting = true): Nullable<ICustomEffect> {
-        if (!this._customEffects) {
-            this._customEffects = {};
+    public _getDrawWrapper(name: string, createIfNotExisting = false): DrawWrapper | undefined {
+        if (name === Constants.SUBMESH_DRAWWRAPPER_MAINPASS) {
+            return this._mainDrawWrapper;
         }
-
-        let customEffect = this._customEffects[name];
+        let customEffect = this._drawWrappers[name];
         if (!customEffect && createIfNotExisting) {
-            this._customEffects[name] = customEffect = { effect: undefined as any, defines: undefined as any };
+            this._drawWrappers[name] = customEffect = new DrawWrapper(this._mesh.getScene().getEngine());
         }
         return customEffect;
     }
 
     /** @hidden */
-    public _removeCustomEffect(name: string) {
-        delete this._customEffects[name];
+    public _removeEffect(name: string) {
+        delete this._drawWrappers[name];
     }
 
     /**
-     * Gets associated effect
+     * Gets associated (main) effect (possibly the effect override if defined)
      */
     public get effect(): Nullable<Effect> {
-        return this._effectOverride ?? this._materialEffect;
+        return this._mainDrawWrapperOverride ? this._mainDrawWrapperOverride.effect : this._mainDrawWrapper.effect;
+    }
+
+    /** @hidden */
+    public get _drawWrapper(): DrawWrapper {
+        return this._mainDrawWrapperOverride ?? this._mainDrawWrapper;
+    }
+
+    /** @hidden */
+    public get _drawWrapperOverride(): Nullable<DrawWrapper> {
+        return this._mainDrawWrapperOverride;
+    }
+
+    /** @hidden */
+    public _setMainDrawWrapperOverride(wrapper: Nullable<DrawWrapper>): void {
+        this._mainDrawWrapperOverride = wrapper;
+        const drawWrapper = this._mainDrawWrapperOverride ?? this._mainDrawWrapper;
+        (this._materialEffect as any) = drawWrapper.effect;
+        (this._materialDefines as any) = drawWrapper.defines;
     }
 
     /**
      * Sets associated effect (effect used to render this submesh)
      * @param effect defines the effect to associate with
      * @param defines defines the set of defines used to compile this effect
+     * @param materialContext material context associated to the effect
      */
-    public setEffect(effect: Nullable<Effect>, defines: Nullable<MaterialDefines> = null) {
-        if (this._materialEffect === effect) {
-            if (!effect) {
-                this._materialDefines = null;
-            }
-            return;
+    public setEffect(effect: Nullable<Effect>, defines: Nullable<string | MaterialDefines> = null, materialContext?: IMaterialContext) {
+        const drawWrapper = this._mainDrawWrapperOverride ?? this._mainDrawWrapper;
+        drawWrapper.setEffect(effect, defines);
+        if (materialContext !== undefined) {
+            drawWrapper.materialContext = materialContext;
         }
-        this._materialDefines = defines;
-        this._materialEffect = effect;
+        if (effect !== this._materialEffect) {
+            (this._materialEffect as any) = effect;
+            (this._materialDefines as any) = defines;
+        } else if (!effect) {
+            (this._materialDefines as any) = null;
+            drawWrapper.materialContext = undefined;
+        }
     }
 
     /** @hidden */
@@ -162,6 +182,9 @@ export class SubMesh implements ICullable {
             mesh.subMeshes.push(this);
         }
 
+        this._drawWrappers = {};
+        this._mainDrawWrapper = new DrawWrapper(this._mesh.getScene().getEngine(), false);
+        this._drawWrappers[Constants.SUBMESH_DRAWWRAPPER_MAINPASS] = this._mainDrawWrapper;
         this._trianglePlanes = [];
 
         this._id = mesh.subMeshes.length - 1;
@@ -250,7 +273,7 @@ export class SubMesh implements ICullable {
 
             if (this._currentMaterial !== effectiveMaterial) {
                 this._currentMaterial = effectiveMaterial;
-                this._materialDefines = null;
+                this._mainDrawWrapper.defines = null;
             }
 
             return effectiveMaterial;
