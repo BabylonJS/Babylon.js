@@ -71,6 +71,7 @@
 - Added resizable canvas ([msDestiny14](https://github.com/msDestiny14))
 - Added parenting system ([msDestiny14](https://github.com/msDestiny14))
 - Added ability to change zorder ([msDestiny14](https://github.com/msDestiny14))
+- Added scene explorer ([msDestiny14](https://github.com/msDestiny14))
 
 ### GUI
 
