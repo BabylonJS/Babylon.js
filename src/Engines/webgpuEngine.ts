@@ -882,6 +882,34 @@ export class WebGPUEngine extends Engine {
         }
     }
 
+    private _blendColorsCurrent: Array<Array<Nullable<number>>> = [[null, null, null, null], [null, null, null, null]];
+
+    private _resetCurrentColorBlend(index: number): void {
+        this._blendColorsCurrent[index][0] =
+        this._blendColorsCurrent[index][1] =
+        this._blendColorsCurrent[index][2] =
+        this._blendColorsCurrent[index][3] = null;
+    }
+
+    private _applyBlendColor(renderPass: GPURenderPassEncoder, force = false): void {
+        const index = renderPass === this._mainRenderPassWrapper.renderPass ? 0 : 1;
+
+        const colorBlend = this._alphaState._blendConstants;
+
+        if (colorBlend[0] !== this._blendColorsCurrent[index][0] ||
+            colorBlend[1] !== this._blendColorsCurrent[index][1] ||
+            colorBlend[2] !== this._blendColorsCurrent[index][2] ||
+            colorBlend[3] !== this._blendColorsCurrent[index][3] || force)
+        {
+            this._blendColorsCurrent[index][0] = colorBlend[0];
+            this._blendColorsCurrent[index][1] = colorBlend[1];
+            this._blendColorsCurrent[index][2] = colorBlend[2];
+            this._blendColorsCurrent[index][3] = colorBlend[3];
+
+            renderPass.setBlendColor(colorBlend as GPUColor);
+        }
+    }
+
     /**
      * Clear the current render buffer or the current render target (if any is set up)
      * @param color defines the color to use
@@ -2986,6 +3014,7 @@ export class WebGPUEngine extends Engine {
         this._resetCurrentViewport(1);
         this._resetCurrentScissor(1);
         this._resetCurrentStencilRef(1);
+        this._resetCurrentColorBlend(1);
     }
 
     private _endRenderTargetRenderPass() {
@@ -3001,6 +3030,7 @@ export class WebGPUEngine extends Engine {
             this._resetCurrentViewport(1);
             this._resetCurrentScissor(1);
             this._resetCurrentStencilRef(1);
+            this._resetCurrentColorBlend(1);
             this._currentRenderPass = null;
             this._rttRenderPassWrapper.reset();
         }
@@ -3063,6 +3093,7 @@ export class WebGPUEngine extends Engine {
         this._resetCurrentViewport(0);
         this._resetCurrentScissor(0);
         this._resetCurrentStencilRef(0);
+        this._resetCurrentColorBlend(0);
     }
 
     private _endMainRenderPass(): void {
@@ -3078,6 +3109,7 @@ export class WebGPUEngine extends Engine {
             this._resetCurrentViewport(0);
             this._resetCurrentScissor(0);
             this._resetCurrentStencilRef(0);
+            this._resetCurrentColorBlend(0);
             if (this._mainRenderPassWrapper.renderPass === this._currentRenderPass) {
                 this._currentRenderPass = null;
             }
@@ -3601,16 +3633,14 @@ export class WebGPUEngine extends Engine {
         const bindGroups = this._getBindGroupsToRender();
         this._setRenderBindGroups(bindGroups);
 
-        // TODO WebGPU add back the dirty mechanism, but we need to distinguish between the main render pass and the RTT pass (if any)
-        if (this._alphaState.alphaBlend /* && this._alphaState._isBlendConstantsDirty*/ && renderPass !== this._bundleEncoder) {
-            this._getCurrentRenderPass().setBlendColor(this._alphaState._blendConstants as any);
-        }
-
         if (renderPass !== this._bundleEncoder) {
             this._applyViewport(renderPass as GPURenderPassEncoder);
             this._applyScissor(renderPass as GPURenderPassEncoder);
             if (this._stencilState.stencilTest) {
                 this._applyStencilRef(renderPass as GPURenderPassEncoder);
+            }
+            if (this._alphaState.alphaBlend) {
+                this._applyBlendColor(renderPass as GPURenderPassEncoder);
             }
         }
     }
