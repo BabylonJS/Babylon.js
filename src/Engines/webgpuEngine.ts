@@ -1,4 +1,5 @@
 import { Logger } from "../Misc/logger";
+import { DomManagement } from '../Misc/domManagement';
 import { Nullable, DataArray, IndicesArray, FloatArray, Immutable } from "../types";
 import { Color4 } from "../Maths/math";
 import { Engine } from "../Engines/engine";
@@ -140,6 +141,17 @@ export interface WebGPUEngineOptions extends GPURequestAdapterOptions {
      * Options to load the associated Glslang library
      */
     glslangOptions?: GlslangOptions;
+
+    /**
+     * Defines if the engine should no exceed a specified device ratio
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio
+     */
+    limitDeviceRatio?: number;
+
+    /**
+     * Defines whether to adapt to the device's viewport characteristics (default: false)
+     */
+    adaptToDeviceRatio?: boolean;
 }
 
 /**
@@ -363,7 +375,11 @@ export class WebGPUEngine extends Engine {
         this._options = options;
         this.premultipliedAlpha = false;
 
-        this._hardwareScalingLevel = 1;
+        const devicePixelRatio = DomManagement.IsWindowObjectExist() ? (window.devicePixelRatio || 1.0) : 1.0;
+        const limitDeviceRatio = options.limitDeviceRatio || devicePixelRatio;
+        const adaptToDeviceRatio = options.adaptToDeviceRatio ?? false;
+
+        this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, devicePixelRatio) : 1.0;
         this._mainPassSampleCount = options.antialiasing ? this._defaultSampleCount : 1;
         this._isStencilEnable = options.stencil;
 
