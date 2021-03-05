@@ -103,6 +103,15 @@ async function evaluate(test, resultCanvas, result, renderImage, waitRing, done)
     var renderData = await getRenderData(canvas, engine);
     var testRes = true;
 
+    var dontReportTestOutcome = false;
+    if (config.qs && config.qs.checkresourcecreation && engine.countersLastFrame) {
+        if (BABYLON.WebGPUCacheBindGroups.NumBindGroupsCreatedLastFrame > 0 || engine.countersLastFrame.numEnableEffects > 0) {
+            console.warn(`check resource creation: numBindGroupsCreation=${BABYLON.WebGPUCacheBindGroups.NumBindGroupsCreatedLastFrame}, numEnableEffects=${engine.countersLastFrame.numEnableEffects}`);
+            testRes = false;
+        }
+        dontReportTestOutcome = true;
+    }
+
     // gl check
     var gl = engine._gl, glError = gl ? gl.getError() : 0;
     if (gl && glError !== 0) {
@@ -117,7 +126,7 @@ async function evaluate(test, resultCanvas, result, renderImage, waitRing, done)
             var info = engine.getGlInfo();
             var defaultErrorRatio = 2.5
 
-            if (compare(renderData, resultCanvas, test.threshold || 25, test.errorRatio || defaultErrorRatio)) {
+            if ((dontReportTestOutcome && !testRes) || !dontReportTestOutcome && compare(renderData, resultCanvas, test.threshold || 25, test.errorRatio || defaultErrorRatio)) {
                 result.classList.add("failed");
                 result.innerHTML = "×";
                 testRes = false;
@@ -131,8 +140,10 @@ async function evaluate(test, resultCanvas, result, renderImage, waitRing, done)
     }
     waitRing.classList.add("hidden");
 
-    var renderB64 = saveRenderImage(renderData, canvas);
-    renderImage.src = renderB64;
+    if (!dontReportTestOutcome) {
+        var renderB64 = saveRenderImage(renderData, canvas);
+        renderImage.src = renderB64;
+    }
 
     currentScene.dispose();
     currentScene = null;
@@ -149,10 +160,12 @@ async function evaluate(test, resultCanvas, result, renderImage, waitRing, done)
         resultCanvas.parentElement.setAttribute("result", testRes);
     }
 
-    if (testRes) {
-        numTestsOk++;
-    } else {
-        failedTests.push(currentTestName);
+    if (!dontReportTestOutcome) {
+        if (testRes) {
+            numTestsOk++;
+        } else {
+            failedTests.push(currentTestName);
+        }
     }
 
     done(testRes, renderB64);
@@ -161,6 +174,10 @@ async function evaluate(test, resultCanvas, result, renderImage, waitRing, done)
 function processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing, done) {
     currentScene.useConstantAnimationDeltaTime = true;
     var renderCount = test.renderCount || 1;
+
+    if (config.qs && config.qs.checkresourcecreation) {
+        renderCount = 50;
+    }
 
     engine.endFrame();
 
@@ -179,6 +196,7 @@ function processCurrentScene(test, resultCanvas, result, renderImage, index, wai
                 }
             }
             catch (e) {
+                engine.stopRenderLoop();
                 console.error(e);
                 failedTests.push(currentTestName);
                 done(false);

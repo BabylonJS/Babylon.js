@@ -97,7 +97,7 @@ export class FireMaterial extends PushMaterial {
         }
 
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new FireMaterialDefines();
+            subMesh.materialDefines = new FireMaterialDefines();
         }
 
         var defines = <FireMaterialDefines>subMesh._materialDefines;
@@ -195,7 +195,7 @@ export class FireMaterial extends PushMaterial {
                     indexParameters: null,
                     maxSimultaneousLights: 4,
                     transformFeedbackVaryings: null
-                }, engine), defines);
+                }, engine), defines, this._materialContext);
         }
 
         if (!subMesh.effect || !subMesh.effect.isReady()) {

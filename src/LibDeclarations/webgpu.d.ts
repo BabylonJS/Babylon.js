@@ -92,7 +92,7 @@ declare class GPUDevice extends EventTarget implements GPUObjectBase {
     readonly features: GPUFeatureName[];
     readonly limits: Required<GPUAdapterLimits>;
 
-    defaultQueue: GPUQueue;
+    readonly queue: GPUQueue;
 
     destroy(): void;
 
@@ -108,8 +108,8 @@ declare class GPUDevice extends EventTarget implements GPUObjectBase {
 
     createComputePipeline(descriptor: GPUComputePipelineDescriptor): GPUComputePipeline;
     createRenderPipeline(descriptor: GPURenderPipelineDescriptor): GPURenderPipeline;
-    createReadyComputePipeline(descriptor: GPUComputePipelineDescriptor): Promise<GPUComputePipeline>;
-    createReadyRenderPipeline(descriptor: GPURenderPipelineDescriptor): Promise<GPURenderPipeline>;
+    createComputePipelineAsync(descriptor: GPUComputePipelineDescriptor): Promise<GPUComputePipeline>;
+    createRenderPipelineAsync(descriptor: GPURenderPipelineDescriptor): Promise<GPURenderPipeline>;
 
     createCommandEncoder(descriptor?: GPUCommandEncoderDescriptor): GPUCommandEncoder;
     createRenderBundleEncoder(descriptor: GPURenderBundleEncoderDescriptor): GPURenderBundleEncoder;
@@ -597,7 +597,7 @@ type GPUVertexFormat =
 
 type GPUInputStepMode = "vertex" | "instance";
 
-interface GPUVertexState {
+interface GPUVertexState { // TODO WEBGPU to be replaced by: interface GPUVertexState extends GPUProgrammableStage {
     indexFormat?: GPUIndexFormat; // TODO WEBGPU to be removed
     vertexBuffers?: GPUVertexBufferLayout[]; // TODO WEBGPU to be renamed to buffers
 }
@@ -1065,7 +1065,7 @@ type GPUOrigin3D = [GPUIntegerCoordinate, GPUIntegerCoordinate, GPUIntegerCoordi
 interface GPUExtent3DDict {
     width?: GPUIntegerCoordinate; /* default=1 */
     height?: GPUIntegerCoordinate; /* default=1 */
-    depth?: GPUIntegerCoordinate; /* default=1 */
+    depthOrArrayLayers?: GPUIntegerCoordinate; /* default=1 */
 }
 type GPUExtent3D = [GPUIntegerCoordinate, GPUIntegerCoordinate, GPUIntegerCoordinate] | GPUExtent3DDict;
 

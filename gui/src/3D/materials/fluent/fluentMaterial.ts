@@ -140,7 +140,7 @@ export class FluentMaterial extends PushMaterial {
         }
 
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new FluentMaterialDefines();
+            subMesh.materialDefines = new FluentMaterialDefines();
         }
 
         var scene = this.getScene();
@@ -207,7 +207,7 @@ export class FluentMaterial extends PushMaterial {
                     onCompiled: this.onCompiled,
                     onError: this.onError,
                     indexParameters: { maxSimultaneousLights: 4 }
-                }, engine));
+                }, engine), defines, this._materialContext);
 
         }
 
