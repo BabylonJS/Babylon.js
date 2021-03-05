@@ -4,8 +4,6 @@ import { GlobalState } from "./globalState";
 import { WorkbenchEditor } from "./workbenchEditor";
 import { Popup } from "./sharedUiComponents/lines/popup";
 import { Observable } from "babylonjs/Misc/observable";
-import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorerComponent";
-import { Nullable } from "babylonjs/Legacy/legacy";
 
 /**
  * Interface used to specify creation options for the gui editor
@@ -22,7 +20,6 @@ export interface IGUIEditorOptions {
  */
 export class GUIEditor {
     private static _CurrentState: GlobalState;
-    private static _SceneExplorerHost: Nullable<HTMLElement>;
     /**
      * Show the gui editor
      * @param options defines the options to use to configure the gui editor

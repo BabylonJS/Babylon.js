@@ -1352,8 +1352,6 @@ export class NodeMaterial extends PushMaterial {
 
     /** Creates the node editor window. */
     private _createNodeEditor() {
-        this.BJSNODEMATERIALEDITOR = this.BJSNODEMATERIALEDITOR || this._getGlobalNodeMaterialEditor();
-
         this.BJSNODEMATERIALEDITOR.NodeEditor.Show({
             nodeMaterial: this
         });
@@ -1366,6 +1364,7 @@ export class NodeMaterial extends PushMaterial {
      */
     public edit(config?: INodeMaterialEditorOptions): Promise<void> {
         return new Promise((resolve, reject) => {
+            this.BJSNODEMATERIALEDITOR = this.BJSNODEMATERIALEDITOR || this._getGlobalNodeMaterialEditor();
             if (typeof this.BJSNODEMATERIALEDITOR == 'undefined') {
                 const editorUrl = config && config.editorURL ? config.editorURL : NodeMaterial.EditorURL;
 
