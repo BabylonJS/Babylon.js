@@ -12,7 +12,7 @@ import { _TimeToken } from "../Instrumentation/timeToken";
 import { Constants } from "./constants";
 import * as WebGPUConstants from './WebGPU/webgpuConstants';
 import { VertexBuffer } from "../Meshes/buffer";
-import { WebGPUPipelineContext, IWebGPURenderPipelineStageDescriptor, WebGPUBindGroupCacheNode } from './WebGPU/webgpuPipelineContext';
+import { WebGPUPipelineContext, IWebGPURenderPipelineStageDescriptor } from './WebGPU/webgpuPipelineContext';
 import { IPipelineContext } from './IPipelineContext';
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { WebGPUDataBuffer } from '../Meshes/WebGPU/webgpuDataBuffer';
@@ -40,6 +40,10 @@ import { WebGPUCacheRenderPipeline } from "./WebGPU/webgpuCacheRenderPipeline";
 import { WebGPUCacheRenderPipelineTree } from "./WebGPU/webgpuCacheRenderPipelineTree";
 import { WebGPUStencilState } from "./WebGPU/webgpuStencilState";
 import { WebGPUDepthCullingState } from "./WebGPU/webgpuDepthCullingState";
+import { DrawWrapper } from "../Materials/drawWrapper";
+import { WebGPUMaterialContext } from "./WebGPU/webgpuMaterialContext";
+import { WebGPUDrawContext } from "./WebGPU/webgpuDrawContext";
+import { WebGPUCacheBindGroups } from "./WebGPU/webgpuCacheBindGroups";
 
 import "../Shaders/clearQuad.vertex";
 import "../Shaders/clearQuad.fragment";
@@ -190,12 +194,26 @@ export class WebGPUEngine extends Engine {
     private _shaderManager: WebGPUShaderManager;
     private _cacheSampler: WebGPUCacheSampler;
     private _cacheRenderPipeline: WebGPUCacheRenderPipeline;
+    private _cacheBindGroups: WebGPUCacheBindGroups;
     private _emptyVertexBuffer: VertexBuffer;
     private _mrtAttachments: number[];
-    private _counters: {
-        numBindGroupsCreation: number;
+    /** @hidden */
+    public _counters: {
+        numEnableEffects: number;
+        numEnableDrawWrapper: number;
     } = {
-        numBindGroupsCreation: 0,
+        numEnableEffects: 0,
+        numEnableDrawWrapper: 0,
+    };
+    /**
+     * Counters from last frame
+     */
+    public readonly countersLastFrame: {
+        numEnableEffects: number;
+        numEnableDrawWrapper: number;
+    } = {
+        numEnableEffects: 0,
+        numEnableDrawWrapper: 0,
     };
 
     // Some of the internal state might change during the render pass.
@@ -223,6 +241,9 @@ export class WebGPUEngine extends Engine {
     // DrawCall Life Cycle
     // Effect is on the parent class
     // protected _currentEffect: Nullable<Effect> = null;
+    private _defaultMaterialContext: WebGPUMaterialContext;
+    private _currentMaterialContext: WebGPUMaterialContext;
+    private _currentDrawContext: WebGPUDrawContext | undefined;
     private _currentVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }> = null;
     private _currentOverrideVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }> = null;
     private _currentIndexBuffer: Nullable<DataBuffer> = null;
@@ -234,13 +255,15 @@ export class WebGPUEngine extends Engine {
     /** @hidden */
     public dbgShowShaderCode = false;
     /** @hidden */
-    public dbgSanityChecks = false;
-    /** @hidden */
-    public dbgGenerateLogs = false;
+    public dbgSanityChecks = true;
     /** @hidden */
     public dbgVerboseLogsForFirstFrames = false;
     /** @hidden */
     public dbgVerboseLogsNumFrames = 10;
+    /** @hidden */
+    public dbgLogIfNotDrawWrapper = true;
+    /** @hidden */
+    public dbgShowEmptyEnableEffectCalls = true;
 
     /**
      * Sets this to true to disable the cache for the samplers. You should do it only for testing purpose!
@@ -265,6 +288,19 @@ export class WebGPUEngine extends Engine {
     public set disableCacheRenderPipelines(disable: boolean) {
         if (this._cacheRenderPipeline) {
             this._cacheRenderPipeline.disabled = disable;
+        }
+    }
+
+    /**
+     * Sets this to true to disable the cache for the bind groups. You should do it only for testing purpose!
+     */
+    public get disableCacheBindGroups(): boolean {
+        return this._cacheBindGroups ? this._cacheBindGroups.disabled : false;
+    }
+
+    public set disableCacheBindGroups(disable: boolean) {
+        if (this._cacheBindGroups) {
+            this._cacheBindGroups.disabled = disable;
         }
     }
 
@@ -315,6 +351,14 @@ export class WebGPUEngine extends Engine {
     public get version(): number {
         return 1;
     }
+
+    /**
+     * True to be in compatibility mode, meaning rendering in the same way than OpenGL.
+     * Setting the property to false will improve performances, but can lead to rendering artifacts.
+     * See @TODO WEBGPU DOC PAGE
+     * @hidden
+     */
+    public compatibilityMode = true;
 
     /**
      * Create a new instance of the gpu engine asynchronously
@@ -441,6 +485,7 @@ export class WebGPUEngine extends Engine {
                 this._textureHelper = new WebGPUTextureHelper(this._device, this._glslang, this._bufferManager);
                 this._shaderManager = new WebGPUShaderManager(this._device);
                 this._cacheSampler = new WebGPUCacheSampler(this._device);
+                this._cacheBindGroups = new WebGPUCacheBindGroups(this._device, this._cacheSampler, this);
 
                 if (this.dbgVerboseLogsForFirstFrames) {
                     if ((this as any)._count === undefined) {
@@ -467,6 +512,10 @@ export class WebGPUEngine extends Engine {
                 this._textureHelper.setCommandEncoder(this._uploadEncoder);
 
                 this._initializeLimits();
+
+                this._defaultMaterialContext = this.createMaterialContext()!;
+                this._currentMaterialContext = this._defaultMaterialContext;
+
                 this._initializeContextAndSwapChain();
                 this._initializeMainAttachments();
                 this.resize();
@@ -588,9 +637,6 @@ export class WebGPUEngine extends Engine {
         this._colorFormat = this._options.swapChainFormat!;
         this._mainRenderPassWrapper.colorAttachmentGPUTextures = [new WebGPUHardwareTexture()];
         this._mainRenderPassWrapper.colorAttachmentGPUTextures[0].format = this._colorFormat;
-        if (this.dbgGenerateLogs) {
-            console.log("Swap chain preferred format:", this._context.getSwapChainPreferredFormat(this._adapter));
-        }
     }
 
     // Set default values as WebGL with depth and stencil attachment for the broadest Compat.
@@ -598,7 +644,7 @@ export class WebGPUEngine extends Engine {
         this._mainTextureExtends = {
             width: this.getRenderWidth(),
             height: this.getRenderHeight(),
-            depth: 1
+            depthOrArrayLayers: 1
         };
 
         let mainColorAttachments: GPURenderPassColorAttachment[];
@@ -1213,6 +1259,12 @@ export class WebGPUEngine extends Engine {
     //                              UBO
     //------------------------------------------------------------------------------
 
+    /**
+     * Create an uniform buffer
+     * @see https://doc.babylonjs.com/features/webgl2#uniform-buffer-objets
+     * @param elements defines the content of the uniform buffer
+     * @returns the webGL uniform buffer
+     */
     public createUniformBuffer(elements: FloatArray): DataBuffer {
         let view: Float32Array;
         if (elements instanceof Array) {
@@ -1226,10 +1278,24 @@ export class WebGPUEngine extends Engine {
         return dataBuffer;
     }
 
+    /**
+     * Create a dynamic uniform buffer
+     * @see https://doc.babylonjs.com/features/webgl2#uniform-buffer-objets
+     * @param elements defines the content of the uniform buffer
+     * @returns the webGL uniform buffer
+     */
     public createDynamicUniformBuffer(elements: FloatArray): DataBuffer {
         return this.createUniformBuffer(elements);
     }
 
+    /**
+     * Update an existing uniform buffer
+     * @see https://doc.babylonjs.com/features/webgl2#uniform-buffer-objets
+     * @param uniformBuffer defines the target uniform buffer
+     * @param elements defines the content to update
+     * @param offset defines the offset in the uniform buffer where update should start
+     * @param count defines the size of the data to update
+     */
     public updateUniformBuffer(uniformBuffer: DataBuffer, elements: FloatArray, offset?: number, count?: number): void {
         if (offset === undefined) {
             offset = 0;
@@ -1255,6 +1321,12 @@ export class WebGPUEngine extends Engine {
         this._bufferManager.setSubData(dataBuffer, offset, view, 0, count);
     }
 
+    /**
+     * Bind a buffer to the current webGL context at a given location
+     * @param buffer defines the buffer to bind
+     * @param location defines the index where to bind the buffer
+     * @param name Name of the uniform variable to bind
+     */
     public bindUniformBufferBase(buffer: DataBuffer, location: number, name: string): void {
         this._uniformsBuffers[name] = buffer as WebGPUDataBuffer;
     }
@@ -1361,6 +1433,22 @@ export class WebGPUEngine extends Engine {
         return new WebGPUPipelineContext(shaderProcessingContext! as WebGPUShaderProcessingContext, this);
     }
 
+    /**
+     * Creates a new material context
+     * @returns the new context
+     */
+    public createMaterialContext(): WebGPUMaterialContext | undefined {
+        return new WebGPUMaterialContext(this._cacheBindGroups);
+    }
+
+    /**
+     * Creates a new draw context
+     * @returns the new context
+     */
+    public createDrawContext(): WebGPUDrawContext | undefined {
+        return new WebGPUDrawContext();
+    }
+
     /** @hidden */
     public _preparePipelineContext(pipelineContext: IPipelineContext, vertexSourceCode: string, fragmentSourceCode: string, createAsRaw: boolean, rawVertexSourceCode: string, rawFragmentSourceCode: string,
         rebuildRebind: any,
@@ -1419,19 +1507,48 @@ export class WebGPUEngine extends Engine {
      * Activates an effect, mkaing it the current one (ie. the one used for rendering)
      * @param effect defines the effect to activate
      */
-    public enableEffect(effect: Nullable<Effect>): void {
-        if (!effect || effect === this._currentEffect && !this._forceEnableEffect) {
+    public enableEffect(effect: Nullable<Effect | DrawWrapper>): void {
+        if (!effect) {
             return;
         }
 
-        this._currentEffect = effect;
-        this._forceEnableEffect = false;
+        let isNewEffect = true;
 
-        if (effect.onBind) {
-            effect.onBind(effect);
+        if (!DrawWrapper.IsWrapper(effect)) {
+            isNewEffect = effect !== this._currentEffect;
+            this._currentEffect = effect;
+            this._currentMaterialContext = this._defaultMaterialContext;
+            this._currentDrawContext = undefined;
+            this._counters.numEnableEffects++;
+            if (this.dbgLogIfNotDrawWrapper) {
+                Logger.Warn(`enableEffect has been called with an Effect and not a Wrapper! effect.uniqueId=${effect.uniqueId}, effect.name=${effect.name}, effect.name.vertex=${effect.name.vertex}, effect.name.fragment=${effect.name.fragment}`, 10);
+            }
+        } else if (!effect.effect || effect.effect === this._currentEffect && effect.materialContext === this._currentMaterialContext && effect.drawContext === this._currentDrawContext && !this._forceEnableEffect) {
+            if (!effect.effect && this.dbgShowEmptyEnableEffectCalls) {
+                console.warn("Invalid call to enableEffect: the effect property is empty! drawWrapper=", effect);
+            }
+            return;
+        } else {
+            isNewEffect = effect.effect !== this._currentEffect;
+            this._currentEffect = effect.effect;
+            this._currentMaterialContext = effect.materialContext as WebGPUMaterialContext;
+            this._currentDrawContext = effect.drawContext as WebGPUDrawContext;
+            this._counters.numEnableDrawWrapper++;
+            if (!this._currentMaterialContext) {
+                console.error("drawWrapper=", effect);
+                throw `Invalid call to enableEffect: the materialContext property is empty!`;
+            }
         }
-        if (effect._onBindObservable) {
-            effect._onBindObservable.notifyObservers(effect);
+
+        this._forceEnableEffect = isNewEffect || this._forceEnableEffect ? false : this._forceEnableEffect;
+
+        if (isNewEffect) {
+            if (this._currentEffect!.onBind) {
+                this._currentEffect!.onBind(this._currentEffect!);
+            }
+            if (this._currentEffect!._onBindObservable) {
+                this._currentEffect!._onBindObservable.notifyObservers(this._currentEffect!);
+            }
         }
     }
 
@@ -1943,27 +2060,21 @@ export class WebGPUEngine extends Engine {
 
     private _setInternalTexture(name: string, internalTexture: Nullable<InternalTexture>, baseName?: string, textureIndex = 0): void {
         baseName = baseName ?? name;
-        if (this._currentEffect) {
+        if (this._currentEffect && !this._currentMaterialContext.setTexture(name, internalTexture)) {
             const webgpuPipelineContext = this._currentEffect._pipelineContext as WebGPUPipelineContext;
-
-            if (webgpuPipelineContext.textures[name]) {
-                if (webgpuPipelineContext.textures[name]!.texture !== internalTexture) {
-                    webgpuPipelineContext.bindGroupsCache.values = {}; // the bind groups need to be rebuilt (at least the bind group owning this texture, but it's easier to just have them all rebuilt)
-                }
-                webgpuPipelineContext.textures[name]!.texture = internalTexture!;
-            }
-            else {
-                const availableSampler = webgpuPipelineContext.shaderProcessingContext.availableSamplers[baseName];
-                if (availableSampler) {
-                    webgpuPipelineContext.samplers[baseName] = {
-                        samplerBinding: availableSampler.sampler.bindingIndex,
-                        firstTextureName: name,
-                    };
-                    webgpuPipelineContext.textures[name] = {
-                        textureBinding: availableSampler.textures[textureIndex].bindingIndex,
-                        texture: internalTexture!,
-                    };
-                }
+            const availableSampler = webgpuPipelineContext.shaderProcessingContext.availableSamplers[baseName];
+            if (availableSampler) {
+                this._currentMaterialContext.samplers[baseName] = {
+                    firstTextureName: name,
+                };
+                this._currentMaterialContext.textures[name] = {
+                    texture: internalTexture!,
+                    wrapU: internalTexture?._cachedWrapU,
+                    wrapV: internalTexture?._cachedWrapV,
+                    wrapR: internalTexture?._cachedWrapR,
+                    anisotropicFilteringLevel: internalTexture?._cachedAnisotropicFilteringLevel,
+                    samplingMode: internalTexture?.samplingMode,
+                };
             }
         }
     }
@@ -1995,16 +2106,12 @@ export class WebGPUEngine extends Engine {
     protected _setTexture(channel: number, texture: Nullable<BaseTexture>, isPartOfTextureArray = false, depthStencilTexture = false, name = "", baseName?: string, textureIndex = 0): boolean {
         // name == baseName for a texture that is not part of a texture array
         // Else, name is something like 'myTexture0' / 'myTexture1' / ... and baseName is 'myTexture'
-        // baseName is used to look up the sampler in the WebGPUPipelineContext.samplers map
-        // name is used to look up the texture in the WebGPUPipelineContext.textures map
+        // baseName is used to look up the sampler in the effectContext.samplers map
+        // name is used to look up the texture in the effectContext.textures map
         baseName = baseName ?? name;
         if (this._currentEffect) {
-            const webgpuPipelineContext = this._currentEffect._pipelineContext as WebGPUPipelineContext;
             if (!texture) {
-                if (webgpuPipelineContext.textures[name] && webgpuPipelineContext.textures[name]!.texture) {
-                    webgpuPipelineContext.bindGroupsCache.values = {}; // the bind groups need to be rebuilt (at least the bind group owning this texture, but it's easier to just have them all rebuilt)
-                }
-                webgpuPipelineContext.textures[name] = null;
+                this._currentMaterialContext.setTexture(name, null);
                 return false;
             }
 
@@ -2846,7 +2953,7 @@ export class WebGPUEngine extends Engine {
         if (this.dbgVerboseLogsForFirstFrames) {
             if ((this as any)._count === undefined) { (this as any)._count = 0; }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                console.log("frame #" + (this as any)._count + " - counters - numBindGroupsCreation=", this._counters.numBindGroupsCreation);
+                console.log("frame #" + (this as any)._count + " - counters");
             }
         }
 
@@ -2867,8 +2974,13 @@ export class WebGPUEngine extends Engine {
             UniformBuffer._updatedUbosInFrame = {};
         }
 
-        this._counters.numBindGroupsCreation = 0;
+        this.countersLastFrame.numEnableEffects = this._counters.numEnableEffects;
+        this.countersLastFrame.numEnableDrawWrapper = this._counters.numEnableDrawWrapper;
+        this._counters.numEnableEffects = 0;
+        this._counters.numEnableDrawWrapper = 0;
+
         this._cacheRenderPipeline.endFrame();
+        this._cacheBindGroups.endFrame();
 
         this._pendingDebugCommands.length = 0;
 
@@ -2910,7 +3022,7 @@ export class WebGPUEngine extends Engine {
         this._commandBuffers[1] = this._renderTargetEncoder.finish();
         this._commandBuffers[2] = this._renderEncoder.finish();
 
-        this._device.defaultQueue.submit(this._commandBuffers);
+        this._device.queue.submit(this._commandBuffers);
 
         this._uploadEncoder = this._device.createCommandEncoder(this._uploadEncoderDescriptor);
         this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
@@ -3498,109 +3610,19 @@ export class WebGPUEngine extends Engine {
             webgpuPipelineContext.uniformBuffer.update();
         }
 
-        let node: WebGPUBindGroupCacheNode = webgpuPipelineContext.bindGroupsCache;
-        for (let i = 0; i < webgpuPipelineContext.shaderProcessingContext.uniformBufferNames.length; ++i) {
-            const bufferName = webgpuPipelineContext.shaderProcessingContext.uniformBufferNames[i];
-            const uboId = this._uniformsBuffers[bufferName].uniqueId;
-            let nextNode = node.values[uboId];
-            if (!nextNode) {
-                nextNode = new WebGPUBindGroupCacheNode();
-                node.values[uboId] = nextNode;
+        const sceneBufferId = this._uniformsBuffers?.["Scene"]?.uniqueId ?? 0;
+
+        if (!this.compatibilityMode && this._currentDrawContext) {
+            let bindGroups = this._currentDrawContext.fastBindGroups[sceneBufferId];
+            if (bindGroups) {
+                return bindGroups;
             }
-            node = nextNode;
         }
 
-        let bindGroups: GPUBindGroup[] = node.bindGroups;
-        if (bindGroups) {
-            return bindGroups;
-        }
+        let bindGroups = this._cacheBindGroups.getBindGroups(webgpuPipelineContext, this._currentMaterialContext, this._uniformsBuffers);
 
-        bindGroups = [];
-
-        node.bindGroups = bindGroups;
-        this._counters.numBindGroupsCreation++;
-
-        const bindGroupLayouts = webgpuPipelineContext.bindGroupLayouts;
-
-        for (let i = 0; i < webgpuPipelineContext.shaderProcessingContext.orderedUBOsAndSamplers.length; i++) {
-            const setDefinition = webgpuPipelineContext.shaderProcessingContext.orderedUBOsAndSamplers[i];
-            if (setDefinition === undefined) {
-                let groupLayout = bindGroupLayouts[i];
-                bindGroups[i] = this._device.createBindGroup({
-                    layout: groupLayout,
-                    entries: [],
-                });
-                continue;
-            }
-
-            const entries: GPUBindGroupEntry[] = [];
-            for (let j = 0; j < setDefinition.length; j++) {
-                const bindingDefinition = webgpuPipelineContext.shaderProcessingContext.orderedUBOsAndSamplers[i][j];
-                if (bindingDefinition === undefined) {
-                    continue;
-                }
-
-                if (bindingDefinition.isSampler) {
-                    const bindingInfo = webgpuPipelineContext.samplers[bindingDefinition.name];
-                    if (bindingInfo) {
-                        const texture = webgpuPipelineContext.textures[bindingInfo.firstTextureName]?.texture;
-                        if (!texture) {
-                            Logger.Error(`Could not create the gpu sampler "${bindingDefinition.name}" because no texture can be looked up for the name "${bindingInfo.firstTextureName}". bindingInfo=${JSON.stringify(bindingInfo)}, webgpuPipelineContext.textures=${webgpuPipelineContext.textures}`, 50);
-                            continue;
-                        }
-                        entries.push({
-                            binding: bindingInfo.samplerBinding,
-                            resource: this._cacheSampler.getSampler(texture),
-                        });
-                    } else {
-                        Logger.Error(`Sampler "${bindingDefinition.name}" could not be bound. bindingDefinition=${JSON.stringify(bindingDefinition)}, webgpuPipelineContext.samplers=${JSON.stringify(webgpuPipelineContext.samplers)}`, 50);
-                    }
-                } else if (bindingDefinition.isTexture) {
-                    const bindingInfo = webgpuPipelineContext.textures[bindingDefinition.name];
-                    if (bindingInfo) {
-                        if (this.dbgSanityChecks && bindingInfo.texture === null) {
-                            Logger.Error(`Trying to bind a null texture! bindingDefinition=${JSON.stringify(bindingDefinition)}, bindingInfo=${JSON.stringify(bindingInfo, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}`, 50);
-                            continue;
-                        }
-                        const hardwareTexture = bindingInfo.texture._hardwareTexture as WebGPUHardwareTexture;
-
-                        if (this.dbgSanityChecks && !hardwareTexture.view) {
-                            Logger.Error(`Trying to bind a null gpu texture! bindingDefinition=${JSON.stringify(bindingDefinition)}, bindingInfo=${JSON.stringify(bindingInfo, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}, isReady=${bindingInfo.texture.isReady}`, 50);
-                            continue;
-                        }
-
-                        entries.push({
-                            binding: bindingInfo.textureBinding,
-                            resource: hardwareTexture.view!,
-                        });
-                    } else {
-                        Logger.Error(`Texture "${bindingDefinition.name}" could not be bound. bindingDefinition=${JSON.stringify(bindingDefinition)}, webgpuPipelineContext.textures=${JSON.stringify(webgpuPipelineContext.textures, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}`, 50);
-                    }
-                } else {
-                    const dataBuffer = this._uniformsBuffers[bindingDefinition.name];
-                    if (dataBuffer) {
-                        const webgpuBuffer = dataBuffer.underlyingResource as GPUBuffer;
-                        entries.push({
-                            binding: j,
-                            resource: {
-                                buffer: webgpuBuffer,
-                                offset: 0,
-                                size: dataBuffer.capacity,
-                            },
-                        });
-                    } else {
-                        Logger.Error(`UBO "${bindingDefinition.name}. bindingDefinition=${JSON.stringify(bindingDefinition)}, _uniformsBuffers=${JSON.stringify(this._uniformsBuffers)}`, 50);
-                    }
-                }
-            }
-
-            if (entries.length > 0) {
-                let groupLayout = bindGroupLayouts[i];
-                bindGroups[i] = this._device.createBindGroup({
-                    layout: groupLayout,
-                    entries,
-                });
-            }
+        if (!this.compatibilityMode && this._currentDrawContext) {
+            this._currentDrawContext.fastBindGroups[sceneBufferId] = bindGroups;
         }
 
         return bindGroups;
@@ -3641,8 +3663,15 @@ export class WebGPUEngine extends Engine {
     private _setRenderPipeline(fillMode: number): void {
         const renderPass = this._bundleEncoder || this._getCurrentRenderPass();
 
-        const pipeline = this._cacheRenderPipeline.getRenderPipeline(fillMode, this._currentEffect!, this._currentRenderTarget ? this._currentRenderTarget.samples : this._mainPassSampleCount);
+        let pipeline = !this.compatibilityMode ? this._currentDrawContext?.fastRenderPipeline : null;
+        if (!pipeline) {
+            pipeline = this._cacheRenderPipeline.getRenderPipeline(fillMode, this._currentEffect!, this._currentRenderTarget ? this._currentRenderTarget.samples : this._mainPassSampleCount);
+        }
         renderPass.setPipeline(pipeline);
+
+        if (!this.compatibilityMode && this._currentDrawContext) {
+            this._currentDrawContext.fastRenderPipeline = pipeline;
+        }
 
         this._bindVertexInputs();
 

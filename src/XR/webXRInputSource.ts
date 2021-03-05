@@ -143,7 +143,7 @@ export class WebXRInputSource {
      */
     public dispose() {
         if (this.grip) {
-            this.grip.dispose();
+            this.grip.dispose(false, true);
         }
         if (this.motionController) {
             this.motionController.dispose();
