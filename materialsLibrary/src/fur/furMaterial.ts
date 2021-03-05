@@ -166,7 +166,7 @@ export class FurMaterial extends PushMaterial {
         }
 
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new FurMaterialDefines();
+            subMesh.materialDefines = new FurMaterialDefines();
         }
 
         var defines = <FurMaterialDefines>subMesh._materialDefines;
@@ -295,7 +295,7 @@ export class FurMaterial extends PushMaterial {
                     onCompiled: this.onCompiled,
                     onError: this.onError,
                     indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights }
-                }, engine), defines);
+                }, engine), defines, this._materialContext);
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;

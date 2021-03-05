@@ -856,7 +856,7 @@ export class StandardMaterial extends PushMaterial {
         }
 
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new StandardMaterialDefines();
+            subMesh.materialDefines = new StandardMaterialDefines();
         }
 
         var scene = this.getScene();
@@ -1229,7 +1229,7 @@ export class StandardMaterial extends PushMaterial {
             DetailMapConfiguration.AddSamplers(samplers);
 
             PrePassConfiguration.AddUniforms(uniforms);
-            PrePassConfiguration.AddSamplers(uniforms);
+            PrePassConfiguration.AddSamplers(samplers);
 
             if (ImageProcessingConfiguration) {
                 ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
@@ -1288,7 +1288,7 @@ export class StandardMaterial extends PushMaterial {
                 } else {
                     this._rebuildInParallel = false;
                     scene.resetCachedMaterial();
-                    subMesh.setEffect(effect, defines);
+                    subMesh.setEffect(effect, defines, this._materialContext);
                     this.buildUniformLayout();
                 }
             }

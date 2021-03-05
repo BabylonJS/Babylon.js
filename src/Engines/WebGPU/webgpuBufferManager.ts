@@ -68,11 +68,11 @@ export class WebGPUBufferManager {
         const maxChunk = 1024 * 1024 * 15;
         let offset = 0;
         while ((chunkEnd - (chunkStart + offset)) > maxChunk) {
-            this._device.defaultQueue.writeBuffer(buffer, dstByteOffset + offset, src.buffer, chunkStart + offset, maxChunk);
+            this._device.queue.writeBuffer(buffer, dstByteOffset + offset, src.buffer, chunkStart + offset, maxChunk);
             offset += maxChunk;
         }
 
-        this._device.defaultQueue.writeBuffer(buffer, dstByteOffset + offset, src.buffer, chunkStart + offset, byteLength - offset);
+        this._device.queue.writeBuffer(buffer, dstByteOffset + offset, src.buffer, chunkStart + offset, byteLength - offset);
     }
 
     private _FromHalfFloat(value: number): number {
