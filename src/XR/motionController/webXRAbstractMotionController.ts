@@ -306,7 +306,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
     public dispose(): void {
         this.getComponentIds().forEach((id) => this.getComponent(id).dispose());
         if (this.rootMesh) {
-            this.rootMesh.dispose();
+            this.rootMesh.dispose(false, true);
         }
     }
 
