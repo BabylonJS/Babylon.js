@@ -517,24 +517,18 @@ export class DeviceInputSystem implements IDisposable {
                 let previousWheelScrollY = pointer[PointerInput.MouseWheelY];
                 let previousWheelScrollZ = pointer[PointerInput.MouseWheelZ];
 
-                if (evt.deltaX) {
-                    pointer[PointerInput.MouseWheelX] = evt.deltaX;
-                }
-                if (evt.deltaY) {
-                    pointer[PointerInput.MouseWheelY] = evt.deltaY;
-                }
-                if (evt.deltaX) {
-                    pointer[PointerInput.MouseWheelZ] = evt.deltaZ;
-                }
+                pointer[PointerInput.MouseWheelX] = evt.deltaX || 0;
+                pointer[PointerInput.MouseWheelY] = evt.deltaY || evt.wheelDelta || 0;
+                pointer[PointerInput.MouseWheelZ] = evt.deltaZ || 0;
 
                 if (this.onInputChanged) {
-                    if (evt.deltaX !== 0) {
+                    if (pointer[PointerInput.MouseWheelX] !== 0) {
                         this.onInputChanged(deviceType, deviceSlot, PointerInput.MouseWheelX, previousWheelScrollX, pointer[PointerInput.MouseWheelX], evt);
                     }
-                    if (evt.deltaY !== 0) {
+                    if (pointer[PointerInput.MouseWheelY] !== 0) {
                         this.onInputChanged(deviceType, deviceSlot, PointerInput.MouseWheelY, previousWheelScrollY, pointer[PointerInput.MouseWheelY], evt);
                     }
-                    if (evt.deltaZ !== 0) {
+                    if (pointer[PointerInput.MouseWheelZ] !== 0) {
                         this.onInputChanged(deviceType, deviceSlot, PointerInput.MouseWheelZ, previousWheelScrollZ, pointer[PointerInput.MouseWheelZ], evt);
                     }
                 }
