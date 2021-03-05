@@ -553,9 +553,17 @@ export class Constants {
     public static readonly PREPASS_ALBEDO_TEXTURE_TYPE = 7;
 
     /**
-     * Prefixes used by the engine for custom effects
+     * Prefixes used by the engine for sub mesh draw wrappers
      */
-    public static readonly CUSTOMEFFECT_PREFIX_SHADOWGENERATOR = "bjs_shadowgenerator_";
+
+    /** @hidden */
+    public static readonly SUBMESH_DRAWWRAPPER_MAINPASS = "bjs_mainpass";
+    /** @hidden */
+    public static readonly SUBMESH_DRAWWRAPPER_SHADOWGENERATOR_PREFIX = "bjs_shadowgenerator_";
+    /** @hidden */
+    public static readonly SUBMESH_DRAWWRAPPER_DEPTHRENDERER_PREFIX = "bjs_depthrenderer_";
+    /** @hidden */
+    public static readonly SUBMESH_DRAWWRAPPER_OUTLINERENDERER_PREFIX = "bjs_outlinerenderer_";
 
     /**
      * Constant used as key code for Alt key

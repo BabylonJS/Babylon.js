@@ -842,6 +842,7 @@ export class Sound {
                 this._soundSource.stop(stopTime);
                 if (stopTime === undefined) {
                     this.isPlaying = false;
+                    this._soundSource.onended = () => void(0);
                 } else {
                     this._soundSource.onended = () => {
                         this.isPlaying = false;

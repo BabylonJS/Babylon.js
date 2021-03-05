@@ -988,7 +988,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new PBRMaterialDefines();
+            subMesh.materialDefines = new PBRMaterialDefines();
         }
 
         const defines = <PBRMaterialDefines>subMesh._materialDefines;
@@ -1126,7 +1126,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             } else {
                 this._rebuildInParallel = false;
                 scene.resetCachedMaterial();
-                subMesh.setEffect(effect, defines);
+                subMesh.setEffect(effect, defines, this._materialContext);
                 this.buildUniformLayout();
             }
         }
@@ -1322,7 +1322,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         PBRSheenConfiguration.AddSamplers(samplers);
 
         PrePassConfiguration.AddUniforms(uniforms);
-        PrePassConfiguration.AddSamplers(uniforms);
+        PrePassConfiguration.AddSamplers(samplers);
 
         if (ImageProcessingConfiguration) {
             ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);

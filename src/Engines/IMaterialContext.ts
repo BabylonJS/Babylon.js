@@ -1,0 +1,3 @@
+/** @hidden */
+export interface IMaterialContext {
+}
