@@ -5,7 +5,6 @@ import { GlobalState } from "../globalState";
 import { Control } from "babylonjs-gui/2D/controls/control";
 import { Container } from "babylonjs-gui/2D/controls/container";
 
-
 interface IParentingPropertyGridComponentProps {
     guiNode: Control;
     guiNodes: Control[];
@@ -30,7 +29,6 @@ export class ParentingPropertyGridComponent extends React.Component<IParentingPr
         }
     }
 
-    
     public addChildGui(childNode: Control, parentNode: Control) {
         this.props.globalState.guiTexture.removeControl(childNode);
         (parentNode as Container).addControl(childNode);
@@ -78,7 +76,7 @@ export class ParentingPropertyGridComponent extends React.Component<IParentingPr
                             }
                             if (value != 0) {
                                 var parent = containerNodes[value - 1];
-                                this.addChildGui(this.props.guiNode,parent);
+                                this.addChildGui(this.props.guiNode, parent);
                             }
                             this.forceUpdate();
                         }}

@@ -9,7 +9,7 @@ import { GUINodeTools } from "./guiNodeTools";
 import { WorkbenchComponent } from "./diagram/workbench";
 import { _TypeStore } from "babylonjs/Misc/typeStore";
 import { MessageDialogComponent } from "./sharedComponents/messageDialog";
-import { Control } from "babylonjs-gui";
+import { Control } from "babylonjs-gui/2D/controls/control";
 
 require("./main.scss");
 
