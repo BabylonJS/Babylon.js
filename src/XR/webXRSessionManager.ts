@@ -23,7 +23,7 @@ export class WebXRSessionManager implements IDisposable {
     private _sessionEnded: boolean = false;
     private _xrNavigator: any;
     private _baseLayer: Nullable<XRWebGLLayer> = null;
-    private _renderTargetTexture: RenderTargetTexture;
+    private _renderTargetTextures: Array<RenderTargetTexture> = [];
 
     /**
      * The base reference space from which the session started. good if you want to reset your
@@ -202,9 +202,9 @@ export class WebXRSessionManager implements IDisposable {
                     // Notify frame observers
                     this.onXRSessionEnded.notifyObservers(null);
 
-                    if (this._renderTargetTexture) {
-                        this._renderTargetTexture.dispose();
-                    }
+                    // Dispose render target textures.
+                    this._renderTargetTextures.forEach((rtt) => rtt.dispose());
+                    this._renderTargetTextures = [];
                 },
                 { once: true }
             );
@@ -257,7 +257,10 @@ export class WebXRSessionManager implements IDisposable {
         };
 
         if (this._xrNavigator.xr.native) {
-            this._rttProvider = this._xrNavigator.xr.getNativeRenderTargetProvider(this.session, this._createRenderTargetTexture.bind(this));
+            this._rttProvider = this._xrNavigator.xr.getNativeRenderTargetProvider(
+                this.session,
+                this._createRenderTargetTexture.bind(this),
+                this._destroyRenderTargetTexture.bind(this));
         } else {
             // Create render target texture from xr's webgl render target
             let rtt: RenderTargetTexture, framebufferWidth: number, framebufferHeight: number, framebuffer: WebGLFramebuffer;
@@ -384,13 +387,17 @@ export class WebXRSessionManager implements IDisposable {
         internalTexture._framebuffer = framebuffer;
 
         // Create render target texture from the internal texture
-        if (this._renderTargetTexture) {
-            this._renderTargetTexture.dispose();
-        }
-        // keep reference locally to dispose when the session ends
-        this._renderTargetTexture = new RenderTargetTexture("XR renderTargetTexture", { width: width, height: height }, this.scene, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true);
-        this._renderTargetTexture._texture = internalTexture;
+        const renderTargetTexture = new RenderTargetTexture("XR renderTargetTexture", { width: width, height: height }, this.scene, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true);
+        renderTargetTexture._texture = internalTexture;
 
-        return this._renderTargetTexture;
+        // Store the render target texture for cleanup when the session ends.
+        this._renderTargetTextures.push(renderTargetTexture);
+
+        return renderTargetTexture;
+    }
+
+    private _destroyRenderTargetTexture(renderTargetTexture: RenderTargetTexture): void {
+        this._renderTargetTextures.splice(this._renderTargetTextures.indexOf(renderTargetTexture), 1);
+        renderTargetTexture.dispose();
     }
 }
