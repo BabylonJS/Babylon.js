@@ -161,6 +161,9 @@ export class VideoTexture extends Texture {
     }
 
     private _getVideo(src: string | string[] | HTMLVideoElement): HTMLVideoElement {
+        if ((<any>src).isNative) {
+            return <HTMLVideoElement>src;
+        }
         if (src instanceof HTMLVideoElement) {
             Tools.SetCorsBehavior(src.currentSrc, src);
             return src;
@@ -366,10 +369,11 @@ export class VideoTexture extends Texture {
      * Creates a video texture straight from a stream.
      * @param scene Define the scene the texture should be created in
      * @param stream Define the stream the texture should be created from
+     * @param constraints video constraints
      * @returns The created video texture as a promise
      */
-    public static CreateFromStreamAsync(scene: Scene, stream: MediaStream): Promise<VideoTexture> {
-        var video = document.createElement("video");
+    public static CreateFromStreamAsync(scene: Scene, stream: MediaStream, constraints: any): Promise<VideoTexture> {
+        var video = scene.getEngine().createVideoElement(constraints);
 
         if (scene.getEngine()._badOS) {
             // Yes... I know and I hope to remove it soon...
@@ -440,7 +444,7 @@ export class VideoTexture extends Texture {
                     audio: audioConstaints
                 })
                 .then((stream) => {
-                    return this.CreateFromStreamAsync(scene, stream);
+                    return this.CreateFromStreamAsync(scene, stream, constraints);
                 });
         }
         else {
@@ -467,7 +471,7 @@ export class VideoTexture extends Texture {
                         audio: audioConstaints
                     },
                     (stream: any) => {
-                        return this.CreateFromStreamAsync(scene, stream);
+                        return this.CreateFromStreamAsync(scene, stream, constraints);
                     },
                     function(e: MediaStreamError) {
                         Logger.Error(e.name);
