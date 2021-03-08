@@ -13,6 +13,8 @@ import { Gizmo, GizmoAxisCache } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { RotationGizmo } from "./rotationGizmo";
+import { ShaderMaterial } from "../Materials/shaderMaterial";
+import { Effect } from "../Materials/effect";
 
 /**
  * Single plane rotation gizmo
@@ -34,21 +36,69 @@ export class PlaneRotationGizmo extends Gizmo {
      */
     public onSnapObservable = new Observable<{ snapDistance: number }>();
 
+    /**
+     * The maximum angle between the camera and the rotation allowed for interaction
+     * If a rotation plane appears 'flat', a lower value allows interaction.
+     */
+    public static MaxDragAngle: number = Math.PI * 9 / 20;
+
+    /**
+     * Acumulated relative angle value for rotation on the axis. Reset to 0 when a dragStart occurs
+     */
+    public angle: number = 0;
+
     private _isEnabled: boolean = true;
     private _parent: Nullable<RotationGizmo> = null;
     private _coloredMaterial: StandardMaterial;
     private _hoverMaterial: StandardMaterial;
     private _disableMaterial: StandardMaterial;
     private _gizmoMesh: Mesh;
-    private _rotationCircle: Mesh;
+    private _rotationDisplayPlane: Mesh;
     private _dragging: boolean = false;
+    private _angles = new Vector3();
 
-    private static _CircleConstants = {
-        radius: 0.3,
-        pi2: Math.PI * 2,
-        tessellation: 70,
-        rotationCircleRange: 4
-    };
+    private static _rotationGizmoVertexShader = `
+        precision highp float;
+        attribute vec3 position;
+        attribute vec2 uv;
+        uniform mat4 worldViewProjection;
+        varying vec3 vPosition;
+        varying vec2 vUV;
+        void main(void) {
+            gl_Position = worldViewProjection * vec4(position, 1.0);
+            vUV = uv;
+        }`;
+
+    private static _rotationGizmoFragmentShader = `
+        precision highp float;
+        varying vec2 vUV;
+        varying vec3 vPosition;
+        uniform vec3 angles;
+        #define twopi 6.283185307
+        void main(void) {
+            vec2 uv = vUV - vec2(0.5);
+            float angle = atan(uv.y, uv.x) + 3.141592;
+            float delta = gl_FrontFacing ? angles.y : -angles.y;
+            float begin = angles.x - delta * angles.z;
+            float start = (begin < (begin + delta)) ? begin : (begin + delta);
+            float end = (begin > (begin + delta)) ? begin : (begin + delta);
+            float len = sqrt(dot(uv,uv));
+            float opacity = 1. - step(0.5, len);
+
+            float base = abs(floor(start / twopi)) * twopi;
+            start += base;
+            end += base;
+
+            float intensity = 0.;
+            for (int i = 0; i < 5; i++)
+            {
+                intensity += max(step(start, angle) - step(end, angle), 0.);
+                angle += twopi;
+            }
+            gl_FragColor = vec4(1.,1.,0., min(intensity * 0.25, 0.8)) * opacity;
+        }`;
+
+    private _rotationShaderMaterial: ShaderMaterial;
 
     /**
      * Creates a PlaneRotationGizmo
@@ -79,8 +129,25 @@ export class PlaneRotationGizmo extends Gizmo {
         const { rotationMesh, collider } = this._createGizmoMesh(this._gizmoMesh, thickness, tessellation);
 
         // Setup Rotation Circle
-        const rotationCirclePaths: any[] = [];
-        this._rotationCircle = this.setupRotationCircle(rotationCirclePaths, this._gizmoMesh);
+        this._rotationDisplayPlane = Mesh.CreatePlane("rotationDisplay", 0.6, this.gizmoLayer.utilityLayerScene, false);
+        this._rotationDisplayPlane.rotation.z = Math.PI * 0.5;
+        this._rotationDisplayPlane.parent = this._gizmoMesh;
+        this._rotationDisplayPlane.setEnabled(false);
+
+        Effect.ShadersStore["rotationGizmoVertexShader"] = PlaneRotationGizmo._rotationGizmoVertexShader;
+        Effect.ShadersStore["rotationGizmoFragmentShader"] = PlaneRotationGizmo._rotationGizmoFragmentShader;
+        this._rotationShaderMaterial = new ShaderMaterial("shader", this.gizmoLayer.utilityLayerScene, {
+            vertex: "rotationGizmo",
+            fragment: "rotationGizmo",
+        },
+        {
+            attributes: ["position", "uv"],
+            uniforms: ["worldViewProjection", "angles"]
+        });
+        this._rotationShaderMaterial.backFaceCulling = false;
+
+        this._rotationDisplayPlane.material = this._rotationShaderMaterial;
+        this._rotationDisplayPlane.visibility = 0.999;
 
         this._gizmoMesh.lookAt(this._rootMesh.position.add(planeNormal));
         this._rootMesh.addChild(this._gizmoMesh);
@@ -88,14 +155,13 @@ export class PlaneRotationGizmo extends Gizmo {
         // Add drag behavior to handle events when the gizmo is dragged
         this.dragBehavior = new PointerDragBehavior({ dragPlaneNormal: planeNormal });
         this.dragBehavior.moveAttached = false;
-        this.dragBehavior.maxDragAngle = Math.PI * 9 / 20;
+        this.dragBehavior.maxDragAngle = PlaneRotationGizmo.MaxDragAngle;
         this.dragBehavior._useAlternatePickedPointAboveMaxDragAngle = true;
         this._rootMesh.addBehavior(this.dragBehavior);
 
         // Closures for drag logic
-        let dragDistance = 0;
         const lastDragPosition = new Vector3();
-        let dragPlanePoint = new Vector3();
+
         const rotationMatrix = new Matrix();
         const planeNormalTowardsCamera = new Vector3();
         let localPlaneNormalTowardsCamera = new Vector3();
@@ -103,32 +169,24 @@ export class PlaneRotationGizmo extends Gizmo {
         this.dragBehavior.onDragStartObservable.add((e) => {
             if (this.attachedNode) {
                 lastDragPosition.copyFrom(e.dragPlanePoint);
+                this._rotationDisplayPlane.setEnabled(true);
 
-                // This is for instantiation location of rotation circle
-                const forward = new Vector3(0, 0, 1);
-                const direction = this._rotationCircle.getDirection(forward);
-                direction.normalize();
+                this._rotationDisplayPlane.getWorldMatrix().invertToRef(rotationMatrix);
+                Vector3.TransformCoordinatesToRef(e.dragPlanePoint, rotationMatrix, lastDragPosition);
 
-                // Remove Rotation Circle from parent mesh before drag interaction
-                this._gizmoMesh.removeChild(this._rotationCircle);
-
-                lastDragPosition.copyFrom(e.dragPlanePoint);
-                dragPlanePoint = e.dragPlanePoint;
-                const origin = this._rotationCircle.getAbsolutePosition().clone();
-                const originalRotationPoint = this._rotationCircle.getAbsolutePosition().clone().addInPlace(direction);
-                const dragStartPoint = e.dragPlanePoint;
-                const angle = Vector3.GetAngleBetweenVectors(originalRotationPoint.subtract(origin), dragStartPoint.subtract(origin), this._rotationCircle.up);
-
-                this._rotationCircle.addRotation(0, angle, 0);
+                this._angles.x = Math.atan2(lastDragPosition.y, lastDragPosition.x) + Math.PI;
+                this._angles.y = 0;
+                this._angles.z = this.updateGizmoRotationToMatchAttachedMesh ? 1 : 0;
                 this._dragging = true;
+                lastDragPosition.copyFrom(e.dragPlanePoint);
+                this._rotationShaderMaterial.setVector3("angles", this._angles);
+                this.angle = 0;
             }
         });
 
         this.dragBehavior.onDragEndObservable.add(() => {
-            dragDistance = 0;
-            this.updateRotationCircle(this._rotationCircle, rotationCirclePaths, dragDistance, dragPlanePoint);
-            this._gizmoMesh.addChild(this._rotationCircle);    // Add rotation circle back to parent mesh after drag behavior
             this._dragging = false;
+            this._rotationDisplayPlane.setEnabled(false);
         });
 
         var tmpSnapEvent = { snapDistance: 0 };
@@ -155,13 +213,11 @@ export class PlaneRotationGizmo extends Gizmo {
                     localPlaneNormalTowardsCamera = Vector3.TransformCoordinates(planeNormalTowardsCamera, rotationMatrix);
                 }
                 // Flip up vector depending on which side the camera is on
-                let cameraFlipped = false;
                 if (gizmoLayer.utilityLayerScene.activeCamera) {
-                    var camVec = gizmoLayer.utilityLayerScene.activeCamera.position.subtract(nodeTranslation);
+                    var camVec = gizmoLayer.utilityLayerScene.activeCamera.position.subtract(nodeTranslation).normalize();
                     if (Vector3.Dot(camVec, localPlaneNormalTowardsCamera) > 0) {
                         planeNormalTowardsCamera.scaleInPlace(-1);
                         localPlaneNormalTowardsCamera.scaleInPlace(-1);
-                        cameraFlipped = true;
                     }
                 }
                 var halfCircleSide = Vector3.Dot(localPlaneNormalTowardsCamera, cross) > 0.0;
@@ -183,9 +239,6 @@ export class PlaneRotationGizmo extends Gizmo {
                         angle = 0;
                     }
                 }
-
-                dragDistance += cameraFlipped ? -angle : angle;
-                this.updateRotationCircle(this._rotationCircle, rotationCirclePaths, dragDistance, dragPlanePoint);
 
                 // Convert angle and axis to quaternion (http://www.euclideanspace.com/maths/geometry/rotations/conversions/angleToQuaternion/index.htm)
                 var quaternionCoefficient = Math.sin(angle / 2);
@@ -214,7 +267,9 @@ export class PlaneRotationGizmo extends Gizmo {
                     tmpSnapEvent.snapDistance = angle;
                     this.onSnapObservable.notifyObservers(tmpSnapEvent);
                 }
-
+                this._angles.y += angle;
+                this.angle += angle;
+                this._rotationShaderMaterial.setVector3("angles", this._angles);
                 this._matrixChanged();
             }
         });
@@ -236,6 +291,8 @@ export class PlaneRotationGizmo extends Gizmo {
             if (this._customMeshSet) {
                 return;
             }
+            // updating here the maxangle because ondragstart is too late (value already used) and the updated value is not taken into account
+            this.dragBehavior.maxDragAngle = PlaneRotationGizmo.MaxDragAngle;
             this._isHovered = !!(cache.colliderMeshes.indexOf(<Mesh>pointerInfo?.pickInfo?.pickedMesh) != -1);
             if (!this._parent) {
                 var material = this._isHovered || this._dragging ? this._hoverMaterial : this._coloredMaterial;
@@ -271,72 +328,6 @@ export class PlaneRotationGizmo extends Gizmo {
         }
     }
 
-    private setupRotationCircle(paths: Vector3[][], parentMesh: AbstractMesh): Mesh {
-        const fillRadians = 0;
-        const step = PlaneRotationGizmo._CircleConstants.pi2 / PlaneRotationGizmo._CircleConstants.tessellation;
-        for (let p = -Math.PI / 2; p < Math.PI / 2 - 1.5; p += step / 2) {
-            const path: Vector3[] = [];
-            for (let i = 0; i < PlaneRotationGizmo._CircleConstants.pi2 * PlaneRotationGizmo._CircleConstants.rotationCircleRange + 0.01; i += step) {
-                if (i < fillRadians) {
-                    const x = PlaneRotationGizmo._CircleConstants.radius * Math.sin(i) * Math.cos(p);
-                    const z = PlaneRotationGizmo._CircleConstants.radius * Math.cos(i) * Math.cos(p);
-                    const y = 0;
-                    path.push(new Vector3(x, y, z));
-                } else {
-                    path.push(new Vector3(0, 0, 0));
-                }
-            }
-
-            paths.push(path);
-        }
-
-        const mat = new StandardMaterial("", this.gizmoLayer.utilityLayerScene);
-        mat.diffuseColor = Color3.Yellow();
-        mat.backFaceCulling = false;
-        const mesh = Mesh.CreateRibbon("rotationCircle", paths, false, false, 0, this.gizmoLayer.utilityLayerScene, true);
-        mesh.material = mat;
-        mesh.material.alpha = .25;
-        mesh.rotation.x = Math.PI / 2;
-        parentMesh.addChild(mesh);
-        return mesh;
-    }
-
-    private updateRotationPath(pathArr: Vector3[][], newFill: number): void {
-        // To update the Ribbon, you have to mutate the pathArray in-place
-        const step = PlaneRotationGizmo._CircleConstants.pi2 / PlaneRotationGizmo._CircleConstants.tessellation;
-        let tessellationCounter = 0;
-        for (let p = -Math.PI / 2; p < Math.PI / 2 - 1.5; p += step / 2) {
-            const path = pathArr[tessellationCounter];
-            if (path) {
-                let radianCounter = 0;
-                for (let i = 0; i < PlaneRotationGizmo._CircleConstants.pi2 * PlaneRotationGizmo._CircleConstants.rotationCircleRange + 0.01; i += step) {
-                    if (path[radianCounter]) {
-                        if (i < Math.abs(newFill)) {
-                            const absI = (newFill > 0) ? i : i * -1;
-                            const absP = (newFill > 0) ? p : p * -1;
-                            path[radianCounter].set(
-                                PlaneRotationGizmo._CircleConstants.radius * Math.sin(absI) * Math.cos(absP),
-                                0,
-                                PlaneRotationGizmo._CircleConstants.radius * Math.cos(absI) * Math.cos(absP)
-                            );
-                        } else {
-                            path[radianCounter].set(0, 0, 0);
-                        }
-                    }
-
-                    radianCounter++;
-                }
-            }
-
-            tessellationCounter ++;
-        }
-    }
-
-    private updateRotationCircle(mesh: Mesh, paths: any[], newFill: number, dragPlanePoint: Vector3): void {
-        this.updateRotationPath(paths, newFill);
-        Mesh.CreateRibbon("rotationCircle", paths, false, false, 0, this.gizmoLayer.utilityLayerScene, undefined, undefined, mesh.geometry ? mesh : undefined);
-    }
-
     /**
          * If the gizmo is enabled
          */
@@ -364,8 +355,11 @@ export class PlaneRotationGizmo extends Gizmo {
         if (this._gizmoMesh) {
             this._gizmoMesh.dispose();
         }
-        if (this._rotationCircle) {
-            this._rotationCircle.dispose();
+        if (this._rotationDisplayPlane) {
+            this._rotationDisplayPlane.dispose();
+        }
+        if (this._rotationShaderMaterial) {
+            this._rotationShaderMaterial.dispose();
         }
         [this._coloredMaterial, this._hoverMaterial, this._disableMaterial].forEach((matl) => {
             if (matl) {

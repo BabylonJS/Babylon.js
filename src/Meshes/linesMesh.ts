@@ -14,6 +14,10 @@ import { MaterialHelper } from '../Materials/materialHelper';
 import "../Shaders/color.fragment";
 import "../Shaders/color.vertex";
 
+Mesh._LinesMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
+    return LinesMesh.Parse(parsedMesh, scene);
+};
+
 /**
  * Line mesh
  * @see https://doc.babylonjs.com/babylon101/parametric_shapes
@@ -182,7 +186,11 @@ export class LinesMesh extends Mesh {
 
         // VBOs
         const indexToBind = this.isUnIndexed ? null : this._geometry.getIndexBuffer();
-        this._geometry._bind(colorEffect, indexToBind);
+        if (!this._userInstancedBuffersStorage) {
+            this._geometry._bind(colorEffect, indexToBind);
+        } else {
+            this._geometry._bind(colorEffect, indexToBind, this._userInstancedBuffersStorage.vertexBuffers, this._userInstancedBuffersStorage.vertexArrayObjects);
+        }
 
         // Color
         if (!this.useVertexColor) {
@@ -239,6 +247,31 @@ export class LinesMesh extends Mesh {
      */
     public createInstance(name: string): InstancedLinesMesh {
         return new InstancedLinesMesh(name, this);
+    }
+
+    /**
+     * Serializes this ground mesh
+     * @param serializationObject object to write serialization to
+     */
+    public serialize(serializationObject: any): void {
+        super.serialize(serializationObject);
+        serializationObject.color = this.color.asArray();
+        serializationObject.alpha = this.alpha;
+    }
+
+        /**
+     * Parses a serialized ground mesh
+     * @param parsedMesh the serialized mesh
+     * @param scene the scene to create the ground mesh in
+     * @returns the created ground mesh
+     */
+    public static Parse(parsedMesh: any, scene: Scene): LinesMesh {
+        var result = new LinesMesh(parsedMesh.name, scene);
+
+        result.color = Color3.FromArray(parsedMesh.color);
+        result.alpha = parsedMesh.alpha;
+
+        return result;
     }
 }
 

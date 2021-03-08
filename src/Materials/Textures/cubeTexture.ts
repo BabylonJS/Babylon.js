@@ -191,8 +191,8 @@ export class CubeTexture extends BaseTexture {
 
         const lastDot = rootUrl.lastIndexOf(".");
         const extension = forcedExtension ? forcedExtension : (lastDot > -1 ? rootUrl.substring(lastDot).toLowerCase() : "");
-        const isDDS = (extension === ".dds");
-        const isEnv = (extension === ".env");
+        const isDDS = (extension.indexOf(".dds") === 0);
+        const isEnv = (extension.indexOf(".env") === 0);
 
         if (isEnv) {
             this.gammaSpace = false;

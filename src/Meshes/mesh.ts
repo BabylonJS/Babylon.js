@@ -36,6 +36,7 @@ import { Plane } from '../Maths/math.plane';
 import { TransformNode } from './transformNode';
 import { CanvasGenerator } from '../Misc/canvasGenerator';
 import { ICreateCapsuleOptions } from './Builders/capsuleBuilder';
+import { DrawWrapper } from "../Materials/drawWrapper";
 
 declare type LinesMesh = import("./linesMesh").LinesMesh;
 declare type InstancedMesh = import("./instancedMesh").InstancedMesh;
@@ -111,7 +112,7 @@ class _InternalMeshDataInfo {
     public _onBeforeBindObservable: Nullable<Observable<Mesh>>;
     public _onAfterRenderObservable: Nullable<Observable<Mesh>>;
     public _onBeforeDrawObservable: Nullable<Observable<Mesh>>;
-    public _onBetweenPassObservable: Nullable<Observable<Mesh>>;
+    public _onBetweenPassObservable: Nullable<Observable<SubMesh>>;
 
     public _areNormalsFrozen: boolean = false; // Will be used by ribbons mainly
     public _sourcePositions: Float32Array; // Will be used to save original positions when using software skinning
@@ -284,11 +285,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
-    * An event triggeredbetween rendering pass wneh using separateCullingPass = true
+    * An event triggeredbetween rendering pass when using separateCullingPass = true
     */
-   public get onBetweenPassObservable(): Observable<Mesh> {
+   public get onBetweenPassObservable(): Observable<SubMesh> {
     if (!this._internalMeshDataInfo._onBetweenPassObservable) {
-        this._internalMeshDataInfo._onBetweenPassObservable = new Observable<Mesh>();
+        this._internalMeshDataInfo._onBetweenPassObservable = new Observable<SubMesh>();
     }
 
     return this._internalMeshDataInfo._onBetweenPassObservable;
@@ -1943,18 +1944,20 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             engine.setAlphaMode(this._effectiveMaterial.alphaMode);
         }
 
-        var effect: Nullable<Effect>;
+        var drawWrapper: Nullable<DrawWrapper>;
         if (this._effectiveMaterial._storeEffectOnSubMeshes) {
-            effect = subMesh.effect;
+            drawWrapper = subMesh._drawWrapper;
         } else {
-            effect = this._effectiveMaterial.getEffect();
+            drawWrapper = this._effectiveMaterial._getDrawWrapper();
         }
+
+        var effect = drawWrapper?.effect ?? null;
 
         for (let step of scene._beforeRenderingMeshStage) {
             step.action(this, subMesh, batch, effect);
         }
 
-        if (!effect) {
+        if (!drawWrapper || !effect) {
             if (oldCamera) {
                 oldCamera.maxZ = oldCameraMaxZ;
                 scene.updateTransformMatrix(true);
@@ -1981,7 +1984,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             sideOrientation = instanceDataStorage.sideOrientation;
         }
 
-        var reverse = this._effectiveMaterial._preBind(effect, sideOrientation);
+        var reverse = this._effectiveMaterial._preBind(drawWrapper, sideOrientation);
 
         if (this._effectiveMaterial.forceDepthWrite) {
             engine.setDepthWrite(true);
@@ -2011,7 +2014,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             engine.setState(true, this._effectiveMaterial.zOffset, false, reverse);
 
             if (this._internalMeshDataInfo._onBetweenPassObservable) {
-                this._internalMeshDataInfo._onBetweenPassObservable.notifyObservers(this);
+                this._internalMeshDataInfo._onBetweenPassObservable.notifyObservers(subMesh);
             }
         }
 
@@ -2807,14 +2810,18 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public increaseVertices(numberPerEdge: number): void {
         var vertex_data = VertexData.ExtractFromMesh(this);
         var uvs = vertex_data.uvs;
-        var currentIndices = vertex_data.indices;
-        var positions = vertex_data.positions;
-        var normals = vertex_data.normals;
+        var currentIndices = vertex_data.indices && !Array.isArray(vertex_data.indices) && Array.from ? Array.from(vertex_data.indices) : vertex_data.indices;
+        var positions = vertex_data.positions && !Array.isArray(vertex_data.positions) && Array.from ? Array.from(vertex_data.positions) : vertex_data.positions;
+        var normals = vertex_data.normals && !Array.isArray(vertex_data.normals) && Array.from ? Array.from(vertex_data.normals) : vertex_data.normals;
 
         if (!currentIndices || !positions || !normals || !uvs) {
             Logger.Warn("VertexData contains null entries");
         }
         else {
+            vertex_data.indices = currentIndices;
+            vertex_data.positions = positions;
+            vertex_data.normals = normals;
+
             var segments: number = numberPerEdge + 1; //segments per current facet edge, become sides of new facets
             var tempIndices: Array<Array<number>> = new Array();
             for (var i = 0; i < segments + 1; i++) {
@@ -3380,6 +3387,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         throw _DevTools.WarnImport("GroundMesh");
     }
 
+    /** @hidden */
+    public static _LinesMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
+        throw _DevTools.WarnImport("LinesMesh");
+    }
+
     /**
      * Returns a new Mesh object parsed from the source provided.
      * @param parsedMesh is the source
@@ -3390,7 +3402,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public static Parse(parsedMesh: any, scene: Scene, rootUrl: string): Mesh {
         var mesh: Mesh;
 
-        if (parsedMesh.type && parsedMesh.type === "GroundMesh") {
+        if (parsedMesh.type && parsedMesh.type === "LinesMesh") {
+            mesh = Mesh._LinesMeshParser(parsedMesh, scene);
+        } else if (parsedMesh.type && parsedMesh.type === "GroundMesh") {
             mesh = Mesh._GroundMeshParser(parsedMesh, scene);
         } else {
             mesh = new Mesh(parsedMesh.name, scene);

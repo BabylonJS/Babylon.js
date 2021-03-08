@@ -1,6 +1,6 @@
 import { Tools } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
-import { Vector3, TmpVectors } from "../Maths/math.vector";
+import { Vector3 } from "../Maths/math.vector";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Engine } from "../Engines/engine";
@@ -121,8 +121,6 @@ export class Sound {
     private _startTime: number = 0;
     private _startOffset: number = 0;
     private _position: Vector3 = Vector3.Zero();
-    /** @hidden */
-    public _positionInEmitterSpace: boolean = false;
     private _localDirection: Vector3 = new Vector3(1, 0, 0);
     private _volume: number = 1;
     private _isReadyToPlay: boolean = false;
@@ -840,11 +838,16 @@ export class Sound {
                 }
                 this.isPlaying = false;
             } else if (Engine.audioEngine.audioContext && this._soundSource) {
-                var stopTime = time ? Engine.audioEngine.audioContext.currentTime + time : Engine.audioEngine.audioContext.currentTime;
+                var stopTime = time ? Engine.audioEngine.audioContext.currentTime + time : undefined;
                 this._soundSource.stop(stopTime);
-                this._soundSource.onended = () => {
+                if (stopTime === undefined) {
                     this.isPlaying = false;
-                };
+                    this._soundSource.onended = () => void(0);
+                } else {
+                    this._soundSource.onended = () => {
+                        this.isPlaying = false;
+                    };
+                }
                 if (!this.isPaused) {
                     this._startOffset = 0;
                 }
@@ -864,6 +867,7 @@ export class Sound {
                 } else {
                     this._streamingSource.disconnect();
                 }
+                this.isPlaying = false;
             } else if (Engine.audioEngine.audioContext) {
                 this.stop(0);
                 this._startOffset += Engine.audioEngine.audioContext.currentTime - this._startTime;
@@ -949,17 +953,12 @@ export class Sound {
     }
 
     private _onRegisterAfterWorldMatrixUpdate(node: TransformNode): void {
-        if (this._positionInEmitterSpace) {
-            node.worldMatrixFromCache.invertToRef(TmpVectors.Matrix[0]);
-            this.setPosition(TmpVectors.Matrix[0].getTranslation());
+        if (!(<any>node).getBoundingInfo) {
+            this.setPosition(node.absolutePosition);
         } else {
-            if (!(<any>node).getBoundingInfo) {
-                this.setPosition(node.absolutePosition);
-            } else {
-                let mesh = node as AbstractMesh;
-                let boundingInfo = mesh.getBoundingInfo();
-                this.setPosition(boundingInfo.boundingSphere.centerWorld);
-            }
+            let mesh = node as AbstractMesh;
+            let boundingInfo = mesh.getBoundingInfo();
+            this.setPosition(boundingInfo.boundingSphere.centerWorld);
         }
         if (Engine.audioEngine.canUseWebAudio && this._isDirectional && this.isPlaying) {
             this._updateDirection();

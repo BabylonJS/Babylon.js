@@ -3,17 +3,19 @@ import { Observable } from "babylonjs/Misc/observable";
 import { LogEntry } from "./components/log/logComponent";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
 import { Color4 } from "babylonjs/Maths/math.color";
-import { GUINode } from "./diagram/guiNode";
 import { WorkbenchComponent } from "./diagram/workbench";
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
 import { PropertyChangedEvent } from "./sharedUiComponents/propertyChangedEvent";
+import { Vector2 } from "babylonjs/Maths/math.vector";
+import { Control } from "babylonjs-gui/2D/controls/control";
 
 export class GlobalState {
     guiTexture: AdvancedDynamicTexture;
     hostElement: HTMLElement;
     hostDocument: HTMLDocument;
     hostWindow: Window;
-    onSelectionChangedObservable = new Observable<Nullable<GUINode>>();
+    onSelectionChangedObservable = new Observable<Nullable<Control>>();
+    onResizeObservable = new Observable<Vector2>();
     onRebuildRequiredObservable = new Observable<void>();
     onBuiltObservable = new Observable<void>();
     onResetRequiredObservable = new Observable<void>();
@@ -23,7 +25,7 @@ export class GlobalState {
     onErrorMessageDialogRequiredObservable = new Observable<string>();
     onIsLoadingChanged = new Observable<boolean>();
     onSelectionBoxMoved = new Observable<ClientRect | DOMRect>();
-    onGuiNodeRemovalObservable = new Observable<GUINode>();
+    onGuiNodeRemovalObservable = new Observable<Control>();
     backgroundColor: Color4;
     blockKeyboardEvents = false;
     controlCamera: boolean;

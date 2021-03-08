@@ -5,13 +5,11 @@ import { PropertyTabComponent } from "./components/propertyTab/propertyTabCompon
 import { Portal } from "./portal";
 import { LogComponent } from "./components/log/logComponent";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
-import { Nullable } from "babylonjs/types";
 import { GUINodeTools } from "./guiNodeTools";
-import { IEditorData } from "./nodeLocationInfo";
 import { WorkbenchComponent } from "./diagram/workbench";
-import { GUINode } from "./diagram/guiNode";
 import { _TypeStore } from "babylonjs/Misc/typeStore";
 import { MessageDialogComponent } from "./sharedComponents/messageDialog";
+import { Control } from "babylonjs-gui/2D/controls/control";
 
 require("./main.scss");
 
@@ -78,9 +76,9 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                         return;
                     }
 
-                    let selectedItem = selectedItems[0] as GUINode;
+                    let selectedItem = selectedItems[0] as Control;
 
-                    if (!selectedItem.guiControl) {
+                    if (!selectedItem) {
                         return;
                     }
                 } else if (evt.key === "v") {
@@ -91,10 +89,10 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         );
     }
 
-    pasteSelection(copiedNodes: GUINode[], currentX: number, currentY: number, selectNew = false) {
+    pasteSelection(copiedNodes: Control[], currentX: number, currentY: number, selectNew = false) {
         //let originalNode: Nullable<GUINode> = null;
 
-        let newNodes: GUINode[] = [];
+        let newNodes: Control[] = [];
 
         // Copy to prevent recursive side effects while creating nodes.
         copiedNodes = copiedNodes.slice();
@@ -104,7 +102,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
 
         // Create new nodes
         for (var node of copiedNodes) {
-            let block = node.guiControl;
+            let block = node;
 
             if (!block) {
                 continue;
@@ -114,44 +112,12 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         return newNodes;
     }
 
-    zoomToFit() {
-        this._workbenchCanvas.zoomToFit();
-    }
-    
     showWaitScreen() {
         this.props.globalState.hostDocument.querySelector(".wait-screen")?.classList.remove("hidden");
     }
 
     hideWaitScreen() {
         this.props.globalState.hostDocument.querySelector(".wait-screen")?.classList.add("hidden");
-    }
-
-    reOrganize(editorData: Nullable<IEditorData> = null, isImportingAFrame = false) {
-        this.showWaitScreen();
-        this._workbenchCanvas._isLoading = true; // Will help loading large graphes
-
-        setTimeout(() => {
-            if (!editorData || !editorData.locations) {
-                this._workbenchCanvas.distributeGraph();
-            } else {
-                // Locations
-                for (var location of editorData.locations) {
-                    for (var node of this._workbenchCanvas.nodes) {
-                        if (node.guiControl && node.guiControl.uniqueId === location.blockId) {
-                            node.x = location.x;
-                            node.y = location.y;
-                            node.cleanAccumulation();
-                            break;
-                        }
-                    }
-                }
-            }
-
-            this._workbenchCanvas._isLoading = false;
-            for (var node of this._workbenchCanvas.nodes) {
-            }
-            this.hideWaitScreen();
-        });
     }
 
     onPointerDown(evt: React.PointerEvent<HTMLDivElement>) {
@@ -195,16 +161,9 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     emitNewBlock(event: React.DragEvent<HTMLDivElement>) {
         var data = event.dataTransfer.getData("babylonjs-gui-node") as string;
 
-        let guiElement = GUINodeTools.CreateControlFromString (data);
+        let guiElement = GUINodeTools.CreateControlFromString(data);
 
         let newGuiNode = this._workbenchCanvas.appendBlock(guiElement);
-
-        /*let x = event.clientX; // - event.currentTarget.offsetLeft - this._workbenchCanvas.x;
-        let y = event.clientY;   // - event.currentTarget.offsetTop - this._workbenchCanvas.y - 20; 
-
-        newGuiNode.x += (x - newGuiNode.x);
-        newGuiNode.y += y - newGuiNode.y;
-        //newGuiNode.cleanAccumulation();*/
 
         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         this.props.globalState.onSelectionChangedObservable.notifyObservers(newGuiNode);
@@ -299,26 +258,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         }
     };
 
-    fixPopUpStyles = (document: Document) => {
-        const previewContainer = document.getElementById("preview");
-        if (previewContainer) {
-            previewContainer.style.height = "auto";
-            previewContainer.style.gridRow = "1";
-        }
-        const previewConfigBar = document.getElementById("preview-config-bar");
-        if (previewConfigBar) {
-            previewConfigBar.style.gridRow = "2";
-        }
-        const newWindowButton = document.getElementById("preview-new-window");
-        if (newWindowButton) {
-            newWindowButton.style.display = "none";
-        }
-        const previewMeshBar = document.getElementById("preview-mesh-bar");
-        if (previewMeshBar) {
-            previewMeshBar.style.gridTemplateColumns = "auto 1fr 40px 40px";
-        }
-    };
-
     render() {
         return (
             <Portal globalState={this.props.globalState}>
@@ -326,10 +265,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                     id="gui-editor-workbench-root"
                     style={{
                         gridTemplateColumns: this.buildColumnLayout(),
-                    }}
-                    onMouseMove={(evt) => {
-                        // this._mouseLocationX = evt.pageX;
-                        // this._mouseLocationY = evt.pageY;
                     }}
                     onMouseDown={(evt) => {
                         if ((evt.target as HTMLElement).nodeName === "INPUT") {
@@ -366,7 +301,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                     <LogComponent globalState={this.props.globalState} />
                 </div>
                 <MessageDialogComponent globalState={this.props.globalState} />
-                <div className="blocker">Node Material Editor runs only on desktop</div>
+                <div className="blocker">GUI Editor runs only on desktop</div>
                 <div className="wait-screen hidden">Processing...please wait</div>
             </Portal>
         );

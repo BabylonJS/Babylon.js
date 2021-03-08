@@ -195,6 +195,7 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
             halfDomeMode?: boolean;
             crossEyeMode?: boolean;
             generateMipMaps?: boolean;
+            mesh?: Mesh;
         },
         scene: Scene,
         protected onError: Nullable<(message?: string, exception?: any) => void> = null
@@ -222,7 +223,11 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
         }
 
         this._setReady(false);
-        this._mesh = Mesh.CreateSphere(name + "_mesh", options.resolution, options.size, scene, false, Mesh.BACKSIDE);
+        if (!options.mesh) {
+            this._mesh = Mesh.CreateSphere(name + "_mesh", options.resolution, options.size, scene, false, Mesh.BACKSIDE);
+        } else {
+            this._mesh = options.mesh;
+        }
         // configure material
         let material = (this._material = new BackgroundMaterial(name + "_material", scene));
         material.useEquirectangularFOV = true;

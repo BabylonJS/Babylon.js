@@ -457,7 +457,8 @@ export class ShaderMaterial extends Material {
             return true;
         }
 
-        if (this._effect && (this._effect.defines.indexOf("#define INSTANCES") !== -1) !== useInstances) {
+        const effect = this.getEffect();
+        if (effect && (effect.defines.indexOf("#define INSTANCES") !== -1) !== useInstances) {
             return false;
         }
 
@@ -472,18 +473,20 @@ export class ShaderMaterial extends Material {
      * @returns a boolean indicating that the submesh is ready or not
      */
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
-        return this.isReady(mesh, useInstances);
+        return this.isReady(mesh, useInstances, subMesh);
     }
 
     /**
      * Checks if the material is ready to render the requested mesh
      * @param mesh Define the mesh to render
      * @param useInstances Define whether or not the material is used with instances
+     * @param subMesh defines which submesh to render
      * @returns true if ready, otherwise false
      */
-    public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
-        if (this._effect && this.isFrozen) {
-            if (this._effect._wasPreviouslyReady) {
+    public isReady(mesh?: AbstractMesh, useInstances?: boolean, subMesh?: SubMesh): boolean {
+        let effect = this.getEffect();
+        if (effect && this.isFrozen) {
+            if (effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -617,6 +620,8 @@ export class ShaderMaterial extends Material {
             if (numInfluencers > 0) {
                 uniforms = uniforms.slice();
                 uniforms.push("morphTargetInfluences");
+                uniforms.push("morphTargetTextureInfo");
+                uniforms.push("morphTargetTextureIndices");
             }
         } else {
             defines.push("#define NUM_MORPH_INFLUENCERS 0");
@@ -641,13 +646,13 @@ export class ShaderMaterial extends Material {
             shaderName = this.customShaderNameResolve(shaderName, uniforms, uniformBuffers, samplers, defines, attribs);
         }
 
-        var previousEffect = this._effect;
+        var previousEffect = effect;
         var join = defines.join("\n");
 
         if (this._cachedDefines !== join) {
             this._cachedDefines = join;
 
-            this._effect = engine.createEffect(shaderName, <IEffectCreationOptions>{
+            effect = engine.createEffect(shaderName, <IEffectCreationOptions>{
                 attributes: attribs,
                 uniformsNames: uniforms,
                 uniformBuffersNames: uniformBuffers,
@@ -659,22 +664,25 @@ export class ShaderMaterial extends Material {
                 indexParameters: { maxSimultaneousMorphTargets: numInfluencers }
             }, engine);
 
+            this._drawWrapper.effect = effect;
+
             if (this._onEffectCreatedObservable) {
-                onCreatedEffectParameters.effect = this._effect;
+                onCreatedEffectParameters.effect = effect;
+                onCreatedEffectParameters.subMesh = subMesh ?? mesh?.subMeshes[0] ?? null;
                 this._onEffectCreatedObservable.notifyObservers(onCreatedEffectParameters);
             }
         }
 
-        if (!this._effect?.isReady() ?? true) {
+        if (!effect?.isReady() ?? true) {
             return false;
         }
 
-        if (previousEffect !== this._effect) {
+        if (previousEffect !== effect) {
             scene.resetCachedMaterial();
         }
 
         this._renderId = scene.getRenderId();
-        this._effect._wasPreviouslyReady = true;
+        effect._wasPreviouslyReady = true;
 
         return true;
     }
@@ -687,7 +695,7 @@ export class ShaderMaterial extends Material {
     public bindOnlyWorldMatrix(world: Matrix, effectOverride?: Nullable<Effect>): void {
         var scene = this.getScene();
 
-        const effect = effectOverride ?? this._effect;
+        const effect = effectOverride ?? this.getEffect();
 
         if (!effect) {
             return;
@@ -715,7 +723,7 @@ export class ShaderMaterial extends Material {
      * @param subMesh defines the submesh to bind the material to
      */
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
-        this.bind(world, mesh, subMesh._effectOverride);
+        this.bind(world, mesh, subMesh._drawWrapperOverride?.effect);
     }
 
     /**
@@ -728,7 +736,7 @@ export class ShaderMaterial extends Material {
         // Std values
         this.bindOnlyWorldMatrix(world, effectOverride);
 
-        const effect = effectOverride ?? this._effect;
+        const effect = effectOverride ?? this.getEffect();
 
         let mustRebind = this.getScene().getCachedMaterial() !== this;
 
@@ -861,11 +869,11 @@ export class ShaderMaterial extends Material {
             }
         }
 
-        const seffect = this._effect;
+        const seffect = this.getEffect();
 
-        this._effect = effect; // make sure the active effect is the right one if there are some observers for onBind that would need to get the current effect
+        this._drawWrapper.effect = effect; // make sure the active effect is the right one if there are some observers for onBind that would need to get the current effect
         this._afterBind(mesh, effect);
-        this._effect = seffect;
+        this._drawWrapper.effect = seffect;
     }
 
     protected _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null): void {

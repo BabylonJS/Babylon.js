@@ -15,6 +15,7 @@ import "../Engines/Extensions/engine.renderTarget";
 import { NodeMaterial } from '../Materials/Node/nodeMaterial';
 import { serialize, serializeAsColor4, SerializationHelper } from '../Misc/decorators';
 import { _TypeStore } from '../Misc/typeStore';
+import { DrawWrapper } from "../Materials/drawWrapper";
 
 declare type Scene = import("../scene").Scene;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
@@ -186,7 +187,7 @@ export class PostProcess {
     * @hidden
     */
     public _currentRenderTextureInd = 0;
-    private _effect: Effect;
+    private _drawWrapper: DrawWrapper;
     private _samplers: string[];
     private _fragmentUrl: string;
     private _vertexUrl: string;
@@ -368,7 +369,7 @@ export class PostProcess {
         samplingMode: number = Constants.TEXTURE_NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, vertexUrl: string = "postprocess",
         indexParameters?: any, blockCompilation = false, textureFormat = Constants.TEXTUREFORMAT_RGBA) {
 
-                this.name = name;
+            this.name = name;
             if (camera != null) {
                 this._camera = camera;
                 this._scene = camera.getScene();
@@ -398,6 +399,7 @@ export class PostProcess {
             this._parameters.push("scale");
 
             this._indexParameters = indexParameters;
+            this._drawWrapper = new DrawWrapper(this._engine);
 
             if (!blockCompilation) {
                 this.updateEffect(defines);
@@ -425,7 +427,7 @@ export class PostProcess {
      * @returns The created effect corresponding the the postprocess.
      */
     public getEffect(): Effect {
-        return this._effect;
+        return this._drawWrapper.effect!;
     }
 
     /**
@@ -467,7 +469,7 @@ export class PostProcess {
     public updateEffect(defines: Nullable<string> = null, uniforms: Nullable<string[]> = null, samplers: Nullable<string[]> = null, indexParameters?: any,
         onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, vertexUrl?: string, fragmentUrl?: string) {
         this._postProcessDefines = defines;
-        this._effect = this._engine.createEffect({ vertex: vertexUrl ?? this._vertexUrl, fragment: fragmentUrl ?? this._fragmentUrl },
+        this._drawWrapper.effect = this._engine.createEffect({ vertex: vertexUrl ?? this._vertexUrl, fragment: fragmentUrl ?? this._fragmentUrl },
             ["position"],
             uniforms || this._parameters,
             samplers || this._samplers,
@@ -678,7 +680,7 @@ export class PostProcess {
      * If the post process is supported.
      */
     public get isSupported(): boolean {
-        return this._effect.isSupported;
+        return this._drawWrapper.effect!.isSupported;
     }
 
     /**
@@ -700,7 +702,7 @@ export class PostProcess {
      * @returns true if the post-process is ready (shader is compiled)
      */
     public isReady(): boolean {
-        return this._effect && this._effect.isReady();
+        return this._drawWrapper.effect?.isReady() ?? false;
     }
 
     /**
@@ -709,12 +711,12 @@ export class PostProcess {
      */
     public apply(): Nullable<Effect> {
         // Check
-        if (!this._effect || !this._effect.isReady()) {
+        if (!this._drawWrapper.effect?.isReady()) {
             return null;
         }
 
         // States
-        this._engine.enableEffect(this._effect);
+        this._engine.enableEffect(this._drawWrapper);
         this._engine.setState(false);
         this._engine.setDepthBuffer(false);
         this._engine.setDepthWrite(false);
@@ -734,13 +736,14 @@ export class PostProcess {
         } else {
             source = this.inputTexture;
         }
-        this._effect._bindTexture("textureSampler", source);
+
+        this._drawWrapper.effect._bindTexture("textureSampler", source);
 
         // Parameters
-        this._effect.setVector2("scale", this._scaleRatio);
-        this.onApplyObservable.notifyObservers(this._effect);
+        this._drawWrapper.effect.setVector2("scale", this._scaleRatio);
+        this.onApplyObservable.notifyObservers(this._drawWrapper.effect);
 
-        return this._effect;
+        return this._drawWrapper.effect;
     }
 
     private _disposeTextures() {

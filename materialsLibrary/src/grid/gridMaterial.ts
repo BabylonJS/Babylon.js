@@ -1,4 +1,4 @@
-import { serializeAsTexture, serialize, expandToProperty, serializeAsColor3, SerializationHelper } from "babylonjs/Misc/decorators";
+import { serializeAsTexture, serialize, expandToProperty, serializeAsColor3, SerializationHelper, serializeAsVector3 } from "babylonjs/Misc/decorators";
 import { Matrix, Vector4, Vector3 } from "babylonjs/Maths/math.vector";
 import { Color3 } from "babylonjs/Maths/math.color";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
@@ -60,7 +60,7 @@ export class GridMaterial extends PushMaterial {
     /**
      * Allows setting an offset for the grid lines.
      */
-    @serializeAsColor3()
+    @serializeAsVector3()
     public gridOffset = Vector3.Zero();
 
     /**
@@ -122,7 +122,7 @@ export class GridMaterial extends PushMaterial {
         }
 
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new GridMaterialDefines();
+            subMesh.materialDefines = new GridMaterialDefines();
         }
 
         var defines = <GridMaterialDefines>subMesh._materialDefines;
@@ -192,7 +192,7 @@ export class GridMaterial extends PushMaterial {
                 join,
                 undefined,
                 this.onCompiled,
-                this.onError), defines);
+                this.onError), defines, this._materialContext);
         }
 
         if (!subMesh.effect || !subMesh.effect.isReady()) {
