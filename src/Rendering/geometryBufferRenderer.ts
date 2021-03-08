@@ -7,7 +7,7 @@ import { SmartArray } from "../Misc/smartArray";
 import { Texture } from "../Materials/Textures/texture";
 import { InternalTexture } from "../Materials/Textures/internalTexture";
 import { MultiRenderTarget } from "../Materials/Textures/multiRenderTarget";
-import { Effect } from "../Materials/effect";
+import { DrawWrapper } from "../Materials/drawWrapper";
 import { PrePassRenderer } from "../Rendering/prePassRenderer";
 import { MaterialHelper } from "../Materials/materialHelper";
 import { Scene } from "../scene";
@@ -100,7 +100,7 @@ export class GeometryBufferRenderer {
     private _attachments: number[];
     private _useUbo: boolean;
 
-    protected _effect: Effect;
+    protected _drawWrapper: DrawWrapper;
     protected _cachedDefines: string;
 
     /**
@@ -309,6 +309,7 @@ export class GeometryBufferRenderer {
         this._scene = scene;
         this._ratio = ratio;
         this._useUbo = scene.getEngine().supportsUniformBuffers;
+        this._drawWrapper = new DrawWrapper(scene.getEngine());
 
         GeometryBufferRenderer._SceneComponentInitialization(this._scene);
 
@@ -455,7 +456,7 @@ export class GeometryBufferRenderer {
         var join = defines.join("\n");
         if (this._cachedDefines !== join) {
             this._cachedDefines = join;
-            this._effect = this._scene.getEngine().createEffect("geometry",
+            this._drawWrapper.effect = this._scene.getEngine().createEffect("geometry",
                 {
                     attributes: attribs,
                     uniformsNames: [
@@ -474,7 +475,7 @@ export class GeometryBufferRenderer {
                 this._scene.getEngine());
         }
 
-        return this._effect.isReady();
+        return this._drawWrapper.effect!.isReady();
     }
 
     /**
@@ -597,15 +598,17 @@ export class GeometryBufferRenderer {
             var world = effectiveMesh.getWorldMatrix();
 
             if (this.isReady(subMesh, hardwareInstancedRendering)) {
-                engine.enableEffect(this._effect);
-                renderingMesh._bind(subMesh, this._effect, material.fillMode);
+                const effect = this._drawWrapper.effect!;
+
+                engine.enableEffect(this._drawWrapper);
+                renderingMesh._bind(subMesh, effect, material.fillMode);
 
                 if (!this._useUbo) {
-                    this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
-                    this._effect.setMatrix("view", scene.getViewMatrix());
+                    effect.setMatrix("viewProjection", scene.getTransformMatrix());
+                    effect.setMatrix("view", scene.getViewMatrix());
                 } else {
                     MaterialHelper.FinalizeSceneUbo(this._scene);
-                    MaterialHelper.BindSceneUniformBuffer(this._effect, this._scene.getSceneUniformBuffer());
+                    MaterialHelper.BindSceneUniformBuffer(effect, this._scene.getSceneUniformBuffer());
                 }
 
                 if (material) {
@@ -626,60 +629,60 @@ export class GeometryBufferRenderer {
                         sideOrientation = instanceDataStorage.sideOrientation;
                     }
 
-                    material._preBind(this._effect, sideOrientation);
+                    material._preBind(this._drawWrapper, sideOrientation);
 
                     // Alpha test
                     if (material.needAlphaTesting()) {
                         var alphaTexture = material.getAlphaTestTexture();
                         if (alphaTexture) {
-                            this._effect.setTexture("diffuseSampler", alphaTexture);
-                            this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                            effect.setTexture("diffuseSampler", alphaTexture);
+                            effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
                         }
                     }
 
                     // Bump
                     if (material.bumpTexture && scene.getEngine().getCaps().standardDerivatives && StandardMaterial.BumpTextureEnabled) {
-                        this._effect.setFloat3("vBumpInfos", material.bumpTexture.coordinatesIndex, 1.0 / material.bumpTexture.level, material.parallaxScaleBias);
-                        this._effect.setMatrix("bumpMatrix", material.bumpTexture.getTextureMatrix());
-                        this._effect.setTexture("bumpSampler", material.bumpTexture);
-                        this._effect.setFloat2("vTangentSpaceParams", material.invertNormalMapX ? -1.0 : 1.0, material.invertNormalMapY ? -1.0 : 1.0);
+                        effect.setFloat3("vBumpInfos", material.bumpTexture.coordinatesIndex, 1.0 / material.bumpTexture.level, material.parallaxScaleBias);
+                        effect.setMatrix("bumpMatrix", material.bumpTexture.getTextureMatrix());
+                        effect.setTexture("bumpSampler", material.bumpTexture);
+                        effect.setFloat2("vTangentSpaceParams", material.invertNormalMapX ? -1.0 : 1.0, material.invertNormalMapY ? -1.0 : 1.0);
                     }
 
                     // Roughness
                     if (this._enableReflectivity) {
                         if (material instanceof StandardMaterial && material.specularTexture) {
-                            this._effect.setMatrix("reflectivityMatrix", material.specularTexture.getTextureMatrix());
-                            this._effect.setTexture("reflectivitySampler", material.specularTexture);
+                            effect.setMatrix("reflectivityMatrix", material.specularTexture.getTextureMatrix());
+                            effect.setTexture("reflectivitySampler", material.specularTexture);
                         } else if (material instanceof PBRMaterial && material.reflectivityTexture) {
-                            this._effect.setMatrix("reflectivityMatrix", material.reflectivityTexture.getTextureMatrix());
-                            this._effect.setTexture("reflectivitySampler", material.reflectivityTexture);
+                            effect.setMatrix("reflectivityMatrix", material.reflectivityTexture.getTextureMatrix());
+                            effect.setTexture("reflectivitySampler", material.reflectivityTexture);
                         }
                     }
                 }
 
                 // Bones
                 if (renderingMesh.useBones && renderingMesh.computeBonesUsingShaders && renderingMesh.skeleton) {
-                    this._effect.setMatrices("mBones", renderingMesh.skeleton.getTransformMatrices(renderingMesh));
+                    effect.setMatrices("mBones", renderingMesh.skeleton.getTransformMatrices(renderingMesh));
                     if (this._enableVelocity) {
-                        this._effect.setMatrices("mPreviousBones", this._previousBonesTransformationMatrices[renderingMesh.uniqueId]);
+                        effect.setMatrices("mPreviousBones", this._previousBonesTransformationMatrices[renderingMesh.uniqueId]);
                     }
                 }
 
                 // Morph targets
-                MaterialHelper.BindMorphTargetParameters(renderingMesh, this._effect);
+                MaterialHelper.BindMorphTargetParameters(renderingMesh, effect);
                 if (renderingMesh.morphTargetManager && renderingMesh.morphTargetManager.isUsingTextureForTargets) {
-                    renderingMesh.morphTargetManager._bind(this._effect);
+                    renderingMesh.morphTargetManager._bind(effect);
                 }
 
                 // Velocity
                 if (this._enableVelocity) {
-                    this._effect.setMatrix("previousWorld", this._previousTransformationMatrices[effectiveMesh.uniqueId].world);
-                    this._effect.setMatrix("previousViewProjection", this._previousTransformationMatrices[effectiveMesh.uniqueId].viewProjection);
+                    effect.setMatrix("previousWorld", this._previousTransformationMatrices[effectiveMesh.uniqueId].world);
+                    effect.setMatrix("previousViewProjection", this._previousTransformationMatrices[effectiveMesh.uniqueId].viewProjection);
                 }
 
                 // Draw
-                renderingMesh._processRendering(effectiveMesh, subMesh, this._effect, material.fillMode, batch, hardwareInstancedRendering,
-                    (isInstance, w) => this._effect.setMatrix("world", w));
+                renderingMesh._processRendering(effectiveMesh, subMesh, effect, material.fillMode, batch, hardwareInstancedRendering,
+                    (isInstance, w) => effect.setMatrix("world", w));
             }
 
             // Velocity
