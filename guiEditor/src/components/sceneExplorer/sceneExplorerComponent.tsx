@@ -5,7 +5,6 @@ import { Observer } from "babylonjs/Misc/observable";
 import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
 import { Scene } from "babylonjs/scene";
 import { TreeItemComponent } from "./treeItemComponent";
-import Resizable from "re-resizable";
 import { HeaderComponent } from "../headerComponent";
 import { Tools } from "../../tools";
 import { GlobalState } from "../../globalState";
@@ -45,21 +44,12 @@ interface ISceneExplorerComponentProps {
 
 export class SceneExplorerComponent extends React.Component<ISceneExplorerComponentProps, { filter: Nullable<string>; selectedEntity: any; scene: Nullable<Scene> }> {
     private _onSelectionChangeObserver: Nullable<Observer<any>>;
-    private _onNewSceneObserver: Nullable<Observer<Scene>>;
-    private sceneExplorerRef: React.RefObject<Resizable>;
-
-    private _once = true;
-
-    private sceneMutationFunc: () => void;
+    private _onNewSceneObserver: Nullable<Observer<Nullable<Scene>>>;
 
     constructor(props: ISceneExplorerComponentProps) {
         super(props);
 
         this.state = { filter: null, selectedEntity: null, scene: this.props.scene ? this.props.scene : null };
-
-        this.sceneMutationFunc = this.processMutation.bind(this);
-
-        this.sceneExplorerRef = React.createRef();
         this._onNewSceneObserver = this.props.globalState.onNewSceneObservable.add((scene: Nullable<Scene>) => {
             this.setState({
                 scene,
@@ -77,8 +67,8 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
 
     componentDidMount() {
         this._onSelectionChangeObserver = this.props.globalState.onSelectionChangedObservable.add((entity) => {
-            if (this.state.selectedEntity !== entity?.guiControl) {
-                this.setState({ selectedEntity: entity?.guiControl });
+            if (this.state.selectedEntity !== entity) {
+                this.setState({ selectedEntity: entity});
             }
         });
 
@@ -92,9 +82,9 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             this.props.globalState.onSelectionChangedObservable.remove(this._onSelectionChangeObserver);
         }
 
-        /*if (this._onNewSceneObserver) {
-            this.props.globalState.onNewSceneObservable.remove(this._onNewSceneObserver?);
-        }*/
+        if (this._onNewSceneObserver) {
+            this.props.globalState.onNewSceneObservable.remove(this._onNewSceneObserver);
+        }
 
     }
 
