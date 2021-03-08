@@ -203,7 +203,7 @@ export class Gizmo implements IDisposable {
             else {
                 if (this._customRotationQuaternion) {
                     this._rootMesh.rotationQuaternion!.copyFrom(this._customRotationQuaternion);
-                }else {
+                } else {
                     this._rootMesh.rotationQuaternion!.set(0, 0, 0, 1);
                 }
             }
