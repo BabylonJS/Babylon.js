@@ -187,6 +187,11 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
 
         this._pointerObserver = this._scene.onPointerObservable.add((pointerInfo, eventState) => {
             if (!this.enabled) {
+                // If behavior is disabled before releaseDrag is ever called, call it now.
+                if (this._attachedToElement) {
+                    this.releaseDrag();
+                }
+
                 return;
             }
 
@@ -315,7 +320,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             this.currentDraggingPointerID = pointerId;
             this.lastDragPosition.copyFrom(pickedPoint);
             this.onDragStartObservable.notifyObservers({ dragPlanePoint: pickedPoint, pointerId: this.currentDraggingPointerID });
-            this._targetPosition.copyFrom((this.attachedNode).absolutePosition);
+            this._targetPosition.copyFrom((this.attachedNode).getAbsolutePosition());
 
             // Detatch camera controls
             if (this.detachCameraControls && this._scene.activeCamera && this._scene.activeCamera.inputs && !this._scene.activeCamera.leftCamera) {
@@ -445,7 +450,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             this._dragPlane.lookAt(ray.origin);
         }
         // Update the position of the drag plane so it doesn't get out of sync with the node (eg. when moving back and forth quickly)
-        this._dragPlane.position.copyFrom(this.attachedNode.absolutePosition);
+        this._dragPlane.position.copyFrom(this.attachedNode.getAbsolutePosition());
 
         this._dragPlane.computeWorldMatrix(true);
     }

@@ -1256,7 +1256,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this._components.push(component);
         this._transientComponents.push(component);
 
-        const serializableComponent = component as ISceneSerializableComponent;
+        const serializableComponent = component as any;
         if (serializableComponent.addFromContainer && serializableComponent.serialize) {
             this._serializableComponents.push(serializableComponent);
         }
@@ -3473,9 +3473,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param skipEvaluateActiveMeshes defines an optional boolean indicating that the evaluate active meshes step must be completely skipped
      * @param onSuccess optional success callback
      * @param onError optional error callback
+     * @param freezeMeshes defines if meshes should be frozen (true by default)
      * @returns the current scene
      */
-    public freezeActiveMeshes(skipEvaluateActiveMeshes = false, onSuccess?: () => void, onError?: (message: string) => void): Scene {
+    public freezeActiveMeshes(skipEvaluateActiveMeshes = false, onSuccess?: () => void, onError?: (message: string) => void, freezeMeshes = true): Scene {
         this.executeWhenReady(() => {
             if (!this.activeCamera) {
                 onError && onError('No active camera found');
@@ -3490,8 +3491,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this._activeMeshesFrozen = true;
             this._skipEvaluateActiveMeshesCompletely = skipEvaluateActiveMeshes;
 
-            for (var index = 0; index < this._activeMeshes.length; index++) {
-                this._activeMeshes.data[index]._freeze();
+            if (freezeMeshes) {
+                for (var index = 0; index < this._activeMeshes.length; index++) {
+                    this._activeMeshes.data[index]._freeze();
+                }
             }
             onSuccess && onSuccess();
         });
@@ -3683,15 +3686,15 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(force));
     }
 
-    private _bindFrameBuffer() {
-        if (this.activeCamera && this.activeCamera._multiviewTexture) {
-            this.activeCamera._multiviewTexture._bindFrameBuffer();
-        } else if (this.activeCamera && this.activeCamera.outputRenderTarget) {
-            var useMultiview = this.getEngine().getCaps().multiview && this.activeCamera.outputRenderTarget && this.activeCamera.outputRenderTarget.getViewCount() > 1;
+    private _bindFrameBuffer(camera: Nullable<Camera>) {
+        if (camera && camera._multiviewTexture) {
+            camera._multiviewTexture._bindFrameBuffer();
+        } else if (camera && camera.outputRenderTarget) {
+            var useMultiview = this.getEngine().getCaps().multiview && camera.outputRenderTarget && camera.outputRenderTarget.getViewCount() > 1;
             if (useMultiview) {
-                this.activeCamera.outputRenderTarget._bindFrameBuffer();
+                camera.outputRenderTarget._bindFrameBuffer();
             } else {
-                var internalTexture = this.activeCamera.outputRenderTarget.getInternalTexture();
+                var internalTexture = camera.outputRenderTarget.getInternalTexture();
                 if (internalTexture) {
                     this.getEngine().bindFramebuffer(internalTexture);
                 } else {
@@ -3702,6 +3705,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this.getEngine().restoreDefaultFramebuffer(); // Restore back buffer if needed
         }
     }
+
     /** @hidden */
     public _allowPostProcessClearColor = true;
     /** @hidden */
@@ -3795,7 +3799,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         // Restore framebuffer after rendering to targets
         if (needRebind && !this.prePass) {
-            this._bindFrameBuffer();
+            this._bindFrameBuffer(this._activeCamera);
         }
 
         this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
@@ -3972,6 +3976,15 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
     }
 
+    private _clear(): void {
+        if (this.autoClearDepthAndStencil || this.autoClear) {
+            this._engine.clear(this.clearColor,
+                this.autoClear || this.forceWireframe || this.forcePointsCloud,
+                this.autoClearDepthAndStencil,
+                this.autoClearDepthAndStencil);
+        }
+    }
+
     /**
      * Render the scene
      * @param updateCameras defines a boolean indicating if cameras must update according to their inputs (true by default)
@@ -4110,8 +4123,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         // Restore back buffer
         this.activeCamera = currentActiveCamera;
+        let frameBufferBound = false;
         if (this._activeCamera && this._activeCamera.cameraRigMode !== Camera.RIG_MODE_CUSTOM && !this.prePass) {
-            this._bindFrameBuffer();
+            this._bindFrameBuffer(this._activeCamera);
+            frameBufferBound = true;
         }
         this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
 
@@ -4120,11 +4135,13 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         // Clear
-        if (this.autoClearDepthAndStencil || this.autoClear) {
-            this._engine.clear(this.clearColor,
-                this.autoClear || this.forceWireframe || this.forcePointsCloud,
-                this.autoClearDepthAndStencil,
-                this.autoClearDepthAndStencil);
+        if (!frameBufferBound && this.activeCamera && this.activeCamera._rigCameras.length > 0) {
+            for (const rigCamera of this.activeCamera._rigCameras) {
+                this._bindFrameBuffer(rigCamera);
+                this._clear();
+            }
+        } else {
+            this._clear();
         }
 
         // Collects render targets from external components.

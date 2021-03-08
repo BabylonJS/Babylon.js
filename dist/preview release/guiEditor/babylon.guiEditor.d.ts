@@ -24,112 +24,49 @@ declare module GUIEDITOR {
     export type FramePortData = {};
     export const isFramePortData: (variableToCheck: any) => variableToCheck is FramePortData;
     export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps> {
-        private readonly MinZoom;
-        private readonly MaxZoom;
-        private _hostCanvas;
         private _gridCanvas;
-        private _selectionContainer;
-        private _frameContainer;
         private _svgCanvas;
         private _rootContainer;
-        private _guiNodes;
         private _mouseStartPointX;
         private _mouseStartPointY;
-        private _selectionStartX;
-        private _selectionStartY;
-        private _x;
-        private _y;
-        private _zoom;
+        private _textureMesh;
+        private _scene;
         private _selectedGuiNodes;
-        private _gridSize;
-        private _selectionBox;
-        private _frameCandidate;
-        private _altKeyIsPressed;
         private _ctrlKeyIsPressed;
-        private _oldY;
         _frameIsMoving: boolean;
         _isLoading: boolean;
         isOverGUINode: boolean;
-        get gridSize(): number;
-        set gridSize(value: number);
+        private _panning;
         get globalState(): GlobalState;
-        get nodes(): GUINode[];
-        get zoom(): number;
-        set zoom(value: number);
-        get x(): number;
-        set x(value: number);
-        get y(): number;
-        set y(value: number);
-        get selectedGuiNodes(): GUINode[];
-        get canvasContainer(): HTMLDivElement;
-        get hostCanvas(): HTMLDivElement;
-        get svgCanvas(): HTMLElement;
-        get selectionContainer(): HTMLDivElement;
-        get frameContainer(): HTMLDivElement;
+        get nodes(): Control[];
+        get selectedGuiNodes(): Control[];
         constructor(props: IWorkbenchComponentProps);
-        getGridPosition(position: number, useCeil?: boolean): number;
-        getGridPositionCeil(position: number): number;
         loadFromJson(serializationObject: any): void;
         loadFromSnippet(snippedID: string): Promise<void>;
-        loadFromGuiTexture(): void;
-        updateTransform(): void;
+        resizeGuiTexture(newvalue: BABYLON.Vector2): void;
         onKeyUp(): void;
-        findNodeFromGuiElement(guiControl: Control): GUINode;
+        findNodeFromGuiElement(guiControl: Control): Control;
         reset(): void;
-        appendBlock(guiElement: Control): GUINode;
-        distributeGraph(): void;
+        appendBlock(guiElement: Control): Control;
+        createNewGuiNode(guiControl: Control): Control;
+        enableEditorProperties(guiControl: Control): void;
+        isSelected(value: boolean, guiNode: Control): void;
+        clicked: boolean;
+        _onMove(guiControl: Control, evt: BABYLON.Vector2, startPos: BABYLON.Vector2, ignorClick?: boolean): boolean;
         componentDidMount(): void;
         onMove(evt: React.PointerEvent): void;
+        getGroundPosition(): BABYLON.Nullable<BABYLON.Vector3>;
         onDown(evt: React.PointerEvent<HTMLElement>): void;
         isUp: boolean;
         onUp(evt: React.PointerEvent): void;
-        onWheel(evt: React.WheelEvent): void;
-        zoomToFit(): void;
         createGUICanvas(): void;
-        updateGUIs(): void;
+        addControls(scene: BABYLON.Scene, camera: BABYLON.ArcRotateCamera): void;
+        getPosition(scene: BABYLON.Scene, camera: BABYLON.ArcRotateCamera, plane: BABYLON.Plane): BABYLON.Vector3;
+        panning(newPos: BABYLON.Vector3, initialPos: BABYLON.Vector3, inertia: number, ref: BABYLON.Vector3): BABYLON.Vector3;
+        zoomWheel(p: BABYLON.PointerInfo, e: BABYLON.EventState, camera: BABYLON.ArcRotateCamera): number;
+        zooming(delta: number, scene: BABYLON.Scene, camera: BABYLON.ArcRotateCamera, plane: BABYLON.Plane, ref: BABYLON.Vector3): void;
+        zeroIfClose(vec: BABYLON.Vector3): void;
         render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    export class GUINode {
-        guiControl: Control;
-        private _x;
-        private _y;
-        private _gridAlignedX;
-        private _gridAlignedY;
-        private _globalState;
-        private _onSelectionChangedObserver;
-        private _onSelectionBoxMovedObserver;
-        private _onUpdateRequiredObserver;
-        private _ownerCanvas;
-        private _isSelected;
-        private _isVisible;
-        private _enclosingFrameId;
-        children: GUINode[];
-        get isVisible(): boolean;
-        set isVisible(value: boolean);
-        get gridAlignedX(): number;
-        get gridAlignedY(): number;
-        get x(): number;
-        set x(value: number);
-        get y(): number;
-        set y(value: number);
-        get width(): number;
-        get height(): number;
-        get id(): number;
-        get name(): string | undefined;
-        get isSelected(): boolean;
-        get enclosingFrameId(): number;
-        set enclosingFrameId(value: number);
-        set isSelected(value: boolean);
-        constructor(globalState: GlobalState, guiControl: Control);
-        cleanAccumulation(useCeil?: boolean): void;
-        clicked: boolean;
-        _onMove(evt: BABYLON.Vector2, startPos: BABYLON.Vector2, ignorClick?: boolean): boolean;
-        updateVisual(): void;
-        private _isContainer;
-        addGui(childNode: GUINode): void;
-        dispose(): void;
     }
 }
 declare module GUIEDITOR {
@@ -147,7 +84,8 @@ declare module GUIEDITOR {
         hostElement: HTMLElement;
         hostDocument: HTMLDocument;
         hostWindow: Window;
-        onSelectionChangedObservable: BABYLON.Observable<BABYLON.Nullable<GUINode>>;
+        onSelectionChangedObservable: BABYLON.Observable<BABYLON.Nullable<Control>>;
+        onResizeObservable: BABYLON.Observable<BABYLON.Vector2>;
         onRebuildRequiredObservable: BABYLON.Observable<void>;
         onBuiltObservable: BABYLON.Observable<void>;
         onResetRequiredObservable: BABYLON.Observable<void>;
@@ -156,8 +94,8 @@ declare module GUIEDITOR {
         onLogRequiredObservable: BABYLON.Observable<LogEntry>;
         onErrorMessageDialogRequiredObservable: BABYLON.Observable<string>;
         onIsLoadingChanged: BABYLON.Observable<boolean>;
-        onSelectionBoxMoved: BABYLON.Observable<DOMRect | ClientRect>;
-        onGuiNodeRemovalObservable: BABYLON.Observable<GUINode>;
+        onSelectionBoxMoved: BABYLON.Observable<ClientRect | DOMRect>;
+        onGuiNodeRemovalObservable: BABYLON.Observable<Control>;
         backgroundColor: BABYLON.Color4;
         blockKeyboardEvents: boolean;
         controlCamera: boolean;
@@ -172,17 +110,26 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
+    export interface ISelectedLineContainer {
+        selectedLineContainerTitles: Array<string>;
+        selectedLineContainerTitlesNoFocus: Array<string>;
+    }
+}
+declare module GUIEDITOR {
     interface ILineContainerComponentProps {
+        selection?: ISelectedLineContainer;
         title: string;
         children: any[] | any;
         closed?: boolean;
     }
     export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
         isExpanded: boolean;
+        isHighlighted: boolean;
     }> {
         constructor(props: ILineContainerComponentProps);
         switchExpandedState(): void;
         renderHeader(): JSX.Element;
+        componentDidMount(): void;
         render(): JSX.Element;
     }
 }
@@ -748,11 +695,56 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
+    interface IVector2LineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        step?: number;
+        onChange?: (newvalue: BABYLON.Vector2) => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class Vector2LineComponent extends React.Component<IVector2LineComponentProps, {
+        isExpanded: boolean;
+        value: BABYLON.Vector2;
+    }> {
+        static defaultProps: {
+            step: number;
+        };
+        private _localChange;
+        constructor(props: IVector2LineComponentProps);
+        shouldComponentUpdate(nextProps: IVector2LineComponentProps, nextState: {
+            isExpanded: boolean;
+            value: BABYLON.Vector2;
+        }): boolean;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: BABYLON.Vector2): void;
+        updateStateX(value: number): void;
+        updateStateY(value: number): void;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface IParentingPropertyGridComponentProps {
+        guiNode: Control;
+        guiNodes: Control[];
+        globalState: GlobalState;
+    }
+    export class ParentingPropertyGridComponent extends React.Component<IParentingPropertyGridComponentProps> {
+        constructor(props: IParentingPropertyGridComponentProps);
+        parentIndex: number;
+        private _isContainer;
+        addChildGui(childNode: Control, parentNode: Control): void;
+        removeChildGui(childNode: Control, parentNode: Control): void;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
     interface IPropertyTabComponentProps {
         globalState: GlobalState;
     }
     interface IPropertyTabComponentState {
-        currentNode: BABYLON.Nullable<GUINode>;
+        currentNode: BABYLON.Nullable<Control>;
+        textureSize: BABYLON.Vector2;
     }
     export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
         private _onBuiltObserver;
@@ -766,7 +758,7 @@ declare module GUIEDITOR {
         save(): void;
         saveToSnippetServer(): void;
         loadFromSnippet(): void;
-        renderProperties(): JSX.Element | null;
+        renderProperties(): JSX.Element | JSX.Element[] | null;
         render(): JSX.Element;
     }
 }
@@ -780,35 +772,7 @@ declare module GUIEDITOR {
 }
 declare module GUIEDITOR {
     export class GUINodeTools {
-        static CreateControlFromString(data: string): Grid | Slider | Line | TextBlock | InputText | ColorPicker | Image | Rectangle | Ellipse | Checkbox | DisplayGrid | VirtualKeyboard;
-    }
-}
-declare module GUIEDITOR {
-    export interface INodeLocationInfo {
-        blockId: number;
-        x: number;
-        y: number;
-    }
-    export interface IFrameData {
-        x: number;
-        y: number;
-        width: number;
-        height: number;
-        color: number[];
-        name: string;
-        isCollapsed: boolean;
-        blocks: number[];
-        comments: string;
-    }
-    export interface IEditorData {
-        locations: INodeLocationInfo[];
-        x: number;
-        y: number;
-        zoom: number;
-        frames?: IFrameData[];
-        map?: {
-            [key: number]: number;
-        };
+        static CreateControlFromString(data: string): Rectangle | Grid | Slider | Line | TextBlock | InputText | ColorPicker | Image | StackPanel | Ellipse | Checkbox | DisplayGrid;
     }
 }
 declare module GUIEDITOR {
@@ -841,11 +805,9 @@ declare module GUIEDITOR {
         componentDidMount(): void;
         componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);
-        pasteSelection(copiedNodes: GUINode[], currentX: number, currentY: number, selectNew?: boolean): GUINode[];
-        zoomToFit(): void;
+        pasteSelection(copiedNodes: Control[], currentX: number, currentY: number, selectNew?: boolean): Control[];
         showWaitScreen(): void;
         hideWaitScreen(): void;
-        reOrganize(editorData?: BABYLON.Nullable<IEditorData>, isImportingAFrame?: boolean): void;
         onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
         onPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
         resizeColumns(evt: React.PointerEvent<HTMLDivElement>, forLeft?: boolean): void;
@@ -855,7 +817,6 @@ declare module GUIEDITOR {
         handleClosingPopUp: () => void;
         createPopupWindow: (title: string, windowVariableName: string, width?: number, height?: number) => Window | null;
         copyStyles: (sourceDoc: HTMLDocument, targetDoc: HTMLDocument) => void;
-        fixPopUpStyles: (document: Document) => void;
         render(): JSX.Element;
     }
 }
@@ -875,6 +836,7 @@ declare module GUIEDITOR {
             label: string;
             action: (data: string) => Promise<void>;
         };
+        currentSnippetToken?: string;
         customLoadObservable?: BABYLON.Observable<any>;
     }
     /**
@@ -887,6 +849,34 @@ declare module GUIEDITOR {
          * @param options defines the options to use to configure the gui editor
          */
         static Show(options: IGUIEditorOptions): void;
+    }
+}
+declare module GUIEDITOR {
+    export interface INodeLocationInfo {
+        blockId: number;
+        x: number;
+        y: number;
+    }
+    export interface IFrameData {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+        color: number[];
+        name: string;
+        isCollapsed: boolean;
+        blocks: number[];
+        comments: string;
+    }
+    export interface IEditorData {
+        locations: INodeLocationInfo[];
+        x: number;
+        y: number;
+        zoom: number;
+        frames?: IFrameData[];
+        map?: {
+            [key: number]: number;
+        };
     }
 }
 declare module GUIEDITOR {
@@ -1198,35 +1188,6 @@ declare module GUIEDITOR {
     }
     export class ValueLineComponent extends React.Component<IValueLineComponentProps> {
         constructor(props: IValueLineComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    interface IVector2LineComponentProps {
-        label: string;
-        target: any;
-        propertyName: string;
-        step?: number;
-        onChange?: (newvalue: BABYLON.Vector2) => void;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-    }
-    export class Vector2LineComponent extends React.Component<IVector2LineComponentProps, {
-        isExpanded: boolean;
-        value: BABYLON.Vector2;
-    }> {
-        static defaultProps: {
-            step: number;
-        };
-        private _localChange;
-        constructor(props: IVector2LineComponentProps);
-        shouldComponentUpdate(nextProps: IVector2LineComponentProps, nextState: {
-            isExpanded: boolean;
-            value: BABYLON.Vector2;
-        }): boolean;
-        switchExpandState(): void;
-        raiseOnPropertyChanged(previousValue: BABYLON.Vector2): void;
-        updateStateX(value: number): void;
-        updateStateY(value: number): void;
         render(): JSX.Element;
     }
 }

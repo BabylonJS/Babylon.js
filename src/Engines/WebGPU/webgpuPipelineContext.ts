@@ -1,7 +1,6 @@
 import { IPipelineContext } from '../IPipelineContext';
 import { Nullable } from '../../types';
 import { WebGPUEngine } from '../webgpuEngine';
-import { InternalTexture } from '../../Materials/Textures/internalTexture';
 import { Effect } from '../../Materials/effect';
 import { WebGPUShaderProcessingContext } from './webgpuShaderProcessingContext';
 import { UniformBuffer } from "../../Materials/uniformBuffer";
@@ -23,18 +22,6 @@ const _uniformSizes: { [type: string]: number } = {
 };
 
 /** @hidden */
-export interface IWebGPUPipelineContextSamplerCache {
-    samplerBinding: number;
-    firstTextureName: string;
-}
-
-/** @hidden */
-export interface IWebGPUPipelineContextTextureCache {
-    textureBinding: number;
-    texture: InternalTexture;
-}
-
-/** @hidden */
 export interface IWebGPUPipelineContextVertexInputsCache {
     indexBuffer: Nullable<GPUBuffer>;
     indexOffset: number;
@@ -46,18 +33,8 @@ export interface IWebGPUPipelineContextVertexInputsCache {
 
 /** @hidden */
 export interface IWebGPURenderPipelineStageDescriptor {
-    vertexStage: GPUProgrammableStageDescriptor;
-    fragmentStage?: GPUProgrammableStageDescriptor;
-}
-
-/** @hidden */
-export class WebGPUBindGroupCacheNode {
-    public values: { [id: number]: WebGPUBindGroupCacheNode };
-    public bindGroups: GPUBindGroup[];
-
-    constructor() {
-        this.values = {};
-    }
+    vertexStage: GPUProgrammableStage;
+    fragmentStage?: GPUProgrammableStage;
 }
 
 /** @hidden */
@@ -77,11 +54,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
 
     public stages: Nullable<IWebGPURenderPipelineStageDescriptor>;
 
-    public samplers: { [name: string]: Nullable<IWebGPUPipelineContextSamplerCache> } = { };
-    public textures: { [name: string]: Nullable<IWebGPUPipelineContextTextureCache> } = { };
-
     public bindGroupLayouts: GPUBindGroupLayout[];
-    public bindGroupsCache: WebGPUBindGroupCacheNode;
 
     /**
      * Stores the uniform buffer
@@ -111,7 +84,6 @@ export class WebGPUPipelineContext implements IPipelineContext {
         this.shaderProcessingContext = shaderProcessingContext;
         this.leftOverUniformsByName = {};
         this.engine = engine;
-        this.bindGroupsCache = new WebGPUBindGroupCacheNode();
     }
 
     public _handlesSpectorRebuildCallback(onCompiled: (program: any) => void): void {
@@ -134,6 +106,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
         // this._vertexSourceCodeOverride = "";
 
         const foundSamplers = this.shaderProcessingContext.availableSamplers;
+        const samplerNames: string[] = [];
         let index: number;
         for (index = 0; index < samplerList.length; index++) {
             const name = samplerList[index];
@@ -145,8 +118,11 @@ export class WebGPUPipelineContext implements IPipelineContext {
             }
             else {
                 samplers[name] = index;
+                samplerNames.push(name);
             }
         }
+
+        this.shaderProcessingContext.samplerNames = samplerNames;
 
         for (let attr of engine.getAttributes(this, attributesNames)) {
             attributes.push(attr);

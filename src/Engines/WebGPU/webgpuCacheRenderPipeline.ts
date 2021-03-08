@@ -31,6 +31,7 @@ const textureFormatToIndex: { [name: string]: number } = {
     "r8snorm": 2,
     "r8uint": 3,
     "r8sint": 4,
+
     "r16uint": 5,
     "r16sint": 6,
     "r16float": 7,
@@ -38,6 +39,7 @@ const textureFormatToIndex: { [name: string]: number } = {
     "rg8snorm": 9,
     "rg8uint": 10,
     "rg8sint": 11,
+
     "r32uint": 12,
     "r32sint": 13,
     "r32float": 14,
@@ -51,23 +53,28 @@ const textureFormatToIndex: { [name: string]: number } = {
     "rgba8sint": 22,
     "bgra8unorm": 23,
     "bgra8unorm-srgb": 24,
+
     "rgb9e5ufloat": 25,
     "rgb10a2unorm": 26,
     "rg11b10ufloat": 27,
+
     "rg32uint": 28,
     "rg32sint": 29,
     "rg32float": 30,
     "rgba16uint": 31,
     "rgba16sint": 32,
     "rgba16float": 33,
+
     "rgba32uint": 34,
     "rgba32sint": 35,
     "rgba32float": 36,
+
     "stencil8": 37,
     "depth16unorm": 38,
     "depth24plus": 39,
     "depth24plus-stencil8": 40,
     "depth32float": 41,
+
     "bc1-rgba-unorm": 42,
     "bc1-rgba-unorm-srgb": 43,
     "bc2-rgba-unorm": 44,
@@ -82,7 +89,9 @@ const textureFormatToIndex: { [name: string]: number } = {
     "bc6h-rgb-float": 53,
     "bc7-rgba-unorm": 54,
     "bc7-rgba-unorm-srgb": 55,
+
     "depth24unorm-stencil8": 56,
+
     "depth32float-stencil8": 57,
 };
 
@@ -330,23 +339,28 @@ export abstract class WebGPUCacheRenderPipeline {
             // so we can encode 5 texture formats in 32 bits
             throw "Can't handle more than 10 attachments for a MRT in cache render pipeline!";
         }
-        let bits: number[] = [0, 0], indexBits = 0, mask = 0;
-        this._mrtFormats.length = attachments.length;
+        let bits: number[] = [0, 0], indexBits = 0, mask = 0, numRT = 0;
         for (let i = 0; i < attachments.length; ++i) {
             const index = attachments[i];
+            if (index === 0) {
+                continue;
+            }
+
             const texture = textureArray[index - 1];
             const gpuWrapper = texture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
 
-            this._mrtFormats[i] = gpuWrapper?.format ?? this._webgpuColorFormat;
+            this._mrtFormats[numRT] = gpuWrapper?.format ?? this._webgpuColorFormat;
 
-            bits[indexBits] += textureFormatToIndex[this._mrtFormats[i]] << mask;
+            bits[indexBits] += textureFormatToIndex[this._mrtFormats[numRT]] << mask;
             mask += 6;
+            numRT++;
 
             if (mask >= 32) {
                 mask = 0;
                 indexBits++;
             }
         }
+        this._mrtFormats.length = numRT;
         if (this._mrtAttachments1 !== bits[0] || this._mrtAttachments2 !== bits[1]) {
             this._mrtAttachments1 = bits[0];
             this._mrtAttachments2 = bits[1];
@@ -584,76 +598,76 @@ export abstract class WebGPUCacheRenderPipeline {
                 switch (size) {
                     case 1:
                     case 2:
-                        return normalized ? WebGPUConstants.VertexFormat.Char2Norm : WebGPUConstants.VertexFormat.Char2;
+                        return normalized ? WebGPUConstants.VertexFormat.Snorm8x2 : WebGPUConstants.VertexFormat.Sint8x2;
                     case 3:
                     case 4:
-                        return normalized ? WebGPUConstants.VertexFormat.Char4Norm : WebGPUConstants.VertexFormat.Char4;
+                        return normalized ? WebGPUConstants.VertexFormat.Snorm8x4 : WebGPUConstants.VertexFormat.Sint8x4;
                 }
                 break;
             case VertexBuffer.UNSIGNED_BYTE:
                 switch (size) {
                     case 1:
                     case 2:
-                        return normalized ? WebGPUConstants.VertexFormat.Uchar2Norm : WebGPUConstants.VertexFormat.Uchar2;
+                        return normalized ? WebGPUConstants.VertexFormat.Unorm8x2 : WebGPUConstants.VertexFormat.Uint8x2;
                     case 3:
                     case 4:
-                        return normalized ? WebGPUConstants.VertexFormat.Uchar4Norm : WebGPUConstants.VertexFormat.Uchar4;
+                        return normalized ? WebGPUConstants.VertexFormat.Unorm8x4 : WebGPUConstants.VertexFormat.Uint8x4;
                 }
                 break;
             case VertexBuffer.SHORT:
                 switch (size) {
                     case 1:
                     case 2:
-                        return normalized ? WebGPUConstants.VertexFormat.Short2Norm : WebGPUConstants.VertexFormat.Short2;
+                        return normalized ? WebGPUConstants.VertexFormat.Snorm16x2 : WebGPUConstants.VertexFormat.Sint16x2;
                     case 3:
                     case 4:
-                        return normalized ? WebGPUConstants.VertexFormat.Short4Norm : WebGPUConstants.VertexFormat.Short4;
+                        return normalized ? WebGPUConstants.VertexFormat.Snorm16x4 : WebGPUConstants.VertexFormat.Sint16x4;
                 }
                 break;
             case VertexBuffer.UNSIGNED_SHORT:
                 switch (size) {
                     case 1:
                     case 2:
-                        return normalized ? WebGPUConstants.VertexFormat.Ushort2Norm : WebGPUConstants.VertexFormat.Ushort2;
+                        return normalized ? WebGPUConstants.VertexFormat.Unorm16x2 : WebGPUConstants.VertexFormat.Uint16x2;
                     case 3:
                     case 4:
-                        return normalized ? WebGPUConstants.VertexFormat.Ushort4Norm : WebGPUConstants.VertexFormat.Ushort4;
+                        return normalized ? WebGPUConstants.VertexFormat.Unorm16x4 : WebGPUConstants.VertexFormat.Uint16x4;
                 }
                 break;
             case VertexBuffer.INT:
                 switch (size) {
                     case 1:
-                        return WebGPUConstants.VertexFormat.Int;
+                        return WebGPUConstants.VertexFormat.Sint32;
                     case 2:
-                        return WebGPUConstants.VertexFormat.Int2;
+                        return WebGPUConstants.VertexFormat.Sint32x2;
                     case 3:
-                        return WebGPUConstants.VertexFormat.Int3;
+                        return WebGPUConstants.VertexFormat.Sint32x3;
                     case 4:
-                        return WebGPUConstants.VertexFormat.Int4;
+                        return WebGPUConstants.VertexFormat.Sint32x4;
                 }
                 break;
             case VertexBuffer.UNSIGNED_INT:
                 switch (size) {
                     case 1:
-                        return WebGPUConstants.VertexFormat.Uint;
+                        return WebGPUConstants.VertexFormat.Uint32;
                     case 2:
-                        return WebGPUConstants.VertexFormat.Uint2;
+                        return WebGPUConstants.VertexFormat.Uint32x2;
                     case 3:
-                        return WebGPUConstants.VertexFormat.Uint3;
+                        return WebGPUConstants.VertexFormat.Uint32x3;
                     case 4:
-                        return WebGPUConstants.VertexFormat.Uint4;
+                        return WebGPUConstants.VertexFormat.Uint32x4;
                 }
                 break;
             case VertexBuffer.FLOAT:
                 switch (size) {
                     case 1:
-                        return WebGPUConstants.VertexFormat.Float;
+                        return WebGPUConstants.VertexFormat.Float32;
                     case 2:
-                        return WebGPUConstants.VertexFormat.Float2;
+                        return WebGPUConstants.VertexFormat.Float32x2;
                     case 3:
-                        return WebGPUConstants.VertexFormat.Float3;
+                        return WebGPUConstants.VertexFormat.Float32x3;
                     case 4:
-                        return WebGPUConstants.VertexFormat.Float4;
+                        return WebGPUConstants.VertexFormat.Float32x4;
                 }
                 break;
         }
@@ -814,30 +828,26 @@ export abstract class WebGPUCacheRenderPipeline {
                     visibility = visibility | WebGPUConstants.ShaderStage.Fragment;
                 }
 
+                const entry: GPUBindGroupLayoutEntry = {
+                    binding: j,
+                    visibility,
+                };
+                entries.push(entry);
+
                 if (bindingDefinition.isSampler) {
-                    entries.push({
-                        binding: j,
-                        visibility,
-                        type: bindingDefinition.isComparisonSampler ? WebGPUConstants.BindingType.ComparisonSampler : WebGPUConstants.BindingType.Sampler
-                    });
+                    entry.sampler = {
+                        type: bindingDefinition.isComparisonSampler ? WebGPUConstants.SamplerBindingType.Comparison : WebGPUConstants.SamplerBindingType.Filtering
+                    };
                 } else if (bindingDefinition.isTexture) {
-                    entries.push({
-                        binding: j,
-                        visibility,
-                        type: WebGPUConstants.BindingType.SampledTexture,
+                    entry.texture = {
+                        sampleType: bindingDefinition.sampleType,
                         viewDimension: bindingDefinition.textureDimension,
-                        textureComponentType: bindingDefinition.componentType,
-                        // TODO WEBGPU.
-                        // hasDynamicOffset?: boolean;
-                        // storageTextureFormat?: GPUTextureFormat;
-                        // minBufferBindingSize?: number;
-                    });
+                        multisampled: false,
+                    };
                 } else {
-                    entries.push({
-                        binding: j,
-                        visibility,
-                        type: WebGPUConstants.BindingType.UniformBuffer,
-                    });
+                    entry.buffer = {
+                        type: WebGPUConstants.BufferBindingType.Uniform,
+                    };
                 }
             }
 
@@ -854,8 +864,8 @@ export abstract class WebGPUCacheRenderPipeline {
         return this._device.createPipelineLayout({ bindGroupLayouts });
     }
 
-    private _getVertexInputDescriptor(effect: Effect, topology: GPUPrimitiveTopology): GPUVertexStateDescriptor {
-        const descriptors: GPUVertexBufferLayoutDescriptor[] = [];
+    private _getVertexInputDescriptor(effect: Effect, topology: GPUPrimitiveTopology): GPUVertexState {
+        const descriptors: GPUVertexBufferLayout[] = [];
         const webgpuPipelineContext = effect._pipelineContext as WebGPUPipelineContext;
         const attributes = webgpuPipelineContext.shaderProcessingContext.attributeNamesFromEffect;
         const locations = webgpuPipelineContext.shaderProcessingContext.attributeLocationsFromEffect;
@@ -868,14 +878,14 @@ export abstract class WebGPUCacheRenderPipeline {
                 vertexBuffer = this._emptyVertexBuffer;
             }
 
-            const attributeDescriptor: GPUVertexAttributeDescriptor = {
+            const attributeDescriptor: GPUVertexAttribute = {
                 shaderLocation: location,
                 offset: 0, // not available in WebGL
                 format: WebGPUCacheRenderPipeline._GetVertexInputDescriptorFormat(vertexBuffer),
             };
 
             // TODO WEBGPU. Factorize the one with the same underlying buffer.
-            const vertexBufferDescriptor: GPUVertexBufferLayoutDescriptor = {
+            const vertexBufferDescriptor: GPUVertexBufferLayout = {
                 arrayStride: vertexBuffer.byteStride,
                 stepMode: vertexBuffer.getIsInstanced() ? WebGPUConstants.InputStepMode.Instance : WebGPUConstants.InputStepMode.Vertex,
                 attributes: [attributeDescriptor]
@@ -884,7 +894,7 @@ export abstract class WebGPUCacheRenderPipeline {
             descriptors.push(vertexBufferDescriptor);
         }
 
-        const inputStateDescriptor: GPUVertexStateDescriptor = {
+        const inputStateDescriptor: GPUVertexState = {
             vertexBuffers: descriptors
         };
 
@@ -922,7 +932,7 @@ export abstract class WebGPUCacheRenderPipeline {
             });
         }
 
-        const stencilFrontBack: GPUStencilStateFaceDescriptor = {
+        const stencilFrontBack: GPUStencilStateFace = {
             compare: WebGPUCacheRenderPipeline._GetCompareFunction(this._stencilFrontCompare),
             depthFailOp: WebGPUCacheRenderPipeline._GetStencilOpFunction(this._stencilFrontDepthFailOp),
             failOp: WebGPUCacheRenderPipeline._GetStencilOpFunction(this._stencilFrontFailOp),

@@ -41,7 +41,7 @@ export class GamepadManager {
             this._gamepadEventSupported = false;
         } else {
             this._gamepadEventSupported = 'GamepadEvent' in window;
-            this._gamepadSupport = (navigator.getGamepads ||
+            this._gamepadSupport = navigator && (navigator.getGamepads ||
                 navigator.webkitGetGamepads || navigator.msGetGamepads || navigator.webkitGamepads);
         }
 

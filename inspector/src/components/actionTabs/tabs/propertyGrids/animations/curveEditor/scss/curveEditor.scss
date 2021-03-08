@@ -1,0 +1,79 @@
+#curve-editor {
+    background: #333333;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-rows: 40px 1fr 45px;
+    grid-template-columns: 10px 210px 10px 1fr 10px;
+
+    #top-bar {
+        background: #333333;
+        grid-row: 1;
+        grid-column: 1 / 6;
+        width: 100%;
+        height: 100%;
+    }
+
+    #bottom-bar {
+        background: #333333;
+        grid-row: 3;
+        grid-column: 1 / 6;
+        width: 100%;
+        height: 100%;
+    }
+
+    #canvas-zone {
+        grid-row: 2;
+        grid-column: 4;
+        width: 100%;
+        height: 100%;
+        background: #333333;
+    }
+
+    #sidebar {
+        grid-row: 2;
+        grid-column: 2;
+        width: 100%;
+        height: 100%;
+        background: #111111;
+    }
+
+    .action-button {
+        &:hover {
+            background: #666666;
+            color:white;
+            cursor: pointer;
+        }
+
+        &.active {
+            background: #111111;
+        }
+
+        &:active {
+            transform-origin: 50% 50%;
+            transform: scale(0.96);
+        }
+    }
+
+    .push-button {
+        cursor: pointer;
+        &.active {
+            background: #666666;
+        }
+    }
+
+    .text-input {
+        color:white;
+        background: #000000;
+        font-family: 'acumin-pro-condensed';
+        font-size: 11pt;
+        border: 0;
+        margin: 3px 1px;
+        text-align: end;    
+        padding-right: 4px;
+
+        &:focus {
+            outline: none;
+        }
+    }
+}

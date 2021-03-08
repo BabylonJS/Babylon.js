@@ -68,6 +68,10 @@ export class NodeEditor {
 
         this._CurrentState = globalState;
 
+        globalState.hostWindow.addEventListener('beforeunload', () => {
+            globalState.onPopupClosedObservable.notifyObservers();
+        });
+
         // Close the popup window when the page is refreshed or scene is disposed
         var popupWindow = (Popup as any)["node-editor"];
         if (globalState.nodeMaterial && popupWindow) {

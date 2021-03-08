@@ -28,7 +28,7 @@ export class CommonRenderingPipelinePropertyGridComponent extends React.Componen
 
         return (
             <div>
-                <LineContainerComponent title="GENERAL">
+                <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
                     <TextLineComponent label="Name" value={renderPipeline.name} />
                     <TextLineComponent label="Class" value={renderPipeline.getClassName()} />
                     {

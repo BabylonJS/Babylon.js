@@ -280,7 +280,7 @@ export class Geometry implements IGetSetVerticesData {
                 this._totalVertices = totalVertices;
             } else {
                 if (data != null) {
-                    this._totalVertices = data.length / (buffer.byteStride / 4);
+                    this._totalVertices = data.length / (buffer.type === VertexBuffer.BYTE ? buffer.byteStride : buffer.byteStride / 4);
                 }
             }
 
@@ -297,10 +297,6 @@ export class Geometry implements IGetSetVerticesData {
         }
 
         this.notifyUpdate(kind);
-
-        if (this._vertexArrayObjects) {
-            this._disposeVertexArrayObjects();
-        }
     }
 
     /**
@@ -734,6 +730,10 @@ export class Geometry implements IGetSetVerticesData {
     private notifyUpdate(kind?: string) {
         if (this.onGeometryUpdated) {
             this.onGeometryUpdated(this, kind);
+        }
+
+        if (this._vertexArrayObjects) {
+            this._disposeVertexArrayObjects();
         }
 
         for (var mesh of this._meshes) {
