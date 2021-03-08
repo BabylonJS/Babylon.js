@@ -34,7 +34,7 @@ export class WebGPUClearQuad {
         this._cacheRenderPipeline.setDepthTestEnabled(false);
         this._cacheRenderPipeline.setStencilReadMask(0xFF);
 
-        this._effect = engine.createEffect("clearQuad", [], ["color", "depthValue"]);        
+        this._effect = engine.createEffect("clearQuad", [], ["color", "depthValue"]);
     }
 
     public clear(renderPass: GPURenderPassEncoder, clearColor?: Nullable<IColor4Like>, clearDepth?: boolean, clearStencil?: boolean, sampleCount = 1) {
