@@ -40598,9 +40598,10 @@ declare module BABYLON {
          * Creates a video texture straight from a stream.
          * @param scene Define the scene the texture should be created in
          * @param stream Define the stream the texture should be created from
+         * @param constraints video constraints
          * @returns The created video texture as a promise
          */
-        static CreateFromStreamAsync(scene: Scene, stream: MediaStream): Promise<VideoTexture>;
+        static CreateFromStreamAsync(scene: Scene, stream: MediaStream, constraints: any): Promise<VideoTexture>;
         /**
          * Creates a video texture straight from your WebCam video feed.
          * @param scene Define the scene the texture should be created in
@@ -43492,6 +43493,12 @@ declare module BABYLON {
          * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
          */
         set loadingUIBackgroundColor(color: string);
+        /**
+         * creates and returns a new video element
+         * @param constraints video constraints
+         * @returns video element
+         */
+        createVideoElement(constraints: MediaTrackConstraints): any;
         /** Pointerlock and fullscreen */
         /**
          * Ask the browser to promote the current element to pointerlock mode
@@ -45884,15 +45891,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
-    export class WebGPUShaderManager {
-        private _shaders;
-        private _device;
-        constructor(device: GPUDevice);
-        getCompiledShaders(name: string): IWebGPURenderPipelineStageDescriptor;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
     export abstract class WebGPUCacheRenderPipeline {
         static NumCacheHitWithoutHash: number;
         static NumCacheHitWithHash: number;
@@ -46150,6 +46148,20 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export class WebGPUClearQuad {
+        private _device;
+        private _engine;
+        private _cacheRenderPipeline;
+        private _effect;
+        private _bindGroups;
+        setDepthStencilFormat(format: GPUTextureFormat | undefined): void;
+        setColorFormat(format: GPUTextureFormat): void;
+        constructor(device: GPUDevice, engine: WebGPUEngine, emptyVertexBuffer: VertexBuffer);
+        clear(renderPass: GPURenderPassEncoder, clearColor?: Nullable<IColor4Like>, clearDepth?: boolean, clearStencil?: boolean, sampleCount?: number): void;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
     export var clearQuadVertexShader: {
         name: string;
         shader: string;
@@ -46255,9 +46267,12 @@ declare module BABYLON {
         private readonly _uploadEncoderDescriptor;
         private readonly _renderEncoderDescriptor;
         private readonly _renderTargetEncoderDescriptor;
-        private readonly _clearDepthValue;
-        private readonly _clearReverseDepthValue;
-        private readonly _clearStencilValue;
+        /** @hidden */
+        readonly _clearDepthValue: number;
+        /** @hidden */
+        readonly _clearReverseDepthValue: number;
+        /** @hidden */
+        readonly _clearStencilValue: number;
         private readonly _defaultSampleCount;
         private _canvas;
         private _options;
@@ -46272,7 +46287,7 @@ declare module BABYLON {
         private _mainPassSampleCount;
         private _textureHelper;
         private _bufferManager;
-        private _shaderManager;
+        private _clearQuad;
         private _cacheSampler;
         private _cacheRenderPipeline;
         private _cacheBindGroups;
@@ -46444,7 +46459,8 @@ declare module BABYLON {
         disableScissor(): void;
         private _stencilRefsCurrent;
         private _resetCurrentStencilRef;
-        private _applyStencilRef;
+        /** @hidden */
+        _applyStencilRef(renderPass: GPURenderPassEncoder, force?: boolean): void;
         private _blendColorsCurrent;
         private _resetCurrentColorBlend;
         private _applyBlendColor;
@@ -54956,7 +54972,7 @@ declare module BABYLON {
         private _sessionEnded;
         private _xrNavigator;
         private _baseLayer;
-        private _renderTargetTexture;
+        private _renderTargetTextures;
         /**
          * The base reference space from which the session started. good if you want to reset your
          * reference space
@@ -55087,6 +55103,7 @@ declare module BABYLON {
          */
         get isNative(): boolean;
         private _createRenderTargetTexture;
+        private _destroyRenderTargetTexture;
     }
 }
 declare module BABYLON {
@@ -58538,6 +58555,7 @@ declare module BABYLON {
         _rootMesh: Mesh;
         private _attachedMesh;
         private _attachedNode;
+        private _customRotationQuaternion;
         /**
          * Ratio for the scale of the gizmo (Default: 1)
          */
@@ -58606,6 +58624,12 @@ declare module BABYLON {
         constructor(
         /** The utility layer the gizmo will be added to */
         gizmoLayer?: UtilityLayerRenderer);
+        /**
+         * poseture that the gizmo will be display
+         * * When set null, default value will be used (Quaternion(0, 0, 0, 1))
+         */
+        get customRotationQuaternion(): Nullable<Quaternion>;
+        set customRotationQuaternion(customRotationQuaternion: Nullable<Quaternion>);
         /**
          * Updates the gizmo to match the attached mesh's position/rotation
          */
@@ -61333,13 +61357,9 @@ declare module BABYLON {
         nativeVertexBuffer?: any;
     }
     /** @hidden */
-    class NativeTexture extends InternalTexture {
-        getInternalTexture(): InternalTexture;
-        getViewCount(): number;
-    }
-    /** @hidden */
     export class NativeEngine extends Engine {
         private readonly _native;
+        private _nativeCamera;
         /** Defines the invalid handle returned by bgfx when resource creation goes wrong */
         private readonly INVALID_HANDLE;
         private _boundBuffersVertexArray;
@@ -61519,6 +61539,9 @@ declare module BABYLON {
          * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
          */
         updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha?: boolean, format?: number): void;
+        createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture;
+        createVideoElement(constraints: MediaTrackConstraints): any;
+        updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void;
         createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression?: Nullable<string>, type?: number): InternalTexture;
         updateRawTexture(texture: Nullable<InternalTexture>, bufferView: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression?: Nullable<string>, type?: number): void;
         /**
@@ -61543,7 +61566,7 @@ declare module BABYLON {
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
         createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string, loaderOptions?: any): InternalTexture;
-        _createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions): NativeTexture;
+        _createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions): InternalTexture;
         _releaseFramebufferObjects(texture: InternalTexture): void;
         /**
          * Engine abstraction for createImageBitmap
@@ -61580,7 +61603,7 @@ declare module BABYLON {
         createRenderTargetTexture(size: number | {
             width: number;
             height: number;
-        }, options: boolean | RenderTargetCreationOptions): NativeTexture;
+        }, options: boolean | RenderTargetCreationOptions): InternalTexture;
         updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void;
         bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void;
         unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps?: boolean, onBeforeUnbind?: () => void): void;
@@ -81805,6 +81828,15 @@ declare module BABYLON {
             token: any;
             pipeline: Nullable<GPURenderPipeline>;
         }): void;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class WebGPUShaderManager {
+        private _shaders;
+        private _device;
+        constructor(device: GPUDevice);
+        getCompiledShaders(name: string): IWebGPURenderPipelineStageDescriptor;
     }
 }
 declare module BABYLON {
