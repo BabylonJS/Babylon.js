@@ -23380,7 +23380,7 @@ declare module BABYLON {
         private _prePassRenderer;
         private _attachments;
         private _useUbo;
-        protected _effect: Effect;
+        protected _drawWrapper: DrawWrapper;
         protected _cachedDefines: string;
         /**
          * @hidden
