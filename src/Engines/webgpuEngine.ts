@@ -35,7 +35,6 @@ import { UniformBuffer } from '../Materials/uniformBuffer';
 import { WebGPURenderPassWrapper } from './WebGPU/webgpuRenderPassWrapper';
 import { IMultiRenderTargetOptions } from '../Materials/Textures/multiRenderTarget';
 import { WebGPUCacheSampler } from "./WebGPU/webgpuCacheSampler";
-import { WebGPUShaderManager } from "./WebGPU/webgpuShaderManager";
 import { WebGPUCacheRenderPipeline } from "./WebGPU/webgpuCacheRenderPipeline";
 import { WebGPUCacheRenderPipelineTree } from "./WebGPU/webgpuCacheRenderPipelineTree";
 import { WebGPUStencilState } from "./WebGPU/webgpuStencilState";
@@ -44,6 +43,7 @@ import { DrawWrapper } from "../Materials/drawWrapper";
 import { WebGPUMaterialContext } from "./WebGPU/webgpuMaterialContext";
 import { WebGPUDrawContext } from "./WebGPU/webgpuDrawContext";
 import { WebGPUCacheBindGroups } from "./WebGPU/webgpuCacheBindGroups";
+import { WebGPUClearQuad } from "./WebGPU/webgpuClearQuad";
 
 import "../Shaders/clearQuad.vertex";
 import "../Shaders/clearQuad.fragment";
@@ -172,9 +172,12 @@ export class WebGPUEngine extends Engine {
     private readonly _uploadEncoderDescriptor = { label: "upload" };
     private readonly _renderEncoderDescriptor = { label: "render" };
     private readonly _renderTargetEncoderDescriptor = { label: "renderTarget" };
-    private readonly _clearDepthValue = 1;
-    private readonly _clearReverseDepthValue = 0;
-    private readonly _clearStencilValue = 0;
+    /** @hidden */
+    public readonly _clearDepthValue = 1;
+    /** @hidden */
+    public readonly _clearReverseDepthValue = 0;
+    /** @hidden */
+    public readonly _clearStencilValue = 0;
     private readonly _defaultSampleCount = 4; // Only supported value for now.
 
     // Engine Life Cycle
@@ -191,7 +194,7 @@ export class WebGPUEngine extends Engine {
     private _mainPassSampleCount: number;
     private _textureHelper: WebGPUTextureHelper;
     private _bufferManager: WebGPUBufferManager;
-    private _shaderManager: WebGPUShaderManager;
+    private _clearQuad: WebGPUClearQuad;
     private _cacheSampler: WebGPUCacheSampler;
     private _cacheRenderPipeline: WebGPUCacheRenderPipeline;
     private _cacheBindGroups: WebGPUCacheBindGroups;
@@ -483,7 +486,6 @@ export class WebGPUEngine extends Engine {
             .then(() => {
                 this._bufferManager = new WebGPUBufferManager(this._device);
                 this._textureHelper = new WebGPUTextureHelper(this._device, this._glslang, this._bufferManager);
-                this._shaderManager = new WebGPUShaderManager(this._device);
                 this._cacheSampler = new WebGPUCacheSampler(this._device);
                 this._cacheBindGroups = new WebGPUCacheBindGroups(this._device, this._cacheSampler, this);
 
@@ -513,6 +515,7 @@ export class WebGPUEngine extends Engine {
 
                 this._initializeLimits();
 
+                this._clearQuad = new WebGPUClearQuad(this._device, this, this._emptyVertexBuffer);
                 this._defaultMaterialContext = this.createMaterialContext()!;
                 this._currentMaterialContext = this._defaultMaterialContext;
 
@@ -933,7 +936,8 @@ export class WebGPUEngine extends Engine {
         this._stencilRefsCurrent[index] = -1;
     }
 
-    private _applyStencilRef(renderPass: GPURenderPassEncoder, force = false): void {
+    /** @hidden */
+    public _applyStencilRef(renderPass: GPURenderPassEncoder, force = false): void {
         const index = renderPass === this._mainRenderPassWrapper.renderPass ? 0 : 1;
 
         const stencilRef = this._stencilState.stencilFuncRef;
@@ -1019,66 +1023,9 @@ export class WebGPUEngine extends Engine {
     }
 
     private _clearFullQuad(clearColor?: Nullable<IColor4Like>, clearDepth?: boolean, clearStencil?: boolean): void {
-        // TODO WEBGPU cache things
-        const pipeline = this._device.createRenderPipeline({
-            sampleCount: this._currentRenderTarget ? this._currentRenderTarget.samples : this._mainPassSampleCount,
-            primitiveTopology: WebGPUConstants.PrimitiveTopology.TriangleStrip,
-            vertexState: {
-                indexFormat: WebGPUConstants.IndexFormat.Uint16
-            },
-
-            depthStencilState: this._depthTextureFormat === undefined ? undefined : {
-                depthWriteEnabled: clearDepth,
-                depthCompare: WebGPUConstants.CompareFunction.Always,
-                format: this._depthTextureFormat,
-                stencilFront: {
-                    compare: clearStencil ? WebGPUConstants.CompareFunction.Always : WebGPUConstants.CompareFunction.Never,
-                    passOp: clearStencil ? WebGPUConstants.StencilOperation.Replace : WebGPUConstants.StencilOperation.Keep,
-                },
-                stencilReadMask: 0xFF,
-                stencilWriteMask: clearStencil ? 0xFF : 0,
-            },
-
-            colorStates: [{
-                format: this._colorFormat,
-                writeMask: clearColor ? WebGPUConstants.ColorWrite.All : 0,
-            }],
-
-            ...this._shaderManager.getCompiledShaders("clearQuad"),
-        });
-
-        const bindGroupLayout = pipeline.getBindGroupLayout(0);
-
-        const buffer = this._bufferManager.createBuffer(4 * 4 + 1 * 4, WebGPUConstants.BufferUsage.CopyDst | WebGPUConstants.BufferUsage.Uniform) as WebGPUDataBuffer;
-
-        if (clearColor) {
-            const data = new Float32Array([clearColor.r, clearColor.g, clearColor.b, clearColor.a]);
-            this._bufferManager.setSubData(buffer, 0, data);
-        }
-
-        this._bufferManager.setSubData(buffer, 4 * 4, new Float32Array([this.useReverseDepthBuffer ? this._clearReverseDepthValue : this._clearDepthValue]));
-
-        const bindGroup = this._device.createBindGroup({
-            layout: bindGroupLayout,
-            entries: [{
-                binding: 0,
-                resource: {
-                    buffer: buffer.underlyingResource,
-                },
-            }],
-        });
-
-        const renderPass = this._getCurrentRenderPass();
-
-        renderPass.setStencilReference(this._clearStencilValue);
-        renderPass.setPipeline(pipeline);
-        renderPass.setBindGroup(0, bindGroup);
-        renderPass.draw(4, 1, 0, 0);
-
-        if (this._stencilState.stencilTest) {
-            this._applyStencilRef(renderPass, true);
-        }
-        this._bufferManager.releaseBuffer(buffer);
+        this._clearQuad.setColorFormat(this._colorFormat);
+        this._clearQuad.setDepthStencilFormat(this._depthTextureFormat);
+        this._clearQuad.clear(this._getCurrentRenderPass(), clearColor, clearDepth, clearStencil, this._currentRenderTarget ? this._currentRenderTarget.samples : this._mainPassSampleCount);
     }
 
     //------------------------------------------------------------------------------
