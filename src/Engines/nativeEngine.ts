@@ -1,5 +1,6 @@
 import { Nullable, IndicesArray, DataArray } from "../types";
 import { Engine } from "../Engines/engine";
+import { EngineOptions } from "../Engines/thinEngine";
 import { VertexBuffer } from "../Meshes/buffer";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
@@ -740,6 +741,17 @@ class NativeTexture extends InternalTexture {
 /** @hidden */
 declare var _native: any;
 
+/**
+ * Options to create the Native engine
+ */
+export interface NativeEngineOptions {
+
+    /**
+     * defines whether to adapt to the device's viewport characteristics (default: false)
+     */
+    adaptToDeviceRatio? : boolean;
+}
+
 /** @hidden */
 export class NativeEngine extends Engine {
     private readonly _native: INativeEngine = new _native.Engine();
@@ -756,8 +768,8 @@ export class NativeEngine extends Engine {
         this._native.setHardwareScalingLevel(level);
     }
 
-    public constructor(config: any = {}) {
-        super(null, config.antialias, config.options, config.adaptToDeviceRatio);
+    public constructor(options: NativeEngineOptions = {}) {
+        super(null, false, undefined, options.adaptToDeviceRatio);
 
         this._webGLVersion = 2;
         this.disableUniformBuffers = true;
@@ -856,9 +868,8 @@ export class NativeEngine extends Engine {
 
         // Currently we do not fully configure the ThinEngine on construction of NativeEngine.
         // Setup resolution scaling based on display settings.
-        console.log("NativeEngine: Window " + window.devicePixelRatio ? "does " : "does NOT " + "have devicePixelRatio!");
         var devicePixelRatio = window ? (window.devicePixelRatio || 1.0) : 1.0;
-        this._hardwareScalingLevel = config.adaptToDeviceRatio ? 1.0 / Math.min(devicePixelRatio) : 1.0;
+        this._hardwareScalingLevel = options.adaptToDeviceRatio ? devicePixelRatio : 1.0;
         this.resize();
 
         // Shader processor
