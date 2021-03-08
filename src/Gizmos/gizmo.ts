@@ -201,7 +201,11 @@ export class Gizmo implements IDisposable {
                 effectiveNode.getWorldMatrix().decompose(undefined, this._rootMesh.rotationQuaternion!);
             }
             else {
-                this._customRotationQuaternion ? (this._rootMesh.rotationQuaternion!.copyFrom(this._customRotationQuaternion)) : (this._rootMesh.rotationQuaternion!.set(0, 0, 0, 1));
+                if (this._customRotationQuaternion) {
+                    this._rootMesh.rotationQuaternion!.copyFrom(this._customRotationQuaternion);
+                }else {
+                    this._rootMesh.rotationQuaternion!.set(0, 0, 0, 1);
+                }
             }
 
             // Scale
