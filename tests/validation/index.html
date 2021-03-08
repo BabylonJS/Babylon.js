@@ -70,6 +70,8 @@
 
 						config = JSON.parse(xhr.responseText);
 
+                        config.qs = qs;
+
 						// Run tests
 						var index = 0;
 						if (qs.test) {

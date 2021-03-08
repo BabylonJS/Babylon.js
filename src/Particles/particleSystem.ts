@@ -19,6 +19,7 @@ import { Constants } from "../Engines/constants";
 import { SerializationHelper } from "../Misc/decorators";
 import { _TypeStore } from '../Misc/typeStore';
 import { IAnimatable } from '../Animations/animatable.interface';
+import { DrawWrapper } from "../Materials/drawWrapper";
 
 import "../Shaders/particles.fragment";
 import "../Shaders/particles.vertex";
@@ -110,8 +111,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     private _vertexBuffers: { [key: string]: VertexBuffer } = {};
     private _spriteBuffer: Nullable<Buffer>;
     private _indexBuffer: Nullable<DataBuffer>;
-    private _effect: Effect;
-    private _customEffect: { [blendMode: number] : Nullable<Effect> };
+    private _drawWrapper: DrawWrapper;
+    private _customWrappers: { [blendMode: number] : Nullable<DrawWrapper> };
     private _cachedDefines: string;
     private _scaledColorStep = new Color4(0, 0, 0, 0);
     private _colorDiff = new Color4(0, 0, 0, 0);
@@ -232,7 +233,11 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      * @returns The effect
      */
     public getCustomEffect(blendMode: number = 0): Nullable<Effect> {
-        return this._customEffect[blendMode] ?? this._customEffect[0];
+        return this._customWrappers[blendMode]?.effect ?? this._customWrappers[0]!.effect;
+    }
+
+    private _getCustomDrawWrapper(blendMode: number = 0): Nullable<DrawWrapper> {
+        return this._customWrappers[blendMode] ?? this._customWrappers[0];
     }
 
     /**
@@ -241,7 +246,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      * @param blendMode Blend mode for which the effect should be set
      */
     public setCustomEffect(effect: Nullable<Effect>, blendMode: number = 0) {
-        this._customEffect[blendMode] = effect;
+        this._customWrappers[blendMode] = new DrawWrapper(this._engine);
+        this._customWrappers[blendMode]!.effect = effect;
     }
 
     /** @hidden */
@@ -300,8 +306,10 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         // Setup the default processing configuration to the scene.
         this._attachImageProcessingConfiguration(null);
 
-        this._customEffect = { 0: customEffect };
+        this._customWrappers = { 0: new DrawWrapper(this._engine) };
+        this._customWrappers[0]!.effect = customEffect;
 
+        this._drawWrapper = new DrawWrapper(this._engine);
         this._useInstancing = this._engine.getCaps().instancedArrays;
 
         this._createIndexBuffer();
@@ -1725,11 +1733,11 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     }
 
     /** @hidden */
-    private _getEffect(blendMode: number): Effect {
-        const customEffect = this.getCustomEffect(blendMode);
+    private _getWrapper(blendMode: number): DrawWrapper {
+        const customWrapper = this._getCustomDrawWrapper(blendMode);
 
-        if (customEffect) {
-            return customEffect;
+        if (customWrapper?.effect) {
+            return customWrapper;
         }
 
         var defines: Array<string> = [];
@@ -1747,14 +1755,14 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
             this.fillUniformsAttributesAndSamplerNames(effectCreationOption, attributesNamesOrOptions, samplers);
 
-            this._effect = this._engine.createEffect(
+            this._drawWrapper.effect = this._engine.createEffect(
                 "particles",
                 attributesNamesOrOptions,
                 effectCreationOption,
                 samplers, join);
         }
 
-        return this._effect;
+        return this._drawWrapper;
     }
 
     /**
@@ -1891,14 +1899,14 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         }
 
         if (this.blendMode !== ParticleSystem.BLENDMODE_MULTIPLYADD) {
-            if (!this._getEffect(this.blendMode).isReady()) {
+            if (!this._getWrapper(this.blendMode).effect!.isReady()) {
                 return false;
             }
         } else {
-            if (!this._getEffect(ParticleSystem.BLENDMODE_MULTIPLY).isReady()) {
+            if (!this._getWrapper(ParticleSystem.BLENDMODE_MULTIPLY).effect!.isReady()) {
                 return false;
             }
-            if (!this._getEffect(ParticleSystem.BLENDMODE_ADD).isReady()) {
+            if (!this._getWrapper(ParticleSystem.BLENDMODE_ADD).effect!.isReady()) {
                 return false;
             }
         }
@@ -1907,12 +1915,13 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     }
 
     private _render(blendMode: number) {
-        var effect = this._getEffect(blendMode);
+        const drawWrapper = this._getWrapper(blendMode);
+        var effect = drawWrapper.effect!;
 
         var engine = this._engine;
 
         // Render
-        engine.enableEffect(effect);
+        engine.enableEffect(drawWrapper);
 
         var viewMatrix = this.defaultViewMatrix ?? this._scene!.getViewMatrix();
         effect.setTexture("diffuseSampler", this.particleTexture);
@@ -2118,7 +2127,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      * @returns the cloned particle system
      */
     public clone(name: string, newEmitter: any): ParticleSystem {
-        var custom = { ...this._customEffect };
+        var custom = { ...this._customWrappers };
         var program: any = null;
         var engine = this._engine as any;
         if (engine.createEffectForParticles) {
@@ -2133,7 +2142,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         var result = ParticleSystem.Parse(serialization, this._scene || this._engine, this._rootUrl);
         result.name = name;
         result.customShader = program;
-        result._customEffect = custom;
+        result._customWrappers = custom;
 
         if (newEmitter === undefined) {
             newEmitter = this.emitter;

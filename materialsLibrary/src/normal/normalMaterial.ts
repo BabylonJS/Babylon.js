@@ -136,10 +136,10 @@ export class NormalMaterial extends PushMaterial {
         }
 
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new NormalMaterialDefines();
+            subMesh.materialDefines = new NormalMaterialDefines();
         }
 
-        var defines = <NormalMaterialDefines>subMesh._materialDefines;
+        var defines = <NormalMaterialDefines>subMesh.materialDefines;
         var scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
@@ -247,7 +247,7 @@ export class NormalMaterial extends PushMaterial {
                     onCompiled: this.onCompiled,
                     onError: this.onError,
                     indexParameters: { maxSimultaneousLights: 4 }
-                }, engine), defines);
+                }, engine), defines, this._materialContext);
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;

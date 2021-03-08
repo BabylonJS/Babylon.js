@@ -867,7 +867,7 @@ export class NodeMaterial extends PushMaterial {
             defines.toString(), result?.fallbacks, undefined);
 
         proceduralTexture.nodeMaterialSource = this;
-        proceduralTexture._effect = effect;
+        proceduralTexture._setEffect(effect);
 
         let buildId = this._buildId;
         proceduralTexture.onBeforeGenerationObservable.add(() => {
@@ -897,7 +897,7 @@ export class NodeMaterial extends PushMaterial {
                         this._fragmentCompilationState.samplers,
                         defines.toString(), result?.fallbacks, undefined);
 
-                    proceduralTexture._effect = effect;
+                    proceduralTexture._setEffect(effect);
                 });
             }
 
@@ -1132,7 +1132,7 @@ export class NodeMaterial extends PushMaterial {
         }
 
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new NodeMaterialDefines();
+            subMesh.materialDefines = new NodeMaterialDefines();
         }
 
         var defines = <NodeMaterialDefines>subMesh._materialDefines;
@@ -1192,7 +1192,7 @@ export class NodeMaterial extends PushMaterial {
 
                 } else {
                     scene.resetCachedMaterial();
-                    subMesh.setEffect(effect, defines);
+                    subMesh.setEffect(effect, defines, this._materialContext);
                 }
             }
         }

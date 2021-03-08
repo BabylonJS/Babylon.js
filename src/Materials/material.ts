@@ -20,6 +20,8 @@ import { IInspectable } from '../Misc/iInspectable';
 import { Plane } from '../Maths/math.plane';
 import { ShadowDepthWrapper } from './shadowDepthWrapper';
 import { MaterialHelper } from './materialHelper';
+import { IMaterialContext } from "../Engines/IMaterialContext";
+import { DrawWrapper } from "./drawWrapper";
 
 declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
 declare type Mesh = import("../Meshes/mesh").Mesh;
@@ -617,7 +619,13 @@ export class Material implements IAnimatable {
      * @hidden
      * Stores the effects for the material
      */
-    public _effect: Nullable<Effect> = null;
+    protected _materialContext: IMaterialContext | undefined;
+
+    protected _drawWrapper: DrawWrapper;
+    /** @hidden */
+    public _getDrawWrapper(): DrawWrapper {
+        return this._drawWrapper;
+    }
 
     /**
      * Specifies if uniform buffers should be used
@@ -673,6 +681,9 @@ export class Material implements IAnimatable {
 
         this.id = name || Tools.RandomId();
         this.uniqueId = this._scene.getUniqueId();
+        this._materialContext = this._scene.getEngine().createMaterialContext();
+        this._drawWrapper = new DrawWrapper(this._scene.getEngine(), false);
+        this._drawWrapper.materialContext = this._materialContext;
 
         if (this._scene.useRightHandedSystem) {
             this.sideOrientation = Material.ClockWiseSideOrientation;
@@ -761,7 +772,7 @@ export class Material implements IAnimatable {
      * @returns the effect associated with the material
      */
     public getEffect(): Nullable<Effect> {
-        return this._effect;
+        return this._drawWrapper.effect;
     }
 
     /**
@@ -898,13 +909,13 @@ export class Material implements IAnimatable {
     }
 
     /** @hidden */
-    public _preBind(effect?: Effect, overrideOrientation: Nullable<number> = null): boolean {
+    public _preBind(effect?: Effect | DrawWrapper, overrideOrientation: Nullable<number> = null): boolean {
         var engine = this._scene.getEngine();
 
         var orientation = (overrideOrientation == null) ? this.sideOrientation : overrideOrientation;
         var reverse = orientation === Material.ClockWiseSideOrientation;
 
-        engine.enableEffect(effect ? effect : this._effect);
+        engine.enableEffect(effect ? effect : this._getDrawWrapper());
         engine.setState(this.backFaceCulling, this.zOffset, false, reverse);
 
         return reverse;
@@ -1407,12 +1418,12 @@ export class Material implements IAnimatable {
         this._uniformBuffer.dispose();
 
         // Shader are kept in cache for further use but we can get rid of this by using forceDisposeEffect
-        if (forceDisposeEffect && this._effect) {
+        if (forceDisposeEffect && this._drawWrapper.effect) {
             if (!this._storeEffectOnSubMeshes) {
-                this._effect.dispose();
+                this._drawWrapper.effect.dispose();
             }
 
-            this._effect = null;
+            this._drawWrapper.effect = null;
         }
 
         // Callback
@@ -1444,7 +1455,7 @@ export class Material implements IAnimatable {
                     }
                 }
             } else {
-                geometry._releaseVertexArrayObject(this._effect);
+                geometry._releaseVertexArrayObject(this._drawWrapper.effect);
             }
         }
     }
