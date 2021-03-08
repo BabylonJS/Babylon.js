@@ -56,7 +56,7 @@ export class WebGPUClearQuad {
         this._effect.setFloat("depthValue", this._engine.useReverseDepthBuffer ? this._engine._clearReverseDepthValue : this._engine._clearDepthValue);
 
         webgpuPipelineContext.uniformBuffer?.update();
-        
+
         const buffer = webgpuPipelineContext.uniformBuffer?.getBuffer() as WebGPUDataBuffer;
         let bindGroups = this._bindGroups[buffer.uniqueId];
 
