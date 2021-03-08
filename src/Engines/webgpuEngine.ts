@@ -43,10 +43,10 @@ import { DrawWrapper } from "../Materials/drawWrapper";
 import { WebGPUMaterialContext } from "./WebGPU/webgpuMaterialContext";
 import { WebGPUDrawContext } from "./WebGPU/webgpuDrawContext";
 import { WebGPUCacheBindGroups } from "./WebGPU/webgpuCacheBindGroups";
+import { WebGPUClearQuad } from "./WebGPU/webgpuClearQuad";
 
 import "../Shaders/clearQuad.vertex";
 import "../Shaders/clearQuad.fragment";
-import { WebGPUClearQuad } from "./WebGPU/webgpuMisc";
 
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
