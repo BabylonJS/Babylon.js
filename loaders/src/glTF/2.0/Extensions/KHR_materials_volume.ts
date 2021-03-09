@@ -54,12 +54,12 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialBasePropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
-            promises.push(this._loadTransparentPropertiesAsync(context, material, babylonMaterial, extension));
+            promises.push(this._loadVolumePropertiesAsync(extensionContext, material, babylonMaterial, extension));
             return Promise.all(promises).then(() => { });
         });
     }
 
-    private _loadTransparentPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, extension: IMaterialsTransmission): Promise<void> {
+    private _loadVolumePropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, extension: IMaterialsTransmission): Promise<void> {
         if (!(babylonMaterial instanceof PBRMaterial)) {
             throw new Error(`${context}: Material type not supported`);
         }
