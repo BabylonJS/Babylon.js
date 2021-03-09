@@ -63,31 +63,30 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
         if (!(babylonMaterial instanceof PBRMaterial)) {
             throw new Error(`${context}: Material type not supported`);
         }
-        let pbrMaterial = babylonMaterial as PBRMaterial;
-
+        
         // If transparency isn't enabled already, this extension shouldn't do anything.
         // i.e. it requires either the KHR_materials_transmission or KHR_materials_translucency extensions.
-        if (!pbrMaterial.subSurface.isRefractionEnabled && !pbrMaterial.subSurface.isTranslucencyEnabled || !extension.thicknessFactor) {
+        if (!babylonMaterial.subSurface.isRefractionEnabled && !babylonMaterial.subSurface.isTranslucencyEnabled || !extension.thicknessFactor) {
             return Promise.resolve();
         }
 
         // IOR in this extension only affects interior.
-        pbrMaterial.subSurface.volumeIndexOfRefraction = pbrMaterial.indexOfRefraction;
+        babylonMaterial.subSurface.volumeIndexOfRefraction = babylonMaterial.indexOfRefraction;
         const attenuationDistance = extension.attenuationDistance !== undefined ? extension.attenuationDistance : Number.MAX_VALUE;
-        pbrMaterial.subSurface.tintColorAtDistance = attenuationDistance;
+        babylonMaterial.subSurface.tintColorAtDistance = attenuationDistance;
         if (extension.attenuationColor !== undefined && extension.attenuationColor.length == 3) {
-            pbrMaterial.subSurface.tintColor.copyFromFloats(extension.attenuationColor[0], extension.attenuationColor[1], extension.attenuationColor[2]);
-            pbrMaterial.subSurface.tintColor = pbrMaterial.subSurface.tintColor.toLinearSpace();
+            babylonMaterial.subSurface.tintColor.copyFromFloats(extension.attenuationColor[0], extension.attenuationColor[1], extension.attenuationColor[2]);
+            babylonMaterial.subSurface.tintColor = babylonMaterial.subSurface.tintColor.toLinearSpace();
         }
 
-        pbrMaterial.subSurface.minimumThickness = 0.0;
-        pbrMaterial.subSurface.maximumThickness = extension.thicknessFactor;
+        babylonMaterial.subSurface.minimumThickness = 0.0;
+        babylonMaterial.subSurface.maximumThickness = extension.thicknessFactor;
         if (extension.thicknessTexture) {
-            return this._loader.loadTextureInfoAsync(context, extension.thicknessTexture)
+            return this._loader.loadTextureInfoAsync(`${context}/thicknessTexture`, extension.thicknessTexture)
                 .then((texture: BaseTexture) => {
-                    pbrMaterial.subSurface.thicknessTexture = texture;
-                    pbrMaterial.subSurface.useMaskFromThicknessTextureGltf = true;
-                    pbrMaterial.subSurface.useMaskFromThicknessTexture = false;
+                    babylonMaterial.subSurface.thicknessTexture = texture;
+                    babylonMaterial.subSurface.useMaskFromThicknessTextureGltf = true;
+                    babylonMaterial.subSurface.useMaskFromThicknessTexture = false;
                 });
         } else {
             return Promise.resolve();
