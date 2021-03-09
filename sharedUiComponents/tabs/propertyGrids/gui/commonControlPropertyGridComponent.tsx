@@ -82,6 +82,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         (control as any).background !== undefined &&
                         <TextInputLineComponent lockObject={this.props.lockObject} label="Background" target={control} propertyName="background" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     }
+                    <FloatLineComponent lockObject={this.props.lockObject} label="ZIndex" target={control} propertyName="zIndex" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
                 {
                     this.renderGridInformation()

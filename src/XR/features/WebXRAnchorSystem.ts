@@ -297,7 +297,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
                     const newAnchor: Partial<IWebXRAnchor> = {
                         id: anchorIdProvider++,
                         xrAnchor: xrAnchor,
-                        remove: xrAnchor.delete,
+                        remove: () => xrAnchor.delete(),
                     };
                     const anchor = this._updateAnchorWithXRFrame(xrAnchor, newAnchor, frame);
                     this._trackedAnchors.push(anchor);

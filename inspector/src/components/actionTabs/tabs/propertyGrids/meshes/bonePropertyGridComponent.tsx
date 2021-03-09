@@ -37,7 +37,7 @@ export class BonePropertyGridComponent extends React.Component<IBonePropertyGrid
 
         return (
             <div className="pane">
-                <LineContainerComponent title="GENERAL">
+                <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
                     <TextLineComponent label="Name" value={bone.name} />
                     <TextLineComponent label="Index" value={bone.getIndex().toString()} />
                     <TextLineComponent label="Unique ID" value={bone.uniqueId.toString()} />
@@ -50,7 +50,7 @@ export class BonePropertyGridComponent extends React.Component<IBonePropertyGrid
                         <TextLineComponent label="Linked node" value={bone.getTransformNode()!.name} onLink={() => this.onTransformNodeLink()}/>
                     }
                 </LineContainerComponent>
-                <LineContainerComponent title="TRANSFORMATIONS">
+                <LineContainerComponent title="TRANSFORMATIONS" selection={this.props.globalState}>
                     <Vector3LineComponent label="Position" target={bone} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         !bone.rotationQuaternion &&

@@ -5,7 +5,7 @@ import { Scene } from "../scene";
 import { Engine } from "../Engines/engine";
 import { Constants } from "../Engines/constants";
 import { ISceneComponent, SceneComponentConstants } from "../sceneComponent";
-import { Effect } from "../Materials/effect";
+import { DrawWrapper } from "../Materials/drawWrapper";
 import { MaterialHelper } from "../Materials/materialHelper";
 
 import "../Shaders/outline.fragment";
@@ -90,6 +90,8 @@ Object.defineProperty(Mesh.prototype, "renderOverlay", {
  * It should not be used directly but through the available method on mesh.
  */
 export class OutlineRenderer implements ISceneComponent {
+    private static _Counter = 0;
+
     /**
      * Stencil value used to avoid outline being seen within the mesh when the mesh is transparent
      */
@@ -110,9 +112,8 @@ export class OutlineRenderer implements ISceneComponent {
     public zOffset = 1;
 
     private _engine: Engine;
-    private _effect: Effect;
-    private _cachedDefines: string;
     private _savedDepthWrite: boolean;
+    private _nameForDrawWrapper: string;
 
     /**
      * Instantiates a new outline renderer. (There could be only one per scene).
@@ -122,6 +123,7 @@ export class OutlineRenderer implements ISceneComponent {
         this.scene = scene;
         this._engine = scene.getEngine();
         this.scene._addComponent(this);
+        this._nameForDrawWrapper = Constants.SUBMESH_DRAWWRAPPER_OUTLINERENDERER_PREFIX + OutlineRenderer._Counter++;
     }
 
     /**
@@ -173,44 +175,47 @@ export class OutlineRenderer implements ISceneComponent {
             return;
         }
 
-        engine.enableEffect(this._effect);
+        const drawWrapper = subMesh._getDrawWrapper(this._nameForDrawWrapper)!;
+        const effect = DrawWrapper.GetEffect(drawWrapper)!;
+
+        engine.enableEffect(drawWrapper);
 
         // Logarithmic depth
         if ((<any>material).useLogarithmicDepth) {
-            this._effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(scene.activeCamera.maxZ + 1.0) / Math.LN2));
+            effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(scene.activeCamera.maxZ + 1.0) / Math.LN2));
         }
 
-        this._effect.setFloat("offset", useOverlay ? 0 : renderingMesh.outlineWidth);
-        this._effect.setColor4("color", useOverlay ? renderingMesh.overlayColor : renderingMesh.outlineColor, useOverlay ? renderingMesh.overlayAlpha : material.alpha);
-        this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
-        this._effect.setMatrix("world", effectiveMesh.getWorldMatrix());
+        effect.setFloat("offset", useOverlay ? 0 : renderingMesh.outlineWidth);
+        effect.setColor4("color", useOverlay ? renderingMesh.overlayColor : renderingMesh.outlineColor, useOverlay ? renderingMesh.overlayAlpha : material.alpha);
+        effect.setMatrix("viewProjection", scene.getTransformMatrix());
+        effect.setMatrix("world", effectiveMesh.getWorldMatrix());
 
         // Bones
         if (renderingMesh.useBones && renderingMesh.computeBonesUsingShaders && renderingMesh.skeleton) {
-            this._effect.setMatrices("mBones", renderingMesh.skeleton.getTransformMatrices(renderingMesh));
+            effect.setMatrices("mBones", renderingMesh.skeleton.getTransformMatrices(renderingMesh));
         }
 
         if (renderingMesh.morphTargetManager && renderingMesh.morphTargetManager.isUsingTextureForTargets) {
-            renderingMesh.morphTargetManager._bind(this._effect);
+            renderingMesh.morphTargetManager._bind(effect);
         }
 
         // Morph targets
-        MaterialHelper.BindMorphTargetParameters(renderingMesh, this._effect);
+        MaterialHelper.BindMorphTargetParameters(renderingMesh, effect);
 
-        renderingMesh._bind(subMesh, this._effect, material.fillMode);
+        renderingMesh._bind(subMesh, effect, material.fillMode);
 
         // Alpha test
         if (material && material.needAlphaTesting()) {
             var alphaTexture = material.getAlphaTestTexture();
             if (alphaTexture) {
-                this._effect.setTexture("diffuseSampler", alphaTexture);
-                this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                effect.setTexture("diffuseSampler", alphaTexture);
+                effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
             }
         }
 
         engine.setZOffset(-this.zOffset);
-        renderingMesh._processRendering(effectiveMesh, subMesh, this._effect, material.fillMode, batch, hardwareInstancedRendering,
-            (isInstance, world) => { this._effect.setMatrix("world", world); });
+        renderingMesh._processRendering(effectiveMesh, subMesh, effect, material.fillMode, batch, hardwareInstancedRendering,
+            (isInstance, world) => { effect.setMatrix("world", world); });
 
         engine.setZOffset(0);
     }
@@ -225,6 +230,11 @@ export class OutlineRenderer implements ISceneComponent {
     public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
         var defines = [];
         var attribs = [VertexBuffer.PositionKind, VertexBuffer.NormalKind];
+
+        const subMeshEffect = subMesh._getDrawWrapper(this._nameForDrawWrapper, true)!;
+
+        let effect = subMeshEffect.effect!;
+        let cachedDefines = subMeshEffect.defines;
 
         var mesh = subMesh.getMesh();
         var material = subMesh.getMaterial();
@@ -290,9 +300,9 @@ export class OutlineRenderer implements ISceneComponent {
 
         // Get correct effect
         var join = defines.join("\n");
-        if (this._cachedDefines !== join) {
-            this._cachedDefines = join;
-            this._effect = this.scene.getEngine().createEffect("outline",
+        if (cachedDefines !== join) {
+            cachedDefines = join;
+            effect = this.scene.getEngine().createEffect("outline",
                 attribs,
                 ["world", "mBones", "viewProjection", "diffuseMatrix", "offset", "color", "logarithmicDepthConstant",
                 "morphTargetInfluences", "morphTargetTextureInfo", "morphTargetTextureIndices"],
@@ -301,7 +311,9 @@ export class OutlineRenderer implements ISceneComponent {
                 { maxSimultaneousMorphTargets: numMorphInfluencers });
         }
 
-        return this._effect.isReady();
+        subMeshEffect.setEffect(effect, cachedDefines);
+
+        return effect.isReady();
     }
 
     private _beforeRenderingMesh(mesh: Mesh, subMesh: SubMesh, batch: _InstancesBatch): void {

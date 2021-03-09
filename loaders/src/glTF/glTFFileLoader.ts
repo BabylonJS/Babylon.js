@@ -715,7 +715,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     public _loadFile(url: string, scene: Scene, onSuccess: (data: string | ArrayBuffer) => void, useArrayBuffer?: boolean, onError?: (request?: WebRequest) => void): IFileRequest {
         const request = scene._loadFile(url, onSuccess, (event) => {
             this._onProgress(event, request);
-        }, undefined, useArrayBuffer, onError) as IFileRequestInfo;
+        }, true, useArrayBuffer, onError) as IFileRequestInfo;
         request.onCompleteObservable.add((request) => {
             this._requests.splice(this._requests.indexOf(request), 1);
         });
@@ -727,7 +727,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     public _requestFile(url: string, scene: Scene, onSuccess: (data: string | ArrayBuffer, request?: WebRequest) => void, useArrayBuffer?: boolean, onError?: (error: RequestFileError) => void, onOpened?: (request: WebRequest) => void): IFileRequest {
         const request = scene._requestFile(url, onSuccess, (event) => {
             this._onProgress(event, request);
-        }, undefined, useArrayBuffer, onError, onOpened) as IFileRequestInfo;
+        }, true, useArrayBuffer, onError, onOpened) as IFileRequestInfo;
         request.onCompleteObservable.add((request) => {
             this._requests.splice(this._requests.indexOf(request), 1);
         });

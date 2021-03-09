@@ -60,11 +60,11 @@ export class DebugTabComponent extends PaneComponent {
 
         return (
             <div className="pane">
-                <LineContainerComponent title="HELPERS">
+                <LineContainerComponent title="HELPERS" selection={this.props.globalState}>
                     <RenderGridPropertyGridComponent globalState={this.props.globalState} scene={scene} />
                     <CheckBoxLineComponent label="Physics" isSelected={() => this._physicsViewersEnabled} onSelect={() => this.switchPhysicsViewers()} />
                 </LineContainerComponent>
-                <LineContainerComponent title="CORE TEXTURE CHANNELS">
+                <LineContainerComponent title="CORE TEXTURE CHANNELS" selection={this.props.globalState}>
                     <CheckBoxLineComponent label="Diffuse" isSelected={() => StandardMaterial.DiffuseTextureEnabled} onSelect={() => StandardMaterial.DiffuseTextureEnabled = !StandardMaterial.DiffuseTextureEnabled} />
                     <CheckBoxLineComponent label="Ambient" isSelected={() => StandardMaterial.AmbientTextureEnabled} onSelect={() => StandardMaterial.AmbientTextureEnabled = !StandardMaterial.AmbientTextureEnabled} />
                     <CheckBoxLineComponent label="Specular" isSelected={() => StandardMaterial.SpecularTextureEnabled} onSelect={() => StandardMaterial.SpecularTextureEnabled = !StandardMaterial.SpecularTextureEnabled} />
@@ -77,7 +77,7 @@ export class DebugTabComponent extends PaneComponent {
                     <CheckBoxLineComponent label="Lightmap" isSelected={() => StandardMaterial.LightmapTextureEnabled} onSelect={() => StandardMaterial.LightmapTextureEnabled = !StandardMaterial.LightmapTextureEnabled} />
                     <CheckBoxLineComponent label="Fresnel" isSelected={() => StandardMaterial.FresnelEnabled} onSelect={() => StandardMaterial.FresnelEnabled = !StandardMaterial.FresnelEnabled} />
                 </LineContainerComponent>
-                <LineContainerComponent title="FEATURES">
+                <LineContainerComponent title="FEATURES" selection={this.props.globalState}>
                     <CheckBoxLineComponent label="Animations" isSelected={() => scene.animationsEnabled} onSelect={() => scene.animationsEnabled = !scene.animationsEnabled} />
                     <CheckBoxLineComponent label="Physics" isSelected={() => scene.physicsEnabled} onSelect={() => scene.physicsEnabled = !scene.physicsEnabled} />
                     <CheckBoxLineComponent label="Collisions" isSelected={() => scene.collisionsEnabled} onSelect={() => scene.collisionsEnabled = !scene.collisionsEnabled} />

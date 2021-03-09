@@ -131,7 +131,9 @@ export class DeviceInputSystem implements IDisposable {
             throw `Unable to find device ${DeviceType[deviceType]}`;
         }
 
-        this._updateDevice(deviceType, deviceSlot, inputIndex);
+        if (deviceType >= DeviceType.Xbox && deviceType <= DeviceType.Switch && navigator.getGamepads) {
+            this._updateDevice(deviceType, deviceSlot, inputIndex);
+        }
 
         if (device[inputIndex] === undefined) {
             throw `Unable to find input ${inputIndex} for device ${DeviceType[deviceType]} in slot ${deviceSlot}`;
@@ -190,11 +192,13 @@ export class DeviceInputSystem implements IDisposable {
      * Currently handles gamepads and mouse
      */
     private _checkForConnectedDevices() {
-        const gamepads = navigator.getGamepads();
+        if (navigator.getGamepads) {
+            const gamepads = navigator.getGamepads();
 
-        for (const gamepad of gamepads) {
-            if (gamepad) {
-                this._addGamePad(gamepad);
+            for (const gamepad of gamepads) {
+                if (gamepad) {
+                    this._addGamePad(gamepad);
+                }
             }
         }
 
@@ -405,7 +409,7 @@ export class DeviceInputSystem implements IDisposable {
             const deviceType = (evt.pointerType === "mouse") ? DeviceType.Mouse : DeviceType.Touch;
             const deviceSlot = (evt.pointerType === "mouse") ? 0 : evt.pointerId;
 
-            const pointer = this._inputs[deviceType][deviceSlot];
+            const pointer = this._inputs[deviceType]?.[deviceSlot];
             if (pointer) {
                 const previousHorizontal = pointer[PointerInput.Horizontal];
                 const previousVertical = pointer[PointerInput.Vertical];
@@ -424,12 +428,12 @@ export class DeviceInputSystem implements IDisposable {
                     }
                     this.onInputChanged(deviceType, deviceSlot, evt.button + 2, previousButton, pointer[evt.button + 2], evt);
                 }
-            }
-            // We don't want to unregister the mouse because we may miss input data when a mouse is moving after a click
-            if (evt.pointerType !== "mouse") {
-                this._unregisterDevice(deviceType, deviceSlot);
-            }
 
+                // We don't want to unregister the mouse because we may miss input data when a mouse is moving after a click
+                if (evt.pointerType !== "mouse") {
+                    this._unregisterDevice(deviceType, deviceSlot);
+                }
+            }
         });
 
         // Set Wheel Event Name, code originally from scene.inputManager
@@ -513,18 +517,18 @@ export class DeviceInputSystem implements IDisposable {
                 let previousWheelScrollY = pointer[PointerInput.MouseWheelY];
                 let previousWheelScrollZ = pointer[PointerInput.MouseWheelZ];
 
-                pointer[PointerInput.MouseWheelX] = evt.deltaX;
-                pointer[PointerInput.MouseWheelY] = evt.deltaY;
-                pointer[PointerInput.MouseWheelZ] = evt.deltaZ;
+                pointer[PointerInput.MouseWheelX] = evt.deltaX || 0;
+                pointer[PointerInput.MouseWheelY] = evt.deltaY || evt.wheelDelta || 0;
+                pointer[PointerInput.MouseWheelZ] = evt.deltaZ || 0;
 
                 if (this.onInputChanged) {
-                    if (evt.deltaX !== 0) {
+                    if (pointer[PointerInput.MouseWheelX] !== 0) {
                         this.onInputChanged(deviceType, deviceSlot, PointerInput.MouseWheelX, previousWheelScrollX, pointer[PointerInput.MouseWheelX], evt);
                     }
-                    if (evt.deltaY !== 0) {
+                    if (pointer[PointerInput.MouseWheelY] !== 0) {
                         this.onInputChanged(deviceType, deviceSlot, PointerInput.MouseWheelY, previousWheelScrollY, pointer[PointerInput.MouseWheelY], evt);
                     }
-                    if (evt.deltaZ !== 0) {
+                    if (pointer[PointerInput.MouseWheelZ] !== 0) {
                         this.onInputChanged(deviceType, deviceSlot, PointerInput.MouseWheelZ, previousWheelScrollZ, pointer[PointerInput.MouseWheelZ], evt);
                     }
                 }

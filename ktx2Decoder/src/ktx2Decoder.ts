@@ -17,17 +17,7 @@ import { LiteTranscoder_UASTC_RGBA_SRGB } from './Transcoders/liteTranscoder_UAS
 import { MSCTranscoder } from './Transcoders/mscTranscoder';
 import { transcodeTarget, sourceTextureFormat } from './transcoder';
 import { ZSTDDecoder } from './zstddec';
-
-const COMPRESSED_RGBA_BPTC_UNORM_EXT = 0x8E8C;
-const COMPRESSED_RGBA_ASTC_4x4_KHR = 0x93B0;
-const COMPRESSED_RGB_S3TC_DXT1_EXT  = 0x83F1;
-const COMPRESSED_RGBA_S3TC_DXT5_EXT = 0x83F3;
-const COMPRESSED_RGBA_PVRTC_4BPPV1_IMG = 0x8C02;
-const COMPRESSED_RGB_PVRTC_4BPPV1_IMG = 0x8C00;
-const COMPRESSED_RGBA8_ETC2_EAC = 0x9278;
-const COMPRESSED_RGB8_ETC2 = 0x9274;
-const COMPRESSED_RGB_ETC1_WEBGL = 0x8D64;
-const RGBA8Format = 0x8058;
+import { TranscodeDecisionTree } from "./transcodeDecisionTree";
 
 export interface IDecodedData {
     width: number;
@@ -119,54 +109,21 @@ export class KTX2Decoder {
         const height = kfr.header.pixelHeight;
         const srcTexFormat = kfr.textureFormat;
 
-        // PVRTC1 transcoders (from both ETC1S and UASTC) only support power of 2 dimensions.
-        const pvrtcTranscodable = isPowerOfTwo(width) && isPowerOfTwo(height);
+        const decisionTree = new TranscodeDecisionTree(srcTexFormat, kfr.hasAlpha, isPowerOfTwo(width) && isPowerOfTwo(height), caps, options);
 
-        let targetFormat = -1;
-        let transcodedFormat = -1;
-        let roundToMultiple4 = true;
+        let transcodeFormat = decisionTree.transcodeFormat;
+        let engineFormat = decisionTree.engineFormat;
+        let roundToMultiple4 = decisionTree.roundToMultiple4;
 
-        if (options?.forceRGBA) {
-            targetFormat = transcodeTarget.RGBA32;
-            transcodedFormat = RGBA8Format;
-            roundToMultiple4 = false;
-        } else if (caps.astc) {
-            targetFormat = transcodeTarget.ASTC_4x4_RGBA;
-            transcodedFormat = COMPRESSED_RGBA_ASTC_4x4_KHR;
-        } else if (caps.bptc) {
-            targetFormat = transcodeTarget.BC7_RGBA;
-            transcodedFormat = COMPRESSED_RGBA_BPTC_UNORM_EXT;
-        } else if (options?.useRGBAIfASTCBC7NotAvailableWhenUASTC && srcTexFormat === sourceTextureFormat.UASTC4x4) {
-            targetFormat = transcodeTarget.RGBA32;
-            transcodedFormat = RGBA8Format;
-            roundToMultiple4 = false;
-        } else if (caps.s3tc) {
-            targetFormat = kfr.hasAlpha ? transcodeTarget.BC3_RGBA : transcodeTarget.BC1_RGB;
-            transcodedFormat = kfr.hasAlpha ? COMPRESSED_RGBA_S3TC_DXT5_EXT : COMPRESSED_RGB_S3TC_DXT1_EXT;
-        } else if (caps.pvrtc && pvrtcTranscodable) {
-            targetFormat = kfr.hasAlpha ? transcodeTarget.PVRTC1_4_RGBA : transcodeTarget.PVRTC1_4_RGB;
-            transcodedFormat = kfr.hasAlpha ? COMPRESSED_RGBA_PVRTC_4BPPV1_IMG : COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
-        } else if (caps.etc2) {
-            targetFormat = kfr.hasAlpha ? transcodeTarget.ETC2_RGBA : transcodeTarget.ETC1_RGB /* subset of ETC2 */;
-            transcodedFormat = kfr.hasAlpha ? COMPRESSED_RGBA8_ETC2_EAC : COMPRESSED_RGB8_ETC2;
-        } else if (caps.etc1) {
-            targetFormat = transcodeTarget.ETC1_RGB;
-            transcodedFormat = COMPRESSED_RGB_ETC1_WEBGL;
-        } else {
-            targetFormat = transcodeTarget.RGBA32;
-            transcodedFormat = RGBA8Format;
-            roundToMultiple4 = false;
-        }
-
-        const transcoder = this._transcoderMgr.findTranscoder(srcTexFormat, targetFormat, kfr.isInGammaSpace, options?.bypassTranscoders);
+        const transcoder = this._transcoderMgr.findTranscoder(srcTexFormat, transcodeFormat, kfr.isInGammaSpace, options?.bypassTranscoders);
 
         if (transcoder === null) {
-            throw new Error(`no transcoder found to transcode source texture format "${sourceTextureFormat[srcTexFormat]}" to format "${transcodeTarget[targetFormat]}"`);
+            throw new Error(`no transcoder found to transcode source texture format "${sourceTextureFormat[srcTexFormat]}" to format "${transcodeTarget[transcodeFormat]}"`);
         }
 
         const mipmaps: Array<IMipmap> = [];
         const dataPromises: Array<Promise<Uint8Array | null>> = [];
-        const decodedData: IDecodedData = { width: 0, height: 0, transcodedFormat, mipmaps, isInGammaSpace: kfr.isInGammaSpace, hasAlpha: kfr.hasAlpha, transcoderName: transcoder.getName() };
+        const decodedData: IDecodedData = { width: 0, height: 0, transcodedFormat: engineFormat, mipmaps, isInGammaSpace: kfr.isInGammaSpace, hasAlpha: kfr.hasAlpha, transcoderName: transcoder.getName() };
 
         let firstImageDescIndex = 0;
 
@@ -218,14 +175,14 @@ export class KTX2Decoder {
                     height: levelHeight,
                 };
 
-                const transcodedData = transcoder.transcode(srcTexFormat, targetFormat, level, levelWidth, levelHeight, levelUncompressedByteLength, kfr, imageDesc, encodedData)
+                const transcodedData = transcoder.transcode(srcTexFormat, transcodeFormat, level, levelWidth, levelHeight, levelUncompressedByteLength, kfr, imageDesc, encodedData)
                     .then((data) => {
                         mipmap.data = data;
                         return data;
                     })
                     .catch((reason) => {
                         decodedData.errors = decodedData.errors ?? "";
-                        decodedData.errors += reason + "\n";
+                        decodedData.errors += reason + "\n" + reason.stack + "\n";
                         return null;
                     });
 

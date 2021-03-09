@@ -27,6 +27,7 @@ import { HardwareTextureWrapper } from '../../Materials/Textures/hardwareTexture
 import { BaseTexture } from '../../Materials/Textures/baseTexture';
 import { WebGPUHardwareTexture } from './webgpuHardwareTexture';
 import { IColor4Like } from '../../Maths/math.like';
+import { EngineStore } from '../engineStore';
 
 // TODO WEBGPU improve mipmap generation by not using the OutputAttachment flag
 // see https://github.com/toji/web-texture-tool/tree/main/src
@@ -683,7 +684,7 @@ export class WebGPUTextureHelper {
             }, {
                 width,
                 height,
-                depth: 1,
+                depthOrArrayLayers: 1,
             }
         );
 
@@ -692,7 +693,7 @@ export class WebGPUTextureHelper {
         commandEncoder!.popDebugGroup();
 
         if (useOwnCommandEncoder) {
-            this._device.defaultQueue.submit([commandEncoder!.finish()]);
+            this._device.queue.submit([commandEncoder!.finish()]);
             commandEncoder = null as any;
         }
     }
@@ -742,7 +743,7 @@ export class WebGPUTextureHelper {
         let textureSize = {
             width: imageBitmap.width,
             height: imageBitmap.height,
-            depth: layerCount,
+            depthOrArrayLayers: layerCount,
         };
 
         const mipLevelCount = hasMipmaps ? WebGPUTextureHelper.ComputeNumMipmapLevels(imageBitmap.width, imageBitmap.height) : 1;
@@ -788,7 +789,7 @@ export class WebGPUTextureHelper {
             size: {
                 width,
                 height,
-                depth: 6,
+                depthOrArrayLayers: 6,
             },
             dimension: WebGPUConstants.TextureDimension.E2d,
             format,
@@ -824,7 +825,7 @@ export class WebGPUTextureHelper {
         commandEncoder!.popDebugGroup();
 
         if (useOwnCommandEncoder) {
-            this._device.defaultQueue.submit([commandEncoder!.finish()]);
+            this._device.queue.submit([commandEncoder!.finish()]);
             commandEncoder = null as any;
         }
     }
@@ -880,7 +881,7 @@ export class WebGPUTextureHelper {
         commandEncoder!.popDebugGroup();
 
         if (useOwnCommandEncoder) {
-            this._device.defaultQueue.submit([commandEncoder!.finish()]);
+            this._device.queue.submit([commandEncoder!.finish()]);
             commandEncoder = null as any;
         }
     }
@@ -1004,7 +1005,7 @@ export class WebGPUTextureHelper {
         const textureExtent = {
             width: Math.ceil(width / blockInformation.width) * blockInformation.width,
             height: Math.ceil(height / blockInformation.height) * blockInformation.height,
-            depth: layers || 1
+            depthOrArrayLayers: layers || 1
         };
 
         if ((imageBitmap as Uint8Array).byteLength !== undefined) {
@@ -1036,13 +1037,13 @@ export class WebGPUTextureHelper {
                 }, textureCopyView, textureExtent);
 
                 if (useOwnCommandEncoder) {
-                    this._device.defaultQueue.submit([commandEncoder!.finish()]);
+                    this._device.queue.submit([commandEncoder!.finish()]);
                     commandEncoder = null as any;
                 }
 
                 this._bufferManager.releaseBuffer(buffer);
             } else {
-                this._device.defaultQueue.writeTexture(textureCopyView, imageBitmap, {
+                this._device.queue.writeTexture(textureCopyView, imageBitmap, {
                     offset: 0,
                     bytesPerRow,
                     rowsPerImage: height,
@@ -1056,11 +1057,12 @@ export class WebGPUTextureHelper {
             imageBitmap = imageBitmap as ImageBitmap;
 
             if (invertY || premultiplyAlpha) {
-                createImageBitmap(imageBitmap, { imageOrientation: invertY ? "flipY" : "none", premultiplyAlpha: premultiplyAlpha ? "premultiply" : "none" }).then((imageBitmap) => {
-                    this._device.defaultQueue.copyImageBitmapToTexture({ imageBitmap }, textureCopyView, textureExtent);
+                const engine = EngineStore.LastCreatedEngine;
+                engine && engine.createImageBitmap(imageBitmap, { imageOrientation: invertY ? "flipY" : "none", premultiplyAlpha: premultiplyAlpha ? "premultiply" : "none" }).then((imageBitmap) => {
+                    this._device.queue.copyImageBitmapToTexture({ imageBitmap }, textureCopyView, textureExtent);
                 });
             } else {
-                this._device.defaultQueue.copyImageBitmapToTexture({ imageBitmap }, textureCopyView, textureExtent);
+                this._device.queue.copyImageBitmapToTexture({ imageBitmap }, textureCopyView, textureExtent);
             }
         }
     }
@@ -1093,10 +1095,10 @@ export class WebGPUTextureHelper {
         }, {
             width,
             height,
-            depth: 1
+            depthOrArrayLayers: 1
         });
 
-        this._device.defaultQueue.submit([commandEncoder!.finish()]);
+        this._device.queue.submit([commandEncoder!.finish()]);
 
         const type = WebGPUTextureHelper._GetTextureTypeFromFormat(format);
         const floatFormat = type === Constants.TEXTURETYPE_FLOAT ? 2 : type === Constants.TEXTURETYPE_HALF_FLOAT ? 1 : 0;

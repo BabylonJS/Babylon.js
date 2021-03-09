@@ -100,7 +100,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /*!***********************************************************!*\
   !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
   \***********************************************************/
-/*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
+/*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -119,6 +119,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__read", function() { return __read; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__spread", function() { return __spread; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__spreadArrays", function() { return __spreadArrays; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__spreadArray", function() { return __spreadArray; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__await", function() { return __await; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__asyncGenerator", function() { return __asyncGenerator; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__asyncDelegator", function() { return __asyncDelegator; });
@@ -152,6 +153,8 @@ var extendStatics = function(d, b) {
 };
 
 function __extends(d, b) {
+    if (typeof b !== "function" && b !== null)
+        throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
     extendStatics(d, b);
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -274,19 +277,27 @@ function __read(o, n) {
     return ar;
 }
 
+/** @deprecated */
 function __spread() {
     for (var ar = [], i = 0; i < arguments.length; i++)
         ar = ar.concat(__read(arguments[i]));
     return ar;
 }
 
+/** @deprecated */
 function __spreadArrays() {
     for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
     for (var r = Array(s), k = 0, i = 0; i < il; i++)
         for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
             r[k] = a[j];
     return r;
-};
+}
+
+function __spreadArray(to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
+}
 
 function __await(v) {
     return this instanceof __await ? (this.v = v, this) : new __await(v);
@@ -544,7 +555,7 @@ var CellMaterial = /** @class */ (function (_super) {
             }
         }
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new CellMaterialDefines();
+            subMesh.materialDefines = new CellMaterialDefines();
         }
         var defines = subMesh._materialDefines;
         var scene = this.getScene();
@@ -634,7 +645,7 @@ var CellMaterial = /** @class */ (function (_super) {
                 onCompiled: this.onCompiled,
                 onError: this.onError,
                 indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights - 1 }
-            }, engine), defines);
+            }, engine), defines, this._materialContext);
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;
@@ -1432,7 +1443,7 @@ var FireMaterial = /** @class */ (function (_super) {
             }
         }
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new FireMaterialDefines();
+            subMesh.materialDefines = new FireMaterialDefines();
         }
         var defines = subMesh._materialDefines;
         var scene = this.getScene();
@@ -1511,7 +1522,7 @@ var FireMaterial = /** @class */ (function (_super) {
                 indexParameters: null,
                 maxSimultaneousLights: 4,
                 transformFeedbackVaryings: null
-            }, engine), defines);
+            }, engine), defines, this._materialContext);
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;
@@ -1902,7 +1913,7 @@ var FurMaterial = /** @class */ (function (_super) {
             }
         }
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new FurMaterialDefines();
+            subMesh.materialDefines = new FurMaterialDefines();
         }
         var defines = subMesh._materialDefines;
         var scene = this.getScene();
@@ -2007,7 +2018,7 @@ var FurMaterial = /** @class */ (function (_super) {
                 onCompiled: this.onCompiled,
                 onError: this.onError,
                 indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights }
-            }, engine), defines);
+            }, engine), defines, this._materialContext);
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;
@@ -2448,7 +2459,7 @@ var GradientMaterial = /** @class */ (function (_super) {
             }
         }
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new GradientMaterialDefines();
+            subMesh.materialDefines = new GradientMaterialDefines();
         }
         var defines = subMesh._materialDefines;
         var scene = this.getScene();
@@ -2520,7 +2531,7 @@ var GradientMaterial = /** @class */ (function (_super) {
                 onCompiled: this.onCompiled,
                 onError: this.onError,
                 indexParameters: { maxSimultaneousLights: 4 }
-            }, engine), defines);
+            }, engine), defines, this._materialContext);
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;
@@ -2810,7 +2821,7 @@ var GridMaterial = /** @class */ (function (_super) {
             }
         }
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new GridMaterialDefines();
+            subMesh.materialDefines = new GridMaterialDefines();
         }
         var defines = subMesh._materialDefines;
         var scene = this.getScene();
@@ -2861,7 +2872,7 @@ var GridMaterial = /** @class */ (function (_super) {
             // Defines
             var join = defines.toString();
             subMesh.setEffect(scene.getEngine().createEffect("grid", attribs, ["projection", "mainColor", "lineColor", "gridControl", "gridOffset", "vFogInfos", "vFogColor", "world", "view",
-                "opacityMatrix", "vOpacityInfos"], ["opacitySampler"], join, undefined, this.onCompiled, this.onError), defines);
+                "opacityMatrix", "vOpacityInfos"], ["opacitySampler"], join, undefined, this.onCompiled, this.onError), defines, this._materialContext);
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;
@@ -3281,7 +3292,7 @@ var LavaMaterial = /** @class */ (function (_super) {
             }
         }
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new LavaMaterialDefines();
+            subMesh.materialDefines = new LavaMaterialDefines();
         }
         var defines = subMesh._materialDefines;
         var scene = this.getScene();
@@ -3375,7 +3386,7 @@ var LavaMaterial = /** @class */ (function (_super) {
                 onCompiled: this.onCompiled,
                 onError: this.onError,
                 indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights }
-            }, engine), defines);
+            }, engine), defines, this._materialContext);
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;
@@ -3786,7 +3797,7 @@ var MixMaterial = /** @class */ (function (_super) {
             }
         }
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new MixMaterialDefines();
+            subMesh.materialDefines = new MixMaterialDefines();
         }
         var defines = subMesh._materialDefines;
         var scene = this.getScene();
@@ -3907,7 +3918,7 @@ var MixMaterial = /** @class */ (function (_super) {
                 onCompiled: this.onCompiled,
                 onError: this.onError,
                 indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights }
-            }, engine), defines);
+            }, engine), defines, this._materialContext);
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;
@@ -4406,9 +4417,9 @@ var NormalMaterial = /** @class */ (function (_super) {
             }
         }
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new NormalMaterialDefines();
+            subMesh.materialDefines = new NormalMaterialDefines();
         }
-        var defines = subMesh._materialDefines;
+        var defines = subMesh.materialDefines;
         var scene = this.getScene();
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
@@ -4493,7 +4504,7 @@ var NormalMaterial = /** @class */ (function (_super) {
                 onCompiled: this.onCompiled,
                 onError: this.onError,
                 indexParameters: { maxSimultaneousLights: 4 }
-            }, engine), defines);
+            }, engine), defines, this._materialContext);
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;
@@ -4797,7 +4808,7 @@ var ShadowOnlyMaterial = /** @class */ (function (_super) {
             }
         }
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new ShadowOnlyMaterialDefines();
+            subMesh.materialDefines = new ShadowOnlyMaterialDefines();
         }
         var defines = subMesh._materialDefines;
         var scene = this.getScene();
@@ -4880,7 +4891,7 @@ var ShadowOnlyMaterial = /** @class */ (function (_super) {
                 onCompiled: this.onCompiled,
                 onError: this.onError,
                 indexParameters: { maxSimultaneousLights: 1 }
-            }, engine), defines);
+            }, engine), defines, this._materialContext);
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;
@@ -5128,7 +5139,7 @@ var SimpleMaterial = /** @class */ (function (_super) {
             }
         }
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new SimpleMaterialDefines();
+            subMesh.materialDefines = new SimpleMaterialDefines();
         }
         var defines = subMesh._materialDefines;
         var scene = this.getScene();
@@ -5216,7 +5227,7 @@ var SimpleMaterial = /** @class */ (function (_super) {
                 onCompiled: this.onCompiled,
                 onError: this.onError,
                 indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights - 1 }
-            }, engine), defines);
+            }, engine), defines, this._materialContext);
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;
@@ -5571,7 +5582,7 @@ var SkyMaterial = /** @class */ (function (_super) {
             }
         }
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new SkyMaterialDefines();
+            subMesh.materialDefines = new SkyMaterialDefines();
         }
         var defines = subMesh._materialDefines;
         var scene = this.getScene();
@@ -5602,7 +5613,7 @@ var SkyMaterial = /** @class */ (function (_super) {
                 "vFogInfos", "vFogColor", "pointSize", "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6",
                 "luminance", "turbidity", "rayleigh", "mieCoefficient", "mieDirectionalG", "sunPosition",
                 "cameraPosition", "cameraOffset", "up"
-            ], [], join, fallbacks, this.onCompiled, this.onError), defines);
+            ], [], join, fallbacks, this.onCompiled, this.onError), defines, this._materialContext);
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;
@@ -5939,7 +5950,7 @@ var TerrainMaterial = /** @class */ (function (_super) {
             }
         }
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new TerrainMaterialDefines();
+            subMesh.materialDefines = new TerrainMaterialDefines();
         }
         var defines = subMesh._materialDefines;
         var scene = this.getScene();
@@ -6048,7 +6059,7 @@ var TerrainMaterial = /** @class */ (function (_super) {
                 onCompiled: this.onCompiled,
                 onError: this.onError,
                 indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights }
-            }, engine), defines);
+            }, engine), defines, this._materialContext);
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;
@@ -6387,7 +6398,7 @@ var TriPlanarMaterial = /** @class */ (function (_super) {
             }
         }
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new TriPlanarMaterialDefines();
+            subMesh.materialDefines = new TriPlanarMaterialDefines();
         }
         var defines = subMesh._materialDefines;
         var scene = this.getScene();
@@ -6490,7 +6501,7 @@ var TriPlanarMaterial = /** @class */ (function (_super) {
                 onCompiled: this.onCompiled,
                 onError: this.onError,
                 indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights }
-            }, engine), defines);
+            }, engine), defines, this._materialContext);
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;
@@ -7122,7 +7133,7 @@ var WaterMaterial = /** @class */ (function (_super) {
             }
         }
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new WaterMaterialDefines();
+            subMesh.materialDefines = new WaterMaterialDefines();
         }
         var defines = subMesh._materialDefines;
         var scene = this.getScene();
@@ -7254,7 +7265,7 @@ var WaterMaterial = /** @class */ (function (_super) {
                 onCompiled: this.onCompiled,
                 onError: this.onError,
                 indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights }
-            }, engine), defines);
+            }, engine), defines, this._materialContext);
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;

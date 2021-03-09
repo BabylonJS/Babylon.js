@@ -187,7 +187,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
 
         return (
             <div className="pane">
-                <LineContainerComponent title="PREVIEW">
+                <LineContainerComponent title="PREVIEW" selection={this.props.globalState}>
                     <TextureLineComponent ref={this.textureLineRef} texture={texture} width={256} height={256} globalState={this.props.globalState} />
                     <FileButtonLineComponent label="Load texture from file" onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
                     <ButtonLineComponent label="Edit" onClick={() => this.openTextureEditor()} />
@@ -215,7 +215,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={texture}
                     lockObject={this.props.lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent title="GENERAL">
+                <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
                     <TextLineComponent label="Width" value={texture.getSize().width.toString()} />
                     <TextLineComponent label="Height" value={texture.getSize().height.toString()} />
                     {
@@ -268,7 +268,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                 }
                 {
                     (texture as any).rootContainer && this._adtInstrumentation &&
-                    <LineContainerComponent title="ADVANCED TEXTURE PROPERTIES">
+                    <LineContainerComponent title="ADVANCED TEXTURE PROPERTIES" selection={this.props.globalState}>
                         <ValueLineComponent label="Last layout time" value={this._adtInstrumentation!.renderTimeCounter.current} units="ms" />
                         <ValueLineComponent label="Last render time" value={this._adtInstrumentation!.layoutTimeCounter.current} units="ms" />
                         <SliderLineComponent label="Render scale" minimum={0.1} maximum={5} step={0.1} target={texture} propertyName="renderScale" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -280,7 +280,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                         <CheckBoxLineComponent label="Invalidate Rect optimization" target={texture} propertyName="useInvalidateRectOptimization" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     </LineContainerComponent>
                 }
-                <LineContainerComponent title="TRANSFORM">
+                <LineContainerComponent title="TRANSFORM" selection={this.props.globalState}>
                     {
                         !texture.isCube &&
                         <div>

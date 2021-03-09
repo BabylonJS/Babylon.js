@@ -19,15 +19,16 @@ import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTextur
 import { PostProcess } from "../../PostProcesses/postProcess";
 import { BlurPostProcess } from "../../PostProcesses/blurPostProcess";
 import { Constants } from "../../Engines/constants";
+import { Observable } from '../../Misc/observable';
+import { _DevTools } from '../../Misc/devTools';
+import { EffectFallbacks } from '../../Materials/effectFallbacks';
+import { RenderingManager } from '../../Rendering/renderingManager';
+import { DrawWrapper } from "../../Materials/drawWrapper";
 
 import "../../Shaders/shadowMap.fragment";
 import "../../Shaders/shadowMap.vertex";
 import "../../Shaders/depthBoxBlur.fragment";
 import "../../Shaders/ShadersInclude/shadowMapFragmentSoftTransparentShadow";
-import { Observable } from '../../Misc/observable';
-import { _DevTools } from '../../Misc/devTools';
-import { EffectFallbacks } from '../../Materials/effectFallbacks';
-import { RenderingManager } from '../../Rendering/renderingManager';
 
 const tmpMatrix = new Matrix(),
       tmpMatrix2 = new Matrix();
@@ -804,7 +805,8 @@ export class ShadowGenerator implements IShadowGenerator {
     protected _textureType: number;
     protected _defaultTextureMatrix = Matrix.Identity();
     protected _storedUniqueId: Nullable<number>;
-    protected _nameForCustomEffect: string;
+    /** @hidden */
+    public _nameForDrawWrapper: string;
 
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
@@ -840,7 +842,7 @@ export class ShadowGenerator implements IShadowGenerator {
         light._shadowGenerator = this;
         this.id = light.id;
 
-        this._nameForCustomEffect = Constants.CUSTOMEFFECT_PREFIX_SHADOWGENERATOR + ShadowGenerator._Counter++;
+        this._nameForDrawWrapper = Constants.SUBMESH_DRAWWRAPPER_SHADOWGENERATOR_PREFIX + ShadowGenerator._Counter++;
 
         ShadowGenerator._SceneComponentInitialization(this._scene);
 
@@ -918,7 +920,7 @@ export class ShadowGenerator implements IShadowGenerator {
         let engine = this._scene.getEngine();
 
         this._shadowMap.onBeforeBindObservable.add(() => {
-            engine._debugPushGroup(`shadow map generation for ${this._nameForCustomEffect}`, 1);
+            engine._debugPushGroup(`shadow map generation for ${this._nameForDrawWrapper}`, 1);
         });
 
         // Record Face Index before render.
@@ -1111,9 +1113,10 @@ export class ShadowGenerator implements IShadowGenerator {
 
             const shadowDepthWrapper = material.shadowDepthWrapper;
 
-            let effect = shadowDepthWrapper?.getEffect(subMesh, this) ?? subMesh._getCustomEffect(this._nameForCustomEffect, false)!.effect;
+            const drawWrapper = shadowDepthWrapper?.getEffect(subMesh, this) ?? subMesh._getDrawWrapper(this._nameForDrawWrapper)!;
+            const effect = DrawWrapper.GetEffect(drawWrapper)!;
 
-            engine.enableEffect(effect);
+            engine.enableEffect(drawWrapper);
 
             renderingMesh._bind(subMesh, effect, material.fillMode);
 
@@ -1137,13 +1140,13 @@ export class ShadowGenerator implements IShadowGenerator {
             }
 
             if (shadowDepthWrapper) {
-                subMesh._effectOverride = effect;
+                subMesh._setMainDrawWrapperOverride(drawWrapper);
                 if (shadowDepthWrapper.standalone) {
                     shadowDepthWrapper.baseMaterial.bindForSubMesh(effectiveMesh.getWorldMatrix(), renderingMesh, subMesh);
                 } else {
                     material.bindForSubMesh(effectiveMesh.getWorldMatrix(), renderingMesh, subMesh);
                 }
-                subMesh._effectOverride = null;
+                subMesh._setMainDrawWrapperOverride(null);
             } else {
                 effect.setMatrix("viewProjection", this.getTransformMatrix());
                 // Alpha test
@@ -1340,15 +1343,16 @@ export class ShadowGenerator implements IShadowGenerator {
 
         this._prepareShadowDefines(subMesh, useInstances, defines, isTransparent);
 
-        const subMeshEffect = subMesh._getCustomEffect(this._nameForCustomEffect)!;
-
-        let { effect, defines: cachedDefines } = subMeshEffect;
-
         if (shadowDepthWrapper) {
             if (!shadowDepthWrapper.isReadyForSubMesh(subMesh, defines, this, useInstances)) {
                 return false;
             }
         } else {
+            const subMeshEffect = subMesh._getDrawWrapper(this._nameForDrawWrapper, true)!;
+
+            let effect = subMeshEffect.effect!;
+            let cachedDefines = subMeshEffect.defines;
+
             var attribs = [VertexBuffer.PositionKind];
 
             var mesh = subMesh.getMesh();
@@ -1520,8 +1524,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 }, engine);
             }
 
-            subMeshEffect.effect = effect;
-            subMeshEffect.defines = cachedDefines;
+            subMeshEffect.setEffect(effect, cachedDefines);
 
             if (!effect.isReady()) {
                 return false;

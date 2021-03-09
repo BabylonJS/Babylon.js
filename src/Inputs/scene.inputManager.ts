@@ -211,7 +211,7 @@ export class InputManager {
         }
 
         if (pickResult) {
-            let type = evt.type === "wheel" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
+            let type = (evt.type === "wheel" || evt.type === "mousewheel" || evt.type === "DOMMouseScroll") ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
 
             if (scene.onPointerMove) {
                 scene.onPointerMove(evt, pickResult, type);
@@ -621,7 +621,7 @@ export class InputManager {
             this._updatePointerPosition((evt as IPointerEvent));
 
             // PreObservable support
-            if (this._checkPrePointerObservable(null, (evt as IPointerEvent), evt.type === "wheel" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE)) {
+            if (this._checkPrePointerObservable(null, (evt as IPointerEvent), (evt.type === "wheel" || evt.type === "mousewheel" || evt.type === "DOMMouseScroll") ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE)) {
                 return;
             }
 
