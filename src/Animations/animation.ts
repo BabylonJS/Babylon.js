@@ -486,7 +486,7 @@ export class Animation {
      */
     public get hasRunningRuntimeAnimations(): boolean {
         for (var runtimeAnimation of this._runtimeAnimations) {
-            if (!runtimeAnimation.isStopped) {
+            if (!runtimeAnimation.isStopped()) {
                 return true;
             }
         }
@@ -805,6 +805,19 @@ export class Animation {
     }
 
     /**
+     * Evaluate the animation value at a given frame
+     * @param currentFrame defines the frame where we want to evaluate the animation
+     * @returns the animation value
+     */
+    public evaluate(currentFrame: number) {
+        return this._interpolate(currentFrame, {
+            key: 0,
+            repeatCount: 0,
+            loopMode: Animation.ANIMATIONLOOPMODE_CONSTANT
+        });
+    }
+
+    /**
      * @hidden Internal use only
      */
     public _interpolate(currentFrame: number, state: _IAnimationState): any {
@@ -825,7 +838,7 @@ export class Animation {
             }
         }
 
-        for (var key = startKeyIndex; key < keys.length; key++) {
+        for (var key = startKeyIndex; key < keys.length - 1; key++) {
             var endKey = keys[key + 1];
 
             if (endKey.frame >= currentFrame) {

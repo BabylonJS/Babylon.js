@@ -74,7 +74,7 @@ export class CommonPropertyGridComponent extends React.Component<ICommonProperty
 
         return (
             <div>
-                <LineContainerComponent title="XMP METADATA">
+                <LineContainerComponent title="XMP METADATA" selection={this.props.globalState}>
                     {
                         this.renderLevel(this.props.host.metadata.xmp)
                     }

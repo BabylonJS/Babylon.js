@@ -190,7 +190,7 @@ export class WebXRImageTracking extends WebXRAbstractFeature {
                         img.src = image.src;
                         img.onload = () => {
                             img.decode().then(() => {
-                                createImageBitmap(img).then((imageBitmap) => {
+                                this._xrSessionManager.scene.getEngine().createImageBitmap(img).then((imageBitmap) => {
                                     resolve(imageBitmap);
                                 });
                             });

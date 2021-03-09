@@ -673,7 +673,7 @@ export class BackgroundMaterial extends PushMaterial {
         }
 
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new BackgroundMaterialDefines();
+            subMesh.materialDefines = new BackgroundMaterialDefines();
         }
 
         var scene = this.getScene();
@@ -917,7 +917,7 @@ export class BackgroundMaterial extends PushMaterial {
             };
 
             var join = defines.toString();
-            subMesh.setEffect(scene.getEngine().createEffect("background", <IEffectCreationOptions>{
+            const effect = scene.getEngine().createEffect("background", <IEffectCreationOptions>{
                 attributes: attribs,
                 uniformsNames: uniforms,
                 uniformBuffersNames: uniformBuffers,
@@ -927,7 +927,8 @@ export class BackgroundMaterial extends PushMaterial {
                 onCompiled: onCompiled,
                 onError: this.onError,
                 indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights }
-            }, engine), defines);
+            }, engine);
+            subMesh.setEffect(effect, defines, this._materialContext);
 
             this.buildUniformLayout();
         }

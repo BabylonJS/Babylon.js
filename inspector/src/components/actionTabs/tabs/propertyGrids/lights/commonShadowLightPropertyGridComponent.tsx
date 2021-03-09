@@ -119,7 +119,7 @@ export class CommonShadowLightPropertyGridComponent extends React.Component<ICom
 
         return (
             <div>
-                <LineContainerComponent title="SHADOWS">
+                <LineContainerComponent title="SHADOWS" selection={this.props.globalState}>
                     <CheckBoxLineComponent label="Shadows enabled" target={light} propertyName="shadowEnabled" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     { !csmGenerator && <>
                         <FloatLineComponent lockObject={this.props.lockObject} label="Shadows near plane" target={light} propertyName="shadowMinZ" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -128,7 +128,7 @@ export class CommonShadowLightPropertyGridComponent extends React.Component<ICom
                 </LineContainerComponent>
                 {
                     generator == null &&
-                    <LineContainerComponent title="SHADOW GENERATOR">
+                    <LineContainerComponent title="SHADOW GENERATOR" selection={this.props.globalState}>
                         <OptionsLineComponent label="Type" options={typeGeneratorOptions} target={internals} propertyName="generatorType" />
                         <OptionsLineComponent label="Map size" options={mapSizeOptions} target={internals} propertyName="mapSize" />
                         <ButtonLineComponent label="Create generator" onClick={() => this.createShadowGenerator()} />
@@ -136,7 +136,7 @@ export class CommonShadowLightPropertyGridComponent extends React.Component<ICom
                 }
                 {
                     generator !== null &&
-                    <LineContainerComponent title="SHADOW GENERATOR">
+                    <LineContainerComponent title="SHADOW GENERATOR" selection={this.props.globalState}>
                         <ButtonLineComponent label="Dispose generator" onClick={() => this.disposeShadowGenerator()} />
                         { csmGenerator && <>
                             <OptionsLineComponent label="Num cascades" options={numCascadesOptions} target={generator} propertyName="numCascades" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

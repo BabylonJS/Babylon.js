@@ -141,12 +141,12 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
 
         return (
             <div className="pane">
-                <LineContainerComponent title="RENDERING MODE">
+                <LineContainerComponent title="RENDERING MODE" selection={this.props.globalState}>
                     <RadioButtonLineComponent onSelectionChangedObservable={this._renderingModeGroupObservable} label="Point" isSelected={() => scene.forcePointsCloud} onSelect={() => this.setRenderingModes(true, false)} />
                     <RadioButtonLineComponent onSelectionChangedObservable={this._renderingModeGroupObservable} label="Wireframe" isSelected={() => scene.forceWireframe} onSelect={() => this.setRenderingModes(false, true)} />
                     <RadioButtonLineComponent onSelectionChangedObservable={this._renderingModeGroupObservable} label="Solid" isSelected={() => !scene.forcePointsCloud && !scene.forceWireframe} onSelect={() => this.setRenderingModes(false, false)} />
                 </LineContainerComponent>
-                <LineContainerComponent title="ENVIRONMENT">
+                <LineContainerComponent title="ENVIRONMENT" selection={this.props.globalState}>
                     <Color3LineComponent label="Clear color" target={scene} propertyName="clearColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Clear color enabled" target={scene} propertyName="autoClear" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Color3LineComponent label="Ambient color" target={scene} propertyName="ambientColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -160,7 +160,7 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
                     <FogPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} scene={scene} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
                 <AnimationGridComponent globalState={this.props.globalState} animatable={scene} scene={scene} lockObject={this.props.lockObject} />
-                <LineContainerComponent title="MATERIAL IMAGE PROCESSING">
+                <LineContainerComponent title="MATERIAL IMAGE PROCESSING" selection={this.props.globalState}>
                     <SliderLineComponent minimum={0} maximum={4} step={0.1} label="Contrast" target={imageProcessing} propertyName="contrast" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent minimum={0} maximum={4} step={0.1} label="Exposure" target={imageProcessing} propertyName="exposure" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Tone mapping" target={imageProcessing} propertyName="toneMappingEnabled" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -176,15 +176,15 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
                 </LineContainerComponent>
                 {
                     dummy !== null &&
-                    <LineContainerComponent title="PHYSICS" closed={true}>
+                    <LineContainerComponent title="PHYSICS" closed={true} selection={this.props.globalState}>
                         <FloatLineComponent lockObject={this.props.lockObject} label="Time step" target={dummy} propertyName="timeStep" onChange={(newValue) => this.updateTimeStep(newValue)} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                         <Vector3LineComponent label="Gravity" target={dummy} propertyName="gravity" onChange={(newValue) => this.updateGravity(newValue)} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     </LineContainerComponent>
                 }
-                <LineContainerComponent title="COLLISIONS" closed={true}>
+                <LineContainerComponent title="COLLISIONS" closed={true} selection={this.props.globalState}>
                     <Vector3LineComponent label="Gravity" target={scene} propertyName="gravity" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
-                <LineContainerComponent title="SHADOWS" closed={true}>
+                <LineContainerComponent title="SHADOWS" closed={true} selection={this.props.globalState}>
                     <ButtonLineComponent label="Normalize scene" onClick={() => this.normalizeScene()} />
                 </LineContainerComponent>
             </div>

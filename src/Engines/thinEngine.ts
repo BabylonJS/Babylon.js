@@ -34,6 +34,9 @@ import { PerformanceConfigurator } from './performanceConfigurator';
 import { EngineFeatures } from './engineFeatures';
 import { HardwareTextureWrapper } from '../Materials/Textures/hardwareTextureWrapper';
 import { WebGLHardwareTexture } from './WebGL/webGLHardwareTexture';
+import { DrawWrapper } from "../Materials/drawWrapper";
+import { IMaterialContext } from "./IMaterialContext";
+import { IDrawContext } from "./IDrawContext";
 
 declare type WebRequest = import("../Misc/webRequest").WebRequest;
 declare type LoadFileError = import("../Misc/fileTools").LoadFileError;
@@ -167,14 +170,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-alpha.10";
+        return "babylonjs@5.0.0-alpha.14";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-alpha.10";
+        return "5.0.0-alpha.14";
     }
 
     /**
@@ -265,6 +268,11 @@ export class ThinEngine {
      * Gets or sets a boolean indicating that uniform buffers must be disabled even if they are supported
      */
     public disableUniformBuffers = false;
+
+    /**
+    * An event triggered when the engine is disposed.
+    */
+   public readonly onDisposeObservable = new Observable<ThinEngine>();
 
     private _frameId = 0;
     /**
@@ -2333,6 +2341,22 @@ export class ThinEngine {
         return pipelineContext;
     }
 
+    /**
+     * Creates a new material context
+     * @returns the new context
+     */
+    public createMaterialContext(): IMaterialContext | undefined {
+        return undefined;
+    }
+
+    /**
+     * Creates a new draw context
+     * @returns the new context
+     */
+    public createDrawContext(): IDrawContext | undefined {
+        return undefined;
+    }
+
     protected _createShaderProgram(pipelineContext: WebGLPipelineContext, vertexShader: WebGLShader, fragmentShader: WebGLShader, context: WebGLRenderingContext, transformFeedbackVaryings: Nullable<string[]> = null): WebGLProgram {
         var shaderProgram = context.createProgram();
         pipelineContext.program = shaderProgram;
@@ -2506,10 +2530,14 @@ export class ThinEngine {
      * Activates an effect, making it the current one (ie. the one used for rendering)
      * @param effect defines the effect to activate
      */
-    public enableEffect(effect: Nullable<Effect>): void {
+    public enableEffect(effect: Nullable<Effect | DrawWrapper>): void {
+        effect = effect !== null && DrawWrapper.IsWrapper(effect) ? effect.effect : effect; // get only the effect, we don't need a Wrapper in the WebGL engine
+
         if (!effect || effect === this._currentEffect) {
             return;
         }
+
+        effect = effect as Effect;
 
         // Use program
         this.bindSamplers(effect);
@@ -4137,6 +4165,9 @@ export class ThinEngine {
         for (let request of this._activeRequests) {
             request.abort();
         }
+
+        this.onDisposeObservable.notifyObservers(this);
+        this.onDisposeObservable.clear();
     }
 
     /**
