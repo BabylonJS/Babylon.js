@@ -191,20 +191,6 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         }
 
         let guiElements = scene.textures.filter((t) => t.getClassName() === "AdvancedDynamicTexture");
-        //let textures = scene.textures.filter((t) => t.getClassName() !== "AdvancedDynamicTexture");
-
-        /*const getUniqueName = (name: string) : string => {
-            let idSubscript = 1;
-            while (scene.getMaterialByID(name)) {
-                name = name + " " + idSubscript++;
-            }
-            return name;
-        };
-        
-        <SceneExplorerFilterComponent onFilter={(filter) => this.filterContent(filter)} />
-                <SceneTreeItemComponent globalState={this.props.globalState}
-                extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} scene={scene} onRefresh={() => this.forceUpdate()} onSelectionChangedObservable={this.props.globalState.onSelectionChangedObservable} />
-        */
 
         return (
             <div id="tree" onContextMenu={(e) => e.preventDefault()}>
