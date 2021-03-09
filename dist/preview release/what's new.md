@@ -26,6 +26,7 @@
 ### Engine
 
 - Moved all instance data from Geometry to Mesh such that the same Geometry objects can be used by many meshes with instancing. Reduces memory consumption on CPU/GPU. ([breakin](https://github.com/breakin)
+- Added NativeEngine configuration object parameter. ([drigax](https://github.com/drigax))
 
 ### Loaders
 
@@ -142,6 +143,7 @@
 - Fix for warning in chrome about passive wheel events ([#9777](https://github.com/BabylonJS/Babylon.js/pull/9777)) ([kaliatech](https://github.com/kaliatech))
 - Fix crash when cloning material in `AssetContainer.instantiateModelsToScene` when mesh is an instanced mesh ([Popov72](https://github.com/Popov72))
 - Fix Normalized quaternion when updating the node components ([CedricGuillemet](https://github.com/CedricGuillemet))
+- Fix Mesh impostor not taking LH/RH into account ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Fix update absolute position before use in PointerDragBehavior ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Fix issue with NinePatch displaying half pixel gaps between slices on Firefox browsers. ([Pryme8](https://github.com/Pryme8))
 - Fix issue when canvas loses focus while holding a pointer button ([PolygonalSun](https://github.com/PolygonalSun))

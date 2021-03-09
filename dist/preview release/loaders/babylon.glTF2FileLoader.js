@@ -5958,7 +5958,7 @@ var GLTFFileLoader = /** @class */ (function () {
         var _this = this;
         var request = scene._loadFile(url, onSuccess, function (event) {
             _this._onProgress(event, request);
-        }, undefined, useArrayBuffer, onError);
+        }, true, useArrayBuffer, onError);
         request.onCompleteObservable.add(function (request) {
             _this._requests.splice(_this._requests.indexOf(request), 1);
         });
@@ -5970,7 +5970,7 @@ var GLTFFileLoader = /** @class */ (function () {
         var _this = this;
         var request = scene._requestFile(url, onSuccess, function (event) {
             _this._onProgress(event, request);
-        }, undefined, useArrayBuffer, onError, onOpened);
+        }, true, useArrayBuffer, onError, onOpened);
         request.onCompleteObservable.add(function (request) {
             _this._requests.splice(_this._requests.indexOf(request), 1);
         });

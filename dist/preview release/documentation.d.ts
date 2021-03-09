@@ -61356,6 +61356,15 @@ declare module BABYLON {
          */
         nativeVertexBuffer?: any;
     }
+    /**
+     * Options to create the Native engine
+     */
+    export interface NativeEngineOptions {
+        /**
+         * defines whether to adapt to the device's viewport characteristics (default: false)
+         */
+        adaptToDeviceRatio?: boolean;
+    }
     /** @hidden */
     export class NativeEngine extends Engine {
         private readonly _native;
@@ -61367,7 +61376,7 @@ declare module BABYLON {
         homogeneousDepth: boolean;
         getHardwareScalingLevel(): number;
         setHardwareScalingLevel(level: number): void;
-        constructor();
+        constructor(options?: NativeEngineOptions);
         dispose(): void;
         /**
          * Can be used to override the current requestAnimationFrame requester.
