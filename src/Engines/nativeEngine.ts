@@ -739,6 +739,18 @@ class NativeDataBuffer extends DataBuffer {
 
 /** @hidden */
 declare var _native: any;
+
+/**
+ * Options to create the Native engine
+ */
+export interface NativeEngineOptions {
+
+    /**
+     * defines whether to adapt to the device's viewport characteristics (default: false)
+     */
+    adaptToDeviceRatio? : boolean;
+}
+
 /** @hidden */
 export class NativeEngine extends Engine {
     private readonly _native: INativeEngine = new _native.Engine();
@@ -758,8 +770,8 @@ export class NativeEngine extends Engine {
         this._native.setHardwareScalingLevel(level);
     }
 
-    public constructor() {
-        super(null);
+    public constructor(options: NativeEngineOptions = {}) {
+        super(null, false, undefined, options.adaptToDeviceRatio);
 
         this._webGLVersion = 2;
         this.disableUniformBuffers = true;
@@ -855,6 +867,12 @@ export class NativeEngine extends Engine {
         if (typeof Blob === "undefined") {
             (window.Blob as any) = function(v: any) { return v; };
         }
+
+        // Currently we do not fully configure the ThinEngine on construction of NativeEngine.
+        // Setup resolution scaling based on display settings.
+        var devicePixelRatio = window ? (window.devicePixelRatio || 1.0) : 1.0;
+        this._hardwareScalingLevel = options.adaptToDeviceRatio ? devicePixelRatio : 1.0;
+        this.resize();
 
         // Shader processor
         this._shaderProcessor = new NativeShaderProcessor();
