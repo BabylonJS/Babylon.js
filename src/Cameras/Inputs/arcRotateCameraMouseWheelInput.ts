@@ -6,6 +6,7 @@ import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManage
 import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 import { Tools } from '../../Misc/tools';
 import { IWheelEvent } from "../../Events/deviceInputEvents";
+import { Scalar } from "../../Maths/math.scalar";
 
 /**
  * Manage the mouse wheel inputs to control an arc rotate camera.
@@ -33,6 +34,17 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
     private _wheel: Nullable<(p: PointerInfo, s: EventState) => void>;
     private _observer: Nullable<Observer<PointerInfo>>;
 
+    private computeDeltaFromMouseWheelLegacyEvent(mouseWheelDelta: number, radius: number) {
+        var delta = 0;
+        var wheelDelta = (mouseWheelDelta * 0.01 * this.wheelDeltaPercentage) * radius;
+        if (mouseWheelDelta > 0) {
+            delta = wheelDelta / (1.0 + this.wheelDeltaPercentage);
+        } else {
+            delta = wheelDelta * (1.0 + this.wheelDeltaPercentage);
+        }
+        return delta;
+    }
+
     /**
      * Attach the input controls to a specific dom element to get the input from.
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
@@ -43,25 +55,35 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
         this._wheel = (p, s) => {
             //sanity check - this should be a PointerWheel event.
             if (p.type !== PointerEventTypes.POINTERWHEEL) { return; }
-            const event = <IWheelEvent>p.event;
-            let delta = 0;
+            var event = <IWheelEvent>p.event;
+            var delta = 0;
+
+            let mouseWheelLegacyEvent = event as any;
             let wheelDelta = 0;
-            let currentDelta = event.deltaY || (event.wheelDelta ?  -event.wheelDelta : 0);
 
-            if (currentDelta !== 0) {
-                // Using the inertia percentage, calculate the value needed to move based on set wheel delta percentage
-                if (this.wheelDeltaPercentage !== 0) {
-                    wheelDelta = (currentDelta > 0 ? -1 : 1) * this.camera.radius * this.wheelDeltaPercentage;
-                    delta = wheelDelta * (this.camera.inertia === 1 ? 1 : (1 - this.camera.inertia));
-                }
-                // If there's no percentage set, just handle using a value that emulates Chrome
-                else {
-                    wheelDelta = (currentDelta > 0 ? -100 : 100);
+            if (mouseWheelLegacyEvent.wheelDelta) {
+                wheelDelta = mouseWheelLegacyEvent.wheelDelta;
+            } else {
+                wheelDelta = -(event.deltaY || event.detail) * 60;
+            }
 
-                    if (this.wheelPrecision !== 0) {
-                        delta = wheelDelta / (this.wheelPrecision * 40);
+            if (this.wheelDeltaPercentage) {
+                delta = this.computeDeltaFromMouseWheelLegacyEvent(wheelDelta, this.camera.radius);
+
+                // If zooming in, estimate the target radius and use that to compute the delta for inertia
+                // this will stop multiple scroll events zooming in from adding too much inertia
+                if (delta > 0) {
+                    var estimatedTargetRadius = this.camera.radius;
+                    var targetInertia = this.camera.inertialRadiusOffset + delta;
+                    for (var i = 0; i < 20 && Math.abs(targetInertia) > 0.001; i++) {
+                        estimatedTargetRadius -= targetInertia;
+                        targetInertia *= this.camera.inertia;
                     }
+                    estimatedTargetRadius = Scalar.Clamp(estimatedTargetRadius, 0, Number.MAX_VALUE);
+                    delta = this.computeDeltaFromMouseWheelLegacyEvent(wheelDelta, estimatedTargetRadius);
                 }
+            } else {
+                delta = wheelDelta / (this.wheelPrecision * 40);
             }
 
             if (delta) {
