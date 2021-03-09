@@ -571,16 +571,30 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             if (!vertexPositions) {
                 vertexPositions = [];
             }
-            object.computeWorldMatrix(false);
+
+            // top level matrix used for shape transform doesn't take scale into account.
+            // Moreover, every children vertex position must be in that space.
+            // So, each vertex position here is transform by (mesh world matrix * toplevelMatrix -1)
+            var topLevelQuaternion;
+            if (topLevelObject.rotationQuaternion) {
+                topLevelQuaternion = topLevelObject.rotationQuaternion;
+            } else if (topLevelObject.rotation) {
+                topLevelQuaternion = Quaternion.FromEulerAngles(topLevelObject.rotation.x, topLevelObject.rotation.y, topLevelObject.rotation.z);
+            } else {
+                topLevelQuaternion = Quaternion.Identity();
+            }
+            const topLevelMatrix = Matrix.Compose(Vector3.One(), topLevelQuaternion, topLevelObject.position);
+            topLevelMatrix.invertToRef(this._tmpMatrix);
+            const wm = object.computeWorldMatrix(false);
+            const localMatrix = wm.multiply(this._tmpMatrix);
+
             var faceCount = indices.length / 3;
             for (var i = 0; i < faceCount; i++) {
                 var triPoints = [];
                 for (var point = 0; point < 3; point++) {
                     var v = new Vector3(vertexPositions[(indices[(i * 3) + point] * 3) + 0], vertexPositions[(indices[(i * 3) + point] * 3) + 1], vertexPositions[(indices[(i * 3) + point] * 3) + 2]);
 
-                    // Adjust for initial scaling
-                    Matrix.ScalingToRef(object.scaling.x, object.scaling.y, object.scaling.z, this._tmpMatrix);
-                    v = Vector3.TransformCoordinates(v, this._tmpMatrix);
+                    v = Vector3.TransformCoordinates(v, localMatrix);
 
                     var vec: any;
                     if (point == 0) {
