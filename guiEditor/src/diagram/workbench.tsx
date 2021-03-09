@@ -109,7 +109,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.loadToEditor();
     }
 
-    loadToEditor(){
+    loadToEditor() {
         var children = this.globalState.guiTexture.getChildren();
         children[0].children.forEach(guiElement => {
             this.createNewGuiNode(guiElement);
@@ -176,8 +176,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this.isOverGUINode = false;
         });
 
-        if(this.isContainer(guiControl))
-        {
+        if (this.isContainer(guiControl)) {
             (guiControl as Container).children.forEach(child => {
                 this.createNewGuiNode(child);
             });
@@ -312,10 +311,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         });
 
         this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(`Please note: This editor is still a work in progress. You may submit feedback to msDestiny14 on GitHub.`);
-        engine.runRenderLoop(() => {this._scene.render()});
+        engine.runRenderLoop(() => { this._scene.render() });
         this.globalState.onNewSceneObservable.notifyObservers(this.globalState.guiTexture.getScene());
     };
-    
+
     //Add map-like controls to an ArcRotate camera
     addControls(scene: Scene, camera: ArcRotateCamera) {
         camera.inertia = 0.7;
