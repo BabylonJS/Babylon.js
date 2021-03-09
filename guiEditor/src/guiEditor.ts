@@ -70,26 +70,6 @@ export class GUIEditor {
             }
         }
                 
-        /*this._SceneExplorerHost = hostElement.ownerDocument!.createElement("div");
-
-        this._SceneExplorerHost.id = "scene-explorer-host";
-        this._SceneExplorerHost.style.width =  "auto";
-
-        this._SceneExplorerHost.style.position = "relative";
-
-        
-
-
-        let scene = globalState.guiTexture.getScene();
-        if(scene) {
-            const sceneExplorerElement = React.createElement(SceneExplorerComponent, {
-                scene: scene,
-                globalState: globalState
-            });
-        
-            ReactDOM.render(sceneExplorerElement, globalState.hostElement);
-        }*/
-
         if (options.customLoadObservable) {
             options.customLoadObservable.add((data) => {
                 globalState.onResetRequiredObservable.notifyObservers();
