@@ -572,8 +572,8 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 vertexPositions = [];
             }
 
-            // top level matrix used for shape transform doesn't take scale into account. 
-            // Moreover, every children vertex position must be in that space. 
+            // top level matrix used for shape transform doesn't take scale into account.
+            // Moreover, every children vertex position must be in that space.
             // So, each vertex position here is transform by (mesh world matrix * toplevelMatrix -1)
             var topLevelQuaternion;
             if (topLevelObject.rotationQuaternion) {
