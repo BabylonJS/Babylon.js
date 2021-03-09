@@ -52,7 +52,7 @@
 
 ### Meshes
 
--   `LineMesh` now allows assigning custom material via `material` setter. ([FullStackForger]
+-   `LineMesh` now allows assigning custom material via `material` setter. ([FullStackForger](https://github.com/FullStackForger)
 
 ### Inspector
 
