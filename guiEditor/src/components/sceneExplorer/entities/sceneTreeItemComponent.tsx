@@ -10,12 +10,12 @@ import { faSyncAlt, faImage, faCrosshairs, faArrowsAlt, faCompress, faRedoAlt, f
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
 
-import { GlobalState } from "../../globalState";
 import { UtilityLayerRenderer } from "babylonjs/Rendering/utilityLayerRenderer";
-import { PropertyChangedEvent } from '../../../components/propertyChangedEvent';
 import { LightGizmo } from 'babylonjs/Gizmos/lightGizmo';
 import { CameraGizmo } from 'babylonjs/Gizmos/cameraGizmo';
 import { TmpVectors, Vector3 } from 'babylonjs/Maths/math';
+import { GlobalState } from "../../../globalState";
+import { PropertyChangedEvent } from "../../../sharedUiComponents/propertyChangedEvent";
 
 interface ISceneTreeItemComponentProps {
     scene: Scene;
