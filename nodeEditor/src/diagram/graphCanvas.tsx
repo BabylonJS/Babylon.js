@@ -832,6 +832,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 case NodeMaterialConnectionPointCompatibilityStates.TargetIncompatible:
                     message = "Source block can only work in fragment shader whereas destination block is currently aimed for the vertex shader";
                     break;
+                case NodeMaterialConnectionPointCompatibilityStates.HierarchyIssue:
+                    message = "Source block cannot be connected with one of its ancestors";
+                    break;
             }
 
             this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(message);             

@@ -15,7 +15,9 @@ export enum NodeMaterialConnectionPointCompatibilityStates {
     /** Points are incompatible because of their types */
     TypeIncompatible,
     /** Points are incompatible because of their targets (vertex vs fragment) */
-    TargetIncompatible
+    TargetIncompatible,
+    /** Points are incompatible because they are in the same hierarchy **/
+    HierarchyIssue
 }
 
 /**
@@ -390,10 +392,10 @@ export class NodeMaterialConnectionPoint {
      */
     public checkCompatibilityState(connectionPoint: NodeMaterialConnectionPoint): NodeMaterialConnectionPointCompatibilityStates {
         const ownerBlock = this._ownerBlock;
+        const otherBlock = connectionPoint.ownerBlock;
 
         if (ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
             // Let's check we are not going reverse
-            const otherBlock = connectionPoint.ownerBlock;
 
             if (otherBlock.target === NodeMaterialBlockTargets.Vertex) {
                 return NodeMaterialConnectionPointCompatibilityStates.TargetIncompatible;
@@ -424,7 +426,19 @@ export class NodeMaterialConnectionPoint {
 
         // Excluded
         if ((connectionPoint.excludedConnectionPointTypes && connectionPoint.excludedConnectionPointTypes.indexOf(this.type) !== -1)) {
-            return 1;
+            return NodeMaterialConnectionPointCompatibilityStates.TypeIncompatible;
+        }
+
+        // Check hierarchy
+        let targetBlock = otherBlock;
+        let sourceBlock = ownerBlock;
+        if (this.direction === NodeMaterialConnectionPointDirection.Input) {
+            targetBlock = ownerBlock;
+            sourceBlock = otherBlock;
+        }
+
+        if (targetBlock.isAnAncestorOf(sourceBlock)) {
+            return NodeMaterialConnectionPointCompatibilityStates.HierarchyIssue;
         }
 
         return NodeMaterialConnectionPointCompatibilityStates.Compatible;

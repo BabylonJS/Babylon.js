@@ -58970,6 +58970,9 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
                 case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialConnectionPointCompatibilityStates"].TargetIncompatible:
                     message = "Source block can only work in fragment shader whereas destination block is currently aimed for the vertex shader";
                     break;
+                case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialConnectionPointCompatibilityStates"].HierarchyIssue:
+                    message = "Source block cannot be connected with one of its ancestors";
+                    break;
             }
             this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(message);
             return;
