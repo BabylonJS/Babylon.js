@@ -113,16 +113,16 @@ export class ColorMergerBlock extends NodeMaterialBlock {
         if (rgbInput.isConnected) {
             if (color4Output.hasEndpoints) {
                 state.compilationString += this._declareOutput(color4Output, state) + ` = vec4(${rgbInput.associatedVariableName}, ${aInput.isConnected ? this._writeVariable(aInput) : "0.0"});\r\n`;
-            } 
-            
+            }
+
             if (color3Output.hasEndpoints) {
                 state.compilationString += this._declareOutput(color3Output, state) + ` = ${rgbInput.associatedVariableName};\r\n`;
             }
         } else {
             if (color4Output.hasEndpoints) {
                 state.compilationString += this._declareOutput(color4Output, state) + ` = vec4(${rInput.isConnected ? this._writeVariable(rInput) : "0.0"}, ${gInput.isConnected ? this._writeVariable(gInput) : "0.0"}, ${bInput.isConnected ? this._writeVariable(bInput) : "0.0"}, ${aInput.isConnected ? this._writeVariable(aInput) : "0.0"});\r\n`;
-            } 
-            
+            }
+
             if (color3Output.hasEndpoints) {
                 state.compilationString += this._declareOutput(color3Output, state) + ` = vec3(${rInput.isConnected ? this._writeVariable(rInput) : "0.0"}, ${gInput.isConnected ? this._writeVariable(gInput) : "0.0"}, ${bInput.isConnected ? this._writeVariable(bInput) : "0.0"});\r\n`;
             }

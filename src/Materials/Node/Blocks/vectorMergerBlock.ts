@@ -163,12 +163,12 @@ export class VectorMergerBlock extends NodeMaterialBlock {
         if (xyzInput.isConnected) {
             if (v4Output.hasEndpoints) {
                 state.compilationString += this._declareOutput(v4Output, state) + ` = vec4(${xyzInput.associatedVariableName}, ${wInput.isConnected ? this._writeVariable(wInput) : "0.0"});\r\n`;
-            } 
-            
+            }
+
             if (v3Output.hasEndpoints) {
                 state.compilationString += this._declareOutput(v3Output, state) + ` = ${xyzInput.associatedVariableName};\r\n`;
-            } 
-            
+            }
+
             if (v2Output.hasEndpoints) {
                 state.compilationString += this._declareOutput(v2Output, state) + ` = ${xyzInput.associatedVariableName}.xy;\r\n`;
             }
@@ -179,12 +179,12 @@ export class VectorMergerBlock extends NodeMaterialBlock {
                 } else {
                     state.compilationString += this._declareOutput(v4Output, state) + ` = vec4(${xyInput.associatedVariableName}, ${zInput.isConnected ? this._writeVariable(zInput) : "0.0"}, ${wInput.isConnected ? this._writeVariable(wInput) : "0.0"});\r\n`;
                 }
-            } 
-            
+            }
+
             if (v3Output.hasEndpoints) {
                 state.compilationString += this._declareOutput(v3Output, state) + ` = vec3(${xyInput.associatedVariableName}, ${zInput.isConnected ? this._writeVariable(zInput) : "0.0"});\r\n`;
-            } 
-            
+            }
+
             if (v2Output.hasEndpoints) {
                 state.compilationString += this._declareOutput(v2Output, state) + ` = ${xyInput.associatedVariableName};\r\n`;
             }
@@ -203,12 +203,12 @@ export class VectorMergerBlock extends NodeMaterialBlock {
                 } else {
                     state.compilationString += this._declareOutput(v4Output, state) + ` = vec4(${xInput.isConnected ? this._writeVariable(xInput) : "0.0"}, ${yInput.isConnected ? this._writeVariable(yInput) : "0.0"}, ${zInput.isConnected ? this._writeVariable(zInput) : "0.0"}, ${wInput.isConnected ? this._writeVariable(wInput) : "0.0"});\r\n`;
                 }
-            } 
-            
+            }
+
             if (v3Output.hasEndpoints) {
                 state.compilationString += this._declareOutput(v3Output, state) + ` = vec3(${xInput.isConnected ? this._writeVariable(xInput) : "0.0"}, ${yInput.isConnected ? this._writeVariable(yInput) : "0.0"}, ${zInput.isConnected ? this._writeVariable(zInput) : "0.0"});\r\n`;
-            } 
-            
+            }
+
             if (v2Output.hasEndpoints) {
                 state.compilationString += this._declareOutput(v2Output, state) + ` = vec2(${xInput.isConnected ? this._writeVariable(xInput) : "0.0"}, ${yInput.isConnected ? this._writeVariable(yInput) : "0.0"});\r\n`;
             }

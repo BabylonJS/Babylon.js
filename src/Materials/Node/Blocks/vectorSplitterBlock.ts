@@ -154,7 +154,7 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
         }
         if (zwOutput.hasEndpoints && this.xyzw.isConnected) {
             state.compilationString += this._declareOutput(zwOutput, state) + ` = ${this.xyzw.associatedVariableName}.zw;\r\n`;
-        }        
+        }
         if (xyOutput.hasEndpoints) {
             state.compilationString += this._declareOutput(xyOutput, state) + ` = ${input.associatedVariableName}.xy;\r\n`;
         }
