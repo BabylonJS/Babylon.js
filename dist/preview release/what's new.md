@@ -103,7 +103,6 @@
 ### Gizmos
 
 -   Exposed `scaleDragSpeed` and added `axisFactor` for BoundingBoxGizmo ([CedricGuillemet](https://github.com/CedricGuillemet))
-
 -   Provide additional attributes `_customRotationQuaternion` to customize the posture of the gizmo ([ecojust](https://github.com/ecojust))
 
 ### Viewer
