@@ -286,8 +286,6 @@ export class EffectWrapper {
                 creationOptions.onCompiled,
             );
         }
-
-        this._drawWrapper.effect = this.effect;
     }
 
     /**
