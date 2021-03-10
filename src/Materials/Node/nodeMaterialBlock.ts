@@ -321,7 +321,6 @@ export class NodeMaterialBlock {
         return this._outputs[index + 1];
     }
 
-    
     /**
      * Checks if the current block is an ancestor of a given block
      * @param block defines the potential descendant block to check

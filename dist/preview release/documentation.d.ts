@@ -12971,7 +12971,9 @@ declare module BABYLON {
         /** Points are incompatible because of their types */
         TypeIncompatible = 1,
         /** Points are incompatible because of their targets (vertex vs fragment) */
-        TargetIncompatible = 2
+        TargetIncompatible = 2,
+        /** Points are incompatible because they are in the same hierarchy **/
+        HierarchyIssue = 3
     }
     /**
      * Defines the direction of a connection point
@@ -14146,6 +14148,12 @@ declare module BABYLON {
          */
         getSiblingOutput(current: NodeMaterialConnectionPoint): NodeMaterialConnectionPoint | null;
         /**
+         * Checks if the current block is an ancestor of a given block
+         * @param block defines the potential descendant block to check
+         * @returns true if block is a descendant
+         */
+        isAnAncestorOf(block: NodeMaterialBlock): boolean;
+        /**
          * Connect current block with another block
          * @param other defines the block to connect with
          * @param options define the various options to help pick the right connections
@@ -14505,6 +14513,10 @@ declare module BABYLON {
          */
         get xyIn(): NodeMaterialConnectionPoint;
         /**
+         * Gets the zw component (input)
+         */
+        get zwIn(): NodeMaterialConnectionPoint;
+        /**
          * Gets the x component (input)
          */
         get x(): NodeMaterialConnectionPoint;
@@ -14532,6 +14544,10 @@ declare module BABYLON {
          * Gets the xy component (output)
          */
         get xyOut(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the zw component (output)
+         */
+        get zwOut(): NodeMaterialConnectionPoint;
         /**
          * Gets the xy component (output)
          * @deprecated Please use xyOut instead.
@@ -29409,7 +29425,8 @@ declare module BABYLON {
          * Default value is 0.1
          */
         intersectionThreshold: number;
-        private _colorShader;
+        private _lineMaterial;
+        private _isShaderMaterial;
         private color4;
         /**
          * Creates a new LinesMesh
@@ -50836,6 +50853,7 @@ declare module BABYLON {
         wheelDeltaPercentage: number;
         private _wheel;
         private _observer;
+        private computeDeltaFromMouseWheelLegacyEvent;
         /**
          * Attach the input controls to a specific dom element to get the input from.
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
@@ -69081,6 +69099,10 @@ declare module BABYLON {
          */
         get xyOut(): NodeMaterialConnectionPoint;
         /**
+         * Gets the zw component (output)
+         */
+        get zw(): NodeMaterialConnectionPoint;
+        /**
          * Gets the x component (output)
          */
         get x(): NodeMaterialConnectionPoint;
@@ -73372,6 +73394,7 @@ declare module BABYLON {
         private _sourceBuffer;
         private _targetBuffer;
         private _currentRenderId;
+        private _currentRenderingCameraUniqueId;
         private _started;
         private _stopped;
         private _timeDelta;
@@ -73388,12 +73411,12 @@ declare module BABYLON {
          */
         static get IsSupported(): boolean;
         /**
-        * An event triggered when the system is disposed.
-        */
+         * An event triggered when the system is disposed.
+         */
         onDisposeObservable: Observable<IParticleSystem>;
         /**
-        * An event triggered when the system is stopped
-        */
+         * An event triggered when the system is stopped
+         */
         onStoppedObservable: Observable<IParticleSystem>;
         /**
          * Gets the maximum number of particles active at the same time.
